@@ -48,8 +48,9 @@ log = logging.getLogger(__name__)
 
 ###############################################
 
-@tokenclass_registry.class_entry('remote')
-@tokenclass_registry.class_entry('linotp.tokens.remotetoken.RemoteTokenClass')
+
+@tokenclass_registry.class_entry("remote")
+@tokenclass_registry.class_entry("linotp.tokens.remotetoken.RemoteTokenClass")
 class RemoteTokenClass(TokenClass):
     """
     The Remote token forwards an authentication request to another LinOTP
@@ -76,7 +77,7 @@ class RemoteTokenClass(TokenClass):
         self.remoteUser = None
         self.remoteRealm = None
         self.remoteResConf = None
-        self.mode = ['authenticate', 'challenge']
+        self.mode = ["authenticate", "challenge"]
 
         self.isRemoteChallengeRequest = False
         self.local_pin_check = None
@@ -96,7 +97,7 @@ class RemoteTokenClass(TokenClass):
         return "LSRE"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
+    def getClassInfo(cls, key=None, ret="all"):
         """
         getClassInfo - returns a subtree of the token definition
 
@@ -111,31 +112,41 @@ class RemoteTokenClass(TokenClass):
 
         """
 
-        res = {'type': 'remote',
-               'title': 'Remote Token',
-               'description': ('REMOTE token to forward the authentication'
-                               ' request to another LinOTP server'),
-
-               'init': {'page': {'html': 'remotetoken.mako',
-                                 'scope': 'enroll', },
-                        'title': {'html': 'remotetoken.mako',
-                                  'scope': 'enroll.title', },
-                        },
-
-               'config': {'page': {'html': 'remotetoken.mako',
-                                   'scope': 'config', },
-                          'title': {'html': 'remotetoken.mako',
-                                    'scope': 'config.title', },
-                          },
-
-               'selfservice': {},
-               'policy': {},
-               }
+        res = {
+            "type": "remote",
+            "title": "Remote Token",
+            "description": (
+                "REMOTE token to forward the authentication"
+                " request to another LinOTP server"
+            ),
+            "init": {
+                "page": {
+                    "html": "remotetoken.mako",
+                    "scope": "enroll",
+                },
+                "title": {
+                    "html": "remotetoken.mako",
+                    "scope": "enroll.title",
+                },
+            },
+            "config": {
+                "page": {
+                    "html": "remotetoken.mako",
+                    "scope": "config",
+                },
+                "title": {
+                    "html": "remotetoken.mako",
+                    "scope": "config.title",
+                },
+            },
+            "selfservice": {},
+            "policy": {},
+        }
 
         if key is not None and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
 
         return ret
@@ -226,8 +237,9 @@ class RemoteTokenClass(TokenClass):
 
         # should we check the pin localy??
         if self.check_pin_local():
-            (res, pin, otpval) = split_pin_otp(self, passw, user,
-                                               options=options)
+            (res, pin, otpval) = split_pin_otp(
+                self, passw, user, options=options
+            )
 
             res = check_pin(self, pin, user=user, options=options)
             if res is False:
@@ -264,8 +276,9 @@ class RemoteTokenClass(TokenClass):
 
         return request_is_valid
 
-    def do_request(self, passw, transactionid=None, user=None,
-                   autoassign=False):
+    def do_request(
+        self, passw, transactionid=None, user=None, autoassign=False
+    ):
         """
         run the http request against the remote host
 
@@ -289,29 +302,30 @@ class RemoteTokenClass(TokenClass):
         remoteRealm = self.getFromTokenInfo("remote.realm") or ""
         remoteResConf = self.getFromTokenInfo("remote.resConf") or ""
 
-        ssl_verify_config = getFromConfig("remote.verify_ssl_certificate",
-                                          "False")
-        ssl_verify = str(ssl_verify_config).lower().strip() == 'true'
+        ssl_verify_config = getFromConfig(
+            "remote.verify_ssl_certificate", "False"
+        )
+        ssl_verify = str(ssl_verify_config).lower().strip() == "true"
 
         # here we also need to check for remote.user and so on....
         params = {}
 
         if autoassign:
-            params['user'] = user.login
-            params['realm'] = remoteRealm
+            params["user"] = user.login
+            params["realm"] = remoteRealm
             user.realm = remoteRealm
             if len(remotePath) == 0:
                 remotePath = "/validate/check"
 
         elif len(remoteSerial) > 0:
-            params['serial'] = remoteSerial
+            params["serial"] = remoteSerial
             if len(remotePath) == 0:
                 remotePath = "/validate/check_s"
 
         elif len(remoteUser) > 0:
-            params['user'] = remoteUser
-            params['realm'] = remoteRealm
-            params['resConf'] = remoteResConf
+            params["user"] = remoteUser
+            params["realm"] = remoteRealm
+            params["resConf"] = remoteResConf
             if len(remotePath) == 0:
                 remotePath = "/validate/check"
 
@@ -321,17 +335,19 @@ class RemoteTokenClass(TokenClass):
             if user is None:
                 log.warning("FIXME: We do not know the user at the moment!")
             else:
-                params['user'] = user.login
-                params['realm'] = user.realm
+                params["user"] = user.login
+                params["realm"] = user.realm
 
-        params['pass'] = otpval
+        params["pass"] = otpval
         if transactionid is not None:
-            params['state'] = transactionid
+            params["state"] = transactionid
 
         # use a POST request to check the token
         data = urllib.parse.urlencode(params)
-        request_url = "%s/%s" % (remoteServer.rstrip('/'),
-                                 remotePath.lstrip('/'))
+        request_url = "%s/%s" % (
+            remoteServer.rstrip("/"),
+            remotePath.lstrip("/"),
+        )
 
         reply = {}
         otp_count = -1
@@ -339,40 +355,45 @@ class RemoteTokenClass(TokenClass):
 
         try:
             # prepare the submit and receive headers
-            headers = {"Content-type": "application/x-www-form-urlencoded",
-                       "Accept": "text/plain", 'Connection': 'close'}
+            headers = {
+                "Content-type": "application/x-www-form-urlencoded",
+                "Accept": "text/plain",
+                "Connection": "close",
+            }
 
             # submit the request
             try:
                 # is httplib compiled with ssl?
                 http = httplib2.Http(
-                    disable_ssl_certificate_validation=not(ssl_verify))
+                    disable_ssl_certificate_validation=not (ssl_verify)
+                )
             except TypeError as exx:
                 # not so on squeeze:
                 # TypeError: __init__() got an unexpected keyword argument
                 # 'disable_ssl_certificate_validation'
 
-                log.warning("httplib2 'disable_ssl_certificate_validation' "
-                            "attribute error: %r", exx)
+                log.warning(
+                    "httplib2 'disable_ssl_certificate_validation' "
+                    "attribute error: %r",
+                    exx,
+                )
                 # so we run in fallback mode
                 http = httplib2.Http()
 
-            (resp, content) = http.request(request_url,
-                                           method="POST",
-                                           body=data,
-                                           headers=headers)
+            (resp, content) = http.request(
+                request_url, method="POST", body=data, headers=headers
+            )
             result = json.loads(content)
-            status = result['result']['status']
+            status = result["result"]["status"]
 
             if status is True:
 
-                if result.get('result', {}).get('value', False) is True:
+                if result.get("result", {}).get("value", False) is True:
                     res = True
                     otp_count = 0
-                    auth_info = result.get('detail', {}).get('auth_info',
-                                                               None)
+                    auth_info = result.get("detail", {}).get("auth_info", None)
                     if auth_info and not self.local_pin_check:
-                        self.auth_info['auth_info'] = auth_info
+                        self.auth_info["auth_info"] = auth_info
 
                 else:
                     # if false and detail - this is a challenge response
@@ -384,8 +405,10 @@ class RemoteTokenClass(TokenClass):
                         self.remote_challenge_response = reply
 
         except Exception as exx:
-            log.exception("[do_request] [RemoteToken] Error getting response from "
-                          "remote Server (%r): %r" % (request_url, exx))
+            log.exception(
+                "[do_request] [RemoteToken] Error getting response from "
+                "remote Server (%r): %r" % (request_url, exx)
+            )
 
         return (res, otp_count, reply)
 
@@ -397,19 +420,20 @@ class RemoteTokenClass(TokenClass):
         remark: we might call the super of this method first
         """
 
-        message = 'Remote Otp: '
-        data = {'serial': self.token.getSerial()}
+        message = "Remote Otp: "
+        data = {"serial": self.token.getSerial()}
 
         if self.isRemoteChallengeRequest:
-            data['remote_reply'] = self.remote_challenge_response
+            data["remote_reply"] = self.remote_challenge_response
 
         attributes = None
 
         return (True, message, data, attributes)
 
-    def checkResponse4Challenge(self, user, passw, options=None,
-                                challenges=None):
-        '''
+    def checkResponse4Challenge(
+        self, user, passw, options=None, challenges=None
+    ):
+        """
         This method verifies if the given ``passw`` matches any
         existing ``challenge`` of the token.
 
@@ -432,7 +456,7 @@ class RemoteTokenClass(TokenClass):
         :type challenges: list
         :return: tuple of (otpcounter and the list of matching challenges)
 
-        '''
+        """
         otp_counter = -1
         transid = None
         matching_challenge = None
@@ -440,9 +464,9 @@ class RemoteTokenClass(TokenClass):
 
         matching_challenges = []
 
-        if 'transactionid' in options or 'state' in options:
+        if "transactionid" in options or "state" in options:
             # fetch the transactionid
-            transid = options.get('transactionid', options.get('state', None))
+            transid = options.get("transactionid", options.get("state", None))
 
         if transid is not None:
             # lookup if there is a transaction with this transaction id
@@ -457,8 +481,7 @@ class RemoteTokenClass(TokenClass):
             # and we must not forward this!!
             if self.check_pin_local():
                 # check if transaction id is in list of challengens
-                (res, otp_counter, reply) = \
-                    self.do_request(passw, user=user)
+                (res, otp_counter, reply) = self.do_request(passw, user=user)
 
                 # everything is ok, we remove the challenge
                 if res is True and otp_counter >= 0:
@@ -467,12 +490,14 @@ class RemoteTokenClass(TokenClass):
             # in case of remote check pin, we lookup in the local challenge
             # to extract the replyed challenge
             else:
-                remote_transid = matching_challenge.get('data', {}).\
-                    get('remote_reply', {}).\
-                    get('transactionid', '')
-                (res, otp_counter, reply) = \
-                    self.do_request(passw, transactionid=remote_transid,
-                                    user=user)
+                remote_transid = (
+                    matching_challenge.get("data", {})
+                    .get("remote_reply", {})
+                    .get("transactionid", "")
+                )
+                (res, otp_counter, reply) = self.do_request(
+                    passw, transactionid=remote_transid, user=user
+                )
                 # everything is ok, we remove the challenge
                 if res and otp_counter >= 0:
                     matching_challenges.append(matching_challenge)
@@ -480,13 +505,14 @@ class RemoteTokenClass(TokenClass):
         return (otp_counter, matching_challenges)
 
     def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
-        '''
+        """
         checks if the given OTP value is/are values of this very token.
         This is used to autoassign and to determine the serial number of
         a token.
-        '''
-        (res, otp_count, reply) = self.do_request(otp, user=user,
-                                                  autoassign=autoassign)
+        """
+        (res, otp_count, reply) = self.do_request(
+            otp, user=user, autoassign=autoassign
+        )
         return otp_count
 
     def checkPin(self, pin, options=None):
@@ -520,8 +546,11 @@ class RemoteTokenClass(TokenClass):
             pin = ""
             otpval = passw
 
-        log.debug("[splitPinPass] [remotetoken] returnung (len:%r) (len:%r)"
-                  % (len(pin), len(otpval)))
+        log.debug(
+            "[splitPinPass] [remotetoken] returnung (len:%r) (len:%r)"
+            % (len(pin), len(otpval))
+        )
         return pin, otpval
+
 
 ###eof#########################################################################

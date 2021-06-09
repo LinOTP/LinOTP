@@ -39,14 +39,14 @@ import os
 from linotp.tests import TestController
 
 DEFAULT_NOSE_CONFIG = {
-    'radius': {
-        'authport': '18012',
-        'acctport': '18013',
-        },
-    'paster': {
-        'port': '5001',
-        }
-    }
+    "radius": {
+        "authport": "18012",
+        "acctport": "18013",
+    },
+    "paster": {
+        "port": "5001",
+    },
+}
 try:
     from testconfig import config as nose_config
 except ImportError as exc:
@@ -55,23 +55,24 @@ except ImportError as exc:
 
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class TestSpecialController(TestController):
 
-    radius_authport = DEFAULT_NOSE_CONFIG['radius']['authport']
-    radius_acctport = DEFAULT_NOSE_CONFIG['radius']['acctport']
-    paster_port = DEFAULT_NOSE_CONFIG['paster']['port']
+    radius_authport = DEFAULT_NOSE_CONFIG["radius"]["authport"]
+    radius_acctport = DEFAULT_NOSE_CONFIG["radius"]["acctport"]
+    paster_port = DEFAULT_NOSE_CONFIG["paster"]["port"]
 
     @classmethod
     def setup_class(cls):
-        if nose_config and 'radius' in nose_config:
-            cls.radius_authport = nose_config['radius']['authport']
-            cls.radius_acctport = nose_config['radius']['acctport']
+        if nose_config and "radius" in nose_config:
+            cls.radius_authport = nose_config["radius"]["authport"]
+            cls.radius_acctport = nose_config["radius"]["acctport"]
 
-        if nose_config and 'paster' in nose_config:
-            cls.paster_port = nose_config['paster']['port']
+        if nose_config and "paster" in nose_config:
+            cls.paster_port = nose_config["paster"]["port"]
 
         TestController.setup_class()
 
@@ -80,34 +81,36 @@ class TestSpecialController(TestController):
         TestController.teardown_class()
 
     @staticmethod
-    def do_http_request(remoteServer, params=None, headers=None, cookies=None,
-                        method='POST'):
+    def do_http_request(
+        remoteServer, params=None, headers=None, cookies=None, method="POST"
+    ):
 
-            request_url = "%s" % (remoteServer)
+        request_url = "%s" % (remoteServer)
 
-            if not params:
-                params = {}
-            data = urllib.parse.urlencode(params)
+        if not params:
+            params = {}
+        data = urllib.parse.urlencode(params)
 
-            # predefine the submit and receive headers, but allow the overwrite
-            r_headers = {"Content-type": "application/x-www-form-urlencoded",
-                         "Accept": "text/plain"}
-            if headers:
-                r_headers.update(headers)
+        # predefine the submit and receive headers, but allow the overwrite
+        r_headers = {
+            "Content-type": "application/x-www-form-urlencoded",
+            "Accept": "text/plain",
+        }
+        if headers:
+            r_headers.update(headers)
 
-            if cookies:
-                cooking = []
-                for key, value in list(cookies.items()):
-                    cooking.append('%s=%s' % (key, value))
-                r_headers['Cookie'] = ";".join(cooking)
+        if cookies:
+            cooking = []
+            for key, value in list(cookies.items()):
+                cooking.append("%s=%s" % (key, value))
+            r_headers["Cookie"] = ";".join(cooking)
 
-            # submit the request
-            http = httplib2.Http()
-            (_resp, content) = http.request(request_url,
-                                           method=method,
-                                           body=data,
-                                           headers=r_headers)
-            return content
+        # submit the request
+        http = httplib2.Http()
+        (_resp, content) = http.request(
+            request_url, method=method, body=data, headers=r_headers
+        )
+        return content
 
     @staticmethod
     def check_for_process(service):
@@ -116,6 +119,7 @@ class TestSpecialController(TestController):
         """
         result = False
         import subprocess
+
         p = subprocess.Popen(["ps", "-a"], stdout=subprocess.PIPE)
         out, _err = p.communicate()
         if service in out:
@@ -129,8 +133,10 @@ class TestSpecialController(TestController):
         """
         result = False
         import subprocess
-        p = subprocess.Popen(["lsof", "-t", "-i:%s" % port],
-                             stdout=subprocess.PIPE)
+
+        p = subprocess.Popen(
+            ["lsof", "-t", "-i:%s" % port], stdout=subprocess.PIPE
+        )
         out, _err = p.communicate()
         if len(out) > 0:
             result = True
@@ -146,21 +152,22 @@ class TestSpecialController(TestController):
         not be accessable outside of a test anymore
         """
         import subprocess
+
         try:
             radius_server_file = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
-                '..',
-                'tools',
-                'dummy_radius_server.py',
-                )
+                "..",
+                "tools",
+                "dummy_radius_server.py",
+            )
             dictionary_file = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
-                '..',
-                '..',
-                '..',
-                'config',
-                'dictionary',
-                )
+                "..",
+                "..",
+                "..",
+                "config",
+                "dictionary",
+            )
             proc = subprocess.Popen(
                 [
                     radius_server_file,
@@ -170,8 +177,8 @@ class TestSpecialController(TestController):
                     radius_authport,
                     "--acctport",
                     radius_acctport,
-                    ]
-                )
+                ]
+            )
         except Exception as exx:
             raise exx
         assert proc is not None
@@ -180,12 +187,11 @@ class TestSpecialController(TestController):
 
     @staticmethod
     def stop_radius_server(proc):
-        '''
+        """
         stopping the dummy radius server
-        '''
+        """
         if proc:
             r = proc.kill()
             log.debug(r)
 
         return
-

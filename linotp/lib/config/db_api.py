@@ -23,9 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''handle all configuration items with aspekts like persitance and
+"""handle all configuration items with aspekts like persitance and
    syncronysation and provides this to all requests
-'''
+"""
 
 
 import logging
@@ -72,10 +72,11 @@ def _storeConfigDB(key, val, typ=None, desc=None):
         key = "linotp." + key
 
     if isinstance(key, str):
-        key = '' + key
+        key = "" + key
 
-    log.debug('Changing config entry %r in database: New value is %r',
-              key, val)
+    log.debug(
+        "Changing config entry %r in database: New value is %r", key, val
+    )
 
     # ---------------------------------------------------------------------- --
 
@@ -107,7 +108,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     # an iterator to split the value into chunks
 
     chunks = []
-    if len(value) < len(value.encode('utf-8')):
+    if len(value) < len(value.encode("utf-8")):
         text_slice = utf8_slice
     else:
         text_slice = simple_slice
@@ -206,9 +207,9 @@ def _store_continous_entry_db(chunks, key, val, typ, desc):
             cont_typ = typ
             cont_desc = desc
 
-        res = _storeConfigEntryDB(cont_key, cont_value,
-                                  typ=cont_typ,
-                                  desc=cont_desc)
+        res = _storeConfigEntryDB(
+            cont_key, cont_value, typ=cont_typ, desc=cont_desc
+        )
 
     return res
 
@@ -231,11 +232,11 @@ def _storeConfigEntryDB(key, value, typ=None, desc=None):
     # insert
     elif confEntries.count() == 0:
         theConf = Config(
-                        Key=str(key),
-                        Value=str(value),
-                        Type=str(typ),
-                        Description=str(desc)
-                        )
+            Key=str(key),
+            Value=str(value),
+            Type=str(typ),
+            Description=str(desc),
+        )
     if theConf is not None:
         db.session.add(theConf)
 
@@ -249,16 +250,16 @@ def _removeConfigDB(key):
     :param key: the name of the entry
     :return: number of deleted entries
     """
-    log.debug('removing config entry %r from database table' % key)
+    log.debug("removing config entry %r from database table" % key)
 
-    if (not key.startswith("linotp.")):
-        if not key.startswith('enclinotp.'):
+    if not key.startswith("linotp."):
+        if not key.startswith("enclinotp."):
             key = "linotp." + key
 
     if isinstance(key, str):
-        key = '' + key
+        key = "" + key
 
-    confEntries = Config.query.filter_by(Key= str(key)).all()
+    confEntries = Config.query.filter_by(Key=str(key)).all()
 
     if not confEntries:
         return 0
@@ -269,8 +270,8 @@ def _removeConfigDB(key):
     to_be_deleted.append(theConf)
 
     # if entry is a contious type, delete all of this kind
-    if theConf.Type == 'C' and theConf.Description[:len('0:')] == '0:':
-        _start, end = theConf.Description.split(':')
+    if theConf.Type == "C" and theConf.Description[: len("0:")] == "0:":
+        _start, end = theConf.Description.split(":")
         search_key = "%s__[%%:%s]" % (key, end)
         cont_entries = Config.query.filter(Config.Key.like(search_key)).all()
 
@@ -282,8 +283,9 @@ def _removeConfigDB(key):
             db.session.delete(entry)
 
     except Exception as e:
-        raise ConfigAdminError("remove Config failed for %r: %r"
-                               % (key, e), id=1133)
+        raise ConfigAdminError(
+            "remove Config failed for %r: %r" % (key, e), id=1133
+        )
 
     return len(to_be_deleted)
 
@@ -292,12 +294,12 @@ def _retrieveConfigDB(Key):
 
     # prepend "linotp." if required
     key = Key
-    if (not key.startswith("linotp.")):
-        if (not key.startswith("enclinotp.")):
+    if not key.startswith("linotp."):
+        if not key.startswith("enclinotp."):
             key = "linotp." + Key
 
     if isinstance(key, str):
-        key = '' + key
+        key = "" + key
 
     myVal = None
 
@@ -309,14 +311,14 @@ def _retrieveConfigDB(Key):
     theConf = entries[0]
 
     # other types than continous: we are done
-    if theConf.Type != 'C':
+    if theConf.Type != "C":
         myVal = theConf.Value
         myVal = expand_here(myVal)
         return myVal
 
     # else we have the continue type: we iterate over all entries where the
     # number of entries is stored in the description as range end
-    _start, end = theConf.Description.split(':')
+    _start, end = theConf.Description.split(":")
 
     # start accumulating the value
     value = theConf.Value
@@ -366,8 +368,8 @@ def _retrieveAllConfigDB():
         # search for the entry which starts with '0:' as it will provide the
         # number of continuous entries
 
-        if conf.Type == 'C' and conf.Description[:len('0:')] == '0:':
-            _start, num = conf.Description.split(':')
+        if conf.Type == "C" and conf.Description[: len("0:")] == "0:":
+            _start, num = conf.Description.split(":")
             cont_dict[conf.Key] = int(num)
 
     # ---------------------------------------------------------------------- --
@@ -403,7 +405,7 @@ def _retrieveAllConfigDB():
             key = "linotp." + key
 
         if isinstance(key, str):
-            key = '' + key
+            key = "" + key
 
         nVal = expand_here(value)
         config[key] = nVal
@@ -421,9 +423,10 @@ def _retrieveAllConfigDB():
 
         myTyp = type_dict.get(key)
 
-        if myTyp and myTyp in ['password', 'encrypted_data']:
+        if myTyp and myTyp in ["password", "encrypted_data"]:
             config[key] = EncryptedData(value)
 
     return config, False
+
 
 # eof #

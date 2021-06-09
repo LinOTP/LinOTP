@@ -60,23 +60,34 @@ from flask.cli import with_appcontext
 
 # audit commands: cleanup (more commands to come ...)
 
-audit_cmds = AppGroup('audit')
+audit_cmds = AppGroup("audit")
 
-@audit_cmds.command('cleanup',
-                help='Reduce the amount of audit log entries in the database')
-@click.option('--max', 'maximum',
-              default=10000,
-              help='The maximum entries. If not given 10.000 as default is ' +
-                   'assumed.')
-@click.option('--min', 'minimum',
-              default=5000,
-              help='The minimum old remaining entries. If not given 5.000 ' +
-                   'as default is assumed.')
-@click.option('--exportdir', '-e',
-               type=click.Path(exists=True, dir_okay=True),
-               help='Defines the directory where the audit entries which ' +
-               'are cleaned up are exported. A example filename would be: ' +
-               'SQLData.yeah.month.day-max_id.csv')
+
+@audit_cmds.command(
+    "cleanup", help="Reduce the amount of audit log entries in the database"
+)
+@click.option(
+    "--max",
+    "maximum",
+    default=10000,
+    help="The maximum entries. If not given 10.000 as default is "
+    + "assumed.",
+)
+@click.option(
+    "--min",
+    "minimum",
+    default=5000,
+    help="The minimum old remaining entries. If not given 5.000 "
+    + "as default is assumed.",
+)
+@click.option(
+    "--exportdir",
+    "-e",
+    type=click.Path(exists=True, dir_okay=True),
+    help="Defines the directory where the audit entries which "
+    + "are cleaned up are exported. A example filename would be: "
+    + "SQLData.yeah.month.day-max_id.csv",
+)
 @with_appcontext
 def cleanup_command(maximum, minimum, exportdir):
     """This function removes old entries from the audit table.
@@ -90,8 +101,8 @@ def cleanup_command(maximum, minimum, exportdir):
     app = current_app
     try:
 
-        if not(0 <= minimum < maximum):
-            app.echo('Error: max has to be greater than min.')
+        if not (0 <= minimum < maximum):
+            app.echo("Error: max has to be greater than min.")
             sys.exit(1)
 
         sqljanitor = SQLJanitor(export=exportdir)
@@ -100,41 +111,44 @@ def cleanup_command(maximum, minimum, exportdir):
 
         app.echo(
             f'{cleanup_infos["entries_in_audit"]} entries found in database.',
-            v=2)
+            v=2,
+        )
 
-        if cleanup_infos['entries_deleted'] > 0:
+        if cleanup_infos["entries_deleted"] > 0:
             app.echo(
                 f'{cleanup_infos["entries_in_audit"] - minimum} entries '
-                'cleaned up. {minimum} entries left in database.\n'
-                'Min: {minimum}, Max: {maximum}.',
-                v=2)
+                "cleaned up. {minimum} entries left in database.\n"
+                "Min: {minimum}, Max: {maximum}.",
+                v=2,
+            )
 
             if cleanup_infos["export_filename"]:
                 app.echo(
-                    f'Exported into {cleanup_infos["export_filename"]}',
-                    v=2)
+                    f'Exported into {cleanup_infos["export_filename"]}', v=2
+                )
 
             app.echo(
-                f'Cleaning up took {cleanup_infos["time_taken"]} seconds',
-                v=2)
+                f'Cleaning up took {cleanup_infos["time_taken"]} seconds', v=2
+            )
         else:
             app.echo(
                 f'Nothing cleaned up. {cleanup_infos["entries_in_audit"]} '
-                'entries in database.\n'
-                'Min: {minimum}, Max: {maximum}.',
-                v=2)
+                "entries in database.\n"
+                "Min: {minimum}, Max: {maximum}.",
+                v=2,
+            )
 
     except Exception as exx:
-        app.echo(f'Error while cleanup up audit table: {exx!s}')
+        app.echo(f"Error while cleanup up audit table: {exx!s}")
         sys.exit(1)
 
-class SQLJanitor():
+
+class SQLJanitor:
     """
     script to help the house keeping of audit entries
     """
 
     def __init__(self, export=None):
-
 
         self.export_dir = export
 
@@ -145,8 +159,7 @@ class SQLJanitor():
         metadata = MetaData(engine)
         # The audit table already exists, so no need to redefine it. Just
         # load it from the database using the "autoload" feature.
-        self.audit = Table('audit', metadata, autoload=True)
-
+        self.audit = Table("audit", metadata, autoload=True)
 
     def export_data(self, max_id):
         """
@@ -161,12 +174,17 @@ class SQLJanitor():
 
         # create the filename
         t2 = datetime.datetime.now()
-        filename = ("SQLData.%d.%d.%d-%d.csv" %
-                    (t2.year, t2.month, t2.day, max_id))
+        filename = "SQLData.%d.%d.%d-%d.csv" % (
+            t2.year,
+            t2.month,
+            t2.day,
+            max_id,
+        )
 
         with open(os.path.join(self.export_dir, filename), "w") as f:
-            s = self.audit.select(
-                self.audit.c.id < max_id).order_by(desc(self.audit.c.id))
+            s = self.audit.select(self.audit.c.id < max_id).order_by(
+                desc(self.audit.c.id)
+            )
             result = s.execute()
 
             # write the csv header
@@ -188,8 +206,9 @@ class SQLJanitor():
                     else:
                         row_data.append("?")
                         self.app.echo(
-                            'exporting of unknown data / data type %r' % val,
-                            v=1)
+                            "exporting of unknown data / data type %r" % val,
+                            v=1,
+                        )
 
                 prin = "; ".join(row_data)
                 f.write(prin)
@@ -217,14 +236,14 @@ class SQLJanitor():
         """
 
         cleanup_infos = {
-            'cleaned': False,
-            'entries_in_audit': 0,
-            'entries_deleted': 0,
-            'export_filename' : None,
-            'first_entry_id': 0,
-            'last_entry_id': 0,
-            'time_taken': 0,
-            }
+            "cleaned": False,
+            "entries_in_audit": 0,
+            "entries_deleted": 0,
+            "export_filename": None,
+            "first_entry_id": 0,
+            "last_entry_id": 0,
+            "time_taken": 0,
+        }
 
         t1 = datetime.datetime.now()
         id_pos = 0
@@ -236,31 +255,31 @@ class SQLJanitor():
         row = rows.fetchone()
         overall_number = int(row[id_pos])
 
-        cleanup_infos['entries_in_audit'] = overall_number
+        cleanup_infos["entries_in_audit"] = overall_number
         if overall_number >= max_entries:
 
             s = self.audit.select().order_by(asc(self.audit.c.id)).limit(1)
             rows = s.execute()
             first_id = int(rows.fetchone()[id_pos])
-            cleanup_infos['first_entry_id'] = first_id
+            cleanup_infos["first_entry_id"] = first_id
 
             s = self.audit.select().order_by(desc(self.audit.c.id)).limit(1)
             rows = s.execute()
-            last_id = int (rows.fetchone()[id_pos])
-            cleanup_infos['last_entry_id'] = last_id
+            last_id = int(rows.fetchone()[id_pos])
+            cleanup_infos["last_entry_id"] = last_id
 
             delete_from = last_id - min_entries
             if delete_from > 0:
                 # if export is enabled, we start the export now
                 export_filename = self.export_data(delete_from)
-                cleanup_infos['export_filename'] = export_filename
+                cleanup_infos["export_filename"] = export_filename
                 s = self.audit.delete(self.audit.c.id < delete_from)
                 s.execute()
-                cleanup_infos['entries_deleted'] = overall_number - min_entries
-                cleanup_infos['cleaned'] = True
+                cleanup_infos["entries_deleted"] = overall_number - min_entries
+                cleanup_infos["cleaned"] = True
 
         t2 = datetime.datetime.now()
 
         duration = t2 - t1
-        cleanup_infos['time_taken'] = duration.seconds
+        cleanup_infos["time_taken"] = duration.seconds
         return cleanup_infos

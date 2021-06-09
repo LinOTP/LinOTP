@@ -45,9 +45,9 @@ class TestImportUser(TestController):
 
     resolver_name = "myresolv"
     target_realm = "myrealm"
-    resolver_spec = ('useridresolver.'
-                     'SQLIdResolver.'
-                     'IdResolver.' + resolver_name)
+    resolver_spec = (
+        "useridresolver." "SQLIdResolver." "IdResolver." + resolver_name
+    )
 
     def setUp(self):
 
@@ -76,47 +76,53 @@ class TestImportUser(TestController):
         """
 
         resolver_param = {
-            'name': 'black1',
-            'fileName': (os.path.join(self.fixture_path, 'def-passwd')),
-            'type': 'passwdresolver'}
-
-        response = self.make_system_request('setResolver',
-                                            params=resolver_param)
-
-        content = json.loads(response.body)
-        assert content['result']['status']
-
-        resolver_param = {
-            'name': 'black2',
-            'fileName': (os.path.join(self.fixture_path, 'def-passwd')),
-            'type': 'passwdresolver'}
-
-        response = self.make_system_request('setResolver',
-                                            params=resolver_param)
-
-        content = json.loads(response.body)
-        assert content['result']['status']
-
-        response = self.create_realm('black', [
-            'useridresolver.PasswdIdResolver.IdResolver.black1'])
-
-        hmac_token = {
-            'key': '5132333435363738393031323334353637383930',
-            'type': 'hmac',
-            'serial': None,
-            'otplen': 6,
-            'otps': ['841650', '850446', '352919'],
+            "name": "black1",
+            "fileName": (os.path.join(self.fixture_path, "def-passwd")),
+            "type": "passwdresolver",
         }
 
-        params = {'type': hmac_token['type'],
-                  'otpkey': hmac_token['key'],
-                  'otplen': hmac_token['otplen'],
-                  'serial': 'migration_token',
-                  'user': 'passthru_user1@black',
-                  'pin': 'geheim1'
-                  }
+        response = self.make_system_request(
+            "setResolver", params=resolver_param
+        )
 
-        response = self.make_admin_request('init', params)
+        content = json.loads(response.body)
+        assert content["result"]["status"]
+
+        resolver_param = {
+            "name": "black2",
+            "fileName": (os.path.join(self.fixture_path, "def-passwd")),
+            "type": "passwdresolver",
+        }
+
+        response = self.make_system_request(
+            "setResolver", params=resolver_param
+        )
+
+        content = json.loads(response.body)
+        assert content["result"]["status"]
+
+        response = self.create_realm(
+            "black", ["useridresolver.PasswdIdResolver.IdResolver.black1"]
+        )
+
+        hmac_token = {
+            "key": "5132333435363738393031323334353637383930",
+            "type": "hmac",
+            "serial": None,
+            "otplen": 6,
+            "otps": ["841650", "850446", "352919"],
+        }
+
+        params = {
+            "type": hmac_token["type"],
+            "otpkey": hmac_token["key"],
+            "otplen": hmac_token["otplen"],
+            "serial": "migration_token",
+            "user": "passthru_user1@black",
+            "pin": "geheim1",
+        }
+
+        response = self.make_admin_request("init", params)
         assert '"value": true' in response
 
         # ------------------------------------------------------------------ --
@@ -124,50 +130,54 @@ class TestImportUser(TestController):
         # verify that the token is usable by the user
 
         params = {
-            'user' : 'passthru_user1@black',
-            'pass': 'geheim1' + hmac_token['otps'][0]
-            }
+            "user": "passthru_user1@black",
+            "pass": "geheim1" + hmac_token["otps"][0],
+        }
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert '"value": true' in response
 
-        response = self.create_realm('black', [
-            'useridresolver.PasswdIdResolver.IdResolver.black1',
-            'useridresolver.PasswdIdResolver.IdResolver.black2'])
+        response = self.create_realm(
+            "black",
+            [
+                "useridresolver.PasswdIdResolver.IdResolver.black1",
+                "useridresolver.PasswdIdResolver.IdResolver.black2",
+            ],
+        )
 
         # run the migration
 
-        params = {
-            'from': 'black1',
-            'to': 'black2'}
+        params = {"from": "black1", "to": "black2"}
 
-        response = self.make_tools_request(action='migrate_resolver',
-                                           params=params)
+        response = self.make_tools_request(
+            action="migrate_resolver", params=params
+        )
 
-        assert '1 tokens of 1 migrated' in response, response
+        assert "1 tokens of 1 migrated" in response, response
 
         # verify the tokens in the token list
-        params = {'resConf': 'black2'}
-        response = self.make_admin_request('show', params)
+        params = {"resConf": "black2"}
+        response = self.make_admin_request("show", params)
         jresp = json.loads(response.body)
 
-        token = jresp.get('result', {}).get('value', {}).get('data', [])[0]
+        token = jresp.get("result", {}).get("value", {}).get("data", [])[0]
 
-        assert 'black2' in token.get('LinOtp.IdResClass')
-        assert token['LinOtp.TokenSerialnumber'] == 'migration_token'
+        assert "black2" in token.get("LinOtp.IdResClass")
+        assert token["LinOtp.TokenSerialnumber"] == "migration_token"
 
         # ------------------------------------------------------------------ --
 
         # verify that the token is usable by the user
 
         params = {
-            'user' : 'passthru_user1@black',
-            'pass': 'geheim1' + hmac_token['otps'][1]
-            }
+            "user": "passthru_user1@black",
+            "pass": "geheim1" + hmac_token["otps"][1],
+        }
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert '"value": true' in response
 
         return
+
 
 # eof ########################################################################

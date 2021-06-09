@@ -38,7 +38,7 @@ from linotp.tests import TestController
 
 
 def test_ticket_425(adminclient):
-    '''
+    """
     Test #2425: test if setConfig is timing save
 
     1. run multiple setConfig threads concurrently
@@ -47,19 +47,20 @@ def test_ticket_425(adminclient):
 
     config entries are of format: key_entryId = val_threadId
             eg. key_101 = val_4 belongs to thread 4 and is entry 101
-    '''
-    class DoRequest(threading.Thread):
-        ''' the request thread'''
+    """
 
-        def __init__ (self, client, rid=1, params=None):
-            '''
+    class DoRequest(threading.Thread):
+        """ the request thread"""
+
+        def __init__(self, client, rid=1, params=None):
+            """
             initialize all settings of the request thread
 
             :param client: application client
             :param rid: the request id
             :param uri: the request url object
             :param params: additional parmeters
-            '''
+            """
             threading.Thread.__init__(self)
 
             self.client = client
@@ -69,24 +70,24 @@ def test_ticket_425(adminclient):
             self.response = None
 
         def run(self):
-            ''' start the thread'''
-            response = self.client.post('/system/setConfig', json=self.params)
+            """ start the thread"""
+            response = self.client.post("/system/setConfig", json=self.params)
             self.response = response.body
             return
 
         def status(self):
-            '''
+            """
             retrieve the request result
 
             :return: the thread request result
-            '''
+            """
             res = '"status": true,' in self.response
             return res
 
         def stat(self):
-            '''
+            """
             retrieve the complete response
-            '''
+            """
             return (self.rid, self.response)
 
     check_results = []
@@ -98,8 +99,8 @@ def test_ticket_425(adminclient):
     for tid in range(numthreads):
         param = {}
         for kid in range(numkeys):
-            key = 'key_%d' % (kid)
-            val = 'val_%d' % (tid)
+            key = "key_%d" % (kid)
+            val = "val_%d" % (tid)
             param[key] = val
         params[tid] = param
 
@@ -114,38 +115,40 @@ def test_ticket_425(adminclient):
         req.join()
 
     ## now check in the config if all keys are there
-    config = adminclient.get('/system/getConfig').json
-    conf = config['result']['value']
+    config = adminclient.get("/system/getConfig").json
+    conf = config["result"]["value"]
 
     ## check for the keys and the values in the dict
     counter = 0
     valdict = set()
 
     for cconf in conf:
-        if cconf.startswith('key_'):
+        if cconf.startswith("key_"):
             valdict.add(conf.get(cconf))
             counter += 1
 
     assert counter == numkeys
     assert len(valdict) == 1
 
+
 class TestFixesController(TestController):
-    '''
+    """
     test some fixes for closed tickets
-    '''
+    """
+
     def setUp(self):
-        ''' setup the Test Controller'''
+        """ setup the Test Controller"""
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
         self.serials = []
 
     def tearDown(self):
-        ''' make the dishes'''
+        """ make the dishes"""
 
         for kid in range(200):
-            key = 'key_%d' % (kid)
-            self.make_system_request('delConfig', params = {'key': key})
+            key = "key_%d" % (kid)
+            self.make_system_request("delConfig", params={"key": key})
 
         self.remove_tokens()
         self.delete_all_realms()
@@ -154,40 +157,49 @@ class TestFixesController(TestController):
         return
 
     def remove_tokens(self):
-        '''
+        """
         remove all tokens, which are in the internal array of serial
 
         :return: - nothing -
-        '''
+        """
         for serial in self.serials:
             self.del_token(serial)
         return
 
     def del_token(self, serial):
-        '''
+        """
         delet a token identified by his serial number
 
         :param serial: the token serial
         :return: the response object of admin/remove
-        '''
-        param = {"serial" : serial }
-        response = self.make_admin_request('remove', params=param)
+        """
+        param = {"serial": serial}
+        response = self.make_admin_request("remove", params=param)
         return response
 
     def get_config(self):
-        '''
+        """
         get the linotp config
 
         :return: the response object of the system/getConfig
-        '''
+        """
         param = {}
-        response = self.make_system_request('getConfig', params=param)
+        response = self.make_system_request("getConfig", params=param)
         return response
 
-
-    def add_token(self, user, pin=None, serial=None, typ=None, key=None,
-                        timeStep=60, timeShift=0, hashlib='sha1', otplen=8):
-        '''
+    def add_token(
+        self,
+        user,
+        pin=None,
+        serial=None,
+        typ=None,
+        key=None,
+        timeStep=60,
+        timeShift=0,
+        hashlib="sha1",
+        otplen=8,
+    ):
+        """
         add a token to LinOTP
 
         :param user: user that owns the token
@@ -201,31 +213,38 @@ class TestFixesController(TestController):
         :param otplen: the otp length
 
         :return: tuple of serial and response
-        '''
+        """
         if serial is None:
-            serial = 's' + user
+            serial = "s" + user
 
         if pin is None:
             pin = user
 
         if typ is None:
-            typ = 'totp'
+            typ = "totp"
 
-        param = { 'user': user, 'pin':pin, 'serial': serial, 'type':typ,
-                 'timeStep':timeStep, 'otplen' : otplen, 'hashlib':hashlib}
+        param = {
+            "user": user,
+            "pin": pin,
+            "serial": serial,
+            "type": typ,
+            "timeStep": timeStep,
+            "otplen": otplen,
+            "hashlib": hashlib,
+        }
         if timeShift != 0:
-            param['timeShift'] = timeShift
+            param["timeShift"] = timeShift
 
         if key is not None:
-            param['otpkey'] = key
+            param["otpkey"] = key
 
-        response = self.make_admin_request('init', params=param)
+        response = self.make_admin_request("init", params=param)
         assert '"status": true,' in response
 
         return (serial, response)
 
     def test_ticket_864(self):
-        '''
+        """
         #2864: admin/tokenrealm with multiple realms
         remarks:
             the problem is independent of sqlite, the reason is that realms are
@@ -233,44 +252,45 @@ class TestFixesController(TestController):
         1. create a token
         2. add some realms to the token
         3. verify, that the token is part of the realms
-        '''
+        """
 
-        self.add_token('root', serial='troot', typ='spass', key='1234')
+        self.add_token("root", serial="troot", typ="spass", key="1234")
 
-        param = {'serial':'troot', 'realms':'myDefRealm,myMixRealm'}
-        response = self.make_admin_request('tokenrealm', params=param)
+        param = {"serial": "troot", "realms": "myDefRealm,myMixRealm"}
+        response = self.make_admin_request("tokenrealm", params=param)
         if '"value": 1' not in response.body:
             assert '"value": 1' in response.body
 
         param = {}
         ## the admin show returns slices of 10 token and our troot is not in
         ## the first slice :-( - so we now search directly for the token
-        param['serial'] = 'troot'
-        response = self.make_admin_request('show', params=param)
+        param["serial"] = "troot"
+        response = self.make_admin_request("show", params=param)
         resp = json.loads(response.body)
-        tok_data = resp.get('result').get('value').get('data')[0]
-        realms = tok_data.get('LinOtp.RealmNames')
+        tok_data = resp.get("result").get("value").get("data")[0]
+        realms = tok_data.get("LinOtp.RealmNames")
         t_ser = tok_data.get("LinOtp.TokenSerialnumber")
 
-        assert t_ser == 'troot'
-        assert 'mydefrealm' in realms
-        assert 'mymixrealm' in realms
+        assert t_ser == "troot"
+        assert "mydefrealm" in realms
+        assert "mymixrealm" in realms
 
-        self.del_token('troot')
+        self.del_token("troot")
 
         return
 
     def test_ticket_12018(self):
-        '''
+        """
         #12018: OTPLen of /admin/init is not ignored
-        '''
+        """
         (serial, response) = self.add_token(
-            'root', serial='troot', typ='hmac', key='1234', otplen=8)
-        assert serial == 'troot', response
+            "root", serial="troot", typ="hmac", key="1234", otplen=8
+        )
+        assert serial == "troot", response
 
         param = {}
-        response = self.make_admin_request('show', params=param)
-        #resp = json.loads(response.body)
+        response = self.make_admin_request("show", params=param)
+        # resp = json.loads(response.body)
         assert '"LinOtp.OtpLen": 8' in response
 
         res = self.del_token(serial)
@@ -279,5 +299,5 @@ class TestFixesController(TestController):
 
         return
 
-#eof###########################################################################
 
+# eof###########################################################################

@@ -76,24 +76,29 @@ def u64_to_transaction_id(u64_int):
     if rest == 0:
         return str(before)
     else:
-        return '%d.%02d' % (before, rest)
+        return "%d.%02d" % (before, rest)
 
 
 class TestQRToken(TestController):
-
-    def setPinPolicy(self, name='otpPin', realm='myDefRealm',
-                     action='otppin=1, ', scope='authentication',
-                     active=True, remoteurl=None):
+    def setPinPolicy(
+        self,
+        name="otpPin",
+        realm="myDefRealm",
+        action="otppin=1, ",
+        scope="authentication",
+        active=True,
+        remoteurl=None,
+    ):
         params = {
-            'name': name,
-            'user': '*',
-            'action': action,
-            'scope': scope,
-            'realm': realm,
-            'time': '',
-            'client': '',
-            'active': active,
-            'session': self.session,
+            "name": name,
+            "user": "*",
+            "action": action,
+            "scope": scope,
+            "realm": realm,
+            "time": "",
+            "client": "",
+            "active": active,
+            "session": self.session,
         }
 
         response = self.make_system_request("setPolicy", params=params)
@@ -104,27 +109,32 @@ class TestQRToken(TestController):
 
         return response
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
-    def setOfflinePolicy(self, realm='*', name='qr_offline',
-                         action='support_offline=qr', active=True):
+    def setOfflinePolicy(
+        self,
+        realm="*",
+        name="qr_offline",
+        action="support_offline=qr",
+        active=True,
+    ):
 
         params = {
-            'name': name,
-            'user': '*',
-            'action': action,
-            'scope': 'authentication',
-            'realm': realm,
-            'time': '',
-            'client': '',
-            'active': active,
-            'session': self.session,
+            "name": name,
+            "user": "*",
+            "action": action,
+            "scope": "authentication",
+            "realm": realm,
+            "time": "",
+            "client": "",
+            "active": active,
+            "session": self.session,
         }
 
         response = self.make_system_request("setPolicy", params=params)
         assert '"status": true' in response, response
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def setUnassignPolicy(self):
 
@@ -133,62 +143,66 @@ class TestQRToken(TestController):
         # is possible. used in unpairing tests
 
         params = {
-            'name': 'dummy_unassign',
-            'user': '*',
-            'action': 'unassign',
-            'scope': 'admin',
-            'realm': '*',
-            'time': '',
-            'client': '',
-            'active': True,
-            'session': self.session,
+            "name": "dummy_unassign",
+            "user": "*",
+            "action": "unassign",
+            "scope": "admin",
+            "realm": "*",
+            "time": "",
+            "client": "",
+            "active": True,
+            "session": self.session,
         }
 
         response = self.make_system_request("setPolicy", params=params)
         assert '"status": true' in response, response
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def setUnpairPolicy(self, active=True):
 
         params = {
-            'name': 'dummy_unpairing',
-            'user': '*',
-            'action': 'unpair',
-            'scope': 'admin',
-            'realm': '*',
-            'time': '',
-            'client': '',
-            'active': active,
-            'session': self.session,
+            "name": "dummy_unpairing",
+            "user": "*",
+            "action": "unpair",
+            "scope": "admin",
+            "realm": "*",
+            "time": "",
+            "client": "",
+            "active": active,
+            "session": self.session,
         }
 
         response = self.make_system_request("setPolicy", params=params)
         assert '"status": true' in response, response
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def create_dummy_cb_policies(self):
-        """ sets some dummy callback policies. callback policies get ignored
-        by the tests, but are nonetheless necessary for the backend """
+        """sets some dummy callback policies. callback policies get ignored
+        by the tests, but are nonetheless necessary for the backend"""
 
         # ------------------------------------------------------------------- --
 
         # set pairing callback policies
 
-        params = {'name': 'dummy1',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'qrtoken_pairing_callback_url=foo',
-                  'user': '*'}
+        params = {
+            "name": "dummy1",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "qrtoken_pairing_callback_url=foo",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
-        params = {'name': 'dummy2',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'qrtoken_pairing_callback_sms=foo',
-                  'user': '*'}
+        params = {
+            "name": "dummy2",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "qrtoken_pairing_callback_sms=foo",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
@@ -196,23 +210,27 @@ class TestQRToken(TestController):
 
         # set challenge callback policies
 
-        params = {'name': 'dummy3',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'qrtoken_challenge_callback_url=foo',
-                  'user': '*'}
+        params = {
+            "name": "dummy3",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "qrtoken_challenge_callback_url=foo",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
-        params = {'name': 'dummy4',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'qrtoken_challenge_callback_sms=foo',
-                  'user': '*'}
+        params = {
+            "name": "dummy4",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "qrtoken_challenge_callback_sms=foo",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def setUp(self):
         # do the cleanup upfront for better post mortem debuggability
@@ -229,7 +247,7 @@ class TestQRToken(TestController):
         self.public_key = calc_dh_base(self.secret_key)
         self.tokens = defaultdict(dict)
         self.tan_length = 8
-        self.uri = self.app.config.get('MOBILE_APP_PROTOCOLL_ID', 'lseqr')
+        self.uri = self.app.config.get("MOBILE_APP_PROTOCOLL_ID", "lseqr")
 
     def tearDown(self):
         self.delete_all_policies()
@@ -238,9 +256,9 @@ class TestQRToken(TestController):
         self.delete_all_token()
         super(TestQRToken, self).tearDown()
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
-    def enroll_qrtoken(self, hashlib=None, user=None, pin='1234'):
+    def enroll_qrtoken(self, hashlib=None, user=None, pin="1234"):
         """
         enrolls a qrtoken
 
@@ -255,15 +273,15 @@ class TestQRToken(TestController):
 
         # initialize an unfinished token on the server
 
-        params = {'type': 'qr', 'pin': pin}
+        params = {"type": "qr", "pin": pin}
 
         if hashlib is not None:
-            params['hashlib'] = hashlib
+            params["hashlib"] = hashlib
 
         if user:
-            params['user'] = user
+            params["user"] = user
 
-        response = self.make_admin_request('init', params)
+        response = self.make_admin_request("init", params)
 
         # ------------------------------------------------------------------- --
 
@@ -271,11 +289,11 @@ class TestQRToken(TestController):
         # sent and validate
 
         response_dict = json.loads(response.body)
-        assert 'pairing_url' in response_dict.get('detail', {})
+        assert "pairing_url" in response_dict.get("detail", {})
 
-        pairing_url = response_dict.get('detail', {}).get('pairing_url')
+        pairing_url = response_dict.get("detail", {}).get("pairing_url")
         assert pairing_url is not None
-        assert pairing_url.startswith(self.uri + '://pair/')
+        assert pairing_url.startswith(self.uri + "://pair/")
 
         return pairing_url, pin
 
@@ -284,43 +302,44 @@ class TestQRToken(TestController):
         if not params:
             params = {}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
         # check if challenge was triggered
 
-        assert 'detail' in response_dict
-        detail = response_dict.get('detail')
+        assert "detail" in response_dict
+        detail = response_dict.get("detail")
 
-        assert 'transactionid' in detail
-        assert 'message' in detail
+        assert "transactionid" in detail
+        assert "message" in detail
 
-        challenge_url = detail.get('message')
+        challenge_url = detail.get("message")
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        return challenge_url, detail.get('transactionid')
-# --------------------------------------------------------------------------- --
+        return challenge_url, detail.get("transactionid")
+
+    # --------------------------------------------------------------------------- --
 
     def setPolicy(self, params):
         """ sets a system policy defined by param """
 
-        response = self.make_system_request('setPolicy', params)
+        response = self.make_system_request("setPolicy", params)
         response_dict = json.loads(response.body)
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
 
         assert status
 
-        response = self.make_system_request('getPolicy', params)
+        response = self.make_system_request("getPolicy", params)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_callback_policies(self):
         """QRTOKEN: check if callback policies returned callbacks are correct"""
@@ -328,19 +347,23 @@ class TestQRToken(TestController):
 
         # set pairing callback policies
 
-        params = {'name': 'dummy1',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'qrtoken_pairing_callback_url=/foo/bar/url',
-                  'user': '*'}
+        params = {
+            "name": "dummy1",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "qrtoken_pairing_callback_url=/foo/bar/url",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
-        params = {'name': 'dummy2',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'qrtoken_pairing_callback_sms=1234',
-                  'user': '*'}
+        params = {
+            "name": "dummy2",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "qrtoken_pairing_callback_sms=1234",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
@@ -348,19 +371,23 @@ class TestQRToken(TestController):
 
         # set challenge callback policies
 
-        params = {'name': 'dummy3',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'qrtoken_challenge_callback_url=/bar/baz/url',
-                  'user': '*'}
+        params = {
+            "name": "dummy3",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "qrtoken_challenge_callback_url=/bar/baz/url",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
-        params = {'name': 'dummy4',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'qrtoken_challenge_callback_sms=5678',
-                  'user': '*'}
+        params = {
+            "name": "dummy4",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "qrtoken_challenge_callback_sms=5678",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
@@ -372,18 +399,19 @@ class TestQRToken(TestController):
         user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
         token = self.tokens[user_token_id]
-        callback_url = token['callback_url']
-        callback_sms = token['callback_sms']
+        callback_url = token["callback_url"]
+        callback_sms = token["callback_sms"]
 
-        assert callback_url == '/foo/bar/url'
-        assert callback_sms == '1234'
+        assert callback_url == "/foo/bar/url"
+        assert callback_sms == "1234"
 
         # ------------------------------------------------------------------- --
 
         # create the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-            user_token_id)
+            user_token_id
+        )
 
         # ------------------------------------------------------------------- --
 
@@ -395,16 +423,18 @@ class TestQRToken(TestController):
 
         # check if returned json is correct
 
-        assert not response_dict.get('result', {}).get('value', True)
-        assert response_dict.get('result', {}).get('status', False)
+        assert not response_dict.get("result", {}).get("value", True)
+        assert response_dict.get("result", {}).get("status", False)
 
         # ------------------------------------------------------------------- --
 
         # get challenge
 
-        params = {'serial': token['serial'],
-                  'pass': token['pin'],
-                  'data': token['serial']}
+        params = {
+            "serial": token["serial"],
+            "pass": token["pin"],
+            "data": token["serial"],
+        }
 
         challenge_url, transid = self.get_challenge(params=params)
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
@@ -413,13 +443,13 @@ class TestQRToken(TestController):
 
         # check if returned callbacks are correct
 
-        callback_url = challenge['callback_url'].decode()
-        assert callback_url == '/bar/baz/url'
+        callback_url = challenge["callback_url"].decode()
+        assert callback_url == "/bar/baz/url"
 
-        callback_sms = challenge['callback_sms'].decode()
-        assert callback_sms == '5678'
+        callback_sms = challenge["callback_sms"].decode()
+        assert callback_sms == "5678"
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def assign_token_to_user(self, serial, user_login, pin=None):
         """
@@ -432,43 +462,43 @@ class TestQRToken(TestController):
 
         """
 
-        params = {'serial': serial, 'user': user_login}
+        params = {"serial": serial, "user": user_login}
 
         if pin is not None:
-            params['pin'] = pin
+            params["pin"] = pin
 
-        response = self.make_admin_request('assign', params)
+        response = self.make_admin_request("assign", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
 
         assert value
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def send_pairing_response(self, pairing_response):
 
-        params = {'pairing_response': pairing_response}
+        params = {"pairing_response": pairing_response}
 
         # we use the standard calback url in here
         # in a real client we would use the callback
         # defined in the pairing url (and saved in
         # the 'token database' of the user)
 
-        response = self.make_validate_request('pair', params)
+        response = self.make_validate_request("pair", params)
         response_dict = json.loads(response.body)
 
         return response_dict
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
-    def pair_until_challenge(self, pairing_url, pin='1234'):
+    def pair_until_challenge(self, pairing_url, pin="1234"):
         """
         Executes a pairing for an existing token until the last
         step in which the challenge response is sent.
@@ -488,7 +518,8 @@ class TestQRToken(TestController):
         # create the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-            user_token_id)
+            user_token_id
+        )
 
         # ------------------------------------------------------------------- --
 
@@ -500,29 +531,27 @@ class TestQRToken(TestController):
 
         # check if returned json is correct
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
         assert not value
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert status
 
         # ------------------------------------------------------------------- --
 
         # trigger challenge
 
-        serial = self.tokens[user_token_id]['serial']
-        pin = self.tokens[user_token_id]['pin']
+        serial = self.tokens[user_token_id]["serial"]
+        pin = self.tokens[user_token_id]["pin"]
 
-        params = {'serial': serial,
-                  'pass': pin,
-                  'data': serial}
+        params = {"serial": serial, "pass": pin, "data": serial}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
@@ -530,22 +559,23 @@ class TestQRToken(TestController):
         # check if challenge was triggered
         challenge_url = None
         try:
-            assert 'detail' in response_dict
-            detail = response_dict.get('detail')
+            assert "detail" in response_dict
+            detail = response_dict.get("detail")
 
-            assert 'transactionid' in detail
-            assert 'message' in detail
+            assert "transactionid" in detail
+            assert "message" in detail
 
-            challenge_url = detail.get('message')
+            challenge_url = detail.get("message")
         except:
             pass
 
         return challenge_url
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
-    def execute_correct_pairing(self, hashlib=None, user=None,
-                                use_tan=False, tan_length=8, pin='1234'):
+    def execute_correct_pairing(
+        self, hashlib=None, user=None, use_tan=False, tan_length=8, pin="1234"
+    ):
         """
         do the pairing for given parameters
 
@@ -589,15 +619,15 @@ class TestQRToken(TestController):
         # check if the content type is right (we are doing pairing
         # right now, so type must be QRTOKEN_CT_PAIR)
 
-        content_type = challenge['content_type']
+        content_type = challenge["content_type"]
         assert content_type == QRTOKEN_CT_PAIR
 
         # challenge message in content type QRTOKEN_CT_PAIR is defined
         # as the token serial - check, if this is the case
 
-        user_token_id = challenge['user_token_id']
-        serial = self.tokens[user_token_id]['serial']
-        assert challenge['message'].decode() == serial
+        user_token_id = challenge["user_token_id"]
+        serial = self.tokens[user_token_id]["serial"]
+        assert challenge["message"].decode() == serial
 
         # ------------------------------------------------------------------- --
 
@@ -605,35 +635,34 @@ class TestQRToken(TestController):
 
         pass_ = tan if use_tan else sig
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'pass': pass_}
+        params = {"transactionid": challenge["transaction_id"], "pass": pass_}
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('check_t', params)
+        response = self.make_validate_request("check_t", params)
         response_dict = json.loads(response.body)
 
-        assert 'status' in response_dict.get('result', {})
+        assert "status" in response_dict.get("result", {})
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status == True
 
         # ------------------------------------------------------------------- --
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
 
-        assert 'value' in value
-        assert 'failcount' in value
+        assert "value" in value
+        assert "failcount" in value
 
-        value_value = value.get('value')
+        value_value = value.get("value")
 
         assert value_value
 
         return user_token_id
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
-    def create_user_token_by_pairing_url(self, pairing_url, pin='1234'):
+    def create_user_token_by_pairing_url(self, pairing_url, pin="1234"):
         """
         parses the pairing url and saves the extracted data in
         the fake token database of this test class.
@@ -644,12 +673,12 @@ class TestQRToken(TestController):
 
         # extract metadata and the public key
 
-        data_encoded = pairing_url[len(self.uri + '://pair/'):]
+        data_encoded = pairing_url[len(self.uri + "://pair/") :]
         data = decode_base64_urlsafe(data_encoded)
-        version, token_type, flags = struct.unpack('<bbI', data[0:6])
-        partition = struct.unpack('<I', data[6:10])[0]
+        version, token_type, flags = struct.unpack("<bbI", data[0:6])
+        partition = struct.unpack("<I", data[6:10])[0]
 
-        server_public_key_dsa = data[10:10 + 32]
+        server_public_key_dsa = data[10 : 10 + 32]
         server_public_key = dsa_to_dh_public(server_public_key_dsa)
 
         # validate protocol versions and type id
@@ -662,22 +691,23 @@ class TestQRToken(TestController):
         # extract custom data that may or may not be present
         # (depending on flags)
 
-        custom_data = data[10 + 32:]
+        custom_data = data[10 + 32 :]
 
         token_serial = None
         if flags & FLAG_PAIR_SERIAL:
-            token_serial, __, custom_data = custom_data.partition(b'\x00')
+            token_serial, __, custom_data = custom_data.partition(b"\x00")
 
         callback_url = None
         if flags & FLAG_PAIR_CBURL:
-            callback_url, __, custom_data = custom_data.partition(b'\x00')
+            callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
-            raise NotImplementedError('SMS is not implemented. Callback URL'
-                                      'is mandatory.')
+            raise NotImplementedError(
+                "SMS is not implemented. Callback URL" "is mandatory."
+            )
 
         callback_sms = None
         if flags & FLAG_PAIR_CBSMS:
-            callback_sms, __, custom_data = custom_data.partition(b'\x00')
+            callback_sms, __, custom_data = custom_data.partition(b"\x00")
 
         # ------------------------------------------------------------------- --
 
@@ -685,19 +715,19 @@ class TestQRToken(TestController):
 
         user_token_id = len(self.tokens)
         self.tokens[user_token_id] = {
-            'serial': token_serial.decode(),
-            'server_public_key': server_public_key,
-            'partition': partition,
-            'callback_url': callback_url.decode(),
-            'callback_sms': callback_sms.decode(),
-            'pin': pin}
+            "serial": token_serial.decode(),
+            "server_public_key": server_public_key,
+            "partition": partition,
+            "callback_url": callback_url.decode(),
+            "callback_sms": callback_sms.decode(),
+            "pin": pin,
+        }
 
         # ------------------------------------------------------------------- --
 
         return user_token_id
 
-
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def decrypt_and_verify_challenge(self, challenge_url):
         """
@@ -737,7 +767,7 @@ class TestQRToken(TestController):
             cant' be sent be the server (is generated from signature)
         """
 
-        challenge_data_encoded = challenge_url[len(self.uri + '://chal/'):]
+        challenge_data_encoded = challenge_url[len(self.uri + "://chal/") :]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
         # ------------------------------------------------------------------- --
@@ -746,7 +776,7 @@ class TestQRToken(TestController):
         # encrypted challenge data
 
         header = challenge_data[0:5]
-        version, user_token_id = struct.unpack('<bI', header)
+        version, user_token_id = struct.unpack("<bI", header)
         assert version == QRTOKEN_VERSION
 
         # ------------------------------------------------------------------- --
@@ -760,8 +790,8 @@ class TestQRToken(TestController):
         # prepare decryption by seperating R from
         # ciphertext and tag
 
-        R = challenge_data[5:5 + 32]
-        ciphertext = challenge_data[5 + 32:-16]
+        R = challenge_data[5 : 5 + 32]
+        ciphertext = challenge_data[5 + 32 : -16]
         tag = challenge_data[-16:]
 
         # ------------------------------------------------------------------- --
@@ -789,7 +819,7 @@ class TestQRToken(TestController):
         # parse/check plaintext header
 
         pt_header = plaintext[0:10]
-        content_type, flags, transaction_id = struct.unpack('<bbQ', pt_header)
+        content_type, flags, transaction_id = struct.unpack("<bbQ", pt_header)
         transaction_id = u64_to_transaction_id(transaction_id)
 
         # make sure a flag for the server signature is
@@ -807,12 +837,12 @@ class TestQRToken(TestController):
             # plaintext has a server signature as a header
             # extract it and check if it is correct
 
-            server_signature = plaintext[10:10 + 32]
-            data = plaintext[10 + 32:]
+            server_signature = plaintext[10 : 10 + 32]
+            data = plaintext[10 + 32 :]
 
             # calculate secret
 
-            server_public_key = token['server_public_key']
+            server_public_key = token["server_public_key"]
             secret = calc_dh(self.secret_key, server_public_key)
 
             # check hmac
@@ -832,34 +862,34 @@ class TestQRToken(TestController):
             # here because we need it later to create the
             # client signature
 
-            server_signature = b''
+            server_signature = b""
 
         # ------------------------------------------------------------------- --
 
         # extract message and (optional) callback
         # parameters from data
 
-        message, _, suffix = data.partition(b'\x00')
+        message, _, suffix = data.partition(b"\x00")
 
-        callback_url = token['callback_url']
+        callback_url = token["callback_url"]
         if flags & FLAG_QR_HAVE_URL:
-            callback_url, _, suffix = suffix.partition(b'\x00')
+            callback_url, _, suffix = suffix.partition(b"\x00")
 
-        callback_sms = token['callback_sms']
+        callback_sms = token["callback_sms"]
         if flags & FLAG_QR_HAVE_SMS:
-            callback_sms, _, suffix = suffix.partition(b'\x00')
+            callback_sms, _, suffix = suffix.partition(b"\x00")
 
         # ------------------------------------------------------------------- --
 
         # prepare the parsed challenge data
 
         challenge = {}
-        challenge['message'] = message
-        challenge['content_type'] = content_type
-        challenge['callback_url'] = callback_url
-        challenge['callback_sms'] = callback_sms
-        challenge['transaction_id'] = transaction_id
-        challenge['user_token_id'] = user_token_id
+        challenge["message"] = message
+        challenge["content_type"] = content_type
+        challenge["callback_url"] = callback_url
+        challenge["callback_sms"] = callback_sms
+        challenge["transaction_id"] = transaction_id
+        challenge["user_token_id"] = user_token_id
 
         # calculate signature and tan
 
@@ -872,8 +902,7 @@ class TestQRToken(TestController):
 
         return challenge, encoded_sig, tan
 
-
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def create_pairing_response_by_serial(self, user_token_id):
         """
@@ -884,18 +913,18 @@ class TestQRToken(TestController):
         :returns base64 encoded pairing response
         """
 
-        token_serial = self.tokens[user_token_id]['serial']
-        server_public_key = self.tokens[user_token_id]['server_public_key']
-        partition = self.tokens[user_token_id]['partition']
+        token_serial = self.tokens[user_token_id]["serial"]
+        server_public_key = self.tokens[user_token_id]["server_public_key"]
+        partition = self.tokens[user_token_id]["partition"]
 
-        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, partition)
+        header = struct.pack("<bI", PAIR_RESPONSE_VERSION, partition)
 
-        pairing_response = b''
-        pairing_response += struct.pack('<bI', TYPE_QRTOKEN, user_token_id)
+        pairing_response = b""
+        pairing_response += struct.pack("<bI", TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
-        pairing_response += token_serial.encode('utf8') + b'\x00\x00'
+        pairing_response += token_serial.encode("utf8") + b"\x00\x00"
 
         # ------------------------------------------------------------------- --
 
@@ -924,7 +953,7 @@ class TestQRToken(TestController):
 
         return encode_base64_urlsafe(header + R + ciphertext + tag)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
     def test_re_activate(self):
         """
         verify that activation can be done multiple times
@@ -941,7 +970,8 @@ class TestQRToken(TestController):
         # create the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-            user_token_id)
+            user_token_id
+        )
 
         # ------------------------------------------------------------------- --
 
@@ -953,41 +983,39 @@ class TestQRToken(TestController):
 
         # check if returned json is correct
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
         assert not value
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert status
 
         # ------------------------------------------------------------------- --
 
         # trigger activation challenge
 
-        serial = self.tokens[user_token_id]['serial']
-        pin = self.tokens[user_token_id]['pin']
+        serial = self.tokens[user_token_id]["serial"]
+        pin = self.tokens[user_token_id]["pin"]
 
-        params = {'serial': serial,
-                  'pass': pin,
-                  'data': serial}
+        params = {"serial": serial, "pass": pin, "data": serial}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         response_dict = json.loads(response.body)
 
-        assert 'detail' in response_dict
+        assert "detail" in response_dict
 
         # ------------------------------------------------------------------- --
 
         # verify that a second request for activation will allowed
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         response_dict = json.loads(response.body)
 
-        assert 'detail' in response_dict
+        assert "detail" in response_dict
 
     def test_pairing_sig(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
@@ -996,32 +1024,32 @@ class TestQRToken(TestController):
 
         return
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_sig_with_user(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
 
-        self.execute_correct_pairing(user='def')
+        self.execute_correct_pairing(user="def")
 
         return
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_sig_with_fquser(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
 
-        self.execute_correct_pairing(user='def@mymixrealm')
+        self.execute_correct_pairing(user="def@mymixrealm")
 
         return
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_tan(self):
         """QRTOKEN: check if pairing mechanism works correctly (tan based)"""
 
         self.execute_correct_pairing(use_tan=True)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_response_after_pairing(self):
         """QRTOKEN: check if a sent pairing response after pairing will fail"""
@@ -1033,7 +1061,8 @@ class TestQRToken(TestController):
         # create another pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-            user_token_id)
+            user_token_id
+        )
 
         # ------------------------------------------------------------------- --
 
@@ -1043,10 +1072,10 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        result = response_dict.get('result', {})
-        assert 'status' in result
+        result = response_dict.get("result", {})
+        assert "status" in result
 
-        status = result.get('status')
+        status = result.get("status")
         assert status == False
 
         # FIXME: removed since the new interface doesn't
@@ -1066,21 +1095,22 @@ class TestQRToken(TestController):
         # self.assertIn('Unfitting request for this token', error.get('message'))
         # self.assertEqual(905, error.get('code'))
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_ill_formatted_pairing_response(self):
         """QRTOKEN: check if error is thrown on ill-formatted pairing response """
 
         self.enroll_qrtoken()
-        response_dict = self.send_pairing_response('look, mom! i\'m crashing '
-                                                   'the server')
+        response_dict = self.send_pairing_response(
+            "look, mom! i'm crashing " "the server"
+        )
 
         # ------------------------------------------------------------------- --
 
-        result = response_dict.get('result', {})
-        assert 'status' in result
+        result = response_dict.get("result", {})
+        assert "status" in result
 
-        status = result.get('status')
+        status = result.get("status")
         assert status == False
 
         # FIXME: removed since the new interface doesn't
@@ -1100,7 +1130,7 @@ class TestQRToken(TestController):
         # self.assertIn('Malformed pairing response', error.get('message'))
         # self.assertEqual(905, error.get('code'))
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_wrong_challenge_response(self):
         """
@@ -1123,28 +1153,30 @@ class TestQRToken(TestController):
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        serial = challenge['user_token_id']
+        serial = challenge["user_token_id"]
 
-        params = {'serial': serial,
-                  'transactionid': challenge['transaction_id'],
-                  'pass': 'certainly a wrong otp'}
+        params = {
+            "serial": serial,
+            "transactionid": challenge["transaction_id"],
+            "pass": "certainly a wrong otp",
+        }
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
-        result = response_dict.get('result', {})
-        assert 'status' in result
-        assert 'value' in result
+        result = response_dict.get("result", {})
+        assert "status" in result
+        assert "value" in result
 
-        status = result.get('status')
+        status = result.get("status")
         assert status == True
 
-        value = result.get('value')
+        value = result.get("value")
         assert value == False
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_response_wrong_response_version(self):
         """
@@ -1165,18 +1197,18 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        token_serial = self.tokens[user_token_id]['serial']
-        server_public_key = self.tokens[user_token_id]['server_public_key']
+        token_serial = self.tokens[user_token_id]["serial"]
+        server_public_key = self.tokens[user_token_id]["server_public_key"]
 
         NONEXISTENT_RESPONSE_VERSION = 127
-        header = struct.pack('<bI', NONEXISTENT_RESPONSE_VERSION, TYPE_QRTOKEN)
+        header = struct.pack("<bI", NONEXISTENT_RESPONSE_VERSION, TYPE_QRTOKEN)
 
-        pairing_response = b''
-        pairing_response += struct.pack('<bI', TYPE_QRTOKEN, user_token_id)
+        pairing_response = b""
+        pairing_response += struct.pack("<bI", TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
-        pairing_response += token_serial.encode('utf8') + b'\x00\x00'
+        pairing_response += token_serial.encode("utf8") + b"\x00\x00"
 
         # ------------------------------------------------------------------- --
 
@@ -1202,18 +1234,19 @@ class TestQRToken(TestController):
         cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(header + R +
-                                                       ciphertext + tag)
+        wrong_pairing_response = encode_base64_urlsafe(
+            header + R + ciphertext + tag
+        )
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
         # ------------------------------------------------------------------- --
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert status == False
 
         # FIXME: removed since the new interface doesn't
@@ -1233,7 +1266,7 @@ class TestQRToken(TestController):
         # self.assertIn('Unexpected pair-response version', error.get('message'))
         # self.assertEqual(-311, error.get('code'))
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_response_wrong_serial(self):
         """
@@ -1254,17 +1287,17 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
+        header = struct.pack("<bI", PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
 
         token_serial = "WRONGSERIAL!!11!!1"
-        server_public_key = self.tokens[user_token_id]['server_public_key']
+        server_public_key = self.tokens[user_token_id]["server_public_key"]
 
-        pairing_response = b''
-        pairing_response += struct.pack('<bI', TYPE_QRTOKEN, user_token_id)
+        pairing_response = b""
+        pairing_response += struct.pack("<bI", TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
-        pairing_response += token_serial.encode('utf8') + b'\x00\x00'
+        pairing_response += token_serial.encode("utf8") + b"\x00\x00"
 
         # ------------------------------------------------------------------- --
 
@@ -1290,18 +1323,19 @@ class TestQRToken(TestController):
         cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(header + R +
-                                                       ciphertext + tag)
+        wrong_pairing_response = encode_base64_urlsafe(
+            header + R + ciphertext + tag
+        )
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
         # ------------------------------------------------------------------- --
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert status == False
 
         # FIXME: removed since the new interface doesn't
@@ -1325,7 +1359,7 @@ class TestQRToken(TestController):
         # self.assertIn('Unfitting request for this token', error.get('message'))
         # self.assertEqual(905, error.get('code'))
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_response_wrong_token_type(self):
         """
@@ -1346,20 +1380,21 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
+        header = struct.pack("<bI", PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
 
-        token_serial = self.tokens[user_token_id]['serial']
-        server_public_key = self.tokens[user_token_id]['server_public_key']
+        token_serial = self.tokens[user_token_id]["serial"]
+        server_public_key = self.tokens[user_token_id]["server_public_key"]
 
         NON_EXISTENT_PROTOCOL = 127
 
-        pairing_response = b''
-        pairing_response += struct.pack('<bI', NON_EXISTENT_PROTOCOL,
-                                        user_token_id)
+        pairing_response = b""
+        pairing_response += struct.pack(
+            "<bI", NON_EXISTENT_PROTOCOL, user_token_id
+        )
 
         pairing_response += self.public_key
 
-        pairing_response += token_serial.encode('utf8') + b'\x00\x00'
+        pairing_response += token_serial.encode("utf8") + b"\x00\x00"
 
         # ------------------------------------------------------------------- --
 
@@ -1385,18 +1420,19 @@ class TestQRToken(TestController):
         cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(header + R +
-                                                       ciphertext + tag)
+        wrong_pairing_response = encode_base64_urlsafe(
+            header + R + ciphertext + tag
+        )
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
         # ------------------------------------------------------------------- --
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert status == False
 
         # FIXME: removed since the new interface doesn't
@@ -1416,7 +1452,7 @@ class TestQRToken(TestController):
         # self.assertIn('wrong token type', error.get('message'))
         # self.assertEqual(-311, error.get('code'))
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_response_wrong_R(self):
         """
@@ -1436,17 +1472,17 @@ class TestQRToken(TestController):
         # ------------------------------------------------------------------- --
 
         # create the pairing response
-        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
+        header = struct.pack("<bI", PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
 
-        token_serial = self.tokens[user_token_id]['serial']
-        server_public_key = self.tokens[user_token_id]['server_public_key']
+        token_serial = self.tokens[user_token_id]["serial"]
+        server_public_key = self.tokens[user_token_id]["server_public_key"]
 
-        pairing_response = b''
-        pairing_response += struct.pack('<bI', TYPE_QRTOKEN, user_token_id)
+        pairing_response = b""
+        pairing_response += struct.pack("<bI", TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
-        pairing_response += token_serial.encode('utf8') + b'\x00\x00'
+        pairing_response += token_serial.encode("utf8") + b"\x00\x00"
 
         # ------------------------------------------------------------------- --
 
@@ -1473,18 +1509,19 @@ class TestQRToken(TestController):
         cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(header + R +
-                                                       ciphertext + tag)
+        wrong_pairing_response = encode_base64_urlsafe(
+            header + R + ciphertext + tag
+        )
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
         # ------------------------------------------------------------------- --
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert status == False
 
         # FIXME: removed since the new interface doesn't
@@ -1504,7 +1541,7 @@ class TestQRToken(TestController):
         # self.assertIn('MAC check failed', error.get('message'))
         # self.assertEqual(-311, error.get('code'))
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_pairing_response_double_send(self):
         """
@@ -1528,7 +1565,8 @@ class TestQRToken(TestController):
         # create the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-            user_token_id)
+            user_token_id
+        )
 
         # ------------------------------------------------------------------- --
 
@@ -1539,10 +1577,10 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        result = response_dict.get('result', {})
-        assert 'status' in result
+        result = response_dict.get("result", {})
+        assert "status" in result
 
-        status = result.get('status')
+        status = result.get("status")
         assert status == False
 
         # FIXME: removed since the new interface doesn't
@@ -1562,35 +1600,35 @@ class TestQRToken(TestController):
         # self.assertIn('Unfitting request for this token', error.get('message'))
         # self.assertEqual(905, error.get('code'))
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_challenge_response_serial_signature(self):
         """ QRTOKEN: Executing complete challenge response with serial/sig """
 
         self.execute_correct_serial_challenge(QRTOKEN_CT_FREE)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_challenge_response_serial_signature_login(self):
         """ QRTOKEN: Executing complete login flow with serial/sig """
 
         self.execute_correct_serial_challenge(QRTOKEN_CT_AUTH)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_challenge_response_serial_tan(self):
         """ QRTOKEN: Executing complete challenge response with serial/tan """
 
         self.execute_correct_serial_challenge(QRTOKEN_CT_FREE, use_tan=True)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_challenge_response_serial_tan_login(self):
         """ QRTOKEN: Executing complete login flow with serial/tan """
 
         self.execute_correct_serial_challenge(QRTOKEN_CT_AUTH, use_tan=True)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_wrong_serial_challenge_response(self):
         """ QRTOKEN: Sending a wrong challenge response on token (serial) """
@@ -1601,28 +1639,30 @@ class TestQRToken(TestController):
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        serial = challenge['user_token_id']
+        serial = challenge["user_token_id"]
 
-        params = {'serial': serial,
-                  'transactionid': challenge['transaction_id'],
-                  'pass': 'certainly a wrong otp'}
+        params = {
+            "serial": serial,
+            "transactionid": challenge["transaction_id"],
+            "pass": "certainly a wrong otp",
+        }
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
-        result = response_dict.get('result', {})
-        assert 'status' in result
-        assert 'value' in result
+        result = response_dict.get("result", {})
+        assert "status" in result
+        assert "value" in result
 
-        status = result.get('status')
+        status = result.get("status")
         assert status == True
 
-        value = result.get('value')
+        value = result.get("value")
         assert value == False
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def trigger_challenge_by_serial(self, content_type):
 
@@ -1631,40 +1671,38 @@ class TestQRToken(TestController):
         # ------------------------------------------------------------------- --
 
         token = self.tokens[user_token_id]
-        serial = token['serial']
-        pin = token['pin']
+        serial = token["serial"]
+        pin = token["pin"]
 
-        params = {'serial': serial,
-                  'pass': pin,
-                  'content_type': content_type}
+        params = {"serial": serial, "pass": pin, "content_type": content_type}
 
         if content_type == QRTOKEN_CT_FREE:
-            params['data'] = '5 million dollar sheeeeesh'
+            params["data"] = "5 million dollar sheeeeesh"
         elif content_type == QRTOKEN_CT_AUTH:
-            params['data'] = 'root@localhost'
+            params["data"] = "root@localhost"
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         response_dict = json.loads(response.body)
 
-        assert 'detail' in response_dict
-        detail = response_dict.get('detail')
+        assert "detail" in response_dict
+        detail = response_dict.get("detail")
 
         # ------------------------------------------------------------------- --
 
-        assert 'transactionid' in detail
-        assert 'message' in detail
+        assert "transactionid" in detail
+        assert "message" in detail
 
-        challenge_url = detail.get('message')
+        challenge_url = detail.get("message")
 
-        assert challenge_url.startswith(self.uri + '://')
+        assert challenge_url.startswith(self.uri + "://")
 
         return challenge_url
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_unpaired_challenge_serial(self):
         """
-         QRTOKEN: Check if unpaired token refuses incoming challenge requests
+        QRTOKEN: Check if unpaired token refuses incoming challenge requests
         """
 
         pairing_url, pin = self.enroll_qrtoken()
@@ -1673,59 +1711,64 @@ class TestQRToken(TestController):
         # ------------------------------------------------------------------- --
 
         token = self.tokens[user_token_id]
-        serial = token['serial']
+        serial = token["serial"]
 
         # ------------------------------------------------------------------- --
 
-        params = {'serial': serial,
-                  'data': 'yikes! another possible catastrophe',
-                  'pass': pin}
+        params = {
+            "serial": serial,
+            "data": "yikes! another possible catastrophe",
+            "pass": pin,
+        }
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
-        result = response_dict.get('result', {})
-        assert 'status' in result
-        assert 'value' in result
+        result = response_dict.get("result", {})
+        assert "status" in result
+        assert "value" in result
 
-        status = result.get('status')
+        status = result.get("status")
         assert status == True, response
 
-        value = result.get('value')
+        value = result.get("value")
         assert value == False, response
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_validate_user_pin_policy_1_wrong_pin(self):
         """ QRTOKEN: Validating user with pin policy 1 (wrong pin)"""
 
         user_token_id = self.execute_correct_pairing()
         token = self.tokens[user_token_id]
-        serial = token['serial']
+        serial = token["serial"]
 
         # ------------------------------------------------------------------- --
 
-        self.setPinPolicy(action='otppin=1, ')
-        self.assign_token_to_user(serial=serial, user_login='molière')
+        self.setPinPolicy(action="otppin=1, ")
+        self.assign_token_to_user(serial=serial, user_login="molière")
 
         # ------------------------------------------------------------------- --
 
-        params = {'user': 'molière', 'pass': 'wrongpassword',
-                  'data': '2000 dollars to that nigerian prince'}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "molière",
+            "pass": "wrongpassword",
+            "data": "2000 dollars to that nigerian prince",
+        }
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = response_dict.get('value')
+        assert "value" in result
+        value = response_dict.get("value")
 
         assert not value
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def set_pin(self, serial, pin):
         """
@@ -1735,32 +1778,32 @@ class TestQRToken(TestController):
         :pin: The pin that should be set
         """
 
-        params = {'serial': serial, 'pin': pin}
+        params = {"serial": serial, "pin": pin}
 
-        response = self.make_admin_request('set', params)
+        response = self.make_admin_request("set", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
 
         assert status
 
         # ------------------------------------------------------------------- --
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
 
-        assert 'set pin' in value
-        set_pin = value.get('set pin')
+        assert "set pin" in value
+        set_pin = value.get("set pin")
 
         assert set_pin == 1
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def create_multiple_challenges(self, user_login, pin):
         """
@@ -1772,10 +1815,10 @@ class TestQRToken(TestController):
         """
 
         user_token_id1 = self.execute_correct_pairing()
-        serial1 = self.tokens[user_token_id1]['serial']
+        serial1 = self.tokens[user_token_id1]["serial"]
 
         user_token_id2 = self.execute_correct_pairing()
-        serial2 = self.tokens[user_token_id2]['serial']
+        serial2 = self.tokens[user_token_id2]["serial"]
 
         self.assign_token_to_user(serial=serial1, user_login=user_login)
         self.assign_token_to_user(serial=serial2, user_login=user_login)
@@ -1784,19 +1827,22 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        params = {'user': 'root', 'pass': '1234',
-                  'data': '2000 dollars to that nigerian prince'}
+        params = {
+            "user": "root",
+            "pass": "1234",
+            "data": "2000 dollars to that nigerian prince",
+        }
 
         # ------------------------------------------------------------------- --
 
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
-        assert 'detail' in response_dict
-        detail = response_dict.get('detail')
+        assert "detail" in response_dict
+        detail = response_dict.get("detail")
 
-        assert 'challenges' in detail
-        challenges = detail.get('challenges')
+        assert "challenges" in detail
+        challenges = detail.get("challenges")
 
         # ------------------------------------------------------------------- --
 
@@ -1808,17 +1854,17 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        assert 'transactionid' in data_1
-        assert 'transactionid' in data_2
+        assert "transactionid" in data_1
+        assert "transactionid" in data_2
 
-        assert 'message' in data_1
-        assert 'message' in data_2
+        assert "message" in data_1
+        assert "message" in data_2
 
         # ------------------------------------------------------------------- --
 
         return response_dict
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_multiple_challenges(self):
         """ QRTOKEN: creating multiple challenges and validate them """
@@ -1829,34 +1875,34 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        response_dict = self.create_multiple_challenges('root', '1234')
-        challenges = response_dict['detail']['challenges']
+        response_dict = self.create_multiple_challenges("root", "1234")
+        challenges = response_dict["detail"]["challenges"]
 
         serial = list(challenges.keys())[0]
-        challenge_url = challenges[serial]['message']
+        challenge_url = challenges[serial]["message"]
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        transaction_id = response_dict['detail']['transactionid']
-        params = {'transactionid': transaction_id, 'pass': sig}
+        transaction_id = response_dict["detail"]["transactionid"]
+        params = {"transactionid": transaction_id, "pass": sig}
 
         # ------------------------------------------------------------------- --
 
-        response = self.make_validate_request('check_t', params)
+        response = self.make_validate_request("check_t", params)
         response_dict = json.loads(response.body)
-        assert 'status' in response_dict.get('result', {})
+        assert "status" in response_dict.get("result", {})
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status == True
 
         # ------------------------------------------------------------------- --
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
 
-        assert 'value' in value
-        assert 'failcount' in value
+        assert "value" in value
+        assert "failcount" in value
 
-        value_value = value.get('value')
+        value_value = value.get("value")
 
         assert value_value
 
@@ -1866,69 +1912,72 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        response_dict = self.create_multiple_challenges('root', '1234')
-        challenges = response_dict['detail']['challenges']
+        response_dict = self.create_multiple_challenges("root", "1234")
+        challenges = response_dict["detail"]["challenges"]
 
         serial = list(challenges.keys())[0]
-        challenge_url = challenges[serial]['message']
+        challenge_url = challenges[serial]["message"]
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        transaction_id = challenges[serial]['transactionid']
-        params = {'transactionid': transaction_id, 'pass': sig}
+        transaction_id = challenges[serial]["transactionid"]
+        params = {"transactionid": transaction_id, "pass": sig}
 
         # ------------------------------------------------------------------- --
 
-        response = self.make_validate_request('check_t', params)
+        response = self.make_validate_request("check_t", params)
         response_dict = json.loads(response.body)
-        assert 'status' in response_dict.get('result', {})
+        assert "status" in response_dict.get("result", {})
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status == True
 
         # ------------------------------------------------------------------- --
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
 
-        assert 'value' in value
-        assert 'failcount' in value
+        assert "value" in value
+        assert "failcount" in value
 
-        value_value = value.get('value')
+        value_value = value.get("value")
 
         assert value_value
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_validate_user_pin_policy_1(self):
         """ QRTOKEN: Validating user with pin policy 1 """
 
         user_token_id = self.execute_correct_pairing()
         token = self.tokens[user_token_id]
-        serial = token['serial']
+        serial = token["serial"]
 
         # ------------------------------------------------------------------- --
 
-        self.setPinPolicy(action='otppin=1, ')
-        self.assign_token_to_user(serial=serial, user_login='molière')
+        self.setPinPolicy(action="otppin=1, ")
+        self.assign_token_to_user(serial=serial, user_login="molière")
 
         # ------------------------------------------------------------------- --
 
-        params = {'user': 'molière', 'pass': 'molière',
-                  'data': '2000 dollars to that nigerian prince'}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "molière",
+            "pass": "molière",
+            "data": "2000 dollars to that nigerian prince",
+        }
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
-        assert 'detail' in response_dict
-        detail = response_dict.get('detail')
+        assert "detail" in response_dict
+        detail = response_dict.get("detail")
 
         # ------------------------------------------------------------------- --
 
-        assert 'transactionid' in detail
-        assert 'message' in detail
+        assert "transactionid" in detail
+        assert "message" in detail
 
-        challenge_url = detail.get('message')
+        challenge_url = detail.get("message")
 
-        assert challenge_url.startswith(self.uri + '://')
+        assert challenge_url.startswith(self.uri + "://")
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -1936,57 +1985,62 @@ class TestQRToken(TestController):
 
         transaction_id = challenge["transaction_id"]
 
-        params = {'user': 'molière',
-                  'transactionid': transaction_id,
-                  'pass': sig}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "molière",
+            "transactionid": transaction_id,
+            "pass": sig,
+        }
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
 
         # ------------------------------------------------------------------- --
 
         assert value
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_validate_user_pin_policy_2(self):
         """ QRTOKEN: Validating user with pin policy 2 """
 
         user_token_id = self.execute_correct_pairing()
         token = self.tokens[user_token_id]
-        serial = token['serial']
+        serial = token["serial"]
 
         # ------------------------------------------------------------------- --
 
         # otppin=2 - on validation NO PIN should be entered atall
-        self.setPinPolicy(action='otppin=2, ')
-        self.assign_token_to_user(serial=serial, user_login='root')
+        self.setPinPolicy(action="otppin=2, ")
+        self.assign_token_to_user(serial=serial, user_login="root")
 
         # ------------------------------------------------------------------- --
 
-        params = {'user': 'root', 'pass': '',
-                  'data': '2000 dollars to that nigerian prince'}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "root",
+            "pass": "",
+            "data": "2000 dollars to that nigerian prince",
+        }
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
-        assert 'detail' in response_dict
-        detail = response_dict.get('detail')
+        assert "detail" in response_dict
+        detail = response_dict.get("detail")
 
         # ------------------------------------------------------------------- --
 
-        assert 'transactionid' in detail
-        assert 'message' in detail
+        assert "transactionid" in detail
+        assert "message" in detail
 
-        challenge_url = detail.get('message')
+        challenge_url = detail.get("message")
 
-        assert challenge_url.startswith(self.uri + '://')
+        assert challenge_url.startswith(self.uri + "://")
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -1994,24 +2048,23 @@ class TestQRToken(TestController):
 
         transaction_id = challenge["transaction_id"]
 
-        params = {'user': 'root', 'transactionid': transaction_id, 'pass': sig}
-        response = self.make_validate_request('check', params)
+        params = {"user": "root", "transactionid": transaction_id, "pass": sig}
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
 
         # ------------------------------------------------------------------- --
 
         assert value
 
-
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def execute_correct_serial_challenge(self, content_type, use_tan=False):
 
@@ -2025,7 +2078,7 @@ class TestQRToken(TestController):
 
         # check if the content type is right
 
-        returned_content_type = challenge['content_type']
+        returned_content_type = challenge["content_type"]
         assert returned_content_type == content_type
 
         # ------------------------------------------------------------------- --
@@ -2034,62 +2087,64 @@ class TestQRToken(TestController):
 
         pass_ = tan if use_tan else sig
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'pass': pass_}
+        params = {"transactionid": challenge["transaction_id"], "pass": pass_}
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('check_t', params)
+        response = self.make_validate_request("check_t", params)
         response_dict = json.loads(response.body)
 
-        assert 'status' in response_dict.get('result', {})
+        assert "status" in response_dict.get("result", {})
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status == True
 
         # ------------------------------------------------------------------- --
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
 
-        assert 'value' in value
-        assert 'failcount' in value
+        assert "value" in value
+        assert "failcount" in value
 
-        value_value = value.get('value')
+        value_value = value.get("value")
 
         assert value_value
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_offline_info(self):
         """ QRTOKEN: Checking if offline info is transmitted on validation """
 
         user_token_id = self.execute_correct_pairing()
         token = self.tokens[user_token_id]
-        serial = token['serial']
+        serial = token["serial"]
 
         # ------------------------------------------------------------------- --
 
-        self.setPinPolicy(action='otppin=1, ')
-        self.assign_token_to_user(serial=serial, user_login='molière')
+        self.setPinPolicy(action="otppin=1, ")
+        self.assign_token_to_user(serial=serial, user_login="molière")
 
         # ------------------------------------------------------------------- --
 
-        params = {'user': 'molière', 'pass': 'molière',
-                  'data': '2000 dollars to that nigerian prince'}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "molière",
+            "pass": "molière",
+            "data": "2000 dollars to that nigerian prince",
+        }
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
-        assert 'detail' in response_dict
-        detail = response_dict.get('detail')
+        assert "detail" in response_dict
+        detail = response_dict.get("detail")
 
         # ------------------------------------------------------------------- --
 
-        assert 'transactionid' in detail
-        assert 'message' in detail
+        assert "transactionid" in detail
+        assert "message" in detail
 
-        challenge_url = detail.get('message')
+        challenge_url = detail.get("message")
 
-        assert challenge_url.startswith(self.uri + '://')
+        assert challenge_url.startswith(self.uri + "://")
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -2097,28 +2152,30 @@ class TestQRToken(TestController):
 
         transaction_id = challenge["transaction_id"]
 
-        params = {'user': 'molière',
-                  'transactionid': transaction_id,
-                  'pass': sig,
-                  'use_offline': True}
+        params = {
+            "user": "molière",
+            "transactionid": transaction_id,
+            "pass": sig,
+            "use_offline": True,
+        }
 
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
 
         assert value
 
         # even if we provided the use_offline parameter, the data
         # should not be returned because the policy was not set
 
-        assert 'detail' not in response_dict
+        assert "detail" not in response_dict
 
         # ------------------------------------------------------------------- --
 
@@ -2128,22 +2185,25 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        params = {'user': 'molière', 'pass': 'molière',
-                  'data': '2000 dollars to that nigerian prince'}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "molière",
+            "pass": "molière",
+            "data": "2000 dollars to that nigerian prince",
+        }
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
-        assert 'detail' in response_dict
-        detail = response_dict.get('detail')
+        assert "detail" in response_dict
+        detail = response_dict.get("detail")
 
         # ------------------------------------------------------------------- --
 
-        assert 'transactionid' in detail
-        assert 'message' in detail
+        assert "transactionid" in detail
+        assert "message" in detail
 
-        challenge_url = detail.get('message')
+        challenge_url = detail.get("message")
 
-        assert challenge_url.startswith(self.uri + '://')
+        assert challenge_url.startswith(self.uri + "://")
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -2151,51 +2211,53 @@ class TestQRToken(TestController):
 
         transaction_id = challenge["transaction_id"]
 
-        params = {'user': 'molière',
-                  'transactionid': transaction_id,
-                  'pass': sig,
-                  'use_offline': True}
+        params = {
+            "user": "molière",
+            "transactionid": transaction_id,
+            "pass": sig,
+            "use_offline": True,
+        }
 
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
 
         # ------------------------------------------------------------------- --
 
         assert value
 
-        assert 'detail' in response_dict
-        detail = response_dict.get('detail')
+        assert "detail" in response_dict
+        detail = response_dict.get("detail")
 
-        assert 'offline' in detail
-        offline = detail.get('offline')
+        assert "offline" in detail
+        offline = detail.get("offline")
 
-        assert 'type' in offline
-        assert 'serial' in offline
-        assert 'offline_info' in offline
+        assert "type" in offline
+        assert "serial" in offline
+        assert "offline_info" in offline
 
-        token_type = offline.get('type')
-        serial = offline.get('serial')
+        token_type = offline.get("type")
+        serial = offline.get("serial")
 
-        assert token_type == 'qr'
-        assert serial == token['serial']
+        assert token_type == "qr"
+        assert serial == token["serial"]
 
-        offline_info = offline.get('offline_info')
-        assert 'user_token_id' in offline_info
-        assert 'public_key' in offline_info
+        offline_info = offline.get("offline_info")
+        assert "user_token_id" in offline_info
+        assert "public_key" in offline_info
 
-        received_user_token_id = offline_info.get('user_token_id')
+        received_user_token_id = offline_info.get("user_token_id")
         assert user_token_id == received_user_token_id
 
-        public_key = offline_info.get('public_key')
-        assert public_key.encode('utf-8') == b64encode(self.public_key)
+        public_key = offline_info.get("public_key")
+        assert public_key.encode("utf-8") == b64encode(self.public_key)
 
         # we run the test until one of the tans start with a '0'
 
@@ -2204,48 +2266,53 @@ class TestQRToken(TestController):
 
             # -------------------------------------------------------------- --
 
-            params = {'user': 'molière', 'pass': 'molière',
-                      'data': '2000 dollars to that nigerian prince'}
-            response = self.make_validate_request('check', params)
+            params = {
+                "user": "molière",
+                "pass": "molière",
+                "data": "2000 dollars to that nigerian prince",
+            }
+            response = self.make_validate_request("check", params)
             response_dict = json.loads(response.body)
 
-            assert 'detail' in response_dict
-            detail = response_dict.get('detail')
+            assert "detail" in response_dict
+            detail = response_dict.get("detail")
 
             # -------------------------------------------------------------- --
 
-            assert 'transactionid' in detail
-            assert 'message' in detail
+            assert "transactionid" in detail
+            assert "message" in detail
 
-            challenge_url = detail.get('message')
+            challenge_url = detail.get("message")
 
-            assert challenge_url.startswith(self.uri + '://')
+            assert challenge_url.startswith(self.uri + "://")
 
             challenge, sig, tan = self.decrypt_and_verify_challenge(
-                                        challenge_url)
+                challenge_url
+            )
 
             # -------------------------------------------------------------- --
 
-            if tan.startswith('0'):
+            if tan.startswith("0"):
                 leading_zero_test = True
 
             transaction_id = challenge["transaction_id"]
 
-            params = {'user': 'molière',
-                      'transactionid': transaction_id,
-                      'pass': tan,
-                      }
+            params = {
+                "user": "molière",
+                "transactionid": transaction_id,
+                "pass": tan,
+            }
 
-            response = self.make_validate_request('check', params)
+            response = self.make_validate_request("check", params)
             response_dict = json.loads(response.body)
 
             # -------------------------------------------------------------- --
 
-            assert 'result' in response_dict
-            result = response_dict.get('result')
+            assert "result" in response_dict
+            result = response_dict.get("result")
 
-            assert 'value' in result
-            value = result.get('value')
+            assert "value" in result
+            value = result.get("value")
 
         assert leading_zero_test
 
@@ -2271,31 +2338,31 @@ class TestQRToken(TestController):
 
         # unpair the token with serial without setting unpair policy
 
-        serial = self.tokens[user_token_id]['serial']
+        serial = self.tokens[user_token_id]["serial"]
 
-        params = {'serial': serial}
+        params = {"serial": serial}
 
-        response = self.make_admin_request('unpair', params)
+        response = self.make_admin_request("unpair", params)
         response_dict = json.loads(response.body)
 
         # call should succeed, because with no policy anything goes
 
-        assert response_dict.get('result', {}).get('value', False)
+        assert response_dict.get("result", {}).get("value", False)
 
         # -------------------------------------------------------------------- -
 
         # unpair again now with deactivated policy
 
         self.setUnassignPolicy()  # just a dummy to activate the
-                                  # policy engine altogether
+        # policy engine altogether
 
-        response = self.make_admin_request('unpair', params)
+        response = self.make_admin_request("unpair", params)
         response_dict = json.loads(response.body)
 
         # call should fail, because policy engine is activated (unassign
         # dummy policy is active), but admin-unpair is not activated
 
-        assert not response_dict.get('result', {}).get('value', True)
+        assert not response_dict.get("result", {}).get("value", True)
 
         # -------------------------------------------------------------------- -
 
@@ -2303,12 +2370,12 @@ class TestQRToken(TestController):
 
         self.setUnpairPolicy(active=True)
 
-        response = self.make_admin_request('unpair', params)
+        response = self.make_admin_request("unpair", params)
         response_dict = json.loads(response.body)
 
         # call should succeed now
 
-        assert response_dict.get('result', {}).get('value', True)
+        assert response_dict.get("result", {}).get("value", True)
 
         # -------------------------------------------------------------------- -
 
@@ -2321,7 +2388,7 @@ class TestQRToken(TestController):
 
         self.verify_pairing(challenge_url)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def test_unpairing_with_user(self):
 
@@ -2341,32 +2408,32 @@ class TestQRToken(TestController):
 
         # assign token to user
 
-        serial = self.tokens[user_token_id]['serial']
+        serial = self.tokens[user_token_id]["serial"]
 
-        self.assign_token_to_user(serial=serial, user_login='molière')
+        self.assign_token_to_user(serial=serial, user_login="molière")
 
         # -------------------------------------------------------------------- -
 
         # unpair the token with user
 
-        params = {'user': 'molière'}
+        params = {"user": "molière"}
 
-        response = self.make_admin_request('unpair', params)
+        response = self.make_admin_request("unpair", params)
         response_dict = json.loads(response.body)
 
         # call should succeed
 
-        assert response_dict.get('result', {}).get('value', False)
+        assert response_dict.get("result", {}).get("value", False)
 
         # -------------------------------------------------------------------- -
 
         # unpair the token with nonexistant user
 
-        params = {'user': 'iprobablydontexist'}
+        params = {"user": "iprobablydontexist"}
 
-        response = self.make_admin_request('unpair', params)
+        response = self.make_admin_request("unpair", params)
         response_dict = json.loads(response.body)
 
         # call should fail, because user is not found
 
-        assert not response_dict.get('result', {}).get('value', True)
+        assert not response_dict.get("result", {}).get("value", True)

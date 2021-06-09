@@ -33,10 +33,10 @@ from sqlalchemy.exc import OperationalError
 from linotp.flap import config, HTTPUnauthorized
 from linotp.model import db, Config, LoggingConfig
 
+
 @pytest.mark.usefixtures("app")
 class TestMaintenance(object):
-
-    @patch('linotp.model.db.session')
+    @patch("linotp.model.db.session")
     def test_check_status_ok(self, mock_session, client):
         """
         Test that 'check_status' returns the number of config entries
@@ -45,29 +45,27 @@ class TestMaintenance(object):
 
         mock_session.query.return_value.count.return_value = entries
 
-        response = client.get('/maintenance/check_status')
+        response = client.get("/maintenance/check_status")
 
-        assert response.json['detail']['config']['entries'] == entries
+        assert response.json["detail"]["config"]["entries"] == entries
 
-    @patch('linotp.model.db.session')
+    @patch("linotp.model.db.session")
     def test_000_check_status_error(self, mock_session, client):
         """
         Test that 'check_status' returns an error status code
         """
-        op_error = OperationalError(statement="Error",
-                                    params={},
-                                    orig="Error")
+        op_error = OperationalError(statement="Error", params={}, orig="Error")
 
         mock_session.query.side_effect = op_error
 
-        response = client.get('/maintenance/check_status')
+        response = client.get("/maintenance/check_status")
 
         assert response.status_code == 500
 
         return
 
     def test_set_loglevel(self, app, client):
-        name = 'linotp.lib.user'
+        name = "linotp.lib.user"
         config_entry = LoggingConfig.query.get(name)
         assert not config_entry
 
@@ -75,7 +73,7 @@ class TestMaintenance(object):
             loggerName=name,
             level=10,
         )
-        client.post('/maintenance/setLogLevel', json=params)
+        client.post("/maintenance/setLogLevel", json=params)
 
         config_entry = LoggingConfig.query.get(name)
         assert config_entry.level == 10
@@ -88,17 +86,17 @@ class TestMaintCertificateHandling(object):
     @pytest.fixture(autouse=True)
     def controller(self, app):
         self.app = app
-        self.maint = app.blueprints['maintenance']
+        self.maint = app.blueprints["maintenance"]
 
     def test_certificate_error(self):
         """
         Test that a request raises an exception if no certificate is available
         """
 
-        config['MAINTENANCE_VERIFY_CLIENT_ENV_VAR'] = 'TEST_VAR_NOTSET'
+        config["MAINTENANCE_VERIFY_CLIENT_ENV_VAR"] = "TEST_VAR_NOTSET"
 
         with pytest.raises(HTTPUnauthorized) as err:
-            self.maint.__before__(action='check_status')
+            self.maint.__before__(action="check_status")
 
         assert err.value.code == 401
 
@@ -107,9 +105,9 @@ class TestMaintCertificateHandling(object):
         Test that a request raises an exception if no certificate is available
         """
 
-        config['MAINTENANCE_VERIFY_CLIENT_ENV_VAR'] = 'TEST_VAR'
+        config["MAINTENANCE_VERIFY_CLIENT_ENV_VAR"] = "TEST_VAR"
 
-        with self.app.test_request_context('/matintenance/check_status'):
-            flask.request.environ['TEST_VAR'] = 'OK'
-            ret = self.maint.__before__(action='check_status')
+        with self.app.test_request_context("/matintenance/check_status"):
+            flask.request.environ["TEST_VAR"] = "OK"
+            ret = self.maint.__before__(action="check_status")
             assert ret is None

@@ -45,79 +45,87 @@ PHONE_TAG = "<phone>"
 MSG_TAG = "<otp>"
 
 
-@provider_registry.class_entry('SmtpSMSProvider')
-@provider_registry.class_entry('linotp.provider.smsprovider.SmtpSMSProvider')
-@provider_registry.class_entry('smsprovider.SmtpSMSProvider.SmtpSMSProvider')
-@provider_registry.class_entry('smsprovider.SmtpSMSProvider')
+@provider_registry.class_entry("SmtpSMSProvider")
+@provider_registry.class_entry("linotp.provider.smsprovider.SmtpSMSProvider")
+@provider_registry.class_entry("smsprovider.SmtpSMSProvider.SmtpSMSProvider")
+@provider_registry.class_entry("smsprovider.SmtpSMSProvider")
 class SmtpSMSProvider(ISMSProvider):
-
     def __init__(self):
         self.config = {}
 
-    '''
+    """
       submitMessage()
       - send out a message to a phone
 
-    '''
+    """
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
+    def getClassInfo(cls, key=None, ret="all"):
 
         defintion = {}
         parameters = {}
-        parameters['mailserver'] = {'type': 'string',
-                                    'description': "your mail server address"
-                                    }
-        parameters['mailserver_port'] = {'type': 'int',
-                                         'description': "your mail server port"
-                                                        " - if not default"
-                                         }
+        parameters["mailserver"] = {
+            "type": "string",
+            "description": "your mail server address",
+        }
+        parameters["mailserver_port"] = {
+            "type": "int",
+            "description": "your mail server port" " - if not default",
+        }
 
-        parameters["start_tls"] = {'type': 'bool',
-                                   'description': "use 'starttls' to secure "
-                                                  "the mail communication."
-                                   }
+        parameters["start_tls"] = {
+            "type": "bool",
+            "description": "use 'starttls' to secure "
+            "the mail communication.",
+        }
 
-        parameters['keyfile'] = {'type': 'string',
-                                 'description': "if 'starttls' is defined, a "
-                                                "keyfile could be used."
-                                 }
-        parameters["certfile"] = {'type': 'string',
-                                  'description': "if 'starttls' is defined "
-                                                 "a certificate file could "
-                                                 "be used"
-                                  }
+        parameters["keyfile"] = {
+            "type": "string",
+            "description": "if 'starttls' is defined, a "
+            "keyfile could be used.",
+        }
+        parameters["certfile"] = {
+            "type": "string",
+            "description": "if 'starttls' is defined "
+            "a certificate file could "
+            "be used",
+        }
 
-        parameters['use_ssl'] = {'type': 'bool',
-                                 'description': "use_ssl to secure "
-                                                "the mail communication."
-                                 }
+        parameters["use_ssl"] = {
+            "type": "bool",
+            "description": "use_ssl to secure " "the mail communication.",
+        }
 
-        parameters["mailuser"] = {'type': 'string',
-                                  'description': "the mailserver login user"
-                                  }
-        parameters["mailpassword"] = {'type': 'password',
-                                      'description': "the password of the "
-                                                     "login user"
-                                      }
+        parameters["mailuser"] = {
+            "type": "string",
+            "description": "the mailserver login user",
+        }
+        parameters["mailpassword"] = {
+            "type": "password",
+            "description": "the password of the " "login user",
+        }
 
-        parameters["mailsender"] = {'type': 'emailaddress',
-                                    'description': "the email sender name",
-                                    'default': "linotp@localhost"
-                                    }
-        parameters["mailto"] = {'type': 'emailaddress',
-                                'description': "the target email user"
-                                }
+        parameters["mailsender"] = {
+            "type": "emailaddress",
+            "description": "the email sender name",
+            "default": "linotp@localhost",
+        }
+        parameters["mailto"] = {
+            "type": "emailaddress",
+            "description": "the target email user",
+        }
 
-        parameters["subject"] = {'type': 'string',
-                                 'description': "email subject line"
-                                 }
+        parameters["subject"] = {
+            "type": "string",
+            "description": "email subject line",
+        }
 
-        parameters["body"] = {'type': 'string',
-                              'description': "email body text"
-                              }
+        parameters["body"] = {
+            "type": "string",
+            "description": "email body text",
+        }
 
-        defintion['parameters'] = parameters
+        defintion["parameters"] = parameters
 
         if not key:
             return defintion
@@ -128,20 +136,25 @@ class SmtpSMSProvider(ISMSProvider):
         return {}
 
     def _submitMessage(self, phone, message):
-        '''
+        """
         Submits the message for phone to the email gateway.
 
         Returns true in case of success
-        '''
+        """
         ret = False
-        if ('mailserver' not in self.config or
-                'mailsender' not in self.config or 'mailto' not in self.config):
-            log.error("[submitMessage] incomplete config: %s. mailserver, "
-                      "mailsender and mailto needed." % self.config)
+        if (
+            "mailserver" not in self.config
+            or "mailsender" not in self.config
+            or "mailto" not in self.config
+        ):
+            log.error(
+                "[submitMessage] incomplete config: %s. mailserver, "
+                "mailsender and mailto needed." % self.config
+            )
             return ret
 
         # prepare the phone number
-        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
+        msisdn = "true" in ("%r" % self.config.get("MSISDN", "false")).lower()
         if msisdn:
             phone = self._get_msisdn_phonenumber(phone)
 
@@ -149,13 +162,13 @@ class SmtpSMSProvider(ISMSProvider):
         default_port = 25
 
         start_tls_params = {}
-        start_tls = str(self.config.get("start_tls", False)).lower() == 'true'
+        start_tls = str(self.config.get("start_tls", False)).lower() == "true"
         if start_tls:
             default_port = 587
             start_tls_params_keyfile = self.config.get("keyfile", None)
             start_tls_params_certfile = self.config.get("certfile", None)
 
-        use_ssl = str(self.config.get("use_ssl", False)).lower() == 'true'
+        use_ssl = str(self.config.get("use_ssl", False)).lower() == "true"
         if use_ssl:
             default_port = 465
 
@@ -164,8 +177,8 @@ class SmtpSMSProvider(ISMSProvider):
 
         # support for mailserver syntax like server:port
         # if port is not explicit defined
-        if "mailserver_port" not in self.config and ':' in server:
-            server, _sep, port = server.rpartition(':')
+        if "mailserver_port" not in self.config and ":" in server:
+            server, _sep, port = server.rpartition(":")
 
         user = self.config.get("mailuser")
         password = self.config.get("mailpassword")
@@ -175,8 +188,9 @@ class SmtpSMSProvider(ISMSProvider):
         subject = self.config.get("subject", "")
         body = self.config.get("body", "")
 
-        log.debug("[submitMessage] submitting message %s to %s",
-                  message, phone)
+        log.debug(
+            "[submitMessage] submitting message %s to %s", message, phone
+        )
 
         toaddr = toaddr.replace(PHONE_TAG, phone)
 
@@ -190,8 +204,12 @@ class SmtpSMSProvider(ISMSProvider):
         body = body.replace(PHONE_TAG, phone)
         body = body.replace(MSG_TAG, message)
 
-        msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s"
-               % (fromaddr, toaddr, subject, body))
+        msg = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s" % (
+            fromaddr,
+            toaddr,
+            subject,
+            body,
+        )
 
         serv = None
         try:
@@ -204,18 +222,24 @@ class SmtpSMSProvider(ISMSProvider):
 
             serv.ehlo()
             if start_tls and not use_ssl:
-                if serv.has_extn('STARTTLS'):
-                    serv.starttls(start_tls_params_keyfile,
-                                  start_tls_params_certfile)
+                if serv.has_extn("STARTTLS"):
+                    serv.starttls(
+                        start_tls_params_keyfile, start_tls_params_certfile
+                    )
                     serv.ehlo()
                 else:
                     log.error("Start_TLS not supported:")
-                    raise Exception("Start_TLS requested but not supported"
-                                    " by server %r" % server)
+                    raise Exception(
+                        "Start_TLS requested but not supported"
+                        " by server %r" % server
+                    )
             if user:
-                if serv.has_extn('AUTH'):
-                    log.debug("authenticating to mailserver, user: %s, "
-                              "pass: %r", user, sha256(password).hexdigest())
+                if serv.has_extn("AUTH"):
+                    log.debug(
+                        "authenticating to mailserver, user: %s, " "pass: %r",
+                        user,
+                        sha256(password).hexdigest(),
+                    )
                     serv.login(user, password)
                 else:
                     log.error("AUTH not supported:")
@@ -228,15 +252,16 @@ class SmtpSMSProvider(ISMSProvider):
             ret = True
 
         except smtplib.socket.error as exc:
-            log.exception('Error: could not connect to server')
-            if boolean(self.config.get('raise_exception', True)):
-                raise ProviderNotAvailable('Error: could not connect '
-                                           'to server: %r' % exc)
+            log.exception("Error: could not connect to server")
+            if boolean(self.config.get("raise_exception", True)):
+                raise ProviderNotAvailable(
+                    "Error: could not connect " "to server: %r" % exc
+                )
             ret = False
 
         except Exception as exx:
             log.exception("[submitMessage] %s", exx)
-            if boolean(self.config.get('raise_exception', False)):
+            if boolean(self.config.get("raise_exception", False)):
                 raise Exception(exx)
             ret = False
 
@@ -248,5 +273,6 @@ class SmtpSMSProvider(ISMSProvider):
 
     def loadConfig(self, configDict):
         self.config = configDict
+
 
 # eof ########################################################################

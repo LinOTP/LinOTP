@@ -42,7 +42,7 @@ from flask.cli import FlaskGroup
 
 from linotp.app import create_app
 
-FLASK_APP_DEFAULT = "linotp.app"   # Contains default `create_app()` factory
+FLASK_APP_DEFAULT = "linotp.app"  # Contains default `create_app()` factory
 FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
 
 
@@ -79,9 +79,9 @@ class Echo:
         and `err` defaults to `True`.
         """
 
-        verbosity = kwargs.pop('v', kwargs.pop('verbosity', 0))
+        verbosity = kwargs.pop("v", kwargs.pop("verbosity", 0))
         if verbosity <= self.verbosity:
-            err = kwargs.pop('err', True)
+            err = kwargs.pop("err", True)
             click.echo(message, err=err, **kwargs)
 
 
@@ -91,7 +91,8 @@ def get_backup_filename(filename: str, now: datetime = None) -> str:
     `now` is `None`, the current time will be used.
     """
     ext = (now or datetime.now()).strftime(
-        current_app.config["BACKUP_FILE_TIME_FORMAT"])
+        current_app.config["BACKUP_FILE_TIME_FORMAT"]
+    )
     return filename + "." + ext
 
 
@@ -106,13 +107,13 @@ def get_backup_filename(filename: str, now: datetime = None) -> str:
 # wants to do database initialisation. Once we end up in a Click-based
 # command function it is already too late.
 
-class LinOTPGroup(FlaskGroup):
 
+class LinOTPGroup(FlaskGroup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         for arg in sys.argv[1:]:
-            if arg[0] != '-':
-                os.environ['LINOTP_CMD'] = arg
+            if arg[0] != "-":
+                os.environ["LINOTP_CMD"] = arg
                 break
 
 
@@ -122,13 +123,27 @@ class LinOTPGroup(FlaskGroup):
 # new subcommands (or subcommand groups) must be registered in `setup.py`
 # to become reachable.
 
+
 @click.group(name="linotp", cls=LinOTPGroup, create_app=create_app)
-@click.option('--verbose', '-v', count=True,
-              help=("Increase amount of output from the command "
-                    "(can be specified several times)."))
-@click.option('--quiet', '-q', is_flag=True, default=False,
-              help=("Don't generate any output at all (check exit "
-                    "code for success/failure)."))
+@click.option(
+    "--verbose",
+    "-v",
+    count=True,
+    help=(
+        "Increase amount of output from the command "
+        "(can be specified several times)."
+    ),
+)
+@click.option(
+    "--quiet",
+    "-q",
+    is_flag=True,
+    default=False,
+    help=(
+        "Don't generate any output at all (check exit "
+        "code for success/failure)."
+    ),
+)
 @with_appcontext
 def main(verbose, quiet):
     current_app.echo = Echo(-1 if quiet else verbose)

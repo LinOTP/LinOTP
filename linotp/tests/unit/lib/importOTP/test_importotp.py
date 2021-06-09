@@ -32,18 +32,18 @@ from linotp.lib.ImportOTP.oath import parseOATHcsv
 
 
 class TestCacheActivation(unittest.TestCase):
-
     def setUp(self):
         """
-        we use the setUp to define the fixture path, which points to the 
-        location of the fixed data files 
+        we use the setUp to define the fixture path, which points to the
+        location of the fixed data files
         """
 
         this_file = os.path.dirname(os.path.realpath(__file__))
-        location, _sep, _skip = this_file.rpartition('tests' + os.sep + 'unit')
+        location, _sep, _skip = this_file.rpartition("tests" + os.sep + "unit")
 
         self.fixture_path = os.path.join(
-            location, 'tests', 'functional', 'fixtures')
+            location, "tests", "functional", "fixtures"
+        )
 
         unittest.TestCase.setUp(self)
 
@@ -67,9 +67,9 @@ class TestCacheActivation(unittest.TestCase):
             return data
 
     def test_parse_OATH(self):
-        '''
+        """
         Test the OATH csv import for sha1 totp and hmac tokens
-        '''
+        """
         csv = self._read_data("oath_tokens.csv")
 
         TOKENS = parseOATHcsv(csv)
@@ -83,9 +83,9 @@ class TestCacheActivation(unittest.TestCase):
         return
 
     def test_parse_OATH_256(self):
-        '''
+        """
         Test the OATH csv import for sha256 tokens
-        '''
+        """
         csv = self._read_data("oath_tokens_sha256.csv")
 
         tokens = parseOATHcsv(csv)
@@ -93,9 +93,10 @@ class TestCacheActivation(unittest.TestCase):
         assert len(tokens) == 8, tokens
 
         for serial, token in list(tokens.items()):
-            if 'sha256' in serial:
-                assert token['hashlib'] == 'sha256', token
+            if "sha256" in serial:
+                assert token["hashlib"] == "sha256", token
 
         return
+
 
 # eof #

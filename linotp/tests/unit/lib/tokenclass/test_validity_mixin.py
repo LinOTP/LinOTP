@@ -35,7 +35,6 @@ from linotp.tokens.base.validity_mixin import TokenValidityMixin
 
 
 class FakeTokenInfoMixin(object):
-
     def __init__(self):
         self.info = {}
 
@@ -66,9 +65,9 @@ class TestTokenValidityMixin(unittest.TestCase):
     """
 
     def test_access_count(self):
-        '''
+        """
         check if the access counter (with getter and setter) is incremented
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -86,9 +85,9 @@ class TestTokenValidityMixin(unittest.TestCase):
         return
 
     def test_del_access_count(self):
-        '''
+        """
         check that the max access counter will be removed
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -100,14 +99,14 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         t_info = fake_token.getTokenInfo()
 
-        assert 'count_auth_max' not in t_info, fake_token
+        assert "count_auth_max" not in t_info, fake_token
 
         return
 
     def test_inc_access_count(self):
-        '''
+        """
         check if the access counter (with getter and setter) is incremented
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -127,9 +126,9 @@ class TestTokenValidityMixin(unittest.TestCase):
     # ---------------------------------------------------------------------- --
 
     def test_success_count(self):
-        '''
+        """
         check if the success counter (with getter and setter) is incremented
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -139,8 +138,10 @@ class TestTokenValidityMixin(unittest.TestCase):
 
             fake_token.count_auth_success = fake_token.count_auth_success + 1
 
-            if (fake_token.count_auth_success >
-                fake_token.count_auth_success_max):
+            if (
+                fake_token.count_auth_success
+                > fake_token.count_auth_success_max
+            ):
                 break
 
         assert fake_token.count_auth_success == 4, fake_token
@@ -148,17 +149,19 @@ class TestTokenValidityMixin(unittest.TestCase):
         return
 
     def test_inc_success_count(self):
-        '''
+        """
         check if the success counter (with getter and setter) is incremented
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
         fake_token.count_auth_success_max = 3
         for _i in range(1, 10):
             fake_token.inc_count_auth_success()
-            if (fake_token.count_auth_success >
-                fake_token.count_auth_success_max):
+            if (
+                fake_token.count_auth_success
+                > fake_token.count_auth_success_max
+            ):
                 break
 
         assert fake_token.count_auth_success == 4, fake_token
@@ -166,9 +169,9 @@ class TestTokenValidityMixin(unittest.TestCase):
         return
 
     def test_del_success_count(self):
-        '''
+        """
         delete the success counter
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -180,14 +183,14 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         t_info = fake_token.getTokenInfo()
 
-        assert 'count_auth_success_max' not in t_info, fake_token
+        assert "count_auth_success_max" not in t_info, fake_token
 
     # ---------------------------------------------------------------------- --
 
     def test_del_expiry_end(self):
-        '''
+        """
         check expiration end compare
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -203,14 +206,14 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         t_info = fake_token.getTokenInfo()
 
-        assert 'validity_period_end' not in t_info, fake_token
+        assert "validity_period_end" not in t_info, fake_token
 
         return
 
     def test_del_expiry_start(self):
-        '''
+        """
         check expiration end compare
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -226,16 +229,16 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         t_info = fake_token.getTokenInfo()
 
-        assert 'validity_period_start' not in t_info, fake_token
+        assert "validity_period_start" not in t_info, fake_token
 
         return
 
     # ---------------------------------------------------------------------- --
 
     def test_for_expiry_end(self):
-        '''
+        """
         check expiration end compare
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -253,9 +256,9 @@ class TestTokenValidityMixin(unittest.TestCase):
         return
 
     def test_for_expiry_start(self):
-        '''
+        """
         check expiration start compare
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -271,9 +274,9 @@ class TestTokenValidityMixin(unittest.TestCase):
         assert not fake_token.validity_period_end, fake_token
 
     def test_for_not_expiry(self):
-        '''
+        """
         check for not expiration
-        '''
+        """
 
         fake_token = FakeTokenClass()
 
@@ -290,8 +293,10 @@ class TestTokenValidityMixin(unittest.TestCase):
         assert fake_token.validity_period_start, fake_token
         assert fake_token.validity_period_end, fake_token
 
-        assert (fake_token.validity_period_start < now and
-             fake_token.validity_period_end > now), \
-            fake_token
+        assert (
+            fake_token.validity_period_start < now
+            and fake_token.validity_period_end > now
+        ), fake_token
+
 
 # eof #

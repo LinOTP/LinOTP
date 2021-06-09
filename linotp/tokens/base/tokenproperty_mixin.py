@@ -36,14 +36,13 @@ log = logging.getLogger(__name__)
 
 
 class TokenPropertyMixin(TokenInfoMixin):
-
     @property
     def timeStep(self):
-        return self.getFromTokenInfo('timeStep')
+        return self.getFromTokenInfo("timeStep")
 
     @timeStep.setter
     def timeStep(self, value):
-        self.addToTokenInfo('timeStep', value)
+        self.addToTokenInfo("timeStep", value)
 
 
 # eof #

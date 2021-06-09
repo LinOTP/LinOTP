@@ -36,17 +36,16 @@ import pytest
 
 
 class CustomSMTPServer(smtpd.SMTPServer):
-
     def process_message(self, peer, mailfrom, rcpttos, data):
-        print('Receiving message from:', peer)
-        print('Message addressed from:', mailfrom)
-        print('Message addressed to  :', rcpttos)
-        print('Message length        :', len(data))
+        print("Receiving message from:", peer)
+        print("Message addressed from:", mailfrom)
+        print("Message addressed to  :", rcpttos)
+        print("Message length        :", len(data))
         return
 
 
 class TestSMS(TestCase):
-    '''
+    """
     def test_sms(self):
         print " SMSProvider - class test "
 
@@ -57,27 +56,29 @@ class TestSMS(TestCase):
         print " root - " + y.submittMessage("015154294800","root")
 
         self.assertEquals(res,'0')
-    '''
+    """
 
     def setUp(self):
-        #server = CustomSMTPServer(('127.0.0.1', 1025), None)
+        # server = CustomSMTPServer(('127.0.0.1', 1025), None)
         # asyncore.loop()
         print("EHLO")
 
     def test_01_smtp(self):
-        '''
+        """
         This test will fail, since the mailserver does not exist
-        '''
+        """
         phone = "1234567890"
         message = "123456"
-        smtp_config = {'mailserver': 'xxx.yyy.zz',
-                       'mailsender': "user@example.com",
-                       # 'mailuser' : "useraccount",
-                       # 'mailpassword' : "somesecret",
-                       'mailto': 'user@example.com',
-                       'subject': '<phone>',
-                       'body': 'This is the otp value: <otp>',
-                       'raise_exception': True}
+        smtp_config = {
+            "mailserver": "xxx.yyy.zz",
+            "mailsender": "user@example.com",
+            # 'mailuser' : "useraccount",
+            # 'mailpassword' : "somesecret",
+            "mailto": "user@example.com",
+            "subject": "<phone>",
+            "body": "This is the otp value: <otp>",
+            "raise_exception": True,
+        }
 
         sms = getSMSProviderClass("SmtpSMSProvider", "SmtpSMSProvider")()
         sms.loadConfig(smtp_config)
@@ -85,58 +86,64 @@ class TestSMS(TestCase):
         with pytest.raises(ProviderNotAvailable):
             sms.submitMessage(phone, message)
 
-        smtp_config = {'mailserver': 'localhost:1025',
-                       'mailsender': "user@example.com",
-                       # 'mailuser' : "useraccount",
-                       # 'mailpassword' : "somesecret",
-                       'mailto': 'user@example.com',
-                       'subject': '<phone>',
-                       'body': 'This is the otp value: <otp>',
-                       'raise_exception': False}
+        smtp_config = {
+            "mailserver": "localhost:1025",
+            "mailsender": "user@example.com",
+            # 'mailuser' : "useraccount",
+            # 'mailpassword' : "somesecret",
+            "mailto": "user@example.com",
+            "subject": "<phone>",
+            "body": "This is the otp value: <otp>",
+            "raise_exception": False,
+        }
 
         sms.loadConfig(smtp_config)
         ret = sms.submitMessage(phone, message)
         assert ret is False, ret
 
-        smtp_config['raise_exception'] = True
+        smtp_config["raise_exception"] = True
         sms.loadConfig(smtp_config)
 
-        with pytest.raises(Exception, match="Connection refused|Cannot assign requested address"):
+        with pytest.raises(
+            Exception,
+            match="Connection refused|Cannot assign requested address",
+        ):
             sms.submitMessage(phone, message)
 
     def test_02_http(self):
-        '''
+        """
         Test the HTTP sms provider
-        '''
+        """
         phone = "1234567890"
         message = "123456"
         ret = False
 
-        clickatell_config = {'URL': 'http://api.clickatell.com/http/sendmsg',
-                             'PARAMETER': {
-                                 'user': 'notme',
-                                 'password': 'askme',
-                                 'api_id': 'askme',
+        clickatell_config = {
+            "URL": "http://api.clickatell.com/http/sendmsg",
+            "PARAMETER": {
+                "user": "notme",
+                "password": "askme",
+                "api_id": "askme",
+            },
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "to",
+            "HTTP_Method": "GET",
+            "RETURN_SUCCESS": "ID",
+        }
 
-                             },
-                             'SMS_TEXT_KEY': 'text',
-                             'SMS_PHONENUMBER_KEY': 'to',
-                             'HTTP_Method': 'GET',
-                             "RETURN_SUCCESS": "ID"
-                             }
-
-        config = {'URL': 'http://localhost/cgi-perl/prepaid/private/smsversand.cgi',
-                  'PARAMETER': {
-                      'von': 'OWN_NUMBER',
-                      'passwort': 'PASSWORD',
-                      'absender': 'TYPE',
-                      'konto': '1'
-                  },
-                  'SMS_TEXT_KEY': 'text',
-                  'SMS_PHONENUMBER_KEY': 'ziel',
-                  'HTTP_Method': 'GET',
-                  "RETURN_SUCCESS": "ID"
-                  }
+        config = {
+            "URL": "http://localhost/cgi-perl/prepaid/private/smsversand.cgi",
+            "PARAMETER": {
+                "von": "OWN_NUMBER",
+                "passwort": "PASSWORD",
+                "absender": "TYPE",
+                "konto": "1",
+            },
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "ziel",
+            "HTTP_Method": "GET",
+            "RETURN_SUCCESS": "ID",
+        }
 
         sms = getSMSProviderClass("HttpSMSProvider", "HttpSMSProvider")()
 
@@ -153,7 +160,7 @@ class TestSMS(TestCase):
         # so the test for the error message is adjusted to
         #
 
-        msg = ("Failed to send SMS")
+        msg = "Failed to send SMS"
 
         with pytest.raises(Exception, match=msg):
             sms.loadConfig(clickatell_config)
@@ -170,5 +177,5 @@ def main():
     unittest.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

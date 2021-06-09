@@ -47,7 +47,7 @@ class TestSystemConfig(TestCase):
 
         # Set the opposite value of current 'split at' - force change
         split_at_pre_state = self.system_config.getSplitAt()
-        if(split_at_pre_state):
+        if split_at_pre_state:
             self.system_config.setSplitAt(False)
         else:
             self.system_config.setSplitAt(True)
@@ -55,22 +55,24 @@ class TestSystemConfig(TestCase):
         self.system_config.save()
 
         error_raised = self.alert_box_handler.check_message(
-            'Error saving system configuration', MsgType.Error)
+            "Error saving system configuration", MsgType.Error
+        )
         # There shouldnt raise an error
-        assert not error_raised, \
-                         "Error during system configuration save procedure!"
+        assert (
+            not error_raised
+        ), "Error during system configuration save procedure!"
 
         self.alert_box_handler.clear_messages()
         self.system_config.open()
         # After the re-open and the previous save, the checkbox should be
         # True/False (opposite of split_at_pre_state)
         split_at_state = self.system_config.getSplitAt()
-        if(split_at_pre_state):
-            assert not split_at_state, \
-                             "'False' for 'SplitAt@' checkbox not saved!"
+        if split_at_pre_state:
+            assert (
+                not split_at_state
+            ), "'False' for 'SplitAt@' checkbox not saved!"
         else:
-            assert split_at_state, \
-                            "'True' for 'SplitAt@' checkbox not saved!"
+            assert split_at_state, "'True' for 'SplitAt@' checkbox not saved!"
 
         # Test the other way around (set state for checkbox, set at test start)
         self.system_config.setSplitAt(split_at_pre_state)
@@ -78,16 +80,18 @@ class TestSystemConfig(TestCase):
 
         # There shouldnt raise an error
         error_raised = self.alert_box_handler.check_message(
-            'Error saving system configuration', MsgType.Error)
-        assert not error_raised, \
-                         "Error during system configuration save procedure!"
+            "Error saving system configuration", MsgType.Error
+        )
+        assert (
+            not error_raised
+        ), "Error during system configuration save procedure!"
 
         # Check whether the checkbox is enabled after saving and re-open
         self.system_config.open()
         split_at_state = self.system_config.getSplitAt()
-        if(split_at_pre_state is True):
-            assert split_at_state, \
-                            "'True' for 'SplitAt@' checkbox not saved!"
+        if split_at_pre_state is True:
+            assert split_at_state, "'True' for 'SplitAt@' checkbox not saved!"
         else:
-            assert not split_at_state, \
-                             "'False' for 'SplitAt@' checkbox not saved!"
+            assert (
+                not split_at_state
+            ), "'False' for 'SplitAt@' checkbox not saved!"

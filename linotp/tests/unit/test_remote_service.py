@@ -27,7 +27,11 @@
 from datetime import datetime, timedelta
 from mock import patch
 from unittest import TestCase
-from linotp.lib.remote_service import RemoteServiceList, AllServicesUnavailable, State
+from linotp.lib.remote_service import (
+    RemoteServiceList,
+    AllServicesUnavailable,
+    State,
+)
 import pytest
 
 
@@ -42,20 +46,22 @@ def generate_variadic_func(exception=Exception, default=False):
             raise exception()
 
         return args, kwargs
+
     func.fail = default
     func.call_count = 0
 
     return func
 
+
 def generate_failing_func(exception=Exception):
     return generate_variadic_func(exception=exception, default=True)
+
 
 def generate_passthru_func():
     return generate_variadic_func(default=False)
 
 
 class TestRemoteServiceList(TestCase):
-
     def test_emtpy_remote_service_list(self):
         """
         A list without services should throw an AllServicesUnavailable exception
@@ -91,9 +97,11 @@ class TestRemoteServiceList(TestCase):
         services.append(generate_passthru_func())
 
         # the arguments we pass into the service should be returned for investigation
-        args, kwargs = services.call_first_available(1, 2, 3, one=1, two=2, three=3)
+        args, kwargs = services.call_first_available(
+            1, 2, 3, one=1, two=2, three=3
+        )
 
-        assert args == (1,2,3)
+        assert args == (1, 2, 3)
         assert kwargs == dict(one=1, two=2, three=3)
 
     def test_service_failover(self):
@@ -151,7 +159,7 @@ class TestRemoteServiceList(TestCase):
         # and return the expected value
         assert services.call_first_available() == 42
 
-    @patch('linotp.lib.remote_service.now')
+    @patch("linotp.lib.remote_service.now")
     def test_recovery(self, dt_now):
         """
         Ensure that a failing function recovers after the configured timeout.
@@ -163,7 +171,7 @@ class TestRemoteServiceList(TestCase):
         services = RemoteServiceList(expected_exception=CustomException)
         func = generate_variadic_func(exception=CustomException)
         services.append(func)
-        services.append(lambda: 'failover')
+        services.append(lambda: "failover")
 
         # record the current time for our mocking
         start_time = datetime.now()
@@ -181,14 +189,16 @@ class TestRemoteServiceList(TestCase):
 
         # call n times until the function is marked as failed
         for _ in range(0, services.failure_threshold):
-            assert services.call_first_available() == 'failover'
+            assert services.call_first_available() == "failover"
 
         assert services[0].state == State.UNAVAILABLE
 
         # Every second until recovery call the first available service
         # The return value should always be 'failover'
-        while dt_now.return_value <= start_time + timedelta(seconds=services.recovery_timeout):
-            assert services.call_first_available() == 'failover'
+        while dt_now.return_value <= start_time + timedelta(
+            seconds=services.recovery_timeout
+        ):
+            assert services.call_first_available() == "failover"
             dt_now.return_value += timedelta(seconds=1)
 
         # the state of the primary function should still be UNAVAILABLE
@@ -202,4 +212,3 @@ class TestRemoteServiceList(TestCase):
         dt_now.return_value += timedelta(seconds=1)
         assert services.call_first_available(1) == ((1,), {})
         assert services[0].state == State.FUNCTIONAL
-

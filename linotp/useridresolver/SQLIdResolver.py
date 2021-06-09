@@ -71,43 +71,55 @@ from passlib.context import CryptContext
 
 # format like {ssha1}adsadasdad - from the RFC 2307
 Ldap_crypt_schemes = [
-    "ldap_sha1", "ldap_salted_sha1", "ldap_sha1_crypt",
-    "ldap_sha256_crypt", "ldap_sha512_crypt",
-    "ldap_bcrypt", "ldap_des_crypt" , "ldap_bsdi_crypt",
-    "ldap_md5_crypt", "ldap_md5", "ldap_salted_md5",
+    "ldap_sha1",
+    "ldap_salted_sha1",
+    "ldap_sha1_crypt",
+    "ldap_sha256_crypt",
+    "ldap_sha512_crypt",
+    "ldap_bcrypt",
+    "ldap_des_crypt",
+    "ldap_bsdi_crypt",
+    "ldap_md5_crypt",
+    "ldap_md5",
+    "ldap_salted_md5",
 ]
 
 # format like {ssha1}adsadasdad but not in the RFC 2307
-Ldap_similar_crypt_schemes = [
-    "atlassian_pbkdf2_sha1", "fshp"
-    ]
+Ldap_similar_crypt_schemes = ["atlassian_pbkdf2_sha1", "fshp"]
 
 # format like $identifier$content - MCF: modular crypt format
 MCF_crypt_schemes = [
-    "md5_crypt", "bcrypt", "bsd_nthash",
-    "sha512_crypt", "sha256_crypt", "sha1_crypt", "sun_md5_crypt"
-    ]
+    "md5_crypt",
+    "bcrypt",
+    "bsd_nthash",
+    "sha512_crypt",
+    "sha256_crypt",
+    "sha1_crypt",
+    "sun_md5_crypt",
+]
 
 # other application related password formats
 Other_crypt_schemes = [
-    "bcrypt_sha256", "phpass" # "argon2" # requires extra install
-    ]
+    "bcrypt_sha256",
+    "phpass",  # "argon2" # requires extra install
+]
 
 # db related password formats
 DB_crypt_schemes = [
-    "mssql2000", "mssql2005",
-    "mysql323", "mysql41", # "postgres_md5", # requires extra install
+    "mssql2000",
+    "mssql2005",
+    "mysql323",
+    "mysql41",  # "postgres_md5", # requires extra install
     "oracle11",
-    ]
+]
 
 # legacy password schemes partialy without identifier
-Archaic_crypt_schemes = [
-    "des_crypt", "bsdi_crypt", "bigcrypt"
-    ]
+Archaic_crypt_schemes = ["des_crypt", "bsdi_crypt", "bigcrypt"]
 
 
 LdapCrypt = CryptContext(
-    schemes=Ldap_crypt_schemes + Ldap_similar_crypt_schemes)
+    schemes=Ldap_crypt_schemes + Ldap_similar_crypt_schemes
+)
 
 MCFCrypt = CryptContext(schemes=MCF_crypt_schemes)
 
@@ -154,8 +166,9 @@ def check_password(password, crypted_password, salt=None):
 
         try:
             if salt:
-                return pw_hash.using(salt=salt, relaxed=True
-                                     ).verify(password, crypted_password)
+                return pw_hash.using(salt=salt, relaxed=True).verify(
+                    password, crypted_password
+                )
             else:
                 return pw_hash.verify(password, crypted_password)
 
@@ -171,7 +184,7 @@ def check_password(password, crypted_password, salt=None):
 
 
 def make_connect(driver, user, pass_, server, port, db, conParams=""):
-    '''
+    """
     create a connect string from decicated parts
     - to build a SQLAlchemy Uri
 
@@ -189,7 +202,7 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
     :type     db:     string
     :param    conParams: additional connection parameters
     :type     conParams: string
-    '''
+    """
 
     connect = ""
     if "?odbc_connect=" in driver:
@@ -218,15 +231,22 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
         url_quote = urllib.parse.quote_plus(param_str)
         connect = "%s%s" % (driver, url_quote)
     else:
-        connect = build_simple_connect(driver, user, pass_,
-                                       server, port, db, conParams)
+        connect = build_simple_connect(
+            driver, user, pass_, server, port, db, conParams
+        )
 
     return connect
 
 
-def build_simple_connect(driver, user=None, pass_=None,
-                         server=None, port=None, db=None,
-                         conParams=None):
+def build_simple_connect(
+    driver,
+    user=None,
+    pass_=None,
+    server=None,
+    port=None,
+    db=None,
+    conParams=None,
+):
     """
     build from the parameters the sql connect url
 
@@ -247,7 +267,7 @@ def build_simple_connect(driver, user=None, pass_=None,
 
     # add driver scope as protocoll
 
-    connect.append('%s://' % driver)
+    connect.append("%s://" % driver)
 
     # ------------------------------------------------------------------ --
 
@@ -257,9 +277,9 @@ def build_simple_connect(driver, user=None, pass_=None,
         user = user.strip()
 
         if pass_ and pass_.strip():
-            connect.append('%s:%s' % (user, pass_))
+            connect.append("%s:%s" % (user, pass_))
         else:
-            connect.append('%s' % user)
+            connect.append("%s" % user)
 
     # ------------------------------------------------------------------ --
 
@@ -272,9 +292,9 @@ def build_simple_connect(driver, user=None, pass_=None,
 
         if port and port.strip():
             port = port.strip()
-            connect.append('@%s:%d' % (server, int(port)))
+            connect.append("@%s:%d" % (server, int(port)))
         else:
-            connect.append('@%s' % server)
+            connect.append("@%s" % server)
     else:
 
         # in case of no server and a user, we have to append the empty @ sign
@@ -282,30 +302,29 @@ def build_simple_connect(driver, user=None, pass_=None,
         # will fail as it is not of type int
 
         if user and user.strip():
-            connect.append('@')
+            connect.append("@")
 
     # ------------------------------------------------------------------ --
 
     # add database
     if db and db.strip():
-        connect.append('/%s' % db.strip())
+        connect.append("/%s" % db.strip())
 
     # ------------------------------------------------------------------ --
 
     # add additional parameters
 
     if conParams:
-        connect.append('?%s' % conParams)
+        connect.append("?%s" % conParams)
 
-    return ''.join(connect)
+    return "".join(connect)
 
 
-class dbObject():
-
+class dbObject:
     def __init__(self):
-        '''
+        """
         constructor - initaialize the database object
-        '''
+        """
         self.engine = None
         self.meta = None
         self.sess = None
@@ -319,25 +338,29 @@ class dbObject():
         :param sqlConnect: sql url for the connection
         """
 
-        args = {'echo': False, 'echo_pool': True}
+        args = {"echo": False, "echo_pool": True}
 
-        if 'sqlite' not in sqlConnect:
-            args['pool_timeout'] = 30
-            args['connect_args'] = { 'connect_timeout': timeout}
+        if "sqlite" not in sqlConnect:
+            args["pool_timeout"] = 30
+            args["connect_args"] = {"connect_timeout": timeout}
 
         self.engine = create_engine(sqlConnect, **args)
 
         # the repr of engine is does not show the password
 
-        log.debug('[dbObject::connect] %r' % self.engine)
+        log.debug("[dbObject::connect] %r" % self.engine)
 
         self.meta = MetaData()
 
-        Session = sessionmaker(bind=self.engine, autoflush=True,
-                               autocommit=True, expire_on_commit=True)
+        Session = sessionmaker(
+            bind=self.engine,
+            autoflush=True,
+            autocommit=True,
+            expire_on_commit=True,
+        )
         self.sess = Session()
 
-        #if not verify:
+        # if not verify:
         #    return
 
         # ------------------------------------------------------------------ --
@@ -362,12 +385,13 @@ class dbObject():
             raise
 
     def getTable(self, tableName):
-        log.debug('[dbObject::getTable] %s' % tableName)
-        return Table(tableName, self.meta, autoload=True,
-                     autoload_with=self.engine)
+        log.debug("[dbObject::getTable] %s" % tableName)
+        return Table(
+            tableName, self.meta, autoload=True, autoload_with=self.engine
+        )
 
     def count(self, table, where=""):
-        log.debug('[dbObject::count] %s:%s' % (table, where))
+        log.debug("[dbObject::count] %s:%s" % (table, where))
         num = 0
         if where != "":
             num = self.sess.query(table).filter(sql_text(where)).count()
@@ -376,11 +400,11 @@ class dbObject():
         return num
 
     def query(self, select):
-        log.debug('[dbObject::query] %s' % (select))
+        log.debug("[dbObject::query] %s" % (select))
         return self.sess.execute(select)
 
     def close(self):
-        log.debug('[dbObject::close]')
+        log.debug("[dbObject::close]")
         if self.sess is not None:
             self.sess.close()
         return
@@ -398,22 +422,30 @@ def testconnection(params):
     """
     _status, desc = IdResolver.testconnection(params)
 
-    return desc.get('rows', ''), desc.get('err_str', '')
+    return desc.get("rows", ""), desc.get("err_str", "")
 
 
-@resolver_registry.class_entry('useridresolver.SQLIdResolver.IdResolver')
-@resolver_registry.class_entry('useridresolveree.SQLIdResolver.IdResolver')
-@resolver_registry.class_entry('useridresolver.sqlresolver')
-@resolver_registry.class_entry('sqlresolver')
+@resolver_registry.class_entry("useridresolver.SQLIdResolver.IdResolver")
+@resolver_registry.class_entry("useridresolveree.SQLIdResolver.IdResolver")
+@resolver_registry.class_entry("useridresolver.sqlresolver")
+@resolver_registry.class_entry("sqlresolver")
 class IdResolver(UserIdResolver):
 
-    db_prefix = 'useridresolver.SQLIdResolver.IdResolver'
-    critical_parameters = ['Driver', 'Server', 'Port',
-                           'Database', 'User', 'Table']
+    db_prefix = "useridresolver.SQLIdResolver.IdResolver"
+    critical_parameters = [
+        "Driver",
+        "Server",
+        "Port",
+        "Database",
+        "User",
+        "Table",
+    ]
 
-    crypted_parameters = ['Password']
+    crypted_parameters = ["Password"]
 
-    resolver_parameters: Dict[str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]] = {
+    resolver_parameters: Dict[
+        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
+    ] = {
         "Connect": (False, "", text),
         "Driver": (False, None, text),
         "Server": (False, "", text),
@@ -427,7 +459,7 @@ class IdResolver(UserIdResolver):
         "Where": (False, "", text),
         "Map": (False, "", text),
         "Encoding": (False, DEFAULT_ENCODING, text),
-        }
+    }
     resolver_parameters.update(UserIdResolver.resolver_parameters)
 
     @classmethod
@@ -440,8 +472,10 @@ class IdResolver(UserIdResolver):
 
         :return: boolean
         """
-        new_uid = json.loads(new_params.get('Map', '{}')).get('userid', '')
-        prev_uid = json.loads(previous_params.get('Map', '{}')).get('userid', '')
+        new_uid = json.loads(new_params.get("Map", "{}")).get("userid", "")
+        prev_uid = json.loads(previous_params.get("Map", "{}")).get(
+            "userid", ""
+        )
 
         return new_uid != prev_uid
 
@@ -461,7 +495,7 @@ class IdResolver(UserIdResolver):
         - Table
         """
 
-        log.debug('[testconnection] %r', parameters)
+        log.debug("[testconnection] %r", parameters)
 
         num = -1
         dbObj = dbObject()
@@ -473,49 +507,52 @@ class IdResolver(UserIdResolver):
             passwd = params.get("Password").get_unencrypted()
 
             connect_str = make_connect(
-                       driver=params.get("Driver"),
-                       user=params.get("User"),
-                       pass_=passwd,
-                       server=params.get("Server"),
-                       port=params.get("Port"),
-                       db=params.get("Database"),
-                       conParams=params.get('ConnectionParams', ""))
+                driver=params.get("Driver"),
+                user=params.get("User"),
+                pass_=passwd,
+                server=params.get("Server"),
+                port=params.get("Port"),
+                db=params.get("Database"),
+                conParams=params.get("ConnectionParams", ""),
+            )
 
-            log.debug("[testconnection] testing connection with "
-                      "connect str: %r", connect_str)
+            log.debug(
+                "[testconnection] testing connection with " "connect str: %r",
+                connect_str,
+            )
 
             dbObj.connect(connect_str, verify=False)
             table = dbObj.getTable(params.get("Table"))
             num = dbObj.count(table, params.get("Where", ""))
 
         except Exception as exx:
-            log.exception('[testconnection] Exception: %r', exx)
-            return False, {'err_string': "%r" % exx, 'rows': num}
+            log.exception("[testconnection] Exception: %r", exx)
+            return False, {"err_string": "%r" % exx, "rows": num}
 
         finally:
             dbObj.close()
-            log.debug('[testconnection] done')
+            log.debug("[testconnection] done")
 
-        return True, {'rows': num, 'err_string': ""}
+        return True, {"rows": num, "err_string": ""}
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):
-        '''
+        """
         this setup hook is triggered, when the server
         starts to serve the first request
 
         :param config: the linotp config
         :type  config: the linotp config dict
-        '''
+        """
         log.info("Setting up the SQLResolver")
         return
 
     def __init__(self):
-        ''' initialize the SQLResolver class '''
-        self.sqlConnect = ''
-        self.sqlTable = ''
-        self.sqlWhere = ''
-        self.sqlEncoding = ''
+        """ initialize the SQLResolver class """
+        self.sqlConnect = ""
+        self.sqlTable = ""
+        self.sqlWhere = ""
+        self.sqlEncoding = ""
         self.sqlUserInfo = {}
         self.conf = ""
         self.driver = ""
@@ -567,7 +604,7 @@ class IdResolver(UserIdResolver):
         return resolver
 
     def checkPass(self, uid, password):
-        '''
+        """
         checkPass - checks the password for a given uid.
 
         :param uid: userid to be checked
@@ -580,7 +617,7 @@ class IdResolver(UserIdResolver):
 
         :todo: extend to support htpasswd passwords:
              http://httpd.apache.org/docs/2.2/misc/password_encryptions.html
-        '''
+        """
 
         log.info("[checkPass] checking password for user %s" % uid)
         userInfo = self.getUserInfo(uid, suppress_password=False)
@@ -590,56 +627,58 @@ class IdResolver(UserIdResolver):
             return False
 
         result = check_password(
-            password, userInfo["password"], userInfo.get("salt"))
+            password, userInfo["password"], userInfo.get("salt")
+        )
 
         if result:
-            log.info("[checkPass] successfully authenticated "
-                         "user uid %s", uid)
+            log.info(
+                "[checkPass] successfully authenticated " "user uid %s", uid
+            )
             return True
 
         log.warning("[checkPass] user %s failed to authenticate.", uid)
         return False
 
-
     @classmethod
     def getResolverClassType(cls):
-        return 'sqlresolver'
+        return "sqlresolver"
 
     def getResolverType(self):
-        '''
+        """
         getResolverType - return the type of the resolver
 
         :return: returns the string 'sqlresolver'
         :rtype:  string
-        '''
+        """
         return IdResolver.getResolverClassType()
 
     @classmethod
     def getResolverClassDescriptor(cls):
-        '''
+        """
         return the descriptor of the resolver, which is
         - the class name and
         - the config description
 
         :return: resolver description dict
         :rtype:  dict
-        '''
+        """
         descriptor = {}
         typ = cls.getResolverClassType()
-        descriptor['clazz'] = "useridresolver.SQLIdResolver.IdResolver"
-        descriptor['config'] = {
-                                'Driver': 'string',
-                                'Server': 'string',
-                                'Port': 'string',
-                                'Database': 'string',
-                                'User': 'string',
-                                'Password': 'password',
-                                'Table': 'string',
-                                'Limit': 'string',
-                                'Where': 'sting',
-                                'Encoding': 'string',
-                                'UserInfo': 'string',
-                                'conParams': 'string', }
+        descriptor["clazz"] = "useridresolver.SQLIdResolver.IdResolver"
+        descriptor["config"] = {
+            "Driver": "string",
+            "Server": "string",
+            "Port": "string",
+            "Database": "string",
+            "User": "string",
+            "Password": "password",
+            "Table": "string",
+            "Limit": "string",
+            "Where": "sting",
+            "Encoding": "string",
+            "UserInfo": "string",
+            "conParams": "string",
+        }
 
         return {typ: descriptor}
 
@@ -647,14 +686,14 @@ class IdResolver(UserIdResolver):
         return IdResolver.getResolverClassDescriptor()
 
     def loadConfig(self, config, conf=""):
-        '''
+        """
         loadConfig - load the config for the resolver
 
         :param config: configuration for the sqlresolver
         :type  config: dict
         :param conf: configuration postfix
         :type  conf: string
-        '''
+        """
         log.debug("[loadConfig]")
 
         self.conf = conf
@@ -662,10 +701,11 @@ class IdResolver(UserIdResolver):
         l_config, missing = self.filter_config(config, conf)
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(" missing config entries:"
-                                          " %r" % missing)
+            raise ResolverLoadConfigError(
+                " missing config entries:" " %r" % missing
+            )
 
-        self.managed = l_config.get('readonly', False)
+        self.managed = l_config.get("readonly", False)
 
         #  example for connect:
         #      postgres://otpd:linotp2d@localhost:521/otpdb
@@ -686,8 +726,9 @@ class IdResolver(UserIdResolver):
 
             passwd = l_config.get("Password").get_unencrypted()
 
-            connect = make_connect(driver, user, passwd,
-                                   server, port, db, conParams)
+            connect = make_connect(
+                driver, user, passwd, server, port, db, conParams
+            )
 
         # ------------------------------------------------------------------ --
 
@@ -706,8 +747,10 @@ class IdResolver(UserIdResolver):
             self.sqlUserInfo = json.loads(userInfo)
 
         except ValueError as exx:
-            raise ResolverLoadConfigError("Invalid userinfo - no json "
-                                          "document: %s %r" % (userInfo, exx))
+            raise ResolverLoadConfigError(
+                "Invalid userinfo - no json "
+                "document: %s %r" % (userInfo, exx)
+            )
 
         except Exception as exx:
             raise Exception("linotp.sqlresolver.Map: %r" % exx)
@@ -736,28 +779,32 @@ class IdResolver(UserIdResolver):
 
                 if column is None:
 
-                    log.error('Invalid mapping: %r => %r, column not found',
-                              key, sqlCol)
+                    log.error(
+                        "Invalid mapping: %r => %r, column not found",
+                        key,
+                        sqlCol,
+                    )
 
                     invalid_columns.append(sqlCol)
 
             if invalid_columns:
                 dbObj.close()
-                raise Exception("Invalid map with invalid columns: %r. "
-                                "Possible columns: %s" %
-                                (invalid_columns,
-                                 [co.name for co in table.columns]))
+                raise Exception(
+                    "Invalid map with invalid columns: %r. "
+                    "Possible columns: %s"
+                    % (invalid_columns, [co.name for co in table.columns])
+                )
             else:
-                log.info('Valid mapping: %r', self.sqlUserInfo)
+                log.info("Valid mapping: %r", self.sqlUserInfo)
 
         except Exception as exx:
-            log.exception('[checkMapping] Exception: %r', exx)
+            log.exception("[checkMapping] Exception: %r", exx)
 
-        log.debug('[checkMapping] done')
+        log.debug("[checkMapping] done")
         return
 
     def getUserId(self, loginName):
-        '''
+        """
         return the userId which mappes to a loginname
 
         :param loginName: login name of the user
@@ -765,8 +812,7 @@ class IdResolver(UserIdResolver):
 
         :return: userid - unique idenitfier for this unser
         :rtype:  string
-        '''
-
+        """
 
         log.debug("[getUserId] %s[%s]" % (loginName, type(loginName)))
         userId = ""
@@ -781,21 +827,24 @@ class IdResolver(UserIdResolver):
             log.debug("[getUserId] select: %s" % select)
 
             rows = dbObj.query(select)
-            log.debug("[getUserId] length of select statement %i" %
-                                                                rows.rowcount)
+            log.debug(
+                "[getUserId] length of select statement %i" % rows.rowcount
+            )
             for row in rows:
                 colName = self.sqlUserInfo.get("userid")
                 userId = row[colName]
-                log.info("[getUserId] getting userid %s for user %s" %
-                                                        (userId, loginName))
+                log.info(
+                    "[getUserId] getting userid %s for user %s"
+                    % (userId, loginName)
+                )
         except Exception as e:
-            log.exception('[getUserId] Exception: %s' % (str(e)))
+            log.exception("[getUserId] Exception: %s" % (str(e)))
 
-        log.debug('[getUserId] done')
+        log.debug("[getUserId] done")
         return userId
 
     def getUsername(self, userId):
-        '''
+        """
         get the loginname from the given userid
 
         :param userId: userid descriptor
@@ -803,7 +852,7 @@ class IdResolver(UserIdResolver):
 
         :return: loginname
         :rtype:  string
-        '''
+        """
         log.debug("[getUsername] %s[%s]" % (userId, type(userId)))
 
         userName = ""
@@ -819,22 +868,22 @@ class IdResolver(UserIdResolver):
                 userName = row[colName]
 
         except Exception as e:
-            log.exception('[getUsername] Exception: %s' % (str(e)))
+            log.exception("[getUsername] Exception: %s" % (str(e)))
 
-        log.debug('[getUsername] done')
+        log.debug("[getUsername] done")
 
         return userName
 
     def getUserInfo(self, userId, suppress_password=True):
-        '''
-            return all user related information
+        """
+        return all user related information
 
-            @param userId: specied user
-            @type userId:  string
-            @return: dictionary, containing all user related info
-            @rtype:  dict
+        @param userId: specied user
+        @type userId:  string
+        @return: dictionary, containing all user related info
+        @rtype:  dict
 
-        '''
+        """
         log.debug("[getUserInfo] %s[%s]" % (userId, type(userId)))
         userInfo = {}
 
@@ -846,22 +895,22 @@ class IdResolver(UserIdResolver):
 
             for row in dbObj.query(select):
                 userInfo = self.__getUserInfo(
-                                    dbObj, row,
-                                    suppress_password=suppress_password)
+                    dbObj, row, suppress_password=suppress_password
+                )
 
         except Exception as e:
-            log.exception('[getUserInfo] Exception: %s' % (str(e)))
+            log.exception("[getUserInfo] Exception: %s" % (str(e)))
 
-        log.debug('[getUserInfo] done')
+        log.debug("[getUserInfo] done")
         return userInfo
 
     def getSearchFields(self):
-        '''
+        """
         return all fields on which a search could be made
 
         :return: dictionary of the search fields and their types
         :rtype:  dict
-        '''
+        """
         log.debug("[getSearchFields]")
 
         sf = {}
@@ -874,7 +923,7 @@ class IdResolver(UserIdResolver):
             for key in self.sqlUserInfo:
                 sqlCol = self.sqlUserInfo.get(key)
                 sqlTyp = table.c[sqlCol].type
-                #print key, " - ", sqlCol, " {",sqlTyp,"} "
+                # print key, " - ", sqlCol, " {",sqlTyp,"} "
                 typ = "text"
                 if isinstance(sqlTyp, types.String):
                     typ = "text"
@@ -885,21 +934,21 @@ class IdResolver(UserIdResolver):
                 sf[key] = typ
 
         except Exception as e:
-            log.exception('[getSearchFields] Exception: %s' % (str(e)))
+            log.exception("[getSearchFields] Exception: %s" % (str(e)))
 
-        log.debug('[getSearchFields] done')
+        log.debug("[getSearchFields] done")
         return sf
 
     def getUserList(self, searchDict):
-        '''
+        """
         retrieve a list of users
 
         :param searchDict: dictionary of the search criterias
         :type  searchDict: dict
         :return: list of user descriptions (as dict)
-        '''
+        """
         if not searchDict:
-            searchDict = {'username': '*'}
+            searchDict = {"username": "*"}
         log.debug("[getUserList] %r" % searchDict)
 
         # we use a dict, where the return users are inserted to where key
@@ -937,7 +986,7 @@ class IdResolver(UserIdResolver):
             for row in rows:
                 log.debug("[getUserList]  row     : %s" % row)
                 ui = self.__getUserInfo(dbObj, row)
-                userid = ui['userid']
+                userid = ui["userid"]
                 log.debug("[getUserList] user info: %s" % ui)
                 for s in searchDict:
                     if s in regex_dict:
@@ -945,9 +994,11 @@ class IdResolver(UserIdResolver):
                             users[userid] = ui
 
                     # handle the comparisons
-                    elif (">" in searchDict[s] or
-                          "<" in searchDict[s] or
-                          "=" in searchDict[s]):
+                    elif (
+                        ">" in searchDict[s]
+                        or "<" in searchDict[s]
+                        or "=" in searchDict[s]
+                    ):
 
                         users[userid] = ui
 
@@ -956,27 +1007,27 @@ class IdResolver(UserIdResolver):
                             users[userid] = ui
 
         except KeyError as exx:
-            log.exception('[getUserList] Invalid Mapping Error %r' % exx)
+            log.exception("[getUserList] Invalid Mapping Error %r" % exx)
             raise KeyError("Invalid Mapping %r " % exx)
 
         except Exception as exx:
-            log.exception('[getUserList] Exception: %r' % exx)
+            log.exception("[getUserList] Exception: %r" % exx)
 
         log.debug("[getUserList] returning userlist %s" % list(users.values()))
         return list(users.values())
 
-#######################
-#   Helper functions
-#######################
-    def __replaceChars(self, string, repl='*'):
-        '''
+    #######################
+    #   Helper functions
+    #######################
+    def __replaceChars(self, string, repl="*"):
+        """
         Replaces unwanted chars with ord()>127
 
         :param string: string to be replaced
         :param repl: replacement pattern
 
         :return: string with replaced patterns
-        '''
+        """
         retString = ""
         for i in string:
             if ord(i) > 127:
@@ -997,7 +1048,7 @@ class IdResolver(UserIdResolver):
         userInfo = {}
 
         for key in self.sqlUserInfo:
-            if key == 'password' and suppress_password:
+            if key == "password" and suppress_password:
                 continue
 
             colName = self.sqlUserInfo.get(key)
@@ -1006,7 +1057,7 @@ class IdResolver(UserIdResolver):
                 value = row[colName]
                 log.debug("[__getUserInfo] %r:%r" % (value, type(value)))
 
-            except NoSuchColumnError as  e:
+            except NoSuchColumnError as e:
                 log.exception("[__getUserInfo]")
                 value = "-ERR: column mapping-"
 
@@ -1015,13 +1066,13 @@ class IdResolver(UserIdResolver):
         return userInfo
 
     def __add_where_clause_to_filter(self, filtr):
-        '''
+        """
         add to an existing filter the WHERE filter if it exist.
         This can be used for the getUserList or getUserId
 
         :param filtr: filter espression
         :return: new filter string
-        '''
+        """
         # use the Where clause to only see certain users.
         if self.sqlWhere != "":
             clause = expression.text(self.sqlWhere)
@@ -1040,11 +1091,12 @@ class IdResolver(UserIdResolver):
         :param loginname: the name of the user to be searched
         :return: filter condition, which will be added to the db query
         """
-        #loginName = loginName.decode("latin1")
+        # loginName = loginName.decode("latin1")
         column_name = self.sqlUserInfo.get("username")
         if column_name == None:
-            log.error("[__getUserIdFilter] username column "
-                                                        "definition required!")
+            log.error(
+                "[__getUserIdFilter] username column " "definition required!"
+            )
             raise Exception("username column definition required!")
         log.debug("[__getUserIdFilter] type loginName: %s" % type(loginName))
         log.debug("[__getUserIdFilter] type filtr: %s" % type(column_name))
@@ -1054,7 +1106,8 @@ class IdResolver(UserIdResolver):
         ## need the double quotes.
 
         return self.__add_where_clause_to_filter(
-                                        table.c[column_name] == loginName)
+            table.c[column_name] == loginName
+        )
 
     def __getUserNameFilter(self, table, loginId):
         """
@@ -1072,7 +1125,8 @@ class IdResolver(UserIdResolver):
             raise Exception(err)
 
         return self.__add_where_clause_to_filter(
-                                            table.c[column_name] == loginId)
+            table.c[column_name] == loginId
+        )
 
     def __creatSearchString(self, dbObj, table, searchDict):
         """
@@ -1098,27 +1152,28 @@ class IdResolver(UserIdResolver):
             ## postprocessing
             val = self.__replaceChars(searchDict.get(key))
 
-            log.debug("[__createSearchString] key: %s, value: %s "
-                                                                % (key, val))
+            log.debug(
+                "[__createSearchString] key: %s, value: %s " % (key, val)
+            )
 
             # First: replace wildcards. Our wildcards are * and . (shell-like),
             # and SQL wildcards are % and _.
-            if '%' in val:
-                val = val.replace('%', r'\%')
+            if "%" in val:
+                val = val.replace("%", r"\%")
 
-            if '_' in val:
-                val = val.replace('_', r'\_')
+            if "_" in val:
+                val = val.replace("_", r"\_")
 
-            if '*' in val:
-                val = val.replace('*', '%')
+            if "*" in val:
+                val = val.replace("*", "%")
 
-            if '.' in val:
-                if not self.sqlConnect.startswith('mysql'):
-                    val = val.replace('.', '_')
+            if "." in val:
+                if not self.sqlConnect.startswith("mysql"):
+                    val = val.replace(".", "_")
                 else:
                     ## mysql replaces unicode chars with 2 placeholders,
                     ## so we rely more on postprocessing :-(
-                    val = val.replace('.', '%')
+                    val = val.replace(".", "%")
 
             # don't match for whitespace at the beginning or the end.
             val = val.strip()
@@ -1126,28 +1181,28 @@ class IdResolver(UserIdResolver):
             # Now: predicates. <, <=, >=, > get translated,
             # everything else is `LIKE`.
             # No wildcards are supported for <, <=, >=, >.
-            if val.startswith('<='):
+            if val.startswith("<="):
                 val = val[2:].strip()
                 exp = column <= val
 
-            elif val.startswith('>='):
+            elif val.startswith(">="):
                 val = val[2:].strip()
                 exp = column >= val
 
-            elif val.startswith('>'):
+            elif val.startswith(">"):
                 val = val[1:].strip()
                 exp = column > val
 
-            elif val.startswith('<'):
+            elif val.startswith("<"):
                 val = val[1:].strip()
                 exp = column < val
 
             else:
                 ### for postgres no escape is required!!
-                if self.sqlConnect.startswith('postg'):
+                if self.sqlConnect.startswith("postg"):
                     exp = column.like(val)
                 else:
-                    exp = column.like(val, escape='\\')
+                    exp = column.like(val, escape="\\")
 
             log.debug("[__createSearchString] searchStr : %s" % exp)
 
@@ -1159,27 +1214,27 @@ if __name__ == "__main__":
 
     print("SQLIdResolver - IdResolver class test ")
 
-    #sqlR = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()
+    # sqlR = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()
     sqlR = IdResolver()
 
     # sqlite:////home/virtualbox/project/linotp2/dev/linotpd/src/token.db
     config = {
-            'linotp.sqlresolver.Driver': 'mysql',
-            'linotp.sqlresolver.Port': '3306',
-            'linotp.sqlresolver.Database': 'LinOTP2',
-            'linotp.sqlresolver.Server': 'localhost',
-            'linotp.sqlresolver.User': 'linotp21',
-            'linotp.sqlresolver.Password': 'test123!',
-            'linotp.sqlresolver.Table': 'users_temp',
-            'linotp.sqlresolver.Map': '{ "username": "user",'
-                                       '"userid" : "userid", '
-                                       '"password": "password", '
-                                       '"salt" : "salt", '
-                                       '"description" : "user"}'
-             }
+        "linotp.sqlresolver.Driver": "mysql",
+        "linotp.sqlresolver.Port": "3306",
+        "linotp.sqlresolver.Database": "LinOTP2",
+        "linotp.sqlresolver.Server": "localhost",
+        "linotp.sqlresolver.User": "linotp21",
+        "linotp.sqlresolver.Password": "test123!",
+        "linotp.sqlresolver.Table": "users_temp",
+        "linotp.sqlresolver.Map": '{ "username": "user",'
+        '"userid" : "userid", '
+        '"password": "password", '
+        '"salt" : "salt", '
+        '"description" : "user"}',
+    }
 
     sqlR.loadConfig(config)
-    print("JSON", json.dumps(config.get('linotp.sqlresolver.UserInfo')))
+    print("JSON", json.dumps(config.get("linotp.sqlresolver.UserInfo")))
 
     userId = sqlR.getUserId("kay")
     print("getUserId:\n kay = ", userId)
@@ -1190,30 +1245,30 @@ if __name__ == "__main__":
     sf = sqlR.getSearchFields()
     print("getSearchFields: \n ", sf)
 
-    #, "id" : ">100"}
+    # , "id" : ">100"}
     searchDict = {"username": "k*%", "description": "*_Winkler*"}
-    #searchDict=  {"userid" : ">100"}
+    # searchDict=  {"userid" : ">100"}
 
     ulist = sqlR.getUserList(searchDict)
     print("getUserList: \n ", ulist)
 
-    #, "id" : ">100"}
+    # , "id" : ">100"}
     searchDict2 = {"description": "*Winkler*"}
-    #searchDict=  {"id" : ">100"}
+    # searchDict=  {"id" : ">100"}
 
     ulist = sqlR.getUserList(searchDict2)
     print("getUserList2: \n ", ulist)
 
-    #, "id" : ">100"}
+    # , "id" : ">100"}
     searchDict3 = {"username": "k..", "description": "*Winkler.;*"}
-    #searchDict=  {"id" : ">100"}
+    # searchDict=  {"id" : ">100"}
 
     ulist = sqlR.getUserList(searchDict3)
     print("getUserList3: \n ", ulist)
 
-    #, "id" : ">100"}
+    # , "id" : ">100"}
     searchDict4 = {"username": "*"}
-    #searchDict=  {"id" : ">100"}
+    # searchDict=  {"id" : ">100"}
 
     ulist = sqlR.getUserList(searchDict4)
     print("getUserList4: \n ", ulist)

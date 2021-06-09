@@ -36,11 +36,12 @@ import pytest
 from linotp.tests import TestController
 
 
-@pytest.mark.app_config({
-    'CONTROLLERS': 'admin system helpdesk',
-})
+@pytest.mark.app_config(
+    {
+        "CONTROLLERS": "admin system helpdesk",
+    }
+)
 class TestHelpdeskAuthorization(TestController):
-
     def setUp(self):
         """ setup for std resolver / realms"""
 
@@ -61,29 +62,30 @@ class TestHelpdeskAuthorization(TestController):
     def test_authorisation(self):
         """ connect to the helpdesk contoller """
 
-        response = self.make_helpdesk_request('getsession')
-        assert 'false' not in response
+        response = self.make_helpdesk_request("getsession")
+        assert "false" not in response
 
         cookies = TestController.get_cookies(response)
 
-        assert 'helpdesk_session' in cookies
+        assert "helpdesk_session" in cookies
 
-        session = cookies.get('helpdesk_session')
+        session = cookies.get("helpdesk_session")
 
         assert session, cookies
 
-        params = {'session': session}
-        response = self.make_helpdesk_request('users', params=params)
+        params = {"session": session}
+        response = self.make_helpdesk_request("users", params=params)
 
         cookies = TestController.get_cookies(response)
-        assert 'false' not in response, (cookies, session)
+        assert "false" not in response, (cookies, session)
 
-        response = self.make_helpdesk_request('dropsession')
+        response = self.make_helpdesk_request("dropsession")
 
-        assert 'false' not in response
+        assert "false" not in response
 
         cookies = TestController.get_cookies(response)
-        assert ' Expires' in cookies
-        assert cookies.get('helpdesk_session') == ''
+        assert " Expires" in cookies
+        assert cookies.get("helpdesk_session") == ""
+
 
 # eof #

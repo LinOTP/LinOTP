@@ -37,21 +37,17 @@ from linotp.lib.error import ProgrammingError
 from linotp.lib.reply import _get_httperror_from_params, sendResultIterator
 
 
-@pytest.mark.usefixtures('app')
+@pytest.mark.usefixtures("app")
 class TestReplyTestCase(object):
     @pytest.mark.parametrize(
-        'querystring,result',
+        "querystring,result",
         [
-            ('/?httperror=777', '777'),
-            ('/?httperror=somestr', '500'),
-            ('/?httperror', '500'),
-            ('', None)
+            ("/?httperror=777", "777"),
+            ("/?httperror=somestr", "500"),
+            ("/?httperror", "500"),
+            ("", None),
         ],
-        ids=(
-            'set and valid',
-            'set and invalid',
-            'set and empty',
-            'unset'),
+        ids=("set and valid", "set and invalid", "set and empty", "unset"),
     )
     def test_httperror_from_params(self, app, querystring, result):
         with app.test_request_context(querystring):
@@ -63,32 +59,37 @@ class TestReplyTestCase(object):
         """
         Simulate request parameters returning a UnicodeDecodeError
         """
+
         class fake_current_app(object):
             def getRequestParams(self):
                 # Raise UnicodeDecodeError
-                b'\xc0'.decode('utf-8')
-        monkeypatch.setattr(reply, 'current_app', fake_current_app())
+                b"\xc0".decode("utf-8")
 
-    @pytest.mark.usefixtures('unicodeDecodeError')
+        monkeypatch.setattr(reply, "current_app", fake_current_app())
+
+    @pytest.mark.usefixtures("unicodeDecodeError")
     def test_httperror_with_UnicodeDecodeError(self):
-        with flask.current_app.test_request_context('/?httperror=555'):
+        with flask.current_app.test_request_context("/?httperror=555"):
             httperror = _get_httperror_from_params(None)
-            assert httperror == '555'
+            assert httperror == "555"
 
-    @pytest.mark.usefixtures('unicodeDecodeError')
+    @pytest.mark.usefixtures("unicodeDecodeError")
     def test_httperror_with_UnicodeDecodeError_and_mult_param(self):
         # Raising exceptions on attribute access
-        with flask.current_app.test_request_context('/?httperror=555&httperror=777'):
+        with flask.current_app.test_request_context(
+            "/?httperror=555&httperror=777"
+        ):
             httperror = _get_httperror_from_params(None)
-            assert httperror == '777'
+            assert httperror == "777"
 
     def test_httperror_with_Exception(self, monkeypatch):
         class fake_current_app(object):
             def getRequestParams(self):
                 raise Exception("Random exception")
-        monkeypatch.setattr(reply, 'current_app', fake_current_app())
 
-        with flask.current_app.test_request_context('/?httperror=555'):
+        monkeypatch.setattr(reply, "current_app", fake_current_app())
+
+        with flask.current_app.test_request_context("/?httperror=555"):
             httperror = _get_httperror_from_params(None)
             assert httperror is None
 
@@ -100,24 +101,27 @@ class TestReplyTestCase(object):
         def request_context_test_iterator():
             # this will raise an error if it is called
             # outside of request_context_safety
-            yield request_context.get('foo')
+            yield request_context.get("foo")
 
         # we need to enclose bar into double qoutes,
         # because the json is assembled manually
-        request_context_copy = {'foo': '"bar"'}
+        request_context_copy = {"foo": '"bar"'}
 
         try:
-            res = sendResultIterator(request_context_test_iterator(),
-                                     request_context_copy=request_context_copy)
+            res = sendResultIterator(
+                request_context_test_iterator(),
+                request_context_copy=request_context_copy,
+            )
         except ProgrammingError:
-            assert False, 'request_context was used outside' \
-                                   'of request_context_safety'
+            assert False, (
+                "request_context was used outside" "of request_context_safety"
+            )
 
         result = ""
         for chunk in res:
             result += chunk
 
         result_dict = json.loads(result)
-        value = result_dict.get('result', {}).get('value')
+        value = result_dict.get("result", {}).get("value")
 
-        assert 'bar' in value
+        assert "bar" in value

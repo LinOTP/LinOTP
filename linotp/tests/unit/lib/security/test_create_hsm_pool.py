@@ -37,28 +37,31 @@ class TestHSMPool(unittest.TestCase):
     Unit test to check the exception handling for createHSMPool
     """
 
-    @patch('linotp.lib.security.provider.SecurityProvider.loadSecurityModule')
-    @patch('linotp.lib.security.provider.SecurityProvider._getHsmPool_')
-    @patch('linotp.lib.security.provider.SecurityProvider.__init__')
-
-    def test_create_hsm_pool(self,
-                             mock_init,
-                             mock_get_hsm_pool,
-                             mock_load_security_module):
+    @patch("linotp.lib.security.provider.SecurityProvider.loadSecurityModule")
+    @patch("linotp.lib.security.provider.SecurityProvider._getHsmPool_")
+    @patch("linotp.lib.security.provider.SecurityProvider.__init__")
+    def test_create_hsm_pool(
+        self, mock_init, mock_get_hsm_pool, mock_load_security_module
+    ):
 
         mock_init.return_value = None
         mock_get_hsm_pool.return_value = None
 
-        mock_load_security_module.side_effect = Exception('Mocked Exception to be caught')
+        mock_load_security_module.side_effect = Exception(
+            "Mocked Exception to be caught"
+        )
 
         # hook for local provider test
         sec_prov = SecurityProvider()
-        sec_prov.config = {'default': {
-            'crypted': 'FALSE',
-            'module': 'linotp.lib.security.default.DefaultSecurityModule',
-            'poolsize': 20}}
+        sec_prov.config = {
+            "default": {
+                "crypted": "FALSE",
+                "module": "linotp.lib.security.default.DefaultSecurityModule",
+                "poolsize": 20,
+            }
+        }
 
-        sec_prov.hsmpool = {'default': ''}
-        sec_prov.createHSMPool('default', None, None)
+        sec_prov.hsmpool = {"default": ""}
+        sec_prov.createHSMPool("default", None, None)
 
         return True

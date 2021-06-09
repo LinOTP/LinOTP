@@ -30,8 +30,7 @@ import pytest
 from linotp_selenium_helper import TestCase
 
 
-class TestTokenView():
-
+class TestTokenView:
     @pytest.fixture(autouse=True)
     def setUp(self, manage_ui):
         self.manage_ui = manage_ui
@@ -56,14 +55,17 @@ class TestTokenView():
         v.delete_all_tokens()
 
 
-class TestTokenViewOperations():
-
+class TestTokenViewOperations:
     @pytest.fixture(autouse=True)
     def setUp(self, manage_ui):
         self.manage_ui = manage_ui
         self.token_view = self.manage_ui.token_view
         self.token_view.delete_all_tokens()
-        self.token_serial = self.manage_ui.token_enroll.create_static_password_token("testPassword")
+        self.token_serial = (
+            self.manage_ui.token_enroll.create_static_password_token(
+                "testPassword"
+            )
+        )
 
     def test_01_select(self):
         self.token_view.select_token(self.token_serial)
@@ -73,5 +75,6 @@ class TestTokenViewOperations():
 
     def test_03_info(self):
         info = self.token_view.get_token_info(self.token_serial)
-        assert info['LinOtp.TokenSerialnumber'] == self.token_serial, \
-                         "Displayed token serial should be same as created serial number"
+        assert (
+            info["LinOtp.TokenSerialnumber"] == self.token_serial
+        ), "Displayed token serial should be same as created serial number"

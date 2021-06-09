@@ -38,29 +38,30 @@ from linotp.lib.policy import get_autoassignment_without_pass
 from linotp.lib.policy import get_autoassignment_from_realm
 from linotp.tokens.passwordtoken import PasswordTokenClass
 
+
 @pytest.mark.usefixtures("app")
 class TestAutoEnroll(unittest.TestCase):
-
-    @patch('linotp.lib.token.context')
-    @patch('linotp.lib.token.TokenHandler.assignToken')
-    @patch('linotp.lib.token.TokenHandler.getTokensOfType')
-    @patch('linotp.lib.token.getTokens4UserOrSerial')
-    @patch('linotp.lib.policy.get_autoassignment_without_pass')
-    @patch('linotp.lib.policy.get_autoassignment_from_realm')
-    def test_autenroll_wo_pass(self,
-                               mocked_policy_src_realm,
-                               mocked_policy_autosignment_wo,
-                               mockedgetTokens4UserOrSerial,
-                               mocked_getTokensOfType,
-                               mocked_assignToken,
-                               mocked_context
-                               ):
+    @patch("linotp.lib.token.context")
+    @patch("linotp.lib.token.TokenHandler.assignToken")
+    @patch("linotp.lib.token.TokenHandler.getTokensOfType")
+    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.policy.get_autoassignment_without_pass")
+    @patch("linotp.lib.policy.get_autoassignment_from_realm")
+    def test_autenroll_wo_pass(
+        self,
+        mocked_policy_src_realm,
+        mocked_policy_autosignment_wo,
+        mockedgetTokens4UserOrSerial,
+        mocked_getTokensOfType,
+        mocked_assignToken,
+        mocked_context,
+    ):
 
         thdle = TokenHandler()
 
         options = {}
         user = User("Hugo", realm="def_realm")
-        otp = '123467'
+        otp = "123467"
 
         class Token(object):
 
@@ -74,12 +75,11 @@ class TestAutoEnroll(unittest.TestCase):
                 return self.typ
 
             def getSerial(self):
-                return 'ABCDEFG'
+                return "ABCDEFG"
 
         aToken = Token()
 
         class MockPasswordTokenClass(PasswordTokenClass):
-
             def check_otp_exist(self, *args, **kwargs):
                 return 1
 
@@ -100,123 +100,133 @@ class TestAutoEnroll(unittest.TestCase):
 
         return
 
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy._get_client')
-    @patch('linotp.lib.policy.get_client_policy')
-    def test_get_autoassignment_without_pass(self,
-                                     mocked_get_client_policy,
-                                     mocked_get_client,
-                                     mocked_get_policy_definitions,
-                                     ):
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy._get_client")
+    @patch("linotp.lib.policy.get_client_policy")
+    def test_get_autoassignment_without_pass(
+        self,
+        mocked_get_client_policy,
+        mocked_get_client,
+        mocked_get_policy_definitions,
+    ):
 
-        user = User('Hugo', realm='Home_realm')
+        user = User("Hugo", realm="Home_realm")
 
         mocked_get_client_policy.return_value = {
-            'my_autoassign_policy_wo_pass': {
-                'realm': 'mydefrealm',
-                'active': 'True',
-                'client': '*',
-                'user': '*',
-                'time': '*',
-                'action': 'autoassignment_without_password=True',
-                'scope': 'enrollment'}}
-        mocked_get_client.return_value = '127.0.0.1'
+            "my_autoassign_policy_wo_pass": {
+                "realm": "mydefrealm",
+                "active": "True",
+                "client": "*",
+                "user": "*",
+                "time": "*",
+                "action": "autoassignment_without_password=True",
+                "scope": "enrollment",
+            }
+        }
+        mocked_get_client.return_value = "127.0.0.1"
 
         mocked_get_policy_definitions.return_value = {
-            'enrollment': {
-                'autoassignment_without_password': {'type': 'bool'}
-                }
-            }
+            "enrollment": {"autoassignment_without_password": {"type": "bool"}}
+        }
 
         res = get_autoassignment_without_pass(user=user)
         assert res
 
         mocked_get_client_policy.return_value = {
-            'my_autoassign_policy_wo_pass': {
-                'realm': 'mydefrealm',
-                'active': 'True',
-                'client': '*',
-                'user': '*',
-                'time': '*',
-                'action': 'autoassignment_without_password',
-                'scope': 'enrollment'}}
-
+            "my_autoassign_policy_wo_pass": {
+                "realm": "mydefrealm",
+                "active": "True",
+                "client": "*",
+                "user": "*",
+                "time": "*",
+                "action": "autoassignment_without_password",
+                "scope": "enrollment",
+            }
+        }
 
         res = get_autoassignment_without_pass(user=user)
         assert res
 
         mocked_get_client_policy.return_value = {
-            'my_autoassign_policy_wo_pass': {
-                'realm': 'mydefrealm',
-                'active': 'True',
-                'client': '*',
-                'user': '*',
-                'time': '*',
-                'action': 'autoassignment_without_password=False',
-                'scope': 'enrollment'}}
+            "my_autoassign_policy_wo_pass": {
+                "realm": "mydefrealm",
+                "active": "True",
+                "client": "*",
+                "user": "*",
+                "time": "*",
+                "action": "autoassignment_without_password=False",
+                "scope": "enrollment",
+            }
+        }
 
         res = get_autoassignment_without_pass(user=user)
         assert not res
 
         mocked_get_client_policy.return_value = {
-            'my_autoassign_policy_wo_pass': {
-                'realm': 'mydefrealm',
-                'active': 'True',
-                'client': '*',
-                'user': '*',
-                'time': '*',
-                'action': 'autoassignment_without_password=error',
-                'scope': 'enrollment'}}
+            "my_autoassign_policy_wo_pass": {
+                "realm": "mydefrealm",
+                "active": "True",
+                "client": "*",
+                "user": "*",
+                "time": "*",
+                "action": "autoassignment_without_password=error",
+                "scope": "enrollment",
+            }
+        }
 
         res = get_autoassignment_without_pass(user=user)
         assert not res
 
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy._get_client')
-    @patch('linotp.lib.policy.get_client_policy')
-    def test_get_autoassignment_from_realm(self,
-                                           mocked_get_client_policy,
-                                           mocked_get_client,
-                                           mocked_get_policy_definitions,
-                                           ):
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy._get_client")
+    @patch("linotp.lib.policy.get_client_policy")
+    def test_get_autoassignment_from_realm(
+        self,
+        mocked_get_client_policy,
+        mocked_get_client,
+        mocked_get_policy_definitions,
+    ):
 
-        user = User('Hugo', realm='Home_realm')
-        mocked_get_client.return_value = '127.0.0.1'
-        src_realm = 'token-realm '
+        user = User("Hugo", realm="Home_realm")
+        mocked_get_client.return_value = "127.0.0.1"
+        src_realm = "token-realm "
 
         mocked_get_client_policy.return_value = {
-            'my_autoassign_policy_wo_pass': {
-                'realm': 'mydefrealm',
-                'active': 'True',
-                'client': '*',
-                'user': '*',
-                'time': '*',
-                'action': 'autoassignment_from_realm=%s' % src_realm,
-                'scope': 'enrollment'}}
+            "my_autoassign_policy_wo_pass": {
+                "realm": "mydefrealm",
+                "active": "True",
+                "client": "*",
+                "user": "*",
+                "time": "*",
+                "action": "autoassignment_from_realm=%s" % src_realm,
+                "scope": "enrollment",
+            }
+        }
 
         mocked_get_policy_definitions.return_value = {
-            'enrollment': {
-                'autoassignment_from_realm': {'type': 'str'}
-                }
-            }
+            "enrollment": {"autoassignment_from_realm": {"type": "str"}}
+        }
 
         realm = get_autoassignment_from_realm(user)
         assert src_realm.strip() == realm
 
-        src_realm = ' '
+        src_realm = " "
         mocked_get_client_policy.return_value = {
-            'my_autoassign_policy_wo_pass': {
-                'realm': 'mydefrealm',
-                'active': 'True',
-                'client': '127.0.0.1',
-                'user': '*',
-                'time': '*',
-                'action': 'autoassignment_from_realm=%s' % src_realm,
-                'scope': 'enrollment'}}
+            "my_autoassign_policy_wo_pass": {
+                "realm": "mydefrealm",
+                "active": "True",
+                "client": "127.0.0.1",
+                "user": "*",
+                "time": "*",
+                "action": "autoassignment_from_realm=%s" % src_realm,
+                "scope": "enrollment",
+            }
+        }
 
         realm = get_autoassignment_from_realm(user)
         assert not realm
 
         return
+
 
 # eof #

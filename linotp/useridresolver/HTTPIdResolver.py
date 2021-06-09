@@ -31,7 +31,7 @@ http and json
 Dependencies: UserIdResolver
 """
 
-#from sqlalchemy.event import listen
+# from sqlalchemy.event import listen
 
 from . import resolver_registry
 from linotp.useridresolver.UserIdResolver import UserIdResolver
@@ -39,6 +39,7 @@ from linotp.useridresolver.UserIdResolver import UserIdResolver
 import json
 
 import logging
+
 log = logging.getLogger(__name__)
 
 DEFAULT_ENCODING = "utf-8"
@@ -60,14 +61,20 @@ def urllib_encoded_dict(in_dict):
     out_dict = {}
     for k, v in in_dict.items():
         if isinstance(v, str):
-            v = v.encode('utf8')
+            v = v.encode("utf8")
         out_dict[k] = v
     return out_dict
 
 
-def urllib_request(url, parameter,
-                   username=None, password=None, method='POST',
-                   config=None, timeout=10.0):
+def urllib_request(
+    url,
+    parameter,
+    username=None,
+    password=None,
+    method="POST",
+    config=None,
+    timeout=10.0,
+):
     """
     build the urllib request and check the response for success or fail
 
@@ -84,12 +91,13 @@ def urllib_request(url, parameter,
     try:
 
         handlers = []
-        if config and 'PROXY' in config and config['PROXY']:
+        if config and "PROXY" in config and config["PROXY"]:
             # for simplicity we set both protocols
-            proxy_handler = urllib.request.ProxyHandler({"http": config['PROXY'],
-                                                  "https": config['PROXY']})
+            proxy_handler = urllib.request.ProxyHandler(
+                {"http": config["PROXY"], "https": config["PROXY"]}
+            )
             handlers.append(proxy_handler)
-            print("using Proxy: %r" % config['PROXY'])
+            print("using Proxy: %r" % config["PROXY"])
 
         if username and password is not None:
             password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
@@ -103,9 +111,11 @@ def urllib_request(url, parameter,
         full_url = str(url)
         encoded_params = None
         if parameter is not None and len(parameter) > 0:
-            encoded_params = urllib.parse.urlencode(urllib_encoded_dict(parameter))
+            encoded_params = urllib.parse.urlencode(
+                urllib_encoded_dict(parameter)
+            )
 
-        if method == 'GET':
+        if method == "GET":
             c_data = None
             if encoded_params:
                 full_url = str("%s?%s" % (url, encoded_params))
@@ -114,8 +124,9 @@ def urllib_request(url, parameter,
 
         requ = urllib.request.Request(full_url, data=c_data, headers={})
         if username and password is not None:
-            base64string = base64.encodestring('%s:%s' %
-                                    (username, password)).replace('\n', '')
+            base64string = base64.encodestring(
+                "%s:%s" % (username, password)
+            ).replace("\n", "")
             requ.add_header("Authorization", "Basic %s" % base64string)
 
         response = urllib.request.urlopen(requ, timeout=float(timeout))
@@ -130,23 +141,23 @@ def urllib_request(url, parameter,
     return reply
 
 
-@resolver_registry.class_entry('useridresolver.HTTPIdResolver.IdResolver')
-@resolver_registry.class_entry('useridresolveree.HTTPIdResolver.IdResolver')
-@resolver_registry.class_entry('useridresolver.httpresolver')
-@resolver_registry.class_entry('httpresolver')
-class IdResolver (UserIdResolver):
+@resolver_registry.class_entry("useridresolver.HTTPIdResolver.IdResolver")
+@resolver_registry.class_entry("useridresolveree.HTTPIdResolver.IdResolver")
+@resolver_registry.class_entry("useridresolver.httpresolver")
+@resolver_registry.class_entry("httpresolver")
+class IdResolver(UserIdResolver):
 
-    db_prefix = 'useridresolver.HTTPIdResolver.IdResolver'
+    db_prefix = "useridresolver.HTTPIdResolver.IdResolver"
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):
-        '''
+        """
         this setup hook is triggered, when the server
         starts to serve the first request
 
         :param config: the linotp config
         :type  config: the linotp config dict
-        '''
+        """
         _config = config
         _cache_dir = cache_dir
 
@@ -155,7 +166,7 @@ class IdResolver (UserIdResolver):
 
     @staticmethod
     def testconnection(params):
-        '''
+        """
         test the http connection - with a POST request on the userlist
 
         dict: { 'timeout': u'5',
@@ -185,39 +196,49 @@ class IdResolver (UserIdResolver):
                 'username_result_path': u'/result/value',
                 'username_result_mapping': u'{}',
 
-        '''
-        result = ''
+        """
+        result = ""
         log.info("Setting up the HTTPResolver")
         try:
-            uri = params.get('uri', '').split(',')[0]
+            uri = params.get("uri", "").split(",")[0]
 
-            authuser = params.get('authuser')
-            password = params.get('password')
-            certificate = params.get('certificate')
+            authuser = params.get("authuser")
+            password = params.get("password")
+            certificate = params.get("certificate")
 
-            timeout = float(params.get('timeout', 0.1))
+            timeout = float(params.get("timeout", 0.1))
 
-            result_path = params.get('userlist_result_path', '')
-            result_mapping = params.get('userlist_result_mapping', '{}')
+            result_path = params.get("userlist_result_path", "")
+            result_mapping = params.get("userlist_result_mapping", "{}")
 
-            request_path = params.get('userlist_request_path', '')
-            request_mapping = params.get('userlist_request_mapping', '{}')
+            request_path = params.get("userlist_request_path", "")
+            request_mapping = params.get("userlist_request_mapping", "{}")
 
             # now prepare the query attributes
-            request_params = {'{USERNAME}': '*',
-                        '{PAGE}': '1',
-                        '{PAGESIZE}': '10'
-                        }
+            request_params = {
+                "{USERNAME}": "*",
+                "{PAGE}": "1",
+                "{PAGESIZE}": "10",
+            }
 
-            credentials = {'user': authuser,
-                           'password': password,
-                           'certificate': certificate}
+            credentials = {
+                "user": authuser,
+                "password": password,
+                "certificate": certificate,
+            }
             result = ""
 
             try:
-                result = IdResolver._do_request(uri, timeout, credentials,
-                                request_path, request_mapping, request_params,
-                                result_path, result_mapping)
+                result = IdResolver._do_request(
+                    uri,
+                    timeout,
+                    credentials,
+                    request_path,
+                    request_mapping,
+                    request_params,
+                    result_path,
+                    result_mapping,
+                )
 
                 status = "success"
 
@@ -234,34 +255,44 @@ class IdResolver (UserIdResolver):
             return (status, result)
 
     @staticmethod
-    def _do_request(uri, timeout, credentials,
-                    request_path, request_mapping, request_params,
-                    result_path, result_mapping):
+    def _do_request(
+        uri,
+        timeout,
+        credentials,
+        request_path,
+        request_mapping,
+        request_params,
+        result_path,
+        result_mapping,
+    ):
 
-            query_params = json.loads(request_mapping)
-            for key, value in list(query_params.items()):
-                for repl, repl_val in list(request_params.items()):
-                    if repl in value:
-                        value = value.replace(repl, repl_val)
-                query_params[key] = value
+        query_params = json.loads(request_mapping)
+        for key, value in list(query_params.items()):
+            for repl, repl_val in list(request_params.items()):
+                if repl in value:
+                    value = value.replace(repl, repl_val)
+            query_params[key] = value
 
-            url = "%s/%s" % (uri.strip('/'), request_path.lstrip('/'))
-            response = urllib_request(url, query_params,
-                                      credentials.get('user'),
-                                      credentials.get('password'),
-                                      timeout=timeout)
+        url = "%s/%s" % (uri.strip("/"), request_path.lstrip("/"))
+        response = urllib_request(
+            url,
+            query_params,
+            credentials.get("user"),
+            credentials.get("password"),
+            timeout=timeout,
+        )
 
-            result_data = json.loads(response)
+        result_data = json.loads(response)
 
-            result_pathes = result_path.strip('/').split('/')
-            result_mappings = json.loads(result_mapping)
+        result_pathes = result_path.strip("/").split("/")
+        result_mappings = json.loads(result_mapping)
 
-            for path in result_pathes:
-                result_data = result_data.get(path, {})
-            result = result_data
-            result = IdResolver._map_result(result_mappings, result)
+        for path in result_pathes:
+            result_data = result_data.get(path, {})
+        result = result_data
+        result = IdResolver._map_result(result_mappings, result)
 
-            return result
+        return result
 
     @staticmethod
     def _map_result(mapping, result):
@@ -280,7 +311,7 @@ class IdResolver (UserIdResolver):
         for key, value in list(mapping.items()):
             re_map[value] = key
 
-        if not(re_map):
+        if not (re_map):
             return result
 
         re_list = []
@@ -318,7 +349,7 @@ class IdResolver (UserIdResolver):
         return resolver
 
     def checkPass(self, uid, password):
-        '''
+        """
         checkPass - checks the password for a given uid.
 
         :param uid: userid to be checked
@@ -331,30 +362,31 @@ class IdResolver (UserIdResolver):
 
         :todo: extend to support htpasswd passwords:
              http://httpd.apache.org/docs/2.2/misc/password_encryptions.html
-        '''
+        """
         _password = password
         log.info("[checkPass] checking password for user %s" % uid)
-        log.error("[checkPass] password is currently not defined in HTTP"
-                  " mapping!")
+        log.error(
+            "[checkPass] password is currently not defined in HTTP" " mapping!"
+        )
 
         return False
 
     @classmethod
     def getResolverClassType(cls):
-        return 'httpresolver'
+        return "httpresolver"
 
     def getResolverType(self):
-        '''
+        """
         getResolverType - return the type of the resolver
 
         :return: returns the string 'sqlresolver'
         :rtype:  string
-        '''
+        """
         return IdResolver.getResolverClassType()
 
     @classmethod
     def getResolverClassDescriptor(cls):
-        '''
+        """
         return the descriptor of the resolver, which is
         - the class name and
         - the config description
@@ -363,17 +395,17 @@ class IdResolver (UserIdResolver):
         :rtype:  dict
         TODO: adjust
 
-        '''
+        """
         descriptor = {}
         typ = cls.getResolverClassType()
-        descriptor['clazz'] = "useridresolver.HTTPIdResolver.IdResolver"
-        descriptor['config'] = {
-                                'BASEURL': 'string',
-                                'userQuery': 'string',
-                                'userIdQuery': 'string',
-                                'User': 'string',
-                                'Password': 'password',
-                                 }
+        descriptor["clazz"] = "useridresolver.HTTPIdResolver.IdResolver"
+        descriptor["config"] = {
+            "BASEURL": "string",
+            "userQuery": "string",
+            "userIdQuery": "string",
+            "User": "string",
+            "Password": "password",
+        }
         return {typ: descriptor}
 
     def getResolverDescriptor(self):
@@ -385,21 +417,21 @@ class IdResolver (UserIdResolver):
         """
         my_config = {}
         for key, value in list(config.items()):
-            parts = key.split('.')
-            if parts[-1] == conf and parts[1] == 'httpresolver':
+            parts = key.split(".")
+            if parts[-1] == conf and parts[1] == "httpresolver":
                 new_key = ".".join(parts[2:-1])
                 my_config[new_key.lower()] = value
         return my_config
 
     def loadConfig(self, config, conf=""):
-        '''
+        """
         loadConfig - load the config for the resolver
 
         :param config: configuration for the sqlresolver
         :type  config: dict
         :param conf: configuration postfix
         :type  conf: string
-        '''
+        """
         log.debug("[loadConfig]")
         self.conf = conf
         self.config = self._get_my_config(config, conf)
@@ -415,11 +447,11 @@ class IdResolver (UserIdResolver):
         """
         log.debug("[checkMapping]")
 
-        log.debug('[checkMapping] done')
+        log.debug("[checkMapping] done")
         return
 
     def getUserId(self, loginName):
-        '''
+        """
         return the userId which mappes to a loginname
 
         :param loginName: login name of the user
@@ -427,37 +459,47 @@ class IdResolver (UserIdResolver):
 
         :return: userid - unique idenitfier for this unser
         :rtype:  string
-        '''
+        """
 
         try:
-            uri = self.config['uri']
-            timeout = self.config['timeout']
+            uri = self.config["uri"]
+            timeout = self.config["timeout"]
 
-            username = self.config['authuser']
-            password = self.config['password']
-            certificate = self.config['certificate']
+            username = self.config["authuser"]
+            password = self.config["password"]
+            certificate = self.config["certificate"]
 
-            credentials = {'user': username,
-                           'password': password,
-                           'certificate': certificate}
+            credentials = {
+                "user": username,
+                "password": password,
+                "certificate": certificate,
+            }
 
             # now prepare the query attributes
-            request_params = {'{USERNAME}': loginName,
-                        '{PAGE}': '0',
-                        '{PAGESIZE}': '10'
-                        }
+            request_params = {
+                "{USERNAME}": loginName,
+                "{PAGE}": "0",
+                "{PAGESIZE}": "10",
+            }
 
-            request_path = self.config['userid_request_path']
-            request_mapping = self.config['userid_request_mapping']
-            result_path = self.config['userid_result_path']
-            result_mapping = self.config['userid_result_mapping']
+            request_path = self.config["userid_request_path"]
+            request_mapping = self.config["userid_request_mapping"]
+            result_path = self.config["userid_result_path"]
+            result_mapping = self.config["userid_result_mapping"]
 
-            results = IdResolver._do_request(uri, timeout, credentials,
-                            request_path, request_mapping, request_params,
-                            result_path, result_mapping)
+            results = IdResolver._do_request(
+                uri,
+                timeout,
+                credentials,
+                request_path,
+                request_mapping,
+                request_params,
+                result_path,
+                result_mapping,
+            )
 
             result = results[0]
-            userId = result.get('userid')
+            userId = result.get("userid")
             return userId
 
         except Exception as exx:
@@ -465,7 +507,7 @@ class IdResolver (UserIdResolver):
             raise exx
 
     def getUsername(self, userId):
-        '''
+        """
         get the loginname from the given userid
 
         :param userId: userid descriptor
@@ -473,51 +515,61 @@ class IdResolver (UserIdResolver):
 
         :return: loginname
         :rtype:  string
-        '''
+        """
         log.debug("%s" % userId)
         result = self.getUserInfo(userId)
-        username = result.get('username')
+        username = result.get("username")
         return username
 
     def getUserInfo(self, userId):
-        '''
-            return all user related information
+        """
+        return all user related information
 
-            @param userId: specied user
-            @type userId:  string
-            @return: dictionary, containing all user related info
-            @rtype:  dict
+        @param userId: specied user
+        @type userId:  string
+        @return: dictionary, containing all user related info
+        @rtype:  dict
 
-        '''
+        """
         log.debug("[getUserInfo] %s[%s]" % (userId, type(userId)))
         try:
-            uri = self.config['uri']
-            timeout = self.config['timeout']
+            uri = self.config["uri"]
+            timeout = self.config["timeout"]
 
-            username = self.config['authuser']
-            password = self.config['password']
-            certificate = self.config['certificate']
+            username = self.config["authuser"]
+            password = self.config["password"]
+            certificate = self.config["certificate"]
 
-            credentials = {'user': username,
-                           'password': password,
-                           'certificate': certificate}
+            credentials = {
+                "user": username,
+                "password": password,
+                "certificate": certificate,
+            }
 
             # now prepare the query attributes
-            request_params = {'{USERID}': userId,
-                        '{PAGE}': '0',
-                        '{PAGESIZE}': '10'
-                        }
+            request_params = {
+                "{USERID}": userId,
+                "{PAGE}": "0",
+                "{PAGESIZE}": "10",
+            }
 
-            request_path = self.config['username_request_path']
-            request_mapping = self.config['username_request_mapping']
-            result_path = self.config['username_result_path']
-            result_mapping = self.config['username_result_mapping']
+            request_path = self.config["username_request_path"]
+            request_mapping = self.config["username_request_mapping"]
+            result_path = self.config["username_result_path"]
+            result_mapping = self.config["username_result_mapping"]
 
-            result = IdResolver._do_request(uri, timeout, credentials,
-                            request_path, request_mapping, request_params,
-                            result_path, result_mapping)
+            result = IdResolver._do_request(
+                uri,
+                timeout,
+                credentials,
+                request_path,
+                request_mapping,
+                request_params,
+                result_path,
+                result_mapping,
+            )
 
-            log.debug('[getUsername] done')
+            log.debug("[getUsername] done")
             return result[0]
 
         except Exception as exx:
@@ -525,64 +577,74 @@ class IdResolver (UserIdResolver):
             raise exx
 
         finally:
-            log.debug('[getUserInfo] done')
+            log.debug("[getUserInfo] done")
 
     def getSearchFields(self):
-        '''
+        """
         return all fields on which a search could be made
 
         :return: dictionary of the search fields and their types
         :rtype:  dict
-        '''
+        """
         log.debug("[getSearchFields]")
 
         sf = {}
 
-        log.debug('[getSearchFields] done')
+        log.debug("[getSearchFields] done")
         return sf
 
     def getUserList(self, searchDict):
-        '''
+        """
         retrieve a list of users
 
         :param searchDict: dictionary of the search criterias
         :type  searchDict: dict
         :return: list of user descriptions (as dict)
-        '''
+        """
         log.debug("[getUserList] %s" % (str(searchDict)))
 
         ## we use a dict, where the return users are inserted to where key
         ## is userid to return only a distinct list of users
         try:
-            uri = self.config['uri']
-            timeout = self.config['timeout']
+            uri = self.config["uri"]
+            timeout = self.config["timeout"]
 
-            username = self.config['authuser']
-            password = self.config['password']
-            certificate = self.config['certificate']
+            username = self.config["authuser"]
+            password = self.config["password"]
+            certificate = self.config["certificate"]
 
-            credentials = {'user': username,
-                           'password': password,
-                           'certificate': certificate}
+            credentials = {
+                "user": username,
+                "password": password,
+                "certificate": certificate,
+            }
 
             # now prepare the query attributes
-            s_uname = searchDict.get('username')
-            s_uid = searchDict.get('userid')
+            s_uname = searchDict.get("username")
+            s_uid = searchDict.get("userid")
 
-            request_params = {'{USERID}': s_uid,
-                              '{USERNAME}': s_uname,
-                        '{PAGE}': '1',
-                        '{PAGESIZE}': '10'
-                        }
+            request_params = {
+                "{USERID}": s_uid,
+                "{USERNAME}": s_uname,
+                "{PAGE}": "1",
+                "{PAGESIZE}": "10",
+            }
 
-            request_path = self.config['userlist_request_path']
-            request_mapping = self.config['userlist_request_mapping']
-            result_path = self.config['userlist_result_path']
-            result_mapping = self.config['userlist_result_mapping']
+            request_path = self.config["userlist_request_path"]
+            request_mapping = self.config["userlist_request_mapping"]
+            result_path = self.config["userlist_result_path"]
+            result_mapping = self.config["userlist_result_mapping"]
 
-            result = IdResolver._do_request(uri, timeout, credentials,
-                            request_path, request_mapping, request_params,
-                            result_path, result_mapping)
+            result = IdResolver._do_request(
+                uri,
+                timeout,
+                credentials,
+                request_path,
+                request_mapping,
+                request_params,
+                result_path,
+                result_mapping,
+            )
             return result
 
         except Exception as exx:
@@ -590,7 +652,7 @@ class IdResolver (UserIdResolver):
             raise exx
 
         finally:
-            log.debug('done')
+            log.debug("done")
 
 
 if __name__ == "__main__":

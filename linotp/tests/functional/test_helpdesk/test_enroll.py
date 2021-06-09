@@ -67,13 +67,13 @@ def get_email_content(email_message):
     thus the content starts with the first empty line
     """
 
-    if not 'Content-Transfer-Encoding: base64' in email_message:
+    if not "Content-Transfer-Encoding: base64" in email_message:
         return email_message
 
     body = []
     body_start = False
 
-    for l in email_message.split('\n'):
+    for l in email_message.split("\n"):
         if body_start:
             body.append(l.strip())
         if not l:
@@ -81,14 +81,15 @@ def get_email_content(email_message):
 
     cc = "\n".join(body).strip()
 
-    return base64.urlsafe_b64decode(cc).decode('utf-8')
+    return base64.urlsafe_b64decode(cc).decode("utf-8")
 
 
-@pytest.mark.app_config({
-    'CONTROLLERS': 'admin system helpdesk',
-})
+@pytest.mark.app_config(
+    {
+        "CONTROLLERS": "admin system helpdesk",
+    }
+)
 class TestHelpdeskEnrollment(TestController):
-
     def setUp(self):
         """ setup for std resolver / realms"""
 
@@ -112,28 +113,28 @@ class TestHelpdeskEnrollment(TestController):
         # define admin policy for helpdesk user 'helpdesk'
 
         policy = {
-            'name': 'admin',
-            'action': '*',
-            'scope': 'admin',
-            'active': True,
-            'realm': '*',
-            'user': 'superadmin, admin',
-            'client': '*',
+            "name": "admin",
+            "action": "*",
+            "scope": "admin",
+            "active": True,
+            "realm": "*",
+            "user": "superadmin, admin",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         policy = {
-            'name': 'helpdesk',
-            'action': 'show, userlist',
-            'scope': 'admin',
-            'active': True,
-            'realm': 'mydefrealm',
-            'user': 'helpdesk,',
-            'client': '*',
+            "name": "helpdesk",
+            "action": "show, userlist",
+            "scope": "admin",
+            "active": True,
+            "realm": "mydefrealm",
+            "user": "helpdesk,",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -142,16 +143,15 @@ class TestHelpdeskEnrollment(TestController):
 
         params = {}
 
-        response = self.make_helpdesk_request(
-            'users', params=params)
+        response = self.make_helpdesk_request("users", params=params)
 
-        assert 'false' not in response
+        assert "false" not in response
 
         jresp = json.loads(response.body)
-        for user in jresp['result']['value']['rows']:
-            user_parts = user['cell']
+        for user in jresp["result"]["value"]["rows"]:
+            user_parts = user["cell"]
             realms = user_parts[8]
-            assert 'mydefrealm' in realms
+            assert "mydefrealm" in realms
             assert len(realms) <= 1
 
         # ------------------------------------------------------------------ --
@@ -160,37 +160,36 @@ class TestHelpdeskEnrollment(TestController):
         # one realm
 
         policy = {
-            'name': 'helpdesk',
-            'action': 'show, userlist',
-            'scope': 'admin',
-            'active': True,
-            'realm': 'mydefrealm, mymixrealm',
-            'user': 'helpdesk,',
-            'client': '*',
+            "name": "helpdesk",
+            "action": "show, userlist",
+            "scope": "admin",
+            "active": True,
+            "realm": "mydefrealm, mymixrealm",
+            "user": "helpdesk,",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # verify that the helpdesk user can see only users for the
         # specified realm
 
         params = {}
 
-        response = self.make_helpdesk_request(
-            'users', params=params)
+        response = self.make_helpdesk_request("users", params=params)
 
-        assert 'false' not in response
+        assert "false" not in response
 
         realm_set = set()
 
         jresp = json.loads(response.body)
-        for user in jresp['result']['value']['rows']:
-            user_parts = user['cell']
+        for user in jresp["result"]["value"]["rows"]:
+            user_parts = user["cell"]
             realms = user_parts[8]
             realm_set.update(realms)
 
-        assert 'mydefrealm' in realm_set
-        assert 'mymixrealm' in realm_set
+        assert "mydefrealm" in realm_set
+        assert "mymixrealm" in realm_set
 
         assert len(realm_set) == 2
 
@@ -200,38 +199,37 @@ class TestHelpdeskEnrollment(TestController):
         # one realm
 
         policy = {
-            'name': 'helpdesk',
-            'action': 'show, userlist',
-            'scope': 'admin',
-            'active': True,
-            'realm': '*',
-            'user': 'helpdesk,',
-            'client': '*',
+            "name": "helpdesk",
+            "action": "show, userlist",
+            "scope": "admin",
+            "active": True,
+            "realm": "*",
+            "user": "helpdesk,",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # verify that the helpdesk user can see only users for the
         # specified realm
 
         params = {}
 
-        response = self.make_helpdesk_request(
-            'users', params=params)
+        response = self.make_helpdesk_request("users", params=params)
 
-        assert 'false' not in response
+        assert "false" not in response
 
         realm_set = set()
 
         jresp = json.loads(response.body)
-        for user in jresp['result']['value']['rows']:
-            user_parts = user['cell']
+        for user in jresp["result"]["value"]["rows"]:
+            user_parts = user["cell"]
             realms = user_parts[8]
             realm_set.update(realms)
 
-        assert 'mydefrealm' in realm_set
-        assert 'mymixrealm' in realm_set
-        assert 'myotherrealm' in realm_set
+        assert "mydefrealm" in realm_set
+        assert "mymixrealm" in realm_set
+        assert "myotherrealm" in realm_set
 
         assert len(realm_set) == 3
 
@@ -240,40 +238,40 @@ class TestHelpdeskEnrollment(TestController):
     def test_users_with_params(self):
         """verify that the users search parameter work"""
 
-        user_query = r'ha*'
+        user_query = r"ha*"
         user_search = re.compile(user_query)
 
-        params = {'qtype': 'username', 'query': user_query}
+        params = {"qtype": "username", "query": user_query}
 
-        response = self.make_helpdesk_request(
-            'users', params=params)
+        response = self.make_helpdesk_request("users", params=params)
 
-        assert 'false' not in response
+        assert "false" not in response
 
         jresp = json.loads(response.body)
-        for user in jresp['result']['value']['rows']:
-            user_parts = user['cell']
+        for user in jresp["result"]["value"]["rows"]:
+            user_parts = user["cell"]
             username = user_parts[0]
             res = re.match(user_search, username)
             assert res
 
-        params = {'qtype': 'email', 'query': user_query}
+        params = {"qtype": "email", "query": user_query}
 
-        response = self.make_helpdesk_request(
-            'users', params=params)
+        response = self.make_helpdesk_request("users", params=params)
 
-        assert 'false' not in response
+        assert "false" not in response
 
         jresp = json.loads(response.body)
-        for user in jresp['result']['value']['rows']:
-            user_parts = user['cell']
+        for user in jresp["result"]["value"]["rows"]:
+            user_parts = user["cell"]
             email = user_parts[4]
             res = re.match(user_search, email)
             assert res
 
-    @pytest.mark.app_config({
-        'CONTROLLERS': 'admin system helpdesk validate',
-    })
+    @pytest.mark.app_config(
+        {
+            "CONTROLLERS": "admin system helpdesk validate",
+        }
+    )
     def test_autoenrollment(self):
         """verify that an email will be submitted on autoenrollment"""
 
@@ -286,46 +284,46 @@ class TestHelpdeskEnrollment(TestController):
             "SMTP_USER": "secret_user",
             "SMTP_PASSWORD": "secret_pasword",
             "EMAIL_FROM": "linotp@example.com",
-            "EMAIL_SUBJECT": "Your requested otp"
+            "EMAIL_SUBJECT": "Your requested otp",
         }
 
         params = {
-            'name': 'enrollmentProvider',
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
-            'timeout': '120',
-            'type': 'email',
-            'config': json.dumps(email_config)
+            "name": "enrollmentProvider",
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+            "timeout": "120",
+            "type": "email",
+            "config": json.dumps(email_config),
         }
 
-        self.make_system_request('setProvider', params=params)
+        self.make_system_request("setProvider", params=params)
 
         # ------------------------------------------------------------------ --
 
         # define the notification provider policy
 
         policy = {
-            'name': 'notify_autoenrollement',
-            'action': 'autoenrollment=email::enrollmentProvider ',
-            'scope': 'notification',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "notify_autoenrollement",
+            "action": "autoenrollment=email::enrollmentProvider ",
+            "scope": "notification",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         policy = {
-            'name': 'email_autoenrollment',
-            'action': 'autoenrollment=email',
-            'scope': 'enrollment',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "email_autoenrollment",
+            "action": "autoenrollment=email",
+            "scope": "enrollment",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -336,13 +334,13 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            user = 'passthru_user1@myDefRealm'
+            user = "passthru_user1@myDefRealm"
             params = {
-                'user': user,
-                'pass': 'geheim1',
-                }
-            response = self.make_validate_request('check', params)
-            assert 'false' in response, response
+                "user": user,
+                "pass": "geheim1",
+            }
+            response = self.make_validate_request("check", params)
+            assert "false" in response, response
 
             # the sendmail api is called twice: for enrollment and for otp
             assert mock_smtp_instance.sendmail.call_count == 2
@@ -352,8 +350,8 @@ class TestHelpdeskEnrollment(TestController):
             # first call is the enrollment notification
 
             _email_from, email_to, email_message = call_args_list[0][0]
-            assert email_to == 'pass.true@example.com'
-            assert 'Subject: New email token enrolled' in email_message
+            assert email_to == "pass.true@example.com"
+            assert "Subject: New email token enrolled" in email_message
 
             content = get_email_content(email_message)
             assert "with pin 'geheim1!" not in content
@@ -361,8 +359,8 @@ class TestHelpdeskEnrollment(TestController):
             # second call is the otp notification
 
             _email_from, email_to, email_message = call_args_list[1][0]
-            assert email_to == 'pass.true@example.com'
-            assert 'Subject: Your requested otp' in email_message
+            assert email_to == "pass.true@example.com"
+            assert "Subject: Your requested otp" in email_message
 
     def test_enrollment(self):
         """verify that an email token will be enrolled"""
@@ -376,34 +374,34 @@ class TestHelpdeskEnrollment(TestController):
             "SMTP_USER": "secret_user",
             "SMTP_PASSWORD": "secret_pasword",
             "EMAIL_FROM": "linotp@example.com",
-            "EMAIL_SUBJECT": "New Token <PIN>"
+            "EMAIL_SUBJECT": "New Token <PIN>",
         }
 
         params = {
-            'name': 'enrollmentProvider',
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
-            'timeout': '120',
-            'type': 'email',
-            'config': json.dumps(email_config)
+            "name": "enrollmentProvider",
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+            "timeout": "120",
+            "type": "email",
+            "config": json.dumps(email_config),
         }
 
-        self.make_system_request('setProvider', params=params)
+        self.make_system_request("setProvider", params=params)
 
         # ------------------------------------------------------------------ --
 
         # define the notification provider policy
 
         policy = {
-            'name': 'notify_enrollement',
-            'action': 'enrollment=email::enrollmentProvider ',
-            'scope': 'notification',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "notify_enrollement",
+            "action": "enrollment=email::enrollmentProvider ",
+            "scope": "notification",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -414,18 +412,17 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email', 'pin': 'test123!'}
+            params = {"user": "hans", "type": "email", "pin": "test123!"}
 
-            response = self.make_helpdesk_request(
-                'enroll', params=params)
+            response = self.make_helpdesk_request("enroll", params=params)
 
-            assert 'false' not in response, response
+            assert "false" not in response, response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _email_from, email_to, email_message = call_args[0]
 
-            assert email_to == 'hans@example.com'
-            assert 'Subject: New email token enrolled' in email_message
+            assert email_to == "hans@example.com"
+            assert "Subject: New email token enrolled" in email_message
 
             content = get_email_content(email_message)
             assert "with pin 'test123!" in content
@@ -436,34 +433,33 @@ class TestHelpdeskEnrollment(TestController):
         # verify that message does not contain the given pin
 
         policy = {
-            'name': 'enrollment_pin_policy',
-            'action': 'otp_pin_random=12, otp_pin_random_content=n',
-            'scope': 'enrollment',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "enrollment_pin_policy",
+            "action": "otp_pin_random=12, otp_pin_random_content=n",
+            "scope": "enrollment",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         with MockedSMTP() as mock_smtp_instance:
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email', 'pin': 'test123!'}
+            params = {"user": "hans", "type": "email", "pin": "test123!"}
 
-            response = self.make_helpdesk_request(
-                'enroll', params=params)
+            response = self.make_helpdesk_request("enroll", params=params)
 
-            assert 'false' not in response, response
+            assert "false" not in response, response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _email_from, email_to, email_message = call_args[0]
 
-            assert email_to == 'hans@example.com'
-            assert 'Subject: New email token enrolled' in email_message
+            assert email_to == "hans@example.com"
+            assert "Subject: New email token enrolled" in email_message
 
             content = get_email_content(email_message)
             assert "with pin 'test123!" not in content
@@ -485,11 +481,11 @@ class TestHelpdeskEnrollment(TestController):
 
         # define the email provider
 
-        filename = os.path.join(self.fixture_path, 'enrollment_email.eml')
+        filename = os.path.join(self.fixture_path, "enrollment_email.eml")
         with open(filename, "rb") as f:
             content = f.read()
 
-        inline_template = json.dumps(content.decode('utf-8'))
+        inline_template = json.dumps(content.decode("utf-8"))
 
         email_config = {
             "SMTP_SERVER": "mail.example.com",
@@ -500,30 +496,30 @@ class TestHelpdeskEnrollment(TestController):
         }
 
         params = {
-            'name': 'enrollmentTemplateProvider',
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
-            'timeout': '120',
-            'type': 'email',
-            'config': json.dumps(email_config)
+            "name": "enrollmentTemplateProvider",
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+            "timeout": "120",
+            "type": "email",
+            "config": json.dumps(email_config),
         }
 
-        self.make_system_request('setProvider', params=params)
+        self.make_system_request("setProvider", params=params)
 
         # ------------------------------------------------------------------ --
 
         # define the notification provider policy
 
         policy = {
-            'name': 'notify_enrollement',
-            'action': 'enrollment=email::enrollmentTemplateProvider ',
-            'scope': 'notification',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "notify_enrollement",
+            "action": "enrollment=email::enrollmentTemplateProvider ",
+            "scope": "notification",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -531,38 +527,37 @@ class TestHelpdeskEnrollment(TestController):
         # verify that message does not contain the given pin
 
         policy = {
-            'name': 'enrollment_pin_policy',
-            'action': 'otp_pin_random=12, otp_pin_random_content=n',
-            'scope': 'enrollment',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "enrollment_pin_policy",
+            "action": "otp_pin_random=12, otp_pin_random_content=n",
+            "scope": "enrollment",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         with MockedSMTP() as mock_smtp_instance:
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email'}
+            params = {"user": "hans", "type": "email"}
 
-            response = self.make_helpdesk_request(
-                'enroll', params=params)
+            response = self.make_helpdesk_request("enroll", params=params)
 
-            assert 'false' not in response, response
+            assert "false" not in response, response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _email_from, email_to, email_message = call_args[0]
 
-            assert email_to == 'hans@example.com'
-            message_parts = email_message.decode('utf-8').split('\\n')
+            assert email_to == "hans@example.com"
+            message_parts = email_message.decode("utf-8").split("\\n")
 
-            assert 'Subject: New email token enrolled' in message_parts[3]
+            assert "Subject: New email token enrolled" in message_parts[3]
 
-            content = email_message.decode('utf-8')
+            content = email_message.decode("utf-8")
             assert "with pin 'test123!" not in content
 
             # now verify that there are only digits in the pin, as we defined
@@ -582,68 +577,68 @@ class TestHelpdeskEnrollment(TestController):
         # define the email provider
 
         email_config = {
-            "SMTP_SERVER":"mail.example.com",
-            "SMTP_USER":"secret_user",
-            "SMTP_PASSWORD":"secret_pasword",
-            "EMAIL_FROM":"linotp@example.com",
-            "EMAIL_SUBJECT":"New Token enrolled"
+            "SMTP_SERVER": "mail.example.com",
+            "SMTP_USER": "secret_user",
+            "SMTP_PASSWORD": "secret_pasword",
+            "EMAIL_FROM": "linotp@example.com",
+            "EMAIL_SUBJECT": "New Token enrolled",
         }
 
         params = {
-            'name': 'enrollmentProvider',
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
-            'timeout': '120',
-            'type': 'email',
-            'config': json.dumps(email_config)
+            "name": "enrollmentProvider",
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+            "timeout": "120",
+            "type": "email",
+            "config": json.dumps(email_config),
         }
 
-        self.make_system_request('setProvider', params=params)
+        self.make_system_request("setProvider", params=params)
 
         # ------------------------------------------------------------------ --
 
         # define the notification provider policy
 
         policy = {
-            'name': 'notify_enrollement',
-            'action': 'enrollment=email::enrollmentProvider ',
-            'scope': 'notification',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "notify_enrollement",
+            "action": "enrollment=email::enrollmentProvider ",
+            "scope": "notification",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # define admin policy which denies the enrollemt for the helpdesk user
 
         policy = {
-            'name': 'admin',
-            'action': '*',
-            'scope': 'admin',
-            'active': True,
-            'realm': '*',
-            'user': 'superadmin, admin',
-            'client': '*',
+            "name": "admin",
+            "action": "*",
+            "scope": "admin",
+            "active": True,
+            "realm": "*",
+            "user": "superadmin, admin",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # define the restricted admin policy for helpdesk user 'helpdesk'
 
         policy = {
-            'name': 'helpdesk',
-            'scope': 'admin',
-            'active': True,
-            'user': 'helpdesk,',
-            'action': 'initEMAIL',
-            'realm': 'myotherrealm',
-            'client': '*',
+            "name": "helpdesk",
+            "scope": "admin",
+            "active": True,
+            "user": "helpdesk,",
+            "action": "initEMAIL",
+            "realm": "myotherrealm",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -654,12 +649,11 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email'}
+            params = {"user": "hans", "type": "email"}
 
-            response = self.make_helpdesk_request(
-                'enroll', params=params)
+            response = self.make_helpdesk_request("enroll", params=params)
 
-            assert 'not have the administrative right' in response, response
+            assert "not have the administrative right" in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -667,16 +661,16 @@ class TestHelpdeskEnrollment(TestController):
         # email tokens in the realm mydefrealm as well
 
         policy = {
-            'name': 'helpdesk',
-            'scope': 'admin',
-            'active': True,
-            'user': 'helpdesk,',
-            'action': 'initEMAIL',
-            'realm': 'myotherrealm, mydefrealm',
-            'client': '*',
+            "name": "helpdesk",
+            "scope": "admin",
+            "active": True,
+            "user": "helpdesk,",
+            "action": "initEMAIL",
+            "realm": "myotherrealm, mydefrealm",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -686,12 +680,11 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email'}
+            params = {"user": "hans", "type": "email"}
 
-            response = self.make_helpdesk_request(
-                'enroll', params=params)
+            response = self.make_helpdesk_request("enroll", params=params)
 
-            assert 'have the administrative right' not in response, response
+            assert "have the administrative right" not in response, response
             assert '"value": true' in response, response
 
         return
@@ -704,38 +697,38 @@ class TestHelpdeskEnrollment(TestController):
         # define the email provider
 
         email_config = {
-            "SMTP_SERVER":"mail.example.com",
-            "SMTP_USER":"secret_user",
-            "SMTP_PASSWORD":"secret_pasword",
-            "EMAIL_FROM":"linotp@example.com",
-            "EMAIL_SUBJECT":"New Token enrolled"
+            "SMTP_SERVER": "mail.example.com",
+            "SMTP_USER": "secret_user",
+            "SMTP_PASSWORD": "secret_pasword",
+            "EMAIL_FROM": "linotp@example.com",
+            "EMAIL_SUBJECT": "New Token enrolled",
         }
 
         params = {
-            'name': 'enrollmentProvider',
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
-            'timeout': '120',
-            'type': 'email',
-            'config': json.dumps(email_config)
+            "name": "enrollmentProvider",
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+            "timeout": "120",
+            "type": "email",
+            "config": json.dumps(email_config),
         }
 
-        self.make_system_request('setProvider', params=params)
+        self.make_system_request("setProvider", params=params)
 
         # ------------------------------------------------------------------ --
 
         # define the notification provider policy
 
         policy = {
-            'name': 'notify_enrollement',
-            'action': 'enrollment=email::enrollmentProvider ',
-            'scope': 'notification',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "notify_enrollement",
+            "action": "enrollment=email::enrollmentProvider ",
+            "scope": "notification",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -743,17 +736,17 @@ class TestHelpdeskEnrollment(TestController):
         # verify that message does not contain the given pin
 
         policy = {
-            'name': 'maxtoken',
-            'action': 'maxtoken=1',
-            'scope': 'enrollment',
-            'active': True,
-            'realm': 'mydefrealm',
-            'user': '*',
-            'client': '*',
+            "name": "maxtoken",
+            "action": "maxtoken=1",
+            "scope": "enrollment",
+            "active": True,
+            "realm": "mydefrealm",
+            "user": "*",
+            "client": "*",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -764,18 +757,17 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email', 'pin': 'test123!'}
+            params = {"user": "hans", "type": "email", "pin": "test123!"}
 
-            response = self.make_helpdesk_request(
-                'enroll', params=params)
+            response = self.make_helpdesk_request("enroll", params=params)
 
-            assert 'false' not in response, response
+            assert "false" not in response, response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _email_from, email_to, email_message = call_args[0]
 
-            assert email_to == 'hans@example.com'
-            assert 'Subject: New email token enrolled' in email_message
+            assert email_to == "hans@example.com"
+            assert "Subject: New email token enrolled" in email_message
 
             content = get_email_content(email_message)
             assert "with pin 'test123!" in content
@@ -789,26 +781,23 @@ class TestHelpdeskEnrollment(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'user': 'hans', 'type': 'email', 'pin': 'test123!'}
+            params = {"user": "hans", "type": "email", "pin": "test123!"}
 
-            response = self.make_helpdesk_request(
-                'enroll', params=params)
+            response = self.make_helpdesk_request("enroll", params=params)
 
-            assert 'maximum number of allowed' in response, response
+            assert "maximum number of allowed" in response, response
 
         # ------------------------------------------------------------------ --
 
         # verify that user has only one token
-        params = {
-            'qtype': 'loginname',
-            'query': 'hans'
-            }
+        params = {"qtype": "loginname", "query": "hans"}
 
-        response = self.make_helpdesk_request('tokens', params=params)
-        assert 'false' not in response
-        assert 'hans' in response
+        response = self.make_helpdesk_request("tokens", params=params)
+        assert "false" not in response
+        assert "hans" in response
         assert '"total": 1' in response
 
         return
+
 
 # eof #

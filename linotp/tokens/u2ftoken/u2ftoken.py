@@ -59,11 +59,12 @@ from linotp.tokens import tokenclass_registry
 """
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
-@tokenclass_registry.class_entry('u2f')
-@tokenclass_registry.class_entry('linotp.tokens.u2ftoken.U2FTokenClass')
+@tokenclass_registry.class_entry("u2f")
+@tokenclass_registry.class_entry("linotp.tokens.u2ftoken.U2FTokenClass")
 class U2FTokenClass(TokenClass):
 
     """
@@ -88,7 +89,7 @@ class U2FTokenClass(TokenClass):
         """
         TokenClass.__init__(self, aToken)
         self.setType("u2f")
-        self.mode = ['challenge']  # This is a challenge response token
+        self.mode = ["challenge"]  # This is a challenge response token
         self.supports_offline_mode = True
 
     @classmethod
@@ -107,7 +108,7 @@ class U2FTokenClass(TokenClass):
         return "u2f"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
+    def getClassInfo(cls, key=None, ret="all"):
         """
         getClassInfo - returns a subtree of the token definition
 
@@ -122,35 +123,38 @@ class U2FTokenClass(TokenClass):
 
         """
         res = {
-            'type': 'u2f',
-            'title': 'U2F FIDO Token',
-            'description': ('A U2F V2 token as specified by the FIDO Alliance. \
-                Can be combined with the OTP PIN.'),
-            'init': {},
-            'config': {},
-            'selfservice': {
-                'enroll': {
-                    'title': {
-                        'html': 'u2ftoken/u2ftoken.mako',
-                        'scope': 'selfservice.title.enroll',
-                        },
-                    'page': {
-                        'html': 'u2ftoken/u2ftoken.mako',
-                        'scope': 'selfservice.enroll',
-                        },
-                    }
-                },
-            'policy': {
-                'enrollment': {
-                    'u2f_valid_facets': {'type': 'str'},
-                    'u2f_app_id': {'type': 'str'}}
+            "type": "u2f",
+            "title": "U2F FIDO Token",
+            "description": (
+                "A U2F V2 token as specified by the FIDO Alliance. \
+                Can be combined with the OTP PIN."
+            ),
+            "init": {},
+            "config": {},
+            "selfservice": {
+                "enroll": {
+                    "title": {
+                        "html": "u2ftoken/u2ftoken.mako",
+                        "scope": "selfservice.title.enroll",
+                    },
+                    "page": {
+                        "html": "u2ftoken/u2ftoken.mako",
+                        "scope": "selfservice.enroll",
+                    },
                 }
+            },
+            "policy": {
+                "enrollment": {
+                    "u2f_valid_facets": {"type": "str"},
+                    "u2f_app_id": {"type": "str"},
+                }
+            },
         }
 
         if key is not None and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
         return ret
 
@@ -166,7 +170,7 @@ class U2FTokenClass(TokenClass):
         # requested_phase must be either "registration1" or "registration2"
         # current_phase is either "registration" or "authentication"
         requested_phase = param.get("phase")
-        current_phase = self.getFromTokenInfo('phase', None)
+        current_phase = self.getFromTokenInfo("phase", None)
 
         if requested_phase == "registration1" and current_phase is None:
             # This initial registration phase triggers a challenge
@@ -178,28 +182,39 @@ class U2FTokenClass(TokenClass):
                 TokenClass.setPin(self, pin)
 
             # preserve the registration state
-            self.addToTokenInfo('phase', 'registration')
+            self.addToTokenInfo("phase", "registration")
             self.token.LinOtpIsactive = False
-        elif requested_phase == "registration2" and current_phase == "registration":
+        elif (
+            requested_phase == "registration2"
+            and current_phase == "registration"
+        ):
             # Check the token pin
             pin = param.get("pin")
             if pin is None:
-                pin = ''
+                pin = ""
             if check_pin(self, pin) is False:
                 raise ValueError("Wrong token pin!")
         # check for set phases which are not "registration1" or "registration2"
-        elif requested_phase != "registration2" and requested_phase is not None:
-            raise Exception('Wrong phase parameter!')
+        elif (
+            requested_phase != "registration2" and requested_phase is not None
+        ):
+            raise Exception("Wrong phase parameter!")
         # only allow empty phase parameters once the token is registered successfully
         elif current_phase != "authentication" and requested_phase is None:
-            raise Exception('Wrong phase parameter!')
+            raise Exception("Wrong phase parameter!")
         # only allow "registration2" if the token already completed "registration1"
-        elif current_phase != "registration" and requested_phase == "registration2":
+        elif (
+            current_phase != "registration"
+            and requested_phase == "registration2"
+        ):
             raise Exception(
                 "Phase 'registration2' requested but we are not in the correct phase \
-                to process the request.")
+                to process the request."
+            )
         else:
-            raise Exception('Unknown "phase" and "current_phase" parameter combination!')
+            raise Exception(
+                'Unknown "phase" and "current_phase" parameter combination!'
+            )
 
     def splitPinPass(self, passw):
         """
@@ -251,32 +266,33 @@ class U2FTokenClass(TokenClass):
                  attributes are additional attributes, which could be returned
         """
         # Create an otp key (from urandom) which is used as challenge, 32 bytes long
-        challenge = base64.urlsafe_b64encode(binascii.unhexlify(self._genOtpKey_(32)))
+        challenge = base64.urlsafe_b64encode(
+            binascii.unhexlify(self._genOtpKey_(32))
+        )
 
         # We delete all '=' symbols we added during registration to ensure that the
         # challenge object is sent to exact the same keyHandle we received in the
         # registration. Otherwise some U2F tokens won't respond.
-        keyHandle = self.getFromTokenInfo('keyHandle')
+        keyHandle = self.getFromTokenInfo("keyHandle")
         keyHandleIndex = 1
-        while keyHandle[-keyHandleIndex] == '=':
+        while keyHandle[-keyHandleIndex] == "=":
             keyHandleIndex = keyHandleIndex + 1
         if keyHandleIndex > 1:
-            keyHandle = keyHandle[:-(keyHandleIndex - 1)]
+            keyHandle = keyHandle[: -(keyHandleIndex - 1)]
 
         appId = self._get_app_id()
 
         data = {
-            'challenge': challenge.decode('ascii'),
-            'version': 'U2F_V2',
-            'keyHandle': keyHandle,
-            'appId': appId
+            "challenge": challenge.decode("ascii"),
+            "version": "U2F_V2",
+            "keyHandle": keyHandle,
+            "appId": appId,
         }
         message = "U2F challenge"
         attributes = dict()
-        attributes['signrequest'] = data
+        attributes["signrequest"] = data
 
         return (True, message, data, attributes)
-
 
     def _is_valid_facet(self, origin):
         """
@@ -289,22 +305,25 @@ class U2FTokenClass(TokenClass):
 
         # Get the valid facets as specified in the enrollment policy 'u2f_valid_facets'
         # for the specific realm
-        valid_facets_action_value = ''
+        valid_facets_action_value = ""
         realms = self.token.getRealmNames()
         if len(realms) > 0:
             get_policy_params = {
-                'action': 'u2f_valid_facets',
-                'scope': 'enrollment',
-                'realm': realms[0]
-                }
+                "action": "u2f_valid_facets",
+                "scope": "enrollment",
+                "realm": realms[0],
+            }
             policies = getPolicy(get_policy_params)
             valid_facets_action_value = get_action_value(
-                policies, scope='enrollment', action='u2f_valid_facets',
-                default='')
+                policies,
+                scope="enrollment",
+                action="u2f_valid_facets",
+                default="",
+            )
 
-        if valid_facets_action_value != '':
+        if valid_facets_action_value != "":
             # 'u2f_valid_facets' policy is set - check if origin is in valid facets list
-            valid_facets = valid_facets_action_value.split(';')
+            valid_facets = valid_facets_action_value.split(";")
             for facet in valid_facets:
                 facet = facet.strip()
             if origin in valid_facets:
@@ -325,8 +344,8 @@ class U2FTokenClass(TokenClass):
         :return: appId
         """
         # Get the appId from TokenInfo
-        appId = self.getFromTokenInfo('appId', '')
-        if appId == '':
+        appId = self.getFromTokenInfo("appId", "")
+        if appId == "":
             raise Exception("appId could not be determined.")
 
         return appId
@@ -339,26 +358,25 @@ class U2FTokenClass(TokenClass):
         :param client_response: U2F client response object
         :return:
         """
-        error_codes = {0: 'OK',
-                       1: 'OTHER_ERROR',
-                       2: 'BAD_REQUEST',
-                       3: 'CONFIGURATION_UNSUPPORTED',
-                       4: 'DEVICE_INELIGIBLE',
-                       5: 'TIMEOUT'}
+        error_codes = {
+            0: "OK",
+            1: "OTHER_ERROR",
+            2: "BAD_REQUEST",
+            3: "CONFIGURATION_UNSUPPORTED",
+            4: "DEVICE_INELIGIBLE",
+            5: "TIMEOUT",
+        }
 
         if "errorCode" in client_response:
-            error_code = client_response['errorCode']
-            error_text = error_codes.get(error_code, '')
-            error_msg = client_response.get('errorMessage', '')
-            raise Exception("U2F client error code: %s (%d): %s" % (error_text,
-                                                                    error_code,
-                                                                    error_msg))
+            error_code = client_response["errorCode"]
+            error_text = error_codes.get(error_code, "")
+            error_msg = client_response.get("errorMessage", "")
+            raise Exception(
+                "U2F client error code: %s (%d): %s"
+                % (error_text, error_code, error_msg)
+            )
 
-    def _checkClientData(self,
-                         clientData,
-                         clientDataType,
-                         challenge
-                         ):
+    def _checkClientData(self, clientData, clientDataType, challenge):
         """
         checkClientData - checks whether the clientData object retrieved
         from the U2F token is valid
@@ -374,28 +392,30 @@ class U2FTokenClass(TokenClass):
             raise Exception("Invalid client data JSON format")
 
         try:
-            cdType = clientData['typ']
-            cdChallenge = clientData['challenge']
-            cdOrigin = clientData['origin']
+            cdType = clientData["typ"]
+            cdChallenge = clientData["challenge"]
+            cdOrigin = clientData["origin"]
             # TODO: Check for optional cid_pubkey
         except KeyError as err:
-            raise Exception('Wrong client data format!')
+            raise Exception("Wrong client data format!")
 
         # validate typ
-        if clientDataType is 'registration':
-            if cdType != 'navigator.id.finishEnrollment':
-                raise Exception('Incorrect client data object received!')
-        elif clientDataType is 'authentication':
-            if cdType != 'navigator.id.getAssertion':
-                raise Exception('Incorrect client data object received!')
+        if clientDataType is "registration":
+            if cdType != "navigator.id.finishEnrollment":
+                raise Exception("Incorrect client data object received!")
+        elif clientDataType is "authentication":
+            if cdType != "navigator.id.getAssertion":
+                raise Exception("Incorrect client data object received!")
         else:
             # Wrong function call
-            raise Exception('Wrong validClientData function call.')
+            raise Exception("Wrong validClientData function call.")
 
         # validate challenge
         if cdChallenge != challenge:
-            log.debug('Challenge mismatch - The received challenge in the received client \
-                       data object does not match the sent challenge!')
+            log.debug(
+                "Challenge mismatch - The received challenge in the received client \
+                       data object does not match the sent challenge!"
+            )
             return False
 
         # validate origin
@@ -421,7 +441,9 @@ class U2FTokenClass(TokenClass):
         # since authentication responses without requiring user presence
         # are not yet supported by the U2F specification
         if FIRST_BIT_MASK & ord(signatureData[:1]) != 0b00000001:
-            log.error("Wrong signature data format: User presence bit must be set")
+            log.error(
+                "Wrong signature data format: User presence bit must be set"
+            )
             raise ValueError("Wrong signature data format")
         userPresenceByte = signatureData[:1]
         signatureData = signatureData[1:]
@@ -443,9 +465,7 @@ class U2FTokenClass(TokenClass):
         return (userPresenceByte, counter, signature)
 
     @staticmethod
-    def _checkCounterOverflow(counter,
-                              prevCounter
-                              ):
+    def _checkCounterOverflow(counter, prevCounter):
         """
         Internal helper function to check the counter in the range of an overflow
 
@@ -456,7 +476,10 @@ class U2FTokenClass(TokenClass):
         # TODO: Create Policy to adjust the OVERFLOW_RANGE
         OVERFLOW_RANGE = 1000
         res = False
-        if prevCounter >= (256 ** 4) - OVERFLOW_RANGE and counter <= OVERFLOW_RANGE:
+        if (
+            prevCounter >= (256 ** 4) - OVERFLOW_RANGE
+            and counter <= OVERFLOW_RANGE
+        ):
             # This is the range of a legal overflow
             res = True
         return res
@@ -475,7 +498,7 @@ class U2FTokenClass(TokenClass):
         :param counter: the received counter value
         :return:
         """
-        prevCounter = int(self.getFromTokenInfo('counter', None))
+        prevCounter = int(self.getFromTokenInfo("counter", None))
 
         # Did the counter not increase?
         if not counter > prevCounter:
@@ -485,19 +508,22 @@ class U2FTokenClass(TokenClass):
                 # deactivate the token. This could also happen if you use the token
                 # A LOT with other applications and very seldom with LinOTP.
                 self.token.LinOtpIsactive = False
-                raise ValueError("Counter not increased! Possible device cloning!")
+                raise ValueError(
+                    "Counter not increased! Possible device cloning!"
+                )
 
         # save the new counter
-        self.addToTokenInfo('counter', counter)
+        self.addToTokenInfo("counter", counter)
 
-    def _validateAuthenticationSignature(self,
-                                         applicationParameter,
-                                         userPresenceByte,
-                                         counter,
-                                         challengeParameter,
-                                         publicKey,
-                                         signature
-                                         ):
+    def _validateAuthenticationSignature(
+        self,
+        applicationParameter,
+        userPresenceByte,
+        counter,
+        challengeParameter,
+        publicKey,
+        signature,
+    ):
         """
         Internal helper function to validate the authentication signature received after parsing
         the token authentication response according to the U2F specification
@@ -519,7 +545,7 @@ class U2FTokenClass(TokenClass):
 
         PUB_KEY_ASN1_PREFIX = bytes.fromhex(
             "3059301306072a8648ce3d020106082a8648ce3d030107034200"
-            )
+        )
 
         asn1_publicKey = PUB_KEY_ASN1_PREFIX + publicKey
 
@@ -530,16 +556,19 @@ class U2FTokenClass(TokenClass):
         # following byte string:
 
         message = (
-            applicationParameter + userPresenceByte + counter +
-            challengeParameter
-            )
+            applicationParameter
+            + userPresenceByte
+            + counter
+            + challengeParameter
+        )
 
         # ------------------------------------------------------------------ --
 
         # verify with the asn1, der encoded public key
 
         ecc_pub = serialization.load_der_public_key(
-                                asn1_publicKey, default_backend())
+            asn1_publicKey, default_backend()
+        )
 
         try:
 
@@ -554,8 +583,9 @@ class U2FTokenClass(TokenClass):
             log.error("Signature verification failed! %r" % exx)
             raise
 
-
-    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
+    def checkResponse4Challenge(
+        self, user, passw, options=None, challenges=None
+    ):
         """
         This method verifies if the given ``passw`` matches any existing ``challenge``
         of the token.
@@ -592,8 +622,8 @@ class U2FTokenClass(TokenClass):
             # The U2F checkOtp functions needs to know the saved challenge
             # to compare the received challenge value to the saved one,
             # thus we add the transactionid to the options
-            options['transactionid'] = challenge.transid
-            options['challenges'] = challenges
+            options["transactionid"] = challenge.transid
+            options["challenges"] = challenges
 
             _otp_counter = check_otp(self, otpval, options=options)
             if _otp_counter >= 0:
@@ -604,12 +634,7 @@ class U2FTokenClass(TokenClass):
 
         return otp_counter, matching_challenges
 
-    def checkOtp(self,
-                 passw,
-                 counter,
-                 window,
-                 options=None
-                 ):
+    def checkOtp(self, passw, counter, window, options=None):
         """
         checkOtp - standard callback of linotp to verify the token
 
@@ -629,16 +654,16 @@ class U2FTokenClass(TokenClass):
 
         challenges = []
         serial = self.getSerial()
-        transid = options.get('transactionid', None)
+        transid = options.get("transactionid", None)
         if transid is None:
             raise Exception("Could not checkOtp due to missing transaction id")
 
         # get all challenges with a matching trasactionid
-        if 'challenges' in options:
-            challs = options['challenges']
+        if "challenges" in options:
+            challs = options["challenges"]
         else:
             challs = []
-            log.debug('Could not find a challenge')
+            log.debug("Could not find a challenge")
 
         for chall in challs:
             (rec_tan, rec_valid) = chall.getTanStatus()
@@ -650,7 +675,10 @@ class U2FTokenClass(TokenClass):
                 pass
 
         if len(challenges) == 0:
-            err = 'No open transaction found for token %s and transactionid %s' % (serial, transid)
+            err = (
+                "No open transaction found for token %s and transactionid %s"
+                % (serial, transid)
+            )
             raise Exception(err)
 
         # decode the retrieved passw object
@@ -662,16 +690,16 @@ class U2FTokenClass(TokenClass):
         self._handle_client_errors(authResponse)
 
         try:
-            signatureData = authResponse.get('signatureData', None)
-            clientData = authResponse['clientData']
-            keyHandle = authResponse['keyHandle']
+            signatureData = authResponse.get("signatureData", None)
+            clientData = authResponse["clientData"]
+            keyHandle = authResponse["keyHandle"]
         except AttributeError as ex:
             raise Exception("Couldn't find keyword in JSON object")
 
         # Does the keyHandle match the saved keyHandle created on registration?
         # Remove trailing '=' on the saved keyHandle
-        savedKeyHandle = self.getFromTokenInfo('keyHandle', None)
-        while savedKeyHandle.endswith('='):
+        savedKeyHandle = self.getFromTokenInfo("keyHandle", None)
+        while savedKeyHandle.endswith("="):
             savedKeyHandle = savedKeyHandle[:-1]
         if keyHandle is None or keyHandle != savedKeyHandle:
             return -1
@@ -679,53 +707,61 @@ class U2FTokenClass(TokenClass):
         # signatureData and clientData are urlsafe base64 encoded
         # correct padding errors (length should be multiples of 4)
         # fill up the signatureData and clientData with '=' to the correct padding
-        signatureData = signatureData + ('=' * (4 - (len(signatureData) % 4)))
-        clientData = clientData + ('=' * (4 - (len(clientData) % 4)))
-        signatureData = base64.urlsafe_b64decode(signatureData.encode('ascii'))
-        clientData = base64.urlsafe_b64decode(clientData.encode('ascii'))
+        signatureData = signatureData + ("=" * (4 - (len(signatureData) % 4)))
+        clientData = clientData + ("=" * (4 - (len(clientData) % 4)))
+        signatureData = base64.urlsafe_b64decode(signatureData.encode("ascii"))
+        clientData = base64.urlsafe_b64decode(clientData.encode("ascii"))
 
         # now check the otp for each challenge
         for ch in challenges:
             challenge = {}
 
             # we saved the 'real' challenge in the data
-            data = ch.get('data', None)
+            data = ch.get("data", None)
             if data is not None:
-                challenge['challenge'] = data.get('challenge')
+                challenge["challenge"] = data.get("challenge")
 
-            if challenge.get('challenge') is None:
-                log.debug('could not checkOtp due to missing challenge in request: %r', ch)
+            if challenge.get("challenge") is None:
+                log.debug(
+                    "could not checkOtp due to missing challenge in request: %r",
+                    ch,
+                )
                 continue
 
             # prepare the applicationParameter and challengeParameter needed for
             # verification of the registration signature
 
             appId = self._get_app_id()
-            applicationParameter = sha256(appId.encode('utf-8')).digest()
+            applicationParameter = sha256(appId.encode("utf-8")).digest()
             challengeParameter = sha256(clientData).digest()
             publicKey = base64.urlsafe_b64decode(
-                self.getFromTokenInfo('publicKey', None).encode('ascii'))
+                self.getFromTokenInfo("publicKey", None).encode("ascii")
+            )
 
             # parse the received signatureData object
-            (userPresenceByte, counter, signature) = self._parseSignatureData(signatureData)
+            (userPresenceByte, counter, signature) = self._parseSignatureData(
+                signatureData
+            )
 
             # verify the authentication signature
-            if not self._validateAuthenticationSignature(applicationParameter,
-                                                         userPresenceByte,
-                                                         counter,
-                                                         challengeParameter,
-                                                         publicKey,
-                                                         signature
-                                                         ):
+            if not self._validateAuthenticationSignature(
+                applicationParameter,
+                userPresenceByte,
+                counter,
+                challengeParameter,
+                publicKey,
+                signature,
+            ):
                 continue
 
             # check the received clientData object and retrieve the appId
             if not self._checkClientData(
-                clientData, 'authentication', challenge['challenge']):
+                clientData, "authentication", challenge["challenge"]
+            ):
                 continue
 
             # the counter is interpreted as big-endian according to the U2F specification
-            counterInt = struct.unpack('>I', counter)[0]
+            counterInt = struct.unpack(">I", counter)[0]
 
             # verify that the counter value increased - prevent token device cloning
             self._verifyCounterValue(counterInt)
@@ -748,20 +784,26 @@ class U2FTokenClass(TokenClass):
 
         # first byte has to be 0x05
         if ord(registrationData[:1]) is not 0x05:
-            log.error("Wrong registration data format: Reserved byte does not match")
+            log.error(
+                "Wrong registration data format: Reserved byte does not match"
+            )
             raise ValueError("Wrong registration data format")
         registrationData = registrationData[1:]
 
         # next 65 bytes refer to the user public key
         userPublicKey = registrationData[:USER_PUBLIC_KEY_LEN]
         if len(userPublicKey) < USER_PUBLIC_KEY_LEN:
-            log.error("Wrong registration data format: registration data is too short")
+            log.error(
+                "Wrong registration data format: registration data is too short"
+            )
             raise ValueError("Wrong registration data format")
         registrationData = registrationData[USER_PUBLIC_KEY_LEN:]
 
         # next byte represents the length of the following key handle
         if len(registrationData) < 1:
-            log.error("Wrong registration data format: registration data is too short")
+            log.error(
+                "Wrong registration data format: registration data is too short"
+            )
             raise ValueError("Wrong registration data format")
         keyHandleLength = ord(registrationData[:1])
         registrationData = registrationData[1:]
@@ -769,14 +811,16 @@ class U2FTokenClass(TokenClass):
         # key handle of length keyHandleLength
         keyHandle = registrationData[:keyHandleLength]
         if len(keyHandle) < keyHandleLength:
-            log.error("Wrong registration data format: registration data is too short")
+            log.error(
+                "Wrong registration data format: registration data is too short"
+            )
             raise ValueError("Wrong registration data format")
         registrationData = registrationData[keyHandleLength:]
 
-
         # load the X509 Certificate
         cert = x509.load_der_x509_certificate(
-                            registrationData, default_backend())
+            registrationData, default_backend()
+        )
 
         cert_len = len(cert.public_bytes(serialization.Encoding.DER))
 
@@ -785,14 +829,15 @@ class U2FTokenClass(TokenClass):
 
         return (userPublicKey, keyHandle, cert, signature)
 
-    def _validateRegistrationSignature(self,
-                                       applicationParameter,
-                                       challengeParameter,
-                                       keyHandle,
-                                       userPublicKey,
-                                       cert,
-                                       signature
-                                       ):
+    def _validateRegistrationSignature(
+        self,
+        applicationParameter,
+        challengeParameter,
+        keyHandle,
+        userPublicKey,
+        cert,
+        signature,
+    ):
         """
         Internal helper function to validate the registration signature received after parsing the
         token registration data according to the U2F specification
@@ -812,9 +857,12 @@ class U2FTokenClass(TokenClass):
         # compose the message from its parts
 
         message = (
-            b'\x00' + applicationParameter + challengeParameter +
-            keyHandle + userPublicKey
-            )
+            b"\x00"
+            + applicationParameter
+            + challengeParameter
+            + keyHandle
+            + userPublicKey
+        )
 
         # ------------------------------------------------------------------ --
 
@@ -827,12 +875,11 @@ class U2FTokenClass(TokenClass):
 
         except InvalidSignature as exx:
             log.info("Failed to verify signature %r" % exx)
-            raise ValueError('Attestation signature is invalid')
+            raise ValueError("Attestation signature is invalid")
 
         except Exception as exx:
             log.error("Failed to verify signature %r" % exx)
             raise
-
 
     def getInitDetail(self, params, user=None):
         """
@@ -843,7 +890,7 @@ class U2FTokenClass(TokenClass):
 
         info = self.getInfo()
         response_detail.update(info)
-        response_detail['serial'] = self.getSerial()
+        response_detail["serial"] = self.getSerial()
 
         # get requested phase
         try:
@@ -855,14 +902,16 @@ class U2FTokenClass(TokenClass):
             # We are in registration phase 1
             # We create a 32 bytes otp key (from urandom)
             # which is used as the registration challenge
-            challenge = base64.urlsafe_b64encode(binascii.unhexlify(self._genOtpKey_(32)))
-            self.addToTokenInfo('challenge', challenge.decode('ascii'))
+            challenge = base64.urlsafe_b64encode(
+                binascii.unhexlify(self._genOtpKey_(32))
+            )
+            self.addToTokenInfo("challenge", challenge.decode("ascii"))
 
             # save the appId to the TokenInfo
             # An appId passed as parameter is preferred over an appId defined in a policy
-            appId = ''
-            if 'appid' in params:
-                appId = params.get('appid')
+            appId = ""
+            if "appid" in params:
+                appId = params.get("appid")
             else:
                 # No appId passed as parameter - fall back to the policy
                 # Get the appId as specified in the enrollment policy 'u2f_app_id'
@@ -873,32 +922,38 @@ class U2FTokenClass(TokenClass):
                 realms = self.token.getRealmNames()
                 for realm in realms:
                     get_policy_params = {
-                        'action': 'u2f_app_id',
-                        'scope': 'enrollment',
-                        'realm': realm
-                        }
+                        "action": "u2f_app_id",
+                        "scope": "enrollment",
+                        "realm": realm,
+                    }
                     policies = getPolicy(get_policy_params)
                     policy_value = get_action_value(
-                        policies, scope='enrollment', action='u2f_app_id',
-                        default='')
+                        policies,
+                        scope="enrollment",
+                        action="u2f_app_id",
+                        default="",
+                    )
 
                     # Check for appId conflicts
                     if appId and policy_value:
                         if appId != policy_value:
-                            raise Exception("Conflicting appId values in u2f policies.")
+                            raise Exception(
+                                "Conflicting appId values in u2f policies."
+                            )
                     appId = policy_value
 
             if not appId:
                 raise Exception("No appId defined.")
-            self.addToTokenInfo('appId', appId)
+            self.addToTokenInfo("appId", appId)
 
             # create U2F RegisterRequest object and append it to the response as 'message'
             appId = self._get_app_id()
-            register_request = {'challenge': challenge.decode('ascii'),
-                                'version': 'U2F_V2',
-                                'appId': appId
-                                }
-            response_detail['registerrequest'] = register_request
+            register_request = {
+                "challenge": challenge.decode("ascii"),
+                "version": "U2F_V2",
+                "appId": appId,
+            }
+            response_detail["registerrequest"] = register_request
 
         elif requested_phase == "registration2":
             # We are in registration phase 2
@@ -906,70 +961,86 @@ class U2FTokenClass(TokenClass):
             registerResponse = ""
 
             otpkey = None
-            if 'otpkey' in params:
-                otpkey = params.get('otpkey')
+            if "otpkey" in params:
+                otpkey = params.get("otpkey")
 
             if otpkey is not None:
                 # otpkey holds the JSON RegisterResponse object as specified by the FIDO Alliance
                 try:
                     registerResponse = json.loads(otpkey)
                 except ValueError as ex:
-                    raise Exception('Invalid JSON format')
+                    raise Exception("Invalid JSON format")
 
                 self._handle_client_errors(registerResponse)
 
                 try:
-                    registrationData = registerResponse['registrationData']
-                    clientData = registerResponse['clientData']
+                    registrationData = registerResponse["registrationData"]
+                    clientData = registerResponse["clientData"]
                 except AttributeError as ex:
                     raise Exception("Couldn't find keyword in JSON object")
 
                 # registrationData and clientData are urlsafe base64 encoded
                 # correct padding errors (length should be multiples of 4)
                 # fill up the registrationData with '=' to the correct padding
-                registrationData = registrationData + \
-                    ('=' * (4 - (len(registrationData) % 4)))
-                clientData = clientData + ('=' * (4 - (len(clientData) % 4)))
+                registrationData = registrationData + (
+                    "=" * (4 - (len(registrationData) % 4))
+                )
+                clientData = clientData + ("=" * (4 - (len(clientData) % 4)))
                 registrationData = base64.urlsafe_b64decode(
-                    registrationData.encode('ascii'))
-                clientData = base64.urlsafe_b64decode(clientData.encode('ascii'))
+                    registrationData.encode("ascii")
+                )
+                clientData = base64.urlsafe_b64decode(
+                    clientData.encode("ascii")
+                )
 
                 # parse the raw registrationData according to the specification
-                (userPublicKey, keyHandle, x509cert, signature) = \
-                    self._parseRegistrationData(registrationData)
+                (
+                    userPublicKey,
+                    keyHandle,
+                    x509cert,
+                    signature,
+                ) = self._parseRegistrationData(registrationData)
 
                 # check the received clientData object
                 if not self._checkClientData(
-                    clientData, 'registration', self.getFromTokenInfo('challenge', None)):
-                    raise ValueError("Received invalid clientData object. Aborting...")
+                    clientData,
+                    "registration",
+                    self.getFromTokenInfo("challenge", None),
+                ):
+                    raise ValueError(
+                        "Received invalid clientData object. Aborting..."
+                    )
 
                 # prepare the applicationParameter and challengeParameter needed for
                 # verification of the registration signature
                 appId = self._get_app_id()
-                applicationParameter = sha256(appId.encode('utf-8')).digest()
+                applicationParameter = sha256(appId.encode("utf-8")).digest()
                 challengeParameter = sha256(clientData).digest()
 
                 # verify the registration signature
-                self._validateRegistrationSignature(applicationParameter,
-                                                    challengeParameter,
-                                                    keyHandle,
-                                                    userPublicKey,
-                                                    x509cert,
-                                                    signature
-                                                    )
+                self._validateRegistrationSignature(
+                    applicationParameter,
+                    challengeParameter,
+                    keyHandle,
+                    userPublicKey,
+                    x509cert,
+                    signature,
+                )
 
                 # save the key handle and the user public key in the Tokeninfo field for
                 # future use
                 self.addToTokenInfo(
-                    'keyHandle',
-                    base64.urlsafe_b64encode(keyHandle).decode('ascii'))
+                    "keyHandle",
+                    base64.urlsafe_b64encode(keyHandle).decode("ascii"),
+                )
                 self.addToTokenInfo(
-                    'publicKey',
-                    base64.urlsafe_b64encode(userPublicKey).decode('ascii'))
-                self.addToTokenInfo('counter', '0')
-                self.addToTokenInfo('phase', 'authentication')
+                    "publicKey",
+                    base64.urlsafe_b64encode(userPublicKey).decode("ascii"),
+                )
+                self.addToTokenInfo("counter", "0")
+                self.addToTokenInfo("phase", "authentication")
                 # remove the registration challenge from the token info
-                self.removeFromTokenInfo('challenge')
+                self.removeFromTokenInfo("challenge")
                 # Activate the token
                 self.token.LinOtpIsactive = True
             else:
@@ -981,12 +1052,14 @@ class U2FTokenClass(TokenClass):
 
     def getOfflineInfo(self):
 
-        public_key = self.getFromTokenInfo('publicKey')
-        key_handle = self.getFromTokenInfo('keyHandle')
-        counter = self.getFromTokenInfo('counter')
-        app_id = self.getFromTokenInfo('appId')
+        public_key = self.getFromTokenInfo("publicKey")
+        key_handle = self.getFromTokenInfo("keyHandle")
+        counter = self.getFromTokenInfo("counter")
+        app_id = self.getFromTokenInfo("appId")
 
-        return {'public_key': public_key,
-                'key_handle': key_handle,
-                'counter': counter,
-                'app_id': app_id}
+        return {
+            "public_key": public_key,
+            "key_handle": key_handle,
+            "counter": counter,
+            "app_id": app_id,
+        }

@@ -37,7 +37,7 @@ import smtplib
 
 class MockedSMTP(object):
     def __init__(self):
-        self.patch_smtp = patch('smtplib.SMTP', spec=smtplib.SMTP)
+        self.patch_smtp = patch("smtplib.SMTP", spec=smtplib.SMTP)
 
     def __enter__(self):
         mock_smtp_class = self.patch_smtp.start()
@@ -51,8 +51,8 @@ class MockedSMTP(object):
 from linotp.tests import TestController
 from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
 
-class TestEmailtoken(TestController):
 
+class TestEmailtoken(TestController):
     def setUp(self):
         """ setup for std resolver / realms"""
 
@@ -80,12 +80,10 @@ class TestEmailtoken(TestController):
         # email_provider_template root directory - we will use the email.eml
         # template
 
-        params = {
-            EMAIL_PROVIDER_TEMPLATE_KEY: self.fixture_path
-            }
+        params = {EMAIL_PROVIDER_TEMPLATE_KEY: self.fixture_path}
 
-        response = self.make_system_request('setConfig', params=params)
-        assert 'false' not in response
+        response = self.make_system_request("setConfig", params=params)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -96,51 +94,50 @@ class TestEmailtoken(TestController):
             "SMTP_USER": "secret_user",
             "SMTP_PASSWORD": "secret_pasword",
             "EMAIL_SUBJECT": "Your requested otp ${otp} for token ${serial}",
-            "TEMPLATE": "file://email.eml"
+            "TEMPLATE": "file://email.eml",
         }
 
         email_provider_definition = {
-            'name': 'TemplEMailProvider', 
-            'timeout': '3', 
-            'type': 'email', 
-            'config': json.dumps(email_provider_config),
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider'
-            }
+            "name": "TemplEMailProvider",
+            "timeout": "3",
+            "type": "email",
+            "config": json.dumps(email_provider_config),
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+        }
 
         response = self.make_system_request(
-            'setProvider', params=email_provider_definition)
+            "setProvider", params=email_provider_definition
+        )
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # and make hime the default email provider
 
-        params = {
-            'type': 'email', 
-            'name': 'TemplEMailProvider'
-        }
+        params = {"type": "email", "name": "TemplEMailProvider"}
         response = self.make_system_request(
-            'setDefaultProvider', params=params)
+            "setDefaultProvider", params=params
+        )
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # enroll email token for user
 
-        user = 'root'
-        serial = 'EMAIL_TOKEN_001'
+        user = "root"
+        serial = "EMAIL_TOKEN_001"
 
         params = {
-            'user': user,
-            'type': 'email',
-            'pin': '123',
-            'email_address': 'test@example.com',
-            'serial': serial
+            "user": user,
+            "type": "email",
+            "pin": "123",
+            "email_address": "test@example.com",
+            "serial": serial,
         }
-        response = self.make_admin_request('init', params=params)
-        assert 'false' not in response
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -153,23 +150,19 @@ class TestEmailtoken(TestController):
 
             # now trigger a challenge for the user
 
-            params = {
-                'user': user,
-                'pass': '123'
-                }
-            response = self.make_validate_request('check', params=params)
-            assert 'false' in response
+            params = {"user": user, "pass": "123"}
+            response = self.make_validate_request("check", params=params)
+            assert "false" in response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _from, _to, raw_message = call_args[0]
 
-            message = raw_message.decode('utf-8')
+            message = raw_message.decode("utf-8")
 
-            assert 'Content-Type: multipart/related;' in message
-            assert '${otp}' not in message
+            assert "Content-Type: multipart/related;" in message
+            assert "${otp}" not in message
             assert "${serial}" not in message
             assert serial in message
-
 
     def test_email_template_with_inline(self):
         """
@@ -181,93 +174,92 @@ class TestEmailtoken(TestController):
         # email_provider_template root directory - we will use the email.eml
         # template
 
-        params = {
-            EMAIL_PROVIDER_TEMPLATE_KEY: self.fixture_path
-            }
+        params = {EMAIL_PROVIDER_TEMPLATE_KEY: self.fixture_path}
 
-        response = self.make_system_request('setConfig', params=params)
-        assert 'false' not in response
+        response = self.make_system_request("setConfig", params=params)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
-        # define an email message policy which should be 
+        # define an email message policy which should be
         # overruled by the template
 
         params = {
-            'name': 'email_message',
-            'active': True,
-            'scope': 'authentication',
-            'action': ("emailtext='text from policy',"
-                       "emailsubject='subject from policy'"),
-            'user': '*',
-            'realm': '*'
-            }
+            "name": "email_message",
+            "active": True,
+            "scope": "authentication",
+            "action": (
+                "emailtext='text from policy',"
+                "emailsubject='subject from policy'"
+            ),
+            "user": "*",
+            "realm": "*",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # now define the email provider
 
-        filename = os.path.join(self.fixture_path, 'email.eml')
+        filename = os.path.join(self.fixture_path, "email.eml")
         with open(filename, "rb") as f:
             raw_content = f.read()
 
-        content = raw_content.decode('utf-8')
-        inline_template = '"' + content.replace('"', '\"') + '"'
+        content = raw_content.decode("utf-8")
+        inline_template = '"' + content.replace('"', '"') + '"'
 
         email_provider_config = {
             "SMTP_SERVER": "mail.example.com",
             "SMTP_USER": "secret_user",
             "SMTP_PASSWORD": "secret_pasword",
-            "EMAIL_SUBJECT": ("Your requested otp ${otp} for "
-                        "token ${serial} and ${user}"),
-
-            "TEMPLATE": inline_template
+            "EMAIL_SUBJECT": (
+                "Your requested otp ${otp} for " "token ${serial} and ${user}"
+            ),
+            "TEMPLATE": inline_template,
         }
         email_provider_definition = {
-            'name': 'TemplEMailProvider', 
-            'timeout': '3', 
-            'type': 'email', 
-            'config': json.dumps(email_provider_config),
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider'
-            }
+            "name": "TemplEMailProvider",
+            "timeout": "3",
+            "type": "email",
+            "config": json.dumps(email_provider_config),
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+        }
 
         response = self.make_system_request(
-            'setProvider', params=email_provider_definition)
+            "setProvider", params=email_provider_definition
+        )
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # and make him the default email provider
 
-        params = {
-            'type': 'email', 
-            'name': 'TemplEMailProvider'
-        }
+        params = {"type": "email", "name": "TemplEMailProvider"}
         response = self.make_system_request(
-            'setDefaultProvider', params=params)
+            "setDefaultProvider", params=params
+        )
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # enroll email token for user
 
-        user = 'root'
-        serial = 'EMAIL_TOKEN_001'
+        user = "root"
+        serial = "EMAIL_TOKEN_001"
 
         params = {
-            'user': user,
-            'type': 'email',
-            'pin': '123',
-            'email_address': 'test@example.com',
-            'serial': serial
+            "user": user,
+            "type": "email",
+            "pin": "123",
+            "email_address": "test@example.com",
+            "serial": serial,
         }
-        response = self.make_admin_request('init', params=params)
-        assert 'false' not in response
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -280,25 +272,22 @@ class TestEmailtoken(TestController):
 
             # now trigger a challenge for the user
 
-            params = {
-                'user': user,
-                'pass': '123'
-                }
-            response = self.make_validate_request('check', params=params)
+            params = {"user": user, "pass": "123"}
+            response = self.make_validate_request("check", params=params)
 
-            assert 'false' in response
+            assert "false" in response
             assert '"message": "e-mail sent successfully"' in response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _from, _to, raw_message = call_args[0]
 
-            message = raw_message.decode('utf-8')
+            message = raw_message.decode("utf-8")
 
             # verify that the template is used instead of the message
-            assert 'Content-Type: multipart/related;' in message
+            assert "Content-Type: multipart/related;" in message
 
             # verify that otp and serial are replaced in message
-            assert '${otp}' not in message
+            assert "${otp}" not in message
             assert "${serial}" not in message
             assert serial in message
 
@@ -306,7 +295,7 @@ class TestEmailtoken(TestController):
             assert "${user}" in message
 
             # verify that the policy did not overrule the template
-            assert 'from policy' not in message
+            assert "from policy" not in message
 
     def test_dynamic_email_address(self):
         """ use the email address of the user not of the token (dynamic)"""
@@ -315,65 +304,65 @@ class TestEmailtoken(TestController):
             "SMTP_SERVER": "mail.example.com",
             "SMTP_USER": "secret_user",
             "SMTP_PASSWORD": "secret_pasword",
-            "EMAIL_SUBJECT": ("Your requested otp ${otp} for "
-                        "token ${serial} and ${user}"),
+            "EMAIL_SUBJECT": (
+                "Your requested otp ${otp} for " "token ${serial} and ${user}"
+            ),
         }
         email_provider_definition = {
-            'name': 'TemplEMailProvider', 
-            'timeout': '3', 
-            'type': 'email', 
-            'config': json.dumps(email_provider_config),
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider'
-            }
+            "name": "TemplEMailProvider",
+            "timeout": "3",
+            "type": "email",
+            "config": json.dumps(email_provider_config),
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+        }
 
         response = self.make_system_request(
-            'setProvider', params=email_provider_definition)
+            "setProvider", params=email_provider_definition
+        )
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # and make him the default email provider
 
-        params = {
-            'type': 'email',
-            'name': 'TemplEMailProvider'
-        }
+        params = {"type": "email", "name": "TemplEMailProvider"}
         response = self.make_system_request(
-            'setDefaultProvider', params=params)
+            "setDefaultProvider", params=params
+        )
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # enroll email token for user
 
-        user = 'passthru_user1'
-        serial = 'EMAIL_TOKEN_001'
+        user = "passthru_user1"
+        serial = "EMAIL_TOKEN_001"
 
         params = {
-            'user': user,
-            'type': 'email',
-            'pin': '123',
-            'email_address': 'test@example.com',
-            'serial': serial
+            "user": user,
+            "type": "email",
+            "pin": "123",
+            "email_address": "test@example.com",
+            "serial": serial,
         }
-        response = self.make_admin_request('init', params=params)
-        assert 'false' not in response
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         params = {
-            'name': 'dynamic_email_address',
-            'scope': 'authentication',
-            'action': 'dynamic_email_address',
-            'user': user,
-            'realm': '*',
-            'active': True,
-            }
+            "name": "dynamic_email_address",
+            "scope": "authentication",
+            "action": "dynamic_email_address",
+            "user": user,
+            "realm": "*",
+            "active": True,
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -386,19 +375,16 @@ class TestEmailtoken(TestController):
 
             # now trigger a challenge for the user
 
-            params = {
-                'user': user,
-                'pass': '123'
-                }
-            response = self.make_validate_request('check', params=params)
+            params = {"user": user, "pass": "123"}
+            response = self.make_validate_request("check", params=params)
 
-            assert 'false' in response
+            assert "false" in response
             assert '"message": "e-mail sent successfully"' in response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _from, to, _message = call_args[0]
 
-            assert to == 'pass.true@example.com'
+            assert to == "pass.true@example.com"
 
     def test_verify_not_blocking(self):
         """ verify that email challenges are not blocked if challenge is closed """
@@ -414,47 +400,46 @@ class TestEmailtoken(TestController):
             "EMAIL_SUBJECT": "otp: ${otp}",
         }
         email_provider_definition = {
-            'name': 'TemplEMailProvider',
-            'timeout': '3',
-            'type': 'email',
-            'config': json.dumps(email_provider_config),
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider'
-            }
+            "name": "TemplEMailProvider",
+            "timeout": "3",
+            "type": "email",
+            "config": json.dumps(email_provider_config),
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+        }
 
         response = self.make_system_request(
-            'setProvider', params=email_provider_definition)
+            "setProvider", params=email_provider_definition
+        )
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # and make him the default email provider
 
-        params = {
-            'type': 'email',
-            'name': 'TemplEMailProvider'
-        }
+        params = {"type": "email", "name": "TemplEMailProvider"}
         response = self.make_system_request(
-            'setDefaultProvider', params=params)
+            "setDefaultProvider", params=params
+        )
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # enroll email token for user and answer the challenge
 
-        user = 'passthru_user1'
-        serial = 'EMAIL_TOKEN_001'
+        user = "passthru_user1"
+        serial = "EMAIL_TOKEN_001"
 
         params = {
-            'user': user,
-            'type': 'email',
-            'pin': '123',
-            'email_address': 'test@example.com',
-            'serial': serial
+            "user": user,
+            "type": "email",
+            "pin": "123",
+            "email_address": "test@example.com",
+            "serial": serial,
         }
-        response = self.make_admin_request('init', params=params)
-        assert 'false' not in response
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -469,59 +454,49 @@ class TestEmailtoken(TestController):
 
             # now trigger a challenge for the user
 
-            params = {
-                'user': user,
-                'pass': '123'
-                }
-            response = self.make_validate_request('check', params=params)
+            params = {"user": user, "pass": "123"}
+            response = self.make_validate_request("check", params=params)
 
-            assert 'false' in response
+            assert "false" in response
             assert '"message": "e-mail sent successfully"' in response
 
             jresp = json.loads(response.body)
-            transaction_id = jresp['detail']['transactionid']
+            transaction_id = jresp["detail"]["transactionid"]
 
             call_args = mock_smtp_instance.sendmail.call_args
             _from, _to, message = call_args[0]
-            otp = message.rpartition('\n')[2].strip()
+            otp = message.rpartition("\n")[2].strip()
 
             # -------------------------------------------------------------- --
 
             # now trigger a second challenge for the user which is blocked
 
-            params = {
-                'user': user,
-                'pass': '123'
-                }
-            response = self.make_validate_request('check', params=params)
+            params = {"user": user, "pass": "123"}
+            response = self.make_validate_request("check", params=params)
 
-            assert 'false' in response
+            assert "false" in response
             assert '"message": "e-mail with otp already submitted"' in response
 
-
-
             params = {
-                'user': user,
-                'pass': otp,
-                'transactionid': transaction_id
-                }
-            response = self.make_validate_request('check', params=params)
+                "user": user,
+                "pass": otp,
+                "transactionid": transaction_id,
+            }
+            response = self.make_validate_request("check", params=params)
 
-            assert 'false' not in response
+            assert "false" not in response
 
             # -------------------------------------------------------------- --
 
             # now trigger a challenge for the user -
             # which should now be possible without blocking
 
-            params = {
-                'user': user,
-                'pass': '123'
-                }
-            response = self.make_validate_request('check', params=params)
+            params = {"user": user, "pass": "123"}
+            response = self.make_validate_request("check", params=params)
 
-            assert 'false' in response
+            assert "false" in response
 
             assert '"message": "e-mail sent successfully"' in response
+
 
 # eof

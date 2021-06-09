@@ -31,8 +31,8 @@ from unittest import TestCase
 
 from linotp.provider.smsprovider.FileSMSProvider import FileSMSProvider
 
-class TestSMS(TestCase):
 
+class TestSMS(TestCase):
     def test_filesms_provider(self):
         """ test the file writing """
 
@@ -46,25 +46,26 @@ class TestSMS(TestCase):
         os.path.dirname(temp_file.name)
 
         config = {
-            'file': os.path.basename(temp_file.name),
-            'here': os.path.dirname(temp_file.name)
-            }
+            "file": os.path.basename(temp_file.name),
+            "here": os.path.dirname(temp_file.name),
+        }
         fsms.loadConfig(config)
 
         # ------------------------------------------------------------------ --
 
         # test the standard string message
 
-        message = 'test sms with my favorite otp: 8765 4321'
+        message = "test sms with my favorite otp: 8765 4321"
 
-        fsms._submitMessage('+49 1717 1234 567', message)
+        fsms._submitMessage("+49 1717 1234 567", message)
 
         # ------------------------------------------------------------------ --
 
         # test with bytes as message - supported by internal conversion
 
-        message = b'test sms with my favorite otp: 8765 4321'
+        message = b"test sms with my favorite otp: 8765 4321"
 
-        fsms._submitMessage('+49 1717 1234 567', message)
+        fsms._submitMessage("+49 1717 1234 567", message)
 
-#eof
+
+# eof

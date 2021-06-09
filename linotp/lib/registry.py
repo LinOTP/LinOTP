@@ -43,8 +43,8 @@ class ClassRegistry(dict):
 
     def class_entry(self, registry_key=None):
 
-        """ decorator factory to insert classes into
-        this registry """
+        """decorator factory to insert classes into
+        this registry"""
 
         def _inner(cls_):
 

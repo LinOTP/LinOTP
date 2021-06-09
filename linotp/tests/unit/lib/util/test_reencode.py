@@ -26,7 +26,7 @@
 #
 """Tests for text_util re_encode which is required for linotp2 migration """
 
-import logging 
+import logging
 import pytest
 
 from linotp.model.migrate import re_encode
@@ -37,8 +37,8 @@ log = logging.getLogger(__name__)
 def test_iso8859():
     """Test for iso-8859-1 input re_encoding."""
 
-    utf8_str = 'äöüß€'
-    iso8859_15_str = bytes(utf8_str, encoding='utf-8').decode('iso-8859-15')
+    utf8_str = "äöüß€"
+    iso8859_15_str = bytes(utf8_str, encoding="utf-8").decode("iso-8859-15")
 
     with pytest.raises(UnicodeDecodeError):
         re_encode(utf8_str)
@@ -48,4 +48,4 @@ def test_iso8859():
 
     assert re_encode(None) is None
 
-    assert re_encode('') == ''
+    assert re_encode("") == ""

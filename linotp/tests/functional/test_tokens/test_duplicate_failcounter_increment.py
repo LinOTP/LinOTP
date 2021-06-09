@@ -34,8 +34,8 @@ from linotp.tests import TestController
 
 
 class TestDuplicateFailcounterIncrement(TestController):
-    '''
-    '''
+    """"""
+
     def setUp(self):
 
         resp = TestController.setUp(self)
@@ -54,16 +54,16 @@ class TestDuplicateFailcounterIncrement(TestController):
         # active for all tokens
 
         params = {
-            'name': 'duplicate_inc',
-            'scope': 'authentication',
-            'active': True,
-            'action': 'challenge_response=*,',
-            'user': '*',
-            'realm': '*',
-            }
+            "name": "duplicate_inc",
+            "scope": "authentication",
+            "active": True,
+            "action": "challenge_response=*,",
+            "user": "*",
+            "realm": "*",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response.body, response.body
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response.body, response.body
 
         # ------------------------------------------------------------------ --
 
@@ -71,24 +71,24 @@ class TestDuplicateFailcounterIncrement(TestController):
 
         params = {
             "user": "root",
-            'serial': 'roots_email_token',
-            'type': 'email',
-            'email_address': 'root@home',
-            'pin': '123!',
+            "serial": "roots_email_token",
+            "type": "email",
+            "email_address": "root@home",
+            "pin": "123!",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert "false" not in response
 
         params = {
             "user": "root",
-            'serial': 'roots_hmac_token',
-            'genkey': '1',
-            'type': 'hmac',
-            'pin': '123!'
+            "serial": "roots_hmac_token",
+            "genkey": "1",
+            "type": "hmac",
+            "pin": "123!",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert "false" not in response
 
         # ------------------------------------------------------------------ --
@@ -96,11 +96,11 @@ class TestDuplicateFailcounterIncrement(TestController):
         # now run a validate check on pin base
 
         params = {
-            'user': 'root',
-            'pass': '123!',
-            }
+            "user": "root",
+            "pass": "123!",
+        }
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert '"value": false' in response
 
         # ------------------------------------------------------------------ --
@@ -108,17 +108,17 @@ class TestDuplicateFailcounterIncrement(TestController):
         # have a look on the token
 
         params = {
-            'user': 'root',
-            }
+            "user": "root",
+        }
 
-        response = self.make_admin_request('show', params=params)
+        response = self.make_admin_request("show", params=params)
         jresp = json.loads(response.body)
 
         failcounters = []
 
-        data = jresp['result']['value']['data']
+        data = jresp["result"]["value"]["data"]
         for entry in data:
-            failcounters.append(entry['LinOtp.FailCount'])
+            failcounters.append(entry["LinOtp.FailCount"])
 
         assert failcounters[0] == failcounters[1]
 

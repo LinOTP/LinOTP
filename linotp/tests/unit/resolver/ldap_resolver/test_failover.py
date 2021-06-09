@@ -56,11 +56,11 @@ class MockedLdapObject:
     def simple_bind_s(self, user, passw, *args, **kwargs):
         """  emulate a simple_bind  """
 
-        if 'fail' in self.uri:
-            raise LDAPError('failed to connect')
+        if "fail" in self.uri:
+            raise LDAPError("failed to connect")
 
-        if passw != 'geheim1':
-            raise INVALID_CREDENTIALS('not geheim1!')
+        if passw != "geheim1":
+            raise INVALID_CREDENTIALS("not geheim1!")
 
         return True
 
@@ -100,6 +100,7 @@ class MockedBindPW:
 
 class MockedResourceRegistry(DictResourceRegistry):
     """ mock the registry, so we can access the registry data localy """
+
     registry = {}
 
 
@@ -109,8 +110,10 @@ class MockedResourceScheduler(ResourceScheduler):
     def __init__(self, uri_list=None, tries=1):
         """ overload the constuctor so we can control the retries """
         super(MockedResourceScheduler, self).__init__(
-                uri_list=uri_list, tries=TRIES,
-                resource_registry_class=MockedResourceRegistry)
+            uri_list=uri_list,
+            tries=TRIES,
+            resource_registry_class=MockedResourceRegistry,
+        )
 
 
 @pytest.mark.usefixtures("app")
@@ -124,11 +127,13 @@ class TestLDAPResolverFailover(unittest.TestCase):
         FakeLdapResolver.called = []
         MockedResourceRegistry.registry = {}
 
-        monkeypatch.setattr(LDAPResolver, 'connect',
-                            FakeLdapResolver.m_connect)
+        monkeypatch.setattr(
+            LDAPResolver, "connect", FakeLdapResolver.m_connect
+        )
 
-        monkeypatch.setattr(ldap_resolver_module, 'ResourceScheduler',
-                            MockedResourceScheduler)
+        monkeypatch.setattr(
+            ldap_resolver_module, "ResourceScheduler", MockedResourceScheduler
+        )
 
     def test_bind_with_failover(self):
         """
@@ -145,13 +150,14 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # the mocked Registry so that we can access the calling data
 
         myldap = LDAPResolver()
-        myldap.ldapuri = ("ldap://fail_bind1.psw.de, "
-                        "ldap://fail_bind2.psw.de, "
-                        "ldap://ok_bind3.psw.de, "
-                        "ldap://ok_bind4.psw.de, "
-                        )
+        myldap.ldapuri = (
+            "ldap://fail_bind1.psw.de, "
+            "ldap://fail_bind2.psw.de, "
+            "ldap://ok_bind3.psw.de, "
+            "ldap://ok_bind4.psw.de, "
+        )
 
-        myldap.bindpw = MockedBindPW('geheim1')
+        myldap.bindpw = MockedBindPW("geheim1")
 
         # ------------------------------------------------------------------ --
 
@@ -166,7 +172,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         called = FakeLdapResolver.called
 
         assert len(called) == 2 * TRIES + 1
-        assert 'ldap://ok_bind4.psw.de' not in called
+        assert "ldap://ok_bind4.psw.de" not in called
 
         # ------------------------------------------------------------------ --
 
@@ -177,7 +183,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         for key, val in list(registry.items()):
             value, _b_ind, _b_count = val
 
-            if 'fail' in key:
+            if "fail" in key:
                 assert value is not None
             else:
                 assert value is None
@@ -186,7 +192,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         # verify that the 4th entry was never evaluated
 
-        assert 'ldap://ok_bind4.psw.de' not in registry
+        assert "ldap://ok_bind4.psw.de" not in registry
 
         return
 
@@ -205,14 +211,15 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # the mocked Registry so that we can access the calling data
 
         myldap = LDAPResolver()
-        myldap.ldapuri = ("ldap://fail_bind1.psw.de, "
-                        "ldap://fail_bind2.psw.de, "
-                        "ldap://fail_bind3.psw.de, "
-                        "ldap://fail_bind4.psw.de, "
-                        )
+        myldap.ldapuri = (
+            "ldap://fail_bind1.psw.de, "
+            "ldap://fail_bind2.psw.de, "
+            "ldap://fail_bind3.psw.de, "
+            "ldap://fail_bind4.psw.de, "
+        )
 
         myldap.binddn = "Heinz"
-        myldap.bindpw = MockedBindPW('geheim1')
+        myldap.bindpw = MockedBindPW("geheim1")
 
         # ------------------------------------------------------------------ --
 
@@ -229,7 +236,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
             called = FakeLdapResolver.called
 
             assert len(called) == 4 * TRIES
-            assert 'ldap://fail_bind4.psw.de' in called
+            assert "ldap://fail_bind4.psw.de" in called
 
             # -------------------------------------------------------------- --
 
@@ -244,7 +251,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             # verify that the 4th entry was evaluated
 
-            assert 'ldap://fail_bind4.psw.de' in registry
+            assert "ldap://fail_bind4.psw.de" in registry
 
             # -------------------------------------------------------------- --
 
@@ -252,7 +259,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             FakeLdapResolver.called = []
 
-#           # -------------------------------------------------------------- --
+            #           # -------------------------------------------------------------- --
 
             # and re-run the bind
 
@@ -267,7 +274,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
             called = FakeLdapResolver.called
 
             assert len(called) == 0
-            assert 'ldap://fail_bind1.psw.de' not in called
+            assert "ldap://fail_bind1.psw.de" not in called
 
         with freeze_time("2012-01-14 12:01:00"):
 
@@ -275,11 +282,12 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             # one minute later re-run the bind
 
-            myldap.ldapuri = ("ldap://fail_bind1.psw.de, "
-                              "ldap://fail_bind2.psw.de, "
-                              "ldap://go_bind3.psw.de, "
-                              "ldap://go_bind4.psw.de, "
-                              )
+            myldap.ldapuri = (
+                "ldap://fail_bind1.psw.de, "
+                "ldap://fail_bind2.psw.de, "
+                "ldap://go_bind3.psw.de, "
+                "ldap://go_bind4.psw.de, "
+            )
 
             myldap.bind()
 
@@ -290,7 +298,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
             called = FakeLdapResolver.called
 
             assert len(called) == 2 * TRIES + 1
-            assert 'ldap://go_bind4.psw.de' not in called
+            assert "ldap://go_bind4.psw.de" not in called
 
             # -------------------------------------------------------------- --
 
@@ -301,7 +309,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
             for key, val in list(registry.items()):
                 value, _b_ind, _b_count = val
 
-                if 'fail' in key:
+                if "fail" in key:
                     assert value is not None
                 else:
                     assert value is None
@@ -310,7 +318,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             # verify that the 4th entry was never evaluated
 
-            assert 'ldap://go_bind4.psw.de' not in registry
+            assert "ldap://go_bind4.psw.de" not in registry
 
         return
 
@@ -329,19 +337,20 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # the mocked Registry so that we can access the calling data
 
         myldap = LDAPResolver()
-        myldap.ldapuri = ("ldap://fail_bind1.psw.de, "
-                          "ldap://fail_bind2.psw.de, "
-                          "ldap://ok_bind3.psw.de, "
-                          "ldap://ok_bind4.psw.de, "
-                        )
+        myldap.ldapuri = (
+            "ldap://fail_bind1.psw.de, "
+            "ldap://fail_bind2.psw.de, "
+            "ldap://ok_bind3.psw.de, "
+            "ldap://ok_bind4.psw.de, "
+        )
 
-        myldap.bindpw = MockedBindPW('geheim1')
+        myldap.bindpw = MockedBindPW("geheim1")
 
         # ------------------------------------------------------------------ --
 
         # run the checkPass test
 
-        myldap.checkPass('myUid', 'not geheim1')
+        myldap.checkPass("myUid", "not geheim1")
 
         # ------------------------------------------------------------------ --
 
@@ -350,7 +359,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         called = FakeLdapResolver.called
 
         assert len(called) == 2 * TRIES + 1
-        assert 'ldap://ok_bind4.psw.de' not in called
+        assert "ldap://ok_bind4.psw.de" not in called
 
         # ------------------------------------------------------------------ --
 
@@ -361,7 +370,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         for key, val in list(registry.items()):
             value, _b_ind, _b_count = val
 
-            if 'fail' in key:
+            if "fail" in key:
                 assert value is not None
             else:
                 assert value is None
@@ -370,7 +379,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         # verify that the 4th entry was never evaluated
 
-        assert 'ldap://ok_bind4.psw.de' not in registry
+        assert "ldap://ok_bind4.psw.de" not in registry
 
         # ------------------------------------------------------------------ --
 
@@ -382,7 +391,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         # run the checkPass test
 
-        myldap.checkPass('myUid', 'geheim1')
+        myldap.checkPass("myUid", "geheim1")
 
         # ------------------------------------------------------------------ --
 
@@ -391,7 +400,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         called = FakeLdapResolver.called
 
         assert len(called) == 1
-        assert 'ldap://ok_bind4.psw.de' not in called
+        assert "ldap://ok_bind4.psw.de" not in called
 
         # ------------------------------------------------------------------ --
 
@@ -402,7 +411,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         for key, val in list(registry.items()):
             value, _b_ind, _b_count = val
 
-            if 'fail' in key:
+            if "fail" in key:
                 assert value is not None
             else:
                 assert value is None
@@ -411,8 +420,9 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         # verify that the 4th entry was never evaluated
 
-        assert 'ldap://ok_bind4.psw.de' not in registry
+        assert "ldap://ok_bind4.psw.de" not in registry
 
         return
+
 
 # eof #

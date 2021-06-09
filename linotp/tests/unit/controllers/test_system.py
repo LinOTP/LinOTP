@@ -37,8 +37,9 @@ from linotp.model import db
 
 @pytest.mark.usefixtures("app")
 class TestSetResolver(unittest.TestCase):
-
-    @patch('linotp.controllers.system.BaseController.__init__', return_value=None)
+    @patch(
+        "linotp.controllers.system.BaseController.__init__", return_value=None
+    )
     def setUp(self, mock_base):
         unittest.TestCase.setUp(self)
         self.system = SystemController()
@@ -46,21 +47,37 @@ class TestSetResolver(unittest.TestCase):
     def tearDown(self):
         db.session.remove()
 
-    @patch('linotp.controllers.system.getResolverList', return_value=[])
-    @patch('linotp.controllers.system.request')
-    @patch('linotp.controllers.system.prepare_resolver_parameter')
-    @patch('linotp.controllers.system._')
-    @patch('linotp.controllers.system.defineResolver')
-    def set_resolver(self, params, mock_define_resolver, mock_translate, mock_prepare, mock_request, mock_resolverlist):
+    @patch("linotp.controllers.system.getResolverList", return_value=[])
+    @patch("linotp.controllers.system.request")
+    @patch("linotp.controllers.system.prepare_resolver_parameter")
+    @patch("linotp.controllers.system._")
+    @patch("linotp.controllers.system.defineResolver")
+    def set_resolver(
+        self,
+        params,
+        mock_define_resolver,
+        mock_translate,
+        mock_prepare,
+        mock_request,
+        mock_resolverlist,
+    ):
         # Call set resolver with given parameters
 
-        params['name'] = 'UnitTestResolver'
+        params["name"] = "UnitTestResolver"
 
         # prepare_request_params simply returns the parameters unchanged
-        mock_prepare.side_effect = lambda new_resolver_name, param, previous_name: (param, False, False)
+        mock_prepare.side_effect = (
+            lambda new_resolver_name, param, previous_name: (
+                param,
+                False,
+                False,
+            )
+        )
 
-        with patch('linotp.controllers.system.sendError') as mock_senderror:
-            with patch('linotp.controllers.system.sendResult') as mock_sendresult:
+        with patch("linotp.controllers.system.sendError") as mock_senderror:
+            with patch(
+                "linotp.controllers.system.sendResult"
+            ) as mock_sendresult:
                 # sendError returns the exception
                 mock_senderror.side_effect = lambda response, exx: exx
                 mock_sendresult.side_effect = lambda response, obj, *args: obj
@@ -71,12 +88,16 @@ class TestSetResolver(unittest.TestCase):
 
     def test_set_resolver_readonly_param_invalid(self):
         expected_message = "Failed to convert attribute 'readonly' to a boolean value! 'truly'"
-        ret = self.set_resolver({'readonly': 'truly'})
+        ret = self.set_resolver({"readonly": "truly"})
         assert str(ret) == expected_message
 
     def test_set_resolver_readonly_param_empty(self):
-        ret = self.set_resolver({'readonly': ''})
-        assert ret, "setResolver with empty readonly parameter should succeed. Returned:%s" % ret
+        ret = self.set_resolver({"readonly": ""})
+        assert ret, (
+            "setResolver with empty readonly parameter should succeed. Returned:%s"
+            % ret
+        )
+
 
 @pytest.fixture
 def err_hsm(app, monkeypatch):
@@ -89,14 +110,15 @@ def err_hsm(app, monkeypatch):
             def isReady(self):
                 return False
 
-        return {
-            'obj': ErrHSM()
-        }
+        return {"obj": ErrHSM()}
 
     # Override SecurityProvider.getSecurityModule() to return the error HSM
-    monkeypatch.setattr(SecurityProvider, 'getSecurityModule', getErrSecurityModule)
+    monkeypatch.setattr(
+        SecurityProvider, "getSecurityModule", getErrSecurityModule
+    )
 
-@pytest.mark.usefixtures('err_hsm')
+
+@pytest.mark.usefixtures("err_hsm")
 class TestHSMFail(object):
     """
     Tests for #2909 to check behaviour with an HSM
@@ -104,26 +126,30 @@ class TestHSMFail(object):
     """
 
     def test_hsm_exception(self, adminclient):
-        '''
+        """
         Test #2909: HSM problems will raise an HSM Exception
                which could trigger an HTTP Error
-        '''
-        param = {'key':'sec', 'value':'mySec', 'type':'password'}
+        """
+        param = {"key": "sec", "value": "mySec", "type": "password"}
 
-        response = adminclient.post('/system/setConfig', json=param)
+        response = adminclient.post("/system/setConfig", json=param)
         assert response.status_code == 200
 
-        result = response.json['result']
-        assert result['status'] == False
-        assert result['error']['code'] == 707
-        assert 'hsm not ready' in result['error']['message']
+        result = response.json["result"]
+        assert result["status"] == False
+        assert result["error"]["code"] == 707
+        assert "hsm not ready" in result["error"]["message"]
 
     def test_httperror(self, adminclient):
-        '''
+        """
         Test that custom error code is returned if requested
-        '''
-        param = {'key':'sec', 'value':'mySec',
-                'type':'password', 'httperror':'503'}
+        """
+        param = {
+            "key": "sec",
+            "value": "mySec",
+            "type": "password",
+            "httperror": "503",
+        }
 
-        response = adminclient.post('/system/setConfig', json=param)
+        response = adminclient.post("/system/setConfig", json=param)
         assert response.status_code == 503

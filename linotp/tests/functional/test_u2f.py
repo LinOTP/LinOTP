@@ -62,49 +62,58 @@ def ECDSA_verify(cert, message, signature):
     except Exception as _exx:
         return False
 
+
 def ECDSA_sign(private_key, message):
     """
     helper - create a ECDSA signature - useful for development
     """
 
     priv = serialization.load_pem_private_key(
-        private_key, password=None, backend=default_backend())
+        private_key, password=None, backend=default_backend()
+    )
 
     return priv.sign(message, ec.ECDSA(hashes.SHA256()))
 
 
 class TestU2FController(TestController):
 
-    ATTESTATION_PRIVATE_KEY_PEM = \
-        '-----BEGIN EC PRIVATE KEY-----\n' \
-        'MHQCAQEEIBMsy03r5KbBIxkWY91FDJ7BvtTQhgPgndi282K4YrIOoAcGBSuBBAAK\n' \
-        'oUQDQgAE6WAdbosEirjc9p2R17WVNzz9hbITpR90OMf/sK+1ncXMiNt06oXF/0zw\n' \
-        'YnFZlka4GPRBhBtTWdgff+Ys/3JPKg==\n' \
-        '-----END EC PRIVATE KEY-----'
+    ATTESTATION_PRIVATE_KEY_PEM = (
+        "-----BEGIN EC PRIVATE KEY-----\n"
+        "MHQCAQEEIBMsy03r5KbBIxkWY91FDJ7BvtTQhgPgndi282K4YrIOoAcGBSuBBAAK\n"
+        "oUQDQgAE6WAdbosEirjc9p2R17WVNzz9hbITpR90OMf/sK+1ncXMiNt06oXF/0zw\n"
+        "YnFZlka4GPRBhBtTWdgff+Ys/3JPKg==\n"
+        "-----END EC PRIVATE KEY-----"
+    )
 
-    ATTESTATION_CERT_HEX = '30820202308201a8a003020102020900bedc78032c47968b300a06082a8648ce3d0' \
-                           '40302305f310b30090603550406130244453113301106035504080c0a536f6d652d' \
-                           '53746174653121301f060355040a0c18496e7465726e65742057696467697473205' \
-                           '07479204c74643118301606035504030c0f4c696e4f545020553246205465737430' \
-                           '1e170d3135303331383039353230315a170d3432303830333039353230315a305f3' \
-                           '10b30090603550406130244453113301106035504080c0a536f6d652d5374617465' \
-                           '3121301f060355040a0c18496e7465726e6574205769646769747320507479204c7' \
-                           '4643118301606035504030c0f4c696e4f5450205532462054657374305630100607' \
-                           '2a8648ce3d020106052b8104000a03420004e9601d6e8b048ab8dcf69d91d7b5953' \
-                           '73cfd85b213a51f7438c7ffb0afb59dc5cc88db74ea85c5ff4cf06271599646b818' \
-                           'f441841b5359d81f7fe62cff724f2aa350304e301d0603551d0e04160414c17d9d5' \
-                           '2e8f4696d4f485353fa78e903dab72aae301f0603551d23041830168014c17d9d52' \
-                           'e8f4696d4f485353fa78e903dab72aae300c0603551d13040530030101ff300a060' \
-                           '82a8648ce3d0403020348003045022007e475efd0c9575e915ab89b5c8b1b436b2c' \
-                           'c9a5cc4df37889e9511b1f7808f6022100c1faaa0fa5f36363962058a2e9f679338' \
-                           'eca18b12725f807ffe68d1c05d3d35b'
+    ATTESTATION_CERT_HEX = (
+        "30820202308201a8a003020102020900bedc78032c47968b300a06082a8648ce3d0"
+        "40302305f310b30090603550406130244453113301106035504080c0a536f6d652d"
+        "53746174653121301f060355040a0c18496e7465726e65742057696467697473205"
+        "07479204c74643118301606035504030c0f4c696e4f545020553246205465737430"
+        "1e170d3135303331383039353230315a170d3432303830333039353230315a305f3"
+        "10b30090603550406130244453113301106035504080c0a536f6d652d5374617465"
+        "3121301f060355040a0c18496e7465726e6574205769646769747320507479204c7"
+        "4643118301606035504030c0f4c696e4f5450205532462054657374305630100607"
+        "2a8648ce3d020106052b8104000a03420004e9601d6e8b048ab8dcf69d91d7b5953"
+        "73cfd85b213a51f7438c7ffb0afb59dc5cc88db74ea85c5ff4cf06271599646b818"
+        "f441841b5359d81f7fe62cff724f2aa350304e301d0603551d0e04160414c17d9d5"
+        "2e8f4696d4f485353fa78e903dab72aae301f0603551d23041830168014c17d9d52"
+        "e8f4696d4f485353fa78e903dab72aae300c0603551d13040530030101ff300a060"
+        "82a8648ce3d0403020348003045022007e475efd0c9575e915ab89b5c8b1b436b2c"
+        "c9a5cc4df37889e9511b1f7808f6022100c1faaa0fa5f36363962058a2e9f679338"
+        "eca18b12725f807ffe68d1c05d3d35b"
+    )
 
     # Example key handle taken from the FIDO U2F specification
-    KEY_HANDLE_HEX1 = '2a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a6019551ba' \
-                      'b61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c25'
+    KEY_HANDLE_HEX1 = (
+        "2a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a6019551ba"
+        "b61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c25"
+    )
     # Random made up key handle
-    KEY_HANDLE_HEX2 = '2ae0b2f28fae6053fd697972ba7c81009137f4f46a764bc29751a28987d053ccfffb0687d' \
-                      'ef306f47fd45906e838401a6437270a45a37da9c25d8db8b559a888'
+    KEY_HANDLE_HEX2 = (
+        "2ae0b2f28fae6053fd697972ba7c81009137f4f46a764bc29751a28987d053ccfffb0687d"
+        "ef306f47fd45906e838401a6437270a45a37da9c25d8db8b559a888"
+    )
 
     # Generate ECC key, NIST P-256 elliptic curve
 
@@ -113,49 +122,48 @@ class TestU2FController(TestController):
     ECC_KEY1 = ec.generate_private_key(CURVE(), default_backend())
     ECC_KEY2 = ec.generate_private_key(CURVE(), default_backend())
 
-
-    key_set = {1: (KEY_HANDLE_HEX1, ECC_KEY1),
-               2: (KEY_HANDLE_HEX2, ECC_KEY2)
-               }
+    key_set = {1: (KEY_HANDLE_HEX1, ECC_KEY1), 2: (KEY_HANDLE_HEX2, ECC_KEY2)}
 
     key_handle_set = {
-                KEY_HANDLE_HEX1: ECC_KEY1,
-                KEY_HANDLE_HEX2: ECC_KEY2,
-               }
+        KEY_HANDLE_HEX1: ECC_KEY1,
+        KEY_HANDLE_HEX2: ECC_KEY2,
+    }
 
-    FAKE_REGISTRATION_DATA_HEX = '0504113fafb0da1a6a90bb3a017552c1561af88bfd02c36eec334551959' \
-                                 'ffe562a6f050b496545810b64b738e7673a314efd67216cc1b7c7e46f1b' \
-                                 '34dcd6212a36fe402a552dfdb7477ed65fd84133f86196010b2215b57da' \
-                                 '75d315b7b9e8fe2e3925a6019551bab61d16591659cbaf00b4950f7abfe' \
-                                 '6660e2e006f76868b772d70c2530820202308201a8a003020102020900b' \
-                                 'edc78032c47968b300a06082a8648ce3d040302305f310b300906035504' \
-                                 '06130244453113301106035504080c0a536f6d652d53746174653121301' \
-                                 'f060355040a0c18496e7465726e6574205769646769747320507479204c' \
-                                 '74643118301606035504030c0f4c696e4f5450205532462054657374301' \
-                                 'e170d3135303331383039353230315a170d343230383033303935323031' \
-                                 '5a305f310b30090603550406130244453113301106035504080c0a536f6' \
-                                 'd652d53746174653121301f060355040a0c18496e7465726e6574205769' \
-                                 '646769747320507479204c74643118301606035504030c0f4c696e4f545' \
-                                 '02055324620546573743056301006072a8648ce3d020106052b8104000a' \
-                                 '03420004e9601d6e8b048ab8dcf69d91d7b595373cfd85b213a51f7438c' \
-                                 '7ffb0afb59dc5cc88db74ea85c5ff4cf06271599646b818f441841b5359' \
-                                 'd81f7fe62cff724f2aa350304e301d0603551d0e04160414c17d9d52e8f' \
-                                 '4696d4f485353fa78e903dab72aae301f0603551d23041830168014c17d' \
-                                 '9d52e8f4696d4f485353fa78e903dab72aae300c0603551d13040530030' \
-                                 '101ff300a06082a8648ce3d0403020348003045022007e475efd0c9575e' \
-                                 '915ab89b5c8b1b436b2cc9a5cc4df37889e9511b1f7808f6022100c1faa' \
-                                 'a0fa5f36363962058a2e9f679338eca18b12725f807ffe68d1c05d3d35b' \
-                                 '30440220387f2d2927e4a2bb9053b4ac09b22cc4c1bac2987e868be6f22' \
-                                 '6a8f139171838022013e19c68829d52b2e5db0e80e2efb46738cc418ea9' \
-                                 'ef3b94664f3817e18ddc4d'
+    FAKE_REGISTRATION_DATA_HEX = (
+        "0504113fafb0da1a6a90bb3a017552c1561af88bfd02c36eec334551959"
+        "ffe562a6f050b496545810b64b738e7673a314efd67216cc1b7c7e46f1b"
+        "34dcd6212a36fe402a552dfdb7477ed65fd84133f86196010b2215b57da"
+        "75d315b7b9e8fe2e3925a6019551bab61d16591659cbaf00b4950f7abfe"
+        "6660e2e006f76868b772d70c2530820202308201a8a003020102020900b"
+        "edc78032c47968b300a06082a8648ce3d040302305f310b300906035504"
+        "06130244453113301106035504080c0a536f6d652d53746174653121301"
+        "f060355040a0c18496e7465726e6574205769646769747320507479204c"
+        "74643118301606035504030c0f4c696e4f5450205532462054657374301"
+        "e170d3135303331383039353230315a170d343230383033303935323031"
+        "5a305f310b30090603550406130244453113301106035504080c0a536f6"
+        "d652d53746174653121301f060355040a0c18496e7465726e6574205769"
+        "646769747320507479204c74643118301606035504030c0f4c696e4f545"
+        "02055324620546573743056301006072a8648ce3d020106052b8104000a"
+        "03420004e9601d6e8b048ab8dcf69d91d7b595373cfd85b213a51f7438c"
+        "7ffb0afb59dc5cc88db74ea85c5ff4cf06271599646b818f441841b5359"
+        "d81f7fe62cff724f2aa350304e301d0603551d0e04160414c17d9d52e8f"
+        "4696d4f485353fa78e903dab72aae301f0603551d23041830168014c17d"
+        "9d52e8f4696d4f485353fa78e903dab72aae300c0603551d13040530030"
+        "101ff300a06082a8648ce3d0403020348003045022007e475efd0c9575e"
+        "915ab89b5c8b1b436b2cc9a5cc4df37889e9511b1f7808f6022100c1faa"
+        "a0fa5f36363962058a2e9f679338eca18b12725f807ffe68d1c05d3d35b"
+        "30440220387f2d2927e4a2bb9053b4ac09b22cc4c1bac2987e868be6f22"
+        "6a8f139171838022013e19c68829d52b2e5db0e80e2efb46738cc418ea9"
+        "ef3b94664f3817e18ddc4d"
+    )
 
     # set up in setUp method
     serials = None
 
     def setUp(self):
-        self.serial = ''
+        self.serial = ""
         self.counter = 0
-        self.origin = 'https://u2f-fakeurl.com'
+        self.origin = "https://u2f-fakeurl.com"
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
@@ -179,58 +187,53 @@ class TestU2FController(TestController):
         Performs the first registration step
         """
         parameters = {
-            'type': 'u2f',
-            'phase': 'registration1',
-            'user': 'root',
-            'session': self.session,
-            'appid': self.origin
+            "type": "u2f",
+            "phase": "registration1",
+            "user": "root",
+            "session": self.session,
+            "appid": self.origin,
         }
         if pin is not None:
-            parameters['pin'] = pin
+            parameters["pin"] = pin
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         return response
 
-    def _registration2(self,
-                       register_response_message,
-                       pin=None
-                       ):
+    def _registration2(self, register_response_message, pin=None):
         """
         Performs the second registration step
         """
         parameters = {
-            'type': 'u2f',
-            'phase': 'registration2',
-            'user': 'root',
-            'otpkey': register_response_message,
-            'serial': self.serial,
-            'session': self.session
+            "type": "u2f",
+            "phase": "registration2",
+            "user": "root",
+            "otpkey": register_response_message,
+            "serial": self.serial,
+            "session": self.session,
         }
         if pin is not None:
-            parameters['pin'] = pin
+            parameters["pin"] = pin
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         return response
 
     def _authentication1(self, pin=None):
         """
         Performs the initial authentication step
         """
-        parameters = {
-            'user': 'root',
-            'pass': ''
-        }
+        parameters = {"user": "root", "pass": ""}
         if pin is not None:
-            parameters['pass'] = pin
+            parameters["pass"] = pin
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         return response
 
-    def _authentication2(self,
-                         transactionid,
-                         authentication_response_message,
-                         additional_params=None
-                         ):
+    def _authentication2(
+        self,
+        transactionid,
+        authentication_response_message,
+        additional_params=None,
+    ):
         """
         Performs the second authentication step
         """
@@ -238,16 +241,13 @@ class TestU2FController(TestController):
         if additional_params is None:
             additional_params = {}
 
-        parameters = {
-            'user': 'root',
-            'transactionid': transactionid
-        }
+        parameters = {"user": "root", "transactionid": transactionid}
 
-        parameters['pass'] = authentication_response_message
+        parameters["pass"] = authentication_response_message
 
         parameters.update(additional_params)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         return response
 
@@ -255,31 +255,29 @@ class TestU2FController(TestController):
         """
         Creates a client data object of the type 'registration' or 'authentication'
         """
-        typ_string = ''
-        if typ == 'registration':
-            typ_string = 'navigator.id.finishEnrollment'
-        elif typ == 'authentication':
-            typ_string = 'navigator.id.getAssertion'
+        typ_string = ""
+        if typ == "registration":
+            typ_string = "navigator.id.finishEnrollment"
+        elif typ == "authentication":
+            typ_string = "navigator.id.getAssertion"
         else:
-            raise ValueError('Unknown typ')
+            raise ValueError("Unknown typ")
 
         client_data_object = {
-            'typ': typ_string,
-            'challenge': challenge,
-            'origin': self.origin
+            "typ": typ_string,
+            "challenge": challenge,
+            "origin": self.origin,
         }
         client_data_object_JSON = json.dumps(client_data_object)
         return client_data_object_JSON
 
-    def _createRegistrationResponseMessage(self,
-                                           client_data: str,
-                                           key_set=None,
-                                           correct=True
-                                           ):
+    def _createRegistrationResponseMessage(
+        self, client_data: str, key_set=None, correct=True
+    ):
         """
         Create a registration response message according to the FIDO U2F specification
         """
-        client_data = client_data.encode('utf-8')
+        client_data = client_data.encode("utf-8")
 
         if not key_set:
             raise ValueError("Unknown key number requested!")
@@ -297,9 +295,9 @@ class TestU2FController(TestController):
         #  in the U2F specification
 
         public_key = ecc_key.public_key().public_bytes(
-                            serialization.Encoding.DER,
-                            serialization.PublicFormat.SubjectPublicKeyInfo,
-                        )[-65:]
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )[-65:]
 
         registration_data += public_key
 
@@ -315,12 +313,15 @@ class TestU2FController(TestController):
         # Create the ECDSA signature:
         #  derive the signature from the message for appending
 
-        private_key = self.ATTESTATION_PRIVATE_KEY_PEM.encode('ascii')
+        private_key = self.ATTESTATION_PRIVATE_KEY_PEM.encode("ascii")
 
         message = (
-            b'\x00' + sha256(self.origin.encode('utf-8')).digest() +
-            sha256(client_data).digest() + key_handle + public_key
-            )
+            b"\x00"
+            + sha256(self.origin.encode("utf-8")).digest()
+            + sha256(client_data).digest()
+            + key_handle
+            + public_key
+        )
 
         signature = ECDSA_sign(private_key, message)
 
@@ -339,20 +340,21 @@ class TestU2FController(TestController):
         # ------------------------------------------------------------------ --
 
         # Create the registration_response
-#
+        #
         registration_response = {
-            'registrationData': base64.urlsafe_b64encode(registration_data).decode('ascii'),
-            'clientData': base64.urlsafe_b64encode(client_data).decode('ascii')
+            "registrationData": base64.urlsafe_b64encode(
+                registration_data
+            ).decode("ascii"),
+            "clientData": base64.urlsafe_b64encode(client_data).decode(
+                "ascii"
+            ),
         }
 
         return json.dumps(registration_response)
 
-    def _createAuthenticationResponseMessage(self,
-                                             client_data: str,
-                                             key_handle,
-                                             ecc_key=None,
-                                             correct=True
-                                             ):
+    def _createAuthenticationResponseMessage(
+        self, client_data: str, key_handle, ecc_key=None, correct=True
+    ):
         """
         Create an authentication response message according to the FIDO U2F specification
         """
@@ -360,7 +362,7 @@ class TestU2FController(TestController):
         if not ecc_key:
             raise ValueError("Unknown key handle received.")
 
-        client_data = client_data.encode('utf-8')
+        client_data = client_data.encode("utf-8")
 
         #
         # Create the signatureData object
@@ -369,17 +371,18 @@ class TestU2FController(TestController):
 
         # counter
         self.counter += 1
-        authentication_data += self.counter.to_bytes(4, byteorder='big')
+        authentication_data += self.counter.to_bytes(4, byteorder="big")
 
         # ------------------------------------------------------------------ --
 
         # create the dsa_asn1 signature
 
         message = (
-            sha256(self.origin.encode('utf-8')).digest() + b'\x01' +
-            self.counter.to_bytes(4, byteorder='big') +
-            sha256(client_data).digest()
-            )
+            sha256(self.origin.encode("utf-8")).digest()
+            + b"\x01"
+            + self.counter.to_bytes(4, byteorder="big")
+            + sha256(client_data).digest()
+        )
 
         signature = ecc_key.sign(message, ec.ECDSA(hashes.SHA256()))
 
@@ -397,11 +400,15 @@ class TestU2FController(TestController):
         # Create the signResponse object
         #
         # Remove trailing '=' characters
-        key_handle = key_handle.rstrip(b'=')
+        key_handle = key_handle.rstrip(b"=")
         sign_response = {
-            'keyHandle': key_handle.decode('ascii'),
-            'signatureData': base64.urlsafe_b64encode(authentication_data).decode('ascii'),
-            'clientData': base64.urlsafe_b64encode(client_data).decode('ascii')
+            "keyHandle": key_handle.decode("ascii"),
+            "signatureData": base64.urlsafe_b64encode(
+                authentication_data
+            ).decode("ascii"),
+            "clientData": base64.urlsafe_b64encode(client_data).decode(
+                "ascii"
+            ),
         }
 
         return json.dumps(sign_response)
@@ -414,78 +421,109 @@ class TestU2FController(TestController):
         response_registration1 = self.get_json_body(self._registration1(pin))
 
         # check for status and value
-        assert 'result' in response_registration1, \
-                      "Response: %r" % response_registration1
-        assert 'status' in response_registration1['result'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['result']['status']
-        assert 'value' in response_registration1['result'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['result']['value']
+        assert "result" in response_registration1, (
+            "Response: %r" % response_registration1
+        )
+        assert "status" in response_registration1["result"], (
+            "Response: %r" % response_registration1
+        )
+        assert response_registration1["result"]["status"]
+        assert "value" in response_registration1["result"], (
+            "Response: %r" % response_registration1
+        )
+        assert response_registration1["result"]["value"]
 
         # check detail object containing serial and registerrequest
-        assert 'detail' in response_registration1, \
-                      "Response: %r" % response_registration1
+        assert "detail" in response_registration1, (
+            "Response: %r" % response_registration1
+        )
 
         # check for correct serial
-        assert 'serial' in response_registration1['detail'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['detail']['serial'][:3] == "U2F"
+        assert "serial" in response_registration1["detail"], (
+            "Response: %r" % response_registration1
+        )
+        assert response_registration1["detail"]["serial"][:3] == "U2F"
 
         # check for correct registerrequest object
-        assert 'registerrequest' in response_registration1['detail'], \
-                      "Response: %r" % response_registration1
-        assert 'challenge' in response_registration1['detail']['registerrequest'], \
-                      "Response: %r" % response_registration1
+        assert "registerrequest" in response_registration1["detail"], (
+            "Response: %r" % response_registration1
+        )
+        assert (
+            "challenge" in response_registration1["detail"]["registerrequest"]
+        ), ("Response: %r" % response_registration1)
         # check for non-empty and correctly-padded challenge
-        assert response_registration1['detail']['registerrequest']['challenge'] != ''
-        assert len(response_registration1['detail']['registerrequest']['challenge']) % 4 == \
-                         0
-        assert 'version' in response_registration1['detail']['registerrequest'], \
-                      "Response: %r" % response_registration1
+        assert (
+            response_registration1["detail"]["registerrequest"]["challenge"]
+            != ""
+        )
+        assert (
+            len(
+                response_registration1["detail"]["registerrequest"][
+                    "challenge"
+                ]
+            )
+            % 4
+            == 0
+        )
+        assert (
+            "version" in response_registration1["detail"]["registerrequest"]
+        ), ("Response: %r" % response_registration1)
         # only U2F_V2 is supported right now
-        assert response_registration1['detail']['registerrequest']['version'] == "U2F_V2"
-        assert 'appId' in response_registration1['detail']['registerrequest'], \
-                      "Response: %r" % response_registration1
-        assert response_registration1['detail']['registerrequest']['appId'] == self.origin
+        assert (
+            response_registration1["detail"]["registerrequest"]["version"]
+            == "U2F_V2"
+        )
+        assert (
+            "appId" in response_registration1["detail"]["registerrequest"]
+        ), ("Response: %r" % response_registration1)
+        assert (
+            response_registration1["detail"]["registerrequest"]["appId"]
+            == self.origin
+        )
 
-        challenge_registration = response_registration1['detail']['registerrequest']['challenge']
-        self.serial = response_registration1['detail']['serial']
+        challenge_registration = response_registration1["detail"][
+            "registerrequest"
+        ]["challenge"]
+        self.serial = response_registration1["detail"]["serial"]
         self.serials.add(self.serial)
 
         # Construct the registration response message
-        client_data_registration = self._createClientDataObject('registration',
-                                                                challenge_registration,
-                                                                )
+        client_data_registration = self._createClientDataObject(
+            "registration",
+            challenge_registration,
+        )
 
         key_set = self.key_set.get(key_num, None)
 
-        registration_response_message = \
-            self._createRegistrationResponseMessage(client_data_registration,
-                                                    correct=correct,
-                                                    key_set=key_set
-                                                    )
+        registration_response_message = (
+            self._createRegistrationResponseMessage(
+                client_data_registration, correct=correct, key_set=key_set
+            )
+        )
 
         # Complete the token registration
         response_registration2 = self.get_json_body(
             self._registration2(registration_response_message, pin)
-            )
+        )
 
         # check for status and value
-        assert 'result' in response_registration2, \
-                      "Response: %r" % response_registration2
-        assert 'status' in response_registration2['result'], \
-                      "Response: %r" % response_registration2
+        assert "result" in response_registration2, (
+            "Response: %r" % response_registration2
+        )
+        assert "status" in response_registration2["result"], (
+            "Response: %r" % response_registration2
+        )
         if correct:
-            assert 'value' in response_registration2['result'], \
-                      "Response: %r" % response_registration2
-            assert response_registration2['result']['status']
-            assert response_registration2['result']['value']
+            assert "value" in response_registration2["result"], (
+                "Response: %r" % response_registration2
+            )
+            assert response_registration2["result"]["status"]
+            assert response_registration2["result"]["value"]
         else:
-            assert not response_registration2['result']['status']
+            assert not response_registration2["result"]["status"]
             # check explicitly, that no "value: true" is responded
-            if 'value' in response_registration2['result']:
-                assert not response_registration2['result']['value']
+            if "value" in response_registration2["result"]:
+                assert not response_registration2["result"]["value"]
 
         return
 
@@ -494,152 +532,207 @@ class TestU2FController(TestController):
         Test authentication of a previously registered token with given token pin
         """
         # Initial authentication phase
-        response_authentication1 = self.get_json_body(self._authentication1(pin))
+        response_authentication1 = self.get_json_body(
+            self._authentication1(pin)
+        )
 
         # check for status and value
-        assert 'result' in response_authentication1, \
-                      "Response: %r" % response_authentication1
-        assert 'status' in response_authentication1['result'], \
-                      "Response: %r" % response_authentication1
-        assert response_authentication1['result']['status']
-        assert 'value' in response_authentication1['result'], \
-                      "Response: %r" % response_authentication1
-        assert not response_authentication1['result']['value']
+        assert "result" in response_authentication1, (
+            "Response: %r" % response_authentication1
+        )
+        assert "status" in response_authentication1["result"], (
+            "Response: %r" % response_authentication1
+        )
+        assert response_authentication1["result"]["status"]
+        assert "value" in response_authentication1["result"], (
+            "Response: %r" % response_authentication1
+        )
+        assert not response_authentication1["result"]["value"]
 
-        assert 'detail' in response_authentication1, \
-                      "Response: %r" % response_authentication1
+        assert "detail" in response_authentication1, (
+            "Response: %r" % response_authentication1
+        )
 
         # check for supported message
-        assert 'message' in response_authentication1['detail'], \
-                      "Response: %r" % response_authentication1
-        assert response_authentication1['detail']['message'] in \
-                      ["Multiple challenges submitted.", "U2F challenge"]
+        assert "message" in response_authentication1["detail"], (
+            "Response: %r" % response_authentication1
+        )
+        assert response_authentication1["detail"]["message"] in [
+            "Multiple challenges submitted.",
+            "U2F challenge",
+        ]
 
-        message = response_authentication1['detail']['message']
+        message = response_authentication1["detail"]["message"]
 
         reply = []
         if message == "Multiple challenges submitted.":
-            assert 'challenges' in response_authentication1['detail'], \
-                          "Response: %r" % response_authentication1
-            for challenge in list(response_authentication1['detail']['challenges'].values()):
+            assert "challenges" in response_authentication1["detail"], (
+                "Response: %r" % response_authentication1
+            )
+            for challenge in list(
+                response_authentication1["detail"]["challenges"].values()
+            ):
                 # check for non-empty transactionid
-                assert 'transactionid' in challenge, \
-                              "Response: %r" % response_authentication1
-                assert challenge['transactionid'] != ''
+                assert "transactionid" in challenge, (
+                    "Response: %r" % response_authentication1
+                )
+                assert challenge["transactionid"] != ""
 
                 # check for correct signrequest object
-                assert 'signrequest' in challenge, \
-                              "Response: %r" % response_authentication1
-                assert 'challenge' in challenge['signrequest'], \
-                              "Response: %r" % response_authentication1
+                assert "signrequest" in challenge, (
+                    "Response: %r" % response_authentication1
+                )
+                assert "challenge" in challenge["signrequest"], (
+                    "Response: %r" % response_authentication1
+                )
                 # check for non-empty and correctly-padded challenge
-                assert challenge['signrequest']['challenge'] != ''
-                assert len(challenge['signrequest']['challenge']) % 4 == \
-                                 0
-                assert 'version' in challenge['signrequest'], \
-                              "Response: %r" % response_authentication1
+                assert challenge["signrequest"]["challenge"] != ""
+                assert len(challenge["signrequest"]["challenge"]) % 4 == 0
+                assert "version" in challenge["signrequest"], (
+                    "Response: %r" % response_authentication1
+                )
                 # only U2F_V2 is supported right now
-                assert challenge['signrequest']['version'] == "U2F_V2"
-                assert 'appId' in challenge['signrequest'], \
-                              "Response: %r" % response_authentication1
-                assert challenge['signrequest']['appId'] == self.origin
+                assert challenge["signrequest"]["version"] == "U2F_V2"
+                assert "appId" in challenge["signrequest"], (
+                    "Response: %r" % response_authentication1
+                )
+                assert challenge["signrequest"]["appId"] == self.origin
 
                 # check for non-empty keyHandle
-                assert 'keyHandle' in challenge['signrequest'], \
-                              "Response: %r" % response_authentication1
-                assert challenge['signrequest']['keyHandle'] != ''
+                assert "keyHandle" in challenge["signrequest"], (
+                    "Response: %r" % response_authentication1
+                )
+                assert challenge["signrequest"]["keyHandle"] != ""
 
-            challenges = response_authentication1['detail']['challenges']
+            challenges = response_authentication1["detail"]["challenges"]
             reply.extend(list(challenges.values()))
         else:
             # check for non-empty transactionid
-            assert 'transactionid' in response_authentication1['detail'], \
-                          "Response: %r" % response_authentication1
-            assert response_authentication1['detail']['transactionid'] != ''
+            assert "transactionid" in response_authentication1["detail"], (
+                "Response: %r" % response_authentication1
+            )
+            assert response_authentication1["detail"]["transactionid"] != ""
 
             # check for correct signrequest object
-            assert 'signrequest' in response_authentication1['detail'], \
-                          "Response: %r" % response_authentication1
-            assert 'challenge' in response_authentication1['detail']['signrequest'], \
-                          "Response: %r" % response_authentication1
+            assert "signrequest" in response_authentication1["detail"], (
+                "Response: %r" % response_authentication1
+            )
+            assert (
+                "challenge"
+                in response_authentication1["detail"]["signrequest"]
+            ), ("Response: %r" % response_authentication1)
             # check for non-empty and correctly-padded challenge
-            assert response_authentication1['detail']['signrequest']['challenge'] != ''
-            assert len(response_authentication1['detail']['signrequest']['challenge']) \
-                             % 4 == 0
-            assert 'version' in response_authentication1['detail']['signrequest'], \
-                          "Response: %r" % response_authentication1
+            assert (
+                response_authentication1["detail"]["signrequest"]["challenge"]
+                != ""
+            )
+            assert (
+                len(
+                    response_authentication1["detail"]["signrequest"][
+                        "challenge"
+                    ]
+                )
+                % 4
+                == 0
+            )
+            assert (
+                "version" in response_authentication1["detail"]["signrequest"]
+            ), ("Response: %r" % response_authentication1)
             # only U2F_V2 is supported right now
-            assert response_authentication1['detail']['signrequest']['version'] == "U2F_V2"
-            assert 'appId' in response_authentication1['detail']['signrequest'], \
-                          "Response: %r" % response_authentication1
-            assert response_authentication1['detail']['signrequest']['appId'] == \
-                             self.origin
+            assert (
+                response_authentication1["detail"]["signrequest"]["version"]
+                == "U2F_V2"
+            )
+            assert (
+                "appId" in response_authentication1["detail"]["signrequest"]
+            ), ("Response: %r" % response_authentication1)
+            assert (
+                response_authentication1["detail"]["signrequest"]["appId"]
+                == self.origin
+            )
 
             # check for non-empty keyHandle
-            assert 'keyHandle' in response_authentication1['detail']['signrequest'], \
-                          "Response: %r" % response_authentication1
-            assert response_authentication1['detail']['signrequest']['keyHandle'] != ''
-            reply.append(response_authentication1['detail'])
+            assert (
+                "keyHandle"
+                in response_authentication1["detail"]["signrequest"]
+            ), ("Response: %r" % response_authentication1)
+            assert (
+                response_authentication1["detail"]["signrequest"]["keyHandle"]
+                != ""
+            )
+            reply.append(response_authentication1["detail"])
         return reply
 
-    def _authentication_response(self, challenge, correct=True,
-                                 additional_params=None):
+    def _authentication_response(
+        self, challenge, correct=True, additional_params=None
+    ):
 
         if additional_params is None:
             additional_params = {}
 
-        signrequest_authentication = challenge['signrequest']
-        challenge_authentication = signrequest_authentication['challenge']
+        signrequest_authentication = challenge["signrequest"]
+        challenge_authentication = signrequest_authentication["challenge"]
 
         # Does the received keyHandle match the sent one?
-        key_handle_authentication = signrequest_authentication['keyHandle']
-        transactionid_authentication = challenge['transactionid']
+        key_handle_authentication = signrequest_authentication["keyHandle"]
+        transactionid_authentication = challenge["transactionid"]
         # Correct the padding
-        key_handle_authentication = \
-            key_handle_authentication + ('=' * (4 - (len(key_handle_authentication) % 4)))
-        key_handle_authentication = key_handle_authentication.encode('ascii')
-        assert binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)).decode('ascii') in \
-                        [self.KEY_HANDLE_HEX1, self.KEY_HANDLE_HEX2], \
-                        "signrequest: %r" % signrequest_authentication
+        key_handle_authentication = key_handle_authentication + (
+            "=" * (4 - (len(key_handle_authentication) % 4))
+        )
+        key_handle_authentication = key_handle_authentication.encode("ascii")
+        assert binascii.hexlify(
+            base64.urlsafe_b64decode(key_handle_authentication)
+        ).decode("ascii") in [self.KEY_HANDLE_HEX1, self.KEY_HANDLE_HEX2], (
+            "signrequest: %r" % signrequest_authentication
+        )
 
         # Construct the registration response message
-        client_data_authentication = self._createClientDataObject('authentication',
-                                                                  challenge_authentication,
-                                                                  )
+        client_data_authentication = self._createClientDataObject(
+            "authentication",
+            challenge_authentication,
+        )
 
-        key_handle_hex = binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)).decode('ascii')
+        key_handle_hex = binascii.hexlify(
+            base64.urlsafe_b64decode(key_handle_authentication)
+        ).decode("ascii")
         ecc_key = self.key_handle_set.get(key_handle_hex, None)
 
-        authentication_response_message = \
-            self._createAuthenticationResponseMessage(client_data_authentication,
-                                                      key_handle_authentication,
-                                                      ecc_key=ecc_key,
-                                                      correct=correct
-                                                      )
+        authentication_response_message = (
+            self._createAuthenticationResponseMessage(
+                client_data_authentication,
+                key_handle_authentication,
+                ecc_key=ecc_key,
+                correct=correct,
+            )
+        )
         # Complete the token authentication
         # breakpoint()
         response_authentication2 = self.get_json_body(
-            self._authentication2(transactionid_authentication,
-                                  authentication_response_message,
-                                  additional_params
-                                  )
+            self._authentication2(
+                transactionid_authentication,
+                authentication_response_message,
+                additional_params,
             )
+        )
 
         # check result object
-        assert 'result' in response_authentication2, \
-                      "Response: %r" % response_authentication2
-        assert 'status' in response_authentication2['result'], \
-                      "Response: %r" % response_authentication2
-        assert response_authentication2['result']['status']
-        assert 'value' in response_authentication2['result'], \
-                      "Response: %r" % response_authentication2
+        assert "result" in response_authentication2, (
+            "Response: %r" % response_authentication2
+        )
+        assert "status" in response_authentication2["result"], (
+            "Response: %r" % response_authentication2
+        )
+        assert response_authentication2["result"]["status"]
+        assert "value" in response_authentication2["result"], (
+            "Response: %r" % response_authentication2
+        )
         if correct:
-            assert response_authentication2['result']['value']
+            assert response_authentication2["result"]["value"]
         else:
-            assert not response_authentication2['result']['value']
+            assert not response_authentication2["result"]["value"]
 
         return response_authentication2
-
 
     def test_u2f_registration_and_authentication_without_pin(self):
         """
@@ -684,7 +777,9 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0], correct=False)
         return
 
-    def test_u2f_multiple_registration_and_wrong_authentication_without_pin(self):
+    def test_u2f_multiple_registration_and_wrong_authentication_without_pin(
+        self,
+    ):
         """
         Enroll a U2F token without a token pin and authenticate
         """
@@ -711,7 +806,7 @@ class TestU2FController(TestController):
         Enroll a U2F token with a token pin and authenticate
         """
 
-        pin = 'test{pass}word_with{curly-braces{'
+        pin = "test{pass}word_with{curly-braces{"
         self._registration(pin)
         # Authenticate twice
         challenges = self._authentication_challenge(pin)
@@ -725,7 +820,7 @@ class TestU2FController(TestController):
         Enroll a U2F token without a token pin and authenticate
         """
 
-        pin = 'test{pass}word_with{curly-braces{'
+        pin = "test{pass}word_with{curly-braces{"
         self._registration(pin=pin, key_num=1)
         self._registration(pin=pin, key_num=2)
 
@@ -745,7 +840,7 @@ class TestU2FController(TestController):
         Enroll a U2F token with a token pin and authenticate
         """
 
-        pin = 'test{pass}word_with{curly-braces{'
+        pin = "test{pass}word_with{curly-braces{"
         self._registration(pin)
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[0], correct=False)
@@ -756,7 +851,7 @@ class TestU2FController(TestController):
         Enroll a U2F token without a token pin and authenticate
         """
 
-        pin = 'test{pass}word_with{curly-braces{'
+        pin = "test{pass}word_with{curly-braces{"
         self._registration(pin=pin, key_num=1)
         self._registration(pin=pin, key_num=2)
 
@@ -772,24 +867,28 @@ class TestU2FController(TestController):
         Try an invalid registration of a U2F token with pin
         """
 
-        pin = 'test{pass}word_with{curly-braces{'
+        pin = "test{pass}word_with{curly-braces{"
         self._registration(pin=pin, correct=False)
 
-
-    def setOfflinePolicy(self, realm='*', name='u2f_offline',
-                         action='support_offline=u2f', active=True):
+    def setOfflinePolicy(
+        self,
+        realm="*",
+        name="u2f_offline",
+        action="support_offline=u2f",
+        active=True,
+    ):
 
         params = {
-            'name': name,
-            'user': '*',
-            'action': action,
-            'scope': 'authentication',
-            'realm': realm,
-            'time': '',
-            'client': '',
-            'active': active,
-            'session': self.session,
-            }
+            "name": name,
+            "user": "*",
+            "action": action,
+            "scope": "authentication",
+            "realm": realm,
+            "time": "",
+            "client": "",
+            "active": active,
+            "session": self.session,
+        }
 
         response = self.make_system_request("setPolicy", params=params)
         assert '"status": true' in response, response
@@ -800,20 +899,21 @@ class TestU2FController(TestController):
         Tests, if info for U2F offline mode is transfered
         """
 
-        pin = 'test{pass}word_with{curly-braces{'
+        pin = "test{pass}word_with{curly-braces{"
         self._registration(pin)
         # Authenticate twice
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge(pin)
 
-        use_offline = {'use_offline': True}
+        use_offline = {"use_offline": True}
 
-        response = self._authentication_response(challenges[0],
-                                                 additional_params=use_offline)
+        response = self._authentication_response(
+            challenges[0], additional_params=use_offline
+        )
 
         # policy is not set, so no offline info should be shown
-        assert 'detail' not in response
+        assert "detail" not in response
 
         # set the policy and check again
         self.setOfflinePolicy()
@@ -823,28 +923,29 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge(pin)
 
-        use_offline = {'use_offline': True}
+        use_offline = {"use_offline": True}
 
-        response = self._authentication_response(challenges[0],
-                                                 additional_params=use_offline)
+        response = self._authentication_response(
+            challenges[0], additional_params=use_offline
+        )
 
-        assert 'detail' in response
-        detail = response.get('detail')
+        assert "detail" in response
+        detail = response.get("detail")
 
-        assert 'offline' in detail
-        offline = detail.get('offline')
+        assert "offline" in detail
+        offline = detail.get("offline")
 
-        assert 'offline_info' in offline
-        token_type = offline.get('token_type')
-        assert 'serial' in offline
-        serial = offline.get('serial')
+        assert "offline_info" in offline
+        token_type = offline.get("token_type")
+        assert "serial" in offline
+        serial = offline.get("serial")
 
         assert serial == self.serial
 
-        assert token_type == 'u2f'
+        assert token_type == "u2f"
 
-        assert 'offline_info' in offline
-        offline_info = offline.get('offline_info')
+        assert "offline_info" in offline
+        offline_info = offline.get("offline_info")
 
         # prepare info for comparison
 
@@ -856,18 +957,18 @@ class TestU2FController(TestController):
         public_key = str(ecc_key.pub().get_der())[-65:]
         public_key_b64 = base64.urlsafe_b64encode(public_key)
 
-        assert 'key_handle' in offline_info
-        key_handle_rec = offline_info.get('key_handle')
+        assert "key_handle" in offline_info
+        key_handle_rec = offline_info.get("key_handle")
         assert key_handle_b64 == key_handle_rec
 
-        assert 'public_key' in offline_info
-        public_key_rec = offline_info.get('public_key')
+        assert "public_key" in offline_info
+        public_key_rec = offline_info.get("public_key")
         assert public_key_b64 == public_key_rec
 
-        assert 'app_id' in offline_info
-        app_id = offline_info.get('app_id')
+        assert "app_id" in offline_info
+        app_id = offline_info.get("app_id")
         assert app_id == self.origin
 
-        assert 'counter' in offline_info
-        counter = offline_info.get('counter')
+        assert "counter" in offline_info
+        counter = offline_info.get("counter")
         assert counter == self.counter

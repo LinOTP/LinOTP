@@ -30,6 +30,7 @@ import pytest
 
 from linotp.lib.audit.SQLAudit import AuditTable
 
+
 @pytest.fixture
 def auditparams():
     """
@@ -39,18 +40,18 @@ def auditparams():
     a test audit log entry
     """
     params = dict(
-        serial='ABC123',
-        action='testAction',
-        success='1',
-        tokentype='pw',
-        user='operator',
-        realm='realmtest',
-        administrator='admin',
-        action_detail='This is a test audit entry',
-        info='info entry',
-        client='client1',
-        log_level='debug',
-        clearance_level='1',
+        serial="ABC123",
+        action="testAction",
+        success="1",
+        tokentype="pw",
+        user="operator",
+        realm="realmtest",
+        administrator="admin",
+        action_detail="This is a test audit entry",
+        info="info entry",
+        client="client1",
+        log_level="debug",
+        clearance_level="1",
     )
     return params
 
@@ -73,9 +74,9 @@ def search(adminclient):
     # to the app and client fixtures within the function
 
     def _search(expected_status_code=200, json=True, **params):
-        outform = json and 'json' or 'csv'
+        outform = json and "json" or "csv"
         queryparams = dict(params, outform=outform)
-        response = adminclient.get('audit/search', query_string=queryparams)
+        response = adminclient.get("audit/search", query_string=queryparams)
         assert response.status_code == 200
 
         return response
@@ -87,25 +88,26 @@ def search(adminclient):
 class TestAuditSearch(object):
     def test_audit_json_empty(self, search):
         response = search()
-        expected = {'page': 1, 'rows': [], 'total': 0}
+        expected = {"page": 1, "rows": [], "total": 0}
 
         assert response.json == expected
 
     def test_audit_csv_empty(self, search):
         response = search(json=False)
 
-        assert response.data == b'\n'
+        assert response.data == b"\n"
 
     def test_audit_with_json(self, adminclient, search):
         # GIVEN an empty audit database
-        assert not search().json['rows']
+        assert not search().json["rows"]
 
         # WHEN I create an audit record by retrieving the system config
-        adminclient.get('/system/getConfig')
+        adminclient.get("/system/getConfig")
 
         # THEN the operation is logged and can be read by audit/search
         response = search()
-        assert response.json['rows'][-1]['cell'][4] == 'system/getConfig'
+        assert response.json["rows"][-1]["cell"][4] == "system/getConfig"
+
 
 # class TestAuditRecord(object):
 #     """

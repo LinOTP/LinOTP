@@ -39,7 +39,6 @@ import os
 
 
 class TestImportOTP(TestController):
-
     def setUp(self):
         TestController.setUp(self)
 
@@ -72,8 +71,9 @@ class TestImportOTP(TestController):
 
             return data
 
-    def upload_tokens(self, file_name, data=None, params=None,
-                      auth_user='admin'):
+    def upload_tokens(
+        self, file_name, data=None, params=None, auth_user="admin"
+    ):
         """
         helper to upload a token file via admin/loadtokens file upload
         like it is done in the browser
@@ -89,28 +89,30 @@ class TestImportOTP(TestController):
 
         upload_files = [("file", file_name, data)]
 
-        response = self.make_admin_request('loadtokens',
-                                           params=params,
-                                           method='POST',
-                                           upload_files=upload_files,
-                                           auth_user=auth_user)
+        response = self.make_admin_request(
+            "loadtokens",
+            params=params,
+            method="POST",
+            upload_files=upload_files,
+            auth_user=auth_user,
+        )
 
         return response
 
     def create_policy(self, params):
-        name = params['name']
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'setPolicy ' + name in response, response
+        name = params["name"]
+        response = self.make_system_request("setPolicy", params=params)
+        assert "setPolicy " + name in response, response
         return response
 
     def test_parse_DAT(self):
-        '''
+        """
         Test to parse of eToken dat file format - import
-        '''
+        """
 
         data = self._read_data("safework_tokens.dat")
 
-        TOKENS = eTokenDat.parse_dat_data(data, '1.1.2000')
+        TOKENS = eTokenDat.parse_dat_data(data, "1.1.2000")
 
         assert len(TOKENS) == 2, TOKENS
         assert TOKENS.get("RAINER02") is not None, TOKENS
@@ -119,13 +121,11 @@ class TestImportOTP(TestController):
         return
 
     def test_import_DAT(self):
-        '''
+        """
         Test to import of eToken dat file format
-        '''
+        """
 
-        params = {
-            'type': 'dat',
-            'startdate': '1.1.2000'}
+        params = {"type": "dat", "startdate": "1.1.2000"}
 
         response = self.upload_tokens("safework_tokens.dat", params=params)
 
@@ -141,50 +141,43 @@ class TestImportOTP(TestController):
         #    '    <id>1</id>'
         #    '</jsonrpc>'
 
-        assert '<imported>2</imported>' in response.body, response
+        assert "<imported>2</imported>" in response.body, response
 
         # ------------------------------------------------------------------ --
 
         # test for upload empty file data
 
-        params = {
-            'type': 'dat',
-            'startdate': '1.1.2000'}
+        params = {"type": "dat", "startdate": "1.1.2000"}
 
-        response = self.upload_tokens("safework_tokens.dat",
-                                      data="",
-                                      params=params)
+        response = self.upload_tokens(
+            "safework_tokens.dat", data="", params=params
+        )
 
-        error_msg = 'Error loading tokens. File or Type empty'
+        error_msg = "Error loading tokens. File or Type empty"
         assert error_msg in response, response
 
         # ------------------------------------------------------------------ --
 
         # test with data containing only comments
         data = "#"
-        params = {
-            'type': 'dat',
-            'startdate': '1.1.2000'}
+        params = {"type": "dat", "startdate": "1.1.2000"}
 
-        response = self.upload_tokens("safework_tokens.dat",
-                                      data=data,
-                                      params=params)
+        response = self.upload_tokens(
+            "safework_tokens.dat", data=data, params=params
+        )
 
-        error_msg = '<imported>0</imported>'
+        error_msg = "<imported>0</imported>"
         assert error_msg in response, response
 
         # ------------------------------------------------------------------ --
 
         # test: no startdate
 
-        params = {
-            'file': data,
-            'type': 'dat'}
+        params = {"file": data, "type": "dat"}
 
-        response = self.upload_tokens("safework_tokens.dat",
-                                      params=params)
+        response = self.upload_tokens("safework_tokens.dat", params=params)
 
-        error_msg = '<imported>2</imported>'
+        error_msg = "<imported>2</imported>"
         assert error_msg in response, response
 
         # ------------------------------------------------------------------ --
@@ -192,27 +185,29 @@ class TestImportOTP(TestController):
         # test: wrong startdate
 
         params = {
-            'type': 'dat',
-            'startdate': '2000-12-12', }
+            "type": "dat",
+            "startdate": "2000-12-12",
+        }
 
-        response = self.upload_tokens("safework_tokens.dat",
-                                      params=params)
+        response = self.upload_tokens("safework_tokens.dat", params=params)
 
-        error_msg = '<imported>2</imported>'
+        error_msg = "<imported>2</imported>"
         assert error_msg in response, response
 
         return
 
     def test_parse_PSKC_OCRA(self):
-        '''
+        """
         Test import OCRA via PSCK
-        '''
+        """
 
         xml = self._read_data("ocra_pskc_tokens.xml")
 
-        TOKENS = PSKC.parsePSKCdata(xml,
-                                    preshared_key_hex="4A057F6AB6FCB57AB5408E46A9835E68",
-                                    do_checkserial=False)
+        TOKENS = PSKC.parsePSKCdata(
+            xml,
+            preshared_key_hex="4A057F6AB6FCB57AB5408E46A9835E68",
+            do_checkserial=False,
+        )
 
         assert len(TOKENS) == 3, TOKENS
         assert TOKENS.get("306EUO4-00954") is not None, TOKENS
@@ -222,24 +217,22 @@ class TestImportOTP(TestController):
         return
 
     def test_parse_HOTP_PSKC(self):
-        '''
+        """
         Test import HOTP via PSKC
-        '''
+        """
 
         pskc_xml = self._read_data("pskc_tokens.xml")
 
-        TOKENS = PSKC.parsePSKCdata(
-            pskc_xml,
-            do_checkserial=False)
+        TOKENS = PSKC.parsePSKCdata(pskc_xml, do_checkserial=False)
 
         assert len(TOKENS) == 6, TOKENS
 
         return
 
     def test_parse_Yubikey_CSV(self):
-        '''
+        """
         Test the parsing of Yubikey CSV file
-        '''
+        """
 
         csv = self._read_data("yubi_tokens.csv")
 
@@ -249,9 +242,9 @@ class TestImportOTP(TestController):
         return
 
     def test_parse_XML(self):
-        '''
+        """
         Test parse an SafeNet XML import
-        '''
+        """
         xml = self._read_data("safenet_tokens.xml")
 
         TOKENS = parseSafeNetXML(xml)
@@ -260,27 +253,27 @@ class TestImportOTP(TestController):
         return
 
     def test_import_OATH(self):
-        '''
+        """
         test to import token data
-        '''
+        """
 
-        params = {'type': 'oathcsv'}
+        params = {"type": "oathcsv"}
 
         response = self.upload_tokens("oath_tokens.csv", params=params)
 
-        assert '<imported>4</imported>' in response, response
+        assert "<imported>4</imported>" in response, response
 
         return
 
     def test_import_OATH_256(self):
-        '''
+        """
         test to import token data sha256 seeds
-        '''
+        """
 
-        params = {'type': 'oathcsv'}
+        params = {"type": "oathcsv"}
 
         response = self.upload_tokens("oath_tokens_sha256.csv", params=params)
-        assert '<imported>8</imported>' in response, response
+        assert "<imported>8</imported>" in response, response
 
         # we use for testing the totp test vectors from
         # https://tools.ietf.org/html/rfc6238
@@ -288,54 +281,46 @@ class TestImportOTP(TestController):
         # 1. test token with explicit sha256
         # htok_sha256_3, 313233343536373839303 ... 9303132, hotp, 8 ,,sha256,
 
-        params = {
-            'serial': 'htok_sha256_3',
-            'pass': '46119246'}
+        params = {"serial": "htok_sha256_3", "pass": "46119246"}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         assert '"value": true' in response, response
 
         # 2. test token with no explicit sha256 - determined by seed length
         # htok_sha256_1, 31323334353637383....03132, hotp,       8   ,
 
-        params = {
-            'serial': 'htok_sha256_1',
-            'pass': '46119246'}
+        params = {"serial": "htok_sha256_1", "pass": "46119246"}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         assert '"value": true' in response, response
 
         # 3. positive test token - seed len for sha1 and sha1 otp
         # htok_sha1_6, 313233343...3031323334353637383930, hotp, 8, , , ,
 
-        params = {
-            'serial': 'htok_sha1_6',
-            'pass': '94287082'}
+        params = {"serial": "htok_sha1_6", "pass": "94287082"}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         assert '"value": true' in response, response
 
         # 4. negative test token - seed len for sha1 but declared as sha256
         # htok_sha256_7, 3132333435...1323334353637383930, hotp, 8 ,, Sha256,
 
-        params = {
-            'serial': 'htok_sha256_7',
-            'pass': '94287082'}
+        params = {"serial": "htok_sha256_7", "pass": "94287082"}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         assert '"value": false' in response, response
 
         return
 
     def test_import_OATH_512(self):
-        '''
+        """
         test to import token data with sha512 seeds
-        '''
+        """
 
-        params = {'type': 'oathcsv'}
+        params = {"type": "oathcsv"}
 
         response = self.upload_tokens("oath_tokens_sha512.csv", params=params)
-        assert '<imported>8</imported>' in response, response
+        assert "<imported>8</imported>" in response, response
 
         # we use for testing the totp test vectors from
         # https://tools.ietf.org/html/rfc6238
@@ -343,152 +328,148 @@ class TestImportOTP(TestController):
         # 1. test token with explicit sha512
         # htok_sha512_3, 313233343536373839303 ... 9303132, hotp, 8 ,,sha512,
 
-        params = {
-            'serial': 'htok_sha512_3',
-            'pass': '90693936'}
+        params = {"serial": "htok_sha512_3", "pass": "90693936"}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         assert '"value": true' in response, response
 
         # 2. test token with no explicit sha512 - determined by seed length
         # htok_sha512_1, 31323334353637383....03132, hotp,       8   ,
 
-        params = {
-            'serial': 'htok_sha512_1',
-            'pass': '90693936'}
+        params = {"serial": "htok_sha512_1", "pass": "90693936"}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         assert '"value": true' in response, response
 
         # 3. positive test token - seed len for sha1 and sha1 otp
         # htok_sha1_6, 313233343...3031323334353637383930, hotp, 8, , , ,
 
-        params = {
-            'serial': 'htok_sha1_6',
-            'pass': '94287082'}
+        params = {"serial": "htok_sha1_6", "pass": "94287082"}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         assert '"value": true' in response, response
 
         # 4. negative test token - seed len for sha1 but declared as sha512
         # htok_sha512_7, 3132333435...1323334353637383930, hotp, 8 ,, Sha512,
 
-        params = {
-            'serial': 'htok_sha512_7',
-            'pass': '94287082'}
+        params = {"serial": "htok_sha512_7", "pass": "94287082"}
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         assert '"value": false' in response, response
 
         return
 
     def test_import_PSKC(self):
-        '''
+        """
         Test to import PSKC data
-        '''
+        """
 
         params = {
-            'type': 'pskc',
-            'pskc_type': 'plain',
-            'pskc_password': "",
-            'pskc_preshared': ""}
+            "type": "pskc",
+            "pskc_type": "plain",
+            "pskc_password": "",
+            "pskc_preshared": "",
+        }
 
         response = self.upload_tokens("pskc_tokens.xml", params=params)
 
-        assert '<imported>6</imported>' in response, response
+        assert "<imported>6</imported>" in response, response
 
         params = {
-            'type': 'pskc',
-            'pskc_type': 'plain',
-            'pskc_password': "",
-            'pskc_preshared': "",
-            'pskc_checkserial': 'true'}
+            "type": "pskc",
+            "pskc_type": "plain",
+            "pskc_password": "",
+            "pskc_preshared": "",
+            "pskc_checkserial": "true",
+        }
 
         response = self.upload_tokens("pskc_tokens.xml", params=params)
 
-        assert '<imported>0</imported>' in response, response
+        assert "<imported>0</imported>" in response, response
 
         return
 
     def test_import_empty_file(self):
-        '''
+        """
         Test loading empty file
-        '''
+        """
 
         params = {
-            'type': 'pskc',
-            'pskc_type': 'plain',
-            'pskc_password': "",
-            'pskc_preshared': ""}
+            "type": "pskc",
+            "pskc_type": "plain",
+            "pskc_password": "",
+            "pskc_preshared": "",
+        }
 
-        response = self.upload_tokens('token.psk', data="", params=params)
+        response = self.upload_tokens("token.psk", data="", params=params)
 
-        assert '<status>False</status>' in response, response
-        assert 'Error loading tokens. File' \
-            ' or Type empty!' in response, response
+        assert "<status>False</status>" in response, response
+        assert (
+            "Error loading tokens. File" " or Type empty!" in response
+        ), response
 
         return
 
     def test_import_unknown(self):
-        '''
+        """
         Test to import unknown type
-        '''
+        """
 
-        params = {'type': 'XYZ'}
+        params = {"type": "XYZ"}
         response = self.upload_tokens("pskc_tokens.xml", params=params)
 
-        assert '<status>False</status>' in response, response
-        assert 'Unknown file type' in response, response
+        assert "<status>False</status>" in response, response
+        assert "Unknown file type" in response, response
 
         return
 
     def test_import_XML(self):
-        '''
+        """
         Test to import XML data
-        '''
+        """
 
-        params = {'type': 'aladdin-xml'}
+        params = {"type": "aladdin-xml"}
         response = self.upload_tokens("safenet_tokens.dat", params=params)
 
-        assert '<imported>2</imported>' in response, response
+        assert "<imported>2</imported>" in response, response
 
         return
 
     def test_import_Yubikey(self):
-        '''
+        """
         Test to import Yubikey CSV
-        '''
+        """
 
-        params = {'type': 'yubikeycsv'}
+        params = {"type": "yubikeycsv"}
         response = self.upload_tokens("yubi_tokens.csv", params=params)
 
-        assert '<imported>5</imported>' in response, response
+        assert "<imported>5</imported>" in response, response
 
         return
 
     def test_import_Yubikey_hmac(self):
-        '''
+        """
         Test to import Yubikey CSV with hmac token
-        '''
+        """
 
-        params = {'type':'yubikeycsv'}
+        params = {"type": "yubikeycsv"}
         response = self.upload_tokens("yubi_hmac.csv", params=params)
 
-        assert '<imported>2</imported>' in response, response
+        assert "<imported>2</imported>" in response, response
 
         # now verify that we have one token loaded and the otplen is 8
-        response = self.make_admin_request('show')
+        response = self.make_admin_request("show")
 
         jresp = json.loads(response.body)
-        tokens = jresp['result']['value']['data']
+        tokens = jresp["result"]["value"]["data"]
 
         otp_lens = set()
         for token in tokens:
 
-            otp_lens.add(token['LinOtp.OtpLen'])
+            otp_lens.add(token["LinOtp.OtpLen"])
 
-            token_info = json.loads(token['LinOtp.TokenInfo'])
-            assert token_info['hashlib'] == 'sha1'
+            token_info = json.loads(token["LinOtp.TokenInfo"])
+            assert token_info["hashlib"] == "sha1"
 
         assert 6 in otp_lens
         assert 8 in otp_lens
@@ -496,81 +477,81 @@ class TestImportOTP(TestController):
         return
 
     def test_upload_token_into_targetrealm(self):
-        '''
+        """
         Test the upload of the tokens into a target realm
-        '''
+        """
 
         self.create_common_resolvers()
         self.create_common_realms()
 
-        target_realm = 'mymixrealm'
+        target_realm = "mymixrealm"
 
         # ------------------------------------------------------------------ --
 
         # define policy
 
-        params = {'scope': 'admin',
-                  'action': '*',
-                  'realm': '%s' % target_realm,
-                  'user': '*',
-                  'name': 'all_actions'}
+        params = {
+            "scope": "admin",
+            "action": "*",
+            "realm": "%s" % target_realm,
+            "user": "*",
+            "name": "all_actions",
+        }
 
         self.create_policy(params)
 
         # ------------------------------------------------------------------ --
 
-        params = {
-            'type': 'yubikeycsv',
-            'targetrealm': target_realm}
+        params = {"type": "yubikeycsv", "targetrealm": target_realm}
 
         response = self.upload_tokens("yubi_chall_tokens.csv", params=params)
 
-        assert '<imported>3</imported>' in response, response
+        assert "<imported>3</imported>" in response, response
 
         # ------------------------------------------------------------------ --
 
         # get defined tokens and lookup the token realms
 
-        response = self.make_admin_request('show', params={})
+        response = self.make_admin_request("show", params={})
 
         jresp = json.loads(response.body)
-        tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+        tokens = jresp.get("result", {}).get("value", {}).get("data", [])
 
         assert len(tokens) == 3, jresp
 
         for token in tokens:
-            token_realms = token.get('LinOtp.RealmNames', [])
+            token_realms = token.get("LinOtp.RealmNames", [])
             assert target_realm in token_realms, token
 
-        self.delete_policy('all_actions')
+        self.delete_policy("all_actions")
 
         return
 
     def test_yubikey_challenge(self):
-        '''
+        """
         Test yubikey in challenge response mode with policy
-        '''
+        """
 
         self.create_common_resolvers()
         self.create_common_realms()
 
-        params = {
-            'type': 'yubikeycsv',
-            'targetrealm': 'mymixrealm'}
+        params = {"type": "yubikeycsv", "targetrealm": "mymixrealm"}
 
         response = self.upload_tokens("yubi_chall_tokens.csv", params=params)
 
-        assert '<imported>3</imported>' in response, response
+        assert "<imported>3</imported>" in response, response
 
         # ------------------------------------------------------------------ --
 
         # define policy
 
-        params = {'scope': 'authentication',
-                  'action': 'challenge_response=*,',
-                  'realm': '*',
-                  'user': '*',
-                  'name': 'yubi_challenge'}
+        params = {
+            "scope": "authentication",
+            "action": "challenge_response=*,",
+            "realm": "*",
+            "user": "*",
+            "name": "yubi_challenge",
+        }
 
         self.create_policy(params)
 
@@ -578,43 +559,40 @@ class TestImportOTP(TestController):
 
         # get defined tokens and assign them to a user
 
-        response = self.make_admin_request('show', params={})
+        response = self.make_admin_request("show", params={})
 
         jresp = json.loads(response.body)
 
         err_msg = "Error getting token list. Response %r" % (jresp)
-        assert jresp['result']['status'], err_msg
+        assert jresp["result"]["status"], err_msg
 
         # extract the token info
 
         serials = set()
 
-        data = jresp['result']['value']['data']
+        data = jresp["result"]["value"]["data"]
 
         for entry in data:
 
-            serial = entry['LinOtp.TokenSerialnumber']
+            serial = entry["LinOtp.TokenSerialnumber"]
 
             serials.add(serial)
 
-            params = {'serial': serial,
-                      'user': 'passthru_user1'}
+            params = {"serial": serial, "user": "passthru_user1"}
 
-            self.make_admin_request('assign', params=params)
+            self.make_admin_request("assign", params=params)
 
-            params = {'serial': serial,
-                      'pin': '123!'}
+            params = {"serial": serial, "pin": "123!"}
 
-            self.make_admin_request('set', params=params)
+            self.make_admin_request("set", params=params)
 
         # ------------------------------------------------------------------ --
 
         # trigger challenge and check that all yubi token have been triggered
 
-        params = {'user': 'passthru_user1',
-                  'pass': '123!'}
+        params = {"user": "passthru_user1", "pass": "123!"}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         for serial in serials:
 
@@ -624,9 +602,9 @@ class TestImportOTP(TestController):
 
         # now we remove the policy and no challenge should be triggered
 
-        params = {'name': 'yubi_challenge'}
+        params = {"name": "yubi_challenge"}
 
-        response = self.make_system_request('delPolicy', params=params)
+        response = self.make_system_request("delPolicy", params=params)
 
         assert '"status": true' in response, response
 
@@ -634,10 +612,9 @@ class TestImportOTP(TestController):
 
         # trigger challenge and check that no yubi token have been triggered
 
-        params = {'user': 'passthru_user1',
-                  'pass': '123!'}
+        params = {"user": "passthru_user1", "pass": "123!"}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         for serial in serials:
 
@@ -646,9 +623,9 @@ class TestImportOTP(TestController):
         return
 
     def test_import_OATH_with_admin_policy(self):
-        '''
+        """
         test to import token with admin policies
-        '''
+        """
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -656,11 +633,13 @@ class TestImportOTP(TestController):
         # * only for root and
         # * only in target realm: 'mydefrealm'
 
-        params = {'scope': 'admin',
-                  'action': 'import',
-                  'realm': 'mydefrealm',
-                  'user': 'admin',
-                  'name': 'all_admin'}
+        params = {
+            "scope": "admin",
+            "action": "import",
+            "realm": "mydefrealm",
+            "user": "admin",
+            "name": "all_admin",
+        }
 
         response = self.create_policy(params)
         assert '"setPolicy all_admin"' in response.body, response
@@ -669,11 +648,11 @@ class TestImportOTP(TestController):
 
         # 1. negative test: hugo is not allowed to load tokens
 
-        params = {
-            'type': 'oathcsv'}
+        params = {"type": "oathcsv"}
 
-        response = self.upload_tokens("oath_tokens.csv", params=params,
-                                      auth_user='hugo')
+        response = self.upload_tokens(
+            "oath_tokens.csv", params=params, auth_user="hugo"
+        )
 
         msg = "You do not have the administrative right to import tokens"
         assert msg in response.body, response
@@ -682,12 +661,11 @@ class TestImportOTP(TestController):
 
         # 2. negative test: as target realm only 'mydefrealm' is allowed
 
-        params = {
-            'type': 'oathcsv',
-            'targetrealm': 'myOtherRealm'}
+        params = {"type": "oathcsv", "targetrealm": "myOtherRealm"}
 
-        response = self.upload_tokens("oath_tokens.csv", params=params,
-                                      auth_user='admin')
+        response = self.upload_tokens(
+            "oath_tokens.csv", params=params, auth_user="admin"
+        )
 
         msg = "target realm could not be assigned"
         assert msg in response.body, response
@@ -696,20 +674,20 @@ class TestImportOTP(TestController):
 
         # 3. positiv test: allowed target realm 'mydefrealm' for user 'admin'
 
-        params = {
-            'type': 'oathcsv',
-            'targetrealm': 'mydefrealm'}
+        params = {"type": "oathcsv", "targetrealm": "mydefrealm"}
 
-        response = self.upload_tokens("oath_tokens.csv", params=params,
-                                      auth_user='admin')
+        response = self.upload_tokens(
+            "oath_tokens.csv", params=params, auth_user="admin"
+        )
 
-        assert '<imported>4</imported>' in response, response
+        assert "<imported>4</imported>" in response, response
 
-        self.delete_policy('all_admin')
+        self.delete_policy("all_admin")
 
         self.delete_all_realms()
         self.delete_all_resolvers()
 
         return
+
 
 # eof #

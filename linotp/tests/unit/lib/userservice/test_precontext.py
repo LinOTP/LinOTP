@@ -23,7 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-' verfify that the userservice pre_context works as intended'
+" verfify that the userservice pre_context works as intended"
 
 import unittest
 import pytest
@@ -34,47 +34,55 @@ from linotp.lib.userservice import get_pre_context
 
 @pytest.mark.usefixtures("app")
 class TestPrecontext(unittest.TestCase):
-    @patch('linotp.lib.userservice.get_selfservice_action_value')
-    @patch('linotp.lib.userservice.getRealmBox')
-    @patch('linotp.lib.userservice.getDefaultRealm')
-    @patch('linotp.lib.userservice._get_realms_')
-    @patch('linotp.lib.userservice.get_copyright_info')
-    @patch('linotp.lib.userservice.get_version')
+    @patch("linotp.lib.userservice.get_selfservice_action_value")
+    @patch("linotp.lib.userservice.getRealmBox")
+    @patch("linotp.lib.userservice.getDefaultRealm")
+    @patch("linotp.lib.userservice._get_realms_")
+    @patch("linotp.lib.userservice.get_copyright_info")
+    @patch("linotp.lib.userservice.get_version")
     def test_footer_fields(
-            self,
-            mock_get_version,
-            mock_get_copyright_info,
-            mock_get_realms,
-            mock_getDefaultRealm,
-            mock_getRealmBox,
-            mock_get_selfservice_action_value):
-        '''
+        self,
+        mock_get_version,
+        mock_get_copyright_info,
+        mock_get_realms,
+        mock_getDefaultRealm,
+        mock_getRealmBox,
+        mock_get_selfservice_action_value,
+    ):
+        """
         verify that the precontext contains footer fields
-        '''
+        """
 
-        mock_get_version.return_value = 'version'
-        mock_get_copyright_info.return_value = 'copyright'
-        mock_get_realms.return_value = 'realms'
-        mock_getDefaultRealm.return_value = 'realm'
+        mock_get_version.return_value = "version"
+        mock_get_copyright_info.return_value = "copyright"
+        mock_get_realms.return_value = "realms"
+        mock_getDefaultRealm.return_value = "realm"
         mock_getRealmBox.return_value = True
-        mock_get_selfservice_action_value.side_effect = [False, False, False, False, 'footer', 'imprint', 'privacy']
+        mock_get_selfservice_action_value.side_effect = [
+            False,
+            False,
+            False,
+            False,
+            "footer",
+            "imprint",
+            "privacy",
+        ]
 
-        client = '127.0.0.1'
-        
-        assert get_pre_context(client) ==  {
-            'version': 'version',
-            'copyright': 'copyright',
-            'realms': 'realms',
-            'settings': {
-                'default_realm': 'realm',
-                'realm_box': True,
-                'mfa_login': False,
-                'mfa_3_fields': False,
-                'autoassign': False,
-                'autoenroll': False,
-                'footer_text': 'footer',
-                'imprint_url': 'imprint',
-                'privacy_notice_url': 'privacy',
-            }
+        client = "127.0.0.1"
+
+        assert get_pre_context(client) == {
+            "version": "version",
+            "copyright": "copyright",
+            "realms": "realms",
+            "settings": {
+                "default_realm": "realm",
+                "realm_box": True,
+                "mfa_login": False,
+                "mfa_3_fields": False,
+                "autoassign": False,
+                "autoenroll": False,
+                "footer_text": "footer",
+                "imprint_url": "imprint",
+                "privacy_notice_url": "privacy",
+            },
         }
-

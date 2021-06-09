@@ -39,6 +39,7 @@ from linotp.lib.fs_utils import ensure_dir
 # Tests for `ensure_dir()` function.
 # ----------------------------------------------------------------------
 
+
 def test_ensure_dir_ok(app, tmp_path):
     parent = os.path.join(app.config["ROOT_DIR"], "foo")
     d = os.path.join(parent, "bar")
@@ -54,11 +55,10 @@ def test_ensure_dir_ok(app, tmp_path):
 
 
 def test_ensure_dir_err(app, tmp_path, monkeypatch):
-
     def fake_makedirs(name, mode=0o777, exist_ok=False):
         raise FileNotFoundError(errno.ENOENT, "BOO", name)
 
-    monkeypatch.setattr(os, 'makedirs', fake_makedirs)
+    monkeypatch.setattr(os, "makedirs", fake_makedirs)
     d = os.path.join(app.config["ROOT_DIR"], "foo", "bar")
     with pytest.raises(FileNotFoundError) as ex:
         ensure_dir(app, "test", "ROOT_DIR", "foo", "bar")
@@ -67,10 +67,13 @@ def test_ensure_dir_err(app, tmp_path, monkeypatch):
     assert not os.path.exists(d)
 
 
-@pytest.mark.parametrize("var", [
-    ("DATABASE_URI",),  # doesn't end in `_DIR`
-    ("FLORP_DIR"),                 # doesn't exist
-])
+@pytest.mark.parametrize(
+    "var",
+    [
+        ("DATABASE_URI",),  # doesn't end in `_DIR`
+        ("FLORP_DIR"),  # doesn't exist
+    ],
+)
 def test_ensure_dir_bad_config(app, var):
     var = "FLORP_DIR"
     with pytest.raises(KeyError) as ex:
@@ -79,7 +82,7 @@ def test_ensure_dir_bad_config(app, var):
 
 
 def test_ensure__dir_missing_base_dir(app, caplog):
-    os.rmdir(app.config['DATA_DIR'])
+    os.rmdir(app.config["DATA_DIR"])
     with pytest.raises(FileNotFoundError) as ex:
         ensure_dir(app, "test", "DATA_DIR", "foo", mode=0x700)
     assert (
@@ -89,8 +92,8 @@ def test_ensure__dir_missing_base_dir(app, caplog):
 
 
 def test_ensure_dir_bad_base_dir(app):
-    os.rmdir(app.config['DATA_DIR'])
-    with open(app.config['DATA_DIR'], "w") as f:
+    os.rmdir(app.config["DATA_DIR"])
+    with open(app.config["DATA_DIR"], "w") as f:
         f.write("FOO\n")
     with pytest.raises(NotADirectoryError) as ex:
         ensure_dir(app, "test", "DATA_DIR", "bar", mode=0x700)

@@ -24,8 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
-TEMPLATE_MESSAGE = (
-"""Content-Type: multipart/alternative;
+TEMPLATE_MESSAGE = """Content-Type: multipart/alternative;
  boundary="===============3294676191386143061=="
 MIME-Version: 1.0
 Subject: ${Subject}
@@ -127,7 +126,6 @@ DMt11kPAK5S/Dn2QiCeKXgf4X0iH4OfyrFVlAAAAAElFTkSuQmCC
 
 --===============3294676191386143061==--
 """
-)
 
 import os
 from mock import patch
@@ -137,13 +135,12 @@ from linotp.provider.emailprovider import SMTPEmailProvider as EMailProvider
 from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
 
 mocked_context = {
-    'Config': {
-        EMAIL_PROVIDER_TEMPLATE_KEY: os.path.dirname(__file__)
-    }
+    "Config": {EMAIL_PROVIDER_TEMPLATE_KEY: os.path.dirname(__file__)}
 }
 
+
 class TestEMailTemplate(TestCase):
-    '''
+    """
     test the processing of email templates
 
     the main subject are the following static methods:
@@ -151,28 +148,26 @@ class TestEMailTemplate(TestCase):
         render_simple_message
         render_template_message
 
-    '''
+    """
 
     def test_legacy_email_messages(self):
         """
         verify that the former email substitutions <otp> <serial> still works
         """
 
-        email_from = 'me@home.org'
-        email_to = 'you@home.org'
+        email_from = "me@home.org"
+        email_to = "you@home.org"
 
-        subject = '<otp> subject'
+        subject = "<otp> subject"
         message = "Hello <otp>"
 
-        otp = '123 456'
+        otp = "123 456"
 
-        replacements = {
-            'otp': otp,
-            'serial': 'LEMT_12345'
-        }
+        replacements = {"otp": otp, "serial": "LEMT_12345"}
 
         response = EMailProvider.render_simple_message(
-            email_to, email_from, subject, message, replacements)
+            email_to, email_from, subject, message, replacements
+        )
 
         # verify that the otp is appended to the message without <otp>
 
@@ -182,16 +177,17 @@ class TestEMailTemplate(TestCase):
         # of type bytes or python str - thus we convert to assure to
         # recieve a python str
         if not isinstance(response, str):
-            response = response.decode('utf-8')
+            response = response.decode("utf-8")
 
         assert otp in response
-        assert otp + ' subject' in response
-        assert 'Hello ' + otp in response
+        assert otp + " subject" in response
+        assert "Hello " + otp in response
 
         message = "no otp in message"
 
         response = EMailProvider.render_simple_message(
-            email_to, email_from, subject, message, replacements)
+            email_to, email_from, subject, message, replacements
+        )
 
         assert message + otp in response
 
@@ -200,31 +196,29 @@ class TestEMailTemplate(TestCase):
         message = "<otp> double <otp>"
 
         response = EMailProvider.render_simple_message(
-            email_to, email_from, subject, message, replacements)
+            email_to, email_from, subject, message, replacements
+        )
 
-        assert otp + ' double ' + otp in response
-
+        assert otp + " double " + otp in response
 
     def test_email_templates(self):
         """
         verify that vars in an email template will be substituted
         """
 
-        email_from = 'me@home.org'
-        email_to = 'you@home.org'
+        email_from = "me@home.org"
+        email_to = "you@home.org"
 
-        subject = '${otp} subject'
+        subject = "${otp} subject"
         template_message = TEMPLATE_MESSAGE
 
-        otp = '123 456'
+        otp = "123 456"
 
-        replacements = {
-            'otp': otp,
-            'serial': 'LEMT_12345'
-            }
+        replacements = {"otp": otp, "serial": "LEMT_12345"}
 
         response = EMailProvider.render_template_message(
-            email_to, email_from, subject, template_message, replacements)
+            email_to, email_from, subject, template_message, replacements
+        )
 
         assert response
 
@@ -232,33 +226,30 @@ class TestEMailTemplate(TestCase):
         # of type bytes or python str - thus we convert to assure to
         # recieve a python str
         if not isinstance(response, str):
-            response = response.decode('utf-8')
+            response = response.decode("utf-8")
 
         assert "Your requested OTP is " + otp in response
         assert "<td align='center'>" + otp in response
         assert "Subject: " + otp + " subject" in response
-
 
     def test_email_templates_unknown(self):
         """
         verify that unknown vars in an email template wont break
         """
 
-        email_from = 'me@home.org'
-        email_to = 'you@home.org'
+        email_from = "me@home.org"
+        email_to = "you@home.org"
 
-        subject = '${otp} subject'
-        template_message = TEMPLATE_MESSAGE.replace('${otp}', '${otp} ${var}')
+        subject = "${otp} subject"
+        template_message = TEMPLATE_MESSAGE.replace("${otp}", "${otp} ${var}")
 
-        otp = '123 456'
+        otp = "123 456"
 
-        replacements = {
-            'otp': otp,
-            'serial': 'LEMT_12345'
-            }
+        replacements = {"otp": otp, "serial": "LEMT_12345"}
 
         response = EMailProvider.render_template_message(
-            email_to, email_from, subject, template_message, replacements)
+            email_to, email_from, subject, template_message, replacements
+        )
 
         assert response
 
@@ -266,38 +257,42 @@ class TestEMailTemplate(TestCase):
         # of type bytes or python str - thus we convert to assure to
         # recieve a python str
         if not isinstance(response, str):
-            response = response.decode('utf-8')
+            response = response.decode("utf-8")
 
-        assert "Your requested OTP is " + otp + " ${var}"in response
+        assert "Your requested OTP is " + otp + " ${var}" in response
         assert "<td align='center'>" + otp + " ${var}" in response
         assert "Subject: " + otp + " subject" in response
 
-
-    @patch('linotp.provider.emailprovider.request_context', new=mocked_context)
+    @patch("linotp.provider.emailprovider.request_context", new=mocked_context)
     def test_load_file_template(self):
         """ test secure template file loding - not allowed below the templ root"""
 
-        email_from = 'me@home.org'
-        email_to = 'you@home.org'
+        email_from = "me@home.org"
+        email_to = "you@home.org"
 
-        subject = '${otp} subject'
+        subject = "${otp} subject"
 
-        otp = '123 456'
+        otp = "123 456"
 
-        replacements = {
-            'otp': otp,
-            'serial': 'LEMT_12345'
-            }
+        replacements = {"otp": otp, "serial": "LEMT_12345"}
 
         # ------------------------------------------------------------------ --
 
         # now get the fixture directory which contains our email.eml template
 
-        fixture_path = os.path.abspath(os.path.join(
-            os.path.dirname(__file__), '..', '..', '..','functional', 'fixtures'))
+        fixture_path = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "..",
+                "..",
+                "functional",
+                "fixtures",
+            )
+        )
 
         global mocked_context
-        mocked_context['Config'][EMAIL_PROVIDER_TEMPLATE_KEY]= fixture_path
+        mocked_context["Config"][EMAIL_PROVIDER_TEMPLATE_KEY] = fixture_path
 
         # ------------------------------------------------------------------ --
 
@@ -306,7 +301,8 @@ class TestEMailTemplate(TestCase):
         template_message = "file://email.eml"
 
         response = EMailProvider.render_template_message(
-            email_to, email_from, subject, template_message, replacements)
+            email_to, email_from, subject, template_message, replacements
+        )
 
         assert response
 
@@ -314,7 +310,7 @@ class TestEMailTemplate(TestCase):
         # of type bytes or python str - thus we convert to assure to
         # recieve a python str
         if not isinstance(response, str):
-            response = response.decode('utf-8')
+            response = response.decode("utf-8")
 
         assert "Subject: " + otp + " subject" in response
 
@@ -326,9 +322,11 @@ class TestEMailTemplate(TestCase):
 
         with self.assertRaises(Exception) as exx:
             response = EMailProvider.render_template_message(
-                email_to, email_from, subject, template_message, replacements)
+                email_to, email_from, subject, template_message, replacements
+            )
 
         ex_msg = "%r" % exx.exception
-        assert 'not in email provider template root' in ex_msg
+        assert "not in email provider template root" in ex_msg
+
 
 # eof

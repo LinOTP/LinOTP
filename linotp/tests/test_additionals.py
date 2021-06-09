@@ -38,16 +38,16 @@ import binascii
 import tempfile
 
 
-
 class PBKDF2(TestCase):
-
     def test_pbkdf(self):
-        '''
+        """
         Test password based key derivation function
-        '''
-        expected_key = { 1000: "979d33c5e39bf7fc20ef",
-                         10: "3c28a7f09aa19108a17d",
-                         100: "303155b866685ad279fa" }
+        """
+        expected_key = {
+            1000: "979d33c5e39bf7fc20ef",
+            10: "3c28a7f09aa19108a17d",
+            100: "303155b866685ad279fa",
+        }
         for key_length in list(expected_key.keys()):
             key = pbkdf2("my password", "salt", 10, key_length).hex()
             print(key, expected_key[key_length])
@@ -56,7 +56,7 @@ class PBKDF2(TestCase):
 
 class TestPSKC(TestCase):
 
-    XML1 = '''<?xml version="1.0" encoding="UTF-8"?>
+    XML1 = """<?xml version="1.0" encoding="UTF-8"?>
        <KeyContainer Version="1.0"
            Id="exampleID1"
            xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
@@ -88,10 +88,9 @@ class TestPSKC(TestCase):
                </Key>
            </KeyPackage>
        </KeyContainer>
-       '''
+       """
 
-
-    XML2 = '''<?xml version="1.0" encoding="UTF-8"?>
+    XML2 = """<?xml version="1.0" encoding="UTF-8"?>
        <KeyContainer Version="1.0"
            Id="exampleID1"
            xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
@@ -150,9 +149,9 @@ class TestPSKC(TestCase):
                </Key>
            </KeyPackage>
        </KeyContainer>
-       '''
+       """
 
-    XML3 = '''<?xml version="1.0" encoding="UTF-8"?>
+    XML3 = """<?xml version="1.0" encoding="UTF-8"?>
  <KeyContainer Version="1.0"
      xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
      xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
@@ -205,9 +204,9 @@ class TestPSKC(TestCase):
              </Data>
          </Key>
      </KeyPackage>
- </KeyContainer>'''
+ </KeyContainer>"""
 
-    XML4 = '''<?xml version="1.0" encoding="UTF-8"?>
+    XML4 = """<?xml version="1.0" encoding="UTF-8"?>
   <pskc:KeyContainer
     xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc"
     xmlns:xenc11="http://www.w3.org/2009/xmlenc11#"
@@ -277,61 +276,74 @@ class TestPSKC(TestCase):
               </pskc:Data>
           </pskc:Key>
       </pskc:KeyPackage>
-  </pskc:KeyContainer>'''
+  </pskc:KeyContainer>"""
 
     def test_01_xml1(self):
-        '''
+        """
         testing import PSKC #1 -- no valid OATH serial
-        '''
+        """
         res = parsePSKCdata(self.XML1)
         print(res)
         assert res == {}
 
     def test_02_xml1(self):
-        '''
+        """
         testing import PSKC #1 -- ignore OATH serial
-        '''
-        res = parsePSKCdata(self.XML1, 	do_checkserial=False)
+        """
+        res = parsePSKCdata(self.XML1, do_checkserial=False)
         print(res)
         assert len(res) == 1
-        assert res.get('987654321')
-        assert res.get('987654321').get('otplen') == 8
-        assert res.get('987654321').get('hmac_key') == '3132333435363738393031323334353637383930'
+        assert res.get("987654321")
+        assert res.get("987654321").get("otplen") == 8
+        assert (
+            res.get("987654321").get("hmac_key")
+            == "3132333435363738393031323334353637383930"
+        )
 
     def test_03_xml2(self):
-        '''
+        """
         testing import PSKC #2 -- 2 valid OATH serials
-        '''
+        """
         res = parsePSKCdata(self.XML2)
         print(res)
         assert len(res) == 2
 
     def test_04_preshared_key(self):
-        '''
+        """
         testing import PSKC #3 -- preshared key
-        '''
-        res = parsePSKCdata(self.XML3, preshared_key_hex="12345678901234567890123456789012", do_checkserial=False)
+        """
+        res = parsePSKCdata(
+            self.XML3,
+            preshared_key_hex="12345678901234567890123456789012",
+            do_checkserial=False,
+        )
         print(res)
-        assert res.get('12345678').get('hmac_key') == "3132333435363738393031323334353637383930"
+        assert (
+            res.get("12345678").get("hmac_key")
+            == "3132333435363738393031323334353637383930"
+        )
 
     def test_05_password_based(self):
-        '''
+        """
         testing import PSKC #4 -- password based encryption
-        '''
+        """
         res = parsePSKCdata(self.XML4, password="qwerty", do_checkserial=False)
         print(res)
-        assert res.get('123456').get('hmac_key') == "3132333435363738393031323334353637383930"
+        assert (
+            res.get("123456").get("hmac_key")
+            == "3132333435363738393031323334353637383930"
+        )
 
 
 class TestDPWImport(TestCase):
 
-    DPW = '''dpw123456	12121212121212
-dpw23456789		3434343434343434'''
+    DPW = """dpw123456	12121212121212
+dpw23456789		3434343434343434"""
 
     def test_01_Import(self):
-        '''
+        """
         testing import of day password tokens
-        '''
+        """
         res = parseDPWdata(self.DPW)
         print(res)
         assert len(res) == 2

@@ -40,11 +40,11 @@ log = logging.getLogger(__name__)
 
 
 def create_static_password(key_hex):
-    '''
+    """
     According to yubikey manual 5.5.5 the static-ticket is the same algorith
     with no moving factors. The msg_hex that is encoded with the aes key is
        '000000000000ffffffffffffffff0f2e'
-    '''
+    """
     msg_hex = "000000000000ffffffffffffffff0f2e"
     msg_bin = binascii.unhexlify(msg_hex)
     aes = AES.new(binascii.unhexlify(key_hex), AES.MODE_ECB)
@@ -55,7 +55,7 @@ def create_static_password(key_hex):
 
 
 def parseYubicoCSV(csv):
-    '''
+    """
     This function reads the CSV data as created by the Yubico personalization GUI.
 
     Traditional Format:
@@ -92,15 +92,15 @@ def parseYubicoCSV(csv):
                         'description' : xxx
                          }
         }
-    '''
+    """
     TOKENS = {}
     log.debug("[parseYubicoCSV] starting to parse an yubico csv file.")
 
-    csv_array = csv.split('\n')
+    csv_array = csv.split("\n")
 
     log.debug("[parseYubicoCSV] the file contains %i tokens." % len(csv_array))
     for line in csv_array:
-        l = line.split(',')
+        l = line.split(",")
         serial = ""
         key = ""
         otplen = 32
@@ -108,7 +108,11 @@ def parseYubicoCSV(csv):
         slot = ""
         if len(l) >= 6:
             first_column = l[0].strip()
-            if first_column.lower() in ["yubico otp", "oath-hotp", "static password"]:
+            if first_column.lower() in [
+                "yubico otp",
+                "oath-hotp",
+                "static password",
+            ]:
                 # traditional format
                 typ = l[0].strip()
                 slot = l[2].strip()
@@ -119,38 +123,42 @@ def parseYubicoCSV(csv):
                     log.warning("No public ID in line %r" % line)
                     serial_int = int(binascii.hexlify(os.urandom(4)), 16)
                 else:
-                    mh = modhex_decode(public_id).encode('utf-8')[:8]
+                    mh = modhex_decode(public_id).encode("utf-8")[:8]
                     serial_int = int(mh, 16)
 
                 if typ.lower() == "yubico otp":
                     ttype = "yubikey"
                     otplen = 32 + len(public_id)
                     serial = "UBAM%08d_%s" % (serial_int, slot)
-                    TOKENS[serial] = {'type': ttype,
-                                      'hmac_key': key,
-                                      'otplen': otplen,
-                                      'description': public_id
-                                      }
+                    TOKENS[serial] = {
+                        "type": ttype,
+                        "hmac_key": key,
+                        "otplen": otplen,
+                        "description": public_id,
+                    }
                 elif typ.lower() == "oath-hotp":
-                    '''
+                    """
                     TODO: this does not work out at the moment, since the GUI either
                     1. creates a serial in the CSV, but then the serial is always prefixed! We can not authenticate with this!
                     2. if it does not prefix the serial there is no serial in the CSV! We can not import and assign the token!
-                    '''
+                    """
                     ttype = "hmac"
                     otplen = 6
                     if l and len(l) > 11 and l[11] and l[11].strip():
                         otplen = int(l[11])
 
                     serial = "UBOM%08d_%s" % (serial_int, slot)
-                    TOKENS[serial] = {'type': ttype,
-                                      'hmac_key': key,
-                                      'otplen': otplen,
-                                      'description': public_id
-                                      }
+                    TOKENS[serial] = {
+                        "type": ttype,
+                        "hmac_key": key,
+                        "otplen": otplen,
+                        "description": public_id,
+                    }
                 else:
                     log.warning(
-                        "[parseYubicoCSV] at the moment we do only support Yubico OTP and HOTP: %r" % line)
+                        "[parseYubicoCSV] at the moment we do only support Yubico OTP and HOTP: %r"
+                        % line
+                    )
                     continue
             elif first_column.isdigit():
                 # first column is a number, (serial number), so we are in the
@@ -170,8 +178,10 @@ def parseYubicoCSV(csv):
                     serial = "UBSM%s_%s" % (serial, slot)
                     key = create_static_password(key)
                     otplen = len(key)
-                    log.warning("[parseYubcoCSV] We can not enroll a static mode, since we do not know"
-                                " the private identify and so we do not know the static password.")
+                    log.warning(
+                        "[parseYubcoCSV] We can not enroll a static mode, since we do not know"
+                        " the private identify and so we do not know the static password."
+                    )
                     continue
                 else:
                     # Yubico
@@ -179,14 +189,17 @@ def parseYubicoCSV(csv):
                     serial = "UBAM%s_%s" % (serial, slot)
                     public_id = l[1].strip()
                     otplen = 32 + len(public_id)
-                TOKENS[serial] = {'type': typ,
-                                  'hmac_key': key,
-                                  'otplen': otplen,
-                                  'description': public_id
-                                  }
+                TOKENS[serial] = {
+                    "type": typ,
+                    "hmac_key": key,
+                    "otplen": otplen,
+                    "description": public_id,
+                }
         else:
             log.warning(
-                "[parseYubicoCSV] the line %r did not contain a enough values" % line)
+                "[parseYubicoCSV] the line %r did not contain a enough values"
+                % line
+            )
             continue
 
     log.debug("[parseOATHcsv] read the following values: %s" % str(TOKENS))

@@ -53,8 +53,8 @@ log = logging.getLogger(__name__)
 
 RADIUS_RESPONSE_FUNC = None
 
-class RadiusResponse(object):
 
+class RadiusResponse(object):
     def __init__(self, auth, reply=None):
         if auth is True:
             self.code = AccessAccept
@@ -88,12 +88,12 @@ def mocked_radius_SendPacket(Client, *argparams, **kwparams):
 
         params = {}
         # contents of User-Name
-        params['username'] = pkt[1][0]
+        params["username"] = pkt[1][0]
         # encrypted User-Password
-        params['password'] = pkt.PwDecrypt(pkt[2][0])
+        params["password"] = pkt.PwDecrypt(pkt[2][0])
 
         try:
-            params['state'] = pkt["State"][0]
+            params["state"] = pkt["State"][0]
         except Exception as exx:
             pass
 
@@ -106,11 +106,10 @@ def mocked_radius_SendPacket(Client, *argparams, **kwparams):
 
 
 class TestRadiusTokenChallengeController(TestChallengeResponseController):
-
     def setUp(self):
-        '''
+        """
         This sets up all the resolvers and realms
-        '''
+        """
         TestChallengeResponseController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
@@ -127,7 +126,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        self.radius_url = 'localhost:%s' % self.radius_authport,
+        self.radius_url = ("localhost:%s" % self.radius_authport,)
         return
 
     def tearDown(self):
@@ -137,20 +136,25 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         self.delete_all_resolvers()
         TestChallengeResponseController.tearDown(self)
 
-    def setPinPolicy(self, name='otpPin', realm='ldap_realm',
-                     action='otppin=1, ', scope='authentication',
-                     active=True):
+    def setPinPolicy(
+        self,
+        name="otpPin",
+        realm="ldap_realm",
+        action="otppin=1, ",
+        scope="authentication",
+        active=True,
+    ):
         params = {
-            'name': name,
-            'user': '*',
-            'action': action,
-            'scope': scope,
-            'realm': realm,
-            'time': '',
-            'client': '',
-            'active': active,
-            'session': self.session,
-            }
+            "name": name,
+            "user": "*",
+            "action": action,
+            "scope": scope,
+            "realm": realm,
+            "time": "",
+            "client": "",
+            "active": active,
+            "session": self.session,
+        }
         cookies = {"admin_session": self.session}
 
         response = self.make_system_request("setPolicy", params=params)
@@ -167,45 +171,45 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         serials = []
 
         # The token with the remote PIN
-        params_list = [{
-                      "serial": "radius1",
-                      "type": "radius",
-                      "otpkey": "1234567890123456",
-                      "otppin": "",
-                      "user": "remoteuser",
-                      "pin": "",
-                      "description": "RadiusToken1",
-                      'radius.server': self.radius_url,
-                      'radius.local_checkpin': 0,
-                      'radius.user': 'challenge',
-                      'radius.secret': 'testing123',
-                      'session': self.session,
-                      },
-
-                    # the token with the local PIN
-                    {
-                      "serial": "radius2",
-                      "type": "radius",
-                      "otpkey": "1234567890123456",
-                      "otppin": "local",
-                      "user": "localuser",
-                      "pin": "local",
-                      "description": "RadiusToken2",
-                      'radius.server': self.radius_url,
-                      'radius.local_checkpin': 1,
-                      'radius.user': 'user_no_pin',
-                      'radius.secret': 'testing123',
-                      'session': self.session,
-                      },
-                     ]
+        params_list = [
+            {
+                "serial": "radius1",
+                "type": "radius",
+                "otpkey": "1234567890123456",
+                "otppin": "",
+                "user": "remoteuser",
+                "pin": "",
+                "description": "RadiusToken1",
+                "radius.server": self.radius_url,
+                "radius.local_checkpin": 0,
+                "radius.user": "challenge",
+                "radius.secret": "testing123",
+                "session": self.session,
+            },
+            # the token with the local PIN
+            {
+                "serial": "radius2",
+                "type": "radius",
+                "otpkey": "1234567890123456",
+                "otppin": "local",
+                "user": "localuser",
+                "pin": "local",
+                "description": "RadiusToken2",
+                "radius.server": self.radius_url,
+                "radius.local_checkpin": 1,
+                "radius.user": "user_no_pin",
+                "radius.secret": "testing123",
+                "session": self.session,
+            },
+        ]
         for params in params_list:
-            response = self.make_admin_request(action='init', params=params)
+            response = self.make_admin_request(action="init", params=params)
             assert '"value": true' in response, response
             serials.append(params.get("serial"))
 
         return serials
 
-    @patch.object(Client, 'SendPacket', mocked_radius_SendPacket)
+    @patch.object(Client, "SendPacket", mocked_radius_SendPacket)
     def test_radiustoken_remote_pin(self):
         """
         Challenge Response Test: radius token with remote PIN
@@ -216,8 +220,9 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         otp = "test123456"
 
         # now switch policy on for challenge_response for hmac token
-        response = self.setPinPolicy(name="ch_resp", realm='*',
-                                action='challenge_response=radius')
+        response = self.setPinPolicy(
+            name="ch_resp", realm="*", action="challenge_response=radius"
+        )
         assert '"status": true,' in response, response
 
         # define validation function
@@ -226,9 +231,9 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
             opt = None
 
             # check if we are in a chellenge request
-            if params.get('password') == 'test':
+            if params.get("password") == "test":
                 opt = {}
-                opt["State"] = ['012345678901']
+                opt["State"] = ["012345678901"]
                 opt["Reply-Message"] = ["text"]
                 resp = opt
 
@@ -239,12 +244,12 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
 
         # 1.1 now trigger a challenge
         params = {"user": user, "pass": "test"}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert '"value": false' in response, response
 
         body = json.loads(response.body)
-        state = body.get('detail', {}).get('transactionid', '')
-        assert state != '', response
+        state = body.get("detail", {}).get("transactionid", "")
+        assert state != "", response
 
         # 1.2 check the challenge
 
@@ -254,8 +259,10 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
             opt = None
 
             # check if we are in a chellenge request
-            if (params.get('password') == 'test123456' and
-                params.get('state') == '012345678901'):
+            if (
+                params.get("password") == "test123456"
+                and params.get("state") == "012345678901"
+            ):
                 resp = True
 
             return resp, opt
@@ -264,7 +271,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         RADIUS_RESPONSE_FUNC = check_func2
 
         params = {"user": user, "pass": otp, "state": state}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         # hey, if this ok, we are done for the remote pin check
         assert '"value": true' in response, response
@@ -274,7 +281,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
 
         return
 
-    @patch.object(Client, 'SendPacket', mocked_radius_SendPacket)
+    @patch.object(Client, "SendPacket", mocked_radius_SendPacket)
     def test_radiustoken_local_pin(self):
         """
         Challenge Response Test: radius token with local PIN
@@ -287,8 +294,9 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         otp = "654321"
 
         # now switch policy on for challenge_response for hmac token
-        response = self.setPinPolicy(name="ch_resp", realm='*',
-                                action='challenge_response=radius')
+        response = self.setPinPolicy(
+            name="ch_resp", realm="*", action="challenge_response=radius"
+        )
         assert '"status": true,' in response, response
 
         # 1.1 now trigger a challenge
@@ -298,9 +306,9 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
             opt = None
 
             # check if we are in a chellenge request
-            if params.get('password') == 'test':
+            if params.get("password") == "test":
                 opt = {}
-                opt["State"] = ['012345678901']
+                opt["State"] = ["012345678901"]
                 opt["Reply-Message"] = ["text"]
                 resp = opt
 
@@ -310,12 +318,12 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         RADIUS_RESPONSE_FUNC = check_func1
 
         params = {"user": user, "pass": "local"}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert '"value": false' in response, response
 
         body = json.loads(response.body)
-        state = body.get('detail', {}).get('transactionid', '')
-        assert state != '', response
+        state = body.get("detail", {}).get("transactionid", "")
+        assert state != "", response
 
         # 1.2 check the challenge
         def check_func2(params):
@@ -323,7 +331,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
             opt = None
 
             # check if we got the correct otp
-            if params.get('password') == otp:
+            if params.get("password") == otp:
                 resp = True
 
             return resp, opt
@@ -332,7 +340,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         RADIUS_RESPONSE_FUNC = check_func2
 
         params = {"user": user, "pass": otp, "state": state}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         # hey, if this ok, we are done for the remote pin check
         assert '"value": true' in response, response
 

@@ -55,27 +55,29 @@ import logging
 log = logging.getLogger(__name__)
 
 
-keylen = {'sha1': SHA1.digest_size,
-          'sha256': SHA256.digest_size,
-          'sha512': SHA512.digest_size}
+keylen = {
+    "sha1": SHA1.digest_size,
+    "sha256": SHA256.digest_size,
+    "sha512": SHA512.digest_size,
+}
 
 
-@tokenclass_registry.class_entry('hmac')
-@tokenclass_registry.class_entry('linotp.tokens.hmactoken.HmacTokenClass')
+@tokenclass_registry.class_entry("hmac")
+@tokenclass_registry.class_entry("linotp.tokens.hmactoken.HmacTokenClass")
 class HmacTokenClass(TokenClass):
-    '''
+    """
     hotp token class implementation
-    '''
+    """
 
     @classmethod
     def getClassType(cls):
-        '''
+        """
         getClassType - return the token type shortname
 
         :return: 'hmac'
         :rtype: string
 
-        '''
+        """
         return "hmac"
 
     @classmethod
@@ -83,8 +85,8 @@ class HmacTokenClass(TokenClass):
         return "oath"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
-        '''
+    def getClassInfo(cls, key=None, ret="all"):
+        """
         getClassInfo - returns a subtree of the token definition
 
         :param key: subsection identifier
@@ -96,68 +98,82 @@ class HmacTokenClass(TokenClass):
         :return: subsection if key exists or user defined
         :rtype: s.o.
 
-        '''
+        """
 
-        _ = context['translate']
+        _ = context["translate"]
 
         res = {
-           'type'         : 'hmac',
-           'title'        : 'HMAC Event Token',
-           'description'  : ('event based otp token using the hmac algorithm'),
-
-           'init'         : {'page' : {'html'      : 'hmactoken.mako',
-                                        'scope'      : 'enroll', },
-                               'title'  : {'html'      : 'hmactoken.mako',
-                                         'scope'     : 'enroll.title', },
-                               },
-
-           'config'        : { 'page' : {'html'      : 'hmactoken.mako',
-                                        'scope'      : 'config', },
-                               'title'  : {'html'      : 'hmactoken.mako',
-                                         'scope'     : 'config.title', },
-                             },
-
-           'selfservice'   :  { 'enroll' :
-                               {'page' : {
-                                  'html'       : 'hmactoken.mako',
-                                  'scope'      : 'selfservice.enroll', },
-                                'title'  :
-                                 { 'html'      : 'hmactoken.mako',
-                                   'scope'      : 'selfservice.title.enroll', },
-                                  },
-                              },
-
-           'policy' : {
-            'selfservice' : {
-               'hmac_hashlib' : {
-                   'type':'int',
-                   'value' : [1, 2, 3],
-                   'desc' : ('Specify the hashlib to be used. Can be '
-                             'sha1 (1), sha256 (2) or sha512 (3)')
+            "type": "hmac",
+            "title": "HMAC Event Token",
+            "description": ("event based otp token using the hmac algorithm"),
+            "init": {
+                "page": {
+                    "html": "hmactoken.mako",
+                    "scope": "enroll",
+                },
+                "title": {
+                    "html": "hmactoken.mako",
+                    "scope": "enroll.title",
+                },
+            },
+            "config": {
+                "page": {
+                    "html": "hmactoken.mako",
+                    "scope": "config",
+                },
+                "title": {
+                    "html": "hmactoken.mako",
+                    "scope": "config.title",
+                },
+            },
+            "selfservice": {
+                "enroll": {
+                    "page": {
+                        "html": "hmactoken.mako",
+                        "scope": "selfservice.enroll",
                     },
-               'hmac_otplen' : {'type':'int',
-                  'value' : [6, 8],
-                  'desc' : _('Specify the otplen to be used. Can be 6 or 8 digits.')
-                  },
+                    "title": {
+                        "html": "hmactoken.mako",
+                        "scope": "selfservice.title.enroll",
+                    },
+                },
+            },
+            "policy": {
+                "selfservice": {
+                    "hmac_hashlib": {
+                        "type": "int",
+                        "value": [1, 2, 3],
+                        "desc": (
+                            "Specify the hashlib to be used. Can be "
+                            "sha1 (1), sha256 (2) or sha512 (3)"
+                        ),
+                    },
+                    "hmac_otplen": {
+                        "type": "int",
+                        "value": [6, 8],
+                        "desc": _(
+                            "Specify the otplen to be used. Can be 6 or 8 digits."
+                        ),
+                    },
                 }
-                }
-               }
+            },
+        }
 
         if key is not None and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
         return ret
 
     def __init__(self, a_token):
-        '''
+        """
         constructor - create a token object
 
         :param aToken: instance of the orm db object
         :type aToken:  orm object
 
-        '''
+        """
 
         TokenClass.__init__(self, a_token)
         self.setType("HMAC")
@@ -168,30 +184,31 @@ class HmacTokenClass(TokenClass):
         # which is effectively set in the update
 
         self.hashlibStr = self.getFromTokenInfo(
-                "hashlib", getFromConfig("hotp.hashlib", 'sha1'))
+            "hashlib", getFromConfig("hotp.hashlib", "sha1")
+        )
 
     def update(self, param, reset_failcount=True):
-        '''
+        """
         update - process the initialization parameters
 
         :param param: dict of initialization parameters
         :type param: dict
 
         :return: nothing
-        '''
+        """
 
         # Remark: the otpKey is handled in the parent class
 
-        self.hashlibStr = param.get("hashlib", 'sha1') or 'sha1'
+        self.hashlibStr = param.get("hashlib", "sha1") or "sha1"
 
         # check if the key_size id provided
         # if not, we could derive it from the hashlib
-        key_size = param.get('key_size')
+        key_size = param.get("key_size")
         if not key_size and self.hashlibStr in keylen:
             key_size = keylen.get(self.hashlibStr)
 
-        param['key_size'] = key_size
-        param['hashlib'] = self.hashlibStr
+        param["key_size"] = key_size
+        param["hashlib"] = self.hashlibStr
         self.addToTokenInfo("hashlib", self.hashlibStr)
 
         # ------------------------------------------------------------------ --
@@ -199,9 +216,9 @@ class HmacTokenClass(TokenClass):
         # for usability reason we can accept otpkeys with white spaces or
         # separators like '-', we just replace them before storing it
 
-        if 'otpkey' in param:
-            otpkey = param['otpkey']
-            param['otpkey'] = otpkey.replace(' ','').replace('-','')
+        if "otpkey" in param:
+            otpkey = param["otpkey"]
+            param["otpkey"] = otpkey.replace(" ", "").replace("-", "")
 
         # ------------------------------------------------------------------ --
 
@@ -209,10 +226,10 @@ class HmacTokenClass(TokenClass):
 
         return
 
-# challenge interfaces starts here
+    # challenge interfaces starts here
 
     def is_challenge_request(self, passw, user, options=None):
-        '''
+        """
         check, if the request would start a challenge
 
         - default: if the passw contains only the pin, this request would
@@ -224,7 +241,7 @@ class HmacTokenClass(TokenClass):
         :param options: dictionary of additional request parameters
 
         :return: returns true or false
-        '''
+        """
 
         trigger_challenge = False
         pin_match = check_pin(self, passw, user=user, options=options)
@@ -233,8 +250,9 @@ class HmacTokenClass(TokenClass):
 
         return trigger_challenge
 
-    def is_challenge_response(self, passw, user, options=None,
-                              challenges=None):
+    def is_challenge_response(
+        self, passw, user, options=None, challenges=None
+    ):
         """
         This method checks, if this is a request, that is the response to
         a previously sent challenge.
@@ -264,7 +282,8 @@ class HmacTokenClass(TokenClass):
             return True
 
         pin_match, otp_counter, reply = self.authenticate(
-            passw=passw, user=user, options=options)
+            passw=passw, user=user, options=options
+        )
 
         if otp_counter >= 0:
             self.authenticated = pin_match, otp_counter, reply
@@ -272,8 +291,10 @@ class HmacTokenClass(TokenClass):
 
         return False
 
-    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
-        '''
+    def checkResponse4Challenge(
+        self, user, passw, options=None, challenges=None
+    ):
+        """
         verify the response of a previous challenge
 
         :param user:     the requesting user
@@ -284,10 +305,10 @@ class HmacTokenClass(TokenClass):
                             described as dict
         :return: tuple of (otpcounter and the list of matching challenges)
 
-        '''
+        """
 
         # fetch the transactionid
-        transid = options.get('transactionid', options.get('state', None))
+        transid = options.get("transactionid", options.get("state", None))
 
         # in case of no transaction id, we do a direct authentication
         if not transid and self.authenticated is not None:
@@ -312,7 +333,7 @@ class HmacTokenClass(TokenClass):
         return otp_counter, matching_challenges
 
     def createChallenge(self, state, options=None):
-        '''
+        """
         create a challenge, which is submitted to the user
 
         :param state: the state/transaction id
@@ -321,20 +342,21 @@ class HmacTokenClass(TokenClass):
                  message is submitted to the user
                  data is preserved in the challenge
                  attributes are additional attributes, which could be returned
-        '''
+        """
         message = getFromConfig(
-                        self.type.upper() + "_CHALLENGE_PROMPT",
-                        'Please enter your otp value: ')
+            self.type.upper() + "_CHALLENGE_PROMPT",
+            "Please enter your otp value: ",
+        )
 
         data = {
-                'serial' : self.token.getSerial(),
-                'date' : "%s" % datetime.now()
-                }
+            "serial": self.token.getSerial(),
+            "date": "%s" % datetime.now(),
+        }
 
         return (True, message, data, None)
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
-        '''
+        """
         checkOtp - validate the token otp against a given otpvalue
 
         :param anOtpVal: the to be verified otpvalue
@@ -352,25 +374,31 @@ class HmacTokenClass(TokenClass):
         :return: the counter state or -1
         :rtype: int
 
-        '''
+        """
         res = -1
 
         try:
             otplen = int(self.getOtpLen())
         except ValueError as ex:
-            log.exception('[checkOtp] failed to initialize otplen: ValueError %r %r' % (ex, self.token.LinOtpOtpLen))
+            log.exception(
+                "[checkOtp] failed to initialize otplen: ValueError %r %r"
+                % (ex, self.token.LinOtpOtpLen)
+            )
             raise ex
 
         try:
-            self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
+            self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         except Exception as ex:
-            log.exception('[checkOtp] failed to initialize hashlibStr: %r' % (ex))
+            log.exception(
+                "[checkOtp] failed to initialize hashlibStr: %r" % (ex)
+            )
             raise ex
 
         secObj = self._get_secret_object()
 
-        hmac2Otp = HmacOtp(secObj, counter, otplen,
-                           self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(
+            secObj, counter, otplen, self.getHashlib(self.hashlibStr)
+        )
         res = hmac2Otp.checkOtp(anOtpVal, window)
 
         if -1 == res:
@@ -379,7 +407,7 @@ class HmacTokenClass(TokenClass):
         return res
 
     def check_otp_exist(self, otp, window=10, user=None, autoassign=False):
-        '''
+        """
         checks if the given OTP value is/are values of this very token.
         This is used to autoassign and to determine the serial number of
         a token.
@@ -393,7 +421,7 @@ class HmacTokenClass(TokenClass):
         :return: counter or -1 if otp does not exist
         :rtype:  int
 
-        '''
+        """
 
         res = -1
 
@@ -401,15 +429,18 @@ class HmacTokenClass(TokenClass):
             otplen = int(self.token.LinOtpOtpLen)
             counter = int(self.token.LinOtpCount)
         except ValueError as ex:
-            log.warning("[check_otp_exist] a value error occurred while converting: otplen %r, counter %r : ValueError: %r ret: %r "
-                      % (self.token.LinOtpOtpLen, self.token.LinOtpCount, ex, res))
+            log.warning(
+                "[check_otp_exist] a value error occurred while converting: otplen %r, counter %r : ValueError: %r ret: %r "
+                % (self.token.LinOtpOtpLen, self.token.LinOtpCount, ex, res)
+            )
             return res
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
 
         secObj = self._get_secret_object()
-        hmac2Otp = HmacOtp(secObj, counter, otplen,
-                           self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(
+            secObj, counter, otplen, self.getHashlib(self.hashlibStr)
+        )
         res = hmac2Otp.checkOtp(otp, window)
 
         if res >= 0:
@@ -424,7 +455,7 @@ class HmacTokenClass(TokenClass):
         return res
 
     def autosync(self, hmac2Otp, anOtpVal):
-        '''
+        """
         auto - sync the token based on two otp values
         - internal method to realize the autosync within the
         checkOtp method
@@ -438,7 +469,7 @@ class HmacTokenClass(TokenClass):
         :return: counter or -1 if otp does not exist
         :rtype:  int
 
-        '''
+        """
 
         res = -1
         autosync = False
@@ -460,20 +491,22 @@ class HmacTokenClass(TokenClass):
 
         ## if autosync is enabled
         if False == autosync:
-            log.debug("[autosync] end. autosync is not enabled : res %r" % (res))
+            log.debug(
+                "[autosync] end. autosync is not enabled : res %r" % (res)
+            )
             return res
 
         info = self.getTokenInfo()
         syncWindow = self.getSyncWindow()
 
-        #check if the otpval is valid in the sync scope
+        # check if the otpval is valid in the sync scope
         res = hmac2Otp.checkOtp(anOtpVal, syncWindow)
 
-        #if yes:
+        # if yes:
         if res != -1:
             # if former is defined
             if "otp1c" in info:
-                #check if this is consecutive
+                # check if this is consecutive
                 otp1c = info.get("otp1c")
                 otp2c = res
 
@@ -508,7 +541,7 @@ class HmacTokenClass(TokenClass):
         return res
 
     def resync(self, otp1, otp2, options=None):
-        '''
+        """
         resync the token based on two otp values
         - external method to do the resync of the token
 
@@ -524,7 +557,7 @@ class HmacTokenClass(TokenClass):
         :return: counter or -1 if otp does not exist
         :rtype:  int
 
-        '''
+        """
 
         ret = False
 
@@ -534,23 +567,30 @@ class HmacTokenClass(TokenClass):
             log.debug("[resync] otplen ValueError: %r ret: %r " % (ex, ret))
             raise Exception(ex)
 
-        self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
+        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
 
         secObj = self._get_secret_object()
         counter = self.token.getOtpCounter()
         syncWindow = self.token.getSyncWindow()
-        #log.debug("serial: %s",serialNum)
-        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
+        # log.debug("serial: %s",serialNum)
+        hmac2Otp = HmacOtp(
+            secObj, counter, otplen, self.getHashlib(self.hashlibStr)
+        )
         counter = hmac2Otp.checkOtp(otp1, syncWindow)
 
         if counter == -1:
-            log.debug("[resync] exit. First counter (-1) not found  ret: %r" % (ret))
+            log.debug(
+                "[resync] exit. First counter (-1) not found  ret: %r" % (ret)
+            )
             return ret
 
         nextOtp = hmac2Otp.generate(counter + 1)
 
         if nextOtp != otp2:
-            log.debug("[resync] exit. Failed to verify second otp: nextOtp: %r != otp2: %r ret: %r" % (nextOtp, otp2, ret))
+            log.debug(
+                "[resync] exit. Failed to verify second otp: nextOtp: %r != otp2: %r ret: %r"
+                % (nextOtp, otp2, ret)
+            )
             return ret
 
         ret = True
@@ -560,50 +600,60 @@ class HmacTokenClass(TokenClass):
         return ret
 
     def getSyncTimeOut(self):
-        '''
+        """
         get the token sync timeout value
 
         :return: timeout value in seconds
         :rtype:  int
-        '''
+        """
         try:
             timeOut = int(getFromConfig("AutoResyncTimeout", 5 * 60))
         except Exception as ex:
-            log.warning("[getSyncTimeOut] AutoResyncTimeout: value error %r - reset to 5*60" % (ex))
+            log.warning(
+                "[getSyncTimeOut] AutoResyncTimeout: value error %r - reset to 5*60"
+                % (ex)
+            )
             timeOut = 5 * 60
 
         return timeOut
 
     def getOtp(self, curTime=None):
-        '''
+        """
         get the next OTP value
 
         :return: next otp value
         :rtype: string
-        '''
+        """
 
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.exception("[getOtp]: Could not convert otplen - value error %r " % (ex))
+            log.exception(
+                "[getOtp]: Could not convert otplen - value error %r " % (ex)
+            )
             raise Exception(ex)
 
-        self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
+        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         secObj = self._get_secret_object()
 
-        hmac2Otp = HmacOtp(secObj, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(
+            secObj,
+            self.getOtpCount(),
+            otplen,
+            self.getHashlib(self.hashlibStr),
+        )
         otpval = hmac2Otp.generate(inc_counter=False)
 
         pin = self.getPin()
         combined = "%s%s" % (otpval, pin)
 
-        if getFromConfig("PrependPin") == "True" :
+        if getFromConfig("PrependPin") == "True":
             combined = "%s%s" % (pin, otpval)
 
         return (1, pin, otpval, combined)
 
     def get_multi_otp(self, count=0, epoch_start=0, epoch_end=0, curTime=None):
-        '''
+        """
         return a dictionary of multiple future OTP values of the HOTP/HMAC token
 
         :param count:   how many otp values should be returned
@@ -611,19 +661,24 @@ class HmacTokenClass(TokenClass):
 
         :return:     tuple of status: boolean, error: text and the OTP dictionary
 
-        '''
+        """
 
-        otp_dict = {"type" : "HMAC", "otp": {}}
+        otp_dict = {"type": "HMAC", "otp": {}}
         ret = False
         error = "No count specified"
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.exception("[get_multi_otp]: Could not convert otplen - value error %r " % (ex))
+            log.exception(
+                "[get_multi_otp]: Could not convert otplen - value error %r "
+                % (ex)
+            )
             raise Exception(ex)
         s_count = self.getOtpCount()
         secObj = self._get_secret_object()
-        hmac2Otp = HmacOtp(secObj, s_count, otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(
+            secObj, s_count, otplen, self.getHashlib(self.hashlibStr)
+        )
 
         if count > 0:
             for i in range(count):
@@ -633,67 +688,70 @@ class HmacTokenClass(TokenClass):
 
         return (ret, error, otp_dict)
 
-    def getInitDetail(self, params , user=None):
-        '''
+    def getInitDetail(self, params, user=None):
+        """
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
-        '''
+        """
 
-        _ = context['translate']
+        _ = context["translate"]
 
         response_detail = {}
 
         info = self.getInfo()
         response_detail.update(info)
-        response_detail['serial'] = self.getSerial()
+        response_detail["serial"] = self.getSerial()
 
         tok_type = self.type.lower()
 
         otpkey = None
-        if 'otpkey' in info:
-            otpkey = info.get('otpkey')
+        if "otpkey" in info:
+            otpkey = info.get("otpkey")
 
         if otpkey is not None:
             response_detail["otpkey"] = {
-                  "order"      : '1',
-                  "description": _("OTP seed"),
-                  "value"      :  "seed://%s" % otpkey,
-                  "img"        :  create_img(otpkey, width=200),
-                     }
+                "order": "1",
+                "description": _("OTP seed"),
+                "value": "seed://%s" % otpkey,
+                "img": create_img(otpkey, width=200),
+            }
             try:
                 p = {}
                 p.update(params)
-                p['otpkey'] = otpkey
-                p['serial'] = self.getSerial()
+                p["otpkey"] = otpkey
+                p["serial"] = self.getSerial()
                 # label
                 goo_url = create_google_authenticator(p, user=user)
 
                 response_detail["googleurl"] = {
-                      "order"      : '0',
-                      "description": _("OTPAuth Url"),
-                      "value" :     goo_url,
-                      "img"   :     create_img(goo_url, width=250)
-                      }
+                    "order": "0",
+                    "description": _("OTPAuth Url"),
+                    "value": goo_url,
+                    "img": create_img(goo_url, width=250),
+                }
 
             except NoOtpAuthTokenException as exx:
                 log.warning("%r" % exx)
 
-            oath_support = getFromConfig('OATHTokenSupport', 'False') == 'True'
+            oath_support = getFromConfig("OATHTokenSupport", "False") == "True"
             if oath_support:
                 if user is not None:
                     try:
 
-                        oath_url = create_oathtoken_url(user.login, user.realm,
-                                                        otpkey, tok_type,
-                                                        serial=self.getSerial())
+                        oath_url = create_oathtoken_url(
+                            user.login,
+                            user.realm,
+                            otpkey,
+                            tok_type,
+                            serial=self.getSerial(),
+                        )
                         response_detail["oathurl"] = {
-                               "order"      : '2',
-                               "description" : _("URL for OATH token"),
-                               "value" : oath_url,
-                               "img"   : create_img(oath_url, width=250)
-                               }
+                            "order": "2",
+                            "description": _("URL for OATH token"),
+                            "value": oath_url,
+                            "img": create_img(oath_url, width=250),
+                        }
                     except Exception as ex:
-                        log.info('failed to set oath or google url: %r' % ex)
+                        log.info("failed to set oath or google url: %r" % ex)
 
         return response_detail
-

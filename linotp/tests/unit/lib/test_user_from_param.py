@@ -34,103 +34,131 @@ from linotp.lib.user import getUserFromParam
 class TestGetFromParam(unittest.TestCase):
 
     test_sets = [
-     {  # 1. test set with split @ off, user in no realm and no resolver
-        'config': {
-              'split@sign': 'false',
-              'defaultRealm': 'DefRealm',
-              'resolversOfUser': None,
-              'realms': []},
-
-        'runs': [{'params': {'user': 'amigo'},
-                  'result': {'login': 'amigo', 'realm': 'DefRealm'}},
-
-                 {'params': {'user': 'amigo', 'realm': 'mexico'},
-                  'result': {'login': 'amigo', 'realm': 'mexico'}},
-
-                 {'params': {'user': 'amigo@mexico'},
-                  'result': {'login': 'amigo@mexico', 'realm': 'DefRealm'}},
-
-                 {'params': {'user': 'amigo@mexico', 'realm': 'norway'},
-                  'result': {'login': 'amigo@mexico', 'realm': 'norway'}},
-                 ]},
-
-     {  # 2. test set with split @ off, user in multiple realms and one resolver
-        'config': {
-              'split@sign': 'false',
-              'defaultRealm': 'DefRealm',
-              'resolversOfUser': ['mexRes'],
-              'realms': ['mexico', 'DefRealm', 'norway']},
-
-        'runs': [{'params': {'user': 'amigo'},
-                  'result': {'login': 'amigo', 'realm': 'DefRealm'}},
-
-                 {'params': {'user': 'amigo', 'realm': 'mexico'},
-                  'result': {'login': 'amigo', 'realm': 'mexico'}},
-
-                 {'params': {'user': 'amigo@mexico'},
-                  'result': {'login': 'amigo@mexico', 'realm': 'DefRealm'}},
-
-                 {'params': {'user': 'amigo@mexico', 'realm': 'norway'},
-                  'result': {'login': 'amigo@mexico', 'realm': 'norway'}},
-
-                 {'params': {'user': 'amigo@mexico', 'realm': 'china'},
-                  'result': {'login': 'amigo@mexico', 'realm': 'china'}},
-                 ]},
-
-     {  # 3. test set with split @ on and
-        #    resolver found in determined realm
-        'config': {
-              'split@sign': 'true',
-              'defaultRealm': 'DefRealm',
-              'resolversOfUser': ['mexRes'],
-              'realms': []},
-        'runs': [{'params': {'user': 'amigo'},
-                  'result': {'login': 'amigo', 'realm': 'DefRealm'}},
-
-                 {'params': {'user': 'amigo', 'realm': 'mexico'},
-                  'result': {'login': 'amigo', 'realm': 'mexico'}},
-
-                 {'params': {'user': 'amigo@mexico'},
-                  'result': {'login': 'amigo', 'realm': 'mexico'}},
-
-                 # ! error: realm correct, but login name splitted!
-                 {'params': {'user': 'amigo@mexico', 'realm': 'norway'},
-                  'result': {'login': 'amigo@mexico', 'realm': 'norway'}},
-                 ]},
-
-     {  # 4. test set with split @ on and
-        #    resolver found in determined realm
-        'config': {
-              'split@sign': 'true',
-              'defaultRealm': 'DefRealm',
-              'resolversOfUser': ['mexRes'],
-              'realms': ['mexico', 'DefRealm']},
-
-        'runs': [{'params': {'user': 'amigo'},
-                  'result': {'login': 'amigo', 'realm': 'DefRealm'}},
-
-                 {'params': {'user': 'amigo', 'realm': 'mexico'},
-                  'result': {'login': 'amigo', 'realm': 'mexico'}},
-
-                 {'params': {'user': 'amigo@mexico'},
-                  'result': {'login': 'amigo', 'realm': 'mexico'}},
-
-                 # ! error: realm correct, but login name splitted!
-                 {'params': {'user': 'amigo@mexico', 'realm': 'norway'},
-                  'result': {'login': 'amigo@mexico', 'realm': 'norway'}},
-                 ]},
-
+        {  # 1. test set with split @ off, user in no realm and no resolver
+            "config": {
+                "split@sign": "false",
+                "defaultRealm": "DefRealm",
+                "resolversOfUser": None,
+                "realms": [],
+            },
+            "runs": [
+                {
+                    "params": {"user": "amigo"},
+                    "result": {"login": "amigo", "realm": "DefRealm"},
+                },
+                {
+                    "params": {"user": "amigo", "realm": "mexico"},
+                    "result": {"login": "amigo", "realm": "mexico"},
+                },
+                {
+                    "params": {"user": "amigo@mexico"},
+                    "result": {"login": "amigo@mexico", "realm": "DefRealm"},
+                },
+                {
+                    "params": {"user": "amigo@mexico", "realm": "norway"},
+                    "result": {"login": "amigo@mexico", "realm": "norway"},
+                },
+            ],
+        },
+        {  # 2. test set with split @ off, user in multiple realms and one resolver
+            "config": {
+                "split@sign": "false",
+                "defaultRealm": "DefRealm",
+                "resolversOfUser": ["mexRes"],
+                "realms": ["mexico", "DefRealm", "norway"],
+            },
+            "runs": [
+                {
+                    "params": {"user": "amigo"},
+                    "result": {"login": "amigo", "realm": "DefRealm"},
+                },
+                {
+                    "params": {"user": "amigo", "realm": "mexico"},
+                    "result": {"login": "amigo", "realm": "mexico"},
+                },
+                {
+                    "params": {"user": "amigo@mexico"},
+                    "result": {"login": "amigo@mexico", "realm": "DefRealm"},
+                },
+                {
+                    "params": {"user": "amigo@mexico", "realm": "norway"},
+                    "result": {"login": "amigo@mexico", "realm": "norway"},
+                },
+                {
+                    "params": {"user": "amigo@mexico", "realm": "china"},
+                    "result": {"login": "amigo@mexico", "realm": "china"},
+                },
+            ],
+        },
+        {  # 3. test set with split @ on and
+            #    resolver found in determined realm
+            "config": {
+                "split@sign": "true",
+                "defaultRealm": "DefRealm",
+                "resolversOfUser": ["mexRes"],
+                "realms": [],
+            },
+            "runs": [
+                {
+                    "params": {"user": "amigo"},
+                    "result": {"login": "amigo", "realm": "DefRealm"},
+                },
+                {
+                    "params": {"user": "amigo", "realm": "mexico"},
+                    "result": {"login": "amigo", "realm": "mexico"},
+                },
+                {
+                    "params": {"user": "amigo@mexico"},
+                    "result": {"login": "amigo", "realm": "mexico"},
+                },
+                # ! error: realm correct, but login name splitted!
+                {
+                    "params": {"user": "amigo@mexico", "realm": "norway"},
+                    "result": {"login": "amigo@mexico", "realm": "norway"},
+                },
+            ],
+        },
+        {  # 4. test set with split @ on and
+            #    resolver found in determined realm
+            "config": {
+                "split@sign": "true",
+                "defaultRealm": "DefRealm",
+                "resolversOfUser": ["mexRes"],
+                "realms": ["mexico", "DefRealm"],
+            },
+            "runs": [
+                {
+                    "params": {"user": "amigo"},
+                    "result": {"login": "amigo", "realm": "DefRealm"},
+                },
+                {
+                    "params": {"user": "amigo", "realm": "mexico"},
+                    "result": {"login": "amigo", "realm": "mexico"},
+                },
+                {
+                    "params": {"user": "amigo@mexico"},
+                    "result": {"login": "amigo", "realm": "mexico"},
+                },
+                # ! error: realm correct, but login name splitted!
+                {
+                    "params": {"user": "amigo@mexico", "realm": "norway"},
+                    "result": {"login": "amigo@mexico", "realm": "norway"},
+                },
+            ],
+        },
     ]  # eof test sets
 
-    @patch('linotp.lib.user.getRealms')
-    @patch('linotp.lib.user.getResolversOfUser')
-    @patch('linotp.lib.user.getDefaultRealm')
-    @patch('linotp.lib.user.getFromConfig')
-    def test_split_at_atsign(self,
-                             mock_getFromConfig,
-                             mock_getDefaultRealm,
-                             mock_getResolversOfUser,
-                             mock_getRealms):
+    @patch("linotp.lib.user.getRealms")
+    @patch("linotp.lib.user.getResolversOfUser")
+    @patch("linotp.lib.user.getDefaultRealm")
+    @patch("linotp.lib.user.getFromConfig")
+    def test_split_at_atsign(
+        self,
+        mock_getFromConfig,
+        mock_getDefaultRealm,
+        mock_getResolversOfUser,
+        mock_getRealms,
+    ):
         """
         test the test sets for split at @ sign
         """
@@ -140,30 +168,32 @@ class TestGetFromParam(unittest.TestCase):
 
         for test_set in self.test_sets:
             config_id += 1
-            config = test_set['config']
+            config = test_set["config"]
 
-            mock_getFromConfig.return_value = config['split@sign']
-            mock_getDefaultRealm.return_value = config['defaultRealm']
-            mock_getResolversOfUser.return_value = config['resolversOfUser']
-            mock_getRealms.return_value = config['realms']
+            mock_getFromConfig.return_value = config["split@sign"]
+            mock_getDefaultRealm.return_value = config["defaultRealm"]
+            mock_getResolversOfUser.return_value = config["resolversOfUser"]
+            mock_getRealms.return_value = config["realms"]
 
             # ------------------------------------------------------------- --
             run_id = 0
-            for run in test_set['runs']:
+            for run in test_set["runs"]:
 
                 run_id += 1
-                param = run['params']
-                result = run['result']
+                param = run["params"]
+                result = run["result"]
 
                 user = getUserFromParam(param)
 
-                msg = ("Failed for config: %r\n at run[%r] %r\n"
-                       "result was %r" % (config, run_id, run, user))
+                msg = (
+                    "Failed for config: %r\n at run[%r] %r\n"
+                    "result was %r" % (config, run_id, run, user)
+                )
 
                 try:
 
-                    assert user.login == result['login'], msg
-                    assert user.realm == result['realm'], msg
+                    assert user.login == result["login"], msg
+                    assert user.realm == result["realm"], msg
 
                 except Exception as _exx:
                     errors.append(msg)
@@ -175,15 +205,17 @@ class TestGetFromParam(unittest.TestCase):
 
         return
 
-    @patch('linotp.lib.user.getRealms')
-    @patch('linotp.lib.user.getResolversOfUser')
-    @patch('linotp.lib.user.getDefaultRealm')
-    @patch('linotp.lib.user.getFromConfig')
-    def document_split_at_atsign(self,
-                                 mock_getFromConfig,
-                                 mock_getDefaultRealm,
-                                 mock_getResolversOfUser,
-                                 mock_getRealms):
+    @patch("linotp.lib.user.getRealms")
+    @patch("linotp.lib.user.getResolversOfUser")
+    @patch("linotp.lib.user.getDefaultRealm")
+    @patch("linotp.lib.user.getFromConfig")
+    def document_split_at_atsign(
+        self,
+        mock_getFromConfig,
+        mock_getDefaultRealm,
+        mock_getResolversOfUser,
+        mock_getRealms,
+    ):
         """
         create documentation for the split at @sign behaviour
         """
@@ -196,62 +228,70 @@ class TestGetFromParam(unittest.TestCase):
 
         for test_set in self.test_sets:
             config_id += 1
-            config = test_set['config']
+            config = test_set["config"]
 
-            mock_getFromConfig.return_value = config['split@sign']
-            mock_getDefaultRealm.return_value = config['defaultRealm']
-            mock_getResolversOfUser.return_value = config['resolversOfUser']
-            mock_getRealms.return_value = config['realms']
+            mock_getFromConfig.return_value = config["split@sign"]
+            mock_getDefaultRealm.return_value = config["defaultRealm"]
+            mock_getResolversOfUser.return_value = config["resolversOfUser"]
+            mock_getRealms.return_value = config["realms"]
 
-            table.append('')
+            table.append("")
             cparams = json.dumps(config)
-            cc = cparams.replace(
-                '{', ' * ').replace(
-                    ',', ' * ').replace(
-                        '}', '')
+            cc = (
+                cparams.replace("{", " * ")
+                .replace(",", " * ")
+                .replace("}", "")
+            )
 
-            panel = ("{panel:title=Configuration|borderColor=blue|"
-                     "titleBGColor=#708090|titleColor=white|bgColor=#dcdcdc}")
-            cc = cc.replace(
-                "true", 'Ja').replace(
-                    "resolversOfUser", "User wird Resolver gefunden").replace(
-                        "realms", "Benutzer ist in folgenden Realms")
+            panel = (
+                "{panel:title=Configuration|borderColor=blue|"
+                "titleBGColor=#708090|titleColor=white|bgColor=#dcdcdc}"
+            )
+            cc = (
+                cc.replace("true", "Ja")
+                .replace("resolversOfUser", "User wird Resolver gefunden")
+                .replace("realms", "Benutzer ist in folgenden Realms")
+            )
 
-            table.append('%s %s' % (panel, cc))
-            table.append('')
+            table.append("%s %s" % (panel, cc))
+            table.append("")
 
             # ------------------------------------------------------------- --
             run_id = 0
-            for run in test_set['runs']:
+            for run in test_set["runs"]:
 
                 run_id += 1
-                param = run['params']
+                param = run["params"]
 
                 user = getUserFromParam(param)
 
                 jparams = json.dumps(param)
-                pp = jparams.replace(
-                    '{', '|* ').replace(
-                        ',', ' * ').replace(
-                            '}', '')
+                pp = (
+                    jparams.replace("{", "|* ")
+                    .replace(",", " * ")
+                    .replace("}", "")
+                )
 
-                result = {'login': user.login, 'realm': user.realm}
+                result = {"login": user.login, "realm": user.realm}
                 rparams = json.dumps(result)
-                rr = rparams.replace(
-                    '{', '|* ').replace(
-                        ',', ' * ').replace(
-                            '}', '')
+                rr = (
+                    rparams.replace("{", "|* ")
+                    .replace(",", " * ")
+                    .replace("}", "")
+                )
 
-                table.append('||Parameters: %s||Result: %s|' % (pp, rr))
+                table.append("||Parameters: %s||Result: %s|" % (pp, rr))
 
-            table.append('{panel}')
-            table.append('')
+            table.append("{panel}")
+            table.append("")
 
-        with open('/tmp/split_at_atsign.txt', 'w') as ff:
-            ff.write("\n".join(table).replace(
-                ' * ', '\n* ').replace(
-                    '[', '- ').replace(
-                        ']', ''))
+        with open("/tmp/split_at_atsign.txt", "w") as ff:
+            ff.write(
+                "\n".join(table)
+                .replace(" * ", "\n* ")
+                .replace("[", "- ")
+                .replace("]", "")
+            )
 
         # ----------------------------------------------------------------- --
 

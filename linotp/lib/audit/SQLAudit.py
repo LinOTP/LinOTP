@@ -58,54 +58,81 @@ from linotp.lib.text_utils import utf8_slice
 
 log = logging.getLogger(__name__)
 
+
 def now():
     u_now = "%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     return u_now
 
+
 ######################## MODEL ################################################
 table_prefix = ""
 
-audit_table_name = '%saudit' % table_prefix
+audit_table_name = "%saudit" % table_prefix
 
-audit_table = schema.Table(audit_table_name, db.metadata,
-    schema.Column('id', types.Integer, schema.Sequence('audit_seq_id',
-                                                       optional=True),
-                  primary_key=True),
-    schema.Column('timestamp', types.Unicode(30), default=now, index=True),
-    schema.Column('signature', types.Unicode(512), default=''),
-    schema.Column('action', types.Unicode(30), index=True),
-    schema.Column('success', types.Unicode(30), default="False"),
-    schema.Column('serial', types.Unicode(30), index=True),
-    schema.Column('tokentype', types.Unicode(40)),
-    schema.Column('user', types.Unicode(255), index=True),
-    schema.Column('realm', types.Unicode(255), index=True),
-    schema.Column('administrator', types.Unicode(255)),
-    schema.Column('action_detail', types.Unicode(512), default=''),
-    schema.Column('info', types.Unicode(512), default=''),
-    schema.Column('linotp_server', types.Unicode(80)),
-    schema.Column('client', types.Unicode(80)),
-    schema.Column('log_level', types.Unicode(20), default="INFO", index=True),
-    schema.Column('clearance_level', types.Integer, default=0)
+audit_table = schema.Table(
+    audit_table_name,
+    db.metadata,
+    schema.Column(
+        "id",
+        types.Integer,
+        schema.Sequence("audit_seq_id", optional=True),
+        primary_key=True,
+    ),
+    schema.Column("timestamp", types.Unicode(30), default=now, index=True),
+    schema.Column("signature", types.Unicode(512), default=""),
+    schema.Column("action", types.Unicode(30), index=True),
+    schema.Column("success", types.Unicode(30), default="False"),
+    schema.Column("serial", types.Unicode(30), index=True),
+    schema.Column("tokentype", types.Unicode(40)),
+    schema.Column("user", types.Unicode(255), index=True),
+    schema.Column("realm", types.Unicode(255), index=True),
+    schema.Column("administrator", types.Unicode(255)),
+    schema.Column("action_detail", types.Unicode(512), default=""),
+    schema.Column("info", types.Unicode(512), default=""),
+    schema.Column("linotp_server", types.Unicode(80)),
+    schema.Column("client", types.Unicode(80)),
+    schema.Column("log_level", types.Unicode(20), default="INFO", index=True),
+    schema.Column("clearance_level", types.Integer, default=0),
 )
 
 
-AUDIT_ENCODE = ["action", "serial", "success", "user", "realm", "tokentype",
-                "administrator", "action_detail", "info", "linotp_server",
-                "client", "log_level"]
+AUDIT_ENCODE = [
+    "action",
+    "serial",
+    "success",
+    "user",
+    "realm",
+    "tokentype",
+    "administrator",
+    "action_detail",
+    "info",
+    "linotp_server",
+    "client",
+    "log_level",
+]
+
 
 class AuditTable(db.Model):
 
     __table__ = audit_table
 
-    def __init__(self, serial="", action="", success="False",
-                 tokentype="", user="",
-                 realm="", administrator="",
-                 action_detail="", info="",
-                 linotp_server="",
-                 client="",
-                 log_level="INFO",
-                 clearance_level=0,
-                 config_param=None):
+    def __init__(
+        self,
+        serial="",
+        action="",
+        success="False",
+        tokentype="",
+        user="",
+        realm="",
+        administrator="",
+        action_detail="",
+        info="",
+        linotp_server="",
+        client="",
+        log_level="INFO",
+        clearance_level=0,
+        config_param=None,
+    ):
         """
         build an audit db entry
 
@@ -141,8 +168,9 @@ class AuditTable(db.Model):
 
         """
 
-        log.debug("[__init__] creating AuditTable object, action = %s"
-                  % action)
+        log.debug(
+            "[__init__] creating AuditTable object, action = %s" % action
+        )
 
         super().__init__()
 
@@ -151,27 +179,27 @@ class AuditTable(db.Model):
         else:
             self.config = config
         self.trunc_as_err = current_app.config["AUDIT_ERROR_ON_TRUNCATION"]
-        self.serial = str(serial or '')
-        self.action = str(action or '')
-        self.success = str(success or '0')
-        self.tokentype = str(tokentype or '')
-        self.user = str(user or '')
-        self.realm = str(realm or '')
-        self.administrator = str(administrator or '')
+        self.serial = str(serial or "")
+        self.action = str(action or "")
+        self.success = str(success or "0")
+        self.tokentype = str(tokentype or "")
+        self.user = str(user or "")
+        self.realm = str(realm or "")
+        self.administrator = str(administrator or "")
 
         #
         # we have to truncate the 'action_detail' and the 'info' data
         # in utf-8 compliant way
         #
-        self.action_detail = next(utf8_slice(str(action_detail or ''), 512))
-        self.info = next(utf8_slice(str(info or ''), 512))
+        self.action_detail = next(utf8_slice(str(action_detail or ""), 512))
+        self.info = next(utf8_slice(str(info or ""), 512))
 
-        self.linotp_server = str(linotp_server or '')
-        self.client = str(client or '')
-        self.log_level = str(log_level or '')
+        self.linotp_server = str(linotp_server or "")
+        self.client = str(client or "")
+        self.log_level = str(log_level or "")
         self.clearance_level = clearance_level
         self.timestamp = now()
-        self.siganture = ' '
+        self.siganture = " "
 
     def _get_field_len(self, col_name):
         leng = -1
@@ -198,16 +226,18 @@ class AuditTable(db.Model):
             field_len = self._get_field_len(name)
             encoded_value = linotp.lib.crypto.utils.uencode(value)
             if field_len != -1 and len(encoded_value) > field_len:
-                log.warning("truncating audit data: [audit.%s] %s",
-                            name, value)
+                log.warning(
+                    "truncating audit data: [audit.%s] %s", name, value
+                )
                 if self.trunc_as_err is not False:
-                    raise Exception("truncating audit data: [audit.%s] %s" %
-                                    (name, value))
+                    raise Exception(
+                        "truncating audit data: [audit.%s] %s" % (name, value)
+                    )
 
                 ## during the encoding the value might expand -
                 ## so we take this additional length into account
                 add_len = len(encoded_value) - len(value)
-                value = value[:field_len - add_len]
+                value = value[: field_len - add_len]
 
         if name in AUDIT_ENCODE:
             ## encode data
@@ -224,7 +254,7 @@ class AuditTable(db.Model):
 
         :return: the corresponding value
         """
-        #Default behaviour
+        # Default behaviour
         value = object.__getattribute__(self, name)
         if name in AUDIT_ENCODE:
             if value:
@@ -233,6 +263,7 @@ class AuditTable(db.Model):
                 value = ""
 
         return value
+
 
 # orm.mapper(AuditTable, audit_table)
 
@@ -260,8 +291,10 @@ def add_column(engine, table, column):
     column_type = column.type.compile(engine.dialect)
 
     try:
-        engine.execute('ALTER TABLE %s ADD COLUMN %s %s'
-                                % (table_name, column_name, column_type))
+        engine.execute(
+            "ALTER TABLE %s ADD COLUMN %s %s"
+            % (table_name, column_name, column_type)
+        )
         result = True
 
     except Exception as exx:
@@ -316,8 +349,7 @@ class Audit(AuditBase):
         # initialize signing keys
         self.readKeys()
 
-        self.rsa = RSA_Signature(private=self.private.encode('utf-8'))
-
+        self.rsa = RSA_Signature(private=self.private.encode("utf-8"))
 
     def _init_db(self):
         """
@@ -332,19 +364,27 @@ class Audit(AuditBase):
         # AttributeError: 'MySQLCompiler_mysqldb' object has no
         # attribute 'returning_clause'
         # So we do not mention explicit_returning at all
-        implicit_returning = self.config.get("linotpSQL.implicit_returning", True)
+        implicit_returning = self.config.get(
+            "linotpSQL.implicit_returning", True
+        )
 
-        self.engine = create_engine(connect_string,
-                                    pool_recycle=pool_recycle,
-                                    implicit_returning=implicit_returning)
+        self.engine = create_engine(
+            connect_string,
+            pool_recycle=pool_recycle,
+            implicit_returning=implicit_returning,
+        )
 
     def _init_sessionmaker(self):
         """
         Set up session maker in `self.session`
         """
         # Set up the session
-        sm = orm.sessionmaker(bind=self.engine, autoflush=True,
-                                   autocommit=True, expire_on_commit=True)
+        sm = orm.sessionmaker(
+            bind=self.engine,
+            autoflush=True,
+            autocommit=True,
+            expire_on_commit=True,
+        )
         self.session = orm.scoped_session(sm)
 
     def _createdb(self):
@@ -355,37 +395,36 @@ class Audit(AuditBase):
         # metadata.create_all()
         db.create_all()
 
-
     def _attr_to_dict(self, audit_line):
 
         line = {}
-        line['number'] = audit_line.id
-        line['id'] = audit_line.id
-        line['date'] = str(audit_line.timestamp)
-        line['timestamp'] = str(audit_line.timestamp)
-        line['missing_line'] = ""
-        line['serial'] = audit_line.serial
-        line['action'] = audit_line.action
-        line['action_detail'] = audit_line.action_detail
-        line['success'] = audit_line.success
-        line['token_type'] = audit_line.tokentype
-        line['tokentype'] = audit_line.tokentype
-        line['user'] = audit_line.user
-        line['realm'] = audit_line.realm
-        line['administrator'] = audit_line.administrator
-        line['action_detail'] = audit_line.action_detail
-        line['info'] = audit_line.info
-        line['linotp_server'] = audit_line.linotp_server
+        line["number"] = audit_line.id
+        line["id"] = audit_line.id
+        line["date"] = str(audit_line.timestamp)
+        line["timestamp"] = str(audit_line.timestamp)
+        line["missing_line"] = ""
+        line["serial"] = audit_line.serial
+        line["action"] = audit_line.action
+        line["action_detail"] = audit_line.action_detail
+        line["success"] = audit_line.success
+        line["token_type"] = audit_line.tokentype
+        line["tokentype"] = audit_line.tokentype
+        line["user"] = audit_line.user
+        line["realm"] = audit_line.realm
+        line["administrator"] = audit_line.administrator
+        line["action_detail"] = audit_line.action_detail
+        line["info"] = audit_line.info
+        line["linotp_server"] = audit_line.linotp_server
         line["client"] = audit_line.client
-        line['log_level'] = audit_line.log_level
-        line['clearance_level'] = audit_line.clearance_level
+        line["log_level"] = audit_line.log_level
+        line["clearance_level"] = audit_line.clearance_level
 
         return line
 
     def _sign(self, audit_line):
-        '''
+        """
         Create a signature of the audit object
-        '''
+        """
         line = self._attr_to_dict(audit_line)
         s_audit = getAsBytes(line)
 
@@ -393,9 +432,9 @@ class Audit(AuditBase):
         return signature.hex()
 
     def _verify(self, auditline, signature):
-        '''
+        """
         Verify the signature of the audit line
-        '''
+        """
         res = False
         if not signature:
             log.debug("[_verify] missing signature %r" % auditline)
@@ -406,26 +445,26 @@ class Audit(AuditBase):
         return self.rsa.verify(s_audit, unhexlify(signature))
 
     def log(self, param):
-        '''
+        """
         This method is used to log the data. It splits information of
         multiple tokens (e.g from import) in multiple audit log entries
-        '''
+        """
 
         try:
-            serial = param.get('serial', '') or ''
+            serial = param.get("serial", "") or ""
             if not serial:
                 # if no serial, do as before
                 self.log_entry(param)
             else:
                 # look if we have multiple serials inside
-                serials = serial.split(',')
+                serials = serial.split(",")
                 for serial in serials:
                     p = {}
                     p.update(param)
-                    p['serial'] = serial
+                    p["serial"] = serial
                     self.log_entry(p)
 
-        except Exception as  exx:
+        except Exception as exx:
             log.exception("[log] error writing log message: %r" % exx)
             self.session.rollback()
             raise exx
@@ -433,27 +472,27 @@ class Audit(AuditBase):
         return
 
     def log_entry(self, param):
-        '''
+        """
         This method is used to log the data.
         It should hash the data and do a hash chain and sign the data
-        '''
+        """
 
         at = AuditTable(
-                    serial=param.get('serial'),
-                    action=param.get('action').lstrip('/'),
-                    success=1 if param.get('success') else 0,
-                    tokentype=param.get('token_type'),
-                    user=param.get('user'),
-                    realm=param.get('realm'),
-                    administrator=param.get('administrator'),
-                    action_detail=param.get('action_detail'),
-                    info=param.get('info'),
-                    linotp_server=param.get('linotp_server'),
-                    client=param.get('client'),
-                    log_level=param.get('log_level'),
-                    clearance_level=param.get('clearance_level'),
-                    config_param=self.config,
-            )
+            serial=param.get("serial"),
+            action=param.get("action").lstrip("/"),
+            success=1 if param.get("success") else 0,
+            tokentype=param.get("token_type"),
+            user=param.get("user"),
+            realm=param.get("realm"),
+            administrator=param.get("administrator"),
+            action_detail=param.get("action_detail"),
+            info=param.get("info"),
+            linotp_server=param.get("linotp_server"),
+            client=param.get("client"),
+            log_level=param.get("log_level"),
+            clearance_level=param.get("clearance_level"),
+            config_param=self.config,
+        )
 
         self.session.add(at)
         self.session.flush()
@@ -462,27 +501,25 @@ class Audit(AuditBase):
         self.session.merge(at)
         self.session.flush()
 
-
     def initialize_log(self, param):
-        '''
+        """
         This method initialized the log state.
         The fact, that the log state was initialized, also needs to be logged.
         Therefor the same params are passed as i the log method.
-        '''
+        """
         pass
 
     def set(self):
-        '''
+        """
         This function could be used to set certain things like the signing key.
         But maybe it should only be read from linotp.cfg?
-        '''
+        """
         pass
 
-
     def _buildCondition(self, param, AND):
-        '''
+        """
         create the sqlalchemy condition from the params
-        '''
+        """
         conditions = []
         boolCheck = and_
         if not AND:
@@ -539,22 +576,21 @@ class Audit(AuditBase):
                 value = linotp.lib.crypto.utils.udecode(value)
                 line[key] = value
             elif value is None:
-                line[key] = ''
+                line[key] = ""
 
         # Signature check
         # TODO: use instead the verify_init
 
         res = self._verify(line, audit_line.signature)
         if res == 1:
-            line['sig_check'] = "OK"
+            line["sig_check"] = "OK"
         else:
-            line['sig_check'] = "FAIL"
-
+            line["sig_check"] = "FAIL"
 
         return line
 
     def searchQuery(self, param, AND=True, display_error=True, rp_dict=None):
-        '''
+        """
         This function is used to search audit events.
 
         param:
@@ -563,13 +599,13 @@ class Audit(AuditBase):
         return:
             a result object which has to be converted with iter() to an
             iterator
-        '''
+        """
 
         if rp_dict is None:
             rp_dict = {}
 
-        if 'or' in param:
-            if "true" == param['or'].lower():
+        if "or" in param:
+            if "true" == param["or"].lower():
                 AND = False
 
         # build the condition / WHERE clause
@@ -577,7 +613,7 @@ class Audit(AuditBase):
 
         order = AuditTable.id
         if rp_dict.get("sortname"):
-            sortn = rp_dict.get('sortname').lower()
+            sortn = rp_dict.get("sortname").lower()
             if "serial" == sortn:
                 order = AuditTable.serial
             elif "number" == sortn:
@@ -613,32 +649,33 @@ class Audit(AuditBase):
         order_dir = asc(order)
 
         if rp_dict.get("sortorder"):
-            sorto = rp_dict.get('sortorder').lower()
+            sorto = rp_dict.get("sortorder").lower()
             if "desc" == sorto:
                 order_dir = desc(order)
 
         if condition is None:
-            audit_q = self.session.query(AuditTable)\
-                .order_by(order_dir)
+            audit_q = self.session.query(AuditTable).order_by(order_dir)
         else:
-            audit_q = self.session.query(AuditTable)\
-                .filter(condition)\
+            audit_q = (
+                self.session.query(AuditTable)
+                .filter(condition)
                 .order_by(order_dir)
+            )
 
         # FIXME? BUT THIS IS SO MUCH SLOWER!
         # FIXME: Here desc() ordering also does not work! :/
 
-        if 'rp' in rp_dict or 'page' in rp_dict:
+        if "rp" in rp_dict or "page" in rp_dict:
             # build the LIMIT and OFFSET
             page = 1
             offset = 0
             limit = 15
 
-            if 'rp' in rp_dict:
-                limit = int(rp_dict.get('rp'))
+            if "rp" in rp_dict:
+                limit = int(rp_dict.get("rp"))
 
-            if 'page' in rp_dict:
-                page = int(rp_dict.get('page'))
+            if "page" in rp_dict:
+                page = int(rp_dict.get("page"))
 
             offset = limit * (page - 1)
 
@@ -651,47 +688,58 @@ class Audit(AuditBase):
         result = self.session.execute(audit_q.statement)
         return result
 
-
-
     def getTotal(self, param, AND=True, display_error=True):
-        '''
+        """
         This method returns the total number of audit entries in
         the audit store
-        '''
+        """
         condition = self._buildCondition(param, AND)
-        if type(condition).__name__ == 'NoneType':
+        if type(condition).__name__ == "NoneType":
             c = self.session.query(AuditTable).count()
         else:
             c = self.session.query(AuditTable).filter(condition).count()
 
         return c
 
+
 def getAsString(data):
-    '''
+    """
     We need to distinguish, if this is an entry after the adding the
     client entry or before. Otherwise the old signatures will break!
-    '''
+    """
 
-    s = ("number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s,"
-         " admin=%s, %s, %s, server=%s, %s, %s") % (
-                str(data.get('id')), str(data.get('timestamp')),
-                data.get('action'), str(data.get('success')),
-                data.get('serial'), data.get('tokentype'),
-                data.get('user'), data.get('realm'),
-                data.get('administrator'), data.get('action_detail'),
-                data.get('info'), data.get('linotp_server'),
-                data.get('log_level'), str(data.get('clearance_level')))
+    s = (
+        "number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s,"
+        " admin=%s, %s, %s, server=%s, %s, %s"
+    ) % (
+        str(data.get("id")),
+        str(data.get("timestamp")),
+        data.get("action"),
+        str(data.get("success")),
+        data.get("serial"),
+        data.get("tokentype"),
+        data.get("user"),
+        data.get("realm"),
+        data.get("administrator"),
+        data.get("action_detail"),
+        data.get("info"),
+        data.get("linotp_server"),
+        data.get("log_level"),
+        str(data.get("clearance_level")),
+    )
 
-    if 'client' in data:
-        s += ", client=%s" % data.get('client')
+    if "client" in data:
+        s += ", client=%s" % data.get("client")
     return s
+
 
 def getAsBytes(data):
     """
     Return the audit record in a bytes format that can be used
     for signing
     """
-    return bytes(getAsString(data), 'utf-8')
+    return bytes(getAsString(data), "utf-8")
+
 
 class AuditLinOTPDB(Audit):
     """
@@ -700,6 +748,7 @@ class AuditLinOTPDB(Audit):
     This backend is mainly to allow simple configuration scenario
     where a separate engine is not required
     """
+
     name = "SQLAudit-LinOTPDB"
 
     def __init__(self, config):
@@ -724,5 +773,6 @@ class AuditLinOTPDB(Audit):
     def log_entry(self, param):
         super().log_entry(param)
         self.session.commit()
+
 
 ###eof#########################################################################

@@ -72,7 +72,7 @@ def get_otp_mail(queue, timeout):
     * Receive message via SMTP
     * Send message payload through the queue
     """
-    smtpserver = SmtpListener(('0.0.0.0', 0), queue)
+    smtpserver = SmtpListener(("0.0.0.0", 0), queue)
     port = smtpserver.get_port()
     queue.put(port)
     logger.debug("Waiting on port %s for OTP email", port)
@@ -101,15 +101,17 @@ class SmtpMessageServer(object):
 
         # We need a minimum version of 2.9.2 to set the SMTP port number, so
         # skip if testing an earlier version
-        self.testcase.need_linotp_version('2.9.2')
+        self.testcase.need_linotp_version("2.9.2")
 
         self.timeout = message_timeout
 
-        self.set_config = SetConfig(testcase.http_protocol,
-                                    testcase.http_host,
-                                    testcase.http_port,
-                                    testcase.http_username,
-                                    testcase.http_password)
+        self.set_config = SetConfig(
+            testcase.http_protocol,
+            testcase.http_host,
+            testcase.http_port,
+            testcase.http_username,
+            testcase.http_password,
+        )
 
         # We advertise the local SMTP server hostname
         # using the IP address that connects to LinOTP
@@ -119,7 +121,8 @@ class SmtpMessageServer(object):
     def __enter__(self):
         self.smtp_process_queue = Queue()
         self.smtp_process = Process(
-            target=get_otp_mail, args=(self.smtp_process_queue, self.timeout))
+            target=get_otp_mail, args=(self.smtp_process_queue, self.timeout)
+        )
         self.smtp_process.start()
         self.port = self.smtp_process_queue.get(True, 5)
         self._do_linotp_config()
@@ -132,7 +135,9 @@ class SmtpMessageServer(object):
         logger.debug("Configuration parameters: %s", parameters)
         result = self.set_config.setConfig(parameters)
 
-        assert result, "It was not possible to set the config. Result:%s" % result
+        assert result, (
+            "It was not possible to set the config. Result:%s" % result
+        )
 
     def get_config_parameters(self):
         # This function can be overridden to provide configuration parameters to configure
@@ -159,9 +164,11 @@ class SmtpMessageServer(object):
         LinOTP
         """
 
-        with closing(socket.create_connection((self.testcase.http_host,
-                                               int(self.testcase.http_port)),
-                                              10)) as s:
+        with closing(
+            socket.create_connection(
+                (self.testcase.http_host, int(self.testcase.http_port)), 10
+            )
+        ) as s:
             addr = s.getsockname()[0]
 
         return addr
@@ -175,14 +182,15 @@ class EmailProviderServer(SmtpMessageServer):
     def get_config_parameters(self):
 
         # SMTP e-mail configuration
-        config = '''{
+        config = """{
             "SMTP_SERVER": "%s",
             "SMTP_PORT": %s
-        }''' % (self.addr, self.port)
+        }""" % (
+            self.addr,
+            self.port,
+        )
 
-        parameters = {
-            'EmailProviderConfig': config
-        }
+        parameters = {"EmailProviderConfig": config}
         return parameters
 
 
@@ -194,17 +202,20 @@ class SMSProviderServer(SmtpMessageServer):
 
     def get_config_parameters(self):
 
-        sms_provider_config = '''{
+        sms_provider_config = """{
             "mailserver" : "%s",
             "mailserver_port": %s,
             "mailsender" : "linotp-sms@localhost",
             "mailto": "seleniumtest@localhost"
-        }''' % (self.addr, self.port)
+        }""" % (
+            self.addr,
+            self.port,
+        )
         print(sms_provider_config)
 
         # Set SMTP sms config
         parameters = {
-            'SMSProvider': 'smsprovider.SmtpSMSProvider.SmtpSMSProvider',
-            'SMSProviderConfig': sms_provider_config,
+            "SMSProvider": "smsprovider.SmtpSMSProvider.SmtpSMSProvider",
+            "SMSProviderConfig": sms_provider_config,
         }
         return parameters

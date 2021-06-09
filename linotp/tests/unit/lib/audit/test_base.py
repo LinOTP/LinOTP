@@ -33,6 +33,7 @@ import pytest
 from linotp.lib.audit.base import getAudit
 from linotp.model import db
 
+
 class TestAuditSetup(object):
     def test_sqlaudit_none(self, app):
         # GIVEN an empty configuration

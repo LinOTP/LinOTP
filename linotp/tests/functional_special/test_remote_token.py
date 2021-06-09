@@ -52,20 +52,18 @@ log = logging.getLogger(__name__)
 HTTP_RESPONSE_FUNC = None
 HTTP_RESPONSE = None
 
+
 def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     resp = 200
-    body = kwparams.get('body', '')
+    body = kwparams.get("body", "")
     params = dict(urllib.parse.parse_qsl(body))
 
     content = {
         "version": "LinOTP MOCK",
         "jsonrpc": "2.0",
-        "result": {
-            "status": True,
-            "value": True
-        },
-        "id": 0
+        "result": {"status": True, "value": True},
+        "id": 0,
     }
 
     global HTTP_RESPONSE
@@ -85,19 +83,16 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     return resp, json.dumps(content)
 
 
-
-
 class TestRemoteToken(TestSpecialController):
-
     def setUp(self):
-        '''
+        """
         Overwrite the deleting of the realms!
 
         If the realms are deleted also the table TokenRealm gets deleted
         and we loose the information how many tokens are within a realm!
-        '''
+        """
         TestSpecialController.setUp(self)
-        self.remote_url = 'http://127.0.0.1:%s' % self.paster_port
+        self.remote_url = "http://127.0.0.1:%s" % self.paster_port
 
         self.delete_all_policies()
         self.delete_all_token()
@@ -112,265 +107,257 @@ class TestRemoteToken(TestSpecialController):
         serial = "LSP%s" % serial
 
         # local token
-        param_local_1 = {"serial": serial,
-                         "type": "spass",
-                         "otpkey": "123456",
-                         "otppin": "",
-                         "user": "",
-                         "pin": "pin",
-                         }
+        param_local_1 = {
+            "serial": serial,
+            "type": "spass",
+            "otpkey": "123456",
+            "otppin": "",
+            "user": "",
+            "pin": "pin",
+        }
 
-        response = self.make_admin_request('init', params=param_local_1)
+        response = self.make_admin_request("init", params=param_local_1)
         assert '"value": true' in response, response
         return serial
 
-
     def create_remote_token(self):
         # local token
-        param_local_1 = {"serial": "LSPW1",
-                         "type": "pw",
-                         "otpkey": "123456",
-                         "otppin": "",
-                         "user": "",
-                         "pin": "pin",
-                         }
-        param_local_2 = {"serial": "LSPW2",
-                         "type": "pw",
-                         "otpkey": "234567",
-                         "otppin": "",
-                         "user": "",
-                         "pin": "pin",
-                        }
+        param_local_1 = {
+            "serial": "LSPW1",
+            "type": "pw",
+            "otpkey": "123456",
+            "otppin": "",
+            "user": "",
+            "pin": "pin",
+        }
+        param_local_2 = {
+            "serial": "LSPW2",
+            "type": "pw",
+            "otpkey": "234567",
+            "otppin": "",
+            "user": "",
+            "pin": "pin",
+        }
 
         # The token with the remote PIN
-        parameters1 = {"serial": "LSRE001",
-                       "type": "remote",
-                       "otpkey": "1234567890123456",
-                       "otppin": "",
-                       "user": "remoteuser",
-                       "pin": "pin",
-                       "description": "RemoteToken1",
-                       'remote.server': self.remote_url,
-                       'remote.local_checkpin': 0,
-                       'remote.serial': 'LSPW1',
-                       }
+        parameters1 = {
+            "serial": "LSRE001",
+            "type": "remote",
+            "otpkey": "1234567890123456",
+            "otppin": "",
+            "user": "remoteuser",
+            "pin": "pin",
+            "description": "RemoteToken1",
+            "remote.server": self.remote_url,
+            "remote.local_checkpin": 0,
+            "remote.serial": "LSPW1",
+        }
 
         # the token with the local PIN
-        parameters2 = {"serial": "LSRE002",
-                       "type": "remote",
-                       "otpkey": "1234567890123456",
-                       "otppin": "",
-                       "user": "localuser",
-                       "pin": "pin",
-                       "description": "RemoteToken2",
-                       'remote.server':  self.remote_url,
-                       'remote.local_checkpin': 1,
-                       'remote.serial': 'LSPW2',
-                       }
+        parameters2 = {
+            "serial": "LSRE002",
+            "type": "remote",
+            "otpkey": "1234567890123456",
+            "otppin": "",
+            "user": "localuser",
+            "pin": "pin",
+            "description": "RemoteToken2",
+            "remote.server": self.remote_url,
+            "remote.local_checkpin": 1,
+            "remote.serial": "LSPW2",
+        }
 
-        response = self.make_admin_request('init', params=param_local_1)
+        response = self.make_admin_request("init", params=param_local_1)
         assert '"value": true' in response, response
 
-        response = self.make_admin_request('init', params=param_local_2)
+        response = self.make_admin_request("init", params=param_local_2)
         assert '"value": true' in response, response
 
-        response = self.make_admin_request('init', params=parameters1)
+        response = self.make_admin_request("init", params=parameters1)
         assert '"value": true' in response, response
 
-        response = self.make_admin_request('init', params=parameters2)
+        response = self.make_admin_request("init", params=parameters2)
         assert '"value": true' in response, response
 
-        response = self.make_admin_request('set',
-                                           params={'serial': 'LSPW1',
-                                                   'pin': 'lspw1'})
+        response = self.make_admin_request(
+            "set", params={"serial": "LSPW1", "pin": "lspw1"}
+        )
         assert '"set pin": 1' in response, response
 
-        response = self.make_admin_request('set',
-                                           params={'serial': 'LSPW2',
-                                                   'pin': ''})
+        response = self.make_admin_request(
+            "set", params={"serial": "LSPW2", "pin": ""}
+        )
         assert '"set pin": 1' in response, response
 
-        response = self.make_admin_request('set',
-                                           params={'serial': 'LSRE001',
-                                                   'pin': 'local'})
+        response = self.make_admin_request(
+            "set", params={"serial": "LSRE001", "pin": "local"}
+        )
         assert '"set pin": 1' in response, response
 
-        response = self.make_admin_request('set',
-                                           params={'serial': 'LSRE002',
-                                                   'pin': 'local'})
+        response = self.make_admin_request(
+            "set", params={"serial": "LSRE002", "pin": "local"}
+        )
         assert '"set pin": 1' in response, response
 
         return
 
-    @patch.object(httplib2.Http, 'request', mocked_http_request)
+    @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_check_token_local_pin(self):
-        '''
+        """
         Checking if token with local PIN works
 
         To successfully test the remote token, the paster must run locally.
-        '''
+        """
         global HTTP_RESPONSE_FUNC
-        
+
         self.create_remote_token()
 
         parameters = {"serial": "LSPW2", "pass": "234567"}
-        response = self.make_validate_request('check_s',
-                                              params=parameters)
+        response = self.make_validate_request("check_s", params=parameters)
         assert '"value": true' in response, response
 
         # test for local missing pin, which whould be 'local'
         parameters = {"user": "localuser", "pass": "234567"}
-        response = self.make_validate_request('check',
-                                              params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         assert '"value": false' in response, response
 
         # test for local pin check + remote pw check
         def check_func1(params):
             resp = 200
-            value = params.get('pass') == '234567'
+            value = params.get("pass") == "234567"
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": value
-                },
-                "id": 0
+                "result": {"status": True, "value": value},
+                "id": 0,
             }
             return resp, content
 
         HTTP_RESPONSE_FUNC = check_func1
 
         parameters = {"user": "localuser", "pass": "local234567"}
-        response = self.make_validate_request('check',
-                                              params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         # Checking if a wrong local PIN will fail
         parameters = {"user": "localuser", "pass": "lspw1234567"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         assert '"value": false' in response, response
 
         return
 
-    @patch.object(httplib2.Http, 'request', mocked_http_request)
+    @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_check_token_remote_pin(self):
-        '''
+        """
         Checking if remote PIN works
-        '''
+        """
         global HTTP_RESPONSE_FUNC
         self.create_remote_token()
 
-        # test for remote pin, which should be lspw11 
+        # test for remote pin, which should be lspw11
         def check_func1(params):
             resp = 200
-            value = params.get('pass') == 'lspw1123456'
+            value = params.get("pass") == "lspw1123456"
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": value
-                },
-                "id": 0
+                "result": {"status": True, "value": value},
+                "id": 0,
             }
             return resp, content
 
         HTTP_RESPONSE_FUNC = check_func1
-        
+
         parameters = {"user": "remoteuser", "pass": "lspw1123456"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         assert '"value": true' in response, response
 
         # Checking if a missing remote PIN will fail
         def check_func2(params):
             resp = 200
-            value = params.get('pass') == '123456'
+            value = params.get("pass") == "123456"
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": not value
-                },
-                "id": 0
+                "result": {"status": True, "value": not value},
+                "id": 0,
             }
             return resp, content
 
         HTTP_RESPONSE_FUNC = check_func2
 
         parameters = {"user": "remoteuser", "pass": "123456"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         assert '"value": false' in response, response
 
         # Checking if a wrong remote PIN will fail
         def check_func2(params):
             resp = 200
-            value = params.get('pass') == 'local123456'
+            value = params.get("pass") == "local123456"
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": not value
-                },
-                "id": 0
+                "result": {"status": True, "value": not value},
+                "id": 0,
             }
             return resp, content
+
         HTTP_RESPONSE_FUNC = check_func2
 
         parameters = {"user": "remoteuser", "pass": "local123456"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         assert '"value": false' in response, response
 
         return
 
-    @patch.object(httplib2.Http, 'request', mocked_http_request)
+    @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_fix_12061(self):
-        '''
+        """
         ticket 12061: timeout with remote tokens: many tokens + unicode pins
-        '''
+        """
 
         global HTTP_RESPONSE_FUNC
         self.create_remote_token()
 
-        sqlconnect = self.appconf.get('sqlalchemy.url')
-        log.debug('current test against %s' % (sqlconnect))
+        sqlconnect = self.appconf.get("sqlalchemy.url")
+        log.debug("current test against %s" % (sqlconnect))
 
         # verify that there is n index on the TokenSerial number
         from linotp.model import token_table
-        for column in token_table.columns:
-            log.debug("Column Table name: %s : %s : %r"
-                      % (column.name, column.type, column.index))
-            if column.name == 'LinOtpTokenSerialnumber':
-                assert column.index is True, column.name
 
+        for column in token_table.columns:
+            log.debug(
+                "Column Table name: %s : %s : %r"
+                % (column.name, column.type, column.index)
+            )
+            if column.name == "LinOtpTokenSerialnumber":
+                assert column.index is True, column.name
 
         # create token and remote token which points to this
         serials = []
-        serial = self.create_local_tokens('tok_%d' % 1)
+        serial = self.create_local_tokens("tok_%d" % 1)
         rserial = "%s_remote" % serial
         serials.append(rserial)
 
         parameters1 = {
-                      "serial": rserial,
-                      "type": "remote",
-                      "otpkey": "1234567890123456",
-                      "otppin": "",
-                      "user": "root",
-                      "pin": "",
-                      "description": "RemoteToken",
-                      'remote.server':  self.remote_url,
-                      'remote.local_checkpin': 0,
-                      'remote.serial': serial,
-                      }
+            "serial": rserial,
+            "type": "remote",
+            "otpkey": "1234567890123456",
+            "otppin": "",
+            "user": "root",
+            "pin": "",
+            "description": "RemoteToken",
+            "remote.server": self.remote_url,
+            "remote.local_checkpin": 0,
+            "remote.serial": serial,
+        }
 
-        response = self.make_admin_request('init', params=parameters1)
+        response = self.make_admin_request("init", params=parameters1)
         assert '"value": true' in response, response
 
         # set pin to the target token and do remote token pin verification
@@ -379,36 +366,34 @@ class TestRemoteToken(TestSpecialController):
             for i in range(1, 100):
                 pin_chars.append(chr(0x28 * offset + i))
             pin = "pin" + "".join(pin_chars)
-            pin = pin.encode('utf-8')
+            pin = pin.encode("utf-8")
 
-            params = {'serial': serial, 'pin': pin}
-            response = self.make_admin_request('set', params=params)
+            params = {"serial": serial, "pin": pin}
+            response = self.make_admin_request("set", params=params)
             assert '"set pin": 1' in response, response
 
             # Checking if a wrong remote PIN will fail
             def check_func3(params):
                 resp = 200
 
-                # during transfer through the callstack, the pin is 
-                # transformed into utf-8. so for comparison, we have 
+                # during transfer through the callstack, the pin is
+                # transformed into utf-8. so for comparison, we have
                 # to do the same before comparing
-                l_pin = params.get('pass')
-                
+                l_pin = params.get("pass")
+
                 value = l_pin == pin
                 content = {
                     "version": "LinOTP MOCK",
                     "jsonrpc": "2.0",
-                    "result": {
-                        "status": True,
-                        "value": value
-                    },
-                    "id": 0
+                    "result": {"status": True, "value": value},
+                    "id": 0,
                 }
                 return resp, content
+
             HTTP_RESPONSE_FUNC = check_func3
 
-            params = {'user': 'root', 'pass': pin}
-            response = self.make_validate_request('check', params=params)
+            params = {"user": "root", "pass": pin}
+            response = self.make_validate_request("check", params=params)
             assert '"value": true' in response, response
 
         for serial in serials:
@@ -416,4 +401,5 @@ class TestRemoteToken(TestSpecialController):
 
         return
 
-#eof###########################################################################
+
+# eof###########################################################################

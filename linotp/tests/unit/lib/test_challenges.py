@@ -36,21 +36,29 @@ import pytest
 
 @pytest.mark.usefixtures("app")
 class TestChallengesTransactionidLength(unittest.TestCase):
-
     def test_transactionid_length(self):
 
-        with patch('linotp.lib.challenges.context') as mock_context:
+        with patch("linotp.lib.challenges.context") as mock_context:
             mock_context.get.return_value = {}
             transid_length = Challenges.get_tranactionid_length()
-            assert round(abs(transid_length-Challenges.DefaultTransactionIdLength), 7) == 0
+            assert (
+                round(
+                    abs(
+                        transid_length - Challenges.DefaultTransactionIdLength
+                    ),
+                    7,
+                )
+                == 0
+            )
 
             too_short_length = 7
 
-            wrong_range_message = \
-                "TransactionIdLength must be between 12 and 17, " \
+            wrong_range_message = (
+                "TransactionIdLength must be between 12 and 17, "
                 "was %d" % too_short_length
+            )
             mock_context.get.return_value = {
-                'TransactionIdLength': too_short_length
+                "TransactionIdLength": too_short_length
             }
             with pytest.raises(Exception) as wrong_range:
                 Challenges.get_tranactionid_length()

@@ -24,7 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
-'''
+"""
 This is the controller module. The controllers provide the Web API to
 communicate with LinOTP. You can use the following controllers:
 
@@ -64,10 +64,8 @@ communicate with LinOTP. You can use the following controllers:
 | :py:class:`linotp.controllers.validate`    | for authenticating / OTP checking        |
 +--------------------------------------------+------------------------------------------+
 
-'''
+"""
 
 from .base import BaseController
 
-__all__ = [
-    'BaseController'
-]
+__all__ = ["BaseController"]

@@ -26,6 +26,7 @@
 
 from datetime import datetime, timedelta
 
+
 def now():
     """
     Return the current time.
@@ -39,6 +40,7 @@ class State(object):
     """
     State of a Service
     """
+
     FUNCTIONAL = 1
     UNAVAILABLE = 2
 
@@ -50,6 +52,7 @@ class ServiceUnavailable(Exception):
     This exception is used for failover to other services and not passed to
     users.
     """
+
     pass
 
 
@@ -61,6 +64,7 @@ class AllServicesUnavailable(Exception):
     `RemoteService.call_first_available` when there are no functional services
     left.
     """
+
     pass
 
 
@@ -70,11 +74,13 @@ class RemoteService(object):
     after an exceeding amount of configured (base) exceptions.
     """
 
-    def __init__(self,
-                 func,
-                 failure_threshold=5,
-                 recovery_timeout=30,
-                 expected_exception=Exception):
+    def __init__(
+        self,
+        func,
+        failure_threshold=5,
+        recovery_timeout=30,
+        expected_exception=Exception,
+    ):
 
         self.func = func
         self.failure_count = 0
@@ -104,8 +110,9 @@ class RemoteService(object):
 
         if self.state == State.UNAVAILABLE:
 
-            if now() > self.last_unavailable + \
-                                timedelta(seconds=self.recovery_timeout):
+            if now() > self.last_unavailable + timedelta(
+                seconds=self.recovery_timeout
+            ):
 
                 # recovery time is over. try once(!) if function
                 # is available again
@@ -139,10 +146,13 @@ class RemoteServiceList(list):
     """
     A list of services that will transparently failover to the next service if one failes.
     """
-    def __init__(self,
-                 failure_threshold=5,
-                 recovery_timeout=30,
-                 expected_exception=Exception):
+
+    def __init__(
+        self,
+        failure_threshold=5,
+        recovery_timeout=30,
+        expected_exception=Exception,
+    ):
 
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
@@ -150,9 +160,11 @@ class RemoteServiceList(list):
 
     def append(self, func, **kwargs):
 
-        service_kwargs = {'failure_threshold': self.failure_threshold,
-                          'recovery_timeout': self.recovery_timeout,
-                          'expected_exception': self.expected_exception}
+        service_kwargs = {
+            "failure_threshold": self.failure_threshold,
+            "recovery_timeout": self.recovery_timeout,
+            "expected_exception": self.expected_exception,
+        }
 
         service_kwargs.update(kwargs)
 

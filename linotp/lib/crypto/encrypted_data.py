@@ -48,10 +48,10 @@ class EncryptedData(str):
 
     def get_unencrypted(self) -> str:
         """ return the decrypted data """
-        return decryptPassword(self._encrypted_str).decode('utf-8')
+        return decryptPassword(self._encrypted_str).decode("utf-8")
 
     @staticmethod
-    def from_unencrypted(value: str) -> 'EncryptedData':
+    def from_unencrypted(value: str) -> "EncryptedData":
         """
         to create an EncrytedData obejct from a plaintext password
         for the encryption it is required to have the value encoded as utf-8
@@ -59,7 +59,7 @@ class EncryptedData(str):
         :param value: value is a unicode string
         :return: new EncrytedData object
         """
-        crypted_value = encryptPassword(value.encode('utf-8'))
+        crypted_value = encryptPassword(value.encode("utf-8"))
         return EncryptedData(crypted_value)
 
     def __str__(self):

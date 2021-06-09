@@ -30,16 +30,15 @@ import tokens module
 import re
 
 
-
 class ImportException(Exception):
     def __init__(self, description):
-        #self.auth_scope = scope
-        #self.auth_action = action
-        #self.auth_action_desc = action_desc
+        # self.auth_scope = scope
+        # self.auth_action = action
+        # self.auth_action_desc = action_desc
         self.description = description
 
     def __str__(self):
-        return ('%s' % self.description)
+        return "%s" % self.description
 
 
 def getTagName(elem):
@@ -51,13 +50,16 @@ def getTagName(elem):
 
 
 def getKnownTypes():
-    return ["feitian", "pskc", "dpw", 'dat']
+    return ["feitian", "pskc", "dpw", "dat"]
 
 
 def getImportText():
-    return {'feitian': 'Feitian XML',
-            'pskc': 'OATH compliant PSKC',
-            'dpw': 'Tagespasswort Token File',
-            'dat': 'eToken DAT File'}
+    return {
+        "feitian": "Feitian XML",
+        "pskc": "OATH compliant PSKC",
+        "dpw": "Tagespasswort Token File",
+        "dat": "eToken DAT File",
+    }
+
 
 # eof

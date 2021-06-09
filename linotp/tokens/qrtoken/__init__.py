@@ -28,9 +28,10 @@ import struct
 from collections import namedtuple
 from linotp.lib.error import ParameterError
 
-_QRTokenPairingData = namedtuple('_QRTokenPairingData',
-                                 ['user_public_key', 'user_token_id',
-                                  'serial', 'user_login'])
+_QRTokenPairingData = namedtuple(
+    "_QRTokenPairingData",
+    ["user_public_key", "user_token_id", "serial", "user_login"],
+)
 
 
 class QRTokenPairingData(_QRTokenPairingData):
@@ -41,6 +42,7 @@ class QRTokenPairingData(_QRTokenPairingData):
     """
 
     pass
+
 
 # --------------------------------------------------------------------------- --
 
@@ -64,7 +66,7 @@ def parse_qrtoken_pairing_data(plaintext):
 
     plaintext_min_length = 1 + 4 + 32 + 1 + 1
     if len(plaintext) < plaintext_min_length:
-        raise ParameterError('Malformed pairing response for type QrToken')
+        raise ParameterError("Malformed pairing response for type QrToken")
 
     # ----------------------------------------------------------------------- --
 
@@ -78,7 +80,7 @@ def parse_qrtoken_pairing_data(plaintext):
     #  size     |     1      |       4       |    ?    |
     #            --------------------------------------
 
-    user_token_id = struct.unpack('<I', plaintext[1:5])[0]
+    user_token_id = struct.unpack("<I", plaintext[1:5])[0]
 
     # ----------------------------------------------------------------------- --
 
@@ -90,7 +92,7 @@ def parse_qrtoken_pairing_data(plaintext):
     #  size     |  5  |       32        |  ?  |
     #            -----------------------------
 
-    user_public_key = plaintext[5:5+32]
+    user_public_key = plaintext[5 : 5 + 32]
 
     # ----------------------------------------------------------------------- --
 
@@ -104,27 +106,30 @@ def parse_qrtoken_pairing_data(plaintext):
 
     # parse token_serial and user identification
 
-    serial_user_data = plaintext[5+32:].split(b'\x00')
-    serial = serial_user_data[0].decode('utf8')
-    user_login = serial_user_data[1].decode('utf8')
+    serial_user_data = plaintext[5 + 32 :].split(b"\x00")
+    serial = serial_user_data[0].decode("utf8")
+    user_login = serial_user_data[1].decode("utf8")
 
     # ----------------------------------------------------------------------- --
 
     # check serial / user login max length
 
     if len(serial) > 63:
-        raise ParameterError('Malformed pairing response for type QrToken:'
-                             'Serial too long')
+        raise ParameterError(
+            "Malformed pairing response for type QrToken:" "Serial too long"
+        )
 
     if len(user_login) > 255:
-        raise ParameterError('Malformed pairing response for type QrToken:'
-                             'User login too long')
+        raise ParameterError(
+            "Malformed pairing response for type QrToken:"
+            "User login too long"
+        )
 
     # ----------------------------------------------------------------------- --
 
-    return QRTokenPairingData(user_public_key,
-                              user_token_id,
-                              serial,
-                              user_login)
+    return QRTokenPairingData(
+        user_public_key, user_token_id, serial, user_login
+    )
 
-#eof############################################################################
+
+# eof############################################################################

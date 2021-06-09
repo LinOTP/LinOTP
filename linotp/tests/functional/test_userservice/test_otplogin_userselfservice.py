@@ -36,7 +36,7 @@ log = logging.getLogger(__name__)
 
 
 class TestUserserviceAuthController(TestController):
-    '''
+    """
     Selfservice Authorization: test for user authetication with otp
 
     the selfservice authetication could be switched on to require an OTP
@@ -49,13 +49,14 @@ class TestUserserviceAuthController(TestController):
     the concatinated b64(otp) + ':' + b64(password) is provided toward
     the userservice api
 
-    '''
+    """
 
     def setUp(self):
 
         response = self.make_system_request(
-                        'setConfig', params={'splitAtSign': 'true'})
-        assert 'false' not in response.body
+            "setConfig", params={"splitAtSign": "true"}
+        )
+        assert "false" not in response.body
 
         TestController.setUp(self)
         # clean setup
@@ -73,19 +74,21 @@ class TestUserserviceAuthController(TestController):
         TestController.tearDown(self)
 
     def createPolicy(self, param):
-        policy = {'name': 'self01',
-                  'scope': 'selfservice',
-                  'realm': 'myDefRealm',
-                  'user': None,
-                  'action': 'history', }
+        policy = {
+            "name": "self01",
+            "scope": "selfservice",
+            "realm": "myDefRealm",
+            "user": None,
+            "action": "history",
+        }
 
         # overwrite the default defintion
         if not param:
             param = {}
         policy.update(param)
-        name = policy['name']
+        name = policy["name"]
 
-        response = self.make_system_request('setPolicy', params=policy)
+        response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
         assert ('"setPolicy %s": {' % name) in response, response
 
@@ -94,59 +97,71 @@ class TestUserserviceAuthController(TestController):
     def local_setup(self):
         """ run the local test setup """
 
-        otps = ['870581', '793334', '088491', '013126', '818771',
-                '454594', '217219', '250710', '478893', '517407']
+        otps = [
+            "870581",
+            "793334",
+            "088491",
+            "013126",
+            "818771",
+            "454594",
+            "217219",
+            "250710",
+            "478893",
+            "517407",
+        ]
 
         self.otps = otps[::-1]
 
-        self.pin = 'Test123!'
+        self.pin = "Test123!"
 
         params = {
-            'user': 'passthru_user1@myDefRealm',
-            'pin': self.pin,
-            'serial': 'LoginToken',
-            'otpkey': 'AD8EABE235FC57C815B26CEF3709075580B44738',
+            "user": "passthru_user1@myDefRealm",
+            "pin": self.pin,
+            "serial": "LoginToken",
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"img": "<img ' in response, response
 
         policy = {
-            'name': 'T1',
-            'action': 'enrollHMAC, mfa_login, delete, history',
-            'user': ' passthru.*.myDefRes:',
-            'realm': '*',
-            'scope': 'selfservice'}
+            "name": "T1",
+            "action": "enrollHMAC, mfa_login, delete, history",
+            "user": " passthru.*.myDefRes:",
+            "realm": "*",
+            "scope": "selfservice",
+        }
 
         self.createPolicy(policy)
 
         policy = {
-            'name': 'auth_challenge',
-            'action': 'challenge_response=hmac, ',
-            'user': ' passthru.*.myDefRes:',
-            'realm': '*',
-            'scope': 'authentication'}
+            "name": "auth_challenge",
+            "action": "challenge_response=hmac, ",
+            "user": " passthru.*.myDefRes:",
+            "realm": "*",
+            "scope": "authentication",
+        }
 
         self.createPolicy(policy)
 
     def get_audit_entries(self, num=3, page=1):
-        '''
+        """
         query the last audit entry
         # audit/search?sortorder=desc&rp=1
 
         Be aware: this method could not be moved into the parent class !!!
                   it wont be found :(
-        '''
-        params = {'sortorder': 'desc',
-                  'rp': num,
-                  'page': page,
-                  }
-        response = self.make_audit_request(action="search",
-                                           params=params)
+        """
+        params = {
+            "sortorder": "desc",
+            "rp": num,
+            "page": page,
+        }
+        response = self.make_audit_request(action="search", params=params)
 
         jresp = json.loads(response.body)
-        for row in jresp.get('rows',[]):
-            cell_info = row.get('cell',[])
+        for row in jresp.get("rows", []):
+            cell_info = row.get("cell", [])
             yield cell_info
 
     # ---------------------------------------------------------------------- --
@@ -157,32 +172,31 @@ class TestUserserviceAuthController(TestController):
         to reenter credentials while login session is valid
         """
 
-        auth_user = {'login': 'passthru_user1@myDefRealm',
-                     'password': 'geheim1'}
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
 
-        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
-        response = self.make_userselfservice_request('enroll',
-                                                     params=params,
-                                                     auth_user=auth_user,
-                                                     new_auth_cookie=True)
+        params = {"type": "hmac", "genkey": "1", "serial": "hmac123"}
+        response = self.make_userselfservice_request(
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'additional authentication parameter required' \
-                        in response
+        assert "additional authentication parameter required" in response
 
-        auth_user['otp'] = self.otps.pop()
+        auth_user["otp"] = self.otps.pop()
 
-        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
-        response = self.make_userselfservice_request('enroll',
-                                                     params=params,
-                                                     auth_user=auth_user,
-                                                     new_auth_cookie=True)
+        params = {"type": "hmac", "genkey": "1", "serial": "hmac123"}
+        response = self.make_userselfservice_request(
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
         assert '"img": "<img ' in response, response
 
-        params = {'serial': 'hmac123'}
-        response = self.make_userselfservice_request('delete',
-                                                     params=params,
-                                                     auth_user=auth_user)
+        params = {"serial": "hmac123"}
+        response = self.make_userselfservice_request(
+            "delete", params=params, auth_user=auth_user
+        )
 
         assert '"delete token": 1' in response, response
 
@@ -199,35 +213,35 @@ class TestUserserviceAuthController(TestController):
 
         self.delete_all_token()
 
-        auth_user = {'login': 'passthru_user1@myDefRealm',
-                     'password': 'geheim1'}
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
 
         params = {}
-        response = self.make_userselfservice_request('history',
-                                                     params=params,
-                                                     auth_user=auth_user,
-                                                     new_auth_cookie=True)
+        response = self.make_userselfservice_request(
+            "history", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'additional authentication parameter required' in response
+        assert "additional authentication parameter required" in response
 
         # after switching on the policy mfa_passOnNoToken the user can login
 
         params = {
-            'name': 'mfa_noToken',
-            'active': True,
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_passOnNoToken',
-            'user': '*',
-            'realm': '*',
-            }
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response
+            "name": "mfa_noToken",
+            "active": True,
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_passOnNoToken",
+            "user": "*",
+            "realm": "*",
+        }
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response
 
-        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
-        response = self.make_userselfservice_request('enroll',
-                                                     params=params,
-                                                     auth_user=auth_user,
-                                                     new_auth_cookie=True)
+        params = {"type": "hmac", "genkey": "1", "serial": "hmac123"}
+        response = self.make_userselfservice_request(
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
         assert '"img": "<img ' in response, response
 
@@ -235,22 +249,22 @@ class TestUserserviceAuthController(TestController):
         # the login with u/p is not possible anymore
 
         params = {}
-        response = self.make_userselfservice_request('logout',
-                                                     params=params,
-                                                     auth_user=auth_user)
+        response = self.make_userselfservice_request(
+            "logout", params=params, auth_user=auth_user
+        )
         assert "true" in response
 
         with self.assertRaises(Exception) as exx:
-            params = {'serial': 'hmac123'}
-            response = self.make_userselfservice_request('delete',
-                                                         params=params,
-                                                         auth_user=auth_user)
+            params = {"serial": "hmac123"}
+            response = self.make_userselfservice_request(
+                "delete", params=params, auth_user=auth_user
+            )
 
         msg = "%s" % exx.exception
-        assert 'Server Error 401' in msg
+        assert "Server Error 401" in msg
 
         self.delete_all_token()
-        self.delete_policy(name='mfa_noToken')
+        self.delete_policy(name="mfa_noToken")
 
         return
 
@@ -261,16 +275,17 @@ class TestUserserviceAuthController(TestController):
         to reenter credentials while login session is valid
         """
 
-        auth_user = {'login': 'passthru_user1@myDefRealm',
-                     'password': 'WRONGPASS'}
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "WRONGPASS",
+        }
 
-        auth_user['otp'] = self.otps.pop()
+        auth_user["otp"] = self.otps.pop()
 
-        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
-        response = self.make_userselfservice_request('enroll',
-                                                     params=params,
-                                                     auth_user=auth_user,
-                                                     new_auth_cookie=True)
+        params = {"type": "hmac", "genkey": "1", "serial": "hmac123"}
+        response = self.make_userselfservice_request(
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
         assert '"value": false' in response, response
 
@@ -279,8 +294,10 @@ class TestUserserviceAuthController(TestController):
         # now we verify that the faild login is in the audit log and
         # the exception does not appear anymore
 
-        unbound_msg = ('UnboundLocalError("local variable \'reply\' '
-                       'referenced before assignment",)')
+        unbound_msg = (
+            "UnboundLocalError(\"local variable 'reply' "
+            'referenced before assignment",)'
+        )
 
         failed_auth_msg1 = "User(login='passthru_user1'"
         failed_auth_msg2 = "failed to authenticate!"
@@ -301,7 +318,6 @@ class TestUserserviceAuthController(TestController):
         assert failed_auth_found, entries
 
         return
-
 
     def test_login_with_challenge_response(self):
         """
@@ -330,94 +346,95 @@ class TestUserserviceAuthController(TestController):
         # run the credential verification step
 
         auth_user = {
-            'login': 'passthru_user1@myDefRealm',
-            'password': 'geheim1'}
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
 
-        response = self.client.post(url(controller='userservice',
-                                        action='login'), data=auth_user)
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=auth_user
+        )
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
+        auth_cookie = cookies.get("user_selfservice")
 
         jresp = response.json
-        tokenlist = jresp['detail']["tokenList"]
+        tokenlist = jresp["detail"]["tokenList"]
         assert len(tokenlist) == 1
-        assert tokenlist[0]['LinOtp.TokenSerialnumber'] == 'LoginToken'
+        assert tokenlist[0]["LinOtp.TokenSerialnumber"] == "LoginToken"
 
         # ------------------------------------------------------------------ --
 
         # verify that 'history' could not be called in this status
 
         params = {}
-        params['session'] = 'void'
+        params["session"] = "void"
 
-        response = self.client.post(url(controller='userservice',
-                                        action='history'), data=params)
+        response = self.client.post(
+            url(controller="userservice", action="history"), data=params
+        )
 
         assert response.status_code == 401
         assert "No valid session" in response.data.decode()
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
-        response = self.client.post(url(controller='userservice',
-                                        action='usertokenlist'), data=params)
+        params["session"] = auth_cookie
+        response = self.client.post(
+            url(controller="userservice", action="usertokenlist"), data=params
+        )
 
         response.body = response.data.decode("utf-8")
-        assert 'LoginToken' in response, response
+        assert "LoginToken" in response, response
 
         # ------------------------------------------------------------------ --
 
         # next request is to trigger the login challenge response
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
-        response = self.client.post(url(controller='userservice',
-                                        action='login'), data=params)
+        params["session"] = auth_cookie
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=params
+        )
 
         response.body = response.data.decode("utf-8")
-        assert '"Please enter your otp value: "' in response, \
-                        response
+        assert '"Please enter your otp value: "' in response, response
 
         # response should contain the challenge information
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        auth_cookie = cookies.get("user_selfservice")
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         # ------------------------------------------------------------------ --
 
         # next request replies to the challenge response with a wrong otp
         # and check if the fail counter is incremented
 
-        params = {
-            'serial': 'LoginToken'
-            }
-        response = self.make_admin_request('show', params)
-        token_data = json.loads(response.body)['result']['value']['data'][0]
+        params = {"serial": "LoginToken"}
+        response = self.make_admin_request("show", params)
+        token_data = json.loads(response.body)["result"]["value"]["data"][0]
         failcount = token_data["LinOtp.FailCount"]
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
+        params["session"] = auth_cookie
         otp = self.otps.pop()
-        params['otp'] = otp[::-1]
+        params["otp"] = otp[::-1]
 
-        response = self.client.post(url(controller='userservice',
-                                    action='login'), data=params)
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=params
+        )
         response.body = response.data.decode("utf-8")
 
         assert '"value": false' in response, response
 
-        params = {
-            'serial': 'LoginToken'
-            }
-        response = self.make_admin_request('show', params)
-        token_data = json.loads(response.body)['result']['value']['data'][0]
+        params = {"serial": "LoginToken"}
+        response = self.make_admin_request("show", params)
+        token_data = json.loads(response.body)["result"]["value"]["data"][0]
         new_failcount = token_data["LinOtp.FailCount"]
 
         assert new_failcount > failcount
@@ -427,32 +444,29 @@ class TestUserserviceAuthController(TestController):
         # next request replies to the challenge response with an emptyotp
         # and check if the fail counter is incremented
 
-        params = {
-            'serial': 'LoginToken'
-            }
-        response = self.make_admin_request('show', params)
-        token_data = json.loads(response.body)['result']['value']['data'][0]
+        params = {"serial": "LoginToken"}
+        response = self.make_admin_request("show", params)
+        token_data = json.loads(response.body)["result"]["value"]["data"][0]
         failcount = token_data["LinOtp.FailCount"]
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
+        params["session"] = auth_cookie
         otp = self.otps.pop()
-        params['otp'] = ''
+        params["otp"] = ""
 
-        response = self.client.post(url(controller='userservice',
-                                    action='login'), data=params)
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=params
+        )
 
         response.body = response.data.decode("utf-8")
 
         assert '"value": false' in response, response
 
-        params = {
-            'serial': 'LoginToken'
-            }
-        response = self.make_admin_request('show', params)
-        token_data = json.loads(response.body)['result']['value']['data'][0]
+        params = {"serial": "LoginToken"}
+        response = self.make_admin_request("show", params)
+        token_data = json.loads(response.body)["result"]["value"]["data"][0]
         new_failcount = token_data["LinOtp.FailCount"]
 
         assert new_failcount > failcount
@@ -462,34 +476,35 @@ class TestUserserviceAuthController(TestController):
         # next request replies to the challenge response and
         # finishes the authorisation
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
-        params['otp'] = self.otps.pop()
+        params["session"] = auth_cookie
+        params["otp"] = self.otps.pop()
 
-        response = self.client.post(url(controller='userservice',
-                                        action='login'), data=params)
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=params
+        )
 
         response.body = response.data.decode("utf-8")
         assert '"value": true' in response, response
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        auth_cookie = cookies.get("user_selfservice")
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         # ------------------------------------------------------------------ --
 
         params = {}
-        params['session'] = auth_cookie
-        response = self.client.post(url(controller='userservice',
-                                        action='history'), data=params)
+        params["session"] = auth_cookie
+        response = self.client.post(
+            url(controller="userservice", action="history"), data=params
+        )
 
         response.body = response.data.decode("utf-8")
         assert '"rows": [' in response, response
 
         return
-
 
     def test_login_with_challenge_response_simple(self):
         """
@@ -521,22 +536,23 @@ class TestUserserviceAuthController(TestController):
         # run the credential verification step
 
         auth_user = {
-            'login': 'passthru_user1@myDefRealm',
-            'password': 'geheim1'}
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
 
-        response = self.client.post(url(controller='userservice',
-                                        action='login'), data=auth_user)
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=auth_user
+        )
 
         jresp = response.json
-        tokenlist = jresp['detail']["tokenList"]
+        tokenlist = jresp["detail"]["tokenList"]
         assert len(tokenlist) == 1
-        assert tokenlist[0]['LinOtp.TokenSerialnumber'] == 'LoginToken'
-
+        assert tokenlist[0]["LinOtp.TokenSerialnumber"] == "LoginToken"
 
         # ------------------------------------------------------------------ --
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
+        auth_cookie = cookies.get("user_selfservice")
         assert auth_cookie
 
         # ------------------------------------------------------------------ --
@@ -544,34 +560,36 @@ class TestUserserviceAuthController(TestController):
         # next request is to trigger the login challenge response
         # response should contain the challenge information
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
-        response = self.client.post(url(controller='userservice',
-                                        action='login'), data=params)
+        params["session"] = auth_cookie
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=params
+        )
 
         jresp = response.json
-        assert jresp['detail']
-        assert jresp['detail']['message'] == "Please enter your otp value: "
+        assert jresp["detail"]
+        assert jresp["detail"]["message"] == "Please enter your otp value: "
 
         # ------------------------------------------------------------------ --
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
+        auth_cookie = cookies.get("user_selfservice")
 
         # ------------------------------------------------------------------ --
 
         # replies to the challenge response which finishes the authorisation
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
-        params['otp'] = self.otps.pop()
+        params["session"] = auth_cookie
+        params["otp"] = self.otps.pop()
 
-        response = self.client.post(url(controller='userservice',
-                                        action='login'), data=params)
+        response = self.client.post(
+            url(controller="userservice", action="login"), data=params
+        )
 
         response.body = response.data.decode("utf-8")
         assert '"value": true' in response, response
@@ -579,18 +597,19 @@ class TestUserserviceAuthController(TestController):
         # ------------------------------------------------------------------ --
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
+        auth_cookie = cookies.get("user_selfservice")
 
         # ------------------------------------------------------------------ --
 
         # verify that the authentication was successful
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
-        response = self.client.post(url(controller='userservice',
-                                        action='history'), data=params)
+        params["session"] = auth_cookie
+        response = self.client.post(
+            url(controller="userservice", action="history"), data=params
+        )
 
         response.body = response.data.decode("utf-8")
         assert '"rows": [' in response, response
@@ -627,32 +646,35 @@ class TestUserserviceAuthController(TestController):
         # run the credential verification step
 
         auth_user = {
-            'login': 'passthru_user1@myDefRealm',
-            'password': 'geheim1'}
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
 
-        response = self.client.get(url(controller='userservice',
-                                    action='login'), data=auth_user)
+        response = self.client.get(
+            url(controller="userservice", action="login"), data=auth_user
+        )
         response.body = response.data.decode("utf-8")
 
         assert '"value": false' in response, response
-        assert 'additional authentication parameter' in response, response
+        assert "additional authentication parameter" in response, response
 
         # ------------------------------------------------------------------ --
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        auth_cookie = cookies.get("user_selfservice")
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         # ------------------------------------------------------------------ --
 
         # next request is to trigger the login challenge response
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
-        response = self.client.get(url(controller='userservice',
-                                    action='login'), data=params)
+        params["session"] = auth_cookie
+        response = self.client.get(
+            url(controller="userservice", action="login"), data=params
+        )
         response.body = response.data.decode("utf-8")
 
         assert '"Please enter your otp value: "' in response, response
@@ -660,23 +682,24 @@ class TestUserserviceAuthController(TestController):
         # response should contain the challenge information
 
         jresp = response.json
-        transactionid = jresp['detail']['transactionId']
+        transactionid = jresp["detail"]["transactionId"]
 
         # ------------------------------------------------------------------ --
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        auth_cookie = cookies.get("user_selfservice")
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         # ------------------------------------------------------------------ --
 
         # next request queries the challeng status
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
-        params = {'session': auth_cookie}
-        response = self.client.get(url(controller='userservice',
-                                    action='login'), data=params)
+        params = {"session": auth_cookie}
+        response = self.client.get(
+            url(controller="userservice", action="login"), data=params
+        )
         response.body = response.data.decode("utf-8")
 
         assert '"value": false' in response, response
@@ -686,11 +709,12 @@ class TestUserserviceAuthController(TestController):
         # make a /validate/check to verify the challenge
 
         params = {
-            'pass': self.otps.pop(),
-            'transactionid': transactionid,
-            }
-        response = self.client.get(url(controller='validate',
-                                    action='check_t'), data=params)
+            "pass": self.otps.pop(),
+            "transactionid": transactionid,
+        }
+        response = self.client.get(
+            url(controller="validate", action="check_t"), data=params
+        )
         response.body = response.data.decode("utf-8")
 
         assert '"value": true' in response, response
@@ -699,13 +723,14 @@ class TestUserserviceAuthController(TestController):
 
         # verify that transaction is verified
 
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {}
-        params['session'] = auth_cookie
+        params["session"] = auth_cookie
 
-        response = self.client.get(url(controller='userservice',
-                                    action='login'), data=params)
+        response = self.client.get(
+            url(controller="userservice", action="login"), data=params
+        )
         response.body = response.data.decode("utf-8")
 
         assert '"value": true' in response, response
@@ -713,15 +738,16 @@ class TestUserserviceAuthController(TestController):
         # ------------------------------------------------------------------ --
 
         cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get('user_selfservice')
-        TestController.set_cookie(self.client, 'user_selfservice', auth_cookie)
+        auth_cookie = cookies.get("user_selfservice")
+        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         # ------------------------------------------------------------------ --
 
         params = {}
-        params['session'] = auth_cookie
-        response = self.client.get(url(controller='userservice',
-                                    action='history'), data=params)
+        params["session"] = auth_cookie
+        response = self.client.get(
+            url(controller="userservice", action="history"), data=params
+        )
         response.body = response.data.decode("utf-8")
 
         assert '"rows": [' in response, response

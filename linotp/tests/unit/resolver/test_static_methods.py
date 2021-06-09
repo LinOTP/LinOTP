@@ -35,9 +35,12 @@ import json
 
 try:
 
-    from linotp.useridresolver.LDAPIdResolver import IdResolver as ldap_resolver
+    from linotp.useridresolver.LDAPIdResolver import (
+        IdResolver as ldap_resolver,
+    )
     from linotp.useridresolver.SQLIdResolver import IdResolver as sql_resolver
-    NO_LDAP_AVAILABLE = ''
+
+    NO_LDAP_AVAILABLE = ""
 
 except ImportError as exx:
 
@@ -68,13 +71,15 @@ class TestResolverTestCase(unittest.TestCase):
         res = ldap_cls.primary_key_changed({}, {})
         assert not res
 
-        res = ldap_cls.primary_key_changed({'UIDTYPE': 'objectGUID'},
-                                           {'UIDTYPE': 'uid'})
+        res = ldap_cls.primary_key_changed(
+            {"UIDTYPE": "objectGUID"}, {"UIDTYPE": "uid"}
+        )
 
         assert res
 
-        res = ldap_cls.primary_key_changed({'UIDTYPE': 'uid'},
-                                           {'UIDTYPE': 'uid'})
+        res = ldap_cls.primary_key_changed(
+            {"UIDTYPE": "uid"}, {"UIDTYPE": "uid"}
+        )
 
         assert not res
 
@@ -95,16 +100,14 @@ class TestResolverTestCase(unittest.TestCase):
         res = sql_cls.primary_key_changed({}, {})
         assert not res
 
-        u_map_1 = json.dumps({'userid': 'id'})
-        u_map_2 = json.dumps({'userid': 'uid'})
+        u_map_1 = json.dumps({"userid": "id"})
+        u_map_2 = json.dumps({"userid": "uid"})
 
-        res = sql_cls.primary_key_changed({'Map': u_map_1},
-                                          {'Map': u_map_2})
+        res = sql_cls.primary_key_changed({"Map": u_map_1}, {"Map": u_map_2})
 
         assert res
 
-        res = sql_cls.primary_key_changed({'Map': u_map_1},
-                                          {'Map': u_map_1})
+        res = sql_cls.primary_key_changed({"Map": u_map_1}, {"Map": u_map_1})
 
         assert not res
 

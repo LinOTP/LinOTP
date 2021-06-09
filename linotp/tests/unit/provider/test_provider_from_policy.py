@@ -30,36 +30,36 @@ from mock import patch
 from linotp.lib.user import User
 from linotp.provider import get_provider_from_policy
 
-mocked_context = {
-    'Client': '123.123.123.123'
-    }
+mocked_context = {"Client": "123.123.123.123"}
+
 
 class TestProviderFromPolicy(unittest.TestCase):
     """
     unit test to identify provider  from policy
     """
-    @patch('linotp.provider.request_context', new=mocked_context)
+
+    @patch("linotp.provider.request_context", new=mocked_context)
     def test_get_default_provider(self):
         """
         get the default providers if no policy
         """
         with patch("linotp.lib.policy.get_client_policy") as mock_policy:
             with patch(
-                "linotp.provider._get_default_provider_name") as mock_default:
+                "linotp.provider._get_default_provider_name"
+            ) as mock_default:
 
                 mock_policy.return_value = {}
-                mock_default.return_value = 'default'
+                mock_default.return_value = "default"
 
                 provider = get_provider_from_policy(
-                    'sms', user=User('login', 'realm'))
+                    "sms", user=User("login", "realm")
+                )
 
-                assert provider == ['default']
+                assert provider == ["default"]
 
-
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.provider.request_context', new=mocked_context)
-    def test_get_policy_provider(self,
-                                 mocked_get_policy_definitions):
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.provider.request_context", new=mocked_context)
+    def test_get_policy_provider(self, mocked_get_policy_definitions):
         """
         get the providers from the policy
         """
@@ -67,25 +67,26 @@ class TestProviderFromPolicy(unittest.TestCase):
         with patch("linotp.lib.policy.get_client_policy") as mocked_policy:
 
             mocked_policy.return_value = {
-                'one': {
-                    'name': 'one',
-                    'scope': 'authentication',
-                    'active': True,
-                    'action': 'sms_provider=  one   two ,  ',
-                    'realm': '*',
-                    'user': '*'
-                    }
+                "one": {
+                    "name": "one",
+                    "scope": "authentication",
+                    "active": True,
+                    "action": "sms_provider=  one   two ,  ",
+                    "realm": "*",
+                    "user": "*",
                 }
+            }
             mocked_get_policy_definitions.return_value = {
-                'authentication': {
-                    'sms_provider': {'type': 'str'},
-                     }
+                "authentication": {
+                    "sms_provider": {"type": "str"},
+                }
             }
 
             provider = get_provider_from_policy(
-                'sms', user=User('login', 'realm'))
+                "sms", user=User("login", "realm")
+            )
 
-            assert provider == ['one', 'two']
+            assert provider == ["one", "two"]
 
 
 # eof #

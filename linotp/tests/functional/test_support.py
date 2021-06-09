@@ -50,7 +50,6 @@ log = logging.getLogger(__name__)
 
 
 class TestSupport(TestController):
-
     def setUp(self):
 
         self.delete_license()
@@ -71,7 +70,7 @@ class TestSupport(TestController):
 
         # remove the license, if installed
 
-        self.make_system_request('delConfig', params={'key': 'license'})
+        self.make_system_request("delConfig", params={"key": "license"})
 
         return TestController.tearDown(self)
 
@@ -87,8 +86,9 @@ class TestSupport(TestController):
 
         upload_files = [("license", "demo-lic.pem", demo_license)]
 
-        response = self.make_system_request("setSupport",
-                                            upload_files=upload_files)
+        response = self.make_system_request(
+            "setSupport", upload_files=upload_files
+        )
 
         return response
 
@@ -101,8 +101,8 @@ class TestSupport(TestController):
 
         # check that there is no license installed
 
-        params = {'key': 'license'}
-        response = self.make_system_request('getConfig', params)
+        params = {"key": "license"}
+        response = self.make_system_request("getConfig", params)
         assert '"getConfig license": null' in response
 
         response = self.make_system_request("isSupportValid")
@@ -154,9 +154,7 @@ class TestSupport(TestController):
         jresp = json.loads(response.body)
 
         assert not jresp.get("result", {}).get("value")
-        assert "License expired" in jresp.get(
-            "detail", {}).get(
-            "reason")
+        assert "License expired" in jresp.get("detail", {}).get("reason")
 
         return
 
@@ -178,12 +176,8 @@ class TestSupport(TestController):
         """
 
         for i in range(1, 10):
-            params = {
-                'type': 'hmac',
-                'genkey': 1,
-                'serial': 'HMAC_DEMO%d' % i
-            }
-            response = self.make_admin_request('init', params)
+            params = {"type": "hmac", "genkey": 1, "serial": "HMAC_DEMO%d" % i}
+            response = self.make_admin_request("init", params)
             assert '"status": true' in response
             assert '"value": true' in response
 
@@ -214,8 +208,9 @@ class TestSupport(TestController):
         if not requires_patch:
             return self.check_appliance_demo_licence()
 
-        with patch("linotp.controllers.system."
-                   "running_on_appliance") as mocked_running_on_appliance:
+        with patch(
+            "linotp.controllers.system." "running_on_appliance"
+        ) as mocked_running_on_appliance:
 
             mocked_running_on_appliance.return_value = True
             return self.check_appliance_demo_licence()
@@ -235,22 +230,23 @@ class TestSupport(TestController):
             assert '"status": true' in response
             assert '"value": true' in response
 
-            for i in range(1, 6+2):
+            for i in range(1, 6 + 2):
                 params = {
-                    'type': 'hmac',
-                    'genkey': 1,
-                    'serial': 'HMAC_DEMO%d' % i
+                    "type": "hmac",
+                    "genkey": 1,
+                    "serial": "HMAC_DEMO%d" % i,
                 }
-                response = self.make_admin_request('init', params)
+                response = self.make_admin_request("init", params)
                 assert '"status": true' in response
                 assert '"value": true' in response
 
-
-            params['serial'] ='HMAC_DEMO-XXX'
-            response = self.make_admin_request('init', params)
+            params["serial"] = "HMAC_DEMO-XXX"
+            response = self.make_admin_request("init", params)
             assert '"status": false' in response, response
-            msg = ("Due to license restrictions no more "
-                   "tokens could be enrolled!")
+            msg = (
+                "Due to license restrictions no more "
+                "tokens could be enrolled!"
+            )
             assert msg in response, response
 
     def test_token_user_license(self):
@@ -262,23 +258,22 @@ class TestSupport(TestController):
 
         with freeze_time(license_valid_date):
 
-            license_file = os.path.join(self.fixture_path,
-                                        "linotp2.token_user.pem")
+            license_file = os.path.join(
+                self.fixture_path, "linotp2.token_user.pem"
+            )
             with open(license_file, "r") as f:
                 license = f.read()
 
             upload_files = [("license", "linotp2.token_user.pem", license)]
-            response = self.make_system_request("setSupport",
-                                                upload_files=upload_files)
+            response = self.make_system_request(
+                "setSupport", upload_files=upload_files
+            )
             assert '"status": true' in response
             assert '"value": true' in response
 
             response = self.make_system_request("getSupportInfo")
             jresp = json.loads(response.body)
-            user_num = jresp.get(
-                "result", {}).get(
-                "value", {}).get(
-                "user-num")
+            user_num = jresp.get("result", {}).get("value", {}).get("user-num")
 
             assert user_num == "4"
 
@@ -288,16 +283,16 @@ class TestSupport(TestController):
             # + 2 additional one for beeing nice to the customers :)
             # - tokens per user are not limited
 
-            for user in ['hans', 'rollo', 'susi', 'horst', 'user1', 'user2']:
+            for user in ["hans", "rollo", "susi", "horst", "user1", "user2"]:
 
-                for i in range(0,2):
+                for i in range(0, 2):
                     params = {
-                        'type': 'pw',
-                        'user': user + "@myDefRealm",
-                        'otpkey': 'geheim',
-                        'serial': '%s.%d' % (user, i),
+                        "type": "pw",
+                        "user": user + "@myDefRealm",
+                        "otpkey": "geheim",
+                        "serial": "%s.%d" % (user, i),
                     }
-                    response = self.make_admin_request('init', params)
+                    response = self.make_admin_request("init", params)
                     assert '"value": true' in response, response
 
             response = self.make_system_request("isSupportValid")
@@ -308,37 +303,39 @@ class TestSupport(TestController):
             # enrollment to one more owner is not allowed
 
             params = {
-                'type': 'pw',
-                'user': "root@myDefRealm",
-                'otpkey': 'geheim'
+                "type": "pw",
+                "user": "root@myDefRealm",
+                "otpkey": "geheim",
             }
 
-            response = self.make_admin_request('init', params)
+            response = self.make_admin_request("init", params)
             assert '"status": false' in response
-            msg = ("Due to license restrictions no more "
-                   "tokens could be enrolled!")
+            msg = (
+                "Due to license restrictions no more "
+                "tokens could be enrolled!"
+            )
             assert msg in response
 
             # ------------------------------------------------------------- --
 
             # disable one of the users tokens and now we can enroll more users
 
-            for i in range(0,2):
+            for i in range(0, 2):
                 params = {
-                    'serial': 'hans.%d' % i,
+                    "serial": "hans.%d" % i,
                 }
-                response = self.make_admin_request('disable', params)
+                response = self.make_admin_request("disable", params)
                 assert '"value": 1' in response
 
-            for i in range(0,2):
+            for i in range(0, 2):
                 params = {
-                    'type': 'pw',
-                    'user': "root@myDefRealm",
-                    'otpkey': 'geheim',
-                    'serial': 'root.%d' % i
+                    "type": "pw",
+                    "user": "root@myDefRealm",
+                    "otpkey": "geheim",
+                    "serial": "root.%d" % i,
                 }
 
-                response = self.make_admin_request('init', params)
+                response = self.make_admin_request("init", params)
                 assert '"value": true' in response
 
             # ------------------------------------------------------------- --
@@ -347,13 +344,15 @@ class TestSupport(TestController):
             # is not allowed
 
             params = {
-                'serial': 'hans.1',
+                "serial": "hans.1",
             }
 
-            response = self.make_admin_request('enable', params)
+            response = self.make_admin_request("enable", params)
             assert '"status": false' in response
-            msg = ("Due to license restrictions no more "
-                   "tokens could be enrolled!")
+            msg = (
+                "Due to license restrictions no more "
+                "tokens could be enrolled!"
+            )
             assert msg in response
             # ------------------------------------------------------------- --
 
@@ -361,16 +360,17 @@ class TestSupport(TestController):
             # which is not allowed
 
             params = {
-                'serial': 'root.1',
-                'user': "hans@myDefRealm",
+                "serial": "root.1",
+                "user": "hans@myDefRealm",
             }
 
-            response = self.make_admin_request('assign', params)
+            response = self.make_admin_request("assign", params)
             assert '"status": false' in response
-            msg = ("Due to license restrictions no more "
-                   "tokens could be enrolled!")
+            msg = (
+                "Due to license restrictions no more "
+                "tokens could be enrolled!"
+            )
             assert msg in response
-
 
     def test_tokencount_user_license(self):
         """
@@ -378,62 +378,61 @@ class TestSupport(TestController):
         """
 
         params = {
-            'name': 'token_count_limit',
-            'scope': 'enrollment',
-            'realm': 'mydefrealm',
-            'user': '*',
-            'active': True,
-            'action': 'tokencount=6',
+            "name": "token_count_limit",
+            "scope": "enrollment",
+            "realm": "mydefrealm",
+            "user": "*",
+            "active": True,
+            "action": "tokencount=6",
         }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response.body
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response.body
 
         license_valid_date = datetime(year=2018, month=11, day=16)
 
         with freeze_time(license_valid_date):
 
-            license_file = os.path.join(self.fixture_path,
-                                        "linotp2.token_user.pem")
+            license_file = os.path.join(
+                self.fixture_path, "linotp2.token_user.pem"
+            )
             with open(license_file, "r") as f:
                 license = f.read()
 
             upload_files = [("license", "linotp2.token_user.pem", license)]
-            response = self.make_system_request("setSupport",
-                                                upload_files=upload_files)
+            response = self.make_system_request(
+                "setSupport", upload_files=upload_files
+            )
             assert '"status": true' in response
             assert '"value": true' in response
 
             response = self.make_system_request("getSupportInfo")
             jresp = json.loads(response.body)
-            user_num = jresp.get(
-                "result", {}).get(
-                "value", {}).get(
-                "user-num")
+            user_num = jresp.get("result", {}).get("value", {}).get("user-num")
 
             assert user_num == "4"
 
-            for user in ['hans', 'rollo', 'susi', 'horst', 'user1', 'user2']:
+            for user in ["hans", "rollo", "susi", "horst", "user1", "user2"]:
 
                 params = {
-                    'type': 'pw',
-                    'user': user + "@myDefRealm",
-                    'otpkey': 'geheim'
+                    "type": "pw",
+                    "user": user + "@myDefRealm",
+                    "otpkey": "geheim",
                 }
 
-                response = self.make_admin_request('init', params)
+                response = self.make_admin_request("init", params)
                 assert '"value": true' in response
 
             response = self.make_system_request("isSupportValid")
             assert '"value": true' in response
 
             params = {
-                'type': 'pw',
-                'user': "root@myDefRealm",
-                'otpkey': 'geheim'
+                "type": "pw",
+                "user": "root@myDefRealm",
+                "otpkey": "geheim",
             }
 
-            response = self.make_admin_request('init', params)
+            response = self.make_admin_request("init", params)
 
             msg = "The maximum allowed number of tokens for the realm"
             assert msg in response

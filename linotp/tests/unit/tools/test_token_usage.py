@@ -31,17 +31,18 @@ from .script_testing_lib import ScriptTester
 
 # -------------------------------------------------------------------------- --
 
+
 class TestLinotpTokenUsage(ScriptTester):
 
-    script_name = 'linotp-token-usage'
+    script_name = "linotp-token-usage"
 
     @pytest.mark.xfail(reason="old-style INI-based configuration")
-    @mock.patch('linotp_token_usage.token_usage')
-    @mock.patch('sys.exit')
+    @mock.patch("linotp_token_usage.token_usage")
+    @mock.patch("sys.exit")
     def test_main(self, mock_exit, mock_usage):
         self.script_module.main()
         mock_usage.assert_called_once()
 
     @pytest.mark.xfail(reason="old-style INI-based configuration")
     def test_token_usage(self):
-        self.script_module.token_usage(None, None, '')
+        self.script_module.token_usage(None, None, "")

@@ -51,14 +51,14 @@ class TestGetHashAlgoFromDescription(unittest.TestCase):
 
         # invalid hash function name but valid fallback
 
-        hash_algo = get_hashalgo_from_description('blub')
+        hash_algo = get_hashalgo_from_description("blub")
         assert hash_algo == sha1
 
         # invalid hash function name and invalid fallback
 
         with pytest.raises(Exception) as exx:
-            hash_algo = get_hashalgo_from_description('blub', fallback='blah')
-        exx.match('unsupported hash function')
+            hash_algo = get_hashalgo_from_description("blub", fallback="blah")
+        exx.match("unsupported hash function")
 
     def test_get_valid_hashalgo_from_descrition(self):
         """
@@ -71,5 +71,6 @@ class TestGetHashAlgoFromDescription(unittest.TestCase):
             assert hash_algo == hash_function
 
         return
+
 
 # eof #

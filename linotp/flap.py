@@ -22,9 +22,9 @@ from linotp.lib.fs_utils import ensure_dir
 
 log = logging.getLogger(__name__)
 
-config = LocalProxy(lambda: flask.g.request_context['config'])
+config = LocalProxy(lambda: flask.g.request_context["config"])
 
-error_document_template = '''
+error_document_template = """
     <html>
         <body>
             <p>An error occurred in %(prefix)s</p>
@@ -32,7 +32,7 @@ error_document_template = '''
             <p>%(message)s</p>
         </body>
     </html>
-    '''
+    """
 
 
 class RequestProxy(object):
@@ -66,7 +66,7 @@ class RequestContextProxy(object):
         # return flask.g.request_context.__getattribute__(name)
 
     def __setattr__(self, name, value):
-        #flask.g.request_context.__setattr__(name, value)
+        # flask.g.request_context.__setattr__(name, value)
         flask.g.request_context.__setitem__(name, value)
 
     def __getitem__(self, key):
@@ -87,6 +87,7 @@ class RequestContextProxy(object):
             repr_dict[key] = value
         return "%r" % repr_dict
 
+
 tmpl_context = RequestContextProxy()
 
 
@@ -95,37 +96,40 @@ def set_config():
     Set up config from flask request object
     """
     flask.g.request_context = {
-        'config': {             # This must die, die, die!!!
-            'linotp.root': os.path.dirname(os.path.abspath(__file__)),
+        "config": {  # This must die, die, die!!!
+            "linotp.root": os.path.dirname(os.path.abspath(__file__)),
         },
     }
 
     # We get this from `load_environment()`, and it basically sucks.
-    flask.g.request_context['config'].update(flask.current_app.config)
+    flask.g.request_context["config"].update(flask.current_app.config)
 
 
 def setup_mako(app):
-    if not hasattr(app, 'mako_template_lookup'):
+    if not hasattr(app, "mako_template_lookup"):
         app.mako_template_lookup = None
 
 
 def _make_mako_lookup(app):
     # Make a Mako `TemplateLookup` from the app configuration.
 
-    mod_dir = ensure_dir(app, "Mako template cache",
-                         "DATA_DIR", "template-cache", mode=0o770)
+    mod_dir = ensure_dir(
+        app, "Mako template cache", "DATA_DIR", "template-cache", mode=0o770
+    )
 
     kwargs = {
-        'input_encoding': 'utf-8',
-        'output_encoding': 'utf-8',
-        'default_filters': app.config['MAKO_DEFAULT_FILTERS'],
-        'imports': [
-            ('from flask_babel import gettext as _, ngettext, '
-             'pgettext, npgettext'),
+        "input_encoding": "utf-8",
+        "output_encoding": "utf-8",
+        "default_filters": app.config["MAKO_DEFAULT_FILTERS"],
+        "imports": [
+            (
+                "from flask_babel import gettext as _, ngettext, "
+                "pgettext, npgettext"
+            ),
         ],
         # `module_directory` points to a directory that is used to
         # cache Mako templates that have been compiled to Python code.
-        'module_directory': mod_dir,
+        "module_directory": mod_dir,
     }
 
     # Tokens can come with their own Mako templates, all of which are
@@ -134,8 +138,10 @@ def _make_mako_lookup(app):
     # blueprint-scanning code can find it. It's easier to add the folder
     # here and omit the blueprint-scanning loop (see below).
 
-    dirs = [os.path.join(app.root_path, app.template_folder),
-            os.path.join(app.root_path, "tokens")]
+    dirs = [
+        os.path.join(app.root_path, app.template_folder),
+        os.path.join(app.root_path, "tokens"),
+    ]
     custom_templates_dir = app.config["CUSTOM_TEMPLATES_DIR"]
     if custom_templates_dir is not None:
         dirs.insert(0, custom_templates_dir)
@@ -147,7 +153,6 @@ def _make_mako_lookup(app):
 
 
 class TemplateError(RuntimeError):
-
     def __init__(self, template):
         self.text = text_error_template().render()
         message = f"Error rendering template '{template.uri}'"
@@ -174,9 +179,9 @@ def render_mako(template_name, extra_context=None):
 
     try:
         template = app.mako_template_lookup.get_template(
-            template_name.lstrip('/'))
-        ret = template.render(c=tmpl_context,
-                              lang=get_locale().language)
+            template_name.lstrip("/")
+        )
+        ret = template.render(c=tmpl_context, lang=get_locale().language)
     except TemplateError as e:
         log.error(e.text)
         raise

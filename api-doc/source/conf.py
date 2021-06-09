@@ -13,19 +13,20 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../linotp'))
+
+sys.path.insert(0, os.path.abspath("../linotp"))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'LinOTP API'
-copyright = '2020, arxes-tolina GmbH'
-author = 'arxes-tolina GmbH'
+project = "LinOTP API"
+copyright = "2020, arxes-tolina GmbH"
+author = "arxes-tolina GmbH"
 
 # The short X.Y version
-version = '3.0'
+version = "3.0"
 # The full version, including alpha/beta/rc tags
-release = '3.0'
+release = "3.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -38,7 +39,7 @@ release = '3.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
+    "sphinx.ext.autodoc",
 ]
 
 # Add modules here that need to be mocked in order to build the API
@@ -49,12 +50,12 @@ extensions = [
 #     sys.modules[mod_name] = mock.Mock()
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["build", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -62,10 +63,10 @@ exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'linotp-api'
+html_theme = "linotp-api"
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['themes']
+html_theme_path = ["themes"]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

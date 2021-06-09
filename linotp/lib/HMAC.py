@@ -37,9 +37,10 @@ from hashlib import sha1
 log = logging.getLogger(__name__)
 
 
-class HmacOtp():
-
-    def __init__(self, secObj=None, counter: int = 0, digits: int = 6, hashfunc=sha1):
+class HmacOtp:
+    def __init__(
+        self, secObj=None, counter: int = 0, digits: int = 6, hashfunc=sha1
+    ):
         self.secretObj = secObj
         self.counter = counter
         self.digits = digits
@@ -52,19 +53,20 @@ class HmacOtp():
 
         if key is None:
             dig = self.secretObj.hmac_digest(
-                data_input, hash_algo=self.hashfunc)
+                data_input, hash_algo=self.hashfunc
+            )
         else:
             dig = hmac.new(key, data_input, self.hashfunc).digest()
 
         return dig
 
     def truncate(self, digest):
-        offset = ord(digest[-1:]) & 0x0f
+        offset = ord(digest[-1:]) & 0x0F
 
-        binary = (digest[offset + 0] & 0x7f) << 24
-        binary |= (digest[offset + 1] & 0xff) << 16
-        binary |= (digest[offset + 2] & 0xff) << 8
-        binary |= (digest[offset + 3] & 0xff)
+        binary = (digest[offset + 0] & 0x7F) << 24
+        binary |= (digest[offset + 1] & 0xFF) << 16
+        binary |= (digest[offset + 2] & 0xFF) << 8
+        binary |= digest[offset + 3] & 0xFF
 
         return binary % (10 ** self.digits)
 
@@ -72,10 +74,7 @@ class HmacOtp():
 
         counter = counter or self.counter
 
-        otp = str(
-            self.truncate(
-                self.hmac(counter=counter, key=key))
-            )
+        otp = str(self.truncate(self.hmac(counter=counter, key=key)))
 
         # fill in the leading zeros
 
@@ -94,14 +93,15 @@ class HmacOtp():
             start = 0 if (start < 0) else start
             end = self.counter + (window)
 
-        for c in range(start , end):
+        for c in range(start, end):
             otpval = self.generate(c)
 
             if otpval == anOtpVal:
                 res = c
                 break
 
-        #return -1 or the counter
+        # return -1 or the counter
         return res
 
-#eof##########################################################################
+
+# eof##########################################################################

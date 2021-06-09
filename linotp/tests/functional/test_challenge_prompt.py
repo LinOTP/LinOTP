@@ -42,7 +42,7 @@ from linotp.tests import TestController
 
 
 def calcOTP(key, counter=0, digits=6, typ=None):
-    '''
+    """
     as we have to use this method in a not class related function
     this function is extracted
 
@@ -51,9 +51,9 @@ def calcOTP(key, counter=0, digits=6, typ=None):
     :param digits: the number of to be returned digits
 
     :return: the otp value as string
-    '''
+    """
     htoken = HmacOtp(digits=digits)
-    if typ == 'totp':
+    if typ == "totp":
 
         timestep = 30
         time.sleep(timestep + 1)
@@ -107,33 +107,33 @@ class TestChallengePrompt(TestController):
         return
 
     def init_yubikey_token(
-            self,
-            serialnum="01382015",
-            yubi_slot=1,
-            otpkey="9163508031b20d2fbb1868954e041729",
-            public_uid="ecebeeejedecebeg",
-            use_public_id=False,
-            user=None
-            ):
+        self,
+        serialnum="01382015",
+        yubi_slot=1,
+        otpkey="9163508031b20d2fbb1868954e041729",
+        public_uid="ecebeeejedecebeg",
+        use_public_id=False,
+        user=None,
+    ):
 
         serial = "UBAM%s_%s" % (serialnum, yubi_slot)
 
         params = {
-            'type': 'yubikey',
-            'serial': serial,
-            'otpkey': otpkey,
-            'description': "Yubikey enrolled in functional tests",
+            "type": "yubikey",
+            "serial": serial,
+            "otpkey": otpkey,
+            "description": "Yubikey enrolled in functional tests",
         }
 
         if not use_public_id:
-            params['otplen'] = 32 + len(public_uid)
+            params["otplen"] = 32 + len(public_uid)
         else:
-            params['public_uid'] = public_uid
+            params["public_uid"] = public_uid
 
         if user:
-            params['user'] = user
+            params["user"] = user
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, "Response: %r" % response
 
         # setup the otp values, that we check against
@@ -149,24 +149,24 @@ class TestChallengePrompt(TestController):
 
         """
         params = {
-            'name': "ch_resp",
-            'realm': '*',
-            'action': 'challenge_response=*, ',
-            'user': '*',
-            'active': True,
-            'scope': 'authentication'
-            }
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+            "name": "ch_resp",
+            "realm": "*",
+            "action": "challenge_response=*, ",
+            "user": "*",
+            "active": True,
+            "scope": "authentication",
+        }
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
         public_uid = "ecebeeejedecebeg"
-        user = 'passthru_user1'
+        user = "passthru_user1"
 
         serial = self.init_yubikey_token(public_uid=public_uid, user=user)
         pin = "1234!"
 
-        params = {'serial': serial, 'pin': pin}
-        response = self.make_admin_request('set', params)
+        params = {"serial": serial, "pin": pin}
+        response = self.make_admin_request("set", params)
 
         # --------------------------------------------------------------- --
 
@@ -174,8 +174,8 @@ class TestChallengePrompt(TestController):
 
         prompt = "How are you?"
 
-        params = {'YUBIKEY_CHALLENGE_PROMPT': prompt}
-        response = self.make_system_request('setConfig', params)
+        params = {"YUBIKEY_CHALLENGE_PROMPT": prompt}
+        response = self.make_system_request("setConfig", params)
 
         assert prompt in response, response
 
@@ -183,8 +183,8 @@ class TestChallengePrompt(TestController):
 
         # trigger the challenge request
 
-        params = {'user': user, 'pass': pin}
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": pin}
+        response = self.make_validate_request("check", params=params)
 
         assert prompt in response, response
 
@@ -193,11 +193,12 @@ class TestChallengePrompt(TestController):
         # unset the config entry and check if the prompt is not more
         # in the challenge prompt
 
-        params = {'key': 'YUBIKEY_CHALLENGE_PROMPT'}
-        response = self.make_system_request('delConfig', params)
+        params = {"key": "YUBIKEY_CHALLENGE_PROMPT"}
+        response = self.make_system_request("delConfig", params)
 
-        assert '"delConfig YUBIKEY_CHALLENGE_PROMPT": true' \
-                        in response, response
+        assert (
+            '"delConfig YUBIKEY_CHALLENGE_PROMPT": true' in response
+        ), response
 
         # --------------------------------------------------------------- --
 
@@ -207,42 +208,42 @@ class TestChallengePrompt(TestController):
         return
 
     def test_hmac_challenge_prompt(self):
-        '''
+        """
         Challenge Response Test: HMAC tokens with challenge prompt
-        '''
+        """
 
         # --------------------------------------------------------------- --
 
         # define challenge response policy
 
         params = {
-            'name': "ch_resp",
-            'scope': 'authentication',
-            'action': 'challenge_response=*, ',
-            'active': True,
-            'user': '*',
-            'realm':'myDefRealm',
-            }
+            "name": "ch_resp",
+            "scope": "authentication",
+            "action": "challenge_response=*, ",
+            "active": True,
+            "user": "*",
+            "realm": "myDefRealm",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response, response
 
         # --------------------------------------------------------------- --
 
         # create hmac token
 
         counter = 0
-        serial = 'HMAC_TEST_TOKEN_1'
+        serial = "HMAC_TEST_TOKEN_1"
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         params = {
-            'otpkey': otpkey,
-            'pin': 'shortpin',
-            'user': 'passthru_user1',
-            'typ': 'hmac',
-            'serial': serial,
+            "otpkey": otpkey,
+            "pin": "shortpin",
+            "user": "passthru_user1",
+            "typ": "hmac",
+            "serial": serial,
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # --------------------------------------------------------------- --
@@ -250,8 +251,7 @@ class TestChallengePrompt(TestController):
         # trigger a challenge and answer it correctly
 
         params = {"user": "passthru_user1", "pass": "shortpin"}
-        response = self.make_validate_request(action='check',
-                                              params=params)
+        response = self.make_validate_request(action="check", params=params)
         assert '"value": false' in response, response
         assert '"transactionid":' in response, response
 
@@ -261,7 +261,7 @@ class TestChallengePrompt(TestController):
         # and a reply message message
 
         body = json.loads(response.body)
-        state = body.get('detail', {}).get('transactionid', None)
+        state = body.get("detail", {}).get("transactionid", None)
         assert state != None, response
 
         # --------------------------------------------------------------- --
@@ -270,9 +270,8 @@ class TestChallengePrompt(TestController):
 
         otp = calcOTP(otpkey, counter=counter)
         params = {"user": "passthru_user1", "pass": otp}
-        params['transactionid'] = state
-        response = self.make_validate_request(action='check',
-                                              params=params)
+        params["transactionid"] = state
+        response = self.make_validate_request(action="check", params=params)
         assert '"value": true' in response, response
 
         # --------------------------------------------------------------- --
@@ -281,8 +280,8 @@ class TestChallengePrompt(TestController):
 
         prompt = "How are you?"
 
-        params = {'HMAC_CHALLENGE_PROMPT': prompt}
-        response = self.make_system_request('setConfig', params)
+        params = {"HMAC_CHALLENGE_PROMPT": prompt}
+        response = self.make_system_request("setConfig", params)
 
         assert prompt in response, response
 
@@ -291,8 +290,7 @@ class TestChallengePrompt(TestController):
         # submit a pin only request - to trigger a challenge
 
         params = {"user": "passthru_user1", "pass": "shortpin"}
-        response = self.make_validate_request(action='check',
-                                              params=params)
+        response = self.make_validate_request(action="check", params=params)
         assert '"value": false' in response, response
         assert '"transactionid":' in response, response
         assert prompt in response, response
@@ -302,11 +300,10 @@ class TestChallengePrompt(TestController):
         # unset the config entry and check if the prompt is not more
         # in the challenge prompt
 
-        params = {'key': 'HMAC_CHALLENGE_PROMPT'}
-        response = self.make_system_request('delConfig', params)
+        params = {"key": "HMAC_CHALLENGE_PROMPT"}
+        response = self.make_system_request("delConfig", params)
 
-        assert '"delConfig HMAC_CHALLENGE_PROMPT": true' \
-                        in response, response
+        assert '"delConfig HMAC_CHALLENGE_PROMPT": true' in response, response
 
         # --------------------------------------------------------------- --
 
@@ -314,8 +311,7 @@ class TestChallengePrompt(TestController):
         # no more part of the challenge reply
 
         params = {"user": "passthru_user1", "pass": "shortpin"}
-        response = self.make_validate_request(action='check',
-                                              params=params)
+        response = self.make_validate_request(action="check", params=params)
         assert '"value": false' in response, response
         assert '"transactionid":' in response, response
         assert prompt not in response, response
@@ -330,53 +326,54 @@ class TestChallengePrompt(TestController):
 
         return
 
-    @patch.object(linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
-                  'submitMessage', mocked_submitMessage_request)
+    @patch.object(
+        linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
+        "submitMessage",
+        mocked_submitMessage_request,
+    )
     def test_sms_challenge_prompt(self):
-        '''
+        """
         Challenge Response Test: sms token challenge with otppin=1 + otppin=2
-        '''
+        """
 
         params = {
-            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            "SMSProvider": "smsprovider.HttpSMSProvider.HttpSMSProvider",
         }
-        _response = self.make_system_request(action='setConfig', params=params)
+        _response = self.make_system_request(action="setConfig", params=params)
 
-        sms_conf = {"URL": self.sms_url,
-                    "PARAMETER": {"account": "clickatel",
-                                  "username": "legit"},
-                    "SMS_TEXT_KEY": "text",
-                    "SMS_PHONENUMBER_KEY": "destination",
-                    "HTTP_Method": "GET",
-                    "RETURN_SUCCESS": "ID"
-                    }
+        sms_conf = {
+            "URL": self.sms_url,
+            "PARAMETER": {"account": "clickatel", "username": "legit"},
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "destination",
+            "HTTP_Method": "GET",
+            "RETURN_SUCCESS": "ID",
+        }
 
         params = {
-            'SMSProviderConfig': json.dumps(sms_conf),
+            "SMSProviderConfig": json.dumps(sms_conf),
         }
-        response = self.make_system_request(action='setConfig', params=params)
+        response = self.make_system_request(action="setConfig", params=params)
         assert '"status": true' in response, response
 
-        params = {
-            'name': 'imported_default',
-            'type': 'sms'
-            }
-        response = self.make_system_request('setDefaultProvider',
-                                            params=params)
+        params = {"name": "imported_default", "type": "sms"}
+        response = self.make_system_request(
+            "setDefaultProvider", params=params
+        )
 
         counter = 0
-        serial = 'SMS_TOKEN_01'
+        serial = "SMS_TOKEN_01"
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         params = {
             "serial": serial,
             "otpkey": otpkey,
-            "user": 'passthru_user1',
+            "user": "passthru_user1",
             "pin": "shortpin",
-            "type": 'sms',
-            'phone': '12345'
+            "type": "sms",
+            "phone": "12345",
         }
 
-        response = self.make_admin_request(action='init', params=params)
+        response = self.make_admin_request(action="init", params=params)
         assert '"value": true' in response, response
 
         # --------------------------------------------------------------- --
@@ -384,8 +381,8 @@ class TestChallengePrompt(TestController):
         # define a system defined challenge prompt
 
         prompt = "How are you?"
-        params = {'SMS_CHALLENGE_PROMPT': prompt}
-        response = self.make_system_request('setConfig', params)
+        params = {"SMS_CHALLENGE_PROMPT": prompt}
+        response = self.make_system_request("setConfig", params)
 
         assert prompt in response, response
 
@@ -393,8 +390,8 @@ class TestChallengePrompt(TestController):
 
         # run the authentication with new prompt
 
-        params = {'serial': serial, 'pass': 'shortpin'}
-        response = self.make_validate_request('check_s', params)
+        params = {"serial": serial, "pass": "shortpin"}
+        response = self.make_validate_request("check_s", params)
         assert prompt in response, response
 
         # --------------------------------------------------------------- --
@@ -402,11 +399,10 @@ class TestChallengePrompt(TestController):
         # unset the config entry and check if the prompt is not more
         # in the challenge prompt
 
-        params = {'key': 'SMS_CHALLENGE_PROMPT'}
-        response = self.make_system_request('delConfig', params)
+        params = {"key": "SMS_CHALLENGE_PROMPT"}
+        response = self.make_system_request("delConfig", params)
 
-        assert '"delConfig SMS_CHALLENGE_PROMPT": true' \
-                        in response, response
+        assert '"delConfig SMS_CHALLENGE_PROMPT": true' in response, response
         # --------------------------------------------------------------- --
 
         self.delete_token(serial)
@@ -421,24 +417,24 @@ class TestChallengePrompt(TestController):
         # define challenge response policy
 
         params = {
-            'name': "ch_resp",
-            'scope': 'authentication',
-            'action': 'challenge_response=*, ',
-            'active': True,
-            'user': '*',
-            'realm':'myDefRealm',
-            }
+            "name": "ch_resp",
+            "scope": "authentication",
+            "action": "challenge_response=*, ",
+            "active": True,
+            "user": "*",
+            "realm": "myDefRealm",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response, response
 
         # --------------------------------------------------------------- --
 
         # define a system defined challenge prompt
 
         prompt = "How are you?"
-        params = {'PW_CHALLENGE_PROMPT': prompt}
-        response = self.make_system_request('setConfig', params)
+        params = {"PW_CHALLENGE_PROMPT": prompt}
+        response = self.make_system_request("setConfig", params)
 
         assert prompt in response, response
 
@@ -446,27 +442,24 @@ class TestChallengePrompt(TestController):
 
         # create the password token
         params = {
-            'serial': "TPW",
-            'user': "root",
-            'pin': "pin",
-            'otpkey': "123456",
-            'type': 'pw',
-            "user": 'passthru_user1',
+            "serial": "TPW",
+            "user": "root",
+            "pin": "pin",
+            "otpkey": "123456",
+            "type": "pw",
+            "user": "passthru_user1",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # --------------------------------------------------------------- --
 
         # trigger the challenge with a validate request
 
-        params = {
-            'user': 'passthru_user1',
-            'pass': 'pin'
-        }
+        params = {"user": "passthru_user1", "pass": "pin"}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert prompt in response, response
 
         # --------------------------------------------------------------- --
@@ -474,14 +467,13 @@ class TestChallengePrompt(TestController):
         # unset the config entry and check if the prompt is not more
         # in the challenge prompt
 
-        params = {'key': 'PW_CHALLENGE_PROMPT'}
-        response = self.make_system_request('delConfig', params)
+        params = {"key": "PW_CHALLENGE_PROMPT"}
+        response = self.make_system_request("delConfig", params)
 
-        assert '"delConfig PW_CHALLENGE_PROMPT": true' \
-                        in response, response
+        assert '"delConfig PW_CHALLENGE_PROMPT": true' in response, response
         # --------------------------------------------------------------- --
 
         self.delete_all_token()
-        self.delete_policy(name='ch_resp')
+        self.delete_policy(name="ch_resp")
 
         return

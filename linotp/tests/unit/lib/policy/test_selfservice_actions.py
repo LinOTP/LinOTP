@@ -32,209 +32,222 @@ from collections import namedtuple
 import copy
 import unittest
 
-from linotp.lib.policy.action import get_selfservice_actions, get_selfservice_action_value
+from linotp.lib.policy.action import (
+    get_selfservice_actions,
+    get_selfservice_action_value,
+)
 from linotp.lib.user import User as LinotpUser
 
 from mock import patch
 import pytest
 
 
-Token = namedtuple('Token', ['type'])
+Token = namedtuple("Token", ["type"])
 fake_context = {
-    'translate': lambda x: x,
-    'Client': '128.0.0.1',
+    "translate": lambda x: x,
+    "Client": "128.0.0.1",
 }
 
 PolicySet = {
-    'hans': {
-        'realm': '*',
-        'active': 'True',
-        'client': '*',
-        'user': 'hans',
-                'time': '* * * * * *;',
-                'action': 'enable',
-                'scope': 'selfservice'
+    "hans": {
+        "realm": "*",
+        "active": "True",
+        "client": "*",
+        "user": "hans",
+        "time": "* * * * * *;",
+        "action": "enable",
+        "scope": "selfservice",
     },
-    'simple_user': {
-        'realm': '*',
-        'active': 'True',
-        'client': '*',
-        'user': 'simple_user',
-                'time': '* * * * * *;',
-                'action': 'disable',
-                'scope': 'selfservice'
+    "simple_user": {
+        "realm": "*",
+        "active": "True",
+        "client": "*",
+        "user": "simple_user",
+        "time": "* * * * * *;",
+        "action": "disable",
+        "scope": "selfservice",
     },
-    'general': {
-        'realm': '*',
-        'active': 'True',
-        'client': '*',
-        'user': '*',
-                'time': '* * * * * *;',
-                'action': '',
-                'scope': 'selfservice'
-    }
+    "general": {
+        "realm": "*",
+        "active": "True",
+        "client": "*",
+        "user": "*",
+        "time": "* * * * * *;",
+        "action": "",
+        "scope": "selfservice",
+    },
 }
 
 
 @pytest.mark.usefixtures("app")
 class SelfserviceActionTest(unittest.TestCase):
-    """Verify the helper function get_selfservice_actions
-    """
+    """Verify the helper function get_selfservice_actions"""
 
-    @patch('linotp.lib.token.context', new=fake_context)
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy.processing.get_policies')
-    @patch('linotp.lib.policy.action._get_client')
+    @patch("linotp.lib.token.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.policy.action._get_client")
     def test_get_selfservice_actions(
-            self, mocked__get_client, mocked__get_policies,
-            mocked_get_policy_definitions):
+        self,
+        mocked__get_client,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
         """Verify the policy evaluation via helper get_selfservice_actions"""
 
-        mocked__get_client.return_value = '127.0.0.1'
+        mocked__get_client.return_value = "127.0.0.1"
 
-        simple_user = LinotpUser(login='simple_user', realm='defaultrealm')
-        anonym_user = LinotpUser(login='anonym_user', realm='defaultrealm')
+        simple_user = LinotpUser(login="simple_user", realm="defaultrealm")
+        anonym_user = LinotpUser(login="anonym_user", realm="defaultrealm")
 
         policy_set = copy.deepcopy(PolicySet)
 
         mocked_get_policy_definitions.return_value = {
-            'selfservice': {
-                'setDescription': {'type': 'bool'},
-                'enrollHMAC': {'type': 'bool'},
-                'reset': {'type': 'bool'},
-                }
+            "selfservice": {
+                "setDescription": {"type": "bool"},
+                "enrollHMAC": {"type": "bool"},
+                "reset": {"type": "bool"},
+            }
         }
 
         # ----------------------------------------------------------------- --
 
         # verify that general policy is honored
 
-        policy_set['general']['action'] = (
-            'setDescription, enrollHMAC, reset')
+        policy_set["general"]["action"] = "setDescription, enrollHMAC, reset"
 
         mocked__get_policies.return_value = policy_set
 
-        res = get_selfservice_actions(simple_user, 'setDescription')
+        res = get_selfservice_actions(simple_user, "setDescription")
 
-        assert 'setDescription' in res
-        assert res['setDescription']
+        assert "setDescription" in res
+        assert res["setDescription"]
 
         res = get_selfservice_actions(simple_user)
 
-        assert 'setDescription' not in res
-        assert 'disable' in res
+        assert "setDescription" not in res
+        assert "disable" in res
 
-        assert get_selfservice_actions(simple_user, 'setDescription')
+        assert get_selfservice_actions(simple_user, "setDescription")
 
-        assert not get_selfservice_actions(anonym_user, 'disable')
+        assert not get_selfservice_actions(anonym_user, "disable")
 
         # ----------------------------------------------------------------- --
 
         # verify that user specific policy is honored
 
-        policy_set['simple_user']['action'] = (
-            'setDescription, disable')
+        policy_set["simple_user"]["action"] = "setDescription, disable"
 
         mocked__get_policies.return_value = policy_set
 
         res = get_selfservice_actions(simple_user)
 
-        assert 'setDescription' in res
-        assert 'disable' in res
-        assert 'reset' not in res
+        assert "setDescription" in res
+        assert "disable" in res
+        assert "reset" not in res
 
-    @patch('linotp.lib.token.context', new=fake_context)
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy.processing.get_policies')
-    @patch('linotp.lib.policy.action._get_client')
+    @patch("linotp.lib.token.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.policy.action._get_client")
     def test_get_selfservice_actions2(
-            self, mocked__get_client, mocked__get_policies,
-            mocked_get_policy_definitions):
+        self,
+        mocked__get_client,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
         """Verify the policy evaluation via helper get_selfservice_actions"""
 
-        mocked__get_client.return_value = '127.0.0.1'
+        mocked__get_client.return_value = "127.0.0.1"
 
-        simple_user = LinotpUser(login='simple_user', realm='defaultrealm')
-        anonym_user = LinotpUser(login='anonym_user', realm='defaultrealm')
+        simple_user = LinotpUser(login="simple_user", realm="defaultrealm")
+        anonym_user = LinotpUser(login="anonym_user", realm="defaultrealm")
 
         policy_set = copy.deepcopy(PolicySet)
 
         # ----------------------------------------------------------------- --
         mocked_get_policy_definitions.return_value = {
-            'selfservice': {
-                'otp_pin_maxlength': {'type': 'int'},
-                'enrollHMAC': {'type': 'bool'},
-                'reset': {'type': 'bool'},
-                }
+            "selfservice": {
+                "otp_pin_maxlength": {"type": "int"},
+                "enrollHMAC": {"type": "bool"},
+                "reset": {"type": "bool"},
+            }
         }
         # verify that general policy is honored
 
-        policy_set['general']['action'] = (
-            'otp_pin_maxlength=4, enrollHMAC, reset')
+        policy_set["general"][
+            "action"
+        ] = "otp_pin_maxlength=4, enrollHMAC, reset"
 
         mocked__get_policies.return_value = policy_set
 
-        res = get_selfservice_actions(simple_user, 'otp_pin_maxlength')
+        res = get_selfservice_actions(simple_user, "otp_pin_maxlength")
 
-        assert 'otp_pin_maxlength' in res
-        assert res['otp_pin_maxlength'] == 4
+        assert "otp_pin_maxlength" in res
+        assert res["otp_pin_maxlength"] == 4
 
         # ----------------------------------------------------------------- --
 
         # verify that user specific policy is honored
 
-        policy_set['simple_user']['action'] = (
-            'otp_pin_maxlength=6, delete, reset')
+        policy_set["simple_user"][
+            "action"
+        ] = "otp_pin_maxlength=6, delete, reset"
 
         mocked__get_policies.return_value = policy_set
 
-        res = get_selfservice_actions(simple_user, 'otp_pin_maxlength')
+        res = get_selfservice_actions(simple_user, "otp_pin_maxlength")
 
-        assert 'otp_pin_maxlength' in res
-        assert res['otp_pin_maxlength'] == 6
+        assert "otp_pin_maxlength" in res
+        assert res["otp_pin_maxlength"] == 6
 
         # ----------------------------------------------------------------- --
 
         # verify that user specific policy is honored but only for the user
 
-        res = get_selfservice_actions(anonym_user, 'otp_pin_maxlength')
+        res = get_selfservice_actions(anonym_user, "otp_pin_maxlength")
 
-        assert 'otp_pin_maxlength' in res
-        assert res['otp_pin_maxlength'] == 4
+        assert "otp_pin_maxlength" in res
+        assert res["otp_pin_maxlength"] == 4
 
-
-    @patch('linotp.lib.token.context', new=fake_context)
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy.processing.get_policies')
-    @patch('linotp.lib.policy.action._get_client')
+    @patch("linotp.lib.token.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.policy.action._get_client")
     def test_get_selfservice_action_value(
-            self, mocked__get_client, mocked__get_policies,
-            mocked_get_policy_definitions):
+        self,
+        mocked__get_client,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
         """Verify the policy evaluation via helper get_selfservice_action_value"""
 
-        mocked__get_client.return_value = '127.0.0.1'
+        mocked__get_client.return_value = "127.0.0.1"
 
-        simple_user = LinotpUser(login='simple_user', realm='defaultrealm')
-        anonym_user = LinotpUser(login='anonym_user', realm='defaultrealm')
+        simple_user = LinotpUser(login="simple_user", realm="defaultrealm")
+        anonym_user = LinotpUser(login="anonym_user", realm="defaultrealm")
 
         policy_set = copy.deepcopy(PolicySet)
 
         # ----------------------------------------------------------------- --
         mocked_get_policy_definitions.return_value = {
-            'selfservice': {
-                'otp_pin_maxlength': {'type': 'int'},
-                'enrollHMAC': {'type': 'bool'},
-                'reset': {'type': 'bool'},
-                }
+            "selfservice": {
+                "otp_pin_maxlength": {"type": "int"},
+                "enrollHMAC": {"type": "bool"},
+                "reset": {"type": "bool"},
+            }
         }
         # verify that general policy is honored
 
-        policy_set['general']['action'] = (
-            'otp_pin_maxlength=4, enrollHMAC, reset')
+        policy_set["general"][
+            "action"
+        ] = "otp_pin_maxlength=4, enrollHMAC, reset"
 
         mocked__get_policies.return_value = policy_set
 
-        res = get_selfservice_action_value('otp_pin_maxlength', user=simple_user)
+        res = get_selfservice_action_value(
+            "otp_pin_maxlength", user=simple_user
+        )
 
         assert res == 4
 
@@ -242,12 +255,15 @@ class SelfserviceActionTest(unittest.TestCase):
 
         # verify that user specific policy is honored
 
-        policy_set['simple_user']['action'] = (
-            'otp_pin_maxlength=6, delete, reset')
+        policy_set["simple_user"][
+            "action"
+        ] = "otp_pin_maxlength=6, delete, reset"
 
         mocked__get_policies.return_value = policy_set
 
-        res = get_selfservice_action_value('otp_pin_maxlength', user=simple_user)
+        res = get_selfservice_action_value(
+            "otp_pin_maxlength", user=simple_user
+        )
 
         assert res == 6
 
@@ -255,6 +271,8 @@ class SelfserviceActionTest(unittest.TestCase):
 
         # verify that user specific policy is honored but only for the user
 
-        res = get_selfservice_action_value('otp_pin_maxlength', user=anonym_user)
+        res = get_selfservice_action_value(
+            "otp_pin_maxlength", user=anonym_user
+        )
 
         assert res == 4

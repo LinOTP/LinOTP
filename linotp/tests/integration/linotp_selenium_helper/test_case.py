@@ -58,10 +58,12 @@ def is_flaky_exception(err, *args):
     In case of some exceptions we
     want to re-run the test case.
     """
-    if(issubclass(err[0], AssertionError) or
-       issubclass(err[0], TimeoutException) or
-       issubclass(err[0], WebDriverException) or
-       issubclass(err[0], StaleElementReferenceException)):
+    if (
+        issubclass(err[0], AssertionError)
+        or issubclass(err[0], TimeoutException)
+        or issubclass(err[0], WebDriverException)
+        or issubclass(err[0], StaleElementReferenceException)
+    ):
 
         time.sleep(30)
         return True
@@ -95,30 +97,49 @@ class TestCase(object):
             load_tconfig_from_file(configfile)
 
         cls.http_username = get_from_tconfig(
-            ['linotp', 'username'], required=True)
+            ["linotp", "username"], required=True
+        )
         cls.http_password = get_from_tconfig(
-            ['linotp', 'password'], required=True)
-        cls.http_host = get_from_tconfig(['linotp', 'host'], required=True)
+            ["linotp", "password"], required=True
+        )
+        cls.http_host = get_from_tconfig(["linotp", "host"], required=True)
         cls.http_protocol = get_from_tconfig(
-            ['linotp', 'protocol'], default="https")
-        cls.http_port = get_from_tconfig(['linotp', 'port'])
-        cls.base_url = cls.http_protocol + "://" + cls.http_username + \
-            ":" + cls.http_password + "@" + cls.http_host
+            ["linotp", "protocol"], default="https"
+        )
+        cls.http_port = get_from_tconfig(["linotp", "port"])
+        cls.base_url = (
+            cls.http_protocol
+            + "://"
+            + cls.http_username
+            + ":"
+            + cls.http_password
+            + "@"
+            + cls.http_host
+        )
         if cls.http_port:
             cls.base_url += ":" + cls.http_port
 
         remote_setting = get_from_tconfig(
-            ['selenium', 'remote'], default='False')
-        cls.remote_enable = remote_setting.lower() == 'true'
-        cls.remote_url = get_from_tconfig(['selenium', 'remote_url'])
+            ["selenium", "remote"], default="False"
+        )
+        cls.remote_enable = remote_setting.lower() == "true"
+        cls.remote_url = get_from_tconfig(["selenium", "remote_url"])
 
-        cls.selenium_driver_name = get_from_tconfig(['selenium', 'driver'],
-                                                    default="firefox").lower()
-        cls.selenium_driver_language = get_from_tconfig(['selenium', 'language'],
-                                                        default="en_us").lower()
-        cls.implicit_wait_time = int(get_from_tconfig(['timeouts', 'default'], default=5))
-        cls.ui_wait_time = int(get_from_tconfig(['timeouts', 'ui_updates'], default=5))
-        cls.backend_wait_time = int(get_from_tconfig(['timeouts', 'backend_updates'], default=10))
+        cls.selenium_driver_name = get_from_tconfig(
+            ["selenium", "driver"], default="firefox"
+        ).lower()
+        cls.selenium_driver_language = get_from_tconfig(
+            ["selenium", "language"], default="en_us"
+        ).lower()
+        cls.implicit_wait_time = int(
+            get_from_tconfig(["timeouts", "default"], default=5)
+        )
+        cls.ui_wait_time = int(
+            get_from_tconfig(["timeouts", "ui_updates"], default=5)
+        )
+        cls.backend_wait_time = int(
+            get_from_tconfig(["timeouts", "backend_updates"], default=10)
+        )
 
     @classmethod
     def startDriver(cls):
@@ -129,42 +150,51 @@ class TestCase(object):
         see stackoverflow: How to deal with certificates using Selenium?
           https://stackoverflow.com/questions/24507078/how-to-deal-with-certificates-using-selenium
         """
+
         def _get_chrome_options():
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument(
-                '--lang=' + cls.selenium_driver_language)
-            chrome_options.add_argument('--ignore-certificate-errors')
-            chrome_options.add_argument('--allow-running-insecure-content')
-            chrome_options.add_argument('--allow-insecure-localhost')
-            chrome_options.add_argument('--unsafely-treat-insecure-origin-as-secure')
+                "--lang=" + cls.selenium_driver_language
+            )
+            chrome_options.add_argument("--ignore-certificate-errors")
+            chrome_options.add_argument("--allow-running-insecure-content")
+            chrome_options.add_argument("--allow-insecure-localhost")
+            chrome_options.add_argument(
+                "--unsafely-treat-insecure-origin-as-secure"
+            )
             return chrome_options
 
         def _get_firefox_profile():
             fp = webdriver.FirefoxProfile()
             fp.set_preference(
-                "intl.accept_languages", cls.selenium_driver_language)
+                "intl.accept_languages", cls.selenium_driver_language
+            )
             fp.accept_untrusted_certs = True
             return fp
 
         selenium_driver = cls.selenium_driver_name
         if not cls.remote_enable:
-            if selenium_driver == 'chrome':
+            if selenium_driver == "chrome":
                 try:
-                    driver = webdriver.Chrome(
-                        options=_get_chrome_options())
+                    driver = webdriver.Chrome(options=_get_chrome_options())
                 except WebDriverException as e:
-                    logger.error("Error creating Chrome driver. Maybe you need to install"
-                                 " 'chromedriver'. If you wish to use another browser please"
-                                 " adapt your configuratiion file. Error message: %s" % str(e))
+                    logger.error(
+                        "Error creating Chrome driver. Maybe you need to install"
+                        " 'chromedriver'. If you wish to use another browser please"
+                        " adapt your configuratiion file. Error message: %s"
+                        % str(e)
+                    )
                     raise
 
-            elif selenium_driver == 'firefox':
+            elif selenium_driver == "firefox":
                 driver = webdriver.Firefox(
-                    firefox_profile=_get_firefox_profile())
+                    firefox_profile=_get_firefox_profile()
+                )
             if driver is None:
                 logger.warn("Falling back to Firefox driver.")
                 driver = webdriver.Firefox(
-                    firefox_profile=_get_firefox_profile())
+                    firefox_profile=_get_firefox_profile()
+                )
         else:
             # Remote driver. We need to build a desired capabilities
             # request for the remote instance
@@ -177,21 +207,26 @@ class TestCase(object):
 
             try:
                 desired_capabilities = getattr(
-                    DesiredCapabilities, selenium_driver).copy()
-                desired_capabilities['acceptInsecureCerts'] = True
+                    DesiredCapabilities, selenium_driver
+                ).copy()
+                desired_capabilities["acceptInsecureCerts"] = True
             except AttributeError:
                 logger.warning(
-                    "Could not find capabilities for the given remote driver %s", selenium_driver)
-                desired_capabilities = {'browserName': selenium_driver}
+                    "Could not find capabilities for the given remote driver %s",
+                    selenium_driver,
+                )
+                desired_capabilities = {"browserName": selenium_driver}
 
             # Remote driver
             url = cls.remote_url
             if not url:
-                url = 'http://127.0.0.1:4444/wd/hub'
+                url = "http://127.0.0.1:4444/wd/hub"
 
             try:
-                driver = webdriver.Remote(command_executor=url,
-                                          desired_capabilities=desired_capabilities)
+                driver = webdriver.Remote(
+                    command_executor=url,
+                    desired_capabilities=desired_capabilities,
+                )
             except Exception as e:
                 logger.error("Could not start driver: %s", e)
                 raise
@@ -230,7 +265,7 @@ class TestCase(object):
         yield
         self.enableImplicitWait()
 
-    def find_children_by_id(self, parent_id, element_type='*'):
+    def find_children_by_id(self, parent_id, element_type="*"):
         """
         Find an element with the given id, and return a list of children. The
         child list can be empty.
@@ -245,7 +280,8 @@ class TestCase(object):
         try:
             elements = WebDriverWait(self.driver, 0).until(
                 EC.visibility_of_all_elements_located(
-                    (By.XPATH, 'id("%s")//%s' % (parent_id, element_type)))
+                    (By.XPATH, 'id("%s")//%s' % (parent_id, element_type))
+                )
             )
         except TimeoutException:
             return []
@@ -268,7 +304,13 @@ class TestCase(object):
         """
         Return validate helper
         """
-        return Validate(self.http_protocol, self.http_host, self.http_port, self.http_username, self.http_password)
+        return Validate(
+            self.http_protocol,
+            self.http_host,
+            self.http_port,
+            self.http_username,
+            self.http_password,
+        )
 
     @property
     def realm_manager(self):
@@ -288,12 +330,12 @@ class TestCase(object):
     @property
     def major_version(self) -> int:
         "LinOTP server major version number"
-        return int(self.linotp_version.split('.')[0])
+        return int(self.linotp_version.split(".")[0])
 
     @property
     def minor_version(self) -> int:
         "LinOTP server minor version number"
-        return int(self.linotp_version.split('.')[1])
+        return int(self.linotp_version.split(".")[1])
 
     def need_linotp_version(self, version_minimum):
         """
@@ -302,34 +344,39 @@ class TestCase(object):
         :param version: Minimum version. Example: '2.9.1'
         :raises unittest.SkipTest: if the version is too old
         """
-        current_AUT_version = self.linotp_version.split('.')
+        current_AUT_version = self.linotp_version.split(".")
         # Avoid comparisons like below:
         # [u'2', u'10', u'dev2+g2b1b96a'] < ['2', '9', '2'] = True
         filtered_version = []
 
         for version_part in current_AUT_version:
             # Only in case of a 'pure' number, we want to use for comparison
-            matchObj = re.search(r'^\d+$', version_part)
-            if(matchObj is not None):
+            matchObj = re.search(r"^\d+$", version_part)
+            if matchObj is not None:
                 filtered_version.append(version_part)
                 continue
 
             # Match '10' in '2.10rc3'
-            matchObj = re.search(r'^(\d+)', version_part)
-            if(matchObj is not None):
+            matchObj = re.search(r"^(\d+)", version_part)
+            if matchObj is not None:
                 filtered_version.append(matchObj.group(1))
                 # In case of a release candidate or beta version,
                 # we assume the match is the last relevant entry.
                 break
 
-        filtered_version_string = '.'.join(filtered_version)
+        filtered_version_string = ".".join(filtered_version)
 
-        if(parse_version(filtered_version_string) <
-                parse_version(version_minimum)):
+        if parse_version(filtered_version_string) < parse_version(
+            version_minimum
+        ):
             raise SkipTest(
-                'LinOTP version %s (%s) <  %s' % (filtered_version_string,
-                                                  self.linotp_version,
-                                                  version_minimum))
+                "LinOTP version %s (%s) <  %s"
+                % (
+                    filtered_version_string,
+                    self.linotp_version,
+                    version_minimum,
+                )
+            )
 
     def reset_resolvers_and_realms(self, resolver=None, realm=None):
         """
@@ -345,7 +392,7 @@ class TestCase(object):
 
             if realm:
                 self.realm_manager.open()
-                self.realm_manager.create(realm, resolver['name'])
+                self.realm_manager.create(realm, resolver["name"])
                 self.realm_manager.close()
         else:
             assert not realm, "Can't create a realm without a resolver"

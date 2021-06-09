@@ -75,11 +75,12 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     fxn()
 
-LOG = logging.getLogger('flask.app')
+LOG = logging.getLogger("flask.app")
 
 __all__ = ["environ", "url", "TestController"]
 
 environ = {}
+
 
 def url(controller, action):
     """
@@ -91,6 +92,7 @@ def url(controller, action):
 
     return "/".join([controller, action or ""])
 
+
 class CompatibleTestResponse(Response):
     """
     A response class that supports the use of the
@@ -100,6 +102,7 @@ class CompatibleTestResponse(Response):
     needing code changes for code of the form
     'assert foo in response'
     """
+
     def __contains__(self, value):
         return value in self.body
 
@@ -118,9 +121,11 @@ class ConfigWrapper:
     This is a class so that we can raise warnings later on in
     the porting cycle
     """
+
     mappings = {
-        'sqlalchemy.url': 'DATABASE_URI',
+        "sqlalchemy.url": "DATABASE_URI",
     }
+
     def __init__(self, config):
         self.config = config
 
@@ -135,6 +140,7 @@ class ConfigWrapper:
 
     def get(self, key):
         return self.config.get(self._mapkey(key))
+
 
 class TestController(TestCase):
     """
@@ -162,7 +168,7 @@ class TestController(TestCase):
         as class atributes
         """
         self.app = app
-        g.audit = {}            # ensure `g.audit` exists
+        g.audit = {}  # ensure `g.audit` exists
 
         # Provide a test client instance via class variable
         #
@@ -214,7 +220,8 @@ class TestController(TestCase):
         :param max_age: the maximum age of the copkie
         """
         app_client.set_cookie(
-            '.localhost', key, value, expires=expires, max_age=max_age)
+            ".localhost", key, value, expires=expires, max_age=max_age
+        )
 
     @staticmethod
     def delete_cookie(app_client, key):
@@ -224,7 +231,7 @@ class TestController(TestCase):
         :param client: the flask test client
         :param key: the key of the cookie
         """
-        app_client.delete_cookie('.localhost', key)
+        app_client.delete_cookie(".localhost", key)
         return
 
     @staticmethod
@@ -259,8 +266,8 @@ class TestController(TestCase):
         # dict of all authenticated users cookies
         self.user_service = {}
 
-        request.environ['REQUEST_ID'] = str(uuid4())
-        request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
+        request.environ["REQUEST_ID"] = str(uuid4())
+        request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
         # disable caching as this will change the behavior
         params = {
@@ -303,12 +310,12 @@ class TestController(TestCase):
         if upload_files:
             f_param, file_name, content = upload_files[0]
             nparams = {
-                f_param: (io.BytesIO(content.encode('utf-8')), file_name),
+                f_param: (io.BytesIO(content.encode("utf-8")), file_name),
             }
             params.update(nparams)
-            headers["Content-Type"] = 'multipart/form-data'
+            headers["Content-Type"] = "multipart/form-data"
         if content_type:
-            headers['Content-Type'] = content_type
+            headers["Content-Type"] = content_type
             if content_type == "application/json":
                 params = json.dumps(params)
 
@@ -329,21 +336,21 @@ class TestController(TestCase):
                 url(controller=controller, action=action),
                 query_string=params,
                 headers=headers,
-                **pparams
+                **pparams,
             )
         elif method == "PUT":
             response = self.client.put(
                 url(controller=controller, action=action),
                 data=params,
                 headers=headers,
-                **pparams
+                **pparams,
             )
         else:
             response = self.client.post(
                 url(controller=controller, action=action),
                 data=params,
                 headers=headers,
-                **pparams
+                **pparams,
             )
 
         response.body = response.data.decode("utf-8")
@@ -372,8 +379,8 @@ class TestController(TestCase):
         # Authorization: Basic d2lraTpwZWRpYQ==
         auth_info = login + ":" + pw
         return "Basic %s" % str(
-            base64.b64encode(auth_info.encode('utf-8')),
-            'utf-8')
+            base64.b64encode(auth_info.encode("utf-8")), "utf-8"
+        )
 
     @staticmethod
     def get_http_digest_header(username="admin", method="GET"):
@@ -454,18 +461,18 @@ class TestController(TestCase):
 
         session = params["session"]
 
-        cookie_name = 'admin_session'
-        if controller in ['api/helpdesk']:
-            cookie_name = 'helpdesk_session'
+        cookie_name = "admin_session"
+        if controller in ["api/helpdesk"]:
+            cookie_name = "helpdesk_session"
 
         if cookie_name not in cookies:
             cookies[cookie_name] = session
 
         if "Authorization" not in headers:
             if auth_type == "Basic":
-                headers["Authorization"] = TestController.get_http_basic_header(
-                    username=auth_user
-                )
+                headers[
+                    "Authorization"
+                ] = TestController.get_http_basic_header(username=auth_user)
             else:
                 headers[
                     "Authorization"
@@ -512,19 +519,31 @@ class TestController(TestCase):
         )
 
     def make_helpdesk_request(
-            self, action, params=None, method=None, headers=None,
-            auth_user='helpdesk', client=None, upload_files=None,
-            auth_type='Digest', cookies=None, content_type=None):
+        self,
+        action,
+        params=None,
+        method=None,
+        headers=None,
+        auth_user="helpdesk",
+        client=None,
+        upload_files=None,
+        auth_type="Digest",
+        cookies=None,
+        content_type=None,
+    ):
         """
         Makes an authenticated request to /api/helpdesk/'action'
         """
         if cookies:
 
             TestController.set_cookie(
-                self.client, 'helpdesk_session', cookies.get('helpdesk_session'))
+                self.client,
+                "helpdesk_session",
+                cookies.get("helpdesk_session"),
+            )
 
         return self.make_authenticated_request(
-            'api/helpdesk',
+            "api/helpdesk",
             action,
             method=method,
             params=params,
@@ -532,7 +551,7 @@ class TestController(TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
-            content_type=content_type
+            content_type=content_type,
         )
 
     def make_audit_request(
@@ -617,17 +636,24 @@ class TestController(TestCase):
             content_type=content_type,
         )
 
-    def make_reporting_request(self, action, params=None, method=None,
-                            auth_user='admin', client=None, upload_files=None,
-                            auth_type='Digest',
-                            content_type=None):
+    def make_reporting_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+        auth_type="Digest",
+        content_type=None,
+    ):
         """
         Makes an authenticated request to /admin/'action'
         """
         if not params:
             params = {}
         return self.make_authenticated_request(
-            'reporting',
+            "reporting",
             action,
             method=method,
             params=params,
@@ -635,7 +661,7 @@ class TestController(TestCase):
             upload_files=upload_files,
             client=client,
             auth_type=auth_type,
-            content_type=content_type
+            content_type=content_type,
         )
 
     def make_gettoken_request(
@@ -700,7 +726,7 @@ class TestController(TestCase):
         client=None,
         upload_files=None,
         auth_type="Digest",
-        content_type=None
+        content_type=None,
     ):
         """
         Makes an authenticated request to /tools/'action'
@@ -731,11 +757,12 @@ class TestController(TestCase):
             "validate", action, method=method, params=params, client=client
         )
 
-    def delete_all_realms(self, auth_user='admin'):
+    def delete_all_realms(self, auth_user="admin"):
         """ get al realms and delete them """
 
         response = self.make_system_request(
-            "getRealms", params={}, auth_user=auth_user)
+            "getRealms", params={}, auth_user=auth_user
+        )
 
         values = response.json.get("result", {}).get("value", {})
 
@@ -744,14 +771,16 @@ class TestController(TestCase):
             realm_name = realm_desc.get("realmname")
             params = {"realm": realm_name}
             resp = self.make_system_request(
-                "delRealm", params=params, auth_user=auth_user)
+                "delRealm", params=params, auth_user=auth_user
+            )
             assert '"result": true' in resp.body
 
-    def delete_all_resolvers(self, auth_user='admin'):
+    def delete_all_resolvers(self, auth_user="admin"):
         """ get all resolvers and delete them """
 
         response = self.make_system_request(
-            "getResolvers", params={}, auth_user=auth_user)
+            "getResolvers", params={}, auth_user=auth_user
+        )
         values = response.json.get("result", {}).get("value", {})
 
         for realmId in values:
@@ -759,7 +788,8 @@ class TestController(TestCase):
             resolv_name = resolv_desc.get("resolvername")
             params = {"resolver": resolv_name}
             resp = self.make_system_request(
-                "delResolver", params=params, auth_user=auth_user)
+                "delResolver", params=params, auth_user=auth_user
+            )
             assert '"status": true' in resp.body
 
     def delete_all_policies(self, auth_user="admin"):
@@ -781,9 +811,9 @@ class TestController(TestCase):
 
         sys_policies = []
         for policy_name, policy_def in list(policies.items()):
-            if policy_def['scope'] == 'system':
-                action = policy_def['action']
-                if 'write' in action or '*' in action:
+            if policy_def["scope"] == "system":
+                action = policy_def["action"]
+                if "write" in action or "*" in action:
                     sys_policies.append(policy_name)
 
         # first delete all non-system policies
@@ -812,8 +842,9 @@ class TestController(TestCase):
             ["name", "scope", "action", "user", "realm", "client", "time"]
         )
         diff_set = expected_keys - set(lparams.keys())
-        assert len(diff_set) == 0, \
+        assert len(diff_set) == 0, (
             "Some key is missing to create a policy %r" % diff_set
+        )
 
         response = self.make_system_request("setPolicy", lparams)
         content = response.json
@@ -833,27 +864,26 @@ class TestController(TestCase):
         assert expected_value == content["result"]["value"]
 
     def delete_license(self):
-        ''' delete the current installed license '''
+        """ delete the current installed license """
 
-        params = {'key': 'license'}
-        response = self.make_system_request('delConfig', params)
+        params = {"key": "license"}
+        response = self.make_system_request("delConfig", params)
         msg = '"delConfig license": true'
         assert msg in response
 
-        params = {'key': 'license_duration'}
-        response = self.make_system_request('delConfig', params)
+        params = {"key": "license_duration"}
+        response = self.make_system_request("delConfig", params)
         msg = '"delConfig license_duration": true'
         assert msg in response
 
-
     def delete_config(self, prefix):
-        '''
+        """
         delete config entry with prefix
-        '''
+        """
 
-        response = self.make_system_request('getConfig')
+        response = self.make_system_request("getConfig")
 
-        entries = json.loads(response.body)['result']['value']
+        entries = json.loads(response.body)["result"]["value"]
 
         for entry in entries:
 
@@ -861,9 +891,10 @@ class TestController(TestCase):
                 continue
 
             response = self.make_system_request(
-                'delConfig', params={'key': entry})
+                "delConfig", params={"key": entry}
+            )
 
-            assert 'false' not in response
+            assert "false" not in response
 
         return
 
@@ -990,12 +1021,13 @@ class TestController(TestCase):
         """
 
         common_realms = {
-            'myDefRealm': self.resolvers['myDefRes'],
-            'myOtherRealm': self.resolvers['myOtherRes'],
-            'myMixRealm': [self.resolvers['myDefRes'],
-                           self.resolvers['myOtherRes']]
-            }
-
+            "myDefRealm": self.resolvers["myDefRes"],
+            "myOtherRealm": self.resolvers["myOtherRes"],
+            "myMixRealm": [
+                self.resolvers["myDefRes"],
+                self.resolvers["myOtherRes"],
+            ],
+        }
 
         response = self.make_system_request("getRealms", {})
         existing_realms = response.json["result"]["value"]
@@ -1017,13 +1049,12 @@ class TestController(TestCase):
             # assure that the myDefRealm is the default realm
 
             if realm.lower() == "myDefRealm".lower():
-                params = {
-                    'realm': realm.lower()
-                    }
+                params = {"realm": realm.lower()}
                 response = self.make_system_request(
-                    'setDefaultRealm', params=params)
+                    "setDefaultRealm", params=params
+                )
 
-                assert 'false' not in response
+                assert "false" not in response
 
         # Assert 'myDefRealm' is default
 
@@ -1032,22 +1063,25 @@ class TestController(TestCase):
 
         assert content["result"]["status"]
         realms = content["result"]["value"]
-        lookup_realm = set(['mydefrealm', 'mymixrealm', 'myotherrealm'])
+        lookup_realm = set(["mydefrealm", "mymixrealm", "myotherrealm"])
         assert lookup_realm == set(realms).intersection(lookup_realm)
         assert "mydefrealm" in realms
         assert "default" in realms["mydefrealm"]
         assert realms["mydefrealm"]["default"]
 
-    def _user_service_init(self, auth_user:str, password:str, otp:str=None):
+    def _user_service_init(
+        self, auth_user: str, password: str, otp: str = None
+    ):
 
-        auth_user = auth_user.encode('utf-8')
-        password = password.encode('utf-8')
+        auth_user = auth_user.encode("utf-8")
+        password = password.encode("utf-8")
 
         if otp:
-            otp = otp.encode('utf-8')
+            otp = otp.encode("utf-8")
 
             passw = (
-                base64.b32encode(otp).decode() + ":"
+                base64.b32encode(otp).decode()
+                + ":"
                 + base64.b32encode(password).decode()
             )
         else:
@@ -1091,7 +1125,8 @@ class TestController(TestCase):
 
         if not auth_cookie:
             response, auth_cookie = self._user_service_init(
-                user, password, otp)
+                user, password, otp
+            )
 
             if not auth_cookie:
                 response.body = response.data.decode("utf-8")
@@ -1180,7 +1215,7 @@ class TestController(TestCase):
         )
 
         if response.status_code != 200:
-            raise Exception('Server Error %d' % response.status_code)
+            raise Exception("Server Error %d" % response.status_code)
 
         response.body = response.data.decode("utf-8")
         return response
@@ -1227,10 +1262,12 @@ class TestController(TestCase):
         params["session"] = auth_cookie
         # params['user'] = user
         response = self.client.get(
-            url(controller="selfservice-legacy", action=action), query_string=params
+            url(controller="selfservice-legacy", action=action),
+            query_string=params,
         )
 
         response.body = response.data.decode("utf-8")
         return response
+
 
 # eof #

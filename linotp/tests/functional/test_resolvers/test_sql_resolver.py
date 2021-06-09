@@ -39,7 +39,6 @@ log = logging.getLogger(__name__)
 
 @pytest.mark.exclude_sqlite
 class SQLResolverTest(SQLTestController):
-
     def setUp(self):
         """ create an sql user table some users and the sql resolver """
 
@@ -63,15 +62,15 @@ class SQLResolverTest(SQLTestController):
         test that we can use an sql resolver with the uid defined as int
         """
 
-        user = 'hey1'
-        serial = 'sql_hmac_test_token'
-        realm = 'sqlRealm'
+        user = "hey1"
+        serial = "sql_hmac_test_token"
+        realm = "sqlRealm"
 
         # ------------------------------------------------------------------ --
 
         # create the User schema with id field as integer
 
-        self.createUserTable(schema_additions={'id': 'integer'})
+        self.createUserTable(schema_additions={"id": "integer"})
 
         # ------------------------------------------------------------------ --
 
@@ -80,104 +79,93 @@ class SQLResolverTest(SQLTestController):
         # ------------------------------------------------------------------ --
 
         # define resolver and realm
-        response = self.make_system_request('getRealms',params={})
+        response = self.make_system_request("getRealms", params={})
 
-        if realm.lower() not in response.json['result']['value']:
-            self.addSqlResolver('my_sql_users')
-            self.addSqlRealm(realm, 'my_sql_users', defaultRealm=True)
+        if realm.lower() not in response.json["result"]["value"]:
+            self.addSqlResolver("my_sql_users")
+            self.addSqlRealm(realm, "my_sql_users", defaultRealm=True)
 
         # ------------------------------------------------------------------ --
 
         # create token for user 'hey1'
 
         params = {
-            'type': 'hmac',
-            'genkey': 1,
-            'user': user,
-            'realm': realm,
-            'serial': serial,
-            'pin': 'mypin'
+            "type": "hmac",
+            "genkey": 1,
+            "user": user,
+            "realm": realm,
+            "serial": serial,
+            "pin": "mypin",
         }
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
 
-        assert 'false' not in response.body, response
+        assert "false" not in response.body, response
 
         # ------------------------------------------------------------------ --
 
         # create the required selfservice policy
 
         params = {
-            'name': 'my_selfservice_pol',
-            'action': 'reset',
-            'scope': 'selfservice',
-            'user': '*',
-            'realm': '*',
-            }
+            "name": "my_selfservice_pol",
+            "action": "reset",
+            "scope": "selfservice",
+            "user": "*",
+            "realm": "*",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response.body
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response.body
 
         # ------------------------------------------------------------------ --
 
         # run a wrong login, so that the token failcount increments
 
-        params = {
-            'user': user,
-            'pass': 'mypin123456'
-            }
+        params = {"user": user, "pass": "mypin123456"}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert '"value": false' in response
 
         # ------------------------------------------------------------------ --
 
         # verify that the token count is incremented to 1
 
-        params = {
-            'serial': serial
-            }
+        params = {"serial": serial}
 
-        response = self.make_admin_request('show', params=params)
+        response = self.make_admin_request("show", params=params)
         jresp = json.loads(response.body)
-        token_info = jresp.get(
-            'result', {}).get(
-                'value', {}).get(
-                    'data',[{}])[0]
-        assert token_info.get( "LinOtp.FailCount", -1) == 1
+        token_info = (
+            jresp.get("result", {}).get("value", {}).get("data", [{}])[0]
+        )
+        assert token_info.get("LinOtp.FailCount", -1) == 1
 
         # ------------------------------------------------------------------ --
 
         # now login to the selfservice and run the token reset
 
-        auth_user = {'login': user,
-                     'realm': realm,
-                     'password': 'geheim1'}
+        auth_user = {"login": user, "realm": realm, "password": "geheim1"}
 
-        params = {'serial': serial}
+        params = {"serial": serial}
 
-        response = self.make_userselfservice_request('reset',
-                                                     params=params,
-                                                     auth_user=auth_user,
-                                                     new_auth_cookie=True)
+        response = self.make_userselfservice_request(
+            "reset", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'false' not in response, response
+        assert "false" not in response, response
 
         # ------------------------------------------------------------------ --
 
         # verify that the token count is reset to 0
 
-        params = {
-            'serial': serial
-            }
+        params = {"serial": serial}
 
-        response = self.make_admin_request('show', params=params)
+        response = self.make_admin_request("show", params=params)
         jresp = json.loads(response.body)
-        token_info = jresp.get(
-            'result', {}).get(
-                'value', {}).get(
-                    'data',[{}])[0]
-        assert token_info.get( "LinOtp.FailCount", -1) == 0
+        token_info = (
+            jresp.get("result", {}).get("value", {}).get("data", [{}])[0]
+        )
+        assert token_info.get("LinOtp.FailCount", -1) == 0
 
         return
+
 
 # eof

@@ -53,16 +53,16 @@ class TestPolicyTokencount(TestController):
 
     def enroll_token(self, token_params=None):
         parameters = {
-                      "serial": "003e808e",
-                      "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
-                      "description": "myToken",
-                      }
+            "serial": "003e808e",
+            "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
+            "description": "myToken",
+        }
         if token_params:
             parameters.update(token_params)
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
-        return parameters['serial']
+        return parameters["serial"]
 
     def test_tokencount_with_assign(self):
         """
@@ -74,68 +74,70 @@ class TestPolicyTokencount(TestController):
         """
         # all policies are deleted before
 
-        for i in range(1,6):
-            token_params = {'serial': '#TCOUNT%d' % i}
+        for i in range(1, 6):
+            token_params = {"serial": "#TCOUNT%d" % i}
             serial = self.enroll_token(token_params)
-            assert serial == '#TCOUNT%d' % i
+            assert serial == "#TCOUNT%d" % i
 
         # set tokencount policy
         policy = {
-            'name': 'token_count_policy',
-            'scope': 'enrollment',
-            'action': 'tokencount=4, ',
-            'user': '*',
-            'realm': 'mydefrealm',
+            "name": "token_count_policy",
+            "scope": "enrollment",
+            "action": "tokencount=4, ",
+            "user": "*",
+            "realm": "mydefrealm",
         }
 
         response = self.create_policy(policy)
 
         # check that at least 4 tokens could be assigned
 
-        for i in range(1,5):
-            params = {'serial': '#TCOUNT%d' % i,
-                      'user': 'def'}
-            response = self.make_admin_request('assign', params=params)
+        for i in range(1, 5):
+            params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+            response = self.make_admin_request("assign", params=params)
             assert '"value": true' in response, response
 
         # check that the policy will raise an error
 
         i = 5
-        params = {'serial': '#TCOUNT%d' % i,
-                  'user': 'def'}
-        response = self.make_admin_request('assign', params=params)
+        params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+        response = self.make_admin_request("assign", params=params)
         assert not ('"value": true' in response), response
-        msg = ('The maximum allowed number of tokens for the realm mydefrealm'
-               ' was reached. You can not init any more tokens. Check the '
-               'policies scope=enrollment, action=tokencount.')
+        msg = (
+            "The maximum allowed number of tokens for the realm mydefrealm"
+            " was reached. You can not init any more tokens. Check the "
+            "policies scope=enrollment, action=tokencount."
+        )
         assert msg in response, response
 
         # check that overall only 4 tokens belong to user 'def'
 
-        params = {'user': 'def'}
-        response = self.make_admin_request('show', params=params)
+        params = {"user": "def"}
+        response = self.make_admin_request("show", params=params)
         assert '"tokens": 4,' in response, response
 
         # now we do an unassign and assign the token #5 to the user:
         # as the token will remain in the realm the new assign has to fail!
 
-        params = {'serial': '#TCOUNT1'}
-        response = self.make_admin_request('unassign', params=params)
+        params = {"serial": "#TCOUNT1"}
+        response = self.make_admin_request("unassign", params=params)
         assert '"value": true' in response, response
 
         # check that the policy will raise an error, as there are
         # already 4 tokens in realm
 
         i = 5
-        params = {'serial': '#TCOUNT%d' % i,
-                  'user': 'def'}
-        response = self.make_admin_request('assign', params=params)
+        params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+        response = self.make_admin_request("assign", params=params)
         assert not ('"value": true' in response), response
-        msg = ('The maximum allowed number of tokens for the realm mydefrealm'
-               ' was reached. You can not init any more tokens. Check the '
-               'policies scope=enrollment, action=tokencount.')
+        msg = (
+            "The maximum allowed number of tokens for the realm mydefrealm"
+            " was reached. You can not init any more tokens. Check the "
+            "policies scope=enrollment, action=tokencount."
+        )
         assert msg in response, response
 
         return
+
 
 # eof ##

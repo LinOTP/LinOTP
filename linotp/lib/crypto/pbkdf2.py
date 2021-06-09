@@ -31,7 +31,5 @@ from hashlib import sha1
 from linotp.lib.ext.pbkdf2 import PBKDF2
 
 
-def pbkdf2(password, salt, dk_length, iterations=1000,
-           hashfunc=sha1):
+def pbkdf2(password, salt, dk_length, iterations=1000, hashfunc=sha1):
     return PBKDF2(password, salt, iterations, hashfunc).read(dk_length)
-

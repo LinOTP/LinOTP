@@ -25,7 +25,6 @@
 #
 
 
-
 """Test for various policy aspects:
     - adminstrative permissions
     - authorization
@@ -91,8 +90,7 @@ class TestPolicies(TestPoliciesBase):
         response = self.make_system_request(
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Policy 02: create a policy for the realm admin
@@ -109,7 +107,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Policy 03: Realm admin reads policies
@@ -120,7 +118,7 @@ class TestPolicies(TestPoliciesBase):
             action="getPolicy", params=parameters, auth_user="adminR1"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Policy 04: The superadmin is allowed to write to system and
@@ -138,7 +136,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Policy 05: The realmAdmin is allowed to read the system config
@@ -156,7 +154,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Policy 201: creating all the administrators (scope admin)
@@ -175,7 +173,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
         # one administrator for enabling and disabling
         parameters = {
             "name": "adm201a",
@@ -188,7 +186,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # one administrator for setting
         parameters = {
@@ -202,8 +200,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         # one administrator for setting
         parameters = {
@@ -217,7 +214,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # one administrator for resyncing
         parameters = {
@@ -231,7 +228,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # one administrator for resetting
         parameters = {
@@ -245,8 +242,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         # one administrator for removing
         parameters = {
@@ -260,7 +256,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # one administrator for removing
         parameters = {
@@ -274,7 +270,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_06setPolicy_System(self):
@@ -296,10 +292,10 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         assert (
             "setPolicy failed: name and action required!" in response
-            ), response
+        ), response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_07a_setPolicy_w_empty_action(self):
@@ -318,10 +314,10 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         assert (
             "setPolicy failed: name and action required!" in response
-                ), response
+        ), response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_07checkPolicy_System(self):
@@ -333,8 +329,7 @@ class TestPolicies(TestPoliciesBase):
             action="getPolicy", params=parameters, auth_user="adminR1"
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_08checkPolicy_System(self):
@@ -352,7 +347,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="adminR1"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_09checkPolicy_System(self):
@@ -370,8 +365,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="adminEnroller"
         )
 
-        assert not response.json['result']['status'], response
-
+        assert not response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_10checkPolicy_System(self):
@@ -383,7 +377,7 @@ class TestPolicies(TestPoliciesBase):
             action="getPolicy", params=parameters, auth_user="adminEnroller"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
     @pytest.fixture
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
@@ -401,29 +395,29 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user="admin_init"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "serial": "test_token_002",
             "type": "spass",
-            "otpkey": "geheim"
+            "otpkey": "geheim",
         }
         response = self.make_admin_request(
             action="init", params=parameters, auth_user="admin_reset"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {
             "serial": "test_token_003",
             "type": "spass",
-            "otpkey": "geheim"
+            "otpkey": "geheim",
         }
         response = self.make_admin_request(
             action="init", params=parameters, auth_user="admin_init"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "serial": "test_token_004",
@@ -436,10 +430,11 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
-
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
+    @pytest.mark.usefixtures(
+        "realms_and_resolver", "admin_roles", "enroll_tokens"
+    )
     def test_203_enable_disbale(self):
         """
         Policy 203: enabling and disabling tokens. "admin_enable_disable"
@@ -452,34 +447,36 @@ class TestPolicies(TestPoliciesBase):
             action="disable", params=parameters, auth_user="admin_init"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {"serial": "test_token_001"}
         response = self.make_admin_request(
-            action="disable", params=parameters,
-            auth_user="admin_enable_disable"
+            action="disable",
+            params=parameters,
+            auth_user="admin_enable_disable",
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {"serial": "test_token_001"}
         response = self.make_admin_request(
             action="enable", params=parameters, auth_user="admin_init"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {"serial": "test_token_001"}
         response = self.make_admin_request(
-            action="enable", params=parameters,
-            auth_user="admin_enable_disable"
+            action="enable",
+            params=parameters,
+            auth_user="admin_enable_disable",
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_204_set(self):
         """
         Policy 204: setting token properties. "admin_set" is allowed,
@@ -493,7 +490,7 @@ class TestPolicies(TestPoliciesBase):
             action="set", params=parameters, auth_user="admin_init"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {
             "serial": "test_token_001",
@@ -503,11 +500,11 @@ class TestPolicies(TestPoliciesBase):
             action="set", params=parameters, auth_user="admin_set"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_205_setPIN(self):
         """
         Policy 205: setting PIN. "admin_setpin" is allowed, "admin_set" not!
@@ -520,7 +517,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPin", params=parameters, auth_user="admin_set"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {
             "serial": "test_token_001",
@@ -530,7 +527,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPin", params=parameters, auth_user="admin_setpin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "serial": "test_token_001",
@@ -540,7 +537,7 @@ class TestPolicies(TestPoliciesBase):
             action="set", params=parameters, auth_user="admin_set"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {
             "serial": "test_token_001",
@@ -550,11 +547,11 @@ class TestPolicies(TestPoliciesBase):
             action="set", params=parameters, auth_user="admin_setpin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_206_resync(self):
         """
         Policy 206: resynching token. "admin_resync" is allowed.
@@ -569,7 +566,7 @@ class TestPolicies(TestPoliciesBase):
             action="resync", params=parameters, auth_user="admin_set"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {
             "serial": "test_token_001",
@@ -581,11 +578,11 @@ class TestPolicies(TestPoliciesBase):
             action="resync", params=parameters, auth_user="admin_resync"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_207_reset(self):
         """
         Policy 207: admin is allowed to reset a token
@@ -596,18 +593,18 @@ class TestPolicies(TestPoliciesBase):
             action="reset", params=parameters, auth_user="admin_set"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {"serial": "test_token_001"}
         response = self.make_admin_request(
             action="reset", params=parameters, auth_user="admin_reset"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_208_assign_unassign(self):
         """
         Policy 208: admin_assign_unassign is allowed to assign and unassign
@@ -619,29 +616,29 @@ class TestPolicies(TestPoliciesBase):
             action="assign", params=parameters, auth_user="admin_set"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {"serial": "test_token_001", "user": "root"}
         response = self.make_admin_request(
-            action="assign", params=parameters,
-            auth_user="admin_assign_unassign"
+            action="assign",
+            params=parameters,
+            auth_user="admin_assign_unassign",
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         parameters = {"serial": "test_token_001"}
         response = self.make_admin_request(
-            action="unassign", params=parameters,
-            auth_user="admin_assign_unassign"
+            action="unassign",
+            params=parameters,
+            auth_user="admin_assign_unassign",
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_209_remove_fail(self):
         """
         Policy 209: test remove fail
@@ -651,11 +648,11 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=parameters, auth_user="admin_set"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_210_remove_success(self):
         """
         Policy 210: test remove success
@@ -665,12 +662,11 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=parameters, auth_user="admin_remove"
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_211_remove_in_wrong_realm(self):
         """
         Policy 211: An administrator is not allowed to remove a token,
@@ -693,8 +689,8 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value']['setPolicy pol211'], response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"]["setPolicy pol211"], response
 
         # add token to realm_wrong
         params = {
@@ -705,8 +701,8 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'], response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"], response
 
         params = {
             "serial": serial,
@@ -716,8 +712,8 @@ class TestPolicies(TestPoliciesBase):
             action="tokenrealm", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"] == 1, response
 
         # admin will fail to remove token in wrong realm
         params = {"serial": serial}
@@ -725,13 +721,9 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=admin
         )
 
-        assert not response.json['result']['status'], response
-        message = (
-            "You do not have the administrative right to remove token"
-            )
-        assert (
-            message in response.json['result']['error']['message']
-            ), response
+        assert not response.json["result"]["status"], response
+        message = "You do not have the administrative right to remove token"
+        assert message in response.json["result"]["error"]["message"], response
 
         # remove token
         params = {"serial": serial}
@@ -739,8 +731,8 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"] == 1, response
 
         # remove policy
         params = {
@@ -750,15 +742,15 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
         values = set(
-            response.json['result']['value']['delPolicy']['result'].values()
-            )
+            response.json["result"]["value"]["delPolicy"]["result"].values()
+        )
         assert False not in values, response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_212_remove_no_action(self):
         """
         Policy 212: admin is not allowed to remove token, if he does not have
@@ -782,8 +774,8 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value']['setPolicy pol212'], response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"]["setPolicy pol212"], response
 
         # add token to realm_wrong
         params = {"serial": serial, "type": "spass"}
@@ -792,8 +784,8 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'], response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"], response
 
         params = {
             "serial": serial,
@@ -803,8 +795,8 @@ class TestPolicies(TestPoliciesBase):
             action="tokenrealm", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"] == 1, response
 
         # admin will fail to remove token in his right realm
         params = {"serial": serial}
@@ -812,11 +804,11 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=admin
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         msg = (
             "ERR410: You do not have the administrative right to remove token"
-            )
-        assert msg in response.json['result']['error']['message'], response
+        )
+        assert msg in response.json["result"]["error"]["message"], response
 
         # remove token
         params = {"serial": serial}
@@ -824,8 +816,8 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"] == 1, response
 
         # remove policy
         params = {"name": policy}
@@ -833,16 +825,15 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
         values = set(
-            response.json['result']['value']['delPolicy']['result'].values()
-            )
+            response.json["result"]["value"]["delPolicy"]["result"].values()
+        )
         assert False not in values
-
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_213_remove_no_realm(self):
         """
         Policy 213: An administrator is not allowed to remove a token,
@@ -864,8 +855,8 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value']['setPolicy pol213'], response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"]["setPolicy pol213"], response
 
         # token has no realm
         params = {"serial": serial, "type": "spass"}
@@ -873,8 +864,8 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'], response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"], response
 
         # admin will fail to remove the token as it is in no realm of his
         params = {"serial": serial}
@@ -882,11 +873,9 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=admin
         )
 
-        assert not response.json['result']['status'], response
-        msg = (
-            "You do not have the administrative right to remove token"
-        )
-        assert msg in response.json['result']['error']['message'], response
+        assert not response.json["result"]["status"], response
+        msg = "You do not have the administrative right to remove token"
+        assert msg in response.json["result"]["error"]["message"], response
 
         # remove token
         params = {"serial": serial}
@@ -894,8 +883,8 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"] == 1, response
 
         # remove policy
         params = {"name": policy}
@@ -903,10 +892,10 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
         values = set(
-            response.json['result']['value']['delPolicy']['result'].values()
-            )
+            response.json["result"]["value"]["delPolicy"]["result"].values()
+        )
         assert False not in values, response
 
         # TODO: check different REALMS, manageRealms usw.
@@ -921,7 +910,7 @@ class TestPolicies(TestPoliciesBase):
             action="setSupport", params=parameters, auth_user="adminEnroller"
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_32_set_support_subscription(self):
@@ -935,7 +924,7 @@ class TestPolicies(TestPoliciesBase):
         )
 
         msg = "No key 'license': Not a form request"
-        assert msg in response.json['result']['error']['message'], response
+        assert msg in response.json["result"]["error"]["message"], response
 
     @pytest.fixture
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
@@ -956,7 +945,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "name": "self_02",
@@ -968,8 +957,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         parameters = {
             "name": "self_03",
@@ -981,7 +969,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user="superadmin"
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Policy 420: test enrolling of tokens in the selfservice portal
@@ -998,7 +986,7 @@ class TestPolicies(TestPoliciesBase):
             action="enroll", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "type": "motp",
@@ -1011,7 +999,7 @@ class TestPolicies(TestPoliciesBase):
             action="enroll", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Users in myMixRealm are not allowed to init a token
@@ -1028,16 +1016,17 @@ class TestPolicies(TestPoliciesBase):
             action="enroll", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
-
+        assert not response.json["result"]["status"], response
 
     # ----------------------------------------------------------------- --
     # Check the self services
     # ----------------------------------------------------------------- --
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_421_selfService_disable(self):
         """
@@ -1051,7 +1040,7 @@ class TestPolicies(TestPoliciesBase):
             action="disable", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         # myOtherRealm is allowed to disable
         parameters = {"serial": "self002"}
@@ -1060,7 +1049,7 @@ class TestPolicies(TestPoliciesBase):
             action="disable", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['value']['disable token'] == 1, response
+        assert response.json["result"]["value"]["disable token"] == 1, response
 
         # myOtherRealm: a user, not the owner of the token can not
         # disable the token
@@ -1070,12 +1059,14 @@ class TestPolicies(TestPoliciesBase):
             action="disable", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'] == {}, response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"] == {}, response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_422_sefService_setOTPPIN(self):
         """
@@ -1089,7 +1080,7 @@ class TestPolicies(TestPoliciesBase):
             action="setpin", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         # myOtherRealm is allowed to set PIN
         parameters = {"serial": "self002", "userpin": "test"}
@@ -1098,7 +1089,7 @@ class TestPolicies(TestPoliciesBase):
             action="setpin", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {"serial": "self001"}
         auth_user = "superadmin"
@@ -1106,7 +1097,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {"serial": "self002"}
         auth_user = "superadmin"
@@ -1115,12 +1106,13 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_423_selfservice_webprovision(self):
         """
@@ -1134,7 +1126,7 @@ class TestPolicies(TestPoliciesBase):
             action="webprovision", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         parameters = {"type": "oathtoken"}
         auth_user = ("horst@myMixRealm", "test123")
@@ -1142,7 +1134,7 @@ class TestPolicies(TestPoliciesBase):
             action="webprovision", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {"type": "googleauthenticator"}
         auth_user = ("horst@myMixRealm", "test123")
@@ -1150,12 +1142,13 @@ class TestPolicies(TestPoliciesBase):
             action="webprovision", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_423a_selfservice_assign(self):
         """
@@ -1169,21 +1162,21 @@ class TestPolicies(TestPoliciesBase):
             action="tokenrealm", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         response = self.make_admin_request(
             action="show", params={}, auth_user=auth_user
         )
 
         token_found = False
-        tokens = response.json['result']['value']['data']
+        tokens = response.json["result"]["value"]["data"]
         for token in tokens:
-            if token['LinOtp.TokenSerialnumber'] == "test_token_003":
-                assert token['LinOtp.CountWindow'] == 10, token
-                assert token['LinOtp.MaxFail'] == 10, token
-                assert token['User.description'] == "", token
-                assert token['LinOtp.IdResClass'] == "", token
-                assert token['LinOtp.RealmNames'][0] == 'mydefrealm', token
+            if token["LinOtp.TokenSerialnumber"] == "test_token_003":
+                assert token["LinOtp.CountWindow"] == 10, token
+                assert token["LinOtp.MaxFail"] == 10, token
+                assert token["User.description"] == "", token
+                assert token["LinOtp.IdResClass"] == "", token
+                assert token["LinOtp.RealmNames"][0] == "mydefrealm", token
                 token_found = True
 
         assert token_found
@@ -1194,7 +1187,7 @@ class TestPolicies(TestPoliciesBase):
             action="assign", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # unassign the token
         parameters = {"serial": "test_token_003"}
@@ -1204,12 +1197,13 @@ class TestPolicies(TestPoliciesBase):
             action="unassign", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_424_selfservice_assign(self):
         """
@@ -1222,7 +1216,7 @@ class TestPolicies(TestPoliciesBase):
             action="tokenrealm", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # user tries to assign
         parameters = {"serial": "test_token_003"}
@@ -1231,11 +1225,13 @@ class TestPolicies(TestPoliciesBase):
             action="assign", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_425_selfservice_user(self):
         """
@@ -1254,7 +1250,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # user in realm, who has no policy
         parameters = {"type": "oathtoken"}
@@ -1263,7 +1259,7 @@ class TestPolicies(TestPoliciesBase):
             action="webprovision", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         # user who has a policy
         parameters = {"type": "oathtoken"}
@@ -1272,7 +1268,7 @@ class TestPolicies(TestPoliciesBase):
             action="webprovision", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # delete the policy
         params = {"name": "self_user_pol1"}
@@ -1282,7 +1278,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # delete both tokens
         params = {"user": "user1"}
@@ -1291,7 +1287,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {"user": "user2"}
         auth_user = "superadmin"
@@ -1300,11 +1296,13 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_426_selfservice_resolver(self):
         """
@@ -1322,7 +1320,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # delete the old self_03 policy, so that we can use
         # the mixrealm to test
@@ -1333,7 +1331,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # we list all the policy to find errors
         params = {"scope": "selfservice", "realm": "mymixrealm"}
@@ -1342,7 +1340,7 @@ class TestPolicies(TestPoliciesBase):
             action="getPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # user in resolver myOtherRes, who is not allowed to enroll token
         parameters = {"type": "oathtoken"}
@@ -1351,7 +1349,7 @@ class TestPolicies(TestPoliciesBase):
             action="webprovision", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         # user in resolver myDefRes, who is allowed to enroll token
         parameters = {"type": "oathtoken"}
@@ -1360,7 +1358,7 @@ class TestPolicies(TestPoliciesBase):
             action="webprovision", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # delete the policy
         params = {"name": "self_res_pol1"}
@@ -1369,7 +1367,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # delete both tokens
         params = {"user": "user1"}
@@ -1378,7 +1376,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {"user": "user2"}
         auth_user = "superadmin"
@@ -1387,12 +1385,13 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_427_selfservice_assign(self):
         """
@@ -1410,7 +1409,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # check this token is in no realm
         response = self.make_admin_request(
@@ -1418,7 +1417,7 @@ class TestPolicies(TestPoliciesBase):
         )
 
         token_found = False
-        tokens = response.json['result']['value']['data']
+        tokens = response.json["result"]["value"]["data"]
         for token in tokens:
             if token["LinOtp.TokenSerialnumber"] == serial:
                 assert token["LinOtp.CountWindow"] == 10, token
@@ -1438,19 +1437,20 @@ class TestPolicies(TestPoliciesBase):
             action="assign", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['value']['assign token'], response
+        assert response.json["result"]["value"]["assign token"], response
 
         params = {"serial": serial}
         response = self.make_admin_request(
             action="remove", params=params, auth_user="superadmin"
         )
 
-        assert response.json['result']['value'] == 1, response
-
+        assert response.json["result"]["value"] == 1, response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_428_selfservice_assign(self):
         """
@@ -1468,7 +1468,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # set the realm of the token
         params = {"serial": serial, "realms": "myOtherRealm"}
@@ -1477,7 +1477,7 @@ class TestPolicies(TestPoliciesBase):
             action="tokenrealm", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["value"] == 1, response
 
         # check this token is in no realm
         params = {"serial": serial}
@@ -1486,7 +1486,7 @@ class TestPolicies(TestPoliciesBase):
         )
 
         token_found = False
-        tokens = response.json['result']['value']['data']
+        tokens = response.json["result"]["value"]["data"]
         for token in tokens:
             if token["LinOtp.TokenSerialnumber"] == "temp_spass_428":
                 assert token["LinOtp.CountWindow"] == 10, token
@@ -1505,7 +1505,7 @@ class TestPolicies(TestPoliciesBase):
             action="assign", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         assert (
             "The token you want to assign is not contained in"
             " your realm!" in response
@@ -1517,11 +1517,13 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["value"] == 1, response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "selfservice_policies",
-        "enroll_tokens"
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
     )
     def test_429_get_serial_by_OTP(self):
         """
@@ -1543,7 +1545,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # set the realm of the token
         params = {"serial": serial, "realms": "myDefRealm"}
@@ -1552,7 +1554,7 @@ class TestPolicies(TestPoliciesBase):
             action="tokenrealm", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["value"] == 1, response
 
         # check this token is in no realm
         params = {"serial": serial}
@@ -1561,7 +1563,7 @@ class TestPolicies(TestPoliciesBase):
         )
 
         token_found = False
-        tokens = response.json['result']['value']['data']
+        tokens = response.json["result"]["value"]["data"]
         for token in tokens:
             if token["LinOtp.TokenSerialnumber"] == "oath429":
                 token_found = True
@@ -1577,7 +1579,7 @@ class TestPolicies(TestPoliciesBase):
             action="getSerialByOtp", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         assert (
             "The policy settings do not allow you to request a "
             "serial by OTP!" in response
@@ -1595,8 +1597,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'], response
-
+        assert response.json["result"]["value"], response
 
         # try again to get the serial
         parameters = {"otp": otps[0], "realm": "myDefRealm"}
@@ -1605,10 +1606,10 @@ class TestPolicies(TestPoliciesBase):
             action="getSerialByOtp", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
         assert (
-            response.json['result']['value']['serial'] == "oath429"
-            ), response
+            response.json["result"]["value"]["serial"] == "oath429"
+        ), response
 
         parameters = {"otp": otps[3]}
         auth_user = ("passthru_user1@myDefRealm", "geheim1")
@@ -1616,10 +1617,10 @@ class TestPolicies(TestPoliciesBase):
             action="getSerialByOtp", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
         assert (
-            response.json['result']['value']['serial'] == "oath429"
-            ), response
+            response.json["result"]["value"]["serial"] == "oath429"
+        ), response
 
         # remove the policy
         params = {"name": "getSerial"}
@@ -1628,7 +1629,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # remove the token
         params = {"serial": serial}
@@ -1637,12 +1638,11 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["value"] == 1, response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles",
-        "enroll_tokens"
-        )
+        "realms_and_resolver", "admin_roles", "enroll_tokens"
+    )
     def test_430_passthru_policy(self):
         """
         Policy 430: check the passthru policy. passthru_user1/geheim1 is
@@ -1660,19 +1660,19 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # user1 is allowed to passthru as he has no token.
         params = {"user": "passthru_user1", "pass": "geheim1"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # user2 is allowed to passthru as he is not in the policy
         params = {"user": "passthru_user2", "pass": "geheim2"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         params = {"name": "NoToken"}
         auth_user = "superadmin"
@@ -1681,12 +1681,11 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_430_passOnNoToken_policy(self):
         """
         Policy 430: check the passOnNoToken policy. passthru_user1 is
@@ -1705,24 +1704,24 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # user1 is allowed to passthru as he has no token.
         params = {"user": "passthru_user1", "pass": "argsargs"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         params = {"user": "passthru_user1", "pass": "OtherPW"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # user2 is allowed to passthru as he is not in the policy
         params = {"user": "passthru_user2", "pass": "geheim2"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         params = {"name": "NoToken"}
         auth_user = "superadmin"
@@ -1730,11 +1729,11 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_431_otppin_policy(self):
         """
         Policy 431: check that passthru_user1 can authenticate with the
@@ -1753,7 +1752,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll a token for each user
         params = {
@@ -1767,7 +1766,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {
             "user": "passthru_user2",
@@ -1780,24 +1779,24 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # user1 has otppin=1
         params = {"user": "passthru_user1", "pass": "geheim1"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # user2 has default otppin=0
         params = {"user": "passthru_user2", "pass": "geheim2"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         params = {"user": "passthru_user2", "pass": "otppin"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         params = {"name": "otppin"}
         auth_user = "superadmin"
@@ -1806,7 +1805,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # remove the tokens
         params = {"serial": "spass_pin_2"}
@@ -1815,7 +1814,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {"serial": "spass_pin_1"}
         auth_user = "superadmin"
@@ -1823,12 +1822,11 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_440_check_authorize(self):
         """
         Policy 440: check if a user is authorized (scope=authorization)
@@ -1848,7 +1846,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll a token for each user
         params = {
@@ -1862,7 +1860,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {
             "user": "passthru_user2",
@@ -1875,7 +1873,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # auth user 1
         params = {"user": "passthru_user1", "pass": "otppin"}
@@ -1884,7 +1882,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # auth user 1 fails. Wrong client
         params = {"user": "passthru_user1", "pass": "otppin"}
@@ -1893,7 +1891,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # user2 is not allowed to auth
         params = {"user": "passthru_user2", "pass": "otppin"}
@@ -1902,7 +1900,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # user2 may login at other clients
         params = {"user": "passthru_user2", "pass": "otppin"}
@@ -1911,7 +1909,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # now test for this user a second wildcard policy
         params = {
@@ -1927,8 +1925,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         # user2 may login at other clients
         params = {"user": "passthru_user2", "pass": "otppin"}
@@ -1937,7 +1934,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete the policy
         params = {"name": "authorize_user1"}
@@ -1946,7 +1943,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {"name": "authorize_user2"}
         auth_user = "superadmin"
@@ -1954,7 +1951,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # remove the tokens
         params = {"serial": "spass_pin_2"}
@@ -1962,19 +1959,18 @@ class TestPolicies(TestPoliciesBase):
         response = self.make_admin_request(
             action="remove", params=params, auth_user=auth_user
         )
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {"serial": "spass_pin_1"}
         auth_user = "superadmin"
         response = self.make_admin_request(
             action="remove", params=params, auth_user=auth_user
         )
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_440a_check_authorize_client_exclude(self):
         """
         Policy 440a: check if authorize policy honor the excluded clients
@@ -1992,7 +1988,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {
             "name": "authorize_all",
@@ -2007,7 +2003,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll a token for each user
         params = {
@@ -2021,7 +2017,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {
             "user": "passthru_user2",
@@ -2034,7 +2030,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # auth user 1
         params = {"user": "passthru_user1", "pass": "otppin"}
@@ -2043,7 +2039,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # auth user 1 can also auth on othe clients
         params = {"user": "passthru_user1", "pass": "otppin"}
@@ -2053,7 +2049,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # user2 is not allowed to auth on certain clients
         params = {"user": "passthru_user2", "pass": "otppin"}
@@ -2062,7 +2058,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         params = {"user": "passthru_user2", "pass": "otppin"}
         client = "192.168.17.16"
@@ -2070,7 +2066,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # user2 may login at other clients
         params = {"user": "passthru_user2", "pass": "otppin"}
@@ -2079,7 +2075,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete the policy
 
@@ -2089,7 +2085,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {"name": "authorize_all"}
         auth_user = "superadmin"
@@ -2097,7 +2093,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # remove the tokens
         params = {"serial": "spass_pin_2"}
@@ -2106,7 +2102,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {"serial": "spass_pin_1"}
         auth_user = "superadmin"
@@ -2114,12 +2110,11 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_441_check_tokentype(self):
         """
         Policy 441: check the authorization token type.
@@ -2138,7 +2133,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll a token for each user
         params = {
@@ -2152,7 +2147,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # Token type SPASS is not allowed to login
         params = {"user": "passthru_user1", "pass": "otppin"}
@@ -2161,7 +2156,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # Token type SPASS is allowed to login from another client
         params = {"user": "passthru_user1", "pass": "otppin"}
@@ -2170,7 +2165,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete old token SPASS and enroll PW token
         params = {"serial": "spass_pin_1"}
@@ -2179,7 +2174,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {
             "user": "passthru_user1",
@@ -2193,7 +2188,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # Token type PW is allowed to login
         params = {"user": "passthru_user1", "pass": "otppinsecret"}
@@ -2202,7 +2197,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete PW token
         params = {"serial": "pw_1"}
@@ -2211,7 +2206,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         #
         # enroll PW token for passthru_user2
@@ -2227,7 +2222,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # user 2 can authenticate with other token, since he is not in policy
         params = {"user": "passthru_user2", "pass": "otppin"}
@@ -2236,7 +2231,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete pw_2
         params = {"serial": "spass_2"}
@@ -2245,8 +2240,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         # delete the policy
         params = {"name": "authorize_user1"}
@@ -2255,12 +2249,11 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_441b_check_auth_serial(self):
         """
         Policy 441b: check the authorization serial.
@@ -2279,7 +2272,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll a token for each user
         params = {
@@ -2293,7 +2286,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # Token type SPASS is not allowed to login
         params = {"user": "passthru_user1", "pass": "otppin"}
@@ -2302,7 +2295,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # Token type SPASS is allowed to login from another client
         params = {"user": "passthru_user1", "pass": "otppin"}
@@ -2311,7 +2304,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete old token SPASS and enroll PW token
         params = {"serial": "spass_pin_1"}
@@ -2320,7 +2313,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {
             "user": "passthru_user1",
@@ -2334,7 +2327,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # Token type PW is allowed to login
         params = {"user": "passthru_user1", "pass": "otppinsecret"}
@@ -2343,7 +2336,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete PW token
         params = {"serial": "pw_1"}
@@ -2352,7 +2345,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         #
         # enroll PW token for passthru_user2
@@ -2368,7 +2361,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # user 2 can authenticate with other token, since he is not in policy
         params = {"user": "passthru_user2", "pass": "otppin"}
@@ -2377,7 +2370,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete pw_2
         params = {"serial": "spass_2"}
@@ -2386,8 +2379,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         # delete the policy
         params = {"name": "authorize_user1"}
@@ -2396,12 +2388,11 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_442_set_realm(self):
         """
         Policy 442: set the realm during authentication for a given user
@@ -2419,7 +2410,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll a token for each user
         params = {
@@ -2433,7 +2424,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {
             "user": "passthru_user2",
@@ -2447,7 +2438,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # Realm for user1 gets rewritten
         params = {"user": "passthru_user1@WrongRealm", "pass": "otppin"}
@@ -2456,7 +2447,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # Realm for user2 gets not rewritten
         params = {"user": "passthru_user2@WrongRealm", "pass": "otppin"}
@@ -2465,7 +2456,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # User 2 can login with right realm
         params = {"user": "passthru_user2@myDefRealm", "pass": "otppin"}
@@ -2474,7 +2465,7 @@ class TestPolicies(TestPoliciesBase):
             action="check", params=params, client=client
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete the tokens
         params = {"serial": "spass_pin_1"}
@@ -2483,8 +2474,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         params = {"serial": "spass_pin_2"}
         auth_user = "superadmin"
@@ -2492,7 +2482,7 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # delete the policy
         params = {"name": "set_realm"}
@@ -2501,7 +2491,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.fixture
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
@@ -2522,10 +2512,8 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user=auth_user
         )
 
-        pkey = 'setPolicy %s' % parameters.get("name")
-        values = set(
-            response.json['result']['value'][pkey].values()
-            )
+        pkey = "setPolicy %s" % parameters.get("name")
+        values = set(response.json["result"]["value"][pkey].values())
         assert False not in values, response
 
         parameters = {
@@ -2540,16 +2528,13 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user=auth_user
         )
 
-        pkey = 'setPolicy %s' % parameters.get("name")
-        values = set(
-            response.json['result']['value'][pkey].values()
-            )
+        pkey = "setPolicy %s" % parameters.get("name")
+        values = set(response.json["result"]["value"][pkey].values())
         assert False not in values, response
-
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "userlist_admins"
-        )
+    )
     def test_502_check_userlist(self):
         """
         Policy 502: check the userlisting rights. Userlisting allowed
@@ -2560,7 +2545,7 @@ class TestPolicies(TestPoliciesBase):
             action="userlist", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {"realm": "MyDefRealm"}
         auth_user = "501_admin_def"
@@ -2572,7 +2557,7 @@ class TestPolicies(TestPoliciesBase):
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "userlist_admins"
-        )
+    )
     def test_503_check_userlist(self):
         """
         Policy 503: check the userlisting rights. Userlisting forbidden
@@ -2680,7 +2665,7 @@ class TestPolicies(TestPoliciesBase):
                 action="setPolicy", params=pol, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
+            assert response.json["result"]["status"], response
 
         # check the policies
         # cp1_admin is allowed to do all actions in realm1
@@ -2864,13 +2849,12 @@ class TestPolicies(TestPoliciesBase):
                 action="delPolicy", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
-
+            assert response.json["result"]["status"], response
 
     @pytest.fixture
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def otppin_policies(self):
         """
         Policy 601: set policy to allow setting OTP PIN
@@ -2886,7 +2870,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "name": "self_pin01",
@@ -2899,13 +2883,14 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens",
-        "otppin_policies"
-        )
+        "realms_and_resolver",
+        "admin_roles",
+        "enroll_tokens",
+        "otppin_policies",
+    )
     def test_604_otp_length_do(self):
         """
         Policy 604: test the otp length
@@ -2917,7 +2902,7 @@ class TestPolicies(TestPoliciesBase):
             action="setpin", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         # PIN to long
         parameters = {"serial": "test_token_004", "userpin": "12345678test"}
@@ -2926,7 +2911,7 @@ class TestPolicies(TestPoliciesBase):
             action="setpin", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         # PIN perfect
         parameters = {"serial": "test_token_004", "userpin": "1234567"}
@@ -2935,13 +2920,12 @@ class TestPolicies(TestPoliciesBase):
             action="setpin", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.fixture
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def otppin_contents(self):
         """
         Policy 605: testing contents of pin: set policy contents=c
@@ -2957,7 +2941,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         """
         Policy 606: testing contents of pin: wrong pin
@@ -2969,12 +2953,15 @@ class TestPolicies(TestPoliciesBase):
             action="setpin", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens",
-        "otppin_policies", "otppin_contents"
-        )
+        "realms_and_resolver",
+        "admin_roles",
+        "enroll_tokens",
+        "otppin_policies",
+        "otppin_contents",
+    )
     def test_607_otppin_contents(self):
         """
         Policy 607: testing contents of pin: PIN ok
@@ -2986,13 +2973,15 @@ class TestPolicies(TestPoliciesBase):
             action="setpin", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens",
-        "otppin_policies", "otppin_contents"
-        )
+        "realms_and_resolver",
+        "admin_roles",
+        "enroll_tokens",
+        "otppin_policies",
+        "otppin_contents",
+    )
     def test_608_otppin_contents(self):
         """
         Policy 608: testing contents of pin: contents=cns
@@ -3008,13 +2997,14 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens",
-        "otppin_contents"
-        )
+        "realms_and_resolver",
+        "admin_roles",
+        "enroll_tokens",
+        "otppin_contents",
+    )
     def test_609_otppin_contents(self):
         """
         Policy 609: testing contents of pin: wrong pin
@@ -3026,12 +3016,15 @@ class TestPolicies(TestPoliciesBase):
             action="setpin", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
-        "realms_and_resolver", "admin_roles", "enroll_tokens",
-        "otppin_policies", "otppin_contents"
-        )
+        "realms_and_resolver",
+        "admin_roles",
+        "enroll_tokens",
+        "otppin_policies",
+        "otppin_contents",
+    )
     def test_610_otppin_contents(self):
         """
         Policy 610: testing contents of pin: PIN ok
@@ -3045,14 +3038,14 @@ class TestPolicies(TestPoliciesBase):
             action="setpin", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # We would also need to define enrollment policies.
         # This will be done in the selfservice test script
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_700_enrollment(self):
         """
         Policy 700: Enrollment policies
@@ -3074,7 +3067,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Policy 702: Unassigning user root@myDefRealm and deleting all tokens
@@ -3088,7 +3081,7 @@ class TestPolicies(TestPoliciesBase):
                 action="remove", params=parameters, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
+            assert response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Policy 703: testing enrollment: the first two tokens will enroll,
@@ -3106,7 +3099,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "type": "spass",
@@ -3117,7 +3110,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # The user may not own a third token!
         parameters = {
@@ -3130,7 +3123,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
 
         # ----------------------------------------------------------------- --
         # Policy 704: enroll the 3rd token in myDefRealm. The 4th token will
@@ -3138,7 +3131,6 @@ class TestPolicies(TestPoliciesBase):
         #
         # This was defined in test_701_enrollment
         # ----------------------------------------------------------------- --
-
 
         parameters = {
             "serial": "enroll_003",
@@ -3150,7 +3142,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # this would be the 4th token, but only 3 allowed.
         parameters = {
@@ -3163,9 +3155,9 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         msg = "You can not init any more tokens"
-        assert msg in response.json['result']['error']['message'], response
+        assert msg in response.json["result"]["error"]["message"], response
 
         # ----------------------------------------------------------------- --
         # Policy 705: create a new token enroll_tc_01 and try to assign this
@@ -3183,7 +3175,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "serial": "enroll_tc_01",
@@ -3194,7 +3186,7 @@ class TestPolicies(TestPoliciesBase):
             action="assign", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         # assert 'You can not assign any more tokens' in response
 
         # ----------------------------------------------------------------- --
@@ -3211,9 +3203,9 @@ class TestPolicies(TestPoliciesBase):
             action="tokenrealm", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         msg = "You may not put any more tokens in realm"
-        assert msg in response.json['result']['error']['message'], response
+        assert msg in response.json["result"]["error"]["message"], response
 
         # ----------------------------------------------------------------- --
         # Policy 707: Try to enable a token in a full realm. Will fail,
@@ -3226,7 +3218,7 @@ class TestPolicies(TestPoliciesBase):
             action="disable", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {"serial": "enroll_tc_01", "realms": "mydefrealm"}
         auth_user = "superadmin"
@@ -3234,7 +3226,7 @@ class TestPolicies(TestPoliciesBase):
             action="tokenrealm", params=parameters, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         parameters = {"serial": "enroll_003"}
         auth_user = "superadmin"
@@ -3242,10 +3234,10 @@ class TestPolicies(TestPoliciesBase):
             action="enable", params=parameters, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         assert (
             "You may not enable any more tokens in realm" in response
-                ), response
+        ), response
 
         # ----------------------------------------------------------------- --
         # Policy 709: Testing maxtoken per user. Policy will be applied for
@@ -3267,7 +3259,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll a token max1
         params = {
@@ -3282,7 +3274,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # enroll 2nd token for max1 will fail
         params = {
@@ -3315,7 +3307,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         params = {
             "user": "max2",
@@ -3329,7 +3321,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete the tokens of the user
         for serial in ["spass_pin_1", "spass_pin_3", "spass_pin_4"]:
@@ -3339,7 +3331,7 @@ class TestPolicies(TestPoliciesBase):
                 action="remove", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
+            assert response.json["result"]["status"], response
 
         # delete the policy
         params = {"name": "maxtoken_per_user"}
@@ -3348,7 +3340,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_710_otp_pin_random_for_users(self):
@@ -3369,7 +3361,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll a token max1
         params = {
@@ -3384,7 +3376,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # enroll token for max2
         params = {
@@ -3399,19 +3391,19 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # validate token of max1: unknown otp pin
         params = {"user": "max1", "realm": "myOtherRealm", "pass": "otppin"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # validate token of max2: known otp pin
         params = {"user": "max2", "realm": "myOtherRealm", "pass": "otppin"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # delete the tokens of the user
         for serial in ["spass_pin_1", "spass_pin_2"]:
@@ -3421,7 +3413,7 @@ class TestPolicies(TestPoliciesBase):
                 action="remove", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
+            assert response.json["result"]["status"], response
 
         # delete the policy
         params = {"name": "otppinrandom_per_user"}
@@ -3430,8 +3422,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_711_get_tokenlabel_for_users(self):
@@ -3452,7 +3443,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll a token max1
         params = {
@@ -3467,10 +3458,8 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        googel_url = response.json['detail']['googleurl']['value']
-        assert (
-            "otpauth://hotp/LinOTP:max1?" in googel_url
-            ), response
+        googel_url = response.json["detail"]["googleurl"]["value"]
+        assert "otpauth://hotp/LinOTP:max1?" in googel_url, response
 
         # enroll token for max2
         params = {
@@ -3485,10 +3474,8 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        googel_url = response.json['detail']['googleurl']['value']
-        assert (
-            "otpauth://hotp/LinOTP:max2?" in googel_url
-            ), response
+        googel_url = response.json["detail"]["googleurl"]["value"]
+        assert "otpauth://hotp/LinOTP:max2?" in googel_url, response
 
         # add tokenissuer policy
         params = {
@@ -3518,7 +3505,7 @@ class TestPolicies(TestPoliciesBase):
         )
 
         msg = "otpauth://hotp/fakeissuer-myOtherRealm:max1?"
-        googel_url = response.json['detail']['googleurl']['value']
+        googel_url = response.json["detail"]["googleurl"]["value"]
         assert msg in googel_url, response
 
         # delete the tokens of the user
@@ -3529,7 +3516,7 @@ class TestPolicies(TestPoliciesBase):
                 action="remove", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
+            assert response.json["result"]["status"], response
 
         # delete the policies
         params = {"name": "tokenlabel_per_user"}
@@ -3538,7 +3525,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {"name": "tokenissuer_with_realm"}
         auth_user = "superadmin"
@@ -3546,8 +3533,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_712_autoassignment_for_users(self):
@@ -3586,8 +3572,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
         # generate dummy tokens from template token1
         token_template = tokens["token1"]
@@ -3617,7 +3602,7 @@ class TestPolicies(TestPoliciesBase):
                 action="init", params=params, auth_user=auth_user
             )
 
-            assert  response.json['result']['value'], response
+            assert response.json["result"]["value"], response
 
         for serial, descr in list(tokens.items()):
             # set realm of tokens
@@ -3630,8 +3615,8 @@ class TestPolicies(TestPoliciesBase):
                 action="tokenrealm", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
-            assert response.json['result']['value'] == 1, response
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"] == 1, response
 
             # check tokens in realm
             params = {"serial": serial}
@@ -3641,7 +3626,7 @@ class TestPolicies(TestPoliciesBase):
             )
 
             token_found = False
-            show_tokens = response.json['result']['value']['data']
+            show_tokens = response.json["result"]["value"]["data"]
             for token in show_tokens:
                 if token["LinOtp.TokenSerialnumber"] == serial:
                     assert token["LinOtp.CountWindow"] == 10, token
@@ -3663,7 +3648,7 @@ class TestPolicies(TestPoliciesBase):
         }
         response = self.make_validate_request(action="check", params=params)
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # check tokens belongs to max
         params = {"serial": serial}
@@ -3673,7 +3658,7 @@ class TestPolicies(TestPoliciesBase):
         )
 
         token_found = False
-        show_tokens = response.json['result']['value']['data']
+        show_tokens = response.json["result"]["value"]["data"]
         for token in show_tokens:
             if token["LinOtp.TokenSerialnumber"] == serial:
                 assert token["LinOtp.CountWindow"] == 10, token
@@ -3695,7 +3680,7 @@ class TestPolicies(TestPoliciesBase):
         # max 2 can not autoassign a token pw2
         response = self.make_validate_request(action="check", params=params)
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # delete the tokens of the user
         for serial in list(tokens.keys()):
@@ -3705,7 +3690,7 @@ class TestPolicies(TestPoliciesBase):
                 action="remove", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
+            assert response.json["result"]["status"], response
 
         # delete the policy
         params = {"name": "autoassignment_user"}
@@ -3714,8 +3699,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_712b_autoassignment_for_users(self):
@@ -3755,7 +3739,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # generate dummy tokens from template token1
         token_template = tokens["token1"]
@@ -3785,7 +3769,7 @@ class TestPolicies(TestPoliciesBase):
                 action="init", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['value'], response
+            assert response.json["result"]["value"], response
 
         for serial, descr in list(tokens.items()):
             # set realm of tokens
@@ -3798,8 +3782,8 @@ class TestPolicies(TestPoliciesBase):
                 action="tokenrealm", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
-            assert response.json['result']['value'] == 1, response
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"] == 1, response
 
             # check tokens in realm
             params = {"serial": serial}
@@ -3809,7 +3793,7 @@ class TestPolicies(TestPoliciesBase):
             )
 
             token_found = False
-            show_tokens = response.json['result']['value']['data']
+            show_tokens = response.json["result"]["value"]["data"]
             for token in show_tokens:
                 if token["LinOtp.TokenSerialnumber"] == serial:
                     assert token["LinOtp.CountWindow"] == 10, token
@@ -3830,7 +3814,7 @@ class TestPolicies(TestPoliciesBase):
         }
         response = self.make_validate_request(action="check", params=params)
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # check tokens belongs to max
         params = {"serial": serial}
@@ -3840,7 +3824,7 @@ class TestPolicies(TestPoliciesBase):
         )
 
         token_found = False
-        show_tokens = response.json['result']['value']['data']
+        show_tokens = response.json["result"]["value"]["data"]
         for token in show_tokens:
             if token["LinOtp.TokenSerialnumber"] == serial:
                 assert token["LinOtp.CountWindow"] == 10, token
@@ -3862,7 +3846,7 @@ class TestPolicies(TestPoliciesBase):
         # max 2 can not autoassign a token pw2
         response = self.make_validate_request(action="check", params=params)
 
-        assert not response.json['result']['value'], response
+        assert not response.json["result"]["value"], response
 
         # delete the tokens of the user
         for serial in list(tokens.keys()):
@@ -3872,7 +3856,7 @@ class TestPolicies(TestPoliciesBase):
                 action="remove", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
+            assert response.json["result"]["status"], response
 
         # delete the policy
         params = {"name": "autoassignment_user"}
@@ -3881,8 +3865,7 @@ class TestPolicies(TestPoliciesBase):
             action="delPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_713_losttoken_for_users(self):
@@ -3905,7 +3888,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         params = {
             "name": "losttoken_user_2",
@@ -3920,7 +3903,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
+        assert response.json["result"]["status"], response
 
         # enroll tokens in realm myOtherRealm
         params = {
@@ -3935,7 +3918,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         params = {
             "type": "hmac",  # OTP: 843851
@@ -3949,7 +3932,7 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'], response
+        assert response.json["result"]["value"], response
 
         # generate lost tokens
         params = {"serial": "token1"}
@@ -3980,7 +3963,7 @@ class TestPolicies(TestPoliciesBase):
                 action="remove", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
+            assert response.json["result"]["status"], response
 
         # delete the policy
         for p in ["losttoken_user_1", "losttoken_user_2"]:
@@ -3990,12 +3973,11 @@ class TestPolicies(TestPoliciesBase):
                 action="delPolicy", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
-
+            assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_810_admin_is_not_allowed_to_show(self):
         """
         Policy 810: admin only wants to show tokens of a selected realm
@@ -4020,11 +4002,9 @@ class TestPolicies(TestPoliciesBase):
                 action="setPolicy", params=policy, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
-            pkey = 'setPolicy %s' % policy.get("name")
-            values = set(
-                response.json['result']['value'][pkey].values()
-                )
+            assert response.json["result"]["status"], response
+            pkey = "setPolicy %s" % policy.get("name")
+            values = set(response.json["result"]["value"][pkey].values())
             assert False not in values, response
 
         # test, if admin show_admin_1 is not allowed to show
@@ -4034,12 +4014,11 @@ class TestPolicies(TestPoliciesBase):
             action="show", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-
+        assert response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_812_empty_policy_name(self):
         """
         Policy 819: Saving policies with empty policy name is not possible
@@ -4048,22 +4027,20 @@ class TestPolicies(TestPoliciesBase):
             "name": "",
             "scope": "admin",
             "realm": "*",
-            "action": "initETNG"
+            "action": "initETNG",
         }
         auth_user = "superadmin"
         response = self.make_system_request(
             action="setPolicy", params=policy, auth_user=auth_user
         )
 
-        assert not response.json['result']['status'], response
+        assert not response.json["result"]["status"], response
         msg = "The name of the policy must not be empty"
-        assert (
-             response.json['result']['error']['message'] == msg
-        ), response
+        assert response.json["result"]["error"]["message"] == msg, response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
-        )
+    )
     def test_820_detail_on_success(self):
         """
         Policy 820: check the authorization/detail_on_success and
@@ -4082,8 +4059,8 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['status'], response
-        assert response.json['result']['value'], response
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"], response
 
         policies = [
             {
@@ -4111,27 +4088,27 @@ class TestPolicies(TestPoliciesBase):
                 action="setPolicy", params=pol, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
-            assert (
-                response.json['result']['value']['setPolicy %s' % pol['name']]
-                ), response
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"][
+                "setPolicy %s" % pol["name"]
+            ], response
 
         # check the successful validation
         params = {"user": "detail_user@myMixRealm", "pass": "secret"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert response.json['result']['value'], response
-        assert response.json['detail']['serial'] == "detail01", response
-        assert response.json['detail']['realm'] == "myMixRealm", response
-        assert response.json['detail']['user'] == "detail_user", response
-        assert response.json['detail']['tokentype'] == "spass", response
+        assert response.json["result"]["value"], response
+        assert response.json["detail"]["serial"] == "detail01", response
+        assert response.json["detail"]["realm"] == "myMixRealm", response
+        assert response.json["detail"]["user"] == "detail_user", response
+        assert response.json["detail"]["tokentype"] == "spass", response
 
         # check failed validation
         params = {"user": "detail_user@myMixRealm", "pass": "wrong"}
         response = self.make_validate_request(action="check", params=params)
 
-        assert not response.json['result']['value'], response
-        assert "wrong otp pin -1" in response.json['detail']['error'], response
+        assert not response.json["result"]["value"], response
+        assert "wrong otp pin -1" in response.json["detail"]["error"], response
 
         # delete policies
         for pol in ["detail_1", "detail_2"]:
@@ -4141,8 +4118,8 @@ class TestPolicies(TestPoliciesBase):
                 action="delPolicy", params=params, auth_user=auth_user
             )
 
-            assert response.json['result']['status'], response
-            assert response.json['result']['value']['delPolicy']
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"]["delPolicy"]
 
         # delete token
         params = {"serial": "detail01"}
@@ -4151,4 +4128,4 @@ class TestPolicies(TestPoliciesBase):
             action="remove", params=params, auth_user=auth_user
         )
 
-        assert response.json['result']['value'] == 1, response
+        assert response.json["result"]["value"] == 1, response

@@ -34,58 +34,57 @@ import unittest
 from linotp.lib.policy.evaluate import PolicyEvaluator
 
 policies = {
-    'p1': {
-              'name': 'qrtoken_local',
-              'user': 'hugo, *',
-              'realm': 'myrealm',
-              'client': "*",
-              'time': "*",
-              'action': "select",
-              'scope': 'authentication',
-              'active': 'True',
-              },
-    'p2': {
-              'name': 'qrtoken_local',
-              'user': 'hugo, eva',
-              'realm': 'myrealm',
-              'client': "127.0.0.1",
-              'time': "*",
-              'action': "select",
-              'scope': 'authentication',
-              'active': 'True',
-              },
-    'p3': {
-              'name': 'qrtoken_local',
-              'user': 'hugo, eva',
-              'realm': '*',
-              'client': "*",
-              'time': "*",
-              'action': "select",
-              'scope': 'authentication',
-              'active': 'True',
-              },
-    'p4': {
-              'name': 'qrtoken_local',
-              'user': 'anton, eva, *',
-              'realm': 'myrealm',
-              'client': "127.0.0.1",
-              'time': "*",
-              'action': "select",
-              'scope': 'authentication',
-              'active': 'True',
-              },
-    'p5': {
-              'name': 'qrtoken_local',
-              'user': 'eva, *',
-              'realm': 'your_realm',
-              'client': "127.0.0.1",
-              'time': "*",
-              'action': "select",
-              'scope': 'authentication',
-              'active': 'True',
-              },
-    }
-
+    "p1": {
+        "name": "qrtoken_local",
+        "user": "hugo, *",
+        "realm": "myrealm",
+        "client": "*",
+        "time": "*",
+        "action": "select",
+        "scope": "authentication",
+        "active": "True",
+    },
+    "p2": {
+        "name": "qrtoken_local",
+        "user": "hugo, eva",
+        "realm": "myrealm",
+        "client": "127.0.0.1",
+        "time": "*",
+        "action": "select",
+        "scope": "authentication",
+        "active": "True",
+    },
+    "p3": {
+        "name": "qrtoken_local",
+        "user": "hugo, eva",
+        "realm": "*",
+        "client": "*",
+        "time": "*",
+        "action": "select",
+        "scope": "authentication",
+        "active": "True",
+    },
+    "p4": {
+        "name": "qrtoken_local",
+        "user": "anton, eva, *",
+        "realm": "myrealm",
+        "client": "127.0.0.1",
+        "time": "*",
+        "action": "select",
+        "scope": "authentication",
+        "active": "True",
+    },
+    "p5": {
+        "name": "qrtoken_local",
+        "user": "eva, *",
+        "realm": "your_realm",
+        "client": "127.0.0.1",
+        "time": "*",
+        "action": "select",
+        "scope": "authentication",
+        "active": "True",
+    },
+}
 
 
 class TestGetClientPolicy(unittest.TestCase):
@@ -96,16 +95,16 @@ class TestGetClientPolicy(unittest.TestCase):
 
         to get the best matches, we intersect the matching policies
         for example:
-        
+
         matching all: p1, p2, p3, p4, p5
         user exact: p1, p2, p3
         user wild: p4, p5
         => 1 selection: (p1, p2, p3, p4,) & (p1, p2, p3) = (p1, p2, p3)
-        
+
         intersect result with realm:
         realm match exact: p1, p2, p4
         => 2. selection: (p1, p2, p3) & (p1, p2, p4) = (p1, p2)
-        
+
         intersect result with client:
         client match exact: p3
         client match wildcard: p1
@@ -114,105 +113,106 @@ class TestGetClientPolicy(unittest.TestCase):
         """
 
         policies = {
-        'p1': {
-                  'name': 'qrtoken_local',
-                  'user': 'hugo, *',
-                  'realm': 'myrealm',
-                  'client': "*",
-                  'time': "*",
-                  'action': "select",
-                  'scope': 'authentication',
-                  'active': 'True',
-                  },
-        'p2': {
-                  'name': 'qrtoken_local',
-                  'user': 'hugo, eva',
-                  'realm': 'myrealm',
-                  'client': "127.0.0.1",
-                  'time': "*",
-                  'action': "select",
-                  'scope': 'authentication',
-                  'active': 'True',
-                  },
-        'p3': {
-                  'name': 'qrtoken_local',
-                  'user': 'hugo, eva',
-                  'realm': '*',
-                  'client': "*",
-                  'time': "*",
-                  'action': "select",
-                  'scope': 'authentication',
-                  'active': 'True',
-                  },
-        'p4': {
-                  'name': 'qrtoken_local',
-                  'user': 'anton, eva, *',
-                  'realm': 'myrealm',
-                  'client': "127.0.0.1",
-                  'time': "*",
-                  'action': "select",
-                  'scope': 'authentication',
-                  'active': 'True',
-                  },
-        'p5': {
-                  'name': 'qrtoken_local',
-                  'user': 'eva, *',
-                  'realm': 'your_realm',
-                  'client': "127.0.0.1",
-                  'time': "*",
-                  'action': "select",
-                  'scope': 'authentication',
-                  'active': 'True',
-                  },
+            "p1": {
+                "name": "qrtoken_local",
+                "user": "hugo, *",
+                "realm": "myrealm",
+                "client": "*",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+            "p2": {
+                "name": "qrtoken_local",
+                "user": "hugo, eva",
+                "realm": "myrealm",
+                "client": "127.0.0.1",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+            "p3": {
+                "name": "qrtoken_local",
+                "user": "hugo, eva",
+                "realm": "*",
+                "client": "*",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+            "p4": {
+                "name": "qrtoken_local",
+                "user": "anton, eva, *",
+                "realm": "myrealm",
+                "client": "127.0.0.1",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+            "p5": {
+                "name": "qrtoken_local",
+                "user": "eva, *",
+                "realm": "your_realm",
+                "client": "127.0.0.1",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
         }
 
         policy_eval = PolicyEvaluator({})
 
-        policy_eval.filter_for_realm('myrealm')
-        policy_eval.filter_for_user('hugo')
-        policy_eval.filter_for_client('192.168.178.12')
+        policy_eval.filter_for_realm("myrealm")
+        policy_eval.filter_for_user("hugo")
+        policy_eval.filter_for_client("192.168.178.12")
 
         res = policy_eval.evaluate(policies)
 
         assert len(list(res.keys())) == 1
-        assert 'p1' in res
+        assert "p1" in res
 
     def test_simple_client_match(self):
         """test that only the most precise client policy will match."""
 
         policies = {
-        'p1': {
-                  'name': 'qrtoken_local',
-                  'user': 'hugo, *',
-                  'realm': 'myrealm',
-                  'client': "*",
-                  'time': "*",
-                  'action': "select",
-                  'scope': 'authentication',
-                  'active': 'True',
-                  },
-        'p2': {
-                  'name': 'qrtoken_local',
-                  'user': 'eva, *',
-                  'realm': 'myrealm',
-                  'client': "127.0.0.1",
-                  'time': "*",
-                  'action': "select",
-                  'scope': 'authentication',
-                  'active': 'True',
-                  },
+            "p1": {
+                "name": "qrtoken_local",
+                "user": "hugo, *",
+                "realm": "myrealm",
+                "client": "*",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+            "p2": {
+                "name": "qrtoken_local",
+                "user": "eva, *",
+                "realm": "myrealm",
+                "client": "127.0.0.1",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
         }
 
         policy_eval = PolicyEvaluator(policies)
 
-        policy_eval.filter_for_realm('myrealm')
-        policy_eval.filter_for_user('anton')
-        policy_eval.filter_for_client('127.0.0.1')
+        policy_eval.filter_for_realm("myrealm")
+        policy_eval.filter_for_user("anton")
+        policy_eval.filter_for_client("127.0.0.1")
 
         res = policy_eval.evaluate(policies)
 
         assert len(list(res.keys())) == 1
-        assert 'p1' not in res
-        assert 'p2' in res
+        assert "p1" not in res
+        assert "p2" in res
+
 
 # eof #

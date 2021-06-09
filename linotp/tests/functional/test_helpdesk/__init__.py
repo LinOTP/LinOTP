@@ -33,6 +33,7 @@
 import smtplib
 from unittest.mock import patch
 
+
 def enable_helpdesk_controller(pylons_config):
     """
     enable the helpdesk controller by adding the route
@@ -45,21 +46,20 @@ def enable_helpdesk_controller(pylons_config):
 
     return
 
-    routeMap = pylons_config['routes.map']
+    routeMap = pylons_config["routes.map"]
 
-    controller = 'helpdesk'
+    controller = "helpdesk"
 
+    routeMap.connect("/api/helpdesk/", controller=controller, action="users")
+    routeMap.connect("/api/%s/{action}" % controller, controller=controller)
     routeMap.connect(
-        '/api/helpdesk/', controller=controller, action='users')
-    routeMap.connect(
-        '/api/%s/{action}' % controller, controller=controller)
-    routeMap.connect(
-        '/api/%s/{action}/{id}' % controller, controller=controller)
+        "/api/%s/{action}/{id}" % controller, controller=controller
+    )
 
 
 class MockedSMTP(object):
     def __init__(self):
-        self.patch_smtp = patch('smtplib.SMTP', spec=smtplib.SMTP)
+        self.patch_smtp = patch("smtplib.SMTP", spec=smtplib.SMTP)
 
     def __enter__(self):
         mock_smtp_class = self.patch_smtp.start()

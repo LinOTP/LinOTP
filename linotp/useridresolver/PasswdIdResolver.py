@@ -40,7 +40,12 @@ import logging
 from typing import Any, Callable, Dict, Tuple, Union
 
 from passlib.hash import (
-    md5_crypt, sha1_crypt, sha256_crypt, sha512_crypt, des_crypt)
+    md5_crypt,
+    sha1_crypt,
+    sha256_crypt,
+    sha512_crypt,
+    des_crypt,
+)
 
 from linotp.lib.type_utils import text
 
@@ -63,18 +68,19 @@ def str2unicode(input_str):
     """
 
     output_str = input_str
-    conversions = [{},
-                   {'encoding': 'utf-8'},
-                   {'encoding': 'iso-8859-1'},
-                   {'encoding': 'iso-8859-15'}
-                   ]
+    conversions = [
+        {},
+        {"encoding": "utf-8"},
+        {"encoding": "iso-8859-1"},
+        {"encoding": "iso-8859-15"},
+    ]
     for param in conversions:
         try:
             output_str = str(input_str, **param)
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:
-                log.info('no unicode conversion found for %r' % input_str)
+                log.info("no unicode conversion found for %r" % input_str)
                 raise exx
 
     return output_str
@@ -86,32 +92,39 @@ def tokenise(r):
         st = s.strip()
         m = re.match("^" + r, st)
         if m:
-            ret = (st[:m.end()].strip(), st[m.end():].strip())
+            ret = (st[: m.end()].strip(), st[m.end() :].strip())
             # ret[0].strip()      ## remove ws
             # ret[1].strip()
         return ret
+
     return _
 
 
-@resolver_registry.class_entry('useridresolver.PasswdIdResolver.IdResolver')
-@resolver_registry.class_entry('useridresolveree.PasswdIdResolver.IdResolver')
-@resolver_registry.class_entry('useridresolver.passwdresolver')
-@resolver_registry.class_entry('passwdresolver')
-class IdResolver (UserIdResolver):
+@resolver_registry.class_entry("useridresolver.PasswdIdResolver.IdResolver")
+@resolver_registry.class_entry("useridresolveree.PasswdIdResolver.IdResolver")
+@resolver_registry.class_entry("useridresolver.passwdresolver")
+@resolver_registry.class_entry("passwdresolver")
+class IdResolver(UserIdResolver):
 
-    db_prefix = 'useridresolver.PasswdIdResolver.IdResolver'
+    db_prefix = "useridresolver.PasswdIdResolver.IdResolver"
 
-    fields = {"username": 1, "userid": 1,
-              "description": 0,
-              "phone": 0, "mobile": 0, "email": 0,
-              "givenname": 0, "surname": 0, "gender": 0
-              }
+    fields = {
+        "username": 1,
+        "userid": 1,
+        "description": 0,
+        "phone": 0,
+        "mobile": 0,
+        "email": 0,
+        "givenname": 0,
+        "surname": 0,
+        "gender": 0,
+    }
 
     searchFields = {
         "username": "text",
         "userid": "numeric",
         "description": "text",
-        "email": "text"
+        "email": "text",
     }
 
     sF = {
@@ -122,21 +135,20 @@ class IdResolver (UserIdResolver):
         "email": 4,
     }
 
-    resolver_parameters: Dict[str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]] = {
-        "fileName": (True, None, text),
-        'linotp.root': (False, None, text)
-    }
+    resolver_parameters: Dict[
+        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
+    ] = {"fileName": (True, None, text), "linotp.root": (False, None, text)}
     resolver_parameters.update(UserIdResolver.resolver_parameters)
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):
-        '''
+        """
         this setup hook is triggered, when the server
         starts to serve the first request
 
         :param config: the linotp config
         :type  config: the linotp config dict
-        '''
+        """
         log.info("Setting up the PasswdResolver")
         return
 
@@ -166,15 +178,15 @@ class IdResolver (UserIdResolver):
 
     def loadFile(self):
         """
-          init loads the /etc/passwd
-            user and uid as a dict for /
-            user loginname lookup
+        init loads the /etc/passwd
+          user and uid as a dict for /
+          user loginname lookup
         """
 
-        if (self.fileName == ""):
+        if self.fileName == "":
             self.fileName = "/etc/passwd"
 
-        log.info('[loadFile] loading users from file %s' % (self.fileName))
+        log.info("[loadFile] loading users from file %s" % (self.fileName))
 
         fileHandle = open(self.fileName, "r")
 
@@ -187,7 +199,7 @@ class IdResolver (UserIdResolver):
 
         while line:
             line = line.strip()
-            if len(line) == 0 or line.startswith('#'):
+            if len(line) == 0 or line.startswith("#"):
                 line = fileHandle.readline()
                 continue
 
@@ -207,7 +219,7 @@ class IdResolver (UserIdResolver):
             # store surname, givenname and phones
             descriptions = fields[DESCRIPTION].split(",")
             name = descriptions[0]
-            names = name.split(' ', 1)
+            names = name.split(" ", 1)
             self.givennameDict[fields[ID]] = names[0]
             self.surnameDict[fields[ID]] = ""
             self.officePhoneDict[fields[ID]] = ""
@@ -221,7 +233,7 @@ class IdResolver (UserIdResolver):
             if len(descriptions) >= 5:
                 for field in descriptions[4:]:
                     # very basic e-mail regex
-                    email_match = re.search('.+@.+\..+', field)
+                    email_match = re.search(".+@.+\..+", field)
                     if email_match:
                         self.emailDict[fields[ID]] = email_match.group(0)
 
@@ -239,35 +251,41 @@ class IdResolver (UserIdResolver):
         """
 
         if type(password) is str:
-            log.debug("Password is a unicode string. Encoding to UTF-8 for \
-                       crypt.crypt() function.")
-            password = password.encode('utf-8')
+            log.debug(
+                "Password is a unicode string. Encoding to UTF-8 for \
+                       crypt.crypt() function."
+            )
+            password = password.encode("utf-8")
         log.info("[checkPass] checking password for user uid %s" % uid)
         cryptedpasswd = self.passDict[uid]
-        log.debug("[checkPass] We found the crypted pass %s for uid %s"
-                  % (cryptedpasswd, uid))
+        log.debug(
+            "[checkPass] We found the crypted pass %s for uid %s"
+            % (cryptedpasswd, uid)
+        )
         if not cryptedpasswd:
-            log.warning("[checkPass] Failed to verify password. "
-                        "No crypted password found in file")
+            log.warning(
+                "[checkPass] Failed to verify password. "
+                "No crypted password found in file"
+            )
             return False
 
-        if cryptedpasswd == 'x' or cryptedpasswd == '*':
+        if cryptedpasswd == "x" or cryptedpasswd == "*":
             err = "Sorry, currently no support for shadow passwords"
             log.error("[checkPass] %s " % err)
             raise NotImplementedError(err)
 
         if self._verify_password(password, cryptedpasswd):
-            log.info("[checkPass] successfully authenticated user uid %s"
-                     % uid)
+            log.info(
+                "[checkPass] successfully authenticated user uid %s" % uid
+            )
             return True
         else:
-            log.warning("[checkPass] user uid %s failed to authenticate"
-                        % uid)
+            log.warning("[checkPass] user uid %s failed to authenticate" % uid)
             return False
 
     @staticmethod
     def _verify_password(password, hashed_password):
-        '''
+        """
         _verify_password - checks the given password against the stored hash.
 
         check the Modular Crypt Format (MCF):
@@ -280,15 +298,21 @@ class IdResolver (UserIdResolver):
         :param hashed_password: the hashed password
         :return :  true in case of success, false if password does not match
 
-        '''
+        """
         # ------------------------------------------------------------------ --
 
         crypt_methods = [
-            md5_crypt, des_crypt, sha1_crypt, sha256_crypt, sha512_crypt]
+            md5_crypt,
+            des_crypt,
+            sha1_crypt,
+            sha256_crypt,
+            sha512_crypt,
+        ]
 
         for crypt_method in crypt_methods:
-            if (hasattr(crypt_method, "identify") and
-                    crypt_method.identify(hashed_password)):
+            if hasattr(crypt_method, "identify") and crypt_method.identify(
+                hashed_password
+            ):
                 return crypt_method.verify(password, hashed_password)
 
         return False  # pragma: no cover
@@ -313,21 +337,21 @@ class IdResolver (UserIdResolver):
                 index = self.sF[key]
                 ret[key] = fields[index]
 
-            ret['givenname'] = self.givennameDict.get(userId)
-            ret['surname'] = self.surnameDict.get(userId)
-            ret['phone'] = self.homePhoneDict.get(userId)
-            ret['mobile'] = self.officePhoneDict.get(userId)
-            ret['email'] = self.emailDict.get(userId)
+            ret["givenname"] = self.givennameDict.get(userId)
+            ret["surname"] = self.surnameDict.get(userId)
+            ret["phone"] = self.homePhoneDict.get(userId)
+            ret["mobile"] = self.officePhoneDict.get(userId)
+            ret["email"] = self.emailDict.get(userId)
 
         return ret
 
     def getUsername(self, userId):
-        '''
+        """
         ## TODO: why does this return bool
 
         :param userId: the user to be searched
         :return: true, if a user id exists
-        '''
+        """
         return userId in self.reversDict
 
     def getUserId(self, LoginName):
@@ -339,7 +363,7 @@ class IdResolver (UserIdResolver):
         :param LoginName: the login of the user
         :return: the userId
         """
-        return self.nameDict.get(LoginName, '') or ''
+        return self.nameDict.get(LoginName, "") or ""
 
     def getSearchFields(self, searchDict=None):
         """
@@ -354,8 +378,9 @@ class IdResolver (UserIdResolver):
             for search in searchDict:
                 pattern = searchDict[search]
 
-                log.debug("[getSearchFields] searching for %s:%s",
-                          search, pattern)
+                log.debug(
+                    "[getSearchFields] searching for %s:%s", search, pattern
+                )
 
         return self.searchFields
 
@@ -435,13 +460,13 @@ class IdResolver (UserIdResolver):
             s = "s"
             pattern = pattern[:-1]
 
-        if (e == "e" and s == "s"):
+        if e == "e" and s == "s":
             if string.find(pattern) != -1:
                 return True
-        elif (e == "e"):
+        elif e == "e":
             if string.endswith(pattern):
                 return True
-        elif (s == "s"):
+        elif s == "s":
             if string.startswith(pattern):
                 return True
         else:
@@ -475,7 +500,7 @@ class IdResolver (UserIdResolver):
             except:
                 return ret
 
-            if (cUserId <= ihVal and cUserId >= ilVal):
+            if cUserId <= ihVal and cUserId >= ilVal:
                 ret = True
         else:
             try:
@@ -484,77 +509,78 @@ class IdResolver (UserIdResolver):
                 return ret
 
             if op == "=":
-                if (cUserId == ival):
+                if cUserId == ival:
                     ret = True
 
             elif op == ">":
-                if (cUserId > ival):
+                if cUserId > ival:
                     ret = True
 
             elif op == ">=":
-                if (cUserId >= ival):
+                if cUserId >= ival:
                     ret = True
 
             elif op == "<":
-                if (cUserId < ival):
+                if cUserId < ival:
                     ret = True
 
             elif op == "<=":
-                if (cUserId < ival):
+                if cUserId < ival:
                     ret = True
 
         return ret
 
-#############################################################
-# server info methods
-#############################################################
+    #############################################################
+    # server info methods
+    #############################################################
     def getResolverId(self):
-        """ getResolverId(LoginName)
-            - returns the resolver identifier string
-            - empty string if not exist
+        """getResolverId(LoginName)
+        - returns the resolver identifier string
+        - empty string if not exist
         """
         return self.fileName
 
     @classmethod
     def getResolverClassType(cls):
-        return 'passwdresolver'
+        return "passwdresolver"
 
     def getResolverType(self):
         return IdResolver.getResolverClassType()
 
     @classmethod
     def getResolverClassDescriptor(cls):
-        '''
+        """
         return the descriptor of the resolver, which is
         - the class name and
         - the config description
 
         :return: resolver description dict
         :rtype:  dict
-        '''
+        """
         descriptor = {}
         typ = cls.getResolverClassType()
-        descriptor['clazz'] = "useridresolver.PasswdIdResolver.IdResolver"
-        descriptor['config'] = {'fileName': 'string'}
+        descriptor["clazz"] = "useridresolver.PasswdIdResolver.IdResolver"
+        descriptor["config"] = {"fileName": "string"}
         return {typ: descriptor}
 
     def getResolverDescriptor(self):
         return IdResolver.getResolverClassDescriptor()
 
     def loadConfig(self, config, conf):
-        """ loadConfig(configDict)
-            The UserIdResolver could be configured
-            from the pylon app config - here
-            this could be the passwd file ,
-            whether it is /etc/passwd or /etc/shadow
+        """loadConfig(configDict)
+        The UserIdResolver could be configured
+        from the pylon app config - here
+        this could be the passwd file ,
+        whether it is /etc/passwd or /etc/shadow
         """
 
         l_config, missing = self.filter_config(config, conf)
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(" missing config entries:"
-                                          " %r" % missing)
+            raise ResolverLoadConfigError(
+                " missing config entries:" " %r" % missing
+            )
 
         fileName = l_config["fileName"]
 
@@ -565,9 +591,10 @@ class IdResolver (UserIdResolver):
 
         fileName = os.path.realpath(fileName)
 
-        if (not os.path.isfile(fileName) or not os.access(fileName, os.R_OK)):
-            raise ResolverLoadConfigError('File %r does not exist or is not '
-                                          'accesible' % fileName)
+        if not os.path.isfile(fileName) or not os.access(fileName, os.R_OK):
+            raise ResolverLoadConfigError(
+                "File %r does not exist or is not " "accesible" % fileName
+            )
         self.fileName = fileName
         self.loadFile()
 
@@ -580,14 +607,14 @@ if __name__ == "__main__":
 
     y = getResolverClass("PasswdIdResolver", "IdResolver")()
 
-    y.loadConfig({'linotp.passwdresolver.fileName': '/etc/passwd'}, "")
+    y.loadConfig({"linotp.passwdresolver.fileName": "/etc/passwd"}, "")
     x = getResolverClass("PasswdIdResolver", "IdResolver")()
-    x.loadConfig({'linotp.passwdresolver.fileName': '/etc/meinpass'}, "")
+    x.loadConfig({"linotp.passwdresolver.fileName": "/etc/meinpass"}, "")
 
     print("======/etc/meinpass==========")
-    print(x.getUserList({'username': '*', "userid": ">= 1000"}))
+    print(x.getUserList({"username": "*", "userid": ">= 1000"}))
     print("======/etc/passwd==========")
-    print(y.getUserList({'username': '*', "userid": ">= 1000"}))
+    print(y.getUserList({"username": "*", "userid": ">= 1000"}))
     print("================")
 
     user = "koelbel"

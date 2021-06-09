@@ -56,33 +56,29 @@ class Response(object):
 def mocked_radius_SendPacket(Client, *argparams, **kwparams):
 
     response = Response()
-    #response.code = pyrad.packet.AccessAccept
+    # response.code = pyrad.packet.AccessAccept
 
     return response
 
 
-def mocked_http_request(HttpObject,  *argparams, **kwparams):
+def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     resp = 200
 
     content = {
         "version": "LinOTP MOCK",
         "jsonrpc": "2.0",
-        "result": {
-            "status": True,
-            "value": True
-        },
-        "id": 0
+        "result": {"status": True, "value": True},
+        "id": 0,
     }
     r_auth_info = TestValidateController.R_AUTH_DETAIL
     if r_auth_info:
-        content['detail'] = r_auth_info
+        content["detail"] = r_auth_info
 
     return resp, json.dumps(content)
 
 
 class HmacOtp(LinHmac):
-
     def __init__(self, secret, counter=0, digits=6, hashfunc=hashlib.sha1):
         self.secret = secret
         self.counter = counter
@@ -95,7 +91,8 @@ class HmacOtp(LinHmac):
             self.hashfunc = hashfunc
 
         super().__init__(
-            None, counter=counter, digits=digits, hashfunc=self.hashfunc)
+            None, counter=counter, digits=digits, hashfunc=self.hashfunc
+        )
 
     def _getHashlib(self, hLibStr):
 
@@ -120,7 +117,7 @@ class HmacOtp(LinHmac):
             return hashlib.sha1
 
 
-@pytest.mark.usefixtures('client_class')
+@pytest.mark.usefixtures("client_class")
 class TestValidateController(TestController):
     """
     test the validate controller
@@ -131,6 +128,7 @@ class TestValidateController(TestController):
             test_httpsms and
             test_challenge_response
     """
+
     R_AUTH_DETAIL = {}
 
     def setUp(self):
@@ -155,11 +153,11 @@ class TestValidateController(TestController):
             "description": "TestToken1",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
     def createTOtpToken(self, hashlib_def):
-        '''
+        """
         // Seed for HMAC-SHA1 - 20 bytes
         String seed = "3132333435363738393031323334353637383930";
         // Seed for HMAC-SHA256 - 32 bytes
@@ -170,13 +168,14 @@ class TestValidateController(TestController):
         "3132333435363738393031323334353637383930" +
         "3132333435363738393031323334353637383930" +
         "31323334";
-        '''
+        """
 
         if hashlib_def == "SHA512":
             otpkey = (
                 "313233343536373839303132333435363738393031323334353"
                 "637383930313233343536373839303132333435363738393031323"
-                "33435363738393031323334")
+                "33435363738393031323334"
+            )
         elif hashlib_def == "SHA256":
             otpkey = (
                 "31323334353637383930313233343536373839303132333435363"
@@ -197,7 +196,7 @@ class TestValidateController(TestController):
             "hashlib": hashlib_def,
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
         try:
@@ -214,25 +213,26 @@ class TestValidateController(TestController):
                 T0 = time.time() - shift
             counter = int((T0 // timeStepping) + 0.5)
             ret = hmac_func.generate(
-                counter, key=binascii.unhexlify(hmac_func.secret))
+                counter, key=binascii.unhexlify(hmac_func.secret)
+            )
 
         except Exception as e:
             raise e
 
         return ret
 
-    def createToken1(self, user='root', pin='pin'):
+    def createToken1(self, user="root", pin="pin"):
         """
-            otp[0]: 870581 :
-            otp[1]: 793334 :
-            otp[2]: 088491 :
-            otp[3]: 013126 :
-            otp[4]: 818771 :
-            otp[5]: 454594 :
-            otp[6]: 217219 :
-            otp[7]: 250710 :
-            otp[8]: 478893 :
-            otp[9]: 517407 :
+        otp[0]: 870581 :
+        otp[1]: 793334 :
+        otp[2]: 088491 :
+        otp[3]: 013126 :
+        otp[4]: 818771 :
+        otp[5]: 454594 :
+        otp[6]: 217219 :
+        otp[7]: 250710 :
+        otp[8]: 478893 :
+        otp[9]: 517407 :
         """
         serial = "F722362"
         parameters = {
@@ -243,12 +243,12 @@ class TestValidateController(TestController):
             "description": "TestToken1",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
         return serial
 
-    def create_hmac_token(self, user='root', pin='pin'):
+    def create_hmac_token(self, user="root", pin="pin"):
 
         serial = self.createToken1(user=user, pin=pin)
         otps = [
@@ -261,22 +261,22 @@ class TestValidateController(TestController):
             "217219",
             "250710",
             "478893",
-            "517407"
+            "517407",
         ]
         return serial, otps
 
     def createRealmToken1(self, realm):
         """
-            otp[0]: 870581 :
-            otp[1]: 793334 :
-            otp[2]: 088491 :
-            otp[3]: 013126 :
-            otp[4]: 818771 :
-            otp[5]: 454594 :
-            otp[6]: 217219 :
-            otp[7]: 250710 :
-            otp[8]: 478893 :
-            otp[9]: 517407 :
+        otp[0]: 870581 :
+        otp[1]: 793334 :
+        otp[2]: 088491 :
+        otp[3]: 013126 :
+        otp[4]: 818771 :
+        otp[5]: 454594 :
+        otp[6]: 217219 :
+        otp[7]: 250710 :
+        otp[8]: 478893 :
+        otp[9]: 517407 :
         """
         parameters = {
             "serial": "F722362",
@@ -287,10 +287,10 @@ class TestValidateController(TestController):
         }
         if realm is not None:
             parameters.update(realm)
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
-    def createHMACToken(self, serial="F722362", user='root', pin="pin"):
+    def createHMACToken(self, serial="F722362", user="root", pin="pin"):
 
         parameters = {
             "serial": serial,
@@ -300,10 +300,8 @@ class TestValidateController(TestController):
             "description": "TestToken1",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         return response
-
-
 
     def createToken(self):
         serials = set()
@@ -315,10 +313,10 @@ class TestValidateController(TestController):
             "description": "TestToken1",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
-        serials.add(parameters.get('serial'))
+        serials.add(parameters.get("serial"))
 
         parameters = {
             "serial": "F722363",
@@ -328,10 +326,10 @@ class TestValidateController(TestController):
             "description": "TestToken2",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
-        serials.add(parameters.get('serial'))
+        serials.add(parameters.get("serial"))
 
         # # test the update
         parameters = {
@@ -342,10 +340,10 @@ class TestValidateController(TestController):
             "description": "TestToken3",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
-        serials.add(parameters.get('serial'))
+        serials.add(parameters.get("serial"))
 
         parameters = {
             "serial": "F722364",
@@ -355,10 +353,10 @@ class TestValidateController(TestController):
             "description": "TestToken3",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
-        serials.add(parameters.get('serial'))
+        serials.add(parameters.get("serial"))
 
         return serials
 
@@ -371,7 +369,7 @@ class TestValidateController(TestController):
             "description": "TestToken2",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
     def createToken3(self):
@@ -383,7 +381,7 @@ class TestValidateController(TestController):
             "description": "TestToken3",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
     def createTokenSMS(self):
@@ -393,10 +391,10 @@ class TestValidateController(TestController):
             "pin": "test",
             "description": "TestSMS",
             "type": "sms",
-            "phone": "007"
+            "phone": "007",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
     def createSpassToken(self, serial="TSpass", user="root", pin="pin"):
@@ -406,35 +404,39 @@ class TestValidateController(TestController):
             "user": user,
             "pin": pin,
             "description": "TestToken1",
-            "type": "spass"
+            "type": "spass",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
         return serial
 
-    def createPWToken(self, serial="TPW", user="root", pin="pin",
-                      otpkey="123456"):
+    def createPWToken(
+        self, serial="TPW", user="root", pin="pin", otpkey="123456"
+    ):
 
-        parameters = {"serial": serial,
-                      "type": "pw",
-                      "otpkey": otpkey,
-                      "otppin": pin,
-                      "user": user,
-                      "pin": pin,
-                      }
+        parameters = {
+            "serial": serial,
+            "type": "pw",
+            "otpkey": otpkey,
+            "otppin": pin,
+            "user": user,
+            "pin": pin,
+        }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
         return serial
 
-    def create_yubi_token(self, serialnum="01382015",
-                          yubi_slot=1,
-                          otpkey="9163508031b20d2fbb1868954e041729",
-                          public_uid="ecebeeejedecebeg",
-                          use_public_id=False,
-                          user='root'
-                          ):
+    def create_yubi_token(
+        self,
+        serialnum="01382015",
+        yubi_slot=1,
+        otpkey="9163508031b20d2fbb1868954e041729",
+        public_uid="ecebeeejedecebeg",
+        use_public_id=False,
+        user="root",
+    ):
         serial = "UBAM%s_%s" % (serialnum, yubi_slot)
 
         valid_otps = [
@@ -454,19 +456,19 @@ class TestValidateController(TestController):
         ]
 
         params = {
-            'type': 'yubikey',
-            'serial': serial,
-            'otpkey': otpkey,
-            'description': "Yubikey enrolled in functional tests",
-            'session': self.session
+            "type": "yubikey",
+            "serial": serial,
+            "otpkey": otpkey,
+            "description": "Yubikey enrolled in functional tests",
+            "session": self.session,
         }
 
         if not use_public_id:
-            params['otplen'] = 32 + len(public_uid)
+            params["otplen"] = 32 + len(public_uid)
         else:
-            params['public_uid'] = public_uid
+            params["public_uid"] = public_uid
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, "Response: %r" % response
 
         # test initial assign
@@ -474,15 +476,21 @@ class TestValidateController(TestController):
             "serial": serial,
             "user": user,
         }
-        response = self.make_admin_request('assign', params=params)
+        response = self.make_admin_request("assign", params=params)
         # Test response...
         assert '"value": true' in response, "Response: %r" % response
 
         return (serial, valid_otps)
 
-    def create_remote_token(self, target_serial, target_otplen=6, user='root',
-                            pin='', check_pin=1,
-                            remote_url='http://127.0.0.1/'):
+    def create_remote_token(
+        self,
+        target_serial,
+        target_otplen=6,
+        user="root",
+        pin="",
+        check_pin=1,
+        remote_url="http://127.0.0.1/",
+    ):
         """
         call admin/init to create the remote token
 
@@ -501,21 +509,22 @@ class TestValidateController(TestController):
             "type": "remote",
             "otplen": target_otplen,
             "description": "RemoteToken",
-            'remote.server': remote_url,
-            'remote.realm': 'nopin',
-            'remote.local_checkpin': check_pin,
-            'remote.serial': target_serial,
-            'user': user,
-            'pin': pin
+            "remote.server": remote_url,
+            "remote.realm": "nopin",
+            "remote.local_checkpin": check_pin,
+            "remote.serial": target_serial,
+            "user": user,
+            "pin": pin,
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, "Response: %r" % response
 
         return serial
 
-    def create_radius_token(self, user="root", pin="pin", serial="radius2",
-                            check_pin=1):
+    def create_radius_token(
+        self, user="root", pin="pin", serial="radius2", check_pin=1
+    ):
         # the token with the local PIN
         parameters = {
             "serial": serial,
@@ -525,13 +534,13 @@ class TestValidateController(TestController):
             "user": user,
             "pin": pin,
             "description": "RadiusToken2",
-            'radius.server': 'localhost:18012',
-            'radius.local_checkpin': check_pin,
-            'radius.user': user,
-            'radius.secret': 'testing123',
+            "radius.server": "localhost:18012",
+            "radius.local_checkpin": check_pin,
+            "radius.user": user,
+            "radius.secret": "testing123",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
         return serial
@@ -543,17 +552,17 @@ class TestValidateController(TestController):
         serials = self.createToken()
 
         for serial in serials:
-            params = {'encryptpin': 'True',
-                      'pin': 'crypted!',
-                      'serial': serial
-                      }
-            response = self.make_admin_request('set', params=params)
+            params = {
+                "encryptpin": "True",
+                "pin": "crypted!",
+                "serial": serial,
+            }
+            response = self.make_admin_request("set", params=params)
             assert '"set pin": 1' in response, response
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "crypted!280395"}
-        response = self.make_validate_request('check',
-                                              params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         for serial in serials:
@@ -573,7 +582,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root", "pass": "pin870581"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
@@ -581,7 +590,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": false' in response, response
@@ -589,7 +598,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": false' in response, response
@@ -597,7 +606,7 @@ class TestValidateController(TestController):
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": false' in response, response
@@ -607,7 +616,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n", response)
         # Test response...
         assert '"value": true' in response, response
@@ -615,7 +624,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
@@ -623,7 +632,7 @@ class TestValidateController(TestController):
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": false' in response, response
@@ -631,7 +640,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root", "pass": "pin088491"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
@@ -639,16 +648,15 @@ class TestValidateController(TestController):
         parameters = {"user": "root"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
-
 
     def checkFalse3(self, realm):
 
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": false' in response, response
@@ -656,7 +664,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": false' in response, response
@@ -664,7 +672,7 @@ class TestValidateController(TestController):
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
@@ -672,7 +680,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root", "pass": "pin818771"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
@@ -680,14 +688,14 @@ class TestValidateController(TestController):
         parameters = {"user": "root"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
     def checkTrue(self, realm):
 
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
@@ -695,7 +703,7 @@ class TestValidateController(TestController):
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
@@ -703,7 +711,7 @@ class TestValidateController(TestController):
         parameters = {"user": "UnKnownUser"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
@@ -711,7 +719,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root", "pass": "pin217219"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": true' in response, response
@@ -719,7 +727,7 @@ class TestValidateController(TestController):
         parameters = {"user": "root"}
         parameters.update(realm)
 
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         #
@@ -734,70 +742,68 @@ class TestValidateController(TestController):
         #    otp[8]: 478893 :
         #    otp[9]: 517407 :
         #
-    def setPolicy(self, name, scope, action,
-                  realm='*', user='*', active=True):
+
+    def setPolicy(self, name, scope, action, realm="*", user="*", active=True):
         params = {
-            'name': name,
-            'user': user,
-            'action': action,
-            'scope': scope,
-            'realm': realm,
-            'time': '',
-            'client': '',
-            'active': active,
-            'session': self.session,
+            "name": name,
+            "user": user,
+            "action": action,
+            "scope": scope,
+            "realm": realm,
+            "time": "",
+            "client": "",
+            "active": active,
+            "session": self.session,
         }
-        response = self.make_system_request('setPolicy', params)
+        response = self.make_system_request("setPolicy", params)
         return response
 
     def test_autousercheck(self):
-        '''
+        """
         testing PassOnUserNoToken and UserNotFound.
-        '''
+        """
         realm = {}
 
         self.createToken1()
 
-        self.make_system_request('getRealms')
+        self.make_system_request("getRealms")
         parameters = {"username": "*"}
-        self.make_admin_request('userlist', params=parameters)
+        self.make_admin_request("userlist", params=parameters)
         self.checkFalse(realm)
 
         parameters = {"PassOnUserNoToken": "True"}
-        response = self.make_system_request('setConfig', params=parameters)
-        assert '"setConfig PassOnUserNoToken:True": true' in response, \
-                        response
+        response = self.make_system_request("setConfig", params=parameters)
+        assert '"setConfig PassOnUserNoToken:True": true' in response, response
 
         self.checkFalse2(realm)
 
         parameters = {"PassOnUserNoToken": "False"}
-        response = self.make_system_request('setConfig', params=parameters)
-        assert '"setConfig PassOnUserNoToken:False": true' in \
-                        response, response
+        response = self.make_system_request("setConfig", params=parameters)
+        assert (
+            '"setConfig PassOnUserNoToken:False": true' in response
+        ), response
 
         parameters = {"PassOnUserNotFound": "True"}
-        response = self.make_system_request('setConfig', params=parameters)
-        assert '"setConfig PassOnUserNotFound:True": true' in \
-                        response, response
+        response = self.make_system_request("setConfig", params=parameters)
+        assert (
+            '"setConfig PassOnUserNotFound:True": true' in response
+        ), response
 
         self.checkFalse3(realm)
 
         parameters = {"PassOnUserNoToken": "True"}
-        response = self.make_system_request('setConfig', params=parameters)
-        assert '"setConfig PassOnUserNoToken:True": true' in response, \
-                        response
+        response = self.make_system_request("setConfig", params=parameters)
+        assert '"setConfig PassOnUserNoToken:True": true' in response, response
 
         self.checkTrue(realm)
 
         parameters = {"key": "PassOnUserNotFound"}
-        response = self.make_system_request('delConfig', params=parameters)
-        assert '"delConfig PassOnUserNotFound": true' in response, \
-                        response
+        response = self.make_system_request("delConfig", params=parameters)
+        assert '"delConfig PassOnUserNotFound": true' in response, response
 
         parameters = {"key": "PassOnUserNoToken"}
-        response = self.make_system_request('delConfig', params=parameters)
-        assert '"delConfig PassOnUserNoToken": true' in response, \
-                        response
+        response = self.make_system_request("delConfig", params=parameters)
+        assert '"delConfig PassOnUserNoToken": true' in response, response
 
         self.delete_token("F722362")
 
@@ -820,22 +826,22 @@ class TestValidateController(TestController):
         # prepare that both hmac and pw token are running
         # as challenge response tokens and enroll the tokens
 
-        self.setPolicy(name="ch_resp",
-                       scope="authentication",
-                       action='challenge_response=hmac pw ')
+        self.setPolicy(
+            name="ch_resp",
+            scope="authentication",
+            action="challenge_response=hmac pw ",
+        )
 
         self.createHMACToken("MyHamc007", "root", "123")
-        self.createPWToken('MyPW007', 'root', '123')
+        self.createPWToken("MyPW007", "root", "123")
 
         # ------------------------------------------------------------------ --
 
         # run request without token_type filter
 
-        parameters = {"serial": "My*007",
-                      "pass": "123"}
+        parameters = {"serial": "My*007", "pass": "123"}
 
-        response = self.make_validate_request('check_s',
-                                              params=parameters)
+        response = self.make_validate_request("check_s", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
@@ -843,18 +849,19 @@ class TestValidateController(TestController):
         assert msg in response, response
 
         jresp = json.loads(response.body)
-        transactionid = jresp.get('detail', {}).get('transactionid', {})
+        transactionid = jresp.get("detail", {}).get("transactionid", {})
 
         # ------------------------------------------------------------------ --
 
         # run request with HMAC token_type filter
 
-        parameters = {"transactionid": transactionid,
-                      "pass": "123",
-                      'token_type': 'HMAC'}
+        parameters = {
+            "transactionid": transactionid,
+            "pass": "123",
+            "token_type": "HMAC",
+        }
 
-        response = self.make_validate_request('check_t',
-                                              params=parameters)
+        response = self.make_validate_request("check_t", params=parameters)
 
         msg = '"token_type": "HMAC"'
         assert msg in response, response
@@ -863,12 +870,13 @@ class TestValidateController(TestController):
 
         # run request with pw token_type filter
 
-        parameters = {"transactionid": transactionid,
-                      "pass": "123",
-                      'token_type': 'pw'}
+        parameters = {
+            "transactionid": transactionid,
+            "pass": "123",
+            "token_type": "pw",
+        }
 
-        response = self.make_validate_request('check_t',
-                                              params=parameters)
+        response = self.make_validate_request("check_t", params=parameters)
 
         msg = '"token_type": "pw"'
         assert msg in response, response
@@ -877,12 +885,13 @@ class TestValidateController(TestController):
 
         # run request with token_type filter ocra2 that is not involved
 
-        parameters = {"transactionid": transactionid,
-                      "pass": "123",
-                      'token_type': 'ocra2'}
+        parameters = {
+            "transactionid": transactionid,
+            "pass": "123",
+            "token_type": "ocra2",
+        }
 
-        response = self.make_validate_request('check_t',
-                                              params=parameters)
+        response = self.make_validate_request("check_t", params=parameters)
 
         msg = '"token_type": ""'
         assert msg in response, response
@@ -893,7 +902,6 @@ class TestValidateController(TestController):
 
         self.delete_all_policies()
         self.delete_all_token()
-
 
     def test_check_serial_with_tokentype(self):
         """
@@ -914,22 +922,22 @@ class TestValidateController(TestController):
         # prepare that both hmac and pw token are running
         # as challenge response tokens and enroll the tokens
 
-        self.setPolicy(name="ch_resp",
-                       scope="authentication",
-                       action='challenge_response=hmac pw ')
+        self.setPolicy(
+            name="ch_resp",
+            scope="authentication",
+            action="challenge_response=hmac pw ",
+        )
 
         self.createHMACToken("MyHamc007", "root", "123")
-        self.createPWToken('MyPW007', 'root', '123')
+        self.createPWToken("MyPW007", "root", "123")
 
         # ------------------------------------------------------------------ --
 
         # run request without token_type filter
 
-        parameters = {"serial": "My*007",
-                      "pass": "123"}
+        parameters = {"serial": "My*007", "pass": "123"}
 
-        response = self.make_validate_request('check_s',
-                                              params=parameters)
+        response = self.make_validate_request("check_s", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
@@ -940,12 +948,9 @@ class TestValidateController(TestController):
 
         # run request with token_type filter for hmac token
 
-        parameters = {"serial": "My*007",
-                      "pass": "123",
-                      "token_type": 'HMAC'}
+        parameters = {"serial": "My*007", "pass": "123", "token_type": "HMAC"}
 
-        response = self.make_validate_request('check_s',
-                                              params=parameters)
+        response = self.make_validate_request("check_s", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
@@ -956,12 +961,9 @@ class TestValidateController(TestController):
 
         # run request with token_type filter for pw token
 
-        parameters = {"serial": "My*007",
-                      "pass": "123",
-                      "token_type": 'pw'}
+        parameters = {"serial": "My*007", "pass": "123", "token_type": "pw"}
 
-        response = self.make_validate_request('check_s',
-                                              params=parameters)
+        response = self.make_validate_request("check_s", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
         assert not (msg in response), response
@@ -994,23 +996,22 @@ class TestValidateController(TestController):
         # prepare that both hmac and pw token are running
         # as challenge response tokens and enroll the tokens
 
-        self.setPolicy(name="ch_resp",
-                       scope="authentication",
-                       action='challenge_response=hmac pw ')
+        self.setPolicy(
+            name="ch_resp",
+            scope="authentication",
+            action="challenge_response=hmac pw ",
+        )
 
         self.createHMACToken("MyHamc007", "root", "123")
-        self.createPWToken('MyPW007', 'root', '123')
+        self.createPWToken("MyPW007", "root", "123")
 
         # ------------------------------------------------------------------ --
 
         # run request with token_type filter for hmac token
 
-        parameters = {"user": "root",
-                      "pass": "123",
-                      "token_type": "HMAC"}
+        parameters = {"user": "root", "pass": "123", "token_type": "HMAC"}
 
-        response = self.make_validate_request('check',
-                                              params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
@@ -1021,12 +1022,9 @@ class TestValidateController(TestController):
 
         # run request with token_type filter for pw token
 
-        parameters = {"user": "root",
-                      "pass": "123",
-                      "token_type": "pw"}
+        parameters = {"user": "root", "pass": "123", "token_type": "pw"}
 
-        response = self.make_validate_request('check',
-                                              params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
         assert not (msg in response), response
@@ -1037,11 +1035,9 @@ class TestValidateController(TestController):
 
         # run request without token_type filter
 
-        parameters = {"user": "root",
-                      "pass": "123"}
+        parameters = {"user": "root", "pass": "123"}
 
-        response = self.make_validate_request('check',
-                                              params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
@@ -1055,34 +1051,33 @@ class TestValidateController(TestController):
         self.delete_all_policies()
         self.delete_all_token()
 
-
     def test_check(self):
-        '''
+        """
         checking several different tokens /validate/check
-        '''
+        """
         self.createToken()
 
         parameters = {"user": "root", "pass": "pin123456"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         parameters = {"serial": "F722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.FailCount": 1' in response, response
         assert '"LinOtp.FailCount": 0' not in response, response
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "pin280395"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"serial": "F722364"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.Count": 1' in response, response
         assert '"LinOtp.FailCount": 0' in response, response
 
         parameters = {"serial": "F722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         # change with token counter fix:
         # if one token of a set of tokens is valid,
         # all others involved are resetted
@@ -1090,16 +1085,16 @@ class TestValidateController(TestController):
 
         # check all 3 tokens - the last one is it
         parameters = {"pin": "TPIN", "serial": "F722364"}
-        response = self.make_admin_request('set', params=parameters)
+        response = self.make_admin_request("set", params=parameters)
         assert '"set pin": 1' in response, response
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "TPIN552629"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"serial": "F722364"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.Count": 4' in response, response
         assert '"LinOtp.FailCount": 0' in response, response
 
@@ -1107,13 +1102,13 @@ class TestValidateController(TestController):
         for _i in range(1, 20):
             # check if otp could be reused
             parameters = {"user": "root", "pass": "TPIN552629"}
-            response = self.make_validate_request('check', params=parameters)
+            response = self.make_validate_request("check", params=parameters)
             assert '"value": false' in response, response
 
         parameters = {"user": "root"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         jresp = json.loads(response.body)
-        data = jresp.get('result', {}).get('value', {}).get('data', [])
+        data = jresp.get("result", {}).get("value", {}).get("data", [])
 
         # assure that we have at least one data row found
         assert len(data) > 0, response
@@ -1127,12 +1122,12 @@ class TestValidateController(TestController):
         tokens = 0
         for token in data:
             tokens += 1
-            if token.get('LinOtp.TokenSerialnumber') == 'F722362':
-                assert token.get('LinOtp.FailCount', -1) == 9
-            if token.get('LinOtp.TokenSerialnumber') == 'F722363':
-                assert token.get('LinOtp.FailCount', -1) == 9
-            if token.get('LinOtp.TokenSerialnumber') == 'F722364':
-                assert token.get('LinOtp.FailCount', -1) == 19
+            if token.get("LinOtp.TokenSerialnumber") == "F722362":
+                assert token.get("LinOtp.FailCount", -1) == 9
+            if token.get("LinOtp.TokenSerialnumber") == "F722363":
+                assert token.get("LinOtp.FailCount", -1) == 9
+            if token.get("LinOtp.TokenSerialnumber") == "F722364":
+                assert token.get("LinOtp.FailCount", -1) == 19
 
         # check if we did see any token
         assert tokens == 3, response
@@ -1142,53 +1137,53 @@ class TestValidateController(TestController):
         self.delete_token("F722362")
 
     def test_check_failcounter(self):
-        '''
+        """
         checking tokens with pin matching - wrong otp only increment these
-        '''
+        """
         self.createToken()
 
         # we change the pin of the 3. token to be different to the other ones
-        parameters = {"serial": "F722364", 'pin': 'Pin3!'}
-        response = self.make_admin_request('set', params=parameters)
+        parameters = {"serial": "F722364", "pin": "Pin3!"}
+        response = self.make_admin_request("set", params=parameters)
         assert '"set pin": 1' in response, response
 
         parameters = {"user": "root", "pass": "pin123456"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         parameters = {"user": "root"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
 
         # check all 3 tokens - the last one is it
         jresp = json.loads(response.body)
-        tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+        tokens = jresp.get("result", {}).get("value", {}).get("data", [])
 
         for token in tokens:
-            if token.get('LinOtp.TokenSerialnumber') == 'F722362':
-                assert token.get('LinOtp.FailCount', -1) == 1
-            if token.get('LinOtp.TokenSerialnumber') == 'F722363':
-                assert token.get('LinOtp.FailCount', -1) == 1
-            if token.get('LinOtp.TokenSerialnumber') == 'F722364':
-                assert token.get('LinOtp.FailCount', -1) == 0
+            if token.get("LinOtp.TokenSerialnumber") == "F722362":
+                assert token.get("LinOtp.FailCount", -1) == 1
+            if token.get("LinOtp.TokenSerialnumber") == "F722363":
+                assert token.get("LinOtp.FailCount", -1) == 1
+            if token.get("LinOtp.TokenSerialnumber") == "F722364":
+                assert token.get("LinOtp.FailCount", -1) == 0
 
         # check all 3 tokens - one of them matches an resets all fail counter
         parameters = {"user": "root", "pass": "Pin3!280395"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"user": "root"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
 
         jresp = json.loads(response.body)
-        tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+        tokens = jresp.get("result", {}).get("value", {}).get("data", [])
 
         for token in tokens:
-            if token.get('LinOtp.TokenSerialnumber') == 'F722362':
-                assert token.get('LinOtp.FailCount', -1) == 0
-            if token.get('LinOtp.TokenSerialnumber') == 'F722363':
-                assert token.get('LinOtp.FailCount', -1) == 0
-            if token.get('LinOtp.TokenSerialnumber') == 'F722364':
-                assert token.get('LinOtp.FailCount', -1) == 0
+            if token.get("LinOtp.TokenSerialnumber") == "F722362":
+                assert token.get("LinOtp.FailCount", -1) == 0
+            if token.get("LinOtp.TokenSerialnumber") == "F722363":
+                assert token.get("LinOtp.FailCount", -1) == 0
+            if token.get("LinOtp.TokenSerialnumber") == "F722364":
+                assert token.get("LinOtp.FailCount", -1) == 0
 
         self.delete_token("F722364")
         self.delete_token("F722363")
@@ -1202,74 +1197,74 @@ class TestValidateController(TestController):
         self.createToken2()
 
         parameters = {"serial": "T2", "otp1": "719818", "otp2": "204809"}
-        response = self.make_admin_request('resync', params=parameters)
+        response = self.make_admin_request("resync", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"serial": "T2"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.Count": 40' in response, response
 
         parameters = {"user": "root", "pass": "T2PIN204809"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         # 957690
         parameters = {"user": "root", "pass": "T2PIN957690"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"serial": "T2"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.Count": 41' in response, response
 
         self.delete_token("T2")
 
     def test_resync2(self):
-        '''
-            test of resync with two similar tokens
-        '''
+        """
+        test of resync with two similar tokens
+        """
 
         self.createToken2()
         self.createToken3()
 
         parameters = {"user": "root", "pass": "T2PIN204809"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         parameters = {"user": "root", "otp1": "719818", "otp2": "204809"}
-        response = self.make_admin_request('resync', params=parameters)
+        response = self.make_admin_request("resync", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"serial": "T2"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.Count": 40' in response, response
 
         parameters = {"serial": "T3"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.Count": 40' in response, response
 
         parameters = {"serial": "T3", "pin": "T3PIN"}
-        response = self.make_admin_request('set', params=parameters)
+        response = self.make_admin_request("set", params=parameters)
         assert '"set pin": 1' in response, response
 
         parameters = {"user": "root", "pass": "T2PIN204809"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         # 957690
         parameters = {"user": "root", "pass": "T2PIN957690"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"serial": "T2"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.Count": 41' in response, response
 
         self.delete_token("T2")
         self.delete_token("T3")
 
     def test_autoresync(self):
-        '''
+        """
         auto resync:
 
         use case:
@@ -1286,32 +1281,31 @@ class TestValidateController(TestController):
         - test no consecutive otp's
         - test otp's out of sync window
 
-        '''
+        """
 
         self.createToken2()
 
         # test resync of token 2
         parameters = {"AutoResync": "true"}
-        response = self.make_system_request('setConfig', params=parameters)
-        assert 'setConfig AutoResync:true": true' in response, \
-                        response
+        response = self.make_system_request("setConfig", params=parameters)
+        assert 'setConfig AutoResync:true": true' in response, response
 
         # 35
         parameters = {"user": "root", "pass": "T2PIN732866"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         # 36
         parameters = {"user": "root", "pass": "T2PIN920079"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"user": "root", "pass": "T2PIN732866"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         parameters = {"user": "root", "pass": "T2PIN957690"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         self.delete_token("T2")
@@ -1324,18 +1318,17 @@ class TestValidateController(TestController):
 
         # test resync of token 2
         parameters = {"AutoResync": "true"}
-        response = self.make_system_request('setConfig', params=parameters)
-        assert 'setConfig AutoResync:true": true' in response, \
-                        response
+        response = self.make_system_request("setConfig", params=parameters)
+        assert 'setConfig AutoResync:true": true' in response, response
 
         # 35
         parameters = {"user": "root", "pass": "T2PIN732866"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         # 37
         parameters = {"user": "root", "pass": "T2PIN328973"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         self.delete_token("T2")
@@ -1348,18 +1341,17 @@ class TestValidateController(TestController):
 
         # test resync of token 2
         parameters = {"AutoResync": "false"}
-        response = self.make_system_request('setConfig', params=parameters)
-        assert 'setConfig AutoResync:false": true' in response, \
-                        response
+        response = self.make_system_request("setConfig", params=parameters)
+        assert 'setConfig AutoResync:false": true' in response, response
 
         # 35
         parameters = {"user": "root", "pass": "T2PIN732866"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         # 36
         parameters = {"user": "root", "pass": "T2PIN920079"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         self.delete_token("T2")
@@ -1369,25 +1361,24 @@ class TestValidateController(TestController):
         self.createMOtpToken()
 
         parameters = {"serial": "M722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.FailCount": 0' in response, response
 
         parameters = {"user": "root", "pass": "pin7215e7"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         parameters = {"serial": "M722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.FailCount": 1' in response, response
 
         # we use a fixed date to check if the otp calc is still okay
-        old_day = datetime(year=2018, month=12, day=12,
-                           hour=12, minute=12)
+        old_day = datetime(year=2018, month=12, day=12, hour=12, minute=12)
 
         with freezegun.freeze_time(old_day):
 
             parameters = {"user": "root", "pass": "pin488ccf"}
-            response = self.make_validate_request('check', params=parameters)
+            response = self.make_validate_request("check", params=parameters)
 
             assert '"value": true' in response, response
 
@@ -1395,80 +1386,83 @@ class TestValidateController(TestController):
 
     def test_checkOTPAlgo(self):
         """
-           The test token shared secret uses the ASCII string value
-           "12345678901234567890".  With Time Step X = 30, and the Unix epoch
-           as the initial value to count time steps, where T0 = 0, the TOTP
-           algorithm will display the following values for specified modes and
-           timestamps.
+         The test token shared secret uses the ASCII string value
+         "12345678901234567890".  With Time Step X = 30, and the Unix epoch
+         as the initial value to count time steps, where T0 = 0, the TOTP
+         algorithm will display the following values for specified modes and
+         timestamps.
 
-          +-------------+--------------+------------------+----------+--------+
-          |  Time (sec) |   UTC Time   | Value of T (hex) |   TOTP   |  Mode  |
-          +-------------+--------------+------------------+----------+--------+
-          |      59     |  1970-01-01  | 0000000000000001 | 94287082 |  SHA1  |
-          |             |   00:00:59   |                  |          |        |
-          |  1111111109 |  2005-03-18  | 00000000023523EC | 07081804 |  SHA1  |
-          |             |   00:00:59   |                  |          |        |
-          |  1111111111 |  2005-03-18  | 00000000023523ED | 14050471 |  SHA1  |
-          |             |   01:58:31   |                  |          |        |
-          |  1234567890 |  2009-02-13  | 000000000273EF07 | 89005924 |  SHA1  |
-          |             |   23:31:30   |                  |          |        |
-          |  2000000000 |  2033-05-18  | 0000000003F940AA | 69279037 |  SHA1  |
-          |             |   03:33:20   |                  |          |        |
-          | 20000000000 |  2603-10-11  | 0000000027BC86AA | 65353130 |  SHA1  |
-          |             |   11:33:20   |                  |          |        |
-
-
-          |      59     |  1970-01-01  | 0000000000000001 | 46119246 | SHA256 |
-          |             |   00:00:59   |                  |          |        |
-          |  1111111109 |  2005-03-18  | 00000000023523EC | 68084774 | SHA256 |
-          |             |   01:58:29   |                  |          |        |
-          |  1111111111 |  2005-03-18  | 00000000023523ED | 67062674 | SHA256 |
-          |             |   01:58:31   |                  |          |        |
-          |  1234567890 |  2009-02-13  | 000000000273EF07 | 91819424 | SHA256 |
-          |             |   23:31:30   |                  |          |        |
-          |  2000000000 |  2033-05-18  | 0000000003F940AA | 90698825 | SHA256 |
-          |             |   03:33:20   |                  |          |        |
-          | 20000000000 |  2603-10-11  | 0000000027BC86AA | 77737706 | SHA256 |
-          |             |   11:33:20   |                  |          |        |
+        +-------------+--------------+------------------+----------+--------+
+        |  Time (sec) |   UTC Time   | Value of T (hex) |   TOTP   |  Mode  |
+        +-------------+--------------+------------------+----------+--------+
+        |      59     |  1970-01-01  | 0000000000000001 | 94287082 |  SHA1  |
+        |             |   00:00:59   |                  |          |        |
+        |  1111111109 |  2005-03-18  | 00000000023523EC | 07081804 |  SHA1  |
+        |             |   00:00:59   |                  |          |        |
+        |  1111111111 |  2005-03-18  | 00000000023523ED | 14050471 |  SHA1  |
+        |             |   01:58:31   |                  |          |        |
+        |  1234567890 |  2009-02-13  | 000000000273EF07 | 89005924 |  SHA1  |
+        |             |   23:31:30   |                  |          |        |
+        |  2000000000 |  2033-05-18  | 0000000003F940AA | 69279037 |  SHA1  |
+        |             |   03:33:20   |                  |          |        |
+        | 20000000000 |  2603-10-11  | 0000000027BC86AA | 65353130 |  SHA1  |
+        |             |   11:33:20   |                  |          |        |
 
 
-          |      59     |  1970-01-01  | 0000000000000001 | 90693936 | SHA512 |
-          |             |   01:58:29   |                  |          |        |
-          |  1111111109 |  2005-03-18  | 00000000023523EC | 25091201 | SHA512 |
-          |             |   01:58:29   |                  |          |        |
-          |  1111111111 |  2005-03-18  | 00000000023523ED | 99943326 | SHA512 |
-          |             |   01:58:31   |                  |          |        |
-          |  1234567890 |  2009-02-13  | 000000000273EF07 | 93441116 | SHA512 |
-          |             |   23:31:30   |                  |          |        |
-          |  2000000000 |  2033-05-18  | 0000000003F940AA | 38618901 | SHA512 |
-          |             |   03:33:20   |                  |          |        |
-          | 20000000000 |  2603-10-11  | 0000000027BC86AA | 47863826 | SHA512 |
-          |             |   11:33:20   |                  |          |        |
-          +-------------+--------------+------------------+----------+--------+
+        |      59     |  1970-01-01  | 0000000000000001 | 46119246 | SHA256 |
+        |             |   00:00:59   |                  |          |        |
+        |  1111111109 |  2005-03-18  | 00000000023523EC | 68084774 | SHA256 |
+        |             |   01:58:29   |                  |          |        |
+        |  1111111111 |  2005-03-18  | 00000000023523ED | 67062674 | SHA256 |
+        |             |   01:58:31   |                  |          |        |
+        |  1234567890 |  2009-02-13  | 000000000273EF07 | 91819424 | SHA256 |
+        |             |   23:31:30   |                  |          |        |
+        |  2000000000 |  2033-05-18  | 0000000003F940AA | 90698825 | SHA256 |
+        |             |   03:33:20   |                  |          |        |
+        | 20000000000 |  2603-10-11  | 0000000027BC86AA | 77737706 | SHA256 |
+        |             |   11:33:20   |                  |          |        |
+
+
+        |      59     |  1970-01-01  | 0000000000000001 | 90693936 | SHA512 |
+        |             |   01:58:29   |                  |          |        |
+        |  1111111109 |  2005-03-18  | 00000000023523EC | 25091201 | SHA512 |
+        |             |   01:58:29   |                  |          |        |
+        |  1111111111 |  2005-03-18  | 00000000023523ED | 99943326 | SHA512 |
+        |             |   01:58:31   |                  |          |        |
+        |  1234567890 |  2009-02-13  | 000000000273EF07 | 93441116 | SHA512 |
+        |             |   23:31:30   |                  |          |        |
+        |  2000000000 |  2033-05-18  | 0000000003F940AA | 38618901 | SHA512 |
+        |             |   03:33:20   |                  |          |        |
+        | 20000000000 |  2603-10-11  | 0000000027BC86AA | 47863826 | SHA512 |
+        |             |   11:33:20   |                  |          |        |
+        +-------------+--------------+------------------+----------+--------+
         """
 
         testVector = {
-            'SHA1': [(59, '94287082'),
-                     (1111111109, '07081804'),
-                     (1111111111, '14050471'),
-                     (1234567890, '89005924'),
-                     (2000000000, '69279037'),
-                     (20000000000, '65353130'),
-                     ],
-            'SHA256': [(59, '46119246'),
-                       (1111111109, '68084774'),
-                       (1111111111, '67062674'),
-                       (1234567890, '91819424'),
-                       (2000000000, '90698825'),
-                       (20000000000, '77737706'),
-                       ],
-            'SHA512': [(59, '90693936'),
-                       (1111111109, '25091201'),
-                       (1111111111, '99943326'),
-                       (1234567890, '93441116'),
-                       (2000000000, '38618901'),
-                       (20000000000, '47863826'),
-                       ],
+            "SHA1": [
+                (59, "94287082"),
+                (1111111109, "07081804"),
+                (1111111111, "14050471"),
+                (1234567890, "89005924"),
+                (2000000000, "69279037"),
+                (20000000000, "65353130"),
+            ],
+            "SHA256": [
+                (59, "46119246"),
+                (1111111109, "68084774"),
+                (1111111111, "67062674"),
+                (1234567890, "91819424"),
+                (2000000000, "90698825"),
+                (20000000000, "77737706"),
+            ],
+            "SHA512": [
+                (59, "90693936"),
+                (1111111109, "25091201"),
+                (1111111111, "99943326"),
+                (1234567890, "93441116"),
+                (2000000000, "38618901"),
+                (20000000000, "47863826"),
+            ],
         }
 
         for hashAlgo in list(testVector.keys()):
@@ -1479,25 +1473,24 @@ class TestValidateController(TestController):
                 val = self.createTOtpValue(totp, T0)
                 assert otp == val, "otp verification failed %r " % tupp
 
-
     def test_checkTOtp(self):
 
         self.createTOtpToken("SHA1")
 
         parameters = {"serial": "TOTP"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"LinOtp.FailCount": 0' in response, response
 
         parameters = {"user": "root", "pass": "pin12345678"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
         assert '"value": false' in response, response
 
         parameters = {"serial": "TOTP"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
 
         assert '"LinOtp.FailCount": 1' in response, response
 
@@ -1505,35 +1498,38 @@ class TestValidateController(TestController):
         with freezegun.freeze_time(old_day):
 
             parameters = {"user": "root", "pass": "pin94287082"}
-            response = self.make_validate_request('check', params=parameters)
+            response = self.make_validate_request("check", params=parameters)
 
             assert '"value": true' in response, response
-
 
         # second test value
         # |  1111111109 |  2005-03-18  | 00000000023523EC | 07081804 |  SHA1  |
         #                  01:58:29
 
-        old_day = datetime(year=2005, month=3, day=18,
-                           hour=1, minute=58, second=29)
+        old_day = datetime(
+            year=2005, month=3, day=18, hour=1, minute=58, second=29
+        )
         with freezegun.freeze_time(old_day):
 
-            parameters = {"user": "root", "pass": "pin07081804",
-                          "init": "1111111109"}
-            response = self.make_validate_request('check', params=parameters)
+            parameters = {
+                "user": "root",
+                "pass": "pin07081804",
+                "init": "1111111109",
+            }
+            response = self.make_validate_request("check", params=parameters)
 
             assert '"value": true' in response, response
 
         # one more test value
         # 1234567890 |  2009-02-13  | 000000000273EF07 | 89005924 |  SHA1  |
         #            |   23:31:30
-        old_day = datetime(year=2009, month=2, day=13,
-                           hour=23, minute=31, second=30)
+        old_day = datetime(
+            year=2009, month=2, day=13, hour=23, minute=31, second=30
+        )
         with freezegun.freeze_time(old_day):
 
             parameters = {"user": "root", "pass": "pin89005924"}
-            response = self.make_validate_request(
-                                    'check', params=parameters)
+            response = self.make_validate_request("check", params=parameters)
 
             assert '"value": true' in response, response
 
@@ -1546,13 +1542,12 @@ class TestValidateController(TestController):
         # |      59     |  1970-01-01  | 0000000000000001 | 46119246 | SHA256 |
         # |             |   00:00:59   |                  |          |        |
 
-
         self.createTOtpToken("SHA256")
 
         old_day = datetime(year=1970, month=1, day=1)
         with freezegun.freeze_time(old_day):
             parameters = {"user": "root", "pass": "pin46119246", "init": "59"}
-            response = self.make_validate_request('check', params=parameters)
+            response = self.make_validate_request("check", params=parameters)
 
             assert '"value": true' in response, response
 
@@ -1571,7 +1566,7 @@ class TestValidateController(TestController):
         with freezegun.freeze_time(old_day):
 
             parameters = {"user": "root", "pass": "pin90693936", "init": "59"}
-            response = self.make_validate_request('check', params=parameters)
+            response = self.make_validate_request("check", params=parameters)
             assert '"value": true' in response, response
 
         self.delete_token("TOTP")
@@ -1588,24 +1583,23 @@ class TestValidateController(TestController):
         totp = self.createTOtpToken("SHA1")
 
         parameters = {"serial": "TOTP"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.FailCount": 0' in response, response
 
         parameters = {"DefaultSyncWindow": "200"}
-        response = self.make_system_request('setDefault', params=parameters)
+        response = self.make_system_request("setDefault", params=parameters)
         assert '"set DefaultSyncWindow": true' in response, response
 
         parameters = {"AutoResync": "true"}
-        response = self.make_system_request('setConfig', params=parameters)
-        assert 'setConfig AutoResync:true": true' in response, \
-                        response
+        response = self.make_system_request("setConfig", params=parameters)
+        assert 'setConfig AutoResync:true": true' in response, response
 
         parameters = {"user": "root", "pass": "pin12345678"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         parameters = {"serial": "TOTP"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         # log.error("response %s\n", response)
         assert '"LinOtp.FailCount": 1' in response, response
 
@@ -1621,8 +1615,8 @@ class TestValidateController(TestController):
         otp2 = self.createTOtpValue(totp, myTime - 70)
 
         parameters = {"user": "root", "otp1": otp1, "otp2": otp2}
-        response = self.make_admin_request('resync', params=parameters)
-        #assert '"value": true' in response
+        response = self.make_admin_request("resync", params=parameters)
+        # assert '"value": true' in response
 
         #
         #    now test TOTP resync - forward lookup
@@ -1636,24 +1630,23 @@ class TestValidateController(TestController):
         otp2 = self.createTOtpValue(totp, myTime + 152)
 
         parameters = {"user": "root", "otp1": otp1, "otp2": otp2}
-        response = self.make_admin_request('resync', params=parameters)
+        response = self.make_admin_request("resync", params=parameters)
         assert '"value": true' in response, response
 
         self.delete_token("TOTP")
 
     def test_totp_autosync(self):
-        '''
-            now let's test the autosync !!!
-        '''
+        """
+        now let's test the autosync !!!
+        """
 
         parameters = {"DefaultSyncWindow": "200"}
-        response = self.make_system_request('setDefault', params=parameters)
+        response = self.make_system_request("setDefault", params=parameters)
         assert '"set DefaultSyncWindow": true' in response, response
 
         parameters = {"AutoResync": "true"}
-        response = self.make_system_request('setConfig', params=parameters)
-        assert 'setConfig AutoResync:true": true' in response, \
-                        response
+        response = self.make_system_request("setConfig", params=parameters)
+        assert 'setConfig AutoResync:true": true' in response, response
 
         # delete 'TOTP' token if it exists
         try:
@@ -1669,10 +1662,10 @@ class TestValidateController(TestController):
         otp2 = self.createTOtpValue(totp, myTime + 286)
 
         parameters = {"user": "root", "pass": "pin" + otp1}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         parameters = {"user": "root", "pass": "pin" + otp2}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         self.delete_token("TOTP")
 
@@ -1685,37 +1678,37 @@ class TestValidateController(TestController):
         self.createToken1()
 
         parameters = {"serial": "F722362", "MaxFailCount": "15"}
-        response = self.make_admin_request('set', params=parameters)
+        response = self.make_admin_request("set", params=parameters)
         assert '"set MaxFailCount": 1' in response, response
 
         parameters = {"user": "root", "pass": "pin870581"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"serial": "F722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.FailCount": 0' in response, response
 
         # Test if FailCount increments and in case of a valid OTP is resetted
 
         for _i in range(0, 14):
             parameters = {"user": "root", "pass": "pin123456"}
-            response = self.make_validate_request('check', params=parameters)
+            response = self.make_validate_request("check", params=parameters)
             assert '"value": false' in response, response
 
         parameters = {"serial": "F722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.FailCount": 14' in response, response
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "pin818771"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
 
         # Test response...
         assert '"value": true' in response, response
 
         parameters = {"serial": "F722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
 
         # Test response...
         assert '"LinOtp.Count": 5' in response, response
@@ -1726,11 +1719,11 @@ class TestValidateController(TestController):
 
         for _i in range(0, 15):
             parameters = {"user": "root", "pass": "pin123456"}
-            response = self.make_validate_request('check', params=parameters)
+            response = self.make_validate_request("check", params=parameters)
             assert '"value": false' in response, response
 
         parameters = {"serial": "F722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
         assert '"LinOtp.Count": 5' in response, response
         assert '"LinOtp.FailCount": 15' in response, response
 
@@ -1738,22 +1731,22 @@ class TestValidateController(TestController):
         # the OTP Count must be incremented anyway
 
         parameters = {"user": "root", "pass": "pin250710"}
-        response = self.make_validate_request('check', params=parameters)
+        response = self.make_validate_request("check", params=parameters)
         assert '"value": false' in response, response
 
         parameters = {"serial": "F722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
 
         # TODO: post merge: verify the real counts
         assert '"LinOtp.Count": 5' in response, response
         assert '"LinOtp.FailCount": 16' in response, response
 
         parameters = {"serial": "F722362"}
-        response = self.make_admin_request('reset', params=parameters)
+        response = self.make_admin_request("reset", params=parameters)
         assert '"value": 1' in response, response
 
         parameters = {"serial": "F722362"}
-        response = self.make_admin_request('show', params=parameters)
+        response = self.make_admin_request("show", params=parameters)
 
         # TODO: post merge: verify the real counts
         assert '"LinOtp.Count": 5' in response, response
@@ -1767,29 +1760,29 @@ class TestValidateController(TestController):
         """
         parameters = {
             "serial": "saml0001",
-                      "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
-                      "user": "root",
-                      "pin": "test",
-                      "type": "spass"
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": "root",
+            "pin": "test",
+            "type": "spass",
         }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
         parameters = {"allowSamlAttributes": "True"}
-        response = self.make_system_request('setConfig', params=parameters)
+        response = self.make_system_request("setConfig", params=parameters)
 
         parameters = {"user": "root", "pass": "test"}
-        response = self.make_validate_request('samlcheck', params=parameters)
+        response = self.make_validate_request("samlcheck", params=parameters)
         assert '"auth": true' in response, response
         assert '"username": "root"' in response, response
 
         self.delete_token("saml0001")
 
     def test_unicode(self):
-        '''
+        """
         checking /validate/check with corrupted unicode
-        '''
+        """
         serials = self.createToken()
 
         parameters = {"user": "root", "pass": "\xC0"}
@@ -1797,35 +1790,39 @@ class TestValidateController(TestController):
         # dont replace with self.make_validate_request as it throw
         # the unicode exception without reaching the linotp server
 
-        response = self.client.get('/validate/check', query_string=parameters)
+        response = self.client.get("/validate/check", query_string=parameters)
 
-        assert not response.json['result']['value']
+        assert not response.json["result"]["value"]
 
         for serial in serials:
             self.delete_token(serial)
 
     def test_simple_check(self):
-        '''
+        """
         Testing simplecheck
-        '''
-        serial = 'simple634'
-        response = self.make_admin_request('init',
-                                params={'type': 'spass',
-                                        'user': 'root',
-                                        'pin': 'topSecret',
-                                        'serial': serial})
+        """
+        serial = "simple634"
+        response = self.make_admin_request(
+            "init",
+            params={
+                "type": "spass",
+                "user": "root",
+                "pin": "topSecret",
+                "serial": serial,
+            },
+        )
         assert '"status": true' in response, response
 
-        response = self.make_validate_request('simplecheck',
-                                params={'user': 'root',
-                                        'pass': 'topSecret'})
+        response = self.make_validate_request(
+            "simplecheck", params={"user": "root", "pass": "topSecret"}
+        )
 
-        assert ':-)' in response, response
+        assert ":-)" in response, response
 
-        response = self.make_validate_request('simplecheck',
-                                params={'user': 'root',
-                                        'pass': 'wrongPW'})
-        assert ':-(' in response, response
+        response = self.make_validate_request(
+            "simplecheck", params={"user": "root", "pass": "wrongPW"}
+        )
+        assert ":-(" in response, response
 
         self.delete_token(serial)
 
@@ -1850,30 +1847,27 @@ class TestValidateController(TestController):
         serial, otps = self.create_hmac_token(pin=pin, user=user)
         otp = otps[0]
 
-        params = {'user': user,
-                  'pass': pin + otp}
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": pin + otp}
+        response = self.make_validate_request("check", params=params)
         assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
-        auth_info = jresp.get('detail', {}).get('auth_info', None)
+        auth_info = jresp.get("detail", {}).get("auth_info", None)
         assert auth_info is None, response
 
         otp = otps[1]
-        params = {'user': user,
-                  'pass': pin + otp,
-                  'auth_info': True}
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": pin + otp, "auth_info": True}
+        response = self.make_validate_request("check", params=params)
         assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
-        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        pin_list = jresp.get("detail", {}).get("auth_info", [])[0]
         assert "pin_length" in pin_list, response
         assert pin_list[1] == len(pin), response
 
-        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        otp_list = jresp.get("detail", {}).get("auth_info", [])[1]
         assert "otp_length" in otp_list, response
         assert otp_list[1] == 6, response
 
@@ -1881,16 +1875,14 @@ class TestValidateController(TestController):
 
         # now check spass token
         serial = self.createSpassToken(pin="Test123!", user="root")
-        params = {'user': user,
-                  'pass': pin,
-                  'auth_info': True}
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": pin, "auth_info": True}
+        response = self.make_validate_request("check", params=params)
 
         assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
-        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        pin_list = jresp.get("detail", {}).get("auth_info", [])[0]
         assert "pin_length" in pin_list, response
         assert pin_list[1] == len(pin), response
 
@@ -1899,24 +1891,21 @@ class TestValidateController(TestController):
         # now check pw token: the pw token requires the fixed pw, which was
         # initially stored on the otpkey
         otpkey = "123456öäüß"
-        u_pin = '#123ä'
+        u_pin = "#123ä"
 
         serial = self.createPWToken(pin=u_pin, user=user, otpkey=otpkey)
-        params = {'user': user,
-                  'pass': u_pin + otpkey,
-                  'auth_info': True
-                  }
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": u_pin + otpkey, "auth_info": True}
+        response = self.make_validate_request("check", params=params)
 
         assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
-        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        pin_list = jresp.get("detail", {}).get("auth_info", [])[0]
         assert "pin_length" in pin_list, response
         assert pin_list[1] == len(u_pin), response
 
-        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        otp_list = jresp.get("detail", {}).get("auth_info", [])[1]
         assert "otp_length" in otp_list, response
         assert otp_list[1] == len(otpkey), response
 
@@ -1930,50 +1919,45 @@ class TestValidateController(TestController):
         pin = "Test123!"
         serial, otps = self.create_yubi_token(user=user)
 
-        params = {'user': user,
-                  'pass': otps[0],
-                  'auth_info': True
-                  }
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": otps[0], "auth_info": True}
+        response = self.make_validate_request("check", params=params)
 
         assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
-        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        pin_list = jresp.get("detail", {}).get("auth_info", [])[0]
         assert "pin_length" in pin_list, response
         assert pin_list[1] == 0, response
 
-        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        otp_list = jresp.get("detail", {}).get("auth_info", [])[1]
         assert "otp_length" in otp_list, response
         assert otp_list[1] == len(otps[0]), response
 
-        params = {'user': user,
-                  'pin': pin,
-                  }
-        response = self.make_admin_request('set', params=params)
+        params = {
+            "user": user,
+            "pin": pin,
+        }
+        response = self.make_admin_request("set", params=params)
         assert '"set pin": ' in response, response
 
-        params = {'user': user,
-                  'pass': pin + otps[1],
-                  'auth_info': True
-                  }
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": pin + otps[1], "auth_info": True}
+        response = self.make_validate_request("check", params=params)
         assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
-        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        pin_list = jresp.get("detail", {}).get("auth_info", [])[0]
         assert "pin_length" in pin_list, response
         assert pin_list[1] == len(pin), response
 
-        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        otp_list = jresp.get("detail", {}).get("auth_info", [])[1]
         assert "otp_length" in otp_list, response
         assert otp_list[1] == len(otps[0]), response
 
         self.delete_token(serial)
 
-    @patch.object(httplib2.Http, 'request', mocked_http_request)
+    @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_auth_info_detail_remotetoken(self):
         """
         check for additional auth_info from validate check for remotetoken
@@ -1982,56 +1966,63 @@ class TestValidateController(TestController):
         pin = "Test123!"
 
         # first check hmac token where most inherit from
-        target_serial, otps = self.create_hmac_token(pin='', user=user)
+        target_serial, otps = self.create_hmac_token(pin="", user=user)
         otp_len = len(otps[0])
 
-        remote_serial = self.create_remote_token(user=user,
-                                                 target_serial=target_serial,
-                                                 target_otplen=otp_len,
-                                                 pin=pin)
+        remote_serial = self.create_remote_token(
+            user=user,
+            target_serial=target_serial,
+            target_otplen=otp_len,
+            pin=pin,
+        )
 
         TestValidateController.R_AUTH_DETAIL = {}
 
-        params = {'serial': remote_serial,
-                  'pass': pin + otps[0],
-                  'auth_info': True
-                  }
-        response = self.make_validate_request('check_s', params=params)
+        params = {
+            "serial": remote_serial,
+            "pass": pin + otps[0],
+            "auth_info": True,
+        }
+        response = self.make_validate_request("check_s", params=params)
 
         assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
-        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        pin_list = jresp.get("detail", {}).get("auth_info", [])[0]
         assert "pin_length" in pin_list, response
         assert pin_list[1] == len(pin), response
 
-        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        otp_list = jresp.get("detail", {}).get("auth_info", [])[1]
         assert "otp_length" in otp_list, response
         assert otp_list[1] == len(otps[0]), response
 
         self.delete_token(remote_serial)
 
-        remote_serial = self.create_remote_token(user=user,
-                                                 target_serial=target_serial,
-                                                 target_otplen=otp_len,
-                                                 check_pin=0)
+        remote_serial = self.create_remote_token(
+            user=user,
+            target_serial=target_serial,
+            target_otplen=otp_len,
+            check_pin=0,
+        )
 
         TestValidateController.R_AUTH_DETAIL = {
-            'auth_info': [('pin_length', len(pin)),
-                            ('otp_length', len(otps[0]))
-                            ]
+            "auth_info": [
+                ("pin_length", len(pin)),
+                ("otp_length", len(otps[0])),
+            ]
         }
 
-        params = {'serial': remote_serial,
-                  'pass': pin + otps[1],
-                  'auth_info': True
-                  }
-        response = self.make_validate_request('check_s', params=params)
+        params = {
+            "serial": remote_serial,
+            "pass": pin + otps[1],
+            "auth_info": True,
+        }
+        response = self.make_validate_request("check_s", params=params)
 
         assert '"value": true' in response, response
 
-        auth_info = jresp.get('detail', {}).get('auth_info', [])
+        auth_info = jresp.get("detail", {}).get("auth_info", [])
 
         assert len(auth_info) == 2, response
 
@@ -2048,7 +2039,7 @@ class TestValidateController(TestController):
 
         TestValidateController.R_AUTH_DETAIL = {}
 
-    @patch.object(Client, 'SendPacket', mocked_radius_SendPacket)
+    @patch.object(Client, "SendPacket", mocked_radius_SendPacket)
     def test_auth_info_detail_radiotoken(self):
         """
         check for additional auth_info from validate check for radiotoken
@@ -2060,30 +2051,33 @@ class TestValidateController(TestController):
         pin = "Test123!"
 
         # first check hmac token where most inherit from
-        target_serial, otps = self.create_hmac_token(pin='', user=user)
+        target_serial, otps = self.create_hmac_token(pin="", user=user)
 
-        remote_serial = self.create_radius_token(user=user, pin=pin,
-                                                 check_pin=1)
+        remote_serial = self.create_radius_token(
+            user=user, pin=pin, check_pin=1
+        )
 
-        params = {'serial': remote_serial,
-                  'pass': pin + otps[0],
-                  'auth_info': True
-                  }
-        response = self.make_validate_request('check_s', params=params)
+        params = {
+            "serial": remote_serial,
+            "pass": pin + otps[0],
+            "auth_info": True,
+        }
+        response = self.make_validate_request("check_s", params=params)
 
         assert '"value": true' in response, response
 
         jresp = json.loads(response.body)
 
-        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        pin_list = jresp.get("detail", {}).get("auth_info", [])[0]
         assert "pin_length" in pin_list, response
         assert pin_list[1] == len(pin), response
 
-        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        otp_list = jresp.get("detail", {}).get("auth_info", [])[1]
         assert "otp_length" in otp_list, response
         assert otp_list[1] == len(otps[0]), response
 
         self.delete_token(target_serial)
         self.delete_token(remote_serial)
+
 
 # eof #########################################################################

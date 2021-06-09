@@ -53,10 +53,11 @@ class AllResourcesUnavailable(Exception):
     """
     to be thrown when all services are unavailable.
     """
+
     pass
 
 
-def string_to_list(string_list, sep=','):
+def string_to_list(string_list, sep=","):
     """
     tiny helper to create a list from a string with separators
 
@@ -71,6 +72,7 @@ def string_to_list(string_list, sep=','):
             entries.append(entry.strip())
 
     return entries
+
 
 # ------------------------------------------------------------------------- --
 
@@ -100,6 +102,7 @@ class ResourceRegistry(object):
         :param value: the value which should be associated with the resource
         """
         raise NotImplementedError()
+
 
 # ------------------------------------------------------------------------- --
 
@@ -150,6 +153,7 @@ class DictResourceRegistry(ResourceRegistry):
         """
 
         cls.registry[resource] = value
+
 
 # ------------------------------------------------------------------------- --
 
@@ -237,8 +241,12 @@ class ResourceScheduler(object):
     the max delay time should be limited to 8 which is ~2 hours
     """
 
-    def __init__(self, uri_list=None, tries=1,
-                 resource_registry_class=DictResourceRegistry):
+    def __init__(
+        self,
+        uri_list=None,
+        tries=1,
+        resource_registry_class=DictResourceRegistry,
+    ):
         """
         :param: uri_list - the list of unique resources
         :param retry: number of retries
@@ -266,16 +274,17 @@ class ResourceScheduler(object):
 
         for uri in self.uri_list:
 
-            log.debug('iterate through resource %r', uri)
+            log.debug("iterate through resource %r", uri)
 
             # -------------------------------------------------------------- --
 
             # check if the resouce is not blocked anymore
 
-            (blocked_until,
-             block_indicator,
-             block_counter) = self.resource_registry.store_or_retrieve(
-                uri, (None, 0, 0))
+            (
+                blocked_until,
+                block_indicator,
+                block_counter,
+            ) = self.resource_registry.store_or_retrieve(uri, (None, 0, 0))
 
             if not self._is_blocked(blocked_until):
 
@@ -288,13 +297,14 @@ class ResourceScheduler(object):
 
                 else:
                     new_block_conuter = min(
-                        MAX_BLOCK_COUNTER, block_indicator+block_counter)
+                        MAX_BLOCK_COUNTER, block_indicator + block_counter
+                    )
 
                 # if the resource is not blocked anymore we unblock it with
                 # setting it to None, while remembering the blocking counter
 
                 self.resource_registry.store(uri, (None, 0, new_block_conuter))
-                log.debug('resource %r unlocked', uri)
+                log.debug("resource %r unlocked", uri)
 
                 # ---------------------------------------------------------- --
 
@@ -322,20 +332,24 @@ class ResourceScheduler(object):
         if self._retry_complete or immediately:
 
             # get the former values of the resource
-            (_blocked_until,
-             block_indicator,
-             block_counter) = self.resource_registry.store_or_retrieve(
-                 resource, (None, 0, 0))
+            (
+                _blocked_until,
+                block_indicator,
+                block_counter,
+            ) = self.resource_registry.store_or_retrieve(
+                resource, (None, 0, 0)
+            )
 
-            adjusted_delay = delay + delay*2**block_counter
+            adjusted_delay = delay + delay * 2 ** block_counter
             block_until = datetime.utcnow() + timedelta(seconds=adjusted_delay)
 
-            log.info('blocking for %r seconds', adjusted_delay)
+            log.info("blocking for %r seconds", adjusted_delay)
 
-            self.resource_registry.store(resource, (
-                block_until, block_indicator + 1, block_counter))
+            self.resource_registry.store(
+                resource, (block_until, block_indicator + 1, block_counter)
+            )
 
-            log.info('blocking resource %r till %r', resource, block_until)
+            log.info("blocking resource %r till %r", resource, block_until)
 
     # --------------------------------------------------------------------- --
 
@@ -357,7 +371,7 @@ class ResourceScheduler(object):
             # the last of the list  is the last try, after which a blocking is
             # possible
 
-            log.debug('try %d/%d for resource  %r', i, self.tries, uri)
+            log.debug("try %d/%d for resource  %r", i, self.tries, uri)
 
             if i + 1 == self.tries:
                 self._retry_complete = True
@@ -380,11 +394,12 @@ class ResourceScheduler(object):
 
         if blocked_until is not None and blocked_until > datetime.utcnow():
 
-            log.debug('still blocked till %r', blocked_until)
+            log.debug("still blocked till %r", blocked_until)
             return True
 
         return False
 
     # --------------------------------------------------------------------- --
+
 
 # eof #

@@ -50,13 +50,14 @@ class TestYubikey(TestCase):
         self.user_name = "maxwell"
 
         self.reset_resolvers_and_realms(
-            data.physics_ldap_resolver, self.realm_name)
+            data.physics_ldap_resolver, self.realm_name
+        )
 
         user_view = self.manage_ui.user_view
         user_view.select_realm(self.realm_name)
-        assert user_view.user_exists(self.user_name), \
-                        "User '" + self.user_name + \
-                        "' should exist."
+        assert user_view.user_exists(self.user_name), (
+            "User '" + self.user_name + "' should exist."
+        )
         self.user_view = user_view
 
     def test_yubico_mode(self):
@@ -65,7 +66,7 @@ class TestYubikey(TestCase):
         """
         url = self.http_host
         if self.http_port:
-            url = '%s:%s' % (self.http_host, self.http_port)
+            url = "%s:%s" % (self.http_host, self.http_port)
         # Enroll Yubikey
         serialnum = "01382015"
         yubi_slot = 1
@@ -91,8 +92,13 @@ class TestYubikey(TestCase):
         pin = "asdf1234"
         self.manage_ui.token_view.assign_token(serial, pin)
 
-        validate = Validate(self.http_protocol, self.http_host, self.http_port,
-                            self.http_username, self.http_password)
+        validate = Validate(
+            self.http_protocol,
+            self.http_host,
+            self.http_port,
+            self.http_username,
+            self.http_password,
+        )
 
         valid_otps = [
             public_uid + "fcniufvgvjturjgvinhebbbertjnihit",
@@ -110,63 +116,92 @@ class TestYubikey(TestCase):
         ]
 
         for otp in valid_otps:
-            access_granted, _ = validate.validate(user=self.user_name + "@" +
-                                                  self.realm_name, password=pin + otp)
-            assert access_granted, "OTP: " + pin + otp + " for user " + \
-                            self.user_name + "@" + self.realm_name + " returned False"
+            access_granted, _ = validate.validate(
+                user=self.user_name + "@" + self.realm_name, password=pin + otp
+            )
+            assert access_granted, (
+                "OTP: "
+                + pin
+                + otp
+                + " for user "
+                + self.user_name
+                + "@"
+                + self.realm_name
+                + " returned False"
+            )
 
         # validate/check_yubikey
         password = pin + public_uid + "eihtnehtetluntirtirrvblfkttbjuih"
         cy_auth = HTTPDigestAuth(self.http_username, self.http_password)
-        cy_validate_url = self.http_protocol + \
-            "://" + url + "/validate/check_yubikey?"
-        response = requests.get(cy_validate_url,
-                                params={'pass': password},
-                                auth=cy_auth,
-                                verify=False)
+        cy_validate_url = (
+            self.http_protocol + "://" + url + "/validate/check_yubikey?"
+        )
+        response = requests.get(
+            cy_validate_url,
+            params={"pass": password},
+            auth=cy_auth,
+            verify=False,
+        )
         assert response.status_code == 200, "Invalid response %r" % response
         return_json = response.json()
-        assert return_json['result']['status'], \
-                        "Invalid return value: %r" % return_json
-        assert return_json['result']['value'], \
-                        "Invalid return value: %r" % return_json
-        assert return_json['detail']['user'] == \
-                         self.user_name, \
-                         "Invalid return value: %r" % return_json
-        assert return_json['detail']['realm'] == \
-                         self.realm_name, \
-                         "Invalid return value: %r" % return_json
+        assert return_json["result"]["status"], (
+            "Invalid return value: %r" % return_json
+        )
+        assert return_json["result"]["value"], (
+            "Invalid return value: %r" % return_json
+        )
+        assert return_json["detail"]["user"] == self.user_name, (
+            "Invalid return value: %r" % return_json
+        )
+        assert return_json["detail"]["realm"] == self.realm_name, (
+            "Invalid return value: %r" % return_json
+        )
 
         # Repeat an old (therefore invalid) OTP value
         invalid_otp = public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
-        access_granted, _ = validate.validate(user=self.user_name + "@" +
-                                              self.realm_name, password=pin + invalid_otp)
-        assert not access_granted, \
-                         "OTP: " + pin + invalid_otp + " for user " + self.user_name + "@" + \
-                         self.realm_name + " should be rejected."
+        access_granted, _ = validate.validate(
+            user=self.user_name + "@" + self.realm_name,
+            password=pin + invalid_otp,
+        )
+        assert not access_granted, (
+            "OTP: "
+            + pin
+            + invalid_otp
+            + " for user "
+            + self.user_name
+            + "@"
+            + self.realm_name
+            + " should be rejected."
+        )
 
         # Repeat an old (therefore invalid) OTP value with
         # validate/check_yubikey
         invalid_otp = pin + public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
-        response = requests.get(cy_validate_url,
-                                params={'pass': password},
-                                auth=cy_auth,
-                                verify=False)
+        response = requests.get(
+            cy_validate_url,
+            params={"pass": password},
+            auth=cy_auth,
+            verify=False,
+        )
         assert response.status_code == 200, "Invalid response %r" % response
         return_json = response.json()
-        assert return_json['result']['status'], \
-                        "Invalid return value: %r" % return_json
-        assert not return_json['result']['value'], \
-                         "Invalid return value: %r" % return_json
+        assert return_json["result"]["status"], (
+            "Invalid return value: %r" % return_json
+        )
+        assert not return_json["result"]["value"], (
+            "Invalid return value: %r" % return_json
+        )
         try:
-            return_json['detail']['user']
-            self.fail("Response should not contain detail.user %r" %
-                      return_json)
+            return_json["detail"]["user"]
+            self.fail(
+                "Response should not contain detail.user %r" % return_json
+            )
         except KeyError:
             pass
         try:
-            return_json['detail']['realm']
-            self.fail("Response should not contain detail.realm %r" %
-                      return_json)
+            return_json["detail"]["realm"]
+            self.fail(
+                "Response should not contain detail.realm %r" % return_json
+            )
         except KeyError:
             pass

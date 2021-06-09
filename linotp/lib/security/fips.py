@@ -43,43 +43,41 @@ log = logging.getLogger(__name__)
 
 
 class FipsSecurityModule(DefaultSecurityModule):
-
     @classmethod
     def getAdditionalClassConfig(cls):
         return ["DefaultSecurityModule"]
 
     def __init__(self, config=None, add_conf=None):
-        '''
+        """
         initialsation of the fips security module
 
         :param config:  contains the configuration definition
         :type  config:  - dict -
 
         :return -
-        '''
+        """
         log.debug("initializing FipsSecurityModule %r: %r", config, add_conf)
 
         self.name = "fips"
 
-        if 'cryptolib' not in config:
+        if "cryptolib" not in config:
             raise FatalHSMException("Missing config entry: 'cryptolib'")
 
         try:
 
             # load the fips module and overwrite the parent digest
-            self.fips = FipsModule(config['cryptolib'])
+            self.fips = FipsModule(config["cryptolib"])
 
             # we use a map of the currently user hash functions to trigger
             # the corresponding fips hmac method
             self.hmac_func_map = {
-
                 Cryptodome.Hash.SHA1: self.fips.hmac_sha1,
                 Cryptodome.Hash.SHA256: self.fips.hmac_sha256,
                 Cryptodome.Hash.SHA512: self.fips.hmac_sha512,
-
                 hashlib.sha1: self.fips.hmac_sha1,
                 hashlib.sha256: self.fips.hmac_sha256,
-                hashlib.sha512: self.fips.hmac_sha512}
+                hashlib.sha512: self.fips.hmac_sha512,
+            }
 
         except SSLError as exx:
             raise FatalHSMException("Failed to load library %r" % exx)
@@ -102,8 +100,9 @@ class FipsSecurityModule(DefaultSecurityModule):
         if hash_algo in self.hmac_func_map:
             digest = self.hmac_func_map[hash_algo](bkey, str(data_input))
         else:
-            raise Exception('unsupported Hash Algorithm %r' % hash_algo)
+            raise Exception("unsupported Hash Algorithm %r" % hash_algo)
 
         return digest
+
 
 # eof #########################################################################

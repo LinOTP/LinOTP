@@ -45,11 +45,11 @@ from linotp.model import db, Token
 from sqlalchemy import and_
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class MigrateResolverHandler(ToolsHandler):
-
     def migrate_resolver(self, src=None, target=None, filter_serials=None):
         """
         support the migration of owned tokens from one resolver to a new one
@@ -63,29 +63,30 @@ class MigrateResolverHandler(ToolsHandler):
 
         """
 
-        _ = context['translate']
+        _ = context["translate"]
 
         ret = {}
 
         if not src or not target:
             raise Exception("Missing src or target resolver defintion!")
 
-
         now = datetime.now()
         stime = now.strftime("%s")
 
-        g.audit['action_detail'] = ("migration from %s to %s"
-                                    % (src['resolvername'],
-                                       target['resolvername']))
+        g.audit["action_detail"] = "migration from %s to %s" % (
+            src["resolvername"],
+            target["resolvername"],
+        )
 
-        ret['src'] = src
-        ret['target'] = target
-        ret['value'] = False
-        ret['message'] = ''
+        ret["src"] = src
+        ret["target"] = target
+        ret["value"] = False
+        ret["message"] = ""
 
-        search = getResolverClassName(src['type'], src['resolvername'])
-        target_resolver = getResolverClassName(target['type'],
-                                               target['resolvername'])
+        search = getResolverClassName(src["type"], src["resolvername"])
+        target_resolver = getResolverClassName(
+            target["type"], target["resolvername"]
+        )
 
         # get all tokens of src resolver
         tokens = self._get_tokens_for_resolver(search, serials=filter_serials)
@@ -93,41 +94,48 @@ class MigrateResolverHandler(ToolsHandler):
         num_migration = 0
         serials = set()
         for token in tokens:
-            serial = token.get('LinOtpTokenSerialnumber')
-            userid = token.get('LinOtpUserid')
-            resolverC = token.get('LinOtpIdResClass')
+            serial = token.get("LinOtpTokenSerialnumber")
+            userid = token.get("LinOtpUserid")
+            resolverC = token.get("LinOtpIdResClass")
             # now do the lookup of the uid in the
             # src resolver to get the login
-            uInfo = getUserInfo(userid, '', resolverC)
+            uInfo = getUserInfo(userid, "", resolverC)
 
-            login = uInfo.get('username')
+            login = uInfo.get("username")
             try:
                 y = getResolverObject(target_resolver)
                 uid = y.getUserId(login)
                 if not uid:
-                    log.warning("User %s not found in target resolver %r",
-                                login, target_resolver)
+                    log.warning(
+                        "User %s not found in target resolver %r",
+                        login,
+                        target_resolver,
+                    )
                     continue
 
                 token.LinOtpIdResClass = target_resolver
                 token.LinOtpUserid = uid
                 # TODO: adjust
-                token.LinOtpIdResolver = target['type']
+                token.LinOtpIdResolver = target["type"]
                 db.session.add(token)
 
                 num_migration += 1
                 serials.add(serial)
 
             except Exception as exx:
-                log.exception("Faild to set new resolver data for token %s: %r"
-                              % (serial, exx))
+                log.exception(
+                    "Faild to set new resolver data for token %s: %r"
+                    % (serial, exx)
+                )
 
-        ret['value'] = True
-        ret['message'] = (_("%d tokens of %d migrated")
-                            % (num_migration, len(tokens)))
-        g.audit['info'] = "[%s] %s" % (stime, ret['message'])
-        g.audit['serial'] = ",".join(list(serials))
-        g.audit['success'] = True
+        ret["value"] = True
+        ret["message"] = _("%d tokens of %d migrated") % (
+            num_migration,
+            len(tokens),
+        )
+        g.audit["info"] = "[%s] %s" % (stime, ret["message"])
+        g.audit["serial"] = ",".join(list(serials))
+        g.audit["success"] = True
 
         return ret
 
@@ -144,13 +152,13 @@ class MigrateResolverHandler(ToolsHandler):
         scondition = None
         if serials:
             # filter token serials
-            serials = ','.join(serials.split(','))
+            serials = ",".join(serials.split(","))
             scondition = and_(Token.LinOtpTokenSerialnumber.in_(serials))
 
         #  create the final condition as AND of all conditions
         condTuple = ()
         for conn in (scondition, rcondition):
-            if type(conn).__name__ != 'NoneType':
+            if type(conn).__name__ != "NoneType":
                 condTuple += (conn,)
 
         tokens = Token.query.filter(*condTuple).all()

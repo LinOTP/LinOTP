@@ -71,13 +71,17 @@ class EnrollTokenDialog(ManageDialog):
 
         # Check the last alert line
         info = self.manage.alert_box_handler.last_line
-        if info.type != "info" or not info.text.startswith("created token with serial"):
+        if info.type != "info" or not info.text.startswith(
+            "created token with serial"
+        ):
             raise RuntimeError(
                 "Password not correctly created. Message:{}".format(info)
             )
 
         # Find the token serial number
-        token_serial = info.element.find_element_by_css_selector(".text_param1").text
+        token_serial = info.element.find_element_by_css_selector(
+            ".text_param1"
+        ).text
 
         if not token_serial or not token_serial.startswith(token_prefix):
             raise Exception("Token was not enrolled correctly.")
@@ -124,7 +128,9 @@ class EnrollTokenDialog(ManageDialog):
 
         wel_hmac_otplen = self.driver.find_element_by_id("hmac_otplen")
         wel_hmac_algorithm = self.driver.find_element_by_id("hmac_algorithm")
-        wel_enroll_hmac_desc = self.driver.find_element_by_id("enroll_hmac_desc")
+        wel_enroll_hmac_desc = self.driver.find_element_by_id(
+            "enroll_hmac_desc"
+        )
 
         if hmac_key:
             # select: seed input - no random seed
@@ -134,8 +140,16 @@ class EnrollTokenDialog(ManageDialog):
             # select: random seed
             self.driver.find_element_by_id("hmac_key_rb_gen").click()
 
-        select(self.driver, select_element=wel_hmac_otplen, option_text=str(otp_length))
-        select(self.driver, select_element=wel_hmac_algorithm, option_text=hash_algorithm)
+        select(
+            self.driver,
+            select_element=wel_hmac_otplen,
+            option_text=str(otp_length),
+        )
+        select(
+            self.driver,
+            select_element=wel_hmac_algorithm,
+            option_text=hash_algorithm,
+        )
 
         fill_form_element(self.driver, "enroll_hmac_desc", description)
         fill_form_element(self.driver, "hmac_pin1", pin)
@@ -147,7 +161,7 @@ class EnrollTokenDialog(ManageDialog):
         self, url, remote_serial, pin="", remote_otp_length=6
     ) -> str:
         """Currently only supports enrolling remote tokens using the remote
-           serial. PIN is always checked locally.
+        serial. PIN is always checked locally.
         """
         self.select_token_type("Remote token")
 
@@ -159,9 +173,7 @@ class EnrollTokenDialog(ManageDialog):
 
         return self.complete_enrollment("LSRE")
 
-    def create_email_token(
-        self, email_address, pin="", description=""
-    ) -> str:
+    def create_email_token(self, email_address, pin="", description="") -> str:
         self.select_token_type("E-mail token")
 
         fill_form_element(self.driver, "enroll_email_desc", description)

@@ -38,14 +38,15 @@ class SystemConfig(ManageDialog):
     """
     Derived from ManageDialog
     """
-    menu_item_id = 'menu_system_config'
-    body_id = 'dialog_system_settings'
-    save_button_id = 'button_system_save'
+
+    menu_item_id = "menu_system_config"
+    body_id = "dialog_system_settings"
+    save_button_id = "button_system_save"
 
     """
     Tab 'Settings' UI elements
     """
-    tab_settings_split_at = 'sys_splitAtSign'
+    tab_settings_split_at = "sys_splitAtSign"
 
     def __init__(self, manage_ui):
         """
@@ -53,9 +54,7 @@ class SystemConfig(ManageDialog):
         """
 
         # Call the default constructor
-        ManageDialog.__init__(self,
-                              manage_ui,
-                              self.body_id)
+        ManageDialog.__init__(self, manage_ui, self.body_id)
 
     def setSplitAt(self, enable):
         """
@@ -65,11 +64,11 @@ class SystemConfig(ManageDialog):
         split_at_checkbox = self.find_by_id(self.tab_settings_split_at)
 
         # Checkbox is not selected/checked but you want to - so check it
-        if(not split_at_checkbox.is_selected() and enable):
+        if not split_at_checkbox.is_selected() and enable:
             split_at_checkbox.click()
 
         # Checkbox is selected/checked but you want to uncheck - so uncheck it
-        if(split_at_checkbox.is_selected() and not enable):
+        if split_at_checkbox.is_selected() and not enable:
             split_at_checkbox.click()
 
     def getSplitAt(self):

@@ -30,40 +30,43 @@ from mock import patch
 from linotp.lib.user import User
 from linotp.lib.token import TokenHandler
 
-class MockedToken():
 
+class MockedToken:
     def getUser(self):
-        return ('1234', 'resolver info', 'passwdResolver.conf1')
+        return ("1234", "resolver info", "passwdResolver.conf1")
 
 
 class TestUserCompare(unittest.TestCase):
-
-    @patch('linotp.lib.token.getTokens4UserOrSerial')
-    @patch('linotp.lib.token.getUserId')
-    def test_compare_user(self,
-                          mocked_getUserId,
-                          mocked_getTokens4UserOrSerial):
+    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.getUserId")
+    def test_compare_user(
+        self, mocked_getUserId, mocked_getTokens4UserOrSerial
+    ):
         """
         test for isTokenOwner
-        
+
         the isTokenOwner should only compare the resolver conf and user id
         """
 
         th = TokenHandler()
 
-        user = User(login='hugo', realm='realm',
-                    resolver_config_identifier='blah')
+        user = User(
+            login="hugo", realm="realm", resolver_config_identifier="blah"
+        )
 
         # ----------------------------------------------------------------- --
 
         # test for same user as uid is the same and the resolver class with
         # conf is the same, only the resolver description is different
 
-        mocked_getUserId.return_value = ('1234', 'migrated resolver info',
-                                         'passwdResolver.conf1')
+        mocked_getUserId.return_value = (
+            "1234",
+            "migrated resolver info",
+            "passwdResolver.conf1",
+        )
         mocked_getTokens4UserOrSerial.return_value = [MockedToken()]
 
-        result = th.isTokenOwner('TokenSerial', user)
+        result = th.isTokenOwner("TokenSerial", user)
 
         assert result
 
@@ -72,11 +75,14 @@ class TestUserCompare(unittest.TestCase):
         # test for different user as uid is the same and the resolver class
         # with different conf, but same resolver description
 
-        mocked_getUserId.return_value = ('1234', 'resolver info',
-                                         'passwdResolver.conf2')
+        mocked_getUserId.return_value = (
+            "1234",
+            "resolver info",
+            "passwdResolver.conf2",
+        )
         mocked_getTokens4UserOrSerial.return_value = [MockedToken()]
 
-        result = th.isTokenOwner('TokenSerial', user)
+        result = th.isTokenOwner("TokenSerial", user)
 
         assert not result
 

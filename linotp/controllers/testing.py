@@ -87,14 +87,14 @@ twilio_fail = """<?xml version='1.0' encoding='UTF-8'?>\
 
 class TestingController(BaseController):
 
-    '''
+    """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server.
 
         https://server/testing/<functionname>
 
     The functions are described below in more detail.
-    '''
+    """
 
     def __before__(self, **params):
         """
@@ -109,17 +109,17 @@ class TestingController(BaseController):
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
 
         return response
 
     def http2sms(self):
-        '''
+        """
         This function simulates an HTTP SMS Gateway.
 
         method:
@@ -152,7 +152,7 @@ class TestingController(BaseController):
 
             account = clickatel, username = <!legit>
                 -> Response Success: "FAILED" (Text)
-        '''
+        """
         param = self.request_params
 
         try:
@@ -184,7 +184,9 @@ class TestingController(BaseController):
 
             elif account == "clickatel":
                 if username == "legit":
-                    return "ID %i" % int(secrets.randbelow(CLICKATEL_ID_MAX + 1))
+                    return "ID %i" % int(
+                        secrets.randbelow(CLICKATEL_ID_MAX + 1)
+                    )
                 else:
                     return "FAILED"
 
@@ -198,7 +200,7 @@ class TestingController(BaseController):
             return "Missing account info."
 
         except Exception as e:
-            log.exception('[http2sms] %r' % e)
+            log.exception("[http2sms] %r" % e)
             db.session.rollback()
             return sendError(response, str(e), 0)
 

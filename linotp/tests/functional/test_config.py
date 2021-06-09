@@ -66,7 +66,8 @@ def create_unicode_alphabet():
 
     return [
         chr(code_point)
-        for r in include_ranges for code_point in range(r[0], r[1]+1)
+        for r in include_ranges
+        for code_point in range(r[0], r[1] + 1)
     ]
 
 
@@ -86,7 +87,7 @@ def create_long_unicode(alphabet, length):
         uchar = random.choice(alphabet)
         res.append(uchar)
 
-    return ''.join(res)
+    return "".join(res)
 
 
 def create_long_entries(length):
@@ -104,17 +105,17 @@ log = logging.getLogger(__name__)
 
 
 class DoRequest(threading.Thread):
-    ''' the request thread'''
+    """ the request thread"""
 
     def __init__(self, utest, rid=1, uri=None, params=None):
-        '''
+        """
         initialize all settings of the request thread
 
         :param utest: method/function to be called
         :param rid: the request id
         :param uri: the request url object
         :param params: additional parmeters
-        '''
+        """
         threading.Thread.__init__(self)
 
         self.utest = utest
@@ -125,7 +126,7 @@ class DoRequest(threading.Thread):
         self.response = None
 
     def run(self):
-        '''
+        """
         run the request
 
         run the request until we recieve an valid response -
@@ -135,7 +136,7 @@ class DoRequest(threading.Thread):
         The inidcation for a redirect is in our test setup, that we dont get
         a json resonse. In this case we do a retry until we have a valid
         response
-        '''
+        """
 
         ok = False
         while not ok:
@@ -150,18 +151,18 @@ class DoRequest(threading.Thread):
         return
 
     def status(self):
-        '''
+        """
         retrieve the request result
 
         :return: the thread request result
-        '''
+        """
         res = '"status": true,' in self.response
         return res
 
     def stat(self):
-        '''
+        """
         retrieve the complete response
-        '''
+        """
         return (self.rid, self.response)
 
 
@@ -177,94 +178,93 @@ class TestConfigController(TestController):
 
     def tearDown(self):
         for entry in self.entries:
-            params = {'key': entry}
-            self.make_system_request('delConfig', params=params)
+            params = {"key": entry}
+            self.make_system_request("delConfig", params=params)
         TestController.tearDown(self)
 
-
-#
-# the long config entry test
-#
+    #
+    # the long config entry test
+    #
 
     def test_random_large_base64_config(self):
-        '''
+        """
         test long config entries with base64 data with many split entries
 
         config entry max length is 2000 -
         entry should be split up into 40 parts
-        '''
+        """
         for i in range(1, 10):
 
             length = 1000 * i + random.randint(0, 1000)
 
             config_data = base64.b64encode(create_long_entries(length))
 
-            config_entry = 'longBase64ConfigEntry%d' % i
+            config_entry = "longBase64ConfigEntry%d" % i
             self.entries.add(config_entry)
 
             param = {config_entry: config_data}
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
 
             assert '"status": true' in response, response
 
-            param = {'key': config_entry}
-            response = self.make_system_request('getConfig', params=param)
+            param = {"key": config_entry}
+            response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
             entry_name = "getConfig %s" % config_entry
-            data = jresp.get('result', {}).get('value', {}).get(entry_name)
+            data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             assert (
-                config_data.decode('utf-8') == data
-            ), 'error while comparing data'
+                config_data.decode("utf-8") == data
+            ), "error while comparing data"
 
-        self.delete_config(prefix='longBase64ConfigEntry')
+        self.delete_config(prefix="longBase64ConfigEntry")
 
         return
 
     def test_random_large_hexlify_config(self):
-        '''
+        """
         test long config entries with hexlified data with many split entries
 
         config entry max length is 2000 -
         entry should be split up into 40 parts
-        '''
+        """
         for i in range(1, 10):
 
             length = 1000 * i + random.randint(0, 1000)
 
             config_data = binascii.hexlify(create_long_entries(length))
 
-            config_entry = 'longHexConfigEntry%d' % i
+            config_entry = "longHexConfigEntry%d" % i
             self.entries.add(config_entry)
 
             param = {config_entry: config_data}
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
 
             assert '"status": true' in response, response
 
-            param = {'key': config_entry}
-            response = self.make_system_request('getConfig', params=param)
+            param = {"key": config_entry}
+            response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
             entry_name = "getConfig %s" % config_entry
-            data = jresp.get('result', {}).get('value', {}).get(entry_name)
+            data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             assert (
-                config_data.decode('utf-8') == data
-            ), 'error while comparing data'
+                config_data.decode("utf-8") == data
+            ), "error while comparing data"
 
-        self.delete_config(prefix='longHexConfigEntry')
+        self.delete_config(prefix="longHexConfigEntry")
 
         return
 
     def test_random_large_UFT8_config(self):
-        '''
+        """
         test long config entries with unicode chars that will be converted to utf-8
 
         config entry max length is 2000 -
         entry should be split up into 40 parts
-        '''
+        """
 
         alphabet = create_unicode_alphabet()
 
@@ -272,23 +272,23 @@ class TestConfigController(TestController):
 
             length = 1000 * i + random.randint(0, 1000)
 
-            config_entry = 'longUnicodeConfigEntry%d' % i
+            config_entry = "longUnicodeConfigEntry%d" % i
             self.entries.add(config_entry)
 
             config_data = create_long_unicode(alphabet, length)
-            u8_config_data = config_data.encode('utf-8')
+            u8_config_data = config_data.encode("utf-8")
 
             param = {config_entry: u8_config_data}
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
 
             assert '"status": true' in response, response
 
-            param = {'key': config_entry}
-            response = self.make_system_request('getConfig', params=param)
+            param = {"key": config_entry}
+            response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
             entry_name = "getConfig %s" % config_entry
-            data = jresp.get('result', {}).get('value', {}).get(entry_name)
+            data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
                 it = 0
@@ -297,59 +297,64 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data == data, \
-                                 'error while comparing data: %r  %r' % \
-                                 (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1])
+                assert (
+                    config_data == data
+                ), "error while comparing data: %r  %r" % (
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
+                )
 
             if len(config_data) != len(data):
-                assert config_data == data, \
-                                 'error while comparing length: %r  %r' % \
-                                 (config_data[len(data):],
-                                  data[len(config_data):])
+                assert (
+                    config_data == data
+                ), "error while comparing length: %r  %r" % (
+                    config_data[len(data) :],
+                    data[len(config_data) :],
+                )
 
-            assert config_data == data, 'error while comparing data'
+            assert config_data == data, "error while comparing data"
 
-        self.delete_config(prefix='longUnicodeConfigEntry')
+        self.delete_config(prefix="longUnicodeConfigEntry")
 
         return
 
     def test_UFT8_alphabet_config(self):
-        '''
+        """
         test long config entries with all unicode chars
 
         config entry max length is 2000 -
         so we check the correct wrapping from 1980 to 2020
-        '''
+        """
 
         alphabet = create_unicode_alphabet()
-        config_data_base = str(base64.b64encode(create_long_entries(1990)),
-                               'utf-8')
+        config_data_base = str(
+            base64.b64encode(create_long_entries(1990)), "utf-8"
+        )
         chunk_len = 2000
         i = -1
         pos = 0
         for pos in range(0, len(alphabet), chunk_len):
             i = i + 1
-            config_data_array = alphabet[pos:pos + chunk_len]
-            config_data = config_data_base + ''.join(config_data_array)
-            u8_config_data = config_data.encode('utf-8')
+            config_data_array = alphabet[pos : pos + chunk_len]
+            config_data = config_data_base + "".join(config_data_array)
+            u8_config_data = config_data.encode("utf-8")
 
-            config_entry = 'longUnicodeConfigEntry%d' % i
+            config_entry = "longUnicodeConfigEntry%d" % i
             param = {config_entry: u8_config_data}
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
             # error occures on update read, so we write a second time
             # to update this entry
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
-            param = {'key': config_entry}
-            response = self.make_system_request('getConfig', params=param)
+            param = {"key": config_entry}
+            response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
             entry_name = "getConfig %s" % config_entry
-            data = jresp.get('result', {}).get('value', {}).get(entry_name)
+            data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
                 it = 0
@@ -358,30 +363,34 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data == data, \
-                                 'error while comparing data: %r  %r' % \
-                                 (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1])
+                assert (
+                    config_data == data
+                ), "error while comparing data: %r  %r" % (
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
+                )
 
             if len(config_data) != len(data):
-                assert config_data == data, \
-                                 'error while comparing length: %r  %r' % \
-                                 (config_data[len(data):],
-                                  data[len(config_data):])
+                assert (
+                    config_data == data
+                ), "error while comparing length: %r  %r" % (
+                    config_data[len(data) :],
+                    data[len(config_data) :],
+                )
 
-            assert config_data == data, 'error while comparing data'
+            assert config_data == data, "error while comparing data"
 
-        self.delete_config(prefix='longUnicodeConfigEntry')
+        self.delete_config(prefix="longUnicodeConfigEntry")
 
         return
 
     def test_wrapping_large_utf8_config(self):
-        '''
+        """
         test long config entries with utf8 chars on split boundary
 
         config entry max length is 2000 -
         so we check the correct wrapping from 1980 to 2020
-        '''
+        """
 
         alphabet = create_unicode_alphabet()
 
@@ -389,28 +398,28 @@ class TestConfigController(TestController):
 
             length = 1980 + i
 
-            config_entry = 'longUtf8ConfigEntry%d' % i
+            config_entry = "longUtf8ConfigEntry%d" % i
             self.entries.add(config_entry)
 
             config_data = create_long_unicode(alphabet, length)
-            u8_config_data = config_data.encode('utf-8')
+            u8_config_data = config_data.encode("utf-8")
 
             param = {config_entry: u8_config_data}
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
             # on the second setConfig an update is made, which is the read
             # of the broken utf-8 string and will fail
             param = {config_entry: u8_config_data}
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
-            param = {'key': config_entry}
-            response = self.make_system_request('getConfig', params=param)
+            param = {"key": config_entry}
+            response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
             entry_name = "getConfig %s" % config_entry
-            data = jresp.get('result', {}).get('value', {}).get(entry_name)
+            data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
                 it = 0
@@ -419,30 +428,34 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data == data, \
-                                 'error while comparing data: %r  %r' % \
-                                 (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1])
+                assert (
+                    config_data == data
+                ), "error while comparing data: %r  %r" % (
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
+                )
 
             if len(config_data) != len(data):
-                assert config_data == data, \
-                                 'error while comparing length: %r  %r' % \
-                                 (config_data[len(data):],
-                                  data[len(config_data):])
+                assert (
+                    config_data == data
+                ), "error while comparing length: %r  %r" % (
+                    config_data[len(data) :],
+                    data[len(config_data) :],
+                )
 
-            assert config_data == data, 'error while comparing data'
+            assert config_data == data, "error while comparing data"
 
-        self.delete_config(prefix='longUtf8ConfigEntry')
+        self.delete_config(prefix="longUtf8ConfigEntry")
 
         return
 
     def test_wrapping_large_utf8_password_config(self):
-        '''
+        """
         test long crypted config entries with utf8 chars on split boundary
 
         config entry max length is 2000 -
         so we check the correct wrapping from 1980 to 2020
-        '''
+        """
 
         alphabet = create_unicode_alphabet()
 
@@ -450,35 +463,37 @@ class TestConfigController(TestController):
 
             length = 1980 + i
 
-            config_entry = 'longUtf8ConfigEntry%d' % i
+            config_entry = "longUtf8ConfigEntry%d" % i
             self.entries.add(config_entry)
 
             config_data = create_long_unicode(alphabet, length)
-            u8_config_data = config_data.encode('utf-8')
+            u8_config_data = config_data.encode("utf-8")
 
             # set as type password
             param = {
                 config_entry: u8_config_data,
-                config_entry + '.type': 'password'}
+                config_entry + ".type": "password",
+            }
 
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
             # on the second setConfig an update is made, which is the read
             # of the broken utf-8 string and will fail
             param = {
                 config_entry: u8_config_data,
-                config_entry + '.type': 'password'}
+                config_entry + ".type": "password",
+            }
 
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
-            param = {'key': config_entry}
-            response = self.make_system_request('getConfig', params=param)
+            param = {"key": config_entry}
+            response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
             entry_name = "getConfig %s" % config_entry
-            data = jresp.get('result', {}).get('value', {}).get(entry_name)
+            data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             # we can't compare the result, as it is the encrypted data
             assert data != config_data, response
@@ -486,32 +501,32 @@ class TestConfigController(TestController):
         return
 
     def test_wrapping_large_hexlify_config(self):
-        '''
+        """
         test long config entries with hexlified chars on split boundary
 
         config entry max length is 2000 -
         so we check the correct wrapping from 1980 to 2020
-        '''
+        """
 
         for i in range(1, 40):
 
             length = 1980 + i
 
-            config_entry = 'longHexlifyConfigEntry%d' % i
+            config_entry = "longHexlifyConfigEntry%d" % i
             self.entries.add(config_entry)
 
             config_data = binascii.hexlify(create_long_entries(length))
             param = {config_entry: config_data}
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
 
             assert '"status": true' in response, response
 
-            param = {'key': config_entry}
-            response = self.make_system_request('getConfig', params=param)
+            param = {"key": config_entry}
+            response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
             entry_name = "getConfig %s" % config_entry
-            data = jresp.get('result', {}).get('value', {}).get(entry_name)
+            data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
                 it = 0
@@ -520,53 +535,57 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data.decode('utf-8') == data, \
-                                 'error while comparing data: %r  %r' % \
-                                 (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1])
+                assert (
+                    config_data.decode("utf-8") == data
+                ), "error while comparing data: %r  %r" % (
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
+                )
 
             if len(config_data) != len(data):
-                assert config_data == data, \
-                                 'error while comparing length: %r  %r' % \
-                                 (config_data[len(data):],
-                                  data[len(config_data):])
+                assert (
+                    config_data == data
+                ), "error while comparing length: %r  %r" % (
+                    config_data[len(data) :],
+                    data[len(config_data) :],
+                )
 
             assert (
-                config_data.decode('utf-8') == data
-            ), 'error while comparing data'
+                config_data.decode("utf-8") == data
+            ), "error while comparing data"
 
-        self.delete_config(prefix='longHexlifyConfigEntry')
+        self.delete_config(prefix="longHexlifyConfigEntry")
 
         return
 
     def test_wrapping_large_base64_config(self):
-        '''
+        """
         test long config entries with base64 chars on split boundary
 
         config entry max length is 2000 -
         so we check the correct wrapping from 1980 to 2020
-        '''
+        """
 
         for i in range(1, 40):
 
             length = 1980 + i
 
-            config_entry = 'longB64ConfigEntry%d' % i
+            config_entry = "longB64ConfigEntry%d" % i
             self.entries.add(config_entry)
 
             config_data = base64.b64encode(create_long_entries(length))
 
             param = {config_entry: config_data}
-            response = self.make_system_request('setConfig', params=param)
+            response = self.make_system_request("setConfig", params=param)
 
             assert '"status": true' in response, response
 
-            param = {'key': config_entry}
-            response = self.make_system_request('getConfig', params=param)
+            param = {"key": config_entry}
+            response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
             entry_name = "getConfig %s" % config_entry
-            data = jresp.get('result', {}).get('value', {}).get(entry_name)
+            data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
                 it = 0
@@ -575,22 +594,26 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data.decode('utf-8') == data, \
-                                 'error while comparing data: %r  %r' % \
-                                 (config_data[it - 3:it + 1],
-                                  data[it - 3:it + 1])
+                assert (
+                    config_data.decode("utf-8") == data
+                ), "error while comparing data: %r  %r" % (
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
+                )
 
             if len(config_data) != len(data):
-                assert config_data == data, \
-                                 'error while comparing length: %r  %r' % \
-                                 (config_data[len(data):],
-                                  data[len(config_data):])
+                assert (
+                    config_data == data
+                ), "error while comparing length: %r  %r" % (
+                    config_data[len(data) :],
+                    data[len(config_data) :],
+                )
 
             assert (
-                config_data.decode('utf-8') == data
-            ), 'error while comparing data'
+                config_data.decode("utf-8") == data
+            ), "error while comparing data"
 
-        self.delete_config(prefix='longB64ConfigEntry')
+        self.delete_config(prefix="longB64ConfigEntry")
 
         return
 
@@ -612,23 +635,26 @@ class TestConfigController(TestController):
 
         """
 
-        multiple_entries = [{
-            'X.PassOnUserNoToken': 'False',
-            'X.client.FORWARDED': 'False',
-            'X.AutoResync': 'False',
-            'X.splitAtSign': 'False',
-            }, {
-            'X.certificates.use_system_certificates': 'False',
-            'X.user_lookup_cache.enabled': 'True',
-            'X.selfservice.realmbox': 'False',
-            'X.resolver_lookup_cache.enabled': 'True',
-            }, {
-            'X.allowSamlAttributes': 'False',
-            'X.FailCounterIncOnFalsePin': 'True',
-            'X.PassOnUserNotFound': 'False',
-            }, {
-            'X.PrependPin': 'True',
-            'X.client.X_FORWARDED_FOR': 'False'}]
+        multiple_entries = [
+            {
+                "X.PassOnUserNoToken": "False",
+                "X.client.FORWARDED": "False",
+                "X.AutoResync": "False",
+                "X.splitAtSign": "False",
+            },
+            {
+                "X.certificates.use_system_certificates": "False",
+                "X.user_lookup_cache.enabled": "True",
+                "X.selfservice.realmbox": "False",
+                "X.resolver_lookup_cache.enabled": "True",
+            },
+            {
+                "X.allowSamlAttributes": "False",
+                "X.FailCounterIncOnFalsePin": "True",
+                "X.PassOnUserNotFound": "False",
+            },
+            {"X.PrependPin": "True", "X.client.X_FORWARDED_FOR": "False"},
+        ]
 
         check_results = []
         numthreads = len(multiple_entries)
@@ -637,7 +663,7 @@ class TestConfigController(TestController):
         for tid in range(numthreads):
             params[tid] = multiple_entries[tid]
 
-        uri = url(controller='system', action='setConfig')
+        uri = url(controller="system", action="setConfig")
 
         for tid in range(numthreads):
             param = params.get(tid)
@@ -655,9 +681,11 @@ class TestConfigController(TestController):
             for check_result in check_results:
                 try:
                     jresp = json.loads(check_result.response)
-                    error_message = jresp.get('result', {}).get(
-                                              'error', {}).get(
-                                              'message', '')
+                    error_message = (
+                        jresp.get("result", {})
+                        .get("error", {})
+                        .get("message", "")
+                    )
                     assert msg not in error_message, check_result.response
 
                 except (ValueError, TypeError) as _exx:
@@ -665,8 +693,9 @@ class TestConfigController(TestController):
 
         finally:
 
-            self.delete_config(prefix='X.')
+            self.delete_config(prefix="X.")
 
         return
+
 
 #

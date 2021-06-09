@@ -30,6 +30,7 @@ from linotp_selenium_helper import TestCase
 
 import integration_data as data
 
+
 def test_ldap_resolver_via_api():
     """Test musicians resolver creation via API call"""
     # Get a test case without starting selenium
@@ -45,6 +46,7 @@ def test_ldap_resolver_via_api():
 
     resolver_manager.clear_resolvers_via_api()
     resolver_manager.create_resolver_via_api(data.musicians_ldap_resolver)
+
 
 class TestCreateUserIdResolvers(TestCase):
     """TestCase class that creates 4 UserIdResolvers"""
@@ -66,9 +68,9 @@ class TestCreateUserIdResolvers(TestCase):
         m.clear_resolvers_via_api()
 
         for d in resolver_data:
-            expected_users = d['expected_users']
+            expected_users = d["expected_users"]
             r = m.create_resolver(d)
-            m.test_connection(d['name'], expected_users)
+            m.test_connection(d["name"], expected_users)
             created_resolvers.append(r)
             total_expected_users += expected_users
 
@@ -79,13 +81,16 @@ class TestCreateUserIdResolvers(TestCase):
         realm_manager.close()
 
         user_view = self.manage_ui.user_view
-        assert total_expected_users == user_view.get_num_users(realm_name), \
-            "Expected %i users, got %i" % \
-            (total_expected_users, user_view.get_num_users(realm_name))
+        assert total_expected_users == user_view.get_num_users(
+            realm_name
+        ), "Expected %i users, got %i" % (
+            total_expected_users,
+            user_view.get_num_users(realm_name),
+        )
 
     def create_resolver(self, testdata):
         m = self.manage_ui.useridresolver_manager
-        name = testdata['name']
+        name = testdata["name"]
         m.open()
         if name in m.get_defined_resolvers():
             m.close()
@@ -110,16 +115,16 @@ class TestCreateUserIdResolvers(TestCase):
 
     def test_05_ldap_enforce_starttls(self):
         ldap_data = data.musicians_ldap_resolver.copy()
-        ldap_data['enforce_tls'] = True
-        ldap_data['uri'] = ldap_data['uri'].replace('ldaps:', 'ldap:')
+        ldap_data["enforce_tls"] = True
+        ldap_data["uri"] = ldap_data["uri"].replace("ldaps:", "ldap:")
 
         self.create_resolver(ldap_data)
 
     def test_06_ldap_dont_enforce_starttls(self):
         ldap_data = data.musicians_ldap_resolver.copy()
-        ldap_data['enforce_tls'] = False
-        ldap_data['uri'] = ldap_data['uri'].replace('ldaps:', 'ldap:')
-        del ldap_data['only_trusted_certs']
+        ldap_data["enforce_tls"] = False
+        ldap_data["uri"] = ldap_data["uri"].replace("ldaps:", "ldap:")
+        del ldap_data["only_trusted_certs"]
 
         self.create_resolver(ldap_data)
 
@@ -129,8 +134,12 @@ class TestCreateUserIdResolvers(TestCase):
         return self.create_resolvers_and_realm(testdata)
 
     def test_11_multiple_resolvers(self):
-        testdata = (data.musicians_ldap_resolver, data.physics_ldap_resolver,
-                    data.sql_resolver, data.sepasswd_resolver)
+        testdata = (
+            data.musicians_ldap_resolver,
+            data.physics_ldap_resolver,
+            data.sql_resolver,
+            data.sepasswd_resolver,
+        )
 
         return self.create_resolvers_and_realm(testdata)
 
@@ -145,11 +154,13 @@ class TestCreateUserIdResolvers(TestCase):
         ldap_data = data.musicians_ldap_resolver
 
         # Make sure that we really have a UTF-8 string
-        assert 'cn="عبد الحليم حافظ"' in ldap_data['binddn'], "Test BindDN does not contain UTF-8"
+        assert (
+            'cn="عبد الحليم حافظ"' in ldap_data["binddn"]
+        ), "Test BindDN does not contain UTF-8"
 
         m.create_resolver_via_api(ldap_data)
-        resolver_config = m.get_resolver_params_via_api(ldap_data['name'])
+        resolver_config = m.get_resolver_params_via_api(ldap_data["name"])
 
-        assert resolver_config['type'] == ldap_data['type']
-        assert resolver_config['resolver'] == ldap_data['name']
-        assert resolver_config['data']['BINDDN'] == ldap_data['binddn']
+        assert resolver_config["type"] == ldap_data["type"]
+        assert resolver_config["resolver"] == ldap_data["name"]
+        assert resolver_config["data"]["BINDDN"] == ldap_data["binddn"]

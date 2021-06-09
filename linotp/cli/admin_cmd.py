@@ -41,22 +41,25 @@ from linotp.model import fix_db_encoding
 
 admin_cmds = AppGroup(
     "admin",
-    help="Administrative commands to manage the linotp application server.")
+    help="Administrative commands to manage the linotp application server.",
+)
 
 # ------------------------------------------------------------------------- --
 # Command `linotp admin fix-db-encoding`
 # ------------------------------------------------------------------------- --
 
-@admin_cmds.command('fix-db-encoding', help=(
-"""Fix encoding of database entries of python2+mysql database
+
+@admin_cmds.command(
+    "fix-db-encoding",
+    help=(
+        """Fix encoding of database entries of python2+mysql database
 by converting data from iso latin encoding to utf8 encoding.
 Affected data might be Config values (Config.Value) and description
 (Config.Description) entries as well as Token info (Token.LinOtpTokenInfo)
 and description (Token.LinOtpTokenDesc) entries.
-""")
+"""
+    ),
 )
-
-
 @with_appcontext
 def fix_db_encoding_command():
     """Fix the python2+mysql iso8859 encoding by conversion to utf-8."""

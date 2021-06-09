@@ -35,15 +35,15 @@ def test_compare_password():
 
     # init the SecretObject
 
-    enc_password = utils.crypt_password('password').encode('utf-8')
-    sec_obj = SecretObj(val=enc_password, iv=b':1:')
+    enc_password = utils.crypt_password("password").encode("utf-8")
+    sec_obj = SecretObj(val=enc_password, iv=b":1:")
 
     # run the comparison tests - positive test
 
-    res = sec_obj.compare_password('password')
+    res = sec_obj.compare_password("password")
     assert res
 
     # negative test
 
-    res = sec_obj.compare_password('Password')
+    res = sec_obj.compare_password("Password")
     assert not res

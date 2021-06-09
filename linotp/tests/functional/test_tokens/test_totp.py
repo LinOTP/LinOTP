@@ -42,7 +42,7 @@ from linotp.lib.HMAC import HmacOtp
 from linotp.tests import TestController
 
 
-'''
+"""
   +-------------+--------------+------------------+----------+--------+
   |  Time (sec) |   UTC Time   | Value of T (hex) |   TOTP   |  Mode  |
   +-------------+--------------+------------------+----------+--------+
@@ -88,7 +88,7 @@ from linotp.tests import TestController
 
 
 
-'''
+"""
 seed = "3132333435363738393031323334353637383930"
 seed32 = "3132333435363738393031323334353637383930313233343536373839303132"
 seed64 = "31323334353637383930313233343536373839303132333435363738393031323334353637383930313233343536373839303132333435363738393031323334"
@@ -100,6 +100,7 @@ def time2counter(t_time, t_step=60):
     t_delta = (t_time - unix_start_time).total_seconds()
     counts = t_delta / t_step
     import math
+
     return math.floor(counts)
 
 
@@ -110,53 +111,52 @@ def get_otp(key, counter=None, digits=8):
 
 
 class TestTotpController(TestController):
-    '''
-    '''
+    """"""
 
     def test_get_otp_is_correct(self):
 
         t_counter = time2counter(
-            t_time=unix_start_time + timedelta(seconds=59),
-            t_step=30)
+            t_time=unix_start_time + timedelta(seconds=59), t_step=30
+        )
 
         otp = get_otp(key=seed, counter=t_counter)
 
-        assert otp == '94287082'
+        assert otp == "94287082"
 
-        utc_time = '2005-03-18  01:58:29'  # 1111111109
-        t1_time = datetime.strptime(utc_time, '%Y-%m-%d  %H:%M:%S')
+        utc_time = "2005-03-18  01:58:29"  # 1111111109
+        t1_time = datetime.strptime(utc_time, "%Y-%m-%d  %H:%M:%S")
 
         t_counter = time2counter(t1_time, t_step=30)
         otp = get_otp(key=seed, counter=t_counter)
 
-        assert otp == '07081804'
+        assert otp == "07081804"
 
-        utc_time = '2005-03-18  01:58:31'  # 111111111
-        t2_time = datetime.strptime(utc_time, '%Y-%m-%d  %H:%M:%S')
+        utc_time = "2005-03-18  01:58:31"  # 111111111
+        t2_time = datetime.strptime(utc_time, "%Y-%m-%d  %H:%M:%S")
 
         t_counter = time2counter(t2_time, t_step=30)
         otp = get_otp(key=seed, counter=t_counter)
 
-        assert otp == '14050471'
+        assert otp == "14050471"
 
         return
 
     def test_time_shift(self):
 
         param = {
-            'pin': 'pin',
-            'serial': 'TOTP',
-            'type': 'totp',
-            'otplen': 8,
-            'otpkey': seed,
-            'timeStep': 30
+            "pin": "pin",
+            "serial": "TOTP",
+            "type": "totp",
+            "otplen": 8,
+            "otpkey": seed,
+            "timeStep": 30,
         }
 
-        response = self.make_admin_request('init', params=param)
+        response = self.make_admin_request("init", params=param)
         assert '"status": true,' in response
 
-        utc_time = '2005-03-18  01:58:29'  # 1111111109
-        t_time = datetime.strptime(utc_time, '%Y-%m-%d  %H:%M:%S')
+        utc_time = "2005-03-18  01:58:29"  # 1111111109
+        t_time = datetime.strptime(utc_time, "%Y-%m-%d  %H:%M:%S")
 
         with freeze_time(t_time):
 
@@ -168,44 +168,38 @@ class TestTotpController(TestController):
             t_count = time2counter(t_time, t_step=30)
             otp = get_otp(key=seed, counter=t_count)
 
-            assert otp == '07081804'
+            assert otp == "07081804"
 
-            params = {
-                'serial': 'TOTP',
-                'pass': 'pin' + otp
-            }
+            params = {"serial": "TOTP", "pass": "pin" + otp}
 
-            response = self.make_validate_request('check_s', params=params)
-            assert 'false' not in response.body
+            response = self.make_validate_request("check_s", params=params)
+            assert "false" not in response.body
 
             # -------------------------------------------------------------
 
             # verify that the next test vector is correct as well
 
-            utc_time = '2005-03-18  01:58:31'  # 1111111111
-            t_time = datetime.strptime(utc_time, '%Y-%m-%d  %H:%M:%S')
+            utc_time = "2005-03-18  01:58:31"  # 1111111111
+            t_time = datetime.strptime(utc_time, "%Y-%m-%d  %H:%M:%S")
 
             t_count = time2counter(t_time, t_step=30)
             otp = get_otp(key=seed, counter=t_count)
 
-            assert otp == '14050471'
+            assert otp == "14050471"
 
-            params = {
-                'serial': 'TOTP',
-                'pass': 'pin' + otp
-            }
+            params = {"serial": "TOTP", "pass": "pin" + otp}
 
-            response = self.make_validate_request('check_s', params=params)
-            assert 'false' not in response.body
+            response = self.make_validate_request("check_s", params=params)
+            assert "false" not in response.body
 
-            response = self.make_admin_request('show', params=params)
+            response = self.make_admin_request("show", params=params)
             jresp = json.loads(response.body)
 
-            tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+            tokens = jresp.get("result", {}).get("value", {}).get("data", [])
             assert len(tokens) == 1
             t_info = json.loads(tokens[0].get("LinOtp.TokenInfo"))
 
-            assert t_info['timeShift'] == 30.0, response.body
+            assert t_info["timeShift"] == 30.0, response.body
 
             # -------------------------------------------------------------
 
@@ -215,26 +209,21 @@ class TestTotpController(TestController):
             t_count = time2counter(t_time + timedelta(seconds=90), t_step=30)
             otp = get_otp(key=seed, counter=t_count)
 
-            params = {
-                'serial': 'TOTP',
-                'pass': 'pin' + otp
-            }
+            params = {"serial": "TOTP", "pass": "pin" + otp}
 
-            response = self.make_validate_request('check_s', params=params)
+            response = self.make_validate_request("check_s", params=params)
             assert '"value": true' in response, response
 
-            params = {
-                'serial': 'TOTP'
-            }
+            params = {"serial": "TOTP"}
 
-            response = self.make_admin_request('show', params=params)
+            response = self.make_admin_request("show", params=params)
             jresp = json.loads(response.body)
 
-            tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+            tokens = jresp.get("result", {}).get("value", {}).get("data", [])
             assert len(tokens) == 1
             t_info = json.loads(tokens[0].get("LinOtp.TokenInfo"))
 
-            assert t_info['timeShift'] == 120.0, response.body
+            assert t_info["timeShift"] == 120.0, response.body
 
         # -------------------------------------------------------
         # now move ahead in time to see if shift decrements
@@ -245,49 +234,39 @@ class TestTotpController(TestController):
             t_count = time2counter(t_time + timedelta(seconds=12), t_step=30)
             otp = get_otp(key=seed, counter=t_count)
 
-            params = {
-                'serial': 'TOTP',
-                'pass': 'pin' + otp
-            }
+            params = {"serial": "TOTP", "pass": "pin" + otp}
 
-            response = self.make_validate_request('check_s', params=params)
+            response = self.make_validate_request("check_s", params=params)
             assert '"value": true' in response, response
 
-            params = {
-                'serial': 'TOTP'
-            }
+            params = {"serial": "TOTP"}
 
-            response = self.make_admin_request('show', params=params)
+            response = self.make_admin_request("show", params=params)
             jresp = json.loads(response.body)
 
-            tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+            tokens = jresp.get("result", {}).get("value", {}).get("data", [])
             assert len(tokens) == 1
             t_info = json.loads(tokens[0].get("LinOtp.TokenInfo"))
 
-            assert t_info['timeShift'] == 0.0, response.body
+            assert t_info["timeShift"] == 0.0, response.body
 
             t_count = time2counter(t_time + timedelta(seconds=32), t_step=30)
             otp = get_otp(key=seed, counter=t_count)
 
-            params = {
-                'serial': 'TOTP',
-                'pass': 'pin' + otp
-            }
+            params = {"serial": "TOTP", "pass": "pin" + otp}
 
-            response = self.make_validate_request('check_s', params=params)
+            response = self.make_validate_request("check_s", params=params)
             assert '"value": true' in response, response
 
-            params = {
-                'serial': 'TOTP'
-            }
+            params = {"serial": "TOTP"}
 
-            response = self.make_admin_request('show', params=params)
+            response = self.make_admin_request("show", params=params)
             jresp = json.loads(response.body)
 
-            tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+            tokens = jresp.get("result", {}).get("value", {}).get("data", [])
             assert len(tokens) == 1
             t_info = json.loads(tokens[0].get("LinOtp.TokenInfo"))
 
-            assert t_info['timeShift'] == 30.0, response.body
+            assert t_info["timeShift"] == 30.0, response.body
 
         return

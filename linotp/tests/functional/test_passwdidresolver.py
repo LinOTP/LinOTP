@@ -40,8 +40,8 @@ log = logging.getLogger(__name__)
 
 
 class TestPasswdController(TestController):
-    '''
-    '''
+    """"""
+
     def setUp(self):
         TestController.setUp(self)
         self.create_common_resolvers()
@@ -54,84 +54,86 @@ class TestPasswdController(TestController):
         TestController.tearDown(self)
 
     def test_resolver(self):
-        '''
+        """
         Testing PasswdIdResolver
-        '''
+        """
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({'fileName':
-                      os.path.join(self.fixture_path, 'my-passwd')}, "")
+        y.loadConfig(
+            {"fileName": os.path.join(self.fixture_path, "my-passwd")}, ""
+        )
 
-        userlist = y.getUserList({'username': '*',
-                                  "userid": "= 1000"})
+        userlist = y.getUserList({"username": "*", "userid": "= 1000"})
 
-        assert userlist[0].get('username') == "heinz", userlist
+        assert userlist[0].get("username") == "heinz", userlist
 
         loginId = y.getUserId("heinz")
-        assert loginId == '1000', loginId
+        assert loginId == "1000", loginId
 
         ret = y.getUserInfo(loginId)
-        assert ret.get('username') == "heinz", ret
+        assert ret.get("username") == "heinz", ret
 
-        username_exists = y.getUsername('1000')
+        username_exists = y.getUsername("1000")
         msg = "Username exists: %r" % username_exists
         assert username_exists, msg
 
     def test_no_file(self):
-        '''
+        """
         Testing PasswdIdResolver without file
-        '''
+        """
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
         y.loadFile()
 
-        userlist = y.getUserList({'username': '*',
-                                  "userid": "= 0"})
-        assert userlist[0].get('username') == "root", userlist
+        userlist = y.getUserList({"username": "*", "userid": "= 0"})
+        assert userlist[0].get("username") == "root", userlist
 
         loginId = y.getUserId("root")
-        assert loginId == '0', loginId
+        assert loginId == "0", loginId
 
         ret = y.getUserInfo(loginId)
-        assert ret.get('username') == "root", ret
+        assert ret.get("username") == "root", ret
 
     def test_checkpass_shadow(self):
-        '''
+        """
         Testing checkpass with PasswdIdResolver with a shadow passwd file
-        '''
+        """
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({'fileName':
-                      os.path.join(self.fixture_path, 'my-passwd')}, "")
+        y.loadConfig(
+            {"fileName": os.path.join(self.fixture_path, "my-passwd")}, ""
+        )
 
         success = False
         try:
-            y.checkPass('1000', "geheim")
+            y.checkPass("1000", "geheim")
         except NotImplementedError:
             success = True
 
         assert success
 
     def test_checkpass(self):
-        '''
+        """
         Testing checkpass
-        '''
+        """
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({'fileName':
-                      os.path.join(self.fixture_path, 'my-pass2')}, "")
+        y.loadConfig(
+            {"fileName": os.path.join(self.fixture_path, "my-pass2")}, ""
+        )
 
-        res = y.checkPass('2001', "geheim")
+        res = y.checkPass("2001", "geheim")
         msg = "result %r" % res
         assert res, msg
 
-        res = y.checkPass('2001', "wrongPW")
+        res = y.checkPass("2001", "wrongPW")
         msg = "result %r" % res
         assert res is False, msg
 
     def test_searchfields(self):
-        '''
+        """
         Testing getSearchfields
-        '''
+        """
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({'fileName':
-                      os.path.join(self.fixture_path, 'my-pass2')}, "")
+        y.loadConfig(
+            {"fileName": os.path.join(self.fixture_path, "my-pass2")}, ""
+        )
 
         s = y.getSearchFields()
         assert s, s

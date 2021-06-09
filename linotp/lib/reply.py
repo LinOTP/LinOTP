@@ -49,16 +49,16 @@ required = False
 LINOTP_ERRORS = [707]
 
 httpErr = {
-        '400': 'Bad Request',
-        '401': 'Unauthorized',
-        '403': 'Forbidden',
-        '404': 'Not Found',
-        '410': 'Gone',
-        '500': 'Internal Server Error',
-        '501': 'Not Implemented',
-        '502': 'Bad Gateway',
-        '503': 'Service Unavailable',
-        }
+    "400": "Bad Request",
+    "401": "Unauthorized",
+    "403": "Forbidden",
+    "404": "Not Found",
+    "410": "Gone",
+    "500": "Internal Server Error",
+    "501": "Not Implemented",
+    "502": "Bad Gateway",
+    "503": "Service Unavailable",
+}
 
 resp = """
 <html>
@@ -92,37 +92,51 @@ def _get_httperror_from_params(request):
     httperror = None
     try:
         request_params = current_app.getRequestParams()
-        httperror = request_params.get('httperror', None)
+        httperror = request_params.get("httperror", None)
     except UnicodeDecodeError as exx:
-        log.exception("Could not extract 'httperror' from params because some "
-                "parameter contains invalid Unicode. Trying to extract "
-                "directly from query_string. Exception: %r", exx)
+        log.exception(
+            "Could not extract 'httperror' from params because some "
+            "parameter contains invalid Unicode. Trying to extract "
+            "directly from query_string. Exception: %r",
+            exx,
+        )
         from urllib.parse import parse_qs
+
         params = parse_qs(flask_request.query_string)
-        if b'httperror' in params:
-            httperror_list = params[b'httperror']
+        if b"httperror" in params:
+            httperror_list = params[b"httperror"]
             if len(httperror_list) > 1:
-                log.warning("Parameter 'httperror' specified multiple times. "
-                        "Using last value '%r'. All values: %r",
-                        httperror_list[-1], httperror_list)
+                log.warning(
+                    "Parameter 'httperror' specified multiple times. "
+                    "Using last value '%r'. All values: %r",
+                    httperror_list[-1],
+                    httperror_list,
+                )
             httperror = httperror_list[-1]
     except Exception as exx:
-        log.exception("Exception while extracting 'httperror' from params. "
-                "Falling back to default LinOTP behaviour httperror=None. "
-                "Exception %r", exx)
+        log.exception(
+            "Exception while extracting 'httperror' from params. "
+            "Falling back to default LinOTP behaviour httperror=None. "
+            "Exception %r",
+            exx,
+        )
         httperror = None
     if httperror is not None:
         try:
             httperror = str(int(httperror))
         except ValueError as value_error:
-            log.warning("'%r' is not a valid integer. Using '500' as "
-                    "fallback. ValueError %r", httperror, value_error)
-            httperror = '500'
+            log.warning(
+                "'%r' is not a valid integer. Using '500' as "
+                "fallback. ValueError %r",
+                httperror,
+                value_error,
+            )
+            httperror = "500"
     return httperror
 
 
 def sendError(_response, exception, id=1, context=None):
-    '''
+    """
     sendError - return a HTML or JSON error result document
 
     Default LinOTP behaviour in case of error is to try to always send a '200
@@ -188,14 +202,15 @@ def sendError(_response, exception, id=1, context=None):
     :return:     json rendered sting result
     :rtype:      string
 
-    '''
-    ret = ''
+    """
+    ret = ""
     errId = -311
 
     ## handle the different types of exception:
     ## Exception, LinOtpError, str/unicode
-    if hasattr(exception, '__class__') is True \
-    and isinstance(exception, Exception):
+    if hasattr(exception, "__class__") is True and isinstance(
+        exception, Exception
+    ):
         errDesc = str(exception)
         if isinstance(exception, LinotpError):
             errId = exception.getId()
@@ -213,13 +228,13 @@ def sendError(_response, exception, id=1, context=None):
     send_custom_http_status = False
     if httperror is not None:
         # Client wants custom HTTP status
-        linotp_errors = c.linotpConfig.get('linotp.errors', None)
+        linotp_errors = c.linotpConfig.get("linotp.errors", None)
         if not linotp_errors:
             # Send custom HTTP status in every error case
             send_custom_http_status = True
         else:
             # Only send custom HTTP status in defined error cases
-            if str(errId) in linotp_errors.split(','):
+            if str(errId) in linotp_errors.split(","):
                 send_custom_http_status = True
             else:
                 send_custom_http_status = False
@@ -229,111 +244,120 @@ def sendError(_response, exception, id=1, context=None):
 
         # Always set a reason, when no standard one found (e.g. custom HTTP
         # code like 444) use 'LinOTP Error'
-        reason = httpErr.get(httperror, 'LinOTP Error')
+        reason = httpErr.get(httperror, "LinOTP Error")
         code = httperror
         status = "%s %s" % (httperror, reason)
-        desc = '[%s] %d: %s' % (get_version(), errId, errDesc)
+        desc = "[%s] %d: %s" % (get_version(), errId, errDesc)
         ret = resp % (code, status, code, status, desc)
 
-        response = Response(response=ret, status=code, mimetype= 'text/html')
+        response = Response(response=ret, status=code, mimetype="text/html")
 
-        if context in ['before', 'after']:
+        if context in ["before", "after"]:
             response._exception = exception
 
         return response
 
     else:
         # Send JSON response with HTTP status 200 OK
-        res = { "jsonrpc": get_api_version(),
-                "result" :
-                    {"status": False,
-                        "error": {
-                            "code"    :   errId,
-                            "message" :   errDesc,
-                            },
-                    },
-                 "version": get_version(),
-                 "id": id
-            }
+        res = {
+            "jsonrpc": get_api_version(),
+            "result": {
+                "status": False,
+                "error": {
+                    "code": errId,
+                    "message": errDesc,
+                },
+            },
+            "version": get_version(),
+            "id": id,
+        }
         data = json.dumps(res, indent=3)
-        response = Response(response=data, status=200, mimetype= 'application/json')
+        response = Response(
+            response=data, status=200, mimetype="application/json"
+        )
 
-        if context in ['before', 'after']:
+        if context in ["before", "after"]:
             response._exception = exception
 
         return response
 
 
 def sendResult(response, obj, id=1, opt=None, status=True):
-    '''
-        sendResult - return an json result document
+    """
+    sendResult - return an json result document
 
-        :param response: the pylons response object
-        :type  response: response object
-        :param obj:      simple result object like dict, sting or list
-        :type  obj:      dict or list or string/unicode
-        :param  id:      id value, for future versions
-        :type   id:      int
-        :param opt:      optional parameter, which allows to provide more detail
-        :type  opt:      None or simple type like dict, list or string/unicode
+    :param response: the pylons response object
+    :type  response: response object
+    :param obj:      simple result object like dict, sting or list
+    :type  obj:      dict or list or string/unicode
+    :param  id:      id value, for future versions
+    :type   id:      int
+    :param opt:      optional parameter, which allows to provide more detail
+    :type  opt:      None or simple type like dict, list or string/unicode
 
-        :return:     json rendered sting result
-        :rtype:      string
+    :return:     json rendered sting result
+    :rtype:      string
 
-    '''
+    """
 
-    res = { "jsonrpc": get_api_version(),
-            "result": { "status": status,
-                        "value": obj,
-                      },
-           "version": get_version(),
-           "id": id }
+    res = {
+        "jsonrpc": get_api_version(),
+        "result": {
+            "status": status,
+            "value": obj,
+        },
+        "version": get_version(),
+        "id": id,
+    }
 
     if opt is not None and len(opt) > 0:
         res["detail"] = opt
 
     data = json.dumps(res, indent=3)
 
-    return Response(response=data, status=200, mimetype= 'application/json')
+    return Response(response=data, status=200, mimetype="application/json")
 
 
-def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
-                       request_context_copy=None):
-    '''
-        sendResultIterator - return an json result document in a streamed mode
-                             which requires a request context to be avaliable
+def sendResultIterator(
+    obj, id=1, opt=None, rp=None, page=None, request_context_copy=None
+):
+    """
+    sendResultIterator - return an json result document in a streamed mode
+                         which requires a request context to be avaliable
 
-        :param obj: iterator of generator object like dict, string or list
-        :param  id: id value, for future versions
-        :param opt: optional parameter, which allows to provide more detail
-        :param rp: results per page
-        :param page: number of page
+    :param obj: iterator of generator object like dict, string or list
+    :param  id: id value, for future versions
+    :param opt: optional parameter, which allows to provide more detail
+    :param rp: results per page
+    :param page: number of page
 
-        :return: generator of response data (yield)
-    '''
-
+    :return: generator of response data (yield)
+    """
 
     # establish the request context within the pylons middleware
 
     api_version = get_api_version()
     linotp_version = get_version()
 
-    res = {"jsonrpc": api_version,
-            "result": {"status": True,
-                       "value": "[DATA]",
-                      },
-           "version": linotp_version,
-           "id": id}
+    res = {
+        "jsonrpc": api_version,
+        "result": {
+            "status": True,
+            "value": "[DATA]",
+        },
+        "version": linotp_version,
+        "id": id,
+    }
 
-    err = {"jsonrpc": api_version,
-            "result":
-                {"status": False,
-                 "error": {},
-                },
-            "version": linotp_version,
-            "id": id
-        }
-
+    err = {
+        "jsonrpc": api_version,
+        "result": {
+            "status": False,
+            "error": {},
+        },
+        "version": linotp_version,
+        "id": id,
+    }
 
     start_at = 0
     stop_at = 0
@@ -344,39 +368,41 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
             start_at = int(page) * int(rp)
             stop_at = start_at + int(rp)
         except ValueError as exx:
-            err['result']['error'] = {
-                            "code": 9876,
-                            "message": "%r" % exx,
-                            }
-            log.exception("failed to convert paging request parameters: %r"
-                          % exx)
+            err["result"]["error"] = {
+                "code": 9876,
+                "message": "%r" % exx,
+            }
+            log.exception(
+                "failed to convert paging request parameters: %r" % exx
+            )
             yield json.dumps(err)
             # finally we signal end of error result
             return
 
     typ = "%s" % type(obj)
-    if 'generator' not in typ and 'iterator' not in typ:
-        raise Exception('no iterator method for object %r' % obj)
+    if "generator" not in typ and "iterator" not in typ:
+        raise Exception("no iterator method for object %r" % obj)
 
-    res = {"jsonrpc": api_version,
-            "result": {"status": True,
-                       "value": "[DATA]",
-                      },
-           "version": linotp_version,
-           "id": id}
+    res = {
+        "jsonrpc": api_version,
+        "result": {
+            "status": True,
+            "value": "[DATA]",
+        },
+        "version": linotp_version,
+        "id": id,
+    }
     if page:
-        res['result']['page'] = int(page)
+        res["result"]["page"] = int(page)
 
     if opt is not None and len(opt) > 0:
         res["detail"] = opt
-
 
     surrounding = json.dumps(res)
     prefix, postfix = surrounding.split('"[DATA]"')
 
     # first return the opening
     yield prefix + " ["
-
 
     sep = ""
     counter = 0
@@ -387,7 +413,7 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
         if page:
             if counter >= start_at and counter < stop_at:
                 res = "%s%s\n" % (sep, next_one)
-                sep = ','
+                sep = ","
                 yield res
             if counter >= stop_at:
                 # stop iterating if we reached the last one of the page
@@ -395,20 +421,21 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None,
         else:
             # no paging - no limit
             res = "%s%s\n" % (sep, next_one)
-            sep = ','
+            sep = ","
             yield res
 
     # we add the amount of queried objects
     total = '"queried" : %d' % counter
-    postfix = ', %s %s' % (total, postfix)
+    postfix = ", %s %s" % (total, postfix)
 
     # last return the closing
     yield "] " + postfix
 
 
-def sendCSVResult(response, obj, flat_lines=False,
-                  filename="linotp-tokendata.csv"):
-    '''
+def sendCSVResult(
+    response, obj, flat_lines=False, filename="linotp-tokendata.csv"
+):
+    """
     returns a CSV document of the input data (like in /admin/show)
 
     :param response: The pylons response object
@@ -418,9 +445,9 @@ def sendCSVResult(response, obj, flat_lines=False,
                          dict { 'cell': ..., 'id': ... }
                        as in all the flexigrid functions.
     'type flat_lines: boolean
-    '''
+    """
     delim = "'"
-    seperator = ';'
+    seperator = ";"
     content_type = "application/force-download"
 
     output = ""
@@ -452,8 +479,9 @@ def sendCSVResult(response, obj, flat_lines=False,
             output += "\n"
 
     response = Response(response=output, status=200, mimetype=content_type)
-    response.headers['Content-disposition'] = (
-        'attachment; filename=%s' % filename)
+    response.headers["Content-disposition"] = (
+        "attachment; filename=%s" % filename
+    )
 
     return response
 
@@ -488,7 +516,8 @@ def sendXMLResult(_response, obj, id=1, opt=None):
     send the result as an xml format
     """
 
-    res = '<?xml version="1.0" encoding="UTF-8"?>\
+    res = (
+        '<?xml version="1.0" encoding="UTF-8"?>\
             <jsonrpc version="%s">\
             <result>\
                 <status>True</status>\
@@ -496,7 +525,9 @@ def sendXMLResult(_response, obj, id=1, opt=None):
             </result>\
             <version>%s</version>\
             <id>%s</id>\
-            </jsonrpc>' % (get_api_version(), obj, get_version(), id)
+            </jsonrpc>'
+        % (get_api_version(), obj, get_version(), id)
+    )
     xml_options = ""
     if opt:
         xml_options = "\n<options>" + json2xml(opt) + "</options>"
@@ -510,9 +541,14 @@ def sendXMLResult(_response, obj, id=1, opt=None):
     </result>
     <version>%s</version>
     <id>%s</id>%s
-</jsonrpc>""" % (xml_object, get_version(), id, xml_options)
+</jsonrpc>""" % (
+        xml_object,
+        get_version(),
+        id,
+        xml_options,
+    )
 
-    return Response(response=res, status=200, mimetype='text/xml')
+    return Response(response=res, status=200, mimetype="text/xml")
 
 
 def sendXMLError(_response, exception, id=1):
@@ -523,7 +559,8 @@ def sendXMLError(_response, exception, id=1):
     else:
         errId = exception.getId()
         errDesc = exception.getDescription()
-    res = '<?xml version="1.0" encoding="UTF-8"?>\
+    res = (
+        '<?xml version="1.0" encoding="UTF-8"?>\
             <jsonrpc version="%s">\
             <result>\
                 <status>False</status>\
@@ -534,12 +571,14 @@ def sendXMLError(_response, exception, id=1):
             </result>\
             <version>%s</version>\
             <id>%s</id>\
-            </jsonrpc>' % (get_api_version(), errId, errDesc, get_version(), id)
-    return Response(response=res, status=200, mimetype='text/xml')
+            </jsonrpc>'
+        % (get_api_version(), errId, errDesc, get_version(), id)
+    )
+    return Response(response=res, status=200, mimetype="text/xml")
 
 
-def sendQRImageResult(response, data, param=None, id=1, typ='html'):
-    '''
+def sendQRImageResult(response, data, param=None, id=1, typ="html"):
+    """
     method
         sendQRImageResult
 
@@ -549,7 +588,7 @@ def sendQRImageResult(response, data, param=None, id=1, typ='html'):
         id       -
         html     - print qrcode wrapped by html or not
 
-    '''
+    """
 
     width = 0
     alt = None
@@ -558,42 +597,40 @@ def sendQRImageResult(response, data, param=None, id=1, typ='html'):
     if param is None:
         param = {}
 
-    if 'qr' in param:
-        typ = param.get('qr')
-        del param['qr']
+    if "qr" in param:
+        typ = param.get("qr")
+        del param["qr"]
 
-    if 'width' in param:
-        width = param.get('width')
-        del param['width']
+    if "width" in param:
+        width = param.get("width")
+        del param["width"]
 
-    if 'alt' in param:
-        alt = param.get('alt')
-        del param['alt']
+    if "alt" in param:
+        alt = param.get("alt")
+        del param["alt"]
 
     img_data = data
     if isinstance(data, dict):
-        img_data = data.get('value', "")
+        img_data = data.get("value", "")
 
-    if typ in ['img', 'embed']:
-        content_type = 'text/html'
+    if typ in ["img", "embed"]:
+        content_type = "text/html"
         ret = create_img(img_data, width, alt)
 
-    elif typ in ['png']:
-        content_type = 'image/png'
+    elif typ in ["png"]:
+        content_type = "image/png"
         ret = create_png(img_data)
         response.content_length = len(ret)
 
     else:
-        content_type = 'text/html'
+        content_type = "text/html"
         ret = create_html(img_data, width, param)
 
     return Response(response=ret, status=200, mimetype=content_type)
 
 
 def create_png(data, alt=None):
-    '''
-
-    '''
+    """"""
 
     img = qrcode.make(data)
 
@@ -605,39 +642,39 @@ def create_png(data, alt=None):
 
 
 def create_img_src(data):
-    '''
-        _create_img - create the qr image data
+    """
+    _create_img - create the qr image data
 
-        :param data: input data that will be munched into the qrcode
-        :type  data: string
-        :param width: image width in pixel
-        :type  width: int
+    :param data: input data that will be munched into the qrcode
+    :type  data: string
+    :param width: image width in pixel
+    :type  width: int
 
-        :return: <img/> taged data
-        :rtype:  string
-    '''
+    :return: <img/> taged data
+    :rtype:  string
+    """
 
     o_data = create_png(data)
     data_uri = base64.b64encode(o_data).decode()
-    ret_img_src = 'data:image/png;base64,%s' % data_uri
+    ret_img_src = "data:image/png;base64,%s" % data_uri
 
     return ret_img_src
 
 
 def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
-    '''
-        _create_img - create the qr image data
+    """
+    _create_img - create the qr image data
 
-        :param data: input data that will be munched into the qrcode
-        :type  data: string
-        :param width: image width in pixel
-        :type  width: int
+    :param data: input data that will be munched into the qrcode
+    :type  data: string
+    :param width: image width in pixel
+    :type  width: int
 
-        :return: <img/> taged data
-        :rtype:  string
-    '''
-    width_str = ''
-    alt_str = ''
+    :return: <img/> taged data
+    :rtype:  string
+    """
+    width_str = ""
+    alt_str = ""
 
     img_src = create_img_src(data)
 
@@ -645,45 +682,51 @@ def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
         width_str = " width=%d " % (int(width))
 
     if alt is not None:
-        val = urllib.parse.urlencode({'alt': alt})
-        alt_str = " alt=%r " % (val[len('alt='):])
+        val = urllib.parse.urlencode({"alt": alt})
+        alt_str = " alt=%r " % (val[len("alt=") :])
 
-    ret_img = ('<img id="%s" %s  %s  src="%s"/>' %
-               (img_id, alt_str, width_str, img_src))
+    ret_img = '<img id="%s" %s  %s  src="%s"/>' % (
+        img_id,
+        alt_str,
+        width_str,
+        img_src,
+    )
 
     return ret_img
 
 
 def create_html(data, width=0, alt=None, list_id="challenge_data"):
-    '''
-        _create_html - create the qr image data embeded in html tag
+    """
+    _create_html - create the qr image data embeded in html tag
 
-        :param data: input data that will be munched into the qrcode
-        :type  data: string
-        :param width: image width in pixel
-        :type  width: int
+    :param data: input data that will be munched into the qrcode
+    :type  data: string
+    :param width: image width in pixel
+    :type  width: int
 
-        :return: <img/> taged data
-        :rtype:  string
-    '''
-    alt_str = ''
+    :return: <img/> taged data
+    :rtype:  string
+    """
+    alt_str = ""
     img = create_img(data, width=width, alt=data)
 
     if alt is not None:
         if isinstance(alt, str):
-            alt_str = '<p>%s</p>' % alt
+            alt_str = "<p>%s</p>" % alt
         elif isinstance(alt, dict):
             alta = []
             for k in list(alt.keys()):
-                alta.append('<li> %s: <span class="%s">%s</span> </li>' % (k, k, alt.get(k)))
-            alt_str = '<ul id="%s">%s</ul>' % ( list_id, " ".join(alta))
+                alta.append(
+                    '<li> %s: <span class="%s">%s</span> </li>'
+                    % (k, k, alt.get(k))
+                )
+            alt_str = '<ul id="%s">%s</ul>' % (list_id, " ".join(alta))
         elif isinstance(alt, list):
             alta = []
             for k in alt:
-                alta.append('<li> %s </li>' % (k))
+                alta.append("<li> %s </li>" % (k))
 
-
-    ret_html = '<html><body><div>%s%s</div></body></html>' % (img , alt_str)
+    ret_html = "<html><body><div>%s%s</div></body></html>" % (img, alt_str)
 
     return ret_html
 
@@ -693,8 +736,8 @@ def sendCSVIterator(obj, headers=True):
     output = ""
 
     typ = "%s" % type(obj)
-    if 'generator' not in typ and 'iterator' not in typ:
-        raise Exception('no iterator method for object %r' % obj)
+    if "generator" not in typ and "iterator" not in typ:
+        raise Exception("no iterator method for object %r" % obj)
 
     try:
         for row in obj:
@@ -713,7 +756,7 @@ def sendCSVIterator(obj, headers=True):
                     value = val.replace("\n", " ")
                     output += "%s%s%s, " % (delim, value, delim)
                 elif isinstance(val, int):
-                    value = '%d' % val
+                    value = "%d" % val
                     output += "%s, " % (value)
                 else:
                     output += "%s%s%s, " % (delim, value, delim)
@@ -722,7 +765,8 @@ def sendCSVIterator(obj, headers=True):
             yield str(output)
 
     except Exception as exx:
-        log.debug('error when iterating result for csv output')
+        log.debug("error when iterating result for csv output")
         raise exx
 
-#eof#######################################################
+
+# eof#######################################################

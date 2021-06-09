@@ -53,18 +53,17 @@ class UserView(ManageTab):
 
     def select_realm(self, realm_name=None):
         """We assume we are one the main page /manage and then select
-           the realm from the <select> dropdown on the left
+        the realm from the <select> dropdown on the left
         """
         if not realm_name:
             realm_name = self.realm_name
         else:
             realm_name = realm_name.lower()
 
-        realm_select = self.driver.find_element_by_id('realm')
+        realm_select = self.driver.find_element_by_id("realm")
 
         WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
-            EC.visibility_of_element_located(
-                (By.ID, "realm"))
+            EC.visibility_of_element_located((By.ID, "realm"))
         )
 
         select(self.driver, realm_select, realm_name)
@@ -82,7 +81,7 @@ class UserView(ManageTab):
         Returns the element containing the user view
         """
         tab = self._get_tab()
-        if(realm_name is not None):
+        if realm_name is not None:
             self.select_realm(realm_name)
         return tab
 
@@ -93,17 +92,23 @@ class UserView(ManageTab):
         @param realm_name If given, switch to this realm first
         """
         usertab = self._open_tab_user_view(realm_name)
-        assert usertab, "User tab could not be opened for realm %s" % realm_name
+        assert usertab, (
+            "User tab could not be opened for realm %s" % realm_name
+        )
 
         self.clear_filters(realm_name)
-        pPageStat = usertab.find_element_by_css_selector("div.flexigrid "
-                                                         "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat").text
+        pPageStat = usertab.find_element_by_css_selector(
+            "div.flexigrid "
+            "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat"
+        ).text
         if pPageStat == "No items":
             return 0
         numbers = [int(s) for s in pPageStat.split() if s.isdigit()]
         if len(numbers) != 3:
-            raise UserViewException("Could not determine number of users. "
-                                    "Missing: 'Displaying N1 to N2 of N3'. Found:<%s>" % pPageStat)
+            raise UserViewException(
+                "Could not determine number of users. "
+                "Missing: 'Displaying N1 to N2 of N3'. Found:<%s>" % pPageStat
+            )
         return numbers[2]
 
     def _get_searchbox_element(self):
@@ -111,8 +116,9 @@ class UserView(ManageTab):
         Return element containing user search box
         """
         usertab = self.open_tab()
-        search_box = usertab.find_element_by_css_selector("div.flexigrid "
-                                                          "> div.sDiv > div.sDiv2 > input[name=\"q\"]")
+        search_box = usertab.find_element_by_css_selector(
+            "div.flexigrid " '> div.sDiv > div.sDiv2 > input[name="q"]'
+        )
         return search_box
 
     def clear_filters(self, realm_name=None):
@@ -126,13 +132,12 @@ class UserView(ManageTab):
         usertab = self._open_tab_user_view(realm_name)
         submit_button = usertab.find_element_by_css_selector(
             "div.flexigrid > div.sDiv > div.sDiv2 > "
-            "input[name=\"search_button\"]"
+            'input[name="search_button"]'
         )
         submit_button.click()
 
     def get_user_element(self, username):
-        """Return element for the user in question
-        """
+        """Return element for the user in question"""
 
         usertab = self._open_tab_user_view()
         usertab_id = usertab.get_attribute("id")
@@ -142,8 +147,7 @@ class UserView(ManageTab):
         search_box.send_keys(username)
 
         select_type = usertab.find_element_by_css_selector(
-            "div.flexigrid > div.sDiv > div.sDiv2 > "
-            "select[name=\"qtype\"]"
+            "div.flexigrid > div.sDiv > div.sDiv2 > " 'select[name="qtype"]'
         )
         select(self.driver, select_type, "Username")
 
@@ -151,7 +155,8 @@ class UserView(ManageTab):
         self.wait_for_grid_loading()
 
         usernames = self.driver.find_elements_by_css_selector(
-            '#%s #user_table [abbr="username"] div' % usertab_id)
+            '#%s #user_table [abbr="username"] div' % usertab_id
+        )
 
         for user in usernames:
             if user.text == username:
@@ -166,8 +171,8 @@ class UserView(ManageTab):
 
     def select_user(self, username):
         """Selects (clicks on) a user in the WebUI. This function does not reload
-           the page (because otherwise the selection would be lost) neither before
-           nor after the selection.
+        the page (because otherwise the selection would be lost) neither before
+        nor after the selection.
         """
         user = self.get_user_element(username)
 

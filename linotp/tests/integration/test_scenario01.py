@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 from linotp_selenium_helper.self_service import SelfService
+
 """LinOTP Selenium Test for Scenario 01 - General functionality tests"""
 
 import time
@@ -54,15 +55,16 @@ def calculate_motp(epoch, key, pin, digits=6):
     :type pin: string
     """
     from hashlib import md5
+
     vhash = "%d%s%s" % (epoch / 10, key, pin)
-    motp = md5(vhash.encode('utf-8')).hexdigest()[:digits]
+    motp = md5(vhash.encode("utf-8")).hexdigest()[:digits]
     return motp
 
 
 @pytest.mark.smoketest
 class TestScenario01(TestCase):
     """TestCase class that tests Scenario 01 as defined here:
-       https://wally/projects/linotp/wiki/TestingTest_Szenario_01
+    https://wally/projects/linotp/wiki/TestingTest_Szenario_01
     """
 
     def _announce_test(self, testname):
@@ -106,7 +108,8 @@ class TestScenario01(TestCase):
         self.realm_manager.close()
 
         self._announce_test(
-            "2. In Management Webinterface, check that all users are visible")
+            "2. In Management Webinterface, check that all users are visible"
+        )
 
         self.check_users(realm_name1, ldap_data)
         self.check_users(realm_name2, sql_data)
@@ -115,19 +118,25 @@ class TestScenario01(TestCase):
 
         token_import_aladdin = TokenImportAladdin(self.manage_ui)
 
-        aladdin_xml_path = os.path.join(self.manage_ui.test_data_dir,
-                                        'aladdin.xml')
+        aladdin_xml_path = os.path.join(
+            self.manage_ui.test_data_dir, "aladdin.xml"
+        )
         token_import_aladdin.do_import(file_path=aladdin_xml_path)
 
         serial_token_bach = "oath137332"
         test1_realm = realm_name1.lower()
 
         self._announce_test(
-            "4. Im Management Webinterface nun eine Policy anlegen")
+            "4. Im Management Webinterface nun eine Policy anlegen"
+        )
 
-        Policy(self.manage_ui, "SE_scenario01", "selfservice",
-               "enrollMOTP, setOTPPIN, setMOTPPIN, resync, disable ",
-               test1_realm)
+        Policy(
+            self.manage_ui,
+            "SE_scenario01",
+            "selfservice",
+            "enrollMOTP, setOTPPIN, setMOTPPIN, resync, disable ",
+            test1_realm,
+        )
 
         self._announce_test("5. eToken zuweisen")
 
@@ -140,11 +149,11 @@ class TestScenario01(TestCase):
 
         user_view.select_user("debussy")
         serial_token_debussy = token_enroll.create_remote_token(
-                                   url="https://billybones",
-                                   remote_serial="LSSP0002F653",
-                                   pin="1234",
-                                   remote_otp_length=6,
-                                   )
+            url="https://billybones",
+            remote_serial="LSSP0002F653",
+            pin="1234",
+            remote_otp_length=6,
+        )
 
         self._announce_test("7. Spass-Token zuweisen")
 
@@ -152,7 +161,7 @@ class TestScenario01(TestCase):
         beethoven_token_password = "beethovenspass#ñô"
         serial_token_beethoven = token_enroll.create_static_password_token(
             password=beethoven_token_password,
-            description="Password Token enrolled with Selenium"
+            description="Password Token enrolled with Selenium",
         )
 
         self._announce_test("8. Selfservice mOTP")
@@ -169,7 +178,8 @@ class TestScenario01(TestCase):
         driver.find_element_by_id("motp_s_pin2").send_keys(motp_pin)
         driver.find_element_by_id("motp_self_desc").clear()
         driver.find_element_by_id("motp_self_desc").send_keys(
-            "Selenium self enrolled")
+            "Selenium self enrolled"
+        )
         driver.find_element_by_id("button_register_motp").click()
         alert_box_text = driver.find_element_by_id("alert_box_text").text
         m = re.match(
@@ -182,23 +192,27 @@ class TestScenario01(TestCase):
                 (?P<serial>\w+)           # For example: LSMO0001222C
                 """,
             alert_box_text,
-            re.DOTALL | re.VERBOSE
+            re.DOTALL | re.VERBOSE,
         )
-        assert m is not None, \
-            "alert_box_text does not match regex. Possibly the token was not enrolled properly. %r" % alert_box_text
-        serial_token_mozart = m.group('serial')
+        assert m is not None, (
+            "alert_box_text does not match regex. Possibly the token was not enrolled properly. %r"
+            % alert_box_text
+        )
+        serial_token_mozart = m.group("serial")
         self.driver.find_element_by_xpath(
-            "//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]").click()
+            "//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]"
+        ).click()
         selfservice.logout()
 
         self._announce_test(
-            "9. Alle 4 Benutzer melden sich im selfservice Portal an und setzen die PIN")
+            "9. Alle 4 Benutzer melden sich im selfservice Portal an und setzen die PIN"
+        )
 
         user_token_dict = {
             "bach": serial_token_bach,
             "debussy": serial_token_debussy,
             "mozart": serial_token_mozart,
-            "beethoven": serial_token_beethoven
+            "beethoven": serial_token_beethoven,
         }
 
         for user, token in user_token_dict.items():
@@ -207,11 +221,13 @@ class TestScenario01(TestCase):
             selfservice.logout()
 
         self._announce_test("10. Authentisierung der 4 Benutzer ###")
-        validate = Validate(self.http_protocol,
-                            self.http_host,
-                            self.http_port,
-                            self.http_username,
-                            self.http_password)
+        validate = Validate(
+            self.http_protocol,
+            self.http_host,
+            self.http_port,
+            self.http_username,
+            self.http_password,
+        )
 
         # seed is also set in testdata/aladdin.xml
         seed_oath137332 = "ff06df50017d3b981cfbc4ec4d374040164d8d19"
@@ -220,15 +236,26 @@ class TestScenario01(TestCase):
         # Validate HOTP Token - bach
         hotp = HmacOtp()
         for counter in range(0, 4):
-            otp = "bachnewpin" + \
-                hotp.generate(counter=counter, key=seed_oath137332_bin)
-            access_granted, _ = validate.validate(user="bach@" +
-                                                  test1_realm, password=otp)
-            assert access_granted, "OTP: " + otp + " for user " + \
-                            "bach@" + test1_realm + " returned False"
-        access_granted, _ = validate.validate(user="bach@" + test1_realm,
-                                              password="1234111111")
-        assert not access_granted, "OTP: 1234111111 should be False for user bach"
+            otp = "bachnewpin" + hotp.generate(
+                counter=counter, key=seed_oath137332_bin
+            )
+            access_granted, _ = validate.validate(
+                user="bach@" + test1_realm, password=otp
+            )
+            assert access_granted, (
+                "OTP: "
+                + otp
+                + " for user "
+                + "bach@"
+                + test1_realm
+                + " returned False"
+            )
+        access_granted, _ = validate.validate(
+            user="bach@" + test1_realm, password="1234111111"
+        )
+        assert (
+            not access_granted
+        ), "OTP: 1234111111 should be False for user bach"
 
         # Validate Remote token - debussy
 
@@ -247,51 +274,83 @@ class TestScenario01(TestCase):
         # Validate Spass token - beethoven
 
         # Correct PIN + password = success
-        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin" + beethoven_token_password)
-        assert access_granted, "OTP: " + "beethovennewpin" + " for user " + \
-                        "beethoven@" + test1_realm + " returned False"
+        access_granted, _ = validate.validate(
+            user="beethoven@" + test1_realm,
+            password="beethovennewpin" + beethoven_token_password,
+        )
+        assert access_granted, (
+            "OTP: "
+            + "beethovennewpin"
+            + " for user "
+            + "beethoven@"
+            + test1_realm
+            + " returned False"
+        )
         # wrong PIN + empty password = fail
-        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="randominvalidpin")
-        assert not access_granted, "OTP: randominvalidpin should be False for user beethoven"
+        access_granted, _ = validate.validate(
+            user="beethoven@" + test1_realm, password="randominvalidpin"
+        )
+        assert (
+            not access_granted
+        ), "OTP: randominvalidpin should be False for user beethoven"
         # correct PIN + wrong password = fail
-        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin" + "wrongpassword")
-        assert not access_granted, "beethoven should not auth with wrong token password"
+        access_granted, _ = validate.validate(
+            user="beethoven@" + test1_realm,
+            password="beethovennewpin" + "wrongpassword",
+        )
+        assert (
+            not access_granted
+        ), "beethoven should not auth with wrong token password"
         # Password without pin = fail
-        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password=beethoven_token_password)
-        assert not access_granted, "beethoven should not auth with password and old pin"
+        access_granted, _ = validate.validate(
+            user="beethoven@" + test1_realm, password=beethoven_token_password
+        )
+        assert (
+            not access_granted
+        ), "beethoven should not auth with password and old pin"
         # Correct PIN + password = success (again)
-        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin" + beethoven_token_password)
-        assert access_granted, "OTP: " + "beethovennewpin" + " for user " + \
-                        "beethoven@" + test1_realm + " returned False"
+        access_granted, _ = validate.validate(
+            user="beethoven@" + test1_realm,
+            password="beethovennewpin" + beethoven_token_password,
+        )
+        assert access_granted, (
+            "OTP: "
+            + "beethovennewpin"
+            + " for user "
+            + "beethoven@"
+            + test1_realm
+            + " returned False"
+        )
 
         time.sleep(2)
 
         # Validate mOTP token - mozart
         current_epoch = time.time()
         motp_otp = calculate_motp(
-            epoch=current_epoch,
-            key=motp_key,
-            pin=motp_pin
+            epoch=current_epoch, key=motp_key, pin=motp_pin
         )
 
-        access_granted, _ = validate.validate(user="mozart@" + test1_realm,
-                                              password="mozartnewpin" + motp_otp)
-        time.sleep(1)
-        assert access_granted, "OTP: " + motp_otp + " for user " + \
-                        "mozart@" + test1_realm + " returned False"
-        motp_otp = calculate_motp(
-            epoch=current_epoch - 4000,
-            key=motp_key,
-            pin=motp_pin
+        access_granted, _ = validate.validate(
+            user="mozart@" + test1_realm, password="mozartnewpin" + motp_otp
         )
-        access_granted, _ = validate.validate(user="mozart@" + test1_realm,
-                                              password="mozartnewpin" + motp_otp)
-        assert not access_granted, "OTP: mozartnewpin%s should be False for user mozart" % motp_otp
+        time.sleep(1)
+        assert access_granted, (
+            "OTP: "
+            + motp_otp
+            + " for user "
+            + "mozart@"
+            + test1_realm
+            + " returned False"
+        )
+        motp_otp = calculate_motp(
+            epoch=current_epoch - 4000, key=motp_key, pin=motp_pin
+        )
+        access_granted, _ = validate.validate(
+            user="mozart@" + test1_realm, password="mozartnewpin" + motp_otp
+        )
+        assert not access_granted, (
+            "OTP: mozartnewpin%s should be False for user mozart" % motp_otp
+        )
 
         self._announce_test("11. mOTP Pin im selfservice ändern")
 
@@ -306,25 +365,34 @@ class TestScenario01(TestCase):
 
         current_epoch = time.time()
         motp_otp = calculate_motp(
-            epoch=current_epoch,
-            key=motp_key,
-            pin=new_motp_pin
+            epoch=current_epoch, key=motp_key, pin=new_motp_pin
         )
-        access_granted, _ = validate.validate(user="mozart@" + test1_realm,
-                                              password="mozartnewpin" + motp_otp)
-        assert access_granted, "OTP: mozartnewpin" + motp_otp + " for user " + \
-                        "mozart@" + test1_realm + " returned False"
+        access_granted, _ = validate.validate(
+            user="mozart@" + test1_realm, password="mozartnewpin" + motp_otp
+        )
+        assert access_granted, (
+            "OTP: mozartnewpin"
+            + motp_otp
+            + " for user "
+            + "mozart@"
+            + test1_realm
+            + " returned False"
+        )
 
         self._announce_test("12. Token Resynchronisierung")
 
         # Bach 'presses' his token more than 10 times and fails to authenticate
         counter = 50  # was 19
         hotp = HmacOtp()
-        otp = "bachnewpin" + \
-            hotp.generate(counter=counter, key=seed_oath137332_bin)
-        access_granted, _ = validate.validate(user="bach@" + test1_realm,
-                                              password=otp)
-        assert not access_granted, "OTP: %s should be False for user bach" % otp
+        otp = "bachnewpin" + hotp.generate(
+            counter=counter, key=seed_oath137332_bin
+        )
+        access_granted, _ = validate.validate(
+            user="bach@" + test1_realm, password=otp
+        )
+        assert not access_granted, (
+            "OTP: %s should be False for user bach" % otp
+        )
 
         selfservice.login("bach", "Test123!", test1_realm)
 
@@ -335,46 +403,60 @@ class TestScenario01(TestCase):
         selfservice.logout()
 
         # Should be able to authenticate again
-        otp = "bachnewpin" + \
-            hotp.generate(counter=counter + 3, key=seed_oath137332_bin)
-        access_granted, _ = validate.validate(user="bach@" + test1_realm,
-                                              password=otp)
+        otp = "bachnewpin" + hotp.generate(
+            counter=counter + 3, key=seed_oath137332_bin
+        )
+        access_granted, _ = validate.validate(
+            user="bach@" + test1_realm, password=otp
+        )
         assert access_granted, "OTP: %s should be True for user bach" % otp
 
         self._announce_test(
-            "13. Benutzer beethoven deaktiviert seinen Token im Selfservice portal und versucht sich anzumelden.")
+            "13. Benutzer beethoven deaktiviert seinen Token im Selfservice portal und versucht sich anzumelden."
+        )
 
         selfservice.login("beethoven", "Test123!", test1_realm)
         selfservice.disable_token(serial_token_beethoven)
         selfservice.logout()
 
         # beethoven should be unable to authenticate
-        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin" + beethoven_token_password)
-        assert not access_granted, "OTP: beethovennewpin should be False for user beethoven"
+        access_granted, _ = validate.validate(
+            user="beethoven@" + test1_realm,
+            password="beethovennewpin" + beethoven_token_password,
+        )
+        assert (
+            not access_granted
+        ), "OTP: beethovennewpin should be False for user beethoven"
 
         self._announce_test(
-            "14. Der Admin entsperrt diesen Token, der Benutzer beethoven kann sich wieder anmelden.")
+            "14. Der Admin entsperrt diesen Token, der Benutzer beethoven kann sich wieder anmelden."
+        )
 
         token_view.open()
         token_view.enable_token(serial_token_beethoven)
 
         # beethoven should be able to authenticate
-        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
-                                              password="beethovennewpin" + beethoven_token_password)
-        assert access_granted, "OTP: beethovennewpin should be able to authenticate after re-enabled token."
+        access_granted, _ = validate.validate(
+            user="beethoven@" + test1_realm,
+            password="beethovennewpin" + beethoven_token_password,
+        )
+        assert (
+            access_granted
+        ), "OTP: beethovennewpin should be able to authenticate after re-enabled token."
 
     def check_users(self, realm, data):
-        expected_users = data['expected_users']
-        users = data['users']
+        expected_users = data["expected_users"]
+        users = data["users"]
 
         found_users = self.manage_ui.user_view.get_num_users(realm)
 
-        assert expected_users == found_users, \
-                         "Not the expected number of users in realm %s: Expecting %s but found %s" \
-                         % (realm, expected_users, found_users)
+        assert expected_users == found_users, (
+            "Not the expected number of users in realm %s: Expecting %s but found %s"
+            % (realm, expected_users, found_users)
+        )
 
         for user in users:
-            assert self.manage_ui.user_view.user_exists(user), \
-                            "User '%s' should exist in realm %s" % (user, realm)
+            assert self.manage_ui.user_view.user_exists(
+                user
+            ), "User '%s' should exist in realm %s" % (user, realm)
             break

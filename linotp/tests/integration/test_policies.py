@@ -77,19 +77,23 @@ class TestPolicies(TestCase):
         # Create LDAP UserIdResolver
         ldap_data = data.musicians_ldap_resolver
         self.ldap_resolver = self.useridresolver_manager.create_resolver(
-            ldap_data)
+            ldap_data
+        )
 
         # Create SQL UserIdResolver
         sql_data = data.sql_resolver
 
         self.sql_resolver = self.useridresolver_manager.create_resolver(
-            sql_data)
+            sql_data
+        )
         self.useridresolver_manager.close()
 
         # Create realms
         self.two_resolvers_realm_name = "two_resolvers_realm"
-        self.realm_manager.create(self.two_resolvers_realm_name, [self.ldap_resolver,
-                                                                  self.sql_resolver])
+        self.realm_manager.create(
+            self.two_resolvers_realm_name,
+            [self.ldap_resolver, self.sql_resolver],
+        )
         self.realm_manager.close()
 
         # Set seed of HMAC token
@@ -129,8 +133,8 @@ class TestPolicies(TestCase):
         # Create Token
         self.user_view.select_user(user_b)
         self.manage_ui.token_enroll.create_hotp_token(
-                  pin=user_b_token_pin,
-                  hmac_key=user_b_token_key)
+            pin=user_b_token_pin, hmac_key=user_b_token_key
+        )
 
         ###############################
         ##
@@ -139,10 +143,9 @@ class TestPolicies(TestCase):
         ###############################
 
         # Create policy
-        Policy(self.manage_ui, "otppin3", "authentication",
-               "otppin=3",
-               "*",
-               "*")  # user = "*"
+        Policy(
+            self.manage_ui, "otppin3", "authentication", "otppin=3", "*", "*"
+        )  # user = "*"
 
         # Create event based HMAC token
         # Tokens were imported by self.import_tokens()
@@ -154,8 +157,7 @@ class TestPolicies(TestCase):
 
         # Assign token to user
         # Set a pin
-        self.token_view.assign_token(self.serial_oath137332,
-                                     user_a_token_pin)
+        self.token_view.assign_token(self.serial_oath137332, user_a_token_pin)
 
         # authentication tests
         # - PIN+OTP -> successfully
@@ -167,51 +169,86 @@ class TestPolicies(TestCase):
         hotp_a = HmacOtp()
 
         # PIN+OTP -> success
-        otp = user_a_token_pin + \
-            hotp_a.generate(counter=0,
-                            key=seed_oath137332_bin)
+        otp = user_a_token_pin + hotp_a.generate(
+            counter=0, key=seed_oath137332_bin
+        )
 
-        access_granted, _ = self.validate.validate(user=user_a + "@" +
-                                                   user_a_realm, password=otp)
-        assert access_granted, "OTPPIN=3, PIN+OTP: " + otp + " for user " + \
-                        user_a + "@" + user_a_realm + " returned False"
+        access_granted, _ = self.validate.validate(
+            user=user_a + "@" + user_a_realm, password=otp
+        )
+        assert access_granted, (
+            "OTPPIN=3, PIN+OTP: "
+            + otp
+            + " for user "
+            + user_a
+            + "@"
+            + user_a_realm
+            + " returned False"
+        )
 
         # PW+OTP -> success
-        otp = user_a_pw + \
-            hotp_a.generate(counter=1,
-                            key=seed_oath137332_bin)
+        otp = user_a_pw + hotp_a.generate(counter=1, key=seed_oath137332_bin)
 
-        access_granted, _ = self.validate.validate(user=user_a + "@" +
-                                                   user_a_realm, password=otp)
-        assert access_granted, "OTPPIN=3, PW+OTP: " + otp + " for user " + \
-                        user_a + "@" + user_a_realm + " returned False"
+        access_granted, _ = self.validate.validate(
+            user=user_a + "@" + user_a_realm, password=otp
+        )
+        assert access_granted, (
+            "OTPPIN=3, PW+OTP: "
+            + otp
+            + " for user "
+            + user_a
+            + "@"
+            + user_a_realm
+            + " returned False"
+        )
 
         # nonsense+OTP -> success
-        otp = "nonsense" + \
-            hotp_a.generate(counter=2,
-                            key=seed_oath137332_bin)
+        otp = "nonsense" + hotp_a.generate(counter=2, key=seed_oath137332_bin)
 
-        access_granted, _ = self.validate.validate(user=user_a + "@" +
-                                                   user_a_realm, password=otp)
-        assert access_granted, "OTPPIN=3, nonsense+OTP: " + otp + " for user " + \
-                        user_a + "@" + user_a_realm + " returned False"
+        access_granted, _ = self.validate.validate(
+            user=user_a + "@" + user_a_realm, password=otp
+        )
+        assert access_granted, (
+            "OTPPIN=3, nonsense+OTP: "
+            + otp
+            + " for user "
+            + user_a
+            + "@"
+            + user_a_realm
+            + " returned False"
+        )
 
         # OTP -> success
-        otp = hotp_a.generate(counter=3,
-                              key=seed_oath137332_bin)
+        otp = hotp_a.generate(counter=3, key=seed_oath137332_bin)
 
-        access_granted, _ = self.validate.validate(user=user_a + "@" +
-                                                   user_a_realm, password=otp)
-        assert access_granted, "OTPPIN=3, OTP: " + otp + " for user " + \
-                        user_a + "@" + user_a_realm + " returned False"
+        access_granted, _ = self.validate.validate(
+            user=user_a + "@" + user_a_realm, password=otp
+        )
+        assert access_granted, (
+            "OTPPIN=3, OTP: "
+            + otp
+            + " for user "
+            + user_a
+            + "@"
+            + user_a_realm
+            + " returned False"
+        )
 
         # wrong OTP -> fails
         otp = "111111"
 
-        access_denied, _ = self.validate.validate(user=user_a + "@" +
-                                                  user_a_realm, password=otp)
-        assert not access_denied, "OTPPIN=3, wrong OTP: " + otp + " for user " + \
-                         user_a + "@" + user_a_realm + " returned True"
+        access_denied, _ = self.validate.validate(
+            user=user_a + "@" + user_a_realm, password=otp
+        )
+        assert not access_denied, (
+            "OTPPIN=3, wrong OTP: "
+            + otp
+            + " for user "
+            + user_a
+            + "@"
+            + user_a_realm
+            + " returned True"
+        )
 
         ###########################
         #
@@ -227,77 +264,127 @@ class TestPolicies(TestCase):
         ###########################
 
         # Change policy
-        Policy(self.manage_ui, "otppin3", "authentication",
-               "otppin=3",
-               "*",  # realm
-               data.sql_resolver["name"] + ":")  # pick specific resolver
+        Policy(
+            self.manage_ui,
+            "otppin3",
+            "authentication",
+            "otppin=3",
+            "*",  # realm
+            data.sql_resolver["name"] + ":",
+        )  # pick specific resolver
 
         hotp_b = HmacOtp()
 
         # PIN+OTP -> success
-        otp = user_b_token_pin + \
-            hotp_b.generate(counter=0,
-                            key=user_b_token_seed_bin)
+        otp = user_b_token_pin + hotp_b.generate(
+            counter=0, key=user_b_token_seed_bin
+        )
 
-        access_granted, _ = self.validate.validate(user=user_b + "@" +
-                                                   user_b_realm, password=otp)
-        assert access_granted, "OTPPIN=3, PIN+OTP: " + otp + " for user " + \
-                        user_b + "@" + user_b_realm + " returned False"
+        access_granted, _ = self.validate.validate(
+            user=user_b + "@" + user_b_realm, password=otp
+        )
+        assert access_granted, (
+            "OTPPIN=3, PIN+OTP: "
+            + otp
+            + " for user "
+            + user_b
+            + "@"
+            + user_b_realm
+            + " returned False"
+        )
 
         # PW+OTP -> success
-        otp = user_b_pw + \
-            hotp_b.generate(counter=1,
-                            key=user_b_token_seed_bin)
+        otp = user_b_pw + hotp_b.generate(counter=1, key=user_b_token_seed_bin)
 
-        access_granted, _ = self.validate.validate(user=user_b + "@" +
-                                                   user_b_realm, password=otp)
-        assert access_granted, "OTPPIN=3, PW+OTP: " + otp + " for user " + \
-                        user_b + "@" + user_b_realm + " returned False"
+        access_granted, _ = self.validate.validate(
+            user=user_b + "@" + user_b_realm, password=otp
+        )
+        assert access_granted, (
+            "OTPPIN=3, PW+OTP: "
+            + otp
+            + " for user "
+            + user_b
+            + "@"
+            + user_b_realm
+            + " returned False"
+        )
 
         # OTP -> success
-        otp = hotp_b.generate(counter=2,
-                              key=user_b_token_seed_bin)
+        otp = hotp_b.generate(counter=2, key=user_b_token_seed_bin)
 
-        access_granted, _ = self.validate.validate(user=user_b + "@" +
-                                                   user_b_realm, password=otp)
-        assert access_granted, "OTPPIN=3, OTP: " + otp + " for user " + \
-                        user_b + "@" + user_b_realm + " returned False"
+        access_granted, _ = self.validate.validate(
+            user=user_b + "@" + user_b_realm, password=otp
+        )
+        assert access_granted, (
+            "OTPPIN=3, OTP: "
+            + otp
+            + " for user "
+            + user_b
+            + "@"
+            + user_b_realm
+            + " returned False"
+        )
 
         # wrong OTP -> fails
         otp = "111111"
 
-        access_denied, _ = self.validate.validate(user=user_b + "@" +
-                                                  user_b_realm, password=otp)
-        assert not access_denied, "OTPPIN=3, wrong OTP: " + otp + " for user " + \
-                         user_b + "@" + user_b_realm + " returned False"
+        access_denied, _ = self.validate.validate(
+            user=user_b + "@" + user_b_realm, password=otp
+        )
+        assert not access_denied, (
+            "OTPPIN=3, wrong OTP: "
+            + otp
+            + " for user "
+            + user_b
+            + "@"
+            + user_b_realm
+            + " returned False"
+        )
 
         # Back to user A and try to authenticate
         # with changed policy!
 
         # OTP -> fails
-        otp = hotp_a.generate(counter=4,
-                              inc_counter=False,
-                              key=seed_oath137332_bin)
+        otp = hotp_a.generate(
+            counter=4, inc_counter=False, key=seed_oath137332_bin
+        )
 
-        access_denied, _ = self.validate.validate(user=user_a + "@" +
-                                                  user_a_realm, password=otp)
-        assert not access_denied, "OTPPIN=3, OTP: " + otp + " for user " + \
-                         user_a + "@" + user_a_realm + " returned True"
+        access_denied, _ = self.validate.validate(
+            user=user_a + "@" + user_a_realm, password=otp
+        )
+        assert not access_denied, (
+            "OTPPIN=3, OTP: "
+            + otp
+            + " for user "
+            + user_a
+            + "@"
+            + user_a_realm
+            + " returned True"
+        )
 
         # PIN+OTP -> success
-        otp = user_a_token_pin + \
-            hotp_a.generate(counter=4,
-                            key=seed_oath137332_bin)
+        otp = user_a_token_pin + hotp_a.generate(
+            counter=4, key=seed_oath137332_bin
+        )
 
-        access_granted, _ = self.validate.validate(user=user_a + "@" +
-                                                   user_a_realm, password=otp)
-        assert access_granted, "OTPPIN=3, PIN+OTP: " + otp + " for user " + \
-                        user_a + "@" + user_a_realm + " returned False"
+        access_granted, _ = self.validate.validate(
+            user=user_a + "@" + user_a_realm, password=otp
+        )
+        assert access_granted, (
+            "OTPPIN=3, PIN+OTP: "
+            + otp
+            + " for user "
+            + user_a
+            + "@"
+            + user_a_realm
+            + " returned False"
+        )
 
     def import_tokens(self):
         """ Import some tokens """
 
-        file_content = """<Tokens>
+        file_content = (
+            """<Tokens>
     <Token serial="00040008CFA5">
     <CaseModel>5</CaseModel>
     <Model>101</Model>
@@ -329,7 +416,9 @@ class TestPolicies(TestCase):
     <ProductName>Safeword Alpine</ProductName>
     <Applications>
     <Application ConnectorID="{ab1397d2-ddb6-4705-b66e-9f83f322deb1}">
-    <Seed>""" + self.seed_oath137332 + """</Seed>
+    <Seed>"""
+            + self.seed_oath137332
+            + """</Seed>
     <MovingFactor>1</MovingFactor>
     </Application>
     </Applications>
@@ -347,6 +436,7 @@ class TestPolicies(TestCase):
     </Applications>
     </Token>
     </Tokens>"""
+        )
 
         token_import_aladdin = TokenImportAladdin(self.manage_ui)
         token_import_aladdin.do_import(file_content)

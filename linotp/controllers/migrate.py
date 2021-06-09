@@ -56,8 +56,7 @@ log = logging.getLogger(__name__)
 
 
 class MigrateController(BaseController):
-    '''
-    '''
+    """"""
 
     def __before__(self, **params):
         """
@@ -73,14 +72,13 @@ class MigrateController(BaseController):
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
         return response
-
 
     def backup(self):
         """
@@ -100,8 +98,8 @@ class MigrateController(BaseController):
 
         try:
             try:
-                backupid = self.request_params['backupid']
-                passphrase = self.request_params['pass']
+                backupid = self.request_params["backupid"]
+                passphrase = self.request_params["pass"]
             except KeyError as exx:
                 raise Exception("missing Parameter:%r" % exx)
 
@@ -114,8 +112,8 @@ class MigrateController(BaseController):
             b_name = hashlib.sha256(backupid).digest()[:16]
             b_name = "%s.hbak" % binascii.hexlify(b_name)
 
-            with open(b_name, 'w') as f:
-                f.write(json.dumps({'Salt': binascii.hexlify(salt)}))
+            with open(b_name, "w") as f:
+                f.write(json.dumps({"Salt": binascii.hexlify(salt)}))
                 f.write("\n")
 
                 i = 0
@@ -133,24 +131,27 @@ class MigrateController(BaseController):
                 backup_data["Token"] = i
 
                 mac = mig.calculate_mac(json.dumps(backup_data))
-                f.write(json.dumps({"Counter": backup_data,
-                                    'mac': binascii.hexlify(mac)}))
+                f.write(
+                    json.dumps(
+                        {"Counter": backup_data, "mac": binascii.hexlify(mac)}
+                    )
+                )
                 f.write("\n")
 
             result = {}
-            for val in ['Token', 'Config']:
+            for val in ["Token", "Config"]:
                 result[val] = backup_data[val]
 
             return sendResult(response, result)
 
         except PolicyException as pe:
             db.session.rollback()
-            log.exception('[backup] policy failed: %r' % pe)
+            log.exception("[backup] policy failed: %r" % pe)
             return sendError(response, str(pe), 1)
 
         except Exception as e:
             db.session.rollback()
-            log.exception('[backup] failed: %r' % e)
+            log.exception("[backup] failed: %r" % e)
             return sendError(response, e)
 
     def restore(self):
@@ -179,10 +180,12 @@ class MigrateController(BaseController):
 
         try:
             try:
-                backupid = self.request_params['backupid']
-                passphrase = self.request_params['pass']
+                backupid = self.request_params["backupid"]
+                passphrase = self.request_params["pass"]
                 remove_backup_file = (
-                            self.request_params.get("remove_backup", "true").lower() == "true")
+                    self.request_params.get("remove_backup", "true").lower()
+                    == "true"
+                )
             except KeyError as exx:
                 missing_param = True
                 raise Exception("missing Parameter:%r" % exx)
@@ -194,12 +197,13 @@ class MigrateController(BaseController):
             backup_file = "%s.hbak" % binascii.hexlify(backup_file)
 
             if not os.path.isfile(backup_file):
-                raise Exception("No restore file found for backupid=%s"
-                                % backupid)
+                raise Exception(
+                    "No restore file found for backupid=%s" % backupid
+                )
 
             counters = {}
             counter_check_done = False
-            with open(backup_file, 'r') as f:
+            with open(backup_file, "r") as f:
                 for data in f.readlines():
 
                     if not data.strip():  # skip empty lines
@@ -210,16 +214,18 @@ class MigrateController(BaseController):
                     if not mig and "Salt" in restore_data:
                         salt = restore_data["Salt"]
                         mig = MigrationHandler()
-                        mig.setup(passphrase=passphrase,
-                                  salt=binascii.unhexlify(salt))
+                        mig.setup(
+                            passphrase=passphrase,
+                            salt=binascii.unhexlify(salt),
+                        )
 
                     elif "Config" in restore_data and mig:
-                        config_entry = restore_data['Config']
+                        config_entry = restore_data["Config"]
                         mig.set_config_entry(config_entry)
                         counters["Config"] = counters.get("Config", 0) + 1
 
                     elif "Token" in restore_data and mig:
-                        token_entry = restore_data['Token']
+                        token_entry = restore_data["Token"]
                         mig.set_token_data(token_entry)
                         counters["Token"] = counters.get("Token", 0) + 1
 
@@ -233,43 +239,46 @@ class MigrateController(BaseController):
                         if binascii.hexlify(mac) != restore_data["mac"]:
                             raise Exception("Restore Lines mismatch")
 
-                        if (restore_data["Counter"].get("Token") !=
-                                counters.get("Token", 0)):
+                        if restore_data["Counter"].get(
+                            "Token"
+                        ) != counters.get("Token", 0):
                             raise Exception("Restore Token mismatch")
 
-                        if (restore_data["Counter"].get("Config") !=
-                                counters.get("Config", 0)):
+                        if restore_data["Counter"].get(
+                            "Config"
+                        ) != counters.get("Config", 0):
                             raise Exception("Restore Config mismatch")
 
                         counter_check_done = True
 
                     else:
                         if not mig:
-                            raise Exception('MigrationHandler not '
-                                            'initialized!')
+                            raise Exception(
+                                "MigrationHandler not " "initialized!"
+                            )
                         else:
                             log.info("unknown entry")
 
             # if somebody removed the last line, we cry for it
             if not counter_check_done:
-                raise Exception('incomplete migration file!')
+                raise Exception("incomplete migration file!")
 
             db.session.commit()
             log.debug("[restore] success")
             return sendResult(response, counters)
 
         except PolicyException as pe:
-            log.exception('[restore] policy failed: %r' % pe)
+            log.exception("[restore] policy failed: %r" % pe)
             return sendError(response, str(pe), 1)
 
         except DecryptionError as err:
             decryption_error = True
-            log.exception('Error - failed with %r' % err)
+            log.exception("Error - failed with %r" % err)
             db.session.rollback()
             return sendError(response, err)
 
         except Exception as err:
-            log.exception('Error - failed with %r' % err)
+            log.exception("Error - failed with %r" % err)
             db.session.rollback()
             return sendError(response, err)
 

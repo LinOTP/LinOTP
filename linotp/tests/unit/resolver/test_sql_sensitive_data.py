@@ -33,13 +33,14 @@ from mock import patch
 
 from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
+
 class TestSQLResolverSensitiveData(object):
     """Test class for SQL sensitive data"""
 
     resolver = None
 
-    @patch('linotp.lib.crypto.encrypted_data.decryptPassword')
-    @patch('linotp.lib.crypto.encrypted_data.encryptPassword')
+    @patch("linotp.lib.crypto.encrypted_data.decryptPassword")
+    @patch("linotp.lib.crypto.encrypted_data.encryptPassword")
     def load_resolver(self, mocked_encryptPassword, mocked_decryptPassword):
         """"Read sql resolver configuration from a given JSON file."""
 
@@ -49,34 +50,40 @@ class TestSQLResolverSensitiveData(object):
             "config": {
                 "Driver": "sqlite",
                 "Port": "",
-                "Database": "%s/imported/data/linotp-users.sql" % current_directory,
+                "Database": "%s/imported/data/linotp-users.sql"
+                % current_directory,
                 "Server": "",
                 "User": "",
                 "Password": "",
                 "Table": "linotp_users",
-                "Map":  json.dumps({
+                "Map": json.dumps(
+                    {
                         "username": "username",
                         "userid": "id",
                         "password": "password",
                         "givenname": "givenname",
                         "surname": "surname",
-                        "email": "email"})
+                        "email": "email",
+                    }
+                ),
             },
-            "config2_map": json.dumps({
-                "username": "username",
-                            "userid": "username",
-                            "password": "password",
-                            "givenname": "givenname",
-                            "surname": "surname",
-                            "email": "email"}),
-
-            "config3_where": "(1 = 0 OR linotp_users.id > 2 ) AND 1 = 1"
+            "config2_map": json.dumps(
+                {
+                    "username": "username",
+                    "userid": "username",
+                    "password": "password",
+                    "givenname": "givenname",
+                    "surname": "surname",
+                    "email": "email",
+                }
+            ),
+            "config3_where": "(1 = 0 OR linotp_users.id > 2 ) AND 1 = 1",
         }
 
-        mocked_encryptPassword.return_value = b''
-        mocked_decryptPassword.return_value = b''
+        mocked_encryptPassword.return_value = b""
+        mocked_decryptPassword.return_value = b""
 
-        config = sql_config['config']
+        config = sql_config["config"]
 
         resolver = SQLResolver()
         resolver.loadConfig(config, "")
@@ -93,20 +100,20 @@ class TestSQLResolverSensitiveData(object):
             assert res == 1
 
             user_info = resolver.getUserInfo(res)
-            assert 'password' not in user_info
+            assert "password" not in user_info
 
         return
 
-    def test_sql_getUserList(self,base_app):
+    def test_sql_getUserList(self, base_app):
         """SQL: test the userinfo does not return sensitive data."""
 
         with base_app.app_context():
             resolver = self.load_resolver()
 
-            users = resolver.getUserList({'username': '*'})
+            users = resolver.getUserList({"username": "*"})
 
             for user_info in users:
-                assert 'password' not in user_info
+                assert "password" not in user_info
 
         return
 
@@ -116,11 +123,7 @@ class TestSQLResolverSensitiveData(object):
         with base_app.app_context():
             resolver = self.load_resolver()
 
-            assert resolver.checkPass(
-                resolver.getUserId("user1"),
-                "password")
-            assert resolver.checkPass(
-                resolver.getUserId("user2"),
-                "password")
+            assert resolver.checkPass(resolver.getUserId("user1"), "password")
+            assert resolver.checkPass(resolver.getUserId("user2"), "password")
 
         return

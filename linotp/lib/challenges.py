@@ -49,13 +49,16 @@ class Challenges(object):
         :return: length of transaction id
         """
         transid_len = int(
-            context.get(
-            'Config', {}).get(
-            'TransactionIdLength', Challenges.DefaultTransactionIdLength))
+            context.get("Config", {}).get(
+                "TransactionIdLength", Challenges.DefaultTransactionIdLength
+            )
+        )
 
         if transid_len < 12 or transid_len > 17:
-            raise Exception("TransactionIdLength must be between 12 and 17, "
-                            "was %d" % transid_len)
+            raise Exception(
+                "TransactionIdLength must be between 12 and 17, "
+                "was %d" % transid_len
+            )
         return transid_len
 
     @staticmethod
@@ -70,12 +73,15 @@ class Challenges(object):
                             been verified before
         :return:         return a list of challenge dict
         """
-        log.debug('lookup_challenges: serial %r: transactionid %r',
-                  serial, transid)
+        log.debug(
+            "lookup_challenges: serial %r: transactionid %r", serial, transid
+        )
 
         if transid is None and serial is None:
-            log.debug('lookup_challenges was called without serial or '
-                      'transid! Returning all challenges')
+            log.debug(
+                "lookup_challenges was called without serial or "
+                "transid! Returning all challenges"
+            )
 
         conditions = ()
 
@@ -93,15 +99,20 @@ class Challenges(object):
         if filter_open is True:
             conditions += (and_(Challenge.session.like('%"status": "open"%')),)
 
-        challenges = Challenge.query.filter(
-            *conditions).order_by(desc(Challenge.id)).all()
+        challenges = (
+            Challenge.query.filter(*conditions)
+            .order_by(desc(Challenge.id))
+            .all()
+        )
 
-        log.debug('lookup_challenges: founnd challenges: %r', challenges)
+        log.debug("lookup_challenges: founnd challenges: %r", challenges)
 
         return challenges
 
     @staticmethod
-    def create_challenge(token, options=None, challenge_id=None, id_postfix=''):
+    def create_challenge(
+        token, options=None, challenge_id=None, id_postfix=""
+    ):
         """
         dedicated method to create a challenge to support the implementation
         of challenge policies in future
@@ -121,7 +132,7 @@ class Challenges(object):
         reason = None
         ReasonException = Exception()
 
-        hsm = context['hsm'].get('obj')
+        hsm = context["hsm"].get("obj")
 
         transid_len = Challenges.get_tranactionid_length()
 
@@ -131,16 +142,20 @@ class Challenges(object):
             try:
                 if not challenge_id:
                     transactionid = "%s%s" % (
-                    Challenge.createTransactionId(length=id_length), id_postfix)
+                        Challenge.createTransactionId(length=id_length),
+                        id_postfix,
+                    )
                 else:
                     transactionid = challenge_id
 
                 num_challenges = Challenge.query.filter_by(
-                    transid=transactionid).count()
+                    transid=transactionid
+                ).count()
 
                 if num_challenges == 0:
-                    challenge_obj = Challenge(transid=transactionid,
-                                              tokenserial=token.getSerial())
+                    challenge_obj = Challenge(
+                        transid=transactionid, tokenserial=token.getSerial()
+                    )
                 if challenge_obj is not None:
                     break
 
@@ -154,8 +169,10 @@ class Challenges(object):
             if retry_counter > 100:
                 log.error(
                     "Failed to create challenge for %d times: %r - quiting!",
-                    retry_counter, reason)
-                raise Exception('Failed to create challenge %r' % reason)
+                    retry_counter,
+                    reason,
+                )
+                raise Exception("Failed to create challenge %r" % reason)
 
         expired_challenges, valid_challenges = Challenges.get_challenges(token)
 
@@ -163,10 +180,14 @@ class Challenges(object):
         try:
 
             # we got a challenge object allocated and initialize the challenge
-            (res, open_transactionid, message, attributes) = \
-                token.initChallenge(transactionid,
-                                    challenges=valid_challenges,
-                                    options=options)
+            (
+                res,
+                open_transactionid,
+                message,
+                attributes,
+            ) = token.initChallenge(
+                transactionid, challenges=valid_challenges, options=options
+            )
 
             if res is False:
                 # if a different transid is returned, this indicates, that there
@@ -181,8 +202,9 @@ class Challenges(object):
                 challenge_obj.setChallenge(message)
                 challenge_obj.save()
 
-                (res, message, data, attributes) = \
-                    token.createChallenge(transactionid, options=options)
+                (res, message, data, attributes) = token.createChallenge(
+                    transactionid, options=options
+                )
 
                 if res is True:
                     # persist the final challenge data + message
@@ -191,7 +213,7 @@ class Challenges(object):
                     challenge_obj.signChallenge(hsm)
                     challenge_obj.save()
                 else:
-                    transactionid = ''
+                    transactionid = ""
                     reason = message
                     ReasonException = Exception(message)
 
@@ -204,32 +226,41 @@ class Challenges(object):
         # if something goes wrong with the challenge, remove it
         if res is False and challenge_obj is not None:
             try:
-                log.debug("Deleting challenge from database session, because "
-                          "of earlier error")
+                log.debug(
+                    "Deleting challenge from database session, because "
+                    "of earlier error"
+                )
                 db.session.delete(challenge_obj)
                 db.session.commit()
             except Exception as exx:
-                log.debug("Deleting challenge from database session failed. "
-                          "Retrying with expunge. Exception was: %r", exx)
+                log.debug(
+                    "Deleting challenge from database session failed. "
+                    "Retrying with expunge. Exception was: %r",
+                    exx,
+                )
                 try:
                     db.session.expunge(challenge_obj)
                     db.session.commit()
                 except Exception as exx:
-                    log.debug("Expunging challenge from database session "
-                              "failed. Exception was: %r", exx)
+                    log.debug(
+                        "Expunging challenge from database session "
+                        "failed. Exception was: %r",
+                        exx,
+                    )
 
         # in case that create challenge fails, we must raise this reason
         if reason is not None:
-            log.error("Failed to create or init challenge. Reason was %r ",
-                      reason)
+            log.error(
+                "Failed to create or init challenge. Reason was %r ", reason
+            )
             raise ReasonException
 
         # prepare the response for the user
         if transactionid is not None:
-            challenge['transactionid'] = transactionid
+            challenge["transactionid"] = transactionid
 
         if message is not None:
-            challenge['message'] = message
+            challenge["message"] = message
 
         if attributes is not None and type(attributes) == dict:
             challenge.update(attributes)
@@ -256,10 +287,10 @@ class Challenges(object):
         challenge_ids = []
         for challenge in challenges:
             if type(challenge) == dict:
-                if 'id' in challenge:
-                    challenge_id = challenge.get('id')
+                if "id" in challenge:
+                    challenge_id = challenge.get("id")
             elif type(challenge) == Challenge:
-                challenge_id = challenge.get('id')
+                challenge_id = challenge.get("id")
             elif isinstance(challenge, (str, int)):
                 challenge_id = challenge
 
@@ -267,8 +298,10 @@ class Challenges(object):
                 challenge_ids.append(int(challenge_id))
             except ValueError:
                 # ignore
-                log.warning("failed to convert the challenge id %r to integer",
-                            challenge_id)
+                log.warning(
+                    "failed to convert the challenge id %r to integer",
+                    challenge_id,
+                )
 
         res = 1
         # gather all challenges with one sql 'in' statement
@@ -288,10 +321,13 @@ class Challenges(object):
         return res
 
     @staticmethod
-    def get_challenges(token=None, transid=None, options=None, filter_open=False):
+    def get_challenges(
+        token=None, transid=None, options=None, filter_open=False
+    ):
 
         state = options and options.get(
-            'state', options.get('transactionid', None))
+            "state", options.get("transactionid", None)
+        )
 
         if not transid:
             transid = state
@@ -302,7 +338,8 @@ class Challenges(object):
         serial = token and token.getSerial()
 
         challenges = Challenges.lookup_challenges(
-            serial=serial, transid=transid)
+            serial=serial, transid=transid
+        )
 
         expired_challenges = []
         valid_chalenges = []
@@ -322,8 +359,9 @@ class Challenges(object):
 
                 log.error(msg, challenge.transid)
 
-                g.audit['action_detail'] = g.audit.get('action_detail','') + (
-                    msg % challenge.transid)
+                g.audit["action_detail"] = g.audit.get("action_detail", "") + (
+                    msg % challenge.transid
+                )
                 continue
 
             # lookup the validty time of the challenge which is per token
@@ -331,7 +369,7 @@ class Challenges(object):
             tokens = linotp.lib.token.getTokens4UserOrSerial(serial=serial)
             validity = tokens[0].get_challenge_validity()
 
-            c_start_time = challenge.get('timestamp')
+            c_start_time = challenge.get("timestamp")
             c_expire_time = c_start_time + datetime.timedelta(seconds=validity)
             c_now = datetime.datetime.now()
             if c_now > c_expire_time:
@@ -365,18 +403,19 @@ class Challenges(object):
             serial = matching_challenge.tokenserial
             token = getTokens4UserOrSerial(serial=serial)[0]
             token_challenges = Challenges.lookup_challenges(serial=serial)
-            to_be_closed = token.challenge_janitor([matching_challenge],
-                                                   token_challenges)
+            to_be_closed = token.challenge_janitor(
+                [matching_challenge], token_challenges
+            )
             to_be_closed_challenges.extend(to_be_closed)
 
             # gather all challenges which are part of the same transaction
             transid = matching_challenge.transid
             if "." in transid:
-                transid = transid.split('.')[0]
+                transid = transid.split(".")[0]
             transid_challenges = Challenges.lookup_challenges(transid=transid)
             to_be_closed_challenges.extend(transid_challenges)
 
-        hsm = context['hsm'].get('obj')
+        hsm = context["hsm"].get("obj")
         for challenge in set(to_be_closed_challenges):
             challenge.close()
             # and calculate the mac for this token data
@@ -397,19 +436,21 @@ class Challenges(object):
         :return: - nothing -
         """
 
-        hsm = context['hsm'].get('obj')
+        hsm = context["hsm"].get("obj")
 
         # we query for all challenges of the token to identify the valid ones
-        (expired_challenges,
-         valid_challenges) = Challenges.get_challenges(token)
+        (expired_challenges, valid_challenges) = Challenges.get_challenges(
+            token
+        )
 
         if success:
             for challenge in token.matching_challenges:
                 # set the valid received
                 challenge.setTanStatus(received=True, valid=True)
 
-            to_be_closed = token.challenge_janitor(token.matching_challenges,
-                                                   valid_challenges)
+            to_be_closed = token.challenge_janitor(
+                token.matching_challenges, valid_challenges
+            )
 
             all_challenges = to_be_closed + token.matching_challenges
 
@@ -445,7 +486,7 @@ class Challenges(object):
         :return: success boolean
         """
 
-        hsm = context['hsm'].get('obj')
+        hsm = context["hsm"].get("obj")
 
         # and calculate the mac for this token data
         result = challenge.checkChallengeSignature(hsm)
@@ -469,10 +510,10 @@ def transaction_id_to_u64(transaction_id):
     # HACK! remove when transaction id handling is
     # refactored.
 
-    if '.' in transaction_id:
-        before, _, after = transaction_id.partition('.')
+    if "." in transaction_id:
+        before, _, after = transaction_id.partition(".")
         encoded = before + after
     else:
-        encoded = transaction_id + '00'
+        encoded = transaction_id + "00"
 
     return int(encoded)

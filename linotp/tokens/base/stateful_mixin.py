@@ -49,7 +49,7 @@ class StatefulTokenMixin(object):
     def current_state(self):
         """ signifies the current state of the token """
 
-        current_state_id = self.getFromTokenInfo('state')
+        current_state_id = self.getFromTokenInfo("state")
         return current_state_id
 
     def ensure_state(self, state_id):
@@ -73,13 +73,14 @@ class StatefulTokenMixin(object):
             the list of valid states
         """
 
-        current_state_id = self.getFromTokenInfo('state')
+        current_state_id = self.getFromTokenInfo("state")
         if current_state_id not in valid_state_ids:
-            raise TokenStateError('Token %r must be in one of the following '
-                                  'states for this action: %s, but current '
-                                  'state is %s' %
-                                  (self, ','.join(valid_state_ids),
-                                   current_state_id))
+            raise TokenStateError(
+                "Token %r must be in one of the following "
+                "states for this action: %s, but current "
+                "state is %s"
+                % (self, ",".join(valid_state_ids), current_state_id)
+            )
 
     def change_state(self, state_id):
         """
@@ -88,6 +89,7 @@ class StatefulTokenMixin(object):
         :param state_id: The new state_id this token should have
         """
 
-        self.addToTokenInfo('state', state_id)
+        self.addToTokenInfo("state", state_id)
+
 
 # eof #

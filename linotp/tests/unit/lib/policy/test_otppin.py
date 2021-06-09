@@ -33,45 +33,48 @@ from mock import patch
 from linotp.lib.user import User
 from linotp.lib.auth.validate import check_pin
 
-class FakeToken():
-    type = 'test'
-    
+
+class FakeToken:
+    type = "test"
+
     def checkPin(self, passw, options=None):
-        if passw == 'good':
+        if passw == "good":
             return True
         else:
             return False
+
 
 class TestOtppinPolicy(unittest.TestCase):
     """
     unit test for check_pin and otppin policy
     """
 
-    @patch('linotp.lib.auth.validate.get_pin_policies')
+    @patch("linotp.lib.auth.validate.get_pin_policies")
     def test_ignore_pin(self, mocked_get_pin_policies):
         """
         test that on otppin policy 3 the pin is ignored
         """
 
-        userObj = User(login='max1', realm='mymixrealm')
+        userObj = User(login="max1", realm="mymixrealm")
         token = FakeToken()
 
         mocked_get_pin_policies.return_value = [3]
 
-        res = check_pin(token, 'QUATSCH', userObj, options={})
+        res = check_pin(token, "QUATSCH", userObj, options={})
         assert res
 
-        res = check_pin(token, '', userObj, options={})
+        res = check_pin(token, "", userObj, options={})
         assert res
 
-        token.type = 'spass'
-        res = check_pin(token, 'bad', userObj, options={})
+        token.type = "spass"
+        res = check_pin(token, "bad", userObj, options={})
         assert not res
 
-        token.type = 'spass'
-        res = check_pin(token, 'good', userObj, options={})
+        token.type = "spass"
+        res = check_pin(token, "good", userObj, options={})
         assert res
 
         return
+
 
 # eof #

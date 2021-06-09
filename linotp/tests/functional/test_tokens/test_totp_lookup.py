@@ -55,6 +55,7 @@ def time2seconds(timestamp):
     """
     return int((timestamp - unix_start_time).total_seconds())
 
+
 def get_otp(key, counter, digits=8, hashfunc=sha1):
     """
     calculate otp from a given counter
@@ -71,7 +72,7 @@ def get_otp(key, counter, digits=8, hashfunc=sha1):
 
 
 class TestTotpLookupController(TestController):
-    '''
+    """
     test for the admin/totp_lookup interface
 
     * verify that the otp is found
@@ -94,7 +95,7 @@ class TestTotpLookupController(TestController):
         * granted if admin and token are in the same realm
         * denied if token is in a realm, where admin is not allowed
 
-    '''
+    """
 
     def setUp(self):
 
@@ -115,7 +116,7 @@ class TestTotpLookupController(TestController):
     def test_verify_lookup_otp_and_response_format(self):
         """ verify that the otp and the totp_lookup response is correct """
 
-        serial = 'totp_lookup'
+        serial = "totp_lookup"
         step = 30
 
         # ------------------------------------------------------------------ --
@@ -123,13 +124,13 @@ class TestTotpLookupController(TestController):
         # create token with a well known seed
 
         params = {
-            'serial': serial,
-            'type': 'totp',
-            'otpkey': seed,
-            'otplen': 8
-            }
+            "serial": serial,
+            "type": "totp",
+            "otpkey": seed,
+            "otplen": 8,
+        }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": false' not in response.body, response.body
 
         # ------------------------------------------------------------------ --
@@ -137,15 +138,15 @@ class TestTotpLookupController(TestController):
         # run test with multiple test times, where the first is taken from
         # the totp spec test vectors
 
-        time_fmt = '%Y-%m-%d %H:%M:%S'
+        time_fmt = "%Y-%m-%d %H:%M:%S"
 
         otp_times = [
-            datetime.strptime('2005-03-18 01:58:29', time_fmt), # 1111111109
-            datetime.strptime('2005-03-18 01:58:39', time_fmt),
-            datetime.strptime('2005-03-18 01:58:59', time_fmt),
-            datetime.strptime('2005-03-18 01:59:01', time_fmt),
-            datetime.now()
-            ]
+            datetime.strptime("2005-03-18 01:58:29", time_fmt),  # 1111111109
+            datetime.strptime("2005-03-18 01:58:39", time_fmt),
+            datetime.strptime("2005-03-18 01:58:59", time_fmt),
+            datetime.strptime("2005-03-18 01:59:01", time_fmt),
+            datetime.now(),
+        ]
 
         for otp_time in otp_times:
 
@@ -155,17 +156,18 @@ class TestTotpLookupController(TestController):
                 # get a valid otp
 
                 seconds = time2seconds(otp_time)
-                counter = int(seconds/step)
+                counter = int(seconds / step)
                 otp = get_otp(key=seed, counter=counter)
 
                 params = {
-                    'serial': serial,
-                    'otp': otp,
-                    'window': '24h',
+                    "serial": serial,
+                    "otp": otp,
+                    "window": "24h",
                 }
 
                 response = self.make_admin_request(
-                    'totp_lookup', params=params)
+                    "totp_lookup", params=params
+                )
                 assert '"value": true' in response.body, response
 
                 # ---------------------------------------------------------- --
@@ -173,12 +175,12 @@ class TestTotpLookupController(TestController):
                 # verify the response detail
 
                 jresp = json.loads(response.body)
-                detail = jresp.get('detail')
+                detail = jresp.get("detail")
 
                 # ---------------------------------------------------------- --
 
                 # verify we have the same otp in the response
-                assert otp == detail['otp']
+                assert otp == detail["otp"]
 
                 # ---------------------------------------------------------- --
 
@@ -186,28 +188,28 @@ class TestTotpLookupController(TestController):
                 otp_time_str = otp_time.strftime(time_fmt)
 
                 # verify otp value from known test set
-                if otp_time_str == '2005-03-18 01:58:29':
-                    assert detail['otp'] == '07081804'
+                if otp_time_str == "2005-03-18 01:58:29":
+                    assert detail["otp"] == "07081804"
 
                 # ---------------------------------------------------------- --
 
                 # verify that the returned time is in iso8601 format
-                if otp_time_str == '2005-03-18 01:58:29':
-                    assert detail['time'] == '2005-03-18T01:58:00'
+                if otp_time_str == "2005-03-18 01:58:29":
+                    assert detail["time"] == "2005-03-18T01:58:00"
 
                 # ---------------------------------------------------------- --
 
                 # verify that the time base is the same - all but the seconds
 
-                assert otp_time_str[:10] == detail['time'][:10]
-                assert otp_time_str[-8:-2] == detail['time'][-8:-2]
+                assert otp_time_str[:10] == detail["time"][:10]
+                assert otp_time_str[-8:-2] == detail["time"][-8:-2]
 
                 # ---------------------------------------------------------- --
 
                 # verify that the validity span matches the time slices
-                input_seconds = int(otp_time_str[-2:]) # 29 seconds
+                input_seconds = int(otp_time_str[-2:])  # 29 seconds
 
-                otp_start = int(detail['time'][-2:])
+                otp_start = int(detail["time"][-2:])
                 assert otp_start in (0, 30)
 
                 otp_end = otp_start + step
@@ -216,7 +218,7 @@ class TestTotpLookupController(TestController):
                 # ---------------------------------------------------------- --
 
                 # verify that the counter matches
-                assert counter == detail['counter']
+                assert counter == detail["counter"]
 
                 # ---------------------------------------------------------- --
 
@@ -226,7 +228,7 @@ class TestTotpLookupController(TestController):
                 start_time = otp_time.replace(second=otp_start)
                 utc_seconds = time2seconds(start_time)
 
-                assert utc_seconds == detail['seconds']
+                assert utc_seconds == detail["seconds"]
 
         return
 
@@ -251,32 +253,32 @@ class TestTotpLookupController(TestController):
         # create the tokens and define the token realms
 
         tokens_realms = {
-            'token1': None,
-            'token2': 'myMixRealm,myOtherRealm',
-            'token3': 'myMixRealm,myDefRealm'
-            }
+            "token1": None,
+            "token2": "myMixRealm,myOtherRealm",
+            "token3": "myMixRealm,myDefRealm",
+        }
 
         for serial, realms in list(tokens_realms.items()):
 
             params = {
-                'serial': serial,
-                'type': 'totp',
-                'otpkey': seed,
-                'otplen': 8,
-                'hash': 'sha1',
-                'step': 30
-                }
+                "serial": serial,
+                "type": "totp",
+                "otpkey": seed,
+                "otplen": 8,
+                "hash": "sha1",
+                "step": 30,
+            }
 
-            response = self.make_admin_request('init', params=params)
+            response = self.make_admin_request("init", params=params)
             assert '"value": false' not in response.body, response.body
 
             if realms:
                 params = {
-                    'serial': serial,
-                    'realms': realms,
-                    }
+                    "serial": serial,
+                    "realms": realms,
+                }
 
-                response = self.make_admin_request('tokenrealm', params)
+                response = self.make_admin_request("tokenrealm", params)
                 assert '"value": false' not in response.body, response.body
 
         # ------------------------------------------------------------------ --
@@ -284,16 +286,16 @@ class TestTotpLookupController(TestController):
         # define the admin policy
 
         params = {
-            'name': 'totp_lookup',
-            'scope': 'admin',
-            'active': True,
-            'action': 'totp_lookup,',
-            'user': 'admin',
-            'realm': 'mydefrealm',
-            }
+            "name": "totp_lookup",
+            "scope": "admin",
+            "active": True,
+            "action": "totp_lookup,",
+            "user": "admin",
+            "realm": "mydefrealm",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response.body, response.body
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response.body, response.body
 
         # ------------------------------------------------------------------ --
 
@@ -302,54 +304,47 @@ class TestTotpLookupController(TestController):
         test_time = datetime.utcnow() - timedelta(hours=1)
 
         seconds = time2seconds(test_time)
-        counter = int(seconds/30)
+        counter = int(seconds / 30)
         otp = get_otp(key=seed, counter=counter)
 
         # ------------------------------------------------------------------ --
 
         # verify: access to token1
 
-        err_msg = 'You do not have the administrative right'
+        err_msg = "You do not have the administrative right"
 
-        params = {
-            'serial': 'token1',
-            'otp': otp
-        }
+        params = {"serial": "token1", "otp": otp}
 
         response = self.make_admin_request(
-            'totp_lookup', params=params, auth_user='admin')
+            "totp_lookup", params=params, auth_user="admin"
+        )
         assert '"status": false' in response.body, response
         assert err_msg in response.body, response
 
         # verify: no access to token2
 
-        params = {
-            'serial': 'token2',
-            'otp': otp
-        }
+        params = {"serial": "token2", "otp": otp}
 
         response = self.make_admin_request(
-            'totp_lookup', params=params, auth_user='admin')
+            "totp_lookup", params=params, auth_user="admin"
+        )
         assert '"status": false' in response.body, response
         assert err_msg in response.body, response
 
         # verify: access to token3
 
-        params = {
-            'serial': 'token3',
-            'otp': otp
-        }
+        params = {"serial": "token3", "otp": otp}
 
         response = self.make_admin_request(
-            'totp_lookup', params=params, auth_user='admin')
+            "totp_lookup", params=params, auth_user="admin"
+        )
         assert '"status": true' in response.body, response
         assert '"value": true' in response.body, response
 
         return
 
-
     def test_verify_window(self):
-        """ verify that the totp_lookup window is working
+        """verify that the totp_lookup window is working
 
         * create an otp for now
         * step into the future by 23 hours
@@ -357,7 +352,7 @@ class TestTotpLookupController(TestController):
         * lookup window backward for one day + 5 hours: success
         """
 
-        serial = 'totp_lookup'
+        serial = "totp_lookup"
         step = 30
 
         # ------------------------------------------------------------------ --
@@ -365,13 +360,13 @@ class TestTotpLookupController(TestController):
         # create token with a well known seed
 
         params = {
-            'serial': serial,
-            'type': 'totp',
-            'otpkey': seed,
-            'otplen': 8
-            }
+            "serial": serial,
+            "type": "totp",
+            "otpkey": seed,
+            "otplen": 8,
+        }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": false' not in response.body, response.body
 
         # ------------------------------------------------------------------ --
@@ -384,38 +379,35 @@ class TestTotpLookupController(TestController):
             # get a valid otp
 
             seconds = time2seconds(test_time)
-            counter = int(seconds/step)
+            counter = int(seconds / step)
             otp = get_otp(key=seed, counter=counter)
 
             # lookup for 5 hours back
 
             params = {
-                'serial': serial,
-                'otp': otp,
-                'window': "PT5H",
+                "serial": serial,
+                "otp": otp,
+                "window": "PT5H",
             }
 
-            response = self.make_admin_request(
-                'totp_lookup', params=params)
+            response = self.make_admin_request("totp_lookup", params=params)
             assert '"value": false' in response.body, response
 
             # extend the lookup window to one day and 5 hours
 
             params = {
-                'serial': serial,
-                'otp': otp,
-                'window': "P1DT5H",
+                "serial": serial,
+                "otp": otp,
+                "window": "P1DT5H",
             }
 
-            response = self.make_admin_request(
-                'totp_lookup', params=params)
+            response = self.make_admin_request("totp_lookup", params=params)
             assert '"value": true' in response.body, response
-
 
     def test_no_future_otp(self):
         """ verify that the totp_lookup does not respond for future otps """
 
-        serial = 'totp_lookup'
+        serial = "totp_lookup"
         step = 30
 
         # ------------------------------------------------------------------ --
@@ -423,13 +415,13 @@ class TestTotpLookupController(TestController):
         # create token with a well known seed
 
         params = {
-            'serial': serial,
-            'type': 'totp',
-            'otpkey': seed,
-            'otplen': 8
-            }
+            "serial": serial,
+            "type": "totp",
+            "otpkey": seed,
+            "otplen": 8,
+        }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": false' not in response.body, response.body
 
         # ------------------------------------------------------------------ --
@@ -442,17 +434,16 @@ class TestTotpLookupController(TestController):
             # get a valid otp
 
             seconds = time2seconds(otp_time)
-            counter = int(seconds/step)
+            counter = int(seconds / step)
             otp = get_otp(key=seed, counter=counter)
 
             # lookup for 5 hours back
 
             params = {
-                'serial': serial,
-                'otp': otp,
-                'window': "24h",
+                "serial": serial,
+                "otp": otp,
+                "window": "24h",
             }
 
-            response = self.make_admin_request(
-                'totp_lookup', params=params)
+            response = self.make_admin_request("totp_lookup", params=params)
             assert '"value": false' in response.body, response

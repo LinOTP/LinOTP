@@ -49,12 +49,12 @@ class dpwOtp:
     using a context manager pattern to make sure that the secret is
     finally removed at the ending
     """
+
     def __init__(self, secObj, digits=6):
         self.secretObject = secObj
         self.digits = digits
 
     def __enter__(self):
-
         class dpwOtpImpl(object):
             """
             helper class for calculating day passwords. (Tagespasswort)
@@ -73,13 +73,13 @@ class dpwOtp:
                 :return: otp string of digits
                 """
 
-                input_data = self.key + date_string.encode('utf-8')
+                input_data = self.key + date_string.encode("utf-8")
 
                 md1 = md5(input_data).digest().hex()
-                md = md1[len(md1) - self.digits:]
+                md = md1[len(md1) - self.digits :]
                 otp = int(md, 16)
                 otp = str(otp)
-                otp = otp[len(otp) - self.digits:]
+                otp = otp[len(otp) - self.digits :]
 
                 return (self.digits - len(otp)) * "0" + otp
 
@@ -88,14 +88,14 @@ class dpwOtp:
                 del self.key
 
             def checkOtp(self, anOtpVal, window=0, options=None):
-                '''
+                """
                 verify the given otp value for the current day
 
                 :param anOtpVal: the to be checked otp value
                 :param window: -ignored-
                 :param options: -ignored-
                 :return: bool
-                '''
+                """
 
                 if str(anOtpVal) == self.getOtp():
                     return 1
@@ -120,12 +120,16 @@ class dpwOtp:
     def __exit__(self, exc_type, exc_value, traceback):
         self.package_obj.cleanup()
 
+
 # -------------------------------------------------------------------------- --
 
-@tokenclass_registry.class_entry('dpw')
-@tokenclass_registry.class_entry('linotp.tokens.tagespassworttoken.TagespasswortTokenClass')
+
+@tokenclass_registry.class_entry("dpw")
+@tokenclass_registry.class_entry(
+    "linotp.tokens.tagespassworttoken.TagespasswortTokenClass"
+)
 class TagespasswortTokenClass(TokenClass):
-    '''
+    """
     The Tagespasswort is a one time password that is calculated based on
     the day input.
 
@@ -133,7 +137,7 @@ class TagespasswortTokenClass(TokenClass):
     - some md5 and truncation will produce an 6 digits password
 
     - via getotp the set of next day passwords could be retrieved
-    '''
+    """
 
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
@@ -150,8 +154,8 @@ class TagespasswortTokenClass(TokenClass):
         return "DOTP"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
-        '''
+    def getClassInfo(cls, key=None, ret="all"):
+        """
         getClassInfo - returns a subtree of the token definition
 
         :param key: subsection identifier
@@ -163,37 +167,40 @@ class TagespasswortTokenClass(TokenClass):
         :return: subsection if key exists or user defined
         :rtype: s.o.
 
-        '''
+        """
 
         res = {
-               'type': 'dpw',
-               'title': 'Tagespasswort Token',
-               'description': ('A token uses a new password every day.'),
-               'init': {
-                    'page': {
-                       'html': 'tagespassworttoken.mako',
-                       'scope': 'enroll', },
-                    'title': {
-                        'html': 'tagespassworttoken.mako',
-                        'scope': 'enroll.title', },
-                        },
-                'config': {},
-                'selfservice': {},
-                'policy': {}, }
+            "type": "dpw",
+            "title": "Tagespasswort Token",
+            "description": ("A token uses a new password every day."),
+            "init": {
+                "page": {
+                    "html": "tagespassworttoken.mako",
+                    "scope": "enroll",
+                },
+                "title": {
+                    "html": "tagespassworttoken.mako",
+                    "scope": "enroll.title",
+                },
+            },
+            "config": {},
+            "selfservice": {},
+            "policy": {},
+        }
 
         # I don't think we need to define the lost token policies here...
 
         if key and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
         return ret
 
     def update(self, param):
 
         # check for the required parameters
-        if (self.hKeyRequired is True):
+        if self.hKeyRequired is True:
             if "otpkey" not in param:
                 raise ParameterError("Missing parameter: 'otpkey'", id=905)
 
@@ -233,10 +240,13 @@ class TagespasswortTokenClass(TokenClass):
                 date_string = curTime.strftime("%d%m%y")
             elif isinstance(curTime, str):
                 date_string = datetime.strptime(
-                    curTime, "%Y-%m-%d %H:%M:%S.%f").strftime("%d%m%y")
+                    curTime, "%Y-%m-%d %H:%M:%S.%f"
+                ).strftime("%d%m%y")
             else:
-                log.error("[getOtp] invalid curTime: %r. You need to "
-                          "specify a datetime.datetime" % type(curTime))
+                log.error(
+                    "[getOtp] invalid curTime: %r. You need to "
+                    "specify a datetime.datetime" % type(curTime)
+                )
 
         secObj = self._get_secret_object()
         with dpwOtp(secObj, otplen) as dpw:
@@ -245,13 +255,13 @@ class TagespasswortTokenClass(TokenClass):
         pin = self.getPin()
         combined = "%s%s" % (otpval, pin)
 
-        if request_context['Config'].get("PrependPin") == "True":
+        if request_context["Config"].get("PrependPin") == "True":
             combined = "%s%s" % (pin, otpval)
 
         return (1, pin, otpval, combined)
 
     def get_multi_otp(self, count=0, epoch_start=0, epoch_end=0, curTime=None):
-        '''
+        """
         This returns a dictionary of multiple future OTP values of
         the Tagespasswort token
 
@@ -264,7 +274,7 @@ class TagespasswortTokenClass(TokenClass):
             True/False
             error text
             OTP dictionary
-        '''
+        """
 
         otp_dict = {"type": "DPW", "otp": {}}
         ret = False
@@ -283,9 +293,11 @@ class TagespasswortTokenClass(TokenClass):
                 elif isinstance(curTime, str):
                     now = datetime.strptime(curTime, "%Y-%m-%d %H:%M:%S.%f")
                 else:
-                    raise TokenAdminError("[get_multi_otp] wrong curTime type:"
-                                          " %s (%s)" % (type(curTime),
-                                                        curTime), id=2001)
+                    raise TokenAdminError(
+                        "[get_multi_otp] wrong curTime type:"
+                        " %s (%s)" % (type(curTime), curTime),
+                        id=2001,
+                    )
 
             secObj = self._get_secret_object()
             with dpwOtp(secObj, otplen) as dpw:
@@ -294,9 +306,12 @@ class TagespasswortTokenClass(TokenClass):
                     delta = timedelta(days=i)
                     date_string = (now + delta).strftime("%d%m%y")
                     otpval = dpw.getOtp(date_string=date_string)
-                    otp_dict["otp"][(now + delta).strftime("%y-%m-%d")] = otpval
+                    otp_dict["otp"][
+                        (now + delta).strftime("%y-%m-%d")
+                    ] = otpval
                 ret = True
 
         return (ret, error, otp_dict)
+
 
 # eof #

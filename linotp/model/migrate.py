@@ -42,7 +42,7 @@ from linotp import model
 log = logging.getLogger(__name__)
 
 
-def has_column(engine:Engine, table_name:str, column:sa.Column) -> bool:
+def has_column(engine: Engine, table_name: str, column: sa.Column) -> bool:
     """Check the column is already in the table.
 
     :param engine: database engine
@@ -63,11 +63,12 @@ def has_column(engine:Engine, table_name:str, column:sa.Column) -> bool:
 
     columns = insp.get_columns(table_name)
     for column_item in columns:
-        if column_item.get('name') == column.name:
+        if column_item.get("name") == column.name:
             return True
     return False
 
-def _compile_name(name:str, dialect=None) -> str:
+
+def _compile_name(name: str, dialect=None) -> str:
     """Helper - to adjust the names of table / column / index to quoted or not.
 
     in postgresql the tablenames / column /index names must be quotes
@@ -77,9 +78,12 @@ def _compile_name(name:str, dialect=None) -> str:
     :param engine: the corresponding engine for mysql / postgresql
     :return: the adjusted name
     """
-    return sa.Column(name, sa.types.Integer()).compile(dialect=dialect) # pylint: disable=E1120
+    return sa.Column(name, sa.types.Integer()).compile(
+        dialect=dialect
+    )  # pylint: disable=E1120
 
-def add_column(engine:Engine, table_name:str, column:sa.Column):
+
+def add_column(engine: Engine, table_name: str, column: sa.Column):
     """Create an index based on the column index definition.
 
     calling the compiled SQL statement:
@@ -99,11 +103,13 @@ def add_column(engine:Engine, table_name:str, column:sa.Column):
     c_column_name = column.compile(dialect=engine.dialect)
     c_column_type = column.type.compile(engine.dialect)
 
-    engine.execute('ALTER TABLE %s ADD COLUMN %s %s' %
-                   (c_table_name, c_column_name, c_column_type))
+    engine.execute(
+        "ALTER TABLE %s ADD COLUMN %s %s"
+        % (c_table_name, c_column_name, c_column_type)
+    )
 
 
-def add_index(engine:Engine, table_name:str, column:sa.Column):
+def add_index(engine: Engine, table_name: str, column: sa.Column):
     """Create an index based on the column index definition
 
     calling the compiled SQL statement:
@@ -126,11 +132,13 @@ def add_index(engine:Engine, table_name:str, column:sa.Column):
     index_name = "ix_%s_%s" % (table_name, column.name)
     c_index_name = _compile_name(index_name, dialect=engine.dialect)
 
-    engine.execute('CREATE INDEX %s ON %s ( %s )' %
-                   (c_index_name, c_table_name, c_column_name))
+    engine.execute(
+        "CREATE INDEX %s ON %s ( %s )"
+        % (c_index_name, c_table_name, c_column_name)
+    )
 
 
-def drop_column(engine:Engine, table_name:str, column:sa.Column):
+def drop_column(engine: Engine, table_name: str, column: sa.Column):
     """
 
     calling the compiled SQL statement
@@ -148,13 +156,14 @@ def drop_column(engine:Engine, table_name:str, column:sa.Column):
     c_table_name = _compile_name(table_name, dialect=engine.dialect)
 
     c_column_name = column.compile(dialect=engine.dialect)
-    engine.execute('ALTER TABLE %s drop COLUMN %s ' %
-                   (c_table_name, c_column_name))
+    engine.execute(
+        "ALTER TABLE %s drop COLUMN %s " % (c_table_name, c_column_name)
+    )
 
 
 def re_encode(
-        value:str, from_encoding:str='iso-8859-15',
-        to_encoding:str='utf-8') -> str:
+    value: str, from_encoding: str = "iso-8859-15", to_encoding: str = "utf-8"
+) -> str:
     """Reencode a value by default from iso-8859 to utf-8.
 
     Remark:
@@ -187,18 +196,21 @@ def re_encode(
         value = bytes(value, from_encoding).decode(to_encoding)
     except UnicodeDecodeError:
         log.info(
-            'unable to re-encode value: %r - might be already %r',
-            value, to_encoding
-            )
+            "unable to re-encode value: %r - might be already %r",
+            value,
+            to_encoding,
+        )
         raise
 
     return value
+
 
 # ------------------------------------------------------------------------- --
 
 # mysql specific migration
 
-class MYSQL_Migration():
+
+class MYSQL_Migration:
     """MYSQL schema and data migration - converting from latin1 to utf8."""
 
     def __init__(self, engine):
@@ -231,7 +243,8 @@ class MYSQL_Migration():
         :param table: the table name
         """
         return self._execute(
-            f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4;")
+            f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4;"
+        )
 
     def _get_tables(self):
         """Query the linotp database for all tables.
@@ -253,9 +266,9 @@ class MYSQL_Migration():
         migrated_tables = []
 
         for table in self._get_tables():
-            schema_def =  self._query_schema(table)
-            table_desc = schema_def.rpartition(')')[2]
-            if 'CHARSET=latin1' in table_desc:
+            schema_def = self._query_schema(table)
+            table_desc = schema_def.rpartition(")")[2]
+            if "CHARSET=latin1" in table_desc:
                 self._update_schema(table)
                 migrated_tables.append(table)
 
@@ -271,24 +284,25 @@ class MYSQL_Migration():
         :param column: the string name of the column
         :return: the composed conversion string
         """
-        return (f"{column} = CONVERT(CAST(CONVERT({column} "
-                "USING latin1) as BINARY) USING utf8)")
+        return (
+            f"{column} = CONVERT(CAST(CONVERT({column} "
+            "USING latin1) as BINARY) USING utf8)"
+        )
 
     def _convert_Config_to_utf8(self):
         """Migrate the Config Value and Description to utf8."""
-        cmd = (
-            "Update Config Set %s, %s ;" % (
+        cmd = "Update Config Set %s, %s ;" % (
             self._convert("Config.Description"),
-            self._convert("Config.Value")
-            ))
+            self._convert("Config.Value"),
+        )
         return self._execute(cmd)
 
     def _convert_Token_to_utf8(self):
         """Migrate the Token Description and LinOtpTokenInfo to utf8."""
-        cmd = ("Update Token Set %s, %s ;" % (
+        cmd = "Update Token Set %s, %s ;" % (
             self._convert("Token.LinOtpTokenDesc"),
-            self._convert("Token.LinOtpTokenInfo")
-            ))
+            self._convert("Token.LinOtpTokenInfo"),
+        )
         return self._execute(cmd)
 
     def migrate_data(self, tables):
@@ -296,16 +310,18 @@ class MYSQL_Migration():
 
         :param tables: list of tables where the data should be converted to utf8
         """
-        if 'Config' in tables:
+        if "Config" in tables:
             self._convert_Config_to_utf8()
-        if 'Token' in tables:
+        if "Token" in tables:
             self._convert_Token_to_utf8()
+
 
 # ------------------------------------------------------------------------- --
 
 # entry point for calling db migration
 
-def run_data_model_migration(engine:Engine):
+
+def run_data_model_migration(engine: Engine):
     """
     hook for database schema upgrade
      - called during database initialisation
@@ -321,7 +337,8 @@ def run_data_model_migration(engine:Engine):
 
     return target_version
 
-class Migration():
+
+class Migration:
     """Migration class.
 
     - support the the db migration with a chain of db migration steps
@@ -332,7 +349,7 @@ class Migration():
 
     # model version key in the config table
 
-    db_model_key = 'linotp.sql_data_model_version'
+    db_model_key = "linotp.sql_data_model_version"
 
     # define the chain of migration steps starting with the not existing one
 
@@ -342,9 +359,9 @@ class Migration():
         "2.10.1.0",
         "2.12.0.0",
         "3.0.0.0",
-        ]
+    ]
 
-    def __init__(self, engine:Engine):
+    def __init__(self, engine: Engine):
         """Class init.
 
         - preserve the database handle / engine
@@ -379,8 +396,12 @@ class Migration():
         touched.
         """
 
-        return model.Config.query.filter(
-            model.Config.Key == 'linotp.Config').first() is None
+        return (
+            model.Config.query.filter(
+                model.Config.Key == "linotp.Config"
+            ).first()
+            is None
+        )
 
     def get_current_version(self) -> Optional[str]:
         """Get the db model version number.
@@ -401,7 +422,7 @@ class Migration():
 
         return self.current_version
 
-    def set_version(self, version:str):
+    def set_version(self, version: str):
         """Set the new db model version number.
 
         - on update: update the entry
@@ -420,12 +441,13 @@ class Migration():
         else:
             config_entry = model.Config(Key=self.db_model_key, Value=version)
 
-        model.db.session.add(config_entry) # pylint: disable=E1101
+        model.db.session.add(config_entry)  # pylint: disable=E1101
 
     def migrate(
-            self, from_version:Optional[str]=None,
-            to_version:Optional[str]=None
-            ) -> str:
+        self,
+        from_version: Optional[str] = None,
+        to_version: Optional[str] = None,
+    ) -> str:
         """Run all migration steps between the versions.
 
         run all steps, which are of ordered list migration_steps
@@ -446,7 +468,6 @@ class Migration():
         if to_version is None:
             to_version = Migration.migration_steps[-1]
 
-
         active = False
 
         for next_version in self.migration_steps:
@@ -457,12 +478,12 @@ class Migration():
 
                 # get the function pointer to the set version
 
-                exec_version = next_version.replace('.', '_')
-                function_name = 'migrate_%s' % exec_version
+                exec_version = next_version.replace(".", "_")
+                function_name = "migrate_%s" % exec_version
 
                 if not hasattr(self, function_name):
-                    log.error("unknown migration function %r",  function_name)
-                    raise Exception('unknown migration to %r' % next_version)
+                    log.error("unknown migration function %r", function_name)
+                    raise Exception("unknown migration to %r" % next_version)
 
                 migration_step = getattr(self, function_name)
 
@@ -474,8 +495,8 @@ class Migration():
                     _success = migration_step()
 
                 except Exception as exx:
-                    log.exception('Failed to upgrade database! %r', exx)
-                    model.db.session.rollback() # pylint: disable=E1101
+                    log.exception("Failed to upgrade database! %r", exx)
+                    model.db.session.rollback()  # pylint: disable=E1101
                     raise exx
 
             if next_version == from_version:
@@ -496,13 +517,13 @@ class Migration():
         challenge_table = "challenges"
 
         # add new bigger challenge column
-        column = sa.Column('lchallenge', sa.types.Unicode(2000))
+        column = sa.Column("lchallenge", sa.types.Unicode(2000))
 
         if not has_column(self.engine, challenge_table, column):
             add_column(self.engine, challenge_table, column)
 
         # add column to refer to the parent transaction
-        column = sa.Column('ptransid', sa.types.Unicode(64), index=True)
+        column = sa.Column("ptransid", sa.types.Unicode(64), index=True)
 
         if not has_column(self.engine, challenge_table, column):
             add_column(self.engine, challenge_table, column)
@@ -518,13 +539,13 @@ class Migration():
         challenge_table = "challenges"
 
         # add new blob challenge column
-        bchallenges = sa.Column('bchallenge', sa.types.LargeBinary())
+        bchallenges = sa.Column("bchallenge", sa.types.LargeBinary())
 
         if not has_column(self.engine, challenge_table, bchallenges):
             add_column(self.engine, challenge_table, bchallenges)
 
         # add new blob data column
-        bdata = sa.Column('bdata', sa.types.LargeBinary())
+        bdata = sa.Column("bdata", sa.types.LargeBinary())
 
         if not has_column(self.engine, challenge_table, bdata):
             add_column(self.engine, challenge_table, bdata)
@@ -541,7 +562,8 @@ class Migration():
 
         # add created column to tokens
         created = sa.Column(
-            'LinOtpCreationDate', sa.types.DateTime, index=True)
+            "LinOtpCreationDate", sa.types.DateTime, index=True
+        )
 
         if not has_column(self.engine, token_table, created):
             add_column(self.engine, token_table, created)
@@ -549,16 +571,17 @@ class Migration():
 
         # add verified column to tokens
         verified = sa.Column(
-            'LinOtpLastAuthSuccess', sa.types.DateTime, index=True)
+            "LinOtpLastAuthSuccess", sa.types.DateTime, index=True
+        )
 
         if not has_column(self.engine, token_table, verified):
             add_column(self.engine, token_table, verified)
-            add_index(
-                self.engine, token_table, verified)
+            add_index(self.engine, token_table, verified)
 
         # add accessed column to tokens
         accessed = sa.Column(
-            'LinOtpLastAuthMatch', sa.types.DateTime, index=True)
+            "LinOtpLastAuthMatch", sa.types.DateTime, index=True
+        )
 
         if not has_column(self.engine, token_table, accessed):
             add_column(self.engine, token_table, accessed)
@@ -577,14 +600,14 @@ class Migration():
         """
 
         if self.is_db_untouched():
-            log.info('Fresh database - no migration required!')
+            log.info("Fresh database - no migration required!")
             return
 
-        if not self.engine.url.drivername.startswith('mysql'):
+        if not self.engine.url.drivername.startswith("mysql"):
             log.info(
                 "Non mysql databases %r - no migration required.",
-                self.engine.url.drivername
-                )
+                self.engine.url.drivername,
+            )
             return
 
         # ----------------------------------------------------------------- --
@@ -602,7 +625,6 @@ class Migration():
         # In case of a newly (buster) e.g. linotp2 created db, we cannot imply
         # that the data migration has to be done, we only can suggest this.
 
-
         log.info("Starting mysql migration")
 
         # before we adjust the schema, we have to close former sessions,
@@ -619,17 +641,17 @@ class Migration():
         if not migrated_tables:
 
             config_entry = model.Config(
-                Key='utf8_conversion', Value='suggested'
-                )
+                Key="utf8_conversion", Value="suggested"
+            )
             model.db.session.add(config_entry)
 
             log.warning(
                 "Database conversion step suggested!\n"
                 "Please run command:\n"
-                " linotp admin fix-db-encoding")
+                " linotp admin fix-db-encoding"
+            )
 
         return
-
 
     def iso8859_to_utf8_conversion(self):
         """Migrate all Config and Token entries from latin1 to utf-8,
@@ -643,17 +665,21 @@ class Migration():
         :return: a tuple of bool and detail message
         """
 
-        if model.Config.query.filter(
-            model.Config.Key == 'linotp.utf8_conversion').first() is None:
+        if (
+            model.Config.query.filter(
+                model.Config.Key == "linotp.utf8_conversion"
+            ).first()
+            is None
+        ):
 
-            return True, 'No latin1 to utf8 conversion suggested!'
+            return True, "No latin1 to utf8 conversion suggested!"
 
         log.info("Starting data convertion")
 
         try:
 
             mysql_mig = MYSQL_Migration(self.engine)
-            mysql_mig.migrate_data(['Config', 'Token'])
+            mysql_mig.migrate_data(["Config", "Token"])
 
         except OperationalError as exx:
 
@@ -665,8 +691,10 @@ class Migration():
             # in any case, we remove the conversion suggestion label
 
             model.Config.query.filter(
-                model.Config.Key == 'linotp.utf8_conversion').delete()
+                model.Config.Key == "linotp.utf8_conversion"
+            ).delete()
 
         return True, "Config and Token data converted to utf-8."
+
 
 # eof

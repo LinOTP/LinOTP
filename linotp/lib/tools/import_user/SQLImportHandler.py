@@ -57,6 +57,7 @@ class DatabaseContext(object):
     with the database context ist is possible to drive the "user import"
     from the shell and from within LinOTP
     """
+
     pass
 
 
@@ -128,8 +129,10 @@ class Shell_DatabaseContext(DatabaseContext):
         :param params: dict with the resolver parameter
         """
 
-        print("create resolver currently only available in "
-              "the scope of LinOTP")
+        print(
+            "create resolver currently only available in "
+            "the scope of LinOTP"
+        )
         return
 
 
@@ -184,18 +187,17 @@ class SQLImportHandler(ImportHandler):
             "Where": where,
             "Map": json.dumps(mapping),
             "readonly": True,
-            }
+        }
 
-        resolver_parameters['name'] = self.resolver_name
+        resolver_parameters["name"] = self.resolver_name
 
         sql_resolver_type = sql_resolver.getResolverClassType()
-        resolver_parameters['type'] = sql_resolver_type
+        resolver_parameters["type"] = sql_resolver_type
 
         _config, missing = sql_resolver.filter_config(resolver_parameters)
 
         if missing:
-            raise Exception("missing some resolver attributes: %r",
-                            missing)
+            raise Exception("missing some resolver attributes: %r", missing)
 
         return resolver_parameters
 
@@ -213,8 +215,7 @@ class SQLImportHandler(ImportHandler):
 
         if not self.table_created:
 
-            Base.metadata.create_all(self.db_context.engine,
-                                     checkfirst=True)
+            Base.metadata.create_all(self.db_context.engine, checkfirst=True)
 
             self.table_created = True
 
@@ -248,8 +249,11 @@ class SQLImportHandler(ImportHandler):
 
         session = self.db_context.get_session()
 
-        u_users = session.query(self.User.userid, self.User.username).filter(
-            self.User.groupid == self.groupid).all()
+        u_users = (
+            session.query(self.User.userid, self.User.username)
+            .filter(self.User.groupid == self.groupid)
+            .all()
+        )
 
         for u_user in u_users:
             userid, username = u_user
@@ -294,9 +298,12 @@ class SQLImportHandler(ImportHandler):
 
         session = self.db_context.get_session()
 
-        u_user_list = session.query(self.User).filter(
-                self.User.userid == user.userid).filter(
-                self.User.groupid == self.groupid).all()
+        u_user_list = (
+            session.query(self.User)
+            .filter(self.User.userid == user.userid)
+            .filter(self.User.groupid == self.groupid)
+            .all()
+        )
 
         if u_user_list:
             return u_user_list[0]
@@ -341,12 +348,18 @@ class SQLImportHandler(ImportHandler):
         """
         session = self.db_context.get_session()
 
-        del_user = session.query(self.User).filter(
-                self.User.userid == user_id and
-                self.User.groupid == self.groupid).all()
+        del_user = (
+            session.query(self.User)
+            .filter(
+                self.User.userid == user_id
+                and self.User.groupid == self.groupid
+            )
+            .all()
+        )
 
         if del_user:
             session.delete(del_user[0])
+
     # ---------------------------------------------------------------------- --
 
     # inner class to process the orm user object
@@ -359,40 +372,39 @@ class SQLImportHandler(ImportHandler):
             "mysql_charset": "utf8",
         }
 
-        groupid = schema.Column(types.Unicode(100),
-                                primary_key=True,
-                                index=True)
+        groupid = schema.Column(
+            types.Unicode(100), primary_key=True, index=True
+        )
 
-        userid = schema.Column(types.Unicode(100),
-                               primary_key=True,
-                               index=True)
+        userid = schema.Column(
+            types.Unicode(100), primary_key=True, index=True
+        )
 
-        username = schema.Column(types.Unicode(255),
-                                 default='',
-                                 index=True)
+        username = schema.Column(types.Unicode(255), default="", index=True)
 
-        phone = schema.Column(types.Unicode(100),
-                              default='')
+        phone = schema.Column(types.Unicode(100), default="")
 
-        mobile = schema.Column(types.Unicode(100),
-                               default='')
+        mobile = schema.Column(types.Unicode(100), default="")
 
-        email = schema.Column(types.Unicode(100),
-                              default='')
+        email = schema.Column(types.Unicode(100), default="")
 
-        surname = schema.Column(types.Unicode(100),
-                                default='')
+        surname = schema.Column(types.Unicode(100), default="")
 
-        givenname = schema.Column(types.Unicode(100),
-                                  default='')
+        givenname = schema.Column(types.Unicode(100), default="")
 
-        password = schema.Column(types.Unicode(255),
-                                 default='',
-                                 index=True)
+        password = schema.Column(types.Unicode(255), default="", index=True)
 
         user_entries = [
-            "userid", "username", "phone", "mobile", "email", "surname",
-            "givenname", "password", "groupid"]
+            "userid",
+            "username",
+            "phone",
+            "mobile",
+            "email",
+            "surname",
+            "givenname",
+            "password",
+            "groupid",
+        ]
 
         def __init__(self):
             self._pw_gen = False
@@ -457,6 +469,7 @@ class SQLImportHandler(ImportHandler):
             :param user: the other user
             :return: bool
             """
-            return not(self == user)
+            return not (self == user)
+
 
 # eof #

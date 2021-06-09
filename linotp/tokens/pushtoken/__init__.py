@@ -29,9 +29,10 @@ from collections import namedtuple
 from linotp.lib.error import ParameterError
 from pysodium import crypto_sign_verify_detached
 
-_PushTokenPairingData = namedtuple('_PushTokenPairingData',
-                                   ['user_public_key', 'user_token_id',
-                                    'serial', 'user_login', 'gda'])
+_PushTokenPairingData = namedtuple(
+    "_PushTokenPairingData",
+    ["user_public_key", "user_token_id", "serial", "user_login", "gda"],
+)
 
 
 class PushTokenPairingData(_PushTokenPairingData):
@@ -67,7 +68,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     plaintext_min_length = 1 + 4 + 32 + 1 + 1 + 1 + 64
     if len(plaintext) < plaintext_min_length:
-        raise ParameterError('Malformed pairing response for type PushToken')
+        raise ParameterError("Malformed pairing response for type PushToken")
 
     # ----------------------------------------------------------------------- --
 
@@ -81,7 +82,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     #  size     |     1      |       4       |    ?    |  64  |
     #            ---------------------------------------------
 
-    user_token_id = struct.unpack('<I', plaintext[1:5])[0]
+    user_token_id = struct.unpack("<I", plaintext[1:5])[0]
 
     # ----------------------------------------------------------------------- --
 
@@ -93,7 +94,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     #  size     |  5  |       32        |  ?  |  64  |
     #            ------------------------------------
 
-    user_public_key = plaintext[5:5+32]
+    user_public_key = plaintext[5 : 5 + 32]
 
     # ----------------------------------------------------------------------- --
 
@@ -107,16 +108,16 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     # parse token_serial and user identification
 
-    str_parts = plaintext[5+32:-64].split(b'\x00')
+    str_parts = plaintext[5 + 32 : -64].split(b"\x00")
 
     # enforce format
 
     if not len(str_parts) == 3 + 1:
-        raise ParameterError('Malformed pairing response for type PushToken')
+        raise ParameterError("Malformed pairing response for type PushToken")
 
-    serial = str_parts[0].decode('utf8')
-    user_login = str_parts[1].decode('utf8')
-    gda = str_parts[2].decode('utf8')
+    serial = str_parts[0].decode("utf8")
+    user_login = str_parts[1].decode("utf8")
+    gda = str_parts[2].decode("utf8")
 
     # ----------------------------------------------------------------------- --
 
@@ -129,12 +130,10 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
         crypto_sign_verify_detached(signature, message, user_public_key)
     except ValueError:
         # original value error is too generic
-        raise ValueError('Invalid signature for pairing response data')
+        raise ValueError("Invalid signature for pairing response data")
 
     # ----------------------------------------------------------------------- --
 
-    return PushTokenPairingData(user_public_key,
-                                user_token_id,
-                                serial,
-                                user_login,
-                                gda)
+    return PushTokenPairingData(
+        user_public_key, user_token_id, serial, user_login, gda
+    )

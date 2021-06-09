@@ -34,45 +34,50 @@ from mock import patch
 
 @pytest.mark.usefixtures("app")
 class PairingUnitTestCase(unittest.TestCase):
-
-    @patch('linotp.lib.pairing.get_secret_key')
-    @patch('linotp.lib.pairing.get_public_key')
-    @patch('linotp.lib.pairing.get_dh_secret_key')
-    def test_protocol_id(self,
-                         mocked_get_secret_key,
-                         mocked_get_public_key,
-                         mocked_get_dh_secret_key):
+    @patch("linotp.lib.pairing.get_secret_key")
+    @patch("linotp.lib.pairing.get_public_key")
+    @patch("linotp.lib.pairing.get_dh_secret_key")
+    def test_protocol_id(
+        self,
+        mocked_get_secret_key,
+        mocked_get_public_key,
+        mocked_get_dh_secret_key,
+    ):
 
         """
         test if pairing urls get generated with correct custom protocol ids
         """
 
-        mocked_get_secret_key.return_value = b'X' * 64
-        mocked_get_dh_secret_key.return_value = b'X' * 64
-        mocked_get_public_key.return_value = b'X' * 32
+        mocked_get_secret_key.return_value = b"X" * 64
+        mocked_get_dh_secret_key.return_value = b"X" * 64
+        mocked_get_public_key.return_value = b"X" * 32
 
         with patch.dict(config):
 
             # if configuration entry is not present,
             # protocol id should be lseqr
 
-            if 'mobile_app_protocol_id' in config:
-                del config['mobile_app_protocol_id']
+            if "mobile_app_protocol_id" in config:
+                del config["mobile_app_protocol_id"]
 
-            url = generate_pairing_url(token_type='qr',
-                                       partition=1,
-                                       serial='QRfoo',
-                                       callback_url='foo')
+            url = generate_pairing_url(
+                token_type="qr",
+                partition=1,
+                serial="QRfoo",
+                callback_url="foo",
+            )
 
-            assert url.startswith('lseqr://')
+            assert url.startswith("lseqr://")
 
         # -------------------------------------------------------------------- -
 
-        with patch.dict(config, {'mobile_app_protocol_id': 'yolo'}):
+        with patch.dict(config, {"mobile_app_protocol_id": "yolo"}):
 
-            url = generate_pairing_url(token_type='qr',
-                                       partition=1,
-                                       serial='QRfoo',
-                                       callback_url='foo')
+            url = generate_pairing_url(
+                token_type="qr",
+                partition=1,
+                serial="QRfoo",
+                callback_url="foo",
+            )
 
-            assert url.startswith('yolo://')
+            assert url.startswith("yolo://")

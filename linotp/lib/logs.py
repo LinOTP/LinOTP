@@ -37,10 +37,10 @@ class RequestContextFilter(logging.Filter):
             # an error)
             env = {}
 
-        record.request_id = env.get('REQUEST_ID')
-        record.remote_addr = env.get('REMOTE_ADDR')
-        record.request_path = env.get('PATH_INFO')
-        as_datetime = env.get('REQUEST_START_TIMESTAMP')
+        record.request_id = env.get("REQUEST_ID")
+        record.remote_addr = env.get("REMOTE_ADDR")
+        record.request_path = env.get("PATH_INFO")
+        as_datetime = env.get("REQUEST_START_TIMESTAMP")
 
         if as_datetime is not None:
             basic_time = as_datetime.strftime("%Y-%m-%dT%H:%M:%S")
@@ -49,10 +49,11 @@ class RequestContextFilter(logging.Filter):
 
         return True
 
+
 # ------------------------------------------------------------------------------
 
-BG_COLOR_START = '\033[48;5;%dm'
-BG_COLOR_STOP = '\033[0m'
+BG_COLOR_START = "\033[48;5;%dm"
+BG_COLOR_STOP = "\033[0m"
 
 
 class ColorFormatter(logging.Formatter):
@@ -64,11 +65,11 @@ class ColorFormatter(logging.Formatter):
     LAVENDER = BG_COLOR_START % 13
 
     LEVEL_COLORS = {
-        'WARNING': YELLOW,
-        'INFO': BLUE,
-        'DEBUG': LAVENDER,
-        'CRITICAL': ORANGE,
-        'ERROR': RED
+        "WARNING": YELLOW,
+        "INFO": BLUE,
+        "DEBUG": LAVENDER,
+        "CRITICAL": ORANGE,
+        "ERROR": RED,
     }
 
     def format(self, record):
@@ -77,6 +78,7 @@ class ColorFormatter(logging.Formatter):
             colored = self.LEVEL_COLORS[levelname] + levelname + BG_COLOR_STOP
             record.levelname = colored
         return logging.Formatter.format(self, record)
+
 
 # ------------------------------------------------------------------------------
 
@@ -95,6 +97,7 @@ def init_logging_config():
         logger = logging.getLogger(config_entry.name)
         logger.setLevel(config_entry.level)
 
+
 # ------------------------------------------------------------------------------
 
 # helper functions
@@ -111,7 +114,7 @@ def log_request_timedelta(logger):
     :param logger: The logger that should be used
     """
 
-    start = request.environ.get('REQUEST_START_TIMESTAMP')
+    start = request.environ.get("REQUEST_START_TIMESTAMP")
 
     if start is None:
         return
@@ -119,12 +122,9 @@ def log_request_timedelta(logger):
     stop = datetime.now()
     delta_sec = (stop - start).total_seconds()
 
-    extra = {
-        'type': 'request_timedelta',
-        'timedelta': delta_sec
-    }
+    extra = {"type": "request_timedelta", "timedelta": delta_sec}
 
-    logger.debug('Spent %f seconds for request' % delta_sec, extra=extra)
+    logger.debug("Spent %f seconds for request" % delta_sec, extra=extra)
 
 
 # ------------------------------------------------------------------------------
@@ -144,21 +144,20 @@ def log_enter_exit(logger):
     :param logger: The logger object that should be used
     """
 
-    enter_str = 'Entered function %s'
-    exit_str = 'Exited function %s'
+    enter_str = "Entered function %s"
+    exit_str = "Exited function %s"
 
     def _inner(func):
-
         @functools.wraps(func)
         def log_and_call(*args, **kwargs):
 
             # --------------------------------------------------------------
 
             extra = {
-                'type': 'function_enter',
-                'function_name': func.__name__,
-                'function_args': args,
-                'function_kwargs': kwargs
+                "type": "function_enter",
+                "function_name": func.__name__,
+                "function_args": args,
+                "function_kwargs": kwargs,
             }
 
             logger.debug(enter_str % func.__name__, extra=extra)
@@ -170,9 +169,9 @@ def log_enter_exit(logger):
             # --------------------------------------------------------------
 
             extra = {
-                'type': 'function_exit',
-                'function_name': func.__name__,
-                'function_returnvalue': returnvalue
+                "type": "function_exit",
+                "function_name": func.__name__,
+                "function_returnvalue": returnvalue,
             }
 
             logger.debug(exit_str % func.__name__, extra=extra)
@@ -187,6 +186,7 @@ def log_enter_exit(logger):
 
     return _inner
 
+
 # --------------------------------------------------------------------------
 
 
@@ -200,7 +200,6 @@ def log_timedelta(logger):
     """
 
     def _inner(func):
-
         @functools.wraps(func)
         def _log_time(*args, **kwargs):
 
@@ -212,13 +211,15 @@ def log_timedelta(logger):
             delta_sec = (stop - start).total_seconds()
 
             extra = {
-                'type': 'function_timedelta',
-                'function_name': func.__name__,
-                'timedelta': delta_sec
+                "type": "function_timedelta",
+                "function_name": func.__name__,
+                "timedelta": delta_sec,
             }
 
-            logger.debug('Spent %f seconds in %s' % (delta_sec, func.__name__),
-                         extra=extra)
+            logger.debug(
+                "Spent %f seconds in %s" % (delta_sec, func.__name__),
+                extra=extra,
+            )
 
             # --------------------------------------------------------------
 
@@ -229,6 +230,7 @@ def log_timedelta(logger):
         return _log_time
 
     return _inner
+
 
 # --------------------------------------------------------------------------
 

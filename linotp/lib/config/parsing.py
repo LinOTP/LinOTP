@@ -48,12 +48,13 @@ class ConfigNotRecognized(Exception):
     def __init__(self, key, message=None):
 
         if message is None:
-            message = 'Unrecognized config key: %s' % key
+            message = "Unrecognized config key: %s" % key
         Exception.__init__(self, message)
         self.key = key
 
 
 # -------------------------------------------------------------------------- --
+
 
 def parse_system_config(composite_key, value):
 
@@ -64,10 +65,11 @@ def parse_system_config(composite_key, value):
         internal config tree parser list
     """
 
-    if not composite_key.startswith('linotp.'):
+    if not composite_key.startswith("linotp."):
         raise ConfigNotRecognized(composite_key)
 
-    return 'system_config', {composite_key: value}
+    return "system_config", {composite_key: value}
+
 
 # -------------------------------------------------------------------------- --
 
@@ -83,10 +85,11 @@ def parse_deprecated_enc(composite_key, value):
 
     # XXX LEGACY DEPRECATED
 
-    if not composite_key.startswith('enclinotp.'):
+    if not composite_key.startswith("enclinotp."):
         raise ConfigNotRecognized(composite_key)
 
-    return 'deprecated_enc', {composite_key: value}
+    return "deprecated_enc", {composite_key: value}
+
 
 # -------------------------------------------------------------------------- --
 
@@ -108,8 +111,10 @@ class ConfigTree(dict):
     # the list of parsers get initialized on startup
     # by the add_parser method.
 
-    _parsers = [('globals', parse_system_config),
-                ('deprecated', parse_deprecated_enc)]
+    _parsers = [
+        ("globals", parse_system_config),
+        ("deprecated", parse_deprecated_enc),
+    ]
 
     def __init__(self):
 

@@ -33,44 +33,49 @@ from typing import List, Dict
 from .helper import find_by_css, find_by_id, fill_element_from_dict
 from .manage_elements import ManageDialog
 
+
 class UserIdResolverException(Exception):
     pass
+
 
 class NewResolverDialog(ManageDialog):
     "New resolver dialog"
 
     def __init__(self, manage_ui):
         super(NewResolverDialog, self).__init__(
-            manage_ui, 'dialog_resolver_create')
+            manage_ui, "dialog_resolver_create"
+        )
 
 
 class UserIdResolverManager(ManageDialog):
     """
     Management dialog for userIdResolvers
     """
-    new_button_id = 'button_resolver_new'
-    close_button_id = 'button_resolver_close'
-    menu_item_id = 'menu_edit_resolvers'
+
+    new_button_id = "button_resolver_new"
+    close_button_id = "button_resolver_close"
+    menu_item_id = "menu_edit_resolvers"
 
     alert_box_handler = None
 
     def __init__(self, manage_ui):
-        ManageDialog.__init__(self, manage_ui, 'dialog_resolvers')
+        ManageDialog.__init__(self, manage_ui, "dialog_resolvers")
         self.resolvers = None
 
         self.new_resolvers_dialog = NewResolverDialog(manage_ui)
         self.no_realms_defined_dialog = ManageDialog(
-            manage_ui, 'text_no_realm')
+            manage_ui, "text_no_realm"
+        )
         self.alert_box_handler = self.manage.alert_box_handler
 
     @staticmethod
     def get_resolver_for_type(resolver_type):
         "Return the derived class for a given resolver type"
-        if resolver_type == 'ldapresolver':
+        if resolver_type == "ldapresolver":
             return LdapUserIdResolver
-        elif resolver_type == 'sqlresolver':
+        elif resolver_type == "sqlresolver":
             return SqlUserIdResolver
-        elif resolver_type == 'passwdresolver':
+        elif resolver_type == "passwdresolver":
             return PasswdUserIdResolver
         else:
             raise Exception("Unknown UserIdResolver type:%s" % (resolver_type))
@@ -80,29 +85,29 @@ class UserIdResolverManager(ManageDialog):
         # Given an element, parse out resolver info
 
         class ResolverElement:
-
             def __init__(self, name, resolverType, element=None):
                 self.name = name
                 self.resolverType = resolverType
                 self.element = element
                 self.name_in_dialog = "%s [%s]" % (name, resolverType)
 
-        id = line.get_attribute('id')
-        if id and id.startswith('realm'):
+        id = line.get_attribute("id")
+        if id and id.startswith("realm"):
             # Realms dialog
             resolver_element = line
         else:
             # Resolvers dialog
-            name_element = line.find_element_by_css_selector('.name')
+            name_element = line.find_element_by_css_selector(".name")
             resolver_element = name_element
 
-        resolver_name_re = r'([\w\-]+) \[([\w\-]+)\]$'
+        resolver_name_re = r"([\w\-]+) \[([\w\-]+)\]$"
 
         m = re.match(resolver_name_re, resolver_element.text)
         assert m, 'Error in resolver regexp for "%s"' % (resolver_element,)
 
-        assert('ui-selectee' in line.get_attribute("class").split(" ")), \
-            "Resolver dialog line not selectable"
+        assert "ui-selectee" in line.get_attribute("class").split(
+            " "
+        ), "Resolver dialog line not selectable"
 
         return ResolverElement(m.group(1), m.group(2), line)
 
@@ -121,12 +126,13 @@ class UserIdResolverManager(ManageDialog):
         # The dialog could be empty, so disable implicit wait for the list
         with self.implicit_wait_disabled():
             lines = resolvers_list.find_elements_by_css_selector(
-                '#resolvers_list > ol > li')
+                "#resolvers_list > ol > li"
+            )
 
             for line in lines:
                 self.resolvers.append(self.parse_resolver_element(line))
 
-    def _get_resolver_by_name(self, name:str) -> Dict:
+    def _get_resolver_by_name(self, name: str) -> Dict:
         """Get resolver given the name.
 
         Return tuple:
@@ -135,48 +141,49 @@ class UserIdResolverManager(ManageDialog):
          name in dialog
         """
         r = [r for r in self.resolvers if r.name == name]
-        assert len(r) == 1, ("Resolver name %r not found "
-                             "in current resolver list" % name)
+        assert len(r) == 1, (
+            "Resolver name %r not found " "in current resolver list" % name
+        )
         resolver = r[0]
         return resolver
 
     def get_defined_resolvers(self) -> List[str]:
-        """Return a list of currently defined resolver names.
-        """
+        """Return a list of currently defined resolver names."""
         self.raise_if_closed()
         return [r.name for r in self.resolvers]
 
     def create_resolver(self, data):
-        resolver_type = data['type']
+        resolver_type = data["type"]
 
         self.open()
         oldlist = self.get_defined_resolvers()
 
-        assert data[
-            'name'] not in oldlist, 'Trying to define a resolver which already exists'
+        assert (
+            data["name"] not in oldlist
+        ), "Trying to define a resolver which already exists"
 
         oldcount = len(oldlist)
         self.find_by_id(self.new_button_id).click()
         self.new_resolvers_dialog.check_text(
-            'Which type of resolver do you want to create?')
+            "Which type of resolver do you want to create?"
+        )
 
         resolverClass = self.get_resolver_for_type(resolver_type)
         resolver = resolverClass(self)
 
         assert resolver.newbutton_id, "Resolver new button id is not defined"
-        self.new_resolvers_dialog.click_button(
-            resolver.newbutton_id)
+        self.new_resolvers_dialog.click_button(resolver.newbutton_id)
         self.manage.wait_for_waiting_finished()
 
         formdata = dict(data)
         if self.testcase.major_version == 2:
             try:
-                del formdata['only_trusted_certs']
+                del formdata["only_trusted_certs"]
             except KeyError:
                 pass
         else:
             try:
-                del formdata['certificate']
+                del formdata["certificate"]
             except KeyError:
                 pass
 
@@ -196,43 +203,47 @@ class UserIdResolverManager(ManageDialog):
             logging.error("Could not create resolver! %s", data)
             assert newcount == oldcount + 1
 
-        return data['name']
+        return data["name"]
 
-    def create_resolver_via_api(self, data:Dict) -> Dict:
+    def create_resolver_via_api(self, data: Dict) -> Dict:
         """Create resolver using API call.
 
         :param data: dictionary of parameters as used in create_resolver
         """
 
         # Default settings which the UI normally provides
-        if data['type'] == 'ldapresolver':
+        if data["type"] == "ldapresolver":
             params = {
-                'EnforceTLS': 'False',
-                'only_trusted_certs': 'False',
-                'TIMEOUT': '5',
-                'EnforceTLS': 'False',
-                'TIMEOUT': '5',
-                'SIZELIMIT': '500',
-                'NOREFERRALS': 'True',
+                "EnforceTLS": "False",
+                "only_trusted_certs": "False",
+                "TIMEOUT": "5",
+                "EnforceTLS": "False",
+                "TIMEOUT": "5",
+                "SIZELIMIT": "500",
+                "NOREFERRALS": "True",
             }
-            if 'preset_ldap' in data:
+            if "preset_ldap" in data:
                 # Preset LDAP
-                params.update({
-                    'LOGINNAMEATTRIBUTE': 'uid',
-                    'LDAPSEARCHFILTER': '(uid=*)(objectClass=inetOrgPerson)',
-                    'LDAPFILTER': '(&(uid=%s)(objectClass=inetOrgPerson))',
-                    'USERINFO': '{ "username": "uid", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
-                    'UIDTYPE': 'entryUUID',
-                })
-            elif 'preset_ad' in data:
+                params.update(
+                    {
+                        "LOGINNAMEATTRIBUTE": "uid",
+                        "LDAPSEARCHFILTER": "(uid=*)(objectClass=inetOrgPerson)",
+                        "LDAPFILTER": "(&(uid=%s)(objectClass=inetOrgPerson))",
+                        "USERINFO": '{ "username": "uid", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
+                        "UIDTYPE": "entryUUID",
+                    }
+                )
+            elif "preset_ad" in data:
                 # Preset Active Directory
-                params.update({
-                    'LOGINNAMEATTRIBUTE': 'sAMAccountName',
-                    'LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
-                    'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
-                    'USERINFO': '{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
-                    'UIDTYPE': 'objectGUID',
-                })
+                params.update(
+                    {
+                        "LOGINNAMEATTRIBUTE": "sAMAccountName",
+                        "LDAPSEARCHFILTER": "(sAMAccountName=*)(objectClass=user)",
+                        "LDAPFILTER": "(&(sAMAccountName=%s)(objectClass=user))",
+                        "USERINFO": '{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
+                        "UIDTYPE": "objectGUID",
+                    }
+                )
         else:
             params = {}
 
@@ -241,21 +252,19 @@ class UserIdResolverManager(ManageDialog):
         # Mapping for renaming items which have a different name in the API compared to the
         # manage interface
         name_map = {
-            'password': 'BINDPW',
-            'binddn': 'BINDDN',
-            'userfilter': 'LDAPFILTER',
-            'basedn': 'LDAPBASE',
-            'uri': 'LDAPURI',
-            'searchfilter': 'LDAPSEARCHFILTER',
-            'mapping': 'USERINFO',
-            'loginattr': 'LOGINNAMEATTRIBUTE',
-            'timeout': 'TIMEOUT',
-            'sizelimit': 'SIZELIMIT',
-
-            'filename': 'fileName',
-
-            'expected_users': None,  # Delete
-            'preset_ldap': None,
+            "password": "BINDPW",
+            "binddn": "BINDDN",
+            "userfilter": "LDAPFILTER",
+            "basedn": "LDAPBASE",
+            "uri": "LDAPURI",
+            "searchfilter": "LDAPSEARCHFILTER",
+            "mapping": "USERINFO",
+            "loginattr": "LOGINNAMEATTRIBUTE",
+            "timeout": "TIMEOUT",
+            "sizelimit": "SIZELIMIT",
+            "filename": "fileName",
+            "expected_users": None,  # Delete
+            "preset_ldap": None,
         }
 
         params = {
@@ -272,7 +281,8 @@ class UserIdResolverManager(ManageDialog):
         Checks that the status was ok and returns the resulting data
         """
         return self.manage.admin_api_call(
-            "system/getResolver", dict(resolver=resolver_name))
+            "system/getResolver", dict(resolver=resolver_name)
+        )
 
     def close(self):
         super(UserIdResolverManager, self).close()
@@ -298,7 +308,7 @@ class UserIdResolverManager(ManageDialog):
         resolver.element.click()
         return resolver
 
-    def edit_resolver(self, name:str):
+    def edit_resolver(self, name: str):
         """return resolver, given open dialog."""
 
         self.raise_if_closed()
@@ -307,7 +317,7 @@ class UserIdResolverManager(ManageDialog):
         self.wait_for_waiting_finished()
         return resolver
 
-    def delete_resolver(self, name:str):
+    def delete_resolver(self, name: str):
         """Click on resolver in list and delete it."""
         driver = self.driver
 
@@ -328,41 +338,45 @@ class UserIdResolverManager(ManageDialog):
 
         # Resolver name would be e. g. : 'test_realm5 [SE_musicians ]'
         # Capture only resolver name.
-        resolver = re.search(r'([^\[(]+)', name).group(1).strip(' ')
+        resolver = re.search(r"([^\[(]+)", name).group(1).strip(" ")
         delete_ok = self.alert_box_handler.check_last_message(
-            "Resolver deleted successfully: " + resolver)
+            "Resolver deleted successfully: " + resolver
+        )
         assert delete_ok, "Error during resolver deletion!"
 
         # Reload resolvers
         self.parse_contents()
 
-        assert (len(self.resolvers) == resolver_count - 1), (
-            'The number of resolvers shown should decrease after deletion. Before: %s, after:%s'
+        assert len(self.resolvers) == resolver_count - 1, (
+            "The number of resolvers shown should decrease after deletion. Before: %s, after:%s"
             % (resolver_count, len(self.resolvers))
         )
 
-    def delete_resolver_via_api(self, resolver_name:str):
+    def delete_resolver_via_api(self, resolver_name: str):
         """Delete resolver by resolver name via api call."""
 
         resolvers = self.manage.admin_api_call("system/getResolvers")
 
         if resolver_name not in resolvers:
             raise UserIdResolverException(
-                'resolver %r does not found!' % resolver_name)
+                "resolver %r does not found!" % resolver_name
+            )
 
         self.manage.admin_api_call(
-            "system/delResolver", {'resolver': resolver_name})
+            "system/delResolver", {"resolver": resolver_name}
+        )
 
     def clear_resolvers_via_api(self):
         """Get all resolvers via API call and delete all by resolver name."""
 
         # Get the resolvers in json format
         resolvers = self.manage.admin_api_call("system/getResolvers")
-        if(resolvers):
+        if resolvers:
             for curr_resolver in resolvers:
                 self.manage.admin_api_call(
                     "system/delResolver",
-                    {'resolver': resolvers[curr_resolver]['resolvername']})
+                    {"resolver": resolvers[curr_resolver]["resolvername"]},
+                )
 
     def clear_resolvers(self):
         """Clear all existing resolvers.
@@ -431,15 +445,22 @@ class UserIdResolverManager(ManageDialog):
             alert_box_text = alert_box.get_text()
 
             m = re.search(
-                "Number of users found: (?P<nusers>\d+)", alert_box_text)
+                "Number of users found: (?P<nusers>\d+)", alert_box_text
+            )
             if m is None:
                 raise Exception(
-                    "test_connection for %s failed: %s" % (name, alert_box_text))
-            num_found = int(m.group('nusers'))
+                    "test_connection for %s failed: %s"
+                    % (name, alert_box_text)
+                )
+            num_found = int(m.group("nusers"))
 
             if expected_users:
-                assert num_found == expected_users, "Expected number of users:%s, found:%s" % (
-                    expected_users, num_found)
+                assert (
+                    num_found == expected_users
+                ), "Expected number of users:%s, found:%s" % (
+                    expected_users,
+                    num_found,
+                )
 
             # Close the popup
             alert_box.close()
@@ -467,100 +488,109 @@ class UserIdResolver:
 class LdapUserIdResolver(UserIdResolver):
     """Creates a LDAP User-Id-Resolver in the LinOTP WebUI."""
 
-    resolvertype = 'ldap'
-    newbutton_id = 'button_new_resolver_type_ldap'
-    savebutton_id = 'button_ldap_resolver_save'
-    testbutton_id = 'button_test_ldap'
-    editcancel_button_id = 'button_ldap_resolver_cancel'
+    resolvertype = "ldap"
+    newbutton_id = "button_new_resolver_type_ldap"
+    savebutton_id = "button_ldap_resolver_save"
+    testbutton_id = "button_test_ldap"
+    editcancel_button_id = "button_ldap_resolver_cancel"
 
     def fill_form(self, data):
         driver = self.manage_ui.driver
-        preset_ldap = data.get('preset_ldap')
+        preset_ldap = data.get("preset_ldap")
 
         if preset_ldap:
             find_by_id(driver, "button_preset_ldap").click()
         else:
             find_by_id(driver, "button_preset_ad").click()
 
-        fill_element_from_dict(driver, 'ldap_resolvername', 'name', data)
-        fill_element_from_dict(driver, 'ldap_uri', 'uri', data)
+        fill_element_from_dict(driver, "ldap_resolvername", "name", data)
+        fill_element_from_dict(driver, "ldap_uri", "uri", data)
 
-        enforce_tls = data.get('enforce_tls')
+        enforce_tls = data.get("enforce_tls")
 
         if enforce_tls is not None:
-            assert data['uri'].startswith('ldap:')
-            checkbox = find_by_id(driver, 'ldap_enforce_tls')
+            assert data["uri"].startswith("ldap:")
+            checkbox = find_by_id(driver, "ldap_enforce_tls")
             selected = checkbox.is_selected()
-            if ((not selected and enforce_tls) or
-                    (selected and not enforce_tls)):
+            if (not selected and enforce_tls) or (
+                selected and not enforce_tls
+            ):
                 checkbox.click()
                 assert selected is not checkbox.is_selected()
 
-        only_trusted_certs = data.get('only_trusted_certs')
+        only_trusted_certs = data.get("only_trusted_certs")
 
         if only_trusted_certs:
-            assert data['uri'].startswith('ldaps:') or enforce_tls is True
-            checkbox = find_by_id(driver, 'ldap_only_trusted_certs')
+            assert data["uri"].startswith("ldaps:") or enforce_tls is True
+            checkbox = find_by_id(driver, "ldap_only_trusted_certs")
             selected = checkbox.is_selected()
-            if ((not selected and only_trusted_certs) or
-                    (selected and not only_trusted_certs)):
+            if (not selected and only_trusted_certs) or (
+                selected and not only_trusted_certs
+            ):
                 checkbox.click()
                 assert selected is not checkbox.is_selected()
 
-        fill_element_from_dict(driver, 'ldap_basedn', 'basedn', data)
-        fill_element_from_dict(driver, 'ldap_binddn', 'binddn', data)
-        fill_element_from_dict(driver, 'ldap_password', 'password', data)
+        fill_element_from_dict(driver, "ldap_basedn", "basedn", data)
+        fill_element_from_dict(driver, "ldap_binddn", "binddn", data)
+        fill_element_from_dict(driver, "ldap_password", "password", data)
 
         # Check that some fields have been filled in correctly
-        for field in ('uri', 'basedn', 'binddn', 'password'):
-            e = driver.find_element_by_id('ldap_' + field)
-            assert e.get_attribute('value') == data[field]
+        for field in ("uri", "basedn", "binddn", "password"):
+            e = driver.find_element_by_id("ldap_" + field)
+            assert e.get_attribute("value") == data[field]
 
 
 class SqlUserIdResolver(UserIdResolver):
     """Creates a Sql User-Id-Resolver in the LinOTP WebUI."""
 
-    resolvertype = 'sql'
-    newbutton_id = 'button_new_resolver_type_sql'
-    savebutton_id = 'button_resolver_sql_save'
-    testbutton_id = 'button_test_sql'
-    editcancel_button_id = 'button_resolver_sql_cancel'
+    resolvertype = "sql"
+    newbutton_id = "button_new_resolver_type_sql"
+    savebutton_id = "button_resolver_sql_save"
+    testbutton_id = "button_test_sql"
+    editcancel_button_id = "button_resolver_sql_cancel"
 
     def __init__(self, manage_ui):
         UserIdResolver.__init__(self, manage_ui)
-        self.savebutton_id = 'button_resolver_sql_save'
-        self.editcancel_button_id = 'button_resolver_sql_cancel'
+        self.savebutton_id = "button_resolver_sql_save"
+        self.editcancel_button_id = "button_resolver_sql_cancel"
 
     def fill_form(self, data):
         driver = self.manage_ui.driver
 
-        fill_element_from_dict(driver, 'sql_resolvername', 'name', data)
+        fill_element_from_dict(driver, "sql_resolvername", "name", data)
 
-        if 'driver' in data:
-            fill_element_from_dict(driver, 'sql_driver', 'driver', data)
+        if "driver" in data:
+            fill_element_from_dict(driver, "sql_driver", "driver", data)
 
-        for field in ('server', 'database', 'user', 'password',
-                      'table', 'limit', 'encoding'):
-            fill_element_from_dict(driver, 'sql_' + field, field, data)
+        for field in (
+            "server",
+            "database",
+            "user",
+            "password",
+            "table",
+            "limit",
+            "encoding",
+        ):
+            fill_element_from_dict(driver, "sql_" + field, field, data)
 
 
 class PasswdUserIdResolver(UserIdResolver):
     """Creates a file(Passwd) User-Id-Resolver in the LinOTP WebUI."""
 
-    resolvertype = 'passwd'
-    newbutton_id = 'button_new_resolver_type_file'
-    savebutton_id = 'button_resolver_file_save'
-    editcancel_button_id = 'button_resolver_file_cancel'
+    resolvertype = "passwd"
+    newbutton_id = "button_new_resolver_type_file"
+    savebutton_id = "button_resolver_file_save"
+    editcancel_button_id = "button_resolver_file_cancel"
     testbutton_id = None
 
     def __init__(self, manage_ui):
         UserIdResolver.__init__(self, manage_ui)
-        self.savebutton_id = 'button_resolver_file_save'
-        self.resolver_type_button_id = 'button_new_resolver_type_file'
+        self.savebutton_id = "button_resolver_file_save"
+        self.resolver_type_button_id = "button_new_resolver_type_file"
         self.testbutton_id = None  # There is no test button for file resolver
 
     def fill_form(self, data):
         driver = self.manage_ui.driver
 
-        fill_element_from_dict(driver, 'file_resolvername', 'name', data)
-        fill_element_from_dict(driver, 'file_filename', 'filename', data)
+        fill_element_from_dict(driver, "file_resolvername", "name", data)
+        fill_element_from_dict(driver, "file_filename", "filename", data)

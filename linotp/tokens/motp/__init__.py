@@ -23,9 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''lib to handle mobileOTP - Implementation inspired by:
+"""lib to handle mobileOTP - Implementation inspired by:
       https://github.com/neush/otpn900/blob/master/src/test_motp.c
-'''
+"""
 
 import logging
 import time
@@ -35,20 +35,19 @@ from hashlib import md5
 from linotp.lib.crypto.utils import zerome
 
 
-
 log = logging.getLogger(__name__)
 
 
-
 class mTimeOtp(object):
-    '''
+    """
     implements the motp timebased check_otp
     - s. https://github.com/neush/otpn900/blob/master/src/test_motp.c
-    '''
+    """
 
-    def __init__(self, secObj=None, secPin=None, oldtime=0, digits=6,
-                 key=None, pin=None):
-        '''
+    def __init__(
+        self, secObj=None, secPin=None, oldtime=0, digits=6, key=None, pin=None
+    ):
+        """
         constructor for the mOtp class
 
         :param secObj:    secretObject, which covers the encrypted secret
@@ -59,7 +58,7 @@ class mTimeOtp(object):
         :param pin:       direct pin provider
 
         :return:          nothing
-        '''
+        """
         self.secretObject = secObj
         self.key = key
 
@@ -70,14 +69,14 @@ class mTimeOtp(object):
         self.digits = digits
 
     def checkOtp(self, anOtpVal, window=10, options=None):
-        '''
+        """
         check a provided otp value
 
         :param anOtpVal: the to be tested otp value
         :param window: the +/- window around the test time
         :param options: generic container for additional values
         :return: -1 for fail else the identified counter/time
-        '''
+        """
 
         res = -1
         window = window * 2
@@ -89,7 +88,6 @@ class mTimeOtp(object):
         else:
             key = self.secretObject.getKey()
             pin = self.secPin.getKey()
-
 
         for i in range(otime - window, otime + window):
             otp = str(self.calcOtp(i, key, pin))
@@ -105,18 +103,20 @@ class mTimeOtp(object):
 
         ## prevent access twice with last motp
         if res <= self.oldtime:
-            log.warning("[checkOtp] otpvalue %s checked once before (%r<=%r)" %
-                        (anOtpVal, res, self.oldtime))
+            log.warning(
+                "[checkOtp] otpvalue %s checked once before (%r<=%r)"
+                % (anOtpVal, res, self.oldtime)
+            )
             res = -1
         if res == -1:
-            msg = 'checking motp failed'
+            msg = "checking motp failed"
         else:
-            msg = 'checking motp sucess'
+            msg = "checking motp sucess"
 
         return res
 
     def calcOtp(self, counter, key=None, pin=None):
-        '''
+        """
         calculate an otp value from counter/time, key and pin
 
         :param counter:    counter/time to be checked
@@ -125,7 +125,7 @@ class mTimeOtp(object):
 
         :return:           the otp value
         :rtype:            string
-        '''
+        """
         ## ref impl from https://github.com/szimszon/motpy/blob/master/motpy
         if pin is None:
             pin = self.pin
@@ -133,18 +133,18 @@ class mTimeOtp(object):
             key = self.key
 
         vhash = b"%d%b%b" % (counter, key, pin)
-        motp = md5(vhash).hexdigest()[:self.digits]
+        motp = md5(vhash).hexdigest()[: self.digits]
         return motp
 
 
 def motp_test():
-    '''
+    """
     Testvector from
        https://github.com/neush/otpn900/blob/master/src/test_motp.c
-    '''
+    """
 
     key = "0123456789abcdef"
-    epoch = [ 129612120, 129612130, 0, 4, 129612244, 129612253]
+    epoch = [129612120, 129612130, 0, 4, 129612244, 129612253]
     pins = ["6666", "6666", "1", "1", "77777777", "77777777"]
     otps = ["6ed4e4", "502a59", "bd94a4", "fb596e", "7abf75", "4d4ac4"]
 
@@ -167,11 +167,12 @@ def motp_test():
     pin = "1234"
 
     timeOtp2 = mTimeOtp(key=key, pin=pin)
-    ntime = timeOtp2.checkOtp("7215e7", 18, options={'iniTime':126753360})
-    #expecting true
+    ntime = timeOtp2.checkOtp("7215e7", 18, options={"iniTime": 126753360})
+    # expecting true
     print("result: ", ntime, " should be 126753370")
 
     return
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     motp_test()

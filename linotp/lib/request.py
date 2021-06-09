@@ -84,35 +84,39 @@ class RemoteRequest(object):
     @staticmethod
     def parse_url(url):
         parsed = urllib.parse.urlparse(url)
-        url_info = {'scheme': parsed.scheme,
-                    'netloc': parsed.netloc,
-                    'port': parsed.port,
-                    'hostname': parsed.hostname,
-                    'path': parsed.path,
-                    'params': parsed.params,
-                    'query': parsed.query,
-                    'fragment': parsed.fragment,
-                    'secret': parsed.password,
-                    'url': url}
+        url_info = {
+            "scheme": parsed.scheme,
+            "netloc": parsed.netloc,
+            "port": parsed.port,
+            "hostname": parsed.hostname,
+            "path": parsed.path,
+            "params": parsed.params,
+            "query": parsed.query,
+            "fragment": parsed.fragment,
+            "secret": parsed.password,
+            "url": url,
+        }
 
         if not parsed.query:
-            _path, _sep, query = parsed.path.partition('?')
+            _path, _sep, query = parsed.path.partition("?")
         else:
             query = parsed.query
 
-        query_parts = query.split('&')
+        query_parts = query.split("&")
         q = {}
         for query_part in query_parts:
-            if '=' in query:
-                key, value = query_part.split('=')
+            if "=" in query:
+                key, value = query_part.split("=")
             else:
                 key = query
-                value = ''
+                value = ""
             # only add if key is not an empty strings
             if key.strip():
-                q[urllib.parse.unquote(key.strip())] = urllib.parse.unquote(value.strip())
+                q[urllib.parse.unquote(key.strip())] = urllib.parse.unquote(
+                    value.strip()
+                )
 
-        url_info['query_params'] = q
+        url_info["query_params"] = q
         return url_info
 
 
@@ -135,19 +139,20 @@ class HttpRequest(RemoteRequest):
         """
 
         params = {}
-        params['pass'] = password.encode("utf-8")
-        params['user'] = user.login
+        params["pass"] = password.encode("utf-8")
+        params["user"] = user.login
 
         if user.realm:
-            params['realm'] = user.realm
+            params["realm"] = user.realm
 
         for key, value in list(options.items()):
             params[key] = value.encode("utf-8")
 
         server_config = RemoteRequest.parse_url(self.server)
         query_params = server_config.get("query_params", {})
-        ssl_verify = (query_params.get("verify_ssl_certificate", '').lower()
-                      == "true")
+        ssl_verify = (
+            query_params.get("verify_ssl_certificate", "").lower() == "true"
+        )
 
         res = False
         reply = {}
@@ -158,8 +163,11 @@ class HttpRequest(RemoteRequest):
             request_url = "%(scheme)s://%(netloc)s%(path)s" % server_config
 
             # prepare the submit and receive headers
-            headers = {"Content-type": "application/x-www-form-urlencoded",
-                       "Accept": "text/plain", 'Connection': 'close'}
+            headers = {
+                "Content-type": "application/x-www-form-urlencoded",
+                "Accept": "text/plain",
+                "Connection": "close",
+            }
 
             data = urllib.parse.urlencode(params)
             # submit the request
@@ -173,23 +181,25 @@ class HttpRequest(RemoteRequest):
                 # TypeError: __init__() got an unexpected keyword argument
                 # 'disable_ssl_certificate_validation'
 
-                log.warning("httplib2 'disable_ssl_certificate_validation'"
-                            " attribute error: %r", exx)
+                log.warning(
+                    "httplib2 'disable_ssl_certificate_validation'"
+                    " attribute error: %r",
+                    exx,
+                )
                 # so we run in fallback mode
                 http = httplib2.Http()
 
-            (resp, content) = http.request(request_url,
-                                           method="POST",
-                                           body=data,
-                                           headers=headers)
+            (resp, content) = http.request(
+                request_url, method="POST", body=data, headers=headers
+            )
             if resp.status not in [200]:
                 raise Exception("Http Status not ok (%s)", resp.status)
 
             result = json.loads(content)
-            status = result.get('result', {}).get('status', False)
+            status = result.get("result", {}).get("status", False)
 
             if status is True:
-                if result.get('result', {}).get('value', False) is True:
+                if result.get("result", {}).get("value", False) is True:
                     res = True
 
             # in case of a remote challenge respone transaction
@@ -198,9 +208,12 @@ class HttpRequest(RemoteRequest):
                 res = False
 
         except Exception as exx:
-            log.exception("Error %r getting response from "
-                          "remote Server (%r):%r", exx, request_url, content)
-
+            log.exception(
+                "Error %r getting response from " "remote Server (%r):%r",
+                exx,
+                request_url,
+                content,
+            )
 
         return res, reply
 
@@ -227,49 +240,62 @@ class RadiusRequest(RemoteRequest):
         res = False
 
         server_config = RemoteRequest.parse_url(self.server)
-        radiusServer = server_config['netloc']
+        radiusServer = server_config["netloc"]
         radiusUser = user.login
 
         # Read the secret - from the parameter list :-)
         query_params = server_config.get("query_params", {})
-        secret = query_params.get("secret", '')
+        secret = query_params.get("secret", "")
         radiusSecret = secret
 
         # here we also need to check for radius.user
-        log.debug("Checking OTP with length %s on radius server %s"
-                  "(user: %s)", len(password), radiusServer, radiusUser)
+        log.debug(
+            "Checking OTP with length %s on radius server %s" "(user: %s)",
+            len(password),
+            radiusServer,
+            radiusUser,
+        )
 
         try:
             # pyrad does not allow to set timeout and retries.
             # it defaults to retries=3, timeout=5
 
-            if ':' in radiusServer:
-                r_server, _sep, r_authport = radiusServer.partition(':')
+            if ":" in radiusServer:
+                r_server, _sep, r_authport = radiusServer.partition(":")
                 r_authport = int(r_authport)
             else:
                 r_server = radiusServer
                 r_authport = 1812
 
-            nas_identifier = current_app.config['RADIUS_NAS_IDENTIFIER']
+            nas_identifier = current_app.config["RADIUS_NAS_IDENTIFIER"]
             r_dict = current_app.getRadiusDictionaryPath()
 
-            log.debug("Radius: constructing client object with server: %r, "
-                      "port: %r, secret: %r", r_server, r_authport,
-                      radiusSecret)
+            log.debug(
+                "Radius: constructing client object with server: %r, "
+                "port: %r, secret: %r",
+                r_server,
+                r_authport,
+                radiusSecret,
+            )
 
-            srv = Client(server=r_server,
-                         authport=r_authport,
-                         secret=radiusSecret.encode('utf-8'),
-                         dict=Dictionary(r_dict))
+            srv = Client(
+                server=r_server,
+                authport=r_authport,
+                secret=radiusSecret.encode("utf-8"),
+                dict=Dictionary(r_dict),
+            )
 
-            req = srv.CreateAuthPacket(code=pyrad.packet.AccessRequest,
-                                User_Name=radiusUser.encode('utf-8'),
-                                NAS_Identifier=nas_identifier.encode('utf-8'))
+            req = srv.CreateAuthPacket(
+                code=pyrad.packet.AccessRequest,
+                User_Name=radiusUser.encode("utf-8"),
+                NAS_Identifier=nas_identifier.encode("utf-8"),
+            )
 
             req["User-Password"] = req.PwCrypt(password)
-            if "transactionid" in options or 'state' in options:
-                req["State"] = str(options.get('transactionid',
-                                               options.get('state')))
+            if "transactionid" in options or "state" in options:
+                req["State"] = str(
+                    options.get("transactionid", options.get("state"))
+                )
 
             response = srv.SendPacket(req)
 
@@ -287,18 +313,24 @@ class RadiusRequest(RemoteRequest):
                     reply["message"] = opt["Reply-Message"][0]
 
             elif response.code == pyrad.packet.AccessAccept:
-                log.info("Radius: Server %s granted "
-                         "access to user %s.", r_server, radiusUser)
+                log.info(
+                    "Radius: Server %s granted " "access to user %s.",
+                    r_server,
+                    radiusUser,
+                )
                 res = True
             else:
-                log.warning("Radius: Server %s"
-                            "rejected access to user %s.",
-                            r_server, radiusUser)
+                log.warning(
+                    "Radius: Server %s" "rejected access to user %s.",
+                    r_server,
+                    radiusUser,
+                )
                 res = False
 
         except Exception as ex:
             log.exception("Error contacting radius Server: %r", ex)
 
         return (res, reply)
+
 
 ### eof #######################################################################

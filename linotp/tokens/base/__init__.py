@@ -74,6 +74,7 @@ from linotp.tokens import tokenclass_registry
 from sqlalchemy import asc, desc
 
 from linotp.lib.context import request_context as context
+
 # from linotp.lib.error import TokenStateError
 
 from linotp.lib.policy import get_pin_policies
@@ -91,15 +92,14 @@ log = logging.getLogger(__name__)
 
 
 class TokenClass(TokenPropertyMixin, TokenValidityMixin):
-
     def __init__(self, token):
-        self.type = ''
+        self.type = ""
         self.token = token
         # the info is a generic container, to store token specific
         # processing info, which could be retrieved in the controllers
         self.info = {}
         self.hKeyRequired = False
-        self.mode = ['authenticate', 'challenge']
+        self.mode = ["authenticate", "challenge"]
         # these lists will be returned as result of the token check
         self.challenge_token = []
         self.pin_matching_token = []
@@ -112,17 +112,19 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.supports_offline_mode = False
 
     def setType(self, typ):
-        typ = '' + typ
+        typ = "" + typ
         self.type = typ
         self.token.setType(typ)
 
     def pair(self, response_data):
-        raise NotImplementedError('token type %s doesn\'t support pairing '
-                                  % self.getType())
+        raise NotImplementedError(
+            "token type %s doesn't support pairing " % self.getType()
+        )
 
     def unpair(self):
-        raise NotImplementedError('token type %s doesn\'t support unpairing '
-                                  % self.getType())
+        raise NotImplementedError(
+            "token type %s doesn't support unpairing " % self.getType()
+        )
 
     def is_auth_only_token(self, user):
         """
@@ -132,15 +134,17 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :param user: the user / realm where the token policy is applied
         :return: boolean
         """
-        if len(self.mode) == 1 and 'authenticate' in self.mode:
+        if len(self.mode) == 1 and "authenticate" in self.mode:
             return True
 
-        if len(self.mode) == 1 and 'challenge' in self.mode:
+        if len(self.mode) == 1 and "challenge" in self.mode:
             return False
 
         import linotp.lib.policy
-        support_challenge_response = \
+
+        support_challenge_response = (
             linotp.lib.policy.get_auth_challenge_response(user, self.type)
+        )
 
         return not support_challenge_response
 
@@ -153,12 +157,14 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :return: boolean
         """
 
-        if not ('authenticate' in self.mode and 'challenge' in self.mode):
+        if not ("authenticate" in self.mode and "challenge" in self.mode):
             return False
 
         import linotp.lib.policy
-        support_challenge_response = \
+
+        support_challenge_response = (
             linotp.lib.policy.get_auth_challenge_response(user, self.type)
+        )
         return support_challenge_response
 
     # #########################################################################
@@ -209,7 +215,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
     def getRealms(self):
         realms = []
 
-        if hasattr(self, 'realms'):
+        if hasattr(self, "realms"):
             return self.realms  # pylint: disable=E0203
 
         tokenrealms = self.token.getRealms()
@@ -233,37 +239,37 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return self.info
 
     def getInfo(self):
-        '''
+        """
         getInfo - return the status of the token rollout
 
         :return: return the status dict.
         :rtype: dict
-        '''
+        """
         return self.info
 
     def checkOtp(self, anOtpVal1, counter, window, options=None):
-        '''
+        """
         This checks the OTP value, AFTER the upper level did
         the checkPIN
 
         return:
             counter of the matching OTP value.
-        '''
+        """
         return -1
 
     def getOtp(self, curtTime=""):
-        '''
+        """
         The default token does not support getting the otp value
         will return something like::
 
             1, pin, otpval, combined
 
         a negative value is a failure.
-        '''
+        """
         return (-2, 0, 0, 0)
 
     def get_multi_otp(self, count=0, epoch_start=0, epoch_end=0, curTime=None):
-        '''
+        """
         This returns a dictionary of multiple future OTP values of a token.
 
         parameter
@@ -275,12 +281,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             True/False
             error text
             OTP dictionary
-        '''
+        """
         return (False, "get_multi_otp not implemented for this tokentype", {})
 
     # new highlevel interface which covers the checkPin and checkOTP
     def authenticate(self, passw, user, options=None):
-        '''
+        """
         This is the method that verifies single shot authentication like
         they are done with push button tokens.
 
@@ -301,7 +307,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :return: returns tuple true or false for the pin match, the otpcounter
                  (int) and the reply (dict) that will be added as additional
                  information in the JSON response of ``/validate/check``.
-        '''
+        """
 
         pin_match = False
         otp_counter = -1
@@ -314,7 +320,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 otp_counter = check_otp(self, otpval, options=options)
                 if otp_counter >= 0:
                     pin_match = check_pin(
-                        self, pin, user=user, options=options)
+                        self, pin, user=user, options=options
+                    )
                     if not pin_match:
                         otp_counter = -1
             else:
@@ -324,13 +331,13 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         # for special token that have no otp like passwordtoken
         if not self.auth_info and pin_match is True and otp_counter == 0:
-            self.auth_info = {'auth_info': [('pin_length', len(passw))]}
+            self.auth_info = {"auth_info": [("pin_length", len(passw))]}
 
         return (pin_match, otp_counter, reply)
 
     # challenge interfaces starts here
     def is_challenge_request(self, passw, user, options=None):
-        '''
+        """
         This method checks, if this is a request, that triggers a challenge.
 
         The default behaviour to trigger a challenge is,
@@ -353,7 +360,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :type options: dict
 
         :return: true or false
-        '''
+        """
 
         request_is_valid = False
 
@@ -364,9 +371,10 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         return request_is_valid
 
-    def is_challenge_response(self, passw, user, options=None,
-                              challenges=None):
-        '''
+    def is_challenge_response(
+        self, passw, user, options=None, challenges=None
+    ):
+        """
         This method checks, if this is a request, that is the response to
         a previously sent challenge.
 
@@ -389,7 +397,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                            is a response for a challenge.
 
         :return: true or false
-        '''
+        """
 
         challenge_response = False
         if "state" in options or "transactionid" in options:
@@ -402,16 +410,16 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return challenge_response
 
     def get_challenge_validity(self):
-        '''
+        """
         This method returns the token specific challenge validity
 
         :return: int - validity in seconds
-        '''
+        """
 
         validity = 120
 
         try:
-            validity = int(getFromConfig('DefaultChallengeValidityTime', 120))
+            validity = int(getFromConfig("DefaultChallengeValidityTime", 120))
 
             # -------------------------------------------------------------- --
 
@@ -425,16 +433,17 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             #           mako / js automatic processing of config values)
 
             typ = self.getType()
-            for token_typ in [typ.capitalize(), typ.upper(), typ.lower()] :
+            for token_typ in [typ.capitalize(), typ.upper(), typ.lower()]:
 
-                lookup_for = token_typ + 'ChallengeValidityTime'
+                lookup_for = token_typ + "ChallengeValidityTime"
                 validity = int(getFromConfig(lookup_for, validity))
 
             # -------------------------------------------------------------- --
 
             # instance specific timeout
-            validity = int(self.getFromTokenInfo('challenge_validity_time',
-                                                 validity))
+            validity = int(
+                self.getFromTokenInfo("challenge_validity_time", validity)
+            )
 
         except ValueError:
             validity = 120
@@ -472,10 +481,11 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         Only in case of ``success`` == true the next method ``createChallenge``
         will be called.
         """
-        return (True, transactionid, 'challenge init ok', {})
+        return (True, transactionid, "challenge init ok", {})
 
-    def checkResponse4Challenge(self, user, passw, options=None,
-                                challenges=None):
+    def checkResponse4Challenge(
+        self, user, passw, options=None, challenges=None
+    ):
         """
         This method verifies if the given ``passw`` matches any existing
         ``challenge`` of the token.
@@ -517,7 +527,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return (otp_counter, matching_challenges)
 
     def challenge_janitor(self, matching_challenges, challenges):
-        '''
+        """
         This is the default janitor for the challenges of a token.
 
         The idea is to delete all challenges, which have an id lower than
@@ -533,17 +543,17 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :type challenges: list
 
         :return: list of all challenges, which should be deleted
-        '''
+        """
 
         to_be_closed = []
         if matching_challenges:
             match_id = 0
             for match in matching_challenges:
-                match_id = max([match_id, int(match.get('id'))])
+                match_id = max([match_id, int(match.get("id"))])
 
             # other, minor challenge will be closes as well
             for ch in challenges:
-                if int(ch.get('id')) < match_id:
+                if int(ch.get("id")) < match_id:
                     to_be_closed.append(ch)
 
         return to_be_closed
@@ -570,10 +580,11 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         additional ``attributes``, which are displayed in the JSON response.
         """
 
-        message = getFromConfig(self.type.upper() + "_CHALLENGE_PROMPT",
-                                'Otp: ')
+        message = getFromConfig(
+            self.type.upper() + "_CHALLENGE_PROMPT", "Otp: "
+        )
 
-        data = {'serial': self.getSerial()}
+        data = {"serial": self.getSerial()}
         attributes = None
         return (True, message, data, attributes)
 
@@ -605,21 +616,22 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         # standard authentication token
         if self.is_auth_only_token(user):
-            (res, reply) = self.check_authenticate(user, passw,
-                                                   options=options)
+            (res, reply) = self.check_authenticate(
+                user, passw, options=options
+            )
             return (res, reply)
 
         # only challenge response token authentication
         if not self.is_challenge_and_auth_token(user):
 
             # first check are there outstanding challenges
-            if self.is_challenge_response(passw, user,
-                                          options=options,
-                                          challenges=challenges):
+            if self.is_challenge_response(
+                passw, user, options=options, challenges=challenges
+            ):
 
-                (res, reply) = self.check_challenge_response(challenges,
-                                                             user, passw,
-                                                             options=options)
+                (res, reply) = self.check_challenge_response(
+                    challenges, user, passw, options=options
+                )
                 return (res, reply)
 
             res = self.is_challenge_request(passw, user, options=options)
@@ -633,13 +645,13 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         # and standard authentication
 
         # first check are there outstanding challenges
-        if self.is_challenge_response(passw, user,
-                                      options=options,
-                                      challenges=challenges):
+        if self.is_challenge_response(
+            passw, user, options=options, challenges=challenges
+        ):
 
-            (res, reply) = self.check_challenge_response(challenges,
-                                                         user, passw,
-                                                         options=options)
+            (res, reply) = self.check_challenge_response(
+                challenges, user, passw, options=options
+            )
             return (res, reply)
 
         # if all okay, we can return here
@@ -679,10 +691,11 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             options = {}
 
         otp = passw
-        self.transId = options.get('transactionid', options.get('state', None))
+        self.transId = options.get("transactionid", options.get("state", None))
 
         (otpcount, matching_challenges) = self.checkResponse4Challenge(
-            user, otp, options=options, challenges=challenges)
+            user, otp, options=options, challenges=challenges
+        )
 
         if otpcount >= 0:
             self.matching_challenges = matching_challenges
@@ -700,33 +713,36 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         realms = getTokenRealms(self.getSerial())
 
         if len(realms) == 1:
-            user = User(login='', realm=realms[0])
+            user = User(login="", realm=realms[0])
 
         elif len(realms) == 0:
             realm = getDefaultRealm()
-            user = User(login='', realm=realm)
-            log.info('No token realm found - using default realm.')
+            user = User(login="", realm=realm)
+            log.info("No token realm found - using default realm.")
 
         else:
-            msg = ('Multiple realms for token found. But one dedicated '
-                   'realm is required for further processing.')
+            msg = (
+                "Multiple realms for token found. But one dedicated "
+                "realm is required for further processing."
+            )
             log.error(msg)
             raise Exception(msg)
 
         return user
 
     def check_authenticate(self, user, passw, options=None):
-        '''
+        """
         simple authentication with pin+otp
 
         :param passw: the password, which should be checked
         :param options: dict with additional request parameters
 
         :return: tuple of matching otpcounter and a potential reply
-        '''
+        """
 
-        pin_match, otp_count, reply = self.authenticate(passw, user,
-                                                        options=options)
+        pin_match, otp_count, reply = self.authenticate(
+            passw, user, options=options
+        )
         if otp_count >= 0:
             self.valid_token.append(self)
         elif pin_match is True:
@@ -759,19 +775,23 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         if user is None:
             realms = getTokenRealms(self.getSerial())
             if len(realms) == 1:
-                user = User(login='', realm=realms[0])
+                user = User(login="", realm=realms[0])
             elif len(realms) == 0:
                 realm = getDefaultRealm()
-                user = User(login='', realm=realm)
-                log.info('No token realm found - using default realm.')
+                user = User(login="", realm=realm)
+                log.info("No token realm found - using default realm.")
             else:
-                msg = ('Multiple realms for token found. But one dedicated '
-                       'realm is required for further processing.')
+                msg = (
+                    "Multiple realms for token found. But one dedicated "
+                    "realm is required for further processing."
+                )
                 log.error(msg)
                 raise Exception(msg)
         import linotp.lib.policy
-        support_challenge_response = \
+
+        support_challenge_response = (
             linotp.lib.policy.get_auth_challenge_response(user, self.getType())
+        )
 
         if len(self.mode) == 1 and self.mode[0] == "challenge":
             # the support_challenge_response is overruled, if the token
@@ -780,11 +800,14 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         try:
             # call the token authentication
-            (pin_match, otp_count, reply) = self.authenticate(passw, user,
-                                                              options=options)
+            (pin_match, otp_count, reply) = self.authenticate(
+                passw, user, options=options
+            )
         except Exception as exx:
-            if (support_challenge_response is True and
-                    self.is_challenge_request(passw, user, options=options)):
+            if (
+                support_challenge_response is True
+                and self.is_challenge_request(passw, user, options=options)
+            ):
                 log.info("Retry on base of a challenge request:")
                 pin_match = False
                 otp_count = -1
@@ -793,9 +816,11 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 raise Exception(exx)
 
         if otp_count < 0 or pin_match is False:
-            if (support_challenge_response is True and
-                    self.isActive() and
-                    self.is_challenge_request(passw, user, options=options)):
+            if (
+                support_challenge_response is True
+                and self.isActive()
+                and self.is_challenge_request(passw, user, options=options)
+            ):
                 # we are in createChallenge mode
                 # fix for #12413:
                 # - moved the create_challenge call to the checkTokenList!
@@ -830,8 +855,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         :return: tuple of token lists
         """
-        return (self.challenge_token, self.pin_matching_token,
-                self.invalid_token, self.valid_token)
+        return (
+            self.challenge_token,
+            self.pin_matching_token,
+            self.invalid_token,
+            self.valid_token,
+        )
 
     def flush(self):
         self.token.storeToken()
@@ -858,13 +887,17 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         genkey = int(param.get("genkey", 0))
 
         if genkey not in [0, 1]:
-            raise Exception("TokenClass supports only genkey in "
-                            "range [0,1] : %r" % genkey)
+            raise Exception(
+                "TokenClass supports only genkey in "
+                "range [0,1] : %r" % genkey
+            )
 
         if genkey == 1 and otpKey is not None:
-            raise ParameterError('[ParameterError] You may either specify'
-                                 'genkey or otpkey, but not both!', id=344)
-
+            raise ParameterError(
+                "[ParameterError] You may either specify"
+                "genkey or otpkey, but not both!",
+                id=344,
+            )
 
         if otpKey is None and genkey == 1:
             otpKey = self._genOtpKey_()
@@ -877,14 +910,14 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 raise ParameterError("Missing parameter: 'otpkey'")
 
         if otpKey is not None:
-            self.addToInfo('otpkey', otpKey)
+            self.addToInfo("otpkey", otpKey)
             self.setOtpKey(otpKey, reset_failcount=reset_failcount)
 
         pin = param.get("pin")
         if pin is not None:
             self.setPin(pin, param=param)
 
-        otplen = param.get('otplen', None)
+        otplen = param.get("otplen", None)
         if otplen:
             self.setOtpLen(otplen)
 
@@ -894,19 +927,19 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         scope = None
 
-        if 'scope' in param:
-            scope = json.loads(param.get('scope', {}))
+        if "scope" in param:
+            scope = json.loads(param.get("scope", {}))
 
-        elif 'rollout' in param:
-            scope = {'path': ['userservice']}
+        elif "rollout" in param:
+            scope = {"path": ["userservice"]}
 
         if scope:
-            self.addToTokenInfo('scope', scope)
+            self.addToTokenInfo("scope", scope)
 
-            if not param.get('description'):
-                path = scope.get('path', [])
-                if set(path) & set(['userservice', 'validate']):
-                    param['description'] = 'rollout token'
+            if not param.get("description"):
+                path = scope.get("path", [])
+                if set(path) & set(["userservice", "validate"]):
+                    param["description"] = "rollout token"
 
         if param.get("description"):
             self.token.setDescription(param.get("description"))
@@ -923,16 +956,16 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         """
         return
 
-    def _genOtpKey_(self, otpkeylen:int = None) -> str:
-        '''
+    def _genOtpKey_(self, otpkeylen: int = None) -> str:
+        """
         private method, to create an otpkey
 
         :param otpkeylen: optional or 20
         :return: token seed / secret
-        '''
+        """
         if otpkeylen is None:
-            if hasattr(self, 'otpkeylen'):
-                otpkeylen = getattr(self, 'otpkeylen')
+            if hasattr(self, "otpkeylen"):
+                otpkeylen = getattr(self, "otpkeylen")
             else:
                 otpkeylen = 20
         return generate_otpkey(otpkeylen)
@@ -942,32 +975,34 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         set the token description
         :param description: set the token description
         """
-        self.token.setDescription('' + description)
+        self.token.setDescription("" + description)
         return
 
     def setDefaults(self):
         # set the defaults
 
-        self.token.LinOtpOtpLen = int(
-            getFromConfig("DefaultOtpLen") or 6)
+        self.token.LinOtpOtpLen = int(getFromConfig("DefaultOtpLen") or 6)
         self.token.LinOtpCountWindow = int(
-            getFromConfig("DefaultCountWindow") or 10)
+            getFromConfig("DefaultCountWindow") or 10
+        )
         self.token.LinOtpMaxFail = int(
-            getFromConfig("DefaultMaxFailCount") or 10)
+            getFromConfig("DefaultMaxFailCount") or 10
+        )
         self.token.LinOtpSyncWindow = int(
-            getFromConfig("DefaultSyncWindow") or 1000)
+            getFromConfig("DefaultSyncWindow") or 1000
+        )
 
-        self.token.LinOtpTokenType = '' + self.type
+        self.token.LinOtpTokenType = "" + self.type
         return
 
     def setUser(self, user, report):
-        '''
+        """
         :param user: a User() object, consisting of loginname and realm
         :param report: tbdf.
-        '''
-        (uuserid,
-         uidResolver,
-         uidResolverClass) = getUserResolverId(user, report)
+        """
+        (uuserid, uidResolver, uidResolverClass) = getUserResolverId(
+            user, report
+        )
 
         self.token.LinOtpIdResolver = uidResolver
         self.token.LinOtpIdResClass = uidResolverClass
@@ -979,22 +1014,23 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         :return: tuple of user id, user resolver and resolver class
         """
-        uidResolver = self.token.LinOtpIdResolver or ''
-        uidResolverClass = self.token.LinOtpIdResClass or ''
+        uidResolver = self.token.LinOtpIdResolver or ""
+        uidResolverClass = self.token.LinOtpIdResClass or ""
 
         # we adjust the token-resolver-class-info to match
         # to the available un-ee resolvers, which makes the live
         # alot easier
-        if 'useridresolveree.' in uidResolverClass:
-            uidResolverClass = uidResolverClass.replace('useridresolveree.',
-                                                        'useridresolver.')
-        uuserid = self.token.LinOtpUserid or ''
+        if "useridresolveree." in uidResolverClass:
+            uidResolverClass = uidResolverClass.replace(
+                "useridresolveree.", "useridresolver."
+            )
+        uuserid = self.token.LinOtpUserid or ""
         return (uuserid, uidResolver, uidResolverClass)
 
     def setUid(self, uid, uidResolver, uidResClass):
-        '''
+        """
         sets the UID values in the database
-        '''
+        """
         self.token.LinOtpIdResolver = uidResolver
         self.token.LinOtpIdResClass = uidResClass
         self.token.LinOtpUserid = uid
@@ -1053,7 +1089,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         :param soPin: the special so pin
         """
-        iv, enc_soPin = SecretObj.encrypt(soPin, hsm=context.get('hsm'))
+        iv, enc_soPin = SecretObj.encrypt(soPin, hsm=context.get("hsm"))
         self.token.setSoPin(enc_soPin, iv)
 
     def setUserPin(self, userPin):
@@ -1065,7 +1101,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :param userPin: the user pin
         """
 
-        iv, enc_user_pin = SecretObj.encrypt(userPin, hsm=context['hsm'])
+        iv, enc_user_pin = SecretObj.encrypt(userPin, hsm=context["hsm"])
         self.token.setUserPin(enc_user_pin, iv)
 
     def setOtpKey(self, otpKey, reset_failcount=True):
@@ -1077,9 +1113,10 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :param otpKey: the token seed / secret
         :param reset_failcount: boolean, if the failcounter should be reseted
         """
-        iv, enc_otp_key = SecretObj.encrypt(otpKey, hsm=context['hsm'])
-        self.token.set_encrypted_seed(enc_otp_key, iv,
-                                      reset_failcount=reset_failcount)
+        iv, enc_otp_key = SecretObj.encrypt(otpKey, hsm=context["hsm"])
+        self.token.set_encrypted_seed(
+            enc_otp_key, iv, reset_failcount=reset_failcount
+        )
 
     def setOtpLen(self, otplen):
         self.token.LinOtpOtpLen = int(otplen)
@@ -1091,7 +1128,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.token.LinOtpCount = int(otpCount)
 
     def setPin(self, pin, param=None):
-        '''
+        """
         set the PIN. The optional parameter "param" can hold the information,
         if the PIN is encrypted or hashed.
 
@@ -1100,11 +1137,11 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                       the 'encryptpin' value, that triggers, that the token
                       secret are stored in an encrypted form
         :return: - nothing -
-        '''
+        """
         if param is None:
             param = {}
 
-        hsm = context['hsm']
+        hsm = context["hsm"]
         storeHashed = True
         enc = param.get("encryptpin", None)
         if enc is not None and "true" == enc.lower():
@@ -1115,16 +1152,17 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             self.token.set_hashed_pin(hashed_pin, iv)
         else:
             enc_pin = SecretObj.encrypt_pin(pin)
-            iv = enc_pin.split(':')[0]
+            iv = enc_pin.split(":")[0]
             self.token.set_encrypted_pin(
-                enc_pin.encode('utf-8'), binascii.unhexlify(iv))
+                enc_pin.encode("utf-8"), binascii.unhexlify(iv)
+            )
 
     def getPin(self):
         """
         :return: the value of the pin- if it is stored encrypted
         """
-        pin = ''
-        hsm = context['hsm']
+        pin = ""
+        hsm = context["hsm"]
         if self.token.isPinEncrypted():
             _iv, enc_pin = self.token.get_encrypted_pin()
             pin = SecretObj.decrypt_pin(enc_pin, hsm=hsm)
@@ -1140,7 +1178,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :return: SecretObject, containing the token seed
         """
         key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=context['hsm'])
+        secObj = SecretObj(key, iv, hsm=context["hsm"])
         return secObj
 
     def enable(self, enable):
@@ -1159,7 +1197,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         try:
             self.token.storeToken()
         except:
-            log.exception('Token fail counter update failed')
+            log.exception("Token fail counter update failed")
             raise TokenAdminError("Token Fail Counter update failed", id=1106)
 
         return self.token.LinOtpFailCount
@@ -1182,11 +1220,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
     def getHashlib(self, hLibStr):
 
-        return get_hashalgo_from_description(description=hLibStr,
-                                             fallback='sha1')
+        return get_hashalgo_from_description(
+            description=hLibStr, fallback="sha1"
+        )
 
     def incOtpCounter(self, counter=None, reset=True):
-        '''
+        """
         method
             incOtpCounter(aToken, counter)
 
@@ -1201,7 +1240,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         side effects:
             default of reset will reset the failCounter
 
-        '''
+        """
 
         resetCounter = False
 
@@ -1215,8 +1254,10 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 resetCounter = True
 
         if resetCounter is True:
-            if (self.token.LinOtpFailCount < self.token.LinOtpMaxFail and
-                    self.token.LinOtpIsactive is True):
+            if (
+                self.token.LinOtpFailCount < self.token.LinOtpMaxFail
+                and self.token.LinOtpIsactive is True
+            ):
                 self.token.LinOtpFailCount = 0
 
         try:
@@ -1224,17 +1265,18 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         except Exception as ex:
             log.exception("Token Counter update failed: %r" % (ex))
-            raise TokenAdminError("Token Counter update failed: %r" % (ex),
-                                  id=1106)
+            raise TokenAdminError(
+                "Token Counter update failed: %r" % (ex), id=1106
+            )
 
         return self.token.LinOtpCount
 
     def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
-        '''
+        """
         checks if the given OTP value is/are values of this very token.
         This is used to autoassign and to determine the serial number of
         a token.
-        '''
+        """
         return -1
 
     def splitPinPass(self, passw):
@@ -1247,20 +1289,20 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         if boolean(getFromConfig("PrependPin", True)):
             pin = passw[0:-otplen]
             otpval = passw[-otplen:]
-            auth_info.append(('pin_length', len(pin)))
-            auth_info.append(('otp_length', len(otpval)))
+            auth_info.append(("pin_length", len(pin)))
+            auth_info.append(("otp_length", len(otpval)))
         else:
             pin = passw[otplen:]
             otpval = passw[0:otplen]
-            auth_info.append(('otp_length', len(otpval)))
-            auth_info.append(('pin_length', len(pin)))
+            auth_info.append(("otp_length", len(otpval)))
+            auth_info.append(("pin_length", len(pin)))
 
-        self.auth_info['auth_info'] = auth_info
+        self.auth_info["auth_info"] = auth_info
 
         return pin, otpval
 
     def checkPin(self, pin, options=None):
-        '''
+        """
         checkPin - test is the pin is matching
 
         :param pin:      the pin
@@ -1268,7 +1310,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                          be token specific
         :return: boolean
 
-        '''
+        """
 
         if self.token.isPinEncrypted():
 
@@ -1276,8 +1318,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             # iv is binary, while encrypted_token_pin is hexlified
             iv, encrypted_token_pin = self.token.get_encrypted_pin()
 
-            return SecretObj.check_encrypted_pin(
-                        pin, encrypted_token_pin, iv)
+            return SecretObj.check_encrypted_pin(pin, encrypted_token_pin, iv)
 
         # hashed pin comparison
 
@@ -1288,9 +1329,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         if len(hashed_token_pin) == 0 and len(pin) == 0:
             return True
 
-        return SecretObj.check_hashed_pin(
-                             pin or '', hashed_token_pin, iv)
-
+        return SecretObj.check_hashed_pin(pin or "", hashed_token_pin, iv)
 
     @staticmethod
     def copy_pin(src, target):
@@ -1309,12 +1348,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return
 
     def __repr__(self):
-        '''
+        """
         return the token state as text
 
         :return: token state as string representation
         :rtype:  string
-        '''
+        """
         ldict = {}
         for attr in self.__dict__:
             key = "%r" % attr
@@ -1324,26 +1363,26 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return res
 
     def get_vars(self, save=False):
-        '''
+        """
         return the token state as dicts
         :return: token as dict
-        '''
+        """
         ldict = {}
         for attr in self.__dict__:
             key = attr
-            if key == 'context':
+            if key == "context":
                 continue
             val = getattr(self, attr)
             if isinstance(val, (list, dict, str, int, float, bool)):
                 ldict[key] = val
-            elif type(val).__name__.startswith('Token'):
+            elif type(val).__name__.startswith("Token"):
                 ldict[key] = val.get_vars(save=save)
             else:
                 ldict[key] = "%r" % val
         return ldict
 
     def get_enrollment_status(self):
-        return {'status': 'completed'}
+        return {"status": "completed"}
 
     def getAuthDetail(self):
 
@@ -1353,43 +1392,44 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return {}
 
     def getInitDetail(self, params, user=None):
-        '''
+        """
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
-        '''
+        """
 
-        _ = context['translate']
+        _ = context["translate"]
 
         response_detail = {}
 
         info = self.getInfo()
         response_detail.update(info)
-        response_detail['serial'] = self.getSerial()
+        response_detail["serial"] = self.getSerial()
 
         otpkey = None
-        if 'otpkey' in info:
-            otpkey = info.get('otpkey')
+        if "otpkey" in info:
+            otpkey = info.get("otpkey")
 
         if otpkey is not None:
-            response_detail["otpkey"] = {"order": '1',
-                                         "description": _("OTP seed"),
-                                         "value":  "seed://%s" % otpkey,
-                                         "img":  create_img(otpkey, width=200),
-                                         }
+            response_detail["otpkey"] = {
+                "order": "1",
+                "description": _("OTP seed"),
+                "value": "seed://%s" % otpkey,
+                "img": create_img(otpkey, width=200),
+            }
 
         return response_detail
 
     def getQRImageData(self, response_detail):
-        '''
-        '''
+        """"""
         url = None
         hparam = {}
 
         if response_detail is not None:
-            if 'googleurl' in response_detail:
-                url = response_detail.get('googleurl')
-                hparam['alt'] = url
+            if "googleurl" in response_detail:
+                url = response_detail.get("googleurl")
+                hparam["alt"] = url
 
         return url, hparam
+
 
 # eof #

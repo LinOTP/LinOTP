@@ -55,76 +55,76 @@ class TestPolicyPassthrough(TestController):
         test passthrough policy in combination with the passOnNoToken
         """
         policy1 = {
-                  'name': 'passOnNoToken',
-                  'realm': '*',
-                  'active': 'False',
-                  'client': "*",
-                  'user': '*',
-                  'time': "",
-                  'action': "passOnNoToken",
-                  'scope': 'authentication',
-                  }
+            "name": "passOnNoToken",
+            "realm": "*",
+            "active": "False",
+            "client": "*",
+            "user": "*",
+            "time": "",
+            "action": "passOnNoToken",
+            "scope": "authentication",
+        }
 
         policy2 = {
-                  'name': 'passthrough',
-                  'realm': '*',
-                  'active': 'True',
-                  'client': "192.168.13.14",
-                  'user': '*',
-                  'time': "",
-                  'action': "passthru",
-                  'scope': 'authentication',
-                  }
+            "name": "passthrough",
+            "realm": "*",
+            "active": "True",
+            "client": "192.168.13.14",
+            "user": "*",
+            "time": "",
+            "action": "passthru",
+            "scope": "authentication",
+        }
 
         self.create_policy(policy1)
         self.create_policy(policy2)
 
         # test that passonNoToken works - first with inactive policy
 
-        params = {'user': 'passthru_user1',
-                  'pass': 'password_not_required'}
+        params = {"user": "passthru_user1", "pass": "password_not_required"}
 
-        response = self.make_validate_request('check', params,
-                                              client='127.0.0.1')
+        response = self.make_validate_request(
+            "check", params, client="127.0.0.1"
+        )
 
         assert '"value": false' in response, response
 
         # test that passonNoToken works - now with active policy
 
-        policy1['active'] = 'True'
+        policy1["active"] = "True"
         self.create_policy(policy1)
 
-        params = {'user': 'passthru_user1',
-                  'pass': 'password_not_required'}
+        params = {"user": "passthru_user1", "pass": "password_not_required"}
 
-        response = self.make_validate_request('check', params,
-                                              client='127.0.0.1')
+        response = self.make_validate_request(
+            "check", params, client="127.0.0.1"
+        )
 
         assert '"value": true' in response, response
-
 
         # test that authentication with wrong password
         # from client 192.168.13.14 will fail
 
-        params = {'user': 'passthru_user1',
-                  'pass': 'wrong_password'}
+        params = {"user": "passthru_user1", "pass": "wrong_password"}
 
-        response = self.make_validate_request('check', params,
-                                              client='192.168.13.14')
+        response = self.make_validate_request(
+            "check", params, client="192.168.13.14"
+        )
 
         assert '"value": false' in response, response
 
         # test that authentication with valid password
         # from client 192.168.13.14 is ok
 
-        params = {'user': 'passthru_user1',
-                  'pass': 'geheim1'}
+        params = {"user": "passthru_user1", "pass": "geheim1"}
 
-        response = self.make_validate_request('check', params,
-                                              client='192.168.13.14')
+        response = self.make_validate_request(
+            "check", params, client="192.168.13.14"
+        )
 
         assert '"value": true' in response, response
 
         return
+
 
 # eof ##

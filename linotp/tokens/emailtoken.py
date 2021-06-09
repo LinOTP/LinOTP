@@ -57,20 +57,25 @@ LOG = logging.getLogger(__name__)
 
 
 def is_email_editable(user=""):
-    '''
+    """
     this function checks the policy scope=selfservice, action=edit_email
     This is a int policy, while the '0' is a deny
-    '''
+    """
 
     realm = user.realm
     login = user.login
 
     policies = get_client_policy(
-        client=context['Client'], scope='selfservice', action= "edit_email",
-        realm=realm, user=login)
+        client=context["Client"],
+        scope="selfservice",
+        action="edit_email",
+        realm=realm,
+        user=login,
+    )
 
     edit_email = get_action_value(
-        policies, scope='selfservice', action='edit_email', default=1)
+        policies, scope="selfservice", action="edit_email", default=1
+    )
 
     if edit_email == 0:
         return False
@@ -78,9 +83,8 @@ def is_email_editable(user=""):
     return True
 
 
-@tokenclass_registry.class_entry('email')
-@tokenclass_registry.class_entry(
-    'linotp.tokens.emailtoken.EmailTokenClass')
+@tokenclass_registry.class_entry("email")
+@tokenclass_registry.class_entry("linotp.tokens.emailtoken.EmailTokenClass")
 class EmailTokenClass(HmacTokenClass):
     """
     E-mail token (similar to SMS token)
@@ -97,8 +101,8 @@ class EmailTokenClass(HmacTokenClass):
 
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
-        self.hashlibStr = context['Config'].get("hotp.hashlib", "sha1")
-        self.mode = ['challenge']
+        self.hashlibStr = context["Config"].get("hotp.hashlib", "sha1")
+        self.mode = ["challenge"]
 
     @property
     def _email_address(self):
@@ -117,7 +121,7 @@ class EmailTokenClass(HmacTokenClass):
         return "LSEM"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
+    def getClassInfo(cls, key=None, ret="all"):
         """
         getClassInfo - returns a subtree of the token definition
 
@@ -131,75 +135,87 @@ class EmailTokenClass(HmacTokenClass):
         :rtype: s.o.
 
         """
-        LOG.debug("[getClassInfo] begin. Get class render info for section: "
-                  "key %r, ret %r " % (key, ret))
+        LOG.debug(
+            "[getClassInfo] begin. Get class render info for section: "
+            "key %r, ret %r " % (key, ret)
+        )
 
-        _ = context['translate']
+        _ = context["translate"]
 
         res = {
-            'type':         'email',
-            'title':        'E-mail Token',
-            'description':  'An e-mail token.',
-            'init': {
-                'page': {
-                    'html': 'emailtoken.mako',
-                    'scope': 'enroll',
+            "type": "email",
+            "title": "E-mail Token",
+            "description": "An e-mail token.",
+            "init": {
+                "page": {
+                    "html": "emailtoken.mako",
+                    "scope": "enroll",
                 },
-                'title': {
-                    'html': 'emailtoken.mako',
-                    'scope': 'enroll.title',
-                },
-            },
-            'config': {
-                'title': {
-                    'html': 'emailtoken.mako',
-                    'scope': 'config.title',
-                },
-                'page': {
-                    'html': 'emailtoken.mako',
-                    'scope': 'config',
+                "title": {
+                    "html": "emailtoken.mako",
+                    "scope": "enroll.title",
                 },
             },
-            'selfservice': {
-                'enroll':
-                    {'page': {
-                        'html': 'emailtoken.mako',
-                        'scope': 'selfservice.enroll', },
-                        'title': {
-                            'html': 'emailtoken.mako',
-                            'scope': 'selfservice.title.enroll', },
-                    },
-            },
-            'policy': {
-                'selfservice':  {
-                    'edit_email':
-                        {'type': 'int',
-                         'value': [0, 1],
-                         'desc': _('define if the user should be allowed'
-                                   ' to define the email address')
-                         }
+            "config": {
+                "title": {
+                    "html": "emailtoken.mako",
+                    "scope": "config.title",
                 },
-                'authentication': {
-                    'emailtext': {
-                        'type': 'str',
-                        'desc': _('The text that will be send via email '
-                                  'for an email token. Use <otp> '
-                                  'and <serial> as parameters.')
+                "page": {
+                    "html": "emailtoken.mako",
+                    "scope": "config",
+                },
+            },
+            "selfservice": {
+                "enroll": {
+                    "page": {
+                        "html": "emailtoken.mako",
+                        "scope": "selfservice.enroll",
                     },
-                    'emailsubject': {
-                        'type': 'str',
-                        'desc': _('The subject that will be send via email '
-                                  'for an email token. Use <otp> '
-                                  'and <serial> as parameters.')
+                    "title": {
+                        "html": "emailtoken.mako",
+                        "scope": "selfservice.title.enroll",
                     },
-                    'dynamic_email_address':{
-                        'type': 'bool',
-                        'desc': _('if set, a new email address will be '
-                                  'retrieved from the user info instead '
-                                  'of the token')},
-
-                }
-            }
+                },
+            },
+            "policy": {
+                "selfservice": {
+                    "edit_email": {
+                        "type": "int",
+                        "value": [0, 1],
+                        "desc": _(
+                            "define if the user should be allowed"
+                            " to define the email address"
+                        ),
+                    }
+                },
+                "authentication": {
+                    "emailtext": {
+                        "type": "str",
+                        "desc": _(
+                            "The text that will be send via email "
+                            "for an email token. Use <otp> "
+                            "and <serial> as parameters."
+                        ),
+                    },
+                    "emailsubject": {
+                        "type": "str",
+                        "desc": _(
+                            "The subject that will be send via email "
+                            "for an email token. Use <otp> "
+                            "and <serial> as parameters."
+                        ),
+                    },
+                    "dynamic_email_address": {
+                        "type": "bool",
+                        "desc": _(
+                            "if set, a new email address will be "
+                            "retrieved from the user info instead "
+                            "of the token"
+                        ),
+                    },
+                },
+            },
         }
 
         # do we need to define the lost token policies here...
@@ -207,10 +223,12 @@ class EmailTokenClass(HmacTokenClass):
         if key is not None and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
-        LOG.debug("[getClassInfo] end. Returned the configuration section:"
-                  " ret %r " % ret)
+        LOG.debug(
+            "[getClassInfo] end. Returned the configuration section:"
+            " ret %r " % ret
+        )
         return ret
 
     def update(self, param, reset_failcount=True):
@@ -223,18 +241,19 @@ class EmailTokenClass(HmacTokenClass):
         :return: nothing
 
         """
-        LOG.debug("[update] begin. adjust the token class with: param %r"
-                  % param)
+        LOG.debug(
+            "[update] begin. adjust the token class with: param %r" % param
+        )
 
-        _ = context['translate']
+        _ = context["translate"]
 
         # in the scope helpdesk we allways have a user
         # to whom the token will be assigned
 
-        if param.get('::scope::', {}).get('helpdesk', False):
-            user = param['::scope::']['user']
+        if param.get("::scope::", {}).get("helpdesk", False):
+            user = param["::scope::"]["user"]
             u_info = getUserDetail(user)
-            param[self.EMAIL_ADDRESS_KEY] = u_info.get('email', None)
+            param[self.EMAIL_ADDRESS_KEY] = u_info.get("email", None)
 
         # specific - e-mail
         self._email_address = param[self.EMAIL_ADDRESS_KEY]
@@ -242,19 +261,20 @@ class EmailTokenClass(HmacTokenClass):
         # in scope selfservice - check if edit_email is allowed
         # if not allowed to edit, check if the email is the same
         # as from the user data
-        if param.get('::scope::', {}).get('selfservice', False):
-            user = param['::scope::']['user']
+        if param.get("::scope::", {}).get("selfservice", False):
+            user = param["::scope::"]["user"]
             if not is_email_editable(user):
                 u_info = getUserDetail(user)
-                u_email = u_info.get('email', None)
+                u_email = u_info.get("email", None)
                 if u_email.strip() != self._email_address.strip():
-                    raise Exception(_('User is not allowed to set '
-                                      'email address'))
+                    raise Exception(
+                        _("User is not allowed to set " "email address")
+                    )
 
         # in case of the e-mail token, only the server must know the otpkey
         # thus if none is provided, we let create one (in the TokenClass)
-        if 'genkey' not in param and 'otpkey' not in param:
-            param['genkey'] = 1
+        if "genkey" not in param and "otpkey" not in param:
+            param["genkey"] = 1
 
         HmacTokenClass.update(self, param, reset_failcount)
 
@@ -282,8 +302,9 @@ class EmailTokenClass(HmacTokenClass):
         hmac2otp = HmacOtp(secObj, counter, otplen)
         nextotp = hmac2otp.generate(counter + 1)
 
-        LOG.debug("[getNextOtp] end. got the next otp value: nextOtp %r"
-                  % nextotp)
+        LOG.debug(
+            "[getNextOtp] end. got the next otp value: nextOtp %r" % nextotp
+        )
         return nextotp
 
     def initChallenge(self, transactionid, challenges=None, options=None):
@@ -305,12 +326,15 @@ class EmailTokenClass(HmacTokenClass):
         """
         success = True
         transactionid_to_use = transactionid
-        message = 'challenge init ok'
+        message = "challenge init ok"
         attributes = {}
 
         now = datetime.datetime.now()
-        blocking_time = int(getFromConfig('EmailBlockingTimeout',
-                                          self.DEFAULT_EMAIL_BLOCKING_TIMEOUT))
+        blocking_time = int(
+            getFromConfig(
+                "EmailBlockingTimeout", self.DEFAULT_EMAIL_BLOCKING_TIMEOUT
+            )
+        )
 
         for challenge in challenges:
 
@@ -318,17 +342,20 @@ class EmailTokenClass(HmacTokenClass):
             if not challenge.is_open():
                 continue
 
-            challenge_timestamp = challenge.get('timestamp')
-            block_timeout = challenge_timestamp + \
-                             datetime.timedelta(seconds=blocking_time)
+            challenge_timestamp = challenge.get("timestamp")
+            block_timeout = challenge_timestamp + datetime.timedelta(
+                seconds=blocking_time
+            )
             # check if there is a challenge that is blocking
             # the creation of new challenges
             if now <= block_timeout:
                 transactionid_to_use = challenge.getTransactionId()
-                message = 'e-mail with otp already submitted'
+                message = "e-mail with otp already submitted"
                 success = False
-                attributes = {'info': 'challenge already submitted',
-                              'state': transactionid_to_use}
+                attributes = {
+                    "info": "challenge already submitted",
+                    "state": transactionid_to_use,
+                }
                 break
 
         return success, transactionid_to_use, message, attributes
@@ -349,44 +376,49 @@ class EmailTokenClass(HmacTokenClass):
         """
         attributes = {}
         counter = self.getOtpCount() + 1
-        data = {'counter_value': "%s" % counter}
+        data = {"counter_value": "%s" % counter}
 
         try:
             success, status_message = self._sendEmail()
             if success:
-                attributes = {'state': transactionid}
+                attributes = {"state": transactionid}
         finally:
             self.incOtpCounter(counter, reset=False)
 
         return success, status_message, data, attributes
 
     def _get_email_address(self, user=None):
-        '''
+        """
         get the email address
             - from the token info or
             - if the policy allowes it, from the user info
-        '''
+        """
 
         if not user:
             return self._email_address
 
         pol = get_client_policy(
-            context['Client'], scope="authentication", user=user,
-            action="dynamic_email_address")
+            context["Client"],
+            scope="authentication",
+            user=user,
+            action="dynamic_email_address",
+        )
 
         if not pol:
             return self._email_address
 
         get_dynamic = get_action_value(
-            pol, scope="authentication", action="dynamic_email_address",
-            default='')
+            pol,
+            scope="authentication",
+            action="dynamic_email_address",
+            default="",
+        )
 
         if not get_dynamic:
             return self._email_address
 
         user_detail = getUserDetail(user)
-        return user_detail.get('email', self._email_address)
-
+        return user_detail.get("email", self._email_address)
 
     def _getEmailMessage(self, user=""):
         """
@@ -405,13 +437,20 @@ class EmailTokenClass(HmacTokenClass):
         realm = user.realm
         login = user.login
 
-        policies = get_client_policy(context['Client'], scope="authentication",
-                                     realm=realm, user=login,
-                                     action="emailtext")
+        policies = get_client_policy(
+            context["Client"],
+            scope="authentication",
+            realm=realm,
+            user=login,
+            action="emailtext",
+        )
 
         message = get_action_value(
-            policies, scope="authentication", action="emailtext",
-            default=message)
+            policies,
+            scope="authentication",
+            action="emailtext",
+            default=message,
+        )
 
         return message
 
@@ -424,7 +463,7 @@ class EmailTokenClass(HmacTokenClass):
             at least the placeholder <otp>
         :rtype: string
         """
-        subject = ''
+        subject = ""
 
         if not user:
             return subject
@@ -432,13 +471,20 @@ class EmailTokenClass(HmacTokenClass):
         realm = user.realm
         login = user.login
 
-        policies = get_client_policy(context['Client'], scope="authentication",
-                                     realm=realm, user=login,
-                                     action="emailsubject")
+        policies = get_client_policy(
+            context["Client"],
+            scope="authentication",
+            realm=realm,
+            user=login,
+            action="emailsubject",
+        )
 
         subject = get_action_value(
-            policies, scope="authentication", action="emailsubject",
-            default=subject)
+            policies,
+            scope="authentication",
+            action="emailsubject",
+            default=subject,
+        )
 
         return subject
 
@@ -462,8 +508,8 @@ class EmailTokenClass(HmacTokenClass):
         subject = self._getEmailSubject(user=owner)
 
         replacements = {}
-        replacements['otp'] = otp
-        replacements['serial'] = self.getSerial()
+        replacements["otp"] = otp
+        replacements["serial"] = self.getSerial()
 
         # ------------------------------------------------------------------ --
 
@@ -471,30 +517,35 @@ class EmailTokenClass(HmacTokenClass):
 
         if owner and owner.login:
             user_detail = owner.getUserInfo()
-            if 'cryptpass' in user_detail:
-                del user_detail['cryptpass']
+            if "cryptpass" in user_detail:
+                del user_detail["cryptpass"]
 
             replacements.update(user_detail)
 
         # ------------------------------------------------------------------ --
 
-
         try:
 
             email_provider = loadProviderFromPolicy(
-                provider_type='email', user=owner)
+                provider_type="email", user=owner
+            )
 
             status, status_message = email_provider.submitMessage(
-                email_address, subject=subject, message=message,
-                replacements=replacements)
+                email_address,
+                subject=subject,
+                message=message,
+                replacements=replacements,
+            )
 
         except Exception as exx:
-            LOG.error('Failed to submit EMail: %r', exx)
+            LOG.error("Failed to submit EMail: %r", exx)
             raise
 
         return status, status_message
 
-    def is_challenge_response(self, passw, user, options=None, challenges=None):
+    def is_challenge_response(
+        self, passw, user, options=None, challenges=None
+    ):
         """
         Checks if the request is a challenge response.
 
@@ -519,8 +570,9 @@ class EmailTokenClass(HmacTokenClass):
 
         return challenge_response
 
-    def checkResponse4Challenge(self, user, passw, options=None,
-                                challenges=None):
+    def checkResponse4Challenge(
+        self, user, passw, options=None, challenges=None
+    ):
         """
         verify the response of a previous challenge
 
@@ -547,7 +599,7 @@ class EmailTokenClass(HmacTokenClass):
             return -1, []
 
         transaction_id = options and options.get(
-            'transactionid', options.get('state', None)
+            "transactionid", options.get("state", None)
         )
 
         if transaction_id:
@@ -555,7 +607,7 @@ class EmailTokenClass(HmacTokenClass):
             # if the transaction_id is set we can assume that we have only
             # received a single challenge with that transaction_id thanks to
             # linotp.lib.validate.ValidateToken.get_challenges()
-            assert(len(challenges) == 1)
+            assert len(challenges) == 1
         else:
             # If no transaction_id is set the request came through the WebUI
             # and we have to check all challenges
@@ -597,13 +649,13 @@ class EmailTokenClass(HmacTokenClass):
         return pin_match, otp_counter, reply
 
     def getInitDetail(self, params, user=None):
-        '''
+        """
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
-        '''
+        """
         response_detail = {}
 
         info = self.getInfo()
-        response_detail['serial'] = self.getSerial()
+        response_detail["serial"] = self.getSerial()
 
         return response_detail

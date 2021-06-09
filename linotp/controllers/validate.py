@@ -34,10 +34,7 @@ from flask import current_app, g
 from flask_babel import gettext as _
 
 from linotp import flap
-from linotp.flap import (
-    request, response, config,
-    tmpl_context as c, abort
-)
+from linotp.flap import request, response, config, tmpl_context as c, abort
 
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.controllers.base import BaseController
@@ -77,7 +74,7 @@ log = logging.getLogger(__name__)
 
 class ValidateController(BaseController):
 
-    '''
+    """
     The linotp.controllers are the implementation of the web-API to talk to the LinOTP server.
     The ValidateController is used to validate the username with its given OTP value.
     An Authentication module like pam_linotp2 or rlm_linotp2 uses this ValidateController.
@@ -86,7 +83,7 @@ class ValidateController(BaseController):
         https://server/validate/<functionname>
 
     The functions are described below in more detail.
-    '''
+    """
 
     def __before__(self, **params):
         """
@@ -97,32 +94,30 @@ class ValidateController(BaseController):
                 created by sendError
         """
 
-        action = request_context['action']
+        action = request_context["action"]
 
         try:
-            g.audit['client'] = get_client(request)
+            g.audit["client"] = get_client(request)
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
             db.session.rollback()
-            return sendError(response, exx, context='before')
-
+            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
 
         current_app.audit_obj.log(g.audit)
         return response
 
-
     def _check(self, param):
-        '''
+        """
         basic check function, that can be used by different controllers
 
         :param param: dict of all caller parameters
@@ -131,7 +126,7 @@ class ValidateController(BaseController):
         :return: Tuple of True or False and opt
         :rtype: Tuple(boolean, opt)
 
-        '''
+        """
         opt = None
 
         options = {}
@@ -149,11 +144,11 @@ class ValidateController(BaseController):
         challenge = param.get("challenge")
         if challenge is not None:
             options = {}
-            options['challenge'] = challenge
+            options["challenge"] = challenge
 
-        g.audit['user'] = user.login
+        g.audit["user"] = user.login
         realm = user.realm or getDefaultRealm()
-        g.audit['realm'] = realm
+        g.audit["realm"] = realm
 
         # AUTHORIZATION Pre Check
         # we need to overwrite the user.realm in case the
@@ -164,33 +159,32 @@ class ValidateController(BaseController):
         vh = ValidationHandler()
         (ok, opt) = vh.checkUserPass(user, passw, options=options)
 
-        g.audit.update(request_context.get('audit', {}))
-        g.audit['success'] = ok
+        g.audit.update(request_context.get("audit", {}))
+        g.audit["success"] = ok
 
         if ok:
             # AUTHORIZATION post check
-            check_auth_tokentype(g.audit['serial'], exception=True, user=user)
-            check_auth_serial(g.audit['serial'], exception=True, user=user)
+            check_auth_tokentype(g.audit["serial"], exception=True, user=user)
+            check_auth_serial(g.audit["serial"], exception=True, user=user)
 
         # add additional details
         if is_auth_return(ok, user=user):
             if opt is None:
                 opt = {}
             if ok:
-                opt['realm'] = g.audit.get('realm')
-                opt['user'] = g.audit.get('user')
-                opt['tokentype'] = g.audit.get('token_type')
-                opt['serial'] = g.audit.get('serial')
+                opt["realm"] = g.audit.get("realm")
+                opt["user"] = g.audit.get("user")
+                opt["tokentype"] = g.audit.get("token_type")
+                opt["serial"] = g.audit.get("serial")
             else:
-                opt['error'] = g.audit.get('action_detail')
+                opt["error"] = g.audit.get("action_detail")
 
         return (ok, opt)
-
 
     # @profile_decorator(log_file="/tmp/validate.prof")
     def check(self):
 
-        '''
+        """
         This function is used to validate the username and the otp value/password.
 
         method:
@@ -223,7 +217,7 @@ class ValidateController(BaseController):
             If ``status`` is ``true`` the request was handled successfully.
 
             If ``value`` is ``true`` the user was authenticated successfully.
-        '''
+        """
 
         param = self.request_params.copy()
         ok = False
@@ -235,25 +229,26 @@ class ValidateController(BaseController):
             try:
                 (ok, opt) = self._check(param)
             except (AuthorizeException, ParameterError) as exx:
-                log.warning("[check] authorization failed for validate/check: %r"
-                            % exx)
-                g.audit['success'] = False
-                g.audit['info'] = str(exx)
+                log.warning(
+                    "[check] authorization failed for validate/check: %r" % exx
+                )
+                g.audit["success"] = False
+                g.audit["info"] = str(exx)
                 ok = False
                 if is_auth_return(ok):
                     if opt is None:
                         opt = {}
-                    opt['error'] = g.audit.get('info')
+                    opt["error"] = g.audit.get("info")
 
             db.session.commit()
 
-            qr = param.get('qr', None)
-            if qr and opt and 'message' in opt:
+            qr = param.get("qr", None)
+            if qr and opt and "message" in opt:
                 try:
-                    dataobj = opt.get('message')
-                    param['alt'] = "%s" % opt
-                    if 'transactionid' in opt:
-                        param['transactionid'] = opt['transactionid']
+                    dataobj = opt.get("message")
+                    param["alt"] = "%s" % opt
+                    if "transactionid" in opt:
+                        param["transactionid"] = opt["transactionid"]
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r " % exc)
@@ -264,7 +259,7 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("[check] validate/check failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
-            g.audit['info'] = "%r" % exx
+            g.audit["info"] = "%r" % exx
             db.session.rollback()
             return sendResult(response, False, 0)
 
@@ -283,45 +278,53 @@ class ValidateController(BaseController):
             #
             # we require either state or transactionid as parameter
 
-            transid = param.get('state', param.get('transactionid', None))
+            transid = param.get("state", param.get("transactionid", None))
             if not transid:
-                raise ParameterError(_('Missing required parameter "state" or '
-                                     '"transactionid"!'))
+                raise ParameterError(
+                    _(
+                        'Missing required parameter "state" or '
+                        '"transactionid"!'
+                    )
+                )
 
             #
             # serial is an optional parameter
 
-            serial = param.get('serial', None)
+            serial = param.get("serial", None)
 
             # user is an optional parameter:
             # if no 'user' in the parameters, the User object will be empty
             user = getUserFromParam(param)
 
-            passw = param.get('pass')
+            passw = param.get("pass")
             if passw is None:
                 raise ParameterError(_('Missing required parameter "pass"!'))
 
-            use_offline = param.get('use_offline', False)
+            use_offline = param.get("use_offline", False)
 
             va = ValidationHandler()
-            ok, opt = va.check_status(transid=transid, user=user,
-                                      serial=serial, password=passw,
-                                      use_offline=use_offline)
+            ok, opt = va.check_status(
+                transid=transid,
+                user=user,
+                serial=serial,
+                password=passw,
+                use_offline=use_offline,
+            )
 
-            g.audit['success'] = ok
-            g.audit['info'] = str(opt)
+            g.audit["success"] = ok
+            g.audit["info"] = str(opt)
 
             db.session.commit()
             return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
             log.exception("check_status failed: %r" % exx)
-            g.audit['info'] = str(exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0)
 
     def check_yubikey(self):
-        '''
+        """
         This function is used to validate the output of a yubikey
 
         method:
@@ -348,12 +351,12 @@ class ValidateController(BaseController):
                     },
                     "id": 0
                 }
-        '''
+        """
 
         try:
 
             try:
-                passw = self.request_params['pass']
+                passw = self.request_params["pass"]
             except KeyError:
                 raise ParameterError("Missing parameter: 'pass'")
 
@@ -361,41 +364,48 @@ class ValidateController(BaseController):
             try:
                 vh = ValidationHandler()
                 ok, opt = vh.checkYubikeyPass(passw)
-                g.audit['success'] = ok
+                g.audit["success"] = ok
 
             except AuthorizeException as exx:
-                log.warning("[check_yubikey] authorization failed for validate/check_yubikey: %r"
-                            % exx)
-                g.audit['success'] = False
-                g.audit['info'] = str(exx)
+                log.warning(
+                    "[check_yubikey] authorization failed for validate/check_yubikey: %r"
+                    % exx
+                )
+                g.audit["success"] = False
+                g.audit["info"] = str(exx)
                 ok = False
 
             db.session.commit()
             return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
-            log.exception("[check_yubikey] validate/check_yubikey failed: %r" % exx)
-            g.audit['info'] = str(exx)
+            log.exception(
+                "[check_yubikey] validate/check_yubikey failed: %r" % exx
+            )
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0)
 
     def check_url(self):
-        '''
+        """
         This function works with pam_url.
-        '''
+        """
         ok = False
         param = self.request_params
         try:
             try:
                 (ok, opt) = self._check(param)
             except AuthorizeException as acc:
-                log.warning("[check_url] authorization failed for validate/check_url: %r" % acc)
-                g.audit['success'] = False
-                g.audit['action_detail'] = str(acc)
+                log.warning(
+                    "[check_url] authorization failed for validate/check_url: %r"
+                    % acc
+                )
+                g.audit["success"] = False
+                g.audit["action_detail"] = str(acc)
                 ok = False
 
             db.session.commit()
-            response.headers['blablafoo'] = 'application/json'
+            response.headers["blablafoo"] = "application/json"
 
             ## TODO: this code seems not to be finished
             if not ok:
@@ -415,7 +425,7 @@ class ValidateController(BaseController):
             return sendResult(response, False, 0)
 
     def samlcheck(self):
-        '''
+        """
         This function is used to validate the username and the otp value/password
         in a SAML environment. If ``linotp.allowSamlAttributes = True``
         then the attributes of the authenticated users are also contained
@@ -431,7 +441,7 @@ class ValidateController(BaseController):
 
         returns:
             JSON response
-        '''
+        """
 
         try:
             opt = None
@@ -444,27 +454,35 @@ class ValidateController(BaseController):
                 try:
                     allowSAML = getFromConfig("allowSamlAttributes")
                 except:
-                    log.warning("[samlcheck] Calling controller samlcheck. But allowSamlAttributes is False.")
+                    log.warning(
+                        "[samlcheck] Calling controller samlcheck. But allowSamlAttributes is False."
+                    )
                 if "True" == allowSAML:
                     ## Now we get the attributes of the user
                     user = getUserFromParam(param)
                     (uid, resId, resIdC) = getUserId(user)
                     userInfo = getUserInfo(uid, resId, resIdC)
-                    log.debug("[samlcheck] getting attributes for: %s@%s"
-                              % (user.login, user.realm))
+                    log.debug(
+                        "[samlcheck] getting attributes for: %s@%s"
+                        % (user.login, user.realm)
+                    )
 
                     res = userInfo
-                    for key in ['username',
-                                'surname',
-                                'mobile',
-                                'phone',
-                                'givenname',
-                                'email']:
+                    for key in [
+                        "username",
+                        "surname",
+                        "mobile",
+                        "phone",
+                        "givenname",
+                        "email",
+                    ]:
                         if key in res:
                             attributes[key] = res[key]
 
             db.session.commit()
-            return sendResult(response, { 'auth': ok, 'attributes' : attributes } , 0, opt)
+            return sendResult(
+                response, {"auth": ok, "attributes": attributes}, 0, opt
+            )
 
         except Exception as exx:
             log.exception("[samlcheck] validate/check failed: %r" % exx)
@@ -479,40 +497,40 @@ class ValidateController(BaseController):
         opt = {}
 
         try:
-            if 'pass' not in param:
+            if "pass" not in param:
                 raise ParameterError("Missing parameter: 'pass'")
 
-            passw = param['pass']
+            passw = param["pass"]
 
-            transid = param.get('state', None)
+            transid = param.get("state", None)
             if transid is not None:
-                param['transactionid'] = transid
-                del param['state']
+                param["transactionid"] = transid
+                del param["state"]
 
             if transid is None:
-                transid = param.get('transactionid', None)
+                transid = param.get("transactionid", None)
 
             if transid is None:
                 raise Exception("missing parameter: state or transactionid!")
 
             vh = ValidationHandler()
-            (ok, opt) = vh.check_by_transactionid(transid=transid,
-                                                  passw=passw,
-                                                  options=param)
+            (ok, opt) = vh.check_by_transactionid(
+                transid=transid, passw=passw, options=param
+            )
 
-            value['value'] = ok
-            value['failcount'] = int(opt.get('failcount', 0))
+            value["value"] = ok
+            value["failcount"] = int(opt.get("failcount", 0))
 
-            g.audit['success'] = ok
+            g.audit["success"] = ok
             db.session.commit()
 
-            qr = param.get('qr', None)
-            if qr and opt and 'message' in opt:
+            qr = param.get("qr", None)
+            if qr and opt and "message" in opt:
                 try:
-                    dataobj = opt.get('message')
-                    param['alt'] = "%s" % opt
-                    if 'transactionid' in opt:
-                        param['transactionid'] = opt['transactionid']
+                    dataobj = opt.get("message")
+                    param["alt"] = "%s" % opt
+                    if "transactionid" in opt:
+                        param["transactionid"] = opt["transactionid"]
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r " % exc)
@@ -522,7 +540,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[check_t] validate/check_t failed: %r" % exx)
-            g.audit['info'] = str(exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0)
 
@@ -547,37 +565,37 @@ class ValidateController(BaseController):
 
             # check the parameters
 
-            if 'signature' not in param:
+            if "signature" not in param:
                 raise ParameterError("Missing parameter: 'signature'!")
 
-            if 'transactionid' not in param:
+            if "transactionid" not in param:
                 raise ParameterError("Missing parameter: 'transactionid'!")
 
             # -------------------------------------------------------------- --
 
             # start the processing
 
-            passw = {'accept': param['signature']}
-            transid = param['transactionid']
+            passw = {"accept": param["signature"]}
+            transid = param["transactionid"]
 
             vh = ValidationHandler()
-            ok, _opt = vh.check_by_transactionid(transid=transid,
-                                                 passw=passw,
-                                                 options=param)
+            ok, _opt = vh.check_by_transactionid(
+                transid=transid, passw=passw, options=param
+            )
 
             # -------------------------------------------------------------- --
 
             # finish the result
 
-            if 'serial' in _opt:
-                g.audit['serial'] = _opt['serial']
+            if "serial" in _opt:
+                g.audit["serial"] = _opt["serial"]
 
-            if 'token_type' in _opt:
-                g.audit['token_type'] = _opt['token_type']
+            if "token_type" in _opt:
+                g.audit["token_type"] = _opt["token_type"]
 
-            g.audit['info'] = 'accept transaction: %r' % ok
+            g.audit["info"] = "accept transaction: %r" % ok
 
-            g.audit['success'] = ok
+            g.audit["success"] = ok
             db.session.commit()
 
             return sendResult(response, ok)
@@ -585,7 +603,7 @@ class ValidateController(BaseController):
         except Exception as exx:
 
             log.exception("validate/accept_transaction failed: %r" % exx)
-            g.audit['info'] = "%r" % exx
+            g.audit["info"] = "%r" % exx
             db.session.rollback()
 
             return sendResult(response, False, 0)
@@ -611,37 +629,37 @@ class ValidateController(BaseController):
 
             # check the parameters
 
-            if 'signature' not in param:
+            if "signature" not in param:
                 raise ParameterError("Missing parameter: 'signature'!")
 
-            if 'transactionid' not in param:
+            if "transactionid" not in param:
                 raise ParameterError("Missing parameter: 'transactionid'!")
 
             # -------------------------------------------------------------- --
 
             # start the processing
 
-            passw = {'reject': param['signature']}
-            transid = param['transactionid']
+            passw = {"reject": param["signature"]}
+            transid = param["transactionid"]
 
             vh = ValidationHandler()
-            ok, _opt = vh.check_by_transactionid(transid=transid,
-                                                 passw=passw,
-                                                 options=param)
+            ok, _opt = vh.check_by_transactionid(
+                transid=transid, passw=passw, options=param
+            )
 
             # -------------------------------------------------------------- --
 
             # finish the result
 
-            if 'serial' in _opt:
-                g.audit['serial'] = _opt['serial']
+            if "serial" in _opt:
+                g.audit["serial"] = _opt["serial"]
 
-            if 'token_type' in _opt:
-                g.audit['token_type'] = _opt['token_type']
+            if "token_type" in _opt:
+                g.audit["token_type"] = _opt["token_type"]
 
-            g.audit['info'] = 'reject transaction: %r' % ok
+            g.audit["info"] = "reject transaction: %r" % ok
 
-            g.audit['success'] = ok
+            g.audit["success"] = ok
             db.session.commit()
 
             return sendResult(response, ok)
@@ -649,13 +667,13 @@ class ValidateController(BaseController):
         except Exception as exx:
 
             log.exception("validate/reject_transaction failed: %r" % exx)
-            g.audit['info'] = "%r" % exx
+            g.audit["info"] = "%r" % exx
             db.session.rollback()
 
             return sendResult(response, False, 0)
 
     def check_s(self):
-        '''
+        """
         This function is used to validate the serial and the otp value/password.
 
         method:
@@ -668,20 +686,20 @@ class ValidateController(BaseController):
 
         returns:
             JSON response
-        '''
+        """
         param = self.request_params
 
         options = {}
         options.update(param)
-        for k in ['user', 'serial', "pass", "init"]:
+        for k in ["user", "serial", "pass", "init"]:
             if k in options:
                 del options[k]
 
         try:
             passw = param.get("pass")
-            serial = param.get('serial')
+            serial = param.get("serial")
             if serial is None:
-                user = param.get('user')
+                user = param.get("user")
                 if user is not None:
                     user = getUserFromParam(param)
                     toks = getTokens4UserOrSerial(user=user)
@@ -692,35 +710,38 @@ class ValidateController(BaseController):
                     else:
                         tok = toks[0].token
                         desc = tok.get()
-                        realms = desc.get('LinOtp.RealmNames')
+                        realms = desc.get("LinOtp.RealmNames")
                         if realms is None or len(realms) == 0:
                             realm = getDefaultRealm()
                         elif len(realms) > 0:
                             realm = realms[0]
 
-                        userInfo = getUserInfo(tok.LinOtpUserid,
-                                               tok.LinOtpIdResolver,
-                                               tok.LinOtpIdResClass)
-                        user = User(login=userInfo.get('username'),
-                                    realm=realm)
+                        userInfo = getUserInfo(
+                            tok.LinOtpUserid,
+                            tok.LinOtpIdResolver,
+                            tok.LinOtpIdResClass,
+                        )
+                        user = User(
+                            login=userInfo.get("username"), realm=realm
+                        )
 
                         serial = tok.getSerial()
 
-            g.audit['serial'] = serial
+            g.audit["serial"] = serial
 
-            options['scope'] = {"check_s": True}
+            options["scope"] = {"check_s": True}
             vh = ValidationHandler()
             (ok, opt) = vh.checkSerialPass(serial, passw, options=options)
-            g.audit['success'] = ok
+            g.audit["success"] = ok
             db.session.commit()
 
-            qr = param.get('qr', None)
-            if qr and opt and 'message' in opt:
+            qr = param.get("qr", None)
+            if qr and opt and "message" in opt:
                 try:
-                    dataobj = opt.get('message')
-                    param['alt'] = "%s" % opt
-                    if 'transactionid' in opt:
-                        param['transactionid'] = opt['transactionid']
+                    dataobj = opt.get("message")
+                    param["alt"] = "%s" % opt
+                    if "transactionid" in opt:
+                        param["transactionid"] = opt["transactionid"]
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r " % exc)
@@ -730,12 +751,12 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[check_s] validate/check_s failed: %r" % exx)
-            g.audit['info'] = str(exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, id=0, status=False)
 
     def simplecheck(self):
-        '''
+        """
         This function is used to validate the username and the otp value/password.
 
         method:
@@ -756,7 +777,7 @@ class ValidateController(BaseController):
                 in case of failed authentication
             :-/
                 in case of any error
-        '''
+        """
         opt = None
         param = self.request_params
         res = []
@@ -766,8 +787,8 @@ class ValidateController(BaseController):
                 (ok, opt) = self._check(param)
             except AuthorizeException as e:
                 log.warning("[simplecheck] validate/simplecheck: %r" % e)
-                g.audit['success'] = False
-                g.audit['action_detail'] = str(e)
+                g.audit["success"] = False
+                g.audit["action_detail"] = str(e)
                 ok = False
 
             db.session.commit()
@@ -780,14 +801,13 @@ class ValidateController(BaseController):
 
             if opt is not None:
 
-                if 'state' in opt or 'transactionid' in opt:
-                    stat = opt.get('transactionid') or opt.get('state')
+                if "state" in opt or "transactionid" in opt:
+                    stat = opt.get("transactionid") or opt.get("state")
                     res.append(stat)
 
                 if "data" in opt or "message" in opt:
-                    msg = opt.get('data') or opt.get('message')
+                    msg = opt.get("data") or opt.get("message")
                     res.append(msg)
-
 
             return " ".join(res).strip()
 
@@ -803,7 +823,7 @@ class ValidateController(BaseController):
         return sendResult(response, False, 0)
 
     def smspin(self):
-        '''
+        """
         This function is used in conjunction with an SMS token:
         the user authenticates with user and pin (pass) and
         will receive on his mobile an OTP as message
@@ -818,36 +838,37 @@ class ValidateController(BaseController):
 
         returns:
             JSON response
-        '''
+        """
         ret = False
         param = self.request_params
-        state = ''
-        message = 'No sms message defined!'
+        state = ""
+        message = "No sms message defined!"
 
         try:
             user = getUserFromParam(param)
-            g.audit['user'] = user.login
-            g.audit['realm'] = user.realm or getDefaultRealm()
-            g.audit['success'] = 0
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm or getDefaultRealm()
+            g.audit["success"] = 0
 
             (ret, opt) = self._check(param)
 
             ## here we build some backward compatibility
             if type(opt) is dict:
-                state = opt.get('state', '') or ''
-                message = opt.get('message', '') or 'No sms message defined!'
+                state = opt.get("state", "") or ""
+                message = opt.get("message", "") or "No sms message defined!"
 
             # sucessfull submit
-            if (message in ['sms with otp already submitted',
-                            'sms submitted']
-                and len(state) > 0):
+            if (
+                message in ["sms with otp already submitted", "sms submitted"]
+                and len(state) > 0
+            ):
                 ret = True
-                g.audit['success'] = 1
+                g.audit["success"] = 1
 
             # sending sms failed should be an error
-            elif message in ['sending sms failed']:
+            elif message in ["sending sms failed"]:
                 ret = True
-                g.audit['success'] = 0
+                g.audit["success"] = 0
 
             # anything else is an exception
             else:
@@ -860,7 +881,7 @@ class ValidateController(BaseController):
             log.exception("[smspin] validate/smspin failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send
             # the SMS, we write this to the detail info.
-            g.audit['info'] = str(exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0)
 
@@ -873,10 +894,10 @@ class ValidateController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            enc_response = self.request_params.get('pairing_response')
+            enc_response = self.request_params.get("pairing_response")
 
             if enc_response is None:
-                raise Exception('Parameter missing')
+                raise Exception("Parameter missing")
 
             # -------------------------------------------------------------- --
 
@@ -884,11 +905,15 @@ class ValidateController(BaseController):
             token_type = dec_response.token_type
             pairing_data = dec_response.pairing_data
 
-            if not hasattr(pairing_data, 'serial') or \
-               pairing_data.serial is None:
+            if (
+                not hasattr(pairing_data, "serial")
+                or pairing_data.serial is None
+            ):
 
-                raise ValidateError('Pairing responses with no serial attached'
-                                    ' are currently not implemented.')
+                raise ValidateError(
+                    "Pairing responses with no serial attached"
+                    " are currently not implemented."
+                )
 
             # --------------------------------------------------------------- -
 
@@ -896,10 +921,10 @@ class ValidateController(BaseController):
             tokens = getTokens4UserOrSerial(None, pairing_data.serial)
 
             if not tokens:
-                raise Exception('Invalid serial in pairing response')
+                raise Exception("Invalid serial in pairing response")
 
             if len(tokens) > 1:
-                raise Exception('Multiple tokens found. Pairing not possible')
+                raise Exception("Multiple tokens found. Pairing not possible")
 
             token = tokens[0]
 
@@ -907,24 +932,26 @@ class ValidateController(BaseController):
             t_owner = token.getUser()
 
             realms = token.getRealms()
-            realm = ''
+            realm = ""
             if realms:
                 realm = realms[0]
 
-            g.audit['user'] = t_owner or ''
-            g.audit['realm'] = realm
+            g.audit["user"] = t_owner or ""
+            g.audit["realm"] = realm
 
             # --------------------------------------------------------------- --
 
             if token.type != token_type:
-                raise Exception('Serial in pairing response doesn\'t match '
-                                'supplied token_type')
+                raise Exception(
+                    "Serial in pairing response doesn't match "
+                    "supplied token_type"
+                )
 
             # --------------------------------------------------------------- --
 
             token.pair(pairing_data)
-            g.audit['success'] = 1
-            g.audit['serial'] = token.getSerial()
+            g.audit["success"] = 1
+            g.audit["serial"] = token.getSerial()
 
             db.session.commit()
             return sendResult(response, False)
@@ -933,8 +960,9 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("validate/pair failed: %r" % exx)
-            g.audit['info'] = str(exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0, status=False)
+
 
 # eof #########################################################################

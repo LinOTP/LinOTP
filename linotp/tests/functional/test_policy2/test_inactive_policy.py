@@ -58,15 +58,17 @@ class TestInactivePolicy(TestController):
 
         # get the currently used policy engine and preserve this for restore
 
-        params = {'key': 'NewPolicyEvaluation'}
-        response = self.make_system_request('getConfig', params=params)
+        params = {"key": "NewPolicyEvaluation"}
+        response = self.make_system_request("getConfig", params=params)
         assert '"getConfig NewPolicyEvaluation"' in response, response
 
         jresp = json.loads(response.body)
 
-        restore_new_policy_engine = jresp.get(
-            'result', {}).get(
-                'value', {}).get('getConfig NewPolicyEvaluation', False)
+        restore_new_policy_engine = (
+            jresp.get("result", {})
+            .get("value", {})
+            .get("getConfig NewPolicyEvaluation", False)
+        )
 
         # ----------------------------------------------------------------- --
 
@@ -74,21 +76,25 @@ class TestInactivePolicy(TestController):
 
         try:
 
-            for policy_engine_version in ['new', 'old']:
+            for policy_engine_version in ["new", "old"]:
 
-                if policy_engine_version == 'new':
-                    params = {'NewPolicyEvaluation': 'True'}
-                    response = self.make_system_request('setConfig',
-                                                        params=params)
-                    assert '"setConfig NewPolicyEvaluation:True"' in response, \
-                        response
+                if policy_engine_version == "new":
+                    params = {"NewPolicyEvaluation": "True"}
+                    response = self.make_system_request(
+                        "setConfig", params=params
+                    )
+                    assert (
+                        '"setConfig NewPolicyEvaluation:True"' in response
+                    ), response
 
-                if policy_engine_version == 'old':
-                    params = {'key': 'NewPolicyEvaluation'}
-                    response = self.make_system_request('delConfig',
-                                                        params=params)
-                    assert '"delConfig NewPolicyEvaluation"' in response, \
-                        response
+                if policy_engine_version == "old":
+                    params = {"key": "NewPolicyEvaluation"}
+                    response = self.make_system_request(
+                        "delConfig", params=params
+                    )
+                    assert (
+                        '"delConfig NewPolicyEvaluation"' in response
+                    ), response
 
                 self.run_inactive_policy_verifcation()
 
@@ -99,12 +105,12 @@ class TestInactivePolicy(TestController):
             # restore the inital policy engine behaviour
 
             if not restore_new_policy_engine:
-                params = {'key': 'NewPolicyEvaluation'}
-                response = self.make_system_request('delConfig', params=params)
+                params = {"key": "NewPolicyEvaluation"}
+                response = self.make_system_request("delConfig", params=params)
 
             else:
-                params = {'NewPolicyEvaluation': 'True'}
-                response = self.make_system_request('setConfig', params=params)
+                params = {"NewPolicyEvaluation": "True"}
+                response = self.make_system_request("setConfig", params=params)
 
         return
 
@@ -118,36 +124,35 @@ class TestInactivePolicy(TestController):
         without policy will work again.
         """
 
-        user = 'passthru_user1'
+        user = "passthru_user1"
         pw_pass = "geheim1"
-        pw_otp = 'Test123'
+        pw_otp = "Test123"
         pw_pin = "123!"
 
         params = {
-            "serial": 'KIPW_007',
+            "serial": "KIPW_007",
             "type": "pw",
-            'otpkey': pw_otp,
-            'pin': pw_pin,
-            'user': user,
-            "description": "myTest123"}
+            "otpkey": pw_otp,
+            "pin": pw_pin,
+            "user": user,
+            "description": "myTest123",
+        }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         jresp = json.loads(response.body)
 
-        serial = jresp.get('detail', {}.get('serial'))
+        serial = jresp.get("detail", {}.get("serial"))
         assert serial is not None, response
 
         # ----------------------------------------------------------------- --
 
         # run a simple validate check test without otppin policy
 
-        params = {
-            'user': user,
-            'pass': pw_pin + pw_otp}
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": pw_pin + pw_otp}
+        response = self.make_validate_request("check", params=params)
 
         jresp = json.loads(response.body)
-        value = jresp.get('result', {}).get('value')
+        value = jresp.get("result", {}).get("value")
         assert value, response
 
         # ----------------------------------------------------------------- --
@@ -155,35 +160,35 @@ class TestInactivePolicy(TestController):
         # we use the otppin policy
 
         policy = {
-            'name': 'inactive_policy',
-            'active': True,
-            'scope': 'authentication',
-            'realm': '*',
-            'client': '*',
-            'user': '*',
-            'action': 'otppin=1'}
+            "name": "inactive_policy",
+            "active": True,
+            "scope": "authentication",
+            "realm": "*",
+            "client": "*",
+            "user": "*",
+            "action": "otppin=1",
+        }
 
-        response = self.make_system_request('setPolicy', policy)
+        response = self.make_system_request("setPolicy", policy)
 
         jresp = json.loads(response.body)
-        p_loaded = jresp.get(
-            'result', {}).get(
-                'value', {}).get(
-                    "setPolicy %s" % policy.get('name'))
+        p_loaded = (
+            jresp.get("result", {})
+            .get("value", {})
+            .get("setPolicy %s" % policy.get("name"))
+        )
         assert p_loaded is not None, response
 
         # ----------------------------------------------------------------- --
 
         # run a validate check test with otppin=1 parameters
 
-        params = {
-            'user': user,
-            'pass': pw_pass + pw_otp}
+        params = {"user": user, "pass": pw_pass + pw_otp}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         jresp = json.loads(response.body)
-        value = jresp.get('result', {}).get('value')
+        value = jresp.get("result", {}).get("value")
         assert value, response
 
         # ----------------------------------------------------------------- --
@@ -191,21 +196,23 @@ class TestInactivePolicy(TestController):
         # now disable the otppin policy
 
         policy = {
-            'name': 'inactive_policy',
-            'active': False,
-            'scope': 'authentication',
-            'realm': '*',
-            'client': '*',
-            'user': '*',
-            'action': 'otppin=1'}
+            "name": "inactive_policy",
+            "active": False,
+            "scope": "authentication",
+            "realm": "*",
+            "client": "*",
+            "user": "*",
+            "action": "otppin=1",
+        }
 
-        response = self.make_system_request('setPolicy', policy)
+        response = self.make_system_request("setPolicy", policy)
 
         jresp = json.loads(response.body)
-        p_loaded = jresp.get(
-            'result', {}).get(
-                'value', {}).get(
-                    "setPolicy %s" % policy.get('name'))
+        p_loaded = (
+            jresp.get("result", {})
+            .get("value", {})
+            .get("setPolicy %s" % policy.get("name"))
+        )
         assert p_loaded is not None, response
 
         # ----------------------------------------------------------------- --
@@ -213,29 +220,26 @@ class TestInactivePolicy(TestController):
         # run a validate check test with otppin=1 parameters again
         # which now will fail
 
-        params = {
-            'user': user,
-            'pass': pw_pass + pw_otp}
+        params = {"user": user, "pass": pw_pass + pw_otp}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         jresp = json.loads(response.body)
-        value = jresp.get('result', {}).get('value')
+        value = jresp.get("result", {}).get("value")
         assert not value, response
 
         # ----------------------------------------------------------------- --
 
         # run a simple validate check test without otppin policy again
 
-        params = {
-            'user': user,
-            'pass': pw_pin + pw_otp}
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": pw_pin + pw_otp}
+        response = self.make_validate_request("check", params=params)
 
         jresp = json.loads(response.body)
-        value = jresp.get('result', {}).get('value')
+        value = jresp.get("result", {}).get("value")
         assert value, response
 
         return
+
 
 # eof #

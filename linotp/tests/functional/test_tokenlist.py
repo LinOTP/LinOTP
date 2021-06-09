@@ -32,19 +32,20 @@ from linotp.tests import TestController
 
 
 class TestTokenlist(TestController):
-    '''
+    """
     test the search on a token list
-    '''
+    """
+
     serials = []
 
     def setUp(self):
-        ''' setup the Test Controller'''
+        """ setup the Test Controller"""
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        ''' make the dishes'''
+        """ make the dishes"""
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -60,33 +61,35 @@ class TestTokenlist(TestController):
         realm = "mydefrealm"
 
         # create token
-        params = {'type': 'spass',
-                  'user': "%s@%s" % (login_name, realm)}
+        params = {"type": "spass", "user": "%s@%s" % (login_name, realm)}
 
-        response = self.make_admin_request('init', params=params)
-        assert 'serial' in response
+        response = self.make_admin_request("init", params=params)
+        assert "serial" in response
 
         jresp = json.loads(response.body)
-        serial = jresp.get('detail', {}).get('serial', '')
+        serial = jresp.get("detail", {}).get("serial", "")
 
         # ----------------------------------------------------------------- --
 
         # first search for the token user with the exact name
 
         params = {
-                "page":1,
-                "query": login_name,
-                "qtype": "loginname",
-                "sortname": None,
-                "sortorder": None,
-                "rp":1 }
+            "page": 1,
+            "query": login_name,
+            "qtype": "loginname",
+            "sortname": None,
+            "sortorder": None,
+            "rp": 1,
+        }
 
-        response = self.make_manage_request('tokenview_flexi', params=params)
+        response = self.make_manage_request("tokenview_flexi", params=params)
         jresp = json.loads(response.body)
-        token_id = jresp.get(
-            'result', {}).get(
-                "value", {}).get(
-                    "rows", [{}])[0].get('id')
+        token_id = (
+            jresp.get("result", {})
+            .get("value", {})
+            .get("rows", [{}])[0]
+            .get("id")
+        )
 
         assert serial == token_id, response
 
@@ -95,19 +98,22 @@ class TestTokenlist(TestController):
         # first search for the token user with the exact name with real realm
 
         params = {
-                "page":1,
-                "query": "%s@mydefrealm" % login_name,
-                "qtype": "loginname",
-                "sortname": None,
-                "sortorder": None,
-                "rp":1 }
+            "page": 1,
+            "query": "%s@mydefrealm" % login_name,
+            "qtype": "loginname",
+            "sortname": None,
+            "sortorder": None,
+            "rp": 1,
+        }
 
-        response = self.make_manage_request('tokenview_flexi', params=params)
+        response = self.make_manage_request("tokenview_flexi", params=params)
         jresp = json.loads(response.body)
-        token_id = jresp.get(
-            'result', {}).get(
-                "value", {}).get(
-                    "rows", [{}])[0].get('id')
+        token_id = (
+            jresp.get("result", {})
+            .get("value", {})
+            .get("rows", [{}])[0]
+            .get("id")
+        )
 
         assert serial == token_id, response
 
@@ -116,19 +122,22 @@ class TestTokenlist(TestController):
         # search for the token user with the wildcard name
 
         params = {
-                "page":1,
-                "query": "pass.thru@example.*",
-                "qtype": "loginname",
-                "sortname": None,
-                "sortorder": None,
-                "rp":1 }
+            "page": 1,
+            "query": "pass.thru@example.*",
+            "qtype": "loginname",
+            "sortname": None,
+            "sortorder": None,
+            "rp": 1,
+        }
 
-        response = self.make_manage_request('tokenview_flexi', params=params)
+        response = self.make_manage_request("tokenview_flexi", params=params)
         jresp = json.loads(response.body)
-        token_id = jresp.get(
-            'result', {}).get(
-                "value", {}).get(
-                    "rows", [{}])[0].get('id')
+        token_id = (
+            jresp.get("result", {})
+            .get("value", {})
+            .get("rows", [{}])[0]
+            .get("id")
+        )
 
         assert serial == token_id, response
 
@@ -137,19 +146,22 @@ class TestTokenlist(TestController):
         # search for the token user with the wildcard name
 
         params = {
-                "page":1,
-                "query": "pass.thru*",
-                "qtype": "loginname",
-                "sortname": None,
-                "sortorder": None,
-                "rp":1 }
+            "page": 1,
+            "query": "pass.thru*",
+            "qtype": "loginname",
+            "sortname": None,
+            "sortorder": None,
+            "rp": 1,
+        }
 
-        response = self.make_manage_request('tokenview_flexi', params=params)
+        response = self.make_manage_request("tokenview_flexi", params=params)
         jresp = json.loads(response.body)
-        token_id = jresp.get(
-            'result', {}).get(
-                "value", {}).get(
-                    "rows", [{}])[0].get('id')
+        token_id = (
+            jresp.get("result", {})
+            .get("value", {})
+            .get("rows", [{}])[0]
+            .get("id")
+        )
 
         assert serial == token_id, response
 

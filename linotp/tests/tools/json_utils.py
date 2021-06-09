@@ -38,15 +38,16 @@ import pkg_resources
 from distutils.version import LooseVersion
 
 # RegexType is only a reference to Regular-Expression
-# runtime type. In order to identify a Regular-Expression 
+# runtime type. In order to identify a Regular-Expression
 # object, you may use:
 #     isinstance(yourobject, RegexType)
-# ... which will return True if yourobject is a 
-# regular-expression object. 
-RegexType = type(re.compile(''))
+# ... which will return True if yourobject is a
+# regular-expression object.
+RegexType = type(re.compile(""))
+
 
 class JsonUtils:
-    # Extract the Json object from the webapi response. 
+    # Extract the Json object from the webapi response.
     @staticmethod
     def getBody(response):
         """
@@ -55,30 +56,32 @@ class JsonUtils:
 
         :param response: A WebOb response object
         """
-        current_webob = LooseVersion(pkg_resources.get_distribution('webob').version)
-        if current_webob >= LooseVersion('1.2'):
+        current_webob = LooseVersion(
+            pkg_resources.get_distribution("webob").version
+        )
+        if current_webob >= LooseVersion("1.2"):
             return response.json_body
         else:
             return json.loads(response.body, encoding=response.charset)
-    
-    # The getJson function implements navigation through json-object dictionaries.  
+
+    # The getJson function implements navigation through json-object dictionaries.
     # If the path argument is string, then the path is split over "/" character.
-    # Else, for each element in path, the program will go deeper and deeper (each 
-    # intermediate object must be a non-empty dictionary). 
+    # Else, for each element in path, the program will go deeper and deeper (each
+    # intermediate object must be a non-empty dictionary).
     @staticmethod
-    def getJson(object, path, defaultValue = None):
+    def getJson(object, path, defaultValue=None):
         if object is None:
             return defaultValue
-        
+
         if isinstance(path, str):
-            path = path.split('/')
+            path = path.split("/")
         else:
             try:
                 # Check if path is iterable...
                 path = iter(path)
             except TypeError:
-                path = [path] 
-        
+                path = [path]
+
         temp = object
         for key in path:
             temp = temp.get(key, None)
@@ -86,9 +89,9 @@ class JsonUtils:
                 return defaultValue
         return temp
 
-    # This function is used in object comparison. 
+    # This function is used in object comparison.
     # If check should succeed if values are different string-types but contain the same value.
-    # Also. for array, each different element must be equal.      
+    # Also. for array, each different element must be equal.
     @staticmethod
     def compareValue(value1, value2):
         if isinstance(value1, str):
@@ -106,11 +109,11 @@ class JsonUtils:
                         return False
                 return True
         return False
-    
-    # This function is used in dictionary comparison. 
-    # The test will not check if dictionaries are 100% equal, but only if 
-    # the name-values from "dictionary" (second argument) are present 100% into  
-    # the "testDictionary" (first parameter, test for inclusion). 
+
+    # This function is used in dictionary comparison.
+    # The test will not check if dictionaries are 100% equal, but only if
+    # the name-values from "dictionary" (second argument) are present 100% into
+    # the "testDictionary" (first parameter, test for inclusion).
     @staticmethod
     def checkDictionary(testDictionary, dictionary):
         for key in list(testDictionary.keys()):
@@ -128,14 +131,14 @@ class JsonUtils:
 
     # Check json object values.
     # If expectedValue (value) is dictionary, we test only inclusion.
-    # If some value-object is actually a regular expression, the program will  
-    # try to match the name/value against the pattern, and if the pattern will 
-    # match, then the check is considered successful. 
-    # Supplementary, if the regular expression contains name-captures, the 
-    # captured groups must also be available info the namedValues (else, the 
-    # test will fail). 
+    # If some value-object is actually a regular expression, the program will
+    # try to match the name/value against the pattern, and if the pattern will
+    # match, then the check is considered successful.
+    # Supplementary, if the regular expression contains name-captures, the
+    # captured groups must also be available info the namedValues (else, the
+    # test will fail).
     @staticmethod
-    def checkJsonValues(object, value, namedValues = {}):
+    def checkJsonValues(object, value, namedValues={}):
         if isinstance(value, dict):
             for key in list(value.keys()):
                 if isinstance(key, RegexType):
@@ -144,25 +147,29 @@ class JsonUtils:
                         # Find a key that match the Regex pattern!
                         match = key.match(key2)
                         if not match is None:
-                            # For named-capture we compare values 
-                            # with the values available in params! 
-                            if not JsonUtils.checkDictionary(match.groupdict(None), namedValues): 
+                            # For named-capture we compare values
+                            # with the values available in params!
+                            if not JsonUtils.checkDictionary(
+                                match.groupdict(None), namedValues
+                            ):
                                 break
                             temp = object.get(key2, None)
                             break
                 else:
                     temp = object.get(key, None)
-                
+
                 # If temp is not None, then a match in json dictionary was found!
-                if temp is None or \
-                   not JsonUtils.checkJsonValues(temp, value[key], namedValues):
+                if temp is None or not JsonUtils.checkJsonValues(
+                    temp, value[key], namedValues
+                ):
                     return False
             return True
         elif type(value) == RegexType:
-            # The compare is performed with a Regex object! 
+            # The compare is performed with a Regex object!
             match = value.match(object)
-            if match is None or \
-               not JsonUtils.checkDictionary(match.groupdict(None), namedValues):
+            if match is None or not JsonUtils.checkDictionary(
+                match.groupdict(None), namedValues
+            ):
                 return False
             return True
         elif JsonUtils.compareValue(value, object):

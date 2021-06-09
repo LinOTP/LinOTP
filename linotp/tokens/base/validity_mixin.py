@@ -66,29 +66,29 @@ class TokenValidityMixin(object):
 
     @property
     def count_auth_success_max(self):
-        ''' get the counter for the maximum allowed successful logins '''
+        """ get the counter for the maximum allowed successful logins """
 
         return int(self.getFromTokenInfo("count_auth_success_max", 0) or 0)
 
     @count_auth_success_max.setter
     def count_auth_success_max(self, count):
-        ''' Sets the counter for the maximum allowed successful logins '''
+        """ Sets the counter for the maximum allowed successful logins """
 
         self.addToTokenInfo("count_auth_success_max", int(count))
 
     def del_count_auth_success_max(self):
-        ''' delete the success access counter '''
+        """ delete the success access counter """
         self.removeFromTokenInfo("count_auth_success_max")
 
     @property
     def count_auth_success(self):
-        ''' getter for the count_auth_success '''
+        """ getter for the count_auth_success """
 
         return int(self.getFromTokenInfo("count_auth_success", 0) or 0)
 
     @count_auth_success.setter
     def count_auth_success(self, count):
-        ''' setter for the count_auth_success '''
+        """ setter for the count_auth_success """
 
         self.addToTokenInfo("count_auth_success", int(count))
 
@@ -108,11 +108,11 @@ class TokenValidityMixin(object):
 
     @count_auth_max.setter
     def count_auth_max(self, count):
-        ''' Sets the counter for the maximum allowed login attemps '''
+        """ Sets the counter for the maximum allowed login attemps """
         self.addToTokenInfo("count_auth_max", int(count))
 
     def del_count_auth_max(self):
-        ''' delete the access counter '''
+        """ delete the access counter """
         self.removeFromTokenInfo("count_auth_max")
 
     @property
@@ -121,18 +121,18 @@ class TokenValidityMixin(object):
 
     @count_auth.setter
     def count_auth(self, count):
-        ''' Sets the counter for the occurred login attepms '''
+        """ Sets the counter for the occurred login attepms """
         self.addToTokenInfo("count_auth", int(count))
 
     def inc_count_auth(self):
-        ''' increment the access counter '''
+        """ increment the access counter """
 
         self.count_auth = self.count_auth + 1
 
         return self.count_auth
 
     def del_count_auth(self):
-        ''' delete the access counter '''
+        """ delete the access counter """
 
         self.removeFromTokenInfo("count_auth")
 
@@ -140,52 +140,53 @@ class TokenValidityMixin(object):
 
     @property
     def validity_period_end(self):
-        '''
+        """
         returns the end of validity period (if set)
-        '''
-        end_time = self.getFromTokenInfo("validity_period_end", '') or ''
+        """
+        end_time = self.getFromTokenInfo("validity_period_end", "") or ""
         if end_time:
             return datetime.strptime(end_time, "%d/%m/%y %H:%M")
-        return ''
+        return ""
 
     @validity_period_end.setter
     def validity_period_end(self, end_date):
-        '''
+        """
         sets the end date of the validity period for a token
-        '''
+        """
         # upper layer will catch. we just try to verify the date format
         datetime.strptime(end_date, "%d/%m/%y %H:%M")
         self.addToTokenInfo("validity_period_end", end_date)
 
     def del_validity_period_end(self):
-        '''
+        """
         delete the end date of the validity period for a token
-        '''
+        """
         self.removeFromTokenInfo("validity_period_end")
 
     @property
     def validity_period_start(self):
-        '''
+        """
         returns the start of validity period (if set)
-        '''
-        start_time = self.getFromTokenInfo("validity_period_start", '') or ''
+        """
+        start_time = self.getFromTokenInfo("validity_period_start", "") or ""
         if start_time:
             return datetime.strptime(start_time, "%d/%m/%y %H:%M")
-        return ''
+        return ""
 
     @validity_period_start.setter
     def validity_period_start(self, start_date):
-        '''
+        """
         sets the start date of the validity period for a token
-        '''
+        """
         #  upper layer will catch. we just try to verify the date format
         datetime.strptime(start_date, "%d/%m/%y %H:%M")
         self.addToTokenInfo("validity_period_start", start_date)
 
     def del_validity_period_start(self):
-        '''
+        """
         delete the start date of the validity period for a token
-        '''
+        """
         self.removeFromTokenInfo("validity_period_start")
+
 
 # eof

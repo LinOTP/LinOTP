@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 
 
 def parseOATHcsv(csv):
-    '''
+    """
 
     This function parses CSV data for oath token.
     The file format is
@@ -63,13 +63,13 @@ def parseOATHcsv(csv):
                         'otplen' : xxx,
                         'ocrasuite' : xxx  }
         }
-    '''
+    """
     TOKENS = {}
 
     # we cant use the csv parser here as we have variable length data. So
     # we do the split into lines manualy
 
-    csv_array = csv.split('\n')
+    csv_array = csv.split("\n")
 
     log.debug("[parseOATHcsv] starting to parse an oath csv file.")
     log.debug("[parseOATHcsv] the file contains %i lines.", len(csv_array))
@@ -80,8 +80,8 @@ def parseOATHcsv(csv):
 
         # we extend the line to contain always 8 columns
 
-        line = [x.strip() for x in csv_line.split(',')]
-        line += [''] * (8 - len(line))
+        line = [x.strip() for x in csv_line.split(",")]
+        line += [""] * (8 - len(line))
 
         # ------------------------------------------------------------------ --
 
@@ -89,14 +89,17 @@ def parseOATHcsv(csv):
 
         serial = line[0]
         if not serial:
-            log.error("[parseOATHcsv] the line %s did not contain"
-                      " a serial number", csv_line)
+            log.error(
+                "[parseOATHcsv] the line %s did not contain"
+                " a serial number",
+                csv_line,
+            )
             continue
 
-        if serial == '#':
+        if serial == "#":
             continue
 
-        token['serial'] = serial
+        token["serial"] = serial
 
         # ------------------------------------------------------------------ --
 
@@ -104,11 +107,13 @@ def parseOATHcsv(csv):
 
         key = line[1]
         if not key:
-            log.error("[parseOATHcsv] the line %s did not contain"
-                      " a hmac key" % csv_line)
+            log.error(
+                "[parseOATHcsv] the line %s did not contain"
+                " a hmac key" % csv_line
+            )
             continue
 
-        token['hmac_key'] = key
+        token["hmac_key"] = key
 
         # ------------------------------------------------------------------ --
 
@@ -121,7 +126,7 @@ def parseOATHcsv(csv):
         if not ttype:
             ttype = "hmac"
 
-        token['type'] = ttype
+        token["type"] = ttype
 
         # ------------------------------------------------------------------ --
 
@@ -132,11 +137,13 @@ def parseOATHcsv(csv):
             ocrasuite = line[3]
 
             if not ocrasuite:
-                log.error("[parseOATHcsv] the line %s did not contain"
-                          " the ocrasuite for the ocra2 token!" % csv_line)
+                log.error(
+                    "[parseOATHcsv] the line %s did not contain"
+                    " the ocrasuite for the ocra2 token!" % csv_line
+                )
                 continue
 
-            token['ocrasuite'] = ocrasuite
+            token["ocrasuite"] = ocrasuite
 
         else:
 
@@ -146,26 +153,26 @@ def parseOATHcsv(csv):
             else:
                 otplen = 6
 
-            token['otplen'] = otplen
+            token["otplen"] = otplen
 
         # ------------------------------------------------------------------ --
 
         # 5 column: timeStep
 
-        if ttype in ['totp']:
+        if ttype in ["totp"]:
             try:
                 seconds = int(line[4])
             except ValueError:
                 seconds = 30
 
-            token['timeStep'] = seconds
+            token["timeStep"] = seconds
 
         # ------------------------------------------------------------------ --
 
         # 6 column: hash lib
 
         hash_hint = line[5].lower()
-        if hash_hint and hash_hint in ['sha1', 'sha256', 'sha512']:
+        if hash_hint and hash_hint in ["sha1", "sha256", "sha512"]:
             hashlib = hash_hint
         else:
             if len(key) == 2 * 64:
@@ -173,15 +180,18 @@ def parseOATHcsv(csv):
             elif len(key) == 2 * 32:
                 hashlib = "sha256"
             else:
-                hashlib = 'sha1'
+                hashlib = "sha1"
 
         if ttype not in ["ocra", "ocra2"]:
-            token['hashlib'] = hashlib
+            token["hashlib"] = hashlib
 
         # ------------------------------------------------------------------ --
 
-        log.debug("[parseOATHcsv] read the line >%s< into token: >%r<",
-                  csv_line, token)
+        log.debug(
+            "[parseOATHcsv] read the line >%s< into token: >%r<",
+            csv_line,
+            token,
+        )
 
         TOKENS[serial] = token
 

@@ -32,6 +32,7 @@ import json
 from unittest import TestCase, skip
 from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
+
 @skip("Broken 'no hsm defined in execution context'")
 class TestSQLResolver(TestCase):
 
@@ -40,9 +41,9 @@ class TestSQLResolver(TestCase):
     proc = None
 
     def setUp(self):
-        '''
+        """
         This is run before each test. Read configuration from the given JSON file.
-        '''
+        """
         current_directory = os.path.dirname(os.path.abspath(__file__))
 
         sql_config = {
@@ -54,38 +55,43 @@ class TestSQLResolver(TestCase):
                 "User": "",
                 "Password": "",
                 "Table": "linotp_users",
-                "Map":  json.dumps({
+                "Map": json.dumps(
+                    {
                         "username": "username",
                         "userid": "id",
                         "password": "password",
                         "salt": "salt",
                         "givenname": "givenname",
                         "surname": "surname",
-                        "email": "email"})
+                        "email": "email",
+                    }
+                ),
             },
-            "config2_map": json.dumps({
-                            "username": "username",
-                            "userid": "username",
-                            "password": "password",
-                            "givenname": "givenname",
-                            "surname": "surname",
-                            "email": "email"}),
-
-            "config3_where": "(1 = 0 OR linotp_users.id > 2 ) AND 1 = 1"
+            "config2_map": json.dumps(
+                {
+                    "username": "username",
+                    "userid": "username",
+                    "password": "password",
+                    "givenname": "givenname",
+                    "surname": "surname",
+                    "email": "email",
+                }
+            ),
+            "config3_where": "(1 = 0 OR linotp_users.id > 2 ) AND 1 = 1",
         }
 
-        config = sql_config['config']
+        config = sql_config["config"]
         config2 = config.copy()
 
         # A config with a differing Map (mapping string user IDs,
         # not numerical user IDs)
 
-        config2['Map'] = sql_config['config2_map']
+        config2["Map"] = sql_config["config2_map"]
 
         # Another config with a where clause (otherwise equals `config`)
 
         config3 = config.copy()
-        config3['Where'] = sql_config['config3_where']
+        config3["Where"] = sql_config["config3_where"]
 
         self.y = SQLResolver()
         self.y.loadConfig(config, "")
@@ -95,20 +101,20 @@ class TestSQLResolver(TestCase):
         self.w.loadConfig(config3, "")
 
     def getUserList(self, obj, arg):
-        '''
-            call obj.getUserList(), but check that we have no errors
-            before returning.
-        '''
+        """
+        call obj.getUserList(), but check that we have no errors
+        before returning.
+        """
         res = obj.getUserList(arg)
         for item in res:
             for _key, val in item.items():
-                assert '-ERR' not in str(val)
+                assert "-ERR" not in str(val)
         return res
 
     def test_sql_getUserId(self):
-        '''
+        """
         SQL: test the existance of the user1 and user2
-        '''
+        """
         res = self.y.getUserId("user1")
         print("uid (user1): ", res)
         assert res == 1
@@ -122,95 +128,96 @@ class TestSQLResolver(TestCase):
         assert self.y.getUserInfo(res).get("surname") == "Zwo"
 
         res = self.z.getUserId("user2")
-        assert res == 'user2'
+        assert res == "user2"
 
     def test_sql_checkpass(self):
-        '''
+        """
         SQL: Check the password of user1 and user 2
-        '''
-        assert self.y.checkPass(self.y.getUserId("user1"),
-                                         "password")
-        assert self.y.checkPass(self.y.getUserId("user2"),
-                                         "password")
+        """
+        assert self.y.checkPass(self.y.getUserId("user1"), "password")
+        assert self.y.checkPass(self.y.getUserId("user2"), "password")
 
     def test_sql_checkpass_wo_salt(self):
-        '''
+        """
         SQL: Check the password of user1 and user 2 without column SALT
-        '''
-        assert self.z.checkPass(self.z.getUserId("user1"),
-                                         "password")
-        assert self.z.checkPass(self.z.getUserId("user2"),
-                                         "password")
+        """
+        assert self.z.checkPass(self.z.getUserId("user1"), "password")
+        assert self.z.checkPass(self.z.getUserId("user2"), "password")
 
     def test_get_search_fields(self):
-        '''
+        """
         SQL: Check the search field detection.
-        '''
+        """
         search_fields = self.y.getSearchFields()
-        assert set(search_fields.keys()) == \
-                         set(['username', 'userid', 'password', 'salt',
-                              'givenname', 'surname', 'email'])
-        assert set(search_fields.values()) == set(['numeric', 'text'])
+        assert set(search_fields.keys()) == set(
+            [
+                "username",
+                "userid",
+                "password",
+                "salt",
+                "givenname",
+                "surname",
+                "email",
+            ]
+        )
+        assert set(search_fields.values()) == set(["numeric", "text"])
 
     def test_sql_search_escapes(self):
-        '''
+        """
         SQL: Check that the SQL wildcards are correctly escaped.
-        '''
-        res1 = self.getUserList(self.y, {'givenname': 'Pro%ent'})
+        """
+        res1 = self.getUserList(self.y, {"givenname": "Pro%ent"})
         assert len(res1) == 1
-        assert res1[0]['username'] == 'user_3'
+        assert res1[0]["username"] == "user_3"
 
-        res2 = self.getUserList(self.y, {'username': 'user_3'})
+        res2 = self.getUserList(self.y, {"username": "user_3"})
         assert len(res2) == 1
-        assert res2[0]['username'] == 'user_3'
+        assert res2[0]["username"] == "user_3"
 
-        res3 = self.getUserList(self.y, {'username': 'user.3'})
+        res3 = self.getUserList(self.y, {"username": "user.3"})
         assert len(res3) == 2
-        assert set(s['username'] for s in res3) == \
-                         set(['user_3', 'userx3'])
+        assert set(s["username"] for s in res3) == set(["user_3", "userx3"])
 
-        res4 = self.getUserList(self.y, {'username': 'user*'})
+        res4 = self.getUserList(self.y, {"username": "user*"})
         assert len(res4) == 4
 
-        res5 = self.getUserList(self.y, {'surname': '....'})
-        assert set(s['userid'] for s in res5) == set([1, 3])
+        res5 = self.getUserList(self.y, {"surname": "...."})
+        assert set(s["userid"] for s in res5) == set([1, 3])
 
     def test_sql_complex_search(self):
-        '''
+        """
         SQL: test more complex search queries
-        '''
-        res1 = self.getUserList(self.y, {'userid': '> 2'})
+        """
+        res1 = self.getUserList(self.y, {"userid": "> 2"})
         assert len(res1) == 2
-        assert set(s['userid'] for s in res1) == set((3, 4))
+        assert set(s["userid"] for s in res1) == set((3, 4))
 
-        res2 = self.getUserList(self.y, {'userid': '  <=   3  '})
+        res2 = self.getUserList(self.y, {"userid": "  <=   3  "})
         assert len(res2) == 3
 
-        res3 = self.getUserList(self.y, {'userid': '>77'})
+        res3 = self.getUserList(self.y, {"userid": ">77"})
         assert res3 == []
 
     def test_sql_where(self):
-        '''
+        """
         SQL: test with a where clause. The where clause in `self.w` only gives us
         users with IDs > 2.
-        '''
+        """
         res1 = self.getUserList(self.w, {})
-        assert set(s['username'] for s in res1) == \
-                         set(('user_3', 'userx3'))
+        assert set(s["username"] for s in res1) == set(("user_3", "userx3"))
         assert self.w.getUsername(1) == ""
         assert self.w.getUsername(2) == ""
         assert self.w.getUsername(3) == "user_3"
         assert self.w.getUsername(4) == "userx3"
         assert self.w.getUsername(5) == ""
 
-        assert self.w.checkPass(self.w.getUserId('user_3'), 'test')
-        assert not self.w.checkPass(self.w.getUserId('user_3'),
-                                          'falsch')
+        assert self.w.checkPass(self.w.getUserId("user_3"), "test")
+        assert not self.w.checkPass(self.w.getUserId("user_3"), "falsch")
 
     def test_sql_getUserList(self):
-        '''
+        """
         SQL: testing the userlist
-        '''
+        """
         # all users are two users
         user_list = self.getUserList(self.y, {})
         assert len(user_list) == 4
@@ -220,9 +227,9 @@ class TestSQLResolver(TestCase):
         assert len(user_list) == 1
 
     def test_sql_getUsername(self):
-        '''
+        """
         SQL: testing getting the username
-        '''
+        """
         assert self.y.getUsername(1) == "user1"
         assert self.y.getUsername(2) == "user2"
         assert self.y.getUsername(5) == ""
@@ -232,5 +239,6 @@ class TestSQLResolver(TestCase):
         assert self.z.getUsername("user1") == "user1"
         assert self.z.getUsername("user2") == "user2"
         assert self.z.getUsername("user5") == ""
+
 
 # eof #

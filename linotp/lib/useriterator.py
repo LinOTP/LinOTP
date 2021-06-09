@@ -34,6 +34,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 def iterate_users(user_iterators):
     """
     build a userlist iterator / generator that returns the user data on demand
@@ -51,18 +52,19 @@ def iterate_users(user_iterators):
                 user_data = next(user_iterator)
                 if type(user_data) in [list]:
                     for data in user_data:
-                        data['resolver'] = reso
+                        data["resolver"] = reso
                         resp = "%s" % json.dumps(data)
                         yield resp
                 else:
-                    user_data['resolver'] = reso
+                    user_data["resolver"] = reso
                     resp = "%s" % json.dumps(user_data)
                     yield resp
         except StopIteration as exx:
             # pass on to next iterator
             pass
         except Exception as exx:
-            log.exception("Problem during iteration of userlist iterators: %r"
-                       % exx)
+            log.exception(
+                "Problem during iteration of userlist iterators: %r" % exx
+            )
 
     return

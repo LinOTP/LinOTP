@@ -23,7 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''establish a global context object'''
+"""establish a global context object"""
 
 
 from linotp.lib.local import LocalContainer, release_local
@@ -72,8 +72,9 @@ def context_stack_trace(manager_id, allow_nesting=True):
     """
 
     if not allow_nesting and manager_id in context_stack:
-        raise ProgrammingError('Nesting of %s context managers is not allowed' %
-                               manager_id)
+        raise ProgrammingError(
+            "Nesting of %s context managers is not allowed" % manager_id
+        )
     context_stack.append(manager_id)
     try:
         yield
@@ -84,9 +85,11 @@ def context_stack_trace(manager_id, allow_nesting=True):
             # through context_stack_trace. however, just in case someone
             # tempers with context_stack directly, we check for stack
             # consistency
-            raise ProgrammingError('Misuse of context stack trace. Entered %s '
-                                   'but exited %s' % manager_id,
-                                   popped_manager_id)
+            raise ProgrammingError(
+                "Misuse of context stack trace. Entered %s "
+                "but exited %s" % manager_id,
+                popped_manager_id,
+            )
 
 
 def is_on_context_stack(manager_id):
@@ -104,6 +107,7 @@ def is_on_context_stack(manager_id):
     """
 
     return manager_id in context_stack
+
 
 @contextmanager
 def request_context_safety():
@@ -126,7 +130,7 @@ def request_context_safety():
 
     """
 
-    with context_stack_trace('request_context_safety', allow_nesting=False):
+    with context_stack_trace("request_context_safety", allow_nesting=False):
         try:
             yield
         finally:

@@ -35,24 +35,24 @@ from linotp.useridresolver.PasswdIdResolver import IdResolver as PasswdResolver
 
 @pytest.fixture
 def passwd_resolver():
-    content = '''user1:0DM4AJtW/rTYY:10:10:User Eins:Irgendwas:Nochmal
-user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal'''
+    content = """user1:0DM4AJtW/rTYY:10:10:User Eins:Irgendwas:Nochmal
+user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal"""
 
-    with tempfile.NamedTemporaryFile(mode='w+') as f:
+    with tempfile.NamedTemporaryFile(mode="w+") as f:
         f.write(content)
         f.flush()
 
         pw_file = f.name
 
-        pw_config = {'linotp.passwdresolver.fileName.my': pw_file}
+        pw_config = {"linotp.passwdresolver.fileName.my": pw_file}
         y = PasswdResolver()
-        y.loadConfig(pw_config, 'my')
+        y.loadConfig(pw_config, "my")
 
         yield y
 
 
 def test_getUserId(passwd_resolver):
-    '''test the existance of the user1 and user2'''
+    """test the existance of the user1 and user2"""
     y = passwd_resolver
 
     res = y.getUserId("user1")
@@ -67,14 +67,17 @@ def test_getUserId(passwd_resolver):
 
 
 def test_resolver_fail():
-    '''
+    """
     Test to use a file, that does not exist
-    '''
-    pw_config = {'linotp.passwdresolver.fileName.my':
-                 '/dev/shm/this_file_does_not_exist'}
+    """
+    pw_config = {
+        "linotp.passwdresolver.fileName.my": "/dev/shm/this_file_does_not_exist"
+    }
 
-    msg = ("File '/dev/shm/this_file_does_not_exist' does not "
-           "exist or is not accesible")
+    msg = (
+        "File '/dev/shm/this_file_does_not_exist' does not "
+        "exist or is not accesible"
+    )
 
     with pytest.raises(ResolverLoadConfigError, match=msg):
 
@@ -83,18 +86,18 @@ def test_resolver_fail():
 
 
 def test_checkpass(passwd_resolver):
-    '''
+    """
     Check the password of user1 and user 2
-    '''
+    """
     y = passwd_resolver
     assert y.checkPass(y.getUserId("user1"), "pwU1")
     assert y.checkPass(y.getUserId("user2"), "pwU2")
 
 
 def test_getUserList(passwd_resolver):
-    '''
+    """
     testing the userlist
-    '''
+    """
     # all users are two users
     y = passwd_resolver
     user_list = y.getUserList({})
@@ -106,12 +109,13 @@ def test_getUserList(passwd_resolver):
 
 
 def test_getUsername(passwd_resolver):
-    '''
+    """
     testing getting the username
-    '''
+    """
     y = passwd_resolver
     assert y.getUsername("10")
     assert y.getUsername("11")
     assert not y.getUsername("9")
+
 
 # eof #

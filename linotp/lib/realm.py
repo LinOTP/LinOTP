@@ -44,6 +44,7 @@ from sqlalchemy import func
 
 
 import logging
+
 log = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------------------
@@ -56,12 +57,12 @@ def parse_realm(composite_key, value):
 
     """ Parses realm data from a config entry """
 
-    if not composite_key.startswith('linotp.useridresolver.group.'):
+    if not composite_key.startswith("linotp.useridresolver.group."):
         raise ConfigNotRecognized(composite_key)
 
-    object_id = composite_key[len('linotp.useridresolver.group.'):]
+    object_id = composite_key[len("linotp.useridresolver.group.") :]
 
-    return object_id, {'resolvers': value}
+    return object_id, {"resolvers": value}
 
 
 def parse_default_realm(composite_key, value):
@@ -71,19 +72,20 @@ def parse_default_realm(composite_key, value):
     in the tree.
     """
 
-    if composite_key != 'linotp.DefaultRealm':
+    if composite_key != "linotp.DefaultRealm":
         raise ConfigNotRecognized(composite_key)
 
-    return value, {'default': True}
+    return value, {"default": True}
 
-ConfigTree.add_parser('realms', parse_realm)
-ConfigTree.add_parser('realms', parse_default_realm)
+
+ConfigTree.add_parser("realms", parse_realm)
+ConfigTree.add_parser("realms", parse_default_realm)
 
 # ------------------------------------------------------------------------------
 
 
 def createDBRealm(realm):
-    '''
+    """
     Store Realm in the DB Realm Table.
     If the realm already exist, we do not need to store it
 
@@ -92,7 +94,7 @@ def createDBRealm(realm):
 
     :return : if realm is created(True) or already esists(False)
     :rtype  : boolean
-    '''
+    """
 
     ret = False
     if not getRealmObject(name=realm):
@@ -104,7 +106,7 @@ def createDBRealm(realm):
 
 
 def realm2Objects(realmList):
-    '''
+    """
     convert a list of realm names to a list of realmObjects
 
     :param realmList: list of realnames
@@ -112,7 +114,7 @@ def realm2Objects(realmList):
 
     :return: list of realmObjects
     :rtype:  list
-    '''
+    """
     realm_set = set()
     realmObjList = []
     if realmList is not None:
@@ -129,7 +131,7 @@ def realm2Objects(realmList):
 
 
 def getRealmObject(name="", id=0):
-    '''
+    """
     returns the Realm Object for a given realm name.
     If the given realm name is not found, it returns "None"
 
@@ -142,15 +144,16 @@ def getRealmObject(name="", id=0):
 
     :return : realmObject - the database object
     :rtype  : the sql db object
-    '''
+    """
 
     log.debug("Getting realm object for name=%s, id=%i", name, id)
     realmObj = None
 
-    name = '' + str(name)
-    if (0 == id):
+    name = "" + str(name)
+    if 0 == id:
         realmObjects = Realm.query.filter(
-            func.lower(Realm.name) == name.lower())
+            func.lower(Realm.name) == name.lower()
+        )
         if realmObjects.count() > 0:
             realmObj = realmObjects[0]
 
@@ -158,7 +161,7 @@ def getRealmObject(name="", id=0):
 
 
 def getRealms(aRealmName=""):
-    '''
+    """
     lookup for a defined realm or all realms
 
     :note:  the realms dict is inserted into the LinOtp Config object
@@ -191,7 +194,7 @@ def getRealms(aRealmName=""):
                         ],
                     entry': u'linotp.useridresolver.group.mymixrealm'}}
 
-    '''
+    """
 
     config = context["Config"]
     realms = config.getRealms()
@@ -211,11 +214,12 @@ def getRealms(aRealmName=""):
         for realm_name, realm_defintion in list(realms.items()):
 
             # get the resolvers list of the realm definition
-            realm_resolvers = realm_defintion.get('useridresolver', [])
+            realm_resolvers = realm_defintion.get("useridresolver", [])
 
             # and the former definition from the local cache
-            former_realm_resolvers = _lookup_realm_config(realm_name,
-                                                          realm_resolvers)
+            former_realm_resolvers = _lookup_realm_config(
+                realm_name, realm_resolvers
+            )
 
             # we check if there has been something dropped from the
             # former resolver definition by using set().difference
@@ -227,6 +231,7 @@ def getRealms(aRealmName=""):
 
                 # refresh the user resolver lookup in the realm user cache
                 from linotp.lib.user import delete_realm_resolver_cache
+
                 delete_realm_resolver_cache(realm_name)
 
                 # maintain the new realm configuration in the cache
@@ -287,14 +292,16 @@ def _lookup_realm_config(realm_name, realm_defintion=None):
             conf_entry = json.loads(conf_entry)
         return conf_entry
 
-    p_lookup_resolver_config = partial(__lookup_realm_config,
-                                       realm_name, realm_defintion)
+    p_lookup_resolver_config = partial(
+        __lookup_realm_config, realm_name, realm_defintion
+    )
 
     p_key = realm_name
 
-    conf_entry = realm_config_cache.get_value(key=p_key,
-                                            createfunc=p_lookup_resolver_config,
-                                              )
+    conf_entry = realm_config_cache.get_value(
+        key=p_key,
+        createfunc=p_lookup_resolver_config,
+    )
 
     if conf_entry:
         conf_entry = json.loads(conf_entry)
@@ -317,7 +324,7 @@ def _get_realm_config_cache():
     :return: the realm config cache
     """
 
-    return get_cache(cache_name='realm_lookup')
+    return get_cache(cache_name="realm_lookup")
 
 
 def _delete_from_realm_config_cache(realm_name):
@@ -330,12 +337,12 @@ def _delete_from_realm_config_cache(realm_name):
 
 
 def _initalGetRealms():
-    '''
+    """
     initaly parse all config entries, and extract the realm definition
 
     :return : a dict with all realm definitions
     :rtype  : dict of definitions
-    '''
+    """
 
     Realms = {}
     defRealmConf = "linotp.useridresolver"
@@ -348,7 +355,7 @@ def _initalGetRealms():
 
         if entry.startswith(realmConf):
 
-            #the realm might contain dots "."
+            # the realm might contain dots "."
             # so take all after the 3rd dot for realm
             r = {}
             realm = entry.split(".", 3)
@@ -375,7 +382,7 @@ def _initalGetRealms():
             r["realmname"] = theRealm
             r["entry"] = defRealmConf
 
-            #resids          = env.config[entry]
+            # resids          = env.config[entry]
             resids = getFromConfig(entry)
             r["useridresolver"] = resids.split(",")
 
@@ -407,10 +414,10 @@ def _setDefaultRealm(realms, defaultRealm):
 
     ret = False
     for k in realms:
-        '''
-            there could be only one default realm
-            - all other defaults will be removed
-        '''
+        """
+        there could be only one default realm
+        - all other defaults will be removed
+        """
         r = realms.get(k)
         if k == defaultRealm.lower():
             r["default"] = "true"
@@ -422,7 +429,7 @@ def _setDefaultRealm(realms, defaultRealm):
 
 
 def isRealmDefined(realm):
-    '''
+    """
     check, if a realm already exists or not
 
     :param realm: the realm, that should be verified
@@ -430,7 +437,7 @@ def isRealmDefined(realm):
 
     :return :found or not found
     :rtype  :boolean
-    '''
+    """
     ret = False
     realms = getRealms()
     if realm.lower() in realms:
@@ -451,7 +458,7 @@ def setDefaultRealm(defaultRealm, check_if_exists=True):
     :rtype:   boolean
     """
 
-    #TODO: verify merge
+    # TODO: verify merge
     if check_if_exists:
         ret = isRealmDefined(defaultRealm)
     else:
@@ -486,24 +493,26 @@ def getDefaultRealm(config=None):
 
 
 def deleteRealm(realmname):
-    '''
+    """
     delete the realm from the Database Table with the given name
 
     :param realmname: the to be deleted realm
     :type  realmname: string
-    '''
+    """
 
     log.debug("deleting realm object with name=%s" % realmname)
     r = getRealmObject(name=realmname)
     if r is None:
-        ''' if no realm is found, we re-try the lowercase name for backward compatibility '''
+        """ if no realm is found, we re-try the lowercase name for backward compatibility """
         r = getRealmObject(name=realmname.lower())
     realmId = 0
     if r is not None:
         realmId = r.id
 
         if realmId != 0:
-            log.debug("Deleting token relations for realm with id %i" % realmId)
+            log.debug(
+                "Deleting token relations for realm with id %i" % realmId
+            )
             TokenRealm.query.filter_by(realm_id=realmId).delete()
         db.session.delete(r)
 
@@ -514,6 +523,7 @@ def deleteRealm(realmname):
 
     # finally we delete the 'realmname' cache
     from linotp.lib.user import delete_realm_resolver_cache
+
     delete_realm_resolver_cache(realmname)
 
     return True
@@ -538,56 +548,62 @@ def match_realms(request_realms, allowed_realms):
         if realm in all_realms:
             all_allowed_realms.add(realm)
         else:
-            log.info('Policy allowed a realm that does not exist: %r', realm)
+            log.info("Policy allowed a realm that does not exist: %r", realm)
 
     realms = []
 
-    _ = context['translate']
+    _ = context["translate"]
 
-    if not request_realms or request_realms == ['']:
+    if not request_realms or request_realms == [""]:
         realms = list(all_allowed_realms)
     # support for empty realms or no realms by realm = *
-    elif '*' in request_realms:
+    elif "*" in request_realms:
         realms = list(all_allowed_realms)
-        realms.append('/:no realm:/')
+        realms.append("/:no realm:/")
     # other cases, we iterate through the realm list
-    elif len(request_realms) > 0 and not (request_realms == ['']):
+    elif len(request_realms) > 0 and not (request_realms == [""]):
         invalid_realms = []
         for search_realm in request_realms:
             search_realm = search_realm.strip()
             if search_realm in all_allowed_realms:
                 realms.append(search_realm)
-            elif search_realm == '/:no realm:/':
+            elif search_realm == "/:no realm:/":
                 realms.append(search_realm)
             else:
                 invalid_realms.append(search_realm)
         if not realms and invalid_realms:
             from linotp.lib.policy import PolicyException
-            raise PolicyException(_('You do not have the rights to see these '
-                                    'realms: %r. Check the policies!')
-                                  % invalid_realms)
+
+            raise PolicyException(
+                _(
+                    "You do not have the rights to see these "
+                    "realms: %r. Check the policies!"
+                )
+                % invalid_realms
+            )
 
     return realms
 
+
 def get_realms_from_params(param, acls=None):
 
-    if 'realm' not in param or param['realm'] == '*':
+    if "realm" not in param or param["realm"] == "*":
 
-        if acls and acls['active']:
+        if acls and acls["active"]:
 
-            if '*' in acls['realms']:
+            if "*" in acls["realms"]:
                 return getRealms().keys()
 
-            return acls['realms']
+            return acls["realms"]
 
         return getRealms().keys()
 
+    realm = param["realm"]
 
-    realm = param['realm']
+    if realm.strip() == "":
+        return [getDefaultRealm()]
 
-    if realm.strip() == '':
-        return  [getDefaultRealm()]
+    return [x.strip() for x in realm.split(",")]
 
-    return [x.strip() for x in realm.split(',')]
 
 # eof ########################################################################

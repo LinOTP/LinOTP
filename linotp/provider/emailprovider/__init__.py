@@ -23,8 +23,8 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''Interface to an EMail provider and implementation of the SMPT email provider
-'''
+"""Interface to an EMail provider and implementation of the SMPT email provider
+"""
 
 import logging
 import smtplib
@@ -42,10 +42,10 @@ from linotp.provider import provider_registry
 from linotp.lib.type_utils import boolean
 from linotp.lib.context import request_context
 
-DEFAULT_MESSAGE = '<otp>'
+DEFAULT_MESSAGE = "<otp>"
 
-EMAIL_PROVIDER_TEMPLATE_ROOT = '/etc/linotp/custom-templates/mailtemplates'
-EMAIL_PROVIDER_TEMPLATE_KEY = 'email_provider_template_root'
+EMAIL_PROVIDER_TEMPLATE_ROOT = "/etc/linotp/custom-templates/mailtemplates"
+EMAIL_PROVIDER_TEMPLATE_KEY = "email_provider_template_root"
 
 LOG = logging.getLogger(__name__)
 
@@ -54,7 +54,8 @@ class IEmailProvider(object):
     """
     An abstract class that has to be implemented by ever e-mail provider class
     """
-    provider_type = 'email'
+
+    provider_type = "email"
 
     def __init__(self):
         pass
@@ -70,8 +71,10 @@ class IEmailProvider(object):
           key: (ConfigName, ConfigType)
         }
         """
-        config_mapping = {'timeout': ('Timeout', None),
-                          'config': ('Config', 'encrypted_data')}
+        config_mapping = {
+            "timeout": ("Timeout", None),
+            "config": ("Config", "encrypted_data"),
+        }
 
         return config_mapping
 
@@ -89,8 +92,9 @@ class IEmailProvider(object):
         :return: A tuple of success and a message
         :rtype: bool, string
         """
-        raise NotImplementedError("Every subclass of IEmailProvider has to "
-                                  "implement this method.")
+        raise NotImplementedError(
+            "Every subclass of IEmailProvider has to " "implement this method."
+        )
 
     def loadConfig(self, configDict):
         """
@@ -104,10 +108,11 @@ class IEmailProvider(object):
         pass
 
 
-@provider_registry.class_entry('SMTPEmailProvider')
-@provider_registry.class_entry('linotp.provider.emailprovider.'
-                               'SMTPEmailProvider')
-@provider_registry.class_entry('linotp.lib.emailprovider.SMTPEmailProvider')
+@provider_registry.class_entry("SMTPEmailProvider")
+@provider_registry.class_entry(
+    "linotp.provider.emailprovider." "SMTPEmailProvider"
+)
+@provider_registry.class_entry("linotp.lib.emailprovider.SMTPEmailProvider")
 class SMTPEmailProvider(IEmailProvider):
     """
     Sends e-mail over a SMTP server.
@@ -127,7 +132,6 @@ class SMTPEmailProvider(IEmailProvider):
         self.start_tls_params_keyfile = None
         self.start_tls_params_certfile = None
 
-
     def loadConfig(self, configDict):
         """
         Loads the configuration for this e-mail e-mail provider
@@ -142,11 +146,12 @@ class SMTPEmailProvider(IEmailProvider):
 
         self.config = configDict
 
-        self.smtp_server = configDict.get('SMTP_SERVER')
+        self.smtp_server = configDict.get("SMTP_SERVER")
 
         if not self.smtp_server:
-            raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is "
-                            "required")
+            raise Exception(
+                "Invalid EmailProviderConfig. SMTP_SERVER is " "required"
+            )
 
         self.start_tls = boolean(self.config.get("START_TLS", False))
         if self.start_tls:
@@ -158,17 +163,16 @@ class SMTPEmailProvider(IEmailProvider):
         if self.use_ssl:
             default_port = 465
 
-        self.smtp_port = int(configDict.get('SMTP_PORT', default_port))
+        self.smtp_port = int(configDict.get("SMTP_PORT", default_port))
 
-        self.smtp_user = configDict.get('SMTP_USER')
-        self.smtp_password = configDict.get('SMTP_PASSWORD')
-        self.email_from = configDict.get(
-            'EMAIL_FROM', self.DEFAULT_EMAIL_FROM)
+        self.smtp_user = configDict.get("SMTP_USER")
+        self.smtp_password = configDict.get("SMTP_PASSWORD")
+        self.email_from = configDict.get("EMAIL_FROM", self.DEFAULT_EMAIL_FROM)
         self.email_subject = configDict.get(
-            'EMAIL_SUBJECT', self.DEFAULT_EMAIL_SUBJECT)
+            "EMAIL_SUBJECT", self.DEFAULT_EMAIL_SUBJECT
+        )
 
-        self.template = configDict.get('TEMPLATE', None)
-
+        self.template = configDict.get("TEMPLATE", None)
 
     @staticmethod
     def get_template_root():
@@ -184,22 +188,25 @@ class SMTPEmailProvider(IEmailProvider):
         :return: the directory where the email provider templates are expected
         """
 
-        linotp_config = request_context['Config']
+        linotp_config = request_context["Config"]
 
-        template_root = linotp_config.get(EMAIL_PROVIDER_TEMPLATE_KEY,
-                                          EMAIL_PROVIDER_TEMPLATE_ROOT)
+        template_root = linotp_config.get(
+            EMAIL_PROVIDER_TEMPLATE_KEY, EMAIL_PROVIDER_TEMPLATE_ROOT
+        )
 
         if not os.path.isdir(template_root):
             LOG.error(
-                'Configuration error: no email provider template directory '
-                'found: %r')
-            raise Exception('Email provider template directory not found')
+                "Configuration error: no email provider template directory "
+                "found: %r"
+            )
+            raise Exception("Email provider template directory not found")
 
         return template_root
 
     @staticmethod
     def render_simple_message(
-            email_to, email_from, subject, message, replacements):
+        email_to, email_from, subject, message, replacements
+    ):
         """
         render the email message body based on a simple text message
 
@@ -215,8 +222,8 @@ class SMTPEmailProvider(IEmailProvider):
 
         # legacy pre processing - transfered from email token
 
-        otp = replacements.get('otp','')
-        serial = replacements.get('serial','')
+        otp = replacements.get("otp", "")
+        serial = replacements.get("serial", "")
 
         if "<otp>" not in message:
             message = message + "<otp>"
@@ -236,30 +243,33 @@ class SMTPEmailProvider(IEmailProvider):
         # protect against recursion
 
         subject_replacements = copy.deepcopy(replacements)
-        if 'Subject' in subject_replacements:
-            del subject_replacements['Subject']
+        if "Subject" in subject_replacements:
+            del subject_replacements["Subject"]
 
         subject_replacement = SMTPEmailProvider._render_template(
-            subject.encode('utf-8'), subject_replacements)
+            subject.encode("utf-8"), subject_replacements
+        )
 
         # and put it back for the message replacements
 
-        replacements['Subject'] = subject_replacement
+        replacements["Subject"] = subject_replacement
 
         # now build up the final message with all replacements
         email_message = SMTPEmailProvider._render_template(
-            message.encode('utf-8'), replacements)
+            message.encode("utf-8"), replacements
+        )
 
         msg = MIMEText(email_message)
-        msg['Subject'] = Header(subject_replacement).encode('utf-8')
-        msg['From'] = Header(email_from).encode('utf-8')
-        msg['To'] = Header(email_to).encode('utf-8')
+        msg["Subject"] = Header(subject_replacement).encode("utf-8")
+        msg["From"] = Header(email_from).encode("utf-8")
+        msg["To"] = Header(email_to).encode("utf-8")
 
         return msg.as_string()
 
     @staticmethod
-    def render_template_message(email_to, email_from, subject,
-                                template_message, replacements):
+    def render_template_message(
+        email_to, email_from, subject, template_message, replacements
+    ):
         """
         render the email message body based on a template
 
@@ -310,34 +320,37 @@ class SMTPEmailProvider(IEmailProvider):
 
         email_subject = subject
 
-        if ((not subject or subject == SMTPEmailProvider.DEFAULT_EMAIL_SUBJECT)
-            and "Subject" in replacements):
-            email_subject = replacements['Subject']
+        if (
+            not subject or subject == SMTPEmailProvider.DEFAULT_EMAIL_SUBJECT
+        ) and "Subject" in replacements:
+            email_subject = replacements["Subject"]
 
-        replacements['Subject'] = Header(email_subject).encode('utf-8')
-        replacements['From'] = Header(email_from).encode('utf-8')
-        replacements['To'] = Header(email_to).encode('utf-8')
+        replacements["Subject"] = Header(email_subject).encode("utf-8")
+        replacements["From"] = Header(email_from).encode("utf-8")
+        replacements["To"] = Header(email_to).encode("utf-8")
 
         template_data = template_message
 
         # ------------------------------------------------------------------ --
 
-        if template_message.startswith('file://'):
+        if template_message.startswith("file://"):
 
-            filename = template_message[len('file://'):]
+            filename = template_message[len("file://") :]
 
             provider_template_root = SMTPEmailProvider.get_template_root()
 
             absolute_filename = os.path.abspath(
-                os.path.join(provider_template_root, filename))
+                os.path.join(provider_template_root, filename)
+            )
 
             # secure open of the template file - only if it is below the
             # provider template root directory
 
             if not absolute_filename.startswith(provider_template_root):
                 raise Exception(
-                    'Template %r - not in email provider template root %r' %
-                    (absolute_filename, provider_template_root))
+                    "Template %r - not in email provider template root %r"
+                    % (absolute_filename, provider_template_root)
+                )
 
             with open(absolute_filename, "rb") as f:
                 template_data = f.read()
@@ -358,22 +371,24 @@ class SMTPEmailProvider(IEmailProvider):
         # protect against recursion
 
         subject_replacements = copy.deepcopy(replacements)
-        if 'Subject' in subject_replacements:
-            del subject_replacements['Subject']
+        if "Subject" in subject_replacements:
+            del subject_replacements["Subject"]
 
         subject_replacement = SMTPEmailProvider._render_template(
-            email_subject.encode('utf-8'), subject_replacements)
+            email_subject.encode("utf-8"), subject_replacements
+        )
 
         # and put it back for the message replacements
 
-        replacements['Subject'] = subject_replacement
+        replacements["Subject"] = subject_replacement
 
         # now build up the final message with all replacements
 
         message = SMTPEmailProvider._render_template(
-            template_data, replacements)
+            template_data, replacements
+        )
 
-        return message.encode('utf-8')
+        return message.encode("utf-8")
 
     @staticmethod
     def _render_template(template_data, replacements):
@@ -407,12 +422,12 @@ class SMTPEmailProvider(IEmailProvider):
                 return message
             except NameError as exx:
                 var = str(exx).split()[0].strip("'")
-                replacements[var]= "${%s}" % var
+                replacements[var] = "${%s}" % var
                 LOG.error(
-                    'Template refers to unresolved replacement: %r' % var)
+                    "Template refers to unresolved replacement: %r" % var
+                )
 
-    def render_message(
-            self, email_to, subject, message, replacements):
+    def render_message(self, email_to, subject, message, replacements):
         """
         create a text/plain or a template rendered email message
 
@@ -433,25 +448,35 @@ class SMTPEmailProvider(IEmailProvider):
             # overrules the policy subject
 
             if message and message != DEFAULT_MESSAGE:
-                LOG.warning('ignoring "message" defined by policy - '
-                            'using template defintion')
+                LOG.warning(
+                    'ignoring "message" defined by policy - '
+                    "using template defintion"
+                )
 
             if subject:
-                LOG.warning('ignoring "subject" defined by policy - '
-                            'using subject from template defintion')
+                LOG.warning(
+                    'ignoring "subject" defined by policy - '
+                    "using subject from template defintion"
+                )
 
             if self.email_subject:
                 email_subject = self.email_subject
 
             return self.render_template_message(
-                email_to, email_from, email_subject,
-                self.template, replacements)
+                email_to,
+                email_from,
+                email_subject,
+                self.template,
+                replacements,
+            )
 
         return self.render_simple_message(
-                email_to, email_from, email_subject, message, replacements)
+            email_to, email_from, email_subject, message, replacements
+        )
 
-
-    def submitMessage(self, email_to, message, subject=None, replacements=None):
+    def submitMessage(
+        self, email_to, message, subject=None, replacements=None
+    ):
         """
         Sends out the e-mail.
 
@@ -469,15 +494,17 @@ class SMTPEmailProvider(IEmailProvider):
         """
 
         if not self.smtp_server:
-            raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is "
-                            "required")
+            raise Exception(
+                "Invalid EmailProviderConfig. SMTP_SERVER is " "required"
+            )
 
         # ------------------------------------------------------------------ --
 
         # setup message
 
         email_message = self.render_message(
-            email_to, subject, message, replacements)
+            email_to, subject, message, replacements
+        )
 
         # ------------------------------------------------------------------ --
 
@@ -502,13 +529,16 @@ class SMTPEmailProvider(IEmailProvider):
         smtp_connection.ehlo()
 
         if self.start_tls and not self.use_ssl:
-            if not smtp_connection.has_extn('STARTTLS'):
+            if not smtp_connection.has_extn("STARTTLS"):
                 LOG.error("Start_TLS not supported:")
-                raise Exception("Start_TLS requested but not supported"
-                                " by server %r" % self.smtp_server)
+                raise Exception(
+                    "Start_TLS requested but not supported"
+                    " by server %r" % self.smtp_server
+                )
 
-            smtp_connection.starttls(self.start_tls_params_keyfile,
-                                     self.start_tls_params_certfile)
+            smtp_connection.starttls(
+                self.start_tls_params_keyfile, self.start_tls_params_certfile
+            )
             smtp_connection.ehlo()
 
         # ------------------------------------------------------------------ --
@@ -516,10 +546,11 @@ class SMTPEmailProvider(IEmailProvider):
         # authenticate on smtp server
 
         if self.smtp_user:
-            if not smtp_connection.has_extn('AUTH'):
+            if not smtp_connection.has_extn("AUTH"):
                 LOG.error("AUTH not supported:")
-                raise Exception("AUTH not supported"
-                                " by server %r" % self.smtp_server)
+                raise Exception(
+                    "AUTH not supported" " by server %r" % self.smtp_server
+                )
 
             LOG.debug("authenticating to mailserver, user: %r", self.smtp_user)
             smtp_connection.login(self.smtp_user, self.smtp_password)
@@ -529,8 +560,9 @@ class SMTPEmailProvider(IEmailProvider):
         # submit message
 
         try:
-            errors = smtp_connection.sendmail(self.email_from,
-                                              email_to, email_message)
+            errors = smtp_connection.sendmail(
+                self.email_from, email_to, email_message
+            )
             if len(errors) > 0:
                 LOG.error("error(s) sending e-mail %r", errors)
                 return False, ("error sending e-mail %r" % errors)
@@ -541,11 +573,13 @@ class SMTPEmailProvider(IEmailProvider):
             smtplib.SMTPHeloError,
             smtplib.SMTPRecipientsRefused,
             smtplib.SMTPSenderRefused,
-            smtplib.SMTPDataError
+            smtplib.SMTPDataError,
         ) as smtplib_exception:
 
-            LOG.error("error(s) sending e-mail. Caught exception: %r",
-                      smtplib_exception)
+            LOG.error(
+                "error(s) sending e-mail. Caught exception: %r",
+                smtplib_exception,
+            )
 
             return False, ("error sending e-mail %r" % smtplib_exception)
 

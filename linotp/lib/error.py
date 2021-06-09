@@ -23,14 +23,14 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-''' definition of some specific error classes'''
+""" definition of some specific error classes"""
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class LinotpError(Exception):
-
     def __init__(self, description="LinotpError!", id=10):
         self.id = id
         self.message = description
@@ -60,9 +60,12 @@ class LinotpError(Exception):
             res = "ERR%d: %r" % (self.id, self.message)
         return res
 
-
     def __repr__(self):
-        ret = '%s(description=%r, id=%d)' % (type(self).__name__, self.message, self.id)
+        ret = "%s(description=%r, id=%d)" % (
+            type(self).__name__,
+            self.message,
+            self.id,
+        )
         return ret
 
 
@@ -107,13 +110,19 @@ class ParameterError(LinotpError):
 
 
 class TokenTypeNotSupportedError(LinotpError):
-    def __init__(self, description="this token type is not supported on this setup!", id=906):
+    def __init__(
+        self,
+        description="this token type is not supported on this setup!",
+        id=906,
+    ):
         LinotpError.__init__(self, description=description, id=id)
 
-class ProgrammingError (Exception):
+
+class ProgrammingError(Exception):
     pass
 
-class InvalidFunctionParameter (Exception):
+
+class InvalidFunctionParameter(Exception):
 
     """
     used to signify an invalid function parameter
@@ -126,10 +135,12 @@ class InvalidFunctionParameter (Exception):
     def __init__(self, parameter_name, message):
         self.parameter_name = parameter_name
         self.message = message
-        Exception.__init__(self, 'Parameter %s: %s' % (parameter_name, message))
+        Exception.__init__(
+            self, "Parameter %s: %s" % (parameter_name, message)
+        )
 
 
-class TokenStateError (UserError):
+class TokenStateError(UserError):
 
     """
     raised by StatefulTokenMixin, if a stateful token got
@@ -141,7 +152,8 @@ class TokenStateError (UserError):
     """
 
     def __init__(self, message):
-        log.debug('TokenStateError occured. Message: %s' % message)
-        UserError.__init__(self, 'Unfitting request for this token')
+        log.debug("TokenStateError occured. Message: %s" % message)
+        UserError.__init__(self, "Unfitting request for this token")
 
-#eof###########################################################################
+
+# eof###########################################################################

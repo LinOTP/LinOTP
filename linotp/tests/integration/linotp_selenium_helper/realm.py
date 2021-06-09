@@ -40,8 +40,10 @@ from .helper import find_by_css, fill_form_element
 from .manage_elements import ManageDialog
 from .user_id_resolver import UserIdResolverManager
 
+
 class RealmException(Exception):
     pass
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,24 +51,23 @@ LOGGER = logging.getLogger(__name__)
 class EditRealmDialog(ManageDialog):
     """Realm create / edit dialog."""
 
-    edit_save_button_id = 'button_editrealms_save'
+    edit_save_button_id = "button_editrealms_save"
 
     def __init__(self, manage):
-        super(EditRealmDialog, self).__init__(
-            manage, 'dialog_edit_realms')
+        super(EditRealmDialog, self).__init__(manage, "dialog_edit_realms")
 
     @property
     def realm_dialog(self):
         return self.manage.realm_manager
 
-    def fill_and_save(self, realm_name:str, resolvers:str):
+    def fill_and_save(self, realm_name: str, resolvers: str):
         """Fill in realm name, resolvers and save dialog."""
 
         self.set_realm_name(realm_name)
         self.set_resolvers(resolvers)
         self.save()
 
-    def set_realm_name(self, name:str):
+    def set_realm_name(self, name: str):
         fill_form_element(self.driver, "realm_name", name)
 
     def get_resolvers(self):
@@ -81,16 +82,18 @@ class EditRealmDialog(ManageDialog):
         with self.implicit_wait_disabled():
             elements = self.get_body_element().find_elements_by_css_selector(
                 #'#resolvers_list, #resolvers_list > ol > li')
-                '#realm_edit_resolver_list, #realm_edit_resolver_list ol > li')
+                "#realm_edit_resolver_list, #realm_edit_resolver_list ol > li"
+            )
 
             for element in elements:
                 # Skip dialog element - we just asked for this to workaround
                 # the delay if the list is empty
-                if element.get_attribute('id') == 'realm_edit_resolver_list':
+                if element.get_attribute("id") == "realm_edit_resolver_list":
                     continue
 
                 resolvers.append(
-                    UserIdResolverManager.parse_resolver_element(element))
+                    UserIdResolverManager.parse_resolver_element(element)
+                )
 
         return resolvers
 
@@ -106,7 +109,8 @@ class EditRealmDialog(ManageDialog):
         resolvers = self.get_resolvers()
 
         resolver_elements = [
-            r.element for r in resolvers if r.name in linked_resolvers]
+            r.element for r in resolvers if r.name in linked_resolvers
+        ]
 
         # We should have a resolver element for each requested resolver
         assert len(linked_resolvers) == len(resolver_elements)
@@ -114,14 +118,14 @@ class EditRealmDialog(ManageDialog):
         for element in resolver_elements:
             # Ctrl-click on the element
             ActionChains(self.driver).key_down(Keys.CONTROL).click(
-                element).key_up(Keys.CONTROL).perform()
+                element
+            ).key_up(Keys.CONTROL).perform()
 
     def save(self):
         """Wait for save button to be clickable, then click save."""
         button_id = self.edit_save_button_id
         WebDriverWait(self.driver, self.testcase.backend_wait_time).until(
-            EC.element_to_be_clickable(
-                (By.ID, button_id))
+            EC.element_to_be_clickable((By.ID, button_id))
         )
 
         self.find_by_id(button_id).click()
@@ -129,35 +133,37 @@ class EditRealmDialog(ManageDialog):
 
 
 class RealmManager(ManageDialog):
-    menu_item_id = 'menu_edit_realms'
-    body_id = 'dialog_realms'
-    new_button_id = 'button_realms_new'
-    close_button_id = 'button_realms_close'
-    delete_button_id = 'button_realms_delete'
+    menu_item_id = "menu_edit_realms"
+    body_id = "dialog_realms"
+    new_button_id = "button_realms_new"
+    close_button_id = "button_realms_close"
+    delete_button_id = "button_realms_delete"
 
     list_css = "#realm_list > ol"
 
     alert_box_handler = None
 
     def __init__(self, manage_ui):
-        ManageDialog.__init__(self, manage_ui, 'dialog_realms')
+        ManageDialog.__init__(self, manage_ui, "dialog_realms")
         self.edit_realm_dialog = EditRealmDialog(manage_ui)
         self.alert_box_handler = self.manage.alert_box_handler
 
     def parse_contents(self):
         """Read list of realms from dialog. Called from open dialog hook."""
-        class RealmListEntry:
 
+        class RealmListEntry:
             def __init__(self, name, element=None):
                 self.name = name
                 self.element = element
 
-        element_path ="//div[@id='realm_list'] | //ol[@id='realms_select']/*"
+        element_path = "//div[@id='realm_list'] | //ol[@id='realms_select']/*"
 
         elements = self.driver.find_elements_by_xpath(element_path)
-        self.realms = [RealmListEntry(e.text, e) for e in elements if e.tag_name == 'li']
+        self.realms = [
+            RealmListEntry(e.text, e) for e in elements if e.tag_name == "li"
+        ]
 
-    def _get_realm_by_name(self, name:str):
+    def _get_realm_by_name(self, name: str):
         """Get realm given the name.
 
         Return tuple:
@@ -166,8 +172,9 @@ class RealmManager(ManageDialog):
          name in dialog
         """
         r = [r for r in self.realms if r.name == name]
-        assert len(
-            r) == 1, "realm name %s not found in current realm list" % (name,)
+        assert len(r) == 1, "realm name %s not found in current realm list" % (
+            name,
+        )
         realm = r[0]
         return realm
 
@@ -201,11 +208,13 @@ class RealmManager(ManageDialog):
         realms: List[str] = self.manage.admin_api_call("system/getRealms")
         return realms
 
-    def delete_realm(self, name:str):
+    def delete_realm(self, name: str):
         """Click on realm in list and delete it."""
         driver = self.driver
-        dialog_css = ("div[aria-describedby='dialog_realm_ask_delete'] "
-                      "span.ui-dialog-title")
+        dialog_css = (
+            "div[aria-describedby='dialog_realm_ask_delete'] "
+            "span.ui-dialog-title"
+        )
 
         realm_count = len(self.realms)
 
@@ -225,12 +234,12 @@ class RealmManager(ManageDialog):
 
         # Reload realms
         self.reparse()
-        assert (len(self.realms) == realm_count - 1), (
-            'The number of realms shown should decrease after deletion. Before: %s, after:%s'
+        assert len(self.realms) == realm_count - 1, (
+            "The number of realms shown should decrease after deletion. Before: %s, after:%s"
             % (realm_count, len(self.realms))
         )
 
-    def delete_realm_via_api(self, realm_name:str) -> None:
+    def delete_realm_via_api(self, realm_name: str) -> None:
         """Delete a realms by realm name using the API.
 
         The list of realms is retrieved using the API, and then
@@ -239,11 +248,9 @@ class RealmManager(ManageDialog):
 
         realms = self.get_realms_via_api()
         if realm_name.lower() not in realms:
-            raise RealmException('realm does not exist')
+            raise RealmException("realm does not exist")
 
-        self.manage.admin_api_call(
-            "system/delRealm", {'realm': realm_name})
-
+        self.manage.admin_api_call("system/delRealm", {"realm": realm_name})
 
     def clear_realms_via_api(self) -> None:
         """Delete all realms using the API.
@@ -257,7 +264,8 @@ class RealmManager(ManageDialog):
             for curr_realm in realms:
                 self.manage.admin_api_call(
                     "system/delRealm",
-                    {'realm': realms[curr_realm]['realmname']})
+                    {"realm": realms[curr_realm]["realmname"]},
+                )
 
     def clear_realms(self):
         """Clear all existing realms.
@@ -297,7 +305,7 @@ class RealmManager(ManageDialog):
 
         self.close()
 
-    def click_new_realm(self, check_for_no_resolver_alert:bool=False):
+    def click_new_realm(self, check_for_no_resolver_alert: bool = False):
         """With the realms dialog open, click the new button."""
 
         self.find_by_id("button_realms_new").click()
@@ -327,11 +335,16 @@ class RealmManager(ManageDialog):
         assert [True for r in new_realm_list if r.startswith(name.lower())]
 
         if len(old_realms) != len(new_realm_list) - 1:
-            LOGGER.warning("Realm was not sucessfully created. Previous realms:%s, New realms:%s",
-                           ','.join(old_realms), '.'.join(new_realm_list))
+            LOGGER.warning(
+                "Realm was not sucessfully created. Previous realms:%s, New realms:%s",
+                ",".join(old_realms),
+                ".".join(new_realm_list),
+            )
             assert False, "Realm was not sucessfully created"
 
-    def create_via_api(self, name: str, resolvers: Union[List[str], str]) -> None:
+    def create_via_api(
+        self, name: str, resolvers: Union[List[str], str]
+    ) -> None:
         """Create a new realm.
 
         :param name: - The name of the new realm to create
@@ -340,8 +353,5 @@ class RealmManager(ManageDialog):
         if isinstance(resolvers, list):
             resolvers = ",".join(resolvers)
 
-        params = dict(
-            realm=name,
-            resolvers=resolvers
-        )
+        params = dict(realm=name, resolvers=resolvers)
         self.manage.admin_api_call("system/setRealm", params)

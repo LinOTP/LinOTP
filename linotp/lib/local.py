@@ -39,6 +39,7 @@ at the end of every thread. Otherwise you will risk data leaks between threads.
 
 # inspired by werkzeugs local module, adapted to our needs
 
+
 class LocalContainer(object):
 
     """
@@ -80,10 +81,12 @@ class LocalContainer(object):
     sure local objects are only called inside the right context
     """
 
-    def __init__(self,
-                 source_func,
-                 ident_func=get_thread_ident,
-                 access_check=lambda: True):
+    def __init__(
+        self,
+        source_func,
+        ident_func=get_thread_ident,
+        access_check=lambda: True,
+    ):
 
         self.__storage__ = {}
         self.__ident_func__ = ident_func
@@ -113,9 +116,11 @@ class LocalContainer(object):
     def _wrapped(self):
         may_access = self.__access_check__()
         if not may_access:
-            raise ProgrammingError('Access not possible in this context. Look '
-                                   'up the docs in linotp.lib.context for the '
-                                   'right context manager')
+            raise ProgrammingError(
+                "Access not possible in this context. Look "
+                "up the docs in linotp.lib.context for the "
+                "right context manager"
+            )
         thread_identity = self.__ident_func__()
         return self.__storage__.setdefault(thread_identity, self._source)
 

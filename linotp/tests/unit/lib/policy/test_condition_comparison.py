@@ -103,16 +103,18 @@ class TestCompare(unittest.TestCase):
         """
         time_conditions0 = (
             # allowed all time
-            '*   *    * * * *; '
+            "*   *    * * * *; "
             # not allowed past 17 o clock
-            '-* 18-23 * * * *; '
+            "-* 18-23 * * * *; "
             # not allowed before 7 o clock
-            '!*  0-6  * * * *')
+            "!*  0-6  * * * *"
+        )
 
         time_conditions1 = (
             # allowed between 7 and 17 o clock
             # same as above but without negation
-            '*  7-17  * * * *; ')
+            "*  7-17  * * * *; "
+        )
 
         time_conditions_set = []
         time_conditions_set.append(time_conditions0)
@@ -122,17 +124,19 @@ class TestCompare(unittest.TestCase):
             # datetime args
             # datetime(year, month, day[, hour[, minute[, second[, micro ..
 
-            _match_type, match = time_list_compare(time_conditions,
-                                  datetime(2016, 12, 14, 15, 30))  # 15:30
+            _match_type, match = time_list_compare(
+                time_conditions, datetime(2016, 12, 14, 15, 30)
+            )  # 15:30
             assert match
 
-            _match_type, match = time_list_compare(time_conditions,
-                                  datetime(2016, 12, 14, 18, 0))  # 18:00
+            _match_type, match = time_list_compare(
+                time_conditions, datetime(2016, 12, 14, 18, 0)
+            )  # 18:00
             assert not match
 
-
-            _match_type, match = time_list_compare(time_conditions,
-                                  datetime(2016, 12, 14, 6, 0))  # 6:00
+            _match_type, match = time_list_compare(
+                time_conditions, datetime(2016, 12, 14, 6, 0)
+            )  # 6:00
             assert not match
 
         return
@@ -144,22 +148,23 @@ class TestCompare(unittest.TestCase):
 
         ip_conditions = (
             # all of subnet
-            '192.168.0.0/16, '
+            "192.168.0.0/16, "
             # but not this one
-            '-192.168.17.15, '
+            "-192.168.17.15, "
             # and subnet is not allowed too
-            '!192.168.16.0/24')
+            "!192.168.16.0/24"
+        )
 
-        _match_type, match = ip_list_compare(ip_conditions, '127.0.0.1')
+        _match_type, match = ip_list_compare(ip_conditions, "127.0.0.1")
         assert not match
 
-        _match_type, match = ip_list_compare(ip_conditions, '192.168.12.13')
+        _match_type, match = ip_list_compare(ip_conditions, "192.168.12.13")
         assert match
 
-        _match_type, match = ip_list_compare(ip_conditions, '192.168.17.15')
+        _match_type, match = ip_list_compare(ip_conditions, "192.168.17.15")
         assert not match
 
-        _match_type, match = ip_list_compare(ip_conditions, '192.168.16.152')
+        _match_type, match = ip_list_compare(ip_conditions, "192.168.16.152")
         assert not match
 
     def test_user_compare(self):
@@ -169,41 +174,42 @@ class TestCompare(unittest.TestCase):
 
         user_conditions = (
             # exact name match
-            'Hugo, '
+            "Hugo, "
             # negative test
-            '!Emma, '
+            "!Emma, "
             # wildcard realm test
-            '*@realm, '
+            "*@realm, "
             # wildcard name test
-            'a*, '
+            "a*, "
             # negative wildcad name test
-            '!*z')
+            "!*z"
+        )
 
-        hugo = User('Hugo', 'realm')
+        hugo = User("Hugo", "realm")
 
         match_type, match = user_list_compare(user_conditions, hugo)
         assert match
-        assert match_type == 'exact:match'
+        assert match_type == "exact:match"
 
-        emma = User('Emma')
+        emma = User("Emma")
         match_type, match = user_list_compare(user_conditions, emma)
         assert not match
-        assert match_type == 'not:match'
+        assert match_type == "not:match"
 
-        betonz = User('betonz', 'realm')
+        betonz = User("betonz", "realm")
         match_type, match = user_list_compare(user_conditions, betonz)
         assert not match
-        assert match_type == 'not:match'
+        assert match_type == "not:match"
 
-        wanda = User('wanda', 'realm')
+        wanda = User("wanda", "realm")
         match_type, match = user_list_compare(user_conditions, wanda)
         assert match
-        assert match_type == 'regex:match'
+        assert match_type == "regex:match"
 
-        wanda2 = 'wanda@realm'
+        wanda2 = "wanda@realm"
         match_type, match = user_list_compare(user_conditions, wanda2)
         assert match
-        assert match_type == 'regex:match'
+        assert match_type == "regex:match"
 
         return
 
@@ -212,13 +218,15 @@ class TestCompare(unittest.TestCase):
         match_type, res = action_compare(
             'voice_message = "Sir, your otp={otp}" ,'
             " voice_language = ' Sir, your otp is {otp}' , ",
-            'voice_message')
+            "voice_message",
+        )
         assert res
-        assert match_type == 'exact:match'
+        assert match_type == "exact:match"
 
         match_type, res = action_compare(
             'voice_message = "Sir, your otp={otp}" ,'
             " voice_language = ' Sir, your otp is {otp}' , ",
-            ' your otp')
+            " your otp",
+        )
         assert not res
-        assert match_type == 'not:match'
+        assert match_type == "not:match"

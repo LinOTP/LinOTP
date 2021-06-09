@@ -49,7 +49,7 @@ class ForwardServerPolicy(object):
             return actions
 
         result_actions = []
-        for action in actions.split(','):
+        for action in actions.split(","):
             if "forward_server=" in action.strip():
                 action = ForwardServerPolicy._transform_action(action)
             result_actions.append(action)
@@ -62,15 +62,15 @@ class ForwardServerPolicy(object):
         transform the action, especialy the secret parameter of the url
         """
         servers = []
-        name, _sep, values = action.partition('=')
-        for value in values.split(' '):
+        name, _sep, values = action.partition("=")
+        for value in values.split(" "):
             # decompose the server url to identify, if there is a secret inside
             parsed_server = urllib.parse.urlparse(value)
 
             # the urlparse has a bug,, where in elder versions, the
             # path is not split from the query
             if not parsed_server.query:
-                path, _sep, query = parsed_server.path.partition('?')
+                path, _sep, query = parsed_server.path.partition("?")
             else:
                 path = parsed_server.path
                 query = parsed_server.query
@@ -82,10 +82,10 @@ class ForwardServerPolicy(object):
                 params[key] = entry[0]
 
             # finally we found the query parameters
-            if 'secret' in params:
-                secret = params['secret']
-                params['encsecret'] = SecretObj.encrypt_pin(secret)
-                del params['secret']
+            if "secret" in params:
+                secret = params["secret"]
+                params["encsecret"] = SecretObj.encrypt_pin(secret)
+                del params["secret"]
 
             # build the server url with the encrypted param:
             # as the named tuple is not updateable, we have to convert this
@@ -93,13 +93,14 @@ class ForwardServerPolicy(object):
             # create an url from this
             parsed_list = list(parsed_server[:])
             parsed_list[ForwardServerPolicy.Path_index] = path.strip()
-            parsed_list[ForwardServerPolicy.Query_index] = \
-                                                urllib.parse.urlencode(params)
+            parsed_list[
+                ForwardServerPolicy.Query_index
+            ] = urllib.parse.urlencode(params)
             server_url = urllib.parse.urlunparse(tuple(parsed_list))
 
             servers.append(server_url)
 
-        ret = '='.join([name, ' '.join(servers)])
+        ret = "=".join([name, " ".join(servers)])
         return ret
 
     @staticmethod
@@ -109,13 +110,13 @@ class ForwardServerPolicy(object):
         """
         log.debug("start request to foreign server: %r" % servers)
 
-        for server in servers.split(' '):
+        for server in servers.split(" "):
             parsed_server = urllib.parse.urlparse(server)
 
             # the urlparse has a bug,, where in elder versions, the
             # path is not split from the query
             if not parsed_server.query:
-                path, _sep, query = parsed_server.path.partition('?')
+                path, _sep, query = parsed_server.path.partition("?")
             else:
                 path = parsed_server.path
                 query = parsed_server.query
@@ -125,23 +126,25 @@ class ForwardServerPolicy(object):
             for key, entry in list(params.items()):
                 params[key] = entry[0]
 
-            if 'encsecret' in params:
-                params['secret'] = SecretObj.decrypt_pin(params['encsecret'])
-                del params['encsecret']
+            if "encsecret" in params:
+                params["secret"] = SecretObj.decrypt_pin(params["encsecret"])
+                del params["encsecret"]
 
             parsed_list = list(parsed_server[:])
             parsed_list[ForwardServerPolicy.Path_index] = path.strip()
-            parsed_list[ForwardServerPolicy.Query_index] = \
-                                                urllib.parse.urlencode(params)
+            parsed_list[
+                ForwardServerPolicy.Query_index
+            ] = urllib.parse.urlencode(params)
             server_url = urllib.parse.urlunparse(tuple(parsed_list))
 
-            if 'radius://' in server_url:
+            if "radius://" in server_url:
                 rad = RadiusRequest(server=server_url, env=env)
                 res, opt = rad.do_request(user, passw, options)
                 return res, opt
-            elif 'http://' in server_url or 'https://' in server_url:
+            elif "http://" in server_url or "https://" in server_url:
                 http = HttpRequest(server=server_url, env=env)
                 res, opt = http.do_request(user, passw, options)
                 return res, opt
 
-#eof###########################################################################
+
+# eof###########################################################################

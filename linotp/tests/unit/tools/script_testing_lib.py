@@ -37,6 +37,7 @@ from linotp.model import db
 
 # -------------------------------------------------------------------------- --
 
+
 class ScriptTester(unittest.TestCase):
     """
     Base class for unit testing linotp scripts
@@ -67,12 +68,8 @@ class ScriptTester(unittest.TestCase):
         """
         self.engine = self.setup_database_in_memory()
         engine_patcher = patch(
-            '.'.join([
-                self.script_module.__name__,
-                'create_engine'
-            ]),
-            return_value=self.engine
-
+            ".".join([self.script_module.__name__, "create_engine"]),
+            return_value=self.engine,
         )
         return engine_patcher
 
@@ -81,18 +78,19 @@ class ScriptTester(unittest.TestCase):
         Load script directly from sources directory
         """
         testscriptdir = os.path.dirname(os.path.realpath(__file__))
-        scriptpath = os.path.join(testscriptdir, '..', '..', '..', '..', 'tools', scriptname)
+        scriptpath = os.path.join(
+            testscriptdir, "..", "..", "..", "..", "tools", scriptname
+        )
 
-        with patch('logging.config.fileConfig'):
+        with patch("logging.config.fileConfig"):
             self.script_module = imp.load_source(
-                scriptname.replace('-', '_'),
-                scriptpath
+                scriptname.replace("-", "_"), scriptpath
             )
 
         assert self.script_module is not None
 
     def setup_database_in_memory(self):
-        engine = create_engine('sqlite://')
+        engine = create_engine("sqlite://")
 
         # Create blank databases
         db.create_all(engine)

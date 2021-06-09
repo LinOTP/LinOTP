@@ -1,4 +1,3 @@
-
 import logging
 
 from flask import current_app
@@ -14,7 +13,7 @@ from beaker.cache import Cache
 log = logging.getLogger(__name__)
 
 
-def get_cache(cache_name: str, scope: str=None) -> Optional[Cache]:
+def get_cache(cache_name: str, scope: str = None) -> Optional[Cache]:
     """
     load the cache with cache_name and scope
 
@@ -33,8 +32,8 @@ def get_cache(cache_name: str, scope: str=None) -> Optional[Cache]:
     :param scope: there are related caches, which names are extended by scope
                   used for realm specific caches e.g. for users
 
-    :return: the cache or None if not enabled, 
-    
+    :return: the cache or None if not enabled,
+
              wrt to typing the cache is not deterministic as the cache type
              is returned by the app.getCacheManager() which could be a beaker
              or something else
@@ -44,7 +43,7 @@ def get_cache(cache_name: str, scope: str=None) -> Optional[Cache]:
 
     # evaluate the config lookup keys
 
-    config = context['Config']
+    config = context["Config"]
 
     config_basename = "linotp." + cache_name + "_cache"
     enabled_entry = config_basename + ".enabled"
@@ -67,8 +66,10 @@ def get_cache(cache_name: str, scope: str=None) -> Optional[Cache]:
         expiration = get_duration(expiration_conf)
 
     except ValueError:
-        log.info("caching is disabled due to a value error for expiration "
-                 "definition %r" % expiration_conf)
+        log.info(
+            "caching is disabled due to a value error for expiration "
+            "definition %r" % expiration_conf
+        )
         return None
 
     # --------------------------------------------------------------------- --
@@ -78,7 +79,7 @@ def get_cache(cache_name: str, scope: str=None) -> Optional[Cache]:
     cache_manager = current_app.getCacheManager()
 
     if not cache_manager:
-        log.info('No Cache Manager found!')
+        log.info("No Cache Manager found!")
         return None
 
     cache_fullname = cache_name
@@ -86,7 +87,7 @@ def get_cache(cache_name: str, scope: str=None) -> Optional[Cache]:
         cache_fullname = "%s::%s" % (cache_name, scope)
 
     resolver_config_cache = cache_manager.get_cache(
-                        cache_fullname, type="memory", expiretime=expiration)
+        cache_fullname, type="memory", expiretime=expiration
+    )
 
     return resolver_config_cache
-

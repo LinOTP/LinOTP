@@ -34,6 +34,7 @@ from linotp.lib.token import get_used_tokens_count
 from linotp.lib.support import get_license_type
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -43,14 +44,18 @@ def getAudit(config):
 
     if audit_url is None:
         # Default to shared database if not set
-        audit_url = 'SHARED'
+        audit_url = "SHARED"
 
-    if audit_url == 'OFF':
-        log.warning("Audit logging is disabled because the URL has been configured to %s", audit_url)
+    if audit_url == "OFF":
+        log.warning(
+            "Audit logging is disabled because the URL has been configured to %s",
+            audit_url,
+        )
         audit = AuditBase(config)
     else:
         from . import SQLAudit
-        if audit_url == 'SHARED':
+
+        if audit_url == "SHARED":
             # Share with main database
             audit = SQLAudit.AuditLinOTPDB(config)
         else:
@@ -66,10 +71,10 @@ def get_token_num_info():
     """
 
     tokens = get_used_tokens_count()
-    token_count_type = 'tokennum'
+    token_count_type = "tokennum"
 
-    if get_license_type() == 'user-num' :
-        token_count_type = 'token users'
+    if get_license_type() == "user-num":
+        token_count_type = "token users"
 
     return "%s = %d" % (token_count_type, tokens)
 
@@ -85,33 +90,38 @@ class AuditBase(object):
 
     def initialize(self, request, client=None):
         # defaults
-        audit = {'action_detail': '',
-                 'info': '',
-                 'log_level': 'INFO',
-                 'administrator': '',
-                 'value': '',
-                 'key': '',
-                 'serial': '',
-                 'token_type': '',
-                 'clearance_level': 0,
-                 'linotp_server': socket.gethostname(),
-                 'realm': '',
-                 'user': '',
-                 'client': '',
-                 'success': False,
-                }
-        audit['action'] = request.path
+        audit = {
+            "action_detail": "",
+            "info": "",
+            "log_level": "INFO",
+            "administrator": "",
+            "value": "",
+            "key": "",
+            "serial": "",
+            "token_type": "",
+            "clearance_level": 0,
+            "linotp_server": socket.gethostname(),
+            "realm": "",
+            "user": "",
+            "client": "",
+            "success": False,
+        }
+        audit["action"] = request.path
         if client:
-            audit['client'] = client
+            audit["client"] = client
         return audit
 
     def createKeys(self):
         """
         Create audit keys using the configured filenames
         """
-        if not os.path.exists(self.privateKeyFilename) or not os.path.exists(self.publicKeyFilename):
-            log.critical("[createKeys] Audit log keypair does not exist; "
-                         "use `linotp init audit-keys` to generate one.")
+        if not os.path.exists(self.privateKeyFilename) or not os.path.exists(
+            self.publicKeyFilename
+        ):
+            log.critical(
+                "[createKeys] Audit log keypair does not exist; "
+                "use `linotp init audit-keys` to generate one."
+            )
             # raise RuntimeError("Audit log keypair is missing")
             sys.exit(11)
 
@@ -123,14 +133,20 @@ class AuditBase(object):
             self.private = f.read()
             f.close()
         except Exception as e:
-            log.exception("[readKeys] Error reading private key %s: (%r)" % (self.privateKeyFilename, e))
+            log.exception(
+                "[readKeys] Error reading private key %s: (%r)"
+                % (self.privateKeyFilename, e)
+            )
 
         try:
             f = open(self.publicKeyFilename, "r")
             self.public = f.read()
             f.close()
         except Exception as e:
-            log.exception("[readKeys] Error reading public key %s: (%r)" % (self.publicKeyFilename, e))
+            log.exception(
+                "[readKeys] Error reading public key %s: (%r)"
+                % (self.publicKeyFilename, e)
+            )
 
         return
 
@@ -138,35 +154,35 @@ class AuditBase(object):
         return self.name
 
     def getTotal(self, param, AND=True, display_error=True):
-        '''
+        """
         This method returns the total number of audit entries in the audit store
-        '''
+        """
         return 0
 
     def log(self, param):
-        '''
+        """
         This method is used to log the data.
         It should hash the data and do a hash chain and sign the data
-        '''
+        """
         pass
 
     def initialize_log(self, param):
-        '''
+        """
         This method initialized the log state.
         The fact, that the log state was initialized, also needs to be logged.
         Therefor the same params are passed as i the log method.
-        '''
+        """
         pass
 
     def set(self):
-        '''
+        """
         This function could be used to set certain things like the signing key.
         But maybe it should only be read from linotp.cfg?
-        '''
+        """
         pass
 
     def search(self, param, AND=True, display_error=True, rp_dict=None):
-        '''
+        """
         This function is used to search audit events.
 
         param:
@@ -175,12 +191,12 @@ class AuditBase(object):
         return:
             A list of dictionaries is return.
             Each list element denotes an audit event.
-        '''
-        result = [ {} ]
+        """
+        result = [{}]
         return result
 
     def searchQuery(self, param, AND=True, display_error=True, rp_dict=None):
-        '''
+        """
         This function is used to search audit events.
 
         param:
@@ -188,7 +204,7 @@ class AuditBase(object):
 
         return:
             An iterator is returned.
-        '''
+        """
         return iter([])
 
 
@@ -198,9 +214,9 @@ def search(param, user=None, columns=None):
     search_dict = {}
 
     if "query" in param:
-        if "extsearch" == param['qtype']:
+        if "extsearch" == param["qtype"]:
             # search patterns are delimitered with ;
-            search_list = param['query'].split(";")
+            search_list = param["query"].split(";")
             for s in search_list:
                 key, _e, value = s.partition("=")
                 key = key.strip()
@@ -208,62 +224,75 @@ def search(param, user=None, columns=None):
                 search_dict[key] = value
 
         else:
-            search_dict[param['qtype']] = param["query"]
+            search_dict[param["qtype"]] = param["query"]
     else:
         for k, v in list(param.items()):
             search_dict[k] = v
 
     rp_dict = {}
     page = 1
-    if 'page' in param:
-        rp_dict['page'] = param.get('page')
-        page = param.get('page')
+    if "page" in param:
+        rp_dict["page"] = param.get("page")
+        page = param.get("page")
 
-    if 'rp' in param:
-        rp_dict['rp'] = param.get('rp')
-    if 'sortname' in param:
-        rp_dict['sortname'] = param.get('sortname')
-    if 'sortorder' in param:
-        rp_dict['sortorder'] = param.get('sortorder')
+    if "rp" in param:
+        rp_dict["rp"] = param.get("rp")
+    if "sortname" in param:
+        rp_dict["sortname"] = param.get("sortname")
+    if "sortorder" in param:
+        rp_dict["sortorder"] = param.get("sortorder")
 
     if user:
-        search_dict['user'] = user.login
-        search_dict['realm'] = user.realm
+        search_dict["user"] = user.login
+        search_dict["realm"] = user.realm
 
     result = audit_obj.searchQuery(search_dict, rp_dict=rp_dict)
 
     lines = []
 
     if not columns:
-        columns = ['number', 'date', 'sig_check', 'missing_line',
-               'action', 'success', 'serial', 'token_type',
-               'user', 'realm', 'administrator', 'action_detail',
-               'info', 'linotp_server', 'client', 'log_level',
-               'clearance_level']
+        columns = [
+            "number",
+            "date",
+            "sig_check",
+            "missing_line",
+            "action",
+            "success",
+            "serial",
+            "token_type",
+            "user",
+            "realm",
+            "administrator",
+            "action_detail",
+            "info",
+            "linotp_server",
+            "client",
+            "log_level",
+            "clearance_level",
+        ]
 
     # In this case we have only a limited list of columns, like in
     # the selfservice portal
     for row in result:
         a = dict(list(row.items()))
-        if 'number' not in a and 'id' in a:
-            a['number'] = a['id']
-        if 'date' not in a and 'timestamp' in a:
-            a['date'] = a['timestamp']
-        if 'token_type' not in a and 'tokentype' in a:
-            a['token_type'] = a['tokentype']
+        if "number" not in a and "id" in a:
+            a["number"] = a["id"]
+        if "date" not in a and "timestamp" in a:
+            a["date"] = a["timestamp"]
+        if "token_type" not in a and "tokentype" in a:
+            a["token_type"] = a["tokentype"]
 
         cell = []
         for colname in columns:
-            if len(a['serial']) > 0:
+            if len(a["serial"]) > 0:
                 pass
             cell.append(a.get(colname))
-        lines.append({'id': a['id'], 'cell': cell})
+        lines.append({"id": a["id"], "cell": cell})
 
     # get the complete number of audit logs
     total = audit_obj.getTotal(search_dict)
 
     return lines, total, page
-
 
 
 ###eof#########################################################################

@@ -38,29 +38,32 @@ from linotp.lib.user import User
 
 class NotAuthorizeException(Exception):
     """This is an exception that is not an `AuthorizeException`. We use
-       this because `validate.simplecheck()` differentiates between
-       `AuthorizeException` and other exceptions.
+    this because `validate.simplecheck()` differentiates between
+    `AuthorizeException` and other exceptions.
     """
+
     pass
 
 
 @pytest.mark.usefixtures("app")
 class TestValidateController(object):
-
-    @pytest.mark.parametrize("check_rv,data", [
-        ((True, {}), ':-)'),
-        ((True, {'state': 'foo'}), ':-) foo'),
-        ((True, {'transactionid': 'bar'}), ':-) bar'),
-        ((True, {'state': 'foo', 'transactionid': 'bar'}), ':-) bar'),
-        ((True, {'data': 'baz'}), ':-) baz'),
-        ((True, {'message': 'quux'}), ':-) quux'),
-        ((True, {'data': 'baz', 'message': 'quux'}), ':-) baz'),
-        ((True, {'state': 'foo', 'data': 'baz'}), ':-) foo baz'),
-        ((False, {}), ':-('),
-        (NotAuthorizeException("exception"), ':-('),
-        (AuthorizeException, ':-(')
-    ])
-    @mock.patch('linotp.controllers.validate.ValidateController._check')
+    @pytest.mark.parametrize(
+        "check_rv,data",
+        [
+            ((True, {}), ":-)"),
+            ((True, {"state": "foo"}), ":-) foo"),
+            ((True, {"transactionid": "bar"}), ":-) bar"),
+            ((True, {"state": "foo", "transactionid": "bar"}), ":-) bar"),
+            ((True, {"data": "baz"}), ":-) baz"),
+            ((True, {"message": "quux"}), ":-) quux"),
+            ((True, {"data": "baz", "message": "quux"}), ":-) baz"),
+            ((True, {"state": "foo", "data": "baz"}), ":-) foo baz"),
+            ((False, {}), ":-("),
+            (NotAuthorizeException("exception"), ":-("),
+            (AuthorizeException, ":-("),
+        ],
+    )
+    @mock.patch("linotp.controllers.validate.ValidateController._check")
     def test_simplecheck(self, _mock_check, client, check_rv, data, caplog):
         caplog.set_level(logging.INFO)
         if isinstance(check_rv, Exception):

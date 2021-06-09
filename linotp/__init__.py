@@ -25,7 +25,7 @@
 #
 
 
-'''
+"""
 LinOTP is an open solution for strong two-factor authentication
        with One Time Passwords.
 
@@ -56,7 +56,7 @@ LinOTP is accessed via a simple http based api, which returns json object
 that are easy to integrate into your authetication solution. Or you can use
 the simple webui which come with linotp
 
-'''
+"""
 
 # IMPORTANT! This file is imported by setup.py, therefore do not (directly or
 # indirectly) import any module that might not yet be installed when installing
@@ -67,5 +67,5 @@ __product__ = "LinOTP"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@keyidentity.com"
-__version__ = '3.1.dev0'
+__version__ = "3.1.dev0"
 __api__ = "2.0802"

@@ -39,15 +39,16 @@ from linotp.provider.smsprovider.DeviceSMSProvider import DeviceSMSProvider
 # corresponding to the separate situations
 class BaseClass:
     class BaseTestDeviceSMS(TestCase):
-
         @classmethod
         def setUpClass(cls):
             super(BaseClass.BaseTestDeviceSMS, cls).setUpClass()
 
             cls.gnokii_available = False
-            FNULL = open(os.devnull, 'w')
+            FNULL = open(os.devnull, "w")
             try:
-                ret = subprocess.call(["gnokii", "--version"], stdout=FNULL, stderr=FNULL)
+                ret = subprocess.call(
+                    ["gnokii", "--version"], stdout=FNULL, stderr=FNULL
+                )
                 cls.gnokii_available = True
             except Exception as e:
                 print(e)
@@ -55,12 +56,13 @@ class BaseClass:
         def setUp(self):
             self.default_config = {
                 "CONFIGFILE": os.path.join(sys.path[0], "gnokiirc"),
-                }
+            }
             self.phone = "1234567890"
             self.message = "123456"
 
-
-        def do_send(self, config, expected_gnokii_status=0, phone=None, message=None):
+        def do_send(
+            self, config, expected_gnokii_status=0, phone=None, message=None
+        ):
 
             if phone:
                 self.phone = phone
@@ -76,24 +78,38 @@ class BaseClass:
             else:
                 wraps = None
 
-            with patch('subprocess.Popen', wraps=wraps) as popen_mock:
+            with patch("subprocess.Popen", wraps=wraps) as popen_mock:
                 if not self.gnokii_available:
-                    popen_mock.return_value.communicate.return_value = ("Mocked gnokii", "Status:%s" % expected_gnokii_status)
+                    popen_mock.return_value.communicate.return_value = (
+                        "Mocked gnokii",
+                        "Status:%s" % expected_gnokii_status,
+                    )
                     popen_mock.return_value.returncode = expected_gnokii_status
                 self.return_code = sms.submitMessage(self.phone, self.message)
                 if config.get("CONFIGFILE"):
-                    assert popen_mock.call_count == 1, "SMS command should be called"
+                    assert (
+                        popen_mock.call_count == 1
+                    ), "SMS command should be called"
                     args, kwargs = popen_mock.call_args
                     self.gnokii_args = args
                 else:
-                    assert popen_mock.call_count == 0, "SMS command should not be called"
+                    assert (
+                        popen_mock.call_count == 0
+                    ), "SMS command should not be called"
 
-        def check_result(self, expected_result=True, expected_gnokii_call=True):
+        def check_result(
+            self, expected_result=True, expected_gnokii_call=True
+        ):
 
-            assert expected_result == self.return_code, "Unexpected result from sms.submitMessage"
+            assert (
+                expected_result == self.return_code
+            ), "Unexpected result from sms.submitMessage"
 
             if expected_gnokii_call:
-                gnokki_cmd = "gnokii --config %s --sendsms %s" % (self.config["CONFIGFILE"], self.phone)
+                gnokki_cmd = "gnokii --config %s --sendsms %s" % (
+                    self.config["CONFIGFILE"],
+                    self.phone,
+                )
 
                 if "SMSC" in self.config:
                     gnokki_cmd += " --smsc %s" % self.config["SMSC"]
@@ -112,11 +128,14 @@ class BaseClass:
 
         def test_03_missing_config(self):
             self.do_send({}, expected_gnokii_status=1)
-            self.check_result(expected_result=False, expected_gnokii_call=False)
+            self.check_result(
+                expected_result=False, expected_gnokii_call=False
+            )
 
         def test_03_invalid_config(self):
             self.do_send({"CONFIGFILE": "12345"}, expected_gnokii_status=1)
             self.check_result(expected_result=False, expected_gnokii_call=True)
+
 
 class TestWithoutGnokii(BaseClass.BaseTestDeviceSMS):
     def setUp(self):
@@ -124,6 +143,7 @@ class TestWithoutGnokii(BaseClass.BaseTestDeviceSMS):
 
         # Always run without gnokii
         self.gnokii_available = False
+
 
 class TestWithGnokii(BaseClass.BaseTestDeviceSMS):
     def setUp(self):
@@ -133,9 +153,9 @@ class TestWithGnokii(BaseClass.BaseTestDeviceSMS):
             raise unittest.SkipTest("Gnokii is not available")
 
 
-
 def main():
     unittest.main()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -36,71 +36,86 @@ from linotp.useridresolver.SQLIdResolver import build_simple_connect
 
 class TestSqlConnectStr(unittest.TestCase):
 
-    test_sets = [{
-
-        'description': 'Test Set 1 - db2',
-        'parameters': {'driver': 'db2+ibm_db',
-                       'server': '',
-                       'port': '',
-                       'user': 'USER',
-                       'pass_': 'PASS',
-                       'db': 'DB_ALIAS',
-                       'conParams': ''},
-        'result': 'db2+ibm_db://USER:PASS@/DB_ALIAS'}, {
-
-        'description': 'Test Set 2 - mysql',
-        'parameters': {'driver': 'mysql',
-                       'server': 'hostname',
-                       'port': '',
-                       'user': 'scott',
-                       'pass_': 'tiger',
-                       'db': 'dbname',
-                       'conParams': ''},
-        'result': 'mysql://scott:tiger@hostname/dbname'}, {
-
-        'description': 'Test Set 3 - postgres 8.0',
-        'parameters': {'driver': 'postgresql+pg8000',
-                       'server': 'localhost',
-                       'port': '5432',
-                       'user': 'scott',
-                       'pass_': 'tiger',
-                       'db': 'mydatabase',
-                       'conParams': ''},
-        'result': 'postgresql+pg8000://scott:tiger@localhost:5432/mydatabase'},
-                 {
-
-        'description': 'Test Set 4 - oracle',
-        'parameters': {'driver': 'oracle+cx_oracle',
-                       'server': 'tnsname',
-                       'port': '',
-                       'user': 'scott',
-                       'pass_': 'tiger',
-                       'db': '',
-                       'conParams': ''},
-        'result': 'oracle+cx_oracle://scott:tiger@tnsname'}, {
-
-        'description': 'Test Set 5 - sqlite - relative db',
-        'parameters': {'driver': 'sqlite',
-                       'server': '',
-                       'port': '',
-                       'user': '',
-                       'pass_': '',
-                       'db': 'foo.db',
-                       'conParams': ''},
-        'result': 'sqlite:///foo.db'}, {
-
-        'description': 'Test Set 6 - sqlite - absolute db',
-        'parameters': {'driver': 'sqlite',
-                       'server': '',
-                       'port': '',
-                       'user': '',
-                       'pass_': '',
-                       'db': '/tmp/foo.db',
-                       'conParams': ''},
-        'result': 'sqlite:////tmp/foo.db'},
-
-
-        ]
+    test_sets = [
+        {
+            "description": "Test Set 1 - db2",
+            "parameters": {
+                "driver": "db2+ibm_db",
+                "server": "",
+                "port": "",
+                "user": "USER",
+                "pass_": "PASS",
+                "db": "DB_ALIAS",
+                "conParams": "",
+            },
+            "result": "db2+ibm_db://USER:PASS@/DB_ALIAS",
+        },
+        {
+            "description": "Test Set 2 - mysql",
+            "parameters": {
+                "driver": "mysql",
+                "server": "hostname",
+                "port": "",
+                "user": "scott",
+                "pass_": "tiger",
+                "db": "dbname",
+                "conParams": "",
+            },
+            "result": "mysql://scott:tiger@hostname/dbname",
+        },
+        {
+            "description": "Test Set 3 - postgres 8.0",
+            "parameters": {
+                "driver": "postgresql+pg8000",
+                "server": "localhost",
+                "port": "5432",
+                "user": "scott",
+                "pass_": "tiger",
+                "db": "mydatabase",
+                "conParams": "",
+            },
+            "result": "postgresql+pg8000://scott:tiger@localhost:5432/mydatabase",
+        },
+        {
+            "description": "Test Set 4 - oracle",
+            "parameters": {
+                "driver": "oracle+cx_oracle",
+                "server": "tnsname",
+                "port": "",
+                "user": "scott",
+                "pass_": "tiger",
+                "db": "",
+                "conParams": "",
+            },
+            "result": "oracle+cx_oracle://scott:tiger@tnsname",
+        },
+        {
+            "description": "Test Set 5 - sqlite - relative db",
+            "parameters": {
+                "driver": "sqlite",
+                "server": "",
+                "port": "",
+                "user": "",
+                "pass_": "",
+                "db": "foo.db",
+                "conParams": "",
+            },
+            "result": "sqlite:///foo.db",
+        },
+        {
+            "description": "Test Set 6 - sqlite - absolute db",
+            "parameters": {
+                "driver": "sqlite",
+                "server": "",
+                "port": "",
+                "user": "",
+                "pass_": "",
+                "db": "/tmp/foo.db",
+                "conParams": "",
+            },
+            "result": "sqlite:////tmp/foo.db",
+        },
+    ]
 
     def test_connect_str_from_parameter(self):
         """
@@ -113,18 +128,21 @@ class TestSqlConnectStr(unittest.TestCase):
 
         for test_set in self.test_sets:
 
-            params = test_set['parameters']
-            result = test_set['result']
-            description = test_set['description']
+            params = test_set["parameters"]
+            result = test_set["result"]
+            description = test_set["description"]
 
             sql_connect = build_simple_connect(**params)
 
-            assert sql_connect == result, \
-                             "error in test set %s: %r:%r" % \
-                             (description, sql_connect, result)
+            assert sql_connect == result, "error in test set %s: %r:%r" % (
+                description,
+                sql_connect,
+                result,
+            )
 
             # finally we verify that sqlalchemy is able to interpret the url
 
             make_url(sql_connect)
+
 
 # eof #

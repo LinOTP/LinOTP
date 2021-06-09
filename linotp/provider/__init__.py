@@ -54,11 +54,13 @@ log = logging.getLogger(__name__)
 # -------------------------------------------------------------------------- --
 # base exception to communicate with the tokens
 
+
 class ProviderNotAvailable(Exception):
     """
     to be thrown when a provider is unavailable, eg. on a connection
     or response timeout error
     """
+
     pass
 
 
@@ -69,9 +71,10 @@ provider_registry = ClassRegistry()
 
 from linotp.lib.config import linotp_config_tree
 
+
 def load_provider_classes():
 
-    """ iterates through the modules in this package and import every single
+    """iterates through the modules in this package and import every single
     one of them. This will trigger the registration of the providers in
     the global provider_registry (s.o.), which registers all available
     provider classes
@@ -87,7 +90,7 @@ def load_provider_classes():
         import_submodules("%s.%s" % (__name__, "smsprovider"))
         import_submodules("%s.%s" % (__name__, "voiceprovider"))
     except ImportError as exx:
-        log.error('unable to load provider module : %s (%r)', __name__, exx)
+        log.error("unable to load provider module : %s (%r)", __name__, exx)
         raise Exception(exx)
 
 
@@ -98,52 +101,55 @@ load_provider_classes()
 
 # the storing prefixes
 Provider_types = {
-    'sms': {'prefix': 'linotp.SMSProvider.'},
-    'email': {'prefix': 'linotp.EmailProvider.'},
-    'push': {'prefix': 'linotp.PushProvider.'},
-    'voice': {'prefix': 'linotp.VoiceProvider.'},
-    }
+    "sms": {"prefix": "linotp.SMSProvider."},
+    "email": {"prefix": "linotp.EmailProvider."},
+    "push": {"prefix": "linotp.PushProvider."},
+    "voice": {"prefix": "linotp.VoiceProvider."},
+}
 
 # legacy keys used in the linotp config
 Legacy_Provider = {
-    'sms': {'linotp.SMSProvider': 'Class',
-            'linotp.SMSProviderTimeout': 'Timeout',
-            'linotp.SMSProviderConfig': 'Config'},
-    'email': {'linotp.EmailProvider': 'Class',
-              # the timeout is not the same as we intent for the
-              # provider timeout, but its a good start
-              'linotp.EmailBlockingTimeout': 'Timeout',
-              'linotp.EmailProviderConfig': 'Config'},
-    }
+    "sms": {
+        "linotp.SMSProvider": "Class",
+        "linotp.SMSProviderTimeout": "Timeout",
+        "linotp.SMSProviderConfig": "Config",
+    },
+    "email": {
+        "linotp.EmailProvider": "Class",
+        # the timeout is not the same as we intent for the
+        # provider timeout, but its a good start
+        "linotp.EmailBlockingTimeout": "Timeout",
+        "linotp.EmailProviderConfig": "Config",
+    },
+}
 
-Legacy_Provider_Name = 'imported_default'
+Legacy_Provider_Name = "imported_default"
 
 Default_Provider_Key = {
-    'email': 'linotp.Provider.Default.email_provider',
-    'sms': 'linotp.Provider.Default.sms_provider',
-    'push': 'linotp.Provider.Default.push_provider',
-    'voice': 'linotp.Provider.Default.voice_provider'
-    }
+    "email": "linotp.Provider.Default.email_provider",
+    "sms": "linotp.Provider.Default.sms_provider",
+    "push": "linotp.Provider.Default.push_provider",
+    "voice": "linotp.Provider.Default.voice_provider",
+}
 
 Policy_action_name = {
-    'email': 'email_provider',
-    'sms': 'sms_provider',
-    'push': 'push_provider',
-    'voice': 'voice_provider',
-    }
+    "email": "email_provider",
+    "sms": "sms_provider",
+    "push": "push_provider",
+    "voice": "voice_provider",
+}
 
 # lookup definition to support legacy provider classes definitions
 ProviderClass_lookup = {
-    "emailprovider.HttpemailProvider.HttpSMSProvider":
-        'linotp.provider.emailprovider.SMTPEmailProvider',
-    'linotp.lib.emailprovider.SMTPEmailProvider':
-        'linotp.provider.emailprovider.SMTPEmailProvider',
-    }
+    "emailprovider.HttpemailProvider.HttpSMSProvider": "linotp.provider.emailprovider.SMTPEmailProvider",
+    "linotp.lib.emailprovider.SMTPEmailProvider": "linotp.provider.emailprovider.SMTPEmailProvider",
+}
 
 
 # -------------------------------------------------------------------------- --
 
 # parsing functions for linotp config
+
 
 def parse_provider(provider_type, composite_key, value):
 
@@ -158,25 +164,25 @@ def parse_provider(provider_type, composite_key, value):
 
     # ------------------------------------------------------------------------ -
 
-    long_prefix = Provider_types[provider_type]['prefix']
-    provider_prefix = long_prefix[len('linotp.'):-1]
+    long_prefix = Provider_types[provider_type]["prefix"]
+    provider_prefix = long_prefix[len("linotp.") : -1]
 
     # ------------------------------------------------------------------------ -
 
     # due to ambiguity of the second part in the config dot notation
     # we must check if the second part is the provider type
 
-    if not composite_key.startswith('linotp.%s.' % provider_prefix):
+    if not composite_key.startswith("linotp.%s." % provider_prefix):
         raise ConfigNotRecognized(composite_key)
 
     # ------------------------------------------------------------------------ -
 
-    parts = composite_key.split('.')
+    parts = composite_key.split(".")
 
     if len(parts) == 3:
 
         object_id = parts[2]
-        attr_updates['class'] = value
+        attr_updates["class"] = value
 
     elif len(parts) == 4:
 
@@ -195,6 +201,7 @@ def parse_provider(provider_type, composite_key, value):
 
 # --------------------------------------------------------------------------- --
 
+
 def parse_legacy_provider(provider_type, composite_key, value):
 
     """
@@ -212,25 +219,25 @@ def parse_legacy_provider(provider_type, composite_key, value):
 
     # ------------------------------------------------------------------------ -
 
-    long_prefix = Provider_types[provider_type]['prefix']
-    provider_prefix = long_prefix[len('linotp.'):-1]
+    long_prefix = Provider_types[provider_type]["prefix"]
+    provider_prefix = long_prefix[len("linotp.") : -1]
 
     # ------------------------------------------------------------------------ -
 
     # due to ambiguity of the second part in the config dot notation
     # we must check if the second part is the provider type
 
-    if not composite_key.startswith('linotp.%s' % provider_prefix):
+    if not composite_key.startswith("linotp.%s" % provider_prefix):
         raise ConfigNotRecognized(composite_key)
 
     # ------------------------------------------------------------------------ -
 
-    parts = composite_key.split('.')
+    parts = composite_key.split(".")
 
     if len(parts) != 2:
         raise ConfigNotRecognized(composite_key)
 
-    object_id = 'imported_default'
+    object_id = "imported_default"
     composite_attr_name = parts[1]
 
     # ------------------------------------------------------------------------ -
@@ -239,7 +246,7 @@ def parse_legacy_provider(provider_type, composite_key, value):
     attr_name = composite_attr_name[prefix_len:]
 
     if not attr_name:
-        attr_name = 'class'
+        attr_name = "class"
 
     attr_updates[attr_name] = value
 
@@ -269,7 +276,8 @@ def parse_default_provider(provider_type, composite_key, value):
 
     # ---------------------------------------------------------------------- --
 
-    return value, {'default': True}
+    return value, {"default": True}
+
 
 # -------------------------------------------------------------------------- --
 
@@ -277,7 +285,7 @@ def parse_default_provider(provider_type, composite_key, value):
 
 for provider_type in Provider_types:
 
-    parser_target = '%s_providers' % provider_type
+    parser_target = "%s_providers" % provider_type
 
     func = partial(parse_provider, provider_type)
     ConfigTree.add_parser(parser_target, func)
@@ -307,7 +315,7 @@ def get_legacy_provider(provider_type):
 
     defintion = Legacy_Provider.get(provider_type, {})
     if not defintion:
-        raise Exception('unknown provider type %r' % provider_type)
+        raise Exception("unknown provider type %r" % provider_type)
 
     for key, translation in list(defintion.items()):
         if key in config:
@@ -316,7 +324,7 @@ def get_legacy_provider(provider_type):
     # prepare for return
     legacy_provider = {}
     if "Config" in provider:
-        provider['Default'] = False
+        provider["Default"] = False
         legacy_provider[Legacy_Provider_Name] = provider
 
     return legacy_provider
@@ -334,46 +342,46 @@ def get_all_new_providers(provider_type, show_managed_config=False):
     provider_names = {}
 
     # find out, which provider type we have, currently only push, sms or email
-    prefix = Provider_types.get(provider_type, {}).get('prefix')
+    prefix = Provider_types.get(provider_type, {}).get("prefix")
     if not prefix:
-        raise Exception('unknown provider type %r' % provider_type)
+        raise Exception("unknown provider type %r" % provider_type)
 
     # find out, which providers we have
     config = getLinotpConfig()
 
     # first identify all providers by its name
     for key, value in list(config.items()):
-        if key[:len(prefix)] == prefix:
-            parts = key.split('.')
+        if key[: len(prefix)] == prefix:
+            parts = key.split(".")
             if len(parts) == 3:
                 provider_names[key] = value
 
     for provider, provider_class in list(provider_names.items()):
 
         defintion = {}
-        defintion['Class'] = provider_class
-        prefix = provider + '.'
+        defintion["Class"] = provider_class
+        prefix = provider + "."
 
         for key, value in list(config.items()):
-            if key[:len(prefix)] == prefix:
+            if key[: len(prefix)] == prefix:
 
-                if 'enc' + key in config:
-                    value = config.get('enc' + key)
+                if "enc" + key in config:
+                    value = config.get("enc" + key)
 
-                entry = key.replace(prefix, '')
+                entry = key.replace(prefix, "")
                 defintion[entry] = value
 
-        defintion['Default'] = False
+        defintion["Default"] = False
 
         # in case of a managed provider, the configuration is not displayed
-        if prefix + 'Managed' in config:
+        if prefix + "Managed" in config:
 
-            defintion['Managed'] = config.get(prefix + 'Managed')
+            defintion["Managed"] = config.get(prefix + "Managed")
 
             if not show_managed_config:
-                del defintion['Config']
+                del defintion["Config"]
 
-        name = provider.split('.')[2]
+        name = provider.split(".")[2]
         providers[name] = defintion
 
     return providers
@@ -418,20 +426,21 @@ def getProvider(provider_type, provider_name=None, decrypted=False):
     default_provider_name = get_default_provider(provider_type)
     if default_provider_name and default_provider_name in providers:
         provider = providers.get(default_provider_name)
-        provider['Default'] = True
+        provider["Default"] = True
     else:
         # we take the first one in the list as the default
         firstone = list(providers.keys())[0]
         provider = providers[firstone]
-        provider['Default'] = True
+        provider["Default"] = True
         default_provider_key = Default_Provider_Key[provider_type]
         storeConfig(default_provider_key, firstone)
 
     if decrypted:
         for provider_def in list(providers.values()):
-            if 'Config' in provider_def:
-                provider_def['Config'] = provider_def.get(
-                                            'Config').get_unencrypted()
+            if "Config" in provider_def:
+                provider_def["Config"] = provider_def.get(
+                    "Config"
+                ).get_unencrypted()
 
     if provider_name:
         if provider_name in providers:
@@ -453,9 +462,9 @@ def delProvider(provider_type, provider_name):
     """
     detail = {}
 
-    prefix = Provider_types.get(provider_type, {}).get('prefix')
+    prefix = Provider_types.get(provider_type, {}).get("prefix")
     if not prefix:
-        raise Exception('unknown provider type %r' % provider_type)
+        raise Exception("unknown provider type %r" % provider_type)
 
     # find out, which providers we have
     config = getLinotpConfig()
@@ -466,7 +475,7 @@ def delProvider(provider_type, provider_name):
         default_provider = config[default_provider_key]
 
         if provider_name == default_provider:
-            detail = {'message': _('Default provider could not be deleted!')}
+            detail = {"message": _("Default provider could not be deleted!")}
             ret = 0
             return ret, detail
 
@@ -474,10 +483,11 @@ def delProvider(provider_type, provider_name):
     provider_policies = _lookup_provider_policies(provider_type)
     if provider_name in provider_policies:
         detail = {
-            'message': (_('Unable to delete - provider used in '
-                          'policies!\n[%s]') %
-                        ','.join(provider_policies[provider_name]))
-            }
+            "message": (
+                _("Unable to delete - provider used in " "policies!\n[%s]")
+                % ",".join(provider_policies[provider_name])
+            )
+        }
         ret = 0
         return ret, detail
 
@@ -497,9 +507,9 @@ def delProvider(provider_type, provider_name):
             del_entries.add(provider)
 
         # now lookup the all decent entries
-        provider_prefix = provider + '.'
+        provider_prefix = provider + "."
         for key in list(config.keys()):
-            if key[:len(provider_prefix)] == provider_prefix:
+            if key[: len(provider_prefix)] == provider_prefix:
                 del_entries.add(key)
 
     # when all entries are gathered, we can now delete them all
@@ -527,17 +537,17 @@ def setProvider(params):
     :return: success - boolean
     """
 
-    provider_type = params['type']
-    provider_name = params['name']
+    provider_type = params["type"]
+    provider_name = params["name"]
 
     if provider_name == Legacy_Provider_Name:
         save_legacy_provider(provider_type, params)
     else:
         save_new_provider(provider_type, provider_name, params)
 
-    if 'default' in params:
+    if "default" in params:
         default_provider_key = Default_Provider_Key[provider_type]
-        if params['default'] is True or params['default'].lower() == 'true':
+        if params["default"] is True or params["default"].lower() == "true":
             storeConfig(key=default_provider_key, val=provider_name)
 
     # uncomment this if you want to get provider config as ini file:
@@ -559,16 +569,17 @@ def save_legacy_provider(provider_type, params):
 
     defintion = Legacy_Provider.get(provider_type, {})
     if not defintion:
-        raise Exception('unknown provider type %r' % provider_type)
+        raise Exception("unknown provider type %r" % provider_type)
 
     for config_name, spec in list(defintion.items()):
-        if spec == 'Class' and 'class' in params:
-            storeConfig(key=config_name, val=params['class'])
-        if spec == 'Config' and 'config' in params:
-            storeConfig(key=config_name, val=params['config'],
-                        typ='encrypted_data')
-        if spec == 'Timeout' and 'timeout' in params:
-            storeConfig(key=config_name, val=params['timeout'])
+        if spec == "Class" and "class" in params:
+            storeConfig(key=config_name, val=params["class"])
+        if spec == "Config" and "config" in params:
+            storeConfig(
+                key=config_name, val=params["config"], typ="encrypted_data"
+            )
+        if spec == "Timeout" and "timeout" in params:
+            storeConfig(key=config_name, val=params["timeout"])
 
     return
 
@@ -589,32 +600,36 @@ def save_new_provider(provider_type, provider_name, params):
 
     """
 
-    prefix = Provider_types.get(provider_type, {}).get('prefix')
+    prefix = Provider_types.get(provider_type, {}).get("prefix")
     if not prefix:
-        raise Exception('unknown provider type %r' % provider_type)
+        raise Exception("unknown provider type %r" % provider_type)
 
     provider_prefix = prefix + provider_name
 
-    storeConfig(key=provider_prefix, val=params['class'])
+    storeConfig(key=provider_prefix, val=params["class"])
 
     config_mapping = {
-        'timeout': ('Timeout', None),
-        'config': ('Config', 'encrypted_data')}
+        "timeout": ("Timeout", None),
+        "config": ("Config", "encrypted_data"),
+    }
 
     #
     # alternative config entries are supported by the the adjustable config
     # entries if the provider supports the 'getConfigMapping' interface:
     #
     try:
-        provider_class = _load_provider_class(params['class'])
+        provider_class = _load_provider_class(params["class"])
         config_mapping = provider_class.getConfigMapping()
     except AttributeError as exx:
-        log.debug("provider %r does not support ConfigMapping: %r",
-                  provider_name, exx)
+        log.debug(
+            "provider %r does not support ConfigMapping: %r",
+            provider_name,
+            exx,
+        )
 
     # add the extra parameter for each resolver that it could be a managed one
 
-    config_mapping['managed'] = ('Managed', None)
+    config_mapping["managed"] = ("Managed", None)
 
     for config_entry in list(config_mapping.keys()):
 
@@ -628,9 +643,9 @@ def save_new_provider(provider_type, provider_name, params):
         value = params[config_entry]
 
         # store the config entry
-        storeConfig(key=provider_prefix + '.' + config_key,
-                    val=value,
-                    typ=config_type)
+        storeConfig(
+            key=provider_prefix + "." + config_key, val=value, typ=config_type
+        )
 
     return True, {}
 
@@ -652,7 +667,7 @@ def setDefaultProvider(provider_type, provider_name):
         storeConfig(key=default_provider_key, val=provider_name)
         res = True
     else:
-        detail = {'message': _('Unknown provider! %r') % provider_name}
+        detail = {"message": _("Unknown provider! %r") % provider_name}
     return res, detail
 
 
@@ -672,30 +687,37 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception('unknown provider_type for policy lookup! %r'
-                        % provider_type)
+        raise Exception(
+            "unknown provider_type for policy lookup! %r" % provider_type
+        )
 
     if user is None:
-        raise Exception('unknown user for policy lookup! %r'
-                        % user)
+        raise Exception("unknown user for policy lookup! %r" % user)
 
     if user and user.login:
         realm = user.realm
 
-    policies = linotp.lib.policy.get_client_policy(request_context['Client'],
-                                 scope='authentication',
-                                 action=provider_action_name, realm=realm,
-                                 user=user.login)
-
+    policies = linotp.lib.policy.get_client_policy(
+        request_context["Client"],
+        scope="authentication",
+        action=provider_action_name,
+        realm=realm,
+        user=user.login,
+    )
 
     provider_name = get_action_value(
-            policies, scope='authentication', action=provider_action_name,
-            default='')
+        policies,
+        scope="authentication",
+        action=provider_action_name,
+        default="",
+    )
 
     return loadProvider(provider_type, provider_name)
 
-def get_provider_from_policy(provider_type, realm=None, user=None,
-                             scope='authentication', action=None):
+
+def get_provider_from_policy(
+    provider_type, realm=None, user=None, scope="authentication", action=None
+):
     """
     interface for the provider user like email token or sms token
 
@@ -711,12 +733,12 @@ def get_provider_from_policy(provider_type, realm=None, user=None,
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception('unknown provider_type for policy lookup! %r'
-                        % provider_type)
+        raise Exception(
+            "unknown provider_type for policy lookup! %r" % provider_type
+        )
 
     if user is None:
-        raise Exception('unknown user for policy lookup! %r'
-                        % user)
+        raise Exception("unknown user for policy lookup! %r" % user)
 
     if user and user.login:
         realm = user.realm
@@ -724,10 +746,13 @@ def get_provider_from_policy(provider_type, realm=None, user=None,
     if not action:
         action = provider_action_name
 
-    policies = linotp.lib.policy.get_client_policy(request_context['Client'],
-                                 scope=scope,
-                                 action=action, realm=realm,
-                                 user=user.login)
+    policies = linotp.lib.policy.get_client_policy(
+        request_context["Client"],
+        scope=scope,
+        action=action,
+        realm=realm,
+        user=user.login,
+    )
 
     if not policies:
 
@@ -739,11 +764,12 @@ def get_provider_from_policy(provider_type, realm=None, user=None,
         return []
 
     provider_names = get_action_value(
-        policies, scope=scope, action=action, default='')
+        policies, scope=scope, action=action, default=""
+    )
 
     providers = []
 
-    for entry in [x.strip() for x in provider_names.split(' ')]:
+    for entry in [x.strip() for x in provider_names.split(" ")]:
         if entry:
             providers.append(entry)
 
@@ -762,18 +788,26 @@ def _lookup_provider_policies(provider_type):
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception('unknown provider_type for policy lookup! %r'
-                        % provider_type)
+        raise Exception(
+            "unknown provider_type for policy lookup! %r" % provider_type
+        )
 
     # now have a look at all authentication policies
-    policies = linotp.lib.policy.getPolicy({'scope': 'authentication',
-                          "action": provider_action_name, })
+    policies = linotp.lib.policy.getPolicy(
+        {
+            "scope": "authentication",
+            "action": provider_action_name,
+        }
+    )
 
     for policy in policies:
 
         provider_name = get_action_value(
-            policy, scope='authentication', action=provider_action_name,
-            default='')
+            policy,
+            scope="authentication",
+            action=provider_action_name,
+            default="",
+        )
 
         if provider_name not in provider_policies:
             provider_policies[provider_name] = []
@@ -793,26 +827,27 @@ def load_provider_ini(ini_file):
 
     for section_name in parser.sections():
 
-        provider_type, provider_name = section_name.split(':')
+        provider_type, provider_name = section_name.split(":")
         provider_config = {}
         for name, value in parser.items(section_name):
             provider_config[name] = value
 
-        provider_config['type'] = provider_type
-        provider_config['name'] = provider_name
+        provider_config["type"] = provider_type
+        provider_config["name"] = provider_name
         setProvider(provider_config)
 
     return
+
 
 def _get_default_provider_name(provider_type):
     """
     if no provider is given, we try to lookup the default
     """
 
-    providers = request_context['Provider'][provider_type]
+    providers = request_context["Provider"][provider_type]
 
     for provider_name, provider in list(providers.items()):
-        if provider.get('Default'):
+        if provider.get("Default"):
             return provider_name
 
     return
@@ -855,10 +890,10 @@ def loadProvider(provider_type, provider_name=None):
         provider_info = providers.get(provider_name)
 
     if not provider_info:
-        raise Exception('Unable to load provider: %r' % provider_name)
+        raise Exception("Unable to load provider: %r" % provider_name)
 
     provider_info = provider_info.get(provider_name, provider_info)
-    provider_class = provider_info.get('Class')
+    provider_class = provider_info.get("Class")
 
     try:
         provider_class_obi = _load_provider_class(provider_class)
@@ -882,20 +917,21 @@ def _build_provider_config(provider_info):
     """
 
     provider_config = {}
-    line_config = provider_info.get('Config').get_unencrypted()
+    line_config = provider_info.get("Config").get_unencrypted()
 
     try:
         provider_config = json.loads(line_config)
     except ValueError as exx:
-        log.exception('Failed to load provider config %r', provider_config)
-        raise ValueError('Failed to load provider config:%r %r'
-                         % (provider_config, exx))
+        log.exception("Failed to load provider config %r", provider_config)
+        raise ValueError(
+            "Failed to load provider config:%r %r" % (provider_config, exx)
+        )
 
     # we have to add the other, additional parameters like timeout
     for additional, value in list(provider_info.items()):
-        if additional not in ['Default', 'Config', 'Class']:
-            if additional == 'Timeout':
-                provider_config['timeout'] = value
+        if additional not in ["Default", "Config", "Class"]:
+            if additional == "Timeout":
+                provider_config["timeout"] = value
             else:
                 provider_config[additional] = value
 
@@ -914,7 +950,7 @@ def _fix_config_contiuation(line_config):
     lconfig = []
     lines = line_config.splitlines()
     for line in lines:
-        line = line.strip('\\')
+        line = line.strip("\\")
         if len(line) > 0:
             lconfig.append(line)
 
@@ -930,41 +966,49 @@ def _load_provider_class(provider_slass_spec):
     if not provider_slass_spec:
         raise Exception("No provider class defined.")
 
-    provider_class = ProviderClass_lookup.get(provider_slass_spec,
-                                              provider_slass_spec)
+    provider_class = ProviderClass_lookup.get(
+        provider_slass_spec, provider_slass_spec
+    )
     provider_class_obj = provider_registry.get(provider_class)
 
     if provider_class_obj is None:
 
-        if '.' not in provider_class:
-            raise Exception("Unknown provider class: Identifier was %s" %
-                            provider_class)
+        if "." not in provider_class:
+            raise Exception(
+                "Unknown provider class: Identifier was %s" % provider_class
+            )
 
         # if there is no entry in the registry we try to fall back to
         # the old style of loading a module definition
 
         try:
 
-            packageName, _, className = str(provider_class).rpartition('.')
+            packageName, _, className = str(provider_class).rpartition(".")
             mod = __import__(packageName, globals(), locals(), [className], 1)
             provider_class_obj = getattr(mod, className)
 
         except ImportError as err:
-            raise Exception("Unknown provider class: Identifier was %s - %r" %
-                            (provider_class, err))
+            raise Exception(
+                "Unknown provider class: Identifier was %s - %r"
+                % (provider_class, err)
+            )
 
         except AttributeError as err:
-            raise Exception("Unknown provider class: Identifier was %s - %r" %
-                            (provider_class, err))
+            raise Exception(
+                "Unknown provider class: Identifier was %s - %r"
+                % (provider_class, err)
+            )
 
     #
     # as not all providers are inherited from a super provider,
     # we only can check for the existance of the required methods :-(
     #
 
-    required_method = ['submitMessage',
-                       'push_notification',
-                       'submitVoiceMessage']
+    required_method = [
+        "submitMessage",
+        "push_notification",
+        "submitVoiceMessage",
+    ]
 
     is_provider = False
     for method in required_method:
@@ -972,11 +1016,13 @@ def _load_provider_class(provider_slass_spec):
             is_provider = True
 
     if not is_provider:
-        raise NameError("Provider AttributeError: %s "
-                        "Provider has no method %s" %
-                        (provider_class_obj.__name__,
-                         ' or '.join(required_method)))
+        raise NameError(
+            "Provider AttributeError: %s "
+            "Provider has no method %s"
+            % (provider_class_obj.__name__, " or ".join(required_method))
+        )
 
     return provider_class_obj
+
 
 # eof ####################################################################

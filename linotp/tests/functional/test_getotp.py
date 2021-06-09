@@ -34,27 +34,31 @@ from linotp.tests import TestController
 from freezegun import freeze_time
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class TestGetOtpController(TestController):
-    '''
+    """
     This test at the moment only tests the implementation
     for the Tagespasswort Token
 
         getotp
         get_multi_otp
-    '''
+    """
+
     seed = "3132333435363738393031323334353637383930"
     seed32 = "3132333435363738393031323334353637383930313233343536373839303132"
-    seed64 = ("31323334353637383930313233343536373839303132333435363738393031"
-              "32333435363738393031323334353637383930313233343536373839303132"
-              "3334")
+    seed64 = (
+        "31323334353637383930313233343536373839303132333435363738393031"
+        "32333435363738393031323334353637383930313233343536373839303132"
+        "3334"
+    )
 
     def setUp(self):
-        '''
+        """
         This sets up all the resolvers and realms
-        '''
+        """
         TestController.setUp(self)
         # for better reentrance and debuging make the cleanup upfront
         self.delete_all_policies()
@@ -74,72 +78,75 @@ class TestGetOtpController(TestController):
     ###########################################################################
 
     def createDPWToken(self, serial, seed):
-        '''
+        """
         creates the test tokens
-        '''
-        parameters = {"serial": serial,
-                      "type": "DPW",
-                      # 64 byte key
-                      "otpkey": seed,
-                      "otppin": "1234",
-                      "pin": "pin",
-                      "otplen": 6,
-                      "description": "DPW testtoken",
-                      }
+        """
+        parameters = {
+            "serial": serial,
+            "type": "DPW",
+            # 64 byte key
+            "otpkey": seed,
+            "otppin": "1234",
+            "pin": "pin",
+            "otplen": 6,
+            "description": "DPW testtoken",
+        }
 
-        response = self.make_admin_request(action='init', params=parameters)
+        response = self.make_admin_request(action="init", params=parameters)
         assert '"value": true' in response, response
 
     def createHOTPToken(self, serial, seed):
-        '''
+        """
         creates the test tokens
-        '''
-        parameters = {"serial": serial,
-                      "type": "HMAC",
-                      # 64 byte key
-                      "otpkey": seed,
-                      "otppin": "1234",
-                      "pin": "pin",
-                      "otplen": 6,
-                      "description": "HOTP testtoken",
-                      }
+        """
+        parameters = {
+            "serial": serial,
+            "type": "HMAC",
+            # 64 byte key
+            "otpkey": seed,
+            "otppin": "1234",
+            "pin": "pin",
+            "otplen": 6,
+            "description": "HOTP testtoken",
+        }
 
-        response = self.make_admin_request(action='init', params=parameters)
+        response = self.make_admin_request(action="init", params=parameters)
         assert '"value": true' in response, response
 
     def createTOTPToken(self, serial, seed, timeStep=30):
-        '''
+        """
         creates the test tokens
-        '''
-        parameters = {"serial": serial,
-                      "type": "TOTP",
-                      # 64 byte key
-                      "otpkey": seed,
-                      "otppin": "1234",
-                      "pin": "pin",
-                      "otplen": 8,
-                      "description": "TOTP testtoken",
-                      "timeStep": timeStep,
-                      }
+        """
+        parameters = {
+            "serial": serial,
+            "type": "TOTP",
+            # 64 byte key
+            "otpkey": seed,
+            "otppin": "1234",
+            "pin": "pin",
+            "otplen": 8,
+            "description": "TOTP testtoken",
+            "timeStep": timeStep,
+        }
 
-        response = self.make_admin_request(action='init', params=parameters)
+        response = self.make_admin_request(action="init", params=parameters)
         assert '"value": true' in response, response
 
     def setTokenRealm(self, serial, realms):
-        parameters = {"serial": serial,
-                      "realms": realms}
+        parameters = {"serial": serial, "realms": realms}
 
-        response = self.make_admin_request(action="tokenrealm",
-                                           params=parameters)
+        response = self.make_admin_request(
+            action="tokenrealm", params=parameters
+        )
         return response
 
     def initToken(self):
-        '''
+        """
         init one DPW token
-        '''
+        """
 
         self.createDPWToken("dpw1", "12341234123412341234123412341234")
-        '''
+        """
         curTime = datetime.datetime(2012, 5, 16, 9, 0, 52, 227413)
             "12-05-22": "202690",
             "12-05-23": "252315",
@@ -151,9 +158,9 @@ class TestGetOtpController(TestController):
             "12-05-16": "427701",
             "12-05-19": "167074",
             "12-05-18": "857788"
-        '''
+        """
         self.createHOTPToken("hotp1", "12341234123412341234123412341234")
-        '''
+        """
             "0": "819132",
             "1": "301156",
             "2": "586172",
@@ -166,9 +173,9 @@ class TestGetOtpController(TestController):
             "9": "294016",
             "10": "161051",
             "11": "886458"
-        '''
+        """
         self.createTOTPToken("totp1", self.seed, timeStep=30)
-        '''
+        """
         T0=44576428.686175205 (*30)
             "44576428": "33726427",
             "44576429": "84341529",
@@ -183,7 +190,7 @@ class TestGetOtpController(TestController):
             "44576438": "90386435",
             "44576439": "76892112"
 
-        '''
+        """
 
         response = self.setTokenRealm("dpw1", "mydefrealm")
         assert '"status": true' in response, response
@@ -194,58 +201,67 @@ class TestGetOtpController(TestController):
         response = self.setTokenRealm("totp1", "mydefrealm")
         assert '"status": true' in response, response
 
-        params = {'user': 'passthru_user1',
-                  'serial': 'totp1'}
-        response = self.make_admin_request(action='assign', params=params)
+        params = {"user": "passthru_user1", "serial": "totp1"}
+        response = self.make_admin_request(action="assign", params=params)
         assert '"status": true' in response, response
 
         parameters = {}
-        response = self.make_system_request(action='getRealms',
-                                            params=parameters)
+        response = self.make_system_request(
+            action="getRealms", params=parameters
+        )
 
         assert '"status": true' in response, response
 
-        parameters = {'name': 'getmultitoken',
-                      'scope': 'gettoken',
-                      'realm': 'mydefrealm',
-                      'action': ('max_count_dpw=10, max_count_hotp=10, '
-                                 'max_count_totp=10'),
-                      'user': 'admin'
-                      }
-        response = self.make_system_request(action='setPolicy',
-                                            params=parameters)
+        parameters = {
+            "name": "getmultitoken",
+            "scope": "gettoken",
+            "realm": "mydefrealm",
+            "action": (
+                "max_count_dpw=10, max_count_hotp=10, " "max_count_totp=10"
+            ),
+            "user": "admin",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters
+        )
         assert '"status": true' in response, response
 
-        response = self.make_system_request(action='getConfig', params={})
+        response = self.make_system_request(action="getConfig", params={})
         assert '"status": true' in response, response
 
         return
 
     def test_01_getotp_dpw(self):
-        '''
+        """
         test for the correct otp value of the DPW token
-        '''
-        parameters = {'serial': 'dpw1',
-                      'curTime': self.curTime,
-                      }
-        response = self.make_gettoken_request(action='getotp',
-                                              params=parameters)
+        """
+        parameters = {
+            "serial": "dpw1",
+            "curTime": self.curTime,
+        }
+        response = self.make_gettoken_request(
+            action="getotp", params=parameters
+        )
 
-        assert '"otpval": "427701"' in response, \
-                        "current time %s;%r" % (self.curTime, response)
+        assert '"otpval": "427701"' in response, "current time %s;%r" % (
+            self.curTime,
+            response,
+        )
 
         return
 
     def test_03_getmultiotp(self):
-        '''
+        """
         test for the correct otp value of the DPW token
-        '''
-        parameters = {'serial': 'dpw1',
-                      'curTime': self.curTime,
-                      'count': "10",
-                      }
-        response = self.make_gettoken_request(action='getmultiotp',
-                                              params=parameters)
+        """
+        parameters = {
+            "serial": "dpw1",
+            "curTime": self.curTime,
+            "count": "10",
+        }
+        response = self.make_gettoken_request(
+            action="getmultiotp", params=parameters
+        )
 
         assert '"12-05-17": "028193"' in response, response
         assert '"12-05-18": "857788"' in response, response
@@ -253,27 +269,30 @@ class TestGetOtpController(TestController):
         return
 
     def test_05_getotp_hotp(self):
-        '''
+        """
         test for the correct otp value of the HOTP token
-        '''
-        parameters = {'serial': 'hotp1'}
-        response = self.make_gettoken_request(action='getotp',
-                                              params=parameters)
+        """
+        parameters = {"serial": "hotp1"}
+        response = self.make_gettoken_request(
+            action="getotp", params=parameters
+        )
 
         assert '"otpval": "819132"' in response, response
 
         return
 
     def test_06_getmultiotp(self):
-        '''
+        """
         test for the correct otp value of the HOTP token
-        '''
-        parameters = {'serial': 'hotp1',
-                      'curTime': self.curTime,
-                      'count': "20",
-                      }
-        response = self.make_gettoken_request(action='getmultiotp',
-                                              params=parameters)
+        """
+        parameters = {
+            "serial": "hotp1",
+            "curTime": self.curTime,
+            "count": "20",
+        }
+        response = self.make_gettoken_request(
+            action="getmultiotp", params=parameters
+        )
 
         assert '"0": "819132"' in response, response
         assert '"1": "301156"' in response, response
@@ -281,7 +300,7 @@ class TestGetOtpController(TestController):
         return
 
     def test_07_getotp_totp(self):
-        '''
+        """
         test for the correct otp value of the TOTP token
 
 
@@ -301,29 +320,30 @@ class TestGetOtpController(TestController):
           | 20000000000 |  2603-10-11  | 0000000027BC86AA | 65353130 |  SHA1  |
           |             |   11:33:20   |                  |          |        |
 
-        '''
-        cTimes = [('1970-01-01 00:00:59', '94287082'),
-                  ('2005-03-18 01:58:29', '07081804'),
-                  ('2005-03-18 01:58:31', '14050471'),
-                  ('2009-02-13 23:31:30', '89005924'),
-                  ('2033-05-18 03:33:20', '69279037'),
-                  ]
+        """
+        cTimes = [
+            ("1970-01-01 00:00:59", "94287082"),
+            ("2005-03-18 01:58:29", "07081804"),
+            ("2005-03-18 01:58:31", "14050471"),
+            ("2009-02-13 23:31:30", "89005924"),
+            ("2033-05-18 03:33:20", "69279037"),
+        ]
         for cTime in cTimes:
             TOTPcurTime = cTime[0]
             otp = cTime[1]
 
-            parameters = {'serial': 'totp1',
-                          'curTime': TOTPcurTime}
-            response = self.make_gettoken_request(action='getotp',
-                                                  params=parameters)
+            parameters = {"serial": "totp1", "curTime": TOTPcurTime}
+            response = self.make_gettoken_request(
+                action="getotp", params=parameters
+            )
             assert otp in response, response
 
         return
 
     def test_08_getmultiotp(self):
-        '''
+        """
         test for the correct otp value of the TOTP token
-        '''
+        """
 
         self.delete_all_token()
 
@@ -331,98 +351,109 @@ class TestGetOtpController(TestController):
         with freeze_time(curTime):
             self.initToken()
 
-            parameters = {'serial': 'totp1',
-                          'count': "20",
-                          }
-            response = self.make_gettoken_request(action='getmultiotp',
-                                                  params=parameters)
+            parameters = {
+                "serial": "totp1",
+                "count": "20",
+            }
+            response = self.make_gettoken_request(
+                action="getmultiotp", params=parameters
+            )
 
             resp = response.json
-            otps = resp.get('result').get('value').get('otp')
+            otps = resp.get("result").get("value").get("otp")
 
-            otp1 = otps.get('44576668')
-            assert otp1.get('otpval') == '75301418', response
-            assert otp1.get('time') == "2012-05-18 00:14:00", response
+            otp1 = otps.get("44576668")
+            assert otp1.get("otpval") == "75301418", response
+            assert otp1.get("time") == "2012-05-18 00:14:00", response
 
-            otp2 = otps.get('44576669')
-            assert otp2.get('otpval') == '28155992', response
-            assert otp2.get('time') == "2012-05-18 00:14:30", response
+            otp2 = otps.get("44576669")
+            assert otp2.get("otpval") == "28155992", response
+            assert otp2.get("time") == "2012-05-18 00:14:30", response
 
         return
 
     def test_09_usergetmultiotp_no_policy(self):
-        '''
+        """
         test for the correct OTP value for a users own token  with missing policy
-        '''
-        auth_user = ('passthru_user1@myDefRealm', 'geheim1')
-        parameters = {'serial': 'totp1',
-                      'curTime': self.TOTPcurTime,
-                      'count': "20"}
-        response = self.make_userservice_request(action='getmultiotp',
-                                                 params=parameters,
-                                                 auth_user=auth_user)
+        """
+        auth_user = ("passthru_user1@myDefRealm", "geheim1")
+        parameters = {
+            "serial": "totp1",
+            "curTime": self.TOTPcurTime,
+            "count": "20",
+        }
+        response = self.make_userservice_request(
+            action="getmultiotp", params=parameters, auth_user=auth_user
+        )
 
         assert '"message": "ERR410:' in response, response
         return
 
     def test_10_usergetmultiotp(self):
-        '''
+        """
         test for the correct OTP value for a users own token
-        '''
+        """
         self.delete_all_token()
 
         curTime = datetime.datetime(2012, 5, 18, 0, 13, 52, 227413)
         with freeze_time(curTime):
             self.initToken()
-            parameters = {'name': 'usertoken',
-                          'scope': 'selfservice',
-                          'realm': 'mydefrealm',
-                          'action': ('max_count_dpw=10, max_count_hotp=10, '
-                                     'max_count_totp=10')
-                          }
-            response = self.make_system_request(action='setPolicy',
-                                                params=parameters)
+            parameters = {
+                "name": "usertoken",
+                "scope": "selfservice",
+                "realm": "mydefrealm",
+                "action": (
+                    "max_count_dpw=10, max_count_hotp=10, " "max_count_totp=10"
+                ),
+            }
+            response = self.make_system_request(
+                action="setPolicy", params=parameters
+            )
 
             assert '"status": true' in response, response
 
-            auth_user = ('passthru_user1@myDefRealm', 'geheim1')
+            auth_user = ("passthru_user1@myDefRealm", "geheim1")
             parameters = {
-                'serial': 'totp1',
-                'count': "20",
+                "serial": "totp1",
+                "count": "20",
             }
-            response = self.make_userservice_request(action='getmultiotp',
-                                                     params=parameters,
-                                                     auth_user=auth_user)
+            response = self.make_userservice_request(
+                action="getmultiotp", params=parameters, auth_user=auth_user
+            )
 
             resp = response.json
-            otps = resp.get('result').get('value').get('otp')
+            otps = resp.get("result").get("value").get("otp")
 
-            otp1 = otps.get('44576668')
-            assert otp1.get('otpval') == '75301418', response
-            assert otp1.get('time') == "2012-05-18 00:14:00", response
+            otp1 = otps.get("44576668")
+            assert otp1.get("otpval") == "75301418", response
+            assert otp1.get("time") == "2012-05-18 00:14:00", response
 
-            otp2 = otps.get('44576669')
-            assert otp2.get('otpval') == '28155992', response
-            assert otp2.get('time') == "2012-05-18 00:14:30", response
+            otp2 = otps.get("44576669")
+            assert otp2.get("otpval") == "28155992", response
+            assert otp2.get("time") == "2012-05-18 00:14:30", response
 
         return
 
     def test_11_usergetmultiotp_fail(self):
-        '''
+        """
         test for the correct OTP value for a  token that does not belong to the user
-        '''
-        auth_user = ('passthru_user1@myDefRealm', 'geheim1')
-        parameters = {'serial': 'hotp1',
-                      'curTime': self.TOTPcurTime,
-                      'count': "20",
-                      }
-        response = self.make_userservice_request(action='getmultiotp',
-                                                 params=parameters,
-                                                 auth_user=auth_user)
+        """
+        auth_user = ("passthru_user1@myDefRealm", "geheim1")
+        parameters = {
+            "serial": "hotp1",
+            "curTime": self.TOTPcurTime,
+            "count": "20",
+        }
+        response = self.make_userservice_request(
+            action="getmultiotp", params=parameters, auth_user=auth_user
+        )
         print(response)
-        assert '"message": "The serial hotp1 does not belong' \
-                        ' to user passthru_user1@mydefrealm"' in response, response
+        assert (
+            '"message": "The serial hotp1 does not belong'
+            ' to user passthru_user1@mydefrealm"' in response
+        ), response
 
         return
+
 
 # eof ########################################################################

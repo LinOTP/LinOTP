@@ -29,6 +29,7 @@
 import flask
 import pytest
 
+
 @pytest.mark.usefixtures("app")
 @pytest.fixture
 def index(client):
@@ -39,10 +40,11 @@ def index(client):
     can be examined here by using the
     `context` fixture, or simply the usual flask objects
     """
-    response = client.get('/manage/')
+    response = client.get("/manage/")
     assert response.status_code == 200
 
     yield response
+
 
 @pytest.fixture
 def context(index):
@@ -51,11 +53,15 @@ def context(index):
     """
     return flask.g.request_context
 
-@pytest.mark.parametrize('tokentype', [
-    'email',
-    'qr',
-])
+
+@pytest.mark.parametrize(
+    "tokentype",
+    [
+        "email",
+        "qr",
+    ],
+)
 def test_tokentypes(tokentype, context):
     """Test c.tokentypes is populated"""
-    tokentypes = context['tokentypes']
+    tokentypes = context["tokentypes"]
     assert tokentype in tokentypes

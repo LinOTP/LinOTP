@@ -33,6 +33,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.manage_ui import ManageUi
 
+
 class TestManage(TestCase):
     """
     TestCase class that tests the manage page

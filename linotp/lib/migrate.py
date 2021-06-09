@@ -46,6 +46,7 @@ from linotp.lib.config.db_api import _storeConfigDB
 from linotp.lib.crypto import SecretObj
 from linotp.lib.context import request_context as context
 
+
 class DecryptionError(Exception):
     pass
 
@@ -66,7 +67,7 @@ class MigrationHandler(object):
         """
         self.salt = None
         self.crypter = None
-        self.hsm = context.get('hsm')
+        self.hsm = context.get("hsm")
 
     def setup(self, passphrase, salt=None):
         """
@@ -108,21 +109,22 @@ class MigrationHandler(object):
                  data like: encrypted_data, iv, mac
         """
 
-        config_entries = model_config.query.filter_by(Type='password').all()
+        config_entries = model_config.query.filter_by(Type="password").all()
         for entry in config_entries:
 
-            key = 'enc%s' % entry.Key
+            key = "enc%s" % entry.Key
             value = getFromConfig(key)
 
             # calculate encryption and add mac from mac_data
-            enc_value = self.crypter.encrypt(input_data=value,
-                                             just_mac=key + entry.Value)
+            enc_value = self.crypter.encrypt(
+                input_data=value, just_mac=key + entry.Value
+            )
 
             config_item = {
                 "Key": entry.Key,
                 "Value": enc_value,
                 "Type": entry.Type,
-                "Description": entry.Description
+                "Description": entry.Description,
             }
 
             yield config_item
@@ -141,19 +143,20 @@ class MigrationHandler(object):
         :return: - nothing -
         """
 
-        key = config_entry['Key']
-        typ = config_entry['Type']
-        desc = config_entry['Description']
-        if desc == 'None':
+        key = config_entry["Key"]
+        typ = config_entry["Type"]
+        desc = config_entry["Description"]
+        if desc == "None":
             desc = None
 
         config_entries = model_config.query.filter_by(Key=key).all()
         entry = config_entries[0]
 
         # decypt the real value
-        enc_value = config_entry['Value']
-        value = self.crypter.decrypt(enc_value,
-                                     just_mac='enc%s' % key + entry.Value)
+        enc_value = config_entry["Value"]
+        value = self.crypter.decrypt(
+            enc_value, just_mac="enc%s" % key + entry.Value
+        )
 
         _storeConfigDB(key, value, typ=typ, desc=desc)
 
@@ -166,24 +169,26 @@ class MigrationHandler(object):
         for token in tokens:
             token_data = {}
             serial = token.LinOtpTokenSerialnumber
-            token_data['Serial'] = serial
+            token_data["Serial"] = serial
 
             if token.isPinEncrypted():
                 iv, enc_pin = token.get_encrypted_pin()
                 pin = SecretObj.decrypt_pin(enc_pin, hsm=self.hsm)
                 just_mac = serial + token.LinOtpPinHash
-                enc_value = self.crypter.encrypt(input_data=pin,
-                                                 just_mac=just_mac)
-                token_data['TokenPin'] = enc_value
+                enc_value = self.crypter.encrypt(
+                    input_data=pin, just_mac=just_mac
+                )
+                token_data["TokenPin"] = enc_value
 
             # the userpin is used in motp and ocra/ocra2 token
             if token.LinOtpTokenPinUser:
                 key, iv = token.getUserPin()
                 user_pin = SecretObj.decrypt(key, iv, hsm=self.hsm)
                 just_mac = serial + token.LinOtpTokenPinUser
-                enc_value = self.crypter.encrypt(input_data=user_pin,
-                                                 just_mac=just_mac)
-                token_data['TokenUserPin'] = enc_value
+                enc_value = self.crypter.encrypt(
+                    input_data=user_pin, just_mac=just_mac
+                )
+                token_data["TokenUserPin"] = enc_value
 
             # then we retrieve as well the original value,
             # to identify changes
@@ -192,9 +197,10 @@ class MigrationHandler(object):
             key, iv = token.get_encrypted_seed()
             secObj = SecretObj(key, iv, hsm=self.hsm)
             seed = secObj.getKey()
-            enc_value = self.crypter.encrypt(input_data=seed,
-                                             just_mac=serial + encKey)
-            token_data['TokenSeed'] = enc_value
+            enc_value = self.crypter.encrypt(
+                input_data=seed, just_mac=serial + encKey
+            )
+            token_data["TokenSeed"] = enc_value
             # next we look for tokens, where the pin is encrypted
             yield token_data
 
@@ -202,27 +208,28 @@ class MigrationHandler(object):
 
         serial = token_data["Serial"]
         tokens = model_token.query.filter_by(
-            LinOtpTokenSerialnumber=serial).all()
+            LinOtpTokenSerialnumber=serial
+        ).all()
         token = tokens[0]
 
-        if 'TokenPin' in token_data:
+        if "TokenPin" in token_data:
 
-            enc_pin = token_data['TokenPin']
+            enc_pin = token_data["TokenPin"]
 
             token_pin = self.crypter.decrypt(
-                                    enc_pin,
-                                    just_mac=serial + token.LinOtpPinHash)
+                enc_pin, just_mac=serial + token.LinOtpPinHash
+            )
             # prove, we can write
             enc_pin = SecretObj.encrypt_pin(token_pin)
-            iv = enc_pin.split(':')[0]
+            iv = enc_pin.split(":")[0]
             token.set_encrypted_pin(enc_pin, binascii.unhexlify(iv))
 
-        if 'TokenUserPin' in token_data:
-            token_enc_user_pin = token_data['TokenUserPin']
+        if "TokenUserPin" in token_data:
+            token_enc_user_pin = token_data["TokenUserPin"]
 
             user_pin = self.crypter.decrypt(
-                                token_enc_user_pin,
-                                just_mac=serial + token.LinOtpTokenPinUser)
+                token_enc_user_pin, just_mac=serial + token.LinOtpTokenPinUser
+            )
 
             # prove, we can write
             iv, enc_user_pin = SecretObj.encrypt(user_pin, hsm=self.hsm)
@@ -231,20 +238,18 @@ class MigrationHandler(object):
         # we put the current crypted seed in the mac to check if
         # something changed in meantime
         encKey = token.LinOtpKeyEnc
-        enc_seed = token_data['TokenSeed']
-        token_seed = self.crypter.decrypt(enc_seed,
-                                          just_mac=serial + encKey)
+        enc_seed = token_data["TokenSeed"]
+        token_seed = self.crypter.decrypt(enc_seed, just_mac=serial + encKey)
 
         # the encryption of the token seed is not part of the model anymore
         iv, enc_token_seed = SecretObj.encrypt(token_seed)
 
-        token.set_encrypted_seed(enc_token_seed, iv,
-                                 reset_failcount=False,
-                                 reset_counter=False)
+        token.set_encrypted_seed(
+            enc_token_seed, iv, reset_failcount=False, reset_counter=False
+        )
 
 
 class Crypter(object):
-
     @staticmethod
     def hmac_sha256(secret, msg):
         hmac_obj = hmac.new(secret, msg=msg, digestmod=sha256)
@@ -272,8 +277,13 @@ class Crypter(object):
         :return: - nothing -
         """
 
-        master_key = PBKDF2(password=password, salt=salt, dkLen=32,
-                            count=65432, prf=Crypter.hmac_sha256)
+        master_key = PBKDF2(
+            password=password,
+            salt=salt,
+            dkLen=32,
+            count=65432,
+            prf=Crypter.hmac_sha256,
+        )
 
         U1 = sha256(master_key).digest()
         U2 = sha256(U1).digest()
@@ -300,10 +310,11 @@ class Crypter(object):
         # mac = self.mac("%r%r%r" % (iv, crypted_data, just_mac))
         mac = self.mac(iv, crypted_data, just_mac)
 
-        return {"iv": binascii.hexlify(iv),
-                "crypted_data": binascii.hexlify(crypted_data),
-                'mac': binascii.hexlify(mac)
-                }
+        return {
+            "iv": binascii.hexlify(iv),
+            "crypted_data": binascii.hexlify(crypted_data),
+            "mac": binascii.hexlify(mac),
+        }
 
     def decrypt(self, encrypted_data, just_mac=""):
         """
@@ -329,8 +340,8 @@ class Crypter(object):
     @staticmethod
     def unpad(output_data):
         """
-            pkcs7 unpadding:
-            the last byte value is the number of bytes to subtract
+        pkcs7 unpadding:
+        the last byte value is the number of bytes to subtract
         """
         padlen = ord(output_data[-1:])
         return output_data[:-padlen]
@@ -338,9 +349,9 @@ class Crypter(object):
     @staticmethod
     def pad(input_data):
         """
-            pkcs7 padding:
-            the value of the last byte is the pad lenght
-            !and zero is not allowed! we take a full block instead
+        pkcs7 padding:
+        the value of the last byte is the pad lenght
+        !and zero is not allowed! we take a full block instead
         """
         padLength = AES.block_size - (len(input_data) % AES.block_size)
         return input_data + chr(padLength) * padLength

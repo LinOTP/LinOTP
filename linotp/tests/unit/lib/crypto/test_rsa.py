@@ -35,7 +35,6 @@ from linotp.lib.crypto.rsa import verify_rsa_signature, create_rsa_signature
 from linotp.lib.crypto.rsa import RSA_Signature
 
 
-
 TEST_PUB_KEY = """-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0NGW3OnnZzQaFIVT9znr
 VnWN2nA9rSdBxljy1ooZiPqb2yLiogs1KRDlU1WUVFBFZot2g3igkoKI11XbpvS+
@@ -100,32 +99,33 @@ ne4lEzFB25uORvWENH/3PIxxMDdkgNTlWxuOOQ+Pzz+oCrwtlWsLePZlbJB0DZRwt5b2I5ez9OFEkJ+Y
 
 def parse_license(License):
     """ parse a linotp license with a valid signature from linotp """
-    license_text = ''
+    license_text = ""
     license_dict = {}
     license_mode = False
 
-    signature = ''
+    signature = ""
 
-    for line in License.strip().split('\n'):
+    for line in License.strip().split("\n"):
 
-        if line == '-----BEGIN LICENSE-----':
+        if line == "-----BEGIN LICENSE-----":
             license_mode = True
             continue
 
-        if line == '-----BEGIN LICENSE SIGNATURE-----':
+        if line == "-----BEGIN LICENSE SIGNATURE-----":
             license_mode = False
             continue
 
         if line in [
-            '-----END LICENSE-----', '-----END LICENSE SIGNATURE-----'
-            ]:
+            "-----END LICENSE-----",
+            "-----END LICENSE SIGNATURE-----",
+        ]:
             continue
 
         if license_mode:
-            license_text = license_text + line + '\n'
+            license_text = license_text + line + "\n"
 
-        if license_mode and '=' in line:
-            key, _, value = line.partition('=')
+        if license_mode and "=" in line:
+            key, _, value = line.partition("=")
             license_dict[key] = value
 
         if not license_mode:
@@ -135,7 +135,6 @@ def parse_license(License):
 
 
 class TestRSA(unittest.TestCase):
-
     def test_rsa_cryto(self):
         """
         verify the signature of an expired linotp license
@@ -147,20 +146,18 @@ class TestRSA(unittest.TestCase):
 
         _lic_dict, lic_msg, sig_msg = parse_license(LINOTP_LICENSE)
 
-        message = lic_msg.encode('utf-8')
+        message = lic_msg.encode("utf-8")
         signature = base64.b64decode(sig_msg)
 
         # ------------------------------------------------------------------ --
 
         # prepare the linotp pub key and run the tests
 
-        public_key = LINOTP_PUB_KEY.strip().encode('utf-8')
+        public_key = LINOTP_PUB_KEY.strip().encode("utf-8")
 
-        assert not verify_rsa_signature(public_key, message + b'x', signature)
+        assert not verify_rsa_signature(public_key, message + b"x", signature)
 
         assert verify_rsa_signature(public_key, message, signature)
-
-
 
     def test_sign_and_verify(self):
         """
@@ -168,9 +165,9 @@ class TestRSA(unittest.TestCase):
         """
 
         rsa = RSA_Signature(
-            private=TEST_PRIV_KEY.encode('utf-8'),
-            public=TEST_PUB_KEY.encode('utf-8')
-            )
+            private=TEST_PRIV_KEY.encode("utf-8"),
+            public=TEST_PUB_KEY.encode("utf-8"),
+        )
 
         message = b"hello world"
 
@@ -178,12 +175,11 @@ class TestRSA(unittest.TestCase):
 
         assert rsa.verify(message, signature)
 
-        assert not rsa.verify(message + b'x', signature)
+        assert not rsa.verify(message + b"x", signature)
 
         # try to reuse the verifyer
 
         assert rsa.verify(message, signature)
-
 
     def test_sign_and_verify_only_with_private_key(self):
         """
@@ -191,8 +187,8 @@ class TestRSA(unittest.TestCase):
         """
 
         rsa = RSA_Signature(
-            private=TEST_PRIV_KEY.encode('utf-8'),
-            )
+            private=TEST_PRIV_KEY.encode("utf-8"),
+        )
 
         message = b"hello world"
 
@@ -200,7 +196,7 @@ class TestRSA(unittest.TestCase):
 
         assert rsa.verify(message, signature)
 
-        assert not rsa.verify(message + b'x', signature)
+        assert not rsa.verify(message + b"x", signature)
 
         # try to reuse the verifyer
 
@@ -211,14 +207,15 @@ class TestRSA(unittest.TestCase):
         verify the signing and verification step by only having an private key
         """
 
-        message = b'hey do'
-        private_key = TEST_PRIV_KEY.encode('utf-8')
-        public_key = TEST_PUB_KEY.encode('utf-8')
+        message = b"hey do"
+        private_key = TEST_PRIV_KEY.encode("utf-8")
+        public_key = TEST_PUB_KEY.encode("utf-8")
 
         signature = create_rsa_signature(private_key, message)
 
-        assert not verify_rsa_signature(public_key, message + b'x', signature)
+        assert not verify_rsa_signature(public_key, message + b"x", signature)
 
         assert verify_rsa_signature(public_key, message, signature)
+
 
 # eof

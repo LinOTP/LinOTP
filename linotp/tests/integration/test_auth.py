@@ -41,7 +41,8 @@ class TestAuth(TestCase):
     def setUp(self):
         self.realm_name = "se_test_auth"
         self.reset_resolvers_and_realms(
-            data.sepasswd_resolver, self.realm_name)
+            data.sepasswd_resolver, self.realm_name
+        )
         self.manage_ui.token_view.delete_all_tokens()
 
     def test_auth_index(self):
@@ -55,34 +56,28 @@ class TestAuth(TestCase):
         self.manage_ui.user_view.select_user(username)
         pin = "myauthpin"
         self.manage_ui.token_enroll.create_hotp_token(
-                  pin=pin,
-                  hmac_key="3132333435363738393031323334353637383930")
+            pin=pin, hmac_key="3132333435363738393031323334353637383930"
+        )
 
-        otp_list = ["755224",
-                    "287082",
-                    "359152",
-                    "969429",
-                    "338314",
-                    "254676"]
+        otp_list = ["755224", "287082", "359152", "969429", "338314", "254676"]
 
         auth = AuthUi(self)
-        user = username + '@' + self.realm_name
+        user = username + "@" + self.realm_name
 
         for otp in otp_list:
             assert auth.auth_using_index(user, pin, otp) == auth.AUTH_SUCCESS
 
         # wrong otp
-        assert auth.auth_using_index(user, 'bla!') == auth.AUTH_FAIL
+        assert auth.auth_using_index(user, "bla!") == auth.AUTH_FAIL
 
         # test auth/index3
-        otp_list = ["287922",
-                    "162583",
-                    "399871",
-                    "520489"]
+        otp_list = ["287922", "162583", "399871", "520489"]
 
         for otp in otp_list:
             assert auth.auth_using_index3(user, pin, otp) == auth.AUTH_SUCCESS
 
         # wrong otp
-        assert auth.auth_using_index(
-            user, pin, 'some invalid otp') == auth.AUTH_FAIL
+        assert (
+            auth.auth_using_index(user, pin, "some invalid otp")
+            == auth.AUTH_FAIL
+        )

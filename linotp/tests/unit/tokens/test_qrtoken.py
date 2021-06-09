@@ -34,21 +34,20 @@ from linotp.lib.context import request_context
 
 
 class FakeHSM(object):
-
     def isReady(self):
         return True
 
     def hmac_digest(self, key, data, algo):
-        return 'foo'
+        return "foo"
 
-fake_hsm_wrapper = {'obj': FakeHSM()}
+
+fake_hsm_wrapper = {"obj": FakeHSM()}
 
 
 # ---------------------------------------------------------------------------- -
 
 
 class FakeTokenModel(object):
-
     def __init__(self):
         self.info_dict = {}
 
@@ -56,7 +55,7 @@ class FakeTokenModel(object):
         self.info_dict = json.loads(json_str)
 
     def getSerial(self):
-        return 'QRfoo123'
+        return "QRfoo123"
 
     def setType(self, type_):
         pass
@@ -65,13 +64,13 @@ class FakeTokenModel(object):
         return json.dumps(self.info_dict)
 
     def get_encrypted_seed(self):
-        return 'foo', 'bar'
+        return "foo", "bar"
+
 
 # ---------------------------------------------------------------------------- -
 
 
 class QRTokenClassUnitTestCase(object):
-
     def test_unpair(self):
 
         """ QRToken unittest: checking if unpairing works """
@@ -80,74 +79,82 @@ class QRTokenClassUnitTestCase(object):
 
         token = QrTokenClass(fake)
 
-        token.addToTokenInfo('user_token_id', 'bar')
-        token.addToTokenInfo('user_public_key', 'foo')
-        token.change_state('baz')
+        token.addToTokenInfo("user_token_id", "bar")
+        token.addToTokenInfo("user_public_key", "foo")
+        token.change_state("baz")
 
         token.unpair()
 
-        assert 'user_token_id' not in fake.info_dict
-        assert 'user_public_key' not in fake.info_dict
-        assert 'pairing_url_sent' == token.current_state
+        assert "user_token_id" not in fake.info_dict
+        assert "user_public_key" not in fake.info_dict
+        assert "pairing_url_sent" == token.current_state
 
     # ------------------------------------------------------------------------ -
 
-    @patch('linotp.tokens.pushtoken.pushtoken.get_secret_key')
+    @patch("linotp.tokens.pushtoken.pushtoken.get_secret_key")
     def test_url_protocol_id(self, base_app, mocked_get_secret_key):
 
         """
         QRToken unittest: Test url protocol id customization
         """
 
-        mocked_get_secret_key.return_value = 'X' * 64
-        user_public_key = 'MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI='
+        mocked_get_secret_key.return_value = "X" * 64
+        user_public_key = "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI="
 
         fake = FakeTokenModel()
 
         token = QrTokenClass(fake)
-        token.addToTokenInfo('user_token_id', 1234)
-        token.addToTokenInfo('user_public_key', user_public_key)
+        token.addToTokenInfo("user_token_id", 1234)
+        token.addToTokenInfo("user_public_key", user_public_key)
 
         with base_app.test_request_context():
 
-            if 'mobile_app_protocol_id' in config:
-                del config['mobile_app_protocol_id']
+            if "mobile_app_protocol_id" in config:
+                del config["mobile_app_protocol_id"]
 
-            request_context['hsm'] = fake_hsm_wrapper
+            request_context["hsm"] = fake_hsm_wrapper
 
             # if no mobile_app_protocol_id is set, it should default
             # to lseqr
 
-            message = 'here are the 2,750 quit you asked for. can i move' + \
-                      'to OT I level now? - tom'
+            message = (
+                "here are the 2,750 quit you asked for. can i move"
+                + "to OT I level now? - tom"
+            )
 
-            url, _ = token.create_challenge_url(transaction_id='1234567890',
-                                                content_type=0,
-                                                message=message,
-                                                callback_url='foo',
-                                                callback_sms_number='+491234')
+            url, _ = token.create_challenge_url(
+                transaction_id="1234567890",
+                content_type=0,
+                message=message,
+                callback_url="foo",
+                callback_sms_number="+491234",
+            )
 
-            assert url.startswith('lseqr://')
+            assert url.startswith("lseqr://")
 
         # -------------------------------------------------------------------- -
 
         fake = FakeTokenModel()
         token = QrTokenClass(fake)
-        token.addToTokenInfo('user_token_id', 1234)
-        token.addToTokenInfo('user_public_key', user_public_key)
+        token.addToTokenInfo("user_token_id", 1234)
+        token.addToTokenInfo("user_public_key", user_public_key)
 
         with base_app.test_request_context():
-            config['mobile_app_protocol_id'] = 'yolo'
+            config["mobile_app_protocol_id"] = "yolo"
 
-            request_context['hsm'] = fake_hsm_wrapper
+            request_context["hsm"] = fake_hsm_wrapper
 
-            message = 'here are the 2,750 quit you asked for. can i move' + \
-                      'to OT I level now? - tom'
+            message = (
+                "here are the 2,750 quit you asked for. can i move"
+                + "to OT I level now? - tom"
+            )
 
-            url, _ = token.create_challenge_url(transaction_id='1234567890',
-                                                content_type=0,
-                                                message=message,
-                                                callback_url='foo',
-                                                callback_sms_number='+491234')
+            url, _ = token.create_challenge_url(
+                transaction_id="1234567890",
+                content_type=0,
+                message=message,
+                callback_url="foo",
+                callback_sms_number="+491234",
+            )
 
-            assert url.startswith('yolo://')
+            assert url.startswith("yolo://")

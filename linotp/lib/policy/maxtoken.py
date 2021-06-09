@@ -38,19 +38,20 @@ from linotp.lib.policy.processing import get_client_policy
 
 
 # Define the map for the maxtoken policy lookup
-#   in selfservice/webprovision the provided token type parameter 
+#   in selfservice/webprovision the provided token type parameter
 #   will be mapped to either hmac or totp
 
 WebprovisionTokenTypesMap = {
-    'oathtoken': 'hmac',
-    'googleauthenticator': 'hmac',
-    'googleauthenticator_time': 'totp'
-    }
+    "oathtoken": "hmac",
+    "googleauthenticator": "hmac",
+    "googleauthenticator_time": "totp",
+}
 
 log = logging.getLogger(__name__)
 
+
 def check_maxtoken(method, user, param):
-    """ 
+    """
     maxtoken policy restricts the tokennumber for the user in a realm
 
     :param method: scope of the controller actions
@@ -61,8 +62,8 @@ def check_maxtoken(method, user, param):
     :raises PolicyException: if maxtoken policy would be violated
     """
 
-    enroll_methods = ['init', 'enroll', 'userwebprovision', 'userinit']
-    assign_methods = ['userassign', 'assign']
+    enroll_methods = ["init", "enroll", "userwebprovision", "userinit"]
+    assign_methods = ["userassign", "assign"]
 
     if method in enroll_methods + assign_methods:
 
@@ -74,23 +75,26 @@ def check_maxtoken(method, user, param):
 
         log.debug("checking maxtokens of user by token type")
 
-        type_of_token = param.get('type', 'hmac')
-        type_of_token = WebprovisionTokenTypesMap.get(type_of_token, type_of_token)
+        type_of_token = param.get("type", "hmac")
+        type_of_token = WebprovisionTokenTypesMap.get(
+            type_of_token, type_of_token
+        )
         check_maxtoken_for_user_by_type(user, type_of_token=type_of_token)
-
 
     elif method in assign_methods:
 
         log.debug("checking maxtokens of user by serial number")
 
-        tokens = linotp.lib.token.getTokens4UserOrSerial(serial=param['serial'])
+        tokens = linotp.lib.token.getTokens4UserOrSerial(
+            serial=param["serial"]
+        )
         for token in tokens:
             type_of_token = token.type.lower()
             check_maxtoken_for_user_by_type(user, type_of_token=type_of_token)
 
 
 def check_maxtoken_for_user(user):
-    '''
+    """
     This internal function checks the number of assigned tokens to a user
     restricted by the policies:
 
@@ -98,9 +102,9 @@ def check_maxtoken_for_user(user):
 
     :param user: to whom the token should belong
     :raises PolicyException: if maxtoken policy would be violated
-    '''
+    """
 
-    _ = context['translate']
+    _ = context["translate"]
 
     if not user or not user.login:
         return
@@ -109,8 +113,10 @@ def check_maxtoken_for_user(user):
 
     user_realms = _getUserRealms(user)
 
-    log.debug("checking the already assigned tokens for user %r, realms %s"
-              % (user, user_realms))
+    log.debug(
+        "checking the already assigned tokens for user %r, realms %s"
+        % (user, user_realms)
+    )
 
     # ----------------------------------------------------------------------- --
 
@@ -121,34 +127,39 @@ def check_maxtoken_for_user(user):
 
     for user_realm in user_realms:
 
-        policies = get_client_policy(client,
-                                     scope='enrollment',
-                                     action=action,
-                                     realm=user_realm,
-                                     user=user.login,
-                                     userObj=user)
+        policies = get_client_policy(
+            client,
+            scope="enrollment",
+            action=action,
+            realm=user_realm,
+            user=user.login,
+            userObj=user,
+        )
 
         if not policies:
             continue
 
         total_maxtoken = get_action_value(
-            policies, scope='enrollment', action=action, default=-1)
+            policies, scope="enrollment", action=action, default=-1
+        )
 
         if total_maxtoken == -1 or isinstance(total_maxtoken, bool):
             continue
 
-        if len(tokens) +1 > total_maxtoken:
+        if len(tokens) + 1 > total_maxtoken:
 
-            error_msg = _("The maximum number of allowed tokens "
-                          "per user is exceeded. Check the "
-                          "policies scope=enrollment, "
-                          "action=maxtoken")
+            error_msg = _(
+                "The maximum number of allowed tokens "
+                "per user is exceeded. Check the "
+                "policies scope=enrollment, "
+                "action=maxtoken"
+            )
 
             raise linotp.lib.policy.MaxTokenUserPolicyException(error_msg)
 
 
 def check_maxtoken_for_user_by_type(user, type_of_token):
-    '''
+    """
     This internal function checks the number of assigned tokens to a user
     restricted by the policies:
 
@@ -157,9 +168,9 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
     :param user: to whom the token should belong
     :param type_of_token: which type of token should be enrolled or assigned
     :raises PolicyException: if maxtoken policy would be violated
-    '''
+    """
 
-    _ = context['translate']
+    _ = context["translate"]
 
     if not user or not user.login:
         return
@@ -168,26 +179,31 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
 
     user_realms = _getUserRealms(user)
 
-    log.debug("checking the already assigned tokens for user %r, realms %s"
-              % (user, user_realms))
+    log.debug(
+        "checking the already assigned tokens for user %r, realms %s"
+        % (user, user_realms)
+    )
 
     # ------------------------------------------------------------------ --
 
     # check the maxtokenTOKENTYPE policy
 
     typed_tokens = linotp.lib.token.getTokens4UserOrSerial(
-                        user, token_type=type_of_token)
+        user, token_type=type_of_token
+    )
 
     action = "maxtoken%s" % type_of_token.upper()
 
     for user_realm in user_realms:
 
-        policies = get_client_policy(client,
-                                     scope='enrollment',
-                                     action=action,
-                                     realm=user_realm,
-                                     user=user.login,
-                                     userObj=user)
+        policies = get_client_policy(
+            client,
+            scope="enrollment",
+            action=action,
+            realm=user_realm,
+            user=user.login,
+            userObj=user,
+        )
 
         if not policies:
             continue
@@ -195,16 +211,19 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
         # compare the tokens of the user with the max numbers of the policy
 
         total_maxtoken = get_action_value(
-            policies, scope='enrollment', action=action, default=-1)
+            policies, scope="enrollment", action=action, default=-1
+        )
 
         if total_maxtoken == -1 or isinstance(total_maxtoken, bool):
             continue
 
         if len(typed_tokens) + 1 > total_maxtoken:
 
-            error_msg = _("The maximum number of allowed tokens of type %s "
-                          "per user is exceeded. Check the policies "
-                          "scope=enrollment, action=maxtoken%s"
-                          % (type_of_token, type_of_token.upper()))
+            error_msg = _(
+                "The maximum number of allowed tokens of type %s "
+                "per user is exceeded. Check the policies "
+                "scope=enrollment, action=maxtoken%s"
+                % (type_of_token, type_of_token.upper())
+            )
 
             raise linotp.lib.policy.MaxTokenTypeUserPolicyException(error_msg)

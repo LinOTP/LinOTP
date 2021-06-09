@@ -32,8 +32,10 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 from warnings import warn
 
 import requests
-from selenium.common.exceptions import (NoSuchElementException,
-                                        WebDriverException)
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    WebDriverException,
+)
 from selenium.webdriver import ActionChains, Chrome, Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebElement
@@ -71,14 +73,14 @@ class ManageUi(object):
     # CSS selectors
 
     # Menu entry "Import Token File"
-    MENU_LINOTP_IMPORT_TOKEN_CSS = '#menu > li:nth-of-type(3)'
+    MENU_LINOTP_IMPORT_TOKEN_CSS = "#menu > li:nth-of-type(3)"
     "CSS of the LinOTP Import Token menu"
 
     # Menu entry "LinOTP Config"
-    MENU_LINOTP_CONFIG_CSS = '#menu > li'
+    MENU_LINOTP_CONFIG_CSS = "#menu > li"
     "CSS of the LinOTP Config menu"
 
-    def __init__(self, testcase: 'TestCase'):
+    def __init__(self, testcase: "TestCase"):
         """
         Create a new ManageUi instance. Normally this will be called
         from a derived class
@@ -86,18 +88,21 @@ class ManageUi(object):
         :param testcase: The test case that is controlling the UI
         """
 
-        self.testcase: 'TestCase' = testcase
+        self.testcase: "TestCase" = testcase
         "The UnitTest class that is running the tests"
 
-        self.test_data_dir = os.path.normpath(os.path.join(
-            os.path.split(__file__)[0], '..', 'testdata'
-        ))
+        self.test_data_dir = os.path.normpath(
+            os.path.join(os.path.split(__file__)[0], "..", "testdata")
+        )
 
         self.welcome_screen = ManageDialog(
-            self, 'welcome_screen', 'welcome_screen_close')
+            self, "welcome_screen", "welcome_screen_close"
+        )
         "Welcome screen dialog"
 
-        self.useridresolver_manager: UserIdResolverManager = UserIdResolverManager(self)
+        self.useridresolver_manager: UserIdResolverManager = (
+            UserIdResolverManager(self)
+        )
         "UserIdResolver manager dialog"
         self.realm_manager: RealmManager = RealmManager(self)
         "Realm manager dialog"
@@ -111,11 +116,11 @@ class ManageUi(object):
         self.token_enroll = EnrollTokenDialog(self)
         "Enroll token dialog"
 
-        self.alert_dialog = ManageDialog(self, 'alert_box')
+        self.alert_dialog = ManageDialog(self, "alert_box")
         "Access to the alert box dialog element"
 
     def is_url_open(self):
-        possible_urls = (self.URL, self.URL + '/', self.URL + '/#')
+        possible_urls = (self.URL, self.URL + "/", self.URL + "/#")
         return self.driver.current_url.endswith(possible_urls)
 
     @property
@@ -126,7 +131,7 @@ class ManageUi(object):
         return self.testcase.base_url + self.URL
 
     @property
-    def alert_box_handler(self) -> 'AlertBoxHandler':
+    def alert_box_handler(self) -> "AlertBoxHandler":
         """
         Return an instance of an alert box handler.
         """
@@ -143,14 +148,17 @@ class ManageUi(object):
         """
         Check we are on the right page
         """
-        assert self.is_url_open(), \
-            'URL %s should end with %s - page not loaded?' % \
-            (self.driver.current_url, self.URL)
+        assert (
+            self.is_url_open()
+        ), "URL %s should end with %s - page not loaded?" % (
+            self.driver.current_url,
+            self.URL,
+        )
         if self.testcase.major_version == 2:
-            title = 'LinOTP 2 Management'
+            title = "LinOTP 2 Management"
         else:
             # LinOTP 3
-            title = 'Management - LinOTP'
+            title = "Management - LinOTP"
         assert self.driver.title == title
 
     def find_by_css(self, css_value) -> WebElement:
@@ -201,8 +209,12 @@ class ManageUi(object):
 
         Throws an assertion if this dialog does not have an associated menu entry
         """
-        assert menu_item_id, "Open dialog requested but no menu id specified (menu_item_id"
-        assert menu_css, "Open dialog requested but no toplevel menu specified (menu_css)"
+        assert (
+            menu_item_id
+        ), "Open dialog requested but no menu id specified (menu_item_id"
+        assert (
+            menu_css
+        ), "Open dialog requested but no toplevel menu specified (menu_css)"
 
         self.open_manage()
 
@@ -232,18 +244,23 @@ class ManageUi(object):
         """
 
         # Find all open dialogs
-        dialogs = self.find_all_by_css('.ui-dialog:not([style*="display: none"])')
+        dialogs = self.find_all_by_css(
+            '.ui-dialog:not([style*="display: none"])'
+        )
 
         # Sort by depth (the z-index attribute in reverse order)
         dialogs.sort(
-            key=methodcaller('get_attribute', 'z-index'), reverse=True)
+            key=methodcaller("get_attribute", "z-index"), reverse=True
+        )
 
         # Close them
         for dialog in dialogs:
-            logging.debug('Closing dialog %s' %
-                          dialog.get_attribute('aria-describedby'))
+            logging.debug(
+                "Closing dialog %s" % dialog.get_attribute("aria-describedby")
+            )
             dialog.find_element_by_css_selector(
-                ManageDialog.CLOSEBUTTON_CSS).click()
+                ManageDialog.CLOSEBUTTON_CSS
+            ).click()
 
     def close_all_menus(self) -> None:
         """
@@ -251,12 +268,16 @@ class ManageUi(object):
         """
         # Query all the menu class attributes to find if any are in the open state.
         # We do it this way to avoid a wait in the case that all the menus are closed
-        for menu in self.find_all_by_css('#menu > li'):
-            if menu.get_attribute('class') == 'sfHover':
+        for menu in self.find_all_by_css("#menu > li"):
+            if menu.get_attribute("class") == "sfHover":
                 # Close using superfish method
-                self.driver.execute_script("$(arguments[0]).superfish('hide')", menu)
+                self.driver.execute_script(
+                    "$(arguments[0]).superfish('hide')", menu
+                )
 
-    def check_alert(self, expected_text=None, click_accept=False, click_dismiss=False) -> None:
+    def check_alert(
+        self, expected_text=None, click_accept=False, click_dismiss=False
+    ) -> None:
         """
         Process popup window:
         * check the text contents
@@ -267,7 +288,9 @@ class ManageUi(object):
         :param click_dismiss: If set, will close the dialog
         """
 
-        assert not click_accept or not click_dismiss, "check_alert cannot click both accept and dismiss"
+        assert (
+            not click_accept or not click_dismiss
+        ), "check_alert cannot click both accept and dismiss"
 
         alert = self.driver.switch_to.alert
         alert_text = alert.text
@@ -278,8 +301,9 @@ class ManageUi(object):
             alert.dismiss()
 
         if expected_text:
-            assert alert_text == expected_text, "Expecting alert text:%s found:%s" % (
-                expected_text, alert_text)
+            assert (
+                alert_text == expected_text
+            ), "Expecting alert text:%s found:%s" % (expected_text, alert_text)
 
     def wait_for_waiting_finished(self) -> None:
         """
@@ -287,7 +311,8 @@ class ManageUi(object):
         During this period, the do_waiting is displayed. Wait for this to disappear
         """
         WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(
-            EC.visibility_of_element_located((By.ID, "do_waiting")))
+            EC.visibility_of_element_located((By.ID, "do_waiting"))
+        )
 
     def is_element_visible(self, css) -> bool:
         """
@@ -298,17 +323,16 @@ class ManageUi(object):
 
         try:
             self.testcase.disableImplicitWait()
-            element = EC.visibility_of_element_located(
-                (By.CSS_SELECTOR, css))(self.driver)
+            element = EC.visibility_of_element_located((By.CSS_SELECTOR, css))(
+                self.driver
+            )
             self.testcase.enableImplicitWait()
         except NoSuchElementException:
             return False
-        is_visible = (element is not False)
+        is_visible = element is not False
         return is_visible
 
-    def admin_api_call(self,
-                       call: str,
-                       params: Dict=None) -> Dict:
+    def admin_api_call(self, call: str, params: Dict = None) -> Dict:
         """
         Give the API endpoint (call) and the params. Omit the session
         because it will be added automatically to your params.
@@ -318,26 +342,33 @@ class ManageUi(object):
         :raise BackendException if the response contains an error
         """
 
-        if(params is None):
+        if params is None:
             params = {}
 
-        url = self.testcase.http_protocol + \
-            "://" + self.testcase.http_host + \
-            ":" + self.testcase.http_port + "/"
+        url = (
+            self.testcase.http_protocol
+            + "://"
+            + self.testcase.http_host
+            + ":"
+            + self.testcase.http_port
+            + "/"
+        )
 
-        params['session'] = helper.get_session(url,
-                                               self.testcase.http_username,
-                                               self.testcase.http_password)
+        params["session"] = helper.get_session(
+            url, self.testcase.http_username, self.testcase.http_password
+        )
 
         auth = requests.auth.HTTPDigestAuth(
-            self.testcase.http_username,
-            self.testcase.http_password)
+            self.testcase.http_username, self.testcase.http_password
+        )
 
-        response = requests.post(url + call.strip('/'),
-                                 auth=auth,
-                                 params=params,
-                                 cookies={'admin_session': params['session']},
-                                 verify=False)
+        response = requests.post(
+            url + call.strip("/"),
+            auth=auth,
+            params=params,
+            cookies={"admin_session": params["session"]},
+            verify=False,
+        )
 
         response.raise_for_status()
         json = response.json()
@@ -353,14 +384,16 @@ class MsgType(object):
     Kind of an enum - Used in AlertBoxHandler to specify
     message types when needed for method paramaters
     """
-    Error = 'error'
-    Info = 'info'
+
+    Error = "error"
+    Info = "info"
 
 
 class AlertBoxInfoLine(object):
     """
     Represenation of a line in the alert box
     """
+
     element: WebElement = None
     ok_button: WebElement = None
     classes = None
@@ -375,17 +408,19 @@ class AlertBoxInfoLine(object):
         """
         # The WebElement representing this line
         self.element = element
-        self.ok_button = element.find_element_by_css_selector('button')
-        self.classes = element.get_attribute('class')
+        self.ok_button = element.find_element_by_css_selector("button")
+        self.classes = element.get_attribute("class")
 
         # Determine type of message
-        if 'error_box' in self.classes:
-            self.type = 'error'
-        elif 'info_box' in self.classes:
-            self.type = 'info'
+        if "error_box" in self.classes:
+            self.type = "error"
+        elif "info_box" in self.classes:
+            self.type = "info"
         else:
-            warn('unknown info box message type. class={}'.format(self.classes))
-            self.type = 'unknown'
+            warn(
+                "unknown info box message type. class={}".format(self.classes)
+            )
+            self.type = "unknown"
 
     @property
     def text(self) -> str:
@@ -399,6 +434,7 @@ class AlertBoxInfoLine(object):
 
     def __str__(self):
         return "{}:{}".format(self.type, self.text)
+
 
 class AlertBoxHandler(object):
     """
@@ -415,8 +451,8 @@ class AlertBoxHandler(object):
 
     manageui: ManageUi = None
 
-    msgs_parent_id = 'info_box'
-    link_close_all_msgs_class = 'close_all'
+    msgs_parent_id = "info_box"
+    link_close_all_msgs_class = "close_all"
 
     def __init__(self, manage_ui: ManageUi):
         """
@@ -435,24 +471,30 @@ class AlertBoxHandler(object):
         """
 
         # Get all elements in the box
-        info_box_elements = self.driver.find_elements_by_xpath('//div[@id="info_box"]/*')
+        info_box_elements = self.driver.find_elements_by_xpath(
+            '//div[@id="info_box"]/*'
+        )
 
         self.info_bar = None
         self.info_lines = []
         self.close_all = None
 
         for e in info_box_elements:
-            id = e.get_attribute('id')
-            if id == 'info_bar':
+            id = e.get_attribute("id")
+            if id == "info_bar":
                 self.info_bar = e
             else:
-                classes = e.get_attribute('class')
-                if 'info_box' in classes or 'error_box' in classes:
+                classes = e.get_attribute("class")
+                if "info_box" in classes or "error_box" in classes:
                     self.info_lines.append(AlertBoxInfoLine(e))
-                elif 'close_all' in classes:
+                elif "close_all" in classes:
                     self.close_all = e
                 else:
-                    warn('Could not parse info element box id={} class={}'.format(id, classes))
+                    warn(
+                        "Could not parse info element box id={} class={}".format(
+                            id, classes
+                        )
+                    )
 
     def clear_messages(self) -> None:
         """
@@ -519,7 +561,6 @@ class AlertBoxHandler(object):
         else:
             return None
 
-
     def check_last_message(self, msg_regex: str) -> bool:
         """
         Get the last alert and search the message for
@@ -542,6 +583,8 @@ class AlertBoxHandler(object):
         """
 
         self.parse()
-        lines = [l for l in self.info_lines if l.type == msg_type and msg in l.text]
+        lines = [
+            l for l in self.info_lines if l.type == msg_type and msg in l.text
+        ]
 
-        return len(lines)>0
+        return len(lines) > 0

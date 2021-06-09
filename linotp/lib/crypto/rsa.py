@@ -37,7 +37,8 @@ log = logging.getLogger(__name__)
 
 
 def verify_rsa_signature(
-        pub_key: bytes, message: bytes, signature: bytes) -> bool:
+    pub_key: bytes, message: bytes, signature: bytes
+) -> bool:
     """
     verify rsa signature
 
@@ -60,14 +61,13 @@ def create_rsa_signature(priv_key: bytes, message: bytes) -> bytes:
     return RSA_Signature(private=priv_key).sign(message)
 
 
-class RSA_Signature():
+class RSA_Signature:
     """
     encapsulate the signature handling
     which allows to switch the cryptographic implementation
     """
 
-
-    def __init__(self, private: bytes=None, public: bytes=None):
+    def __init__(self, private: bytes = None, public: bytes = None):
         """
         instantiate the verifier and signer
 
@@ -93,8 +93,7 @@ class RSA_Signature():
             self.verifier = PKCS115_SigScheme(public_key)
 
         if not self.verifier:
-            raise Exception('At least a public or private key is required!')
-
+            raise Exception("At least a public or private key is required!")
 
     def verify(self, message: bytes, signature: bytes) -> bool:
         """
@@ -115,11 +114,11 @@ class RSA_Signature():
             return True
 
         except ValueError as vexx:
-            log.debug('Failed to verify signature: %r' % vexx)
+            log.debug("Failed to verify signature: %r" % vexx)
             return False
 
         except Exception as exx:
-            log.error('Failed to verify signature: %r' % exx)
+            log.error("Failed to verify signature: %r" % exx)
             raise exx
 
     def sign(self, message: bytes) -> bytes:
@@ -137,5 +136,6 @@ class RSA_Signature():
             raise Exception("unable to sign - signer not initialized?")
 
         return self.signer.sign(SHA256.new(message))
+
 
 # eof

@@ -23,9 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''
+"""
 * interface of the PushProvider
-'''
+"""
 
 from linotp.provider import provider_registry
 
@@ -39,7 +39,7 @@ class IPushProvider(object):
     An abstract class that has to be implemented by ever e-mail provider class
     """
 
-    provider_type = 'push'
+    provider_type = "push"
 
     def __init__(self):
         pass
@@ -56,8 +56,9 @@ class IPushProvider(object):
         }
         """
         config_mapping = {
-                'timeout': ('Timeout', None),
-                'config': ('Config', 'encrypted_data')}
+            "timeout": ("Timeout", None),
+            "config": ("Config", "encrypted_data"),
+        }
 
         return config_mapping
 
@@ -71,8 +72,9 @@ class IPushProvider(object):
         :param transactionId: The push notification transaction reference
         :return: A tuple of success and result message
         """
-        raise NotImplementedError("Every subclass of IPushProvider has to "
-                                  "implement this method.")
+        raise NotImplementedError(
+            "Every subclass of IPushProvider has to " "implement this method."
+        )
 
     def loadConfig(self, configDict):
         """

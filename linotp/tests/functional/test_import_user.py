@@ -68,14 +68,14 @@ class TestImportUser(TestController):
 
     resolver_name = "myresolv"
     target_realm = "myrealm"
-    resolver_spec = ('useridresolver.'
-                     'SQLIdResolver.'
-                     'IdResolver.' + resolver_name)
+    resolver_spec = (
+        "useridresolver." "SQLIdResolver." "IdResolver." + resolver_name
+    )
 
     def setUp(self):
 
         self.delete_all_realms()
-        self.delete_all_policies(auth_user='superadmin')
+        self.delete_all_policies(auth_user="superadmin")
         self.delete_all_resolvers()
         self.dropTable()
 
@@ -86,7 +86,7 @@ class TestImportUser(TestController):
         for the tests, we will drop the imported user table
         """
 
-        sqlconnect = self.app.config.get('DATABASE_URI')
+        sqlconnect = self.app.config.get("DATABASE_URI")
         engine = create_engine(sqlconnect)
         connection = engine.connect()
 
@@ -113,55 +113,57 @@ class TestImportUser(TestController):
 
         content = ""
         upload_files = [("file", "user_list", content)]
-        params = {'resolver': self.resolver_name,
-                  'dryrun': False,
-                  'format': 'password',
-                  'delimiter': ',',
-                  'quotechar': '"',
-                  }
+        params = {
+            "resolver": self.resolver_name,
+            "dryrun": False,
+            "format": "password",
+            "delimiter": ",",
+            "quotechar": '"',
+        }
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
 
         assert '"updated": {}' in response, response
         assert '"created": {}' in response, response
 
-        def_passwd_file = os.path.join(self.fixture_path, 'def-passwd')
+        def_passwd_file = os.path.join(self.fixture_path, "def-passwd")
 
         with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
-        params = {'resolver': self.resolver_name,
-                  'dryrun': False,
-                  'format': 'password',
-                  'delimiter': ',',
-                  'quotechar': '"',
-                  }
+        params = {
+            "resolver": self.resolver_name,
+            "dryrun": False,
+            "format": "password",
+            "delimiter": ",",
+            "quotechar": '"',
+        }
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
 
         assert '"updated": {}' in response, response
         jresp = json.loads(response.body)
-        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        created = jresp.get("result", {}).get("value", {}).get("created", {})
         assert len(created) == 27, response
 
-        csv_data = content.split('\n')[4:]
-        content = '\n'.join(csv_data)
+        csv_data = content.split("\n")[4:]
+        content = "\n".join(csv_data)
         upload_files = [("file", "user_list", content)]
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
 
         jresp = json.loads(response.body)
-        deleted = jresp.get('result', {}).get('value', {}).get('deleted', {})
+        deleted = jresp.get("result", {}).get("value", {}).get("deleted", {})
         assert len(deleted) == 4, response
 
-        updated = jresp.get('result', {}).get('value', {}).get('updated', {})
+        updated = jresp.get("result", {}).get("value", {}).get("updated", {})
         assert len(updated) == 23, response
 
         assert '"created": {}' in response, response
@@ -173,57 +175,59 @@ class TestImportUser(TestController):
         check that the dryrun does not import a user
         """
 
-        def_passwd_file = os.path.join(self.fixture_path, 'def-passwd')
+        def_passwd_file = os.path.join(self.fixture_path, "def-passwd")
 
         with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
-        params = {'resolver': self.resolver_name,
-                  'dryrun': True,
-                  'format': 'password',
-                  'delimiter': ',',
-                  'quotechar': '"',
-                  }
+        params = {
+            "resolver": self.resolver_name,
+            "dryrun": True,
+            "format": "password",
+            "delimiter": ",",
+            "quotechar": '"',
+        }
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
 
         assert '"updated": {}' in response, response
 
         jresp = json.loads(response.body)
-        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        created = jresp.get("result", {}).get("value", {}).get("created", {})
         assert len(created) == 27, response
 
         upload_files = [("file", "user_list", content)]
-        params = {'resolver': self.resolver_name,
-                  'dryrun': True,
-                  'format': 'password',
-                  'delimiter': ',',
-                  'quotechar': '"',
-                  }
+        params = {
+            "resolver": self.resolver_name,
+            "dryrun": True,
+            "format": "password",
+            "delimiter": ",",
+            "quotechar": '"',
+        }
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
 
         assert '"updated": {}' in response, response
 
         jresp = json.loads(response.body)
-        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        created = jresp.get("result", {}).get("value", {}).get("created", {})
         assert len(created) == 27, response
 
         # make sure that no resolver has been created on dryrun
 
-        params = {'resolver': self.resolver_name}
-        response = self.make_system_request('getResolver', params=params)
+        params = {"resolver": self.resolver_name}
+        response = self.make_system_request("getResolver", params=params)
         assert '"data": {}' in response, response
 
         # make sure that no realm has been created on dryrun
 
         params = {}
-        response = self.make_system_request('getRealms', params=params)
+        response = self.make_system_request("getRealms", params=params)
         assert '"value": {}' in response, response
 
     def test_list_imported_users(self):
@@ -235,7 +239,7 @@ class TestImportUser(TestController):
 
         # open the csv data and import the users
 
-        def_passwd_file = os.path.join(self.fixture_path, 'def-passwd.csv')
+        def_passwd_file = os.path.join(self.fixture_path, "def-passwd.csv")
 
         with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
@@ -243,57 +247,62 @@ class TestImportUser(TestController):
         upload_files = [("file", "user_list", content)]
 
         column_mapping = {
-                "username": 0,
-                "userid": 1,
-                "surname": 2,
-                "givenname": 3,
-                "email": 4,
-                "phone": 5,
-                "mobile": 6,
-                "password": 7}
+            "username": 0,
+            "userid": 1,
+            "surname": 2,
+            "givenname": 3,
+            "email": 4,
+            "phone": 5,
+            "mobile": 6,
+            "password": 7,
+        }
 
         params = {
-                'resolver': self.resolver_name,
-                'dryrun': False,
-                'format': 'csv',
-                'delimiter': ',',
-                'quotechar': '"',
-                'column_mapping': json.dumps(column_mapping), }
+            "resolver": self.resolver_name,
+            "dryrun": False,
+            "format": "csv",
+            "delimiter": ",",
+            "quotechar": '"',
+            "column_mapping": json.dumps(column_mapping),
+        }
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
 
         assert '"updated": {}' in response, response
 
         jresp = json.loads(response.body)
-        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        created = jresp.get("result", {}).get("value", {}).get("created", {})
         assert len(created) == 24, response
 
         # ------------------------------------------------------------------ --
 
         # run a testresolver, if the users are really there
 
-        params = {'resolver': self.resolver_name}
-        response = self.make_system_request('getResolver', params=params)
+        params = {"resolver": self.resolver_name}
+        response = self.make_system_request("getResolver", params=params)
         jresp = json.loads(response.body)
 
-        resolver_params = jresp.get(
-                                'result', {}).get('value', {}).get('data', {})
+        resolver_params = (
+            jresp.get("result", {}).get("value", {}).get("data", {})
+        )
 
-        resolver_params['Password'] = ''
-        resolver_params['type'] = 'sqlresolver'
-        resolver_params['name'] = self.resolver_name
-        resolver_params['previous_name'] = self.resolver_name
-        response = self.make_admin_request('testresolver',
-                                           params=resolver_params)
+        resolver_params["Password"] = ""
+        resolver_params["type"] = "sqlresolver"
+        resolver_params["name"] = self.resolver_name
+        resolver_params["previous_name"] = self.resolver_name
+        response = self.make_admin_request(
+            "testresolver", params=resolver_params
+        )
 
         jresp = json.loads(response.body)
-        rows = jresp.get(
-                    'result', {}).get(
-                    'value', {}).get(
-                    'desc', {}).get(
-                    'rows', {})
+        rows = (
+            jresp.get("result", {})
+            .get("value", {})
+            .get("desc", {})
+            .get("rows", {})
+        )
 
         assert rows == 24
 
@@ -301,38 +310,40 @@ class TestImportUser(TestController):
 
         # create a realm for this resolver and do a userlist
 
-        params = {'realm': 'myrealm', 'resolvers': self.resolver_spec}
-        response = self.make_system_request(action='setRealm',  params=params)
+        params = {"realm": "myrealm", "resolvers": self.resolver_spec}
+        response = self.make_system_request(action="setRealm", params=params)
 
-        resolver_id = self.resolver_spec.split('.')[-1]
-        params = {'resConf': resolver_id, 'username': '*'}
-        response = self.make_admin_request(action='userlist', params=params)
+        resolver_id = self.resolver_spec.split(".")[-1]
+        params = {"resConf": resolver_id, "username": "*"}
+        response = self.make_admin_request(action="userlist", params=params)
 
         jresp = json.loads(response.body)
-        users = jresp.get('result', {}).get('value', [])
+        users = jresp.get("result", {}).get("value", [])
         assert len(users) == 24, users
 
         # ------------------------------------------------------------------ --
 
         # login to the selfservice and enroll an HMAC token
 
-        policy = {'name': 'T1',
-                  'action': 'enrollHMAC',
-                  'user': '*',
-                  'realm': '*',
-                  'scope': 'selfservice', }
+        policy = {
+            "name": "T1",
+            "action": "enrollHMAC",
+            "user": "*",
+            "realm": "*",
+            "scope": "selfservice",
+        }
 
-        response = self.make_system_request('setPolicy', params=policy)
+        response = self.make_system_request("setPolicy", params=policy)
 
         # for passthru_user1 do check if policy is defined
-        auth_user = ('passthru_user1@' + self.target_realm, 'geheim1')
+        auth_user = ("passthru_user1@" + self.target_realm, "geheim1")
 
-        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
-        response = self.make_userservice_request('enroll',
-                                                 params=params,
-                                                 auth_user=auth_user)
+        params = {"type": "hmac", "genkey": "1", "serial": "hmac123"}
+        response = self.make_userservice_request(
+            "enroll", params=params, auth_user=auth_user
+        )
         jresp = json.loads(response.body)
-        img = jresp.get('detail', {}).get('googleurl', {}).get('img', '')
+        img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
 
         assert "data:image" in img, response
 
@@ -343,39 +354,47 @@ class TestImportUser(TestController):
         check that import users is policy protected
         """
 
-        policy = {'name': 'user_import',
-                  'action': 'import_users',
-                  'user': 'hans',
-                  'realm': '*',
-                  'scope': 'tools', }
+        policy = {
+            "name": "user_import",
+            "action": "import_users",
+            "user": "hans",
+            "realm": "*",
+            "scope": "tools",
+        }
 
-        response = self.make_system_request('setPolicy', params=policy)
+        response = self.make_system_request("setPolicy", params=policy)
 
         assert '"status": true' in response
 
         content = ""
         upload_files = [("file", "user_list", content)]
         params = {
-                  'resolver': self.resolver_name,
-                  'dryrun': False,
-                  'format': 'password',
-                  'delimiter': ',',
-                  'quotechar': '"',
-                  }
+            "resolver": self.resolver_name,
+            "dryrun": False,
+            "format": "password",
+            "delimiter": ",",
+            "quotechar": '"',
+        }
 
-        msg = ("You do not have the administrative right to manage tools."
-               " You are missing a policy scope=tools, action=import_users")
+        msg = (
+            "You do not have the administrative right to manage tools."
+            " You are missing a policy scope=tools, action=import_users"
+        )
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files,)
+        response = self.make_tools_request(
+            action="import_users",
+            params=params,
+            upload_files=upload_files,
+        )
 
         assert msg in response, response
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files,
-                                           auth_user='hans')
+        response = self.make_tools_request(
+            action="import_users",
+            params=params,
+            upload_files=upload_files,
+            auth_user="hans",
+        )
 
         assert not (msg in response), response
         assert '"updated": {}' in response, response
@@ -392,8 +411,9 @@ class TestImportUser(TestController):
 
         # open the csv data and import the users
 
-        def_passwd_file = os.path.join(self.fixture_path,
-                                       'def-passwd-plain.csv')
+        def_passwd_file = os.path.join(
+            self.fixture_path, "def-passwd-plain.csv"
+        )
 
         with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
@@ -401,73 +421,74 @@ class TestImportUser(TestController):
         upload_files = [("file", "user_list", content)]
 
         column_mapping = {
-                "username": 0,
-                "userid": 1,
-                "surname": 2,
-                "givenname": 3,
-                "email": 4,
-                "phone": 5,
-                "mobile": 6,
-                "password": 7}
+            "username": 0,
+            "userid": 1,
+            "surname": 2,
+            "givenname": 3,
+            "email": 4,
+            "phone": 5,
+            "mobile": 6,
+            "password": 7,
+        }
 
         params = {
-                'resolver': self.resolver_name,
-                'passwords_in_plaintext': True,
-                'dryrun': False,
-                'format': 'csv',
-                'delimiter': ',',
-                'quotechar': '"',
-                'column_mapping': json.dumps(column_mapping), }
+            "resolver": self.resolver_name,
+            "passwords_in_plaintext": True,
+            "dryrun": False,
+            "format": "csv",
+            "delimiter": ",",
+            "quotechar": '"',
+            "column_mapping": json.dumps(column_mapping),
+        }
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
 
         assert '"updated": {}' in response, response
 
         jresp = json.loads(response.body)
-        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        created = jresp.get("result", {}).get("value", {}).get("created", {})
         assert len(created) == 24, response
 
         # upload one more times to check for update and not modified
 
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
 
         assert '"modified": {}' in response, response
 
         jresp = json.loads(response.body)
-        updated = jresp.get('result', {}).get('value', {}).get('updated', {})
+        updated = jresp.get("result", {}).get("value", {}).get("updated", {})
         assert len(updated) == 24, response
 
         # login to the selfservice to check the password
-        policy = {'name': 'T1',
-                  'action': 'enrollHMAC',
-                  'user': '*',
-                  'realm': '*',
-                  'scope': 'selfservice', }
-
-        response = self.make_system_request('setPolicy', params=policy)
-
-        setRealmParams = {
-            'realm': 'newrealm',
-            'resolvers': self.resolver_spec
+        policy = {
+            "name": "T1",
+            "action": "enrollHMAC",
+            "user": "*",
+            "realm": "*",
+            "scope": "selfservice",
         }
 
-        response = self.make_system_request(action='setRealm',
-                                            params=setRealmParams
-                                            )
+        response = self.make_system_request("setPolicy", params=policy)
+
+        setRealmParams = {"realm": "newrealm", "resolvers": self.resolver_spec}
+
+        response = self.make_system_request(
+            action="setRealm", params=setRealmParams
+        )
 
         # for passthru_user1 do check if policy is defined
-        auth_user = ('root', 'root')
+        auth_user = ("root", "root")
 
-        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
-        response = self.make_userservice_request('enroll',
-                                                 params=params,
-                                                 auth_user=auth_user)
+        params = {"type": "hmac", "genkey": "1", "serial": "hmac123"}
+        response = self.make_userservice_request(
+            "enroll", params=params, auth_user=auth_user
+        )
         jresp = json.loads(response.body)
-        img = jresp.get('detail', {}).get('googleurl', {}).get('img', '')
+        img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
 
         assert "data:image" in img, response
 
@@ -479,82 +500,87 @@ class TestImportUser(TestController):
         # setup the admin and superadmin system policies
 
         params = {
-            'name': 'superadmin_rights',
-            'scope': 'system',
-            'realm': '*',
-            'action': '*',
-            'user': 'superadmin'
+            "name": "superadmin_rights",
+            "scope": "system",
+            "realm": "*",
+            "action": "*",
+            "user": "superadmin",
         }
 
         response = self.make_system_request(
-            action='setPolicy', params=params, auth_user='superadmin'
-            )
+            action="setPolicy", params=params, auth_user="superadmin"
+        )
         self.assertTrue('"status": true' in response, response)
 
         params = {
-            'name': 'admin_rights',
-            'scope': 'system',
-            'realm': '*',
-            'action': 'read',
-            'user': 'admin'
+            "name": "admin_rights",
+            "scope": "system",
+            "realm": "*",
+            "action": "read",
+            "user": "admin",
         }
 
         response = self.make_system_request(
-            action='setPolicy', params=params, auth_user='superadmin'
-            )
+            action="setPolicy", params=params, auth_user="superadmin"
+        )
         self.assertTrue('"status": true' in response, response)
 
         # setup the tools policy
 
         params = {
-            'name': 'tools_permission',
-            'scope': 'tools',
-            'realm': '*',
-            'action': 'import_users, *',
-            'user': '*'
+            "name": "tools_permission",
+            "scope": "tools",
+            "realm": "*",
+            "action": "import_users, *",
+            "user": "*",
         }
 
         response = self.make_system_request(
-            action='setPolicy', params=params, auth_user='superadmin'
-            )
+            action="setPolicy", params=params, auth_user="superadmin"
+        )
         self.assertTrue('"status": true' in response, response)
 
         # verify that admin cannot import users
 
         try:
 
-            def_passwd_file = os.path.join(self.fixture_path, 'def-passwd')
+            def_passwd_file = os.path.join(self.fixture_path, "def-passwd")
 
             with open(def_passwd_file, "r") as f:
                 content = f.read()
 
             upload_files = [("file", "user_list", content)]
-            params = {'resolver': self.resolver_name,
-                      'dryrun': False,
-                      'format': 'password',
-                      'delimiter': ',',
-                      'quotechar': '"',
-                      }
+            params = {
+                "resolver": self.resolver_name,
+                "dryrun": False,
+                "format": "password",
+                "delimiter": ",",
+                "quotechar": '"',
+            }
 
             response = self.make_tools_request(
-                action='import_users', params=params,
-                upload_files=upload_files, auth_user='admin'
-                )
+                action="import_users",
+                params=params,
+                upload_files=upload_files,
+                auth_user="admin",
+            )
 
             jresp = json.loads(response.body)
             msg = "You are not allowed to write"
-            assert msg in jresp['result']['error']['message']
+            assert msg in jresp["result"]["error"]["message"]
 
             # verify that superadmin can import users
 
             response = self.make_tools_request(
-                action='import_users', params=params, upload_files=upload_files,
-                auth_user='superadmin'
-                )
+                action="import_users",
+                params=params,
+                upload_files=upload_files,
+                auth_user="superadmin",
+            )
 
             jresp = json.loads(response.body)
-            assert jresp['result']['status']
-            assert 'error' not in jresp['result']
+            assert jresp["result"]["status"]
+            assert "error" not in jresp["result"]
 
         finally:
 
@@ -562,10 +588,13 @@ class TestImportUser(TestController):
             # by delete_all_policies
 
             for policy in [
-                'tools_permission', 'admin_rights', 'superadmin_rights'
-                ]:
-                self.delete_policy(policy, auth_user='superadmin')
+                "tools_permission",
+                "admin_rights",
+                "superadmin_rights",
+            ]:
+                self.delete_policy(policy, auth_user="superadmin")
 
-            self.delete_all_policies(auth_user='superadmin')
+            self.delete_all_policies(auth_user="superadmin")
+
 
 # eof ########################################################################

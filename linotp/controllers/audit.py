@@ -60,12 +60,12 @@ log = logging.getLogger(__name__)
 
 class AuditController(BaseController):
 
-    '''
+    """
     this is the controller for doing some audit stuff
 
         https://server/audit/<functionname>
 
-    '''
+    """
 
     def __before__(self, **params):
         """
@@ -76,32 +76,32 @@ class AuditController(BaseController):
                 created by sendError with the context info 'before'
         """
 
-        action = request_context['action']
+        action = request_context["action"]
 
         try:
-            g.audit['client'] = get_client(request)
+            g.audit["client"] = get_client(request)
             check_session(request)
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
             db.session.rollback()
-            return sendError(response, exx, context='before')
+            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
 
-        g.audit['administrator'] = getUserFromRequest(request).get("login")
+        g.audit["administrator"] = getUserFromRequest(request).get("login")
         current_app.audit_obj.log(g.audit)
 
         return response
 
     def search(self):
-        '''
+        """
         This functions searches within the audit trail
         It returns the audit information for the given search pattern
 
@@ -126,22 +126,23 @@ class AuditController(BaseController):
                 ('query', u''), ('qtype', u'serial')]
         returns:
             JSON response or csv format
-        '''
+        """
 
         try:
             log.debug("[search] params: %s" % self.request_params)
 
-            checkPolicyPre('audit', 'view', {})
+            checkPolicyPre("audit", "view", {})
 
             # remove the param outform (and other parameters that should not
             # be used for search!
             search_params = self.request_params.copy()
-            for key in ["outform", 'delimiter']:
+            for key in ["outform", "delimiter"]:
                 if key in search_params:
                     del search_params[key]
 
-            output_format = self.request_params.get(
-                "outform", 'json') or 'json'
+            output_format = (
+                self.request_params.get("outform", "json") or "json"
+            )
 
             streamed_response = None
 
@@ -149,25 +150,27 @@ class AuditController(BaseController):
             audit_query = AuditQuery(search_params, audit_obj)
 
             if output_format == "csv":
-                delimiter = self.request_params.get('delimiter', ',') or ','
+                delimiter = self.request_params.get("delimiter", ",") or ","
 
                 streamed_response = Response(
                     stream_with_context(
                         CSVAuditIterator(audit_query, delimiter)
-                    ), mimetype='text/csv'
+                    ),
+                    mimetype="text/csv",
                 )
                 streamed_response.headers.set(
-                    'Content-disposition',
-                    'attachment', filename='linotp-audit.csv')
+                    "Content-disposition",
+                    "attachment",
+                    filename="linotp-audit.csv",
+                )
 
             else:
                 streamed_response = Response(
-                    stream_with_context(
-                        JSONAuditIterator(audit_query)
-                    ), mimetype='application/json'
+                    stream_with_context(JSONAuditIterator(audit_query)),
+                    mimetype="application/json",
                 )
 
-            g.audit['success'] = True
+            g.audit["success"] = True
             db.session.commit()
 
             return streamed_response
@@ -183,4 +186,4 @@ class AuditController(BaseController):
             return sendError(response, "audit/search failed", 0)
 
 
-#eof###########################################################################
+# eof###########################################################################

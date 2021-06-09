@@ -36,22 +36,28 @@ import httplib2
 import getpass
 
 
-
 LOG = logging.getLogger(__name__)
 
 
-
 def parse_datetime(d_string):
-    '''
+    """
     parse an date string and try to convert it to an datetime object
 
     :param d_string: date string
     :return: datetime object
-    '''
+    """
 
     startdate = None
-    fmts = ['%d.%m.%Y+%H:%M', '%d.%m.%Y %H:%M', '%d.%m.%Y %H:%M:%S', '%d.%m.%Y',
-            '%Y-%m-%d+%H:%M', '%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d']
+    fmts = [
+        "%d.%m.%Y+%H:%M",
+        "%d.%m.%Y %H:%M",
+        "%d.%m.%Y %H:%M:%S",
+        "%d.%m.%Y",
+        "%Y-%m-%d+%H:%M",
+        "%Y-%m-%d %H:%M",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d",
+    ]
 
     if d_string is not None and len(d_string) > 0:
         for fmt in fmts:
@@ -63,20 +69,20 @@ def parse_datetime(d_string):
 
     return startdate
 
+
 def parse_dat_data(data, d_string=None):
-    '''
+    """
     this function is called from the web-ui and parses an eToken data file
 
     :param data: data from the web-ui file upload
 
     :return: It returns a dictionary of serial : { /admin/init parameters }
-    '''
+    """
 
-    from linotp.lib.ImportOTP  import ImportException
+    from linotp.lib.ImportOTP import ImportException
 
-    #the result set
+    # the result set
     tokens = {}
-
 
     try:
         startdate = parse_datetime(d_string)
@@ -117,21 +123,21 @@ def parse_dat_data(data, d_string=None):
 
 
 class DatToken(object):
-    '''
-     eToken class which is equivalent to the token definition of the dat file
-    '''
+    """
+    eToken class which is equivalent to the token definition of the dat file
+    """
 
     def __init__(self):
-        '''
+        """
         build up the default values
-        '''
+        """
 
         ## the init_params are the definitions, which will be forwarded to the
         ## linotp server
         self.init_params = {}
 
         self.timestep = 30
-        self.init_params['timeStep'] = self.timestep
+        self.init_params["timeStep"] = self.timestep
 
         self.serial = "eToken"
         self.startdate = datetime.datetime(2000, 1, 1)
@@ -143,13 +149,13 @@ class DatToken(object):
         return self.init_params
 
     def set_startdate(self, startdate):
-        '''
+        """
         put in the startdate after creating the token
 
         :param startdate: wehen the counter will start counting datetime format
 
         :return: - nothing -
-        '''
+        """
         self.startdate = startdate
 
     def set(self, key, val):
@@ -170,22 +176,22 @@ class DatToken(object):
         """
 
         ## skip coment lines
-        if line.startswith('#'):
+        if line.startswith("#"):
             return
         ## skip comments at the line end
-        if '#' in line:
-            (line, _rest) = line.split('#', 2)
+        if "#" in line:
+            (line, _rest) = line.split("#", 2)
 
         ## the top level definition have a key value separator ':'
-        if ':' in line:
-            index = line.index(':')
+        if ":" in line:
+            index = line.index(":")
             key = line[:index]
-            val = line[index + 1:]
+            val = line[index + 1 :]
             key = key.strip()
             val = val.strip()
 
-            if hasattr(self, 'set_' + key):
-                getattr(self, 'set_' + key)(val)
+            if hasattr(self, "set_" + key):
+                getattr(self, "set_" + key)(val)
             else:
                 self.set(key, val)
         return
@@ -200,21 +206,21 @@ class DatToken(object):
         :return: - nothing -
         """
 
-        #sccKey=8c281387001e801dc0f5e1f08d0728d3d6dca3ce0febd931cf3374...4891;
-        #sccMode=T;
-        #sccPwLen=6;
-        #sccTick=30;
-        #sccPrTime=2011/05/03 02:46:54;
-        #crypto=HmacSHA256;
-        #sccVer=6.2;
-        params = value.split(';')
+        # sccKey=8c281387001e801dc0f5e1f08d0728d3d6dca3ce0febd931cf3374...4891;
+        # sccMode=T;
+        # sccPwLen=6;
+        # sccTick=30;
+        # sccPrTime=2011/05/03 02:46:54;
+        # crypto=HmacSHA256;
+        # sccVer=6.2;
+        params = value.split(";")
         for param in params:
-            if '=' in param:
-                (key, val) = param.split('=')
+            if "=" in param:
+                (key, val) = param.split("=")
 
                 ## again call a secific attribute or generic setter
-                if hasattr(self, 'set_' + key):
-                    getattr(self, 'set_' + key)(val)
+                if hasattr(self, "set_" + key):
+                    getattr(self, "set_" + key)(val)
                 else:
                     self.set(key, val)
         return
@@ -228,7 +234,7 @@ class DatToken(object):
         :return: - nothing -
         """
         self.serial = value
-        self.init_params['serial'] = value
+        self.init_params["serial"] = value
         return
 
     def set_sccTokenType(self, value):
@@ -239,11 +245,10 @@ class DatToken(object):
         :return: - nothing -
         """
 
-        if 'description' in self.init_params:
-            value = self.init_params.get('description') + ' ' + value
-        self.init_params['description'] = value
+        if "description" in self.init_params:
+            value = self.init_params.get("description") + " " + value
+        self.init_params["description"] = value
         return
-
 
     def set_sccTick(self, value):
         """
@@ -254,7 +259,7 @@ class DatToken(object):
         """
 
         self.timestep = int(value)
-        self.init_params['timeStep'] = int(value)
+        self.init_params["timeStep"] = int(value)
         return
 
     def set_sccPwLen(self, value):
@@ -264,11 +269,11 @@ class DatToken(object):
         :param value: value of the setter
         :return: - nothing -
         """
-        self.init_params['otplen'] = int(value)
+        self.init_params["otplen"] = int(value)
         return
 
     def set_sccPrTime(self, value):
-        '''
+        """
         if the token definition hat this attribute, we can assume
         that we have a timebased eToken, which starts its counter
         which starts the timecount with 1.1.2000 and not in 1.1.1970
@@ -276,18 +281,18 @@ class DatToken(object):
 
         :param value: value of the setter
         :return: - nothing -
-        '''
+        """
 
         ## calculate the time delta into counter ticks
         counter = self.startdate.strftime("%s")
-        self.init_params['timeShift'] = self.odir * int(counter)
+        self.init_params["timeShift"] = self.odir * int(counter)
 
         ## the value e.g. 2011/05/03 02:46:54;, will be appended
         ## to the token description
 
-        if 'description' in self.init_params:
-            value = self.init_params.get('description') + ' ' + value
-        self.init_params['description'] = value
+        if "description" in self.init_params:
+            value = self.init_params.get("description") + " " + value
+        self.init_params["description"] = value
         return
 
     def set_sccMode(self, value):
@@ -298,14 +303,13 @@ class DatToken(object):
         :return: - nothing -
         """
 
-        typ = 'hmac'
-        if value.upper() == 'T':
-            typ = 'totp'
-        elif value.upper() == 'E':
-            typ = 'hmac'
+        typ = "hmac"
+        if value.upper() == "T":
+            typ = "totp"
+        elif value.upper() == "E":
+            typ = "hmac"
 
-        self.init_params['type'] = typ
-
+        self.init_params["type"] = typ
 
     def set_sccKey(self, val):
         """
@@ -314,7 +318,7 @@ class DatToken(object):
         :param value: value of the setter
         :return: - nothing -
         """
-        self.init_params['otpkey'] = val
+        self.init_params["otpkey"] = val
 
     def set_crypto(self, val):
         """
@@ -323,13 +327,14 @@ class DatToken(object):
         :param value: value of the setter
         :return: - nothing -
         """
-        if val == 'HmacSHA256':
-            self.init_params['hashlib'] = 'sha256'
+        if val == "HmacSHA256":
+            self.init_params["hashlib"] = "sha256"
         return
 
     def __repr__(self):
         rep = "<eToken %s>" % self.init_params
         return rep
+
 
 def create_token(lines, startdate=None):
     """
@@ -341,7 +346,7 @@ def create_token(lines, startdate=None):
     """
     token = None
     for line in lines:
-        if line.startswith('#'):
+        if line.startswith("#"):
             continue
         if token is None:
             token = DatToken()
@@ -350,8 +355,9 @@ def create_token(lines, startdate=None):
         token.add_info(line)
     return token
 
+
 def get_session(lino_url, user=None, pwd=None):
-    '''
+    """
     return an LinOTP Session context, which is
     the session and the cookie in the header
 
@@ -360,34 +366,37 @@ def get_session(lino_url, user=None, pwd=None):
     :param pwd: the password of the user
 
     :return: tuple of session and header
-    '''
+    """
 
     http = httplib2.Http(disable_ssl_certificate_validation=True)
 
     session = None
     if user is not None:
-        url = lino_url + 'admin/getsession'
+        url = lino_url + "admin/getsession"
         http.add_credentials(user, pwd)
-        resp, content = http.request(url, 'POST')
+        resp, content = http.request(url, "POST")
 
-        if resp['status'] != '200':
-            LOG.error('Admin login failed: %r' % resp)
+        if resp["status"] != "200":
+            LOG.error("Admin login failed: %r" % resp)
             sys.exit(1)
 
         try:
-            session = \
-               http.cookies.SimpleCookie(resp['set-cookie'])['admin_session'].value
+            session = http.cookies.SimpleCookie(resp["set-cookie"])[
+                "admin_session"
+            ].value
         except Exception as exception:
-            LOG.error('Could not retrieve session. Exception was: %r'
-                      % exception)
+            LOG.error(
+                "Could not retrieve session. Exception was: %r" % exception
+            )
             raise exception
 
     ## add headers, as they transefer the cookies
     headers = {}
     if session is not None:
-        headers['Cookie'] = resp['set-cookie']
+        headers["Cookie"] = resp["set-cookie"]
 
     return (session, headers)
+
 
 def submit_tokens(lino_url, tokens, user=None, pwd=None):
     """
@@ -408,7 +417,7 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
         # Prepare the data
         query_args = token.get_initparams()
         if session is not None:
-            query_args['session'] = session
+            query_args["session"] = session
         data = urllib.parse.urlencode(query_args)
 
         try:
@@ -422,19 +431,24 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
 
         LOG.debug("%s" % content)
 
-        if resp['status'] == '200':
+        if resp["status"] == "200":
             res = json.loads(content)
-            suc = res.get('result').get("value")
+            suc = res.get("result").get("value")
 
-            LOG.info("Storing %s: %r" % (query_args.get('serial'), suc))
+            LOG.info("Storing %s: %r" % (query_args.get("serial"), suc))
             if suc is False:
                 LOG.error("%s" % content)
         else:
             # Print response
-            LOG.error("Error during token submission. Response was: %r, "
-                      "Content: %s", resp, content)
+            LOG.error(
+                "Error during token submission. Response was: %r, "
+                "Content: %s",
+                resp,
+                content,
+            )
 
     return
+
 
 def process_file(filename, startdate, lino_url=None, user=None, password=None):
     """
@@ -481,14 +495,17 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
 
     return
 
+
 def main():
-    '''
+    """
     main - parse the args and start the processing
-    '''
+    """
     try:
-        opts, _args = getopt(sys.argv[1:], "hdc:f:u:s:",
-                ["help", "debug", "create", "file", "user",
-                 "startdate"])
+        opts, _args = getopt(
+            sys.argv[1:],
+            "hdc:f:u:s:",
+            ["help", "debug", "create", "file", "user", "startdate"],
+        )
 
     except GetoptError:
         print("There is an error in your parameter syntax:")
@@ -504,37 +521,42 @@ def main():
 
     for opt, arg in opts:
 
-        if opt in ('-h', '--help'):
+        if opt in ("-h", "--help"):
             usage()
             sys.exit(0)
 
-        elif opt in ('-c', '--create'):
+        elif opt in ("-c", "--create"):
             url = arg
 
-        elif opt in ('-f', "--file"):
+        elif opt in ("-f", "--file"):
             filename = arg
 
-        elif opt in ('-d', "--debug"):
+        elif opt in ("-d", "--debug"):
             LOG.setLevel(logging.DEBUG)
 
-        elif opt in ('-u', "--user"):
+        elif opt in ("-u", "--user"):
             user = arg
             password = getpass.getpass()
 
-        elif opt in ('-s', "--startdate"):
+        elif opt in ("-s", "--startdate"):
             d_string = arg
             startdate = parse_datetime(d_string)
 
-
     if filename is None:
-        print ("Missing token filename parameter!")
+        print("Missing token filename parameter!")
         usage()
         sys.exit(1)
 
-    process_file(filename, startdate=startdate, lino_url=url,
-                 user=user, password=password)
+    process_file(
+        filename,
+        startdate=startdate,
+        lino_url=url,
+        user=user,
+        password=password,
+    )
 
     return
+
 
 def usage():
     """
@@ -554,9 +576,9 @@ def usage():
 
     print(usage_def)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     LOG = logging.getLogger()
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 
     main()
-

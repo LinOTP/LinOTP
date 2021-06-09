@@ -33,26 +33,25 @@ from configobj import ConfigObj
 
 from linotp.lib.policy.manage import import_policies
 
+
 class TestImportPolicy(unittest.TestCase):
-    """
-    """
-    @patch('linotp.lib.policy.manage.setPolicy')
-    def test_import_policy(
-            self,
-            mocked_setPolicy
-            ):
+    """"""
+
+    @patch("linotp.lib.policy.manage.setPolicy")
+    def test_import_policy(self, mocked_setPolicy):
         """
         test the import of policies with empty or no existing realm
         """
 
         return_value = {
-            'realm': True,
-            'active': True,
-            'client': True,
-            'user': True,
-            'time': True,
-            'action': True,
-            'scope': True}
+            "realm": True,
+            "active": True,
+            "client": True,
+            "user": True,
+            "time": True,
+            "action": True,
+            "scope": True,
+        }
 
         mocked_setPolicy.return_value = return_value
 
@@ -70,14 +69,13 @@ action = "otppin=password "
 scope = authentication
 """
 
-        policies_config = ConfigObj(fileString.split('\n'),
-                             encoding="UTF-8")
+        policies_config = ConfigObj(fileString.split("\n"), encoding="UTF-8")
 
         _result = import_policies(policies_config)
 
         args, _kwargs = mocked_setPolicy.call_args
         policy = args[0]
-        assert policy['realm'] == "*"
+        assert policy["realm"] == "*"
 
         # ------------------------------------------------------------------ --
 
@@ -93,15 +91,15 @@ scope = authentication
 
 """
 
-        policies_config = ConfigObj(fileString2.split('\n'),
-                             encoding="UTF-8")
+        policies_config = ConfigObj(fileString2.split("\n"), encoding="UTF-8")
 
         _result = import_policies(policies_config)
 
         args, _kwargs = mocked_setPolicy.call_args
         policy = args[0]
-        assert policy['realm'] == "*"
+        assert policy["realm"] == "*"
 
         return
+
 
 # eof #

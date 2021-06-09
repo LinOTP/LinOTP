@@ -28,20 +28,22 @@
 import re
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
-from linotp.lib.ImportOTP  import ImportException
+from linotp.lib.ImportOTP import ImportException
 
 
 def checkserial(serial):
-    '''
+    """
     TODO: What should the serials look like?
-    '''
+    """
     return True
 
+
 def parseDPWdata(data):
-    '''
+    """
     This function parses data of a file containing the secrets for Tagespasswort-Tokens
 
     each line in the file has the format
@@ -52,7 +54,7 @@ def parseDPWdata(data):
 
     It returns a dictionary of
         serial : { hmac_key , type }
-    '''
+    """
 
     TOKENS = {}
     TOKEN_TYPE = "dpw"
@@ -65,7 +67,7 @@ def parseDPWdata(data):
             key = m.groups()[1]
             if checkserial(serial):
                 log.debug("import tagespasswort token with serial %s" % serial)
-                TOKENS[serial] = { 'hmac_key' : key, 'type' : TOKEN_TYPE }
+                TOKENS[serial] = {"hmac_key": key, "type": TOKEN_TYPE}
             else:
                 log.warning("Found a non-matching line: %s" % line)
 

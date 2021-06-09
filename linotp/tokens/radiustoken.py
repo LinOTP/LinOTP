@@ -52,10 +52,10 @@ VOID_RADIUS_SECRET = "voidRadiusSecret"
 
 ###############################################
 
-@tokenclass_registry.class_entry('radius')
-@tokenclass_registry.class_entry('linotp.tokens.radiustoken.RadiusTokenClass')
-class RadiusTokenClass(RemoteTokenClass):
 
+@tokenclass_registry.class_entry("radius")
+@tokenclass_registry.class_entry("linotp.tokens.radiustoken.RadiusTokenClass")
+class RadiusTokenClass(RemoteTokenClass):
     def __init__(self, aToken):
         RemoteTokenClass.__init__(self, aToken)
         self.setType("radius")
@@ -74,8 +74,8 @@ class RadiusTokenClass(RemoteTokenClass):
         return "LSRA"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
-        '''
+    def getClassInfo(cls, key=None, ret="all"):
+        """
         getClassInfo - returns a subtree of the token definition
 
         :param key: subsection identifier
@@ -87,33 +87,42 @@ class RadiusTokenClass(RemoteTokenClass):
         :return: subsection if key exists or user defined
         :rtype: s.o.
 
-        '''
+        """
 
         res = {
-            'type': 'radius',
-            'title': 'RADIUS Token',
-            'description': ('RADIUS token to forward the authentication request to another RADIUS server'),
-
-            'init': {'page': {'html': 'radiustoken.mako',
-                              'scope': 'enroll', },
-                     'title': {'html': 'radiustoken.mako',
-                               'scope': 'enroll.title', },
-                     },
-
-            'config': {'page': {'html': 'radiustoken.mako',
-                                'scope': 'config', },
-                       'title': {'html': 'radiustoken.mako',
-                                 'scope': 'config.title', },
-                       },
-
-            'selfservice':  {},
-            'policy': {},
+            "type": "radius",
+            "title": "RADIUS Token",
+            "description": (
+                "RADIUS token to forward the authentication request to another RADIUS server"
+            ),
+            "init": {
+                "page": {
+                    "html": "radiustoken.mako",
+                    "scope": "enroll",
+                },
+                "title": {
+                    "html": "radiustoken.mako",
+                    "scope": "enroll.title",
+                },
+            },
+            "config": {
+                "page": {
+                    "html": "radiustoken.mako",
+                    "scope": "config",
+                },
+                "title": {
+                    "html": "radiustoken.mako",
+                    "scope": "config.title",
+                },
+            },
+            "selfservice": {},
+            "policy": {},
         }
 
         if key is not None and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
         return ret
 
@@ -147,7 +156,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
         TokenClass.update(self, param)
         # We need to write the secret!
-        self.setOtpKey(self.radiusSecret.encode('utf-8').hex())
+        self.setOtpKey(self.radiusSecret.encode("utf-8").hex())
 
         self.addToTokenInfo("radius.server", self.radiusServer)
         self.addToTokenInfo("radius.local_checkpin", self.radiusLocal_checkpin)
@@ -169,14 +178,14 @@ class RadiusTokenClass(RemoteTokenClass):
         return local_check
 
     def checkPin(self, pin, options=None):
-        '''
+        """
         check the pin - either remote or localy
         - in case of remote, we return true, as the
           the splitPinPass will put the passw then in the otpVal
 
         :param pin: the pin which should be checked
         :param options: the additional request parameters
-        '''
+        """
         res = True
 
         if self.check_pin_local():
@@ -186,10 +195,10 @@ class RadiusTokenClass(RemoteTokenClass):
         return res
 
     def splitPinPass(self, passw):
-        '''
+        """
         Split the PIN and the OTP value.
         Only if it is locally checked and not remotely.
-        '''
+        """
         pin = ""
         otpval = ""
 
@@ -203,14 +212,17 @@ class RadiusTokenClass(RemoteTokenClass):
             pin = ""
             otpval = passw
 
-        log.debug("[splitPinPass] [radiustoken] returning (len:%s) (len:%s)",
-                  len(pin), len(otpval))
+        log.debug(
+            "[splitPinPass] [radiustoken] returning (len:%s) (len:%s)",
+            len(pin),
+            len(otpval),
+        )
         return pin, otpval
 
     def do_request(self, anOtpVal, transactionid=None, user=None):
-        '''
+        """
         Here we contact the Radius Server to verify the pass
-        '''
+        """
 
         reply = {}
         res = False
@@ -227,8 +239,10 @@ class RadiusTokenClass(RemoteTokenClass):
             log.warning("Usage of default radius secret is not recomended!!")
 
         # here we also need to check for radius.user
-        log.debug("[do_request] checking OTP len:%s on radius server: %s,"
-                  "  user: %s" % (len(anOtpVal), radiusServer, radiusUser))
+        log.debug(
+            "[do_request] checking OTP len:%s on radius server: %s,"
+            "  user: %s" % (len(anOtpVal), radiusServer, radiusUser)
+        )
 
         try:
             # pyrad does not allow to set timeout and retries.
@@ -236,30 +250,38 @@ class RadiusTokenClass(RemoteTokenClass):
 
             # TODO: At the moment we support only one radius server.
             # No round robin.
-            server = radiusServer.split(':')
+            server = radiusServer.split(":")
             r_server = server[0]
             r_authport = 1812
 
-            nas_identifier = current_app.config['RADIUS_NAS_IDENTIFIER']
+            nas_identifier = current_app.config["RADIUS_NAS_IDENTIFIER"]
             r_dict = current_app.getRadiusDictionaryPath()
 
             if len(server) >= 2:
                 r_authport = int(server[1])
-            log.debug("[do_request] [RadiusToken] NAS Identifier: %r, "
-                      "Dictionary: %r" % (nas_identifier, r_dict))
+            log.debug(
+                "[do_request] [RadiusToken] NAS Identifier: %r, "
+                "Dictionary: %r" % (nas_identifier, r_dict)
+            )
 
-            log.debug("[do_request] [RadiusToken] constructing client object "
-                      "with server: %r, port: %r, secret: %r" %
-                      (r_server, r_authport, radiusSecret))
+            log.debug(
+                "[do_request] [RadiusToken] constructing client object "
+                "with server: %r, port: %r, secret: %r"
+                % (r_server, r_authport, radiusSecret)
+            )
 
-            srv = Client(server=r_server,
-                         authport=r_authport,
-                         secret=radiusSecret,
-                         dict=Dictionary(r_dict))
+            srv = Client(
+                server=r_server,
+                authport=r_authport,
+                secret=radiusSecret,
+                dict=Dictionary(r_dict),
+            )
 
-            req = srv.CreateAuthPacket(code=pyrad.packet.AccessRequest,
-                                       User_Name=radiusUser.encode('ascii'),
-                                       NAS_Identifier=nas_identifier.encode('ascii'))
+            req = srv.CreateAuthPacket(
+                code=pyrad.packet.AccessRequest,
+                User_Name=radiusUser.encode("ascii"),
+                NAS_Identifier=nas_identifier.encode("ascii"),
+            )
 
             req["User-Password"] = req.PwCrypt(anOtpVal)
             if transactionid is not None:
@@ -285,18 +307,24 @@ class RadiusTokenClass(RemoteTokenClass):
                 self.remote_challenge_response = reply
 
             elif response.code == pyrad.packet.AccessAccept:
-                log.info("[do_request] [RadiusToken] Radiusserver %s granted "
-                         "access to user %s." % (r_server, radiusUser))
+                log.info(
+                    "[do_request] [RadiusToken] Radiusserver %s granted "
+                    "access to user %s." % (r_server, radiusUser)
+                )
                 otp_count = 0
                 res = True
             else:
-                log.warning("[do_request] [RadiusToken] Radiusserver %s"
-                            "rejected access to user %s." %
-                            (r_server, radiusUser))
+                log.warning(
+                    "[do_request] [RadiusToken] Radiusserver %s"
+                    "rejected access to user %s." % (r_server, radiusUser)
+                )
                 res = False
 
         except Exception as ex:
-            log.exception("[do_request] [RadiusToken] Error contacting radius"
-                          " Server: %r", ex)
+            log.exception(
+                "[do_request] [RadiusToken] Error contacting radius"
+                " Server: %r",
+                ex,
+            )
 
         return (res, otp_count, reply)

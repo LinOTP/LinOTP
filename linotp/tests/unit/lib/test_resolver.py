@@ -30,52 +30,59 @@ from mock import patch, ANY
 
 from linotp.lib import resolver
 
+
 @pytest.mark.usefixtures("app")
 class TestGetResolverList(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         super(TestGetResolverList, cls).setUpClass()
 
-    @patch('linotp.lib.resolver.get_resolver_types', return_value=['test'])
-    def _do_readonly_param_test(self, param, is_invalid, expected_readonly, mock_get_types):
+    @patch("linotp.lib.resolver.get_resolver_types", return_value=["test"])
+    def _do_readonly_param_test(
+        self, param, is_invalid, expected_readonly, mock_get_types
+    ):
         """
         Call getresolverlist with given configuration
         """
 
         conf = {
-            'linotp.test.name.UnitTestResolver': 'UnitTestResolver',
-            'linotp.test.readonly.UnitTestResolver': param,
-            }
+            "linotp.test.name.UnitTestResolver": "UnitTestResolver",
+            "linotp.test.readonly.UnitTestResolver": param,
+        }
 
-        with patch('linotp.lib.resolver.context', return_value=conf) as mock_context:
+        with patch(
+            "linotp.lib.resolver.context", return_value=conf
+        ) as mock_context:
             mock_context.get.return_value = conf
-            with patch('linotp.lib.resolver.log') as mock_log:
+            with patch("linotp.lib.resolver.log") as mock_log:
                 ret = resolver.getResolverList()
 
                 if is_invalid:
                     # Invalid parameter will log a message
                     mock_log.info.assert_called_with(
-                        "Failed to convert 'readonly' attribute %r:%r", ANY, param)
+                        "Failed to convert 'readonly' attribute %r:%r",
+                        ANY,
+                        param,
+                    )
 
                 # If readonly, the resulting resolver has config key=readonly, value=True
                 # If not readonly, the resulting resolver does not have the readonly key
-                r = ret['UnitTestResolver']
+                r = ret["UnitTestResolver"]
                 if expected_readonly:
-                    assert r['readonly'] == True
+                    assert r["readonly"] == True
                 else:
-                    assert 'readonly' not in r
+                    assert "readonly" not in r
 
     def test_get_resolverlist_with_invalid_readonly(self):
         """
         test: an invalid readonly conf entry will raise an exception
         """
-        self._do_readonly_param_test('truly', True, None)
+        self._do_readonly_param_test("truly", True, None)
 
     def test_get_resolverlist_readonly_param(self):
         """
         check true/false values are correctly interpreted
         """
-        self._do_readonly_param_test('', False, False)
-        self._do_readonly_param_test('true', False, True)
-        self._do_readonly_param_test('false', False, False)
+        self._do_readonly_param_test("", False, False)
+        self._do_readonly_param_test("true", False, True)
+        self._do_readonly_param_test("false", False, False)

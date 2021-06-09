@@ -58,7 +58,7 @@ class TestGetSerialController(TestController):
     ###########################################################################
 
     def createHOtpToken(self, hashlib, serial):
-        '''
+        """
         // Seed for HMAC-SHA1 - 20 bytes
         String seed = "3132333435363738393031323334353637383930";
         // Seed for HMAC-SHA256 - 32 bytes
@@ -69,46 +69,49 @@ class TestGetSerialController(TestController):
         "3132333435363738393031323334353637383930" +
         "3132333435363738393031323334353637383930" +
         "31323334";
-        '''
+        """
 
-        if (hashlib == "SHA512"):
-            otpkey = ("31323334353637383930313233343536373839303132333435363"
-                      "73839303132333435363738393031323334353637383930313233"
-                      "3435363738393031323334")
+        if hashlib == "SHA512":
+            otpkey = (
+                "31323334353637383930313233343536373839303132333435363"
+                "73839303132333435363738393031323334353637383930313233"
+                "3435363738393031323334"
+            )
 
-        elif (hashlib == "SHA256"):
-            otpkey = ("3132333435363738393031323334353637383930313233343536"
-                      "373839303132")
+        elif hashlib == "SHA256":
+            otpkey = (
+                "3132333435363738393031323334353637383930313233343536"
+                "373839303132"
+            )
         else:
 
             otpkey = "3132333435363738393031323334353637383930"
 
         parameters = {
-                  "serial": serial,
-                  "type": "HMAC",
-                  # 64 byte key
-                  "otpkey": otpkey,
-                  "otppin": "1234",
-                  "pin": "pin",
-                  "otplen": 6,
-                  "description": "time based HMAC TestToken1",
-                  "hashlib": hashlib,
-                  }
+            "serial": serial,
+            "type": "HMAC",
+            # 64 byte key
+            "otpkey": otpkey,
+            "otppin": "1234",
+            "pin": "pin",
+            "otplen": 6,
+            "description": "time based HMAC TestToken1",
+            "hashlib": hashlib,
+        }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
     def setTokenRealm(self, serial, realms):
-        parameters = {"serial": serial,
-                      "realms": realms}
+        parameters = {"serial": serial, "realms": realms}
 
         response = self.make_admin_request("tokenrealm", params=parameters)
         return response
 
     def initToken(self):
-        '''
+        """
         init two tokens in two realms
-        '''
+        """
 
         self.createHOtpToken("SHA1", "oath_mydef")
 
@@ -129,10 +132,13 @@ class TestGetSerialController(TestController):
         # but as this is still used in the web gui, we leave this here
 
         parameters = {
-            "passwdresolver.fileName.mdef":
-                os.path.join(self.fixture_path, "def-passwd"),
-            "passwdresolver.fileName.mrealm":
-                os.path.join(self.fixture_path, "def-passwd")}
+            "passwdresolver.fileName.mdef": os.path.join(
+                self.fixture_path, "def-passwd"
+            ),
+            "passwdresolver.fileName.mrealm": os.path.join(
+                self.fixture_path, "def-passwd"
+            ),
+        }
 
         resp = self.make_system_request("setConfig", params=parameters)
         assert '"status": true' in resp, resp
@@ -140,7 +146,8 @@ class TestGetSerialController(TestController):
         # create realms
         parameters = {
             "realm": "mydef",
-            "resolvers": "useridresolver.PasswdIdResolver.IdResolver.mdef"}
+            "resolvers": "useridresolver.PasswdIdResolver.IdResolver.mdef",
+        }
 
         resp = self.make_system_request("setRealm", params=parameters)
 
@@ -150,7 +157,8 @@ class TestGetSerialController(TestController):
 
         parameters = {
             "realm": "myrealm",
-            "resolvers": "useridresolver.passwdresolver.mrealm"}
+            "resolvers": "useridresolver.passwdresolver.mrealm",
+        }
 
         resp = self.make_system_request("setRealm", params=parameters)
         assert '"status": true' in resp, resp
@@ -162,36 +170,32 @@ class TestGetSerialController(TestController):
         assert '"status": true' in resp, resp
 
     def test_02_token01_success(self):
-        '''
+        """
         test for the otp of the first token, with all realms
-        '''
+        """
 
-        parameters = {'otp': '359152'}
-        response = self.make_admin_request('getSerialByOtp',
-                                           params=parameters)
+        parameters = {"otp": "359152"}
+        response = self.make_admin_request("getSerialByOtp", params=parameters)
         assert '"serial": "oath_mydef"' in response, response
 
         # test for the otp of the first token, with only in realm mydef
         # But it fails, due to same OTP value!
 
-        parameters = {'otp': '359152',
-                      'realm': 'mydef'}
-        response = self.make_admin_request('getSerialByOtp',
-                                           params=parameters)
+        parameters = {"otp": "359152", "realm": "mydef"}
+        response = self.make_admin_request("getSerialByOtp", params=parameters)
         assert '"serial": ""' in response, response
 
         # test for the otp of the first token, with only in realm mydef
 
-        parameters = {'otp': '969429',
-                      'realm': 'mydef'}
-        response = self.make_admin_request('getSerialByOtp', params=parameters)
+        parameters = {"otp": "969429", "realm": "mydef"}
+        response = self.make_admin_request("getSerialByOtp", params=parameters)
         assert '"serial": "oath_mydef"' in response, response
 
         # The OTP of the first token shall not be found in the second realm
 
-        parameters = {'otp': '338314',
-                      'realm': 'myrealm'}
-        response = self.make_admin_request('getSerialByOtp', params=parameters)
+        parameters = {"otp": "338314", "realm": "myrealm"}
+        response = self.make_admin_request("getSerialByOtp", params=parameters)
         assert '"serial": ""' in response, response
+
 
 # eof ########################################################################

@@ -36,7 +36,8 @@ import integration_data as data
 from linotp_selenium_helper.manage_ui import ManageUi
 from linotp_selenium_helper.test_case import TestCase
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def testcase():
     """Testcase, which manages the driver and test configuration."""
 
@@ -47,10 +48,12 @@ def testcase():
     yield t
     t.teardown_class()
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def manage_ui(testcase) -> ManageUi:
     """Manage interface."""
     return ManageUi(testcase)
+
 
 @pytest.fixture
 def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
@@ -72,14 +75,15 @@ def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
     useridresolver_manager = testcase.useridresolver_manager
 
     resolver = useridresolver_manager.get_resolver_params_via_api(
-        music_resolver['name']
-        )
+        music_resolver["name"]
+    )
 
-    existing = resolver and resolver['type']
+    existing = resolver and resolver["type"]
 
     if not existing:
         useridresolver_manager.create_resolver_via_api(
-            data.musicians_ldap_resolver)
+            data.musicians_ldap_resolver
+        )
 
     yield dict(
         name=music_resolver["name"],
@@ -90,9 +94,11 @@ def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
     if not existing:
         useridresolver_manager.delete_resolver_via_api(music_resolver["name"])
 
+
 @pytest.fixture
 def musicians_realm(
-        manage_ui: ManageUi, musicians_resolver: Dict[str, str]) -> str:
+    manage_ui: ManageUi, musicians_resolver: Dict[str, str]
+) -> str:
     """Create the musician realm and remove it after the test.
 
     manage a realm for a test:
@@ -110,7 +116,8 @@ def musicians_realm(
 
     if not existing:
         realm_manager.create_via_api(
-            realm_name, musicians_resolver["fullname"])
+            realm_name, musicians_resolver["fullname"]
+        )
 
     yield realm_name
 
