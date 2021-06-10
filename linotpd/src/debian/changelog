@@ -1,206 +1,73 @@
-linotp (3.0~rc4-1) buster-dev; urgency=low
-
-  Fixes:
-  * Repaired broken link to documentation that was caused by a faulty version
-    extraction.
-  * Include the README.md in packaging artifacts
-  * Include forgotten `linotp-create-htdigest` script for installation via setup.py
-  * Updating the support license works again via POST request, in addition to
-    file upload via form submission.
-  * Automatic database migrations for LinOTP 3.0 removes all audit log entries because
-    signatures from old audit log entries - written in LinOTP 2.x (using python 2) -
-    could not be validated with python 3.
-  * Testing controller is no longer active by default in production.
-
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 18 Mar 2021 17:00:00 +0100
-
-linotp (3.0~rc3-1) buster-dev; urgency=low
-
-  Fixes:
-  * Missing freeradius dictionary file used for radius forwarding is now
-    shipped with the debian package again.
-  * `/gettoken/getotp` now works on tokens that are not in a realm.
-  * `/auth/challenge-response` is again a valid way to access the testing page,
-    in addition to `/auth/challenge_response`.
-  * use internal database connection for managed resolvers
-
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Fri, 29 Jan 2021 15:11:18 +0100
-
-linotp (3.0~rc2-1) buster-dev; urgency=low
+linotp (3.0-1) buster; urgency=low
 
   Features:
-  * New Token Self Service interface is installed as a recommended
-    dependency for /selfservice. The existing SelfService is deprecated but
+  * LinOTP is ported from Python 2.7 to Python 3.6.
+  * LinOTP is ported from Pylons to Flask.
+  * Use the LinOTP database connection for managed resolvers to allow managed
+    resolvers to work with replicated databases and after restores on different
+    database connections.
+  * New Token Selfservice user interface is installed as a recommended
+    dependency for "/selfservice". The existing SelfService is deprecated but
     still available under /selfservice-legacy.
   * New config value SITE_ROOT_REDIRECT allows to customize the redirect
-    path if the user requests the site root path ("/"). If not set, the
-    browser is redirected to the selfservice controller interface.
-
-  Breaking changes:
-  * Translations fr, it, es, and zh are removed because of their bad state.
-  * LDAP resolver connections to "ldap://" URLs with encryption switched
-    off no longer attempt "stealth" encryption behind the user's back with
-    an optional fallback to a plain connection. Instead, the encryption
-    state can be explicitly controlled. (In the UI, the LDAP resolver
-    dialog now defaults to "use STARTTLS" when an "ldap://" URL is
-    specified, but if the user deselects this then TLS will not be used at
-    all.)
-  * The `-s` ("simple connection") option of the `linotp ldap-test` command
-    was removed.
-  * Replace unmaintained mysql driver with mysqlclient driver.
-
-  Fixes:
-  * LinOTP legacy SelfService Authorization is now correctly responding with
-    an "unauthorized" http response instead of an internal server error.
-  * After enrollment, push and qr token enrollment status will stay completed
-    even when these tokens are disabled.
-  * support reencoding of linotp2 db's with iso8859 (python2+mysql) by
-    conversion of db entries to utf-8.
-  * Prevent startup when the database schema is out of date.
-  * Ensure configuration files and generated directories are owned by the
-    linotp service user.
-
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Wed, 09 Dec 2020 15:45:18 +0100
-
-linotp (3.0~rc1-1) buster-dev; urgency=low
-
-  Features:
-  * Rename the `linotp backup` command to `linotp dbsnapshot`, and the
-    `linotp backup-legacy` command to `linotp backup`, for clarity.
-  * Remove the linotp-restore(1) man page as `linotp restore` is not a
-    LinOTP command.
-  * Configuration:
-    * Add the SESSION_COOKIE_SECURE configuration setting, which controls
-      the "secure" flag on session cookies. This defaults to "true" in
-      "production" mode and to "false" otherwise.
-
-  Fixes:
-  * setting of totp timeStep does now adjust the otp counter
-    which is used to prevent replay attacks.
-  * Favicon in manage and auth pages is no longer missing
-  * Unintentional file config inclusion in Config database is removed
-    to not have security critical information API accessible
-  * Porting the pkcs11 security module to python3 binary encoding/decoding
-  * Removed predefined yubico apiKey and apiId
-  * The database configuration was not always imported on upgrade due
-    to differences in the apt environment
-  * The old Apache site file is removed on upgrade if unchanged
-
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Tue, 10 Nov 2020 15:11:01 +0200
-
-linotp (3.0~rc0-1) buster-dev; urgency=low
-
-  Features:
-  * Selfservice: the selfservice enrollment of hmac and hotp tokens now honors
-    the default values defined by the selfservice enrollment policies:
-    * hmac_otplen, totp_otplen: for the number of digits of an otp
-    * hmac_hashlib, totp_hashlib: the hmac hashing algorithm
-    * totp_timestep: the time stepping for totp tokens
-  * Policies: three new selfservice policies to customize userservice
-    information fields:
-    * footer_text: Can be used to display e.g. copyright notices
-    * imprint_url: URL to an imprint/ legal notice page
-    * privacy_notice: URL to a privacy notice page
-  * Configuration:
-    * Unify database configuration settings so that the
-      setting is called DATABASE_URI and the corresponding environment
-      variable is LINOTP_DATABASE_URI
-    * Load configuration from individual files under /etc/linotp/conf.d
-      The generated database configuration is now placed in this file
-    * The linotp command now finds the system configuration under
-      /etc/linotp without having to set LINOTP_CFG explicitly
-
-  Fixes:
-  * Prevent LinOTP from starting if database schema is not up-to-date
-  * Translate maxtoken errors correctly
-  * Fix "make extract" command for i18n translations
-
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 22 Oct 2020 15:29:38 +0200
-
-linotp (3.0~b1-1) buster-dev; urgency=medium
-
-  * Set new version 3.0 Beta 2
-
-  Feature:
-  * Server: Omit unreadable-config warning if name starts with dash
-  * Server: `linotp.cfg` improvements
-    * Support for wildcard paths in LINOTP_CFG
-      example: LINOTP_CFG=/etc/linotp/linotp.cfg:/etc/linotp/conf.d/*.cfg
-    * In `LINOTP_CFG`, treat directory `/foo` like `/foo/*.cfg`.
+    path if the user requests the site root path ("/"). If not set, the browser
+    is redirected to the legacy selfservice. The new Selfservice will pick
+    priority over the deprecated Selfservice if installed.
+  * Support reencoding of LinOTP 2 databases from ISO 8859-1 (Latin1) to UTF-8
+    via the LinOTP CLI. Latin1 used to be the default for Python 2 against mysql
+    but is no longer valid for Python 3.
+  * Selfservice supports testing tokens after enrollment via the policy
+    `verify`. This feature only works in the new Selfservice.
+  * Selfservice improved handling of expired sessions.
+  * A new 'linotp' CLI installed on the path provides:
+    * admin - administrative commands to manage the linotp application server.
+    * audit - administrative commands to manage the audit log.
+    * backup - manage database backups.
+    * config - configuration file diagnostics.
+    * dbsnapshot - Manage system-independent database 'snapshots'.
+    * init - key generation and database initialisation/migration.
+    * ldap-test - extensive testing of LDAP backends.
+    * routes - show the available URL endpoints of LinOTP.
+    * run - run a development server.
+    * shell - run a shell in the app context.
+  * Settings can now be configured using environment variables
+    LINOTP_<SETTING_NAME>.
+  * Improved config file handling via LINOTP_CFG environment variable:
+    * LINOTP_CFG env allows to set a custom search path for config files.
+    * `/usr/share/linotp/linotp.cfg` contains distribution default settings.
+    * Support for wildcard paths.
+    * By default, `/etc/linotp/linotp.cfg` and `/etc/linotp/conf.d/*.cfg` are
+      configured for adminsistrator configuration overrides.
+    * LINOTP_CFG env treats directory `/foo` like `/foo/*.cfg`.
     * Read config file list from file if `LINOTP_CFG` doesn't exist.
-  * Server: Improved error code separation to differentiate between different
-    problems preventing token enrollment
-  * Package: Downgrade mysql dependency to Recommends. The system
-    administrator should install the package for their database or allow apt
-    to install recommended packages.
-
-  Fixes:
-  * Fix database configuration on new package installs
-  * Fix policy behaviour:
-    * Specific policies override wildcard policies
-    * Fix quoting of actions such as sms_text="Hello, your otp='<otp>'"
-  * Fix login to /manage after upgrading from LinOTP 2.x to 3.0
-  * User based license evaluation
-    * Check license volume
-    * Check amount of user with tokens (for user based license)
-    * Token count and limit evaluation
-
- -- KeyIdentity GmbH <linotp@keyidentity.com>  Tue, 13 Oct 2020 10:13:40 +0200
-
-linotp (3.0~b0-1) buster-dev; urgency=low
-
-  * Set new version 3.0 Beta
-
-  Features:
-  * CLI: Migration of standalone scripts to linotp subcommands:
-    * `linotp-backup` is now available as `linotp backup create`
-    * `linotp-restore` is now available as `linotp backup restore`
-    * `linotp-create-enckey` is now available as `linotp init enc-key`
-  * CLI: initialization commands are now grouped as sub commands of
-    `linotp init`
-  * CLI: Configuration inspection commands added:
-    * `linotp config show` command displays current configuration settings
-      and can optionally only show settings whose values are different from the
-      hard-coded defaults
-    * `linotp config explain` command displays schema information of available
-      configuration settings
-  * Server: Improved config file handling via LINOTP_CFG environment variable:
-    * LINOTP_CFG env allows to set a custom search path for config files
-    * `/usr/share/linotp/linotp.cfg` contains distribution default settings
-    * By default, `/etc/linotp/linotp.cfg` is configured for adminsistrator
-    overrides
-  * Server: Improved path settings. See DEVELOP.md on how the new options
-    ROOT_DIR, CACHE_DIR, DATA_DIR, and LOGFILE_DIR are used and how they are
-    configured by default
-  * Server: LDAP UserID resolver now allows to configure LDAPS and STARTTLS
-    certificate validation settings per resolver instance. By default, only
-    System trusted certificates are allowed. This setting can be disabled in
-    the resolver configuration. Use the test connection feature to verify the
-    setup
-  * Support added to set up linotp with postgres in postinst through migration
-    to dbconfig-common for database setup
-
-  Fixes:
-  * Server: Logfiles are now correctly written if configured and will no
-    longer remain empty
-  * Server: CSV user import now works correctly with files using quote escaping
-  * Server: HSM support is restored and now supports SoftHSMv2 connections
-  * Server: HSM connections are now correctly pooled and are no longer failing
-    on consecutive requests
-  * Server: Increased server speed due to improved config, database
-    initialization, and audit setup handling not being done as often. Note
-    that the server now only performs a simple database check at startup; the
-    `linotp init database` command must be run manually if the database check
-    fails. The postinst script will still initialize the database though.
-  * Policies: Consistent evaluation of policies is ensured in the "enrollment"
-    scope. Evaluation is adjusted to match all actions for a given user if some
-    of the actions are less explicitly defined regarding user and realm fields
-  * Policies: Scope "selfservice" actions with user:* are no longer evaluated
-    if a more specific policy is matched. This brings parity to the
-    implementation of the legacy policy evaluation engine and ensures that
-    actions can be restricted for a subset of users.
+  * Support for SoftHSMv2.
+  * Migration of standalone scripts to linotp CLI subcommands:
+    * `linotp-backup` is now available as `linotp backup create`.
+    * `linotp-restore` is now available as `linotp backup restore`.
+    * `linotp-create-enckey` is now available as `linotp init enc-key`.
+  * Improved path settings. See DEVELOP.md on how the new options ROOT_DIR,
+    CACHE_DIR, DATA_DIR, and LOGFILE_DIR are used and how they are configured by
+    default.
+  * Improved error code separation to differentiate between different problems
+    preventing token enrollment.
+  * The `/userservice/enroll` API now honors default values for hotp and totp
+    tokens defined by the folowing selfservice policies:
+    * hmac_otplen, totp_otplen: for the number of digits of an OTP.
+    * hmac_hashlib, totp_hashlib: the HMAC hashing algorithm used.
+    * totp_timestep: the time stepping for totp tokens.
+  * Customization of Selfservice information fields via policies:
+    * footer_text: Can be used to display e.g. copyright notices.
+    * imprint_url: URL to an imprint/ legal notice page.
+    * privacy_notice: URL to a privacy notice page.
 
   Removed and no longer supported:
+  * Support for Debian versions before buster.
+  * Apache 2.2 configuration.
+  * linotp.ini configuration file format.
+  * non-systemd init script.
+  * OCRA token.
+  * Vasco token.
+  * OSIAM SCIM UserIdResolver.
   * The following tools scripts are no longer part of LinOTP:
     * linotp-auth-radius
     * linotp-convert-gemalto
@@ -223,54 +90,64 @@ linotp (3.0~b0-1) buster-dev; urgency=low
     * linotp-tokens-used
     * testRadiusChallResponse.sh
     * totp-token
-  * OSIAM SCIM UserIdResolver
+  * Predefined yubico apiKey and apiId placeholder values.
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 17 Sep 2020 19:12:58 +0200
+  Breaking changes:
+  * Translations fr, it, es, and zh are removed because of their bad state.
+  * LinOTP no longer accepts custom LDAP trusted certificates in the
+    UserIDREsolver interface. Instead, it now fully relies on the system trusted
+    certificates.
+  * LDAP resolver connections to "ldap://" URLs with encryption switched off no
+    longer attempt "stealth" encryption behind the user's back with an optional
+    fallback to a plain connection. Instead, the encryption state can be
+    explicitly controlled. (In the UI, the LDAP resolver dialog now defaults to
+    "use STARTTLS" when an "ldap://" URL is specified, but if the user deselects
+    this then TLS will not be used at all.)
+  * LinOTP 3.0 removes all existing audit log entries during automatic database
+    migrations because signatures from old audit log entries - written in
+    LinOTP 2.x (using Python 2) - can not be validated with python 3.
+  * Replace unmaintained mysql driver with mysqlclient driver.
+  * LinOTP no longer works with ISO 8859-1 (Latin1) encoded databases. LinOTP
+    provides a migration path if it detects a database that might require
+    reencoding.
+  * LinOTP no longer initilizes all required data automatically on startup to
+    increase server speed. Instead, the server now only performs a simple
+    database check at startup; the `linotp init database` command must be run
+    manually if the database check fails. The postinst script will still
+    initialize the database though.
 
-linotp (3.0~a0-1) buster-dev; urgency=low
+  Fixes:
+  * `/gettoken/getotp` now works on tokens that are not in a realm.
+  * LinOTP legacy Selfservice authorization is now correctly responding with
+    an "unauthorized" http response instead of an internal server error.
+  * After enrollment, Push- and QR-Token enrollment status will stay completed
+    even when these tokens are disabled.
+  * CSV user import now works correctly with files using quote escaping.
+  * Ensure consistent policy behaviour in all scopes:
+    * Specific policies override wildcard policies. This ensures that actions
+      can be restricted for a subset of users.
+    * Fix quoting of actions such as sms_text="Hello, your otp='<otp>'".
+    * All actions are matched for a given user if some of the actions are less
+      explicitly defined regarding user and realm fields.
+  * User based license evaluation now correctly only counts distinct users.
+  * Translate maxtoken errors correctly.
+  * Changing the totp time step for an existing token now adjusts the otp
+    counter to allow the token to keep working. The otp counter is used to
+    prevent replay attacks.
+  * Unintentional inclusion of file config values in Config database is removed
+    to not have security critical information API accessible.
 
-  * Set new version 3.0 Alpha
+  Packaging:
+  * Include README.md in packaging artifacts.
+  * Ensure configuration files and generated directories are owned by the
+    linotp service user.
+  * Support added to set up linotp with postgres in postinst through migration
+    to dbconfig-common for database setup.
+  * Downgrade mysql dependency to Recommends. The system administrator should
+    install the package for their database or allow apt to install recommended
+    packages.
 
-  Features:
-  * Each token can now store the creation / last access / last verification
-    time if enabled in "System Config -> Settings -> Authorization"
-  * Setting via the manage interface of challenge expiration
-    timeouts for Email and SMS tokens
-  * A new 'linotp' command installed on the path provides:
-    * config show/explain - configuration file diagnostics
-    * init auth-keys/enc-key/database - key generation/database initialisation
-    * ldap-test - extensive testing of LDAP backends
-  * Settings can now be configured using environment variables
-    LINOTP_<SETTING_NAME>
-
-  Policies:
-  * Add selfservice policy to allow token verification
-
-  API features:
-    * [selfservice] support for token verification
-    * [selfservice] improved handling of expired cookies
-
-  Removed and no longer supported:
-  * Support for Debian versions before buster due to Flask version
-  * Apache 2.2 configuration
-  * linotp.ini configuration file format
-  * non-systemd init script
-  * OCRA token
-  * Vasco token
-  * Defining LDAP trusted certificates in the UserResolver interface
-
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Wed, 22 Jul 2020 18:00:33 +0200
-
-linotp (2.90rc0-1) buster-dev; urgency=low
-
-  * Set new version 2.90rc0
-
-  Porting:
-  * Server: port code to run with Flask instead of Pylons
-  * Server: port tests to run with Pytest instead of Nose
-  * Server: port code from Python 2.7 to Python 3.6
-
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 23 Jan 2020 11:42:00 +0200
+ -- LinOTP Packaging <packaging.linotp@arxes-tolina.de>  Wed, 09 Jun 2021 11:54:00 +0200
 
 linotp (2.12.1-1) buster; urgency=low
 
