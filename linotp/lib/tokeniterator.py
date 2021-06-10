@@ -43,6 +43,7 @@ import json
 import fnmatch
 import logging
 import re
+
 ENCODING = "utf-8"
 
 
@@ -82,7 +83,7 @@ def _compare_regex(regex, compare_string):
             return True
 
     except Exception as exx:
-        log.exception("error with regular expression matching %r", exx)
+        log.error("error with regular expression matching %r", exx)
 
     return False
 
@@ -233,10 +234,8 @@ class TokenIterator(object):
                         serials.append(tok.LinOtpTokenSerialnumber)
                 except UserError as ex:
                     # we get an exception if the user is not found
-                    log.debug(
-                        "[TokenIterator::init] no exact user: %r" % (user)
-                    )
-                    log.debug("[TokenIterator::init] %r" % ex)
+                    log.debug("[TokenIterator::init] no exact user: %r", user)
+                    log.debug("[TokenIterator::init] %r", ex)
 
             if len(serials) > 0:
                 # if tokens found, search for their serials
@@ -310,7 +309,7 @@ class TokenIterator(object):
         if len(valid_realms) > 0:
             log.debug(
                 "[TokenIterator::init] adding filter condition"
-                " for realm %r" % valid_realms
+                " for realm %r", valid_realms
             )
 
             # get all matching realms
@@ -537,8 +536,8 @@ class TokenIterator(object):
             self.tokens = self.toks.count()
 
             log.debug(
-                "[TokenIterator] DB-Query returned # of objects: %i"
-                % self.tokens
+                "[TokenIterator] DB-Query returned # of objects: %r",
+                self.tokens
             )
             self.pagesize = self.tokens
             self.it = iter(self.toks)
@@ -565,8 +564,8 @@ class TokenIterator(object):
         self.toks = Token.query.filter(condition).order_by(order).distinct()
         self.tokens = self.toks.count()
         log.debug(
-            "[TokenIterator::init] DB-Query returned # of objects: %i"
-            % self.tokens
+            "[TokenIterator::init] DB-Query returned # of objects: %r",
+            self.tokens
         )
         self.page = thePage + 1
         fpages = float(self.tokens) / float(pagesize)

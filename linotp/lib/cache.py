@@ -68,7 +68,7 @@ def get_cache(cache_name: str, scope: str = None) -> Optional[Cache]:
     except ValueError:
         log.info(
             "caching is disabled due to a value error for expiration "
-            "definition %r" % expiration_conf
+            "definition %r", expiration_conf
         )
         return None
 

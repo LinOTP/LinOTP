@@ -80,7 +80,7 @@ def str2unicode(input_str):
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:
-                log.info("no unicode conversion found for %r" % input_str)
+                log.info("no unicode conversion found for %r", input_str)
                 raise exx
 
     return output_str
@@ -186,7 +186,7 @@ class IdResolver(UserIdResolver):
         if self.fileName == "":
             self.fileName = "/etc/passwd"
 
-        log.info("[loadFile] loading users from file %s" % (self.fileName))
+        log.info("[loadFile] loading users from file %s", self.fileName)
 
         fileHandle = open(self.fileName, "r")
 
@@ -256,11 +256,11 @@ class IdResolver(UserIdResolver):
                        crypt.crypt() function."
             )
             password = password.encode("utf-8")
-        log.info("[checkPass] checking password for user uid %s" % uid)
+        log.info("[checkPass] checking password for user uid %s", uid)
         cryptedpasswd = self.passDict[uid]
         log.debug(
-            "[checkPass] We found the crypted pass %s for uid %s"
-            % (cryptedpasswd, uid)
+            "[checkPass] We found the crypted pass %s for uid %s",
+            cryptedpasswd, uid
         )
         if not cryptedpasswd:
             log.warning(
@@ -271,16 +271,14 @@ class IdResolver(UserIdResolver):
 
         if cryptedpasswd == "x" or cryptedpasswd == "*":
             err = "Sorry, currently no support for shadow passwords"
-            log.error("[checkPass] %s " % err)
+            log.error("[checkPass] %s ", err)
             raise NotImplementedError(err)
 
         if self._verify_password(password, cryptedpasswd):
-            log.info(
-                "[checkPass] successfully authenticated user uid %s" % uid
-            )
+            log.info("[checkPass] successfully authenticated user uid %s", uid)
             return True
         else:
-            log.warning("[checkPass] user uid %s failed to authenticate" % uid)
+            log.warning("[checkPass] user uid %s failed to authenticate", uid)
             return False
 
     @staticmethod

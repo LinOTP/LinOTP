@@ -202,7 +202,7 @@ class TestController(TestCase):
     @classmethod
     def teardown_class(cls):
         """teardown - cleanup of test class execution result"""
-        LOG.info("######## teardown_class: %r" % cls)
+        LOG.info("######## teardown_class: %r", cls)
         return
 
     @staticmethod

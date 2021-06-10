@@ -110,7 +110,7 @@ class ForwardServerPolicy(object):
         """
         make the call to the foreign server
         """
-        log.debug("start request to foreign server: %r" % servers)
+        log.debug("start request to foreign server: %r", servers)
 
         for server in servers.split(" "):
             parsed_server = urllib.parse.urlparse(server)

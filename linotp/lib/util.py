@@ -157,7 +157,7 @@ def generate_otpkey(key_size: int = 20) -> str:
     generates the HMAC key of keysize. Should be 20 or 32
     THe key is returned as a hexlified string
     """
-    log.debug("generating key of size %s" % key_size)
+    log.debug("generating key of size %s", key_size)
     return geturandom(key_size).hex()
 
 
@@ -189,30 +189,28 @@ def check_session(request, scope="admin"):
         no_session_clients.append(no_session_client.strip())
 
     client = request.environ.get("REMOTE_ADDR", None)
-    log.debug(
-        "[check_session] checking %s in %s" % (client, no_session_clients)
-    )
+    log.debug("[check_session] checking %s in %s", client, no_session_clients)
     for network in no_session_clients:
         if not network:
             continue
         try:
             if netaddr.IPAddress(client) in netaddr.IPNetwork(network):
                 log.debug(
-                    "skipping session check since client"
-                    " %s in allowed: %s" % (client, no_session_clients)
+                    "skipping session check since client" " %s in allowed: %s",
+                    client, no_session_clients
                 )
                 return
         except Exception as ex:
             log.warning(
-                "misconfiguration in linotpNoSessionCheck: "
-                "%r - %r" % (network, ex)
+                "misconfiguration in linotpNoSessionCheck: " "%r - %r",
+                network, ex
             )
 
     cookie = request.cookies.get(scope + "_session")
     session = get_request_param(request, "session")
     # doing any other request, we need to check the session!
-    log.debug("[check_session]: session: %s" % session)
-    log.debug("[check_session]: cookie:  %s" % cookie)
+    log.debug("[check_session]: session: %s", session)
+    log.debug("[check_session]: cookie:  %s", cookie)
     if session is None or session == "" or session != cookie:
         log.error("The request did not pass a valid session!")
         abort(401, "You have no valid session!")
@@ -220,8 +218,8 @@ def check_session(request, scope="admin"):
     cookie = request.cookies.get(scope + "_session")
     session = get_request_param(request, "session")
     # doing any other request, we need to check the session!
-    log.debug("[check_session]: session: %s" % session)
-    log.debug("[check_session]: cookie:  %s" % cookie)
+    log.debug("[check_session]: session: %s", session)
+    log.debug("[check_session]: cookie:  %s", cookie)
     if session is None or session == "" or session != cookie:
         log.error("The request did not pass a valid session!")
         abort(401, "You have no valid session!")
@@ -240,7 +238,7 @@ def check_selfservice_session(cookies=None, params=None, url=None):
         return False
 
     if session[:40] != cookie[:40]:
-        log.error("The request %r did not pass a valid session!" % url)
+        log.error("The request %r did not pass a valid session!", url)
         return False
 
     return True
@@ -373,7 +371,7 @@ def _get_client_from_request(request=None):
                     client = originator
                     break
 
-    log.debug("got the client %s" % client)
+    log.debug("got the client %s", client)
     return client
 
 
@@ -394,18 +392,18 @@ def get_client(request):
     try:
         may_overwrite = [c.strip() for c in over_client.split(",")]
     except Exception as e:
-        log.warning("evaluating config entry 'mayOverwriteClient': %r" % e)
+        log.warning("evaluating config entry 'mayOverwriteClient': %r", e)
 
     client = _get_client_from_request(request)
 
     if client in may_overwrite or client is None:
-        log.debug("client %s may overwrite!" % client)
+        log.debug("client %s may overwrite!", client)
 
         client = get_request_param(request, "client")
         if client:
-            log.debug("client overwritten to %s" % client)
+            log.debug("client overwritten to %s", client)
 
-    log.debug("returning client %s" % client)
+    log.debug("returning client %s", client)
     return client
 
 
@@ -511,7 +509,7 @@ def str2unicode(input_str):
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:
-                log.info("no unicode conversion found for %r" % input_str)
+                log.info("no unicode conversion found for %r", input_str)
                 raise exx
 
     return output_str

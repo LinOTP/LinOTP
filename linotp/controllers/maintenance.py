@@ -114,7 +114,7 @@ class MaintenanceController(BaseController):
 
         except Exception as exx:
             db.session.rollback()
-            log.exception(exx)
+            log.error(exx)
             return sendError(response, exx, 1)
 
     def check_status(self):
@@ -135,7 +135,7 @@ class MaintenanceController(BaseController):
 
         except Exception as exx:
             db.session.rollback()  # why?
-            log.exception(exx)
+            log.error(exx)
             raise InternalServerError(str(exx))
 
 

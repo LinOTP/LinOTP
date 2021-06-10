@@ -114,8 +114,8 @@ def check_maxtoken_for_user(user):
     user_realms = _getUserRealms(user)
 
     log.debug(
-        "checking the already assigned tokens for user %r, realms %s"
-        % (user, user_realms)
+        "checking the already assigned tokens for user %r, realms %s",
+        user, user_realms
     )
 
     # ----------------------------------------------------------------------- --
@@ -180,8 +180,8 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
     user_realms = _getUserRealms(user)
 
     log.debug(
-        "checking the already assigned tokens for user %r, realms %s"
-        % (user, user_realms)
+        "checking the already assigned tokens for user %r, realms %s",
+        user, user_realms
     )
 
     # ------------------------------------------------------------------ --

@@ -257,7 +257,7 @@ class UserImport(object):
         except Exception as exx:
 
             self.import_handler.rollback()
-            log.exception(exx)
+            log.error(exx)
             raise exx
 
         finally:

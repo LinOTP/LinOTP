@@ -277,11 +277,11 @@ class YubikeyTokenClass(TokenClass):
         msg_hex = binascii.hexlify(msg_bin)
 
         uid = msg_hex[0:12].decode()
-        log.debug("[checkOtp] uid: %r" % uid)
+        log.debug("[checkOtp] uid: %r", uid)
 
         try:
             prefix = modhex_decode(yubi_prefix)
-            log.debug("[checkOtp] prefix: %r" % prefix)
+            log.debug("[checkOtp] prefix: %r", prefix)
         except (TypeError, KeyError) as exx:
             log.info("Unable to decode token prefix %r! %r", yubi_prefix, exx)
 
@@ -297,8 +297,8 @@ class YubikeyTokenClass(TokenClass):
         random = msg_hex[24:28]
 
         log.debug(
-            "[checkOtp] decrypted: usage_count: %r, session_count: %r"
-            % (usage_counter, session_counter)
+            "[checkOtp] decrypted: usage_count: %r, session_count: %r",
+            usage_counter, session_counter
         )
 
         # The checksum is a CRC-16 (16-bit ISO 13239 1st complement) that
@@ -307,23 +307,22 @@ class YubikeyTokenClass(TokenClass):
         # of 0xf0b8 (see Yubikey-Manual - Chapter 6: Implementation details).
         crc = msg_hex[28:]
         log.debug(
-            "[checkOtp] calculated checksum (61624): %r" % checksum(msg_bin)
+            "[checkOtp] calculated checksum (61624): %r", checksum(msg_bin)
         )
         if checksum(msg_bin) != 0xF0B8:
-            log.warning("[checkOtp] CRC checksum for token %r failed" % serial)
+            log.warning("[checkOtp] CRC checksum for token %r failed", serial)
             return -3
 
         # create the counter as integer
         # Note: The usage counter is stored LSB!
         count_hex = usage_counter[2:4] + usage_counter[0:2] + session_counter
         count_int = int(count_hex, 16)
-        log.debug("[checkOtp] decrypted counter: %r" % count_int)
+        log.debug("[checkOtp] decrypted counter: %r", count_int)
 
         tokenid = self.getFromTokenInfo("yubikey.tokenid")
         if not tokenid:
             log.debug(
-                "[checkOtp] Got no tokenid for %r. Setting to %r."
-                % (serial, uid)
+                "[checkOtp] Got no tokenid for %r. Setting to %r.", serial, uid
             )
             tokenid = uid
             self.addToTokenInfo("yubikey.tokenid", tokenid)
@@ -331,14 +330,16 @@ class YubikeyTokenClass(TokenClass):
         if tokenid != uid:
             # wrong token!
             log.warning(
-                "[checkOtp] The wrong token was presented for %r. Got %r, expected %r."
-                % (serial, uid, tokenid)
+                "[checkOtp] The wrong token was presented for %r. Got %r, expected %r.",
+                serial,
+                uid,
+                tokenid,
             )
             return -2
 
         log.debug(
-            "[checkOtp] compare counter to LinOtpCount: %r"
-            % self.token.LinOtpCount
+            "[checkOtp] compare counter to LinOtpCount: %r",
+            self.token.LinOtpCount
         )
         if count_int >= self.token.LinOtpCount:
             return count_int

@@ -100,7 +100,7 @@ class ValidateController(BaseController):
             g.audit["client"] = get_client(request)
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r" % (action, exx))
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(response, exx, context="before")
 
@@ -229,7 +229,7 @@ class ValidateController(BaseController):
                 (ok, opt) = self._check(param)
             except (AuthorizeException, ParameterError) as exx:
                 log.warning(
-                    "[check] authorization failed for validate/check: %r" % exx
+                    "[check] authorization failed for validate/check: %r", exx
                 )
                 g.audit["success"] = False
                 g.audit["info"] = str(exx)
@@ -250,13 +250,13 @@ class ValidateController(BaseController):
                         param["transactionid"] = opt["transactionid"]
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
-                    log.warning("failed to send QRImage: %r " % exc)
+                    log.warning("failed to send QRImage: %r ", exc)
                     return sendQRImageResult(response, opt, param)
             else:
                 return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
-            log.exception("[check] validate/check failed: %r" % exx)
+            log.error("[check] validate/check failed: %r", exx)
             # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
             g.audit["info"] = "%r" % exx
             db.session.rollback()
@@ -317,7 +317,7 @@ class ValidateController(BaseController):
             return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
-            log.exception("check_status failed: %r" % exx)
+            log.error("check_status failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0)
@@ -367,8 +367,8 @@ class ValidateController(BaseController):
 
             except AuthorizeException as exx:
                 log.warning(
-                    "[check_yubikey] authorization failed for validate/check_yubikey: %r"
-                    % exx
+                    "[check_yubikey] authorization failed for validate/check_yubikey: %r",
+                    exx
                 )
                 g.audit["success"] = False
                 g.audit["info"] = str(exx)
@@ -378,9 +378,7 @@ class ValidateController(BaseController):
             return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
-            log.exception(
-                "[check_yubikey] validate/check_yubikey failed: %r" % exx
-            )
+            log.error("[check_yubikey] validate/check_yubikey failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0)
@@ -396,8 +394,8 @@ class ValidateController(BaseController):
                 (ok, opt) = self._check(param)
             except AuthorizeException as acc:
                 log.warning(
-                    "[check_url] authorization failed for validate/check_url: %r"
-                    % acc
+                    "[check_url] authorization failed for validate/check_url: %r",
+                    acc
                 )
                 g.audit["success"] = False
                 g.audit["action_detail"] = str(acc)
@@ -414,12 +412,12 @@ class ValidateController(BaseController):
 
         except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
-            log.exception("[__before__::%r] webob.exception %r" % acc)
+            log.error("[__before__::%r] webob.exception %r", acc)
             db.session.rollback()
             raise acc
 
         except Exception as exx:
-            log.exception("[check_url] validate/check_url failed: %r" % exx)
+            log.error("[check_url] validate/check_url failed: %r", exx)
             db.session.rollback()
             return sendResult(response, False, 0)
 
@@ -462,8 +460,8 @@ class ValidateController(BaseController):
                     (uid, resId, resIdC) = getUserId(user)
                     userInfo = getUserInfo(uid, resId, resIdC)
                     log.debug(
-                        "[samlcheck] getting attributes for: %s@%s"
-                        % (user.login, user.realm)
+                        "[samlcheck] getting attributes for: %s@%s",
+                        user.login, user.realm
                     )
 
                     res = userInfo
@@ -484,7 +482,7 @@ class ValidateController(BaseController):
             )
 
         except Exception as exx:
-            log.exception("[samlcheck] validate/check failed: %r" % exx)
+            log.error("[samlcheck] validate/check failed: %r", exx)
             db.session.rollback()
             return sendResult(response, False, 0)
 
@@ -532,13 +530,13 @@ class ValidateController(BaseController):
                         param["transactionid"] = opt["transactionid"]
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
-                    log.warning("failed to send QRImage: %r " % exc)
+                    log.warning("failed to send QRImage: %r ", exc)
                     return sendQRImageResult(response, opt, param)
             else:
                 return sendResult(response, value, 1, opt=opt)
 
         except Exception as exx:
-            log.exception("[check_t] validate/check_t failed: %r" % exx)
+            log.error("[check_t] validate/check_t failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0)
@@ -599,8 +597,7 @@ class ValidateController(BaseController):
             return sendResult(response, ok)
 
         except Exception as exx:
-
-            log.exception("validate/accept_transaction failed: %r" % exx)
+            log.error("validate/accept_transaction failed: %r", exx)
             g.audit["info"] = "%r" % exx
             db.session.rollback()
 
@@ -662,8 +659,7 @@ class ValidateController(BaseController):
             return sendResult(response, ok)
 
         except Exception as exx:
-
-            log.exception("validate/reject_transaction failed: %r" % exx)
+            log.error("validate/reject_transaction failed: %r", exx)
             g.audit["info"] = "%r" % exx
             db.session.rollback()
 
@@ -741,13 +737,13 @@ class ValidateController(BaseController):
                         param["transactionid"] = opt["transactionid"]
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
-                    log.warning("failed to send QRImage: %r " % exc)
+                    log.warning("failed to send QRImage: %r ", exc)
                     return sendQRImageResult(response, opt, param)
             else:
                 return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
-            log.exception("[check_s] validate/check_s failed: %r" % exx)
+            log.error("[check_s] validate/check_s failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, id=0, status=False)
@@ -782,10 +778,10 @@ class ValidateController(BaseController):
         try:
             try:
                 (ok, opt) = self._check(param)
-            except AuthorizeException as e:
-                log.warning("[simplecheck] validate/simplecheck: %r" % e)
+            except AuthorizeException as exx:
+                log.warning("[simplecheck] validate/simplecheck: %r", exx)
                 g.audit["success"] = False
-                g.audit["action_detail"] = str(e)
+                g.audit["action_detail"] = str(exx)
                 ok = False
 
             db.session.commit()
@@ -809,7 +805,7 @@ class ValidateController(BaseController):
             return " ".join(res).strip()
 
         except Exception as exx:
-            log.exception("[simplecheck] failed: %r" % exx)
+            log.error("[simplecheck] failed: %r", exx)
             db.session.rollback()
             return ":-("
 
@@ -875,7 +871,7 @@ class ValidateController(BaseController):
             return sendResult(response, ret, opt)
 
         except Exception as exx:
-            log.exception("[smspin] validate/smspin failed: %r" % exx)
+            log.error("[smspin] validate/smspin failed: %r", exx)
             # If an internal error occurs or the SMS gateway did not send
             # the SMS, we write this to the detail info.
             g.audit["info"] = str(exx)
@@ -956,7 +952,7 @@ class ValidateController(BaseController):
         # ------------------------------------------------------------------- --
 
         except Exception as exx:
-            log.exception("validate/pair failed: %r" % exx)
+            log.error("validate/pair failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0, status=False)

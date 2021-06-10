@@ -82,7 +82,7 @@ class FileSMSProvider(ISMSProvider):
             ret = True
 
         except Exception as exx:
-            log.exception("Failed to open file %r", filename)
+            log.error("Failed to open file %r", filename)
             raise ProviderNotAvailable("Failed to open file %r" % filename)
 
         return ret

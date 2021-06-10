@@ -199,10 +199,10 @@ class TestingController(BaseController):
             db.session.commit()
             return "Missing account info."
 
-        except Exception as e:
-            log.exception("[http2sms] %r" % e)
+        except Exception as exx:
+            log.error("[http2sms] %r", exx)
             db.session.rollback()
-            return sendError(response, str(e), 0)
+            return sendError(response, exx, 0)
 
 
 # eof #

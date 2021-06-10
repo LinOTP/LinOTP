@@ -423,9 +423,7 @@ class SMTPEmailProvider(IEmailProvider):
             except NameError as exx:
                 var = str(exx).split()[0].strip("'")
                 replacements[var] = "${%s}" % var
-                LOG.error(
-                    "Template refers to unresolved replacement: %r" % var
-                )
+                LOG.error("Template refers to unresolved replacement: %r", var)
 
     def render_message(self, email_to, subject, message, replacements):
         """

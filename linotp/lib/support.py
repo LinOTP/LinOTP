@@ -175,20 +175,20 @@ def parseSupportLicense(licString: str):
 
     if not licString:
         error = _("Support not available, your product is unlicensed")
-        log.error("Verification of support licence failed. %s" % error)
+        log.error("Verification of support licence failed. %s", error)
         raise InvalidLicenseException(error, type="UNLICENSED")
 
     licInfo = LicenseInfo()
     signature = ""
 
-    log.debug("License received: %r" % licString)
+    log.debug("License received: %r", licString)
     licArry = licString.splitlines()
 
     if (
         licArry[0].strip() != "-----BEGIN LICENSE-----"
         and licArry[-1].strip() != "-----END LICENSE SIGNATURE-----"
     ):
-        log.error("Invalid licence: Format error: %r" % licString[0:40])
+        log.error("Invalid licence: Format error: %r", licString[0:40])
         raise InvalidLicenseException(
             "Format error - not a valid license " "file!",
             type="INVALID_FORMAT",
@@ -214,7 +214,7 @@ def parseSupportLicense(licString: str):
 
     if len(signature) < 20 or len(licInfo) < 10:
         log.error(
-            "Format error - not a valid license file! %r" % licString[0:40]
+            "Format error - not a valid license file! %r", licString[0:40]
         )
         raise InvalidLicenseException(
             "Format error - not a valid " "license file!",
@@ -428,7 +428,7 @@ def getSupportLicenseInfo():
             lic_dict["expire"] = get_expiration_date(lic_dict)
 
     except InvalidLicenseException as exx:
-        log.info("Invalid license error: %r" % exx)
+        log.info("Invalid license error: %r", exx)
 
     return lic_dict, lic_sign
 
@@ -592,7 +592,7 @@ def set_duration(lic_dict, raiseException=False):
 
     enc_license_expire = EncryptedData.from_unencrypted(license_expire)
     storeConfig("license_duration", enc_license_expire)
-    log.info("Set license expiration to %s" % license_expire)
+    log.info("Set license expiration to %s", license_expire)
 
     return True
 
@@ -617,7 +617,7 @@ def verifyLicenseInfo(
 
     if not lic_dict:
         error = _("license file is empty!")
-        log.error("Verification of support license failed! %s" % (error))
+        log.error("Verification of support license failed! %s", error)
         if raiseException:
             raise InvalidLicenseException(error, type="UNLICENSED")
         return False, error
@@ -628,7 +628,7 @@ def verifyLicenseInfo(
         error = _("signature could not be verified!")
         log.error(
             "Verification of support license failed!"
-            "Error was %s\n. Lincence info: %r" % (error, lic_dict.info())
+            "Error was %s\n. Lincence info: %r", error, lic_dict.info()
         )
         if raiseException:
             raise InvalidLicenseException(error, type="INVALID_SIGNATURE")
@@ -640,7 +640,7 @@ def verifyLicenseInfo(
         error = "%s" % expiration
         log.error(
             "Verification of support license failed!"
-            "Error was %s\n. Lincence info: %r" % (error, lic_dict.info())
+            "Error was %s\n. Lincence info: %r", error, lic_dict.info()
         )
         if raiseException:
             raise InvalidLicenseException(error, type="EXPIRED")
@@ -658,7 +658,7 @@ def verifyLicenseInfo(
             error = error + volume_info
             log.error(
                 "Verification of support license failed!"
-                "Error was %s\n. Lincence info: %r" % (error, lic_dict.info())
+                "Error was %s\n. Lincence info: %r", error, lic_dict.info()
             )
             if raiseException:
                 raise InvalidLicenseException(error, type="INVALID_VOLUME")
@@ -729,7 +729,7 @@ def _verify_signature(pub_keys, lic_str, lic_sign):
             ret = pub_key_name
             break
 
-    log.debug("Licence signature is %r" % ret)
+    log.debug("Licence signature is %r", ret)
     return ret
 
 
@@ -821,16 +821,16 @@ def verify_user_volume(lic_dict):
     try:
         user_volume = int(lic_dict.get("user-num", 0))
     except TypeError as err:
-        log.exception(
+        log.error(
             "Failed to convert license. Number of token users: %r. "
-            "Exception was:%r " % (lic_dict.get("user-num"), err)
+            "Exception was:%r ", lic_dict.get("user-num"), err
         )
         return False, "max %d" % user_volume
 
     if num > user_volume + 2:
         log.error(
             "Licensed token user volume exceeded. Currently %r users "
-            "present, but only %r allowed." % (num, user_volume)
+            "present, but only %r allowed.", num, user_volume
         )
         used = _("token user used")
         licnu = _("token users supported")
@@ -850,16 +850,16 @@ def verify_token_volume(lic_dict):
     try:
         token_volume = int(lic_dict.get("token-num", 0))
     except TypeError as err:
-        log.exception(
+        log.error(
             "Failed to convert license. Number of tokens: %r. "
-            "Exception was:%r " % (lic_dict.get("token-num"), err)
+            "Exception was:%r ", lic_dict.get("token-num"), err
         )
         return False, "max %d" % token_volume
 
     if num > token_volume + 2:
         log.error(
             "Licensed token volume exceeded. Currently %r tokens "
-            "present, but only %r allowed." % (num, token_volume)
+            "present, but only %r allowed.", num, token_volume
         )
         used = _("tokens used")
         licnu = _("tokens supported")
@@ -900,12 +900,13 @@ def get_public_keys():
                 pubKeys[idx] = key_text
             else:
                 log.error(
-                    "Licence: Public key file is not valid " "(%s)" % key_file
+                    "Licence: Public key file is not valid " "(%r)", key_file
                 )
         except Exception as exx:
-            log.exception(
-                "Licence: error during reading "
-                "public key file (%s): %r" % (key_file, exx)
+            log.error(
+                "Licence: error during reading " "public key file (%s): %r",
+                key_file,
+                exx
             )
 
     return pubKeys
@@ -965,18 +966,20 @@ def check_date(expire_type, expire):
         except:
             log.info(
                 "License expiration format incorrect. Format is %s, "
-                "but got %r" % (fmt, expire)
+                "but got %r",
+                fmt,
+                expire,
             )
             expiration_date = None
 
     if not expiration_date:
         msg = "%s %r" % (_("unsupported date format date %r"), expire)
-        log.error("Licence: Check of %s failed: %s" % (expire_type, msg))
+        log.error("Licence: Check of %s failed: %s", expire_type, msg)
         return (False, msg)
 
     if today > expiration_date:
         msg = "%s %r" % (_("expired - valid till"), expire)
-        log.error("Licence: Check of %s failed: %s" % (expiration_date, msg))
+        log.error("Licence: Check of %s failed: %s", expiration_date, msg)
         return (False, msg)
 
     return (True, "")
@@ -997,7 +1000,7 @@ def readPublicKey(filename):
         with open(filename, "r") as f:
             pem = f.read()
     except Exception as exx:
-        log.exception(
+        log.error(
             "Licence: Problem reading public key file: %s. "
             "Exception was: %r",
             filename,
@@ -1020,7 +1023,7 @@ def readPublicKey(filename):
         pubKey = "\n".join(pem_lines)
 
     else:
-        log.error("Licence: Public key file is not valid (%s)" % filename)
+        log.error("Licence: Public key file is not valid (%s)", filename)
 
     return pubKey
 

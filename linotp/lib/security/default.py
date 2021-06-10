@@ -459,10 +459,10 @@ class DefaultSecurityModule(SecurityModule):
                 result = False
 
         except ValueError as err:
-            log.exception("Signature check: Mac Comparison failed! %r", err)
+            log.error("Signature check: Mac Comparison failed! %r", err)
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "Signature check: Unknown exception happened %r", exx
             )
 

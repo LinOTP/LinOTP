@@ -380,19 +380,18 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.getOtpLen())
         except ValueError as ex:
-            log.exception(
-                "[checkOtp] failed to initialize otplen: ValueError %r %r"
-                % (ex, self.token.LinOtpOtpLen)
+            log.error(
+                "[checkOtp] failed to initialize otplen: ValueError %r %r",
+                ex,
+                self.token.LinOtpOtpLen,
             )
-            raise ex
+            raise
 
         try:
             self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         except Exception as ex:
-            log.exception(
-                "[checkOtp] failed to initialize hashlibStr: %r" % (ex)
-            )
-            raise ex
+            log.error("[checkOtp] failed to initialize hashlibStr: %r", ex)
+            raise
 
         secObj = self._get_secret_object()
 
@@ -430,8 +429,9 @@ class HmacTokenClass(TokenClass):
             counter = int(self.token.LinOtpCount)
         except ValueError as ex:
             log.warning(
-                "[check_otp_exist] a value error occurred while converting: otplen %r, counter %r : ValueError: %r ret: %r "
-                % (self.token.LinOtpOtpLen, self.token.LinOtpCount, ex, res)
+                "[check_otp_exist] a value error occurred while converting: "
+                "otplen %r, counter %r : ValueError: %r ret: %r ",
+                self.token.LinOtpOtpLen, self.token.LinOtpCount, ex, res
             )
             return res
 
@@ -491,9 +491,7 @@ class HmacTokenClass(TokenClass):
 
         # if autosync is enabled
         if False == autosync:
-            log.debug(
-                "[autosync] end. autosync is not enabled : res %r" % (res)
-            )
+            log.debug("[autosync] end. autosync is not enabled : res %r", res)
             return res
 
         info = self.getTokenInfo()
@@ -564,8 +562,8 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.debug("[resync] otplen ValueError: %r ret: %r " % (ex, ret))
-            raise Exception(ex)
+            log.debug("[resync] otplen ValueError: %r ret: %r ", ex, ret)
+            raise
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
 
@@ -580,7 +578,7 @@ class HmacTokenClass(TokenClass):
 
         if counter == -1:
             log.debug(
-                "[resync] exit. First counter (-1) not found  ret: %r" % (ret)
+                "[resync] exit. First counter (-1) not found  ret: %r", ret
             )
             return ret
 
@@ -588,8 +586,8 @@ class HmacTokenClass(TokenClass):
 
         if nextOtp != otp2:
             log.debug(
-                "[resync] exit. Failed to verify second otp: nextOtp: %r != otp2: %r ret: %r"
-                % (nextOtp, otp2, ret)
+                "[resync] exit. Failed to verify second otp: nextOtp:"
+                " %r != otp2: %r ret: %r", nextOtp, otp2, ret
             )
             return ret
 
@@ -610,8 +608,8 @@ class HmacTokenClass(TokenClass):
             timeOut = int(getFromConfig("AutoResyncTimeout", 5 * 60))
         except Exception as ex:
             log.warning(
-                "[getSyncTimeOut] AutoResyncTimeout: value error %r - reset to 5*60"
-                % (ex)
+                "[getSyncTimeOut] AutoResyncTimeout: value error %r"
+                " - reset to 5*60", ex
             )
             timeOut = 5 * 60
 
@@ -628,8 +626,8 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.exception(
-                "[getOtp]: Could not convert otplen - value error %r " % (ex)
+            log.error(
+                "[getOtp]: Could not convert otplen - value error %r ", ex
             )
             raise Exception(ex)
 
@@ -669,9 +667,9 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.exception(
-                "[get_multi_otp]: Could not convert otplen - value error %r "
-                % (ex)
+            log.error(
+                "[get_multi_otp]: Could not convert otplen - value error %r ",
+                ex
             )
             raise Exception(ex)
         s_count = self.getOtpCount()
@@ -731,7 +729,7 @@ class HmacTokenClass(TokenClass):
                 }
 
             except NoOtpAuthTokenException as exx:
-                log.warning("%r" % exx)
+                log.warning(exx)
 
             oath_support = getFromConfig("OATHTokenSupport", "False") == "True"
             if oath_support:
@@ -752,6 +750,6 @@ class HmacTokenClass(TokenClass):
                             "img": create_img(oath_url, width=250),
                         }
                     except Exception as ex:
-                        log.info("failed to set oath or google url: %r" % ex)
+                        log.info("failed to set oath or google url: %r", ex)
 
         return response_detail

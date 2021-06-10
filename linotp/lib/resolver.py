@@ -501,10 +501,10 @@ def deleteResolver(resolvername):
             for entry in delEntries:
                 res = removeFromConfig(entry)
                 res = True
-        except Exception as e:
-            log.exception(
-                "Deleting resolver %s failed. Exception was %r"
-                % (resolvername, e)
+        except Exception as exx:
+            log.error(
+                "Deleting resolver %s failed. Exception was %r",
+                resolvername, exx
             )
             res = False
 
@@ -561,14 +561,15 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
             log.error(
                 "Format error: resolver_spec must have the format "
                 "<resolver_class_identifier>.<config_identifier>, but "
-                "value was %s" % resolver_spec
+                "value was %r",
+                resolver_spec,
             )
             return None
 
         resolver_cls = get_resolver_class(cls_identifier)
 
         if resolver_cls is None:
-            log.error("Unknown resolver class: %s" % cls_identifier)
+            log.error("Unknown resolver class: %r", cls_identifier)
             return None
 
         resolver = resolver_cls()
@@ -800,7 +801,7 @@ def setupResolvers(config=None, cache_dir="/tmp"):
                     setattr(resolver_cls, "_setup_done", True)
 
             except Exception as exx:
-                log.exception(
+                log.error(
                     "Resolver setup: Failed to call setup of %r. "
                     "Exception was %r",
                     resolver_cls,
@@ -818,9 +819,9 @@ def initResolvers():
         context["resolvers_loaded"] = {}
 
     except Exception as exx:
-        log.exception(
+        log.error(
             "Failed to initialize resolver for context. "
-            "Exception was  %r" % exx
+            "Exception was %r", exx
         )
     return context
 
@@ -835,8 +836,9 @@ def closeResolvers():
             if hasattr(resolver, "close"):
                 resolver.close()
     except Exception as exx:
-        log.exception(
-            "Failed to close resolver in context. " "Exception was %r" % exx
+        log.error(
+            "Failed to close resolver in context. "
+            "Error was %r", exx
         )
     return
 

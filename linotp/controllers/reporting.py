@@ -105,7 +105,7 @@ class ReportingController(BaseController):
             return
 
         except Exception as exception:
-            log.exception(exception)
+            log.error(exception)
             db.session.rollback()
             return sendError(response, exception, context="before")
 
@@ -126,7 +126,7 @@ class ReportingController(BaseController):
             return response
 
         except Exception as exception:
-            log.exception(exception)
+            log.error(exception)
             db.session.rollback()
             return sendError(response, exception, context="after")
 
@@ -193,12 +193,12 @@ class ReportingController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
             return sendError(response, policy_exception, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -325,12 +325,12 @@ class ReportingController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -393,12 +393,12 @@ class ReportingController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -455,17 +455,17 @@ class ReportingController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except ValueError as value_error:
-            log.exception(value_error)
+            log.error(value_error)
             db.session.rollback()
-            return sendError(response, str(value_error), 1)
+            return sendError(response, value_error, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -570,16 +570,16 @@ class ReportingController(BaseController):
                 )
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except ValueError as value_error:
-            log.exception(value_error)
+            log.error(value_error)
             db.session.rollback()
-            return sendError(response, str(value_error), 1)
+            return sendError(response, value_error, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)

@@ -840,9 +840,9 @@ class Ocra2TokenClass(TokenClass):
             ocraSuite.compute(c_data)
 
         except Exception as ex:
-            log.exception(
-                "[Ocra2TokenClass] challenge verification failed: "
-                "%s,%r: " % (challenge, ex)
+            log.error(
+                "[Ocra2TokenClass] challenge verification failed: " "%s,%r: ",
+                challenge, ex
             )
             ret = False
 
@@ -1394,7 +1394,7 @@ class Ocra2TokenClass(TokenClass):
             elif "false" == setting.lower():
                 autosync = False
         except Exception as ex:
-            log.exception("autosync check undefined %r" % (ex))
+            log.error("autosync check undefined %r", ex)
             return res
 
         " if autosync is not enabled: do nothing "
@@ -1445,14 +1445,13 @@ class Ocra2TokenClass(TokenClass):
                     timeshift=timeShift,
                 )
             except Exception as ex:
-                log.exception(" error during autosync0 %r" % (ex))
+                log.error(" error during autosync0 %r", ex)
 
             if count_0 != -1:
                 tinfo["lChallenge"] = {"otpc": count_0}
                 self.setTokenInfo(tinfo)
                 log.info(
-                    "[OcraToken:autosync] initial sync - success: %r"
-                    % (count_0)
+                    "[OcraToken:autosync] initial sync - success: %r", count_0
                 )
 
             res = -1
@@ -1471,14 +1470,14 @@ class Ocra2TokenClass(TokenClass):
                     timeshift=timeShift,
                 )
             except Exception as ex:
-                log.exception(" error during autosync1 %r" % (ex))
+                log.error(" error during autosync1 %r", ex)
 
             if count_1 == -1:
                 del tinfo["lChallenge"]
                 self.setTokenInfo(tinfo)
                 log.info(
-                    "[OcraToken:autosync] sync failed! Not a valid pass in scope (%r)"
-                    % (otp1)
+                    "[OcraToken:autosync] sync failed! Not a valid pass in "
+                    "scope (%r)", otp1
                 )
                 res = -1
             else:
@@ -1536,8 +1535,8 @@ class Ocra2TokenClass(TokenClass):
 
             if rolloutState == "1":
                 log.info(
-                    "rollout state 1 for token %r not completed"
-                    % (self.getSerial())
+                    "rollout state 1 for token %r not completed",
+                    self.getSerial()
                 )
 
             elif rolloutState == "2":
@@ -1551,19 +1550,19 @@ class Ocra2TokenClass(TokenClass):
                     # after 3 fails in rollout state 2 - reset to rescan
                     self.addToTokenInfo("rollout", "1")
                     log.info(
-                        "rollout for token %r reset to phase 1:"
-                        % (self.getSerial())
+                        "rollout for token %r reset to phase 1:",
+                        self.getSerial()
                     )
 
                 log.info(
-                    "rollout for token %r not completed" % (self.getSerial())
+                    "rollout for token %r not completed", self.getSerial()
                 )
 
         except Exception as ex:
-            log.exception(
+            log.error(
                 "[Ocra2TokenClass:statusValidationFail] Error during "
-                "validation finalisation for token %r :%r"
-                % (self.getSerial(), ex)
+                "validation finalisation for token %r :%r",
+                self.getSerial(), ex
             )
             raise Exception(ex)
 
@@ -1599,7 +1598,7 @@ class Ocra2TokenClass(TokenClass):
                 del t_info["nonce"]
             self.setTokenInfo(t_info)
 
-            log.info("rollout for token %r completed" % (self.getSerial()))
+            log.info("rollout for token %r completed", self.getSerial())
 
         elif rolloutState == "1":
             raise Exception("unable to complete the rollout ")
@@ -1710,8 +1709,8 @@ class Ocra2TokenClass(TokenClass):
                             # callculate the timeshift
                             date = datetime.datetime.fromtimestamp(count_2)
                             log.info(
-                                "[resync] syncing token to new timestamp: %r"
-                                % (date)
+                                "[resync] syncing token to new timestamp: %r",
+                                date
                             )
 
                             now = datetime.datetime.utcnow()

@@ -92,12 +92,12 @@ class ToolsController(BaseController):
             checkToolsAuthorisation(action, params)
 
         except PolicyException as exx:
-            log.exception("policy failed %r" % exx)
+            log.error("policy failed %r", exx)
             db.session.rollback()
             return sendError(response, exx, context="before")
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r" % (action, exx))
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(response, exx, context="before")
 
@@ -117,7 +117,7 @@ class ToolsController(BaseController):
             return response
 
         except Exception as exx:
-            log.exception(exx)
+            log.error(exx)
             db.session.rollback()
             return sendError(response, exx, context="after")
 
@@ -163,7 +163,7 @@ class ToolsController(BaseController):
 
             g.audit["success"] = False
 
-            log.exception(exx)
+            log.error(exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -194,7 +194,7 @@ class ToolsController(BaseController):
             return sendResult(response, ret)
 
         except Exception as e:
-            log.exception("failed: %r" % e)
+            log.error("migrate resolver failed")
             db.session.rollback()
             return sendError(response, e, 1)
 
@@ -216,7 +216,7 @@ class ToolsController(BaseController):
 
             except KeyError as exx:
 
-                log.exception("Missing parameter: %r", exx)
+                log.error("Missing parameter: %r", exx)
                 raise ParameterError("Missing parameter: %r" % exx)
 
             groupid = resolver_name
@@ -358,7 +358,7 @@ class ToolsController(BaseController):
 
         except PolicyException as pexx:
 
-            log.exception("Error during user import: %r", pexx)
+            log.error("Error during user import: %r", pexx)
 
             db.session.rollback()
 
@@ -366,7 +366,7 @@ class ToolsController(BaseController):
 
         except Exception as exx:
 
-            log.exception("Error during user import: %r" % exx)
+            log.error("Error during user import: %r", exx)
 
             db.session.rollback()
 

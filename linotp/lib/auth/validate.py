@@ -132,8 +132,8 @@ def check_pin(token, passw, user=None, options=None):
         # if password already found, we can return result again
         if hashed_passw in options["pin_match"]:
             log.debug(
-                "check if password already checked! %r "
-                % options["pin_match"][hashed_passw]
+                "check if password already checked! %r ",
+                options["pin_match"][hashed_passw]
             )
             return options["pin_match"][hashed_passw]
 
@@ -149,10 +149,10 @@ def check_pin(token, passw, user=None, options=None):
             (uid, _resolver, resolver_class) = getUserId(user)
             resolver = getResolverObject(resolver_class)
             if resolver.checkPass(uid, passw):
-                log.debug("Successfully authenticated user %r." % uid)
+                log.debug("Successfully authenticated user %r.", uid)
                 res = True
             else:
-                log.info("user %r failed to authenticate." % uid)
+                log.info("user %r failed to authenticate.", uid)
 
         # we register our result
         key = sha256(passw.encode("utf-8")).hexdigest()
@@ -613,8 +613,8 @@ class ValidationHandler(object):
 
             if get_auth_passthru(user):
                 log.debug(
-                    "user %r has no token. Checking for "
-                    "passthru in realm %r" % (user.login, user.realm)
+                    "user %r has no token. Checking for passthru in realm %r",
+                    user.login, user.realm
                 )
                 y = getResolverObject(resolverClass)
                 g.audit["action_detail"] = "Authenticated against Resolver"
@@ -744,8 +744,8 @@ class ValidationHandler(object):
             typ = token.getType()
             if typ.lower() not in tokenclass_registry:
                 log.error(
-                    "token typ %r not found in tokenclasses: %r"
-                    % (typ, list(tokenclass_registry.keys()))
+                    "token typ %r not found in tokenclasses: %r",
+                    typ, list(tokenclass_registry.keys())
                 )
                 audit_entry["action_detail"] = "Unknown Token type"
                 continue
@@ -860,7 +860,7 @@ class ValidationHandler(object):
             except Exception as exx:
                 # in case of a failure during checking token, we log the error
                 # and continue with the next one
-                log.exception("checking token %r failed: %r" % (token, exx))
+                log.error("checking token %r failed: %r", token, exx)
                 ret = -1
                 reply = "%r" % exx
                 audit_entry[
@@ -940,8 +940,8 @@ class ValidationHandler(object):
                 Challenges.delete_challenges(None, expired)
 
         log.debug(
-            "Number of valid tokens found "
-            "(validTokenNum): %d" % len(valid_tokens)
+            "Number of valid tokens found " "(validTokenNum): %d",
+            len(valid_tokens)
         )
 
         return (res, reply)
@@ -970,7 +970,7 @@ class ValidationHandler(object):
             hex_serial = modhex_decode(modhex_serial)
             serialnum = "UBAM" + binascii.unhexlify(hex_serial).decode("utf-8")
         except TypeError as exx:
-            log.error("Failed to convert serialnumber: %r" % exx)
+            log.error("Failed to convert serialnumber: %r", exx)
             return res, opt
 
         #  build list of possible yubikey tokens

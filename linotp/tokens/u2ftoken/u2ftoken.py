@@ -580,7 +580,7 @@ class U2FTokenClass(TokenClass):
             return False
 
         except Exception as exx:
-            log.error("Signature verification failed! %r" % exx)
+            log.error("Signature verification failed! %r", exx)
             raise
 
     def checkResponse4Challenge(
@@ -874,11 +874,11 @@ class U2FTokenClass(TokenClass):
             pubkey.verify(signature, message, ec.ECDSA(hashes.SHA256()))
 
         except InvalidSignature as exx:
-            log.info("Failed to verify signature %r" % exx)
+            log.info("Failed to verify signature %r", exx)
             raise ValueError("Attestation signature is invalid")
 
         except Exception as exx:
-            log.error("Failed to verify signature %r" % exx)
+            log.error("Failed to verify signature %r", exx)
             raise
 
     def getInitDetail(self, params, user=None):

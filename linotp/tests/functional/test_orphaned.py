@@ -236,7 +236,7 @@ class OrphandTestHelpers(object):
         except Exception as e:
             userAdd.dropTable()
             userAdd.creatTable()
-            log.error(" create user table error: %r " % e)
+            log.error(" create user table error: %r ", e)
             userAdd.delUsers()
 
         for i in range(1, usercount):

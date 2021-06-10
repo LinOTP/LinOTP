@@ -240,8 +240,8 @@ class RadiusTokenClass(RemoteTokenClass):
 
         # here we also need to check for radius.user
         log.debug(
-            "[do_request] checking OTP len:%s on radius server: %s,"
-            "  user: %s" % (len(anOtpVal), radiusServer, radiusUser)
+            "[do_request] checking OTP len:%r on radius server: %s,"
+            "  user: %s", len(anOtpVal), radiusServer, radiusUser
         )
 
         try:
@@ -261,13 +261,13 @@ class RadiusTokenClass(RemoteTokenClass):
                 r_authport = int(server[1])
             log.debug(
                 "[do_request] [RadiusToken] NAS Identifier: %r, "
-                "Dictionary: %r" % (nas_identifier, r_dict)
+                "Dictionary: %r", nas_identifier, r_dict
             )
 
             log.debug(
                 "[do_request] [RadiusToken] constructing client object "
-                "with server: %r, port: %r, secret: %r"
-                % (r_server, r_authport, radiusSecret)
+                "with server: %r, port: %r, secret: %r",
+                r_server, r_authport, radiusSecret
             )
 
             srv = Client(
@@ -294,7 +294,7 @@ class RadiusTokenClass(RemoteTokenClass):
                 for attr in list(response.keys()):
                     opt[attr] = response[attr]
                 res = False
-                log.debug("challenge returned %r " % opt)
+                log.debug("challenge returned %r ", opt)
                 # now we map this to a linotp challenge
                 if "State" in opt:
                     reply["transactionid"] = opt["State"][0]
@@ -309,19 +309,19 @@ class RadiusTokenClass(RemoteTokenClass):
             elif response.code == pyrad.packet.AccessAccept:
                 log.info(
                     "[do_request] [RadiusToken] Radiusserver %s granted "
-                    "access to user %s." % (r_server, radiusUser)
+                    "access to user %s.", r_server, radiusUser
                 )
                 otp_count = 0
                 res = True
             else:
                 log.warning(
                     "[do_request] [RadiusToken] Radiusserver %s"
-                    "rejected access to user %s." % (r_server, radiusUser)
+                    "rejected access to user %s.", r_server, radiusUser
                 )
                 res = False
 
         except Exception as ex:
-            log.exception(
+            log.error(
                 "[do_request] [RadiusToken] Error contacting radius"
                 " Server: %r",
                 ex,

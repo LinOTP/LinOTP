@@ -160,7 +160,7 @@ class Challenges(object):
                     break
 
             except Exception as exce:
-                log.exception("Failed to create challenge: %r", exce)
+                log.error("Failed to create challenge: %r", exce)
                 reason = "%r" % exce
                 ReasonException = exce
 
@@ -218,7 +218,7 @@ class Challenges(object):
                     ReasonException = Exception(message)
 
         except Exception as exce:
-            log.exception("Failed to create challenge: %r", exce)
+            log.error("Failed to create challenge: %r", exce)
             reason = "%r" % exce
             ReasonException = exce
             res = False

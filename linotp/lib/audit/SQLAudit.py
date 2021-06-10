@@ -168,9 +168,7 @@ class AuditTable(db.Model):
 
         """
 
-        log.debug(
-            "[__init__] creating AuditTable object, action = %s" % action
-        )
+        log.debug("[__init__] creating AuditTable object, action = %s", action)
 
         super().__init__()
 
@@ -437,7 +435,7 @@ class Audit(AuditBase):
         """
         res = False
         if not signature:
-            log.debug("[_verify] missing signature %r" % auditline)
+            log.debug("[_verify] missing signature %r", auditline)
             return res
 
         s_audit = getAsBytes(auditline)
@@ -465,7 +463,7 @@ class Audit(AuditBase):
                     self.log_entry(p)
 
         except Exception as exx:
-            log.exception("[log] error writing log message: %r" % exx)
+            log.error("[log] error writing log message")
             self.session.rollback()
             raise exx
 

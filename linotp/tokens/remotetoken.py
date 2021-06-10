@@ -407,9 +407,9 @@ class RemoteTokenClass(TokenClass):
                         self.remote_challenge_response = reply
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "[do_request] [RemoteToken] Error getting response from "
-                "remote Server (%r): %r" % (request_url, exx)
+                "remote Server (%r): %r", request_url, exx
             )
 
         return (res, otp_count, reply)
@@ -549,8 +549,8 @@ class RemoteTokenClass(TokenClass):
             otpval = passw
 
         log.debug(
-            "[splitPinPass] [remotetoken] returnung (len:%r) (len:%r)"
-            % (len(pin), len(otpval))
+            "[splitPinPass] [remotetoken] returnung (len:%r) (len:%r)",
+            len(pin), len(otpval)
         )
         return pin, otpval
 

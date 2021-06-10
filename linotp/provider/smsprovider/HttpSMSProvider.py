@@ -257,7 +257,7 @@ class HttpSMSProvider(ISMSProvider):
             requests.exceptions.TooManyRedirects,
         ) as exc:
 
-            log.exception("HttpSMSProvider timed out")
+            log.error("HttpSMSProvider timed out")
             raise ProviderNotAvailable(
                 "Failed to send SMS - timed out %r" % exc
             )

@@ -812,8 +812,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 pin_match = False
                 otp_count = -1
             else:
-                log.exception("%r" % exx)
-                raise Exception(exx)
+                log.error(exx)
+                raise
 
         if otp_count < 0 or pin_match is False:
             if (
@@ -1196,8 +1196,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         try:
             self.token.storeToken()
-        except:
-            log.exception("Token fail counter update failed")
+        except BaseException:
+            log.error("Token fail counter update failed")
             raise TokenAdminError("Token Fail Counter update failed", id=1106)
 
         return self.token.LinOtpFailCount
@@ -1264,7 +1264,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             self.token.storeToken()
 
         except Exception as ex:
-            log.exception("Token Counter update failed: %r" % (ex))
+            log.error("Token Counter update failed: %r", ex)
             raise TokenAdminError(
                 "Token Counter update failed: %r" % (ex), id=1106
             )

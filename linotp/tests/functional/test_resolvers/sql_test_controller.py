@@ -66,7 +66,7 @@ class SQLTestController(TestController):
         except Exception as e:
             userAdd.dropTable()
             userAdd.createTable()
-            log.error(" create user table error: %r " % e)
+            log.error(" create user table error: %r ", e)
             userAdd.delUsers()
 
     def addUser(

@@ -894,7 +894,7 @@ def loadProvider(provider_type, provider_name=None):
         provider_class_obi = _load_provider_class(provider_class)
         provider = provider_class_obi()
     except Exception as exc:
-        log.exception("Failed to load provider: %r", exc)
+        log.error("Failed to load provider: %r", exc)
         raise exc
 
     provider_config = _build_provider_config(provider_info)
@@ -917,7 +917,7 @@ def _build_provider_config(provider_info):
     try:
         provider_config = json.loads(line_config)
     except ValueError as exx:
-        log.exception("Failed to load provider config %r", provider_config)
+        log.error("Failed to load provider config %r", provider_config)
         raise ValueError(
             "Failed to load provider config:%r %r" % (provider_config, exx)
         )

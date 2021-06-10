@@ -245,7 +245,7 @@ class TagespasswortTokenClass(TokenClass):
             else:
                 log.error(
                     "[getOtp] invalid curTime: %r. You need to "
-                    "specify a datetime.datetime" % type(curTime)
+                    "specify a datetime.datetime", curTime
                 )
 
         secObj = self._get_secret_object()
@@ -282,7 +282,7 @@ class TagespasswortTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.exception("[get_multi_otp] %r" % ex)
+            log.error("[get_multi_otp] %r", ex)
             return (False, str(ex), otp_dict)
 
         if count > 0:

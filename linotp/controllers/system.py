@@ -177,18 +177,18 @@ class SystemController(BaseController):
             return
 
         except PolicyException as pex:
-            log.exception("[__before__::%r] policy exception %r", action, pex)
+            log.error("[__before__::%r] policy exception %r", action, pex)
             db.session.rollback()
             return sendError(response, pex, context="before")
 
         except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
-            log.exception("[__before__::%r] webob.exception %r", action, acc)
+            log.error("[__before__::%r] webob.exception %r", action, acc)
             db.session.rollback()
             raise acc
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r", action, exx)
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(response, exx, context="before")
 
@@ -209,7 +209,7 @@ class SystemController(BaseController):
             return response
 
         except Exception as exx:
-            log.exception("[__after__] exception %r", exx)
+            log.error("[__after__] exception %r", exx)
             db.session.rollback()
             return sendError(response, exx, context="after")
 
@@ -293,7 +293,7 @@ class SystemController(BaseController):
             return sendResult(response, res)
 
         except Exception as exx:
-            log.exception("[setDefault] commit failed: %r", exx)
+            log.error("[setDefault] commit failed: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -390,12 +390,12 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except ValueError as exx:
-            log.exception("[setConfig] error saving config: %r", exx)
+            log.error("[setConfig] error saving config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
         except Exception as exx:
-            log.exception("[setConfig] error saving config: %r", exx)
+            log.error("[setConfig] error saving config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -462,7 +462,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[delConfig] error deleting config: %r", exx)
+            log.error("[delConfig] error deleting config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -547,7 +547,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[getConfig] error getting config: %r", exx)
+            log.error("[getConfig] error getting config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -598,12 +598,12 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pex:
-            log.exception("[getRealms] policy exception: %r", pex)
+            log.error("[getRealms] policy exception: %r", pex)
             db.session.rollback()
             return sendError(response, pex)
 
         except Exception as exx:
-            log.exception("[getRealms] error getting realms: %r", exx)
+            log.error("[getRealms] error getting realms: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -793,7 +793,7 @@ class SystemController(BaseController):
             return sendResult(response, True, 1)
 
         except ResolverLoadConfigError as exx:
-            log.exception(
+            log.error(
                 "Failed to load resolver definition %r \n %r",
                 exx,
                 list(param.keys()),
@@ -802,7 +802,7 @@ class SystemController(BaseController):
             return sendError(response, msg % new_resolver_name)
 
         except Exception as exx:
-            log.exception("[setResolver] error saving config: %r", exx)
+            log.error("[setResolver] error saving config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -834,7 +834,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[getResolvers] error getting resolvers: %r", exx)
+            log.error("[getResolvers] error getting resolvers: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -900,7 +900,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[delResolver] error deleting resolver: %r", exx)
+            log.error("[delResolver] error deleting resolver: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -947,7 +947,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[getResolver] error getting resolver: %r", exx)
+            log.error("[getResolver] error getting resolver: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -993,7 +993,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "[setDefaultRealm] setting default realm failed: %r", exx
             )
             db.session.rollback()
@@ -1030,7 +1030,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "[getDefaultRealm] return default realm failed: %r", exx
             )
             db.session.rollback()
@@ -1102,7 +1102,7 @@ class SystemController(BaseController):
 
         except Exception as exx:
             err = "Failed to set realm with %r " % param
-            log.exception("[setRealm] %r %r", err, exx)
+            log.error("[setRealm] %r %r", err, exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1175,7 +1175,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[delRealm] error deleting realm: %r", exx)
+            log.error("[delRealm] error deleting realm: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1287,7 +1287,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[setPolicy] error saving policy: %r", exx)
+            log.error("[setPolicy] error saving policy: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1393,7 +1393,7 @@ class SystemController(BaseController):
             return json.dumps(res, indent=3)
 
         except Exception as exx:
-            log.exception("[policies_flexi] error in policy flexi: %r", exx)
+            log.error("[policies_flexi] error in policy flexi: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1438,7 +1438,7 @@ class SystemController(BaseController):
             return sendResult(response, pol, 1)
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "[getPolicyDef] error getting policy " "definitions: %r", exx
             )
             db.session.rollback()
@@ -1555,7 +1555,7 @@ class SystemController(BaseController):
             return sendResultMethod(response, res)
 
         except Exception as exx:
-            log.exception("[importPolicy] failed! %r", exx)
+            log.error("[importPolicy] failed! %r", exx)
             db.session.rollback()
             return sendErrorMethod(response, exx)
 
@@ -1662,7 +1662,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[checkPolicy] error checking policy: %r", exx)
+            log.error("[checkPolicy] error checking policy: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1795,7 +1795,7 @@ class SystemController(BaseController):
                 return sendResult(response, pol, 1)
 
         except Exception as exx:
-            log.exception("[getPolicy] error getting policy: %r", exx)
+            log.error("[getPolicy] error getting policy: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1845,7 +1845,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[delPolicy] error deleting policy: %r", exx)
+            log.error("[delPolicy] error deleting policy: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1909,7 +1909,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[setupSecurityModule] : setup failed: %r", exx)
+            log.error("[setupSecurityModule] : setup failed: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1931,7 +1931,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "[getSupportInfo] : failed to access support info:" " %r", exx
             )
             db.session.rollback()
@@ -2018,7 +2018,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1, opt=info)
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "[isSupportValid] failed verify support info: %r", exx
             )
 
@@ -2074,7 +2074,7 @@ class SystemController(BaseController):
             return sendResultMethod(response, res, 1, opt=message)
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "[setSupport] failed to set support license: %r", exx
             )
             db.session.rollback()
@@ -2155,7 +2155,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1, opt=reply)
 
         except Exception as exx:
-            log.exception("error saving config: %r", exx)
+            log.error("error saving config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -2201,7 +2201,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("error getting config: %r", exx)
+            log.error("error getting config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -2243,7 +2243,7 @@ class SystemController(BaseController):
             return sendResult(response, status, 1)
 
         except Exception as exx:
-            log.exception("error getting config: %r", exx)
+            log.error("error getting config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -2302,7 +2302,7 @@ class SystemController(BaseController):
             return sendResult(response, res > 0, 1, opt=reply)
 
         except Exception as exx:
-            log.exception("error saving config: %r", exx)
+            log.error("error saving config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -2340,7 +2340,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1, opt=reply)
 
         except Exception as exx:
-            log.exception("error saving config: %r", exx)
+            log.error("error saving config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -2376,7 +2376,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("error saving config: %r", exx)
+            log.error("error saving config: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 

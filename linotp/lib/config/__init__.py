@@ -106,7 +106,7 @@ def getLinotpConfig():
             try:
                 c.linotpConfig = LinOtpConfig()
             except Exception as exx:
-                log.exception(
+                log.error(
                     "Could not add LinOTP configuration to Flask "
                     "application context. Exception was: %r",
                     exx,
@@ -244,7 +244,7 @@ def refreshConfig():
 
 
 def removeFromConfig(key, iCase=False):
-    log.debug("Removing config entry %r" % key)
+    log.debug("Removing config entry %r", key)
     conf = getLinotpConfig()
 
     if iCase is False:

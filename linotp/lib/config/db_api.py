@@ -250,7 +250,7 @@ def _removeConfigDB(key):
     :param key: the name of the entry
     :return: number of deleted entries
     """
-    log.debug("removing config entry %r from database table" % key)
+    log.debug("removing config entry %r from database table", key)
 
     if not key.startswith("linotp."):
         if not key.startswith("enclinotp."):
@@ -358,7 +358,7 @@ def _retrieveAllConfigDB():
     # put all information in the dicts for later processing
 
     for conf in db_config:
-        log.debug("[retrieveAllConfigDB] key %r:%r" % (conf.Key, conf.Value))
+        log.debug("[retrieveAllConfigDB] key %r:%r", conf.Key, conf.Value)
 
         conf_dict[conf.Key] = conf.Value
         type_dict[conf.Key] = conf.Type

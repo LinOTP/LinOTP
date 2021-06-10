@@ -102,7 +102,7 @@ def parse_dat_data(data, d_string=None):
                 # if we get a token, we can preserve this for
                 # later, to store them
                 if token is not None:
-                    LOG.info("Token parsed: %r" % token)
+                    LOG.info("Token parsed: %r", token)
                     serial = token.serial
                     tokens[serial] = token.get_initparams()
                 del lines[:]
@@ -113,7 +113,7 @@ def parse_dat_data(data, d_string=None):
         if len(lines) != 0:
             token = create_token(lines, startdate)
             if token is not None:
-                LOG.info("Token parsed: %r" % token)
+                LOG.info("Token parsed: %r", token)
                 serial = token.serial
                 tokens[serial] = token.get_initparams()
             del lines[:]
@@ -379,7 +379,7 @@ def get_session(lino_url, user=None, pwd=None):
         resp, content = http.request(url, "POST")
 
         if resp["status"] != "200":
-            LOG.error("Admin login failed: %r" % resp)
+            LOG.error("Admin login failed: %r", resp)
             sys.exit(1)
 
         try:
@@ -388,7 +388,7 @@ def get_session(lino_url, user=None, pwd=None):
             ].value
         except Exception as exception:
             LOG.error(
-                "Could not retrieve session. Exception was: %r" % exception
+                "Could not retrieve session. Exception was: %r", exception
             )
             raise exception
 
@@ -431,15 +431,15 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
         except urllib.error.HTTPError as http_error:
             break
 
-        LOG.debug("%s" % content)
+        LOG.debug(content)
 
         if resp["status"] == "200":
             res = json.loads(content)
             suc = res.get("result").get("value")
 
-            LOG.info("Storing %s: %r" % (query_args.get("serial"), suc))
+            LOG.info("Storing %s: %r", query_args.get("serial"), suc)
             if suc is False:
-                LOG.error("%s" % content)
+                LOG.error(content)
         else:
             # Print response
             LOG.error(
@@ -476,7 +476,7 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
             # if we get a token, we can preserve this for
             # later, to store them
             if token is not None:
-                LOG.info("Token parsed: %r" % token)
+                LOG.info("Token parsed: %r", token)
                 tokens.append(token)
             del lines[:]
         else:
@@ -487,7 +487,7 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
     if len(lines) != 0:
         token = create_token(lines, startdate)
         if token is not None:
-            LOG.info("Token parsed: %r" % token)
+            LOG.info("Token parsed: %r", token)
             tokens.append(token)
         del lines[:]
 

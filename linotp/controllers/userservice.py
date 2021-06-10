@@ -409,8 +409,8 @@ class UserserviceController(BaseController):
                 g.audit["realm"] = authUser.get("realm", "")
 
                 log.debug(
-                    "[__after__] authenticating as %s in realm %s!"
-                    % (g.audit["user"], g.audit["realm"])
+                    "[__after__] authenticating as %s in realm %s!",
+                    g.audit["user"], g.audit["realm"]
                 )
 
                 if "serial" in request.params:
@@ -449,7 +449,7 @@ class UserserviceController(BaseController):
 
         except Exception as acc:
             # the exception, when an abort() is called if forwarded
-            log.exception("[__after__::%r] webob.exception %r" % (action, acc))
+            log.error("[__after__::%r] webob.exception %r", action, acc)
             return sendError(response, acc, context="__after__")
 
     def _identify_user(self, params):
@@ -1202,7 +1202,7 @@ class UserserviceController(BaseController):
             return sendResult(self.response, tokenArray, 0)
 
         except Exception as exx:
-            log.exception("failed with error: %r", exx)
+            log.error("failed with error: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1223,7 +1223,7 @@ class UserserviceController(BaseController):
         except Exception as exx:
             db.session.rollback()
             error = "error (%r) " % exx
-            log.exception(error)
+            log.error(error)
             return "<pre>%s</pre>" % error
 
         finally:
@@ -1248,7 +1248,7 @@ class UserserviceController(BaseController):
         except Exception as exx:
             db.session.rollback()
             error = "error (%r) " % exx
-            log.exception(error)
+            log.error(error)
             return "<pre>%s</pre>" % error
 
         finally:
@@ -1267,10 +1267,10 @@ class UserserviceController(BaseController):
             pre_context = get_pre_context(self.client)
             return sendResult(self.response, True, opt=pre_context)
 
-        except Exception as e:
-            log.exception("failed with error: %r" % e)
+        except Exception as exx:
+            log.error("pre_context failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
     def context(self):
         """
@@ -1285,7 +1285,7 @@ class UserserviceController(BaseController):
             return sendResult(self.response, True, opt=context)
 
         except Exception as e:
-            log.exception("[context] failed with error: %r" % e)
+            log.error("[context] failed with error: %r", e)
             db.session.rollback()
             return sendError(response, e)
 
@@ -1322,8 +1322,8 @@ class UserserviceController(BaseController):
             if th.isTokenOwner(serial, self.authUser):
                 log.info(
                     "[userenable] user %s@%s is enabling his token with "
-                    "serial %s."
-                    % (self.authUser.login, self.authUser.realm, serial)
+                    "serial %s.",
+                    self.authUser.login, self.authUser.realm, serial
                 )
                 ret = th.enableToken(True, None, serial)
                 res["enable token"] = ret
@@ -1335,12 +1335,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("[enable] policy failed %r" % pe)
+            log.error("[enable] policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("[enable] failed: %r" % e)
+            log.error("[enable] failed: %r", e)
             db.session.rollback()
             return sendError(response, e, 1)
 
@@ -1376,8 +1376,8 @@ class UserserviceController(BaseController):
             th = TokenHandler()
             if th.isTokenOwner(serial, self.authUser):
                 log.info(
-                    "user %s@%s is disabling his token with serial %s."
-                    % (self.authUser.login, self.authUser.realm, serial)
+                    "user %s@%s is disabling his token with serial %s.",
+                    self.authUser.login, self.authUser.realm, serial
                 )
                 ret = th.enableToken(False, None, serial)
                 res["disable token"] = ret
@@ -1389,12 +1389,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed %r" % pe)
+            log.error("policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("failed: %r" % e)
+            log.error("failed: %r", e)
             db.session.rollback()
             return sendError(response, e, 1)
 
@@ -1420,8 +1420,8 @@ class UserserviceController(BaseController):
             if th.isTokenOwner(serial, self.authUser):
                 log.info(
                     "[userdelete] user %s@%s is deleting his token with "
-                    "serial %s."
-                    % (self.authUser.login, self.authUser.realm, serial)
+                    "serial %s.",
+                    self.authUser.login, self.authUser.realm, serial
                 )
                 ret = th.removeToken(serial=serial)
                 res["delete token"] = ret
@@ -1433,14 +1433,14 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("[userdelete] policy failed: %r" % pe)
+            log.error("[userdelete] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception(
-                "[userdelete] deleting token %s of user %s failed! %r"
-                % (serial, c.user, e)
+            log.error(
+                "[userdelete] deleting token %s of user %s failed!",
+                serial, c.user
             )
             db.session.rollback()
             return sendError(response, e, 1)
@@ -1464,8 +1464,8 @@ class UserserviceController(BaseController):
             if True == th.isTokenOwner(serial, self.authUser):
                 log.info(
                     "[userreset] user %s@%s is resetting the failcounter"
-                    " of his token with serial %s"
-                    % (self.authUser.login, self.authUser.realm, serial)
+                    " of his token with serial %s",
+                    self.authUser.login, self.authUser.realm, serial
                 )
                 ret = resetToken(serial=serial)
                 res["reset Failcounter"] = ret
@@ -1476,14 +1476,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception(
-                "error resetting token with serial %s: %r" % (serial, e)
-            )
+            log.error("error resetting token with serial %s: %r", serial, e)
             db.session.rollback()
             return sendError(response, e, 1)
 
@@ -1510,8 +1508,8 @@ class UserserviceController(BaseController):
             th = TokenHandler()
             if True == th.isTokenOwner(serial, self.authUser):
                 log.info(
-                    "user %s@%s is unassigning his token with serial %s."
-                    % (self.authUser.login, self.authUser.realm, serial)
+                    "user %s@%s is unassigning his token with serial %s.",
+                    self.authUser.login, self.authUser.realm, serial
                 )
 
                 ret = th.unassignToken(serial, None, upin)
@@ -1524,14 +1522,13 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception(
-                "unassigning token %s of user %s failed! %r"
-                % (serial, c.user, e)
+            log.error(
+                "unassigning token %s of user %s failed! %r", serial, c.user, e
             )
             db.session.rollback()
             return sendError(response, e, 1)
@@ -1558,8 +1555,8 @@ class UserserviceController(BaseController):
             if True == th.isTokenOwner(serial, self.authUser):
                 log.info(
                     "user %s@%s is setting the OTP PIN "
-                    "for token with serial %s"
-                    % (self.authUser.login, self.authUser.realm, serial)
+                    "for token with serial %s",
+                    self.authUser.login, self.authUser.realm, serial
                 )
 
                 check_res = checkOTPPINPolicy(userPin, self.authUser)
@@ -1567,8 +1564,8 @@ class UserserviceController(BaseController):
                 if not check_res["success"]:
                     log.warning(
                         "Setting of OTP PIN for Token %s"
-                        " by user %s failed: %s"
-                        % (serial, self.authUser.login, check_res["error"])
+                        " by user %s failed: %s",
+                        serial, self.authUser.login, check_res["error"]
                     )
 
                     return sendError(
@@ -1586,12 +1583,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
-            log.exception("policy failed: %r" % pex)
+            log.error("policy failed: %r", pex)
             db.session.rollback()
-            return sendError(response, str(pex), 1)
+            return sendError(response, pex, 1)
 
         except Exception as exx:
-            log.exception("Error setting OTP PIN: %r" % exx)
+            log.error("Error setting OTP PIN: %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
@@ -1615,8 +1612,8 @@ class UserserviceController(BaseController):
             if True == th.isTokenOwner(serial, self.authUser):
                 log.info(
                     "user %s@%s is setting the mOTP PIN"
-                    " for token with serial %s"
-                    % (self.authUser.login, self.authUser.realm, serial)
+                    " for token with serial %s",
+                    self.authUser.login, self.authUser.realm, serial
                 )
                 ret = setPinUser(pin, serial)
                 res["set userpin"] = ret
@@ -1627,12 +1624,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
-            log.exception("policy failed: %r" % pex)
+            log.error("policy failed: %r", pex)
             db.session.rollback()
-            return sendError(response, str(pex), 1)
+            return sendError(response, pex, 1)
 
         except Exception as exx:
-            log.exception("Error setting the mOTP PIN %r" % exx)
+            log.error("Error setting the mOTP PIN %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
@@ -1660,9 +1657,8 @@ class UserserviceController(BaseController):
             th = TokenHandler()
             if True == th.isTokenOwner(serial, self.authUser):
                 log.info(
-                    "user %s@%s is resyncing his "
-                    "token with serial %s"
-                    % (self.authUser.login, self.authUser.realm, serial)
+                    "user %s@%s is resyncing his " "token with serial %s",
+                    self.authUser.login, self.authUser.realm, serial
                 )
                 ret = th.resyncToken(otp1, otp2, None, serial)
                 res["resync Token"] = ret
@@ -1673,14 +1669,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception(
-                "error resyncing token with serial %s:%r" % (serial, e)
-            )
+            log.error("error resyncing token with serial %s:%r", serial, e)
             db.session.rollback()
             return sendError(response, e, 1)
 
@@ -1934,15 +1928,13 @@ class UserserviceController(BaseController):
                 return sendResult(self.response, False, opt=detail_response)
 
         except PolicyException as pe:
-            log.error("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
             return sendError(response, pe)
 
         except Exception as exx:
             g.audit["success"] = False
-            log.error(
-                "error verifying token with serial %s: %r" % (serial, exx)
-            )
+            log.error("error verifying token with serial %s: %r", serial, exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
@@ -1992,9 +1984,8 @@ class UserserviceController(BaseController):
             # assign  token to user
 
             log.info(
-                "user %s@%s is assign the token with "
-                "serial %s to himself."
-                % (self.authUser.login, self.authUser.realm, serial)
+                "user %s@%s is assign the token with " "serial %s to himself.",
+                self.authUser.login, self.authUser.realm, serial
             )
 
             ret_assign = th.assignToken(serial, self.authUser, upin)
@@ -2021,12 +2012,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("[userassign] policy failed: %r" % pe)
+            log.error("[userassign] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[userassign] token assignment failed! %r" % exx)
+            log.error("[userassign] token assignment failed! %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
@@ -2082,12 +2073,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("token getSerialByOtp failed! %r" % exx)
+            log.error("token getSerialByOtp failed! %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
@@ -2192,20 +2183,15 @@ class UserserviceController(BaseController):
 
             log.info(
                 "[userinit] initialize a token with serial %s "
-                "and type %s by user %s@%s"
-                % (serial, tok_type, self.authUser.login, self.authUser.realm)
+                "and type %s by user %s@%s",
+                serial, tok_type, self.authUser.login, self.authUser.realm
             )
 
             log.debug(
                 "[userinit] Initializing the token serial: %s,"
-                " desc: %s, otppin: %s for user %s @ %s."
-                % (
-                    serial,
-                    desc,
-                    otppin,
-                    self.authUser.login,
-                    self.authUser.realm,
-                )
+                " desc: %s, otppin: %s for user %s @ %s.",
+                serial, desc, otppin,
+                self.authUser.login, self.authUser.realm
             )
             log.debug(param)
 
@@ -2257,12 +2243,12 @@ class UserserviceController(BaseController):
                 return sendResult(self.response, ret, opt=response_detail)
 
         except PolicyException as pe:
-            log.exception("[userinit] policy failed: %r" % pe)
+            log.error("[userinit] policy failed: %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("[userinit] token initialization failed! %r" % e)
+            log.error("[userinit] token initialization failed! %r", e)
             db.session.rollback()
             return sendError(response, e, 1)
 
@@ -2351,13 +2337,9 @@ class UserserviceController(BaseController):
 
                 log.debug(
                     "[userwebprovision] Initializing the token serial:"
-                    " %s, desc: %s for user %s @ %s."
-                    % (
-                        serial,
-                        description,
-                        self.authUser.login,
-                        self.authUser.realm,
-                    )
+                    " %s, desc: %s for user %s @ %s.",
+                    serial, description,
+                    self.authUser.login, self.authUser.realm
                 )
 
                 (ret1, _tokenObj) = th.initToken(
@@ -2414,13 +2396,9 @@ class UserserviceController(BaseController):
 
                 log.debug(
                     "Initializing the token serial: "
-                    "%s, description: %s for user %s @ %s."
-                    % (
-                        serial,
-                        description,
-                        self.authUser.login,
-                        self.authUser.realm,
-                    )
+                    "%s, description: %s for user %s @ %s.",
+                    serial, description,
+                    self.authUser.login, self.authUser.realm
                 )
 
                 (ret1, _tokenObj) = th.initToken(
@@ -2487,13 +2465,13 @@ class UserserviceController(BaseController):
             )
 
         except PolicyException as pe:
-            log.exception("[userwebprovision] policy failed: %r" % pe)
+            log.error("[userwebprovision] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception(
-                "[userwebprovision] token initialization failed! %r" % exx
+            log.error(
+                "[userwebprovision] token initialization failed! %r", exx
             )
             db.session.rollback()
             return sendError(response, exx, 1)
@@ -2543,7 +2521,7 @@ class UserserviceController(BaseController):
             max_count = checkPolicyPre(
                 "selfservice", "max_count", param, self.authUser
             )
-            log.debug("checkpolicypre returned %s" % max_count)
+            log.debug("checkpolicypre returned %s", max_count)
 
             if count > max_count:
                 count = max_count
@@ -2565,14 +2543,12 @@ class UserserviceController(BaseController):
             return sendResult(self.response, ret, 0)
 
         except PolicyException as pe:
-            log.exception("[usergetmultiotp] policy failed: %r" % pe)
+            log.error("[usergetmultiotp] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception(
-                "[usergetmultiotp] gettoken/getmultiotp failed: %r" % e
-            )
+            log.error("[usergetmultiotp] gettoken/getmultiotp failed: %r", e)
             db.session.rollback()
             return sendError(
                 response, _("selfservice/usergetmultiotp failed:" " %r") % e, 0
@@ -2606,7 +2582,7 @@ class UserserviceController(BaseController):
         res = {}
 
         try:
-            log.debug("params: %s" % param)
+            log.debug("params: %r", param)
             checkPolicyPre("selfservice", "userhistory", param, self.authUser)
 
             lines, total, page = audit_search(
@@ -2637,12 +2613,12 @@ class UserserviceController(BaseController):
             return json.dumps(res, indent=3)
 
         except PolicyException as pe:
-            log.exception("[search] policy failed: %r" % pe)
+            log.error("[search] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[search] audit/search failed: %r" % exx)
+            log.error("[search] audit/search failed: %r", exx)
             db.session.rollback()
             return sendError(
                 response, _("audit/search failed: %s") % str(exx), 0
@@ -2650,7 +2626,6 @@ class UserserviceController(BaseController):
 
     def activateocratoken(self):
         """
-
         activateocratoken - called from the selfservice web ui to activate the  OCRA token
 
         :param type:    'ocra2'
@@ -2738,14 +2713,14 @@ class UserserviceController(BaseController):
             )
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("token initialization failed! %r" % e)
+        except Exception as exx:
+            log.error("token initialization failed! %r", exx)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(response, exx, 1)
 
     def finishocra2token(self):
         """
@@ -2814,15 +2789,15 @@ class UserserviceController(BaseController):
             return sendResult(self.response, value, opt)
 
         except PolicyException as pe:
-            log.exception("[userfinishocra2token] policy failed: %r" % pe)
+            log.error("[userfinishocra2token] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
             error = (
                 "[userfinishocra2token] token initialization failed! %r" % e
             )
-            log.exception(error)
+            log.error(error)
             db.session.rollback()
             return sendError(response, error, 1)
 
@@ -2863,8 +2838,7 @@ class UserserviceController(BaseController):
             )
             if not pols or len(pols) == 0:
                 log.error(
-                    "user %r not authorized to call %s"
-                    % (self.authUser, method)
+                    "user %r not authorized to call %s", self.authUser, method
                 )
                 raise PolicyException(
                     "user %r not authorized to call %s"
@@ -2905,17 +2879,17 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("[token_call] policy failed: %r" % pe)
+            log.error("[token_call] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception(
-                "[token_call] calling method %s.%s of user %s failed! %r"
-                % (typ, method, c.user, e)
+        except Exception as exx:
+            log.error(
+                "[token_call] calling method %s.%s of user %s failed! %r",
+                typ, method, c.user, exx
             )
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(response, exx, 1)
 
     def setdescription(self):
         """
@@ -2975,7 +2949,7 @@ class UserserviceController(BaseController):
             return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
-            log.exception("[setdescription] policy failed")
+            log.error("[setdescription] policy failed")
             db.session.rollback()
             return sendError(response, pex, 1)
 

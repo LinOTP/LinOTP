@@ -173,7 +173,7 @@ def google_authenticator_url(label, param):
     if len(label) > allowed_label_length:
         log.debug(
             "[create_google_authenticator_url] we got %d characters"
-            " left for the token label" % allowed_label_length
+            " left for the token label", allowed_label_length
         )
 
     label = label[0:allowed_label_length]
@@ -185,7 +185,7 @@ def google_authenticator_url(label, param):
     auth_url = "otpauth://%s/%s?%s" % (token_type, label, authenticator_params)
 
     auth_url_prefix_len = len("otpauth:///") + len(token_type) + len(label)
-    log.debug("google authenticator: %r" % auth_url[:auth_url_prefix_len])
+    log.debug("google authenticator: %r", auth_url[:auth_url_prefix_len])
 
     return auth_url
 

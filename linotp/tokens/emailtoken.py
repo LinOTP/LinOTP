@@ -242,7 +242,7 @@ class EmailTokenClass(HmacTokenClass):
 
         """
         LOG.debug(
-            "[update] begin. adjust the token class with: param %r" % param
+            "[update] begin. adjust the token class with: param %r", param
         )
 
         _ = context["translate"]
@@ -293,7 +293,7 @@ class EmailTokenClass(HmacTokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            LOG.error("[getNextOtp] ValueError %r" % ex)
+            LOG.error("[getNextOtp] ValueError %r", ex)
             raise Exception(ex)
 
         secObj = self._get_secret_object()
@@ -303,7 +303,7 @@ class EmailTokenClass(HmacTokenClass):
         nextotp = hmac2otp.generate(counter + 1)
 
         LOG.debug(
-            "[getNextOtp] end. got the next otp value: nextOtp %r" % nextotp
+            "[getNextOtp] end. got the next otp value: nextOtp %r", nextotp
         )
         return nextotp
 

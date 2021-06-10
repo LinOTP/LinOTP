@@ -123,9 +123,9 @@ class MigrateResolverHandler(ToolsHandler):
                 serials.add(serial)
 
             except Exception as exx:
-                log.exception(
-                    "Faild to set new resolver data for token %s: %r"
-                    % (serial, exx)
+                log.error(
+                    "Faild to set new resolver data for token %s: %r",
+                    serial, exx
                 )
 
         ret["value"] = True

@@ -43,7 +43,7 @@ class TokenInfoMixin(object):
             try:
                 info = json.loads(tokeninfo)
             except Exception as e:
-                log.exception("JSON loading error in token info: %r" % (e))
+                log.error("JSON loading error in token info: %r", e)
 
         return info
 

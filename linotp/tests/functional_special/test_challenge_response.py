@@ -105,7 +105,7 @@ def email_otp_func(call_args):
         matches = re.search("\d{6}", message)
         otp = matches.group(0)
     except Exception as exx:
-        log.error("email_otp failed: %r" % exx)
+        log.error("email_otp failed: %r", exx)
     return otp
 
 
@@ -122,7 +122,7 @@ def sms_otp_func(call_args):
         _phone = ordered_args[0]
         otp = ordered_args[1]
     except Exception as exx:
-        log.error("sms_otp failed: %r" % exx)
+        log.error("sms_otp failed: %r", exx)
     return otp
 
 

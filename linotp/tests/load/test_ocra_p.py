@@ -930,7 +930,7 @@ class OcraTest(TestController):
         for p_test in p_tests:
             p_test.join()
 
-        log.debug(" %d Threads finished" % (numthreads))
+        log.debug(" %d Threads finished", numthreads)
 
     # as there are asserts in the test, the thread will stop
     # if something is wrong. So we don't care for the results
@@ -983,7 +983,7 @@ class OcraTest(TestController):
                 int(time.time()),
                 random.randint(0, 100),
             )
-            log.info("## serial: %s" % serial)
+            log.info("## serial: %r", serial)
             count = 0
             tcount = tcount + 1
 

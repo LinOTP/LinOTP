@@ -128,7 +128,7 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
 
         tokenArray.append(tok)
 
-    log.debug("[getTokenForUser] found tokenarray: %r" % tokenArray)
+    log.debug("[getTokenForUser] found tokenarray: %r", tokenArray)
     return tokenArray
 
 
@@ -471,10 +471,10 @@ def add_dynamic_selfservice_enrollment(config, actions):
                             e_name = "%s.%s.%s" % (tok, "selfservice", action)
                             dynanmic_actions[e_name] = t_html
 
-            except Exception as e:
+            except Exception as exx:
                 log.info(
                     "[_add_dynamic_actions] no policy for tokentype "
-                    "%s found (%r)" % (str(tok), e)
+                    "%r found (%r)", tok, exx
                 )
 
     return dynanmic_actions
@@ -513,10 +513,10 @@ def add_dynamic_selfservice_policies(config, actions):
                     for local_policy in scope_policies:
                         if local_policy not in defined_policies:
                             dynamic_policies.append(local_policy)
-            except Exception as e:
+            except Exception as exx:
                 log.info(
                     "[_add_dynamic_actions] no policy for tokentype "
-                    "%s found (%r)" % (str(tok), e)
+                    "%r found (%r)", tok, exx
                 )
 
     return dynamic_policies

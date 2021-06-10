@@ -466,8 +466,8 @@ class Token(db.Model):
         seed = binascii.unhexlify(seed_str)
         hPin = hash(pin, seed)
         log.debug(
-            "[getHashedPin] hPin: %s, pin: %s, seed: %s"
-            % (binascii.hexlify(hPin), pin, self.LinOtpSeed or "")
+            "[getHashedPin] hPin: %s, pin: %s, seed: %s",
+            binascii.hexlify(hPin), pin, self.LinOtpSeed or ""
         )
         return binascii.hexlify(hPin)
 
@@ -674,7 +674,7 @@ class Token(db.Model):
 
 
 def createToken(serial):
-    log.debug("createToken(%s)" % serial)
+    log.debug("createToken(%s)", serial)
     serial = "" + serial
     token = Token(serial)
     log.debug("token object created")
@@ -1055,7 +1055,7 @@ class Challenge(db.Model):
             db.session.flush()  # Better safe than sorry.
 
         except Exception as _exce:
-            log.exception("[save]Error during saving challenge")
+            log.error("[save]Error during saving challenge")
 
         return self.transid
 

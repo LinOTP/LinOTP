@@ -451,8 +451,8 @@ def uencode(value):
         try:
             ret = json.dumps(value)[1:-1]
         except Exception as exx:
-            log.exception(
-                "Failed to encode value %r. Exception was %r" % (value, exx)
+            log.error(
+                "Failed to encode value %r. Exception was %r", value, exx
             )
 
     return ret
@@ -475,8 +475,8 @@ def udecode(value):
             # add surrounding "" for correct decoding
             ret = json.loads('"%s"' % value)
         except Exception as exx:
-            log.exception(
-                "Failed to decode value %r. Exception was %r" % (value, exx)
+            log.error(
+                "Failed to decode value %r. Exception was %r", value, exx
             )
     return ret
 

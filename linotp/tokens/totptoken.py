@@ -363,8 +363,9 @@ class TimeHmacTokenClass(HmacTokenClass):
             counter = int(self.token.LinOtpCount)
         except ValueError as ex:
             log.warning(
-                "[check_otp_exist] a value error occurred while converting: counter %r : ValueError: %r ret: %r "
-                % (self.token.LinOtpCount, ex, res)
+                "[check_otp_exist] a value error occurred while "
+                "converting: counter %r : ValueError: %r ret: %r ",
+                self.token.LinOtpCount, ex, res
             )
             return res
 
@@ -395,11 +396,10 @@ class TimeHmacTokenClass(HmacTokenClass):
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
             except Exception as ex:
-                log.exception(
-                    "[time2float] Error during conversion of datetime: %r"
-                    % (ex)
+                log.error(
+                    "[time2float] Error during conversion of datetime: %r", ex
                 )
-                raise Exception(ex)
+                raise
         else:
             raise Exception(
                 "[time2float] invalid curTime: %s. You need to specify a datetime.datetime"
@@ -648,10 +648,10 @@ class TimeHmacTokenClass(HmacTokenClass):
         lastauth = counter2time(old_counter, timeStepping)
         lastauthDt = datetime.datetime.fromtimestamp(float(lastauth))
 
-        log.debug("[checkOTP] last auth : %r" % (lastauthDt))
-        log.debug("[checkOTP] tokentime : %r" % (tokenDt))
-        log.debug("[checkOTP] now       : %r" % (nowDt))
-        log.debug("[checkOTP] delta     : %r" % (tokentime - inow))
+        log.debug("[checkOTP] last auth : %r", lastauthDt)
+        log.debug("[checkOTP] tokentime : %r", tokenDt)
+        log.debug("[checkOTP] now       : %r", nowDt)
+        log.debug("[checkOTP] delta     : %r", tokentime - inow)
 
         inow_counter = time2counter(inow, timeStepping)
         inow_token_time = counter2time(inow_counter, timeStepping)
@@ -700,49 +700,48 @@ class TimeHmacTokenClass(HmacTokenClass):
             window = 10 * timeStepping
 
         log.debug(
-            "[resync] timestep: %r, syncWindow: %r, timeShift: %r"
-            % (timeStepping, window, shift)
+            "[resync] timestep: %r, syncWindow: %r, timeShift: %r",
+            timeStepping, window, shift
         )
 
         T0 = time.time() + shift
 
-        log.debug("[resync] T0 : %i" % T0)
-        counter = int(
-            T0 // timeStepping
-        )  # T = (Current Unix time - T0) / timeStepping
-        log.debug("[resync] counter (current time): %i" % counter)
+        log.debug("[resync] T0 : %i", T0)
+        # T = (Current Unix time - T0) / timeStepping
+        counter = int(T0 // timeStepping)
+        log.debug("[resync] counter (current time): %i", counter)
 
         oCount = self.getOtpCount()
 
-        log.debug("[resync] tokenCounter: %r" % oCount)
+        log.debug("[resync] tokenCounter: %r", oCount)
         log.debug(
-            "[resync] now checking window %s, timeStepping %s"
-            % (window, timeStepping)
+            "[resync] now checking window %s, timeStepping %s",
+            window, timeStepping
         )
         # check 2nd value
         hmac2Otp = HmacOtp(
             secObj, counter, otplen, self.getHashlib(self.hashlibStr)
         )
-        log.debug("[resync] %s in otpkey: %s " % (otp2, secObj))
+        log.debug("[resync] %s in otpkey: %s ", otp2, secObj)
         res2 = hmac2Otp.checkOtp(
             otp2, int(window // timeStepping), symetric=True
         )  # TEST -remove the 10
-        log.debug("[resync] res 2: %r" % res2)
+        log.debug("[resync] res 2: %r", res2)
         # check 1st value
         hmac2Otp = HmacOtp(
             secObj, counter - 1, otplen, self.getHashlib(self.hashlibStr)
         )
-        log.debug("[resync] %s in otpkey: %s " % (otp1, secObj))
+        log.debug("[resync] %s in otpkey: %s ", otp1, secObj)
         res1 = hmac2Otp.checkOtp(
             otp1, int(window // timeStepping), symetric=True
         )  # TEST -remove the 10
-        log.debug("[resync] res 1: %r" % res1)
+        log.debug("[resync] res 1: %r", res1)
 
         if res1 < oCount:
             # A previous OTP value was used again!
             log.warning(
-                "[resync] a previous OTP value was used again! tokencounter: %i, presented counter %i"
-                % (oCount, res1)
+                "[resync] a previous OTP value was used again! "
+                "tokencounter: %i, presented counter %i", oCount, res1
             )
             res1 = -1
 
@@ -752,8 +751,8 @@ class TimeHmacTokenClass(HmacTokenClass):
             currenttime = T0 - shift
             new_shift = tokentime - currenttime
             log.debug(
-                "[resync] the counters %r and %r matched. New shift: %r"
-                % (res1, res2, new_shift)
+                "[resync] the counters %r and %r matched. New shift: %r",
+                res1, res2, new_shift
             )
             self.addToTokenInfo("timeShift", new_shift)
 

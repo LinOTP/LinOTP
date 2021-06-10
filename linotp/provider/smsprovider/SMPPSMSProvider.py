@@ -111,8 +111,8 @@ class SMPPSMSProvider(ISMSProvider):
             log.debug("connected to %r:%r", self.server, self.port)
 
         except Exception as exx:
-            log.exception("Failed to connect to server")
-            raise ProviderNotAvailable("Failed to connect to server %r" % exc)
+            log.error("Failed to connect to server: %r", exx)
+            raise ProviderNotAvailable("Failed to connect to server %r" % exx)
 
         try:
             log.debug(
@@ -158,7 +158,7 @@ class SMPPSMSProvider(ISMSProvider):
                     log.debug("message %r submitted to %r", msg, phone)
 
         except Exception as exx:
-            log.exception(exx)
+            log.error(exx)
             result = False
 
         finally:

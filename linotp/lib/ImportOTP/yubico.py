@@ -98,7 +98,7 @@ def parseYubicoCSV(csv):
 
     csv_array = csv.split("\n")
 
-    log.debug("[parseYubicoCSV] the file contains %i tokens." % len(csv_array))
+    log.debug("[parseYubicoCSV] the file contains %i tokens.", len(csv_array))
     for line in csv_array:
         l = line.split(",")
         serial = ""
@@ -120,7 +120,7 @@ def parseYubicoCSV(csv):
                 key = l[5].strip()
 
                 if public_id == "":
-                    log.warning("No public ID in line %r" % line)
+                    log.warning("No public ID in line %r", line)
                     serial_int = int(binascii.hexlify(os.urandom(4)), 16)
                 else:
                     mh = modhex_decode(public_id).encode("utf-8")[:8]
@@ -156,8 +156,8 @@ def parseYubicoCSV(csv):
                     }
                 else:
                     log.warning(
-                        "[parseYubicoCSV] at the moment we do only support Yubico OTP and HOTP: %r"
-                        % line
+                        "[parseYubicoCSV] at the moment we do only"
+                        " support Yubico OTP and HOTP: %r", line
                     )
                     continue
             elif first_column.isdigit():
@@ -197,11 +197,11 @@ def parseYubicoCSV(csv):
                 }
         else:
             log.warning(
-                "[parseYubicoCSV] the line %r did not contain a enough values"
-                % line
+                "[parseYubicoCSV] the line %r did not contain a enough values",
+                line
             )
             continue
 
-    log.debug("[parseOATHcsv] read the following values: %s" % str(TOKENS))
+    log.debug("[parseOATHcsv] read the following values: %r", TOKENS)
 
     return TOKENS

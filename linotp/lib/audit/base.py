@@ -132,20 +132,20 @@ class AuditBase(object):
             f = open(self.privateKeyFilename, "r")
             self.private = f.read()
             f.close()
-        except Exception as e:
-            log.exception(
-                "[readKeys] Error reading private key %s: (%r)"
-                % (self.privateKeyFilename, e)
+        except Exception as exx:
+            log.error(
+                "[readKeys] Error reading private key %s: (%r)",
+                self.privateKeyFilename, exx
             )
 
         try:
             f = open(self.publicKeyFilename, "r")
             self.public = f.read()
             f.close()
-        except Exception as e:
-            log.exception(
-                "[readKeys] Error reading public key %s: (%r)"
-                % (self.publicKeyFilename, e)
+        except Exception as exx:
+            log.error(
+                "[readKeys] Error reading public key %s: (%r)",
+                self.publicKeyFilename, exx
             )
 
         return

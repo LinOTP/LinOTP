@@ -82,7 +82,7 @@ class AuditController(BaseController):
             g.audit["client"] = get_client(request)
             check_session(request)
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r" % (action, exx))
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(response, exx, context="before")
 
@@ -129,7 +129,7 @@ class AuditController(BaseController):
         """
 
         try:
-            log.debug("[search] params: %s" % self.request_params)
+            log.debug("[search] params: %r", self.request_params)
 
             checkPolicyPre("audit", "view", {})
 
@@ -176,12 +176,12 @@ class AuditController(BaseController):
             return streamed_response
 
         except PolicyException as pe:
-            log.exception("[getotp] gettoken/getotp policy failed: %r" % pe)
+            log.error("[getotp] gettoken/getotp policy failedi: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[search] audit/search failed: %r" % e)
+        except Exception as exx:
+            log.error("[search] audit/search failed: %r", exx)
             db.session.rollback()
             return sendError(response, "audit/search failed", 0)
 

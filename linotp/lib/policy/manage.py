@@ -200,7 +200,7 @@ def deletePolicy(name, enforce=False):
 
     for entry in delEntries:
         # delete this entry.
-        log.debug("[deletePolicy] removing key: %s" % entry)
+        log.debug("[deletePolicy] removing key: %r", entry)
         ret = removeFromConfig(entry)
         res[entry] = ret
 

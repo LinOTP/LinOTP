@@ -116,7 +116,7 @@ class HelpdeskController(BaseController, SessionCookieMixin):
                 check_session(request, scope="helpdesk")
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception", action)
+            log.error("[__before__::%r] exception", action)
 
             db.session.rollback()
             return sendError(None, exx, context="before")
@@ -138,12 +138,10 @@ class HelpdeskController(BaseController, SessionCookieMixin):
             db.session.commit()
             return response
 
-        except Exception as e:
-            log.exception(
-                "[__after__] unable to create a session cookie: %r" % e
-            )
+        except Exception as exx:
+            log.error("[__after__] unable to create a session cookie: %r", exx)
             db.session.rollback()
-            return sendError(response, e, context="after")
+            return sendError(response, exx, context="after")
 
     def tokens(self):
         """
@@ -258,12 +256,12 @@ class HelpdeskController(BaseController, SessionCookieMixin):
             return sendResult(None, res)
 
         except PolicyException as pex:
-            log.exception("Error during checking policies")
+            log.error("Error during checking policies")
             db.session.rollback()
             return sendError(response, pex, 1)
 
         except Exception as exx:
-            log.exception("tokens lookup failed!")
+            log.error("tokens lookup failed!")
             db.session.rollback()
             return sendError(response, exx)
 
@@ -402,16 +400,16 @@ class HelpdeskController(BaseController, SessionCookieMixin):
             return sendResult(None, res)
 
         except PolicyException as pe:
-            log.exception(
-                "[userview_flexi] Error during checking policies: %r" % pe
+            log.error(
+                "[userview_flexi] Error during checking policies: %r", pe
             )
             db.session.rollback()
             return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[userview_flexi] failed: %r" % e)
+        except Exception as exx:
+            log.error("[userview_flexi] failed: %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
     def enroll(self):
         """
@@ -507,8 +505,9 @@ class HelpdeskController(BaseController, SessionCookieMixin):
             params["serial"] = serial
 
             log.info(
-                "[init] initialize token. user: %s, serial: %s"
-                % (user.login, serial)
+                "[init] initialize token. user: %s, serial: %s",
+                user.login,
+                serial,
             )
 
             # --------------------------------------------------------------- --
@@ -568,12 +567,12 @@ class HelpdeskController(BaseController, SessionCookieMixin):
             return sendResult(None, ret)
 
         except PolicyException as pex:
-            log.exception("Policy Exception while enrolling token")
+            log.error("Policy Exception while enrolling token")
             db.session.rollback()
             return sendError(response, pex, 1)
 
         except Exception as exx:
-            log.exception("Exception while enrolling token")
+            log.error("Exception while enrolling token")
             db.session.rollback()
             return sendError(response, exx, 1)
 
@@ -657,11 +656,11 @@ class HelpdeskController(BaseController, SessionCookieMixin):
             return sendResult(None, result)
 
         except PolicyException as pex:
-            log.exception("[setPin] policy failed %r")
+            log.error("[setPin] policy failed %r")
             db.session.rollback()
             return sendError(response, pex, 1)
 
         except Exception as exx:
-            log.exception("[setPin] error while setting pin")
+            log.error("[setPin] error while setting pin")
             db.session.rollback()
             return sendError(response, exx, 0)

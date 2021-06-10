@@ -94,7 +94,7 @@ def _get_httperror_from_params(request):
         request_params = current_app.getRequestParams()
         httperror = request_params.get("httperror", None)
     except UnicodeDecodeError as exx:
-        log.exception(
+        log.error(
             "Could not extract 'httperror' from params because some "
             "parameter contains invalid Unicode. Trying to extract "
             "directly from query_string. Exception: %r",
@@ -114,7 +114,7 @@ def _get_httperror_from_params(request):
                 )
             httperror = httperror_list[-1]
     except Exception as exx:
-        log.exception(
+        log.error(
             "Exception while extracting 'httperror' from params. "
             "Falling back to default LinOTP behaviour httperror=None. "
             "Exception %r",
@@ -372,9 +372,7 @@ def sendResultIterator(
                 "code": 9876,
                 "message": "%r" % exx,
             }
-            log.exception(
-                "failed to convert paging request parameters: %r" % exx
-            )
+            log.error("failed to convert paging request parameters: %r", exx)
             yield json.dumps(err)
             # finally we signal end of error result
             return

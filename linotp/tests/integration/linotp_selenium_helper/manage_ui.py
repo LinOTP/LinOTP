@@ -256,7 +256,7 @@ class ManageUi(object):
         # Close them
         for dialog in dialogs:
             logging.debug(
-                "Closing dialog %s" % dialog.get_attribute("aria-describedby")
+                "Closing dialog %s", dialog.get_attribute("aria-describedby")
             )
             dialog.find_element_by_css_selector(
                 ManageDialog.CLOSEBUTTON_CSS

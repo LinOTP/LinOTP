@@ -116,20 +116,19 @@ class FinishTokens(object):
                 tokens=[],
             )
 
-            log.info("no valid token found: %r" % self.audit_entry)
+            log.info("no valid token found: %r", self.audit_entry)
             return False, None
 
         if self.user:
             log.warning(
-                "user %r@%r failed to auth."
-                % (self.user.login, self.user.realm)
+                "user %r@%r failed to auth.", self.user.login, self.user.realm
             )
         else:
             log.warning(
-                "serial %r failed to auth."
-                % (self.pin_matching_tokens + self.invalid_tokens)[
+                "serial %r failed to auth.",
+                (self.pin_matching_tokens + self.invalid_tokens)[
                     0
-                ].getSerial()
+                ].getSerial(),
             )
 
         if self.pin_matching_tokens:

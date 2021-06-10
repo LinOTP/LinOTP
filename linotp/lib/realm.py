@@ -498,7 +498,7 @@ def deleteRealm(realmname):
     :type  realmname: string
     """
 
-    log.debug("deleting realm object with name=%s" % realmname)
+    log.debug("deleting realm object with name=%s", realmname)
     r = getRealmObject(name=realmname)
     if r is None:
         """ if no realm is found, we re-try the lowercase name for backward compatibility """
@@ -508,14 +508,12 @@ def deleteRealm(realmname):
         realmId = r.id
 
         if realmId != 0:
-            log.debug(
-                "Deleting token relations for realm with id %i" % realmId
-            )
+            log.debug("Deleting token relations for realm with id %r", realmId)
             TokenRealm.query.filter_by(realm_id=realmId).delete()
         db.session.delete(r)
 
     else:
-        log.warning("Realm with name %s was not found." % realmname)
+        log.warning("Realm with name %s was not found.", realmname)
         return False
     # now delete all relations, i.e. remove all Tokens from this realm.
 

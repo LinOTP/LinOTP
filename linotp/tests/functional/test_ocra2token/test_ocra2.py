@@ -746,7 +746,7 @@ class OcraTest(TestController):
             itime = int(stime)
             param["T"] = itime
             date = datetime.fromtimestamp(itime)
-            log.debug("Start for challenge %r" % date)
+            log.debug("Start for challenge %r", date)
 
         ocra = OcraSuite(ocrasuite)
         data = ocra.combineData(**param)
@@ -819,7 +819,7 @@ class OcraTest(TestController):
                 - check OCRA Token with user pin
         """
         ocrasuite = "OCRA-1:HOTP-SHA256-8:QA64"
-        log.info("##################### %s" % ocrasuite)
+        log.info("##################### %s", ocrasuite)
         ocrapin = "myocrapin"
 
         # -1- create an ocra token
@@ -952,7 +952,7 @@ class OcraTest(TestController):
                 itime = int(stime)
                 param["T"] = itime
                 date = datetime.fromtimestamp(itime)
-                log.info("Start for challenge %r" % date)
+                log.info("Start for challenge %r", date)
 
             data = ocra.combineData(**param)
             otp = ocra.compute(data, newkey)
@@ -985,7 +985,7 @@ class OcraTest(TestController):
 
         """
         ocrasuite = "OCRA-1:HOTP-SHA256-8:QA64"
-        log.info("##################### %s" % ocrasuite)
+        log.info("##################### %s", ocrasuite)
         ocrapin = "myocrapin"
         key = self.key32h
 
@@ -1068,7 +1068,7 @@ class OcraTest(TestController):
         hnewkey = binascii.hexlify(newkey)
         ocra = OcraSuite(ocrasuite)
 
-        log.debug("%r" % hnewkey)
+        log.debug("%r", hnewkey)
 
         param = {}
         param["C"] = 0
@@ -1122,7 +1122,7 @@ class OcraTest(TestController):
                 itime = int(stime)
                 param["T"] = itime
                 date = datetime.fromtimestamp(itime)
-                log.info("Start for challenge %r" % date)
+                log.info("Start for challenge %r", date)
 
             data = ocra.combineData(**param)
             otp = ocra.compute(data, newkey)
@@ -1162,7 +1162,7 @@ class OcraTest(TestController):
                 - check OCRA Token with user pin
         """
         ocrasuite = "OCRA-1:HOTP-SHA256-8:QA64"
-        log.info("##################### %s" % ocrasuite)
+        log.info("##################### %s", ocrasuite)
         ocrapin = "myocrapin"
 
         # -1- create an ocra token
@@ -1299,7 +1299,7 @@ class OcraTest(TestController):
             transid = str(jresp.get("detail", {}).get("transactionid"))
             app_import = str(jresp.get("detail", {}).get("app_import"))
         except Exception as e:
-            log.debug(" %r" % e)
+            log.debug(" %r", e)
 
         # now parse the appurl for the ocrasuite
         uri = urlparse(app_import.replace("lseqr://", "http://"))
@@ -1381,7 +1381,7 @@ class OcraTest(TestController):
             key = test["keyh"]
             bkey = test["key"]
 
-            log.info("##################### %s" % ocrasuite)
+            log.info("##################### %s", ocrasuite)
             ocrapin = "myocrapin"
             serial = "OCRA_TOKEN_%d" % (t_count)
 
@@ -1447,8 +1447,8 @@ class OcraTest(TestController):
                 # TB Fixed
                 if '"value": true' not in response:
                     log.info("response %s\n", response)
-                    log.error("test: failed for otp context: %r " % param)
-                    log.error("datainput: %s" % binascii.hexlify(data))
+                    log.error("test: failed for otp context: %r ", param)
+                    log.error("datainput: %s", binascii.hexlify(data))
 
                     _response2 = self.make_validate_request(
                         "check_t", params=parameters
@@ -1489,7 +1489,7 @@ class OcraTest(TestController):
             key = test["keyh"]
             bkey = test["key"]
 
-            log.info("##################### %s" % ocrasuite)
+            log.info("##################### %s", ocrasuite)
             ocrapin = "myocrapin"
             serial = "QR_One1b"
             # -1- create an ocra token
@@ -1508,7 +1508,7 @@ class OcraTest(TestController):
             assert '"value": true' in response, response
 
             for count in range(0, 3):
-                log.error("fetching challenge %d for %s " % (count, ocrasuite))
+                log.error("fetching challenge %d for %s ", count, ocrasuite)
                 # -2- fetch the challenge
                 p = {
                     "serial": serial,
@@ -1644,7 +1644,7 @@ class OcraTest(TestController):
             bkey = test["key"]
             ocrapin = "myocrapin"
 
-            log.info("##################### %s" % ocrasuite)
+            log.info("##################### %s", ocrasuite)
 
             # -1- create an ocra token
             parameters = {
@@ -1775,7 +1775,7 @@ class OcraTest(TestController):
             ocrapin = "myocrapin"
             serial = "QR_One3"
 
-            log.debug(" %r" % bkey)
+            log.debug(" %r", bkey)
 
             ocra = OcraSuite(ocrasuite)
             pinlen = ocra.truncation
@@ -1810,7 +1810,7 @@ class OcraTest(TestController):
                 challenge = str(jresp.get("detail", {}).get("challenge"))
                 transid = str(jresp.get("detail", {}).get("transactionid"))
 
-                log.debug(" %r" % challenge)
+                log.debug(" %r", challenge)
 
                 ppin = "pin" + "a" * pinlen
 
@@ -1870,7 +1870,7 @@ class OcraTest(TestController):
         ocrasuite = "OCRA-1:HOTP-SHA256-8:QA64"
         for test in self.tests[0:1]:
             ocrasuite = test["ocrasuite"]
-            log.info("################# OCRASUITE: %s" % (ocrasuite))
+            log.info("################# OCRASUITE: %s", ocrasuite)
             key = test["keyh"]
             bkey = test["key"]
             ocrapin = "myocrapin"
@@ -2210,7 +2210,7 @@ class OcraTest(TestController):
         except Exception as e:
             challenge = None
             transid = None
-            log.debug(" %r" % e)
+            log.debug(" %r", e)
 
         return (response, challenge, transid)
 
@@ -2493,7 +2493,7 @@ class OcraTest(TestController):
             key = keyStream.read(Ergebniskeylaenge)
 
             res = binascii.hexlify(key)
-            log.debug("%r" % res)
+            log.debug("%r", res)
 
             st = "abcdefg"
             ret = check(st)
@@ -2508,7 +2508,7 @@ class OcraTest(TestController):
             res = ret[-2:0]
 
         except Exception as e:
-            log.debug("%r" % e)
+            log.debug("%r", e)
         return
 
     def test_ERROR_771_(self):

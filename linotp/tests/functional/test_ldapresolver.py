@@ -155,12 +155,12 @@ class LDAPExtObject(LDAPObject):
         )
 
     def result2(
-        self, msgid, all=1, timeout=None
+            self, msgid, all=1, timeout=None
     ):  # pylint: disable=redefined-builtin
         return ldap.RES_SEARCH_RESULT, self._pop_async_result(msgid), None
 
     def result3(
-        self, msgid, all=1, timeout=None
+            self, msgid, all=1, timeout=None
     ):  # pylint: disable=redefined-builtin
         """
         Last result plus server controls

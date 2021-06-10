@@ -562,9 +562,9 @@ class VoiceTokenClass(HmacTokenClass):
         try:
             otp_length = int(self.token.LinOtpOtpLen)
         except ValueError as value_error_ex:
-            log.exception(
-                "[getOTP]: Could not convert otplen - value error "
-                "%r" % (value_error_ex)
+            log.error(
+                "[getOTP]: Could not convert otplen - value error " "%r",
+                value_error_ex
             )
             raise value_error_ex
 

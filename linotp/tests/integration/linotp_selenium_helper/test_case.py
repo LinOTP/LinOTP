@@ -177,12 +177,12 @@ class TestCase(object):
             if selenium_driver == "chrome":
                 try:
                     driver = webdriver.Chrome(options=_get_chrome_options())
-                except WebDriverException as e:
+                except WebDriverException as exx:
                     logger.error(
-                        "Error creating Chrome driver. Maybe you need to install"
-                        " 'chromedriver'. If you wish to use another browser please"
-                        " adapt your configuratiion file. Error message: %s"
-                        % str(e)
+                        "Error creating Chrome driver. Maybe you need to"
+                        " install 'chromedriver'. If you wish to use another "
+                        " browser please  adapt your configuratiion file. "
+                        "Error message: %s", exx
                     )
                     raise
 

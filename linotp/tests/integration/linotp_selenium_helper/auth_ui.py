@@ -94,7 +94,7 @@ class AuthUi(object):
         """
         alert = self.driver.switch_to.alert
         alert_text = alert.text
-        logging.debug("Auth result: %s" % alert_text)
+        logging.debug("Auth result: %s", alert_text)
         alert.accept()
         if alert_text == "User successfully authenticated!":
             return self.AUTH_SUCCESS

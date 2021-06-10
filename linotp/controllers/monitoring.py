@@ -100,7 +100,7 @@ class MonitoringController(BaseController):
             return
 
         except Exception as exception:
-            log.exception(exception)
+            log.error(exception)
             db.session.rollback()
             return sendError(response, exception, context="before")
 
@@ -121,7 +121,7 @@ class MonitoringController(BaseController):
             return response
 
         except Exception as exception:
-            log.exception(exception)
+            log.error(exception)
             db.session.rollback()
             return sendError(response, exception, context="after")
 
@@ -195,12 +195,12 @@ class MonitoringController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -241,7 +241,7 @@ class MonitoringController(BaseController):
             return sendResult(response, result)
 
         except Exception as exception:
-            log.exception(exception)
+            log.error(exception)
             return sendError(response, exception)
 
     def storageEncryption(self):
@@ -269,7 +269,7 @@ class MonitoringController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exception:
-            log.exception(exception)
+            log.error(exception)
             return sendError(response, exception)
 
     def license(self):
@@ -311,7 +311,7 @@ class MonitoringController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exception:
-            log.exception(exception)
+            log.error(exception)
             return sendError(response, exception)
 
     def userinfo(self):
@@ -365,12 +365,12 @@ class MonitoringController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -423,11 +423,11 @@ class MonitoringController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)

@@ -149,7 +149,7 @@ class SmtpSMSProvider(ISMSProvider):
         ):
             log.error(
                 "[submitMessage] incomplete config: %s. mailserver, "
-                "mailsender and mailto needed." % self.config
+                "mailsender and mailto needed.", self.config
             )
             return ret
 
@@ -252,7 +252,7 @@ class SmtpSMSProvider(ISMSProvider):
             ret = True
 
         except smtplib.socket.error as exc:
-            log.exception("Error: could not connect to server")
+            log.error("Error: could not connect to server")
             if boolean(self.config.get("raise_exception", True)):
                 raise ProviderNotAvailable(
                     "Error: could not connect " "to server: %r" % exc
@@ -260,7 +260,7 @@ class SmtpSMSProvider(ISMSProvider):
             ret = False
 
         except Exception as exx:
-            log.exception("[submitMessage] %s", exx)
+            log.error("[submitMessage] %s", exx)
             if boolean(self.config.get("raise_exception", False)):
                 raise Exception(exx)
             ret = False

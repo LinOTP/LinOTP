@@ -362,7 +362,7 @@ class DefaultPushProvider(IPushProvider):
                 TooManyRedirects,
             ) as exx:
 
-                log.exception("resource %r not available!", uri)
+                log.error("resource %r not available!", uri)
 
                 # mark the url as blocked
 

@@ -146,13 +146,13 @@ class MigrateController(BaseController):
 
         except PolicyException as pe:
             db.session.rollback()
-            log.exception("[backup] policy failed: %r" % pe)
-            return sendError(response, str(pe), 1)
+            log.error("[backup] policy failed: %r", pe)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
+        except Exception as exx:
             db.session.rollback()
-            log.exception("[backup] failed: %r" % e)
-            return sendError(response, e)
+            log.error("[backup] failed: %r", exx)
+            return sendError(response, exx)
 
     def restore(self):
         """
@@ -268,17 +268,17 @@ class MigrateController(BaseController):
             return sendResult(response, counters)
 
         except PolicyException as pe:
-            log.exception("[restore] policy failed: %r" % pe)
-            return sendError(response, str(pe), 1)
+            log.error("[restore] policy failed: %r", pe)
+            return sendError(response, pe, 1)
 
         except DecryptionError as err:
             decryption_error = True
-            log.exception("Error - failed with %r" % err)
+            log.error("Error - failed with %r", err)
             db.session.rollback()
             return sendError(response, err)
 
         except Exception as err:
-            log.exception("Error - failed with %r" % err)
+            log.error("Error - failed with %r", err)
             db.session.rollback()
             return sendError(response, err)
 

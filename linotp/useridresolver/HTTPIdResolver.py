@@ -134,8 +134,8 @@ def urllib_request(
         log.debug(">>%s...%s<<", reply[:20], reply[-20:])
 
     except Exception as exc:
-        log.exception("%r" % exc)
-        raise Exception("Failed to send request: %r" % exc)
+        log.error("Failed to send request")
+        raise
 
     return reply
 
@@ -250,7 +250,7 @@ class IdResolver(UserIdResolver):
         except Exception as exx:
             result = "%r" % exx
             status = "error"
-            log.error("Error %r" % exx)
+            log.error("Error %r", exx)
             return (status, result)
 
     @staticmethod
@@ -363,9 +363,9 @@ class IdResolver(UserIdResolver):
              http://httpd.apache.org/docs/2.2/misc/password_encryptions.html
         """
         _password = password
-        log.info("[checkPass] checking password for user %s" % uid)
+        log.info("[checkPass] checking password for user %s", uid)
         log.error(
-            "[checkPass] password is currently not defined in HTTP" " mapping!"
+            "[checkPass] password is currently not defined in HTTP mapping!"
         )
 
         return False
@@ -515,7 +515,7 @@ class IdResolver(UserIdResolver):
         :return: loginname
         :rtype:  string
         """
-        log.debug("%s" % userId)
+        log.debug("%r", userId)
         result = self.getUserInfo(userId)
         username = result.get("username")
         return username
@@ -530,7 +530,7 @@ class IdResolver(UserIdResolver):
         @rtype:  dict
 
         """
-        log.debug("[getUserInfo] %s[%s]" % (userId, type(userId)))
+        log.debug("[getUserInfo] %r[%s]", userId, type(userId))
         try:
             uri = self.config["uri"]
             timeout = self.config["timeout"]
@@ -600,7 +600,7 @@ class IdResolver(UserIdResolver):
         :type  searchDict: dict
         :return: list of user descriptions (as dict)
         """
-        log.debug("[getUserList] %s" % (str(searchDict)))
+        log.debug("[getUserList] %r", searchDict)
 
         # we use a dict, where the return users are inserted to where key
         # is userid to return only a distinct list of users
@@ -647,7 +647,7 @@ class IdResolver(UserIdResolver):
             return result
 
         except Exception as exx:
-            log.exception("%r" % exx)
+            log.error("%r", exx)
             raise exx
 
         finally:

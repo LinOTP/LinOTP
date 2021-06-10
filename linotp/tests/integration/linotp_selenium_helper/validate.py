@@ -105,12 +105,10 @@ class Validate:
         result = return_json["result"]
 
         if not result["status"]:
-            logger.debug(
-                "Failed validate (user=%s), result: %s" % (user, result)
-            )
+            logger.debug("Failed validate (user=%s), result: %s", user, result)
             return False, return_json
 
-        logger.debug("validate (user=%s), result: %s" % (user, result))
+        logger.debug("validate (user=%s), result: %s", user, result)
         assert "value" in result, "Missing value in result %s" % (result)
         access_granted = result["value"]
         return access_granted, return_json

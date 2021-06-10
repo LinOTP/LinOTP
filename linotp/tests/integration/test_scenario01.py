@@ -68,7 +68,7 @@ class TestScenario01(TestCase):
     """
 
     def _announce_test(self, testname):
-        LOGGER.info("### %s ###" % testname)
+        LOGGER.info("### %s ###", testname)
 
     def test_scenario01(self):
         """

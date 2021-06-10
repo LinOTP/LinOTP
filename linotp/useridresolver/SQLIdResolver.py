@@ -350,7 +350,7 @@ class dbObject:
 
         # the repr of engine is does not show the password
 
-        log.debug("[dbObject::connect] %r" % self.engine)
+        log.debug("[dbObject::connect] %r", self.engine)
 
         self.meta = MetaData()
 
@@ -387,13 +387,13 @@ class dbObject:
             raise
 
     def getTable(self, tableName):
-        log.debug("[dbObject::getTable] %s" % tableName)
+        log.debug("[dbObject::getTable] %s", tableName)
         return Table(
             tableName, self.meta, autoload=True, autoload_with=self.engine
         )
 
     def count(self, table, where=""):
-        log.debug("[dbObject::count] %s:%s" % (table, where))
+        log.debug("[dbObject::count] %s:%s", table, where)
         num = 0
         if where != "":
             num = self.sess.query(table).filter(sql_text(where)).count()
@@ -402,7 +402,7 @@ class dbObject:
         return num
 
     def query(self, select):
-        log.debug("[dbObject::query] %s" % (select))
+        log.debug("[dbObject::query] %s", select)
         return self.sess.execute(select)
 
     def close(self):
@@ -528,7 +528,7 @@ class IdResolver(UserIdResolver):
             num = dbObj.count(table, params.get("Where", ""))
 
         except Exception as exx:
-            log.exception("[testconnection] Exception: %r", exx)
+            log.error("[testconnection] Exception: %r", exx)
             return False, {"err_string": "%r" % exx, "rows": num}
 
         finally:
@@ -621,7 +621,7 @@ class IdResolver(UserIdResolver):
              http://httpd.apache.org/docs/2.2/misc/password_encryptions.html
         """
 
-        log.info("[checkPass] checking password for user %s" % uid)
+        log.info("[checkPass] checking password for user %s", uid)
         userInfo = self.getUserInfo(uid, suppress_password=False)
 
         if not userInfo["password"]:
@@ -800,7 +800,7 @@ class IdResolver(UserIdResolver):
                 log.info("Valid mapping: %r", self.sqlUserInfo)
 
         except Exception as exx:
-            log.exception("[checkMapping] Exception: %r", exx)
+            log.error("[checkMapping] Exception: %r", exx)
 
         log.debug("[checkMapping] done")
         return
@@ -816,31 +816,32 @@ class IdResolver(UserIdResolver):
         :rtype:  string
         """
 
-        log.debug("[getUserId] %s[%s]" % (loginName, type(loginName)))
+        log.debug("[getUserId] %r[%s]", loginName, type(loginName))
         userId = ""
 
         dbObj = self.connect(self.sqlConnect)
         try:
             table = dbObj.getTable(self.sqlTable)
             filtr = self.__getUserIdFilter(table, loginName)
-            log.debug("[getUserId] filtr: %s" % filtr)
-            log.debug("[getUserId] filtr type: %s" % type(filtr))
+            log.debug("[getUserId] filtr: %r", filtr)
+            log.debug("[getUserId] filtr type: %s", type(filtr))
             select = table.select(filtr)
-            log.debug("[getUserId] select: %s" % select)
+            log.debug("[getUserId] select: %r", select)
 
             rows = dbObj.query(select)
             log.debug(
-                "[getUserId] length of select statement %i" % rows.rowcount
+                "[getUserId] length of select statement %i", rows.rowcount
             )
             for row in rows:
                 colName = self.sqlUserInfo.get("userid")
                 userId = row[colName]
                 log.info(
-                    "[getUserId] getting userid %s for user %s"
-                    % (userId, loginName)
+                    "[getUserId] getting userid %s for user %s",
+                    userId,
+                    loginName,
                 )
-        except Exception as e:
-            log.exception("[getUserId] Exception: %s" % (str(e)))
+        except Exception as exx:
+            log.error("[getUserId] Exception: %r", exx)
 
         log.debug("[getUserId] done")
         return userId
@@ -855,7 +856,7 @@ class IdResolver(UserIdResolver):
         :return: loginname
         :rtype:  string
         """
-        log.debug("[getUsername] %s[%s]" % (userId, type(userId)))
+        log.debug("[getUsername] %r[%s]", userId, type(userId))
 
         userName = ""
 
@@ -869,8 +870,8 @@ class IdResolver(UserIdResolver):
                 colName = self.sqlUserInfo.get("username")
                 userName = row[colName]
 
-        except Exception as e:
-            log.exception("[getUsername] Exception: %s" % (str(e)))
+        except Exception as exx:
+            log.error("[getUsername] Exception: %r", exx)
 
         log.debug("[getUsername] done")
 
@@ -886,7 +887,7 @@ class IdResolver(UserIdResolver):
         @rtype:  dict
 
         """
-        log.debug("[getUserInfo] %s[%s]" % (userId, type(userId)))
+        log.debug("[getUserInfo] %r[%s]", userId, type(userId))
         userInfo = {}
 
         dbObj = self.connect(self.sqlConnect)
@@ -900,8 +901,8 @@ class IdResolver(UserIdResolver):
                     dbObj, row, suppress_password=suppress_password
                 )
 
-        except Exception as e:
-            log.exception("[getUserInfo] Exception: %s" % (str(e)))
+        except Exception as exx:
+            log.error("[getUserInfo] Exception: %r", exx)
 
         log.debug("[getUserInfo] done")
         return userInfo
@@ -935,8 +936,8 @@ class IdResolver(UserIdResolver):
                     typ = "numeric"
                 sf[key] = typ
 
-        except Exception as e:
-            log.exception("[getSearchFields] Exception: %s" % (str(e)))
+        except Exception as exx:
+            log.error("[getSearchFields] Exception: %r", exx)
 
         log.debug("[getSearchFields] done")
         return sf
@@ -951,7 +952,7 @@ class IdResolver(UserIdResolver):
         """
         if not searchDict:
             searchDict = {"username": "*"}
-        log.debug("[getUserList] %r" % searchDict)
+        log.debug("[getUserList] %r", searchDict)
 
         # we use a dict, where the return users are inserted to where key
         # is userid to return only a distinct list of users
@@ -964,7 +965,7 @@ class IdResolver(UserIdResolver):
 
         try:
             table = dbObj.getTable(self.sqlTable)
-            log.debug("[getUserList] getting SQL users from table %s" % table)
+            log.debug("[getUserList] getting SQL users from table %r", table)
 
             # as most of the SQL dialects dont support unicode, unicode chars
             # are replaced in the __createSearchString as wildcards.
@@ -979,17 +980,17 @@ class IdResolver(UserIdResolver):
                     regex_dict[key] = re.compile(value.replace("*", ".*"))
 
             sStr = self.__creatSearchString(dbObj, table, searchDict)
-            log.debug("[getUserList] creating searchstring <<%s>>" % sStr)
-            log.debug("[getUserList] type of searchString: %s" % type(sStr))
+            log.debug("[getUserList] creating searchstring <<%r>>", sStr)
+            log.debug("[getUserList] type of searchString: %s", type(sStr))
             select = table.select(sStr, limit=self.limit)
 
             rows = dbObj.query(select)
 
             for row in rows:
-                log.debug("[getUserList]  row     : %s" % row)
+                log.debug("[getUserList]  row     : %s", row)
                 ui = self.__getUserInfo(dbObj, row)
                 userid = ui["userid"]
-                log.debug("[getUserList] user info: %s" % ui)
+                log.debug("[getUserList] user info: %s", ui)
                 for s in searchDict:
                     if s in regex_dict:
                         if regex_dict[s].match(ui[s]):
@@ -1009,13 +1010,13 @@ class IdResolver(UserIdResolver):
                             users[userid] = ui
 
         except KeyError as exx:
-            log.exception("[getUserList] Invalid Mapping Error %r" % exx)
+            log.error("[getUserList] Invalid Mapping Error: %r", exx)
             raise KeyError("Invalid Mapping %r " % exx)
 
         except Exception as exx:
-            log.exception("[getUserList] Exception: %r" % exx)
+            log.error("[getUserList] Exception: %r", exx)
 
-        log.debug("[getUserList] returning userlist %s" % list(users.values()))
+        log.debug("[getUserList] returning userlist %r", list(users.values()))
         return list(users.values())
 
     #######################
@@ -1057,10 +1058,10 @@ class IdResolver(UserIdResolver):
 
             try:
                 value = row[colName]
-                log.debug("[__getUserInfo] %r:%r" % (value, type(value)))
+                log.debug("[__getUserInfo] %r:%r", value, type(value))
 
             except NoSuchColumnError as e:
-                log.exception("[__getUserInfo]")
+                log.error("[__getUserInfo]")
                 value = "-ERR: column mapping-"
 
             userInfo[key] = value
@@ -1082,7 +1083,7 @@ class IdResolver(UserIdResolver):
                 filtr = clause
             else:
                 filtr = clause & filtr
-            log.debug("[__add_where_clause_filter] searchString: %r" % filtr)
+            log.debug("[__add_where_clause_filter] searchString: %r", filtr)
         return filtr
 
     def __getUserIdFilter(self, table, loginName):
@@ -1100,8 +1101,8 @@ class IdResolver(UserIdResolver):
                 "[__getUserIdFilter] username column " "definition required!"
             )
             raise Exception("username column definition required!")
-        log.debug("[__getUserIdFilter] type loginName: %s" % type(loginName))
-        log.debug("[__getUserIdFilter] type filtr: %s" % type(column_name))
+        log.debug("[__getUserIdFilter] type loginName: %s", type(loginName))
+        log.debug("[__getUserIdFilter] type filtr: %s", type(column_name))
 
         # DB2 will need the double quotes if the columns are not upper case.
         # But as usually a DB2 admin uses upper case, we do not "
@@ -1136,7 +1137,7 @@ class IdResolver(UserIdResolver):
         """
         exp = None
         for key in searchDict:
-            log.debug("[__createSearchString] proccessing key %s" % key)
+            log.debug("[__createSearchString] proccessing key %s", key)
 
             # more tolerant mapping of column names for some sql dialects
             # as you can define columnnames in mixed case but table mapping
@@ -1154,9 +1155,7 @@ class IdResolver(UserIdResolver):
             # postprocessing
             val = self.__replaceChars(searchDict.get(key))
 
-            log.debug(
-                "[__createSearchString] key: %s, value: %s " % (key, val)
-            )
+            log.debug("[__createSearchString] key: %s, value: %s ", key, val)
 
             # First: replace wildcards. Our wildcards are * and . (shell-like),
             # and SQL wildcards are % and _.
@@ -1206,7 +1205,7 @@ class IdResolver(UserIdResolver):
                 else:
                     exp = column.like(val, escape="\\")
 
-            log.debug("[__createSearchString] searchStr : %s" % exp)
+            log.debug("[__createSearchString] searchStr : %s", exp)
 
         # use the Where clause to only see certain users.
         return self.__add_where_clause_to_filter(exp)

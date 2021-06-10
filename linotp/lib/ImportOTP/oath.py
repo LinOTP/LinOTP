@@ -108,8 +108,8 @@ def parseOATHcsv(csv):
         key = line[1]
         if not key:
             log.error(
-                "[parseOATHcsv] the line %s did not contain"
-                " a hmac key" % csv_line
+                "[parseOATHcsv] the line %s did not contain" " a hmac key",
+                csv_line
             )
             continue
 
@@ -139,7 +139,7 @@ def parseOATHcsv(csv):
             if not ocrasuite:
                 log.error(
                     "[parseOATHcsv] the line %s did not contain"
-                    " the ocrasuite for the ocra2 token!" % csv_line
+                    " the ocrasuite for the ocra2 token!", csv_line
                 )
                 continue
 

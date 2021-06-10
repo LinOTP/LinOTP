@@ -325,15 +325,15 @@ class TestRemoteToken(TestSpecialController):
         self.create_remote_token()
 
         sqlconnect = self.appconf.get("sqlalchemy.url")
-        log.debug("current test against %s" % (sqlconnect))
+        log.debug("current test against %r", sqlconnect)
 
         # verify that there is n index on the TokenSerial number
         from linotp.model import token_table
 
         for column in token_table.columns:
             log.debug(
-                "Column Table name: %s : %s : %r"
-                % (column.name, column.type, column.index)
+                "Column Table name: %s : %s : %r",
+                column.name, column.type, column.index
             )
             if column.name == "LinOtpTokenSerialnumber":
                 assert column.index is True, column.name

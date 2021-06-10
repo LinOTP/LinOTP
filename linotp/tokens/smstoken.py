@@ -146,7 +146,7 @@ try:
 
     SMSPROVIDER_IMPORTED = True
 except ImportError as exx:
-    log.warning("Failed to import SMSProvider %s" % exx)
+    log.warning("Failed to import SMSProvider %s", exx)
     SMSPROVIDER_IMPORTED = False
 
 keylen = {
@@ -177,7 +177,7 @@ def get_auth_smstext(user="", realm=""):
         pol, scope="authentication", action="smstext", default="<otp>"
     )
 
-    log.debug("[get_auth_smstext] got the smstext = %s" % smstext)
+    log.debug("[get_auth_smstext] got the smstext = %s", smstext)
 
     return (smstext != "<otp>"), smstext
 
@@ -203,7 +203,7 @@ def enforce_smstext(user="", realm=""):
     enforce_smstext = get_action_value(
         pol, scope="authentication", action="enforce_smstext", default=False
     )
-    log.debug("got enforce_smstext = %r" % enforce_smstext)
+    log.debug("got enforce_smstext = %r", enforce_smstext)
 
     return enforce_smstext
 
@@ -497,7 +497,7 @@ class SmsTokenClass(HmacTokenClass):
             return res, result
 
         counter = self.getOtpCount()
-        log.debug("[submitChallenge] counter=%r" % counter)
+        log.debug("[submitChallenge] counter=%r", counter)
 
         # At this point we MUST NOT bail out in case of an
         # Gateway error, since checkPIN is successful, as the bail
@@ -745,7 +745,7 @@ class SmsTokenClass(HmacTokenClass):
                 try:
                     _success, message = self.sendSMS(message=message)
                 except Exception as exx:
-                    log.exception(exx)
+                    log.error(exx)
                 finally:
                     self.incOtpCounter(ret, reset=False)
         if ret >= 0:
@@ -767,7 +767,7 @@ class SmsTokenClass(HmacTokenClass):
             # ## TODO - replace tokenLen
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.exception("[getNextOtp] ValueError %r" % ex)
+            log.error("[getNextOtp] ValueError %r", ex)
             raise ex
 
         secObj = self._get_secret_object()
@@ -971,7 +971,7 @@ class SmsTokenClass(HmacTokenClass):
         if transactionid:
             message = message.replace("<transactionid>", transactionid)
 
-        log.debug("[sendSMS] sending SMS to phone number %s " % phone)
+        log.debug("[sendSMS] sending SMS to phone number %s ", phone)
 
         realm = None
         realms = self.getRealms()

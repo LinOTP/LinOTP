@@ -162,7 +162,7 @@ def get_session(base_url, user=None, pwd=None):
         url = base_url + "admin/getsession"
         r = requests.get(url, auth=HTTPDigestAuth(user, pwd), verify=False)
 
-        LOG.debug("Content:\n%s" % r.text)
+        LOG.debug("Content:\n%s", r.text)
         if r.status_code != 200:
             raise Exception(f"Admin login failed: {r}")
         session = None

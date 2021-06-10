@@ -210,7 +210,7 @@ class HttpRequest(RemoteRequest):
                 res = False
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "Error %r getting response from " "remote Server (%r):%r",
                 exx,
                 request_url,
@@ -330,7 +330,7 @@ class RadiusRequest(RemoteRequest):
                 res = False
 
         except Exception as ex:
-            log.exception("Error contacting radius Server: %r", ex)
+            log.error("Error contacting radius Server: %r", ex)
 
         return (res, reply)
 

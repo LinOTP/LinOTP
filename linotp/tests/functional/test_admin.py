@@ -1128,6 +1128,5 @@ def test_host(adminclient):
     assert admin_cookie.path == "/"
     assert admin_cookie.domain == host
 
-    assert (
-        len(admin_cookie.value) >= 64
-    )  # Check we got a generated cookie name
+    # Check we got a generated cookie name
+    assert len(admin_cookie.value) >= 64

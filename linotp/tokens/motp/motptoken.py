@@ -204,5 +204,5 @@ class MotpTokenClass(TokenClass):
         else:
             msg = "verifiction was successful"
 
-        log.debug("[checkOtp] %s :res %r" % (msg, res))
+        log.debug("[checkOtp] %s :res %r", msg, res)
         return res

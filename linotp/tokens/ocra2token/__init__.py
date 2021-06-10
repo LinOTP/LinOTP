@@ -360,9 +360,9 @@ class OcraSuite:
             for d in data:
                 data_input.append(d)
 
-        except Exception as e:
-            log.exception("Failed to encode data %r: \n%r" % (e, h_data))
-            raise e
+        except Exception as exx:
+            log.error("Failed to encode data %r: \n%r", exx, h_data)
+            raise exx
 
         # call the secret object to get the object
         #    convert it to binary
@@ -738,12 +738,12 @@ class OcraSuite:
                 edate = datetime.fromtimestamp(end)
                 log.info(
                     "[OcraSuite:checkOtp] failed for otp val %r :(exp %r)"
-                    " for timerange:  %r - %r " % (otp, passw, sdate, edate)
+                    " for timerange:  %r - %r ", otp, passw, sdate, edate
                 )
             else:
                 log.info(
                     "[OcraSuite:checkOtp] failed for otp val %r :(exp %r)"
-                    " for range: %r - %r" % (otp, passw, start, end)
+                    " for range: %r - %r", otp, passw, start, end
                 )
         return ret
 

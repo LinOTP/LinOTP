@@ -86,7 +86,7 @@ class DeviceSMSProvider(ISMSProvider):
             args.append("--smsc")
             args.append(self.config.get("SMSC"))
 
-        log.info("[submitMessage] sending SMS : %s" % " ".join(args))
+        log.info("[submitMessage] sending SMS : %s", " ".join(args))
         proc = subprocess.Popen(
             args,
             stdin=subprocess.PIPE,
@@ -98,13 +98,13 @@ class DeviceSMSProvider(ISMSProvider):
         (smsout, smserr) = proc.communicate(message)
 
         if proc.returncode == 0:
-            log.debug("[submitMessage] output: %s" % smsout)
+            log.debug("[submitMessage] output: %s", smsout)
             return True
 
-        log.error("[submitMessage] output: %s" % smsout)
+        log.error("[submitMessage] output: %s", smsout)
         log.error(
-            "[submitMessage] SMS sending failed, return code: %s"
-            % proc.returncode
+            "[submitMessage] SMS sending failed, return code: %s",
+            proc.returncode
         )
 
         return False

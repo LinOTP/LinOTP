@@ -29,6 +29,7 @@ from linotp.provider.emailprovider import SMTPEmailProvider as EMailProvider
 from unittest import TestCase
 from mock import patch
 import os
+
 TEMPLATE_MESSAGE = """Content-Type: multipart/alternative;
  boundary="===============3294676191386143061=="
 MIME-Version: 1.0

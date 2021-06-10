@@ -152,7 +152,7 @@ class TokenStateError(UserError):
     """
 
     def __init__(self, message):
-        log.debug("TokenStateError occured. Message: %s" % message)
+        log.debug("TokenStateError occured. Message: %s", message)
         UserError.__init__(self, "Unfitting request for this token")
 
 

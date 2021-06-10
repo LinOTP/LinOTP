@@ -63,8 +63,9 @@ def iterate_users(user_iterators):
             # pass on to next iterator
             pass
         except Exception as exx:
-            log.exception(
-                "Problem during iteration of userlist iterators: %r" % exx
+            log.error(
+                "Problem during iteration of userlist iterators: %r",
+                exx
             )
 
     return

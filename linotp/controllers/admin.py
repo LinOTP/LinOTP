@@ -150,7 +150,7 @@ class AdminController(BaseController, SessionCookieMixin):
             return None
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r", action, exx)
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(response, exx, context='before')
 
@@ -203,11 +203,11 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.commit()
             return response
 
-        except Exception as e:
-            log.exception(
-                "[__after__] unable to create a session cookie: %r" % e)
+        except Exception as exx:
+            log.error(
+                "[__after__] unable to create a session cookie: %r", exx)
             db.session.rollback()
-            return sendError(response, e, context='after')
+            return sendError(response, exx, context='after')
 
     def logout(self):
         # see
@@ -250,14 +250,14 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, ret)
 
         except PolicyException as pe:
-            log.exception("Error getting token owner. Exception was %r" % pe)
+            log.error("Error getting token owner. Exception was %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("Error getting token owner. Exception was %r" % e)
+        except Exception as exx:
+            log.error("Error getting token owner. Exception was %r", exx)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(response, exx, 1)
 
     @staticmethod
     def parse_tokeninfo(tok):
@@ -390,14 +390,14 @@ class AdminController(BaseController, SessionCookieMixin):
                 return sendResult(response, result)
 
         except PolicyException as pe:
-            log.exception('[show] policy failed: %r' % pe)
+            log.error('[show] policy failed: %r', pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception('[show] failed: %r' % e)
+        except Exception as exx:
+            log.error('[show] failed: %r', exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
 ########################################################
     def remove(self):
@@ -476,17 +476,18 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.exception("[remove] policy failed %r" % pe)
+            log.error("[remove] policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[remove] failed! %r" % e)
+        except Exception as exx:
+            log.error("[remove] failed! %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
 
 ########################################################
+
 
     def enable(self):
         """
@@ -547,18 +548,19 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.exception("[enable] policy failed %r" % pe)
+            log.error("[enable] policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[enable] failed: %r" % e)
+        except Exception as exx:
+            log.error("[enable] failed: %r", exx)
             db.session.rollback()
             log.error('[enable] error enabling token')
-            return sendError(response, e, 1)
+            return sendError(response, exx, 1)
 
 
 ########################################################
+
 
     def getSerialByOtp(self):
         """
@@ -606,8 +608,8 @@ class AdminController(BaseController, SessionCookieMixin):
             serial, username, resolverClass = th.get_serial_by_otp(None, otp,
                                                                    10, typ=typ,
                                                                    realm=realm, assigned=assigned)
-            log.debug("[getSerialByOtp] found %s with user %s" %
-                      (serial, username))
+            log.debug("[getSerialByOtp] found %s with user %s",
+                      serial, username)
 
             if "" != serial:
                 checkPolicyPost('admin', 'getserial',
@@ -625,18 +627,19 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, ret, 1)
 
         except PolicyException as pe:
-            log.exception("[disable] policy failed %r" % pe)
+            log.error("[disable] policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
+        except Exception as exx:
             g.audit['success'] = 0
             db.session.rollback()
-            log.exception('[getSerialByOtp] error: %r' % e)
-            return sendError(response, e, 1)
+            log.error('[getSerialByOtp] error: %r', exx)
+            return sendError(response, exx, 1)
 
 
 ########################################################
+
 
     def disable(self):
         """
@@ -696,17 +699,18 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.exception("[disable] policy failed %r" % pe)
+            log.error("[disable] policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[disable] failed! %r" % e)
+        except Exception as exx:
+            log.error("[disable] failed! %r", exx)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(response, exx, 1)
 
 
 #######################################################
+
 
     def check_serial(self):
         '''
@@ -739,9 +743,9 @@ class AdminController(BaseController, SessionCookieMixin):
             # try:
             #    checkPolicyPre('admin', 'disable', param )
             # except PolicyException as pe:
-            #    return sendError(response, str(pe), 1)
+            #    return sendError(response, pe, 1)
 
-            log.info("[check_serial] checking serial %s" % serial)
+            log.info("[check_serial] checking serial %s", serial)
             th = TokenHandler()
             (unique, new_serial) = th.check_serial(serial)
 
@@ -753,17 +757,18 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, {"unique": unique, "new_serial": new_serial}, 1)
 
         except PolicyException as pe:
-            log.exception("[check_serial] policy failed %r" % pe)
+            log.error("[check_serial] policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[check_serial] failed! %r" % e)
+        except Exception as exx:
+            log.error("[check_serial] failed! %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
 
 ########################################################
+
 
     def init(self):
         """
@@ -864,7 +869,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
             tokenrealm = None
             if user.login == "":
-                log.debug("[init] setting tokenrealm %s" % res['realms'])
+                log.debug("[init] setting tokenrealm %r", res['realms'])
                 tokenrealm = res['realms']
 
             # --------------------------------------------------------------- --
@@ -884,8 +889,8 @@ class AdminController(BaseController, SessionCookieMixin):
                 serial = th.genSerial(token_cls_alias, prefix)
                 params['serial'] = serial
 
-            log.info("[init] initialize token. user: %s, serial: %s"
-                     % (user.login, serial))
+            log.info("[init] initialize token. user: %s, serial: %s",
+                     user.login, serial)
 
             # --------------------------------------------------------------- --
 
@@ -937,14 +942,14 @@ class AdminController(BaseController, SessionCookieMixin):
         # ------------------------------------------------------------------- --
 
         except PolicyException as pe:
-            log.exception("[init] policy failed %r" % pe)
+            log.error("[init] policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[init] token initialization failed! %r" % e)
+        except Exception as exx:
+            log.error("[init] token initialization failed! %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
 ########################################################
 
@@ -987,7 +992,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
             th = TokenHandler()
             log.info("[unassign] unassigning token with serial %r from "
-                     "user %r@%r" % (serial, user.login, user.realm))
+                     "user %r@%r", serial, user.login, user.realm)
             ret = th.unassignToken(serial, user, None)
 
             g.audit['success'] = ret
@@ -1007,18 +1012,17 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.exception('[unassign] policy failed %r' % pe)
+            log.error('[unassign] policy failed %r', pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[unassign] failed! %r" % e)
+        except Exception as exx:
+            log.error("[unassign] failed! %r", exx)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(response, exx, 1)
 
 
 ########################################################
-
 
     def assign(self):
         """
@@ -1073,14 +1077,14 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.exception('[assign] policy failed %r' % pe)
+            log.error('[assign] policy failed %r', pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception('[assign] token assignment failed! %r' % e)
+        except Exception as exx:
+            log.error('[assign] token assignment failed! %r', exx)
             db.session.rollback()
-            return sendError(response, e, 0)
+            return sendError(response, exx, 0)
 
 ########################################################
 
@@ -1157,7 +1161,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 checkPolicyPre('admin', 'setPin', param)
 
                 log.info(
-                    "[setPin] setting soPin for token with serial %s" % serial)
+                    "[setPin] setting soPin for token with serial %s", serial)
                 ret = setPinSo(soPin, serial)
                 res["set sopin"] = ret
                 count = count + 1
@@ -1173,14 +1177,14 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.exception('[setPin] policy failed %r, %r' % (msg, pe))
+            log.error('[setPin] policy failed %r, %r', msg, pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception('[setPin] %s :%r' % (msg, e))
+        except Exception as exx:
+            log.error('[setPin] %s :%r', msg, exx)
             db.session.rollback()
-            return sendError(response, str(e), 0)
+            return sendError(response, exx, 0)
 
     def setValidity(self):
         """
@@ -1318,21 +1322,20 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, serials, 1)
 
         except PolicyException as pex:
-            log.exception('policy failed%r', pex)
+            log.error('policy failed%r', pex)
             db.session.rollback()
-            return sendError(response, str(pex), 1)
+            return sendError(response, pex, 1)
 
         except Exception as exx:
 
             g.audit['success'] = False
 
-            log.exception('%r', exx)
+            log.error('%r', exx)
             db.session.rollback()
-            return sendError(response, str(exx), 0)
+            return sendError(response, exx, 0)
 
 
 ########################################################
-
 
     def set(self):
         """
@@ -1408,7 +1411,7 @@ class AdminController(BaseController, SessionCookieMixin):
             if 'pin' in param:
                 msg = "[set] setting pin failed"
                 upin = param["pin"]
-                log.info("[set] setting pin for token with serial %r" % serial)
+                log.info("[set] setting pin for token with serial %r", serial)
                 if 1 == getOTPPINEncrypt(serial=serial, user=user):
                     param['encryptpin'] = "True"
                 ret = setPin(upin, user, serial, param)
@@ -1420,7 +1423,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting MaxFailCount failed"
                 maxFail = int(param["MaxFailCount".lower()])
                 log.info("[set] setting maxFailCount (%r) for token with "
-                         "serial %r" % (maxFail, serial))
+                         "serial %r", maxFail, serial)
                 ret = th.setMaxFailCount(maxFail, user, serial)
                 res["set MaxFailCount"] = ret
                 count = count + 1
@@ -1440,7 +1443,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting description failed"
                 description = param["description".lower()]
                 log.info("[set] setting description (%r) for token with serial"
-                         " %r" % (description, serial))
+                         " %r", description, serial)
                 ret = th.setDescription(description, user, serial)
                 res["set description"] = ret
                 count = count + 1
@@ -1450,8 +1453,8 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting CounterWindow failed"
                 counterWindow = int(param["CounterWindow".lower()])
                 log.info(
-                    "[set] setting counterWindow (%r) for token with serial %r"
-                    % (counterWindow, serial))
+                    "[set] setting counterWindow (%r) for token with serial %r",
+                    counterWindow, serial)
                 ret = th.setCounterWindow(counterWindow, user, serial)
                 res["set CounterWindow"] = ret
                 count = count + 1
@@ -1461,8 +1464,8 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting OtpLen failed"
                 otpLen = int(param["OtpLen".lower()])
                 log.info(
-                    "[set] setting OtpLen (%r) for token with serial %r" % (
-                        otpLen, serial))
+                    "[set] setting OtpLen (%r) for token with serial %r",
+                    otpLen, serial)
                 ret = th.setOtpLen(otpLen, user, serial)
                 res["set OtpLen"] = ret
                 count = count + 1
@@ -1483,7 +1486,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting timeWindow failed"
                 timeWindow = int(param["timeWindow".lower()])
                 log.info("[set] setting timeWindow (%r) for token with serial"
-                         " %r" % (timeWindow, serial))
+                         " %r", timeWindow, serial)
                 ret = th.addTokenInfo("timeWindow", timeWindow, user, serial)
                 res["set timeWindow"] = ret
                 count = count + 1
@@ -1493,7 +1496,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting timeStep failed"
                 timeStep = int(param["timeStep".lower()])
                 log.info("[set] setting timeStep (%r) for token with "
-                         "serial %r" % (timeStep, serial))
+                         "serial %r", timeStep, serial)
                 tokens = getTokens4UserOrSerial(serial=serial)
                 for token in tokens:
                     token.timeStep = timeStep
@@ -1506,7 +1509,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting timeShift failed"
                 timeShift = int(param["timeShift".lower()])
                 log.info("[set] setting timeShift (%r) for token with serial"
-                         " %r" % (timeShift, serial))
+                         " %r", timeShift, serial)
                 ret = th.addTokenInfo("timeShift", timeShift, user, serial)
                 res["set timeShift"] = ret
                 count = count + 1
@@ -1516,8 +1519,8 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting countAuth failed"
                 ca = int(param["countAuth".lower()])
                 log.info(
-                    "[set] setting count_auth (%r) for token with serial %r" % (
-                        ca, serial))
+                    "[set] setting count_auth (%r) for token with serial %r",
+                    ca, serial)
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1531,8 +1534,8 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting countAuthMax failed"
                 ca = int(param["countAuthMax".lower()])
                 log.info(
-                    "[set] setting count_auth_max (%r) for token with serial %r"
-                    % (ca, serial))
+                    "[set] setting count_auth_max (%r) for token with serial %r",
+                    ca, serial)
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1547,7 +1550,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 ca = int(param["countAuthSuccess".lower()])
                 log.info(
                     "[set] setting count_auth_success (%r) for token with"
-                    "serial %r" % (ca, serial))
+                    "serial %r", ca, serial)
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1562,7 +1565,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 ca = int(param["countAuthSuccessMax".lower()])
                 log.info(
                     "[set] setting count_auth_success_max (%r) for token with"
-                    "serial %r" % (ca, serial))
+                    "serial %r", ca, serial)
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1577,7 +1580,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 ca = param["validityPeriodStart".lower()]
                 log.info(
                     "[set] setting validity_period_start (%r) for token with"
-                    "serial %r" % (ca, serial))
+                    "serial %r", ca, serial)
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1594,7 +1597,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 ca = param["validityPeriodEnd".lower()]
                 log.info(
                     "[set] setting validity_period_end (%r) for token with"
-                    "serial %r" % (ca, serial))
+                    "serial %r", ca, serial)
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1608,8 +1611,8 @@ class AdminController(BaseController, SessionCookieMixin):
             if "phone" in param:
                 msg = "[set] setting phone failed"
                 ca = param["phone".lower()]
-                log.info("[set] setting phone (%r) for token with serial %r" % (
-                    ca, serial))
+                log.info("[set] setting phone (%r) for token with serial %r",
+                         ca, serial)
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1635,12 +1638,12 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.exception('[set] policy failed: %s, %r' % (msg, pe))
+            log.error('[set] policy failed: %s, %r', msg, pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception('%s: %r' % (msg, exx))
+            log.error('%s: %r', msg, exx)
             db.session.rollback()
             # as this message is directly returned into the javascript
             # alert as escaped string we remove here all escaping chars
@@ -1706,8 +1709,8 @@ class AdminController(BaseController, SessionCookieMixin):
             # check admin authorization
             checkPolicyPre('admin', 'resync', param)
             th = TokenHandler()
-            log.info("[resync] resyncing token with serial %r, user %r@%r"
-                     % (serial, user.login, user.realm))
+            log.info("[resync] resyncing token with serial %r, user %r@%r",
+                     serial, user.login, user.realm)
             res = th.resyncToken(otp1, otp2, user, serial, options)
 
             g.audit['success'] = res
@@ -1720,14 +1723,14 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.exception('[resync] policy failed %r' % pe)
+            log.error('[resync] policy failed %r', pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception('[resync] resyncing token failed %r' % e)
+        except Exception as exx:
+            log.error('[resync] resyncing token failed %r', exx)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(response, exx, 1)
 
 ########################################################
     def userlist(self):
@@ -1829,14 +1832,14 @@ class AdminController(BaseController, SessionCookieMixin):
             # ---------------------------------------------------------- --
 
         except PolicyException as pe:
-            log.exception('[userlist] policy failed %r' % pe)
+            log.error('[userlist] policy failed %r', pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[userlist] failed %r" % e)
+        except Exception as exx:
+            log.error("[userlist] failed %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
 ########################################################
     def tokenrealm(self):
@@ -1881,14 +1884,14 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, ret, 1)
 
         except PolicyException as pe:
-            log.exception('[tokenrealm] policy failed %r' % pe)
+            log.error('[tokenrealm] policy failed %r', pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception('[tokenrealm] error setting realms for token %r' % e)
+        except Exception as exx:
+            log.error('[tokenrealm] error setting realms for token %r', exx)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(response, exx, 1)
 
 ########################################################
 
@@ -1923,7 +1926,7 @@ class AdminController(BaseController, SessionCookieMixin):
             checkPolicyPre('admin', 'reset', param, user=user)
 
             log.info(
-                "[reset] resetting the FailCounter for token with serial %s" % serial)
+                "[reset] resetting the FailCounter for token with serial %s", serial)
             ret = resetToken(user, serial)
 
             g.audit['success'] = ret
@@ -1945,12 +1948,12 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.exception('[reset] policy failed %r' % pe)
+            log.error('[reset] policy failed %r', pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[reset] Error resetting failcounter %r" % exx)
+            log.error("[reset] Error resetting failcounter %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -2021,14 +2024,14 @@ class AdminController(BaseController, SessionCookieMixin):
                 return sendError(response, "copying token pin failed: %s" % err_string)
 
         except PolicyException as pe:
-            log.exception("[losttoken] Error doing losttoken %r" % pe)
+            log.error("[losttoken] Error doing losttoken %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[copyTokenPin] Error copying token pin")
+        except Exception as exx:
+            log.error("[copyTokenPin] Error copying token pin: %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
 ########################################################
 
@@ -2099,14 +2102,14 @@ class AdminController(BaseController, SessionCookieMixin):
                 return sendError(response, "copying token user failed: %s" % err_string)
 
         except PolicyException as pe:
-            log.exception("[copyTokenUser] Policy Exception %r" % pe)
+            log.error("[copyTokenUser] Policy Exception %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[copyTokenUser] Error copying token user")
+        except Exception as exx:
+            log.error("[copyTokenUser] Error copying token user: %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
 ########################################################
 
@@ -2156,18 +2159,17 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, res)
 
         except PolicyException as pe:
-            log.exception("[losttoken] Policy Exception: %r" % pe)
+            log.error("[losttoken] Policy Exception: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[losttoken] Error doing losttoken %r" % e)
+        except Exception as exx:
+            log.error("[losttoken] Error doing losttoken %r", exx)
             db.session.rollback()
-            return sendError(response, str(e))
+            return sendError(response, exx)
 
 
 ########################################################
-
 
     def loadtokens(self):
         """
@@ -2201,7 +2203,9 @@ class AdminController(BaseController, SessionCookieMixin):
         from linotp.lib.ImportOTP import getKnownTypes
         known_types.extend(getKnownTypes())
         log.info(
-            "[loadtokens] importing linotp.lib. Known import types: %s" % known_types)
+            "[loadtokens] importing linotp.lib. Known import types: %s",
+            known_types
+        )
 
         from linotp.lib.ImportOTP.PSKC import parsePSKCdata
         log.info("[loadtokens] loaded parsePSKCdata")
@@ -2386,13 +2390,13 @@ class AdminController(BaseController, SessionCookieMixin):
 
             # Now import the Tokens from the dictionary
 
-            log.debug("[loadtokens] read %i tokens. starting import now"
-                      % len(TOKENS))
+            log.debug("[loadtokens] read %i tokens. starting import now",
+                      len(TOKENS))
 
             ret = ""
             th = TokenHandler()
             for serial in TOKENS:
-                log.debug("[loadtokens] importing token %s" % TOKENS[serial])
+                log.debug("[loadtokens] importing token %s", TOKENS[serial])
 
                 log.info("[loadtokens] initialize token. "
                          "serial: %r, realm: %r", serial, tokenrealm)
@@ -2437,7 +2441,7 @@ class AdminController(BaseController, SessionCookieMixin):
             checkPolicyPost('admin', 'loadtokens',
                             {'tokenrealm': tokenrealm})
 
-            log.info("[loadtokens] %i tokens imported." % len(TOKENS))
+            log.info("[loadtokens] %i tokens imported.", len(TOKENS))
             res = {'value': True, 'imported': len(TOKENS)}
 
             g.audit['info'] = "%s, %s (imported: %i)" % (
@@ -2450,12 +2454,12 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResultMethod(response, res)
 
         except PolicyException as pex:
-            log.exception("[loadtokens] Failed checking policy: %r", pex)
+            log.error("[loadtokens] Failed checking policy: %r", pex)
             db.session.rollback()
             return sendError(response, "%r" % pex, 1)
 
         except Exception as exx:
-            log.exception("[loadtokens] failed! %r", exx)
+            log.error("[loadtokens] failed! %r", exx)
             db.session.rollback()
             return sendErrorMethod(response, "%r" % exx)
 
@@ -2576,7 +2580,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
             previous_name = param.get('previous_name', '')
 
-            log.debug("[testresolver] testing resolver of type %s" % typ)
+            log.debug("[testresolver] testing resolver of type %s", typ)
 
             (param, missing,
              _primary_key_changed) = prepare_resolver_parameter(
@@ -2606,10 +2610,10 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.commit()
             return sendResult(response, res)
 
-        except Exception as e:
-            log.exception("[testresolver] failed: %r" % e)
+        except Exception as exx:
+            log.error("[testresolver] failed: %r", exx)
             db.session.rollback()
-            return sendError(response, str(e), 1)
+            return sendError(response, exx, 1)
 
     def totp_lookup(self):
         '''
@@ -2672,14 +2676,14 @@ class AdminController(BaseController, SessionCookieMixin):
             # -------------------------------------------------------------- --
 
         except PolicyException as pe:
-            log.exception("[totp_lookup] policy failed: %r" % pe)
+            log.error("[totp_lookup] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe))
+            return sendError(response, pe)
 
         except Exception as exx:
-            log.exception("[totp_lookup] failed: %r" % exx)
+            log.error("[totp_lookup] failed: %r", exx)
             db.session.rollback()
-            return sendResult(response, str(exx), 0)
+            return sendResult(response, exx, 0)
 
     def checkstatus(self):
         """
@@ -2702,7 +2706,7 @@ class AdminController(BaseController, SessionCookieMixin):
         param = self.request_params.copy()
         only_open_challenges = True
 
-        log.debug("[checkstatus] check challenge token status: %r" % param)
+        log.debug("[checkstatus] check challenge token status: %r", param)
 
         description = """
             admin/checkstatus: check the token status -
@@ -2724,7 +2728,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
             if transid is None and user.is_empty and serial is None:
                 # # raise exception
-                log.exception("[admin/checkstatus] : missing parameter: "
+                log.error("[admin/checkstatus] : missing parameter: "
                               "transactionid, user or serial number for token")
                 raise ParameterError("Usage: %s" % description, id=77)
 
@@ -2779,14 +2783,14 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.exception("[checkstatus] policy failed: %r" % pe)
+            log.error("[checkstatus] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe))
+            return sendError(response, pe)
 
         except Exception as exx:
-            log.exception("[checkstatus] failed: %r" % exx)
+            log.error("[checkstatus] failed: %r", exx)
             db.session.rollback()
-            return sendResult(response, str(exx), 0)
+            return sendResult(response, exx, 0)
 
     # ------------------------------------------------------------------------ -
 
@@ -2844,7 +2848,7 @@ class AdminController(BaseController, SessionCookieMixin):
         # -------------------------------------------------------------------- -
 
         except Exception as exx:
-            log.exception("admin/unpair failed: %r" % exx)
+            log.error("admin/unpair failed: %r", exx)
             g.audit['info'] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0, status=False)

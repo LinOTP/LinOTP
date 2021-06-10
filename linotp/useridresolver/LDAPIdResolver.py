@@ -459,18 +459,18 @@ class IdResolver(UserIdResolver):
         except ldap.CONNECT_ERROR as err:
             status = "error"
             if not silent:
-                log.exception("[testconnection] LDAP Error: %r", err)
+                log.error("[testconnection] LDAP Error: %r", err)
             return (status, "Connection Error: %s" % str(err))
 
         except ldap.LDAPError as err:
             status = "error"
             if not silent:
-                log.exception("[testconnection] LDAP Error: %r", err)
+                log.error("[testconnection] LDAP Error: %r", err)
             return (status, str(err))
 
         except Exception as err:
             status = "error"
-            log.exception("[testconnection] Error: %r", err)
+            log.error("[testconnection] Error: %r", err)
             return (status, str(err))
 
         finally:
@@ -547,7 +547,7 @@ class IdResolver(UserIdResolver):
 
             except ldap.LDAPError as _error:
                 resource_scheduler.block(uri, delay=30)
-                log.exception("[bind] LDAP error")
+                log.error("[bind] LDAP error")
 
         # if we reach this point, we were not able to do a successful bind! :-(
 
@@ -618,7 +618,7 @@ class IdResolver(UserIdResolver):
             resultList = l_obj.result(l_id, all=1)[1]
 
         except ldap.LDAPError as exc:
-            log.exception("[getUserId] LDAP error: %r", exc)
+            log.error("[getUserId] LDAP error: %r", exc)
             resultList = None
 
         finally:
@@ -760,11 +760,11 @@ class IdResolver(UserIdResolver):
             result_data = l_obj.result(l_id, all=1)[1]
 
         except ldap.LDAPError as _error:
-            log.exception("[getUserLDAPInfo] LDAP error")
+            log.error("[getUserLDAPInfo] LDAP error")
             return {}
 
         except Exception as exx:
-            log.exception("[getUserLDAPInfo] LDAP error")
+            log.error("[getUserLDAPInfo] LDAP error")
             raise exx
 
         finally:
@@ -1168,7 +1168,7 @@ class IdResolver(UserIdResolver):
                 if search_st in substitute:
                     substitute = substitute.replace(search_st, val)
         except KeyError as key_error:
-            log.exception("Key replacement error %r", key_error)
+            log.error("Key replacement error %r", key_error)
             raise key_error
         return substitute
 
@@ -1210,7 +1210,7 @@ class IdResolver(UserIdResolver):
             log.debug("[getUserList] searchfilter: %r", searchFilter)
 
         except Exception as exep:
-            log.exception(
+            log.error(
                 "[getUserList] Error creating searchFilter: %r", exep
             )
             raise exep
@@ -1268,10 +1268,10 @@ class IdResolver(UserIdResolver):
                     resultList.append(userdata)
 
         except ldap.LDAPError as _exce:
-            log.exception("[getUserList] LDAP error")
+            log.error("[getUserList] LDAP error")
 
         except Exception as _exce:
-            log.exception("[getUserList] error during LDAP access")
+            log.error("[getUserList] error during LDAP access")
 
         finally:
             self.unbind(l_obj)
@@ -1304,7 +1304,7 @@ class IdResolver(UserIdResolver):
         try:
             searchFilter = searchFilter % special_dict
         except KeyError as key_error:
-            log.exception("Key replacement error %r", key_error)
+            log.error("Key replacement error %r", key_error)
             raise key_error
 
         log.debug("[getUserList] searchfilter: %r", searchFilter)
@@ -1325,7 +1325,7 @@ class IdResolver(UserIdResolver):
             searchFilter = "(&%s)" % searchFilter
             log.debug("[getUserList] searchfilter: %r", searchFilter)
         except Exception as exep:
-            log.exception(
+            log.error(
                 "[getUserList] Error creating searchFilter: %r", exep
             )
             raise exep
@@ -1470,11 +1470,11 @@ class IdResolver(UserIdResolver):
                 yield user_list
 
         except ldap.LDAPError as exce:
-            log.exception("LDAP error: %r", exce)
+            log.error("LDAP error: %r", exce)
             raise exce
 
         except Exception as exce:
-            log.exception("Error during LDAP access: %r", exce)
+            log.error("Error during LDAP access: %r", exce)
             raise exce
 
         # we do no unbind here, as this is done at the request end

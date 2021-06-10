@@ -29,6 +29,7 @@ This file contains sample data for the integration tests
 
 # LDAP resolvers
 from typing import Dict, List, Union
+
 ldap_ca_cert = """-----BEGIN CERTIFICATE-----
 MIIFgzCCA2ugAwIBAgIBADANBgkqhkiG9w0BAQ0FADBPMQswCQYDVQQGEwJERTEq
 MCgGA1UECgwhTFNFIExlYWRpbmcgU2VjdXJpdHkgRXhwZXJ0cyBHbWJIMRQwEgYD

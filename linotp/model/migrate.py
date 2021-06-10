@@ -495,7 +495,7 @@ class Migration:
                     _success = migration_step()
 
                 except Exception as exx:
-                    log.exception("Failed to upgrade database! %r", exx)
+                    log.error("Failed to upgrade database! %r", exx)
                     model.db.session.rollback()  # pylint: disable=E1101
                     raise exx
 

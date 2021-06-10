@@ -268,14 +268,14 @@ class SelfserviceController(BaseController):
 
         except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
             # the exception, when an abort() is called if forwarded
-            log.info("[__before__::%r] webob.exception %r" % (action, acc))
+            log.info("[__before__::%r] webob.exception %r", action, acc)
             db.session.rollback()
             raise acc
 
-        except Exception as e:
-            log.exception("[__before__] failed with error: %r" % e)
+        except Exception as exx:
+            log.error("[__before__] failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, e, context="before")
+            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):
@@ -296,8 +296,8 @@ class SelfserviceController(BaseController):
         try:
             if g.audit["action"] in ["selfservice/index"]:
                 log.debug(
-                    "[__after__] authenticating as %s in realm %s!"
-                    % (c.user, c.realm)
+                    "[__after__] authenticating as %s in realm %s!",
+                    c.user, c.realm
                 )
 
                 g.audit["user"] = c.user
@@ -314,16 +314,16 @@ class SelfserviceController(BaseController):
 
         except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
-            log.exception("[__after__::%r] webob.exception %r" % (action, acc))
+            log.error("[__after__::%r] webob.exception %r", action, acc)
             db.session.rollback()
             # FIXME: replace authorization exception handling with flasks preferred
             # error handling
             raise acc
 
-        except Exception as e:
-            log.exception("[__after__] failed with error: %r" % e)
+        except Exception as exx:
+            log.error("[__after__] failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, e, context="after")
+            return sendError(response, exx, context="after")
 
     def index(self):
         """
@@ -441,9 +441,9 @@ class SelfserviceController(BaseController):
             return res
 
         except CompileException as exx:
-            log.exception(
+            log.error(
                 "[load_form] compile error while processing %r.%r:"
-                "Exeption was %r" % (tok, scope, exx)
+                "Exeption was %r", tok, scope, exx
             )
             db.session.rollback()
             raise exx
@@ -454,7 +454,7 @@ class SelfserviceController(BaseController):
                 "error (%r) accessing form data for: tok:%r, scope:%r"
                 ", section:%r" % (exx, tok, scope, section)
             )
-            log.exception(error)
+            log.error(error)
             return "<h1>{}</h1><pre>{} {}</pre>".format(
                 _("Failed to load form"), _("Error"), exx
             )
@@ -566,9 +566,7 @@ class SelfserviceController(BaseController):
             return render("/selfservice/webprovisiongoogle.mako")
 
         except Exception as exx:
-            log.exception(
-                "[webprovisiongoogletoken] failed with error: %r" % exx
-            )
+            log.error("[webprovisiongoogletoken] failed with error: %r", exx)
             return sendError(response, exx)
 
     def usertokenlist(self):

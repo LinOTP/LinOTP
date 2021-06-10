@@ -254,7 +254,7 @@ class YubicoTokenClass(TokenClass):
 
         tokenid = self.getFromTokenInfo("yubico.tokenid")
         if len(anOtpVal) < 12:
-            log.warning("[checkOtp] The otpval is too short: %r" % anOtpVal)
+            log.warning("[checkOtp] The otpval is too short: %r", anOtpVal)
             return -1
 
         if anOtpVal[:12] != tokenid:
@@ -302,7 +302,7 @@ class YubicoTokenClass(TokenClass):
                 TooManyRedirects,
             ) as exx:
 
-                log.exception("resource %r not available!", uri)
+                log.error("resource %r not available!", uri)
 
                 # mark the url as blocked
 
@@ -310,12 +310,12 @@ class YubicoTokenClass(TokenClass):
 
                 log.error(
                     "[checkOtp] Error getting response from "
-                    "Yubico Cloud Server (%r)" % uri
+                    "Yubico Cloud Server (%r)", uri
                 )
 
             except Exception as exx:
 
-                log.exception("unknown exception for uri %r!", uri)
+                log.error("unknown exception for uri %r!", uri)
 
                 raise exx
 
@@ -348,7 +348,7 @@ class YubicoTokenClass(TokenClass):
         if result != "OK":
             # possible results are listed here:
             # https://github.com/Yubico/yubikey-val/wiki/ValidationProtocolV20
-            log.warning("[checkOtp] failed with %r" % result)
+            log.warning("[checkOtp] failed with %r", result)
             return -1
 
         m = re.search(r"nonce=(\w+)\r", rv)

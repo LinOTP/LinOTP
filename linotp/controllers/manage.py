@@ -88,7 +88,7 @@ log = logging.getLogger(__name__)
 KNOWN_TYPES = getKnownTypes()
 IMPORT_TEXT = getImportText()
 
-log.info("importing linotp.lib. Known import types: %s" % IMPORT_TEXT)
+log.info("importing linotp.lib. Known import types: %s", IMPORT_TEXT)
 
 
 class ManageController(BaseController):
@@ -150,12 +150,12 @@ class ManageController(BaseController):
                 check_session(request)
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r" % (action, exx))
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(response, exx, context="before")
 
         finally:
-            log.debug("[__before__::%r] done" % (action))
+            log.debug("[__before__::%r] done", action)
 
     @staticmethod
     def __after__(response):
@@ -227,10 +227,10 @@ class ManageController(BaseController):
 
                     div = confs.get(conf).get("html")
                     # div = +div+'</div>'
-                except Exception as e:
+                except Exception as exx:
                     log.debug(
-                        "[index] no config info for token type %s  (%r)"
-                        % (conf, e)
+                        "[index] no config info for token type %s  (%r)",
+                        conf, exx
                     )
 
                 if (
@@ -258,8 +258,8 @@ class ManageController(BaseController):
                     div = enrolls.get(conf).get("html")
                 except Exception as e:
                     log.debug(
-                        "[index] no enrollment info for token type %s  (%r)"
-                        % (conf, e)
+                        "[index] no enrollment info for token type %s  (%r)",
+                        conf, e
                     )
 
                 if (
@@ -292,12 +292,12 @@ class ManageController(BaseController):
             return ren
 
         except PolicyException as pe:
-            log.exception("[index] Error during checking policies: %r" % pe)
+            log.error("[index] Error during checking policies: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as ex:
-            log.exception("[index] failed! %r" % ex)
+            log.error("[index] failed! %r", ex)
             db.session.rollback()
             raise
 
@@ -312,7 +312,7 @@ class ManageController(BaseController):
                 ii = tclass_object.getClassType()
                 ttinfo.append(ii)
 
-        log.debug("[index] importers: %s" % IMPORT_TEXT)
+        log.debug("[index] importers: %s", IMPORT_TEXT)
         c.tokeninfo = ttinfo
 
         return render("/manage/tokentypeinfo.mako").decode("utf-8")
@@ -433,12 +433,12 @@ class ManageController(BaseController):
                     filterRealm = [filter_realm]
 
             log.debug(
-                "[tokenview_flexi] admin >%s< may display the following realms: %s"
-                % (pol["admin"], pol["realms"])
+                "[tokenview_flexi] admin >%s< may display the following realms: %s",
+                pol["admin"], pol["realms"]
             )
             log.debug(
-                "[tokenview_flexi] page: %s, filter: %s, sort: %s, dir: %s"
-                % (c.page, c.filter, c.sort, c.dir)
+                "[tokenview_flexi] page: %s, filter: %s, sort: %s, dir: %s",
+                c.page, c.filter, c.sort, c.dir
             )
 
             if c.page is None:
@@ -447,8 +447,9 @@ class ManageController(BaseController):
                 c.psize = 20
 
             log.debug(
-                "[tokenview_flexi] calling TokenIterator for user=%s@%s, filter=%s, filterRealm=%s"
-                % (user.login, user.realm, filter_all, filterRealm)
+                "[tokenview_flexi] calling TokenIterator for user=%s@%s, "
+                "filter=%s, filterRealm=%s",
+                user.login, user.realm, filter_all, filterRealm
             )
             c.tokenArray = TokenIterator(
                 user,
@@ -501,16 +502,16 @@ class ManageController(BaseController):
             return sendResult(response, res)
 
         except PolicyException as pe:
-            log.exception(
-                "[tokenview_flexi] Error during checking policies: %r" % pe
+            log.error(
+                "[tokenview_flexi] Error during checking policies: %r", pe
             )
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[tokenview_flexi] failed: %r" % e)
+        except Exception as exx:
+            log.error("[tokenview_flexi] failed: %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
     def userview_flexi(self):
         """
@@ -541,8 +542,8 @@ class ManageController(BaseController):
                 c.filter = "*"
 
             log.debug(
-                "[userview_flexi] page: %s, filter: %s, sort: %s, dir: %s"
-                % (c.page, c.filter, c.sort, c.dir)
+                "[userview_flexi] page: %s, filter: %s, sort: %s, dir: %s",
+                c.page, c.filter, c.sort, c.dir
             )
 
             if c.page is None:
@@ -624,16 +625,16 @@ class ManageController(BaseController):
             return sendResult(response, res)
 
         except PolicyException as pe:
-            log.exception(
-                "[userview_flexi] Error during checking policies: %r" % pe
+            log.error(
+                "[userview_flexi] Error during checking policies: %r", pe
             )
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[userview_flexi] failed: %r" % e)
+        except Exception as exx:
+            log.error("[userview_flexi] failed: %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
     def tokeninfo(self):
         """
@@ -659,7 +660,7 @@ class ManageController(BaseController):
 
             log.info(
                 "[tokeninfo] admin >%s< may display the following realms:"
-                " %s" % (res["admin"], filterRealm)
+                " %s", res["admin"], filterRealm
             )
             log.info("[tokeninfo] displaying tokens: serial: %s", serial)
 
@@ -689,16 +690,14 @@ class ManageController(BaseController):
             return render("/manage/tokeninfo.mako").decode("utf-8")
 
         except PolicyException as pe:
-            log.exception(
-                "[tokeninfo] Error during checking policies: %r" % pe
-            )
+            log.error("[tokeninfo] Error during checking policies: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[tokeninfo] failed! %r" % e)
+        except Exception as exx:
+            log.error("[tokeninfo] failed! %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
     def logout(self):
         """
@@ -748,10 +747,10 @@ class ManageController(BaseController):
             db.session.commit()
             return r
 
-        except Exception as e:
-            log.exception("[help] Error loading helpfile: %r" % e)
+        except Exception as exx:
+            log.error("[help] Error loading helpfile: %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
 
 # ###########################################################
@@ -811,16 +810,15 @@ def _getTokenTypeConfig(section="config"):
                 t_html = render(os.path.sep + tab.get("html")).decode("utf-8")
                 t_html = remove_empty_lines(t_html)
 
-            except CompileException as ex:
-                log.exception(
+            except CompileException as cex:
+                log.error(
                     "[_getTokenTypeConfig] compile error while "
-                    "processing %r.%r:" % (tok, section)
+                    "processing %r.%r:", tok, section
                 )
-                log.error("[_getTokenTypeConfig] %r" % ex)
-                raise Exception(ex)
+                raise Exception(cex)
 
-            except Exception as e:
-                log.debug("no config for token type %r (%r)" % (tok, e))
+            except Exception as exx:
+                log.debug("no config for token type %r (%r)", tok, exx)
                 p_html = ""
 
             if len(p_html) > 0:

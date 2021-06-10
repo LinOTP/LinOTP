@@ -104,8 +104,8 @@ class mTimeOtp(object):
         # prevent access twice with last motp
         if res <= self.oldtime:
             log.warning(
-                "[checkOtp] otpvalue %s checked once before (%r<=%r)"
-                % (anOtpVal, res, self.oldtime)
+                "[checkOtp] otpvalue %s checked once before (%r<=%r)",
+                anOtpVal, res, self.oldtime
             )
             res = -1
         if res == -1:

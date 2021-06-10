@@ -146,7 +146,7 @@ class SetPasswordHandler(ToolsHandler):
 
         except Exception as exx:
 
-            log.exception(exx)
+            log.error(exx)
             db.session.rollback()
 
     # ---------------------------------------------------------------------- --
@@ -196,7 +196,7 @@ class SetPasswordHandler(ToolsHandler):
             db.session.commit()
 
         except Exception as exx:
-            log.exception(exx)
+            log.error(exx)
             db.session.rollback()
 
             raise exx

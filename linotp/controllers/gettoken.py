@@ -98,7 +98,7 @@ class GettokenController(BaseController):
             check_session(request)
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r", action, exx)
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(response, exx, context="before")
 
@@ -176,12 +176,12 @@ class GettokenController(BaseController):
                 return sendResult(response, ret, 0)
 
         except PolicyException as pe:
-            log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
+            log.error("[getotp] gettoken/getotp policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
+            log.error("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
             db.session.rollback()
             return sendError(
                 response, "gettoken/getmultiotp failed: %r" % exx, 0
@@ -314,12 +314,12 @@ class GettokenController(BaseController):
             return sendResult(response, ret, 0)
 
         except PolicyException as pe:
-            log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
+            log.error("[getotp] gettoken/getotp policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[getotp] gettoken/getotp failed: %r", exx)
+            log.error("[getotp] gettoken/getotp failed: %r", exx)
             db.session.rollback()
             return sendError(response, "gettoken/getotp failed: %s" % exx, 0)
 

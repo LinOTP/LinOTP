@@ -161,7 +161,7 @@ class RestSMSProvider(ISMSProvider):
         """
 
         log.debug(
-            "[submitMessage] submitting message " "%s to %s" % (message, phone)
+            "[submitMessage] submitting message " "%s to %s", message, phone
         )
 
         pparams = {}
@@ -292,7 +292,7 @@ class RestSMSProvider(ISMSProvider):
                 return False
 
             except requests.exceptions.Timeout as exc:
-                log.exception("RestSMSProvider timed out %r" % exc)
+                log.error("RestSMSProvider timed out %r", exc)
                 retry -= 1
                 if retry <= 0:
                     raise ProviderNotAvailable(
@@ -300,7 +300,7 @@ class RestSMSProvider(ISMSProvider):
                     )
 
             except Exception as exc:
-                log.exception("RestSMSProvider %r" % exc)
+                log.error("RestSMSProvider %r", exc)
                 retry = 0
                 raise Exception("Failed to send SMS. %s" % str(exc))
 

@@ -121,7 +121,7 @@ class TestEmailTokenAuth(TestEmailToken):
             if state:
                 call_array.extend("-t", state)
 
-            logger.debug("Executing %s" % " ".join(call_array))
+            logger.debug("Executing %s",  " ".join(call_array))
             try:
                 return check_output(call_array)
             except CalledProcessError as e:
@@ -150,7 +150,7 @@ class TestEmailTokenAuth(TestEmailToken):
                 "'State' not found in linotp-auth-radius output. %r" % rad1
             )
             state = m.group(1)
-            logger.debug("State: %s" % state)
+            logger.debug("State: %s", state)
 
             otp = smtpsvc.get_otp()
 

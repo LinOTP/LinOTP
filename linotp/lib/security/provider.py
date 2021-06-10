@@ -112,7 +112,7 @@ class SecurityProvider(object):
                 self.config.update(security_provider_config)
 
         except Exception as e:
-            log.exception("[load_config] failed to identify module")
+            log.error("[load_config] failed to identify module")
             error = "failed to identify module: %r " % e
             raise HSMException(error, id=707)
 
@@ -142,7 +142,7 @@ class SecurityProvider(object):
         if id is None:
             id = self.activeOne
 
-        log.debug("[loadSecurityModule] Loading module %s" % id)
+        log.debug("[loadSecurityModule] Loading module %s", id)
 
         if id not in self.config:
             return ret
@@ -176,7 +176,7 @@ class SecurityProvider(object):
         ret = klass(config, add_conf=additional_config)
         self.security_modules[id] = ret
 
-        log.debug("[loadSecurityModule] returning %r" % ret)
+        log.debug("[loadSecurityModule] returning %r", ret)
 
         return ret
 
@@ -225,7 +225,7 @@ class SecurityProvider(object):
             self.activeOne = hsm_id
         except Exception as e:
             error = "[setupModule] failed to load hsm : %r" % e
-            log.exception(error)
+            log.error(error)
             raise HSMException(error, id=707)
 
         finally:
@@ -251,7 +251,7 @@ class SecurityProvider(object):
 
         for provider_id in provider_ids:
             pool = self._getHsmPool_(provider_id)
-            log.debug("[createHSMPool] already got this pool: %r" % pool)
+            log.debug("[createHSMPool] already got this pool: %r", pool)
             if pool is None:
                 # get the number of entries from the hsd (id) config
                 conf = self.config.get(provider_id)
@@ -269,7 +269,7 @@ class SecurityProvider(object):
                     try:
                         hsm = self.loadSecurityModule(provider_id)
                     except FatalHSMException as exx:
-                        log.exception(
+                        log.error(
                             "[createHSMPool] %r %r ", provider_id, exx
                         )
                         if provider_id == self.activeOne:
@@ -277,7 +277,7 @@ class SecurityProvider(object):
                         error = "%r: %r" % (provider_id, exx)
 
                     except Exception as exx:
-                        log.exception("[createHSMPool] %r ", exx)
+                        log.error("[createHSMPool] %r ", exx)
                         error = "%r: %r" % (provider_id, exx)
 
                     pool.append({"obj": hsm, "session": 0, "error": error})
@@ -337,7 +337,7 @@ class SecurityProvider(object):
             if found is None:
                 log.info(
                     "[SecurityProvider:dropSecurityModule] could not bind "
-                    "hsm to session %r " % hsm_id
+                    "hsm to session %r ", hsm_id
                 )
             else:
                 self._freeHSMSession(pool, sessionId)
@@ -377,15 +377,15 @@ class SecurityProvider(object):
                     locked = False
                     retry = False
                     log.debug(
-                        "[getSecurityModule] using existing pool session %s"
-                        % found
+                        "[getSecurityModule] using existing pool session %s",
+                        found
                     )
                     return found
                 else:
                     # create new entry
                     log.debug(
                         "[getSecurityModule] getting new Session (%s) "
-                        "from pool %s" % (sessionId, pool)
+                        "from pool %s", sessionId, pool
                     )
                     found = self._createHSM4Session(pool, sessionId)
                     self.rwLock.release()
@@ -395,7 +395,7 @@ class SecurityProvider(object):
                         delay = 1 + int(0.2 * tries)
                         log.warning(
                             "try %d: could not bind hsm to session  - "
-                            "going to sleep for %r" % (tries, delay)
+                            "going to sleep for %r", tries, delay
                         )
                         time.sleep(delay)
                         if tries >= self.max_retry:

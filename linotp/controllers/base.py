@@ -283,7 +283,7 @@ class SessionCookieMixin(object):
                 )
                 return response
             except Exception as ex:
-                log.exception("[getsession] unable to create a session cookie")
+                log.error("[getsession] unable to create a session cookie")
                 db.session.rollback()
                 return sendError(response, ex)
 

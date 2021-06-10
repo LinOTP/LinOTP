@@ -55,7 +55,7 @@ def getEncMethod(elem):
     if m:
         algo = m.group(1)
     if "aes128-cbc" != algo:
-        log.error("The algorithm %s is not supported" % algo)
+        log.error("The algorithm %s is not supported", algo)
         raise ImportException("The algorithm %s is not supported" % algo)
     return algo
 
@@ -66,7 +66,7 @@ def getMacMethod(elem):
     if m:
         meth = m.group(1)
     if "hmac-sha1" != meth:
-        log.error("The method %s is not supported" % meth)
+        log.error("The method %s is not supported", meth)
         raise ImportException("The method %s is not supported" % meth)
     return meth
 
@@ -91,8 +91,10 @@ def aes_decrypt(transport_b64, key_hex, serial=""):
         if a == bsize:
             # padding equals blocksize. This is not common!
             log.warning(
-                "[aes_decrypt] the key of token %s is a multiple of blocksize but is padded. This is not compliant to the specification but we import it anyway."
-                % serial
+                "[aes_decrypt] the key of token %s is a multiple "
+                "of blocksize but is padded. This is not compliant "
+                "to the specification but we import it anyway.",
+                serial
             )
         return data[:-a]
 
@@ -153,7 +155,7 @@ def parsePSKCdata(
     namespace = ""
     if match:
         namespace = match.group(1)
-        log.debug("Found namespace %s" % namespace)
+        log.debug("Found namespace %s", namespace)
 
     PSKC_VERSION = elem_keycontainer.get("Version")
     KEYNAME = None
@@ -178,9 +180,7 @@ def parsePSKCdata(
         if "KeyName" == enckeyTag:
             ENC_MODE = "AES128"
             KEYNAME = list(elem_encKey)[0].text
-            log.debug(
-                "The keyname of preshared encryption is <<%s>>" % KEYNAME
-            )
+            log.debug("The keyname of preshared encryption is <<%r>>", KEYNAME)
         # check for PasswordBasedEncyprion (chapter 6.2)
         elif "DerivedKey" == enckeyTag:
             ENC_MODE = "PBE"
@@ -193,7 +193,7 @@ def parsePSKCdata(
                     deriv_algo = e.get("Algorithm")
                     m = re.search(r"#(.*)$", deriv_algo)
                     PBE_DERIVE_ALGO = m.group(1)
-                    log.debug("Algorithm of the PBE: %s" % PBE_DERIVE_ALGO)
+                    log.debug("Algorithm of the PBE: %r", PBE_DERIVE_ALGO)
                     if "pbkdf2" == PBE_DERIVE_ALGO:
                         for p in list(e):
                             if "PBKDF2-params" == getTagName(p):
@@ -205,8 +205,8 @@ def parsePSKCdata(
                                                 PBE_SALT = salt.text
                                             else:
                                                 log.warning(
-                                                    "Unknown element in element Salt: %s"
-                                                    % getTagName(salt)
+                                                    "Unknown element in element Salt: %r",
+                                                    getTagName(salt)
                                                 )
                                     elif "IterationCount" == spTag:
                                         PBE_ITERATION_COUNT = sp.text
@@ -215,19 +215,20 @@ def parsePSKCdata(
                     else:
                         # probably pbkdf1
                         log.error(
-                            "We do not support key derivation method %s"
-                            % deriv_algo
+                            "We do not support key derivation method %r",
+                            deriv_algo
                         )
                         raise ImportException(
                             "We do not support key derivation method %s"
                             % deriv_algo
                         )
-                log.debug("found the salt <<%s>>" % PBE_SALT)
+                log.debug("found the salt <<%r>>", PBE_SALT)
 
             if password and len(password) > 5 and len(password) <= 64:
                 log.debug(
-                    "calculation encryption key from password [%s], salt: [%s] and length: [%s], count: [%s]"
-                    % (password, PBE_SALT, PBE_KEY_LENGTH, PBE_ITERATION_COUNT)
+                    "calculation encryption key from password [%s], salt: [%s] and "
+                    "length: [%s], count: [%s]",
+                    password, PBE_SALT, PBE_KEY_LENGTH, PBE_ITERATION_COUNT
                 )
                 ENCRYPTION_KEY_bin = pbkdf2.pbkdf2(
                     password.encode("ascii"),
@@ -236,7 +237,7 @@ def parsePSKCdata(
                     int(PBE_ITERATION_COUNT),
                 )
                 ENCRYPTION_KEY_hex = binascii.hexlify(ENCRYPTION_KEY_bin)
-                log.debug("calculated encryption key: %s" % ENCRYPTION_KEY_hex)
+                log.debug("calculated encryption key: %r", ENCRYPTION_KEY_hex)
             else:
                 log.error(
                     "You must provide a password that is longer than 5 characters and up to 64 characters long."
@@ -260,25 +261,25 @@ def parsePSKCdata(
                     if "CipherValue" == cipher_tag:
                         cipherValue = c.text.strip()
                         log.debug(
-                            "Found this MAC Key cipherValue: <<%s>>"
-                            % cipherValue
+                            "Found this MAC Key cipherValue: <<%r>>",
+                            cipherValue
                         )
                         MACKEY_bin = aes_decrypt(
                             cipherValue, ENCRYPTION_KEY_hex
                         )
                     else:
                         log.error(
-                            "Found unsupported child in CipherData: %s"
-                            % cipher_tag
+                            "Found unsupported child in CipherData: %r",
+                            cipher_tag,
                         )
                         raise ImportException(
-                            "Found unsupported child in CipherData: %s"
-                            % cipher_tag
+                            "Found unsupported child in CipherData: %r" %
+                            cipher_tag
                         )
             elif "EncryptionMethod" == tag:
                 ENC_ALGO = getEncMethod(e)
             else:
-                log.warning("Found unknown tag: %s" % tag)
+                log.warning("Found unknown tag: %r", tag)
 
     # End of Encryption Key
     # There is a keypackage per key
@@ -298,14 +299,14 @@ def parsePSKCdata(
         elem_key = elem_package.find(namespace + "Key")
 
         serial = elem_key.get(TAG_TOKEN_ID)
-        log.info("Processing token with serial (Key Id=%s)" % serial)
+        log.info("Processing token with serial (Key Id=%r)", serial)
 
         elem_deviceInfo = elem_package.find(namespace + "DeviceInfo")
         if elem_deviceInfo:
             # Try to find the real serial number
             elem_serial = elem_deviceInfo.find(namespace + "SerialNo")
             serial = elem_serial.text
-            log.info("Processing token with the real SerialNo %s" % serial)
+            log.info("Processing token with the real SerialNo %r", serial)
 
         algorithm = elem_key.get("Algorithm")
         if algorithm:
@@ -328,7 +329,7 @@ def parsePSKCdata(
                 TOKEN_TYPE = "ocra2"
 
         if do_checkserial and not checkSerial(serial):
-            log.warning("serial %s is not a valid OATH serial" % serial)
+            log.warning("serial %r is not a valid OATH serial", serial)
         else:
             # Now we do the Parameters, which can hold
             # the number of the digits :
@@ -342,14 +343,14 @@ def parsePSKCdata(
             elem_algoParam = elem_key.find(namespace + "AlgorithmParameters")
             for e in list(elem_algoParam):
                 eTag = getTagName(e)
-                log.debug("Evaluating element <<%s>>" % eTag)
+                log.debug("Evaluating element <<%r>>", eTag)
                 if "ResponseFormat" == eTag:
                     KD_otplen = int(e.get("Length"))
-                    log.debug("Found length = %s" % e.get("Length"))
+                    log.debug("Found length = %r", e.get("Length"))
                 elif "Suite" == eTag:
                     if TOKEN_TYPE == "ocra2":
                         KD_Suite = e.text
-                        log.debug("Found OCRA Suite = %s" % KD_Suite)
+                        log.debug("Found OCRA Suite = %r", KD_Suite)
                     else:
                         # This can be HMAC-SHA256
                         KD_hashlib = e.text
@@ -357,7 +358,7 @@ def parsePSKCdata(
                             KD_hashlib = "sha256"
                         if KD_hashlib.lower() == "hmac-sha1":
                             KD_hashlib = "sha1"
-                        log.debug("Found hashlib = %s" % KD_hashlib)
+                        log.debug("Found hashlib = %r", KD_hashlib)
 
             # Now we do all the Key Data: <pskc:Data>
             elem_keydata = elem_key.find(namespace + "Data")
@@ -371,7 +372,7 @@ def parsePSKCdata(
             KD_TimeOffset = None
             for e in list(elem_keydata):
                 eTag = getTagName(e)
-                log.debug("Evaluating element <<%s>>" % eTag)
+                log.debug("Evaluating element <<%r>>", eTag)
                 if "Secret" == eTag:
                     for se in list(e):
                         seTag = getTagName(se)
@@ -406,7 +407,7 @@ def parsePSKCdata(
                         if "PlainValue" == seTag:
                             KD_TimeInterval = se.text
                             log.debug(
-                                "Found TimeInterval = %s" % KD_TimeInterval
+                                "Found TimeInterval = %r", KD_TimeInterval
                             )
                         else:
                             log.warning(
@@ -417,19 +418,19 @@ def parsePSKCdata(
                         seTag = getTagName(se)
                         if "PlainValue" == seTag:
                             KD_Time = se.text
-                            log.debug("Found Time offset = %s" % KD_Time)
+                            log.debug("Found Time offset = %s", KD_Time)
                         else:
                             log.warning(
                                 "We do only support PlainValue for Time"
                             )
 
                 else:
-                    log.warning("Unparsed Tag in Key: %s" % eTag)
+                    log.warning("Unparsed Tag in Key: %r", eTag)
 
             if KD_algo and KD_hmac_key_b64:
                 log.warning(
-                    "The key %s contained a secret with PlainValue and EncryptedValue!"
-                    % serial
+                    "The key %s contained a secret with PlainValuei "
+                    "and EncryptedValue!", serial
                 )
             else:
                 if "aes128-cbc" == ENC_ALGO:
@@ -445,12 +446,12 @@ def parsePSKCdata(
                             MAC_digest_bin
                         ).decode()
                         log.debug(
-                            "AES128-CBC secret cipher: %s" % KD_cipher_b64
+                            "AES128-CBC secret cipher: %r", KD_cipher_b64
                         )
                         log.debug(
-                            "calculated MAC value    : %s" % MAC_digest_b64
+                            "calculated MAC value    : %r", MAC_digest_b64
                         )
-                        log.debug("read MAC value          : %s" % KD_mac_b64)
+                        log.debug("read MAC value          : %r", KD_mac_b64)
 
                         # decrypt key
                         HMAC_KEY_bin = aes_decrypt(
@@ -469,12 +470,12 @@ def parsePSKCdata(
                             }
                         else:
                             log.error(
-                                "The MAC value for %s does not fit. The HMAC secrets could be compromised!"
-                                % serial
+                                "The MAC value for %s does not fit. The HMAC "
+                                "secrets could be compromised!", serial
                             )
                             raise ImportException(
-                                "The MAC value for %s does not fit. The HMAC secrets could be compromised!"
-                                % serial
+                                "The MAC value for %s does not fit. The HMAC "
+                                "secrets could be compromised!" % serial
                             )
                             # TOKENS[serial] = { 'hmac_key' : binascii.hexlify(HMAC_KEY_bin),
                             #            'counter' : KD_counter, 'type' : TOKEN_TYPE,
@@ -482,8 +483,8 @@ def parsePSKCdata(
                             #            'hashlib' : KD_hashlib }
                     else:
                         log.warning(
-                            "At the moment we only support hmac-sha1. We found %s"
-                            % MAC_Method
+                            "At the moment we only support hmac-sha1. We"
+                            " found %r", MAC_Method
                         )
 
                 elif KD_hmac_key_b64:
@@ -498,8 +499,8 @@ def parsePSKCdata(
                     }
                 else:
                     log.warning(
-                        "neither a PlainValue nor an EncryptedValue was found for the secret of key %s"
-                        % serial
+                        "neither a PlainValue nor an EncryptedValue was "
+                        "found for the secret of key %s", serial
                     )
 
     return TOKENS

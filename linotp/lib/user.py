@@ -71,8 +71,8 @@ class NoResolverFound(Exception):
 class User(object):
     def __init__(self, login="", realm="", resolver_config_identifier=""):
         log.debug(
-            "[User.__init__] creating user %r,%r,%r"
-            % (login, realm, resolver_config_identifier)
+            "[User.__init__] creating user %r,%r,%r",
+            login, realm, resolver_config_identifier
         )
 
         self.login = ""
@@ -193,7 +193,7 @@ class User(object):
                 yield uid, resolver_spec
 
             except Exception as exx:
-                log.exception("Error while accessing resolver %r", exx)
+                log.error("Error while accessing resolver %r", exx)
 
     @property
     def is_empty(self):
@@ -259,15 +259,15 @@ class User(object):
             y = getResolverObject(resolver_spec)
             log.debug(
                 "[getUserInfo] Getting user info for userid "
-                ">%r< in resolver" % userid
+                ">%r< in resolver", userid
             )
             userInfo = y.getUserInfo(userid)
             self.info[resolver_spec] = userInfo
 
-        except Exception as e:
-            log.exception(
+        except Exception as exx:
+            log.error(
                 "[getUserInfo][ resolver with specification %r "
-                "not found: %r ]" % (resolver_spec, e)
+                "not found: %r ]", resolver_spec, exx
             )
 
         return userInfo
@@ -367,7 +367,7 @@ class User(object):
                 log.debug("checking in %r", realm_resolver)
                 y = getResolverObject(realm_resolver)
                 if y:
-                    log.debug("checking in module %r" % y)
+                    log.debug("checking in module %r", y)
                     uid = y.getUserId(self.login)
                     if not uid:
                         continue
@@ -453,7 +453,7 @@ def getUserResolverId(user, report=False):
 
     except Exception as exx:
 
-        log.exception(
+        log.error(
             "[getUserResolverId] for %r@%r failed: %r",
             user.login,
             user.realm,
@@ -721,7 +721,7 @@ def getUserFromRequest(request, config=None):
 
     except Exception as exx:
 
-        log.exception(
+        log.error(
             "[getUserFromRequest] An error occurred when trying"
             " to fetch the user from the request: %r",
             exx,
@@ -1221,7 +1221,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             r_user_info = y.getUserInfo(user_id)
 
             if not r_user_info:
-                log.error("Failed get user info for user_id %r" % user_id)
+                log.error("Failed get user info for user_id %r", user_id)
                 raise NoResolverFound(
                     "Failed get user info " "for user_id %r" % user_id
                 )
@@ -1506,8 +1506,8 @@ def getUserId(user, check_existance=False):
     if not uids:
 
         log.warning(
-            "No uid found for the user >%r< in realm %r"
-            % (user.login, user.realm)
+            "No uid found for the user >%r< in realm %r",
+            user.login, user.realm
         )
 
         raise UserError(
@@ -1652,7 +1652,7 @@ def getUserList(param, search_user):
                 users.extend(ulist)
 
         except KeyError as exx:
-            log.exception(
+            log.error(
                 "[getUserList][ resolver class identifier %s:%r ]",
                 cls_identifier,
                 exx,
@@ -1660,7 +1660,7 @@ def getUserList(param, search_user):
             raise exx
 
         except Exception as exx:
-            log.exception(
+            log.error(
                 "[getUserList][ resolver class identifier %s:%r ]",
                 cls_identifier,
                 exx,
@@ -1712,11 +1712,11 @@ def getUserListIterators(param, search_user):
             user_iters.append((uit, resolver_spec))
 
         except KeyError as exx:
-            log.exception("[ resolver class %r:%r ]", cls_identifier, exx)
+            log.error("[ resolver class %r:%r ]", cls_identifier, exx)
             raise exx
 
         except Exception as exx:
-            log.exception("[ resolver class %r:%r ]", cls_identifier, exx)
+            log.error("[ resolver class %r:%r ]", cls_identifier, exx)
             continue
 
     return user_iters
@@ -1761,7 +1761,7 @@ def getUserDetail(user):
     :returns: the userinfo dict
     """
     (uid, resId, resClass) = getUserId(user)
-    log.debug("got uid %r, ResId %r, Class %r" % (uid, resId, resClass))
+    log.debug("got uid %r, ResId %r, Class %r", uid, resId, resClass)
     userinfo = getUserInfo(uid, resId, resClass)
     return userinfo
 

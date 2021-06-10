@@ -362,7 +362,7 @@ class LinOTPApp(Flask):
             # we supress Exception here as it will be handled in the
             # controller which will return corresponding response
             self.base_auth_user = ""
-            log.warning("Failed to identify user due to %r" % exx)
+            log.warning("Failed to identify user due to %r", exx)
 
     def finalise_request(self, exc):
         drop_security_module()
@@ -432,7 +432,7 @@ class LinOTPApp(Flask):
         try:
             client = get_client(request=request)
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
         request_context["Client"] = client
 
@@ -442,7 +442,7 @@ class LinOTPApp(Flask):
         try:
             authUser = getUserFromRequest(request)
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
         request_context["AuthUser"] = authUser
         request_context["UserLookup"] = {}
@@ -454,7 +454,7 @@ class LinOTPApp(Flask):
         try:
             resolvers = getResolverList(config=linotp_config)
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
         request_context["Resolvers"] = resolvers
 
@@ -465,7 +465,7 @@ class LinOTPApp(Flask):
         try:
             realms = getRealms()
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
         request_context["Realms"] = realms
 
@@ -475,7 +475,7 @@ class LinOTPApp(Flask):
         try:
             defaultRealm = getDefaultRealm(linotp_config)
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
         request_context["defaultRealm"] = defaultRealm
 
@@ -572,7 +572,7 @@ class LinOTPApp(Flask):
         except UnicodeDecodeError as exx:
             # we supress Exception here as it will be handled in the
             # controller which will return corresponding response
-            log.warning("Failed to access request parameters: %r" % exx)
+            log.warning("Failed to access request parameters: %r", exx)
 
         return request_params
 
@@ -773,7 +773,7 @@ def allocate_security_module():
     try:
         c.hsm = current_app.security_provider.getSecurityModule()
     except Exception as exx:
-        log.exception("Failed to get hsm connection for request!")
+        log.error("Failed to get hsm connection for request!")
         raise exx
 
 
@@ -786,7 +786,7 @@ def drop_security_module():
     try:
         current_app.security_provider.dropSecurityModule()
     except Exception as exx:
-        log.exception("Failed to push hsm connection back to pool! %r", c.hsm)
+        log.error("Failed to push hsm connection back to pool! %r", c.hsm)
         raise exx
 
 

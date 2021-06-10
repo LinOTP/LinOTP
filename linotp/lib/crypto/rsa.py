@@ -114,11 +114,11 @@ class RSA_Signature:
             return True
 
         except ValueError as vexx:
-            log.debug("Failed to verify signature: %r" % vexx)
+            log.debug("Failed to verify signature: %r", vexx)
             return False
 
         except Exception as exx:
-            log.error("Failed to verify signature: %r" % exx)
+            log.error("Failed to verify signature: %r", exx)
             raise exx
 
     def sign(self, message: bytes) -> bytes:
