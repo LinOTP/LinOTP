@@ -53,19 +53,19 @@ class RadiusReponse(Client):
 
 
 def mocked_SendPacket_accept(rad_client, *argparams, **kwparams):
-    """ mock the radius accept response """
+    """mock the radius accept response"""
     response = RadiusReponse(code=pyrad.packet.AccessAccept)
     return response
 
 
 def mocked_SendPacket_reject(rad_client, *argparams, **kwparams):
-    """ mock the radius accept response """
+    """mock the radius accept response"""
     response = RadiusReponse(code=pyrad.packet.AccessReject)
     return response
 
 
 def mocked_SendPacket_error(rad_client, *argparams, **kwparams):
-    """ mock the radius accept response """
+    """mock the radius accept response"""
     raise pyrad.server.ServerPacketError("bad packet")
 
 

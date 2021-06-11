@@ -197,13 +197,15 @@ def check_session(request, scope="admin"):
             if netaddr.IPAddress(client) in netaddr.IPNetwork(network):
                 log.debug(
                     "skipping session check since client" " %s in allowed: %s",
-                    client, no_session_clients
+                    client,
+                    no_session_clients,
                 )
                 return
         except Exception as ex:
             log.warning(
                 "misconfiguration in linotpNoSessionCheck: " "%r - %r",
-                network, ex
+                network,
+                ex,
             )
 
     cookie = request.cookies.get(scope + "_session")
@@ -527,7 +529,7 @@ def unicode_compare(x, y):
 
 
 def dict_copy(dict_):
-    """ recursively copies a dict """
+    """recursively copies a dict"""
 
     # we use an recursive approach instead of an
     # iterative one, because our dicts are only

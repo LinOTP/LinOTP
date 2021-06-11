@@ -66,10 +66,11 @@ class TestGetResolverList(unittest.TestCase):
                     )
 
                 # If readonly, the resulting resolver has config key=readonly, value=True
-                # If not readonly, the resulting resolver does not have the readonly key
+                # If not readonly, the resulting resolver does not have the
+                # readonly key
                 r = ret["UnitTestResolver"]
                 if expected_readonly:
-                    assert r["readonly"] == True
+                    assert r["readonly"]
                 else:
                     assert "readonly" not in r
 

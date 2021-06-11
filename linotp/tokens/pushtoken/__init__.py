@@ -93,7 +93,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     #  size     |  5  |       32        |  ?  |  64  |
     #            ------------------------------------
 
-    user_public_key = plaintext[5: 5 + 32]
+    user_public_key = plaintext[5 : 5 + 32]
 
     # ----------------------------------------------------------------------- --
 
@@ -107,7 +107,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     # parse token_serial and user identification
 
-    str_parts = plaintext[5 + 32: -64].split(b"\x00")
+    str_parts = plaintext[5 + 32 : -64].split(b"\x00")
 
     # enforce format
 

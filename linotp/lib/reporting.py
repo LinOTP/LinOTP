@@ -75,8 +75,7 @@ def token_reporting(event, tokenrealms):
             try:
                 db.session.add(report)
             except Exception as exce:
-                log.error("Error during saving report. Exception was %r",
-                          exce)
+                log.error("Error during saving report. Exception was %r", exce)
 
 
 def get_max_token_count_in_period(
@@ -113,7 +112,7 @@ def get_max_token_count_in_period(
         .scalar()
     )
 
-    if token_max_count != None:
+    if token_max_count is not None:
         return token_max_count
 
     return -1
@@ -303,7 +302,8 @@ class ReportingIterator(object):
             except Exception as exce:
                 log.debug(
                     "Reporting: Problem with pagesize detected. "
-                    "Exception was: %r", exce
+                    "Exception was: %r",
+                    exce,
                 )
                 pagesize = 20
 
@@ -312,7 +312,8 @@ class ReportingIterator(object):
             except Exception as exce:
                 log.debug(
                     "Reporting: Problem with page detected. "
-                    "Exception was %r", exce
+                    "Exception was %r",
+                    exce,
                 )
                 the_page = 0
 
@@ -347,6 +348,5 @@ class ReportingIterator(object):
 
         except Exception as exx:
             log.error(
-                "Reporting: Problem during iteration."
-                "Exception was %r", exx
+                "Reporting: Problem during iteration." "Exception was %r", exx
             )

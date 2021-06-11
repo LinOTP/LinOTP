@@ -67,7 +67,7 @@ def get_email_content(email_message):
     thus the content starts with the first empty line
     """
 
-    if not "Content-Transfer-Encoding: base64" in email_message:
+    if "Content-Transfer-Encoding: base64" not in email_message:
         return email_message
 
     body = []
@@ -91,14 +91,14 @@ def get_email_content(email_message):
 )
 class TestHelpdeskEnrollment(TestController):
     def setUp(self):
-        """ setup for std resolver / realms"""
+        """setup for std resolver / realms"""
 
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        """ clean up for all token and resolver / realms """
+        """clean up for all token and resolver / realms"""
 
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -108,7 +108,7 @@ class TestHelpdeskEnrollment(TestController):
         TestController.tearDown(self)
 
     def test_list_users(self):
-        """ verify 'api/helpdesk/users' endpoint honores admin policies """
+        """verify 'api/helpdesk/users' endpoint honores admin policies"""
 
         # define admin policy for helpdesk user 'helpdesk'
 
@@ -570,7 +570,7 @@ class TestHelpdeskEnrollment(TestController):
         return
 
     def test_enrollment_admin_right(self):
-        """verify that an email token will be enrolled adhering to the admin right """
+        """verify that an email token will be enrolled adhering to the admin right"""
 
         # ------------------------------------------------------------------ --
 

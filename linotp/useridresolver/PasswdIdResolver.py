@@ -92,7 +92,7 @@ def tokenise(r):
         st = s.strip()
         m = re.match("^" + r, st)
         if m:
-            ret = (st[: m.end()].strip(), st[m.end():].strip())
+            ret = (st[: m.end()].strip(), st[m.end() :].strip())
             # ret[0].strip()      ## remove ws
             # ret[1].strip()
         return ret
@@ -233,7 +233,7 @@ class IdResolver(UserIdResolver):
             if len(descriptions) >= 5:
                 for field in descriptions[4:]:
                     # very basic e-mail regex
-                    email_match = re.search(".+@.+\..+", field)
+                    email_match = re.search(r".+@.+\..+", field)
                     if email_match:
                         self.emailDict[fields[ID]] = email_match.group(0)
 
@@ -250,7 +250,7 @@ class IdResolver(UserIdResolver):
         of the passwd file needs to contain the crypted password
         """
 
-        if type(password) is str:
+        if isinstance(password, str):
             log.debug(
                 "Password is a unicode string. Encoding to UTF-8 for \
                        crypt.crypt() function."
@@ -260,7 +260,8 @@ class IdResolver(UserIdResolver):
         cryptedpasswd = self.passDict[uid]
         log.debug(
             "[checkPass] We found the crypted pass %s for uid %s",
-            cryptedpasswd, uid
+            cryptedpasswd,
+            uid,
         )
         if not cryptedpasswd:
             log.warning(
@@ -372,7 +373,7 @@ class IdResolver(UserIdResolver):
         :param searchDict: fields, which should be queried
         :return: dict of all searchFields
         """
-        if searchDict != None:
+        if searchDict is not None:
             for search in searchDict:
                 pattern = searchDict[search]
 
@@ -397,7 +398,7 @@ class IdResolver(UserIdResolver):
 
             for search in searchDict:
 
-                if not search in self.searchFields:
+                if search not in self.searchFields:
                     ok = False
                     break
 
@@ -414,10 +415,10 @@ class IdResolver(UserIdResolver):
                 elif search == "email":
                     ok = self.checkEmail(line, pattern)
 
-                if ok != True:
+                if not ok:
                     break
 
-            if ok == True:
+            if ok:
                 uid = line[self.sF["userid"]]
                 info = self.getUserInfo(uid, no_passwd=True)
                 ret.append(info)
@@ -481,7 +482,7 @@ class IdResolver(UserIdResolver):
 
         try:
             cUserId = int(line[self.sF["userid"]])
-        except:
+        except BaseException:
             return ret
 
         (op, val) = tokenise(">=|<=|>|<|=|between")(pattern)
@@ -495,7 +496,7 @@ class IdResolver(UserIdResolver):
                     v = ihVal
                     ihVal = ilVal
                     ilVal = v
-            except:
+            except BaseException:
                 return ret
 
             if cUserId <= ihVal and cUserId >= ilVal:
@@ -503,7 +504,7 @@ class IdResolver(UserIdResolver):
         else:
             try:
                 ival = int(val)
-            except:
+            except BaseException:
                 return ret
 
             if op == "=":

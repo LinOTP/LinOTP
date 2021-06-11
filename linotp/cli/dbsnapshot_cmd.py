@@ -130,7 +130,7 @@ def restore_command(file=None, date=None, table=None):
     "list", help=("List available snapshots of the database " "tables.")
 )
 def list_command():
-    """ list available database snapshots."""
+    """list available database snapshots."""
     try:
         current_app.echo("Available snapshots to restore", v=1)
         for backup_date, backup_file in list_database_backups():
@@ -264,7 +264,7 @@ def list_database_backups() -> list:
         ):
 
             backup_date, _, _ext = backup_file[
-                len(filename_template):
+                len(filename_template) :
             ].rpartition(".")
 
             yield backup_date, backup_file
@@ -403,7 +403,7 @@ def restore_database_tables(
                 name = None
 
             elif line.startswith("--- BEGIN "):
-                name = line[len("--- BEGIN "):]
+                name = line[len("--- BEGIN ") :]
 
             elif line and name in restore_names:
 

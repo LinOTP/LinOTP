@@ -40,7 +40,7 @@ log = logging.getLogger(__name__)
 @pytest.mark.exclude_sqlite
 class SQLResolverTest(SQLTestController):
     def setUp(self):
-        """ create an sql user table some users and the sql resolver """
+        """create an sql user table some users and the sql resolver"""
 
         self.delete_all_policies()
         SQLTestController.setUp(self)
@@ -49,7 +49,7 @@ class SQLResolverTest(SQLTestController):
         return
 
     def tearDown(self):
-        """ drop the users and the user table """
+        """drop the users and the user table"""
 
         self.dropUsers()
         self.delete_all_token()

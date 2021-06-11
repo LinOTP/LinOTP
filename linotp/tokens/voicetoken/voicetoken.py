@@ -564,7 +564,7 @@ class VoiceTokenClass(HmacTokenClass):
         except ValueError as value_error_ex:
             log.error(
                 "[getOTP]: Could not convert otplen - value error " "%r",
-                value_error_ex
+                value_error_ex,
             )
             raise value_error_ex
 

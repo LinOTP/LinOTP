@@ -387,7 +387,7 @@ class DefaultSecurityModule(SecurityModule):
         # split at ":"
         pos = cryptValue.find(":")
         bIV = cryptValue[:pos]
-        bData = cryptValue[pos + 1: len(cryptValue)]
+        bData = cryptValue[pos + 1 : len(cryptValue)]
 
         iv = binascii.unhexlify(bIV)
         data = binascii.unhexlify(bData)
@@ -462,9 +462,7 @@ class DefaultSecurityModule(SecurityModule):
             log.error("Signature check: Mac Comparison failed! %r", err)
 
         except Exception as exx:
-            log.error(
-                "Signature check: Unknown exception happened %r", exx
-            )
+            log.error("Signature check: Unknown exception happened %r", exx)
 
         finally:
             if sign_key:

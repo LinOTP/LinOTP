@@ -199,10 +199,12 @@ class U2FTokenClass(TokenClass):
             requested_phase != "registration2" and requested_phase is not None
         ):
             raise Exception("Wrong phase parameter!")
-        # only allow empty phase parameters once the token is registered successfully
+        # only allow empty phase parameters once the token is registered
+        # successfully
         elif current_phase != "authentication" and requested_phase is None:
             raise Exception("Wrong phase parameter!")
-        # only allow "registration2" if the token already completed "registration1"
+        # only allow "registration2" if the token already completed
+        # "registration1"
         elif (
             current_phase != "registration"
             and requested_phase == "registration2"
@@ -265,7 +267,8 @@ class U2FTokenClass(TokenClass):
                  data is preserved in the challenge
                  attributes are additional attributes, which could be returned
         """
-        # Create an otp key (from urandom) which is used as challenge, 32 bytes long
+        # Create an otp key (from urandom) which is used as challenge, 32 bytes
+        # long
         challenge = base64.urlsafe_b64encode(
             binascii.unhexlify(self._genOtpKey_(32))
         )
@@ -706,7 +709,8 @@ class U2FTokenClass(TokenClass):
 
         # signatureData and clientData are urlsafe base64 encoded
         # correct padding errors (length should be multiples of 4)
-        # fill up the signatureData and clientData with '=' to the correct padding
+        # fill up the signatureData and clientData with '=' to the correct
+        # padding
         signatureData = signatureData + ("=" * (4 - (len(signatureData) % 4)))
         clientData = clientData + ("=" * (4 - (len(clientData) % 4)))
         signatureData = base64.urlsafe_b64decode(signatureData.encode("ascii"))
@@ -760,10 +764,12 @@ class U2FTokenClass(TokenClass):
             ):
                 continue
 
-            # the counter is interpreted as big-endian according to the U2F specification
+            # the counter is interpreted as big-endian according to the U2F
+            # specification
             counterInt = struct.unpack(">I", counter)[0]
 
-            # verify that the counter value increased - prevent token device cloning
+            # verify that the counter value increased - prevent token device
+            # cloning
             self._verifyCounterValue(counterInt)
 
             # U2F does not need an otp count
@@ -908,7 +914,8 @@ class U2FTokenClass(TokenClass):
             self.addToTokenInfo("challenge", challenge.decode("ascii"))
 
             # save the appId to the TokenInfo
-            # An appId passed as parameter is preferred over an appId defined in a policy
+            # An appId passed as parameter is preferred over an appId defined
+            # in a policy
             appId = ""
             if "appid" in params:
                 appId = params.get("appid")
@@ -946,7 +953,8 @@ class U2FTokenClass(TokenClass):
                 raise Exception("No appId defined.")
             self.addToTokenInfo("appId", appId)
 
-            # create U2F RegisterRequest object and append it to the response as 'message'
+            # create U2F RegisterRequest object and append it to the response
+            # as 'message'
             appId = self._get_app_id()
             register_request = {
                 "challenge": challenge.decode("ascii"),
@@ -965,7 +973,8 @@ class U2FTokenClass(TokenClass):
                 otpkey = params.get("otpkey")
 
             if otpkey is not None:
-                # otpkey holds the JSON RegisterResponse object as specified by the FIDO Alliance
+                # otpkey holds the JSON RegisterResponse object as specified by
+                # the FIDO Alliance
                 try:
                     registerResponse = json.loads(otpkey)
                 except ValueError as ex:

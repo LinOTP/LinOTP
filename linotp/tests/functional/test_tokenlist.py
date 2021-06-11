@@ -39,13 +39,13 @@ class TestTokenlist(TestController):
     serials = []
 
     def setUp(self):
-        """ setup the Test Controller"""
+        """setup the Test Controller"""
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        """ make the dishes"""
+        """make the dishes"""
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()

@@ -659,7 +659,7 @@ def extract_tan(signature, digits):
     """
 
     offset = ord(signature[-1:]) & 0xF
-    itan = struct.unpack(">I", signature[offset: offset + 4])[0] & 0x7FFFFFFF
+    itan = struct.unpack(">I", signature[offset : offset + 4])[0] & 0x7FFFFFFF
 
     # convert the binaries of the signature to an integer based string
     tan = "%d" % (itan % 10 ** digits)
@@ -671,10 +671,10 @@ def extract_tan(signature, digits):
 
 
 def encode_base64_urlsafe(data):
-    """ encodes a string with urlsafe base64 and removes its padding """
+    """encodes a string with urlsafe base64 and removes its padding"""
     return base64.urlsafe_b64encode(data).decode("utf8").rstrip("=")
 
 
 def decode_base64_urlsafe(data):
-    """ decodes a string encoded with :func encode_base64_urlsafe """
+    """decodes a string encoded with :func encode_base64_urlsafe"""
     return base64.urlsafe_b64decode(data.encode() + (-len(data) % 4) * b"=")

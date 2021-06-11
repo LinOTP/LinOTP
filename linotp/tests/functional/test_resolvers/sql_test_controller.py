@@ -164,7 +164,7 @@ class SQLTestController(TestController):
         return
 
     def delSqlResolver(self, name):
-        """ delete the sql resolver """
+        """delete the sql resolver"""
         parameters = {
             "resolver": name,
         }
@@ -192,7 +192,7 @@ class SQLTestController(TestController):
         return
 
     def delSqlRealm(self, realmName):
-        """ delete realm """
+        """delete realm"""
 
         parameters = {
             "realm": realmName,
@@ -203,7 +203,7 @@ class SQLTestController(TestController):
         return resp
 
     def dropUsers(self):
-        """ shutdown the db"""
+        """shutdown the db"""
 
         userAdd = SqlUserDB(connect=self.sqlconnect)
         userAdd.dropTable()

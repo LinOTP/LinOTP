@@ -66,29 +66,29 @@ class TokenValidityMixin(object):
 
     @property
     def count_auth_success_max(self):
-        """ get the counter for the maximum allowed successful logins """
+        """get the counter for the maximum allowed successful logins"""
 
         return int(self.getFromTokenInfo("count_auth_success_max", 0) or 0)
 
     @count_auth_success_max.setter
     def count_auth_success_max(self, count):
-        """ Sets the counter for the maximum allowed successful logins """
+        """Sets the counter for the maximum allowed successful logins"""
 
         self.addToTokenInfo("count_auth_success_max", int(count))
 
     def del_count_auth_success_max(self):
-        """ delete the success access counter """
+        """delete the success access counter"""
         self.removeFromTokenInfo("count_auth_success_max")
 
     @property
     def count_auth_success(self):
-        """ getter for the count_auth_success """
+        """getter for the count_auth_success"""
 
         return int(self.getFromTokenInfo("count_auth_success", 0) or 0)
 
     @count_auth_success.setter
     def count_auth_success(self, count):
-        """ setter for the count_auth_success """
+        """setter for the count_auth_success"""
 
         self.addToTokenInfo("count_auth_success", int(count))
 
@@ -108,11 +108,11 @@ class TokenValidityMixin(object):
 
     @count_auth_max.setter
     def count_auth_max(self, count):
-        """ Sets the counter for the maximum allowed login attemps """
+        """Sets the counter for the maximum allowed login attemps"""
         self.addToTokenInfo("count_auth_max", int(count))
 
     def del_count_auth_max(self):
-        """ delete the access counter """
+        """delete the access counter"""
         self.removeFromTokenInfo("count_auth_max")
 
     @property
@@ -121,18 +121,18 @@ class TokenValidityMixin(object):
 
     @count_auth.setter
     def count_auth(self, count):
-        """ Sets the counter for the occurred login attepms """
+        """Sets the counter for the occurred login attepms"""
         self.addToTokenInfo("count_auth", int(count))
 
     def inc_count_auth(self):
-        """ increment the access counter """
+        """increment the access counter"""
 
         self.count_auth = self.count_auth + 1
 
         return self.count_auth
 
     def del_count_auth(self):
-        """ delete the access counter """
+        """delete the access counter"""
 
         self.removeFromTokenInfo("count_auth")
 

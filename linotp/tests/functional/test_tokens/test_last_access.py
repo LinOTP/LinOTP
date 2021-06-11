@@ -40,7 +40,7 @@ class TestLastAccess(TestController):
     """"""
 
     def test_last_access_boolean(self):
-        """ check that last_access does work with boolean expressions """
+        """check that last_access does work with boolean expressions"""
 
         serial = "last_access_token"
 
@@ -105,7 +105,7 @@ class TestLastAccess(TestController):
         return
 
     def test_last_access_timeformat(self):
-        """ check that last_access does work with time format expressions """
+        """check that last_access does work with time format expressions"""
 
         serial = "last_access_token"
 

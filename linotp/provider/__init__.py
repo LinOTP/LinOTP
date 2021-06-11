@@ -162,7 +162,7 @@ def parse_provider(provider_type, composite_key, value):
     # ------------------------------------------------------------------------ -
 
     long_prefix = Provider_types[provider_type]["prefix"]
-    provider_prefix = long_prefix[len("linotp."): -1]
+    provider_prefix = long_prefix[len("linotp.") : -1]
 
     # ------------------------------------------------------------------------ -
 
@@ -216,7 +216,7 @@ def parse_legacy_provider(provider_type, composite_key, value):
     # ------------------------------------------------------------------------ -
 
     long_prefix = Provider_types[provider_type]["prefix"]
-    provider_prefix = long_prefix[len("linotp."): -1]
+    provider_prefix = long_prefix[len("linotp.") : -1]
 
     # ------------------------------------------------------------------------ -
 

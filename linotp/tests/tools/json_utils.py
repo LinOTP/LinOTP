@@ -98,7 +98,7 @@ class JsonUtils:
             if isinstance(value2, str):
                 if value1 == value2:
                     return True
-        elif type(value1) == type(value2):
+        elif isinstance(value1, type(value2)):
             if value1 == value2:
                 return True
             if isinstance(value1, list):
@@ -146,7 +146,7 @@ class JsonUtils:
                     for key2 in list(object.keys()):
                         # Find a key that match the Regex pattern!
                         match = key.match(key2)
-                        if not match is None:
+                        if match is not None:
                             # For named-capture we compare values
                             # with the values available in params!
                             if not JsonUtils.checkDictionary(
@@ -158,13 +158,14 @@ class JsonUtils:
                 else:
                     temp = object.get(key, None)
 
-                # If temp is not None, then a match in json dictionary was found!
+                # If temp is not None, then a match in json dictionary was
+                # found!
                 if temp is None or not JsonUtils.checkJsonValues(
                     temp, value[key], namedValues
                 ):
                     return False
             return True
-        elif type(value) == RegexType:
+        elif isinstance(value, RegexType):
             # The compare is performed with a Regex object!
             match = value.match(object)
             if match is None or not JsonUtils.checkDictionary(

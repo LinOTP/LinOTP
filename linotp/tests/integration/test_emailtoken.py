@@ -121,7 +121,7 @@ class TestEmailTokenAuth(TestEmailToken):
             if state:
                 call_array.extend("-t", state)
 
-            logger.debug("Executing %s",  " ".join(call_array))
+            logger.debug("Executing %s", " ".join(call_array))
             try:
                 return check_output(call_array)
             except CalledProcessError as e:

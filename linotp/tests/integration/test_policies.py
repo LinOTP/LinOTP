@@ -58,7 +58,7 @@ class TestPolicies(TestCase):
 
     @pytest.fixture(autouse=True)
     def setUp(self):
-        """ Some test set up steps """
+        """Some test set up steps"""
 
         # Initialize GUI attributes
         self.token_view = self.manage_ui.token_view
@@ -381,7 +381,7 @@ class TestPolicies(TestCase):
         )
 
     def import_tokens(self):
-        """ Import some tokens """
+        """Import some tokens"""
 
         file_content = (
             """<Tokens>

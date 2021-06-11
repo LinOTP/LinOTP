@@ -257,7 +257,8 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.error("[check] validate/check failed: %r", exx)
-            # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
+            # If an internal error occurs or the SMS gateway did not send the
+            # SMS, we write this to the detail info.
             g.audit["info"] = "%r" % exx
             db.session.rollback()
             return sendResult(response, False, 0)
@@ -368,7 +369,7 @@ class ValidateController(BaseController):
             except AuthorizeException as exx:
                 log.warning(
                     "[check_yubikey] authorization failed for validate/check_yubikey: %r",
-                    exx
+                    exx,
                 )
                 g.audit["success"] = False
                 g.audit["info"] = str(exx)
@@ -395,7 +396,7 @@ class ValidateController(BaseController):
             except AuthorizeException as acc:
                 log.warning(
                     "[check_url] authorization failed for validate/check_url: %r",
-                    acc
+                    acc,
                 )
                 g.audit["success"] = False
                 g.audit["action_detail"] = str(acc)
@@ -450,7 +451,7 @@ class ValidateController(BaseController):
                 allowSAML = False
                 try:
                     allowSAML = getFromConfig("allowSamlAttributes")
-                except:
+                except BaseException:
                     log.warning(
                         "[samlcheck] Calling controller samlcheck. But allowSamlAttributes is False."
                     )
@@ -461,7 +462,8 @@ class ValidateController(BaseController):
                     userInfo = getUserInfo(uid, resId, resIdC)
                     log.debug(
                         "[samlcheck] getting attributes for: %s@%s",
-                        user.login, user.realm
+                        user.login,
+                        user.realm,
                     )
 
                     res = userInfo
@@ -846,7 +848,7 @@ class ValidateController(BaseController):
             (ret, opt) = self._check(param)
 
             # here we build some backward compatibility
-            if type(opt) is dict:
+            if isinstance(opt, dict):
                 state = opt.get("state", "") or ""
                 message = opt.get("message", "") or "No sms message defined!"
 

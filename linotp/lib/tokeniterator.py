@@ -57,7 +57,7 @@ def _compile_regex(search_text):
     """
 
     searcH_regex = re.compile(
-        "^%s$" % search_text.replace(".", "\.").replace("*", ".*")
+        "^%s$" % search_text.replace(".", r"\.").replace("*", ".*")
     )
 
     return searcH_regex
@@ -309,7 +309,8 @@ class TokenIterator(object):
         if len(valid_realms) > 0:
             log.debug(
                 "[TokenIterator::init] adding filter condition"
-                " for realm %r", valid_realms
+                " for realm %r",
+                valid_realms,
             )
 
             # get all matching realms
@@ -537,7 +538,7 @@ class TokenIterator(object):
 
             log.debug(
                 "[TokenIterator] DB-Query returned # of objects: %r",
-                self.tokens
+                self.tokens,
             )
             self.pagesize = self.tokens
             self.it = iter(self.toks)
@@ -548,12 +549,12 @@ class TokenIterator(object):
                 pagesize = int(getFromConfig("pagesize", 50))
             else:
                 pagesize = int(psize)
-        except:
+        except BaseException:
             pagesize = 20
 
         try:
             thePage = int(page) - 1
-        except:
+        except BaseException:
             thePage = 0
         if thePage < 0:
             thePage = 0
@@ -565,7 +566,7 @@ class TokenIterator(object):
         self.tokens = self.toks.count()
         log.debug(
             "[TokenIterator::init] DB-Query returned # of objects: %r",
-            self.tokens
+            self.tokens,
         )
         self.page = thePage + 1
         fpages = float(self.tokens) / float(pagesize)

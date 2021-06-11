@@ -230,7 +230,8 @@ class ManageController(BaseController):
                 except Exception as exx:
                     log.debug(
                         "[index] no config info for token type %s  (%r)",
-                        conf, exx
+                        conf,
+                        exx,
                     )
 
                 if (
@@ -259,7 +260,8 @@ class ManageController(BaseController):
                 except Exception as e:
                     log.debug(
                         "[index] no enrollment info for token type %s  (%r)",
-                        conf, e
+                        conf,
+                        e,
                     )
 
                 if (
@@ -427,18 +429,23 @@ class ManageController(BaseController):
             if not pol["active"]:
                 filterRealm = ["*"]
 
-            # check if we only want to see ONE realm or see all realms we are allowerd to see.
+            # check if we only want to see ONE realm or see all realms we are
+            # allowerd to see.
             if filter_realm:
                 if filter_realm in filterRealm or "*" in filterRealm:
                     filterRealm = [filter_realm]
 
             log.debug(
                 "[tokenview_flexi] admin >%s< may display the following realms: %s",
-                pol["admin"], pol["realms"]
+                pol["admin"],
+                pol["realms"],
             )
             log.debug(
                 "[tokenview_flexi] page: %s, filter: %s, sort: %s, dir: %s",
-                c.page, c.filter, c.sort, c.dir
+                c.page,
+                c.filter,
+                c.sort,
+                c.dir,
             )
 
             if c.page is None:
@@ -449,7 +456,10 @@ class ManageController(BaseController):
             log.debug(
                 "[tokenview_flexi] calling TokenIterator for user=%s@%s, "
                 "filter=%s, filterRealm=%s",
-                user.login, user.realm, filter_all, filterRealm
+                user.login,
+                user.realm,
+                filter_all,
+                filterRealm,
             )
             c.tokenArray = TokenIterator(
                 user,
@@ -543,7 +553,10 @@ class ManageController(BaseController):
 
             log.debug(
                 "[userview_flexi] page: %s, filter: %s, sort: %s, dir: %s",
-                c.page, c.filter, c.sort, c.dir
+                c.page,
+                c.filter,
+                c.sort,
+                c.dir,
             )
 
             if c.page is None:
@@ -660,7 +673,9 @@ class ManageController(BaseController):
 
             log.info(
                 "[tokeninfo] admin >%s< may display the following realms:"
-                " %s", res["admin"], filterRealm
+                " %s",
+                res["admin"],
+                filterRealm,
             )
             log.info("[tokeninfo] displaying tokens: serial: %s", serial)
 
@@ -684,7 +699,7 @@ class ManageController(BaseController):
                         c.tokeninfo["LinOtp.TokenInfo"] = json.loads(
                             c.tokeninfo["LinOtp.TokenInfo"]
                         )
-                    except:
+                    except BaseException:
                         pass
 
             return render("/manage/tokeninfo.mako").decode("utf-8")
@@ -813,7 +828,9 @@ def _getTokenTypeConfig(section="config"):
             except CompileException as cex:
                 log.error(
                     "[_getTokenTypeConfig] compile error while "
-                    "processing %r.%r:", tok, section
+                    "processing %r.%r:",
+                    tok,
+                    section,
                 )
                 raise Exception(cex)
 

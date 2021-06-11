@@ -41,7 +41,7 @@ class DurationTestCase(unittest.TestCase):
     """
 
     def test_ISO8601_duration(self):
-        """ test: parse ISO8601 time delta format """
+        """test: parse ISO8601 time delta format"""
 
         test_vector = {
             "PT45S": 45.0,
@@ -71,7 +71,7 @@ class DurationTestCase(unittest.TestCase):
             assert seconds == timedelta.total_seconds()
 
     def test_duration(self):
-        """ test: parse human time delta format """
+        """test: parse human time delta format"""
 
         test_vector = {
             "24h 3s": 86403.0,
@@ -83,7 +83,7 @@ class DurationTestCase(unittest.TestCase):
             assert seconds == timedelta.total_seconds()
 
     def test_bad_duration(self):
-        """ test: limits of human time delta format """
+        """test: limits of human time delta format"""
 
         test_vector = {
             "24h 3m 4m 3s": 0,

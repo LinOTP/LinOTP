@@ -56,7 +56,7 @@ class Validate:
         # concatenated as string.
         try:
             r = requests.get(url, params, auth=self.auth, verify=False)
-        except:
+        except BaseException:
             # We need to concatenate parameter names (key)
             # and values to a valid url parameter string.
             # e.g.

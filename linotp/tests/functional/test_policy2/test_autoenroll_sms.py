@@ -84,7 +84,7 @@ class TestAutoassignSMSController(TestController):
         REQUEST_BODY = ""
 
     def define_sms_provider(self):
-        """ define the default sms provider """
+        """define the default sms provider"""
 
         sms_url = "http://myfake.com/"
 
@@ -197,7 +197,7 @@ class TestAutoassignSMSController(TestController):
 
     @patch("requests.Session.post", mocked_http_request)
     def test_validate_sms_token_wo_owner(self):
-        """ check what happens if the token has no user assigned """
+        """check what happens if the token has no user assigned"""
 
         self.define_sms_provider()
 
@@ -242,7 +242,7 @@ class TestAutoassignSMSController(TestController):
 
     @patch("requests.Session.post", mocked_http_request)
     def test_autoassigne_sms_token(self):
-        """ check what happens if the token has no user assigned """
+        """check what happens if the token has no user assigned"""
 
         self.define_sms_provider()
 

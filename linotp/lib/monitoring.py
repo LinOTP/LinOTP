@@ -120,7 +120,7 @@ class MonitorHandler(object):
             user_query = db.session.query(TokenRealm, Realm, Token)
             user_query = user_query.filter(r_condition)
             user_query = user_query.filter(Token.LinOtpUserid != "")
-            user_query = user_query.filter(Token.LinOtpIsactive == True)
+            user_query = user_query.filter(Token.LinOtpIsactive)
             user_query = user_query.distinct(
                 Token.LinOtpUserid, Token.LinOtpIdResClass
             )
@@ -143,7 +143,7 @@ class MonitorHandler(object):
                 else:
                     conditions += (and_(Token.LinOtpUserid == ""),)
                 if "active" in stati:
-                    conditions += (and_(Token.LinOtpIsactive == True),)
+                    conditions += (and_(Token.LinOtpIsactive),)
                 else:
                     conditions += (and_(Token.LinOtpIsactive == False),)
             else:
@@ -154,7 +154,7 @@ class MonitorHandler(object):
                 elif "unassigned" == stat:
                     conditions += (and_(Token.LinOtpUserid == ""),)
                 elif "active" == stat:
-                    conditions += (and_(Token.LinOtpIsactive == True),)
+                    conditions += (and_(Token.LinOtpIsactive),)
                 elif "inactive" == stat:
                     conditions += (and_(Token.LinOtpIsactive == False),)
 

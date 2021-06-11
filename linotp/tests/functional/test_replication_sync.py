@@ -138,7 +138,7 @@ class TestReplication(TestController):
         return
 
     def tearDown(self):
-        """ Overwrite parent tear down, which removes all realms """
+        """Overwrite parent tear down, which removes all realms"""
         return
 
     def addData(self, key, value, description):

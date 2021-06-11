@@ -54,7 +54,7 @@ class UserserviceOcra2TokenTest(TestController):
         TestController.tearDown(self)
 
     def test_enroll_ocra2(self):
-        """ verify userservice enrollment and activation of an ocra2 token """
+        """verify userservice enrollment and activation of an ocra2 token"""
 
         auth_user = {
             "login": "passthru_user1@myDefRealm",

@@ -157,7 +157,7 @@ class TestAdminController(TestController):
         self.delete_all_token()
 
     def test_show(self):
-        """ test the admin show interface for json and csv response """
+        """test the admin show interface for json and csv response"""
 
         self.createToken()
 
@@ -408,7 +408,7 @@ class TestAdminController(TestController):
         response = self.make_admin_request("assign", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"], response
 
         response = self.make_admin_request("show")
         # log.error("response %s\n",response)
@@ -689,7 +689,8 @@ class TestAdminController(TestController):
         ttype = data.get("LinOtp.TokenType", "")
         assert ttype == "pw", response
 
-        # finally, check if old spass is blocked and new one works without previous pin
+        # finally, check if old spass is blocked and new one works without
+        # previous pin
         response = self.make_validate_request(
             "check_s", params={"serial": token_name, "pass": spass_pin}
         )

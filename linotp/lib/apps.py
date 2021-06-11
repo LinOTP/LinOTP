@@ -173,7 +173,8 @@ def google_authenticator_url(label, param):
     if len(label) > allowed_label_length:
         log.debug(
             "[create_google_authenticator_url] we got %d characters"
-            " left for the token label", allowed_label_length
+            " left for the token label",
+            allowed_label_length,
         )
 
     label = label[0:allowed_label_length]

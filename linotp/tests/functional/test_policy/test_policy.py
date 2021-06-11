@@ -57,7 +57,7 @@ class TestPolicies(TestPoliciesBase):
         TestPoliciesBase.setUp(self)
 
     def tearDown(self):
-        """ Overwrite parent tear down, which removes all realms """
+        """Overwrite parent tear down, which removes all realms"""
 
     # define fixtures
 

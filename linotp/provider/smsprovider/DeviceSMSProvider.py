@@ -73,7 +73,8 @@ class DeviceSMSProvider(ISMSProvider):
             return False
 
         # NOTE 1: The LinOTP service account need rw-access to /dev/ttyXXX
-        # NOTE 2: we need gnokii 0.6.29 or higher, since 0.6.28 will crash with a bug
+        # NOTE 2: we need gnokii 0.6.29 or higher, since 0.6.28 will crash with
+        # a bug
         args = [
             "gnokii",
             "--config",
@@ -104,7 +105,7 @@ class DeviceSMSProvider(ISMSProvider):
         log.error("[submitMessage] output: %s", smsout)
         log.error(
             "[submitMessage] SMS sending failed, return code: %s",
-            proc.returncode
+            proc.returncode,
         )
 
         return False

@@ -186,7 +186,7 @@ class TestHotpController(TestController):
     """
 
     def setUp(self):
-        """ test setup - we require an default realm with an user """
+        """test setup - we require an default realm with an user"""
 
         TestController.setUp(self)
 

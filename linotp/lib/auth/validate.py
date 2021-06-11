@@ -133,7 +133,7 @@ def check_pin(token, passw, user=None, options=None):
         if hashed_passw in options["pin_match"]:
             log.debug(
                 "check if password already checked! %r ",
-                options["pin_match"][hashed_passw]
+                options["pin_match"][hashed_passw],
             )
             return options["pin_match"][hashed_passw]
 
@@ -614,7 +614,8 @@ class ValidationHandler(object):
             if get_auth_passthru(user):
                 log.debug(
                     "user %r has no token. Checking for passthru in realm %r",
-                    user.login, user.realm
+                    user.login,
+                    user.realm,
                 )
                 y = getResolverObject(resolverClass)
                 g.audit["action_detail"] = "Authenticated against Resolver"
@@ -633,7 +634,8 @@ class ValidationHandler(object):
                 ] = "Authenticated by passOnNoToken policy"
                 return (True, opt)
 
-            # if we have an user, check if we forward the request to another server
+            # if we have an user, check if we forward the request to another
+            # server
             elif get_auth_forward_on_no_token(user) is True:
                 servers = get_auth_forward(user)
                 if servers:
@@ -745,7 +747,8 @@ class ValidationHandler(object):
             if typ.lower() not in tokenclass_registry:
                 log.error(
                     "token typ %r not found in tokenclasses: %r",
-                    typ, list(tokenclass_registry.keys())
+                    typ,
+                    list(tokenclass_registry.keys()),
                 )
                 audit_entry["action_detail"] = "Unknown Token type"
                 continue
@@ -941,7 +944,7 @@ class ValidationHandler(object):
 
         log.debug(
             "Number of valid tokens found " "(validTokenNum): %d",
-            len(valid_tokens)
+            len(valid_tokens),
         )
 
         return (res, reply)

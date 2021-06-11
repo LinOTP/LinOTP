@@ -135,7 +135,7 @@ class TestAutoassignSMSController(TestController):
         assert "false" not in response, response
 
     def define_sms_provider(self):
-        """ define the default sms provider """
+        """define the default sms provider"""
 
         sms_url = "http://myfake.com/"
 

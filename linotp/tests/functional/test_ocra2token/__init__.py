@@ -70,7 +70,7 @@ class OcraOtp:
         self.counter = 0
 
     def init_1(self, response):
-        """ take the response of the first init to setup the OcraOtp"""
+        """take the response of the first init to setup the OcraOtp"""
 
         jresp = json.loads(response.body)
         assert "detail" in jresp, response.body

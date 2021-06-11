@@ -40,14 +40,14 @@ class EncryptedData(str):
     """
 
     def __init__(self, encrypted_str):
-        """ constructor """
+        """constructor"""
         self._encrypted_str = encrypted_str
 
     def __new__(cls, encrypted_str):
         return str.__new__(cls, encrypted_str)
 
     def get_unencrypted(self) -> str:
-        """ return the decrypted data """
+        """return the decrypted data"""
         return decryptPassword(self._encrypted_str).decode("utf-8")
 
     @staticmethod
@@ -69,5 +69,5 @@ class EncryptedData(str):
         return self._encrypted_str
 
     def __repr__(self):
-        """ for log entries and exceptions the repr representation is used """
+        """for log entries and exceptions the repr representation is used"""
         return "XXXXXX"

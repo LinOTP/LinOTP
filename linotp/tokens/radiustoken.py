@@ -241,7 +241,10 @@ class RadiusTokenClass(RemoteTokenClass):
         # here we also need to check for radius.user
         log.debug(
             "[do_request] checking OTP len:%r on radius server: %s,"
-            "  user: %s", len(anOtpVal), radiusServer, radiusUser
+            "  user: %s",
+            len(anOtpVal),
+            radiusServer,
+            radiusUser,
         )
 
         try:
@@ -261,13 +264,17 @@ class RadiusTokenClass(RemoteTokenClass):
                 r_authport = int(server[1])
             log.debug(
                 "[do_request] [RadiusToken] NAS Identifier: %r, "
-                "Dictionary: %r", nas_identifier, r_dict
+                "Dictionary: %r",
+                nas_identifier,
+                r_dict,
             )
 
             log.debug(
                 "[do_request] [RadiusToken] constructing client object "
                 "with server: %r, port: %r, secret: %r",
-                r_server, r_authport, radiusSecret
+                r_server,
+                r_authport,
+                radiusSecret,
             )
 
             srv = Client(
@@ -309,14 +316,18 @@ class RadiusTokenClass(RemoteTokenClass):
             elif response.code == pyrad.packet.AccessAccept:
                 log.info(
                     "[do_request] [RadiusToken] Radiusserver %s granted "
-                    "access to user %s.", r_server, radiusUser
+                    "access to user %s.",
+                    r_server,
+                    radiusUser,
                 )
                 otp_count = 0
                 res = True
             else:
                 log.warning(
                     "[do_request] [RadiusToken] Radiusserver %s"
-                    "rejected access to user %s.", r_server, radiusUser
+                    "rejected access to user %s.",
+                    r_server,
+                    radiusUser,
                 )
                 res = False
 

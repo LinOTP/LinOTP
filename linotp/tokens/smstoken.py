@@ -492,7 +492,8 @@ class SmsTokenClass(HmacTokenClass):
         # it is configurable, if sms should be triggered by a valid pin
         send_by_PIN = getFromConfig("sms.sendByPin") or True
 
-        # if the token is not active or there is no pin triggered sending, we leave
+        # if the token is not active or there is no pin triggered sending, we
+        # leave
         if not (self.isActive() is True and send_by_PIN is True):
             return res, result
 

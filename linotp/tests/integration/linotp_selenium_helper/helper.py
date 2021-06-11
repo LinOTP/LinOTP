@@ -118,7 +118,7 @@ def find_by_xpath(driver, xpath):
 
 
 def fill_form_element(driver, element_id, data):
-    """ Clear element and fill with values """
+    """Clear element and fill with values"""
     e = find_by_id(driver, element_id)
     e.clear()
     e.send_keys(data)

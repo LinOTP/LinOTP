@@ -262,7 +262,7 @@ class TestChallengePrompt(TestController):
 
         body = json.loads(response.body)
         state = body.get("detail", {}).get("transactionid", None)
-        assert state != None, response
+        assert state is not None, response
 
         # --------------------------------------------------------------- --
 

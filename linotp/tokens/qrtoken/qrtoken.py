@@ -112,7 +112,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def get_enrollment_status(self):
-        """ provide token enrollment status"""
+        """provide token enrollment status"""
 
         is_completely_finished = self.current_state == "pairing_complete"
 
@@ -914,7 +914,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                     # pylons silently converts all ints in json
                     # to unicode :(
                     content_type = int(content_type_as_str)
-                except:
+                except BaseException:
                     raise ValueError(
                         "Unrecognized content type: %s" % content_type_as_str
                     )
@@ -997,7 +997,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     @property
     def server_hmac_secret(self):
-        """ the server hmac secret for this specific token """
+        """the server hmac secret for this specific token"""
 
         partition = self.getFromTokenInfo("partition")
 

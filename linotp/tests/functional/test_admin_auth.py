@@ -100,7 +100,7 @@ class TestAdminAuthController(TestController):
 
         return
 
-    ###############################################################################
+    ##########################################################################
     def test_admin_show(self):
         """
         Admin Authorization: The admin is verified to be part of an resolver definition

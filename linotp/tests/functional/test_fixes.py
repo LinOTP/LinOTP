@@ -50,7 +50,7 @@ def test_ticket_425(adminclient):
     """
 
     class DoRequest(threading.Thread):
-        """ the request thread"""
+        """the request thread"""
 
         def __init__(self, client, rid=1, params=None):
             """
@@ -70,7 +70,7 @@ def test_ticket_425(adminclient):
             self.response = None
 
         def run(self):
-            """ start the thread"""
+            """start the thread"""
             response = self.client.post("/system/setConfig", json=self.params)
             self.response = response.body
             return
@@ -137,14 +137,14 @@ class TestFixesController(TestController):
     """
 
     def setUp(self):
-        """ setup the Test Controller"""
+        """setup the Test Controller"""
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
         self.serials = []
 
     def tearDown(self):
-        """ make the dishes"""
+        """make the dishes"""
 
         for kid in range(200):
             key = "key_%d" % (kid)

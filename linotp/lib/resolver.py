@@ -55,7 +55,7 @@ from linotp.lib.crypto.encrypted_data import EncryptedData
 
 
 def parse_resolver(composite_key, value):
-    """ Parses resolver data from a config entry """
+    """Parses resolver data from a config entry"""
 
     attr_updates = {}
 
@@ -114,7 +114,7 @@ __all__ = [
 
 # for the the resolver name check we use a reqular expression
 
-resolver_name_pattern = re.compile("^[a-zA-Z0-9_\-]{4,}$")
+resolver_name_pattern = re.compile(r"^[a-zA-Z0-9_\-]{4,}$")
 
 
 log = logging.getLogger(__name__)
@@ -504,7 +504,8 @@ def deleteResolver(resolvername):
         except Exception as exx:
             log.error(
                 "Deleting resolver %s failed. Exception was %r",
-                resolvername, exx
+                resolvername,
+                exx,
             )
             res = False
 
@@ -820,8 +821,8 @@ def initResolvers():
 
     except Exception as exx:
         log.error(
-            "Failed to initialize resolver for context. "
-            "Exception was %r", exx
+            "Failed to initialize resolver for context. " "Exception was %r",
+            exx,
         )
     return context
 
@@ -836,10 +837,7 @@ def closeResolvers():
             if hasattr(resolver, "close"):
                 resolver.close()
     except Exception as exx:
-        log.error(
-            "Failed to close resolver in context. "
-            "Error was %r", exx
-        )
+        log.error("Failed to close resolver in context. " "Error was %r", exx)
     return
 
 

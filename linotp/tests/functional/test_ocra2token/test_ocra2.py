@@ -385,7 +385,7 @@ class OcraTest(TestController):
         return response
 
     def check_otp(self, transid, otp, pin="pin", params=None):
-        """ -3.a- verify the otp value to finish the rollout """
+        """-3.a- verify the otp value to finish the rollout"""
         parameters = {}
         if params:
             parameters.update(params)
@@ -542,7 +542,7 @@ class OcraTest(TestController):
         return
 
     def randOTP(self, otp):
-        """ randomly change the chars in an otp - to gen a wrong otp """
+        """randomly change the chars in an otp - to gen a wrong otp"""
         rotp = otp
         text = list(otp)
 
@@ -567,7 +567,7 @@ class OcraTest(TestController):
         realm=None,
         params=None,
     ):
-        """ -1- create an ocra token """
+        """-1- create an ocra token"""
 
         parameters = {}
         if params:

@@ -66,7 +66,7 @@ class TestSQLResolver_Password(object):
         assert not res
 
     def test_bcrypt_password(self):
-        """ check the bcrypt password verification method """
+        """check the bcrypt password verification method"""
 
         password = "password"
         password_hash = (
@@ -101,7 +101,7 @@ class TestSQLResolver_Password(object):
         assert "bcrypt: no backends available" in str(excinfo.value)
 
     def test_php_passwords(self):
-        """ check the php password verification method """
+        """check the php password verification method"""
 
         password = "password"
         password_hash = "$P$8ohUJ.1sdFw09/bMaAQPTGDNi2BIUt1"

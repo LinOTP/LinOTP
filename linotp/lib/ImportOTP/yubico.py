@@ -157,7 +157,8 @@ def parseYubicoCSV(csv):
                 else:
                     log.warning(
                         "[parseYubicoCSV] at the moment we do only"
-                        " support Yubico OTP and HOTP: %r", line
+                        " support Yubico OTP and HOTP: %r",
+                        line,
                     )
                     continue
             elif first_column.isdigit():
@@ -198,7 +199,7 @@ def parseYubicoCSV(csv):
         else:
             log.warning(
                 "[parseYubicoCSV] the line %r did not contain a enough values",
-                line
+                line,
             )
             continue
 

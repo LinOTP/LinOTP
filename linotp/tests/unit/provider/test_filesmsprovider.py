@@ -34,7 +34,7 @@ from linotp.provider.smsprovider.FileSMSProvider import FileSMSProvider
 
 class TestSMS(TestCase):
     def test_filesms_provider(self):
-        """ test the file writing """
+        """test the file writing"""
 
         # ------------------------------------------------------------------ --
 

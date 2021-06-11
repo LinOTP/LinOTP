@@ -88,7 +88,7 @@ policies = {
 
 
 class TestGetClientPolicy(unittest.TestCase):
-    """Policy evaluation test. """
+    """Policy evaluation test."""
 
     def test_multiple_matches(self):
         """test for most precise result over multiple matches.

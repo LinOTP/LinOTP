@@ -265,7 +265,7 @@ class TestEMailTemplate(TestCase):
 
     @patch("linotp.provider.emailprovider.request_context", new=mocked_context)
     def test_load_file_template(self):
-        """ test secure template file loding - not allowed below the templ root"""
+        """test secure template file loding - not allowed below the templ root"""
 
         email_from = "me@home.org"
         email_to = "you@home.org"

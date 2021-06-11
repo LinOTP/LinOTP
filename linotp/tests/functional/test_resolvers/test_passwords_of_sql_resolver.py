@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
 @pytest.mark.exclude_sqlite
 class SQLResolverPasswordTest(SQLTestController):
     def setUp(self):
-        """ create an sql user table some users and the sql resolver """
+        """create an sql user table some users and the sql resolver"""
 
         SQLTestController.setUp(self)
         self.setUpSQL()
@@ -52,7 +52,7 @@ class SQLResolverPasswordTest(SQLTestController):
         return
 
     def tearDown(self):
-        """ drop the users and the user table """
+        """drop the users and the user table"""
 
         self.dropUsers()
         self.delete_all_token()

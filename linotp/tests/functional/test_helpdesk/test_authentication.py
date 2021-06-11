@@ -43,14 +43,14 @@ from linotp.tests import TestController
 )
 class TestHelpdeskAuthorization(TestController):
     def setUp(self):
-        """ setup for std resolver / realms"""
+        """setup for std resolver / realms"""
 
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        """ clean up for all token and resolver / realms """
+        """clean up for all token and resolver / realms"""
 
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -60,7 +60,7 @@ class TestHelpdeskAuthorization(TestController):
         TestController.tearDown(self)
 
     def test_authorisation(self):
-        """ connect to the helpdesk contoller """
+        """connect to the helpdesk contoller"""
 
         response = self.make_helpdesk_request("getsession")
         assert "false" not in response

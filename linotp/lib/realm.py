@@ -54,12 +54,12 @@ log = logging.getLogger(__name__)
 
 
 def parse_realm(composite_key, value):
-    """ Parses realm data from a config entry """
+    """Parses realm data from a config entry"""
 
     if not composite_key.startswith("linotp.useridresolver.group."):
         raise ConfigNotRecognized(composite_key)
 
-    object_id = composite_key[len("linotp.useridresolver.group."):]
+    object_id = composite_key[len("linotp.useridresolver.group.") :]
 
     return object_id, {"resolvers": value}
 
@@ -501,7 +501,7 @@ def deleteRealm(realmname):
     log.debug("deleting realm object with name=%s", realmname)
     r = getRealmObject(name=realmname)
     if r is None:
-        """ if no realm is found, we re-try the lowercase name for backward compatibility """
+        """if no realm is found, we re-try the lowercase name for backward compatibility"""
         r = getRealmObject(name=realmname.lower())
     realmId = 0
     if r is not None:

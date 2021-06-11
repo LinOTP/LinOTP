@@ -215,7 +215,7 @@ def get_auth_user(request):
 
 
 def unauthorized(response_proxy, exception, status=401):
-    """ extend the standard sendResult to handle cookies """
+    """extend the standard sendResult to handle cookies"""
 
     response = sendError(_response=None, exception=exception)
 
@@ -236,7 +236,7 @@ def unauthorized(response_proxy, exception, status=401):
 
 
 def sendResult(response_proxy, obj, id=1, opt=None, status=True):
-    """ extend the standard sendResult to handle cookies """
+    """extend the standard sendResult to handle cookies"""
 
     response = sendResponse(
         response=None, obj=obj, id=id, opt=opt, status=status
@@ -410,7 +410,8 @@ class UserserviceController(BaseController):
 
                 log.debug(
                     "[__after__] authenticating as %s in realm %s!",
-                    g.audit["user"], g.audit["realm"]
+                    g.audit["user"],
+                    g.audit["realm"],
                 )
 
                 if "serial" in request.params:
@@ -509,7 +510,7 @@ class UserserviceController(BaseController):
 
         return None
 
-    ###############################################################################
+    ##########################################################################
     # authentication hooks
 
     def auth(self):
@@ -1254,7 +1255,7 @@ class UserserviceController(BaseController):
         finally:
             log.debug("done")
 
-    ###############################################################################
+    ##########################################################################
     # context setup functions
     def pre_context(self):
         """
@@ -1289,7 +1290,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, e)
 
-    # action hooks for the js methods #############################################
+    # action hooks for the js methods ########################################
 
     def enable(self):
         """
@@ -1323,7 +1324,9 @@ class UserserviceController(BaseController):
                 log.info(
                     "[userenable] user %s@%s is enabling his token with "
                     "serial %s.",
-                    self.authUser.login, self.authUser.realm, serial
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
                 )
                 ret = th.enableToken(True, None, serial)
                 res["enable token"] = ret
@@ -1377,7 +1380,9 @@ class UserserviceController(BaseController):
             if th.isTokenOwner(serial, self.authUser):
                 log.info(
                     "user %s@%s is disabling his token with serial %s.",
-                    self.authUser.login, self.authUser.realm, serial
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
                 )
                 ret = th.enableToken(False, None, serial)
                 res["disable token"] = ret
@@ -1421,7 +1426,9 @@ class UserserviceController(BaseController):
                 log.info(
                     "[userdelete] user %s@%s is deleting his token with "
                     "serial %s.",
-                    self.authUser.login, self.authUser.realm, serial
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
                 )
                 ret = th.removeToken(serial=serial)
                 res["delete token"] = ret
@@ -1440,7 +1447,8 @@ class UserserviceController(BaseController):
         except Exception as e:
             log.error(
                 "[userdelete] deleting token %s of user %s failed!",
-                serial, c.user
+                serial,
+                c.user,
             )
             db.session.rollback()
             return sendError(response, e, 1)
@@ -1465,7 +1473,9 @@ class UserserviceController(BaseController):
                 log.info(
                     "[userreset] user %s@%s is resetting the failcounter"
                     " of his token with serial %s",
-                    self.authUser.login, self.authUser.realm, serial
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
                 )
                 ret = resetToken(serial=serial)
                 res["reset Failcounter"] = ret
@@ -1509,7 +1519,9 @@ class UserserviceController(BaseController):
             if True == th.isTokenOwner(serial, self.authUser):
                 log.info(
                     "user %s@%s is unassigning his token with serial %s.",
-                    self.authUser.login, self.authUser.realm, serial
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
                 )
 
                 ret = th.unassignToken(serial, None, upin)
@@ -1556,7 +1568,9 @@ class UserserviceController(BaseController):
                 log.info(
                     "user %s@%s is setting the OTP PIN "
                     "for token with serial %s",
-                    self.authUser.login, self.authUser.realm, serial
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
                 )
 
                 check_res = checkOTPPINPolicy(userPin, self.authUser)
@@ -1565,7 +1579,9 @@ class UserserviceController(BaseController):
                     log.warning(
                         "Setting of OTP PIN for Token %s"
                         " by user %s failed: %s",
-                        serial, self.authUser.login, check_res["error"]
+                        serial,
+                        self.authUser.login,
+                        check_res["error"],
                     )
 
                     return sendError(
@@ -1613,7 +1629,9 @@ class UserserviceController(BaseController):
                 log.info(
                     "user %s@%s is setting the mOTP PIN"
                     " for token with serial %s",
-                    self.authUser.login, self.authUser.realm, serial
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
                 )
                 ret = setPinUser(pin, serial)
                 res["set userpin"] = ret
@@ -1658,7 +1676,9 @@ class UserserviceController(BaseController):
             if True == th.isTokenOwner(serial, self.authUser):
                 log.info(
                     "user %s@%s is resyncing his " "token with serial %s",
-                    self.authUser.login, self.authUser.realm, serial
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
                 )
                 ret = th.resyncToken(otp1, otp2, None, serial)
                 res["resync Token"] = ret
@@ -1985,7 +2005,9 @@ class UserserviceController(BaseController):
 
             log.info(
                 "user %s@%s is assign the token with " "serial %s to himself.",
-                self.authUser.login, self.authUser.realm, serial
+                self.authUser.login,
+                self.authUser.realm,
+                serial,
             )
 
             ret_assign = th.assignToken(serial, self.authUser, upin)
@@ -2184,14 +2206,20 @@ class UserserviceController(BaseController):
             log.info(
                 "[userinit] initialize a token with serial %s "
                 "and type %s by user %s@%s",
-                serial, tok_type, self.authUser.login, self.authUser.realm
+                serial,
+                tok_type,
+                self.authUser.login,
+                self.authUser.realm,
             )
 
             log.debug(
                 "[userinit] Initializing the token serial: %s,"
                 " desc: %s, otppin: %s for user %s @ %s.",
-                serial, desc, otppin,
-                self.authUser.login, self.authUser.realm
+                serial,
+                desc,
+                otppin,
+                self.authUser.login,
+                self.authUser.realm,
             )
             log.debug(param)
 
@@ -2338,8 +2366,10 @@ class UserserviceController(BaseController):
                 log.debug(
                     "[userwebprovision] Initializing the token serial:"
                     " %s, desc: %s for user %s @ %s.",
-                    serial, description,
-                    self.authUser.login, self.authUser.realm
+                    serial,
+                    description,
+                    self.authUser.login,
+                    self.authUser.realm,
                 )
 
                 (ret1, _tokenObj) = th.initToken(
@@ -2397,8 +2427,10 @@ class UserserviceController(BaseController):
                 log.debug(
                     "Initializing the token serial: "
                     "%s, description: %s for user %s @ %s.",
-                    serial, description,
-                    self.authUser.login, self.authUser.realm
+                    serial,
+                    description,
+                    self.authUser.login,
+                    self.authUser.realm,
                 )
 
                 (ret1, _tokenObj) = th.initToken(
@@ -2886,7 +2918,10 @@ class UserserviceController(BaseController):
         except Exception as exx:
             log.error(
                 "[token_call] calling method %s.%s of user %s failed! %r",
-                typ, method, c.user, exx
+                typ,
+                method,
+                c.user,
+                exx,
             )
             db.session.rollback()
             return sendError(response, exx, 1)

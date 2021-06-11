@@ -35,7 +35,7 @@ from linotp.lib.user import User
 class TestUserClass(unittest.TestCase):
     @patch("linotp.lib.user.User.getUserInfo")
     def test_simple_esisting_user_class_comparisson(self, mock_getUserInfo):
-        """ test for user object comparison with existing users"""
+        """test for user object comparison with existing users"""
 
         mock_getUserInfo.return_value = {"userid": "12"}
 
@@ -55,7 +55,7 @@ class TestUserClass(unittest.TestCase):
             assert u1 != u3
 
     def test_simple_user_class_comparisson(self):
-        """ test that no sensitive data got logged """
+        """test that no sensitive data got logged"""
 
         u1 = User()
         u2 = User()
@@ -70,7 +70,7 @@ class TestUserClass(unittest.TestCase):
         assert u1 != u3
 
     def test_realm_user_class_comparisson(self):
-        """ test that no sensitive data got logged """
+        """test that no sensitive data got logged"""
 
         u1 = User(login="emil", realm="heydo")
         u2 = User(login="emil", realm="heydo")
@@ -85,7 +85,7 @@ class TestUserClass(unittest.TestCase):
         assert u1 != u3
 
     def test_user_nonzero(self):
-        """ test that no sensitive data got logged """
+        """test that no sensitive data got logged"""
 
         # check that u1 is zero: either None or empty
 

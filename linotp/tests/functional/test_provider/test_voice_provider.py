@@ -248,7 +248,7 @@ class TestVoiceProviderController(TestController):
             calleeNumber, messageTemplate, otp, locale
         )
 
-        assert status == True
+        assert status
         assert VALID_REQUEST in response
 
         request_json = json.loads(response)

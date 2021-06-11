@@ -404,7 +404,7 @@ class TestForwardToken(TestController):
         response = self.make_validate_request("check", params=params)
 
         jresp = json.loads(response.body)
-        assert jresp["result"]["value"] == True
+        assert jresp["result"]["value"]
 
 
 # eof #########################################################################

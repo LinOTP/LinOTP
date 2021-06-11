@@ -44,7 +44,7 @@ def simple_slice(text, chunk_size):
         yield text
 
     for pos in range(0, len(text), chunk_size):
-        yield text[pos: pos + chunk_size]
+        yield text[pos : pos + chunk_size]
 
 
 def utf8_slice(text, chunk_size):

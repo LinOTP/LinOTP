@@ -293,7 +293,8 @@ class TimeHmacTokenClass(HmacTokenClass):
         if self.hKeyRequired is True:
             genkey = int(param.get("genkey", 0))
             if 1 == genkey:
-                # if hashlibStr not in keylen dict, this will raise an Exception
+                # if hashlibStr not in keylen dict, this will raise an
+                # Exception
                 otpKey = generate_otpkey(keylen.get(self.hashlibStr))
                 del param["genkey"]
             else:
@@ -365,7 +366,9 @@ class TimeHmacTokenClass(HmacTokenClass):
             log.warning(
                 "[check_otp_exist] a value error occurred while "
                 "converting: counter %r : ValueError: %r ret: %r ",
-                self.token.LinOtpCount, ex, res
+                self.token.LinOtpCount,
+                ex,
+                res,
             )
             return res
 
@@ -386,9 +389,9 @@ class TimeHmacTokenClass(HmacTokenClass):
         """
 
         dt = datetime.datetime.now()
-        if type(curTime) == datetime.datetime:
+        if isinstance(curTime, datetime.datetime):
             dt = curTime
-        elif type(curTime) == str:
+        elif isinstance(curTime, str):
             if "." in curTime:
                 tFormat = "%Y-%m-%d %H:%M:%S.%f"
             else:
@@ -696,12 +699,14 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         try:
             window = int(self.token.LinOtpSyncWindow) * timeStepping
-        except:
+        except BaseException:
             window = 10 * timeStepping
 
         log.debug(
             "[resync] timestep: %r, syncWindow: %r, timeShift: %r",
-            timeStepping, window, shift
+            timeStepping,
+            window,
+            shift,
         )
 
         T0 = time.time() + shift
@@ -716,7 +721,8 @@ class TimeHmacTokenClass(HmacTokenClass):
         log.debug("[resync] tokenCounter: %r", oCount)
         log.debug(
             "[resync] now checking window %s, timeStepping %s",
-            window, timeStepping
+            window,
+            timeStepping,
         )
         # check 2nd value
         hmac2Otp = HmacOtp(
@@ -741,18 +747,23 @@ class TimeHmacTokenClass(HmacTokenClass):
             # A previous OTP value was used again!
             log.warning(
                 "[resync] a previous OTP value was used again! "
-                "tokencounter: %i, presented counter %i", oCount, res1
+                "tokencounter: %i, presented counter %i",
+                oCount,
+                res1,
             )
             res1 = -1
 
         if res1 != -1 and res1 + 1 == res2:
-            # here we calculate the new drift/shift between the server time and the tokentime
+            # here we calculate the new drift/shift between the server time and
+            # the tokentime
             tokentime = (res2 + 0.5) * timeStepping
             currenttime = T0 - shift
             new_shift = tokentime - currenttime
             log.debug(
                 "[resync] the counters %r and %r matched. New shift: %r",
-                res1, res2, new_shift
+                res1,
+                res2,
+                new_shift,
             )
             self.addToTokenInfo("timeShift", new_shift)
 

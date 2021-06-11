@@ -147,7 +147,7 @@ class DatToken(object):
         self.odir = -1
 
     def get_initparams(self):
-        """ provide all init definitions """
+        """provide all init definitions"""
         return self.init_params
 
     def set_startdate(self, startdate):
@@ -188,7 +188,7 @@ class DatToken(object):
         if ":" in line:
             index = line.index(":")
             key = line[:index]
-            val = line[index + 1:]
+            val = line[index + 1 :]
             key = key.strip()
             val = val.strip()
 

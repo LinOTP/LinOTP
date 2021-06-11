@@ -109,7 +109,7 @@ def escape_hex_for_search(hex_value: str) -> str:
     """
 
     return "\\" + "\\".join(
-        [hex_value[idx: idx + 2] for idx in range(0, len(hex_value), 2)]
+        [hex_value[idx : idx + 2] for idx in range(0, len(hex_value), 2)]
     )
 
 
@@ -440,7 +440,7 @@ class IdResolver(UserIdResolver):
                 filterstr=searchFilter,
                 sizelimit=sizelimit,
             )
-            while 1:
+            while True:
                 userdata = {}
                 result_type, result_data = l_obj.result(ldap_result_id, 0)
                 if result_data == []:
@@ -855,7 +855,7 @@ class IdResolver(UserIdResolver):
                 if isinstance(val, bytes):
                     try:
                         val = val.decode()
-                    except:
+                    except BaseException:
                         log.info("unable to decode bytes %r", val)
 
             ret[f] = val
@@ -1210,9 +1210,7 @@ class IdResolver(UserIdResolver):
             log.debug("[getUserList] searchfilter: %r", searchFilter)
 
         except Exception as exep:
-            log.error(
-                "[getUserList] Error creating searchFilter: %r", exep
-            )
+            log.error("[getUserList] Error creating searchFilter: %r", exep)
             raise exep
 
         l_obj = self.bind()
@@ -1251,7 +1249,7 @@ class IdResolver(UserIdResolver):
 
             log.debug("[getUserList] uidType: %r", self.uidType)
 
-            while 1:
+            while True:
 
                 userdata = {}
 
@@ -1325,9 +1323,7 @@ class IdResolver(UserIdResolver):
             searchFilter = "(&%s)" % searchFilter
             log.debug("[getUserList] searchfilter: %r", searchFilter)
         except Exception as exep:
-            log.error(
-                "[getUserList] Error creating searchFilter: %r", exep
-            )
+            log.error("[getUserList] Error creating searchFilter: %r", exep)
             raise exep
         return searchFilter
 
@@ -1571,7 +1567,7 @@ class IdResolver(UserIdResolver):
                 if isinstance(udata, bytes):
                     try:
                         udata = udata.decode()
-                    except:
+                    except BaseException:
                         log.warning(
                             "Failed to convert entry %r: %r", ldap_key, udata
                         )
@@ -1767,7 +1763,7 @@ def ldap_test(
         for proto, start_tls, cert_file, checking, expected in cases:
             params0 = params.copy()
             uri = params["LDAPURI"]
-            params0["LDAPURI"] = proto + uri[uri.find(":"):]
+            params0["LDAPURI"] = proto + uri[uri.find(":") :]
             params0["EnforceTLS"] = start_tls
             current_app.config["TLS_CA_CERTIFICATES_FILE"] = cert_file
             params0["only_trusted_certs"] = checking

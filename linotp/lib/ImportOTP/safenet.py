@@ -65,7 +65,8 @@ def parseSafeNetXML(xml):
                     DESCRIPTION = elem_tdata.text
                     log.debug(
                         "The Token with the serial %s has the productname %s",
-                        SERIAL, DESCRIPTION
+                        SERIAL,
+                        DESCRIPTION,
                     )
                 if "Applications" == tag:
                     for elem_apps in elem_tdata:

@@ -550,7 +550,7 @@ class IdResolver(UserIdResolver):
         return
 
     def __init__(self):
-        """ initialize the SQLResolver class """
+        """initialize the SQLResolver class"""
         self.sqlConnect = ""
         self.sqlTable = ""
         self.sqlWhere = ""
@@ -1096,7 +1096,7 @@ class IdResolver(UserIdResolver):
         """
         # loginName = loginName.decode("latin1")
         column_name = self.sqlUserInfo.get("username")
-        if column_name == None:
+        if column_name is None:
             log.error(
                 "[__getUserIdFilter] username column " "definition required!"
             )
@@ -1122,7 +1122,7 @@ class IdResolver(UserIdResolver):
         """
 
         column_name = self.sqlUserInfo.get("userid")
-        if column_name == None:
+        if column_name is None:
             err = "[__getUserNameFilter] userid column definition required!"
             log.error(err)
             raise Exception(err)

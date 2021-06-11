@@ -95,7 +95,7 @@ class TestUserserviceAuthController(TestController):
         return
 
     def local_setup(self):
-        """ run the local test setup """
+        """run the local test setup"""
 
         otps = [
             "870581",

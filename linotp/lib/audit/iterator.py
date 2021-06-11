@@ -154,7 +154,7 @@ class AuditQuery(object):
 
     def get_entry(self, row):
         entry = {}
-        if type(row) != dict:
+        if not isinstance(row, dict):
             # convert table data to dict!
             row = self.audit_obj.row2dict(row)
         if "number" in row:
@@ -168,7 +168,8 @@ class AuditQuery(object):
                 # null.
                 # In order to differentiate between the empty string (which could be
                 # a valid value for most fields) and non-existence I chose the second
-                # option. If this causes problems, the issue has to be revisited.
+                # option. If this causes problems, the issue has to be
+                # revisited.
                 cell.append(row.get(col))
             entry = {"id": row["number"], "cell": cell}
             if self.headers is True:

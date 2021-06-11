@@ -29,8 +29,8 @@
 used to do functional testing of the remote token
 
  + spass token with local and remote token pin test
- + unicode pin through remote token 
-      
+ + unicode pin through remote token
+
 """
 
 import binascii
@@ -333,7 +333,9 @@ class TestRemoteToken(TestSpecialController):
         for column in token_table.columns:
             log.debug(
                 "Column Table name: %s : %s : %r",
-                column.name, column.type, column.index
+                column.name,
+                column.type,
+                column.index,
             )
             if column.name == "LinOtpTokenSerialnumber":
                 assert column.index is True, column.name

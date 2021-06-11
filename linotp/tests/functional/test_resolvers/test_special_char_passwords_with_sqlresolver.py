@@ -52,7 +52,7 @@ log = logging.getLogger(__name__)
 
 class SQLResolverSpecialPasswordTest(SQLTestController):
     def setUp(self):
-        """ create an sql user table some users and the sql resolver """
+        """create an sql user table some users and the sql resolver"""
 
         SQLTestController.setUp(self)
         self.setUpSQL()
@@ -60,7 +60,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         return
 
     def tearDown(self):
-        """ drop the users and the user table """
+        """drop the users and the user table"""
 
         self.dropUsers()
         self.delete_all_token()

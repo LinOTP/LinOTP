@@ -149,7 +149,8 @@ class SmtpSMSProvider(ISMSProvider):
         ):
             log.error(
                 "[submitMessage] incomplete config: %s. mailserver, "
-                "mailsender and mailto needed.", self.config
+                "mailsender and mailto needed.",
+                self.config,
             )
             return ret
 

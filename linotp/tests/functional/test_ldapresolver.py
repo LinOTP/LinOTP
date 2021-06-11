@@ -155,12 +155,12 @@ class LDAPExtObject(LDAPObject):
         )
 
     def result2(
-            self, msgid, all=1, timeout=None
+        self, msgid, all=1, timeout=None
     ):  # pylint: disable=redefined-builtin
         return ldap.RES_SEARCH_RESULT, self._pop_async_result(msgid), None
 
     def result3(
-            self, msgid, all=1, timeout=None
+        self, msgid, all=1, timeout=None
     ):  # pylint: disable=redefined-builtin
         """
         Last result plus server controls
@@ -1597,7 +1597,7 @@ class TestLDAPResolver(TestController):
             iparams.update(params)
 
         response = self.make_system_request("setResolver", params=iparams)
-        assert response.json["result"]["value"] == True
+        assert response.json["result"]["value"]
 
         return response, iparams
 
@@ -1655,7 +1655,7 @@ class TestLDAPResolver(TestController):
 
     @pytest.mark.usefixtures("ldap_realm_test")
     def test_ldap_dn(self):
-        """ search in ldapresolver pointing to ad with uid type: dn"""
+        """search in ldapresolver pointing to ad with uid type: dn"""
 
         realm = "test"
         user = "charlie.chaplin"
@@ -1698,7 +1698,7 @@ class TestLDAPResolver(TestController):
 
     @pytest.mark.usefixtures("ldap_realm_corp")
     def test_ldap_objectGUID(self):
-        """ search in ldapresolver pointing to ad with uid type: objectGUID"""
+        """search in ldapresolver pointing to ad with uid type: objectGUID"""
 
         realm = "corp"
         user = "maxwell"

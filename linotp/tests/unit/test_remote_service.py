@@ -42,7 +42,7 @@ class CustomException(Exception):
 def generate_variadic_func(exception=Exception, default=False):
     def func(*args, **kwargs):
         func.call_count += 1
-        if func.fail == True:
+        if func.fail:
             raise exception()
 
         return args, kwargs
@@ -96,7 +96,8 @@ class TestRemoteServiceList(TestCase):
         services = RemoteServiceList()
         services.append(generate_passthru_func())
 
-        # the arguments we pass into the service should be returned for investigation
+        # the arguments we pass into the service should be returned for
+        # investigation
         args, kwargs = services.call_first_available(
             1, 2, 3, one=1, two=2, three=3
         )
@@ -208,7 +209,8 @@ class TestRemoteServiceList(TestCase):
         # tell function to return again
         func.fail = False
 
-        # after the recovery timeout the first service should start returing again
+        # after the recovery timeout the first service should start returing
+        # again
         dt_now.return_value += timedelta(seconds=1)
         assert services.call_first_available(1) == ((1,), {})
         assert services[0].state == State.FUNCTIONAL

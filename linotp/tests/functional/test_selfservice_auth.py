@@ -91,7 +91,7 @@ class TestSelfserviceAuthController(TestController):
         assert '"status": true' in response, response
         assert ('"setPolicy %s": {' % name) in response, response
 
-    ###############################################################################
+    ##########################################################################
 
     def test_selfservice_user_resolver(self):
         """

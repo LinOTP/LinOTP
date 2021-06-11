@@ -134,7 +134,8 @@ class TokenHandler(object):
             if typ.lower() not in tokenclass_registry:
                 log.error(
                     "Token type %r not found. Available types are: %r",
-                    typ, list(tokenclass_registry.keys())
+                    typ,
+                    list(tokenclass_registry.keys()),
                 )
                 raise TokenAdminError(
                     "[initToken] failed: unknown token " "type %r" % typ,
@@ -160,7 +161,8 @@ class TokenHandler(object):
             if typ.lower() not in tokenclass_registry:
                 log.error(
                     "Token type %r not found. Available types are: %r",
-                    typ, list(tokenclass_registry.keys())
+                    typ,
+                    list(tokenclass_registry.keys()),
                 )
                 raise TokenAdminError(
                     "[initToken] failed: unknown token" " type %r" % typ,
@@ -302,7 +304,8 @@ class TokenHandler(object):
         authUser = get_authenticated_user(user.login, user.realm, passw)
         if authUser is None:
             msg = "User %r@%r failed to authenticate against userstore" % (
-                user.login, user.realm
+                user.login,
+                user.realm,
             )
             log.error(msg)
             return False, {"error": msg}
@@ -409,7 +412,9 @@ class TokenHandler(object):
         owner = self.getTokenOwner(serial)
         log.info(
             "lost token for serial %r and owner %r@%r",
-            serial, owner.login, owner.realm
+            serial,
+            owner.login,
+            owner.realm,
         )
 
         if owner.login == "" or owner.login is None:
@@ -442,7 +447,8 @@ class TokenHandler(object):
                 else:
                     log.warning(
                         "No email address found for %r. Falling back "
-                        "to password token.", owner.login
+                        "to password token.",
+                        owner.login,
                     )
 
             elif param["type"] == "sms":
@@ -454,7 +460,8 @@ class TokenHandler(object):
                 else:
                     log.warning(
                         "No mobile number found for %r. Falling back "
-                        "to password token.", owner.login
+                        "to password token.",
+                        owner.login,
                     )
 
         if init_params["type"] == "pw":
@@ -782,7 +789,9 @@ class TokenHandler(object):
         if len(tokens) > 0:
             log.debug(
                 "[auto_assignToken] no auto_assigment for user %r@%r. "
-                "User already has some tokens.", user.login, user.realm
+                "User already has some tokens.",
+                user.login,
+                user.realm,
             )
             return False
 
@@ -830,7 +839,9 @@ class TokenHandler(object):
         if authUser is None:
             log.error(
                 "[auto_assignToken] User %r@%r failed to authenticate "
-                "against userstore", user.login, user.realm
+                "against userstore",
+                user.login,
+                user.realm,
             )
             return False
 
@@ -897,7 +908,9 @@ class TokenHandler(object):
 
         log.debug(
             "[assignToken] successfully assigned token with serial "
-            "%r to user %r", serial, user.login
+            "%r to user %r",
+            serial,
+            user.login,
         )
         return True
 
@@ -933,7 +946,7 @@ class TokenHandler(object):
 
         log.debug(
             "[unassignToken] successfully unassigned token with serial %r",
-            serial
+            serial,
         )
         return True
 
@@ -1042,14 +1055,14 @@ class TokenHandler(object):
             # filter if assigned or not
             if "0" == str(assigned):
                 sqlQuery = sqlQuery.filter(
-                    or_(Token.LinOtpUserid == None, Token.LinOtpUserid == "")
+                    or_(Token.LinOtpUserid is None, Token.LinOtpUserid == "")
                 )
             elif "1" == str(assigned):
                 sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
             else:
                 log.warning(
                     "[getTokensOfType] assigned value not in [0,1] %r",
-                    assigned
+                    assigned,
                 )
 
         if realm is not None:
@@ -1246,7 +1259,8 @@ class TokenHandler(object):
         """
         log.debug(
             "[copyTokenPin] copying PIN from token %r to token %r",
-            serial_from, serial_to
+            serial_from,
+            serial_to,
         )
         tokens_from = getTokens4UserOrSerial(None, serial_from)
         tokens_to = getTokens4UserOrSerial(None, serial_to)
@@ -1273,7 +1287,8 @@ class TokenHandler(object):
         """
         log.debug(
             "[copyTokenUser] copying user from token %r to token %r",
-            serial_from, serial_to
+            serial_from,
+            serial_to,
         )
         tokens_from = getTokens4UserOrSerial(None, serial_from)
         tokens_to = getTokens4UserOrSerial(None, serial_to)
@@ -1423,7 +1438,8 @@ def createTokenClassObject(token, typ=None):
         log.error(
             "Token type %r not found. Available types are: %r."
             "Using default token class as fallback ",
-            typ, list(tokenclass_registry.keys())
+            typ,
+            list(tokenclass_registry.keys()),
         )
 
         from linotp.tokens.base import TokenClass
@@ -1476,7 +1492,8 @@ def getRealms4Token(user, tokenrealm=None):
         # tokenrealm can either be a string or a list
         log.debug(
             "[getRealms4Token] tokenrealm given (%r). We will add the "
-            "new token to this realm", tokenrealm
+            "new token to this realm",
+            tokenrealm,
         )
         if isinstance(tokenrealm, str):
             log.debug("[getRealms4Token] String: adding realm: %r", tokenrealm)
@@ -1617,7 +1634,9 @@ def getRealmsOfTokenOrUser(token):
 
     log.debug(
         "[getRealmsOfTokenOrUser] the token %r "
-        "is in the following realms: %r", serial, realms
+        "is in the following realms: %r",
+        serial,
+        realms,
     )
 
     return realms
@@ -1796,7 +1815,7 @@ def getTokens4UserOrSerial(
     if serial:
         log.debug(
             "[getTokens4UserOrSerial] getting token object with serial: %r",
-            serial
+            serial,
         )
         #  SAWarning of non unicode type
         serial = linotp.lib.crypto.utils.uencode(serial)
@@ -1890,13 +1909,15 @@ def getTokens4UserOrSerial(
                             if u_realm.lower() not in t_realms:
                                 log.debug(
                                     "user realm and token realm missmatch"
-                                    " %r::%r", u_realm, t_realms
+                                    " %r::%r",
+                                    u_realm,
+                                    t_realms,
                                 )
                                 continue
 
                     log.debug(
                         "[getTokens4UserOrSerial] user serial (user): %r",
-                        token.LinOtpTokenSerialnumber
+                        token.LinOtpTokenSerialnumber,
                     )
                     tokenList.append(token)
 
@@ -1988,7 +2009,10 @@ def get_token_owner(token):
 
     log.debug(
         "[get_token_owner] found the user %r and the realm %r as "
-        "owner of token %r", user.login, user.realm, serial
+        "owner of token %r",
+        user.login,
+        user.realm,
+        serial,
     )
 
     return user
@@ -2012,12 +2036,12 @@ def getTokenType(serial):
 
 
 def add_last_accessed_info(list_of_tokens):
-    """" small wrapper to set the accessed time info """
+    """ " small wrapper to set the accessed time info"""
     add_time_info(list_of_tokens, mode="accessed")
 
 
 def add_last_verified_info(list_of_tokens):
-    """" small wrapper to set the verified time info """
+    """ " small wrapper to set the verified time info"""
     add_time_info(list_of_tokens, mode="verified")
 
 

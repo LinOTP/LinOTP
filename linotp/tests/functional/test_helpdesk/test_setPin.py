@@ -48,14 +48,14 @@ from linotp.tests import TestController
 )
 class TestHelpdeskSetPin(TestController):
     def setUp(self):
-        """ setup for std resolver / realms"""
+        """setup for std resolver / realms"""
 
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        """ clean up for all token and resolver / realms """
+        """clean up for all token and resolver / realms"""
 
         self.delete_all_realms()
         self.delete_all_resolvers()

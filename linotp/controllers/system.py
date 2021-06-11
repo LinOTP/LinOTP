@@ -402,7 +402,7 @@ class SystemController(BaseController):
     # config callback helper
 
     def _config_callback(self, key, val):
-        """ helper to run a direct config change action """
+        """helper to run a direct config change action"""
 
         f_name = "_" + key.replace(".", "_")
 
@@ -413,7 +413,7 @@ class SystemController(BaseController):
     # config callback methods
 
     def _linotp_user_lookup_cache_enabled(self, state):
-        " helper to flush the user lookup cache "
+        "helper to flush the user lookup cache"
 
         if boolean(state) is False:
 
@@ -423,7 +423,7 @@ class SystemController(BaseController):
                 delete_resolver_user_cache(resolver)
 
     def _linotp_resolver_lookup_cache_enabled(self, state):
-        " helper to flush the resolver lookup cache "
+        """helper to flush the resolver lookup cache"""
 
         if boolean(state) is False:
 
@@ -495,8 +495,7 @@ class SystemController(BaseController):
             # if there is no parameter, we return them all
             if len(param) == 0:
                 conf = getLinotpConfig()
-                keys = list(conf.keys())
-                keys.sort()
+                keys = sorted(conf.keys())
                 for key in keys:
 
                     parts = key.split(".")
@@ -505,7 +504,7 @@ class SystemController(BaseController):
                         continue
 
                     if parts[0] == "linotp":
-                        Key = key[len("linotp."):]
+                        Key = key[len("linotp.") :]
 
                         #
                         # Todo: move the handling of extra data to the
@@ -534,7 +533,7 @@ class SystemController(BaseController):
                 #
 
                 if key.startswith("enclinotp."):
-                    key = "linotp.%s" % key[len("enclinotp."):]
+                    key = "linotp.%s" % key[len("enclinotp.") :]
 
                 ret = getFromConfig(key)
                 string = "getConfig " + key
@@ -666,7 +665,8 @@ class SystemController(BaseController):
             if "readonly" in param:
 
                 # the default for the readonly attribute is - to not exist :)
-                # if it does, the conversion will fail and we raise an exception
+                # if it does, the conversion will fail and we raise an
+                # exception
                 if not param["readonly"]:
                     # remove empty 'readonly' attribute
                     del param["readonly"]
@@ -1030,9 +1030,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.error(
-                "[getDefaultRealm] return default realm failed: %r", exx
-            )
+            log.error("[getDefaultRealm] return default realm failed: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -2018,9 +2016,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1, opt=info)
 
         except Exception as exx:
-            log.error(
-                "[isSupportValid] failed verify support info: %r", exx
-            )
+            log.error("[isSupportValid] failed verify support info: %r", exx)
 
             db.session.rollback()
             return sendError(response, exx)
@@ -2074,9 +2070,7 @@ class SystemController(BaseController):
             return sendResultMethod(response, res, 1, opt=message)
 
         except Exception as exx:
-            log.error(
-                "[setSupport] failed to set support license: %r", exx
-            )
+            log.error("[setSupport] failed to set support license: %r", exx)
             db.session.rollback()
             return sendErrorMethod(response, exx)
 

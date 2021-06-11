@@ -311,7 +311,7 @@ class TestPushProviderController(TestController):
             challenge=message, gda=gda, transactionId="012345678901234"
         )
 
-        assert status == True
+        assert status
         assert response == VALID_REQUEST
 
         return
@@ -321,7 +321,7 @@ def cond_failing_http_response(*args, **kwargs):
 
     url = args[0]
 
-    assert type(url) is str
+    assert isinstance(url, str)
 
     if "success" in url:
         return generate_mocked_http_response()(*args, **kwargs)
@@ -354,7 +354,7 @@ class TestPushProviderFailover(TestController):
             challenge=message, gda=gda, transactionId="012345678901234"
         )
 
-        assert status == True
+        assert status
         assert response == VALID_REQUEST
 
     @patch.object(requests, "post", cond_failing_http_response)

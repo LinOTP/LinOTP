@@ -842,7 +842,8 @@ class Ocra2TokenClass(TokenClass):
         except Exception as ex:
             log.error(
                 "[Ocra2TokenClass] challenge verification failed: " "%s,%r: ",
-                challenge, ex
+                challenge,
+                ex,
             )
             ret = False
 
@@ -1325,7 +1326,8 @@ class Ocra2TokenClass(TokenClass):
         for ch in challenges:
             challenge = {}
 
-            # preserve transaction context, so we could use this in the status callback
+            # preserve transaction context, so we could use this in the status
+            # callback
             self.transId = ch.get("transid", None)
             challenge["transid"] = self.transId
             challenge["session"] = ch.get("session", None)
@@ -1428,7 +1430,8 @@ class Ocra2TokenClass(TokenClass):
         tinfo = self.getTokenInfo()
 
         # autosync does only work, if we have a token info, where the last challenge and the last sync-counter is stored
-        # if no tokeninfo, we start with a autosync request, thus start the lookup in the sync window
+        # if no tokeninfo, we start with a autosync request, thus start the
+        # lookup in the sync window
 
         if "lChallenge" not in tinfo:
             # run checkOtp, with sync window for the current challenge
@@ -1477,7 +1480,8 @@ class Ocra2TokenClass(TokenClass):
                 self.setTokenInfo(tinfo)
                 log.info(
                     "[OcraToken:autosync] sync failed! Not a valid pass in "
-                    "scope (%r)", otp1
+                    "scope (%r)",
+                    otp1,
                 )
                 res = -1
             else:
@@ -1536,7 +1540,7 @@ class Ocra2TokenClass(TokenClass):
             if rolloutState == "1":
                 log.info(
                     "rollout state 1 for token %r not completed",
-                    self.getSerial()
+                    self.getSerial(),
                 )
 
             elif rolloutState == "2":
@@ -1551,7 +1555,7 @@ class Ocra2TokenClass(TokenClass):
                     self.addToTokenInfo("rollout", "1")
                     log.info(
                         "rollout for token %r reset to phase 1:",
-                        self.getSerial()
+                        self.getSerial(),
                     )
 
                 log.info(
@@ -1562,7 +1566,8 @@ class Ocra2TokenClass(TokenClass):
             log.error(
                 "[Ocra2TokenClass:statusValidationFail] Error during "
                 "validation finalisation for token %r :%r",
-                self.getSerial(), ex
+                self.getSerial(),
+                ex,
             )
             raise Exception(ex)
 
@@ -1710,7 +1715,7 @@ class Ocra2TokenClass(TokenClass):
                             date = datetime.datetime.fromtimestamp(count_2)
                             log.info(
                                 "[resync] syncing token to new timestamp: %r",
-                                date
+                                date,
                             )
 
                             now = datetime.datetime.utcnow()

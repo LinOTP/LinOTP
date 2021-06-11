@@ -360,7 +360,7 @@ def getResolverClass(packageName, className):
             attribute = att
             getattr(klass, att)
         ret = klass
-    except:
+    except BaseException:
         raise NameError(
             "IdResolver AttributeError: "
             + packageName

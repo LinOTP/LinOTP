@@ -79,7 +79,7 @@ class OcraOtp(object):
         self.counter = 0
 
     def init_1(self, response):
-        """ take the response of the first init to setup the OcraOtp"""
+        """take the response of the first init to setup the OcraOtp"""
 
         jresp = json.loads(response.body)
         app_import = str(jresp.get("detail").get("app_import"))
@@ -512,7 +512,7 @@ class OcraTest(TestController):
         return response
 
     def check_otp(self, transid, otp, pin="pin"):
-        """ -3.a- verify the otp value to finish the rollout """
+        """-3.a- verify the otp value to finish the rollout"""
         parameters = {"transactionid": transid, "pass": "" + pin + otp}
         response = self.app.get(
             genUrl(controller="ocra", action="check_t"), params=parameters
@@ -646,7 +646,7 @@ class OcraTest(TestController):
         return
 
     def randOTP(self, otp):
-        """ randomly change the chars in an otp - to gen a wron otp """
+        """randomly change the chars in an otp - to gen a wron otp"""
         rotp = otp
         lenotp = len(str(otp))
         if lenotp > 1:
@@ -657,8 +657,8 @@ class OcraTest(TestController):
                     if idx1 != idx2:
                         c1 = rotp[idx1]
                         c2 = rotp[idx2]
-                        rotp = rotp[:idx1] + c2 + rotp[idx1 + 1:]
-                        rotp = rotp[:idx2] + c1 + rotp[idx2 + 1:]
+                        rotp = rotp[:idx1] + c2 + rotp[idx1 + 1 :]
+                        rotp = rotp[:idx2] + c1 + rotp[idx2 + 1 :]
         return rotp
 
     def init_0_QR_Token(
@@ -674,7 +674,7 @@ class OcraTest(TestController):
         otpkey=None,
         ocrasuite="OCRA-1:HOTP-SHA256-8:C-QA64",
     ):
-        """ -1- create an ocra token """
+        """-1- create an ocra token"""
         parameters = {}
 
         if tokentype is not None:
@@ -720,7 +720,7 @@ class OcraTest(TestController):
         genkey="1",
         ocrasuite="OCRA-1:HOTP-SHA256-8:C-QA64",
     ):
-        """ -2- acivate ocra token """
+        """-2- acivate ocra token"""
         parameters = {}
 
         if tokentype is not None:
@@ -952,9 +952,9 @@ class OcraTest(TestController):
         log.error(response)
         assert '"status": true' in response
 
-    ###############################################################################
+    ##########################################################################
     # paralell test starts here
-    ###############################################################################
+    ##########################################################################
 
     def ptest_OCRA_token_failcounterInc(self, tid=1):
         """
@@ -1063,7 +1063,7 @@ class OcraTest(TestController):
                 # create more than one challenge
                 chals = random.randint(2, 5)
                 for cc in range(1, chals):
-                    """ -2- fetch the challenge """
+                    """-2- fetch the challenge"""
                     p = {
                         "serial": serial,
                         "data": "0105037311 Konto 50150850 BLZ 1752,03 Eur",
@@ -1108,7 +1108,7 @@ class OcraTest(TestController):
                     params=parameters,
                 )
                 log.info("response %s\n", response)
-                if not '"result": false' in response:
+                if '"result": false' not in response:
                     assert '"result": false' in response
                 fcount += 1
 

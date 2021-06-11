@@ -296,7 +296,7 @@ def set_policy(adminclient):
         """
         response = adminclient.post("system/setPolicy", json=params)
         assert response.status_code == 200
-        assert response.json["result"]["status"] == True
+        assert response.json["result"]["status"]
 
         getResponse = adminclient.get("system/getPolicy", json=params)
         assert (

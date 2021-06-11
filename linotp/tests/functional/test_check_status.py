@@ -94,7 +94,7 @@ class TestCheckStatus(TestController):
 
         return serial, otps
 
-    ###############################################################################
+    ##########################################################################
     def test_single_token(self):
         """
         setup hmac token to support multiple challenges

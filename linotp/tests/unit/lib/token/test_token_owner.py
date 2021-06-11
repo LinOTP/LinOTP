@@ -117,7 +117,7 @@ class TestTokenOwner(unittest.TestCase):
 
         res = th.isTokenOwner(serial, user)
 
-        assert res == True
+        assert res
 
         return
 
@@ -142,7 +142,7 @@ class TestTokenOwner(unittest.TestCase):
 
         res = th.isTokenOwner(serial, user)
 
-        assert res == True
+        assert res
 
         return
 
@@ -167,7 +167,7 @@ class TestTokenOwner(unittest.TestCase):
 
         res = th.hasOwner(serial)
 
-        assert res == True
+        assert res
 
         return
 
@@ -187,7 +187,7 @@ class TestTokenOwner(unittest.TestCase):
 
         res = th.hasOwner(serial)
 
-        assert res == True
+        assert res
 
         return
 

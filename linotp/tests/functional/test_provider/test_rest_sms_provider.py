@@ -107,7 +107,7 @@ class TestRestSmsController(TestSpecialController):
 
         TestSpecialController.tearDown(self)
 
-    ###############################################################################
+    ##########################################################################
 
     @patch("requests.Session.post", mocked_http_request)
     def test_succesful_auth(self):

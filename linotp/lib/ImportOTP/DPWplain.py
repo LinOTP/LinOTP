@@ -59,7 +59,7 @@ def parseDPWdata(data):
 
     for line in data.splitlines():
         log.debug("[parseDPWdata] checking line: %r", line)
-        m = re.match("(\S.*?)\s.*?(\S.*)", line)
+        m = re.match(r"(\S.*?)\s.*?(\S.*)", line)
         if m:
             serial = m.groups()[0]
             key = m.groups()[1]

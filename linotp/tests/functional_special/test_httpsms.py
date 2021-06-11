@@ -136,7 +136,7 @@ class DefaultProvider:
         return self
 
     def __exit__(self, *args):
-        """ on exit restore the old default provider """
+        """on exit restore the old default provider"""
 
         if self.old_default:
             response = self.test.make_system_request(
@@ -194,7 +194,7 @@ class TestHttpSmsController(TestSpecialController):
     def tearDown(self):
         TestSpecialController.tearDown(self)
 
-    ###############################################################################
+    ##########################################################################
     def removeTokens(self):
         for serial in self.serials:
             parameters = {"serial": serial}
@@ -240,7 +240,7 @@ class TestHttpSmsController(TestSpecialController):
 
         assert '"status": true' in response, response
 
-        for serial in self.serials[2: self.max]:
+        for serial in self.serials[2 : self.max]:
             parameters = {
                 "serial": serial,
                 "otpkey": (
@@ -361,7 +361,7 @@ class TestHttpSmsController(TestSpecialController):
         return
 
     def test_succesfull_auth(self):
-        """ Successful SMS sending (via smspin) and authentication """
+        """Successful SMS sending (via smspin) and authentication"""
 
         sms_conf = {
             "URL": self.sms_url,

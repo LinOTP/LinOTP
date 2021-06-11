@@ -267,7 +267,8 @@ class ManageUi(object):
         Close all active menus
         """
         # Query all the menu class attributes to find if any are in the open state.
-        # We do it this way to avoid a wait in the case that all the menus are closed
+        # We do it this way to avoid a wait in the case that all the menus are
+        # closed
         for menu in self.find_all_by_css("#menu > li"):
             if menu.get_attribute("class") == "sfHover":
                 # Close using superfish method

@@ -46,7 +46,7 @@ log = logging.getLogger(__name__)
 
 
 class DBSession(object):
-    """ db session with  context manager """
+    """db session with  context manager"""
 
     def __init__(self):
         self.engine = create_engine(config.get("DATABASE_URI"))
@@ -131,7 +131,7 @@ class TestReportingController(TestController):
 
         resp = json.loads(response.body)
         values = resp.get("result")
-        assert values.get("status") == True, response
+        assert values.get("status"), response
 
     # --------------------------------------------------------------------------- --
     # Tests
@@ -266,7 +266,7 @@ class TestReportingController(TestController):
         )
         resp = json.loads(response.body)
         values = resp.get("result")
-        assert values.get("status") == True, response
+        assert values.get("status"), response
         assert values.get("value") == 1, response
 
     def test_delete_all_reports(self):
@@ -310,7 +310,7 @@ class TestReportingController(TestController):
 
         resp = json.loads(response.body)
         values = resp.get("result")
-        assert values.get("status") == True, response
+        assert values.get("status"), response
         assert values.get("value") == 2, response
 
         with DBSession() as session:
@@ -342,9 +342,9 @@ class TestReportingController(TestController):
 
         resp = json.loads(response.body)
         values = resp.get("result")
-        assert values.get("status") == True, response
+        assert values.get("status"), response
         assert (
-            values.get("value").get("setPolicy self01").get("action") == True
+            values.get("value").get("setPolicy self01").get("action")
         ), response
 
         # do userservice request
@@ -700,7 +700,7 @@ class TestReportingController(TestController):
 
         resp = json.loads(response.body)
         values = resp.get("result")
-        assert values.get("status") == True, response
+        assert values.get("status"), response
         value = values.get("value")
         assert value.get("mydefrealm").get("total") == 4, response
         assert value.get("mymixrealm").get("total") == 1, response
@@ -757,7 +757,7 @@ class TestReportingController(TestController):
         )
         resp = json.loads(response.body)
         assert resp.get("detail").get("report_rows") == 3, response
-        assert resp.get("result").get("status") == True, response
+        assert resp.get("result").get("status"), response
         values = resp.get("result").get("value")
         assert values[2].get("count") == 1, response
 
@@ -812,7 +812,7 @@ class TestReportingController(TestController):
         assert resp.get("detail").get("page") == page_value, response
         assert resp.get("detail").get("pagesize") == pagesize_value, response
 
-        assert resp.get("result").get("status") == True, response
+        assert resp.get("result").get("status"), response
         values = resp.get("result").get("value")
         assert values[2].get("count") == 14, response
 

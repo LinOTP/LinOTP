@@ -612,7 +612,8 @@ class TestTotpController(TestController):
             t_info = self.get_token_info(serial=tserial)
             assert "otp1c" in t_info
 
-            # verify that the auto sync start has been adjusted to the new start
+            # verify that the auto sync start has been adjusted to the new
+            # start
             assert t_info["otp1c"] == int(seconds10 / step)
 
             # second step of the auto sync
@@ -936,7 +937,8 @@ class TestTotpController(TestController):
                     otp1 = otpres.get(str(counter))
                     assert otp1.get("otpval") == otp, response
 
-                    # verify: the first otp matches the unix start time + timeslice
+                    # verify: the first otp matches the unix start time +
+                    # timeslice
 
                     if "1" in otpres:
                         otp_one = otpres.get("1")

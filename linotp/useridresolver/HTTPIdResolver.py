@@ -299,10 +299,10 @@ class IdResolver(UserIdResolver):
         helper method to map the result to something linotp can handle
         """
 
-        if type(mapping) != dict:
+        if not isinstance(mapping, dict):
             return result
 
-        if type(result) != list:
+        if not isinstance(result, list):
             return result
 
         # we have to invert the mapping

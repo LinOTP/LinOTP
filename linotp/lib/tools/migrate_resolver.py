@@ -125,7 +125,8 @@ class MigrateResolverHandler(ToolsHandler):
             except Exception as exx:
                 log.error(
                     "Faild to set new resolver data for token %s: %r",
-                    serial, exx
+                    serial,
+                    exx,
                 )
 
         ret["value"] = True

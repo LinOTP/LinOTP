@@ -108,7 +108,7 @@ class TestRemoteToken2(TestSpecialController):
         return
 
     def tearDown(self):
-        """ Overwrite parent tear down, which removes all realms """
+        """Overwrite parent tear down, which removes all realms"""
         return
 
     def create_pin_policies(self):

@@ -72,7 +72,7 @@ class FakeTokenModel(object):
 
 class QRTokenClassUnitTestCase(object):
     def test_unpair(self):
-        """ QRToken unittest: checking if unpairing works """
+        """QRToken unittest: checking if unpairing works"""
 
         fake = FakeTokenModel()
 

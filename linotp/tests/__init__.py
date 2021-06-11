@@ -259,7 +259,7 @@ class TestController(TestCase):
         return cookies
 
     def setUp(self):
-        """ here we do the system test init per test method """
+        """here we do the system test init per test method"""
         self.session = "justatest"
         self.resolvers = {}  # Set up of resolvers in create_common_resolvers
 
@@ -758,7 +758,7 @@ class TestController(TestCase):
         )
 
     def delete_all_realms(self, auth_user="admin"):
-        """ get al realms and delete them """
+        """get al realms and delete them"""
 
         response = self.make_system_request(
             "getRealms", params={}, auth_user=auth_user
@@ -776,7 +776,7 @@ class TestController(TestCase):
             assert '"result": true' in resp.body
 
     def delete_all_resolvers(self, auth_user="admin"):
-        """ get all resolvers and delete them """
+        """get all resolvers and delete them"""
 
         response = self.make_system_request(
             "getResolvers", params={}, auth_user=auth_user
@@ -864,7 +864,7 @@ class TestController(TestCase):
         assert expected_value == content["result"]["value"]
 
     def delete_license(self):
-        """ delete the current installed license """
+        """delete the current installed license"""
 
         params = {"key": "license"}
         response = self.make_system_request("delConfig", params)

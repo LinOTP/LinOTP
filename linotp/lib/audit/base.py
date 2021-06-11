@@ -135,7 +135,8 @@ class AuditBase(object):
         except Exception as exx:
             log.error(
                 "[readKeys] Error reading private key %s: (%r)",
-                self.privateKeyFilename, exx
+                self.privateKeyFilename,
+                exx,
             )
 
         try:
@@ -145,7 +146,8 @@ class AuditBase(object):
         except Exception as exx:
             log.error(
                 "[readKeys] Error reading public key %s: (%r)",
-                self.publicKeyFilename, exx
+                self.publicKeyFilename,
+                exx,
             )
 
         return

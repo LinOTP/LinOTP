@@ -39,13 +39,13 @@ class TestTokensearch(TestController):
     serials = []
 
     def setUp(self):
-        """ setup the Test Controller"""
+        """setup the Test Controller"""
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        """ make the dishes"""
+        """make the dishes"""
         self.remove_tokens()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -66,7 +66,7 @@ class TestTokensearch(TestController):
         return
 
     def test_singel_character_wildcard_search(self):
-        """ single char wildcard test for user lookup in token view"""
+        """single char wildcard test for user lookup in token view"""
 
         # ------------------------------------------------------------------ --
 

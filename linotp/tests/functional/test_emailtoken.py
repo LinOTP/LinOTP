@@ -79,7 +79,8 @@ class TestEmailtokenController(TestController):
         response = self.make_admin_request("assign", params)
         assert '"value": true' in response
 
-        # Patch (replace) smtplib.SMTP class to prevent e-mails from being sent out
+        # Patch (replace) smtplib.SMTP class to prevent e-mails from being sent
+        # out
         self.patch_smtp = patch("smtplib.SMTP", spec=smtplib.SMTP)
         mock_smtp_class = self.patch_smtp.start()
         self.mock_smtp_instance = mock_smtp_class.return_value
@@ -200,7 +201,8 @@ class TestEmailtokenController(TestController):
         self._assert_email_sent(response)
 
         # Send the response with the stored values from the 3rd challenge
-        # since we are sending the transactionid we only need the otp (without pin)
+        # since we are sending the transactionid we only need the otp (without
+        # pin)
         params = {
             "user": "root",
             "pass": stored_otp,
@@ -322,7 +324,8 @@ class TestEmailtokenController(TestController):
             "challenges", {}
         )
 
-        # Verify that no challenge was created (the exception should have prevented it)
+        # Verify that no challenge was created (the exception should have
+        # prevented it)
         assert (
             existing_challenges == new_challenges
         ), "No new challenges should have been created."
@@ -348,7 +351,7 @@ class TestEmailtokenController(TestController):
         assert "linotp@example.com" == email_from
         assert self.default_email_address == email_to
 
-        matches = re.search("\d{6}", message)
+        matches = re.search(r"\d{6}", message)
         assert matches is not None
         otp = matches.group(0)
         assert 6 == len(otp)

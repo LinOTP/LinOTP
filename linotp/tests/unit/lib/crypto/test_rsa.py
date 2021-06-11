@@ -98,7 +98,7 @@ ne4lEzFB25uORvWENH/3PIxxMDdkgNTlWxuOOQ+Pzz+oCrwtlWsLePZlbJB0DZRwt5b2I5ez9OFEkJ+Y
 
 
 def parse_license(License):
-    """ parse a linotp license with a valid signature from linotp """
+    """parse a linotp license with a valid signature from linotp"""
     license_text = ""
     license_dict = {}
     license_mode = False

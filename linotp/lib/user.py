@@ -72,7 +72,9 @@ class User(object):
     def __init__(self, login="", realm="", resolver_config_identifier=""):
         log.debug(
             "[User.__init__] creating user %r,%r,%r",
-            login, realm, resolver_config_identifier
+            login,
+            realm,
+            resolver_config_identifier,
         )
 
         self.login = ""
@@ -259,7 +261,8 @@ class User(object):
             y = getResolverObject(resolver_spec)
             log.debug(
                 "[getUserInfo] Getting user info for userid "
-                ">%r< in resolver", userid
+                ">%r< in resolver",
+                userid,
             )
             userInfo = y.getUserInfo(userid)
             self.info[resolver_spec] = userInfo
@@ -267,7 +270,9 @@ class User(object):
         except Exception as exx:
             log.error(
                 "[getUserInfo][ resolver with specification %r "
-                "not found: %r ]", resolver_spec, exx
+                "not found: %r ]",
+                resolver_spec,
+                exx,
             )
 
         return userInfo
@@ -429,18 +434,18 @@ class User(object):
         return False
 
     def __eq__(self, other):
-        """ support for: user1 == user2 """
+        """support for: user1 == user2"""
         return not self.__ne__(other)
 
     def __bool__(self):
-        """ support for: if user: """
+        """support for: if user:"""
         if self.login is None:
             return False
         return len(self.login) > 0
 
 
 def getUserResolverId(user, report=False):
-    """ get the resolver id of the user    """
+    """get the resolver id of the user"""
 
     log.debug("getUserResolverId for %r", user)
 
@@ -1128,7 +1133,7 @@ def delete_realm_resolver_cache(realmname):
 
 
 def delete_from_realm_resolver_cache(login, realmname):
-    """ helper for realm cache cleanup """
+    """helper for realm cache cleanup"""
 
     resolvers_lookup_cache = _get_resolver_lookup_cache(realmname)
 
@@ -1140,7 +1145,7 @@ def delete_from_realm_resolver_cache(login, realmname):
 
 
 def delete_from_realm_resolver_local_cache(login, realmname):
-    """ helper for local realm cache cleanup """
+    """helper for local realm cache cleanup"""
 
     key = {"login": login, "realm": realmname}
     p_key = json.dumps(key)
@@ -1377,7 +1382,7 @@ def delete_resolver_user_cache(resolver_spec):
 
 
 def delete_from_local_cache(login, user_id, resolver_spec):
-    """ remove info from the request local cache """
+    """remove info from the request local cache"""
 
     key = {"login": login, "user_id": user_id, "resolver_spec": resolver_spec}
 
@@ -1388,7 +1393,7 @@ def delete_from_local_cache(login, user_id, resolver_spec):
 
 
 def delete_from_resolver_user_cache(login, user_id, resolver_spec):
-    """ clean up the resolver cache """
+    """clean up the resolver cache"""
 
     user_lookup_cache = _get_user_lookup_cache(resolver_spec)
 
@@ -1406,7 +1411,7 @@ def delete_from_resolver_user_cache(login, user_id, resolver_spec):
 
 
 def delete_from_user_cache(user_name, user_id, resolver_spec):
-    """ helper to remove permutation of user entry """
+    """helper to remove permutation of user entry"""
 
     delete_from_resolver_user_cache(user_name, None, resolver_spec)
 
@@ -1507,7 +1512,8 @@ def getUserId(user, check_existance=False):
 
         log.warning(
             "No uid found for the user >%r< in realm %r",
-            user.login, user.realm
+            user.login,
+            user.realm,
         )
 
         raise UserError(
@@ -1538,7 +1544,7 @@ def getSearchFields(user):
     log.debug("[getSearchFields] entering function getSearchFields")
 
     for resolver_spec in getResolvers(user):
-        """  """
+        """ """
         _cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if len(user.resolver_config_identifier) > 0:
@@ -1824,7 +1830,7 @@ def get_authenticated_user(
         realm,
     )
 
-    if type(username) != str:
+    if not isinstance(username, str):
         username = username.decode(ENCODING)
 
     # ease the handling of options

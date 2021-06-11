@@ -409,7 +409,9 @@ class RemoteTokenClass(TokenClass):
         except Exception as exx:
             log.error(
                 "[do_request] [RemoteToken] Error getting response from "
-                "remote Server (%r): %r", request_url, exx
+                "remote Server (%r): %r",
+                request_url,
+                exx,
             )
 
         return (res, otp_count, reply)
@@ -550,7 +552,8 @@ class RemoteTokenClass(TokenClass):
 
         log.debug(
             "[splitPinPass] [remotetoken] returnung (len:%r) (len:%r)",
-            len(pin), len(otpval)
+            len(pin),
+            len(otpval),
         )
         return pin, otpval
 

@@ -445,7 +445,7 @@ class UserIdResolverManager(ManageDialog):
             alert_box_text = alert_box.get_text()
 
             m = re.search(
-                "Number of users found: (?P<nusers>\d+)", alert_box_text
+                r"Number of users found: (?P<nusers>\d+)", alert_box_text
             )
             if m is None:
                 raise Exception(

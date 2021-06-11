@@ -41,7 +41,7 @@ class TestGetSerialController(TestController):
 
     @classmethod
     def setUpClass(cls):
-        " here we do the system test init (once for all)"
+        "here we do the system test init (once for all)"
         return
 
     @classmethod

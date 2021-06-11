@@ -52,14 +52,14 @@ class MockedSMTP(object):
 
 class TestEmailtoken(TestController):
     def setUp(self):
-        """ setup for std resolver / realms"""
+        """setup for std resolver / realms"""
 
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        """ clean up for all token and resolver / realms """
+        """clean up for all token and resolver / realms"""
 
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -296,7 +296,7 @@ class TestEmailtoken(TestController):
             assert "from policy" not in message
 
     def test_dynamic_email_address(self):
-        """ use the email address of the user not of the token (dynamic)"""
+        """use the email address of the user not of the token (dynamic)"""
 
         email_provider_config = {
             "SMTP_SERVER": "mail.example.com",
@@ -385,7 +385,7 @@ class TestEmailtoken(TestController):
             assert to == "pass.true@example.com"
 
     def test_verify_not_blocking(self):
-        """ verify that email challenges are not blocked if challenge is closed """
+        """verify that email challenges are not blocked if challenge is closed"""
 
         # ------------------------------------------------------------------ --
 

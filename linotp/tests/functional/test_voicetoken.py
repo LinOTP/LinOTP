@@ -105,7 +105,7 @@ class TestVoiceToken(TestController):
         "CustomVoiceProvider.submitVoiceMessage"
     )
     def test_validate_check(self, mocked_submit_method):
-        """ VoiceToken: Check if validate/check works correctly """
+        """VoiceToken: Check if validate/check works correctly"""
 
         serial = "KIVO123foobar789"
         token_phone_number = "123987456787"

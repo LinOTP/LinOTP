@@ -62,11 +62,11 @@ class TestCompare(unittest.TestCase):
 
         value_condition = ", a , b ,,, c"
         _mtype, res = value_list_compare(value_condition, "b")
-        assert res == True
+        assert res
 
         value_condition = ", a , b=x ,,, c"
         _mtype, res = value_list_compare(value_condition, "b")
-        assert res == True
+        assert res
 
         value_condition = ", a , b=x ,,, c=x"
         _mtype, res = value_list_compare(value_condition, "b=a")
@@ -83,7 +83,7 @@ class TestCompare(unittest.TestCase):
 
         value_condition = "read, write, execute, "
         _mtype, res = wildcard_list_compare(value_condition, "write")
-        assert res == True
+        assert res
 
         value_condition = " , ,,,,, , ,,     ,,  ,"
         _mtype, res = wildcard_list_compare(value_condition, "write")
@@ -95,7 +95,7 @@ class TestCompare(unittest.TestCase):
 
         value_condition = "* , write"
         _mtype, res = wildcard_list_compare(value_condition, "write")
-        assert res == True
+        assert res
 
     def test_time_compare(self):
         """

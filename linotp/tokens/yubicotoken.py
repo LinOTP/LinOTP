@@ -86,7 +86,7 @@ Please register your own apiKey and apiId at the Yubico web site:"
   %s
 Configure apiKey and apiId in the LinOTP token-config dialog.
 Have a look at:
-  %s" 
+  %s"
 """ % (
     YUBICO_GETAPI_LINK,
     LINOTP_DOC_LINK,
@@ -310,7 +310,8 @@ class YubicoTokenClass(TokenClass):
 
                 log.error(
                     "[checkOtp] Error getting response from "
-                    "Yubico Cloud Server (%r)", uri
+                    "Yubico Cloud Server (%r)",
+                    uri,
                 )
 
             except Exception as exx:

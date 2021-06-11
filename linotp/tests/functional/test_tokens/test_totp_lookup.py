@@ -114,7 +114,7 @@ class TestTotpLookupController(TestController):
         return TestController.tearDown(self)
 
     def test_verify_lookup_otp_and_response_format(self):
-        """ verify that the otp and the totp_lookup response is correct """
+        """verify that the otp and the totp_lookup response is correct"""
 
         serial = "totp_lookup"
         step = 30
@@ -405,7 +405,7 @@ class TestTotpLookupController(TestController):
             assert '"value": true' in response.body, response
 
     def test_no_future_otp(self):
-        """ verify that the totp_lookup does not respond for future otps """
+        """verify that the totp_lookup does not respond for future otps"""
 
         serial = "totp_lookup"
         step = 30

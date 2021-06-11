@@ -467,7 +467,9 @@ class Token(db.Model):
         hPin = hash(pin, seed)
         log.debug(
             "[getHashedPin] hPin: %s, pin: %s, seed: %s",
-            binascii.hexlify(hPin), pin, self.LinOtpSeed or ""
+            binascii.hexlify(hPin),
+            pin,
+            self.LinOtpSeed or "",
         )
         return binascii.hexlify(hPin)
 
@@ -866,7 +868,7 @@ class Challenge(db.Model):
         )
         try:
             data = json.loads(saved_data)
-        except:
+        except BaseException:
             data = saved_data
         return data
 

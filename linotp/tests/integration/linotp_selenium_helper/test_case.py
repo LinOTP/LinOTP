@@ -182,7 +182,8 @@ class TestCase(object):
                         "Error creating Chrome driver. Maybe you need to"
                         " install 'chromedriver'. If you wish to use another "
                         " browser please  adapt your configuratiion file. "
-                        "Error message: %s", exx
+                        "Error message: %s",
+                        exx,
                     )
                     raise
 

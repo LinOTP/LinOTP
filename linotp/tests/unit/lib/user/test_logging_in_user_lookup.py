@@ -86,7 +86,7 @@ class TestLoggingUserInResolver(unittest.TestCase):
     @patch("linotp.lib.user.log", new=mocked_logging)
     @patch("linotp.lib.user._get_user_lookup_cache")
     def test_login_user_data(self, mocked_get_user_lookup_cache):
-        """ test that no sensitive data got logged """
+        """test that no sensitive data got logged"""
 
         global mocked_context
 

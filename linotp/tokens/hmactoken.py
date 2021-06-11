@@ -431,7 +431,10 @@ class HmacTokenClass(TokenClass):
             log.warning(
                 "[check_otp_exist] a value error occurred while converting: "
                 "otplen %r, counter %r : ValueError: %r ret: %r ",
-                self.token.LinOtpOtpLen, self.token.LinOtpCount, ex, res
+                self.token.LinOtpOtpLen,
+                self.token.LinOtpCount,
+                ex,
+                res,
             )
             return res
 
@@ -587,7 +590,10 @@ class HmacTokenClass(TokenClass):
         if nextOtp != otp2:
             log.debug(
                 "[resync] exit. Failed to verify second otp: nextOtp:"
-                " %r != otp2: %r ret: %r", nextOtp, otp2, ret
+                " %r != otp2: %r ret: %r",
+                nextOtp,
+                otp2,
+                ret,
             )
             return ret
 
@@ -609,7 +615,8 @@ class HmacTokenClass(TokenClass):
         except Exception as ex:
             log.warning(
                 "[getSyncTimeOut] AutoResyncTimeout: value error %r"
-                " - reset to 5*60", ex
+                " - reset to 5*60",
+                ex,
             )
             timeOut = 5 * 60
 
@@ -669,7 +676,7 @@ class HmacTokenClass(TokenClass):
         except ValueError as ex:
             log.error(
                 "[get_multi_otp]: Could not convert otplen - value error %r ",
-                ex
+                ex,
             )
             raise Exception(ex)
         s_count = self.getOtpCount()

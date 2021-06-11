@@ -241,7 +241,7 @@ def dec(h, p):
     v = "%d" % truncated_value(h)
     if len(v) < p:
         v = (p - len(v)) * "0" + v
-    return v[len(v) - p:]
+    return v[len(v) - p :]
 
 
 def int2beint64(i):
@@ -455,7 +455,7 @@ class OcraSuite:
                 C = int(C)
                 if C < 0 or C > 2 ** 64:
                     raise Exception()
-            except:
+            except BaseException:
                 raise ValueError("Invalid counter value %r" % C)
             datainput = int2beint64(int(C))
         return datainput
@@ -710,7 +710,7 @@ class OcraSuite:
         challenge = ocraChallenge.get("challenge")
         idx = challenge.find(":")
         if idx != -1:
-            challenge = challenge[idx + 1:]
+            challenge = challenge[idx + 1 :]
 
         param = {}
         param["Q"] = challenge
@@ -738,12 +738,20 @@ class OcraSuite:
                 edate = datetime.fromtimestamp(end)
                 log.info(
                     "[OcraSuite:checkOtp] failed for otp val %r :(exp %r)"
-                    " for timerange:  %r - %r ", otp, passw, sdate, edate
+                    " for timerange:  %r - %r ",
+                    otp,
+                    passw,
+                    sdate,
+                    edate,
                 )
             else:
                 log.info(
                     "[OcraSuite:checkOtp] failed for otp val %r :(exp %r)"
-                    " for range: %r - %r", otp, passw, start, end
+                    " for range: %r - %r",
+                    otp,
+                    passw,
+                    start,
+                    end,
                 )
         return ret
 

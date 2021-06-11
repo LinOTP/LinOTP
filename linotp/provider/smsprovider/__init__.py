@@ -104,8 +104,8 @@ class ISMSProvider(object):
         suppress_prefix = self.config.get("SUPPRESS_PREFIX", "")
         if suppress_prefix:
             phone = phone.lstrip()
-            if phone[0: len(suppress_prefix)] == suppress_prefix:
-                phone = phone[len(suppress_prefix):]
+            if phone[0 : len(suppress_prefix)] == suppress_prefix:
+                phone = phone[len(suppress_prefix) :]
 
         return self._submitMessage(phone, message)
 

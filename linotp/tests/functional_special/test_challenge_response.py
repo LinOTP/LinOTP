@@ -102,7 +102,7 @@ def email_otp_func(call_args):
         _email_from = ordered_args[0]
         _email_to = ordered_args[1]
         message = ordered_args[2]
-        matches = re.search("\d{6}", message)
+        matches = re.search(r"\d{6}", message)
         otp = matches.group(0)
     except Exception as exx:
         log.error("email_otp failed: %r", exx)
@@ -472,7 +472,7 @@ class TestChallengeResponseController(TestSpecialController):
         # and a reply message message
         body = json.loads(response.body)
         state = body.get("detail", {}).get("transactionid", None)
-        assert state != None, response
+        assert state is not None, response
 
         # submit a otp only challenge response
         otp = self.calcOTP(otpkey, counter=counter)

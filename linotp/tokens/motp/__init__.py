@@ -105,7 +105,9 @@ class mTimeOtp(object):
         if res <= self.oldtime:
             log.warning(
                 "[checkOtp] otpvalue %s checked once before (%r<=%r)",
-                anOtpVal, res, self.oldtime
+                anOtpVal,
+                res,
+                self.oldtime,
             )
             res = -1
         if res == -1:

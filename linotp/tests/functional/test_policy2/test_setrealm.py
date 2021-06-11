@@ -76,7 +76,7 @@ class TestPolicySetrealm(TestController):
         TestController.tearDown(self)
 
     def define_setrealm_policies(self):
-        """ define setrealm policy with resolver selector """
+        """define setrealm policy with resolver selector"""
 
         # ------------------------------------------------------------------ --
 
@@ -105,7 +105,7 @@ class TestPolicySetrealm(TestController):
         assert '"active": true' in response, response
 
     def test_setrealm_policy_negative(self):
-        """ test setrealm with resolver selector """
+        """test setrealm with resolver selector"""
 
         self.define_setrealm_policies()
 
@@ -138,7 +138,7 @@ class TestPolicySetrealm(TestController):
         return
 
     def test_setrealm_policy_positiv(self):
-        """ test setrealm with resolver selector """
+        """test setrealm with resolver selector"""
 
         self.define_setrealm_policies()
 

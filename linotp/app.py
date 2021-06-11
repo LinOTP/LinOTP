@@ -725,7 +725,7 @@ def setup_cache(app):
 
 
 def init_linotp_config(app):
-    """ initialize the app global linotp config manager """
+    """initialize the app global linotp config manager"""
 
     app.linotp_app_config = LinotpAppConfig()
 

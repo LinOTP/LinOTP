@@ -298,7 +298,8 @@ class YubikeyTokenClass(TokenClass):
 
         log.debug(
             "[checkOtp] decrypted: usage_count: %r, session_count: %r",
-            usage_counter, session_counter
+            usage_counter,
+            session_counter,
         )
 
         # The checksum is a CRC-16 (16-bit ISO 13239 1st complement) that
@@ -339,7 +340,7 @@ class YubikeyTokenClass(TokenClass):
 
         log.debug(
             "[checkOtp] compare counter to LinOtpCount: %r",
-            self.token.LinOtpCount
+            self.token.LinOtpCount,
         )
         if count_int >= self.token.LinOtpCount:
             return count_int

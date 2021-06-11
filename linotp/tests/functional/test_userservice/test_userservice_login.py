@@ -621,7 +621,8 @@ class TestUserserviceLogin(TestUserserviceController):
 
         # enroll the qr token:
 
-        # response should contain pairing url, check if it was sent and validate
+        # response should contain pairing url, check if it was sent and
+        # validate
 
         user = "passthru_user1@myDefRealm"
         serial = serial

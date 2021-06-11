@@ -248,7 +248,7 @@ class TestGetClientCase(unittest.TestCase):
     @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
     @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
     def test_ipaddr_value(self):
-        """ unit test for get_ip_address """
+        """unit test for get_ip_address"""
 
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.return_value = "91.208.83.132"
@@ -275,7 +275,7 @@ class TestGetClientCase(unittest.TestCase):
     @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
     @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
     def test_network_value(self):
-        """ unit test for get_ip_network """
+        """unit test for get_ip_network"""
 
         ip_network = get_ip_network("93.184.216.34/29")
         assert len(list(ip_network)) == 8
@@ -316,7 +316,7 @@ class TestGetClientCase(unittest.TestCase):
     @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
     @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
     def test_addr_in_network(self):
-        """ unit test for _is_addr_in_network """
+        """unit test for _is_addr_in_network"""
 
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.return_value = "136.243.104.66"

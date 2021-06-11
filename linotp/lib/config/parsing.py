@@ -205,7 +205,7 @@ class ConfigTree(dict):
             raise ConfigNotRecognized(composite_key)
 
     def pretty(self):
-        """ Returns a pretty print of the tree """
+        """Returns a pretty print of the tree"""
 
         return json.dumps(self, indent=4)
 

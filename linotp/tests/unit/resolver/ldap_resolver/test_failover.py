@@ -54,7 +54,7 @@ class MockedLdapObject:
         self.uri = uri
 
     def simple_bind_s(self, user, passw, *args, **kwargs):
-        """  emulate a simple_bind  """
+        """emulate a simple_bind"""
 
         if "fail" in self.uri:
             raise LDAPError("failed to connect")
@@ -88,27 +88,27 @@ class FakeLdapResolver(LDAPResolver):
 
 
 class MockedBindPW:
-    """ simple helper  to emulate the crypted data / password """
+    """simple helper  to emulate the crypted data / password"""
 
     def __init__(self, pw):
         self.pw = pw
 
     def get_unencrypted(self):
-        """ mock the return of crypted data """
+        """mock the return of crypted data"""
         return self.pw
 
 
 class MockedResourceRegistry(DictResourceRegistry):
-    """ mock the registry, so we can access the registry data localy """
+    """mock the registry, so we can access the registry data localy"""
 
     registry = {}
 
 
 class MockedResourceScheduler(ResourceScheduler):
-    """ mock the resource scheduler, so we can establish our local registry """
+    """mock the resource scheduler, so we can establish our local registry"""
 
     def __init__(self, uri_list=None, tries=1):
-        """ overload the constuctor so we can control the retries """
+        """overload the constuctor so we can control the retries"""
         super(MockedResourceScheduler, self).__init__(
             uri_list=uri_list,
             tries=TRIES,

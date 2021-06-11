@@ -628,7 +628,9 @@ def verifyLicenseInfo(
         error = _("signature could not be verified!")
         log.error(
             "Verification of support license failed!"
-            "Error was %s\n. Lincence info: %r", error, lic_dict.info()
+            "Error was %s\n. Lincence info: %r",
+            error,
+            lic_dict.info(),
         )
         if raiseException:
             raise InvalidLicenseException(error, type="INVALID_SIGNATURE")
@@ -640,7 +642,9 @@ def verifyLicenseInfo(
         error = "%s" % expiration
         log.error(
             "Verification of support license failed!"
-            "Error was %s\n. Lincence info: %r", error, lic_dict.info()
+            "Error was %s\n. Lincence info: %r",
+            error,
+            lic_dict.info(),
         )
         if raiseException:
             raise InvalidLicenseException(error, type="EXPIRED")
@@ -653,12 +657,14 @@ def verifyLicenseInfo(
             error = "volume exceeded:"
             try:
                 error = _(error)
-            except:
+            except BaseException:
                 pass
             error = error + volume_info
             log.error(
                 "Verification of support license failed!"
-                "Error was %s\n. Lincence info: %r", error, lic_dict.info()
+                "Error was %s\n. Lincence info: %r",
+                error,
+                lic_dict.info(),
             )
             if raiseException:
                 raise InvalidLicenseException(error, type="INVALID_VOLUME")
@@ -823,14 +829,18 @@ def verify_user_volume(lic_dict):
     except TypeError as err:
         log.error(
             "Failed to convert license. Number of token users: %r. "
-            "Exception was:%r ", lic_dict.get("user-num"), err
+            "Exception was:%r ",
+            lic_dict.get("user-num"),
+            err,
         )
         return False, "max %d" % user_volume
 
     if num > user_volume + 2:
         log.error(
             "Licensed token user volume exceeded. Currently %r users "
-            "present, but only %r allowed.", num, user_volume
+            "present, but only %r allowed.",
+            num,
+            user_volume,
         )
         used = _("token user used")
         licnu = _("token users supported")
@@ -852,14 +862,18 @@ def verify_token_volume(lic_dict):
     except TypeError as err:
         log.error(
             "Failed to convert license. Number of tokens: %r. "
-            "Exception was:%r ", lic_dict.get("token-num"), err
+            "Exception was:%r ",
+            lic_dict.get("token-num"),
+            err,
         )
         return False, "max %d" % token_volume
 
     if num > token_volume + 2:
         log.error(
             "Licensed token volume exceeded. Currently %r tokens "
-            "present, but only %r allowed.", num, token_volume
+            "present, but only %r allowed.",
+            num,
+            token_volume,
         )
         used = _("tokens used")
         licnu = _("tokens supported")
@@ -906,7 +920,7 @@ def get_public_keys():
             log.error(
                 "Licence: error during reading " "public key file (%s): %r",
                 key_file,
-                exx
+                exx,
             )
 
     return pubKeys
@@ -963,7 +977,7 @@ def check_date(expire_type, expire):
         try:
             expiration_date = datetime.datetime.strptime(expire, fmt)
             break
-        except:
+        except BaseException:
             log.info(
                 "License expiration format incorrect. Format is %s, "
                 "but got %r",

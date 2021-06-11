@@ -208,7 +208,8 @@ class TestUserserviceDescriptionTest(TestController):
 
         # ------------------------------------------------------------------ --
 
-        # 2. user can assign this token, setting description is allowed implicit
+        # 2. user can assign this token, setting description is allowed
+        # implicit
 
         params = {"serial": serial, "description": "this is my token"}
 

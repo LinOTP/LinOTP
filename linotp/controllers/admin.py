@@ -34,7 +34,9 @@ from flask import current_app
 
 from linotp.controllers.base import BaseController, SessionCookieMixin
 from linotp.flap import (
-    config, request, response,
+    config,
+    request,
+    response,
     HTTPUnauthorized,
 )
 from linotp.lib.audit.base import get_token_num_info
@@ -113,7 +115,7 @@ log = logging.getLogger(__name__)
 
 class AdminController(BaseController, SessionCookieMixin):
 
-    '''
+    """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server.
     The AdminController is used for administrative tasks like adding tokens
@@ -123,7 +125,7 @@ class AdminController(BaseController, SessionCookieMixin):
         https://server/admin/<functionname>
 
     The functions are described below in more detail.
-    '''
+    """
 
     session_cookie_name = "admin_session"  # for `SessionCookieMixin`
 
@@ -136,14 +138,14 @@ class AdminController(BaseController, SessionCookieMixin):
                 created by sendError with the context info 'before'
         """
 
-        action = request_context['action']
+        action = request_context["action"]
 
         try:
 
-            g.audit['success'] = False
-            g.audit['client'] = get_client(request)
+            g.audit["success"] = False
+            g.audit["client"] = get_client(request)
 
-            if request.path.lower() != '/admin/getsession':
+            if request.path.lower() != "/admin/getsession":
                 # Check we have a valid session
                 check_session(request)
 
@@ -152,50 +154,60 @@ class AdminController(BaseController, SessionCookieMixin):
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(response, exx, context='before')
+            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
 
-        action = request_context['action']
-        audit = config.get('audit')
+        action = request_context["action"]
+        audit = config.get("audit")
 
         try:
             # prevent logging of getsession or other irrelevant requests
-            if action in ['getsession', 'dropsession']:
+            if action in ["getsession", "dropsession"]:
                 return response
 
-            g.audit['administrator'] = getUserFromRequest(request).get("login")
+            g.audit["administrator"] = getUserFromRequest(request).get("login")
 
-            serial = request.params.get('serial')
+            serial = request.params.get("serial")
             if serial:
-                g.audit['serial'] = serial
-                g.audit['token_type'] = getTokenType(serial)
+                g.audit["serial"] = serial
+                g.audit["token_type"] = getTokenType(serial)
 
             # ------------------------------------------------------------- --
 
             # show the token usage counter for the actions which change the
             # numbers of tokens
 
-            if action in ['assign', 'unassign', 'enable', 'disable', 'init',
-                          'loadtokens', 'copyTokenUser', 'losttoken',
-                          'remove', 'tokenrealm', 'loadtokens']:
-                event = 'token_' + action
+            if action in [
+                "assign",
+                "unassign",
+                "enable",
+                "disable",
+                "init",
+                "loadtokens",
+                "copyTokenUser",
+                "losttoken",
+                "remove",
+                "tokenrealm",
+                "loadtokens",
+            ]:
+                event = "token_" + action
 
-                if g.audit.get('source_realm'):
-                    source_realms = g.audit.get('source_realm')
+                if g.audit.get("source_realm"):
+                    source_realms = g.audit.get("source_realm")
                     token_reporting(event, source_realms)
 
-                target_realms = g.audit.get('realm')
+                target_realms = g.audit.get("realm")
                 token_reporting(event, target_realms)
 
-                g.audit['action_detail'] += get_token_num_info()
+                g.audit["action_detail"] += get_token_num_info()
 
             # ------------------------------------------------------------- --
 
@@ -204,22 +216,27 @@ class AdminController(BaseController, SessionCookieMixin):
             return response
 
         except Exception as exx:
-            log.error(
-                "[__after__] unable to create a session cookie: %r", exx)
+            log.error("[__after__] unable to create a session cookie: %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context='after')
+            return sendError(response, exx, context="after")
 
     def logout(self):
         # see
         # http://docs.pylonsproject.org/projects/pyramid/1.0/narr/webob.html
-        g.audit['action_detail'] = "logout"
+        g.audit["action_detail"] = "logout"
 
         nonce = request.environ.get("nonce")
         realm = request.environ.get("realm")
         detail = "401 Unauthorized"
         raise HTTPUnauthorized(
             str(detail),
-            [('WWW-Authenticate', 'Digest realm="%s", nonce="%s", qop="auth"' % (realm, nonce))]
+            [
+                (
+                    "WWW-Authenticate",
+                    'Digest realm="%s", nonce="%s", qop="auth"'
+                    % (realm, nonce),
+                )
+            ],
         )
 
         # raise exc.HTTPUnauthorized(
@@ -238,13 +255,13 @@ class AdminController(BaseController, SessionCookieMixin):
             serial = self.request_params["serial"]
 
             # check admin authorization
-            checkPolicyPre('admin', 'tokenowner', self.request_params)
+            checkPolicyPre("admin", "tokenowner", self.request_params)
             th = TokenHandler()
             owner = th.getTokenOwner(serial)
             if owner.info:
                 ret = owner.info
 
-            g.audit['success'] = len(ret) > 0
+            g.audit["success"] = len(ret) > 0
 
             db.session.commit()
             return sendResult(response, ret)
@@ -267,19 +284,19 @@ class AdminController(BaseController, SessionCookieMixin):
 
         """
 
-        token_info = tok['LinOtp.TokenInfo']
+        token_info = tok["LinOtp.TokenInfo"]
 
         if token_info:
             info = json.loads(token_info)
         else:
             info = {}
 
-        for field in ['validity_period_end', 'validity_period_start']:
+        for field in ["validity_period_end", "validity_period_start"]:
             if field in info:
-                date = datetime.strptime(info[field], '%d/%m/%y %H:%M')
+                date = datetime.strptime(info[field], "%d/%m/%y %H:%M")
                 info[field] = date.isoformat()
 
-        tok['LinOtp.TokenInfo'] = info
+        tok["LinOtp.TokenInfo"] = info
 
     def show(self):
         """
@@ -330,7 +347,7 @@ class AdminController(BaseController, SessionCookieMixin):
             sort = param.get("sortby")
             dir = param.get("sortdir")
             psize = param.get("pagesize")
-            realm = param.get("viewrealm", param.get("realm", ''))
+            realm = param.get("viewrealm", param.get("realm", ""))
             ufields = param.get("user_fields")
             output_format = param.get("outform")
             is_tokeninfo_json = param.get("tokeninfo_format") == "json"
@@ -343,29 +360,40 @@ class AdminController(BaseController, SessionCookieMixin):
 
             filterRealm = []
             # check admin authorization
-            res = checkPolicyPre('admin', 'show', param, user=user)
+            res = checkPolicyPre("admin", "show", param, user=user)
 
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
-            filterRealm = ['*']
-            if res['active'] and res['realms']:
-                filterRealm = res['realms']
+            filterRealm = ["*"]
+            if res["active"] and res["realms"]:
+                filterRealm = res["realms"]
 
             if realm:
                 # If the admin wants to see only one realm, then do it:
-                log.debug("Only tokens in realm %s will be shown",
-                          realm)
-                if realm in filterRealm or '*' in filterRealm:
+                log.debug("Only tokens in realm %s will be shown", realm)
+                if realm in filterRealm or "*" in filterRealm:
                     filterRealm = [realm]
 
-            log.info("[show] admin >%s< may display the following realms: %r",
-                     res['admin'], filterRealm)
+            log.info(
+                "[show] admin >%s< may display the following realms: %r",
+                res["admin"],
+                filterRealm,
+            )
 
-            toks = TokenIterator(user, serial, page, psize, filter, sort, dir,
-                                 filterRealm, user_fields)
+            toks = TokenIterator(
+                user,
+                serial,
+                page,
+                psize,
+                filter,
+                sort,
+                dir,
+                filterRealm,
+                user_fields,
+            )
 
-            g.audit['success'] = True
-            g.audit['info'] = "realm: %s, filter: %r" % (filterRealm, filter)
+            g.audit["success"] = True
+            g.audit["info"] = "realm: %s, filter: %r" % (filterRealm, filter)
 
             # put in the result
             result = {}
@@ -390,16 +418,16 @@ class AdminController(BaseController, SessionCookieMixin):
                 return sendResult(response, result)
 
         except PolicyException as pe:
-            log.error('[show] policy failed: %r', pe)
+            log.error("[show] policy failed: %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.error('[show] failed: %r', exx)
+            log.error("[show] failed: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
-########################################################
+    ########################################################
     def remove(self):
         """
         method:
@@ -430,11 +458,11 @@ class AdminController(BaseController, SessionCookieMixin):
 
             user = getUserFromParam(param)
 
-            g.audit['user'] = user.login
-            g.audit['realm'] = user.realm or ""
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm or ""
 
             if not serials and not user:
-                raise ParameterError('missing parameter user or serial!')
+                raise ParameterError("missing parameter user or serial!")
 
             if user:
                 tokens = getTokens4UserOrSerial(user)
@@ -445,13 +473,16 @@ class AdminController(BaseController, SessionCookieMixin):
             for serial in set(serials):
                 realms.union(getTokenRealms(serial))
 
-            g.audit['realm'] = "%r" % realms
+            g.audit["realm"] = "%r" % realms
 
             # check admin authorization
-            checkPolicyPre('admin', 'remove', param)
+            checkPolicyPre("admin", "remove", param)
 
-            log.info("[remove] removing token with serial %r for user %r",
-                     serials, user.login)
+            log.info(
+                "[remove] removing token with serial %r for user %r",
+                serials,
+                user.login,
+            )
 
             ret = 0
 
@@ -459,7 +490,7 @@ class AdminController(BaseController, SessionCookieMixin):
             for serial in set(serials):
                 ret = th.removeToken(user, serial)
 
-            g.audit['success'] = ret
+            g.audit["success"] = ret
 
             opt_result_dict = {}
 
@@ -470,7 +501,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 else:
                     msg = "No token with serials %r" % serials
 
-                opt_result_dict['message'] = msg
+                opt_result_dict["message"] = msg
 
             db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
@@ -485,9 +516,7 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx)
 
-
-########################################################
-
+    ########################################################
 
     def enable(self):
         """
@@ -516,33 +545,37 @@ class AdminController(BaseController, SessionCookieMixin):
             user = getUserFromParam(param)
 
             # check admin authorization
-            checkPolicyPre('admin', 'enable', param, user=user)
+            checkPolicyPre("admin", "enable", param, user=user)
 
             th = TokenHandler()
-            log.info("[enable] enable token with serial %s for user %s@%s.",
-                     serial, user.login, user.realm)
+            log.info(
+                "[enable] enable token with serial %s for user %s@%s.",
+                serial,
+                user.login,
+                user.realm,
+            )
             ret = th.enableToken(True, user, serial)
 
-            g.audit['success'] = ret
-            g.audit['user'] = user.login
+            g.audit["success"] = ret
+            g.audit["user"] = user.login
 
             if user.is_empty:
-                g.audit['realm'] = getTokenRealms(serial)
+                g.audit["realm"] = getTokenRealms(serial)
             else:
-                g.audit['realm'] = user.realm
-                if g.audit['realm'] == "":
+                g.audit["realm"] = user.realm
+                if g.audit["realm"] == "":
                     realms = set()
                     for tokenserial in getTokens4UserOrSerial(user, serial):
                         realms.union(tokenserial.getRealms())
-                    g.audit['realm'] = realms
+                    g.audit["realm"] = realms
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict['message'] = "No token with serial %s" % serial
+                opt_result_dict["message"] = "No token with serial %s" % serial
             elif ret == 0 and user and not user.is_empty:
-                opt_result_dict['message'] = "No tokens for this user"
+                opt_result_dict["message"] = "No tokens for this user"
 
-            checkPolicyPost('admin', 'enable', param, user=user)
+            checkPolicyPost("admin", "enable", param, user=user)
 
             db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
@@ -555,12 +588,10 @@ class AdminController(BaseController, SessionCookieMixin):
         except Exception as exx:
             log.error("[enable] failed: %r", exx)
             db.session.rollback()
-            log.error('[enable] error enabling token')
+            log.error("[enable] error enabling token")
             return sendError(response, exx, 1)
 
-
-########################################################
-
+    ########################################################
 
     def getSerialByOtp(self):
         """
@@ -603,25 +634,25 @@ class AdminController(BaseController, SessionCookieMixin):
             username = ""
 
             # check admin authorization
-            checkPolicyPre('admin', 'getserial', param)
+            checkPolicyPre("admin", "getserial", param)
             th = TokenHandler()
-            serial, username, resolverClass = th.get_serial_by_otp(None, otp,
-                                                                   10, typ=typ,
-                                                                   realm=realm, assigned=assigned)
-            log.debug("[getSerialByOtp] found %s with user %s",
-                      serial, username)
+            serial, username, resolverClass = th.get_serial_by_otp(
+                None, otp, 10, typ=typ, realm=realm, assigned=assigned
+            )
+            log.debug(
+                "[getSerialByOtp] found %s with user %s", serial, username
+            )
 
             if "" != serial:
-                checkPolicyPost('admin', 'getserial',
-                                {'serial': serial})
+                checkPolicyPost("admin", "getserial", {"serial": serial})
 
-            g.audit['success'] = 1
-            g.audit['serial'] = serial
+            g.audit["success"] = 1
+            g.audit["serial"] = serial
 
-            ret['success'] = True
-            ret['serial'] = serial
-            ret['user_login'] = username
-            ret['user_resolver'] = resolverClass
+            ret["success"] = True
+            ret["serial"] = serial
+            ret["user_login"] = username
+            ret["user_resolver"] = resolverClass
 
             db.session.commit()
             return sendResult(response, ret, 1)
@@ -632,14 +663,12 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendError(response, pe, 1)
 
         except Exception as exx:
-            g.audit['success'] = 0
+            g.audit["success"] = 0
             db.session.rollback()
-            log.error('[getSerialByOtp] error: %r', exx)
+            log.error("[getSerialByOtp] error: %r", exx)
             return sendError(response, exx, 1)
 
-
-########################################################
-
+    ########################################################
 
     def disable(self):
         """
@@ -669,31 +698,35 @@ class AdminController(BaseController, SessionCookieMixin):
             auth_user = getUserFromRequest(request)
 
             # check admin authorization
-            checkPolicyPre('admin', 'disable', param, user=user)
+            checkPolicyPre("admin", "disable", param, user=user)
 
             th = TokenHandler()
-            log.info("[disable] disable token with serial %s for user %s@%s.",
-                     serial, user.login, user.realm)
+            log.info(
+                "[disable] disable token with serial %s for user %s@%s.",
+                serial,
+                user.login,
+                user.realm,
+            )
             ret = th.enableToken(False, user, serial)
 
-            g.audit['success'] = ret
-            g.audit['user'] = user.login
+            g.audit["success"] = ret
+            g.audit["user"] = user.login
 
             if user.is_empty:
-                g.audit['realm'] = getTokenRealms(serial)
+                g.audit["realm"] = getTokenRealms(serial)
             else:
-                g.audit['realm'] = user.realm
-                if g.audit['realm'] == "":
+                g.audit["realm"] = user.realm
+                if g.audit["realm"] == "":
                     realms = set()
                     for tokenserial in getTokens4UserOrSerial(user, serial):
                         realms.union(tokenserial.getRealms())
-                    g.audit['realm'] = realms
+                    g.audit["realm"] = realms
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict['message'] = "No token with serial %s" % serial
+                opt_result_dict["message"] = "No token with serial %s" % serial
             elif ret == 0 and user and not user.is_empty:
-                opt_result_dict['message'] = "No tokens for this user"
+                opt_result_dict["message"] = "No tokens for this user"
 
             db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
@@ -708,12 +741,10 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx, 1)
 
-
-#######################################################
-
+    #######################################################
 
     def check_serial(self):
-        '''
+        """
         method
             admin/check_serial
 
@@ -731,7 +762,7 @@ class AdminController(BaseController, SessionCookieMixin):
         exception:
             if an error occurs an exception is serialized and returned
 
-        '''
+        """
 
         try:
             try:
@@ -749,12 +780,14 @@ class AdminController(BaseController, SessionCookieMixin):
             th = TokenHandler()
             (unique, new_serial) = th.check_serial(serial)
 
-            g.audit['success'] = True
-            g.audit['serial'] = serial
-            g.audit['action_detail'] = "%r - %r" % (unique, new_serial)
+            g.audit["success"] = True
+            g.audit["serial"] = serial
+            g.audit["action_detail"] = "%r - %r" % (unique, new_serial)
 
             db.session.commit()
-            return sendResult(response, {"unique": unique, "new_serial": new_serial}, 1)
+            return sendResult(
+                response, {"unique": unique, "new_serial": new_serial}, 1
+            )
 
         except PolicyException as pe:
             log.error("[check_serial] policy failed %r", pe)
@@ -766,9 +799,7 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx)
 
-
-########################################################
-
+    ########################################################
 
     def init(self):
         """
@@ -828,18 +859,21 @@ class AdminController(BaseController, SessionCookieMixin):
         try:
 
             params = self.request_params.copy()
-            params.setdefault('key_size', 20)
+            params.setdefault("key_size", 20)
 
             # --------------------------------------------------------------- --
 
             # determine token class
 
-            token_cls_alias = params.get("type") or 'hmac'
+            token_cls_alias = params.get("type") or "hmac"
             lower_alias = token_cls_alias.lower()
 
             if lower_alias not in tokenclass_registry:
-                raise TokenAdminError('admin/init failed: unknown token '
-                                      'type %r' % token_cls_alias, id=1610)
+                raise TokenAdminError(
+                    "admin/init failed: unknown token "
+                    "type %r" % token_cls_alias,
+                    id=1610,
+                )
 
             token_cls = tokenclass_registry.get(lower_alias)
 
@@ -861,7 +895,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
             # check admin authorization
 
-            res = checkPolicyPre('admin', 'init', params, user=user)
+            res = checkPolicyPre("admin", "init", params, user=user)
 
             # --------------------------------------------------------------- --
 
@@ -869,8 +903,8 @@ class AdminController(BaseController, SessionCookieMixin):
 
             tokenrealm = None
             if user.login == "":
-                log.debug("[init] setting tokenrealm %r", res['realms'])
-                tokenrealm = res['realms']
+                log.debug("[init] setting tokenrealm %r", res["realms"])
+                tokenrealm = res["realms"]
 
             # --------------------------------------------------------------- --
 
@@ -879,23 +913,25 @@ class AdminController(BaseController, SessionCookieMixin):
 
             # --------------------------------------------------------------- --
 
-            serial = params.get('serial', None)
-            prefix = params.get('prefix', None)
+            serial = params.get("serial", None)
+            prefix = params.get("prefix", None)
 
             # --------------------------------------------------------------- --
 
             th = TokenHandler()
             if not serial:
                 serial = th.genSerial(token_cls_alias, prefix)
-                params['serial'] = serial
+                params["serial"] = serial
 
-            log.info("[init] initialize token. user: %s, serial: %s",
-                     user.login, serial)
+            log.info(
+                "[init] initialize token. user: %s, serial: %s",
+                user.login,
+                serial,
+            )
 
             # --------------------------------------------------------------- --
 
-            (ret, token) = th.initToken(params, user,
-                                        tokenrealm=tokenrealm)
+            (ret, token) = th.initToken(params, user, tokenrealm=tokenrealm)
 
             # --------------------------------------------------------------- --
 
@@ -910,20 +946,20 @@ class AdminController(BaseController, SessionCookieMixin):
             # prepare data for audit
 
             if token is not None and ret is True:
-                g.audit['serial'] = token.getSerial()
-                g.audit['token_type'] = token.type
+                g.audit["serial"] = token.getSerial()
+                g.audit["token_type"] = token.type
 
-            g.audit['success'] = ret
-            g.audit['user'] = user.login
-            g.audit['realm'] = user.realm
+            g.audit["success"] = ret
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
 
-            if g.audit['realm'] == "":
-                g.audit['realm'] = tokenrealm
+            if g.audit["realm"] == "":
+                g.audit["realm"] = tokenrealm
 
-            g.audit['success'] = ret
+            g.audit["success"] = ret
             # --------------------------------------------------------------- --
 
-            checkPolicyPost('admin', 'init', params, user=user)
+            checkPolicyPost("admin", "init", params, user=user)
             db.session.commit()
 
             # --------------------------------------------------------------- --
@@ -931,10 +967,10 @@ class AdminController(BaseController, SessionCookieMixin):
             # depending on parameters send back an qr image
             # or a text result
 
-            if 'qr' in params and token is not None:
+            if "qr" in params and token is not None:
                 (rdata, hparam) = token.getQRImageData(response_detail)
                 hparam.update(response_detail)
-                hparam['qr'] = params.get('qr') or 'html'
+                hparam["qr"] = params.get("qr") or "html"
                 return sendQRImageResult(response, rdata, hparam)
             else:
                 return sendResult(response, ret, opt=response_detail)
@@ -951,7 +987,7 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx)
 
-########################################################
+    ########################################################
 
     def unassign(self):
         """
@@ -985,34 +1021,39 @@ class AdminController(BaseController, SessionCookieMixin):
 
             user = getUserFromParam(param)
 
-            g.audit['source_realm'] = getTokenRealms(serial)
+            g.audit["source_realm"] = getTokenRealms(serial)
 
             # check admin authorization
-            checkPolicyPre('admin', 'unassign', param)
+            checkPolicyPre("admin", "unassign", param)
 
             th = TokenHandler()
-            log.info("[unassign] unassigning token with serial %r from "
-                     "user %r@%r", serial, user.login, user.realm)
+            log.info(
+                "[unassign] unassigning token with serial %r from "
+                "user %r@%r",
+                serial,
+                user.login,
+                user.realm,
+            )
             ret = th.unassignToken(serial, user, None)
 
-            g.audit['success'] = ret
-            g.audit['user'] = user.login
-            g.audit['realm'] = user.realm
+            g.audit["success"] = ret
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
 
-            if "" == g.audit['realm']:
-                g.audit['realm'] = getTokenRealms(serial)
+            if "" == g.audit["realm"]:
+                g.audit["realm"] = getTokenRealms(serial)
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict['message'] = "No token with serial %s" % serial
+                opt_result_dict["message"] = "No token with serial %s" % serial
             elif ret == 0 and user and not user.is_empty:
-                opt_result_dict['message'] = "No tokens for this user"
+                opt_result_dict["message"] = "No tokens for this user"
 
             db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.error('[unassign] policy failed %r', pe)
+            log.error("[unassign] policy failed %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
@@ -1021,8 +1062,7 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx, 1)
 
-
-########################################################
+    ########################################################
 
     def assign(self):
         """
@@ -1056,37 +1096,41 @@ class AdminController(BaseController, SessionCookieMixin):
             user = getUserFromParam(param)
 
             # check admin authorization
-            checkPolicyPre('admin', 'assign', param)
+            checkPolicyPre("admin", "assign", param)
 
             th = TokenHandler()
-            g.audit['source_realm'] = getTokenRealms(serial)
-            log.info("[assign] assigning token with serial %s to user %s@%s",
-                     serial, user.login, user.realm)
+            g.audit["source_realm"] = getTokenRealms(serial)
+            log.info(
+                "[assign] assigning token with serial %s to user %s@%s",
+                serial,
+                user.login,
+                user.realm,
+            )
 
             res = th.assignToken(serial, user, upin, param=param)
 
-            checkPolicyPost('admin', 'assign', param, user)
+            checkPolicyPost("admin", "assign", param, user)
 
-            g.audit['success'] = res
-            g.audit['user'] = user.login
-            g.audit['realm'] = user.realm
-            if "" == g.audit['realm']:
-                g.audit['realm'] = getTokenRealms(serial)
+            g.audit["success"] = res
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
+            if "" == g.audit["realm"]:
+                g.audit["realm"] = getTokenRealms(serial)
 
             db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error('[assign] policy failed %r', pe)
+            log.error("[assign] policy failed %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.error('[assign] token assignment failed! %r', exx)
+            log.error("[assign] token assignment failed! %r", exx)
             db.session.rollback()
             return sendError(response, exx, 0)
 
-########################################################
+    ########################################################
 
     def setPin(self):
         """
@@ -1136,14 +1180,15 @@ class AdminController(BaseController, SessionCookieMixin):
                     raise ParameterError("Missing parameter: 'serial'")
 
                 # check admin authorization
-                checkPolicyPre('admin', 'setPin', param)
+                checkPolicyPre("admin", "setPin", param)
 
-                log.info("[setPin] setting userPin for token with serial %s",
-                         serial)
+                log.info(
+                    "[setPin] setting userPin for token with serial %s", serial
+                )
                 ret = setPinUser(userPin, serial)
                 res["set userpin"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "userpin, "
+                g.audit["action_detail"] += "userpin, "
 
             if "sopin" in param:
                 msg = "setting soPin failed"
@@ -1158,31 +1203,34 @@ class AdminController(BaseController, SessionCookieMixin):
                     raise ParameterError("Missing parameter: 'serial'")
 
                 # check admin authorization
-                checkPolicyPre('admin', 'setPin', param)
+                checkPolicyPre("admin", "setPin", param)
 
                 log.info(
-                    "[setPin] setting soPin for token with serial %s", serial)
+                    "[setPin] setting soPin for token with serial %s", serial
+                )
                 ret = setPinSo(soPin, serial)
                 res["set sopin"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "sopin, "
+                g.audit["action_detail"] += "sopin, "
 
             if count == 0:
                 db.session.rollback()
-                return sendError(response, ParameterError("Usage: %s" % description, id=77))
+                return sendError(
+                    response, ParameterError("Usage: %s" % description, id=77)
+                )
 
-            g.audit['success'] = count
+            g.audit["success"] = count
 
             db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error('[setPin] policy failed %r, %r', msg, pe)
+            log.error("[setPin] policy failed %r, %r", msg, pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.error('[setPin] %s :%r', msg, exx)
+            log.error("[setPin] %s :%r", msg, exx)
             db.session.rollback()
             return sendError(response, exx, 0)
 
@@ -1222,7 +1270,7 @@ class AdminController(BaseController, SessionCookieMixin):
         """
         try:
 
-            g.audit['info'] = "set token validity"
+            g.audit["info"] = "set token validity"
 
             param = getLowerParams(self.request_params)
 
@@ -1232,36 +1280,36 @@ class AdminController(BaseController, SessionCookieMixin):
 
             admin_user = getUserFromRequest(request)
 
-            checkPolicyPre('admin', 'set', param, user=admin_user)
+            checkPolicyPre("admin", "set", param, user=admin_user)
 
             # -------------------------------------------------------------- --
 
             # process the arguments
 
-            unlimited = 'unlimited'
+            unlimited = "unlimited"
 
             countAuthSuccessMax = None
             if "countAuthSuccessMax".lower() in param:
-                countAuthSuccessMax = param.get('countAuthSuccessMax'.lower())
+                countAuthSuccessMax = param.get("countAuthSuccessMax".lower())
 
             countAuthMax = None
             if "countAuthMax".lower() in param:
-                countAuthMax = param.get('countAuthMax'.lower())
+                countAuthMax = param.get("countAuthMax".lower())
 
             validityPeriodStart = None
             if "validityPeriodStart".lower() in param:
-                validityPeriodStart = param.get('validityPeriodStart'.lower())
+                validityPeriodStart = param.get("validityPeriodStart".lower())
 
             validityPeriodEnd = None
             if "validityPeriodEnd".lower() in param:
-                validityPeriodEnd = param.get('validityPeriodEnd'.lower())
+                validityPeriodEnd = param.get("validityPeriodEnd".lower())
 
             # -------------------------------------------------------------- --
 
             try:
-                serials = self.request_params['tokens']
+                serials = self.request_params["tokens"]
             except KeyError:
-                raise ParameterError('missing parameter: tokens[]')
+                raise ParameterError("missing parameter: tokens[]")
 
             tokens = []
             for serial in serials:
@@ -1296,9 +1344,11 @@ class AdminController(BaseController, SessionCookieMixin):
 
                 elif validityPeriodStart is not None:
 
-                    validity_period_start = datetime.utcfromtimestamp(
-                        int(validityPeriodStart)).strftime(
-                        "%d/%m/%y %H:%M").strip()
+                    validity_period_start = (
+                        datetime.utcfromtimestamp(int(validityPeriodStart))
+                        .strftime("%d/%m/%y %H:%M")
+                        .strip()
+                    )
                     token.validity_period_start = validity_period_start
 
                 # ---------------------------------------------------------- --
@@ -1308,34 +1358,35 @@ class AdminController(BaseController, SessionCookieMixin):
 
                 elif validityPeriodEnd is not None:
 
-                    validity_period_end = datetime.utcfromtimestamp(
-                        int(validityPeriodEnd)).strftime(
-                        "%d/%m/%y %H:%M").strip()
+                    validity_period_end = (
+                        datetime.utcfromtimestamp(int(validityPeriodEnd))
+                        .strftime("%d/%m/%y %H:%M")
+                        .strip()
+                    )
 
                     token.validity_period_end = validity_period_end
 
-            g.audit['success'] = 1
+            g.audit["success"] = 1
 
-            g.audit['action_detail'] = ("%r " % serials)[:80]
+            g.audit["action_detail"] = ("%r " % serials)[:80]
 
             db.session.commit()
             return sendResult(response, serials, 1)
 
         except PolicyException as pex:
-            log.error('policy failed%r', pex)
+            log.error("policy failed%r", pex)
             db.session.rollback()
             return sendError(response, pex, 1)
 
         except Exception as exx:
 
-            g.audit['success'] = False
+            g.audit["success"] = False
 
-            log.error('%r', exx)
+            log.error("%r", exx)
             db.session.rollback()
             return sendError(response, exx, 0)
 
-
-########################################################
+    ########################################################
 
     def set(self):
         """
@@ -1404,123 +1455,156 @@ class AdminController(BaseController, SessionCookieMixin):
             user = getUserFromParam(param)
 
             # check admin authorization
-            checkPolicyPre('admin', 'set', param, user=user)
+            checkPolicyPre("admin", "set", param, user=user)
 
             th = TokenHandler()
             # # if there is a pin
-            if 'pin' in param:
+            if "pin" in param:
                 msg = "[set] setting pin failed"
                 upin = param["pin"]
                 log.info("[set] setting pin for token with serial %r", serial)
                 if 1 == getOTPPINEncrypt(serial=serial, user=user):
-                    param['encryptpin'] = "True"
+                    param["encryptpin"] = "True"
                 ret = setPin(upin, user, serial, param)
                 res["set pin"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "pin, "
+                g.audit["action_detail"] += "pin, "
 
             if "MaxFailCount".lower() in param:
                 msg = "[set] setting MaxFailCount failed"
                 maxFail = int(param["MaxFailCount".lower()])
-                log.info("[set] setting maxFailCount (%r) for token with "
-                         "serial %r", maxFail, serial)
+                log.info(
+                    "[set] setting maxFailCount (%r) for token with "
+                    "serial %r",
+                    maxFail,
+                    serial,
+                )
                 ret = th.setMaxFailCount(maxFail, user, serial)
                 res["set MaxFailCount"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "maxFailCount=%d, " % maxFail
+                g.audit["action_detail"] += "maxFailCount=%d, " % maxFail
 
             if "SyncWindow".lower() in param:
                 msg = "[set] setting SyncWindow failed"
                 syncWindow = int(param["SyncWindow".lower()])
-                log.info("[set] setting syncWindow (%r) for token with "
-                         "serial %r", syncWindow, serial)
+                log.info(
+                    "[set] setting syncWindow (%r) for token with "
+                    "serial %r",
+                    syncWindow,
+                    serial,
+                )
                 ret = th.setSyncWindow(syncWindow, user, serial)
                 res["set SyncWindow"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "syncWindow=%d, " % syncWindow
+                g.audit["action_detail"] += "syncWindow=%d, " % syncWindow
 
             if "description".lower() in param:
                 msg = "[set] setting description failed"
                 description = param["description".lower()]
-                log.info("[set] setting description (%r) for token with serial"
-                         " %r", description, serial)
+                log.info(
+                    "[set] setting description (%r) for token with serial"
+                    " %r",
+                    description,
+                    serial,
+                )
                 ret = th.setDescription(description, user, serial)
                 res["set description"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "description=%r, " % description
+                g.audit["action_detail"] += "description=%r, " % description
 
             if "CounterWindow".lower() in param:
                 msg = "[set] setting CounterWindow failed"
                 counterWindow = int(param["CounterWindow".lower()])
                 log.info(
                     "[set] setting counterWindow (%r) for token with serial %r",
-                    counterWindow, serial)
+                    counterWindow,
+                    serial,
+                )
                 ret = th.setCounterWindow(counterWindow, user, serial)
                 res["set CounterWindow"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "counterWindow=%d, " % counterWindow
+                g.audit["action_detail"] += (
+                    "counterWindow=%d, " % counterWindow
+                )
 
             if "OtpLen".lower() in param:
                 msg = "[set] setting OtpLen failed"
                 otpLen = int(param["OtpLen".lower()])
                 log.info(
                     "[set] setting OtpLen (%r) for token with serial %r",
-                    otpLen, serial)
+                    otpLen,
+                    serial,
+                )
                 ret = th.setOtpLen(otpLen, user, serial)
                 res["set OtpLen"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "otpLen=%d, " % otpLen
+                g.audit["action_detail"] += "otpLen=%d, " % otpLen
 
             if "hashlib".lower() in param:
                 msg = "[set] setting hashlib failed"
                 hashlib = param["hashlib".lower()]
-                log.info("[set] setting hashlib (%r) for token with serial"
-                         " %r", hashlib, serial)
+                log.info(
+                    "[set] setting hashlib (%r) for token with serial" " %r",
+                    hashlib,
+                    serial,
+                )
                 th = TokenHandler()
                 ret = th.setHashLib(hashlib, user, serial)
                 res["set hashlib"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "hashlib=%s, " % str(hashlib)
+                g.audit["action_detail"] += "hashlib=%s, " % str(hashlib)
 
             if "timeWindow".lower() in param:
                 msg = "[set] setting timeWindow failed"
                 timeWindow = int(param["timeWindow".lower()])
-                log.info("[set] setting timeWindow (%r) for token with serial"
-                         " %r", timeWindow, serial)
+                log.info(
+                    "[set] setting timeWindow (%r) for token with serial"
+                    " %r",
+                    timeWindow,
+                    serial,
+                )
                 ret = th.addTokenInfo("timeWindow", timeWindow, user, serial)
                 res["set timeWindow"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "timeWindow=%d, " % timeWindow
+                g.audit["action_detail"] += "timeWindow=%d, " % timeWindow
 
             if "timeStep".lower() in param:
                 msg = "[set] setting timeStep failed"
                 timeStep = int(param["timeStep".lower()])
-                log.info("[set] setting timeStep (%r) for token with "
-                         "serial %r", timeStep, serial)
+                log.info(
+                    "[set] setting timeStep (%r) for token with " "serial %r",
+                    timeStep,
+                    serial,
+                )
                 tokens = getTokens4UserOrSerial(serial=serial)
                 for token in tokens:
                     token.timeStep = timeStep
 
                 res["set timeStep"] = len(tokens)
                 count = count + 1
-                g.audit['action_detail'] += "timeStep=%d, " % timeStep
+                g.audit["action_detail"] += "timeStep=%d, " % timeStep
 
             if "timeShift".lower() in param:
                 msg = "[set] setting timeShift failed"
                 timeShift = int(param["timeShift".lower()])
-                log.info("[set] setting timeShift (%r) for token with serial"
-                         " %r", timeShift, serial)
+                log.info(
+                    "[set] setting timeShift (%r) for token with serial" " %r",
+                    timeShift,
+                    serial,
+                )
                 ret = th.addTokenInfo("timeShift", timeShift, user, serial)
                 res["set timeShift"] = ret
                 count = count + 1
-                g.audit['action_detail'] += "timeShift=%d, " % timeShift
+                g.audit["action_detail"] += "timeShift=%d, " % timeShift
 
             if "countAuth".lower() in param:
                 msg = "[set] setting countAuth failed"
                 ca = int(param["countAuth".lower()])
                 log.info(
                     "[set] setting count_auth (%r) for token with serial %r",
-                    ca, serial)
+                    ca,
+                    serial,
+                )
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1528,14 +1612,16 @@ class AdminController(BaseController, SessionCookieMixin):
                     count = count + 1
                     ret += 1
                 res["set countAuth"] = ret
-                g.audit['action_detail'] += "countAuth=%d, " % ca
+                g.audit["action_detail"] += "countAuth=%d, " % ca
 
             if "countAuthMax".lower() in param:
                 msg = "[set] setting countAuthMax failed"
                 ca = int(param["countAuthMax".lower()])
                 log.info(
                     "[set] setting count_auth_max (%r) for token with serial %r",
-                    ca, serial)
+                    ca,
+                    serial,
+                )
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1543,14 +1629,17 @@ class AdminController(BaseController, SessionCookieMixin):
                     count = count + 1
                     ret += 1
                 res["set countAuthMax"] = ret
-                g.audit['action_detail'] += "countAuthMax=%d, " % ca
+                g.audit["action_detail"] += "countAuthMax=%d, " % ca
 
             if "countAuthSuccess".lower() in param:
                 msg = "[set] setting countAuthSuccess failed"
                 ca = int(param["countAuthSuccess".lower()])
                 log.info(
                     "[set] setting count_auth_success (%r) for token with"
-                    "serial %r", ca, serial)
+                    "serial %r",
+                    ca,
+                    serial,
+                )
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1558,14 +1647,17 @@ class AdminController(BaseController, SessionCookieMixin):
                     count = count + 1
                     ret += 1
                 res["set countAuthSuccess"] = ret
-                g.audit['action_detail'] += "countAuthSuccess=%d, " % ca
+                g.audit["action_detail"] += "countAuthSuccess=%d, " % ca
 
             if "countAuthSuccessMax".lower() in param:
                 msg = "[set] setting countAuthSuccessMax failed"
                 ca = int(param["countAuthSuccessMax".lower()])
                 log.info(
                     "[set] setting count_auth_success_max (%r) for token with"
-                    "serial %r", ca, serial)
+                    "serial %r",
+                    ca,
+                    serial,
+                )
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1573,14 +1665,17 @@ class AdminController(BaseController, SessionCookieMixin):
                     count = count + 1
                     ret += 1
                 res["set countAuthSuccessMax"] = ret
-                g.audit['action_detail'] += "countAuthSuccessMax=%d, " % ca
+                g.audit["action_detail"] += "countAuthSuccessMax=%d, " % ca
 
             if "validityPeriodStart".lower() in param:
                 msg = "[set] setting validityPeriodStart failed"
                 ca = param["validityPeriodStart".lower()]
                 log.info(
                     "[set] setting validity_period_start (%r) for token with"
-                    "serial %r", ca, serial)
+                    "serial %r",
+                    ca,
+                    serial,
+                )
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1588,16 +1683,19 @@ class AdminController(BaseController, SessionCookieMixin):
                     count = count + 1
                     ret += 1
                 res["set validityPeriodStart"] = ret
-                g.audit[
-                    'action_detail'] += "validityPeriodStart=%s, " % str(
-                    ca)
+                g.audit["action_detail"] += "validityPeriodStart=%s, " % str(
+                    ca
+                )
 
             if "validityPeriodEnd".lower() in param:
                 msg = "[set] setting validityPeriodEnd failed"
                 ca = param["validityPeriodEnd".lower()]
                 log.info(
                     "[set] setting validity_period_end (%r) for token with"
-                    "serial %r", ca, serial)
+                    "serial %r",
+                    ca,
+                    serial,
+                )
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1605,14 +1703,16 @@ class AdminController(BaseController, SessionCookieMixin):
                     count = count + 1
                     ret += 1
                 res["set validityPeriodEnd"] = ret
-                g.audit['action_detail'] += "validityPeriodEnd=%s, " % str(
-                    ca)
+                g.audit["action_detail"] += "validityPeriodEnd=%s, " % str(ca)
 
             if "phone" in param:
                 msg = "[set] setting phone failed"
                 ca = param["phone".lower()]
-                log.info("[set] setting phone (%r) for token with serial %r",
-                         ca, serial)
+                log.info(
+                    "[set] setting phone (%r) for token with serial %r",
+                    ca,
+                    serial,
+                )
                 tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
@@ -1620,43 +1720,44 @@ class AdminController(BaseController, SessionCookieMixin):
                     count = count + 1
                     ret += 1
                 res["set phone"] = ret
-                g.audit['action_detail'] += "phone=%s, " % str(ca)
+                g.audit["action_detail"] += "phone=%s, " % str(ca)
 
             if count == 0:
                 db.session.rollback()
                 return sendError(
-                    response, ParameterError("Usage: %s" % description,  id=77))
+                    response, ParameterError("Usage: %s" % description, id=77)
+                )
 
-            g.audit['success'] = count
-            g.audit['user'] = user.login
-            g.audit['realm'] = user.realm
+            g.audit["success"] = count
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
 
-            if g.audit['realm'] == "":
-                g.audit['realm'] = getTokenRealms(serial)
+            if g.audit["realm"] == "":
+                g.audit["realm"] = getTokenRealms(serial)
 
             db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error('[set] policy failed: %s, %r', msg, pe)
+            log.error("[set] policy failed: %s, %r", msg, pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.error('%s: %r', msg, exx)
+            log.error("%s: %r", msg, exx)
             db.session.rollback()
             # as this message is directly returned into the javascript
             # alert as escaped string we remove here all escaping chars
             error = "%r" % exx
-            error = error.replace('"', '|')
-            error = error.replace("'", ':')
-            error = error.replace('&', '+')
-            error = error.replace('>', ']')
-            error = error.replace('<', '[')
+            error = error.replace('"', "|")
+            error = error.replace("'", ":")
+            error = error.replace("&", "+")
+            error = error.replace(">", "]")
+            error = error.replace("<", "[")
             result = "%s: %s" % (msg, error)
             return sendError(response, result)
 
-########################################################
+    ########################################################
     def resync(self):
         """
         method:
@@ -1704,35 +1805,39 @@ class AdminController(BaseController, SessionCookieMixin):
 
             options = None
             if chall1 is not None and chall2 is not None:
-                options = {'challenge1': chall1, 'challenge2': chall2}
+                options = {"challenge1": chall1, "challenge2": chall2}
 
             # check admin authorization
-            checkPolicyPre('admin', 'resync', param)
+            checkPolicyPre("admin", "resync", param)
             th = TokenHandler()
-            log.info("[resync] resyncing token with serial %r, user %r@%r",
-                     serial, user.login, user.realm)
+            log.info(
+                "[resync] resyncing token with serial %r, user %r@%r",
+                serial,
+                user.login,
+                user.realm,
+            )
             res = th.resyncToken(otp1, otp2, user, serial, options)
 
-            g.audit['success'] = res
-            g.audit['user'] = user.login
-            g.audit['realm'] = user.realm
-            if "" == g.audit['realm'] and "" != g.audit['user']:
-                g.audit['realm'] = getDefaultRealm()
+            g.audit["success"] = res
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
+            if "" == g.audit["realm"] and "" != g.audit["user"]:
+                g.audit["realm"] = getDefaultRealm()
 
             db.session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error('[resync] policy failed %r', pe)
+            log.error("[resync] policy failed %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.error('[resync] resyncing token failed %r', exx)
+            log.error("[resync] resyncing token failed %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
-########################################################
+    ########################################################
     def userlist(self):
         """
         method:
@@ -1779,21 +1884,23 @@ class AdminController(BaseController, SessionCookieMixin):
             # realm!! we could also only list the users in the realm, if the
             # admin got the right "userlist".
 
-            checkPolicyPre('admin', 'userlist', param)
+            checkPolicyPre("admin", "userlist", param)
 
             up = 0
             user = getUserFromParam(param)
 
             log.info("[userlist] displaying users with param: %s, ", param)
 
-            if (len(user.realm) > 0):
+            if len(user.realm) > 0:
                 up = up + 1
-            if (len(user.resolver_config_identifier) > 0):
+            if len(user.resolver_config_identifier) > 0:
                 up = up + 1
 
             if len(param) == up:
-                usage = {"usage": "list available users matching the "
-                         "given search patterns:"}
+                usage = {
+                    "usage": "list available users matching the "
+                    "given search patterns:"
+                }
                 usage["searchfields"] = getSearchFields(user)
                 res = usage
                 db.session.commit()
@@ -1802,37 +1909,39 @@ class AdminController(BaseController, SessionCookieMixin):
             list_params = {}
             list_params.update(param)
 
-            if 'session' in list_params:
-                del list_params['session']
+            if "session" in list_params:
+                del list_params["session"]
 
             rp = None
             if "rp" in list_params:
-                rp = int(list_params['rp'])
-                del list_params['rp']
+                rp = int(list_params["rp"])
+                del list_params["rp"]
 
             page = None
             if "page" in list_params:
-                page = list_params['page']
-                del list_params['page']
+                page = list_params["page"]
+                del list_params["page"]
 
             users_iters = getUserListIterators(list_params, user)
 
-            g.audit['success'] = True
-            g.audit['info'] = "realm: %s" % realm
+            g.audit["success"] = True
+            g.audit["info"] = "realm: %s" % realm
 
             db.session.commit()
 
             return Response(
                 stream_with_context(
                     sendResultIterator(
-                        iterate_users(users_iters), rp=rp, page=page)
-                ), mimetype='application/json'
+                        iterate_users(users_iters), rp=rp, page=page
+                    )
+                ),
+                mimetype="application/json",
             )
 
             # ---------------------------------------------------------- --
 
         except PolicyException as pe:
-            log.error('[userlist] policy failed %r', pe)
+            log.error("[userlist] policy failed %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
@@ -1841,9 +1950,9 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx)
 
-########################################################
+    ########################################################
     def tokenrealm(self):
-        '''
+        """
         method:
             admin/tokenrealm - set the realms a token belongs to
 
@@ -1853,7 +1962,7 @@ class AdminController(BaseController, SessionCookieMixin):
         arguments:
             * serial    - required -  serialnumber of the token
             * realms    - required -  comma seperated list of realms
-        '''
+        """
 
         param = self.request_params
         try:
@@ -1868,32 +1977,35 @@ class AdminController(BaseController, SessionCookieMixin):
                 raise ParameterError("Missing parameter: 'realms'")
 
             # check admin authorization
-            checkPolicyPre('admin', 'tokenrealm', param)
+            checkPolicyPre("admin", "tokenrealm", param)
 
-            g.audit['source_realm'] = getTokenRealms(serial)
-            log.info("[tokenrealm] setting realms for token %s to %s",
-                     serial, realms)
-            realmList = [r.strip() for r in realms.split(',')]
+            g.audit["source_realm"] = getTokenRealms(serial)
+            log.info(
+                "[tokenrealm] setting realms for token %s to %s",
+                serial,
+                realms,
+            )
+            realmList = [r.strip() for r in realms.split(",")]
             ret = setRealms(serial, realmList)
 
-            g.audit['success'] = ret
-            g.audit['info'] = realms
-            g.audit['realm'] = realmList
+            g.audit["success"] = ret
+            g.audit["info"] = realms
+            g.audit["realm"] = realmList
 
             db.session.commit()
             return sendResult(response, ret, 1)
 
         except PolicyException as pe:
-            log.error('[tokenrealm] policy failed %r', pe)
+            log.error("[tokenrealm] policy failed %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.error('[tokenrealm] error setting realms for token %r', exx)
+            log.error("[tokenrealm] error setting realms for token %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
-########################################################
+    ########################################################
 
     def reset(self):
         """
@@ -1923,15 +2035,17 @@ class AdminController(BaseController, SessionCookieMixin):
         try:
 
             # check admin authorization
-            checkPolicyPre('admin', 'reset', param, user=user)
+            checkPolicyPre("admin", "reset", param, user=user)
 
             log.info(
-                "[reset] resetting the FailCounter for token with serial %s", serial)
+                "[reset] resetting the FailCounter for token with serial %s",
+                serial,
+            )
             ret = resetToken(user, serial)
 
-            g.audit['success'] = ret
-            g.audit['user'] = user.login
-            g.audit['realm'] = user.realm
+            g.audit["success"] = ret
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
 
             # DeleteMe: This code will never run, since getUserFromParam
             # always returns a realm!
@@ -1940,15 +2054,15 @@ class AdminController(BaseController, SessionCookieMixin):
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict['message'] = "No token with serial %s" % serial
+                opt_result_dict["message"] = "No token with serial %s" % serial
             elif ret == 0 and user and not user.is_empty:
-                opt_result_dict['message'] = "No tokens for this user"
+                opt_result_dict["message"] = "No tokens for this user"
 
             db.session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.error('[reset] policy failed %r', pe)
+            log.error("[reset] policy failed %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
@@ -1957,7 +2071,7 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx)
 
-########################################################
+    ########################################################
 
     def copyTokenPin(self):
         """
@@ -1986,26 +2100,29 @@ class AdminController(BaseController, SessionCookieMixin):
         try:
 
             try:
-                serial_from = param['from']
+                serial_from = param["from"]
             except KeyError:
                 raise ParameterError("Missing parameter: 'from'")
 
             try:
-                serial_to = param['to']
+                serial_to = param["to"]
             except KeyError:
                 raise ParameterError("Missing parameter: 'to'")
 
             # check admin authorization
-            checkPolicyPre('admin', 'copytokenpin', param)
+            checkPolicyPre("admin", "copytokenpin", param)
 
             th = TokenHandler()
-            log.info("[copyTokenPin] copying Pin from token %s to token %s",
-                     serial_from, serial_to)
+            log.info(
+                "[copyTokenPin] copying Pin from token %s to token %s",
+                serial_from,
+                serial_to,
+            )
             ret = th.copyTokenPin(serial_from, serial_to)
 
-            g.audit['success'] = ret
-            g.audit['serial'] = serial_to
-            g.audit['action_detail'] = "from %s" % serial_from
+            g.audit["success"] = ret
+            g.audit["serial"] = serial_to
+            g.audit["action_detail"] = "from %s" % serial_from
 
             err_string = str(ret)
             if -1 == ret:
@@ -2013,15 +2130,17 @@ class AdminController(BaseController, SessionCookieMixin):
             if -2 == ret:
                 err_string = "can not set PIN to destination token"
             if 1 != ret:
-                g.audit['action_detail'] += ", " + err_string
-                g.audit['success'] = 0
+                g.audit["action_detail"] += ", " + err_string
+                g.audit["success"] = 0
 
             db.session.commit()
             # Success
             if 1 == ret:
                 return sendResult(response, True)
             else:
-                return sendError(response, "copying token pin failed: %s" % err_string)
+                return sendError(
+                    response, "copying token pin failed: %s" % err_string
+                )
 
         except PolicyException as pe:
             log.error("[losttoken] Error doing losttoken %r", pe)
@@ -2033,7 +2152,7 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx)
 
-########################################################
+    ########################################################
 
     def copyTokenUser(self):
         """
@@ -2062,28 +2181,31 @@ class AdminController(BaseController, SessionCookieMixin):
         try:
 
             try:
-                serial_from = param['from']
+                serial_from = param["from"]
             except KeyError:
                 raise ParameterError("Missing parameter: 'from'")
 
             try:
-                serial_to = param['to']
+                serial_to = param["to"]
             except KeyError:
                 raise ParameterError("Missing parameter: 'to'")
 
             # check admin authorization
-            checkPolicyPre('admin', 'copytokenuser', param)
+            checkPolicyPre("admin", "copytokenuser", param)
 
             th = TokenHandler()
-            log.info("[copyTokenUser] copying User from token %s to token %s",
-                     serial_from, serial_to)
+            log.info(
+                "[copyTokenUser] copying User from token %s to token %s",
+                serial_from,
+                serial_to,
+            )
             ret = th.copyTokenUser(serial_from, serial_to)
 
-            g.audit['success'] = ret
-            g.audit['serial'] = serial_to
-            g.audit['action_detail'] = "from %s" % serial_from
-            g.audit['source_realm'] = getTokenRealms(serial_from)
-            g.audit['realm'] = getTokenRealms(serial_to)
+            g.audit["success"] = ret
+            g.audit["serial"] = serial_to
+            g.audit["action_detail"] = "from %s" % serial_from
+            g.audit["source_realm"] = getTokenRealms(serial_from)
+            g.audit["realm"] = getTokenRealms(serial_to)
 
             err_string = str(ret)
             if -1 == ret:
@@ -2091,15 +2213,17 @@ class AdminController(BaseController, SessionCookieMixin):
             if -2 == ret:
                 err_string = "can not set user to destination token"
             if 1 != ret:
-                g.audit['action_detail'] += ", " + err_string
-                g.audit['success'] = 0
+                g.audit["action_detail"] += ", " + err_string
+                g.audit["success"] = 0
 
             db.session.commit()
             # Success
             if 1 == ret:
                 return sendResult(response, True)
             else:
-                return sendError(response, "copying token user failed: %s" % err_string)
+                return sendError(
+                    response, "copying token user failed: %s" % err_string
+                )
 
         except PolicyException as pe:
             log.error("[copyTokenUser] Policy Exception %r", pe)
@@ -2111,7 +2235,7 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx)
 
-########################################################
+    ########################################################
 
     def losttoken(self):
         """
@@ -2145,15 +2269,15 @@ class AdminController(BaseController, SessionCookieMixin):
             serial = param["serial"]
 
             # check admin authorization
-            checkPolicyPre('admin', 'losttoken', param)
+            checkPolicyPre("admin", "losttoken", param)
             th = TokenHandler()
             res = th.losttoken(serial, param=param)
 
-            g.audit['success'] = ret
-            g.audit['serial'] = res.get('serial')
-            g.audit['action_detail'] = "from %s" % serial
-            g.audit['source_realm'] = getTokenRealms(serial)
-            g.audit['realm'] = getTokenRealms(g.audit['serial'])
+            g.audit["success"] = ret
+            g.audit["serial"] = res.get("serial")
+            g.audit["action_detail"] = "from %s" % serial
+            g.audit["source_realm"] = getTokenRealms(serial)
+            g.audit["realm"] = getTokenRealms(g.audit["serial"])
 
             db.session.commit()
             return sendResult(response, res)
@@ -2168,8 +2292,7 @@ class AdminController(BaseController, SessionCookieMixin):
             db.session.rollback()
             return sendError(response, exx)
 
-
-########################################################
+    ########################################################
 
     def loadtokens(self):
         """
@@ -2193,7 +2316,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
         """
         res = "Loading token file failed!"
-        known_types = ['aladdin-xml', 'oathcsv', 'yubikeycsv']
+        known_types = ["aladdin-xml", "oathcsv", "yubikeycsv"]
         TOKENS = {}
         res = None
 
@@ -2201,19 +2324,23 @@ class AdminController(BaseController, SessionCookieMixin):
         sendErrorMethod = sendError
 
         from linotp.lib.ImportOTP import getKnownTypes
+
         known_types.extend(getKnownTypes())
         log.info(
             "[loadtokens] importing linotp.lib. Known import types: %s",
-            known_types
+            known_types,
         )
 
         from linotp.lib.ImportOTP.PSKC import parsePSKCdata
+
         log.info("[loadtokens] loaded parsePSKCdata")
 
         from linotp.lib.ImportOTP.DPWplain import parseDPWdata
+
         log.info("[loadtokens] loaded parseDPWdata")
 
         from linotp.lib.ImportOTP.eTokenDat import parse_dat_data
+
         log.info("[loadtokens] loaded parseDATdata")
 
         params = self.request_params
@@ -2221,14 +2348,14 @@ class AdminController(BaseController, SessionCookieMixin):
         try:
             log.debug("[loadtokens] getting upload data")
             log.debug("[loadtokens] %r", request.params)
-            tokenFile = request.files['file']
-            fileType = params['type']
+            tokenFile = request.files["file"]
+            fileType = params["type"]
             targetRealm = params.get(
-                'realm', params.get(
-                    'targetrealm', '')).lower()
+                "realm", params.get("targetrealm", "")
+            ).lower()
 
             # for encrypted token import data, this is the decryption key
-            transportkey = params.get('transportkey', None)
+            transportkey = params.get("transportkey", None)
             if not transportkey:
                 transportkey = None
 
@@ -2240,17 +2367,21 @@ class AdminController(BaseController, SessionCookieMixin):
             hashlib = None
 
             if "pskc" == fileType:
-                pskc_type = params['pskc_type']
-                pskc_password = params['pskc_password']
-                pskc_preshared = params['pskc_preshared']
-                if 'pskc_checkserial' in params:
+                pskc_type = params["pskc_type"]
+                pskc_password = params["pskc_password"]
+                pskc_preshared = params["pskc_preshared"]
+                if "pskc_checkserial" in params:
                     pskc_checkserial = True
 
             fileString = ""
             typeString = ""
 
-            log.debug("[loadtokens] loading token file to server "
-                      "Filetype: %s. File: %s", fileType, tokenFile)
+            log.debug(
+                "[loadtokens] loading token file to server "
+                "Filetype: %s. File: %s",
+                fileType,
+                tokenFile,
+            )
 
             # In case of form post requests, it is a "instance" of FileStorage
             # i.e. the Filename is selected in the browser and the data is
@@ -2273,33 +2404,46 @@ class AdminController(BaseController, SessionCookieMixin):
                 typeString = fileType
             log.debug("[loadtokens] typeString: <<%s>>", typeString)
             if "pskc" == typeString:
-                log.debug("[loadtokens] passing password: %s, key: %s, "
-                          "checkserial: %s",
-                          pskc_password, pskc_preshared, pskc_checkserial)
+                log.debug(
+                    "[loadtokens] passing password: %s, key: %s, "
+                    "checkserial: %s",
+                    pskc_password,
+                    pskc_preshared,
+                    pskc_checkserial,
+                )
 
             if fileString == "" or typeString == "":
                 log.error("[loadtokens] file: %s", fileString)
                 log.error("[loadtokens] type: %s", typeString)
-                log.error("[loadtokens] Error loading/importing token file. "
-                          "file or type empty!")
+                log.error(
+                    "[loadtokens] Error loading/importing token file. "
+                    "file or type empty!"
+                )
                 return sendErrorMethod(
-                    response, ("Error loading tokens. File or Type empty!"))
+                    response, ("Error loading tokens. File or Type empty!")
+                )
 
             if typeString not in known_types:
-                log.error("[loadtokens] Unknown file type: >>%s<<. "
-                          "We only know the types: %s",
-                          typeString, ', '.join(known_types))
+                log.error(
+                    "[loadtokens] Unknown file type: >>%s<<. "
+                    "We only know the types: %s",
+                    typeString,
+                    ", ".join(known_types),
+                )
                 return sendErrorMethod(
-                    response, ("Unknown file type: >>%s<<. We only know the "
-                               "types: %s" % (
-                                   typeString, ', '.join(known_types))))
+                    response,
+                    (
+                        "Unknown file type: >>%s<<. We only know the "
+                        "types: %s" % (typeString, ", ".join(known_types))
+                    ),
+                )
 
             # Parse the tokens from file and get dictionary
             if typeString == "aladdin-xml":
                 TOKENS = parseSafeNetXML(fileString)
                 # we only do hashlib for aladdin at the moment.
-                if 'aladdin_hashlib' in params:
-                    hashlib = params['aladdin_hashlib']
+                if "aladdin_hashlib" in params:
+                    hashlib = params["aladdin_hashlib"]
 
             elif typeString == "oathcsv":
                 TOKENS = parseOATHcsv(fileString)
@@ -2311,7 +2455,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 TOKENS = parseDPWdata(fileString)
 
             elif typeString == "dat":
-                startdate = params.get('startdate', None)
+                startdate = params.get("startdate", None)
                 TOKENS = parse_dat_data(fileString, startdate)
 
             elif typeString == "feitian":
@@ -2320,32 +2464,37 @@ class AdminController(BaseController, SessionCookieMixin):
             elif typeString == "pskc":
                 if "key" == pskc_type:
                     TOKENS = parsePSKCdata(
-                        fileString, preshared_key_hex=pskc_preshared,
-                        do_checkserial=pskc_checkserial)
+                        fileString,
+                        preshared_key_hex=pskc_preshared,
+                        do_checkserial=pskc_checkserial,
+                    )
 
                 elif "password" == pskc_type:
                     TOKENS = parsePSKCdata(
-                        fileString, password=pskc_password,
-                        do_checkserial=pskc_checkserial)
+                        fileString,
+                        password=pskc_password,
+                        do_checkserial=pskc_checkserial,
+                    )
 
                 elif "plain" == pskc_type:
                     TOKENS = parsePSKCdata(
-                        fileString, do_checkserial=pskc_checkserial)
+                        fileString, do_checkserial=pskc_checkserial
+                    )
 
-            tokenrealm = ''
+            tokenrealm = ""
 
             # -------------------------------------------------------------- --
             # first check if we are allowed to import the tokens at all
             # if not, this will raise a PolicyException
 
-            rights = checkPolicyPre('admin', 'import', {})
+            rights = checkPolicyPre("admin", "import", {})
 
             # if an empty list of realms is returned, there is no admin policy
             # defined at all. So we grant access to all realms
 
-            access_realms = rights.get('realms')
+            access_realms = rights.get("realms")
             if access_realms == []:
-                access_realms = ['*']
+                access_realms = ["*"]
 
             # -------------------------------------------------------------- --
 
@@ -2353,7 +2502,7 @@ class AdminController(BaseController, SessionCookieMixin):
 
             available_realms = getRealms()
 
-            if '*' in access_realms:
+            if "*" in access_realms:
 
                 admin_realms = available_realms
 
@@ -2375,14 +2524,15 @@ class AdminController(BaseController, SessionCookieMixin):
             if targetRealm:
 
                 if targetRealm not in admin_realms:
-                    raise Exception('target realm could not be assigned')
+                    raise Exception("target realm could not be assigned")
 
                 tokenrealm = targetRealm
 
                 # double check, if this is an allowed targetrealm
 
-                checkPolicyPre('admin', 'loadtokens',
-                               {'tokenrealm': tokenrealm})
+                checkPolicyPre(
+                    "admin", "loadtokens", {"tokenrealm": tokenrealm}
+                )
 
             log.info("[loadtokens] setting tokenrealm %r", tokenrealm)
 
@@ -2390,16 +2540,20 @@ class AdminController(BaseController, SessionCookieMixin):
 
             # Now import the Tokens from the dictionary
 
-            log.debug("[loadtokens] read %i tokens. starting import now",
-                      len(TOKENS))
+            log.debug(
+                "[loadtokens] read %i tokens. starting import now", len(TOKENS)
+            )
 
             ret = ""
             th = TokenHandler()
             for serial in TOKENS:
                 log.debug("[loadtokens] importing token %s", TOKENS[serial])
 
-                log.info("[loadtokens] initialize token. "
-                         "serial: %r, realm: %r", serial, tokenrealm)
+                log.info(
+                    "[loadtokens] initialize token. " "serial: %r, realm: %r",
+                    serial,
+                    tokenrealm,
+                )
 
                 # for the eToken dat we assume, that it brings all its
                 # init parameters in correct format
@@ -2409,46 +2563,49 @@ class AdminController(BaseController, SessionCookieMixin):
 
                 else:
                     init_param = {
-                        'serial': serial,
-                        'type': TOKENS[serial]['type'],
-                        'description': TOKENS[serial].get(
-                            "description", "imported"),
-                        'otpkey': TOKENS[serial]['hmac_key'],
-                        'otplen': TOKENS[serial].get('otplen'),
-                        'timeStep': TOKENS[serial].get('timeStep'),
-                        'hashlib': TOKENS[serial].get('hashlib')}
+                        "serial": serial,
+                        "type": TOKENS[serial]["type"],
+                        "description": TOKENS[serial].get(
+                            "description", "imported"
+                        ),
+                        "otpkey": TOKENS[serial]["hmac_key"],
+                        "otplen": TOKENS[serial].get("otplen"),
+                        "timeStep": TOKENS[serial].get("timeStep"),
+                        "hashlib": TOKENS[serial].get("hashlib"),
+                    }
 
                 # add ocrasuite for ocra tokens, only if ocrasuite is not empty
-                if TOKENS[serial]['type'] in ['ocra2']:
-                    if TOKENS[serial].get('ocrasuite', "") != "":
-                        init_param['ocrasuite'] = TOKENS[serial].get(
-                            'ocrasuite')
+                if TOKENS[serial]["type"] in ["ocra2"]:
+                    if TOKENS[serial].get("ocrasuite", "") != "":
+                        init_param["ocrasuite"] = TOKENS[serial].get(
+                            "ocrasuite"
+                        )
 
                 if hashlib and hashlib != "auto":
-                    init_param['hashlib'] = hashlib
+                    init_param["hashlib"] = hashlib
 
                 (ret, _tokenObj) = th.initToken(
-                    init_param,
-                    User('', '', ''),
-                    tokenrealm=tokenrealm)
+                    init_param, User("", "", ""), tokenrealm=tokenrealm
+                )
 
                 # check policy to set token pin random
-                checkPolicyPost('admin', 'setPin',
-                                {'serial': serial})
+                checkPolicyPost("admin", "setPin", {"serial": serial})
 
             # check the max tokens per realm
 
-            checkPolicyPost('admin', 'loadtokens',
-                            {'tokenrealm': tokenrealm})
+            checkPolicyPost("admin", "loadtokens", {"tokenrealm": tokenrealm})
 
             log.info("[loadtokens] %i tokens imported.", len(TOKENS))
-            res = {'value': True, 'imported': len(TOKENS)}
+            res = {"value": True, "imported": len(TOKENS)}
 
-            g.audit['info'] = "%s, %s (imported: %i)" % (
-                fileType, tokenFile, len(TOKENS))
-            g.audit['serial'] = ', '.join(list(TOKENS.keys()))
-            g.audit['success'] = ret
-            g.audit['realm'] = tokenrealm
+            g.audit["info"] = "%s, %s (imported: %i)" % (
+                fileType,
+                tokenFile,
+                len(TOKENS),
+            )
+            g.audit["serial"] = ", ".join(list(TOKENS.keys()))
+            g.audit["success"] = ret
+            g.audit["realm"] = tokenrealm
 
             db.session.commit()
             return sendResultMethod(response, res)
@@ -2471,28 +2628,27 @@ class AdminController(BaseController, SessionCookieMixin):
         # setup the ldap parameters including defaults
 
         ldap_params = {
-            'NOREFERRALS': 'True',
-            'CACERTIFICATE': '',
-            'EnforceTLS': 'False',
+            "NOREFERRALS": "True",
+            "CACERTIFICATE": "",
+            "EnforceTLS": "False",
         }
 
         mapping = {
-            "ldap_basedn": 'LDAPBASE',
-            "ldap_uri": 'LDAPURI',
-            "ldap_binddn": 'BINDDN',
+            "ldap_basedn": "LDAPBASE",
+            "ldap_uri": "LDAPURI",
+            "ldap_binddn": "BINDDN",
             "ldap_password": "BINDPW",
-            "ldap_timeout": 'TIMEOUT',
-            "ldap_basedn": 'LDAPBASE',
-            "ldap_loginattr": 'LOGINNAMEATTRIBUTE',
-            "ldap_searchfilter": 'LDAPSEARCHFILTER',
-            "ldap_userfilter": 'LDAPFILTER',
-            "ldap_mapping": 'USERINFO',
-            "ldap_uidtype": 'UIDTYPE',
-            "ldap_sizelimit": 'SIZELIMIT',
-            "noreferrals": 'NOREFERRALS',
-            "ldap_certificate": 'CACERTIFICATE',
-            "enforcetls": 'EnforceTLS',
-
+            "ldap_timeout": "TIMEOUT",
+            "ldap_basedn": "LDAPBASE",
+            "ldap_loginattr": "LOGINNAMEATTRIBUTE",
+            "ldap_searchfilter": "LDAPSEARCHFILTER",
+            "ldap_userfilter": "LDAPFILTER",
+            "ldap_mapping": "USERINFO",
+            "ldap_uidtype": "UIDTYPE",
+            "ldap_sizelimit": "SIZELIMIT",
+            "noreferrals": "NOREFERRALS",
+            "ldap_certificate": "CACERTIFICATE",
+            "enforcetls": "EnforceTLS",
         }
         for key, value in list(params.items()):
             if key.lower() in mapping:
@@ -2556,11 +2712,11 @@ class AdminController(BaseController, SessionCookieMixin):
 
                 # adjust legacy key words, we require the resolver class type
 
-                if typ == 'ldap':
-                    typ = 'ldapresolver'
+                if typ == "ldap":
+                    typ = "ldapresolver"
 
                 elif typ in "sql":
-                    typ = 'sqlresolver'
+                    typ = "sqlresolver"
 
                 new_resolver_name = request_params["name"]
 
@@ -2573,39 +2729,40 @@ class AdminController(BaseController, SessionCookieMixin):
             # use the same parameters as the system/setResolver
 
             param = request_params
-            param['type'] = typ
+            param["type"] = typ
 
-            if typ == 'ldapresolver':
+            if typ == "ldapresolver":
                 param = self._ldap_parameter_mapping(request_params)
 
-            previous_name = param.get('previous_name', '')
+            previous_name = param.get("previous_name", "")
 
             log.debug("[testresolver] testing resolver of type %s", typ)
 
-            (param, missing,
-             _primary_key_changed) = prepare_resolver_parameter(
+            (
+                param,
+                missing,
+                _primary_key_changed,
+            ) = prepare_resolver_parameter(
                 new_resolver_name=new_resolver_name,
                 param=param,
-                previous_name=previous_name)
+                previous_name=previous_name,
+            )
 
             if missing:
-                raise ParameterError(_("Missing parameter: %r") %
-                                     missing)
+                raise ParameterError(_("Missing parameter: %r") % missing)
 
             # now we can test the connection
 
-            resolver_cls = get_resolver_class(param['type'])
+            resolver_cls = get_resolver_class(param["type"])
 
             if resolver_cls is None:
-                raise Exception("no such resolver type '%r' defined!" %
-                                param['type'])
+                raise Exception(
+                    "no such resolver type '%r' defined!" % param["type"]
+                )
 
             (status, desc) = resolver_cls.testconnection(param)
 
-            res = {
-                'result': status,
-                'desc': desc
-            }
+            res = {"result": status, "desc": desc}
 
             db.session.commit()
             return sendResult(response, res)
@@ -2616,14 +2773,14 @@ class AdminController(BaseController, SessionCookieMixin):
             return sendError(response, exx, 1)
 
     def totp_lookup(self):
-        '''
+        """
         method:
             admin/totp_lookup - get otp iformation from a totp token
 
         arguments:
             * serial    - required -  serialnumber of the token
             * otp       - optional - to return status to the token
-        '''
+        """
 
         param = self.request_params
         try:
@@ -2632,7 +2789,7 @@ class AdminController(BaseController, SessionCookieMixin):
             if not serial:
                 raise ParameterError("Missing parameter: 'serial'")
 
-            g.audit['serial'] = serial
+            g.audit["serial"] = serial
 
             otp = param.get("otp")
             if not otp:
@@ -2644,17 +2801,17 @@ class AdminController(BaseController, SessionCookieMixin):
 
             # we require access to at least one token realm
 
-            checkPolicyPre('admin', 'totp_lookup', param=param)
+            checkPolicyPre("admin", "totp_lookup", param=param)
 
             # -------------------------------------------------------------- --
 
             # lookup of serial and type totp
 
-            tokens = getTokens4UserOrSerial(serial=serial, token_type='totp')
+            tokens = getTokens4UserOrSerial(serial=serial, token_type="totp")
 
             if not tokens:
-                g.audit['success'] = False
-                g.audit['info'] = "no token found"
+                g.audit["success"] = False
+                g.audit["info"] = "no token found"
                 return sendResult(response, False)
 
             token = tokens[0]
@@ -2664,11 +2821,13 @@ class AdminController(BaseController, SessionCookieMixin):
             # now gather the otp info from the token
 
             res, opt = token.get_otp_detail(otp=otp, window=window)
-            g.audit['success'] = res
+            g.audit["success"] = res
 
             if not res:
-                g.audit['info'] = ("no otp %r found in window %r"
-                                   % (otp, window))
+                g.audit["info"] = "no otp %r found in window %r" % (
+                    otp,
+                    window,
+                )
 
             db.session.commit()
             return sendResult(response, res, opt=opt)
@@ -2715,32 +2874,41 @@ class AdminController(BaseController, SessionCookieMixin):
             """
 
         try:
-            checkPolicyPre('admin', "checkstatus")
+            checkPolicyPre("admin", "checkstatus")
 
-            transid = param.get(
-                'transactionid', None) or param.get('state', None)
+            transid = param.get("transactionid", None) or param.get(
+                "state", None
+            )
             user = getUserFromParam(param)
-            serial = param.get('serial')
-            all = param.get('open', 'False').lower() == 'true'
+            serial = param.get("serial")
+            all = param.get("open", "False").lower() == "true"
 
             if all:
                 only_open_challenges = False
 
             if transid is None and user.is_empty and serial is None:
                 # # raise exception
-                log.error("[admin/checkstatus] : missing parameter: "
-                              "transactionid, user or serial number for token")
+                log.error(
+                    "[admin/checkstatus] : missing parameter: "
+                    "transactionid, user or serial number for token"
+                )
                 raise ParameterError("Usage: %s" % description, id=77)
 
             # # gather all challenges from serial, transactionid and user
             challenges = set()
             if serial is not None:
-                challenges.update(Challenges.lookup_challenges(serial=serial,
-                                                               filter_open=only_open_challenges))
+                challenges.update(
+                    Challenges.lookup_challenges(
+                        serial=serial, filter_open=only_open_challenges
+                    )
+                )
 
             if transid is not None:
-                challenges.update(Challenges.lookup_challenges(transid=transid,
-                                                               filter_open=only_open_challenges))
+                challenges.update(
+                    Challenges.lookup_challenges(
+                        transid=transid, filter_open=only_open_challenges
+                    )
+                )
 
             # # if we have a user
             if not user.is_empty:
@@ -2748,8 +2916,10 @@ class AdminController(BaseController, SessionCookieMixin):
                 for token in tokens:
                     serial = token.getSerial()
                     challenges.update(
-                        Challenges.lookup_challenges(serial=serial,
-                                                     filter_open=True))
+                        Challenges.lookup_challenges(
+                            serial=serial, filter_open=True
+                        )
+                    )
 
             serials = set()
             for challenge in challenges:
@@ -2764,20 +2934,21 @@ class AdminController(BaseController, SessionCookieMixin):
                 # # add the challenges info to the challenge dict
                 for challenge in challenges:
                     if challenge.getTokenSerial() == serial:
-                        chall_dict[challenge.getTransactionId()] = \
-                            challenge.get_vars(save=True)
-                stat['challenges'] = chall_dict
+                        chall_dict[
+                            challenge.getTransactionId()
+                        ] = challenge.get_vars(save=True)
+                stat["challenges"] = chall_dict
 
                 # # add the token info to the stat dict
                 tokens = getTokens4UserOrSerial(serial=serial)
                 token = tokens[0]
-                stat['tokeninfo'] = token.get_vars(save=True)
+                stat["tokeninfo"] = token.get_vars(save=True)
 
                 # # add the local stat to the summary status dict
                 status[serial] = stat
 
-            res['values'] = status
-            g.audit['success'] = res
+            res["values"] = status
+            g.audit["success"] = res
 
             db.session.commit()
             return sendResult(response, res, 1)
@@ -2795,7 +2966,7 @@ class AdminController(BaseController, SessionCookieMixin):
     # ------------------------------------------------------------------------ -
 
     def unpair(self):
-        """ admin/unpair - resets a token to its unpaired state """
+        """admin/unpair - resets a token to its unpaired state"""
 
         try:
 
@@ -2808,18 +2979,19 @@ class AdminController(BaseController, SessionCookieMixin):
 
             # check admin authorization
 
-            checkPolicyPre('admin', 'unpair', params, user=user)
+            checkPolicyPre("admin", "unpair", params, user=user)
 
             # ---------------------------------------------------------------- -
 
             tokens = getTokens4UserOrSerial(user, serial)
 
             if not tokens:
-                raise Exception('No token found. Unpairing not possible')
+                raise Exception("No token found. Unpairing not possible")
 
             if len(tokens) > 1:
                 raise Exception(
-                    'Multiple tokens found. Unpairing not possible')
+                    "Multiple tokens found. Unpairing not possible"
+                )
 
             token = tokens[0]
 
@@ -2829,12 +3001,12 @@ class AdminController(BaseController, SessionCookieMixin):
             t_owner = token.getUser()
 
             realms = token.getRealms()
-            realm = ''
+            realm = ""
             if realms:
                 realm = realms[0]
 
-            g.audit['user'] = t_owner or ''
-            g.audit['realm'] = realm
+            g.audit["user"] = t_owner or ""
+            g.audit["realm"] = realm
 
             # ---------------------------------------------------------------- -
 
@@ -2849,8 +3021,9 @@ class AdminController(BaseController, SessionCookieMixin):
 
         except Exception as exx:
             log.error("admin/unpair failed: %r", exx)
-            g.audit['info'] = str(exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(response, False, 0, status=False)
+
 
 # eof ########################################################################

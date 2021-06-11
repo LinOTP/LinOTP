@@ -395,7 +395,7 @@ class TestMonitoringController(TestController):
         )
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
-        assert values.get("encryption") == True, response
+        assert values.get("encryption"), response
         assert values.get("cryptmodul_name") == "Default", response
         assert (
             values.get("cryptmodul_type") == "DefaultSecurityModule"
@@ -407,7 +407,7 @@ class TestMonitoringController(TestController):
         )
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
-        assert values.get("encryption") == True, response
+        assert values.get("encryption"), response
 
     def test_userinfo(self):
         response = self.make_authenticated_request(

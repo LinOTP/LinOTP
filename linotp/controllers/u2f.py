@@ -71,7 +71,8 @@ class U2FController(BaseController):
             action="u2f_valid_facets",
             default="",
         )
-        # the action value contains the semicolon-separated list of valid facets
+        # the action value contains the semicolon-separated list of valid
+        # facets
         valid_facets = valid_facets_action_value.split(";")
 
         # Prepare the response

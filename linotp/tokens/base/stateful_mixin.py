@@ -47,7 +47,7 @@ class StatefulTokenMixin(object):
 
     @property
     def current_state(self):
-        """ signifies the current state of the token """
+        """signifies the current state of the token"""
 
         current_state_id = self.getFromTokenInfo("state")
         return current_state_id

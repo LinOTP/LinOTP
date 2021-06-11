@@ -41,7 +41,7 @@ from linotp.cli import main as cli_main
 
 @pytest.fixture
 def runner(app):
-    """Set common configuration """
+    """Set common configuration"""
 
     env = {
         "LINOTP_AUDIT_DATABASE_URI": "OFF",  # FIXME: 'SHARED',

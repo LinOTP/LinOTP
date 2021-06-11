@@ -35,7 +35,7 @@ from linotp.tests import TestController
 
 
 class TestUserPrincipalController(TestController):
-    """ verify the handling of users in UserPrincipal style """
+    """verify the handling of users in UserPrincipal style"""
 
     def setUp(self):
 

@@ -42,7 +42,7 @@ class TestUserSearchExpression(unittest.TestCase):
     """
 
     def test_not_matching_expressions(self):
-        """ test user search expression not matching"""
+        """test user search expression not matching"""
 
         token_owner = "maxwell@hotad.example.net"
         token_user_dict = {"match": token_owner}

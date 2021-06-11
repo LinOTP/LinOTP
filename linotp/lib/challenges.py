@@ -262,7 +262,7 @@ class Challenges(object):
         if message is not None:
             challenge["message"] = message
 
-        if attributes is not None and type(attributes) == dict:
+        if attributes is not None and isinstance(attributes, dict):
             challenge.update(attributes)
 
         #
@@ -286,10 +286,10 @@ class Challenges(object):
 
         challenge_ids = []
         for challenge in challenges:
-            if type(challenge) == dict:
+            if isinstance(challenge, dict):
                 if "id" in challenge:
                     challenge_id = challenge.get("id")
-            elif type(challenge) == Challenge:
+            elif isinstance(challenge, Challenge):
                 challenge_id = challenge.get("id")
             elif isinstance(challenge, (str, int)):
                 challenge_id = challenge

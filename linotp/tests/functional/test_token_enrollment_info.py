@@ -41,13 +41,13 @@ class TestTokenEnrollmentInfo(TestController):
     serials = []
 
     def setUp(self):
-        """ setup the Test Controller"""
+        """setup the Test Controller"""
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        """ make the dishes"""
+        """make the dishes"""
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -55,7 +55,7 @@ class TestTokenEnrollmentInfo(TestController):
         return
 
     def test_tokeninfo_for_pushtoken(self):
-        """ get token enrollment status for the pushtoken """
+        """get token enrollment status for the pushtoken"""
         params = {
             "name": "push_enrollment",
             "scope": "authentication",
@@ -102,7 +102,7 @@ class TestTokenEnrollmentInfo(TestController):
         return
 
     def test_tokeninfo_for_qrtoken(self):
-        """ get token enrollment status for the qrtoken """
+        """get token enrollment status for the qrtoken"""
 
         params = {
             "name": "qr_enrollment",
@@ -153,7 +153,7 @@ class TestTokenEnrollmentInfo(TestController):
         return
 
     def test_tokeninfo_for_ocra2(self):
-        """ get token enrollment status for the ocra2 token """
+        """get token enrollment status for the ocra2 token"""
 
         params = {
             "name": "ocra2_enrollment",

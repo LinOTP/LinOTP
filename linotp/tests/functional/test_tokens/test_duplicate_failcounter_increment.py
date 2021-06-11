@@ -46,7 +46,7 @@ class TestDuplicateFailcounterIncrement(TestController):
         return resp
 
     def test_duplicate_failcounter_increment(self):
-        """ check that last_access does work with time format expressions """
+        """check that last_access does work with time format expressions"""
 
         # ------------------------------------------------------------------ --
 

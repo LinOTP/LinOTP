@@ -34,7 +34,7 @@ in the Selenium tests
 
 
 class AuthUi(object):
-    """Base for managing parts of the manage page """
+    """Base for managing parts of the manage page"""
 
     URL = "/auth/index"
 

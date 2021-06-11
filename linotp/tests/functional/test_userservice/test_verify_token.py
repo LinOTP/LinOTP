@@ -562,7 +562,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         mocked_submitMessage,
     )
     def test_verify_cr_sms_token(self):
-        """ verify challenge response for sms token """
+        """verify challenge response for sms token"""
 
         # setup policies
 
@@ -707,7 +707,8 @@ class TestUserserviceTokenTest(TestUserserviceController):
 
         # enroll the qr token:
 
-        # response should contain pairing url, check if it was sent and validate
+        # response should contain pairing url, check if it was sent and
+        # validate
 
         user = "passthru_user1@myDefRealm"
         auth_user = {"login": user, "password": "geheim1"}
@@ -814,7 +815,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         SMTPEmailProvider, "submitMessage", mocked_submitEmailMessage
     )
     def test_verify_cr_email_token(self):
-        """ verify challenge response for email token """
+        """verify challenge response for email token"""
 
         # setup policies
 

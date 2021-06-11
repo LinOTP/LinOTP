@@ -63,7 +63,7 @@ backup_cmds = AppGroup("backup", help="Manage database-specific backups")
 @backup_cmds.command("restore", help="Restore a MySQL backup file.")
 @click.option("--file", help="name of the MySQL backup file")
 def restore_mysql_command(file):
-    """ Restore MySQL backups."""
+    """Restore MySQL backups."""
     try:
         current_app.echo("Restoring legacy database ...", v=1)
         restore_mysql_database(filename=file)
@@ -75,7 +75,7 @@ def restore_mysql_command(file):
 
 @backup_cmds.command("create", help="Create a backup of a MySQL database.")
 def backup_mysql_command():
-    """ Backup MySQL database."""
+    """Backup MySQL database."""
     try:
         current_app.echo("Backup MySQL database ...", v=1)
         backup_mysql_database()

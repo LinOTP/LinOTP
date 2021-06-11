@@ -474,7 +474,9 @@ def add_dynamic_selfservice_enrollment(config, actions):
             except Exception as exx:
                 log.info(
                     "[_add_dynamic_actions] no policy for tokentype "
-                    "%r found (%r)", tok, exx
+                    "%r found (%r)",
+                    tok,
+                    exx,
                 )
 
     return dynanmic_actions
@@ -516,7 +518,9 @@ def add_dynamic_selfservice_policies(config, actions):
             except Exception as exx:
                 log.info(
                     "[_add_dynamic_actions] no policy for tokentype "
-                    "%r found (%r)", tok, exx
+                    "%r found (%r)",
+                    tok,
+                    exx,
                 )
 
     return dynamic_policies

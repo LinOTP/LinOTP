@@ -1469,7 +1469,7 @@ def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
     if not param:
         param = {}
 
-    if method[0: len("max_count")] == "max_count":
+    if method[0 : len("max_count")] == "max_count":
         ret = 0
         serial = param.get("serial")
 
@@ -1949,12 +1949,14 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
         typ = param["type"].lower()
         action = "enroll" + typ.upper()
 
-        wpg = get_selfservice_actions(authUser, 'webprovisionGOOGLE')
-        wpgt = get_selfservice_actions(authUser, 'webprovisionGOOGLEtime')
+        wpg = get_selfservice_actions(authUser, "webprovisionGOOGLE")
+        wpgt = get_selfservice_actions(authUser, "webprovisionGOOGLEtime")
 
-        if not (get_selfservice_actions(authUser, action)
-                or (typ == 'hmac' and wpg)
-                or (typ == 'totp' and wpgt)):
+        if not (
+            get_selfservice_actions(authUser, action)
+            or (typ == "hmac" and wpg)
+            or (typ == "totp" and wpgt)
+        ):
 
             log.warning(
                 "user %r@%r is not allowed to enroll %s!",
@@ -3956,4 +3958,4 @@ def get_single_auth_policy(policy_name, user=None, realms=None):
     return action_values.pop()
 
 
-# eof ##########################################################################
+# eof ####################################################################

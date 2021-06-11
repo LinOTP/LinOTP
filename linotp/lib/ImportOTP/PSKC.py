@@ -83,7 +83,7 @@ def aes_decrypt(transport_b64, key_hex, serial=""):
         if a > bsize:
             return data
 
-        padding = data[len(data) - a:]
+        padding = data[len(data) - a :]
         if not (bytes([a]) * a == padding):
             # it seems not to be padded
             return data
@@ -94,7 +94,7 @@ def aes_decrypt(transport_b64, key_hex, serial=""):
                 "[aes_decrypt] the key of token %s is a multiple "
                 "of blocksize but is padded. This is not compliant "
                 "to the specification but we import it anyway.",
-                serial
+                serial,
             )
         return data[:-a]
 
@@ -206,7 +206,7 @@ def parsePSKCdata(
                                             else:
                                                 log.warning(
                                                     "Unknown element in element Salt: %r",
-                                                    getTagName(salt)
+                                                    getTagName(salt),
                                                 )
                                     elif "IterationCount" == spTag:
                                         PBE_ITERATION_COUNT = sp.text
@@ -216,7 +216,7 @@ def parsePSKCdata(
                         # probably pbkdf1
                         log.error(
                             "We do not support key derivation method %r",
-                            deriv_algo
+                            deriv_algo,
                         )
                         raise ImportException(
                             "We do not support key derivation method %s"
@@ -228,7 +228,10 @@ def parsePSKCdata(
                 log.debug(
                     "calculation encryption key from password [%s], salt: [%s] and "
                     "length: [%s], count: [%s]",
-                    password, PBE_SALT, PBE_KEY_LENGTH, PBE_ITERATION_COUNT
+                    password,
+                    PBE_SALT,
+                    PBE_KEY_LENGTH,
+                    PBE_ITERATION_COUNT,
                 )
                 ENCRYPTION_KEY_bin = pbkdf2.pbkdf2(
                     password.encode("ascii"),
@@ -262,7 +265,7 @@ def parsePSKCdata(
                         cipherValue = c.text.strip()
                         log.debug(
                             "Found this MAC Key cipherValue: <<%r>>",
-                            cipherValue
+                            cipherValue,
                         )
                         MACKEY_bin = aes_decrypt(
                             cipherValue, ENCRYPTION_KEY_hex
@@ -273,8 +276,8 @@ def parsePSKCdata(
                             cipher_tag,
                         )
                         raise ImportException(
-                            "Found unsupported child in CipherData: %r" %
-                            cipher_tag
+                            "Found unsupported child in CipherData: %r"
+                            % cipher_tag
                         )
             elif "EncryptionMethod" == tag:
                 ENC_ALGO = getEncMethod(e)
@@ -430,7 +433,8 @@ def parsePSKCdata(
             if KD_algo and KD_hmac_key_b64:
                 log.warning(
                     "The key %s contained a secret with PlainValuei "
-                    "and EncryptedValue!", serial
+                    "and EncryptedValue!",
+                    serial,
                 )
             else:
                 if "aes128-cbc" == ENC_ALGO:
@@ -471,7 +475,8 @@ def parsePSKCdata(
                         else:
                             log.error(
                                 "The MAC value for %s does not fit. The HMAC "
-                                "secrets could be compromised!", serial
+                                "secrets could be compromised!",
+                                serial,
                             )
                             raise ImportException(
                                 "The MAC value for %s does not fit. The HMAC "
@@ -484,7 +489,8 @@ def parsePSKCdata(
                     else:
                         log.warning(
                             "At the moment we only support hmac-sha1. We"
-                            " found %r", MAC_Method
+                            " found %r",
+                            MAC_Method,
                         )
 
                 elif KD_hmac_key_b64:
@@ -500,7 +506,8 @@ def parsePSKCdata(
                 else:
                     log.warning(
                         "neither a PlainValue nor an EncryptedValue was "
-                        "found for the secret of key %s", serial
+                        "found for the secret of key %s",
+                        serial,
                     )
 
     return TOKENS

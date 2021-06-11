@@ -126,7 +126,7 @@ class TotpTestCase(unittest.TestCase):
     """
 
     def test_compliance(self):
-        """ assure that the HamcOTP class is compilant """
+        """assure that the HamcOTP class is compilant"""
 
         for test_vector in TestVectors:
 

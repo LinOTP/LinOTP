@@ -190,7 +190,8 @@ class SelfserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            # in case of user_selfservice, an unauthenticated request should always go to login
+            # in case of user_selfservice, an unauthenticated request should
+            # always go to login
             if (
                 auth_user
                 and auth_type == "user_selfservice"
@@ -297,7 +298,8 @@ class SelfserviceController(BaseController):
             if g.audit["action"] in ["selfservice/index"]:
                 log.debug(
                     "[__after__] authenticating as %s in realm %s!",
-                    c.user, c.realm
+                    c.user,
+                    c.realm,
                 )
 
                 g.audit["user"] = c.user
@@ -443,7 +445,10 @@ class SelfserviceController(BaseController):
         except CompileException as exx:
             log.error(
                 "[load_form] compile error while processing %r.%r:"
-                "Exeption was %r", tok, scope, exx
+                "Exeption was %r",
+                tok,
+                scope,
+                exx,
             )
             db.session.rollback()
             raise exx

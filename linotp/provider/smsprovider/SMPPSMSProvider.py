@@ -151,7 +151,7 @@ class SMPPSMSProvider(ISMSProvider):
                 # split down into small chunks of 153 chars
                 max_msg_len = 153
                 for i in range(0, len(short_message), max_msg_len):
-                    msg = short_message[i: i + max_msg_len]
+                    msg = short_message[i : i + max_msg_len]
                     if not msg:
                         continue
                     self._send(client, source_addr, destination_addr, msg)
@@ -274,7 +274,7 @@ if __name__ == "__main__":
             val = getattr(args, key)
             if val:
                 config[key] = val
-        except:
+        except BaseException:
             pass
 
     phone = config["phone"]

@@ -105,7 +105,7 @@ log = logging.getLogger(__name__)
 
 
 class DoRequest(threading.Thread):
-    """ the request thread"""
+    """the request thread"""
 
     def __init__(self, utest, rid=1, uri=None, params=None):
         """
@@ -300,16 +300,16 @@ class TestConfigController(TestController):
                 assert (
                     config_data == data
                 ), "error while comparing data: %r  %r" % (
-                    config_data[it - 3: it + 1],
-                    data[it - 3: it + 1],
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
                 )
 
             if len(config_data) != len(data):
                 assert (
                     config_data == data
                 ), "error while comparing length: %r  %r" % (
-                    config_data[len(data):],
-                    data[len(config_data):],
+                    config_data[len(data) :],
+                    data[len(config_data) :],
                 )
 
             assert config_data == data, "error while comparing data"
@@ -335,7 +335,7 @@ class TestConfigController(TestController):
         pos = 0
         for pos in range(0, len(alphabet), chunk_len):
             i = i + 1
-            config_data_array = alphabet[pos: pos + chunk_len]
+            config_data_array = alphabet[pos : pos + chunk_len]
             config_data = config_data_base + "".join(config_data_array)
             u8_config_data = config_data.encode("utf-8")
 
@@ -366,16 +366,16 @@ class TestConfigController(TestController):
                 assert (
                     config_data == data
                 ), "error while comparing data: %r  %r" % (
-                    config_data[it - 3: it + 1],
-                    data[it - 3: it + 1],
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
                 )
 
             if len(config_data) != len(data):
                 assert (
                     config_data == data
                 ), "error while comparing length: %r  %r" % (
-                    config_data[len(data):],
-                    data[len(config_data):],
+                    config_data[len(data) :],
+                    data[len(config_data) :],
                 )
 
             assert config_data == data, "error while comparing data"
@@ -431,16 +431,16 @@ class TestConfigController(TestController):
                 assert (
                     config_data == data
                 ), "error while comparing data: %r  %r" % (
-                    config_data[it - 3: it + 1],
-                    data[it - 3: it + 1],
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
                 )
 
             if len(config_data) != len(data):
                 assert (
                     config_data == data
                 ), "error while comparing length: %r  %r" % (
-                    config_data[len(data):],
-                    data[len(config_data):],
+                    config_data[len(data) :],
+                    data[len(config_data) :],
                 )
 
             assert config_data == data, "error while comparing data"
@@ -538,16 +538,16 @@ class TestConfigController(TestController):
                 assert (
                     config_data.decode("utf-8") == data
                 ), "error while comparing data: %r  %r" % (
-                    config_data[it - 3: it + 1],
-                    data[it - 3: it + 1],
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
                 )
 
             if len(config_data) != len(data):
                 assert (
                     config_data == data
                 ), "error while comparing length: %r  %r" % (
-                    config_data[len(data):],
-                    data[len(config_data):],
+                    config_data[len(data) :],
+                    data[len(config_data) :],
                 )
 
             assert (
@@ -597,16 +597,16 @@ class TestConfigController(TestController):
                 assert (
                     config_data.decode("utf-8") == data
                 ), "error while comparing data: %r  %r" % (
-                    config_data[it - 3: it + 1],
-                    data[it - 3: it + 1],
+                    config_data[it - 3 : it + 1],
+                    data[it - 3 : it + 1],
                 )
 
             if len(config_data) != len(data):
                 assert (
                     config_data == data
                 ), "error while comparing length: %r  %r" % (
-                    config_data[len(data):],
-                    data[len(config_data):],
+                    config_data[len(data) :],
+                    data[len(config_data) :],
                 )
 
             assert (

@@ -269,9 +269,7 @@ class SecurityProvider(object):
                     try:
                         hsm = self.loadSecurityModule(provider_id)
                     except FatalHSMException as exx:
-                        log.error(
-                            "[createHSMPool] %r %r ", provider_id, exx
-                        )
+                        log.error("[createHSMPool] %r %r ", provider_id, exx)
                         if provider_id == self.activeOne:
                             raise exx
                         error = "%r: %r" % (provider_id, exx)
@@ -337,7 +335,8 @@ class SecurityProvider(object):
             if found is None:
                 log.info(
                     "[SecurityProvider:dropSecurityModule] could not bind "
-                    "hsm to session %r ", hsm_id
+                    "hsm to session %r ",
+                    hsm_id,
                 )
             else:
                 self._freeHSMSession(pool, sessionId)
@@ -378,14 +377,16 @@ class SecurityProvider(object):
                     retry = False
                     log.debug(
                         "[getSecurityModule] using existing pool session %s",
-                        found
+                        found,
                     )
                     return found
                 else:
                     # create new entry
                     log.debug(
                         "[getSecurityModule] getting new Session (%s) "
-                        "from pool %s", sessionId, pool
+                        "from pool %s",
+                        sessionId,
+                        pool,
                     )
                     found = self._createHSM4Session(pool, sessionId)
                     self.rwLock.release()
@@ -395,7 +396,9 @@ class SecurityProvider(object):
                         delay = 1 + int(0.2 * tries)
                         log.warning(
                             "try %d: could not bind hsm to session  - "
-                            "going to sleep for %r", tries, delay
+                            "going to sleep for %r",
+                            tries,
+                            delay,
                         )
                         time.sleep(delay)
                         if tries >= self.max_retry:

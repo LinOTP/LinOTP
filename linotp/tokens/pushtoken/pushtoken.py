@@ -122,7 +122,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def get_enrollment_status(self):
-        """ provide token enrollment status"""
+        """provide token enrollment status"""
 
         is_completely_finished = self.current_state == "active"
 
@@ -441,7 +441,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
                 content_type = int(content_type_as_str)
 
-            except:
+            except BaseException:
 
                 raise ValueError(
                     "Unrecognized content type: %s" % content_type_as_str
