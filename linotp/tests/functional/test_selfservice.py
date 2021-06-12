@@ -110,7 +110,7 @@ class TestSelfserviceController(TestController):
         )
         print(response)
         assert '"status": false' in response
-        assert '"code": -311' in response
+        assert '"code": 410' in response
 
         self.createPolicy("reset")
         response = self.make_userselfservice_request(
@@ -176,7 +176,7 @@ class TestSelfserviceController(TestController):
         )
         print(response)
         assert '"status": false' in response
-        assert '"code": -311' in response
+        assert '"code": 410' in response
 
         self.createPolicy("resync")
         response = self.make_userselfservice_request(
