@@ -35,6 +35,7 @@ from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
 
 from . import Bindresult
 
+
 @pytest.mark.usefixtures("app")
 class TestLDAPResolverAttributes(unittest.TestCase):
     """
@@ -52,13 +53,13 @@ class TestLDAPResolverAttributes(unittest.TestCase):
         data encoded in utf-8, which has not been the case for the uidType
         """
 
-        uid_type = 'üid'
+        uid_type = "üid"
 
         # ------------------------------------------------------------------ --
 
         # setup the test environment
 
-        bindresult = Bindresult(uid_type = 'üid')
+        bindresult = Bindresult(uid_type=uid_type)
         mock_bind.return_value = bindresult
         mock_unbind.return_value = None
 
