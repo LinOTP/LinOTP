@@ -23,3 +23,47 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+
+
+class Bindresult(object):
+    def __init__(self, uid_type):
+        self.uid_type = uid_type
+        self._filter_str = None
+
+    def search_ext(
+        self,
+        base,
+        scope_subtree,
+        filterstr=None,
+        sizelimit=None,
+        attrlist=None,
+        timeout=None,
+    ):
+
+        if attrlist:
+            for attr in attrlist:
+
+                # invalid utf-8 will raise an exception
+                attr.encode("utf-8")
+
+        # invalid utf-8 will raise an exception
+        filterstr.encode("utf-8")
+
+        self._filter_str = filterstr
+        return True
+
+    def result(self, l_id, all=1):
+        return [
+            [],
+            [
+                (
+                    "cn=Wolfgang Amadeus Mözart,ou=people,dc=blackdog,"
+                    "dc=corp,dc=lsexperts,dc=de",
+                    {
+                        self.uid_type: [
+                            "f4450c88-1df9-1033-90e8-Wolfgang Amadeus Mözart"
+                        ]
+                    },
+                )
+            ],
+        ]
