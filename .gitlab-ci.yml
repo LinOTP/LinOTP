@@ -22,6 +22,7 @@ workflow:
     - if: $NIGHTLY_PIPELINE                           # Execute jobs if run with this variable set
 
 stages:
+  - pre-check
   - build
   - lint
   - test
@@ -36,6 +37,20 @@ stages:
 
 include:
   - template: Code-Quality.gitlab-ci.yml
+
+pre-commit-check:
+  stage: pre-check
+  image: python:3.7
+  cache:
+    paths:
+      - $CI_PROJECT_DIR/.pre-commit-cache
+  rules:
+    - exists:
+      - .pre-commit-config.yaml
+  before_script:
+    - pip install pre-commit
+  script:
+    - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache pre-commit run --all-files
 
 # Build docker images and debs
 # This builds the .debs and docker images (builder, linotp, testenv).
