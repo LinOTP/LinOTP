@@ -36,19 +36,19 @@ from linotp.tests import TestController
 from mock import patch
 
 
-REQUEST_BODY = ''
+REQUEST_BODY = ""
 REQUEST_HEADERS = {}
 
-EMAIL_MESSAGE_OTP = ('', '')
+EMAIL_MESSAGE_OTP = ("", "")
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     global REQUEST_BODY
-    REQUEST_BODY = kwparams['json']
+    REQUEST_BODY = kwparams["json"]
 
     global REQUEST_HEADERS
-    REQUEST_HEADERS = kwparams.get('headers', {})
+    REQUEST_HEADERS = kwparams.get("headers", {})
 
     # build up response
     class Response:
@@ -59,8 +59,8 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     r.status = 200
     r.ok = True
 
-    r.headers = {'fake': True}
-    r.headers.update(kwparams.get('headers', {}))
+    r.headers = {"fake": True}
+    r.headers.update(kwparams.get("headers", {}))
     r.text = ""  # rest does not return a body
     r.content = ""
 
@@ -73,8 +73,8 @@ def mocked_email_submitMessage(EMail_Object, *argparams, **kwparams):
     EMAIL_MESSAGE_OTP = argparams, kwparams
 
     # we call here the original sms submitter - as we are a functional test
-    #res = EMAIL_Object.submitMessage(*argparams)
-    return True, ''
+    # res = EMAIL_Object.submitMessage(*argparams)
+    return True, ""
 
 
 class TestAutoassignSMSController(TestController):
@@ -96,129 +96,131 @@ class TestAutoassignSMSController(TestController):
         TestController.tearDown(self)
 
         global REQUEST_BODY
-        REQUEST_BODY = ''
+        REQUEST_BODY = ""
 
     def define_email_provider(self):
 
         email_conf = {
             "SMTP_SERVER": "mail.example.com",
             "SMTP_USER": "secret_user",
-            "SMTP_PASSWORD": "secret_pasword"
+            "SMTP_PASSWORD": "secret_pasword",
         }
 
         params = {
-            'name': 'new_email_provider',
-            'config': json.dumps(email_conf),
-            'timeout': '30',
-            'type': 'email',
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider'
+            "name": "new_email_provider",
+            "config": json.dumps(email_conf),
+            "timeout": "30",
+            "type": "email",
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
         }
 
-        response = self.make_system_request('setProvider', params=params)
+        response = self.make_system_request("setProvider", params=params)
         assert '"value": true' in response, response
-        response = self.make_system_request('setProvider', params)
+        response = self.make_system_request("setProvider", params)
         assert '"status": true' in response
 
         # ------------------------------------------------------------------ --
 
         # next we have to make it the default email provider
 
-        params = {'name': 'emailprovider_newone',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'email_provider=new_email_provider',
-                  'user': '*',
-                  }
+        params = {
+            "name": "emailprovider_newone",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "email_provider=new_email_provider",
+            "user": "*",
+        }
 
-        response = self.make_system_request(
-            action='setPolicy', params=params)
-        assert 'false' not in response, response
+        response = self.make_system_request(action="setPolicy", params=params)
+        assert "false" not in response, response
 
     def define_sms_provider(self):
-        """ define the default sms provider """
+        """define the default sms provider"""
 
-        sms_url = 'http://myfake.com/'
+        sms_url = "http://myfake.com/"
 
-        sms_conf = {"URL": sms_url,
-                    'PAYLOAD': {
-                        'text': 'Message: <message>',
-                        'destination': ''
-                    },
-                    "HEADERS": {
-                        "Authorization":
-                        "Bearer da634870addc4568859092b2e0223376"},
-                    "PASSWORD": "v3ry53cr3t",
-                    'USERNAME': 'heinz',
-                    "SMS_TEXT_KEY": "text",
-                    "SMS_PHONENUMBER_KEY": "destination",
-                    "RETURN_SUCCESS": "ID"
-                    }
+        sms_conf = {
+            "URL": sms_url,
+            "PAYLOAD": {"text": "Message: <message>", "destination": ""},
+            "HEADERS": {
+                "Authorization": "Bearer da634870addc4568859092b2e0223376"
+            },
+            "PASSWORD": "v3ry53cr3t",
+            "USERNAME": "heinz",
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "destination",
+            "RETURN_SUCCESS": "ID",
+        }
 
-        params = {'name': 'newone',
-                  'config': json.dumps(sms_conf),
-                  'timeout': '301',
-                  'type': 'sms',
-                  'class': 'RestSMSProvider'
-                  }
+        params = {
+            "name": "newone",
+            "config": json.dumps(sms_conf),
+            "timeout": "301",
+            "type": "sms",
+            "class": "RestSMSProvider",
+        }
 
-        response = self.make_system_request('setProvider', params=params)
+        response = self.make_system_request("setProvider", params=params)
         assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
 
         # next we have to make it the default provider
 
-        params = {'name': 'smsprovider_newone',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'sms_provider=newone',
-                  'user': '*',
-                  }
+        params = {
+            "name": "smsprovider_newone",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "sms_provider=newone",
+            "user": "*",
+        }
 
-        response = self.make_system_request(action='setPolicy',
-                                            params=params)
-        assert 'false' not in response, response
+        response = self.make_system_request(action="setPolicy", params=params)
+        assert "false" not in response, response
 
-    @patch('requests.Session.post', mocked_http_request)
+    @patch("requests.Session.post", mocked_http_request)
     def test_autoenroll_sms_email(self):
-        '''
+        """
         support for autoenroll alternatives with prefered sms
-        '''
+        """
         self.define_email_provider()
         self.define_sms_provider()
 
         # ------------------------------------------------------------------ --
 
         policy = {
-            'name': 'auto_assign_sms',
-            'active': True,
-            'scope': 'enrollment',
-            'action': 'autoenrollment = sms  email',
-            'user': '*',
-            'realm': '*'
+            "name": "auto_assign_sms",
+            "active": True,
+            "scope": "enrollment",
+            "action": "autoenrollment = sms  email",
+            "user": "*",
+            "realm": "*",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
+        user = "passthru_user1@myDefRealm"
         params = {
-            'user': user,
-            'pass': 'geheim1',
-            'data': 'this is your otp <otp>'
+            "user": user,
+            "pass": "geheim1",
+            "data": "this is your otp <otp>",
         }
-        response = self.make_validate_request('check', params)
-        assert 'this is your otp' in REQUEST_BODY['text'], REQUEST_BODY
-        assert 'sms submitted' in response, response
+        response = self.make_validate_request("check", params)
+        assert "this is your otp" in REQUEST_BODY["text"], REQUEST_BODY
+        assert "sms submitted" in response, response
 
         return
 
-    @patch.object(linotp.provider.emailprovider.SMTPEmailProvider,
-                  'submitMessage', mocked_email_submitMessage)
+    @patch.object(
+        linotp.provider.emailprovider.SMTPEmailProvider,
+        "submitMessage",
+        mocked_email_submitMessage,
+    )
     def test_autoenroll_email_sms(self):
-        '''
+        """
         support for autoenroll alternatives - prefered no is email
-        '''
+        """
 
         self.define_email_provider()
         self.define_sms_provider()
@@ -226,28 +228,28 @@ class TestAutoassignSMSController(TestController):
         # ------------------------------------------------------------------ --
 
         policy = {
-            'name': 'auto_assign_sms',
-            'active': True,
-            'scope': 'enrollment',
-            'action': 'autoenrollment =  email  sms ',
-            'user': '*',
-            'realm': '*'
+            "name": "auto_assign_sms",
+            "active": True,
+            "scope": "enrollment",
+            "action": "autoenrollment =  email  sms ",
+            "user": "*",
+            "realm": "*",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
 
         # ---------------------------------------------------------------- --
 
         # now auto enroll the email token
 
-        user = 'passthru_user1@myDefRealm'
+        user = "passthru_user1@myDefRealm"
         params = {
-            'user': user,
-            'pass': 'geheim1',
+            "user": user,
+            "pass": "geheim1",
         }
 
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response.body, response
         assert '"linotp_tokentype": "email"' in response.body, response
 
@@ -256,124 +258,123 @@ class TestAutoassignSMSController(TestController):
         # verify that the otp of the email submission
 
         jresp = json.loads(response.body)
-        trans_id = jresp.get('detail', {}).get('transactionid')
+        trans_id = jresp.get("detail", {}).get("transactionid")
 
         _, submit_kwparams = EMAIL_MESSAGE_OTP
-        otp = submit_kwparams.get('replacements').get('otp')
+        otp = submit_kwparams.get("replacements").get("otp")
         assert otp is not None
 
-        user = 'passthru_user1@myDefRealm'
-        params = {
-            'user': user,
-            'pass': otp,
-            'transactionid': trans_id
-        }
+        user = "passthru_user1@myDefRealm"
+        params = {"user": user, "pass": otp, "transactionid": trans_id}
 
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         assert '"value": true' in response.body, response
 
         return
 
-    @patch('requests.Session.post', mocked_http_request)
+    @patch("requests.Session.post", mocked_http_request)
     def test_autoenroll_wildcard(self):
-        '''
+        """
         support for autoenroll alternatives with wild card
-        '''
+        """
         self.define_email_provider()
         self.define_sms_provider()
 
         # ------------------------------------------------------------------ --
 
         policy = {
-            'name': 'auto_assign_sms',
-            'active': True,
-            'scope': 'enrollment',
-            'action': 'autoenrollment = *',
-            'user': '*',
-            'realm': '*'
+            "name": "auto_assign_sms",
+            "active": True,
+            "scope": "enrollment",
+            "action": "autoenrollment = *",
+            "user": "*",
+            "realm": "*",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
+        user = "passthru_user1@myDefRealm"
         params = {
-            'user': user,
-            'pass': 'geheim1',
+            "user": user,
+            "pass": "geheim1",
         }
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response.body, response
         assert '"linotp_tokentype": "sms"' in response.body, response
-        assert 'sms submitted' in response.body, response
+        assert "sms submitted" in response.body, response
 
         return
 
-    @patch.object(linotp.provider.emailprovider.SMTPEmailProvider,
-                  'submitMessage', mocked_email_submitMessage)
+    @patch.object(
+        linotp.provider.emailprovider.SMTPEmailProvider,
+        "submitMessage",
+        mocked_email_submitMessage,
+    )
     def test_autoenroll_only_email(self):
-        '''
+        """
         test autoenroll alternatives with sms or email policy but only email
-        '''
+        """
         self.define_email_provider()
         self.define_sms_provider()
 
         # ------------------------------------------------------------------ --
 
         policy = {
-            'name': 'auto_assign_sms',
-            'active': True,
-            'scope': 'enrollment',
-            'action': 'autoenrollment = sms email',
-            'user': '*',
-            'realm': '*'
+            "name": "auto_assign_sms",
+            "active": True,
+            "scope": "enrollment",
+            "action": "autoenrollment = sms email",
+            "user": "*",
+            "realm": "*",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
 
-        user = 'email_only@myDefRealm'
+        user = "email_only@myDefRealm"
         params = {
-            'user': user,
-            'pass': 'geheim1',
+            "user": user,
+            "pass": "geheim1",
         }
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response.body, response
         assert '"linotp_tokentype": "email"' in response.body, response
 
         return
 
-    @patch('requests.Session.post', mocked_http_request)
+    @patch("requests.Session.post", mocked_http_request)
     def test_autoenroll_only_mobil(self):
-        '''
+        """
         test autoenroll alternatives with sms or email policy but only sms
-        '''
+        """
         self.define_email_provider()
         self.define_sms_provider()
 
         # ------------------------------------------------------------------ --
 
         policy = {
-            'name': 'auto_assign_sms',
-            'active': True,
-            'scope': 'enrollment',
-            'action': 'autoenrollment = email sms',
-            'user': '*',
-            'realm': '*'
+            "name": "auto_assign_sms",
+            "active": True,
+            "scope": "enrollment",
+            "action": "autoenrollment = email sms",
+            "user": "*",
+            "realm": "*",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
 
-        user = 'mobile_only@myDefRealm'
+        user = "mobile_only@myDefRealm"
         params = {
-            'user': user,
-            'pass': 'geheim1',
+            "user": user,
+            "pass": "geheim1",
         }
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response.body, response
         assert '"linotp_tokentype": "sms"' in response.body, response
 
         return
 
-# eof
 
+# eof

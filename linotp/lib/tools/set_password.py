@@ -86,18 +86,20 @@ class SetPasswordHandler(ToolsHandler):
         - we use here the same class defintion as for the user import
           which will allow to place a managed resolver on top of this
         """
+
         __tablename__ = "admin_users"
 
         groupid = db.Column(db.String(100), primary_key=True, index=True)
         userid = db.Column(db.String(100), primary_key=True, index=True)
-        username = db.Column(db.String(255), default='', unique=True,
-                             index=True)
-        phone = db.Column(db.String(100), default='')
-        mobile = db.Column(db.String(100), default='')
-        email = db.Column(db.String(100), default='')
-        surname = db.Column(db.String(100), default='')
-        givenname = db.Column(db.String(100), default='')
-        password = db.Column(db.String(255), default='')
+        username = db.Column(
+            db.String(255), default="", unique=True, index=True
+        )
+        phone = db.Column(db.String(100), default="")
+        mobile = db.Column(db.String(100), default="")
+        email = db.Column(db.String(100), default="")
+        surname = db.Column(db.String(100), default="")
+        givenname = db.Column(db.String(100), default="")
+        password = db.Column(db.String(255), default="")
 
     @staticmethod
     def create_table(db_context):
@@ -109,7 +111,7 @@ class SetPasswordHandler(ToolsHandler):
         :return: - nothing -
         """
 
-        db.create_all()   # FIXME: This can probably be more targeted.
+        db.create_all()  # FIXME: This can probably be more targeted.
 
     @staticmethod
     def create_admin_user(db_context, username, crypted_password):
@@ -126,21 +128,25 @@ class SetPasswordHandler(ToolsHandler):
         try:
 
             admin_users = SetPasswordHandler.AdminUser.query.filter_by(
-                username=username).all()
+                username=username
+            ).all()
             if len(admin_users) > 0:
                 log.info("admin user %r already exist - user not updated!")
                 return
 
             admin_user = SetPasswordHandler.AdminUser(
-                userid=username, username=username, groupid="admin",
-                givenname="created by setPassword", password=crypted_password,
+                userid=username,
+                username=username,
+                groupid="admin",
+                givenname="created by setPassword",
+                password=crypted_password,
             )
             db.session.add(admin_user)
             db.session.commit()
 
         except Exception as exx:
 
-            log.exception(exx)
+            log.error(exx)
             db.session.rollback()
 
     # ---------------------------------------------------------------------- --
@@ -168,7 +174,8 @@ class SetPasswordHandler(ToolsHandler):
         try:
             try:
                 admin_user = SetPasswordHandler.AdminUser.query.filter_by(
-                    username=username).one()
+                    username=username
+                ).one()
 
             except NoResultFound:
                 log.error("no user %r found!", username)
@@ -189,9 +196,10 @@ class SetPasswordHandler(ToolsHandler):
             db.session.commit()
 
         except Exception as exx:
-            log.exception(exx)
+            log.error(exx)
             db.session.rollback()
 
             raise exx
+
 
 # eof #

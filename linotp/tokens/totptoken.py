@@ -42,11 +42,7 @@ from linotp.tokens.base import TokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.tokens import tokenclass_registry
 
-keylen = {
-    'sha1': 20,
-    'sha256': 32,
-    'sha512': 64
-    }
+keylen = {"sha1": 20, "sha256": 32, "sha512": 64}
 
 log = logging.getLogger(__name__)
 
@@ -92,30 +88,34 @@ Internet-Draft                HOTPTimeBased               September 2010
 
 """
 
+
 def time2counter(T0: Union[float, int], timeStepping: int) -> int:
     counter = int(T0 // timeStepping)
     return counter
 
+
 def counter2time(counter, timeStepping):
-    T0 = float(counter)  * timeStepping
+    T0 = float(counter) * timeStepping
     return T0
+
 
 ###############################################
 
-@tokenclass_registry.class_entry('totp')
-@tokenclass_registry.class_entry('linotp.tokens.totptoken.TimeHmacTokenClass')
+
+@tokenclass_registry.class_entry("totp")
+@tokenclass_registry.class_entry("linotp.tokens.totptoken.TimeHmacTokenClass")
 class TimeHmacTokenClass(HmacTokenClass):
 
     resyncDiffLimit = 3
 
     def __init__(self, aToken):
-        '''
+        """
         constructor - create a token object
 
         :param aToken: instance of the orm db object
         :type aToken:  orm object
 
-        '''
+        """
 
         TokenClass.__init__(self, aToken)
         self.setType("TOTP")
@@ -130,7 +130,6 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         self.timeWindow = getFromConfig("totp.timeWindow", 180) or 180
 
-
         # the time shift is specified in seconds  - and could be
         # positive and negative
 
@@ -139,7 +138,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
 
-        self.hashlibStr = getFromConfig("totp.hashlib", 'sha1') or 'sha1'
+        self.hashlibStr = getFromConfig("totp.hashlib", "sha1") or "sha1"
 
         self.otplen = int(self.token.LinOtpOtpLen)
 
@@ -151,7 +150,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         if info:
 
-            self.hashlibStr = info.get("hashlib", self.hashlibStr) or 'sha1'
+            self.hashlibStr = info.get("hashlib", self.hashlibStr) or "sha1"
 
             self.timeStepping = int(info.get("timeStep", self._timeStep) or 30)
 
@@ -159,30 +158,33 @@ class TimeHmacTokenClass(HmacTokenClass):
 
             self.shift = int(info.get("timeShift", self.timeShift) or 0)
 
-            log.debug("[checkOTP] timestep: %i, timeWindow: %i, timeShift: %i",
-                      self.timeStepping, self.window, self.shift)
+            log.debug(
+                "[checkOTP] timestep: %i, timeWindow: %i, timeShift: %i",
+                self.timeStepping,
+                self.window,
+                self.shift,
+            )
 
         return
 
     @classmethod
     def getClassType(cls):
-        '''
+        """
         getClassType - return the token type shortname
 
         :return: 'totp'
         :rtype: string
 
-        '''
+        """
         return "totp"
 
     @classmethod
     def getClassPrefix(cls):
         return "TOTP"
 
-
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
-        '''
+    def getClassInfo(cls, key=None, ret="all"):
+        """
         getClassInfo - returns a subtree of the token definition
 
         :param key: subsection identifier
@@ -194,101 +196,119 @@ class TimeHmacTokenClass(HmacTokenClass):
         :return: subsection if key exists or user defined
         :rtype: s.o.
 
-        '''
+        """
 
         res = {
-               'type'           : 'totp',
-               'title'          : 'HMAC Time Token',
-               'description'    : ('time based otp token using the hmac algorithm'),
-
-               'init'         : {'page' : {'html'      : 'totptoken.mako',
-                                            'scope'      : 'enroll', },
-                                   'title'  : {'html'      : 'totptoken.mako',
-                                             'scope'     : 'enroll.title', },
-                                   },
-
-               'config'        : { 'page' : {'html'      : 'totptoken.mako',
-                                            'scope'      : 'config', },
-                                   'title'  : {'html'      : 'totptoken.mako',
-                                             'scope'     : 'config.title', },
-                                 },
-
-               'selfservice'   :  { 'enroll' : {'page' : {'html'       : 'totptoken.mako',
-                                                          'scope'      : 'selfservice.enroll', },
-                                               'title'  : { 'html'      : 'totptoken.mako',
-                                                         'scope'      : 'selfservice.title.enroll', },
-                                                  },
-                                  },
-               'policy' : {
-                    'selfservice' : {
-                        'totp_timestep': {
-                            'type':'int',
-                            'value' : [30, 60],
-                            'desc' : ('Specify the time step of the '
-                                      'timebased OTP token.')
-                                  },
-                       'totp_hashlib' : {
-                           'type':'int',
-                           'value' : [1, 2, 3],
-                           'desc' : ('Specify the hashlib to be used. Can be '
-                                     'sha1 (1), sha256 (2) or sha512 (3)')
-                            },
-                       'totp_otplen' : {'type':'int',
-                            'value' : [6, 8],
-                            'desc' : ('Specify the otplen to be used. '
-                                      'Can be 6 or 8 digits.')
-                            },
-
-
-                           },
-                        },
-               }
+            "type": "totp",
+            "title": "HMAC Time Token",
+            "description": ("time based otp token using the hmac algorithm"),
+            "init": {
+                "page": {
+                    "html": "totptoken.mako",
+                    "scope": "enroll",
+                },
+                "title": {
+                    "html": "totptoken.mako",
+                    "scope": "enroll.title",
+                },
+            },
+            "config": {
+                "page": {
+                    "html": "totptoken.mako",
+                    "scope": "config",
+                },
+                "title": {
+                    "html": "totptoken.mako",
+                    "scope": "config.title",
+                },
+            },
+            "selfservice": {
+                "enroll": {
+                    "page": {
+                        "html": "totptoken.mako",
+                        "scope": "selfservice.enroll",
+                    },
+                    "title": {
+                        "html": "totptoken.mako",
+                        "scope": "selfservice.title.enroll",
+                    },
+                },
+            },
+            "policy": {
+                "selfservice": {
+                    "totp_timestep": {
+                        "type": "int",
+                        "value": [30, 60],
+                        "desc": (
+                            "Specify the time step of the "
+                            "timebased OTP token."
+                        ),
+                    },
+                    "totp_hashlib": {
+                        "type": "int",
+                        "value": [1, 2, 3],
+                        "desc": (
+                            "Specify the hashlib to be used. Can be "
+                            "sha1 (1), sha256 (2) or sha512 (3)"
+                        ),
+                    },
+                    "totp_otplen": {
+                        "type": "int",
+                        "value": [6, 8],
+                        "desc": (
+                            "Specify the otplen to be used. "
+                            "Can be 6 or 8 digits."
+                        ),
+                    },
+                },
+            },
+        }
 
         if key is not None and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
         return ret
 
-
     def update(self, param):
-        '''
+        """
         update - process the initialization parameters
 
         :param param: dict of initialization parameters
         :type param: dict
 
         :return: nothing
-        '''
+        """
 
-        ## check for the required parameters
+        # check for the required parameters
         val = param.get("hashlib")
         if val is not None:
             self.hashlibStr = val
         else:
-            self.hashlibStr = 'sha1'
+            self.hashlibStr = "sha1"
 
-        otpKey = ''
+        otpKey = ""
 
-        if (self.hKeyRequired is True):
+        if self.hKeyRequired is True:
             genkey = int(param.get("genkey", 0))
             if 1 == genkey:
-                # if hashlibStr not in keylen dict, this will raise an Exception
+                # if hashlibStr not in keylen dict, this will raise an
+                # Exception
                 otpKey = generate_otpkey(keylen.get(self.hashlibStr))
-                del param['genkey']
+                del param["genkey"]
             else:
                 # genkey not set: check otpkey is given
                 # this will raise an exception if otpkey is not present
                 try:
-                    otpKey = param['otpkey']
+                    otpKey = param["otpkey"]
                 except KeyError:
                     raise ParameterError("Missing parameter: 'serial'")
 
         # finally set the values for the update
 
-        param['otpkey'] = otpKey
-        param['hashlib'] = self.hashlibStr
+        param["otpkey"] = otpKey
+        param["hashlib"] = self.hashlibStr
 
         val = param.get("otplen")
         if val is not None:
@@ -310,11 +330,11 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         HmacTokenClass.update(self, param)
 
-        if self.timeWindow is not None and self.timeWindow != '':
+        if self.timeWindow is not None and self.timeWindow != "":
             self.addToTokenInfo("timeWindow", self.timeWindow)
-        if self.timeShift is not None and self.timeShift != '':
+        if self.timeShift is not None and self.timeShift != "":
             self.addToTokenInfo("timeShift", self.timeShift)
-        if self._timeStep is not None and self._timeStep != '':
+        if self._timeStep is not None and self._timeStep != "":
             self.addToTokenInfo("timeStep", self._timeStep)
         if self.hashlibStr:
             self.addToTokenInfo("hashlib", self.hashlibStr)
@@ -322,7 +342,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         return
 
     def check_otp_exist(self, otp, window=10, user=None, autoassign=False):
-        '''
+        """
         checks if the given OTP value is/are values of this very token.
         This is used to autoassign and to determine the serial number of
         a token.
@@ -336,24 +356,28 @@ class TimeHmacTokenClass(HmacTokenClass):
         :return: counter or -1 if otp does not exist
         :rtype:  int
 
-        '''
+        """
 
         res = -1
 
         try:
             counter = int(self.token.LinOtpCount)
         except ValueError as ex:
-            log.warning("[check_otp_exist] a value error occurred while converting: counter %r : ValueError: %r ret: %r "
-                      % (self.token.LinOtpCount, ex, res))
+            log.warning(
+                "[check_otp_exist] a value error occurred while "
+                "converting: counter %r : ValueError: %r ret: %r ",
+                self.token.LinOtpCount,
+                ex,
+                res,
+            )
             return res
 
         res = self.checkOtp(otp, counter, window=window)
 
         return res
 
-
     def time2float(self, curTime):
-        '''
+        """
         time2float - convert a datetime object or an datetime sting into a float
         s. http://bugs.python.org/issue12750
 
@@ -362,34 +386,41 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         :return: time as float
         :rtype: float
-        '''
+        """
 
         dt = datetime.datetime.now()
-        if type(curTime) == datetime.datetime:
+        if isinstance(curTime, datetime.datetime):
             dt = curTime
-        elif type(curTime) == str:
-            if '.' in curTime:
+        elif isinstance(curTime, str):
+            if "." in curTime:
                 tFormat = "%Y-%m-%d %H:%M:%S.%f"
             else:
                 tFormat = "%Y-%m-%d %H:%M:%S"
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
             except Exception as ex:
-                log.exception('[time2float] Error during conversion of datetime: %r' % (ex))
-                raise Exception(ex)
+                log.error(
+                    "[time2float] Error during conversion of datetime: %r", ex
+                )
+                raise
         else:
-            raise Exception("[time2float] invalid curTime: %s. You need to specify a datetime.datetime" % type(curTime))
+            raise Exception(
+                "[time2float] invalid curTime: %s. You need to specify a datetime.datetime"
+                % type(curTime)
+            )
 
-        td = (dt - datetime.datetime(1970, 1, 1))
-        ## for python 2.6 compatibility, we have to implement 2.7 .total_seconds()::
-        ## TODO: fix to float!!!!
-        tCounter = ((td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6) * 1.0) // 10 ** 6
+        td = dt - datetime.datetime(1970, 1, 1)
+        # for python 2.6 compatibility, we have to implement 2.7 .total_seconds()::
+        # TODO: fix to float!!!!
+        tCounter = (
+            (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6)
+            * 1.0
+        ) // 10 ** 6
 
         return tCounter
 
-
     def checkOtp(self, anOtpVal, counter, window, options=None):
-        '''
+        """
         checkOtp - validate the token otp against a given otpvalue
 
         :param anOtpVal: the to be verified otpvalue
@@ -407,7 +438,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         :return: the counter state or -1
         :rtype: int
 
-        '''
+        """
 
         # convert the window counter into seconds
         totp_window = window * self.timeStepping
@@ -422,12 +453,14 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         secObj = self._get_secret_object()
         hmac2Otp = HmacOtp(
-            secObj, counter, self.otplen, self.getHashlib(self.hashlibStr))
+            secObj, counter, self.otplen, self.getHashlib(self.hashlibStr)
+        )
 
         # ------------------------------------------------------------------ --
 
         otp_match_counter = hmac2Otp.checkOtp(
-            anOtpVal, int(totp_window // self.timeStepping), symetric=True)
+            anOtpVal, int(totp_window // self.timeStepping), symetric=True
+        )
 
         # ------------------------------------------------------------------ --
 
@@ -466,24 +499,22 @@ class TimeHmacTokenClass(HmacTokenClass):
 
     @property
     def timeStep(self):
-        return self.getFromTokenInfo('timeStep')
+        return self.getFromTokenInfo("timeStep")
 
     @timeStep.setter
-    def timeStep(self, value:int):
+    def timeStep(self, value: int):
         """Totp token property setter for timeStep.
 
         :param value: the new timeStep value
         """
-        if value not in [60,30]:
+        if value not in [60, 30]:
             raise ValueError(
-                'timeStep for totp token must be either 30 or 60!'
-                )
-
-        new_time_count = (
-            self.getOtpCount() * self.timeStepping // value
+                "timeStep for totp token must be either 30 or 60!"
             )
+
+        new_time_count = self.getOtpCount() * self.timeStepping // value
         self.setOtpCount(int(new_time_count))
-        self.addToTokenInfo('timeStep', value)
+        self.addToTokenInfo("timeStep", value)
 
     def set_new_timeshift(self, otp_match_counter):
         """
@@ -493,12 +524,13 @@ class TimeHmacTokenClass(HmacTokenClass):
         """
 
         new_shift = self._calculate_new_timeshift(
-            otp_match_counter, self.getOtpCount(), self.timeStepping)
+            otp_match_counter, self.getOtpCount(), self.timeStepping
+        )
 
-        self.addToTokenInfo('timeShift', new_shift)
+        self.addToTokenInfo("timeShift", new_shift)
 
     def autosync(self, hmac2Otp, anOtpVal):
-        '''
+        """
         auto - sync the token based on two otp values
         - internal method to realize the autosync within the
         checkOtp method
@@ -512,10 +544,10 @@ class TimeHmacTokenClass(HmacTokenClass):
         :return: counter or -1 if otp does not exist
         :rtype:  int
 
-        '''
+        """
 
         if not boolean(getFromConfig("AutoResync", False)):
-            log.info('autosync is not enabled')
+            log.info("autosync is not enabled")
             return -1
 
         info = self.getTokenInfo()
@@ -525,7 +557,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         otp_counter = hmac2Otp.checkOtp(anOtpVal, syncWindow, symetric=True)
 
         if otp_counter == -1:
-            log.info('no valid otp in auto resync window')
+            log.info("no valid otp in auto resync window")
             return -1
 
         # ------------------------------------------------------------------ --
@@ -537,7 +569,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         # the resync as it might be replay
 
         if otp_counter < self.getOtpCount():
-            log.info('otp before the last verified valid otp!')
+            log.info("otp before the last verified valid otp!")
             return -1
 
         # ------------------------------------------------------------------ --
@@ -550,7 +582,7 @@ class TimeHmacTokenClass(HmacTokenClass):
             info["otp1c"] = otp_counter
             self.setTokenInfo(info)
 
-            log.info('preserved the first otp counter for resync')
+            log.info("preserved the first otp counter for resync")
             return -1
 
         # ------------------------------------------------------------------ --
@@ -563,12 +595,12 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         if otp2c <= otp1c:
             # the otps are not in right order
-            log.info('OTP values are not in the right order!')
+            log.info("OTP values are not in the right order!")
             return -1
 
         if (otp2c - otp1c) > self.resyncDiffLimit:
             # assert that the otps are not too far apart
-            log.info('the otps are too far apart for resync!')
+            log.info("the otps are too far apart for resync!")
 
             # if so, we take the new one as the auto sync base
             info["otp1c"] = otp2c
@@ -580,10 +612,9 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         return otp_counter
 
-
     @staticmethod
     def _calculate_new_timeshift(new_counter, old_counter, timeStepping):
-        '''
+        """
         Calculate the time offset between token and server time
 
         Over time, the token's internal clock can drift away
@@ -606,7 +637,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         :patam timeStepping: the token timestep
 
         :return: the calculated difference in time shift
-        '''
+        """
 
         tokentime = counter2time(new_counter, timeStepping)
         tokenDt = datetime.datetime.fromtimestamp(float(tokentime))
@@ -620,23 +651,22 @@ class TimeHmacTokenClass(HmacTokenClass):
         lastauth = counter2time(old_counter, timeStepping)
         lastauthDt = datetime.datetime.fromtimestamp(float(lastauth))
 
-        log.debug("[checkOTP] last auth : %r" % (lastauthDt))
-        log.debug("[checkOTP] tokentime : %r" % (tokenDt))
-        log.debug("[checkOTP] now       : %r" % (nowDt))
-        log.debug("[checkOTP] delta     : %r" % (tokentime - inow))
+        log.debug("[checkOTP] last auth : %r", lastauthDt)
+        log.debug("[checkOTP] tokentime : %r", tokenDt)
+        log.debug("[checkOTP] now       : %r", nowDt)
+        log.debug("[checkOTP] delta     : %r", tokentime - inow)
 
         inow_counter = time2counter(inow, timeStepping)
         inow_token_time = counter2time(inow_counter, timeStepping)
 
-        new_shift = (tokentime - inow_token_time)
+        new_shift = tokentime - inow_token_time
 
         log.debug("New shift for counter %r: %r", new_counter, new_shift)
 
         return new_shift
 
-
     def resync(self, otp1, otp2, options=None):
-        '''
+        """
         resync the token based on two otp values
         - external method to do the resync of the token
 
@@ -652,7 +682,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         :return: counter or -1 if otp does not exist
         :rtype:  int
 
-        '''
+        """
 
         ret = False
 
@@ -663,54 +693,79 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         secObj = self._get_secret_object()
 
-        self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
+        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         timeStepping = int(self.getFromTokenInfo("timeStep", 30))
         shift = int(self.getFromTokenInfo("timeShift", 0))
 
         try:
             window = int(self.token.LinOtpSyncWindow) * timeStepping
-        except:
+        except BaseException:
             window = 10 * timeStepping
 
-        log.debug("[resync] timestep: %r, syncWindow: %r, timeShift: %r"
-                  % (timeStepping, window, shift))
-
+        log.debug(
+            "[resync] timestep: %r, syncWindow: %r, timeShift: %r",
+            timeStepping,
+            window,
+            shift,
+        )
 
         T0 = time.time() + shift
 
-        log.debug("[resync] T0 : %i" % T0)
-        counter = int(T0 // timeStepping)  # T = (Current Unix time - T0) / timeStepping
-        log.debug("[resync] counter (current time): %i" % counter)
+        log.debug("[resync] T0 : %i", T0)
+        # T = (Current Unix time - T0) / timeStepping
+        counter = int(T0 // timeStepping)
+        log.debug("[resync] counter (current time): %i", counter)
 
         oCount = self.getOtpCount()
 
-        log.debug("[resync] tokenCounter: %r" % oCount)
-        log.debug("[resync] now checking window %s, timeStepping %s" % (window, timeStepping))
+        log.debug("[resync] tokenCounter: %r", oCount)
+        log.debug(
+            "[resync] now checking window %s, timeStepping %s",
+            window,
+            timeStepping,
+        )
         # check 2nd value
-        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
-        log.debug("[resync] %s in otpkey: %s " % (otp2, secObj))
-        res2 = hmac2Otp.checkOtp(otp2, int(window // timeStepping), symetric=True)  #TEST -remove the 10
-        log.debug("[resync] res 2: %r" % res2)
+        hmac2Otp = HmacOtp(
+            secObj, counter, otplen, self.getHashlib(self.hashlibStr)
+        )
+        log.debug("[resync] %s in otpkey: %s ", otp2, secObj)
+        res2 = hmac2Otp.checkOtp(
+            otp2, int(window // timeStepping), symetric=True
+        )  # TEST -remove the 10
+        log.debug("[resync] res 2: %r", res2)
         # check 1st value
-        hmac2Otp = HmacOtp(secObj, counter - 1, otplen, self.getHashlib(self.hashlibStr))
-        log.debug("[resync] %s in otpkey: %s " % (otp1, secObj))
-        res1 = hmac2Otp.checkOtp(otp1, int(window // timeStepping), symetric=True)  #TEST -remove the 10
-        log.debug("[resync] res 1: %r" % res1)
+        hmac2Otp = HmacOtp(
+            secObj, counter - 1, otplen, self.getHashlib(self.hashlibStr)
+        )
+        log.debug("[resync] %s in otpkey: %s ", otp1, secObj)
+        res1 = hmac2Otp.checkOtp(
+            otp1, int(window // timeStepping), symetric=True
+        )  # TEST -remove the 10
+        log.debug("[resync] res 1: %r", res1)
 
         if res1 < oCount:
             # A previous OTP value was used again!
-            log.warning("[resync] a previous OTP value was used again! tokencounter: %i, presented counter %i" %
-                        (oCount, res1))
+            log.warning(
+                "[resync] a previous OTP value was used again! "
+                "tokencounter: %i, presented counter %i",
+                oCount,
+                res1,
+            )
             res1 = -1
 
         if res1 != -1 and res1 + 1 == res2:
-            # here we calculate the new drift/shift between the server time and the tokentime
+            # here we calculate the new drift/shift between the server time and
+            # the tokentime
             tokentime = (res2 + 0.5) * timeStepping
             currenttime = T0 - shift
-            new_shift = (tokentime - currenttime)
-            log.debug("[resync] the counters %r and %r matched. New shift: %r"
-                       % (res1, res2, new_shift))
-            self.addToTokenInfo('timeShift', new_shift)
+            new_shift = tokentime - currenttime
+            log.debug(
+                "[resync] the counters %r and %r matched. New shift: %r",
+                res1,
+                res2,
+                new_shift,
+            )
+            self.addToTokenInfo("timeShift", new_shift)
 
             # The OTP value that was used for resync must not be used again!
             self.setOtpCount(res2 + 1)
@@ -726,35 +781,39 @@ class TimeHmacTokenClass(HmacTokenClass):
         return ret
 
     def getSyncTimeOut(self):
-        '''
+        """
         get the token sync timeout value
 
         :return: timeout value in seconds
         :rtype:  int
-        '''
+        """
 
         timeOut = int(getFromConfig("AutoResyncTimeout", 5 * 60))
         return timeOut
 
-
     def getOtp(self, curTime=None):
-        '''
+        """
         get the next OTP value
 
         :return: next otp value
         :rtype: string
-        '''
+        """
 
         res = (-1, 0, 0, 0)
 
         otplen = int(self.token.LinOtpOtpLen)
         secObj = self._get_secret_object()
 
-        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1") or 'sha1'
+        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1") or "sha1"
         timeStepping = int(self.getFromTokenInfo("timeStep", 30) or 30)
         shift = int(self.getFromTokenInfo("timeShift", 0) or 0)
 
-        hmac2Otp = HmacOtp(secObj, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(
+            secObj,
+            self.getOtpCount(),
+            otplen,
+            self.getHashlib(self.hashlibStr),
+        )
 
         tCounter = self.time2float(datetime.datetime.utcnow())
         if curTime:
@@ -771,7 +830,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         return (1, pin, otpval, combined)
 
     def get_multi_otp(self, count=0, epoch_start=0, epoch_end=0, curTime=None):
-        '''
+        """
         return a dictionary of multiple future OTP values of the HOTP/HMAC token
 
         :param count:   how many otp values should be returned
@@ -779,7 +838,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         :return:     tuple of status: boolean, error: text and the OTP dictionary
 
-        '''
+        """
 
         otp_dict = {"type": "TOTP", "otp": {}}
         ret = False
@@ -790,17 +849,20 @@ class TimeHmacTokenClass(HmacTokenClass):
             return ret
 
         secObj = self._get_secret_object()
-        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1") or 'sha1'
+        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1") or "sha1"
         timeStepping = int(self.getFromTokenInfo("timeStep", 30) or 30)
         shift = int(self.getFromTokenInfo("timeShift", 0) or 0)
 
-        hmac2Otp = HmacOtp(secObj, self.getOtpCount(),
-                           otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(
+            secObj,
+            self.getOtpCount(),
+            otplen,
+            self.getHashlib(self.hashlibStr),
+        )
 
         tCounter = self.time2float(datetime.datetime.utcnow())
         if curTime:
             tCounter = self.time2float(curTime)
-
 
         counter = int((tCounter - shift) // timeStepping)
 
@@ -809,18 +871,21 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         if count > 0:
             for i in range(0, count):
-                otpval = hmac2Otp.generate(counter=counter + i, inc_counter=False)
+                otpval = hmac2Otp.generate(
+                    counter=counter + i, inc_counter=False
+                )
                 timeCounter = ((counter + i) * timeStepping) + shift
-                otp_dict["otp"][ counter + i] = {
-                     'otpval' : otpval,
-                     'time'  : datetime.datetime.utcfromtimestamp(timeCounter).strftime("%Y-%m-%d %H:%M:%S"),
-                    }
+                otp_dict["otp"][counter + i] = {
+                    "otpval": otpval,
+                    "time": datetime.datetime.utcfromtimestamp(
+                        timeCounter
+                    ).strftime("%Y-%m-%d %H:%M:%S"),
+                }
             ret = True
 
         return (ret, error, otp_dict)
 
-
-    def get_otp_detail(self, otp, window='24h'):
+    def get_otp_detail(self, otp, window="24h"):
         """
         provide information belonging to one otp
 
@@ -829,6 +894,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         """
 
         from linotp.lib.type_utils import parse_duration
+
         window = parse_duration(window).total_seconds()
 
         # ------------------------------------------------------------------ --
@@ -844,17 +910,18 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         secObj = self._get_secret_object()
         hmac2Otp = HmacOtp(
-            secObj, counter, self.otplen, self.getHashlib(self.hashlibStr))
+            secObj, counter, self.otplen, self.getHashlib(self.hashlibStr)
+        )
         matching_counter = hmac2Otp.checkOtp(
-                                otp, int(window // time_step), symetric=True)
-
+            otp, int(window // time_step), symetric=True
+        )
 
         # ------------------------------------------------------------------ --
 
         # matching_counter =-1 : no otp found in the current time frame
 
         if matching_counter == -1:
-            log.info('no matching otp found in window: %r', window)
+            log.info("no matching otp found in window: %r", window)
             return False, None
 
         # ------------------------------------------------------------------ --
@@ -862,25 +929,22 @@ class TimeHmacTokenClass(HmacTokenClass):
         # do not provide information of otps in the future
 
         if matching_counter >= counter:
-            log.info('otp is in future - no info for future otps')
+            log.info("otp is in future - no info for future otps")
             return False, None
-
 
         # ------------------------------------------------------------------ --
 
         # all fine - now return the time stamp and the utc time format
 
-        time_stamp = counter2time(
-            matching_counter, timeStepping=time_step)
+        time_stamp = counter2time(matching_counter, timeStepping=time_step)
 
         time_info = datetime.datetime.utcfromtimestamp(time_stamp)
 
         return True, {
-            'serial' : self.getSerial(),
-            'otp': otp,
-            'counter': matching_counter,
-            'time': time_info.isoformat(),
-            'seconds': int(time_stamp),
-            'span': time_step,
+            "serial": self.getSerial(),
+            "otp": otp,
+            "counter": matching_counter,
+            "time": time_info.isoformat(),
+            "seconds": int(time_stamp),
+            "span": time_step,
         }
-

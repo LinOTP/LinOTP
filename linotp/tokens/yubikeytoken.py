@@ -27,7 +27,6 @@
     run in Yubico Mode"""
 
 
-
 import binascii
 import logging
 
@@ -42,8 +41,10 @@ log = logging.getLogger(__name__)
 
 
 ###############################################
-@tokenclass_registry.class_entry('yubikey')
-@tokenclass_registry.class_entry('linotp.tokens.yubikeytoken.YubikeyTokenClass')
+@tokenclass_registry.class_entry("yubikey")
+@tokenclass_registry.class_entry(
+    "linotp.tokens.yubikeytoken.YubikeyTokenClass"
+)
 class YubikeyTokenClass(TokenClass):
     """
     The YubiKey Token in the Yubico AES mode
@@ -65,7 +66,7 @@ class YubikeyTokenClass(TokenClass):
         return "UBAM"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
+    def getClassInfo(cls, key=None, ret="all"):
         """
         getClassInfo - returns a subtree of the token definition
 
@@ -81,28 +82,28 @@ class YubikeyTokenClass(TokenClass):
         """
 
         res = {
-            'type':          'yubikey',
-            'title':         'YubiKey in Yubico Mode',
-            'description':   ('Yubico token to run the AES OTP mode.'),
-            'init':          {},
-            'config':        {},
-            'selfservice':   {},
-            'policy':        {},
+            "type": "yubikey",
+            "title": "YubiKey in Yubico Mode",
+            "description": ("Yubico token to run the AES OTP mode."),
+            "init": {},
+            "config": {},
+            "selfservice": {},
+            "policy": {},
         }
 
         if key is not None and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
         return ret
 
     def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
-        '''
+        """
         checks if the given OTP value is/are values of this very token.
         This is used to autoassign and to determine the serial number of
         a token.
-        '''
+        """
         res = -1
         if window is None:
             window = self.getOtpCountWindow()
@@ -118,7 +119,7 @@ class YubikeyTokenClass(TokenClass):
         return res
 
     def is_challenge_request(self, passw, user, options=None):
-        '''
+        """
         This method checks, if this is a request, that triggers a challenge.
 
         :param passw: password, which might be pin or pin+otp
@@ -129,7 +130,7 @@ class YubikeyTokenClass(TokenClass):
         :type options: dict
 
         :return: true or false
-        '''
+        """
 
         request_is_valid = False
 
@@ -138,7 +139,6 @@ class YubikeyTokenClass(TokenClass):
             request_is_valid = True
 
         return request_is_valid
-
 
     def resync(self, otp1, otp2, options=None):
         """
@@ -169,30 +169,30 @@ class YubikeyTokenClass(TokenClass):
         return ret
 
     def update(self, param, reset_failcount=True):
-        '''
+        """
         update - process the initialization parameters
 
         :param param: dict of initialization parameters
         :type param: dict
 
         :return: nothing
-        '''
+        """
 
         # we use the public_uid to calculate the otplen which is at 48 or 32
         # the public_uid is stored and used in validation
 
-        if 'public_uid' in param:
-            otplen = 32 + len(param['public_uid'])
+        if "public_uid" in param:
+            otplen = 32 + len(param["public_uid"])
         else:
             otplen = 48
 
-        if 'otplen' not in param:
-            param['otplen'] = otplen
+        if "otplen" not in param:
+            param["otplen"] = otplen
 
         TokenClass.update(self, param, reset_failcount)
 
-        if 'public_uid' in param:
-            self.addToTokenInfo('public_uid', param['public_uid'])
+        if "public_uid" in param:
+            self.addToTokenInfo("public_uid", param["public_uid"])
 
         return
 
@@ -259,7 +259,7 @@ class YubikeyTokenClass(TokenClass):
         yubi_prefix = anOtpVal[:-32]
 
         # verify the prefix if any
-        enroll_prefix = self.getFromTokenInfo('public_uid', None)
+        enroll_prefix = self.getFromTokenInfo("public_uid", None)
         if enroll_prefix and enroll_prefix != yubi_prefix:
             log.warning("token prefix missmatch")
             return -1
@@ -277,11 +277,11 @@ class YubikeyTokenClass(TokenClass):
         msg_hex = binascii.hexlify(msg_bin)
 
         uid = msg_hex[0:12].decode()
-        log.debug("[checkOtp] uid: %r" % uid)
+        log.debug("[checkOtp] uid: %r", uid)
 
         try:
             prefix = modhex_decode(yubi_prefix)
-            log.debug("[checkOtp] prefix: %r" % prefix)
+            log.debug("[checkOtp] prefix: %r", prefix)
         except (TypeError, KeyError) as exx:
             log.info("Unable to decode token prefix %r! %r", yubi_prefix, exx)
 
@@ -296,38 +296,52 @@ class YubikeyTokenClass(TokenClass):
         session_counter = msg_hex[22:24]
         random = msg_hex[24:28]
 
-        log.debug("[checkOtp] decrypted: usage_count: %r, session_count: %r"
-                  % (usage_counter, session_counter))
+        log.debug(
+            "[checkOtp] decrypted: usage_count: %r, session_count: %r",
+            usage_counter,
+            session_counter,
+        )
 
         # The checksum is a CRC-16 (16-bit ISO 13239 1st complement) that
         # occupies the last 2 bytes of the decrypted OTP value. Calculating the
         # CRC-16 checksum of the whole decrypted OTP should give a fixed residual
         # of 0xf0b8 (see Yubikey-Manual - Chapter 6: Implementation details).
         crc = msg_hex[28:]
-        log.debug("[checkOtp] calculated checksum (61624): %r" % checksum(msg_bin))
-        if checksum(msg_bin) != 0xf0b8:
-            log.warning("[checkOtp] CRC checksum for token %r failed" % serial)
+        log.debug(
+            "[checkOtp] calculated checksum (61624): %r", checksum(msg_bin)
+        )
+        if checksum(msg_bin) != 0xF0B8:
+            log.warning("[checkOtp] CRC checksum for token %r failed", serial)
             return -3
 
         # create the counter as integer
         # Note: The usage counter is stored LSB!
         count_hex = usage_counter[2:4] + usage_counter[0:2] + session_counter
         count_int = int(count_hex, 16)
-        log.debug('[checkOtp] decrypted counter: %r' % count_int)
+        log.debug("[checkOtp] decrypted counter: %r", count_int)
 
         tokenid = self.getFromTokenInfo("yubikey.tokenid")
         if not tokenid:
-            log.debug("[checkOtp] Got no tokenid for %r. Setting to %r." % (serial, uid))
+            log.debug(
+                "[checkOtp] Got no tokenid for %r. Setting to %r.", serial, uid
+            )
             tokenid = uid
             self.addToTokenInfo("yubikey.tokenid", tokenid)
 
         if tokenid != uid:
             # wrong token!
-            log.warning("[checkOtp] The wrong token was presented for %r. Got %r, expected %r."
-                        % (serial, uid, tokenid))
+            log.warning(
+                "[checkOtp] The wrong token was presented for %r. Got %r, expected %r.",
+                serial,
+                uid,
+                tokenid,
+            )
             return -2
 
-        log.debug('[checkOtp] compare counter to LinOtpCount: %r' % self.token.LinOtpCount)
+        log.debug(
+            "[checkOtp] compare counter to LinOtpCount: %r",
+            self.token.LinOtpCount,
+        )
         if count_int >= self.token.LinOtpCount:
             return count_int
 

@@ -37,8 +37,7 @@ log = logging.getLogger(__name__)
 
 
 class SqlUserDB(object):
-
-    def __init__(self, connect='sqlite://', table_name='User2'):
+    def __init__(self, connect="sqlite://", table_name="User2"):
         self.tableName = table_name
         self.usercol = '"user"'
         self.userTable = '"%s"' % self.tableName
@@ -48,10 +47,12 @@ class SqlUserDB(object):
             self.engine = create_engine(connect)
             connection = self.engine.connect()
             self.sqlurl = self.engine.url
-            if self.sqlurl.drivername.startswith('mysql'):
-                self.userTable = ("%s.%s"
-                                  % (self.sqlurl.database, self.tableName))
-                self.usercol = 'user'
+            if self.sqlurl.drivername.startswith("mysql"):
+                self.userTable = "%s.%s" % (
+                    self.sqlurl.database,
+                    self.tableName,
+                )
+                self.usercol = "user"
 
         except Exception as e:
             print("%r" % e)
@@ -60,30 +61,30 @@ class SqlUserDB(object):
 
         umap = {
             "userid": "id",
-            "username": 'user',
+            "username": "user",
             "phone": "telephonenumber",
             "mobile": "mobile",
             "email": "mail",
             "surname": "sn",
             "givenname": "givenname",
             "password": "password",
-            }
+        }
 
         self.resolverDef = {
-            'Table': self.tableName,
-            'Map': json.dumps(umap),
-         }
+            "Table": self.tableName,
+            "Map": json.dumps(umap),
+        }
 
         self.sql_params = {
-              self.usercol: 'text',
-              'telephonenumber': 'text',
-              'mobile': 'text',
-              'sn': 'text',
-              'givenname': 'text',
-              'password': 'text',
-              'id': 'text',
-              'mail': 'text'
-            }
+            self.usercol: "text",
+            "telephonenumber": "text",
+            "mobile": "text",
+            "sn": "text",
+            "givenname": "text",
+            "password": "text",
+            "id": "text",
+            "mail": "text",
+        }
 
         # extend the dict with userid resolver attributes from the connect
         conn_dict = self._parse_connection(connect)
@@ -100,22 +101,22 @@ class SqlUserDB(object):
 
         """
 
-        dbdrive_port, _sep, rest = connect.partition('//')
-        dbdrive, _sep, port = dbdrive_port.partition(':')
-        user_pass, _sep, host_db = rest.partition('@')
-        user, _sep, passw = user_pass.partition(':')
-        host, _sep, db = host_db.partition('/')
+        dbdrive_port, _sep, rest = connect.partition("//")
+        dbdrive, _sep, port = dbdrive_port.partition(":")
+        user_pass, _sep, host_db = rest.partition("@")
+        user, _sep, passw = user_pass.partition(":")
+        host, _sep, db = host_db.partition("/")
 
         conn = {
-             'Database': db,
-             'Driver': dbdrive,
-             'Server': host,
-             'User': user,
-             'Password': passw,
-             'type': 'sqlresolver',
-            }
+            "Database": db,
+            "Driver": dbdrive,
+            "Server": host,
+            "User": user,
+            "Password": passw,
+            "type": "sqlresolver",
+        }
         if port:
-            conn['Port'] = port
+            conn["Port"] = port
         return conn
 
     def getResolverDefinition(self):
@@ -129,10 +130,12 @@ class SqlUserDB(object):
         create_key_value = []
 
         for key, value in list(self.sql_params.items()):
-            create_key_value.append('%s %s' % (key, value))
+            create_key_value.append("%s %s" % (key, value))
 
         createStr = "CREATE TABLE %s ( %s )" % (
-            self.userTable, ', '.join(create_key_value))
+            self.userTable,
+            ", ".join(create_key_value),
+        )
 
         t = sqlalchemy.sql.expression.text(createStr)
         self.connection.execute(t)
@@ -144,20 +147,31 @@ class SqlUserDB(object):
         t = sqlalchemy.sql.expression.text(dropStr)
         self.connection.execute(t)
 
-    def addUser(self, user, telephonenumber, mobile, sn, givenname,
-                password, uid, mail):
+    def addUser(
+        self, user, telephonenumber, mobile, sn, givenname, password, uid, mail
+    ):
         intoStr = """
             INSERT INTO %s( %s, telephonenumber, mobile,
             sn, givenname, password, id, mail)
             VALUES (:user, :telephonenumber, :mobile, :sn, :givenname,
                     :password, :id, :mail)
-            """ % (self.userTable, self.usercol)
+            """ % (
+            self.userTable,
+            self.usercol,
+        )
         t = sqlalchemy.sql.expression.text(intoStr)
 
-        self.connection.execute(t, user=user, telephonenumber=telephonenumber,
-                                mobile=mobile, sn=sn,
-                                givenname=givenname, password=password,
-                                id=uid, mail=mail)
+        self.connection.execute(
+            t,
+            user=user,
+            telephonenumber=telephonenumber,
+            mobile=mobile,
+            sn=sn,
+            givenname=givenname,
+            password=password,
+            id=uid,
+            mail=mail,
+        )
 
         # execute(sqlalchemy.sql.expression.text("""SELECT COUNT(*)
         # FROM Config WHERE Config.Key = :key"""), key=REPLICATION_CONFIG_KEY)
@@ -174,17 +188,17 @@ class SqlUserDB(object):
     def delUsers(self, uid=None, username=None):
 
         if username is not None:
-            delStr = 'DELETE FROM %s  WHERE user=:user' % (self.userTable)
+            delStr = "DELETE FROM %s  WHERE user=:user" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, user=username)
 
-        elif type(uid) in (str, ''):
-            delStr = 'DELETE FROM %s  WHERE id=:id' % (self.userTable)
+        elif type(uid) in (str, ""):
+            delStr = "DELETE FROM %s  WHERE id=:id" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, id=uid)
 
         elif uid is None:
-            delStr = 'DELETE FROM %s' % (self.userTable)
+            delStr = "DELETE FROM %s" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t)
 
@@ -193,4 +207,3 @@ class SqlUserDB(object):
 
     def __del__(self):
         self.connection.close()
-

@@ -82,21 +82,19 @@ CONTENT_TYPE_AUTH = 2
 QRTOKEN_VERSION = 1
 
 
-@tokenclass_registry.class_entry('qr')
-@tokenclass_registry.class_entry('linotp.tokens.qrtoken.QrTokenClass')
+@tokenclass_registry.class_entry("qr")
+@tokenclass_registry.class_entry("linotp.tokens.qrtoken.QrTokenClass")
 class QrTokenClass(TokenClass, StatefulTokenMixin):
 
-    """
-
-    """
+    """"""
 
     def __init__(self, token_model_object):
         TokenClass.__init__(self, token_model_object)
-        self.setType('qr')
-        self.mode = ['challenge']
+        self.setType("qr")
+        self.mode = ["challenge"]
         self.supports_offline_mode = True
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def isActive(self):
 
@@ -105,26 +103,27 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # flag is 1) and pairing_challenge_sent (active flag is 0)
 
         is_completely_finished = TokenClass.isActive(self)
-        return is_completely_finished or \
-            self.current_state == 'pairing_response_received' or \
-            self.current_state == 'pairing_challenge_sent'
+        return (
+            is_completely_finished
+            or self.current_state == "pairing_response_received"
+            or self.current_state == "pairing_challenge_sent"
+        )
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def get_enrollment_status(self):
-        """ provide token enrollment status"""
+        """provide token enrollment status"""
 
-        is_completely_finished = self.current_state == 'pairing_complete'
+        is_completely_finished = self.current_state == "pairing_complete"
 
         if is_completely_finished:
-            return {'status': 'completed'}
+            return {"status": "completed"}
         else:
-            return {'status': 'not completed',
-                    'detail': self.current_state}
+            return {"status": "not completed", "detail": self.current_state}
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
-# type identifier interface
+    # type identifier interface
 
     @classmethod
     def getClassType(cls):
@@ -135,91 +134,91 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # OATH standard compliant prefix: XXYY XX= vendor, YY - token type
         return "LSQR"
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     # info interface definition
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
+    def getClassInfo(cls, key=None, ret="all"):
 
-        _ = context['translate']
+        _ = context["translate"]
 
-        info = {'type': 'qr', 'title': _('QRToken')}
+        info = {"type": "qr", "title": _("QRToken")}
 
-        info['description'] = 'Challenge-Response-Token - Curve 25519 based'
+        info["description"] = "Challenge-Response-Token - Curve 25519 based"
 
         # ------------------------------------------------------------------- --
 
-        info['policy'] = {}
+        info["policy"] = {}
 
         auth_policies = {}
 
-        for policy_name in ['qrtoken_pairing_callback_url',
-                            'qrtoken_pairing_callback_sms',
-                            'qrtoken_challenge_callback_url',
-                            'qrtoken_challenge_callback_sms']:
+        for policy_name in [
+            "qrtoken_pairing_callback_url",
+            "qrtoken_pairing_callback_sms",
+            "qrtoken_challenge_callback_url",
+            "qrtoken_challenge_callback_sms",
+        ]:
 
-            auth_policies[policy_name] = {'type': 'str'}
+            auth_policies[policy_name] = {"type": "str"}
 
-        info['policy']['authentication'] = auth_policies
+        info["policy"]["authentication"] = auth_policies
 
-        info['policy']['selfservice'] = {
-            'activate_QRToken': {
-                'type': 'bool',
-                'description': _('activate your QRToken')}
+        info["policy"]["selfservice"] = {
+            "activate_QRToken": {
+                "type": "bool",
+                "description": _("activate your QRToken"),
             }
+        }
 
         # ------------------------------------------------------------------- --
 
         # wire the templates
 
         init_dict = {}
-        init_dict['title'] = {
-            'html': 'qrtoken/qrtoken.mako',
-            'scope': 'enroll.title'
+        init_dict["title"] = {
+            "html": "qrtoken/qrtoken.mako",
+            "scope": "enroll.title",
         }
-        init_dict['page'] = {
-            'html': 'qrtoken/qrtoken.mako',
-            'scope': 'enroll'
-        }
-        info['init'] = init_dict
+        init_dict["page"] = {"html": "qrtoken/qrtoken.mako", "scope": "enroll"}
+        info["init"] = init_dict
 
         config_dict = {}
-        config_dict['title'] = {
-            'html': 'qrtoken/qrtoken.mako',
-            'scope': 'config.title'
+        config_dict["title"] = {
+            "html": "qrtoken/qrtoken.mako",
+            "scope": "config.title",
         }
-        config_dict['page'] = {
-            'html': 'qrtoken/qrtoken.mako',
-            'scope': 'config'
+        config_dict["page"] = {
+            "html": "qrtoken/qrtoken.mako",
+            "scope": "config",
         }
-        info['config'] = config_dict
+        info["config"] = config_dict
 
         ss_enroll = {}
-        ss_enroll['title'] = {
-            'html': 'qrtoken/qrtoken.mako',
-            'scope': 'selfservice.title.enroll'
+        ss_enroll["title"] = {
+            "html": "qrtoken/qrtoken.mako",
+            "scope": "selfservice.title.enroll",
         }
-        ss_enroll['page'] = {
-            'html': 'qrtoken/qrtoken.mako',
-            'scope': 'selfservice.enroll'
+        ss_enroll["page"] = {
+            "html": "qrtoken/qrtoken.mako",
+            "scope": "selfservice.enroll",
         }
 
         ss_activate = {}
-        ss_activate['title'] = {
-            'html': 'qrtoken/qrtoken.mako',
-            'scope': 'selfservice.title.activate'
+        ss_activate["title"] = {
+            "html": "qrtoken/qrtoken.mako",
+            "scope": "selfservice.title.activate",
         }
-        ss_activate['page'] = {
-            'html': 'qrtoken/qrtoken.mako',
-            'scope': 'selfservice.activate'
+        ss_activate["page"] = {
+            "html": "qrtoken/qrtoken.mako",
+            "scope": "selfservice.activate",
         }
 
         selfservice_dict = {}
-        selfservice_dict['enroll'] = ss_enroll
-        selfservice_dict['activate_QRToken'] = ss_activate
+        selfservice_dict["enroll"] = ss_enroll
+        selfservice_dict["activate_QRToken"] = ss_activate
 
-        info['selfservice'] = selfservice_dict
+        info["selfservice"] = selfservice_dict
 
         # ------------------------------------------------------------------- --
 
@@ -228,10 +227,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         return info
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def pair(self, pairing_data):
-
         """
         transfers the token to a paired state using the supplied
         data from the pairing response
@@ -242,28 +240,27 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         user_token_id = pairing_data.user_token_id
         user_public_key = pairing_data.user_public_key
 
-        self.ensure_state('pairing_url_sent')
+        self.ensure_state("pairing_url_sent")
 
-        self.addToTokenInfo('user_token_id', user_token_id)
+        self.addToTokenInfo("user_token_id", user_token_id)
         b64_user_public_key = b64encode(user_public_key).decode()
-        self.addToTokenInfo('user_public_key', b64_user_public_key)
+        self.addToTokenInfo("user_public_key", b64_user_public_key)
 
-        self.change_state('pairing_response_received')
+        self.change_state("pairing_response_received")
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def unpair(self):
-
         """
         resets the stage to 'pairing_url_sent' so the token can be
         paired again.
         """
 
-        self.removeFromTokenInfo('user_token_id')
-        self.removeFromTokenInfo('user_public_key')
-        self.change_state('pairing_url_sent')
+        self.removeFromTokenInfo("user_token_id")
+        self.removeFromTokenInfo("user_public_key")
+        self.change_state("pairing_url_sent")
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def splitPinPass(self, passw):
 
@@ -271,13 +268,20 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # so an incoming request with passw but without transaction_id
         # is a request with a pin
 
-        return (passw, '')
+        return (passw, "")
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
-    def create_challenge_url(self, transaction_id, content_type, message,
-                             callback_url, callback_sms_number,
-                             use_compression=False, reset_url=False):
+    def create_challenge_url(
+        self,
+        transaction_id,
+        content_type,
+        message,
+        callback_url,
+        callback_sms_number,
+        use_compression=False,
+        reset_url=False,
+    ):
         """
         creates a challenge url (looking like lseqr://chal/<base64string>)
         from a challenge dictionary as provided by Challanges.create_challenge
@@ -296,23 +300,32 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # sanity/format checks
 
-        if content_type not in [CONTENT_TYPE_PAIRING,
-                                CONTENT_TYPE_AUTH, CONTENT_TYPE_FREE]:
-            raise InvalidFunctionParameter('content_type', 'content_type must '
-                                           'be CONTENT_TYPE_PAIRING, '
-                                           'CONTENT_TYPE_AUTH or '
-                                           'CONTENT_TYPE_FREE.')
+        if content_type not in [
+            CONTENT_TYPE_PAIRING,
+            CONTENT_TYPE_AUTH,
+            CONTENT_TYPE_FREE,
+        ]:
+            raise InvalidFunctionParameter(
+                "content_type",
+                "content_type must "
+                "be CONTENT_TYPE_PAIRING, "
+                "CONTENT_TYPE_AUTH or "
+                "CONTENT_TYPE_FREE.",
+            )
 
-        if content_type == CONTENT_TYPE_PAIRING and \
-           message != serial:
-            raise InvalidFunctionParameter('message', 'message must be equal '
-                                           'to serial in pairing mode')
+        if content_type == CONTENT_TYPE_PAIRING and message != serial:
+            raise InvalidFunctionParameter(
+                "message", "message must be equal to serial in pairing mode"
+            )
 
         if content_type == CONTENT_TYPE_AUTH:
-            if '@' not in message:
-                raise InvalidFunctionParameter('message', 'For content type '
-                                               'auth, message must have format '
-                                               '<login>@<server>')
+            if "@" not in message:
+                raise InvalidFunctionParameter(
+                    "message",
+                    "For content type "
+                    "auth, message must have format "
+                    "<login>@<server>",
+                )
 
         # ------------------------------------------------------------------- --
 
@@ -331,14 +344,14 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         r = secrets.token_bytes(32)
         R = calc_dh_base(r)
 
-        user_token_id = self.getFromTokenInfo('user_token_id')
-        data_header = struct.pack('<bI', QRTOKEN_VERSION, user_token_id)
+        user_token_id = self.getFromTokenInfo("user_token_id")
+        data_header = struct.pack("<bI", QRTOKEN_VERSION, user_token_id)
 
         # the user public key is saved as base64 in
         # the token info since the byte format is
         # incompatible with the json backend.
 
-        b64_user_public_key = self.getFromTokenInfo('user_public_key')
+        b64_user_public_key = self.getFromTokenInfo("user_public_key")
         user_public_key = b64decode(b64_user_public_key)
 
         ss = calc_dh(r, user_public_key)
@@ -374,7 +387,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         if callback_sms_number is not None:
             flags |= CHALLENGE_HAS_SMS_NUMBER
 
-        if (content_type == CONTENT_TYPE_PAIRING):
+        if content_type == CONTENT_TYPE_PAIRING:
             flags |= CHALLENGE_HAS_SIGNATURE
 
         if reset_url:
@@ -392,7 +405,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         #            ----------------------------------------------
 
         transaction_id = transaction_id_to_u64(transaction_id)
-        pt_header = struct.pack('<bbQ', content_type, flags, transaction_id)
+        pt_header = struct.pack("<bbQ", content_type, flags, transaction_id)
         plaintext = pt_header
 
         # ------------------------------------------------------------------- --
@@ -405,26 +418,33 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         #  size     |   10    |    ?    |  1  |  ?  |
         #            -------------------------------
 
-        data_package = b''
-        utf8_message = message.encode('utf8')
+        data_package = b""
+        utf8_message = message.encode("utf8")
 
         # enforce max sizes specified by protocol
 
         if content_type == CONTENT_TYPE_FREE and len(utf8_message) > 511:
-            raise ParameterError('message (encoded as utf8) can only be 511 '
-                                 'characters long')
+            raise ParameterError(
+                "message (encoded as utf8) can only be 511 characters long"
+            )
 
         elif content_type == CONTENT_TYPE_PAIRING and len(utf8_message) > 63:
-            raise InvalidFunctionParameter('message', 'max string length '
-                                           '(encoded as utf8) is 511 for '
-                                           'content type PAIRING')
+            raise InvalidFunctionParameter(
+                "message",
+                "max string length "
+                "(encoded as utf8) is 511 for "
+                "content type PAIRING",
+            )
 
         elif content_type == CONTENT_TYPE_AUTH and len(utf8_message) > 511:
-            raise InvalidFunctionParameter('message', 'max string length '
-                                           '(encoded as utf8) is 511 for '
-                                           'content type AUTH')
+            raise InvalidFunctionParameter(
+                "message",
+                "max string length "
+                "(encoded as utf8) is 511 for "
+                "content type AUTH",
+            )
 
-        data_package += utf8_message + b'\x00'
+        data_package += utf8_message + b"\x00"
 
         # ------------------------------------------------------------------- --
 
@@ -441,29 +461,31 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         if callback_url is not None:
 
-            utf8_callback_url = callback_url.encode('utf8')
+            utf8_callback_url = callback_url.encode("utf8")
 
             # enforce max url length as specified in protocol
 
             if len(utf8_callback_url) > 511:
-                raise InvalidFunctionParameter('callback_url', 'max string '
-                                               'length (encoded as utf8) is '
-                                               '511')
+                raise InvalidFunctionParameter(
+                    "callback_url",
+                    "max string length (encoded as utf8) is 511",
+                )
 
-            data_package += utf8_callback_url + b'\x00'
+            data_package += utf8_callback_url + b"\x00"
 
         # ------------------------------------------------------------------- --
 
         if callback_sms_number is not None:
 
-            utf8_callback_sms_number = callback_sms_number.encode('utf8')
+            utf8_callback_sms_number = callback_sms_number.encode("utf8")
 
             if len(utf8_callback_sms_number) > 31:
-                raise InvalidFunctionParameter('callback_sms_number',
-                                               'max string length (encoded '
-                                               'as utf8) is 31')
+                raise InvalidFunctionParameter(
+                    "callback_sms_number",
+                    "max string length (encoded as utf8) is 31",
+                )
 
-            data_package += utf8_callback_sms_number + b'\x00'
+            data_package += utf8_callback_sms_number + b"\x00"
 
         # ------------------------------------------------------------------- --
 
@@ -478,16 +500,18 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # the server must send a hmac based signature with the
         # response
 
-        sig = b''
+        sig = b""
         sec_obj = self._get_secret_object()
 
         if flags & CHALLENGE_HAS_SIGNATURE:
 
             hmac_message = nonce + pt_header + maybe_compressed_data_package
 
-            sig = sec_obj.hmac_digest(data_input=hmac_message,
-                                      bkey=self.server_hmac_secret,
-                                      hash_algo=sha256)
+            sig = sec_obj.hmac_digest(
+                data_input=hmac_message,
+                bkey=self.server_hmac_secret,
+                hash_algo=sha256,
+            )
 
             plaintext += sig
 
@@ -499,9 +523,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         user_message = nonce + pt_header + sig + data_package
 
-        user_sig = sec_obj.hmac_digest(data_input=user_message,
-                                       bkey=skB,
-                                       hash_algo=sha256)
+        user_sig = sec_obj.hmac_digest(
+            data_input=user_message, bkey=skB, hash_algo=sha256
+        )
 
         # the user sig will be given as urlsafe base64 in the
         # challenge response. for this reasons (and because we
@@ -517,20 +541,35 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         ciphertext, tag = cipher.encrypt_and_digest(plaintext)
 
         raw_data = data_header + R + ciphertext + tag
-        protocol_id = config.get('mobile_app_protocol_id', 'lseqr')
-        url = protocol_id + '://chal/' + encode_base64_urlsafe(raw_data)
+        protocol_id = config.get("mobile_app_protocol_id", "lseqr")
+        url = protocol_id + "://chal/" + encode_base64_urlsafe(raw_data)
 
         return url, user_sig
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def update(self, params):
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(['type', 'hashlib', 'serial', '::scope::',
-                                   'key_size', 'user.login', 'description',
-                                   'user.realm', 'session', 'otplen', 'resConf',
-                                   'user', 'realm', 'qr', 'pin'])
+        init_rollout_state_keys = set(
+            [
+                "type",
+                "hashlib",
+                "serial",
+                "::scope::",
+                "key_size",
+                "user.login",
+                "description",
+                "user.realm",
+                "session",
+                "otplen",
+                "resConf",
+                "user",
+                "realm",
+                "qr",
+                "pin",
+            ]
+        )
 
         # ------------------------------------------------------------------- --
 
@@ -539,7 +578,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # make sure the call aborts, if request
             # type wasn't recognized
 
-            raise Exception('Unknown request type for token type qr')
+            raise Exception("Unknown request type for token type qr")
 
         # if param keys are in {'type', 'hashlib'} the token is
         # initialized for the first time. this is e.g. done on the
@@ -555,7 +594,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # because the token gets saved directly after the update method
         # in the TokenHandler
 
-        _ = context['translate']
+        _ = context["translate"]
 
         owner = get_token_owner(self)
         if owner and owner.login and owner.realm:
@@ -563,32 +602,44 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         else:
             realms = self.getRealms()
 
-        pairing_policies = ['qrtoken_pairing_callback_url',
-                            'qrtoken_pairing_callback_sms']
+        pairing_policies = [
+            "qrtoken_pairing_callback_url",
+            "qrtoken_pairing_callback_sms",
+        ]
 
-        cb_url = get_single_auth_policy(pairing_policies[0],
-                                        user=owner, realms=realms)
-        cb_sms = get_single_auth_policy(pairing_policies[1],
-                                        user=owner, realms=realms)
-
-        if not cb_url and not cb_sms:
-            raise Exception(_('Policy %s must have a value') %
-                            _(" or ").join(pairing_policies))
-
-        challenge_policies = ['qrtoken_challenge_callback_url',
-                              'qrtoken_challenge_callback_sms']
-
-        cb_url = get_single_auth_policy(challenge_policies[0],
-                                        user=owner, realms=realms)
-        cb_sms = get_single_auth_policy(challenge_policies[1],
-                                        user=owner, realms=realms)
+        cb_url = get_single_auth_policy(
+            pairing_policies[0], user=owner, realms=realms
+        )
+        cb_sms = get_single_auth_policy(
+            pairing_policies[1], user=owner, realms=realms
+        )
 
         if not cb_url and not cb_sms:
-            raise Exception(_('Policy %s must have a value') %
-                            _(" or ").join(challenge_policies))
+            raise Exception(
+                _("Policy %s must have a value")
+                % _(" or ").join(pairing_policies)
+            )
+
+        challenge_policies = [
+            "qrtoken_challenge_callback_url",
+            "qrtoken_challenge_callback_sms",
+        ]
+
+        cb_url = get_single_auth_policy(
+            challenge_policies[0], user=owner, realms=realms
+        )
+        cb_sms = get_single_auth_policy(
+            challenge_policies[1], user=owner, realms=realms
+        )
+
+        if not cb_url and not cb_sms:
+            raise Exception(
+                _("Policy %s must have a value")
+                % _(" or ").join(challenge_policies)
+            )
 
         partition = get_partition(realms, owner)
-        self.addToTokenInfo('partition', partition)
+        self.addToTokenInfo("partition", partition)
 
         # --------------------------------------------------------------- --
 
@@ -600,25 +651,40 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # --------------------------------------------------------------- --
 
-        if 'otplen' not in params:
-            params['otplen'] = getFromConfig("QRTokenOtpLen", 8)
+        if "otplen" not in params:
+            params["otplen"] = getFromConfig("QRTokenOtpLen", 8)
 
         # -------------------------------------------------------------- --
 
         TokenClass.update(self, params, reset_failcount=True)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def getInitDetail(self, params, user=None):
 
-        _ = context['translate']
+        _ = context["translate"]
         response_detail = {}
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(['type', 'hashlib', 'serial', '::scope::',
-                                   'key_size', 'user.login', 'description',
-                                   'user.realm', 'session', 'otplen', 'pin',
-                                   'resConf', 'user', 'realm', 'qr'])
+        init_rollout_state_keys = set(
+            [
+                "type",
+                "hashlib",
+                "serial",
+                "::scope::",
+                "key_size",
+                "user.login",
+                "description",
+                "user.realm",
+                "session",
+                "otplen",
+                "pin",
+                "resConf",
+                "user",
+                "realm",
+                "qr",
+            ]
+        )
 
         # ------------------------------------------------------------------- --
 
@@ -638,50 +704,58 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             else:
                 realms = self.getRealms()
 
-            pairing_policies = ['qrtoken_pairing_callback_url',
-                                'qrtoken_pairing_callback_sms']
+            pairing_policies = [
+                "qrtoken_pairing_callback_url",
+                "qrtoken_pairing_callback_sms",
+            ]
 
             # it is guaranteed, that either cb_url or cb_sms has a value
             # because we checked it in the update method
 
-            cb_url = get_single_auth_policy(pairing_policies[0],
-                                            user=owner, realms=realms)
-            cb_sms = get_single_auth_policy(pairing_policies[1],
-                                            user=owner, realms=realms)
+            cb_url = get_single_auth_policy(
+                pairing_policies[0], user=owner, realms=realms
+            )
+            cb_sms = get_single_auth_policy(
+                pairing_policies[1], user=owner, realms=realms
+            )
 
             # --------------------------------------------------------------- --
 
-            partition = self.getFromTokenInfo('partition')
+            partition = self.getFromTokenInfo("partition")
 
             # FIXME: certificate usage
 
-            pairing_url = generate_pairing_url(token_type='qr',
-                                               partition=partition,
-                                               serial=serial,
-                                               callback_url=cb_url,
-                                               callback_sms_number=cb_sms,
-                                               otp_pin_length=otp_pin_length,
-                                               hash_algorithm=hash_algorithm,
-                                               use_cert=False)
+            pairing_url = generate_pairing_url(
+                token_type="qr",
+                partition=partition,
+                serial=serial,
+                callback_url=cb_url,
+                callback_sms_number=cb_sms,
+                otp_pin_length=otp_pin_length,
+                hash_algorithm=hash_algorithm,
+                use_cert=False,
+            )
 
             # --------------------------------------------------------------- --
 
-            self.addToInfo('pairing_url', pairing_url)
-            response_detail['pairing_url'] = pairing_url
+            self.addToInfo("pairing_url", pairing_url)
+            response_detail["pairing_url"] = pairing_url
 
             # create response tabs
-            response_detail['lse_qr_url'] = {
-                'description': _('QRToken Pairing Url'),
-                'img': create_img(pairing_url, width=250),
-                'order': 0,
-                'value': pairing_url}
-            response_detail['lse_qr_cert'] = {
-                'description': _('QRToken Certificate'),
-                'img': create_img(pairing_url, width=250),
-                'order': 1,
-                'value': pairing_url}
+            response_detail["lse_qr_url"] = {
+                "description": _("QRToken Pairing Url"),
+                "img": create_img(pairing_url, width=250),
+                "order": 0,
+                "value": pairing_url,
+            }
+            response_detail["lse_qr_cert"] = {
+                "description": _("QRToken Certificate"),
+                "img": create_img(pairing_url, width=250),
+                "order": 1,
+                "value": pairing_url,
+            }
 
-            response_detail['serial'] = self.getSerial()
+            response_detail["serial"] = self.getSerial()
 
         # ------------------------------------------------------------------ --
 
@@ -690,20 +764,19 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # make sure the call aborts, if request
             # type wasn't recognized
 
-            raise Exception('Unknown request type for token type qr')
+            raise Exception("Unknown request type for token type qr")
 
         # ------------------------------------------------------------------- --
 
-        self.change_state('pairing_url_sent')
+        self.change_state("pairing_url_sent")
 
         return response_detail
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def checkOtp(self, passwd, counter, window, options=None):
 
-        valid_states = ['pairing_challenge_sent',
-                        'pairing_complete']
+        valid_states = ["pairing_challenge_sent", "pairing_complete"]
 
         self.ensure_state_is_in(valid_states)
 
@@ -715,20 +788,20 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         if options is None:
             options = {}
 
-        max_fail = int(getFromConfig('QRMaxChallenges', '3'))
+        max_fail = int(getFromConfig("QRMaxChallenges", "3"))
 
         # ------------------------------------------------------------------- --
 
         # TODO: from which point is checkOtp called, when there
         # is no challenge response in the request?
 
-        if 'transactionid' in options:
+        if "transactionid" in options:
 
             # --------------------------------------------------------------- --
 
             # fetch all challenges that match the transaction id or serial
 
-            transaction_id = options.get('transaction_id')
+            transaction_id = options.get("transaction_id")
 
             challenges = Challenges.lookup_challenges(serial, transaction_id)
 
@@ -760,7 +833,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         for challenge in filtered_challenges:
 
             data = challenge.getData()
-            correct_passwd = data['user_sig']
+            correct_passwd = data["user_sig"]
 
             # compare values with python's native constant
             # time comparison
@@ -783,15 +856,15 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # return the token counter which is at least 0, -1 indicates an error
         return -1
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def statusValidationSuccess(self):
 
-        if self.current_state == 'pairing_challenge_sent':
-            self.change_state('pairing_complete')
+        if self.current_state == "pairing_challenge_sent":
+            self.change_state("pairing_complete")
             self.enable(True)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
     def createChallenge(self, transaction_id, options):
         """
@@ -810,23 +883,28 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                    {'message': message, 'user_sig': user_sig}
         """
 
-        _ = context['translate']
+        _ = context["translate"]
 
-        valid_states = ['pairing_response_received', 'pairing_challenge_sent',
-                        'pairing_complete']
+        valid_states = [
+            "pairing_response_received",
+            "pairing_challenge_sent",
+            "pairing_complete",
+        ]
         self.ensure_state_is_in(valid_states)
 
         # ------------------------------------------------------------------- --
 
-        if self.current_state in ['pairing_challenge_sent',
-                                  'pairing_response_received']:
+        if self.current_state in [
+            "pairing_challenge_sent",
+            "pairing_response_received",
+        ]:
 
             content_type = CONTENT_TYPE_PAIRING
             reset_url = True
 
-        elif self.current_state == 'pairing_complete':
+        elif self.current_state == "pairing_complete":
 
-            content_type_as_str = options.get('content_type')
+            content_type_as_str = options.get("content_type")
             reset_url = False
 
             if content_type_as_str is None:
@@ -836,13 +914,14 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                     # pylons silently converts all ints in json
                     # to unicode :(
                     content_type = int(content_type_as_str)
-                except:
-                    raise ValueError('Unrecognized content type: %s'
-                                     % content_type_as_str)
+                except BaseException:
+                    raise ValueError(
+                        "Unrecognized content type: %s" % content_type_as_str
+                    )
 
         # ------------------------------------------------------------------- --
 
-        message = options.get('data')
+        message = options.get("data")
 
         # ------------------------------------------------------------------- --
 
@@ -852,34 +931,42 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         else:
             realms = self.getRealms()
 
-        callback_policies = ['qrtoken_challenge_callback_url',
-                             'qrtoken_challenge_callback_sms']
-        callback_url = get_single_auth_policy(callback_policies[0],
-                                              user=owner, realms=realms)
-        callback_sms = get_single_auth_policy(callback_policies[1],
-                                              user=owner, realms=realms)
+        callback_policies = [
+            "qrtoken_challenge_callback_url",
+            "qrtoken_challenge_callback_sms",
+        ]
+        callback_url = get_single_auth_policy(
+            callback_policies[0], user=owner, realms=realms
+        )
+        callback_sms = get_single_auth_policy(
+            callback_policies[1], user=owner, realms=realms
+        )
 
         if not callback_url and not callback_sms:
-            raise Exception(_('Policy %s must have a value') %
-                            _(" or ").join(callback_policies))
+            raise Exception(
+                _("Policy %s must have a value")
+                % _(" or ").join(callback_policies)
+            )
 
         # TODO: get from policy/config
         compression = False
 
         # ------------------------------------------------------------------- --
 
-        challenge_url, user_sig = self.create_challenge_url(transaction_id,
-                                                            content_type,
-                                                            message,
-                                                            callback_url,
-                                                            callback_sms,
-                                                            compression,
-                                                            reset_url)
+        challenge_url, user_sig = self.create_challenge_url(
+            transaction_id,
+            content_type,
+            message,
+            callback_url,
+            callback_sms,
+            compression,
+            reset_url,
+        )
 
-        data = {'message': message, 'user_sig': user_sig}
+        data = {"message": message, "user_sig": user_sig}
 
-        if self.current_state == 'pairing_response_received':
-            self.change_state('pairing_challenge_sent')
+        if self.current_state == "pairing_response_received":
+            self.change_state("pairing_challenge_sent")
 
         return (True, challenge_url, data, {})
 
@@ -891,9 +978,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         hparam = {}
 
         if response_detail is not None:
-            if 'pairing_url' in response_detail:
-                url = response_detail.get('pairing_url')
-                hparam['alt'] = url
+            if "pairing_url" in response_detail:
+                url = response_detail.get("pairing_url")
+                hparam["alt"] = url
 
         return url, hparam
 
@@ -901,27 +988,27 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def getOfflineInfo(self):
 
-        public_key = self.getFromTokenInfo('user_public_key')
-        user_token_id = self.getFromTokenInfo('user_token_id')
+        public_key = self.getFromTokenInfo("user_public_key")
+        user_token_id = self.getFromTokenInfo("user_token_id")
 
-        return {'public_key': public_key,
-                'user_token_id': user_token_id}
+        return {"public_key": public_key, "user_token_id": user_token_id}
 
     # ----------------------------------------------------------------------- --
 
     @property
     def server_hmac_secret(self):
-        """ the server hmac secret for this specific token """
+        """the server hmac secret for this specific token"""
 
-        partition = self.getFromTokenInfo('partition')
+        partition = self.getFromTokenInfo("partition")
 
         # user public key is saved base64 encoded
 
-        b64_user_public_key = self.getFromTokenInfo('user_public_key')
+        b64_user_public_key = self.getFromTokenInfo("user_public_key")
         user_public_key = b64decode(b64_user_public_key)
 
         sec_obj = self._get_secret_object()
-        hmac_secret = sec_obj.calc_dh(partition=partition,
-                                      data=user_public_key)
+        hmac_secret = sec_obj.calc_dh(
+            partition=partition, data=user_public_key
+        )
 
         return hmac_secret

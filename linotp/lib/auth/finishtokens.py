@@ -43,12 +43,17 @@ log = logging.getLogger(__name__)
 
 
 class FinishTokens(object):
-
-    def __init__(self,
-                 valid_tokens, challenge_tokens,
-                 pin_matching_tokens, invalid_tokens,
-                 validation_results, user, options,
-                 audit_entry=None):
+    def __init__(
+        self,
+        valid_tokens,
+        challenge_tokens,
+        pin_matching_tokens,
+        invalid_tokens,
+        validation_results,
+        user,
+        options,
+        audit_entry=None,
+    ):
         """
         create the finalisation object, that finishes the token processing
 
@@ -82,10 +87,12 @@ class FinishTokens(object):
 
         if self.valid_tokens:
             (ret, reply, detail) = self.finish_valid_tokens()
-            self.reset_failcounter(self.valid_tokens +
-                                   self.invalid_tokens +
-                                   self.pin_matching_tokens +
-                                   self.challenge_tokens)
+            self.reset_failcounter(
+                self.valid_tokens
+                + self.invalid_tokens
+                + self.pin_matching_tokens
+                + self.challenge_tokens
+            )
 
             self.create_audit_entry(detail, self.valid_tokens)
             return ret, reply
@@ -104,27 +111,34 @@ class FinishTokens(object):
 
         # if there is no token left, we end up here
         if not (self.pin_matching_tokens + self.invalid_tokens):
-            self.create_audit_entry(self.audit_entry.get('action_detail', "no token found!"),
-                                    tokens=[])
+            self.create_audit_entry(
+                self.audit_entry.get("action_detail", "no token found!"),
+                tokens=[],
+            )
 
-            log.info("no valid token found: %r" % self.audit_entry)
+            log.info("no valid token found: %r", self.audit_entry)
             return False, None
 
         if self.user:
-            log.warning("user %r@%r failed to auth."
-                        % (self.user.login, self.user.realm))
+            log.warning(
+                "user %r@%r failed to auth.", self.user.login, self.user.realm
+            )
         else:
-            log.warning("serial %r failed to auth."
-                        % (self.pin_matching_tokens +
-                           self.invalid_tokens)[0].getSerial())
+            log.warning(
+                "serial %r failed to auth.",
+                (self.pin_matching_tokens + self.invalid_tokens)[
+                    0
+                ].getSerial(),
+            )
 
         if self.pin_matching_tokens:
 
             (ret, reply, detail) = self.finish_pin_matching_tokens()
             self.increment_failcounters(self.pin_matching_tokens)
 
-            self.create_audit_entry(action_detail=detail,
-                                    tokens=self.pin_matching_tokens)
+            self.create_audit_entry(
+                action_detail=detail, tokens=self.pin_matching_tokens
+            )
 
             return ret, reply
 
@@ -133,8 +147,9 @@ class FinishTokens(object):
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
 
-            self.create_audit_entry(action_detail=detail,
-                                    tokens=self.invalid_tokens)
+            self.create_audit_entry(
+                action_detail=detail, tokens=self.invalid_tokens
+            )
 
             return ret, reply
 
@@ -149,11 +164,14 @@ class FinishTokens(object):
         if len(valid_tokens) == 1:
             token = valid_tokens[0]
             if user:
-                action_detail = ("user %r@%r successfully authenticated."
-                                 % (user.login, user.realm))
+                action_detail = "user %r@%r successfully authenticated." % (
+                    user.login,
+                    user.realm,
+                )
             else:
-                action_detail = ("serial %r successfully authenticated."
-                                 % token.getSerial())
+                action_detail = (
+                    "serial %r successfully authenticated." % token.getSerial()
+                )
 
             log.info(action_detail)
 
@@ -174,7 +192,7 @@ class FinishTokens(object):
                 token.inc_count_auth()
 
             detail = None
-            auth_info = self.options.get('auth_info', 'False')
+            auth_info = self.options.get("auth_info", "False")
             if auth_info.lower() == "true":
                 detail = token.getAuthDetail()
 
@@ -190,21 +208,19 @@ class FinishTokens(object):
             offline_is_allowed = supports_offline(realms, token)
 
             # 3. check if parameter 'use_offline' is provided
-            use_offline_param = self.options.get('use_offline', 'False')
-            use_offline = use_offline_param.lower() == 'true'
+            use_offline_param = self.options.get("use_offline", "False")
+            use_offline = use_offline_param.lower() == "true"
 
-            if supports_offline_at_all and \
-               offline_is_allowed and \
-               use_offline:
+            if supports_offline_at_all and offline_is_allowed and use_offline:
 
                 offline_info = token.getOfflineInfo()
                 if detail is None:
                     detail = {}
 
-                offline = {'serial': token.getSerial(), 'type': token.type}
-                offline['offline_info'] = offline_info
+                offline = {"serial": token.getSerial(), "type": token.type}
+                offline["offline_info"] = offline_info
 
-                detail.update({'offline': offline})
+                detail.update({"offline": offline})
 
             janitor_to_remove_enrollment_token(valid_tokens=[token])
 
@@ -227,12 +243,14 @@ class FinishTokens(object):
 
             janitor_to_remove_enrollment_token(valid_tokens=valid_tokens)
 
-            g.audit['action_detail'] = "Multiple valid tokens found!"
+            g.audit["action_detail"] = "Multiple valid tokens found!"
             if user:
-                log.error("multiple token match error: "
-                          "Several Tokens matching with the same OTP PIN "
-                          "and OTP for user %r. Not sure how to auth",
-                          user.login)
+                log.error(
+                    "multiple token match error: "
+                    "Several Tokens matching with the same OTP PIN "
+                    "and OTP for user %r. Not sure how to auth",
+                    user.login,
+                )
 
             raise UserError("multiple token match error", id=-33)
 
@@ -247,13 +265,14 @@ class FinishTokens(object):
         if not options:
             options = {}
 
-        action_detail = 'challenge created'
+        action_detail = "challenge created"
 
         if len(challenge_tokens) == 1:
             challenge_token = challenge_tokens[0]
 
             _res, reply = Challenges.create_challenge(
-                challenge_token, options=options)
+                challenge_token, options=options
+            )
 
             return (False, reply, action_detail)
 
@@ -268,9 +287,9 @@ class FinishTokens(object):
             # the key is the token type combined with its token serial number
 
             all_reply = {}
-            all_reply['challenges'] = {}
+            all_reply["challenges"] = {}
             challenge_count = 0
-            transactionid = ''
+            transactionid = ""
             challenge_id = ""
             for challenge_token in challenge_tokens:
                 challenge_count += 1
@@ -282,29 +301,30 @@ class FinishTokens(object):
                     challenge_token,
                     options=options,
                     challenge_id=challenge_id,
-                    id_postfix=id_postfix
+                    id_postfix=id_postfix,
                 )
-                transactionid = reply.get('transactionid').rsplit('.')[0]
+                transactionid = reply.get("transactionid").rsplit(".")[0]
                 key = challenge_token.getSerial()
-                all_reply['challenges'][key] = reply
+                all_reply["challenges"][key] = reply
 
             # finally add the root challenge response with top transaction id
             # and message, that indicates that 'multiple challenges have been
             # submitted
 
-            all_reply['transactionid'] = transactionid
-            all_reply['message'] = "Multiple challenges submitted."
+            all_reply["transactionid"] = transactionid
+            all_reply["message"] = "Multiple challenges submitted."
 
-            log.debug("Multiple challenges submitted: %d",
-                      len(challenge_tokens))
+            log.debug(
+                "Multiple challenges submitted: %d", len(challenge_tokens)
+            )
 
             return (False, all_reply, action_detail)
 
     def finish_pin_matching_tokens(self):
         """
-            check, if there have been some tokens
-            where the pin matched (but OTP failed
-            and increment only these
+        check, if there have been some tokens
+        where the pin matched (but OTP failed
+        and increment only these
         """
         pin_matching_tokens = self.pin_matching_tokens
         action_detail = "wrong otp value"
@@ -317,8 +337,7 @@ class FinishTokens(object):
         return (False, None, action_detail)
 
     def finish_invalid_tokens(self):
-        """
-        """
+        """"""
         invalid_tokens = self.invalid_tokens
         user = self.user
 
@@ -366,16 +385,16 @@ class FinishTokens(object):
 
         g.audit.update(self.audit_entry)
 
-        g.audit['action_detail'] = action_detail
+        g.audit["action_detail"] = action_detail
 
         if not tokens:
-            g.audit['serial'] = ''
-            g.audit['token_type'] = ''
+            g.audit["serial"] = ""
+            g.audit["token_type"] = ""
             return
 
         if len(tokens) == 1:
-            g.audit['serial'] = tokens[0].getSerial()
-            g.audit['token_type'] = tokens[0].getType()
+            g.audit["serial"] = tokens[0].getSerial()
+            g.audit["token_type"] = tokens[0].getType()
             return
 
         # for multiple tokens we concat the serials / types of all token
@@ -387,8 +406,8 @@ class FinishTokens(object):
             types.add(token.getType())
 
         # TODO: move the limit of serials and types into the audit module
-        g.audit['serial'] = ' '.join(list(serials))[:29]
-        g.audit['token_type'] = ' '.join(list(types))[:39]
+        g.audit["serial"] = " ".join(list(serials))[:29]
+        g.audit["token_type"] = " ".join(list(types))[:39]
 
         return
 
@@ -407,8 +426,8 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
         # if the authenticated token is a rollout token, we dont count him
 
-        path = token.getFromTokenInfo('scope', {}).get('path', [])
-        if set(path) & set(['userservice', 'validate']):
+        path = token.getFromTokenInfo("scope", {}).get("path", [])
+        if set(path) & set(["userservice", "validate"]):
             continue
 
         # TODO: get owner sadly throws a genric exception in case of
@@ -444,8 +463,8 @@ def janitor_to_remove_enrollment_token(valid_tokens):
             continue
 
         for token in user_tokens:
-            path = token.getFromTokenInfo('scope', {}).get('path', [])
-            if set(path) & set(['userservice', 'validate']):
+            path = token.getFromTokenInfo("scope", {}).get("path", [])
+            if set(path) & set(["userservice", "validate"]):
                 to_be_removed_tokens.append(token)
 
     # ------------------------------------------------------------------ --
@@ -462,6 +481,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
     # add info about the purging
 
     if serials:
-        g.audit['info'] += 'purged rollout tokens:' + ', '.join(serials)
+        g.audit["info"] += "purged rollout tokens:" + ", ".join(serials)
+
 
 # eof #########################################################################

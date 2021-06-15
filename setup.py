@@ -36,77 +36,78 @@ from linotp import __version__
 package_directory = os.path.realpath(os.path.dirname(__file__))
 
 install_requirements = [
-    'Flask',
-    'Flask-Babel',
-    'SQLAlchemy>=0.6',
-    'flask-sqlalchemy',
-    'mako',
-    'beaker',
-    'docutils>=0.4',
-    'pycryptodomex>=3.4',
-    'pyrad>=1.1',
-    'netaddr',
-    'qrcode>=2.4',
-    'configobj>=4.6.0',
-    'httplib2',
-    'requests',
-    'pillow',
-    'passlib',
-    'pysodium>=0.6.8',
+    "Flask",
+    "Flask-Babel",
+    "SQLAlchemy>=0.6",
+    "flask-sqlalchemy",
+    "mako",
+    "beaker",
+    "docutils>=0.4",
+    "pycryptodomex>=3.4",
+    "pyrad>=1.1",
+    "netaddr",
+    "qrcode>=2.4",
+    "configobj>=4.6.0",
+    "httplib2",
+    "requests",
+    "pillow",
+    "passlib",
+    "pysodium>=0.6.8",
     # python-ldap needs libsasl2-dev and libldap2-dev system packages on
     # debian buster to be installable via pip or install python-ldap via
     # apt.
-    'python-ldap',
-    'bcrypt',
-    'cryptography',
-    'click',
+    "python-ldap",
+    "bcrypt",
+    "cryptography",
+    "click",
     # Pygments 2.6.0,1 breaks tests so exclude it
     "Pygments < 2.6.0",
-    'jsonschema',
+    "jsonschema",
 ]
 
 # Requirements needed to run all the tests
 # install with
 # > pip install -e ".[test]"
 test_requirements = [
-    'flask_testing',
-    'pytest',
-    'pytest-cov',
-    'pytest-freezegun',
-    'pytest-flask',
-    'pytest-selenium',
-    'pytest-testconfig',
-    'mock',
-    'mockldap',
-    'freezegun',
-    'coverage',
-    'pylint',
-    'autopep8',
-    'flaky',
+    "flask_testing",
+    "pytest",
+    "pytest-cov",
+    "pytest-freezegun",
+    "pytest-flask",
+    "pytest-selenium",
+    "pytest-testconfig",
+    "mock",
+    "mockldap",
+    "freezegun",
+    "coverage",
+    "pylint",
+    "autopep8",
+    "flaky",
 ]
 
 apidocs_requirements = [
-    "Sphinx>3.0", "Sphinx!=3.4.2",
-    'mock',
+    "Sphinx>3.0",
+    "Sphinx!=3.4.2",
+    "mock",
 ]
 
 # packages needed during package build phase
 setup_requirements = [
-    'Babel',
+    "Babel",
 ]
 
 # install with
 # > pip install -e ".[postgres]"
 postgres_requirements = [
     # 'psycopg2' would require to compile some sources
-    'psycopg2-binary',
+    "psycopg2-binary",
 ]
 
 # install with
 # > pip install -e ".[mysql]"
 mysql_requirements = [
     # 'mysql' driver is deprecated and replaced by 'mysqlclient'
-    'mysqlclient',
+    "mysqlclient",
 ]
 
 # Inspired by http://www.mattlayman.com/2015/i18n.html
@@ -118,81 +119,84 @@ class Build(build_py):
     """
 
     def run(self):
-        self.run_command('compile_catalog')
+        self.run_command("compile_catalog")
         # build_py is an old style class so super cannot be used.
         build_py.run(self)
 
 
-with open(os.path.join(package_directory, 'README.md'), encoding='utf-8') as f:
+with open(os.path.join(package_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name='LinOTP',
+    name="LinOTP",
     version=__version__,
-    description=('The Open Source solution for multi-factor authentication '
-                 '(server component)'),
+    description=(
+        "The Open Source solution for multi-factor authentication "
+        "(server component)"
+    ),
     long_description=long_description,
-    long_description_content_type='text/markdown',
-    author='KeyIdentity GmbH',
-    license='AGPL v3, (C) KeyIdentity GmbH',
-    author_email='linotp@keyidentity.com',
-    url='https://www.linotp.org',
+    long_description_content_type="text/markdown",
+    author="KeyIdentity GmbH",
+    license="AGPL v3, (C) KeyIdentity GmbH",
+    author_email="linotp@keyidentity.com",
+    url="https://www.linotp.org",
     setup_requires=setup_requirements,
     install_requires=install_requirements,
     extras_require={
-        'postgres': postgres_requirements,
-        'mysql': mysql_requirements,
-        'test': test_requirements,
-        'apidocs': apidocs_requirements,
+        "postgres": postgres_requirements,
+        "mysql": mysql_requirements,
+        "test": test_requirements,
+        "apidocs": apidocs_requirements,
     },
     tests_require=test_requirements,
-
     packages=find_packages(),
     include_package_data=True,
-    package_data={'linotp': [
-        'linotp/i18n/*/LC_MESSAGES/*.mo',
-        'linotp/dictionary',
-    ]},
+    package_data={
+        "linotp": [
+            "linotp/i18n/*/LC_MESSAGES/*.mo",
+            "linotp/dictionary",
+        ]
+    },
     scripts=[
-        'tools/linotp-create-htdigest',
+        "tools/linotp-create-htdigest",
     ],
     data_files=[
         (
-            'etc/linotp/',
+            "etc/linotp/",
             [
-                'config/linotpapp.wsgi',
-                'config/push-ca-bundle.crt',
-            ]
+                "config/linotpapp.wsgi",
+                "config/push-ca-bundle.crt",
+            ],
         ),
         (
-            'etc/linotp/apache-site-includes/',
+            "etc/linotp/apache-site-includes/",
             [
-                'config/apache-site-includes/README.txt',
-            ]
+                "config/apache-site-includes/README.txt",
+            ],
         ),
         (
-            'share/doc/linotp/examples',
+            "share/doc/linotp/examples",
             [
-                'examples/apache-site.conf',
-                'examples/mailtemplate-authenticate.eml',
-                'examples/mailtemplate-enroll.eml',
-                'examples/mailtemplate-set-pin.eml',
-            ]
+                "examples/apache-site.conf",
+                "examples/mailtemplate-authenticate.eml",
+                "examples/mailtemplate-enroll.eml",
+                "examples/mailtemplate-set-pin.eml",
+            ],
         ),
         (
-            'share/man/man1',
+            "share/man/man1",
             [
                 "man/man1/linotp-audit-janitor.1",
                 "man/man1/linotp-backup.1",
                 "man/man1/linotp-config.1",
                 "man/man1/linotp-init.1",
-            ]
+            ],
         ),
         (
-            'share/linotp',
+            "share/linotp",
             [
-                'config/linotp.cfg',
-            ]
+                "config/linotp.cfg",
+            ],
         ),
     ],
     classifiers=[
@@ -205,75 +209,39 @@ setup(
         "Framework :: Flask",
     ],
     message_extractors={
-        'linotp': [
+        "linotp": [
+            ("**.py", "python", None),
+            ("templates/**.mako", "mako", {"input_encoding": "utf-8"}),
+            ("tokens/**.mako", "mako", {"input_encoding": "utf-8"}),
+            ("public/js/manage.js", "javascript", {"input_encoding": "utf-8"}),
+            ("public/js/tools.js", "javascript", {"input_encoding": "utf-8"}),
             (
-                '**.py',
-                'python',
-                None
+                "public/js/selfservice.js",
+                "javascript",
+                {"input_encoding": "utf-8"},
             ),
             (
-                'templates/**.mako',
-                'mako',
-                {
-                    'input_encoding': 'utf-8'
-                }
+                "public/js/linotp_utils.js",
+                "javascript",
+                {"input_encoding": "utf-8"},
             ),
-            (
-                'tokens/**.mako',
-                'mako',
-                {
-                    'input_encoding': 'utf-8'
-                }
-            ),
-            (
-                'public/js/manage.js',
-                'javascript',
-                {
-                    'input_encoding': 'utf-8'
-                }
-            ),
-            (
-                'public/js/tools.js',
-                'javascript',
-                {
-                    'input_encoding': 'utf-8'
-                }
-            ),
-            (
-                'public/js/selfservice.js',
-                'javascript',
-                {
-                    'input_encoding': 'utf-8'
-                }
-            ),
-            (
-                'public/js/linotp_utils.js',
-                'javascript',
-                {
-                    'input_encoding': 'utf-8'
-                }
-            ),
-            (
-                'public/**',
-                'ignore',
-                None
-            )
+            ("public/**", "ignore", None),
         ]
     },
     zip_safe=False,
-    cmdclass={'build_py': Build},
+    cmdclass={"build_py": Build},
     entry_points={
-        'console_scripts': [
-            'linotp = linotp.cli:main',  # LinOTP command line interface
+        "console_scripts": [
+            "linotp = linotp.cli:main",  # LinOTP command line interface
         ],
-        'flask.commands': [
-            'audit = linotp.cli.audit_cmd:audit_cmds',
-            'admin = linotp.cli.admin_cmd:admin_cmds',
-            'backup = linotp.cli.mysql_cmd:backup_cmds',
-            'config = linotp.settings:config_cmds',
-            'dbsnapshot = linotp.cli.dbsnapshot_cmd:dbsnapshot_cmds',
-            'init = linotp.cli.init_cmd:init_cmds',
-            'ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test',
+        "flask.commands": [
+            "audit = linotp.cli.audit_cmd:audit_cmds",
+            "admin = linotp.cli.admin_cmd:admin_cmds",
+            "backup = linotp.cli.mysql_cmd:backup_cmds",
+            "config = linotp.settings:config_cmds",
+            "dbsnapshot = linotp.cli.dbsnapshot_cmd:dbsnapshot_cmds",
+            "init = linotp.cli.init_cmd:init_cmds",
+            "ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test",
         ],
     },
 )

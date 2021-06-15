@@ -38,10 +38,10 @@ from .filter import UserDomainCompare
 from .filter import AttributeCompare
 from .util import parse_action_value
 
-WILDCARD_MATCH = 'wildcard:match'
-EXACT_MATCH = 'exact:match'
-REGEX_MATCH = 'regex:match'
-NOT_MATCH = 'not:match'
+WILDCARD_MATCH = "wildcard:match"
+EXACT_MATCH = "exact:match"
+REGEX_MATCH = "regex:match"
+NOT_MATCH = "not:match"
 
 
 class PolicyEvaluator(object):
@@ -170,8 +170,8 @@ class PolicyEvaluator(object):
             # we add the name of the policy to the policy description
             # so we can use the same machine for the name compare
 
-            if 'name' not in p_dict:
-                p_dict['name'] = p_name
+            if "name" not in p_dict:
+                p_dict["name"] = p_name
 
             #
             # evaluate each filter against the policy. if one filter fails
@@ -190,7 +190,9 @@ class PolicyEvaluator(object):
                 # only be evaluated within the user_list_compare
                 # function
 
-                match_type[f_key], matching = f_compare(policy_condition, f_value)
+                match_type[f_key], matching = f_compare(
+                    policy_condition, f_value
+                )
 
                 if not matching:
                     break
@@ -229,40 +231,39 @@ class PolicyEvaluator(object):
 
         selection = set(matching_policies.keys())
 
-        user_matches = matches.get('user', {})
+        user_matches = matches.get("user", {})
         if user_matches:
             selection = self.select(
                 selection,
                 user_matches.get(EXACT_MATCH, set()),
                 user_matches.get(REGEX_MATCH, set()),
                 user_matches.get(WILDCARD_MATCH, set()),
-                )
+            )
 
-        realm_matches = matches.get('realm', {})
+        realm_matches = matches.get("realm", {})
         if realm_matches:
             selection = self.select(
                 selection,
                 realm_matches.get(EXACT_MATCH, set()),
                 realm_matches.get(WILDCARD_MATCH, set()),
-                )
+            )
 
-        client_matches = matches.get('client', {})
+        client_matches = matches.get("client", {})
         if client_matches:
             selection = self.select(
                 selection,
                 client_matches.get(EXACT_MATCH, set()),
-                client_matches.get(WILDCARD_MATCH, set())
-                )
+                client_matches.get(WILDCARD_MATCH, set()),
+            )
 
         result = {}
         for entry in selection:
-            result[entry]=all_policies[entry]
+            result[entry] = all_policies[entry]
 
         return result
 
-
     def add_match_type(self, matches: Dict, matches_dict: Dict, policy: str):
-        """ helper to add the matches into a common dict.
+        """helper to add the matches into a common dict.
 
         the dict will contain
             {match_key: {match_type: set(of policy_names)}}
@@ -291,7 +292,6 @@ class PolicyEvaluator(object):
 
             matches[key][match_type].add(policy)
 
-
     def select(self, all_matches, *args):
         """helper to intersect the identified sets of matches.
 
@@ -312,7 +312,6 @@ class PolicyEvaluator(object):
 
         return all_matches
 
-
     def set_filters(self, params):
         """
         set up a set of filters from a dictionary
@@ -321,21 +320,21 @@ class PolicyEvaluator(object):
         """
 
         for key, value in list(params.items()):
-            if key == 'active':
+            if key == "active":
                 self.filter_for_active(state=value)
-            elif key == 'scope':
+            elif key == "scope":
                 self.filter_for_scope(scope=value)
-            elif key == 'user':
+            elif key == "user":
                 self.filter_for_user(user=value)
-            elif key == 'realm':
+            elif key == "realm":
                 self.filter_for_realm(realm=value)
-            elif key == 'action':
+            elif key == "action":
                 self.filter_for_action(action=value)
-            elif key == 'name':
+            elif key == "name":
                 self.filter_for_name(name=value)
-            elif key == 'time':
+            elif key == "time":
                 self.filter_for_time(time=value)
-            elif key == 'client':
+            elif key == "client":
                 self.filter_for_client(client=value)
 
         return self
@@ -363,7 +362,7 @@ class PolicyEvaluator(object):
         :return: - nothing -
         """
         if state is not None:
-            self.add_filter('active', state, bool_compare)
+            self.add_filter("active", state, bool_compare)
 
     def filter_for_scope(self, scope):
         """
@@ -373,7 +372,7 @@ class PolicyEvaluator(object):
         :return: - nothing -
         """
         if scope is not None:
-            self.add_filter('scope', scope, string_compare)
+            self.add_filter("scope", scope, string_compare)
 
     def filter_for_user(self, user):
         """
@@ -383,7 +382,7 @@ class PolicyEvaluator(object):
         :return: - nothing -
         """
         if user is not None:
-            self.add_filter('user', user, user_list_compare)
+            self.add_filter("user", user, user_list_compare)
 
     def filter_for_action(self, action):
         """
@@ -394,7 +393,7 @@ class PolicyEvaluator(object):
         """
 
         if action is not None:
-            self.add_filter('action', action, action_compare)
+            self.add_filter("action", action, action_compare)
 
     def filter_for_name(self, name):
         """
@@ -404,7 +403,7 @@ class PolicyEvaluator(object):
         :return: - nothing -
         """
         if name is not None:
-            self.add_filter('name', name, string_compare)
+            self.add_filter("name", name, string_compare)
 
     def filter_for_realm(self, realm):
         """
@@ -414,7 +413,7 @@ class PolicyEvaluator(object):
         :return: - nothing -
         """
         if realm is not None:
-            self.add_filter('realm', realm, wildcard_icase_list_compare)
+            self.add_filter("realm", realm, wildcard_icase_list_compare)
 
     def filter_for_client(self, client):
         """
@@ -425,7 +424,7 @@ class PolicyEvaluator(object):
         """
 
         if client is not None:
-            self.add_filter('client', client, ip_list_compare)
+            self.add_filter("client", client, ip_list_compare)
 
     def filter_for_time(self, time=None):
         """
@@ -436,13 +435,15 @@ class PolicyEvaluator(object):
         """
         if time is None:
             time = datetime.now()
-        self.add_filter('time', time, time_list_compare)
+        self.add_filter("time", time, time_list_compare)
+
 
 #
 # below: the comparing functions
 #
 # unit tests in tests/unit/policy/test_condition_comparison.py
 #
+
 
 def action_compare(policy_actions, action):
     """
@@ -458,10 +459,10 @@ def action_compare(policy_actions, action):
 
     p_actions = parse_action_value(policy_actions)
 
-    if '*' in p_actions:
+    if "*" in p_actions:
         return WILDCARD_MATCH, True
 
-    if '=' not in action:
+    if "=" not in action:
         if action in p_actions:
             return EXACT_MATCH, True
         return NOT_MATCH, False
@@ -475,6 +476,7 @@ def action_compare(policy_actions, action):
 
     return NOT_MATCH, False
 
+
 def value_list_compare(policy_conditions, action_name):
     """
     check if given action_name matches the conditions
@@ -484,9 +486,9 @@ def value_list_compare(policy_conditions, action_name):
     :return: booleans
     """
 
-    conditions = [x.strip() for x in policy_conditions.split(',')]
+    conditions = [x.strip() for x in policy_conditions.split(",")]
 
-    if '*' in conditions:
+    if "*" in conditions:
         return WILDCARD_MATCH, True
 
     # exact action match
@@ -496,11 +498,12 @@ def value_list_compare(policy_conditions, action_name):
     # extract action name from action_name=value
     for condition in conditions:
 
-        cond_name, _sep, _cond_value = condition.partition('=')
+        cond_name, _sep, _cond_value = condition.partition("=")
         if cond_name.strip() == action_name:
             return EXACT_MATCH, True
 
     return NOT_MATCH, False
+
 
 def wildcard_list_compare(policy_conditions, value):
     """
@@ -511,8 +514,9 @@ def wildcard_list_compare(policy_conditions, value):
     :return: booleans
     """
 
-    matched = wildcard_icase_list_compare(policy_conditions,
-                                          value, ignore_case=False)
+    matched = wildcard_icase_list_compare(
+        policy_conditions, value, ignore_case=False
+    )
 
     return matched
 
@@ -526,9 +530,9 @@ def wildcard_icase_list_compare(policy_conditions, value, ignore_case=True):
     :return: booleans
     """
 
-    conditions = [x.strip() for x in policy_conditions.split(',')]
+    conditions = [x.strip() for x in policy_conditions.split(",")]
 
-    if '*' in conditions:
+    if "*" in conditions:
         return WILDCARD_MATCH, True
 
     matched = False
@@ -541,7 +545,7 @@ def wildcard_icase_list_compare(policy_conditions, value, ignore_case=True):
 
         its_a_not_condition = False
 
-        if condition[0] in ['-', '!']:
+        if condition[0] in ["-", "!"]:
             its_a_not_condition = True
             condition = condition[1:]
 
@@ -563,6 +567,7 @@ def wildcard_icase_list_compare(policy_conditions, value, ignore_case=True):
                 match_type = EXACT_MATCH
 
     return match_type, matched
+
 
 def string_compare(policy_condition, value):
     """
@@ -587,7 +592,7 @@ def bool_compare(policy_condition, value):
     :return: booleans
     """
 
-    boolean_condition = str(policy_condition).lower() == 'true'
+    boolean_condition = str(policy_condition).lower() == "true"
 
     if boolean_condition == value:
         return EXACT_MATCH, True
@@ -604,9 +609,9 @@ def ip_list_compare(policy_conditions, client):
     :return: booleans
     """
 
-    conditions = [x.strip() for x in policy_conditions.split(',')]
+    conditions = [x.strip() for x in policy_conditions.split(",")]
 
-    if '*' in conditions:
+    if "*" in conditions:
         return WILDCARD_MATCH, True
 
     allowed = False
@@ -619,13 +624,13 @@ def ip_list_compare(policy_conditions, client):
         if not condition:
             continue
 
-        if condition[0] in ['-', '!']:
+        if condition[0] in ["-", "!"]:
             condition = condition[1:]
             its_a_not_condition = True
 
-        if condition == '*':
+        if condition == "*":
             identified = True
-            if match_type == '':
+            if match_type == "":
                 match_type = WILDCARD_MATCH
 
         elif IPAddress(client) in IPNetwork(condition):
@@ -648,13 +653,13 @@ def user_list_compare(policy_conditions, login):
     :param login: the to be compared user - either User obj or string
     :return: booleans
     """
-    conditions = [x.strip() for x in policy_conditions.split(',')]
+    conditions = [x.strip() for x in policy_conditions.split(",")]
 
     if isinstance(login, User):
         user = login
     elif isinstance(login, str):
-        if '@' in login:
-            usr, _sep, realm = login.rpartition('@')
+        if "@" in login:
+            usr, _sep, realm = login.rpartition("@")
             user = User(usr, realm)
         else:
             user = User(login)
@@ -680,15 +685,15 @@ def user_list_compare(policy_conditions, login):
         # in case of a 'non condition' match, we must return immeaditly
         # and return a False to break out of the loop of conditions
 
-        if condition[0] in ['-', '!']:
+        if condition[0] in ["-", "!"]:
             condition = condition[1:]
             its_a_not_condition = True
 
-        if '#' in condition:
+        if "#" in condition:
 
-            if isinstance(login, str) and '@' in login:
+            if isinstance(login, str) and "@" in login:
 
-                usr, _sep, realm = login.rpartition('@')
+                usr, _sep, realm = login.rpartition("@")
 
                 if realm in getRealms():
                     c_user = User(usr, realm)
@@ -700,30 +705,30 @@ def user_list_compare(policy_conditions, login):
 
             identified = attr_comp.compare(c_user, condition)
 
-        elif '@' in condition:  # domain condition requires a domain compare
+        elif "@" in condition:  # domain condition requires a domain compare
 
             #
             # we support fake users, where login is of type string
             # and who have an '@' in it - we rely on that real users
             # are identified up front and then login will of type User
 
-            if isinstance(login, str) and '@' in login:
-                u_login, _, r_login = login.rpartition('@')
+            if isinstance(login, str) and "@" in login:
+                u_login, _, r_login = login.rpartition("@")
                 c_user = User(u_login, r_login)
             else:
                 c_user = user
             identified = domain_comp.compare(c_user, condition)
 
-        elif ':' in condition:  # resolver condition - by user exists check
+        elif ":" in condition:  # resolver condition - by user exists check
 
             #
             # special treatment of literal user definition with an @ in login:
             # we can split last part and check if it is an existing realm. If
             # not we treat the user login as literal only
 
-            if isinstance(login, str) and '@' in login:
+            if isinstance(login, str) and "@" in login:
 
-                usr, _sep, realm = login.rpartition('@')
+                usr, _sep, realm = login.rpartition("@")
 
                 if realm in getRealms():
                     c_user = User(usr, realm)
@@ -755,7 +760,7 @@ def user_list_compare(policy_conditions, login):
         if condition in full_qualified_names:
             match_type = EXACT_MATCH
 
-        if condition == '*':
+        if condition == "*":
             if not match_type:
                 match_type = WILDCARD_MATCH
 
@@ -791,10 +796,10 @@ def _compare_cron_value(value, target):
 
     value = value.strip()
 
-    if value == '*':
+    if value == "*":
         return True
 
-    values = [x.strip() for x in value.split(',')]
+    values = [x.strip() for x in value.split(",")]
 
     for value in values:
         try:
@@ -804,14 +809,14 @@ def _compare_cron_value(value, target):
         except ValueError:
             pass
 
-        if '/' in value:
-            val, interval = [x.strip() for x in value.split('/')]
+        if "/" in value:
+            val, interval = [x.strip() for x in value.split("/")]
 
             #
             # Not sure if applicable for every situation, but
             # just to make sure...
 
-            if val != '*':
+            if val != "*":
                 continue
 
             # If the remainder is zero, this matches
@@ -819,9 +824,9 @@ def _compare_cron_value(value, target):
             if target % int(interval) == 0:
                 return True
 
-        if '-' in value:
+        if "-" in value:
             try:
-                start, end = [int(x.strip()) for x in value.split('-')]
+                start, end = [int(x.strip()) for x in value.split("-")]
             except ValueError:
                 continue
             # If target value is in the range, it matches
@@ -842,7 +847,7 @@ def cron_compare(condition, now):
     """
 
     condition_parts = []
-    parts = condition.split(' ')
+    parts = condition.split(" ")
     for part in parts:
         if part.strip():
             condition_parts.append(part)
@@ -862,12 +867,14 @@ def cron_compare(condition, now):
 
     weekday = now.isoweekday()
 
-    return (_compare_cron_value(minute, now.minute) and
-            _compare_cron_value(hour, now.hour) and
-            _compare_cron_value(dom, now.day) and
-            _compare_cron_value(month, now.month) and
-            _compare_cron_value(dow, 0 if weekday == 7 else weekday) and
-            _compare_cron_value(year, now.year))
+    return (
+        _compare_cron_value(minute, now.minute)
+        and _compare_cron_value(hour, now.hour)
+        and _compare_cron_value(dom, now.day)
+        and _compare_cron_value(month, now.month)
+        and _compare_cron_value(dow, 0 if weekday == 7 else weekday)
+        and _compare_cron_value(year, now.year)
+    )
 
 
 def time_list_compare(policy_conditions, now):
@@ -892,7 +899,7 @@ def time_list_compare(policy_conditions, now):
             the cron expression
 
     """
-    conditions = [x.strip() for x in policy_conditions.split(';')]
+    conditions = [x.strip() for x in policy_conditions.split(";")]
 
     matched = False
     match_type = NOT_MATCH
@@ -910,7 +917,7 @@ def time_list_compare(policy_conditions, now):
 
         # if in the conditions one is with wildcard we grant access
 
-        if condition == '*':
+        if condition == "*":
             return WILDCARD_MATCH, True
 
         #
@@ -918,7 +925,7 @@ def time_list_compare(policy_conditions, now):
 
         its_a_not_condition = False
 
-        if condition[0] in ['-', '!']:
+        if condition[0] in ["-", "!"]:
             its_a_not_condition = True
             condition = condition[1:]
 
@@ -933,5 +940,6 @@ def time_list_compare(policy_conditions, now):
                 match_type = EXACT_MATCH
 
     return match_type, matched
+
 
 # eof

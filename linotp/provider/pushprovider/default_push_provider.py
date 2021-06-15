@@ -24,9 +24,9 @@
 #    Support: www.keyidentity.com
 #
 
-'''
+"""
 * implementation of the KeyIdentity PushProvider
-'''
+"""
 
 import logging
 import os
@@ -55,9 +55,9 @@ DEFAULT_TIMEOUT = (3, 5)
 log = logging.getLogger(__name__)
 
 
-@provider_registry.class_entry('DefaultPushProvider')
-@provider_registry.class_entry('linotp.provider.DefaultPushProvider')
-@provider_registry.class_entry('linotp.lib.pushprovider.DefaultPushProvider')
+@provider_registry.class_entry("DefaultPushProvider")
+@provider_registry.class_entry("linotp.provider.DefaultPushProvider")
+@provider_registry.class_entry("linotp.lib.pushprovider.DefaultPushProvider")
 class DefaultPushProvider(IPushProvider):
     """
     Send a push notification to the default push notification proxy (PNP).
@@ -73,7 +73,6 @@ class DefaultPushProvider(IPushProvider):
 
         IPushProvider.__init__(self)
 
-
     @staticmethod
     def _validate_url(url):
         """
@@ -82,7 +81,7 @@ class DefaultPushProvider(IPushProvider):
         :param url: The url as string that should be validated
         """
         parsed_url = urlparse(url)
-        if parsed_url.scheme not in ['http', 'https']:
+        if parsed_url.scheme not in ["http", "https"]:
             raise requests.exceptions.InvalidSchema(url)
 
     def loadConfig(self, configDict):
@@ -112,10 +111,10 @@ class DefaultPushProvider(IPushProvider):
             # we support lists and single values (for compatibility)
             #
             push_server_urls = []
-            push_url = configDict['push_url']
+            push_url = configDict["push_url"]
             if isinstance(push_url, (list, tuple)):
                 # verify the url scheme of all entries
-                for url in configDict['push_url']:
+                for url in configDict["push_url"]:
                     self._validate_url(url)
                     push_server_urls.append(url)
             else:
@@ -129,19 +128,20 @@ class DefaultPushProvider(IPushProvider):
             # client certificate
             #
 
-            self.client_cert = configDict.get('access_certificate')
+            self.client_cert = configDict.get("access_certificate")
 
             if self.client_cert and not os.path.isfile(self.client_cert):
-                raise IOError("required authenticating client"
-                              " cert could not be found %r" %
-                              self.client_cert)
+                raise IOError(
+                    "required authenticating client"
+                    " cert could not be found %r" % self.client_cert
+                )
 
             #
             # default is no server verification, but if provided
             # it must be either a file or directory reference
             #
 
-            server_cert = configDict.get('server_certificate')
+            server_cert = configDict.get("server_certificate")
 
             # server cert can be a string (file location, cert dir)
             # None or not present (cert gets fetched from local trust
@@ -149,13 +149,15 @@ class DefaultPushProvider(IPushProvider):
 
             if server_cert:
 
-                if (
-                    not os.path.isfile(server_cert) and
-                    not os.path.isdir(server_cert)):
+                if not os.path.isfile(server_cert) and not os.path.isdir(
+                    server_cert
+                ):
 
-                    raise IOError("server certificate verification could not"
-                                  " be made as certificate could not be found"
-                                  " %r" % server_cert)
+                    raise IOError(
+                        "server certificate verification could not"
+                        " be made as certificate could not be found"
+                        " %r" % server_cert
+                    )
 
             self.server_cert = server_cert
 
@@ -166,15 +168,17 @@ class DefaultPushProvider(IPushProvider):
             # - or  a tuple of connection and request timeout (float)
             #
 
-            if 'timeout' in configDict or 'Timeout' in configDict:
-                timeout = configDict.get('timeout', configDict.get('Timeout'))
+            if "timeout" in configDict or "Timeout" in configDict:
+                timeout = configDict.get("timeout", configDict.get("Timeout"))
 
                 #
                 # simple timeout or timeout tuple
                 #
 
-                if ',' in timeout:
-                    connection_timeout, request_timeout = list(map(float, timeout.split(',')))
+                if "," in timeout:
+                    connection_timeout, request_timeout = list(
+                        map(float, timeout.split(","))
+                    )
 
                     # validate inputs, we do not allow values <= 0
                     if connection_timeout <= 0:
@@ -196,23 +200,26 @@ class DefaultPushProvider(IPushProvider):
             # in a dicitionary to the request api
             #
 
-            if 'proxy' in configDict:
+            if "proxy" in configDict:
 
                 # verify the url scheme
-                parsed_url = urlparse(configDict['proxy'])
-                if parsed_url.scheme not in ['http', 'https']:
+                parsed_url = urlparse(configDict["proxy"])
+                if parsed_url.scheme not in ["http", "https"]:
                     raise requests.exceptions.InvalidSchema(
-                                                        configDict['proxy'])
+                        configDict["proxy"]
+                    )
 
-                if parsed_url.path and parsed_url.path != '/':
+                if parsed_url.path and parsed_url.path != "/":
                     raise requests.exceptions.InvalidSchema(
-                                                        configDict['proxy'])
+                        configDict["proxy"]
+                    )
 
                 self.proxy = DefaultPushProvider.get_proxy_definition(
-                                    configDict.get('proxy'))
+                    configDict.get("proxy")
+                )
 
         except KeyError as exx:
-            log.error('Missing Configuration entry %r', exx)
+            log.error("Missing Configuration entry %r", exx)
             raise exx
 
     def push_notification(self, challenge, gda, transactionId):
@@ -235,10 +242,9 @@ class DefaultPushProvider(IPushProvider):
         if not gda:
             raise Exception("Missing target description!")
 
-        (success,
-         result_message) = self._http_push(challenge,
-                                           gda,
-                                           transactionId)
+        (success, result_message) = self._http_push(
+            challenge, gda, transactionId
+        )
 
         return success, result_message
 
@@ -249,10 +255,10 @@ class DefaultPushProvider(IPushProvider):
         proxy = None
         if proxy_url:
             proxy = {}
-            if proxy_url.startswith('https:'):
-                proxy['https'] = proxy_url
+            if proxy_url.startswith("https:"):
+                proxy["https"] = proxy_url
             else:
-                proxy['http'] = proxy_url
+                proxy["http"] = proxy_url
 
         return proxy
 
@@ -276,9 +282,9 @@ class DefaultPushProvider(IPushProvider):
         # }
 
         params = {}
-        params['transactionId'] = transactionId
-        params['gda'] = gda
-        params['challenge'] = challenge
+        params["transactionId"] = transactionId
+        params["gda"] = gda
+        params["challenge"] = challenge
 
         json_challenge = {"challenge": params}
 
@@ -288,17 +294,15 @@ class DefaultPushProvider(IPushProvider):
 
         pparams = {}
         if self.timeout:
-            pparams['timeout'] = self.timeout
+            pparams["timeout"] = self.timeout
 
         # submitting the json body requires the correct HTTP headers
         # with contenttype declaration:
 
-        headers = {
-            'Content-type': 'application/json',
-            'Accept': 'text/plain'}
+        headers = {"Content-type": "application/json", "Accept": "text/plain"}
 
         if self.proxy:
-            pparams['proxies'] = self.proxy
+            pparams["proxies"] = self.proxy
 
         #
         # we check if the client certificate exists, which is
@@ -306,22 +310,23 @@ class DefaultPushProvider(IPushProvider):
         #
 
         if self.client_cert and os.path.isfile(self.client_cert):
-            pparams['cert'] = self.client_cert
+            pparams["cert"] = self.client_cert
 
         server_cert = self.server_cert
         if server_cert is not None:
             # Session.post() doesn't like unicode values in Session.verify
             if isinstance(server_cert, str):
-                server_cert = server_cert.encode('utf-8')
+                server_cert = server_cert.encode("utf-8")
 
-            pparams['verify'] = server_cert
+            pparams["verify"] = server_cert
 
         # ------------------------------------------------------------------ --
 
         # schedule all resources
 
         res_scheduler = ResourceScheduler(
-                                tries=2, uri_list=self.push_server_urls)
+            tries=2, uri_list=self.push_server_urls
+        )
 
         # ------------------------------------------------------------------ --
 
@@ -339,7 +344,8 @@ class DefaultPushProvider(IPushProvider):
             try:
 
                 response = requests.post(
-                    uri, json=json_challenge, headers=headers, **pparams)
+                    uri, json=json_challenge, headers=headers, **pparams
+                )
 
                 if not response.ok:
                     result = response.reason
@@ -348,10 +354,15 @@ class DefaultPushProvider(IPushProvider):
 
                 return response.ok, result
 
-            except (Timeout, ConnectTimeout, ReadTimeout,
-                    ConnectionError, TooManyRedirects) as exx:
+            except (
+                Timeout,
+                ConnectTimeout,
+                ReadTimeout,
+                ConnectionError,
+                TooManyRedirects,
+            ) as exx:
 
-                log.exception('resource %r not available!', uri)
+                log.error("resource %r not available!", uri)
 
                 # mark the url as blocked
 
@@ -366,14 +377,16 @@ class DefaultPushProvider(IPushProvider):
 
         # if we reach here, no resource has been availabel
 
-        log.error('non of the resources %r available!', self.push_server_urls)
+        log.error("non of the resources %r available!", self.push_server_urls)
 
         if last_exception:
             log.error("Last Exception was %r", last_exception)
             raise last_exception
 
-        raise AllResourcesUnavailable('non of the resources %r available!' %
-                        self.push_server_urls)
+        raise AllResourcesUnavailable(
+            "non of the resources %r available!" % self.push_server_urls
+        )
+
 
 def main():
     """
@@ -387,23 +400,28 @@ def main():
 
     parser = argparse.ArgumentParser(usage)
 
-    parser.add_argument("-c", "--client_cert", help="client certificate",
-                        required=True)
+    parser.add_argument(
+        "-c", "--client_cert", help="client certificate", required=True
+    )
 
     parser.add_argument("-u", "--url", help="Provider URL", required=True)
 
-    parser.add_argument("-m", '--message', help="message", required=True)
-    parser.add_argument("-g", '--gda', help="target token info (gda)",
-                        required=True)
+    parser.add_argument("-m", "--message", help="message", required=True)
+    parser.add_argument(
+        "-g", "--gda", help="target token info (gda)", required=True
+    )
 
     # not required parameters
 
-    parser.add_argument("-s", '--server_certificates',
-                        help="directory of trusted server certificates")
-    parser.add_argument("-p", "--proxy",
-                        help="the proxy URL")
-    parser.add_argument("-t", "--timeout",
-                        help="Connection timeout and request timeouts")
+    parser.add_argument(
+        "-s",
+        "--server_certificates",
+        help="directory of trusted server certificates",
+    )
+    parser.add_argument("-p", "--proxy", help="the proxy URL")
+    parser.add_argument(
+        "-t", "--timeout", help="Connection timeout and request timeouts"
+    )
 
     args = vars(parser.parse_args())
 
@@ -412,21 +430,21 @@ def main():
     # configuration and request parameters
     #
 
-    message = args['message']
-    gda = args['gda']
+    message = args["message"]
+    gda = args["gda"]
 
     configDict = {}
-    configDict['push_url'] = args['url']
-    configDict['access_certificate'] = args['client_cert']
+    configDict["push_url"] = args["url"]
+    configDict["access_certificate"] = args["client_cert"]
 
-    if 'timeout' in args:
-        configDict['timeout'] = args.get('timeout')
+    if "timeout" in args:
+        configDict["timeout"] = args.get("timeout")
 
-    if 'proxy' in args:
-        configDict['proxy'] = args.get('proxy')
+    if "proxy" in args:
+        configDict["proxy"] = args.get("proxy")
 
-    if 'server_certificates' in args:
-        configDict['server_certificate'] = args.get('server_certificates')
+    if "server_certificates" in args:
+        configDict["server_certificate"] = args.get("server_certificates")
 
     #
     # execute the request
@@ -440,11 +458,10 @@ def main():
         print("Response: %r" % resp)
 
     except Exception as exx:
-        log.error('Failed to push the notification (%r): %r',
-                  exx, configDict)
+        log.error("Failed to push the notification (%r): %r", exx, configDict)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     #
     # in main() we parse the arguments from the command line to support

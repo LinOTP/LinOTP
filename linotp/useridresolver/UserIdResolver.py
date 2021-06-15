@@ -52,24 +52,32 @@ log = logging.getLogger(__name__)
 class ResolverLoadConfigError(Exception):
     pass
 
+
 class ResolverNotAvailable(Exception):
     pass
 
+
 class UserIdResolver(object):
 
-    fields = {"username": 1, "userid": 1,
-              "description": 0,
-              "phone": 0, "mobile": 0, "email": 0,
-              "givenname": 0, "surname": 0, "gender": 0
-              }
+    fields = {
+        "username": 1,
+        "userid": 1,
+        "description": 0,
+        "phone": 0,
+        "mobile": 0,
+        "email": 0,
+        "givenname": 0,
+        "surname": 0,
+        "gender": 0,
+    }
     name = ""
     id = ""
 
     critical_parameters: List[str] = []
     crypted_parameters: List[str] = []
-    resolver_parameters: Dict[str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]] = {
-        'readonly': (False, False, boolean)
-    }
+    resolver_parameters: Dict[
+        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
+    ] = {"readonly": (False, False, boolean)}
 
     def __init(self):
         """
@@ -96,7 +104,7 @@ class UserIdResolver(object):
         """
 
         for crit in cls.critical_parameters:
-            if new_params.get(crit, '') != previous_params.get(crit, ''):
+            if new_params.get(crit, "") != previous_params.get(crit, ""):
                 return True
 
         return False
@@ -151,48 +159,48 @@ class UserIdResolver(object):
         """
         provide the resolver type for registration
         """
-        return 'UserIdResolver'
+        return "UserIdResolver"
 
     def getResolverType(self):
-        '''
+        """
         getResolverType - return the type of the resolver
 
         :return: returns the string 'ldapresolver'
         :rtype:  string
-        '''
-        return 'UserIdResolver'
+        """
+        return "UserIdResolver"
 
     @classmethod
     def getResolverClassDescriptor(cls):
-        '''
+        """
         return the descriptor of the resolver, which is
         - the class name and
         - the config description
 
         :return: resolver description dict
         :rtype:  dict
-        '''
+        """
         descriptor = {}
         typ = cls.getResolverClassType()
-        descriptor['clazz'] = "useridresolver.UserIdResolver"
-        descriptor['config'] = {}
+        descriptor["clazz"] = "useridresolver.UserIdResolver"
+        descriptor["config"] = {}
         return {typ: descriptor}
 
     def getResolverDescriptor(self):
-        '''
+        """
         return the descriptor of the resolver, which is
         - the class name and
         - the config description
 
         :return: resolver description dict
         :rtype:  dict
-        '''
+        """
         return UserIdResolver.getResolverClassDescriptor()
 
     def getUserId(self, loginName):
-        """ getUserId(LoginName)
-          - returns the identifier string
-          - empty string if not exist
+        """getUserId(LoginName)
+        - returns the identifier string
+        - empty string if not exist
 
         """
         return self.id
@@ -238,7 +246,7 @@ class UserIdResolver(object):
         return self.name
 
     @classmethod
-    def filter_config(cls, config, conf=''):
+    def filter_config(cls, config, conf=""):
         """
         build a dict with the parameters of the resolver
 
@@ -273,14 +281,16 @@ class UserIdResolver(object):
 
             search_keys = [key]
 
-            if 'linotp.' in key:
-                ext_key = '.'.join(key.split('.')[1:])
+            if "linotp." in key:
+                ext_key = ".".join(key.split(".")[1:])
                 search_keys.append(ext_key)
 
             else:
-                ext_key = 'linotp.%s.%s.%s' % (
-                          cls.getResolverClassType(), key, conf
-                          )
+                ext_key = "linotp.%s.%s.%s" % (
+                    cls.getResolverClassType(),
+                    key,
+                    conf,
+                )
 
                 search_keys.append(ext_key)
 
@@ -297,8 +307,8 @@ class UserIdResolver(object):
 
         # we show the readonly attribute only, if it is True
 
-        if 'readonly' in l_config and not l_config['readonly']:
-            del l_config['readonly']
+        if "readonly" in l_config and not l_config["readonly"]:
+            del l_config["readonly"]
 
         return l_config, missing
 
@@ -306,11 +316,11 @@ class UserIdResolver(object):
         return self
 
     def checkPass(self, uid, password):
-        '''
+        """
         This function checks the password for a given uid.
         - returns true in case of success
         -         false if password does not match
-        '''
+        """
         return False
 
 
@@ -334,17 +344,31 @@ def getResolverClass(packageName, className):
     ret = ""
     attribute = ""
     try:
-        attrs = ["getUserId", "getUsername", "getUserInfo", "getUserList",
-                 "checkPass", "loadConfig",
-                 "getResolverId", "getResolverType", "getResolverDescriptor"
-                ]
+        attrs = [
+            "getUserId",
+            "getUsername",
+            "getUserInfo",
+            "getUserList",
+            "checkPass",
+            "loadConfig",
+            "getResolverId",
+            "getResolverType",
+            "getResolverDescriptor",
+        ]
 
         for att in attrs:
             attribute = att
             getattr(klass, att)
         ret = klass
-    except:
-        raise NameError("IdResolver AttributeError: " + packageName + "." + \
-              className + " instance has no attribute '" + attribute + "'")
+    except BaseException:
+        raise NameError(
+            "IdResolver AttributeError: "
+            + packageName
+            + "."
+            + className
+            + " instance has no attribute '"
+            + attribute
+            + "'"
+        )
 
     return ret

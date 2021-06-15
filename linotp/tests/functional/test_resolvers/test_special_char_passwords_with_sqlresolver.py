@@ -41,19 +41,18 @@ from .sql_test_controller import SQLTestController
 PASSWORDS = [
     "#,`/^?/#)!'",
     '^.%{[(&}>#].)"#',
-    ' #$%&@`/:;<=>?[\\]^{|}~“‘+',
+    " #$%&@`/:;<=>?[\\]^{|}~“‘+",
     "řƷ&ȧᚽÂᚯŚǡȒᛧƳ¢ȡǗǠȏȄ.ŁœňᛅȤ",
     "ȴĔⱫⱨǝțíǧIė06Ĵᚯ)ƻãĩƜǇǠŚƽĢ",
     "ⱠᛝǾᛥĀ;ǢⱩùΊǎǸŊᛂãȌű¸óȟŗɇ!ĺ",
-    ]
+]
 
 log = logging.getLogger(__name__)
 
 
 class SQLResolverSpecialPasswordTest(SQLTestController):
-
     def setUp(self):
-        """ create an sql user table some users and the sql resolver """
+        """create an sql user table some users and the sql resolver"""
 
         SQLTestController.setUp(self)
         self.setUpSQL()
@@ -61,81 +60,74 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         return
 
     def tearDown(self):
-        """ drop the users and the user table """
+        """drop the users and the user table"""
 
         self.dropUsers()
         self.delete_all_token()
 
         return SQLTestController.tearDown(self)
 
-
-    def define_otp_pin_policy(self, otppin='password'):
+    def define_otp_pin_policy(self, otppin="password"):
         """
         create the policy to check for password instead of pin
         """
 
         params = {
-            'name': 'otppin_poilcy',
-            'action': 'otppin=' + otppin,
-            'scope': 'authentication',
-            'user': '*',
-            'realm': '*',
-            }
+            "name": "otppin_poilcy",
+            "action": "otppin=" + otppin,
+            "scope": "authentication",
+            "user": "*",
+            "realm": "*",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response.body
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response.body
 
     def run_password_check(self, user, password, realm):
 
-        self.define_otp_pin_policy('pin')
+        self.define_otp_pin_policy("pin")
 
         # ------------------------------------------------------------------ --
 
         # create token for user
 
-        pin = 'mypin!'
-        secret = 'mein_geheimnis'
-        serial = 'pw_' + user
+        pin = "mypin!"
+        secret = "mein_geheimnis"
+        serial = "pw_" + user
 
         params = {
-            'type': 'pw',
-            'otpkey': secret,
-            'user': user,
-            'realm': realm,
-            'serial': serial,
-            'pin': pin
+            "type": "pw",
+            "otpkey": secret,
+            "user": user,
+            "realm": realm,
+            "serial": serial,
+            "pin": pin,
         }
 
-        response = self.make_admin_request('init', params=params)
-        assert 'false' not in response.body, response
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response.body, response
 
         # ------------------------------------------------------------------ --
 
         # run a wrong login, so that the token failcount increments
 
-        params = {
-            'user': user,
-            'pass': pin + '1' + secret
-            }
+        params = {"user": user, "pass": pin + "1" + secret}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert '"value": false' in response
 
         # ------------------------------------------------------------------ --
 
         # verify that the token count is incremented to 1
 
-        params = {
-            'serial': serial
-            }
+        params = {"serial": serial}
 
-        response = self.make_admin_request('show', params=params)
+        response = self.make_admin_request("show", params=params)
         jresp = json.loads(response.body)
-        token_info = jresp.get(
-            'result', {}).get(
-                'value', {}).get(
-                    'data',[{}])[0]
-        assert token_info.get( "LinOtp.FailCount", -1) == 1
+        token_info = (
+            jresp.get("result", {}).get("value", {}).get("data", [{}])[0]
+        )
+        assert token_info.get("LinOtp.FailCount", -1) == 1
 
         # ------------------------------------------------------------------ --
 
@@ -143,41 +135,33 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
 
         # run a wrong login, so that the token failcount increments
 
-        params = {
-            'user': user,
-            'pass': pin + secret
-            }
+        params = {"user": user, "pass": pin + secret}
 
-        response = self.make_validate_request('check', params=params, method='GET')
+        response = self.make_validate_request(
+            "check", params=params, method="GET"
+        )
         assert '"value": true' in response
-
 
         # ------------------------------------------------------------------ --
 
         # create the policy to check for password instead of pin
 
-        self.define_otp_pin_policy('password')
+        self.define_otp_pin_policy("password")
 
         # ------------------------------------------------------------------ --
 
         # verify that correct password works
 
-        params = {
-            'user': user,
-            'pass': password + secret
-            }
+        params = {"user": user, "pass": password + secret}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert '"value": true' in response
 
         # verify that wrong password works
 
-        params = {
-            'user': user,
-            'pass': password + '1' + secret
-            }
+        params = {"user": user, "pass": password + "1" + secret}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
         assert '"value": false' in response
 
         return
@@ -198,10 +182,10 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         # ------------------------------------------------------------------ --
         # define resolver and realm
 
-        realm = 'sqlPassRealm'
+        realm = "sqlPassRealm"
 
-        self.addSqlResolver('my_sql_pass_users')
-        self.addSqlRealm(realm, 'my_sql_pass_users', defaultRealm=True)
+        self.addSqlResolver("my_sql_pass_users")
+        self.addSqlRealm(realm, "my_sql_pass_users", defaultRealm=True)
 
         # ------------------------------------------------------------- --
 
@@ -210,31 +194,32 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         # add users
         for password in PASSWORDS:
             i += 1
-            name = 'bach%d' % i
+            name = "bach%d" % i
             bach_password = password
             bach_password_hash = passlib_bcrypt.hash(bach_password)
 
             users[name] = {
-                'login': name,
-                'uid': '%d' % i,
-                'telephonenumber': '',
-                'mobile': bach_password,
-                'surname': 'Bach%d' % i,
-                'givenname': 'Johann Sebastian',
-                'password': bach_password_hash,
-                'mail': 'j%d.s@bach.de' % i
+                "login": name,
+                "uid": "%d" % i,
+                "telephonenumber": "",
+                "mobile": bach_password,
+                "surname": "Bach%d" % i,
+                "givenname": "Johann Sebastian",
+                "password": bach_password_hash,
+                "mail": "j%d.s@bach.de" % i,
             }
 
             assert passlib_bcrypt.verify(bach_password, bach_password_hash)
 
             self.addUser(**users[name])
 
-            user = users[name]['login']
-            password = users[name]['mobile']
+            user = users[name]["login"]
+            password = users[name]["mobile"]
             try:
                 self.run_password_check(user, password, realm=realm)
             except Exception as exx:
                 pass
         return
+
 
 # eof

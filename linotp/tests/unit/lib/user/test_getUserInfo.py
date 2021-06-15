@@ -33,9 +33,7 @@ from linotp.lib.user import User
 
 
 class TestGetUserInfo(unittest.TestCase):
-
-
-    @patch('linotp.lib.user.lookup_user_in_resolver')
+    @patch("linotp.lib.user.lookup_user_in_resolver")
     def test_getUserInfo_fallback(self, mock_lookup_user_in_resolver):
         """
         verify that the fallback is an empty dict for
@@ -45,25 +43,26 @@ class TestGetUserInfo(unittest.TestCase):
 
         mock_lookup_user_in_resolver.return_value = None, None, None
 
-        assert {} == getUserInfo('userId', 'resolver', 'resolver_conf')
-        assert {} == getUserInfo(None, 'resolver', 'resolver_conf')
+        assert {} == getUserInfo("userId", "resolver", "resolver_conf")
+        assert {} == getUserInfo(None, "resolver", "resolver_conf")
 
-
-    @patch('linotp.lib.user.lookup_user_in_resolver')
+    @patch("linotp.lib.user.lookup_user_in_resolver")
     def test_getUserInfo_good(self, mock_lookup_user_in_resolver):
         """
         verify that the lookup result is forwarded
         """
 
-        mock_lookup_user_in_resolver.return_value = '1223', 'myResolver', {
-            'login': 'heinz',
-            'email': 'heinz.el@mann.de'
-            }
+        mock_lookup_user_in_resolver.return_value = (
+            "1223",
+            "myResolver",
+            {"login": "heinz", "email": "heinz.el@mann.de"},
+        )
 
-        userInfo = getUserInfo('userId', 'resolver', 'resolver_conf')
+        userInfo = getUserInfo("userId", "resolver", "resolver_conf")
 
-        assert userInfo['login'] == 'heinz'
+        assert userInfo["login"] == "heinz"
 
         return
+
 
 # eof #

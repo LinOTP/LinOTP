@@ -45,6 +45,7 @@ import ldap.filter
 
 try:
     from ldap import LDAP_CONTROL_PAGE_OID
+
     ldap_api_version = 2.3
 except ImportError:
     ldap_api_version = 2.4
@@ -70,12 +71,12 @@ from linotp.useridresolver import resolver_registry
 
 log = logging.getLogger(__name__)
 
-log.info('using the %r cursoring api.', ldap_api_version)
+log.info("using the %r cursoring api.", ldap_api_version)
 
 # resolver config default / fallback values
 
 DEFAULT_UID_TYPE = "DN"  # can be entryUUID, GUID, objectGUID or DN
-ENCODING = 'utf-8'
+ENCODING = "utf-8"
 DEFAULT_SIZELIMIT = 500
 DEFAULT_EnforceTLS = False
 BIND_NOT_POSSIBLE_TIMEOUT = 30
@@ -83,6 +84,7 @@ TIMEOUT_NO_LIMIT = -1
 
 
 # -------------------------------------------------------------------------- --
+
 
 def escape_hex_for_search(hex_value: str) -> str:
     """
@@ -106,22 +108,26 @@ def escape_hex_for_search(hex_value: str) -> str:
     :return: str escaped hex representation, to be used for search
     """
 
-    return '\\' + '\\'.join([hex_value[idx:idx+2] for idx in range(0, len(hex_value), 2)])
+    return "\\" + "\\".join(
+        [hex_value[idx : idx + 2] for idx in range(0, len(hex_value), 2)]
+    )
+
+
 # -------------------------------------------------------------------------- --
 
 
-@resolver_registry.class_entry('useridresolver.LDAPIdResolver.IdResolver')
-@resolver_registry.class_entry('useridresolveree.LDAPIdResolver.IdResolver')
-@resolver_registry.class_entry('useridresolver.ldapresolver')
-@resolver_registry.class_entry('ldapresolver')
+@resolver_registry.class_entry("useridresolver.LDAPIdResolver.IdResolver")
+@resolver_registry.class_entry("useridresolveree.LDAPIdResolver.IdResolver")
+@resolver_registry.class_entry("useridresolver.ldapresolver")
+@resolver_registry.class_entry("ldapresolver")
 class IdResolver(UserIdResolver):
-    '''
+    """
     LDAP User Id resolver
-    '''
+    """
 
     nameDict: Dict[str, str] = {}
     conf = ""
-    db_prefix = 'useridresolver.LDAPIdResolver.IdResolver'
+    db_prefix = "useridresolver.LDAPIdResolver.IdResolver"
 
     # The mapping of these search fields to the ldap attributes is
     # stored in self.userinfo
@@ -135,7 +141,8 @@ class IdResolver(UserIdResolver):
         "email": 0,
         "givenname": 0,
         "surname": 0,
-        "gender": 0}
+        "gender": 0,
+    }
 
     searchFields = {
         "username": "text",
@@ -143,33 +150,32 @@ class IdResolver(UserIdResolver):
         "description": "text",
         "email": "text",
         "givenname": "text",
-        "surname": "text"}
+        "surname": "text",
+    }
 
-    critical_parameters = ['LDAPBASE', 'BINDDN', 'LDAPURI']
+    critical_parameters = ["LDAPBASE", "BINDDN", "LDAPURI"]
 
-    crypted_parameters = ['BINDPW']
-    primary_key = 'UIDTYPE'
+    crypted_parameters = ["BINDPW"]
+    primary_key = "UIDTYPE"
 
-    resolver_parameters: Dict[str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]] = {
+    resolver_parameters: Dict[
+        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
+    ] = {
         "LDAPURI": (True, None, text),
         "LDAPBASE": (True, None, text),
         "BINDDN": (True, None, text),
         "BINDPW": (True, None, encrypted_data),
-
         "LOGINNAMEATTRIBUTE": (True, None, text),
         "LDAPFILTER": (True, None, text),
         "LDAPSEARCHFILTER": (True, None, text),
         "USERINFO": (True, True, text),
         "UIDTYPE": (False, DEFAULT_UID_TYPE, text),
-
         "EnforceTLS": (False, True, boolean),
         "only_trusted_certs": (False, True, boolean),
         "NOREFERRALS": (False, False, boolean),
         "PROXY": (False, False, boolean),
-
         "TIMEOUT": (False, TIMEOUT_NO_LIMIT, text),
         "SIZELIMIT": (False, DEFAULT_SIZELIMIT, int),
-
     }
 
     resolver_parameters.update(UserIdResolver.resolver_parameters)
@@ -185,20 +191,20 @@ class IdResolver(UserIdResolver):
         :return: boolean
         """
 
-        new_id = new_params.get(cls.primary_key, '')
-        prev_id = previous_params.get(cls.primary_key, '')
+        new_id = new_params.get(cls.primary_key, "")
+        prev_id = previous_params.get(cls.primary_key, "")
 
         return new_id != prev_id
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):
-        '''
+        """
         this setup hook is triggered, when the server starts to serve the
         first request
 
         :param config: the linotp config
         :return: -nothing-
-        '''
+        """
 
         log.info("[setup] Setting up the LDAPResolver")
         return
@@ -239,16 +245,16 @@ class IdResolver(UserIdResolver):
         uri = uri.strip()
 
         # check that the uri is only a valid ldap uri
-        if ',' in uri:
+        if "," in uri:
             log.warning("unsupported multiple urls in ldap uri %r", uri)
 
-        if not uri.startswith(('ldaps://', 'ldap://')):
+        if not uri.startswith(("ldaps://", "ldap://")):
             log.error("unsuported protocol %r", uri)
             raise Exception("unsuported protocol %r" % uri)
 
         l_obj = init_ldap(uri, trace_level)
 
-        if uri.startswith('ldaps://') or caller.enforce_tls:
+        if uri.startswith("ldaps://") or caller.enforce_tls:
 
             # If we establish an ldaps connection, we currently accept
             # untrusted server certificates - default has to be switched.
@@ -261,17 +267,21 @@ class IdResolver(UserIdResolver):
 
             ca_cert_file = current_app.config["TLS_CA_CERTIFICATES_FILE"]
             l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, ca_cert_file)
-            cert_req = (ldap.OPT_X_TLS_DEMAND if caller.only_trusted_certs
-                        else ldap.OPT_X_TLS_NEVER)
+            cert_req = (
+                ldap.OPT_X_TLS_DEMAND
+                if caller.only_trusted_certs
+                else ldap.OPT_X_TLS_NEVER
+            )
             log.debug(
                 f"Using root-level CA certificates from {ca_cert_file}"
                 ", server certificates "
                 f"{'must' if caller.only_trusted_certs else 'need not'} "
-                "be valid.")
+                "be valid."
+            )
             l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
             l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
-        if uri.startswith('ldap://'):
+        if uri.startswith("ldap://"):
             if caller.enforce_tls:
                 # Try to upgrade the LDAP connection to TLS, and
                 # complain fiercely if this fails.
@@ -309,9 +319,12 @@ class IdResolver(UserIdResolver):
         # should, but even the newest version doesn't seem to follow the
         # documentation.)
 
-        if uri.startswith('ldaps://') or caller.enforce_tls:
-            cipher = (l_obj.get_option('OPT_X_TLS_CIPHER')
-                      if hasattr(l_obj, 'OPT_X_TLS_CIPHER') else "Unknown")
+        if uri.startswith("ldaps://") or caller.enforce_tls:
+            cipher = (
+                l_obj.get_option("OPT_X_TLS_CIPHER")
+                if hasattr(l_obj, "OPT_X_TLS_CIPHER")
+                else "Unknown"
+            )
             log.info(f"LDAP TLS: using cipher={cipher}")
 
         if caller.noreferrals:
@@ -364,39 +377,42 @@ class IdResolver(UserIdResolver):
 
         caller.noreferrals = True
 
-        caller.enforce_tls = l_config['EnforceTLS']
-        caller.only_trusted_certs = l_config['only_trusted_certs']
+        caller.enforce_tls = l_config["EnforceTLS"]
+        caller.only_trusted_certs = l_config["only_trusted_certs"]
 
         try:
             # do a bind
-            uri = l_config['LDAPURI']
+            uri = l_config["LDAPURI"]
 
-            caller.noreferrals = l_config['NOREFERRALS']
+            caller.noreferrals = l_config["NOREFERRALS"]
 
-            timeout = l_config['TIMEOUT']
-            (caller.network_timeout,
-             caller.response_timeout) = IdResolver.parse_timeout(timeout)
+            timeout = l_config["TIMEOUT"]
+            (
+                caller.network_timeout,
+                caller.response_timeout,
+            ) = IdResolver.parse_timeout(timeout)
 
-            trace_level = params.get('trace_level', 0)
+            trace_level = params.get("trace_level", 0)
             if trace_level != 0:
                 ldap.set_option(ldap.OPT_DEBUG_LEVEL, 4095)
 
             failed = None
 
-            for s_uri in uri.split(','):
+            for s_uri in uri.split(","):
 
                 log.info("testing connection with uri %r", s_uri)
 
                 try:
 
-                    l_obj = IdResolver.connect(s_uri, caller,
-                                               trace_level=trace_level)
+                    l_obj = IdResolver.connect(
+                        s_uri, caller, trace_level=trace_level
+                    )
 
                     # try to authenticate to server:
                     # this will establish the first connection
 
-                    bind_dn = l_config['BINDDN']
-                    bind_pw = l_config['BINDPW'].get_unencrypted()
+                    bind_dn = l_config["BINDDN"]
+                    bind_pw = l_config["BINDPW"].get_unencrypted()
 
                     l_obj.simple_bind_s(bind_dn, bind_pw)
 
@@ -413,19 +429,21 @@ class IdResolver(UserIdResolver):
                 raise failed
 
             # get a userlist:
-            searchFilter = "(&" + l_config['LDAPSEARCHFILTER'] + ")"
+            searchFilter = "(&" + l_config["LDAPSEARCHFILTER"] + ")"
             sizelimit = int(DEFAULT_SIZELIMIT)
 
             sizelimit = l_config["SIZELIMIT"]
 
-            ldap_result_id = l_obj.search_ext(l_config['LDAPBASE'],
-                                              ldap.SCOPE_SUBTREE,
-                                              filterstr=searchFilter,
-                                              sizelimit=sizelimit)
-            while 1:
+            ldap_result_id = l_obj.search_ext(
+                l_config["LDAPBASE"],
+                ldap.SCOPE_SUBTREE,
+                filterstr=searchFilter,
+                sizelimit=sizelimit,
+            )
+            while True:
                 userdata = {}
                 result_type, result_data = l_obj.result(ldap_result_id, 0)
-                if (result_data == []):
+                if result_data == []:
                     break
                 else:
                     if result_type == ldap.RES_SEARCH_ENTRY:
@@ -441,22 +459,22 @@ class IdResolver(UserIdResolver):
         except ldap.CONNECT_ERROR as err:
             status = "error"
             if not silent:
-                log.exception("[testconnection] LDAP Error: %r", err)
+                log.error("[testconnection] LDAP Error: %r", err)
             return (status, "Connection Error: %s" % str(err))
 
         except ldap.LDAPError as err:
             status = "error"
             if not silent:
-                log.exception("[testconnection] LDAP Error: %r", err)
+                log.error("[testconnection] LDAP Error: %r", err)
             return (status, str(err))
 
         except Exception as err:
-            status = 'error'
-            log.exception("[testconnection] Error: %r", err)
+            status = "error"
+            log.error("[testconnection] Error: %r", err)
             return (status, str(err))
 
         finally:
-            if l_obj: # unbind
+            if l_obj:  # unbind
                 l_obj.unbind_s()
 
         return status, resultList
@@ -522,19 +540,18 @@ class IdResolver(UserIdResolver):
             try:
                 l_obj = IdResolver.connect(uri, caller=self)
 
-                l_obj.simple_bind_s(
-                    self.binddn, self.bindpw.get_unencrypted())
+                l_obj.simple_bind_s(self.binddn, self.bindpw.get_unencrypted())
 
                 self.l_obj = l_obj
                 return l_obj
 
             except ldap.LDAPError as _error:
                 resource_scheduler.block(uri, delay=30)
-                log.exception("[bind] LDAP error")
+                log.error("[bind] LDAP error")
 
         # if we reach this point, we were not able to do a successful bind! :-(
 
-        log.error('Failed to bind to any resource %r', urilist)
+        log.error("Failed to bind to any resource %r", urilist)
 
         raise ResolverNotAvailable("Unable to bind to servers %r" % urilist)
 
@@ -549,7 +566,7 @@ class IdResolver(UserIdResolver):
         return
 
     def getUserId(self, loginname):
-        '''
+        """
         return the userId which mappes to an loginname
 
         :param loginName: login name of the user
@@ -557,20 +574,23 @@ class IdResolver(UserIdResolver):
 
         :return: userid - unique idenitfier for this unser
         :rtype:  string
-        '''
+        """
 
-        log.debug("[getUserId] resolving userid for %r: %r",
-                  type(loginname), loginname)
+        log.debug(
+            "[getUserId] resolving userid for %r: %r",
+            type(loginname),
+            loginname,
+        )
 
         if not loginname:
-            return ''
+            return ""
 
         ufilter = self._replace_macros(self.filter)
         fil = ldap.filter.filter_format(ufilter, [loginname])
         l_obj = self.bind()
 
         if not l_obj:
-            return ''
+            return ""
 
         # ----------------------------------------------------------------- --
 
@@ -586,17 +606,19 @@ class IdResolver(UserIdResolver):
         resultList = None
         try:
             # log.error("%r : %r" % (self.uidType, attrlist))
-            l_id = l_obj.search_ext(self.base,
-                                    ldap.SCOPE_SUBTREE,
-                                    filterstr=fil,
-                                    sizelimit=self.sizelimit,
-                                    attrlist=attrlist,
-                                    timeout=self.response_timeout)
+            l_id = l_obj.search_ext(
+                self.base,
+                ldap.SCOPE_SUBTREE,
+                filterstr=fil,
+                sizelimit=self.sizelimit,
+                attrlist=attrlist,
+                timeout=self.response_timeout,
+            )
 
             resultList = l_obj.result(l_id, all=1)[1]
 
         except ldap.LDAPError as exc:
-            log.exception("[getUserId] LDAP error: %r", exc)
+            log.error("[getUserId] LDAP error: %r", exc)
             resultList = None
 
         finally:
@@ -604,7 +626,7 @@ class IdResolver(UserIdResolver):
 
         if not resultList:
             log.info("[getUserId] : empty result ")
-            return ''
+            return ""
 
         #
         # AD returns an result set where the first entry of the tuple is None
@@ -612,32 +634,37 @@ class IdResolver(UserIdResolver):
 
         relevant_entries = False
         for entry in resultList:
-            if (isinstance(entry, tuple) and
-                len(entry) > 0 and
-                    entry[0] is not None):
+            if (
+                isinstance(entry, tuple)
+                and len(entry) > 0
+                and entry[0] is not None
+            ):
                 relevant_entries = True
 
         if not relevant_entries:
             log.info("[getUserId] : empty result ")
-            return ''
+            return ""
 
         log.debug("[getUserId] : resultList :%r: ", resultList)
-        log.debug('[getUserId] : uidType: %r ', self.uidType)
+        log.debug("[getUserId] : uidType: %r ", self.uidType)
 
         # [0][0] is the distinguished name
 
         userid = self._get_uid_from_result(resultList[0], self.uidType)
 
         if not userid:
-            log.info("[getUserId] : empty result for  %r - uidtype: %r",
-                     loginname, self.uidType.lower())
+            log.info(
+                "[getUserId] : empty result for  %r - uidtype: %r",
+                loginname,
+                self.uidType.lower(),
+            )
         else:
             log.debug("[getUserId] userid: %r:%r", type(userid), userid)
 
         return userid
 
     def getUsername(self, userid):
-        '''
+        """
         get the loginname from the given userid
 
         :param userId: userid descriptor
@@ -645,12 +672,13 @@ class IdResolver(UserIdResolver):
 
         :return: loginname
         :rtype:  string
-        '''
+        """
 
-        username = ''
+        username = ""
 
         l_user = self.getUserLDAPInfo(
-            userid, attrlist=[self.loginnameattribute])
+            userid, attrlist=[self.loginnameattribute]
+        )
 
         if self.loginnameattribute in l_user:
             username = l_user[self.loginnameattribute]
@@ -721,17 +749,22 @@ class IdResolver(UserIdResolver):
                 return {}
 
             l_id = l_obj.search_ext(
-                s_base, s_scope, filterstr=s_filter, attrlist=attrlist,
-                sizelimit=self.sizelimit, timeout=self.response_timeout)
+                s_base,
+                s_scope,
+                filterstr=s_filter,
+                attrlist=attrlist,
+                sizelimit=self.sizelimit,
+                timeout=self.response_timeout,
+            )
 
             result_data = l_obj.result(l_id, all=1)[1]
 
         except ldap.LDAPError as _error:
-            log.exception("[getUserLDAPInfo] LDAP error")
+            log.error("[getUserLDAPInfo] LDAP error")
             return {}
 
         except Exception as exx:
-            log.exception("[getUserLDAPInfo] LDAP error")
+            log.error("[getUserLDAPInfo] LDAP error")
             raise exx
 
         finally:
@@ -750,7 +783,7 @@ class IdResolver(UserIdResolver):
         result = result_data[0]
 
         # add the dn which is the first entry
-        userinfo['dn'] = [result[0]]
+        userinfo["dn"] = [result[0]]
 
         # add the the other key, [values] from the second result entry
         for key, uval in result[1].items():
@@ -758,15 +791,14 @@ class IdResolver(UserIdResolver):
             entries = []
             for udata in uval:
 
-                if key == 'objectGUID':
+                if key == "objectGUID":
                     udata = udata.hex()
 
                 if isinstance(udata, bytes):
                     try:
                         udata = udata.decode()
                     except Exception as _exx:
-                        log.info('Failed to decode entry %r: %r',
-                                 key, udata)
+                        log.info("Failed to decode entry %r: %r", key, udata)
 
                 entries.append(udata)
 
@@ -801,20 +833,21 @@ class IdResolver(UserIdResolver):
         log.debug("[getUserInfo]")
 
         user = self.getUserLDAPInfo(
-            userid, attrlist=list(self.userinfo.values()))
+            userid, attrlist=list(self.userinfo.values())
+        )
 
         if not user:
             return {}
 
         ret = {}
 
-        ret['userid'] = userid
+        ret["userid"] = userid
 
         # we will add all userinfo fields!
 
         for f in self.userinfo:
 
-            val = ''
+            val = ""
             if self.userinfo[f] in user:
 
                 val = user[self.userinfo[f]][0]
@@ -822,22 +855,22 @@ class IdResolver(UserIdResolver):
                 if isinstance(val, bytes):
                     try:
                         val = val.decode()
-                    except:
-                        log.info('unable to decode bytes %r', val)
+                    except BaseException:
+                        log.info("unable to decode bytes %r", val)
 
             ret[f] = val
 
         return ret
 
     def getResolverId(self):
-        '''
+        """
         getResolverId - provide the resolver identifier
 
         :return: returns the resolver identifier string or empty string
                     if not exist
         :rtype: string
 
-        '''
+        """
         log.debug("[getResolverId]")
         resolver = "LDAPIdResolver.IdResolver"
         if self.conf != "":
@@ -846,44 +879,46 @@ class IdResolver(UserIdResolver):
 
     @classmethod
     def getResolverClassType(cls):
-        return 'ldapresolver'
+        return "ldapresolver"
 
     def getResolverType(self):
-        '''
+        """
         getResolverType - return the type of the resolver
 
         :return: returns the string 'ldapresolver'
         :rtype:  string
-        '''
+        """
         return IdResolver.getResolverClassType()
 
     @classmethod
     def getResolverClassDescriptor(cls):
-        '''
+        """
         return the descriptor of the resolver, which is
         - the class name and
         - the config description
 
         :return: resolver description dict
         :rtype:  dict
-        '''
+        """
 
         log.debug("[getResolverDescriptor]")
 
         descriptor = {}
         typ = cls.getResolverClassType()
-        descriptor['clazz'] = "useridresolver.LDAPIdResolver.IdResolver"
-        descriptor['config'] = {'LDAPFILTER': 'string',
-                                'LDAPSEARCHFILTER': 'string',
-                                'LDAPURI': 'string',
-                                'LDAPBASE': 'string',
-                                'BINDDN': 'string',
-                                'BINDPW': 'password',
-                                'LOGINNAMEATTRIBUTE': 'string',
-                                'USERINFO': 'string',
-                                'TIMEOUT': 'float',
-                                'SIZELIMIT': 'int',
-                                'NOREFERRALS': 'string', }
+        descriptor["clazz"] = "useridresolver.LDAPIdResolver.IdResolver"
+        descriptor["config"] = {
+            "LDAPFILTER": "string",
+            "LDAPSEARCHFILTER": "string",
+            "LDAPURI": "string",
+            "LDAPBASE": "string",
+            "BINDDN": "string",
+            "BINDPW": "password",
+            "LOGINNAMEATTRIBUTE": "string",
+            "USERINFO": "string",
+            "TIMEOUT": "float",
+            "SIZELIMIT": "int",
+            "NOREFERRALS": "string",
+        }
         return {typ: descriptor}
 
     def getResolverDescriptor(self):
@@ -891,8 +926,8 @@ class IdResolver(UserIdResolver):
 
     @classmethod
     def parse_timeout(cls, timeout, div=2.0):
-        if ';' in timeout:
-            network_timeout, response_timeout = timeout.split(';')
+        if ";" in timeout:
+            network_timeout, response_timeout = timeout.split(";")
             network_timeout = float(network_timeout) / div
             response_timeout = float(response_timeout) / div
         else:
@@ -902,14 +937,14 @@ class IdResolver(UserIdResolver):
         return float(network_timeout), float(response_timeout)
 
     def loadConfig(self, config, conf=""):
-        '''
+        """
         loadConfig - load the config of the resolver
 
         :param config: configuration dictionary, could be parameter or
                        linotp config format
         :param conf: configuration identifier
 
-        '''
+        """
 
         self.conf = conf
 
@@ -923,13 +958,15 @@ class IdResolver(UserIdResolver):
 
         except Exception as exx:
             log.error("failed to parse configuration: %r", exx)
-            raise ResolverLoadConfigError("failed to parse configuration:"
-                                          " %r" % exx)
+            raise ResolverLoadConfigError(
+                "failed to parse configuration: %r" % exx
+            )
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(" missing config entries:"
-                                          " %r" % missing)
+            raise ResolverLoadConfigError(
+                " missing config entries: %r" % missing
+            )
 
         # ------------------------------------------------------------------ --
 
@@ -949,9 +986,10 @@ class IdResolver(UserIdResolver):
         try:
             self.userinfo = json.loads(l_config["USERINFO"])
         except ValueError as exx:
-            raise ResolverLoadConfigError("Invalid userinfo - no json"
-                                          " document: %s %r" %
-                                          (l_config["USERINFO"], exx))
+            raise ResolverLoadConfigError(
+                "Invalid userinfo - no json"
+                " document: %s %r" % (l_config["USERINFO"], exx)
+            )
 
         # ------------------------------------------------------------------ --
 
@@ -976,24 +1014,24 @@ class IdResolver(UserIdResolver):
         return self
 
     def getSearchFields(self, searchDict=None):
-        '''
+        """
         return all fields on which a search could be made
 
         :return: dictionary of the search fields and their types - not used!!
         :rtype:  dict
-        '''
+        """
         log.debug("[getSearchFields]")
         return self.searchFields
 
     def _getUserDN(self, uid):
-        '''
+        """
         This function takes the UID and returns the DN of the user object
-        '''
-        user_info = self.getUserLDAPInfo(uid, attrlist=['dn'])
-        return user_info['dn'][0]
+        """
+        user_info = self.getUserLDAPInfo(uid, attrlist=["dn"])
+        return user_info["dn"][0]
 
     def checkPass(self, uid, password):
-        '''
+        """
         checkPass - checks the password for a given uid.
 
         :param uid: userid to be checked
@@ -1006,7 +1044,7 @@ class IdResolver(UserIdResolver):
 
         :attention: First the UID needs to be converted to the DN, in
                         case the Uid is not the DN
-        '''
+        """
 
         log.debug("[checkPass]")
 
@@ -1017,7 +1055,7 @@ class IdResolver(UserIdResolver):
             return False
 
         log.debug("[checkPass] uidType: %r", self.uidType)
-        if self.uidType.lower() == 'dn':
+        if self.uidType.lower() == "dn":
             DN = uid
         else:
             DN = self._getUserDN(uid)
@@ -1026,8 +1064,11 @@ class IdResolver(UserIdResolver):
 
         urilist = string_to_list(self.ldapuri)
 
-        log.debug("[checkPass] we will try to authenticate to these LDAP "
-                  "servers: %r", urilist)
+        log.debug(
+            "[checkPass] we will try to authenticate to these LDAP "
+            "servers: %r",
+            urilist,
+        )
 
         last_error = None
         resource_scheduler = ResourceScheduler(tries=1, uri_list=urilist)
@@ -1035,8 +1076,12 @@ class IdResolver(UserIdResolver):
         for uri in next(resource_scheduler):
             l_obj = None
             try:
-                log.info("[checkPass] check password for user %r "
-                         "on LDAP server %r", DN, uri)
+                log.info(
+                    "[checkPass] check password for user %r "
+                    "on LDAP server %r",
+                    DN,
+                    uri,
+                )
                 l_obj = IdResolver.connect(uri, caller=self)
 
                 l_obj.simple_bind_s(DN, password)
@@ -1070,9 +1115,11 @@ class IdResolver(UserIdResolver):
         sAMAccountname in any filter or login attribute
         """
         ret = False
-        if ('sAMAccountName' in self.loginnameattribute or
-            'sAMAccountName' in self.searchfilter or
-                'sAMAccountName' in self.filter):
+        if (
+            "sAMAccountName" in self.loginnameattribute
+            or "sAMAccountName" in self.searchfilter
+            or "sAMAccountName" in self.filter
+        ):
             ret = True
         return ret
 
@@ -1098,7 +1145,7 @@ class IdResolver(UserIdResolver):
             account_expiry = True
             if account_expiry:
                 add_seconds += 86400
-            now = ((now * 10000000) + add_seconds)
+            now = (now * 10000000) + add_seconds
         return now
 
     def _replace_macros(self, expression):
@@ -1113,7 +1160,7 @@ class IdResolver(UserIdResolver):
         """
         substitute = expression
         special_dict = {}
-        special_dict['now'] = self.now_timestamp()
+        special_dict["now"] = self.now_timestamp()
 
         try:
             for key, val in list(special_dict.items()):
@@ -1121,18 +1168,18 @@ class IdResolver(UserIdResolver):
                 if search_st in substitute:
                     substitute = substitute.replace(search_st, val)
         except KeyError as key_error:
-            log.exception('Key replacement error %r', key_error)
+            log.error("Key replacement error %r", key_error)
             raise key_error
         return substitute
 
     def getUserList(self, searchDict):
-        '''
+        """
         retrieve a list of users
 
         :param searchDict: dictionary of the search criterias
         :type  searchDict: dict
         :return: resultList, a dict with user info
-        '''
+        """
 
         # TODO: check if field is searchable
         # several filters are & concatenated:
@@ -1163,8 +1210,7 @@ class IdResolver(UserIdResolver):
             log.debug("[getUserList] searchfilter: %r", searchFilter)
 
         except Exception as exep:
-            log.exception("[getUserList] Error creating searchFilter: %r",
-                          exep)
+            log.error("[getUserList] Error creating searchFilter: %r", exep)
             raise exep
 
         l_obj = self.bind()
@@ -1193,18 +1239,23 @@ class IdResolver(UserIdResolver):
             # ---------------------------------------------------------- --
 
             ldap_result_id = l_obj.search_ext(
-                self.base, ldap.SCOPE_SUBTREE,
-                filterstr=searchFilter, sizelimit=self.sizelimit,
-                attrlist=attrlist, timeout=self.response_timeout)
+                self.base,
+                ldap.SCOPE_SUBTREE,
+                filterstr=searchFilter,
+                sizelimit=self.sizelimit,
+                attrlist=attrlist,
+                timeout=self.response_timeout,
+            )
 
-            log.debug('[getUserList] uidType: %r', self.uidType)
+            log.debug("[getUserList] uidType: %r", self.uidType)
 
-            while 1:
+            while True:
 
                 userdata = {}
 
                 result_type, result_data = l_obj.result(
-                    ldap_result_id, 0, timeout=self.response_timeout)
+                    ldap_result_id, 0, timeout=self.response_timeout
+                )
 
                 if result_type != ldap.RES_SEARCH_ENTRY or not result_data:
                     break
@@ -1215,10 +1266,10 @@ class IdResolver(UserIdResolver):
                     resultList.append(userdata)
 
         except ldap.LDAPError as _exce:
-            log.exception("[getUserList] LDAP error")
+            log.error("[getUserList] LDAP error")
 
         except Exception as _exce:
-            log.exception("[getUserList] error during LDAP access")
+            log.error("[getUserList] error during LDAP access")
 
         finally:
             self.unbind(l_obj)
@@ -1226,13 +1277,13 @@ class IdResolver(UserIdResolver):
         return resultList
 
     def _prepare_searchFilter(self, searchDict):
-        '''
+        """
         prepare the search Expression for the userListIterator
 
         :param searchDict: dictionary of the search criterias
         :type  searchDict: dict
         :return: resultList, a dict with user info
-        '''
+        """
 
         # TODO: check if field is searchable
         # several filters are & concatenated:
@@ -1244,14 +1295,14 @@ class IdResolver(UserIdResolver):
         # we support special replacements in search expressions like
         # %(now)s which will be replaced by the windows or unix timestamp
         special_dict = {}
-        special_dict['now'] = self.now_timestamp()
+        special_dict["now"] = self.now_timestamp()
 
         searchFilter = self.searchfilter
         # add specialdict replacements, to support the "%(now)s" expression
         try:
             searchFilter = searchFilter % special_dict
         except KeyError as key_error:
-            log.exception('Key replacement error %r', key_error)
+            log.error("Key replacement error %r", key_error)
             raise key_error
 
         log.debug("[getUserList] searchfilter: %r", searchFilter)
@@ -1272,13 +1323,13 @@ class IdResolver(UserIdResolver):
             searchFilter = "(&%s)" % searchFilter
             log.debug("[getUserList] searchfilter: %r", searchFilter)
         except Exception as exep:
-            log.exception("[getUserList] Error creating searchFilter: %r",
-                          exep)
+            log.error("[getUserList] Error creating searchFilter: %r", exep)
             raise exep
         return searchFilter
 
-    def _set_cursor(self, searchFilter, attrlist, l_obj=None, lc=None,
-                    serverctrls=None):
+    def _set_cursor(
+        self, searchFilter, attrlist, l_obj=None, lc=None, serverctrls=None
+    ):
         """
         helper function to setup the paging query and shift the cursor
 
@@ -1299,10 +1350,10 @@ class IdResolver(UserIdResolver):
         if lc is None:
             l_obj = self.bind()
             if ldap_api_version == 2.4:
-                lc = SimplePagedResultsControl(True, size=page_size, cookie='')
+                lc = SimplePagedResultsControl(True, size=page_size, cookie="")
             elif ldap_api_version == 2.3:
                 PAGE_OID = LDAP_CONTROL_PAGE_OID
-                lc = SimplePagedResultsControl(PAGE_OID, True, (page_size, ''))
+                lc = SimplePagedResultsControl(PAGE_OID, True, (page_size, ""))
 
         else:
             cookie = None
@@ -1329,13 +1380,14 @@ class IdResolver(UserIdResolver):
                 return (None, None, None)
 
         # submit search request
-        msgid = l_obj.search_ext(self.base,
-                                 ldap.SCOPE_SUBTREE,
-                                 filterstr=searchFilter,
-                                 attrlist=attrlist,
-                                 serverctrls=[lc],
-                                 timeout=self.response_timeout
-                                 )
+        msgid = l_obj.search_ext(
+            self.base,
+            ldap.SCOPE_SUBTREE,
+            filterstr=searchFilter,
+            attrlist=attrlist,
+            serverctrls=[lc],
+            timeout=self.response_timeout,
+        )
 
         return (msgid, l_obj, lc)
 
@@ -1349,8 +1401,9 @@ class IdResolver(UserIdResolver):
         :return: generator object (that yields userlist arrays).
         """
         searchFilter = self._prepare_searchFilter(searchDict)
-        log.debug("[getUserListIterator] doing search with filter %r",
-                  searchFilter)
+        log.debug(
+            "[getUserListIterator] doing search with filter %r", searchFilter
+        )
 
         # ------------------------------------------------------------------ --
 
@@ -1372,7 +1425,7 @@ class IdResolver(UserIdResolver):
         results_size = 0
         try:
 
-            log.debug('uidType: %r', self.uidType)
+            log.debug("uidType: %r", self.uidType)
             while not done:
 
                 if limit_size and results_size >= self.sizelimit:
@@ -1387,8 +1440,12 @@ class IdResolver(UserIdResolver):
 
                 # shift the cursor to the next page
                 (msgid, l_obj, lc) = self._set_cursor(
-                    searchFilter, attrlist, l_obj=l_obj, lc=lc,
-                    serverctrls=serverctrls)
+                    searchFilter,
+                    attrlist,
+                    l_obj=l_obj,
+                    lc=lc,
+                    serverctrls=serverctrls,
+                )
 
                 if not msgid:
                     done = True
@@ -1409,11 +1466,11 @@ class IdResolver(UserIdResolver):
                 yield user_list
 
         except ldap.LDAPError as exce:
-            log.exception("LDAP error: %r", exce)
+            log.error("LDAP error: %r", exce)
             raise exce
 
         except Exception as exce:
-            log.exception("Error during LDAP access: %r", exce)
+            log.error("Error during LDAP access: %r", exce)
             raise exce
 
         # we do no unbind here, as this is done at the request end
@@ -1459,7 +1516,7 @@ class IdResolver(UserIdResolver):
                 userid = result_data.get(entry_key)[0]
 
         if not userid:
-            raise Exception('No Userid found')
+            raise Exception("No Userid found")
 
         # objectguid is converted to hex
 
@@ -1489,7 +1546,8 @@ class IdResolver(UserIdResolver):
             return {}
 
         userdata["userid"] = self._get_uid_from_result(
-            result_data, self.uidType)
+            result_data, self.uidType
+        )
 
         # finally add all existing userinfos (wrt the mapping)
         for user_key, ldap_key in self.userinfo.items():
@@ -1503,15 +1561,16 @@ class IdResolver(UserIdResolver):
 
                 udata = account_info[ldap_key][0]
 
-                if ldap_key == 'objectGUID':
+                if ldap_key == "objectGUID":
                     udata = udata.hex()
 
                 if isinstance(udata, bytes):
                     try:
                         udata = udata.decode()
-                    except:
-                        log.warning('Failed to convert entry %r: %r',
-                                    ldap_key, udata)
+                    except BaseException:
+                        log.warning(
+                            "Failed to convert entry %r: %r", ldap_key, udata
+                        )
 
                 userdata[user_key] = udata
 
@@ -1519,14 +1578,13 @@ class IdResolver(UserIdResolver):
 
 
 def resolver_request(params, silent=False):
-
     def pr(s):
         if not silent:
             print(s)
 
     current_app.preprocess_request()
 
-    pr('Trying to connect to %r' % params['LDAPURI'])
+    pr("Trying to connect to %r" % params["LDAPURI"])
     status, results = IdResolver.testconnection(params, silent)
     pr("Status: %r" % status)
 
@@ -1549,36 +1607,78 @@ def resolver_request(params, silent=False):
 
 # ----------------------------------------------------------------------
 
-@click.command('ldap-test', help='Test LDAP user-ID resolver connection.')
-@click.option('--url', '-u', help='URL for LDAP server', required=True)
-@click.option('--base', '-b', help='LDAP search base DN', required=True)
-@click.option('--binddn', '-d', help='LDAP bind DN', required=True)
-@click.option('--bindpw', '-p', prompt='LDAP bind password', hide_input=True,
-              help='LDAP bind password')
-@click.option('--enforce_tls', '--enforce-tls', '-e', is_flag=True,
-              help='Enforce TLS')
-@click.option('--trace_level', '--trace-level', '-t', type=int, default=0,
-              help='LDAP trace level, 0..255')
-@click.option('--only_trusted_certs', '--only-trusted-certs', '-c',
-              is_flag=True,
-              help='Disallow untrusted or self-signed certificates')
-@click.option('--ldap_type', '--ldap-type',
-              type=click.Choice(['ad', 'ldap'], case_sensitive=False),
-              default='ldap', help='LDAP server type')
-@click.option('--cert_file', '--cert-file',
-              help='Use CA certificate from file')
-@click.option('--filter', help='Define object filter')
-@click.option('--searchfilter', help='Define object search filter')
-@click.option('--loginattribute', default='uid',
-              help='define user login attribute, default is uid')
-@click.option('--all-cases', is_flag=True,
-              help=("Exhaustively test all non-TLS/TLS connection options. "
-                    "This means that the `-e`, `-c`, and `-s` flags and the "
-                    "protocol part of the LDAP server URL are ignored."))
+
+@click.command("ldap-test", help="Test LDAP user-ID resolver connection.")
+@click.option("--url", "-u", help="URL for LDAP server", required=True)
+@click.option("--base", "-b", help="LDAP search base DN", required=True)
+@click.option("--binddn", "-d", help="LDAP bind DN", required=True)
+@click.option(
+    "--bindpw",
+    "-p",
+    prompt="LDAP bind password",
+    hide_input=True,
+    help="LDAP bind password",
+)
+@click.option(
+    "--enforce_tls", "--enforce-tls", "-e", is_flag=True, help="Enforce TLS"
+)
+@click.option(
+    "--trace_level",
+    "--trace-level",
+    "-t",
+    type=int,
+    default=0,
+    help="LDAP trace level, 0..255",
+)
+@click.option(
+    "--only_trusted_certs",
+    "--only-trusted-certs",
+    "-c",
+    is_flag=True,
+    help="Disallow untrusted or self-signed certificates",
+)
+@click.option(
+    "--ldap_type",
+    "--ldap-type",
+    type=click.Choice(["ad", "ldap"], case_sensitive=False),
+    default="ldap",
+    help="LDAP server type",
+)
+@click.option(
+    "--cert_file", "--cert-file", help="Use CA certificate from file"
+)
+@click.option("--filter", help="Define object filter")
+@click.option("--searchfilter", help="Define object search filter")
+@click.option(
+    "--loginattribute",
+    default="uid",
+    help="define user login attribute, default is uid",
+)
+@click.option(
+    "--all-cases",
+    is_flag=True,
+    help=(
+        "Exhaustively test all non-TLS/TLS connection options. "
+        "This means that the `-e`, `-c`, and `-s` flags and the "
+        "protocol part of the LDAP server URL are ignored."
+    ),
+)
 @with_appcontext
-def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
-              only_trusted_certs, ldap_type, cert_file, filter,
-              searchfilter, loginattribute, all_cases):
+def ldap_test(
+    url,
+    base,
+    binddn,
+    bindpw,
+    enforce_tls,
+    trace_level,
+    only_trusted_certs,
+    ldap_type,
+    cert_file,
+    filter,
+    searchfilter,
+    loginattribute,
+    all_cases,
+):
     user_mapping = {
         "username": "uid",
         "phone": "telephoneNumber",
@@ -1589,47 +1689,48 @@ def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
     }
 
     ldap_search = {
-        'LDAPFILTER': "(&(uid=%s)(objectClass=inetOrgPerson))",
-        'LDAPSEARCHFILTER': "(&(uid=*)(objectClass=inetOrgPerson))",
-        'LOGINNAMEATTRIBUTE': "uid",
+        "LDAPFILTER": "(&(uid=%s)(objectClass=inetOrgPerson))",
+        "LDAPSEARCHFILTER": "(&(uid=*)(objectClass=inetOrgPerson))",
+        "LOGINNAMEATTRIBUTE": "uid",
     }
 
     ad_search = {
-        'LDAPFILTER': "(&(sAMAccountName=%s)(objectClass=user))",
-        'LDAPSEARCHFILTER': "(&(sAMAccountName=*)(objectClass=user))",
-        'LOGINNAMEATTRIBUTE': "sAMAccountName",
+        "LDAPFILTER": "(&(sAMAccountName=%s)(objectClass=user))",
+        "LDAPSEARCHFILTER": "(&(sAMAccountName=*)(objectClass=user))",
+        "LOGINNAMEATTRIBUTE": "sAMAccountName",
     }
 
     params = {
-        'LDAPURI': url,
-        'LDAPBASE': base,
-        'BINDDN': binddn,
-        'BINDPW': bindpw,
-        'trace_level': trace_level,
-        'NOREFERRALS': "True",
-        'EnforceTLS': enforce_tls,
-        'only_trusted_certs': only_trusted_certs,
-        'SIZELIMIT': "500",
-        'TIMEOUT': "5",
-        'USERINFO': json.dumps(user_mapping),
+        "LDAPURI": url,
+        "LDAPBASE": base,
+        "BINDDN": binddn,
+        "BINDPW": bindpw,
+        "trace_level": trace_level,
+        "NOREFERRALS": "True",
+        "EnforceTLS": enforce_tls,
+        "only_trusted_certs": only_trusted_certs,
+        "SIZELIMIT": "500",
+        "TIMEOUT": "5",
+        "USERINFO": json.dumps(user_mapping),
     }
 
-    search = ad_search if ldap_type == 'ad' else ldap_search
+    search = ad_search if ldap_type == "ad" else ldap_search
     params.update(search)
 
     if filter:
-        params['LDAPFILTER'] = filter
+        params["LDAPFILTER"] = filter
     if searchfilter:
-        params['LDAPSEARCHFILTER'] = searchfilter
+        params["LDAPSEARCHFILTER"] = searchfilter
     if loginattribute:
-        params['LOGINNAMEATTRIBUTE'] = loginattribute
+        params["LOGINNAMEATTRIBUTE"] = loginattribute
 
-    if not all_cases or current_app.config['LOGGING_LEVEL'] == 'DEBUG':
+    if not all_cases or current_app.config["LOGGING_LEVEL"] == "DEBUG":
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s %(levelname)s: [%(name)s]'
-                                      ' %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s %(levelname)s: [%(name)s] %(message)s"
+        )
         ch.setFormatter(formatter)
         log.addHandler(ch)
 
@@ -1641,19 +1742,19 @@ def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
         # specified using the `TLS_CA_CERTIFICATES_FILE` configuration
         # setting.
 
-        ca_cert_file = current_app.config['TLS_CA_CERTIFICATES_FILE']
+        ca_cert_file = current_app.config["TLS_CA_CERTIFICATES_FILE"]
         cases = [
             # proto   S-TLS  certs         checking  should connect?
             # ---------------------------------------------------------
-            ("ldap",  False, "/dev/null",  False,    True),
-            ("ldap",  True,  "/dev/null",  False,    True),
-            ("ldap",  True,  "/dev/null",  True,     False),
-            ("ldap",  True,  ca_cert_file, False,    True),
-            ("ldap",  True,  ca_cert_file, True,     True),
-            ("ldaps", False, "/dev/null",  False,    True),
-            ("ldaps", False, "/dev/null",  True,     False),
-            ("ldaps", False, ca_cert_file, False,    True),
-            ("ldaps", False, ca_cert_file, True,     True),
+            ("ldap", False, "/dev/null", False, True),
+            ("ldap", True, "/dev/null", False, True),
+            ("ldap", True, "/dev/null", True, False),
+            ("ldap", True, ca_cert_file, False, True),
+            ("ldap", True, ca_cert_file, True, True),
+            ("ldaps", False, "/dev/null", False, True),
+            ("ldaps", False, "/dev/null", True, False),
+            ("ldaps", False, ca_cert_file, False, True),
+            ("ldaps", False, ca_cert_file, True, True),
         ]
 
         print("> Proto  STARTTLS  CA cert      Checking  Result        Happy?")
@@ -1661,31 +1762,34 @@ def ldap_test(url, base, binddn, bindpw, enforce_tls, trace_level,
         ok_cases = 0
         for proto, start_tls, cert_file, checking, expected in cases:
             params0 = params.copy()
-            uri = params['LDAPURI']
-            params0['LDAPURI'] = proto + uri[uri.find(':'):]
-            params0['EnforceTLS'] = start_tls
+            uri = params["LDAPURI"]
+            params0["LDAPURI"] = proto + uri[uri.find(":") :]
+            params0["EnforceTLS"] = start_tls
             current_app.config["TLS_CA_CERTIFICATES_FILE"] = cert_file
-            params0['only_trusted_certs'] = checking
+            params0["only_trusted_certs"] = checking
             with current_app.test_request_context():
                 try:
                     result = resolver_request(params0, silent=True)
                 except ldap.SERVER_DOWN:
                     pass
                 cf_available = (
-                    "Unavailable" if cert_file == '/dev/null'
-                    else 'Available')
-                print(f". {proto:5s}   {start_tls!r:5s}    {cf_available:11s} "
-                      f" {'Enabled' if checking else 'Disabled':8s} "
-                      f" {'Connected' if result else 'Not connected':13s} "
-                      f" {'Yes' if result == expected else 'No'}")
+                    "Unavailable" if cert_file == "/dev/null" else "Available"
+                )
+                print(
+                    f". {proto:5s}   {start_tls!r:5s}    {cf_available:11s} "
+                    f" {'Enabled' if checking else 'Disabled':8s} "
+                    f" {'Connected' if result else 'Not connected':13s} "
+                    f" {'Yes' if result == expected else 'No'}"
+                )
                 if result == expected:
                     ok_cases += 1
         print(f"\n{ok_cases} out of {len(cases)} cases correct")
         sys.exit(1 - (ok_cases == len(cases)))  # 0=OK, 1=failure
 
     with current_app.test_request_context():
-        result = resolver_request(params,
-                                  silent=current_app.echo.verbosity == 0)
+        result = resolver_request(
+            params, silent=current_app.echo.verbosity == 0
+        )
         sys.exit(0 if result else 1)
 
 

@@ -49,7 +49,7 @@ class MockUserserviceController(UserserviceController):
         return
 
 
-@patch('linotp.controllers.userservice.sendResult')
+@patch("linotp.controllers.userservice.sendResult")
 def test_otp_auth(mock_sendResult, app):
     """
     verify that the unbound local error is not raised anymore
@@ -59,11 +59,11 @@ def test_otp_auth(mock_sendResult, app):
         def checkPass(self, password):
             return False
 
-    mock_sendResult.return_value = 'ok'
+    mock_sendResult.return_value = "ok"
 
-    user = MockUser('hans', 'realm')
-    passw = 'test123'
-    param = {'otp': '123456'}
+    user = MockUser("hans", "realm")
+    passw = "test123"
+    param = {"otp": "123456"}
 
     unboundLocalError_raised = False
 
@@ -78,6 +78,7 @@ def test_otp_auth(mock_sendResult, app):
             unboundLocalError_raised = exx
 
     assert not unboundLocalError_raised, unboundLocalError_raised
-    assert result == 'ok'
+    assert result == "ok"
+
 
 # eof

@@ -26,7 +26,7 @@
 #
 
 
-'''
+"""
 Run Radiusserver on some ports (default: 18012 and 18013) and authenticate
 successfully with user "tester"
 
@@ -37,7 +37,7 @@ or:
     echo "User-Name = user_with_pin, User-Password = test123456" | \
         radclient -s -x 127.0.0.1:18012 auth testing123
 etc.
-'''
+"""
 
 from pyrad.server import Server as RadiusServer
 from pyrad.server import ServerPacketError
@@ -56,12 +56,13 @@ from getopt import getopt, GetoptError
 try:
     myIP = socket.gethostbyname(socket.gethostname())
 except socket.gaierror as exx:
-    myIP = '127.0.0.1'
+    myIP = "127.0.0.1"
 
 state_id = "11321312313213132"
-users = {'user_with_pin': 'test123456',
-         'user_no_pin': '654321',
-         }
+users = {
+    "user_with_pin": "test123456",
+    "user_no_pin": "654321",
+}
 
 
 def checkUser(username, password, state):
@@ -80,7 +81,7 @@ def checkUser(username, password, state):
         if users[username] == password:
             auth = True
 
-    ## handle a state request
+    # handle a state request
     if state is not None and state == state_id:
         if password in list(users.values()):
             auth = True
@@ -91,7 +92,6 @@ def checkUser(username, password, state):
 
 
 class myRadiusServer(RadiusServer):
-
     def HandleAuthPacket(self, pkt):
         """Authentication packet handler.
         This is an empty function that is called when a valid
@@ -113,10 +113,10 @@ class myRadiusServer(RadiusServer):
         except Exception as exx:
             state = None
 
-        #print password
+        # print password
         auth = checkUser(username, password, state)
 
-        #print "Handling Auth Packet"
+        # print "Handling Auth Packet"
         reply = self.CreateReplyPacket(pkt)
         if auth is True:
             rcode = AccessAccept
@@ -125,8 +125,8 @@ class myRadiusServer(RadiusServer):
         else:
             rcode = AccessChallenge
             try:
-                reply['State'] = state_id
-                reply['Reply-Message'] = "Enter your challenge reply:"
+                reply["State"] = state_id
+                reply["Reply-Message"] = "Enter your challenge reply:"
             except Exception as exx:
                 print("Failed to add attribute State or Message")
                 print("Did you specify a radius dictionary file?")
@@ -134,8 +134,8 @@ class myRadiusServer(RadiusServer):
 
         reply.code = rcode
 
-        #print self._fdmap
-        #print self._realauthfds
+        # print self._fdmap
+        # print self._realauthfds
         # FIXME: Is this always correct?
         # see: http://pastebin.com/v1X2jdTV
         self.SendReplyPacket(self._fdmap[self._realauthfds[0]], reply)
@@ -145,7 +145,8 @@ def usage(prog):
     """
     Print usage information and exit
     """
-    print("""
+    print(
+        """
 Usage:
         %s [--dict=###] [--authport=###] [--acctport=###] [--help]
 
@@ -153,7 +154,9 @@ Usage:
         --authport=, -t     Port used for RADIUS authentication packets (default is 18012)
         --acctport=, -c     Port used for RADIUS accounting packets (default is 18013)
         --help, -h          Show this message and exit
-""" % prog)
+"""
+        % prog
+    )
 
 
 def main():
@@ -184,8 +187,8 @@ def main():
                 "authport=",
                 "acctport=",
                 "help",
-                ],
-            )
+            ],
+        )
 
     except GetoptError:
         print("There is an error in your parameter syntax:")
@@ -193,17 +196,17 @@ def main():
         sys.exit(1)
 
     for opt, arg in opts:
-        if opt in ('-h', '--help'):
+        if opt in ("-h", "--help"):
             usage(prog)
             sys.exit(0)
-        elif opt in ('-d', '--dict'):
+        elif opt in ("-d", "--dict"):
             if os.path.isfile(arg):
                 r_dict = arg
             else:
                 print(("radius dictionary file  <%r> not found!" % arg))
-        elif opt in ('-t', '--authport'):
+        elif opt in ("-t", "--authport"):
             authport = int(arg)
-        elif opt in ('-c', '--acctport'):
+        elif opt in ("-c", "--acctport"):
             acctport = int(arg)
         else:
             print("Unknown option %s" % opt)
@@ -213,14 +216,14 @@ def main():
     ips.add(myIP)
 
     params = {
-                "addresses": list(ips),
-                "authport": authport,
-                "acctport": acctport,
-                "hosts": {myIP: client1, "127.0.0.1": client2},
-                }
+        "addresses": list(ips),
+        "authport": authport,
+        "acctport": acctport,
+        "hosts": {myIP: client1, "127.0.0.1": client2},
+    }
 
     if os.path.isfile(r_dict) is False:
-        ## falback: try the relative one
+        # falback: try the relative one
         r_dict = "config/dictionary"
 
     if os.path.isfile(r_dict):
@@ -231,6 +234,7 @@ def main():
 
     return serv.Run()
 
-if __name__ == '__main__':
-    ## jump to the main worker
+
+if __name__ == "__main__":
+    # jump to the main worker
     main()

@@ -40,11 +40,11 @@ def simple_slice(text, chunk_size):
 
     :return: iterator which returns a slice of chunk length
     """
-    if text == '':
+    if text == "":
         yield text
 
     for pos in range(0, len(text), chunk_size):
-        yield text[pos:pos + chunk_size]
+        yield text[pos : pos + chunk_size]
 
 
 def utf8_slice(text, chunk_size):
@@ -63,7 +63,7 @@ def utf8_slice(text, chunk_size):
 
     for pos in range(0, len(text)):
 
-        ll = len(text[pos].encode('utf-8'))
+        ll = len(text[pos].encode("utf-8"))
         t_len = t_len + ll
 
         # we require a space of a least 6 bytes which is the max utf8 bytes
@@ -77,5 +77,3 @@ def utf8_slice(text, chunk_size):
 
     # return the rest
     yield text[start:]
-
-

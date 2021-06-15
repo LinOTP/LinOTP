@@ -46,10 +46,11 @@ from linotp.lib.type_utils import boolean
 from linotp.lib.type_utils import get_ip_network
 from linotp.lib.type_utils import get_ip_address
 
-from linotp import (__version__ as linotp_version,
-                    __copyright__ as linotp_copyright,
-                    __product__ as linotp_product,
-                    )
+from linotp import (
+    __version__ as linotp_version,
+    __copyright__ as linotp_copyright,
+    __product__ as linotp_product,
+)
 
 from linotp import __api__ as linotp_api
 
@@ -64,31 +65,32 @@ required = False
 
 
 def get_api_version():
-    '''
+    """
     return the api version number
-    '''
+    """
     return linotp_api
 
+
 def get_version_number():
-    '''
+    """
     returns the linotp version
-    '''
+    """
     return linotp_version
 
 
 def get_version():
-    '''
+    """
     This returns the version, that is displayed in the WebUI and
     self service portal.
-    '''
+    """
     return "%s %s" % (linotp_product, linotp_version)
 
 
 def get_copyright_info():
-    '''
+    """
     This returns the copyright information displayed in the WebUI
     and selfservice portal.
-    '''
+    """
     return linotp_copyright
 
 
@@ -111,12 +113,13 @@ def getParam(param, which, optional=True):
     if which in param:
         ret = param[which]
     else:
-        if (optional is False):
+        if optional is False:
             raise ParameterError("Missing parameter: %r" % which, id=905)
 
     return ret
 
-def  get_request_param(request, key, default=None):
+
+def get_request_param(request, key, default=None):
     """
     Returns the get / post / etc. param with the given key dependent on
     the content type
@@ -126,6 +129,7 @@ def  get_request_param(request, key, default=None):
         return request.json.get(key, default)
     else:
         return request.values.get(key, default)
+
 
 def getLowerParams(param):
     ret = {}
@@ -148,25 +152,26 @@ def uniquify(doubleList):
     return uniqueList
 
 
-def generate_otpkey(key_size:int = 20) -> str:
-    '''
+def generate_otpkey(key_size: int = 20) -> str:
+    """
     generates the HMAC key of keysize. Should be 20 or 32
     THe key is returned as a hexlified string
-    '''
-    log.debug("generating key of size %s" % key_size)
+    """
+    log.debug("generating key of size %s", key_size)
     return geturandom(key_size).hex()
 
 
 def generate_password(size=6, characters=None):
     if not characters:
-        characters = string.ascii_lowercase + \
-                     string.ascii_uppercase + string.digits
+        characters = (
+            string.ascii_lowercase + string.ascii_uppercase + string.digits
+        )
 
-    return ''.join(secrets.choice(characters) for _x in range(size))
+    return "".join(secrets.choice(characters) for _x in range(size))
 
 
-def check_session(request, scope='admin'):
-    '''
+def check_session(request, scope="admin"):
+    """
     This function checks the session cookie and compares it to
     the session parameter
 
@@ -176,71 +181,77 @@ def check_session(request, scope='admin'):
                   cookie name
 
     :return: boolean
-    '''
+    """
 
     # check if the client is in the allowed IP range
     no_session_clients = []
     for no_session_client in config.get("linotpNoSessionCheck", "").split(","):
         no_session_clients.append(no_session_client.strip())
 
-    client = request.environ.get('REMOTE_ADDR', None)
-    log.debug("[check_session] checking %s in %s"
-              % (client, no_session_clients))
+    client = request.environ.get("REMOTE_ADDR", None)
+    log.debug("[check_session] checking %s in %s", client, no_session_clients)
     for network in no_session_clients:
         if not network:
             continue
         try:
             if netaddr.IPAddress(client) in netaddr.IPNetwork(network):
-                log.debug("skipping session check since client"
-                          " %s in allowed: %s" % (client, no_session_clients))
+                log.debug(
+                    "skipping session check since client %s in allowed: %s",
+                    client,
+                    no_session_clients,
+                )
                 return
         except Exception as ex:
-            log.warning("misconfiguration in linotpNoSessionCheck: "
-                        "%r - %r" % (network, ex))
+            log.warning(
+                "misconfiguration in linotpNoSessionCheck: %r - %r",
+                network,
+                ex,
+            )
 
-    cookie = request.cookies.get(scope + '_session')
-    session = get_request_param(request, 'session')
+    cookie = request.cookies.get(scope + "_session")
+    session = get_request_param(request, "session")
     # doing any other request, we need to check the session!
-    log.debug("[check_session]: session: %s" % session)
-    log.debug("[check_session]: cookie:  %s" % cookie)
+    log.debug("[check_session]: session: %s", session)
+    log.debug("[check_session]: cookie:  %s", cookie)
     if session is None or session == "" or session != cookie:
         log.error("The request did not pass a valid session!")
         abort(401, "You have no valid session!")
 
-    cookie = request.cookies.get(scope + '_session')
-    session = get_request_param(request, 'session')
+    cookie = request.cookies.get(scope + "_session")
+    session = get_request_param(request, "session")
     # doing any other request, we need to check the session!
-    log.debug("[check_session]: session: %s" % session)
-    log.debug("[check_session]: cookie:  %s" % cookie)
+    log.debug("[check_session]: session: %s", session)
+    log.debug("[check_session]: cookie:  %s", cookie)
     if session is None or session == "" or session != cookie:
         log.error("The request did not pass a valid session!")
         abort(401, "You have no valid session!")
+
 
 def check_selfservice_session(cookies=None, params=None, url=None):
-    '''
+    """
     This function checks the session cookie for the
     selfservice / userservice session
-    '''
-    cookie = cookies.get('linotp_selfservice', '').strip('"')
-    session = params.get('session', '').strip('"')
+    """
+    cookie = cookies.get("linotp_selfservice", "").strip('"')
+    session = params.get("session", "").strip('"')
 
     if not session or not cookie:
         log.warning("failed to check selfservice session")
         return False
 
     if session[:40] != cookie[:40]:
-        log.error("The request %r did not pass a valid session!" % url)
+        log.error("The request %r did not pass a valid session!", url)
         return False
 
     return True
 
 
 def remove_session_from_param(param):
-    '''
+    """
     Some low level functions like the userlisting do not like to have a
     session parameter in the param dictionary.
     So we remove the session from the params.
-    '''
+    """
     return_param = {}
     for key in list(param.keys()):
         if "session" != key.lower():
@@ -264,44 +275,48 @@ def _is_addr_in_network(addr, network):
 
     ip_network = get_ip_network(network)
     if ip_network is None:
-        log.error('no valid ip_network: %r', network)
+        log.error("no valid ip_network: %r", network)
         return False
 
     ip_addr = get_ip_address(addr)
     if ip_addr is None:
-        log.error('no valid ip_address: %r', addr)
+        log.error("no valid ip_address: %r", addr)
         return False
 
     return ip_addr in ip_network
 
 
 def _get_client_from_request(request=None):
-    '''
+    """
     This function returns the client as it is passed in the HTTP Request.
     This is the very HTTP client, that contacts the LinOTP server.
-    '''
+    """
 
     client = request.environ.get(
-                    'REMOTE_ADDR', request.environ.get(
-                        'HTTP_REMOTE_ADDR', None))
+        "REMOTE_ADDR", request.environ.get("HTTP_REMOTE_ADDR", None)
+    )
 
-    x_forwarded_for = boolean(config.get(
-                        'client.X_FORWARDED_FOR',  getFromConfig(
-                            'client.X_FORWARDED_FOR', 'False')))
+    x_forwarded_for = boolean(
+        config.get(
+            "client.X_FORWARDED_FOR",
+            getFromConfig("client.X_FORWARDED_FOR", "False"),
+        )
+    )
 
     if x_forwarded_for:
         # check, if the request passed by a qualified proxy
 
         remote_addr = client
         x_forwarded_proxies = config.get(
-                    'client.FORWARDED_PROXY', getFromConfig(
-                        'client.FORWARDED_PROXY', '')).split(',')
+            "client.FORWARDED_PROXY",
+            getFromConfig("client.FORWARDED_PROXY", ""),
+        ).split(",")
 
         for x_forwarded_proxy in x_forwarded_proxies:
             if _is_addr_in_network(remote_addr, x_forwarded_proxy):
 
-                ref_clients = request.environ.get('HTTP_X_FORWARDED_FOR', '')
-                for ref_client in ref_clients.split(','):
+                ref_clients = request.environ.get("HTTP_X_FORWARDED_FOR", "")
+                for ref_client in ref_clients.split(","):
 
                     # the first ip in the list is the originator
                     client = ref_client.strip()
@@ -315,17 +330,20 @@ def _get_client_from_request(request=None):
     #
     # Forwarded: for=192.0.2.60; proto=http; by=203.0.113.43
 
-    forwarded = boolean(config.get(
-                    'client.FORWARDED', getFromConfig(
-                        'client.FORWARDED', 'false')))
+    forwarded = boolean(
+        config.get(
+            "client.FORWARDED", getFromConfig("client.FORWARDED", "false")
+        )
+    )
 
     if forwarded:
         # check, if the request passed by a qaulified proxy
 
         remote_addr = client
         forwarded_proxies = config.get(
-                    'client.FORWARDED_PROXY', getFromConfig(
-                            'client.FORWARDED_PROXY', '').split(','))
+            "client.FORWARDED_PROXY",
+            getFromConfig("client.FORWARDED_PROXY", "").split(","),
+        )
 
         for forwarded_proxy in forwarded_proxies:
             if _is_addr_in_network(remote_addr, forwarded_proxy):
@@ -334,19 +352,19 @@ def _get_client_from_request(request=None):
                 # "Forwarded: for=192.0.2.43, for=198.51.100.17"
 
                 entries = request.environ.get(
-                    'HTTP_FORWARDED', request.environ.get(
-                        'Forwarded', ''))
+                    "HTTP_FORWARDED", request.environ.get("Forwarded", "")
+                )
 
                 forwarded_set = []
                 entries = entries.replace("Forwarded:", "")
-                for entry in entries.split(','):
-                    if entry.lower().startswith('for'):
-                        value = entry.split('=')[1]
-                        value = value.split(';')[0].strip()
-                        if ']' in value:
-                            ipvalue = value.split(']')[0].split('[')[1]
-                        elif ':' in value:
-                            ipvalue = value.split(':')[0]
+                for entry in entries.split(","):
+                    if entry.lower().startswith("for"):
+                        value = entry.split("=")[1]
+                        value = value.split(";")[0].strip()
+                        if "]" in value:
+                            ipvalue = value.split("]")[0].split("[")[1]
+                        elif ":" in value:
+                            ipvalue = value.split(":")[0]
                         else:
                             ipvalue = value
                         forwarded_set.append(ipvalue.strip('"'))
@@ -355,12 +373,12 @@ def _get_client_from_request(request=None):
                     client = originator
                     break
 
-    log.debug("got the client %s" % client)
+    log.debug("got the client %s", client)
     return client
 
 
 def get_client(request):
-    '''
+    """
     This function returns the client.
 
     It first tries to get the client as it is passed as the HTTP Client
@@ -370,65 +388,67 @@ def get_client(request):
     client address (like e.g. a FreeRADIUS server, which will always pass the
     FreeRADIUS address but not the address of the RADIUS client) it checks for
     the existance of the client parameter.
-    '''
+    """
     may_overwrite = []
     over_client = getFromConfig("mayOverwriteClient", "")
     try:
-        may_overwrite = [c.strip() for c in over_client.split(',')]
+        may_overwrite = [c.strip() for c in over_client.split(",")]
     except Exception as e:
-        log.warning("evaluating config entry 'mayOverwriteClient': %r" % e)
+        log.warning("evaluating config entry 'mayOverwriteClient': %r", e)
 
     client = _get_client_from_request(request)
 
     if client in may_overwrite or client is None:
-        log.debug("client %s may overwrite!" % client)
+        log.debug("client %s may overwrite!", client)
 
         client = get_request_param(request, "client")
         if client:
-            log.debug("client overwritten to %s" % client)
+            log.debug("client overwritten to %s", client)
 
-    log.debug("returning client %s" % client)
+    log.debug("returning client %s", client)
     return client
 
 
-def normalize_activation_code(activationcode, upper=True, convert_o=True,
-                              convert_0=True):
-    '''
+def normalize_activation_code(
+    activationcode, upper=True, convert_o=True, convert_0=True
+):
+    """
     This normalizes the activation code.
     1. lower letters are capitaliezed
     2. Oh's in the last two characters are turned to zeros
     3. zeros before the last 2 characters are turned to Ohs
-    '''
+    """
     if upper:
         activationcode = activationcode.upper()
     if convert_o:
-        activationcode = activationcode[:-2] + \
-                         activationcode[-2:].replace("O", "0")
+        activationcode = activationcode[:-2] + activationcode[-2:].replace(
+            "O", "0"
+        )
     if convert_0:
-        activationcode = activationcode[:-2].replace("0", "O") + \
-                         activationcode[-2:]
+        activationcode = (
+            activationcode[:-2].replace("0", "O") + activationcode[-2:]
+        )
 
     return activationcode
 
 
 def is_valid_fqdn(hostname, split_port=False):
-    '''
+    """
     Checks if the hostname is a valid FQDN
-    '''
+    """
     if split_port:
-        hostname = hostname.split(':')[0]
+        hostname = hostname.split(":")[0]
     if len(hostname) > 255:
         return False
     # strip exactly one dot from the right, if present
     if hostname[-1:] == ".":
         hostname = hostname[:-1]
 
-
     return all(hostname_regex.match(x) for x in hostname.split("."))
 
 
 def remove_empty_lines(doc):
-    '''
+    """
     remove empty lines from the input document
 
     :param doc: documemt containing long multiline text
@@ -436,31 +456,33 @@ def remove_empty_lines(doc):
 
     :return: data without empty lines
     :rtype:  string
-    '''
-    data = '\n'.join([line for line in doc.split('\n') if line.strip() != ''])
+    """
+    data = "\n".join([line for line in doc.split("\n") if line.strip() != ""])
     return data
 
+
 ##
-## Modhex calculations for Yubikey
+# Modhex calculations for Yubikey
 ##
-hexHexChars = '0123456789abcdef'
-modHexChars = 'cbdefghijklnrtuv'
+hexHexChars = "0123456789abcdef"
+modHexChars = "cbdefghijklnrtuv"
 
 hex2ModDict = dict(list(zip(hexHexChars, modHexChars)))
 mod2HexDict = dict(list(zip(modHexChars, hexHexChars)))
 
 
 def modhex_encode(s: str) -> str:
-    return ''.join([hex2ModDict[c] for c in s])
+    return "".join([hex2ModDict[c] for c in s])
 
 
 def modhex_decode(m: str) -> str:
-    return ''.join([mod2HexDict[c] for c in m])
+    return "".join([mod2HexDict[c] for c in m])
+
 
 def checksum(msg: bytes) -> int:
-    crc = 0xffff
+    crc = 0xFFFF
     for b in msg:
-        crc = crc ^ (b & 0xff)
+        crc = crc ^ (b & 0xFF)
         for _j in range(0, 8):
             n = crc & 1
             crc = crc >> 1
@@ -477,18 +499,19 @@ def str2unicode(input_str):
     """
 
     output_str = input_str
-    conversions = [{},
-                   {'encoding':'utf-8'},
-                   {'encoding':'iso-8859-1'},
-                   {'encoding':'iso-8859-15'}
-                   ]
+    conversions = [
+        {},
+        {"encoding": "utf-8"},
+        {"encoding": "iso-8859-1"},
+        {"encoding": "iso-8859-15"},
+    ]
     for param in conversions:
         try:
             output_str = str(input_str, **param)
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:
-                log.info('no unicode conversion found for %r' % input_str)
+                log.info("no unicode conversion found for %r", input_str)
                 raise exx
 
     return output_str
@@ -505,10 +528,8 @@ def unicode_compare(x, y):
     return x == y
 
 
-
 def dict_copy(dict_):
-
-    """ recursively copies a dict """
+    """recursively copies a dict"""
 
     # we use an recursive approach instead of an
     # iterative one, because our dicts are only
@@ -523,8 +544,8 @@ def dict_copy(dict_):
         copy.update(fragment)
     return copy
 
-def int_from_bytes(bytes_, byteorder='little'):
 
+def int_from_bytes(bytes_, byteorder="little"):
     """
     converts bytes to an integer
 
@@ -533,11 +554,12 @@ def int_from_bytes(bytes_, byteorder='little'):
         or 'big' for big endian
     """
 
-    if byteorder not in ['little', 'big']:
-        raise InvalidFunctionParameter('byteorder', 'byte order can only '
-                                       'be \'little\' or \'big\'')
+    if byteorder not in ["little", "big"]:
+        raise InvalidFunctionParameter(
+            "byteorder", "byte order can only be 'little' or 'big'"
+        )
 
-    order = -1 if byteorder == 'little' else 1
+    order = -1 if byteorder == "little" else 1
 
     # we calculate the result by interpreting data as coefficients of the
     # polynomial

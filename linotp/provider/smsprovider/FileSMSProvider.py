@@ -38,12 +38,11 @@ from linotp.lib.util import str2unicode
 log = logging.getLogger(__name__)
 
 
-@provider_registry.class_entry('FileSMSProvider')
-@provider_registry.class_entry('linotp.provider.smsprovider.FileSMSProvider')
-@provider_registry.class_entry('smsprovider.FileSMSProvider.FileSMSProvider')
-@provider_registry.class_entry('smsprovider.FileSMSProvider')
+@provider_registry.class_entry("FileSMSProvider")
+@provider_registry.class_entry("linotp.provider.smsprovider.FileSMSProvider")
+@provider_registry.class_entry("smsprovider.FileSMSProvider.FileSMSProvider")
+@provider_registry.class_entry("smsprovider.FileSMSProvider")
 class FileSMSProvider(ISMSProvider):
-
     def __init__(self):
         self.config = {}
 
@@ -51,11 +50,14 @@ class FileSMSProvider(ISMSProvider):
         """
         return a description of which config options are available
         """
-        iface = {'file': ('the filename, where the phone and otp '
-                          'values are to be stored.'),
-                 'here': ('the base path for the text file'),
-                 'MSISDN': ('normalize the phone numbers'),
-                 }
+        iface = {
+            "file": (
+                "the filename, where the phone and otp "
+                "values are to be stored."
+            ),
+            "here": ("the base path for the text file"),
+            "MSISDN": ("normalize the phone numbers"),
+        }
 
         return iface
 
@@ -68,8 +70,8 @@ class FileSMSProvider(ISMSProvider):
         """
         ret = False
 
-        filename = self.config.get('file', '')
-        here = self.config.get('here', '')
+        filename = self.config.get("file", "")
+        here = self.config.get("here", "")
 
         if here:
             filename = "%s%s%s" % (here, os.path.sep, filename)
@@ -80,9 +82,8 @@ class FileSMSProvider(ISMSProvider):
             ret = True
 
         except Exception as exx:
-            log.exception("Failed to open file %r", filename)
+            log.error("Failed to open file %r", filename)
             raise ProviderNotAvailable("Failed to open file %r" % filename)
-
 
         return ret
 

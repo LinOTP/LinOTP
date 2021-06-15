@@ -44,7 +44,10 @@ from linotp.lib.user import User
 
 log = logging.getLogger(__name__)
 
-def get_selfservice_action_value(action: str, user: User=None, default: Any=None) -> Any:
+
+def get_selfservice_action_value(
+    action: str, user: User = None, default: Any = None
+) -> Any:
     """Helper to get the value for a selfservice action.
 
     :param user: the authenticated user
@@ -54,17 +57,18 @@ def get_selfservice_action_value(action: str, user: User=None, default: Any=None
     """
 
     policies = get_client_policy(
-        client=_get_client(), userObj=user,
-        scope='selfservice', action=action)
+        client=_get_client(), userObj=user, scope="selfservice", action=action
+    )
 
     action_value = get_action_value(
-            policies, scope='selfservice', action=action, default=default)
+        policies, scope="selfservice", action=action, default=default
+    )
 
     return action_value
 
 
 def get_selfservice_actions(user=None, action=None):
-    '''
+    """
     This function returns the allowed actions in the self service portal
     for the given user
 
@@ -74,7 +78,7 @@ def get_selfservice_actions(user=None, action=None):
     action value will be type converted according to the policy definition
 
     :return: dictionary with all actions
-    '''
+    """
 
     scope = "selfservice"
     client = _get_client()
@@ -82,18 +86,18 @@ def get_selfservice_actions(user=None, action=None):
     pparam = {}
 
     if isinstance(user, User):
-        pparam['user'] = user.login
-        pparam['realm'] = user.realm
-        pparam['userObj'] = user
+        pparam["user"] = user.login
+        pparam["realm"] = user.realm
+        pparam["userObj"] = user
 
     elif isinstance(user, str):
-        pparam['user'] = user
+        pparam["user"] = user
 
     log.debug(
-        "checking actions for scope=%s, realm=%r", scope, pparam.get('realm'))
+        "checking actions for scope=%s, realm=%r", scope, pparam.get("realm")
+    )
 
-    policies = get_client_policy(
-        client, scope=scope, action=action, **pparam)
+    policies = get_client_policy(client, scope=scope, action=action, **pparam)
 
     if not policies:
         return {}
@@ -102,7 +106,7 @@ def get_selfservice_actions(user=None, action=None):
 
     all_actions = {}
     for policy in policies.values():
-        actions = parse_action_value(policy.get('action', {}))
+        actions = parse_action_value(policy.get("action", {}))
         if not action:
             all_actions.update(pat.convert_actions(scope, actions))
         elif action in actions:
@@ -110,8 +114,14 @@ def get_selfservice_actions(user=None, action=None):
 
     return all_actions
 
-def get_action_value(policies:Dict, scope:str, action:str,
-                     subkey:str=None, default:Any=None) -> Any:
+
+def get_action_value(
+    policies: Dict,
+    scope: str,
+    action: str,
+    subkey: str = None,
+    default: Any = None,
+) -> Any:
     """Get the value of an action from a set of policies
 
     :param policies: a dict of policies
@@ -132,7 +142,7 @@ def get_action_value(policies:Dict, scope:str, action:str,
 
     all_actions = {}
     for policy in policies.values():
-        actions = parse_action_value(policy.get('action', {}))
+        actions = parse_action_value(policy.get("action", {}))
 
         if action in actions:
             current = all_actions.setdefault(action, [])
@@ -143,21 +153,24 @@ def get_action_value(policies:Dict, scope:str, action:str,
         return default
 
     if len(set(all_actions[action])) > 1:
-        log.warning('contradicting action values found for action %s:%s: %r',
-                    scope, action, all_actions[action])
+        log.warning(
+            "contradicting action values found for action %s:%s: %r",
+            scope,
+            action,
+            all_actions[action],
+        )
 
     return all_actions[action][0]
 
-class PolicyActionTyping():
-    """Convert the action value according to the policy definition.
-    """
+
+class PolicyActionTyping:
+    """Convert the action value according to the policy definition."""
 
     def __init__(self):
-        """Helper class for the policy typing.
-        """
+        """Helper class for the policy typing."""
         self.definitions = get_policy_definitions()
 
-    def convert(self, scope:str, action_name:str, action_value:str) -> Any:
+    def convert(self, scope: str, action_name: str, action_value: str) -> Any:
         """Convert the action values acording to the policy definitions.
 
         :paran scope: of the action
@@ -169,21 +182,23 @@ class PolicyActionTyping():
         if action_name not in self.definitions[scope]:
             return action_value
 
-        typing = self.definitions[scope][action_name].get('type')
+        typing = self.definitions[scope][action_name].get("type")
 
         if typing is None:
             return action_value
 
-        elif typing == 'bool':
+        elif typing == "bool":
 
             if action_value in [True, False]:
                 return action_value
 
-            msg = ("%s:%s : action value %r is not compliant with "
-                   "action type 'bool'" % (scope, action_name, action_value))
-            warn(msg,DeprecationWarning)
+            msg = (
+                "%s:%s : action value %r is not compliant with "
+                "action type 'bool'" % (scope, action_name, action_value)
+            )
+            warn(msg, DeprecationWarning)
 
-            if action_value in [-1, '-1']:
+            if action_value in [-1, "-1"]:
                 return False
 
             if isinstance(action_value, int):
@@ -191,10 +206,10 @@ class PolicyActionTyping():
 
             if isinstance(action_value, str):
 
-                if action_value.lower() == 'true':
+                if action_value.lower() == "true":
                     return True
 
-                if action_value.lower() == 'false':
+                if action_value.lower() == "false":
                     return False
 
                 if action_value.isdigit():
@@ -204,13 +219,13 @@ class PolicyActionTyping():
 
             return bool(action_value)
 
-        elif typing == 'int':
+        elif typing == "int":
             return int(action_value)
 
-        elif typing in ['str', 'string']:
+        elif typing in ["str", "string"]:
             return str(action_value)
 
-        elif typing == 'set':
+        elif typing == "set":
             # in case of a set, we try our best:
             # if int() else return as is
             if isinstance(action_value, str) and action_value.isdigit():
@@ -218,7 +233,7 @@ class PolicyActionTyping():
 
         return action_value
 
-    def convert_actions(self, scope:str, actions:Dict) -> Dict:
+    def convert_actions(self, scope: str, actions: Dict) -> Dict:
         """type conversion of an action dict.
 
         utility to be used in the by functions like get_selfservice_actions

@@ -36,7 +36,7 @@ log = logging.getLogger(__name__)
 
 
 def import_submodules(package_name):
-    """ Import all submodules of a module, recursively
+    """Import all submodules of a module, recursively
 
     :param package_name: Package name
     :type package_name: str
@@ -51,12 +51,13 @@ def import_submodules(package_name):
 
         try:
 
-            p_list[name] = importlib.import_module(package_name + '.' + name)
+            p_list[name] = importlib.import_module(package_name + "." + name)
 
         except Exception as exx:
 
             log.error("Failed to load %r - %r", name, exx)
 
     return p_list
+
 
 # eof #

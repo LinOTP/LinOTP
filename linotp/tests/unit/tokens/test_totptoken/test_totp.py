@@ -42,9 +42,7 @@ from linotp.tokens.totptoken import counter2time
 from mock import MagicMock, patch
 
 
-fake_context = {
-    'translate': lambda x: x,
-    'Client': '127.0.0.1'}
+fake_context = {"translate": lambda x: x, "Client": "127.0.0.1"}
 
 
 TOTP_Vectors = """
@@ -72,27 +70,28 @@ TOTP_Vectors = """
 +-------------+--------------+------------------+----------+--------+
 """
 
-unix_start_time = datetime(1970,1,1)
+unix_start_time = datetime(1970, 1, 1)
+
 
 def range_tvector():
     """
     helper, to iterate through the test vectors
     """
 
-    for line in TOTP_Vectors.split('\n'):
+    for line in TOTP_Vectors.split("\n"):
 
         # skip the comments
-        if not line or line.strip().startswith('+'):
+        if not line or line.strip().startswith("+"):
             continue
 
         # +  Time (sec) |   UTC Time   | Value of T (hex) |   TOTP   |  Mode  |
-        (
-            seconds, utc_time, counter_hex, totp, hash_algo
-         ) = [x.strip() for x in line.strip('|').split('|')]
+        (seconds, utc_time, counter_hex, totp, hash_algo) = [
+            x.strip() for x in line.strip("|").split("|")
+        ]
 
         # 1970-01-01  00:00:59
-        t_time =datetime.strptime(utc_time,'%Y-%m-%d  %H:%M:%S')
-        seconds = (t_time-unix_start_time).total_seconds()
+        t_time = datetime.strptime(utc_time, "%Y-%m-%d  %H:%M:%S")
+        seconds = (t_time - unix_start_time).total_seconds()
 
         counter = int(counter_hex, 16)
 
@@ -113,27 +112,28 @@ class TotpTestCase(unittest.TestCase):
 
     def test_counter2time(self):
 
-
         for t_step in (60, 30):
             for counter in range(0, 10):
 
                 l_seconds = timedelta(
-                    seconds=(counter-1) * t_step).total_seconds()
-                h_seconds = timedelta(
-                    seconds=counter * t_step).total_seconds()
+                    seconds=(counter - 1) * t_step
+                ).total_seconds()
+                h_seconds = timedelta(seconds=counter * t_step).total_seconds()
 
                 t_seconds = counter2time(counter, timeStepping=t_step)
 
                 # we have to be in the range of seconds
-                assert l_seconds <= t_seconds <= h_seconds, \
-                        ( l_seconds, t_seconds, h_seconds)
+                assert l_seconds <= t_seconds <= h_seconds, (
+                    l_seconds,
+                    t_seconds,
+                    h_seconds,
+                )
 
         return
 
-
     def test_time2counter(self):
 
-        for t_step in (60,30):
+        for t_step in (60, 30):
             for seconds in range(0, 600, t_step):
 
                 # calculate the counter from the seconds

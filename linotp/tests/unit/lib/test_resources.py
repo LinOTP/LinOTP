@@ -40,6 +40,7 @@ from linotp.lib.resources import DictResourceRegistry
 class DummyException(Exception):
     pass
 
+
 class TestResourceScheduler(unittest.TestCase):
     """
     test the iteration of the uri list of an resolver
@@ -61,8 +62,8 @@ class TestResourceScheduler(unittest.TestCase):
         # setup the Resource Scheduler
 
         res_sched = ResourceScheduler(
-                            tries=1,
-                            resource_registry_class=DictResourceRegistry)
+            tries=1, resource_registry_class=DictResourceRegistry
+        )
 
         res_sched.uri_list = string_to_list("uri://1, uri://2, uri://3, ")
 
@@ -100,9 +101,9 @@ class TestResourceScheduler(unittest.TestCase):
             for uri in next(res_sched):
                 uris.append(uri)
 
-            assert 'uri://1' in uris
-            assert 'uri://2' in uris
-            assert 'uri://3' in uris
+            assert "uri://1" in uris
+            assert "uri://2" in uris
+            assert "uri://3" in uris
 
         return
 
@@ -122,10 +123,12 @@ class TestResourceScheduler(unittest.TestCase):
         # setup the Resource Scheduler
 
         res_sched = ResourceScheduler(
-                            tries=3,
-                            resource_registry_class=DictResourceRegistry)
+            tries=3, resource_registry_class=DictResourceRegistry
+        )
 
-        res_sched.uri_list = string_to_list("bluri://1, bluri://2, bluri://3, ")
+        res_sched.uri_list = string_to_list(
+            "bluri://1, bluri://2, bluri://3, "
+        )
 
         # -------------------------------------------------------------- --
 
@@ -166,10 +169,12 @@ class TestResourceScheduler(unittest.TestCase):
         # setup the Resource Scheduler
 
         res_sched = ResourceScheduler(
-                            tries=3,
-                            resource_registry_class=DictResourceRegistry)
+            tries=3, resource_registry_class=DictResourceRegistry
+        )
 
-        res_sched.uri_list = string_to_list("bluri://1, bluri://2, bluri://3, ")
+        res_sched.uri_list = string_to_list(
+            "bluri://1, bluri://2, bluri://3, "
+        )
 
         the_blocked_one = res_sched.uri_list[1]
 
@@ -231,12 +236,13 @@ class TestResourceScheduler(unittest.TestCase):
             # verify that the former blocked one is as well unblocked in the
             # registry
 
-            for _key, val in list(res_sched.resource_registry.registry.items()):
+            for _key, val in list(
+                res_sched.resource_registry.registry.items()
+            ):
                 value, _b_ind, _b_count = val
                 assert value is None
 
         return
-
 
     def test_blocking_counter(self):
         """
@@ -259,10 +265,12 @@ class TestResourceScheduler(unittest.TestCase):
         # setup the Resource Scheduler
 
         res_sched = ResourceScheduler(
-            tries=1, resource_registry_class=DictResourceRegistry)
+            tries=1, resource_registry_class=DictResourceRegistry
+        )
 
         res_sched.uri_list = string_to_list(
-            "bluri://1, bluri://2, bluri://3, ")
+            "bluri://1, bluri://2, bluri://3, "
+        )
 
         the_blocked_one = res_sched.uri_list[1]
 
@@ -276,7 +284,8 @@ class TestResourceScheduler(unittest.TestCase):
         while raise_counter < 10:
             i += 1
             with freeze_time(
-                datetime.datetime.utcnow() + datetime.timedelta(minutes=i)):
+                datetime.datetime.utcnow() + datetime.timedelta(minutes=i)
+            ):
 
                 try:
                     for uri in next(res_sched):
@@ -305,5 +314,6 @@ class TestResourceScheduler(unittest.TestCase):
                 assert b_ind == 0
 
         return
+
 
 # eof #

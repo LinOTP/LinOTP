@@ -38,8 +38,11 @@ from werkzeug.exceptions import Unauthorized
 
 from linotp import flap
 from linotp.flap import (
-    request, response, config, tmpl_context as c,
-    render_mako as render
+    request,
+    response,
+    config,
+    tmpl_context as c,
+    render_mako as render,
 )
 
 from mako.exceptions import CompileException
@@ -114,7 +117,7 @@ class SelfserviceController(BaseController):
         "setpin",
         "unassign",
         "webprovisiongoogletoken",
-        "webprovisionoathtoken"
+        "webprovisionoathtoken",
     ]
 
     def __before__(self, **params):
@@ -130,7 +133,7 @@ class SelfserviceController(BaseController):
                 created by sendError with the context info 'before'
         """
 
-        action = request_context['action']
+        action = request_context["action"]
         self.redirect = None
 
         try:
@@ -138,15 +141,15 @@ class SelfserviceController(BaseController):
             c.licenseinfo = get_copyright_info()
             c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
-            g.audit['success'] = False
+            g.audit["success"] = False
             self.client = get_client(request)
-            g.audit['client'] = self.client
+            g.audit["client"] = self.client
 
             # -------------------------------------------------------------- --
 
             # handle requests which dont require authetication
 
-            if action in ['logout', 'custom_style']:
+            if action in ["logout", "custom_style"]:
                 return
 
             # -------------------------------------------------------------- --
@@ -159,17 +162,17 @@ class SelfserviceController(BaseController):
 
             # handle not authenticated requests
 
-            if not auth_user or auth_type not in ['user_selfservice']:
+            if not auth_user or auth_type not in ["user_selfservice"]:
 
-                if action in ['login']:
+                if action in ["login"]:
                     return
 
-                if action in ['index']:
+                if action in ["index"]:
                     self.redirect = True
-                    return redirect(url_for('.login'))
+                    return redirect(url_for(".login"))
 
                 else:
-                    raise Unauthorized('No valid session')
+                    raise Unauthorized("No valid session")
 
             # -------------------------------------------------------------- --
 
@@ -178,25 +181,29 @@ class SelfserviceController(BaseController):
             # there is only one special case, which is the login that
             # could be forwarded to the index page
 
-            if action in ['login']:
-                if auth_state != 'authenticated':
+            if action in ["login"]:
+                if auth_state != "authenticated":
                     return
 
                 self.redirect = True
-                return redirect(url_for('.index'))
+                return redirect(url_for(".index"))
 
             # -------------------------------------------------------------- --
 
-            # in case of user_selfservice, an unauthenticated request should always go to login
-            if auth_user and auth_type == 'user_selfservice' \
-                    and auth_state != 'authenticated':
+            # in case of user_selfservice, an unauthenticated request should
+            # always go to login
+            if (
+                auth_user
+                and auth_type == "user_selfservice"
+                and auth_state != "authenticated"
+            ):
                 self.redirect = True
-                return redirect(url_for('.login'))
+                return redirect(url_for(".login"))
 
             # futher processing with the authenticated user
 
-            if auth_state != 'authenticated':
-                raise Unauthorized('No valid session')
+            if auth_state != "authenticated":
+                raise Unauthorized("No valid session")
 
             c.user = auth_user.login
             c.realm = auth_user.realm
@@ -206,21 +213,21 @@ class SelfserviceController(BaseController):
 
             # authenticated session verification
 
-            if auth_type == 'user_selfservice':
+            if auth_type == "user_selfservice":
 
                 # checking the session only for not_form_access actions
                 if action not in self.form_access_methods:
 
-                    valid_session = check_session(request,
-                                                  auth_user,
-                                                  self.client)
+                    valid_session = check_session(
+                        request, auth_user, self.client
+                    )
 
                     if not valid_session:
-                        g.audit['action'] = request.path[1:]
-                        g.audit['info'] = "session expired"
+                        g.audit["action"] = request.path[1:]
+                        g.audit["info"] = "session expired"
                         current_app.audit_obj.log(g.audit)
 
-                        raise Unauthorized('No valid session')
+                        raise Unauthorized("No valid session")
 
             # -------------------------------------------------------------- --
 
@@ -243,13 +250,15 @@ class SelfserviceController(BaseController):
                     continue
                 c.__setattr__(action_name, action_value)
 
-            c.dynamic_actions = add_dynamic_selfservice_enrollment(config,
-                                                                   c.actions)
+            c.dynamic_actions = add_dynamic_selfservice_enrollment(
+                config, c.actions
+            )
 
             # we require to establish all token local defined
             # policies to be initialiezd
-            additional_policies = add_dynamic_selfservice_policies(config,
-                                                                   actions)
+            additional_policies = add_dynamic_selfservice_policies(
+                config, actions
+            )
             for policy in additional_policies:
                 c.__setattr__(policy, -1)
 
@@ -260,43 +269,46 @@ class SelfserviceController(BaseController):
 
         except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
             # the exception, when an abort() is called if forwarded
-            log.info("[__before__::%r] webob.exception %r" % (action, acc))
+            log.info("[__before__::%r] webob.exception %r", action, acc)
             db.session.rollback()
             raise acc
 
-        except Exception as e:
-            log.exception("[__before__] failed with error: %r" % e)
+        except Exception as exx:
+            log.error("[__before__] failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, e, context='before')
+            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
 
-        if request_context.get('reponse_redirect', False):
+        if request_context.get("reponse_redirect", False):
             # FIXME: does this really do a redirect???
             return response
 
         param = request.params
-        action = request_context['action']
+        action = request_context["action"]
 
         try:
-            if g.audit['action'] in ['selfservice/index']:
-                log.debug("[__after__] authenticating as %s in realm %s!"
-                          % (c.user, c.realm))
+            if g.audit["action"] in ["selfservice/index"]:
+                log.debug(
+                    "[__after__] authenticating as %s in realm %s!",
+                    c.user,
+                    c.realm,
+                )
 
-                g.audit['user'] = c.user
-                g.audit['realm'] = c.realm
-                g.audit['success'] = True
+                g.audit["user"] = c.user
+                g.audit["realm"] = c.realm
+                g.audit["success"] = True
 
-                if 'serial' in param:
-                    g.audit['serial'] = param['serial']
-                    g.audit['token_type'] = getTokenType(param['serial'])
+                if "serial" in param:
+                    g.audit["serial"] = param["serial"]
+                    g.audit["token_type"] = getTokenType(param["serial"])
 
                 current_app.audit_obj.log(g.audit)
 
@@ -304,24 +316,24 @@ class SelfserviceController(BaseController):
 
         except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
-            log.exception("[__after__::%r] webob.exception %r" % (action, acc))
+            log.error("[__after__::%r] webob.exception %r", action, acc)
             db.session.rollback()
             # FIXME: replace authorization exception handling with flasks preferred
             # error handling
             raise acc
 
-        except Exception as e:
-            log.exception("[__after__] failed with error: %r" % e)
+        except Exception as exx:
+            log.error("[__after__] failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, e, context='after')
+            return sendError(response, exx, context="after")
 
     def index(self):
-        '''
+        """
         This is the redirect to the first template
-        '''
+        """
 
         c.title = _("LinOTP Self Service")
-        return render('selfservice/base.mako')
+        return render("selfservice/base.mako")
 
     def logout(self):
         """
@@ -331,20 +343,20 @@ class SelfserviceController(BaseController):
         redirect to the login page
         """
 
-        request_context['reponse_redirect'] = True
+        request_context["reponse_redirect"] = True
 
-        redirect_response = redirect(url_for('.login'))
+        redirect_response = redirect(url_for(".login"))
 
-        if request.cookies.get('user_selfservice'):
-            remove_auth_cookie(request.cookies.get('user_selfservice'))
-            redirect_response.delete_cookie('user_selfservice')
+        if request.cookies.get("user_selfservice"):
+            remove_auth_cookie(request.cookies.get("user_selfservice"))
+            redirect_response.delete_cookie("user_selfservice")
 
         return redirect_response
 
     def login(self):
-        '''
+        """
         render the selfservice login page
-        '''
+        """
 
         c.title = _("LinOTP Self Service Login")
 
@@ -368,23 +380,23 @@ class SelfserviceController(BaseController):
 
         c.realmbox = getRealmBox()
 
-        context = get_pre_context(g.audit['client'])
+        context = get_pre_context(g.audit["client"])
 
-        mfa_login = bool(context['settings']['mfa_login'])
-        mfa_3_fields = bool(context['settings']['mfa_3_fields'])
+        mfa_login = bool(context["settings"]["mfa_login"])
+        mfa_3_fields = bool(context["settings"]["mfa_3_fields"])
         c.mfa_login = mfa_login
         c.mfa_3_fields = mfa_login and mfa_3_fields
 
-        response = Response(render('/selfservice/login.mako'))
+        response = Response(render("/selfservice/login.mako"))
 
-        if request.cookies.get('user_selfservice'):
-            remove_auth_cookie(request.cookies.get('user_selfservice'))
-            response.delete_cookie('user_selfservice')
+        if request.cookies.get("user_selfservice"):
+            remove_auth_cookie(request.cookies.get("user_selfservice"))
+            response.delete_cookie("user_selfservice")
 
         return response
 
     def load_form(self):
-        '''
+        """
         This shows the enrollment form for a requested token type.
 
         implicit parameters are:
@@ -393,8 +405,8 @@ class SelfserviceController(BaseController):
         :param scope: defines the rendering scope
 
         :return: rendered html of the requested token
-        '''
-        res = ''
+        """
+        res = ""
 
         tok = None
         section = None
@@ -407,23 +419,23 @@ class SelfserviceController(BaseController):
                 raise ParameterError("Missing parameter: 'type'", id=905)
 
             try:
-                (tok, section, scope) = act.split('.')
+                (tok, section, scope) = act.split(".")
             except Exception:
                 return res
 
-            if section != 'selfservice':
+            if section != "selfservice":
                 return res
 
             if tok in tokenclass_registry:
                 tclt = tokenclass_registry.get(tok)
-                if hasattr(tclt, 'getClassInfo'):
+                if hasattr(tclt, "getClassInfo"):
                     sections = tclt.getClassInfo(section, {})
                     if scope in list(sections.keys()):
                         section = sections.get(scope)
-                        page = section.get('page')
-                        c.scope = page.get('scope')
+                        page = section.get("page")
+                        c.scope = page.get("scope")
                         c.authUser = self.authUser
-                        html = page.get('html')
+                        html = page.get("html")
                         res = render(os.path.sep + html).decode()
                         res = remove_empty_lines(res)
 
@@ -431,136 +443,143 @@ class SelfserviceController(BaseController):
             return res
 
         except CompileException as exx:
-            log.exception("[load_form] compile error while processing %r.%r:"
-                          "Exeption was %r" % (tok, scope, exx))
+            log.error(
+                "[load_form] compile error while processing %r.%r:"
+                "Exeption was %r",
+                tok,
+                scope,
+                exx,
+            )
             db.session.rollback()
             raise exx
 
         except Exception as exx:
             db.session.rollback()
-            error = ('error (%r) accessing form data for: tok:%r, scope:%r'
-                     ', section:%r' % (exx, tok, scope, section))
-            log.exception(error)
+            error = (
+                "error (%r) accessing form data for: tok:%r, scope:%r"
+                ", section:%r" % (exx, tok, scope, section)
+            )
+            log.error(error)
             return "<h1>{}</h1><pre>{} {}</pre>".format(
-                _("Failed to load form"), _("Error"), exx)
+                _("Failed to load form"), _("Error"), exx
+            )
 
     def custom_style(self):
-        '''
+        """
         In case the user hasn't defined a custom css, Pylons calls this action.
         Return an empty file instead of a 404 (which would mean hitting the
         debug console)
-        '''
-        response = Response('')
-        response.headers['Content-type'] = 'text/css'
+        """
+        response = Response("")
+        response.headers["Content-type"] = "text/css"
         return response
 
     def assign(self):
-        '''
+        """
         In this form the user may assign an already existing Token to himself.
         For this, the user needs to know the serial number of the Token.
-        '''
-        return render('/selfservice/assign.mako')
+        """
+        return render("/selfservice/assign.mako")
 
     def resync(self):
-        '''
+        """
         In this form, the user can resync an HMAC based OTP token
         by providing two OTP values
-        '''
-        return render('/selfservice/resync.mako')
+        """
+        return render("/selfservice/resync.mako")
 
     def reset(self):
-        '''
+        """
         In this form the user can reset the Failcounter of the Token.
-        '''
-        return render('/selfservice/reset.mako')
+        """
+        return render("/selfservice/reset.mako")
 
     def getotp(self):
-        '''
+        """
         In this form, the user can retrieve OTP values
-        '''
-        return render('/selfservice/getotp.mako')
+        """
+        return render("/selfservice/getotp.mako")
 
     def disable(self):
-        '''
+        """
         In this form the user may select a token of his own and
         disable this token.
-        '''
-        return render('/selfservice/disable.mako')
+        """
+        return render("/selfservice/disable.mako")
 
     def enable(self):
-        '''
+        """
         In this form the user may select a token of his own and
         enable this token.
-        '''
-        return render('/selfservice/enable.mako')
+        """
+        return render("/selfservice/enable.mako")
 
     def unassign(self):
-        '''
+        """
         In this form the user may select a token of his own and
         unassign this token.
-        '''
-        return render('/selfservice/unassign.mako')
+        """
+        return render("/selfservice/unassign.mako")
 
     def delete(self):
-        '''
+        """
         In this form the user may select a token of his own and
         delete this token.
-        '''
-        return render('/selfservice/delete.mako')
+        """
+        return render("/selfservice/delete.mako")
 
     def setpin(self):
-        '''
+        """
         In this form the user may set the OTP PIN, which is the static password
         he enters when logging in in front of the otp value.
-        '''
-        return render('/selfservice/setpin.mako')
+        """
+        return render("/selfservice/setpin.mako")
 
     def setmpin(self):
-        '''
+        """
         In this form the user my set the PIN for his mOTP application soft
         token on his phone. This is the pin, he needs to enter on his phone,
         before a otp value will be generated.
-        '''
-        return render('/selfservice/setmpin.mako')
+        """
+        return render("/selfservice/setmpin.mako")
 
     def history(self):
-        '''
+        """
         This is the form to display the history table for the user
-        '''
-        return render('/selfservice/history.mako')
+        """
+        return render("/selfservice/history.mako")
 
     def landing(self):
-        '''
+        """
         This is the landing page for selfservice
-        '''
+        """
         c.tokenArray = getTokenForUser(self.authUser)
-        return render('/selfservice/landing.mako')
+        return render("/selfservice/landing.mako")
 
     def webprovisionoathtoken(self):
-        '''
+        """
         This is the form for an oathtoken to do web provisioning.
-        '''
-        return render('/selfservice/webprovisionoath.mako')
+        """
+        return render("/selfservice/webprovisionoath.mako")
 
     def webprovisiongoogletoken(self):
-        '''
+        """
         This is the form for an google token to do web provisioning.
-        '''
+        """
         try:
             c.actions = get_selfservice_actions(self.authUser)
-            return render('/selfservice/webprovisiongoogle.mako')
+            return render("/selfservice/webprovisiongoogle.mako")
 
         except Exception as exx:
-            log.exception(
-                "[webprovisiongoogletoken] failed with error: %r" % exx)
+            log.error("[webprovisiongoogletoken] failed with error: %r", exx)
             return sendError(response, exx)
 
     def usertokenlist(self):
-        '''
+        """
         This returns a tokenlist as html output
-        '''
+        """
         c.tokenArray = getTokenForUser(self.authUser)
-        res = render('/selfservice/tokenlist.mako')
+        res = render("/selfservice/tokenlist.mako")
         return res
 
 

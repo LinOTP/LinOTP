@@ -28,9 +28,11 @@
 
 import errno
 import os
+
 # from typing import Protocol     # Only from Python 3.8 on
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,9 +46,13 @@ logger = logging.getLogger(__name__)
 #     config: dict[str, str]      # for typechecking purposes
 
 
-def ensure_dir(app,  # : HasConfig
-               what: str, conf_name: str,
-               *sub_dirs: str, mode: int = 0o770) -> str:
+def ensure_dir(
+    app,  # : HasConfig
+    what: str,
+    conf_name: str,
+    *sub_dirs: str,
+    mode: int = 0o770,
+) -> str:
     """Make sure the directory whose name is given by
     `app.config[conf_name]/sub/dirs` exists. If it needs to be
     created, create all its parents if necessary, and use mode
@@ -55,7 +61,7 @@ def ensure_dir(app,  # : HasConfig
     creating; this will show up in the log if there is an error.
     """
 
-    if (not conf_name.endswith('_DIR')) or (conf_name not in app.config):
+    if (not conf_name.endswith("_DIR")) or (conf_name not in app.config):
         raise KeyError(f"Invalid LinOTP configuration setting '{conf_name}'")
 
     base_name = app.config[conf_name]
@@ -63,12 +69,14 @@ def ensure_dir(app,  # : HasConfig
         raise FileNotFoundError(
             errno.ENOENT,
             f"Directory '{base_name}' ({conf_name}) does not exist",
-            base_name)
+            base_name,
+        )
     if not os.path.isdir(base_name):
         raise NotADirectoryError(
             errno.ENOTDIR,
             f"File '{base_name}' ({conf_name}) is not a directory",
-            base_name)
+            base_name,
+        )
 
     if sub_dirs:
         dir_name = os.path.join(base_name, *sub_dirs)
@@ -76,9 +84,12 @@ def ensure_dir(app,  # : HasConfig
             try:
                 os.makedirs(dir_name, mode=mode, exist_ok=True)
             except OSError as ex:
-                raise OSError(ex.errno,
-                              f"Error creating {what} directory '{dir_name}': "
-                              f"{ex.strerror} ({ex.errno})", dir_name)
+                raise OSError(
+                    ex.errno,
+                    f"Error creating {what} directory '{dir_name}': "
+                    f"{ex.strerror} ({ex.errno})",
+                    dir_name,
+                )
         return dir_name
 
     return base_name

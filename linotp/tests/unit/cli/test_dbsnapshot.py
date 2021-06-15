@@ -41,16 +41,16 @@ from linotp.cli import main as cli_main
 
 @pytest.fixture
 def runner(app):
-    """Set common configuration """
+    """Set common configuration"""
 
     env = {
-        'LINOTP_AUDIT_DATABASE_URI': 'OFF',  # FIXME: 'SHARED',
+        "LINOTP_AUDIT_DATABASE_URI": "OFF",  # FIXME: 'SHARED',
     }
     return app.test_cli_runner(env=env, mix_stderr=False, echo_stdin=True)
 
 
 def test_dbsnapshot(app, runner, freezer):
-    """ verify that dbsnapshot backup and restore are working
+    """verify that dbsnapshot backup and restore are working
 
     - create a snapshot
     - list the available snapshots
@@ -60,7 +60,7 @@ def test_dbsnapshot(app, runner, freezer):
     str_now = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
     # Create a database backup
-    result = runner.invoke(cli_main, ['-v', 'dbsnapshot', 'create'])
+    result = runner.invoke(cli_main, ["-v", "dbsnapshot", "create"])
     assert result.exit_code == 0
 
     # check that the backup directory was created
@@ -70,26 +70,32 @@ def test_dbsnapshot(app, runner, freezer):
     backup_file = backup_dir / f"linotp_backup_{str_now}.sqldb"
     assert backup_file.is_file()
 
-    assert 'Config' in backup_file.read_text()
+    assert "Config" in backup_file.read_text()
 
     # list database backups
-    result = runner.invoke(cli_main, ['dbsnapshot', 'list'])
+    result = runner.invoke(cli_main, ["dbsnapshot", "list"])
     assert str_now in result.output
 
 
-@pytest.mark.parametrize("args,result", [
-    (['--date', 'NOW'], 0),
-    (['--file', 'linotp_backup_NOW.sqldb'], 0),
-    (['--date', 'NOW', '--table', 'Config'], 0),
-    (['--date', 'NOW', '--table', 'Foo'], 2),  # click invalid-argument code
-])
+@pytest.mark.parametrize(
+    "args,result",
+    [
+        (["--date", "NOW"], 0),
+        (["--file", "linotp_backup_NOW.sqldb"], 0),
+        (["--date", "NOW", "--table", "Config"], 0),
+        (
+            ["--date", "NOW", "--table", "Foo"],
+            2,
+        ),  # click invalid-argument code
+    ],
+)
 def test_dbsnapshot_restore_cmd(app, runner, freezer, args, result):
     freezer.move_to("2020-08-18 19:25:33")
     str_now = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
-    backup_result = runner.invoke(cli_main, ['dbsnapshot', 'create'])
+    backup_result = runner.invoke(cli_main, ["dbsnapshot", "create"])
     assert backup_result.exit_code == 0
 
-    args = [a.replace('NOW', str_now) for a in args]
-    cmd_result = runner.invoke(cli_main, ['dbsnapshot', 'restore'] + args)
+    args = [a.replace("NOW", str_now) for a in args]
+    cmd_result = runner.invoke(cli_main, ["dbsnapshot", "restore"] + args)
     assert cmd_result.exit_code == result

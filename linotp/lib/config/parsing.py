@@ -48,15 +48,15 @@ class ConfigNotRecognized(Exception):
     def __init__(self, key, message=None):
 
         if message is None:
-            message = 'Unrecognized config key: %s' % key
+            message = "Unrecognized config key: %s" % key
         Exception.__init__(self, message)
         self.key = key
 
 
 # -------------------------------------------------------------------------- --
 
-def parse_system_config(composite_key, value):
 
+def parse_system_config(composite_key, value):
     """
     Parses system config entries
 
@@ -64,16 +64,16 @@ def parse_system_config(composite_key, value):
         internal config tree parser list
     """
 
-    if not composite_key.startswith('linotp.'):
+    if not composite_key.startswith("linotp."):
         raise ConfigNotRecognized(composite_key)
 
-    return 'system_config', {composite_key: value}
+    return "system_config", {composite_key: value}
+
 
 # -------------------------------------------------------------------------- --
 
 
 def parse_deprecated_enc(composite_key, value):
-
     """
     Parses soon to be deprecated 'enclinotp' config entries
 
@@ -83,10 +83,11 @@ def parse_deprecated_enc(composite_key, value):
 
     # XXX LEGACY DEPRECATED
 
-    if not composite_key.startswith('enclinotp.'):
+    if not composite_key.startswith("enclinotp."):
         raise ConfigNotRecognized(composite_key)
 
-    return 'deprecated_enc', {composite_key: value}
+    return "deprecated_enc", {composite_key: value}
+
 
 # -------------------------------------------------------------------------- --
 
@@ -108,8 +109,10 @@ class ConfigTree(dict):
     # the list of parsers get initialized on startup
     # by the add_parser method.
 
-    _parsers = [('globals', parse_system_config),
-                ('deprecated', parse_deprecated_enc)]
+    _parsers = [
+        ("globals", parse_system_config),
+        ("deprecated", parse_deprecated_enc),
+    ]
 
     def __init__(self):
 
@@ -121,7 +124,6 @@ class ConfigTree(dict):
 
     @classmethod
     def add_parser(cls, target, func):
-
         """
         Adds a parser function for the config tree.
 
@@ -174,7 +176,6 @@ class ConfigTree(dict):
         cls._parsers.insert(0, (target, func))
 
     def consume_entry(self, composite_key, value):
-
         """
         Integrates a config pair of a composite key and value
         into the tree.
@@ -204,8 +205,7 @@ class ConfigTree(dict):
             raise ConfigNotRecognized(composite_key)
 
     def pretty(self):
-
-        """ Returns a pretty print of the tree """
+        """Returns a pretty print of the tree"""
 
         return json.dumps(self, indent=4)
 
@@ -214,7 +214,6 @@ class ConfigTree(dict):
 
 
 def parse_config(config_dict):
-
     """
     Translates a flat config_dict into a hierarchical ConfigTree
 

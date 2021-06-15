@@ -35,8 +35,10 @@ from linotp.lib.policy.action import get_action_value
 
 log = logging.getLogger(__name__)
 
+
 class NotificationException(Exception):
     pass
+
 
 def notify_user(user, action, info, required=False):
     """
@@ -54,35 +56,42 @@ def notify_user(user, action, info, required=False):
     """
 
     policies = linotp.lib.policy.get_client_policy(
-        request_context['Client'], scope='notification',
-        action=action, realm=user.realm, user=user.login)
+        request_context["Client"],
+        scope="notification",
+        action=action,
+        realm=user.realm,
+        user=user.login,
+    )
 
     provider_specs = get_action_value(
-        policies, scope='notification', action=action, default='')
+        policies, scope="notification", action=action, default=""
+    )
 
     if not isinstance(provider_specs, list):
-        provider_specs=[provider_specs]
+        provider_specs = [provider_specs]
 
     # TODO: use the ResouceSchduler to handle failover
 
     for provider_spec in provider_specs:
 
-        provider_type, _sep, provider_name = provider_spec.partition('::')
+        provider_type, _sep, provider_name = provider_spec.partition("::")
 
-        if provider_type == 'email':
+        if provider_type == "email":
             notify_user_by_email(provider_name, user, action, info)
             return True
 
         # elif provider_type == 'sms':
         #    notify_user_by_email(provider_name, user, action, info)
 
-    log.info('Failed to notify user %r', user)
+    log.info("Failed to notify user %r", user)
 
     if required:
         raise NotificationException(
-            'No notification has been sent - %r provider defined?' % action)
+            "No notification has been sent - %r provider defined?" % action
+        )
 
     return False
+
 
 def notify_user_by_email(provider_name, user, action, info):
     """
@@ -96,13 +105,14 @@ def notify_user_by_email(provider_name, user, action, info):
     :param info: generic dict which is action specific
     """
     user_detail = user.getUserInfo()
-    if 'cryptpass' in user_detail:
-        del user_detail['cryptpass']
+    if "cryptpass" in user_detail:
+        del user_detail["cryptpass"]
 
-    user_email = user_detail.get('email')
+    user_email = user_detail.get("email")
     if not user_email:
         raise NotificationException(
-            'Unable to notify user via email - user has no email address')
+            "Unable to notify user via email - user has no email address"
+        )
 
     replacements = {}
     replacements.update(info)
@@ -118,18 +128,20 @@ def notify_user_by_email(provider_name, user, action, info):
 
     try:
 
-        provider = loadProvider(
-            'email', provider_name=provider_name)
+        provider = loadProvider("email", provider_name=provider_name)
 
         provider.submitMessage(
             email_to=user_email,
-            message=info.get('message',''),
-            subject=info.get('Subject',''),
-            replacements=replacements)
+            message=info.get("message", ""),
+            subject=info.get("Subject", ""),
+            replacements=replacements,
+        )
 
     except Exception as exx:
-        log.error('Failed to notify user %r by email' % user_email)
+        log.error("Failed to notify user %r by email", user_email)
         raise NotificationException(
-            'Failed to notify user %r by email:%r' % (user_email, exx))
+            "Failed to notify user %r by email:%r" % (user_email, exx)
+        )
+
 
 # eof

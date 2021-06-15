@@ -75,23 +75,24 @@ SUPPORTED_TOKEN_TYPES = [TYPE_QRTOKEN_ED25519, TYPE_PUSHTOKEN]
 # translation tables between low level enum types and
 # high level string identifiers
 
-hash_algorithms = {'sha1': 0, 'sha256': 1, 'sha512': 2}
-TOKEN_TYPES = {'qr': TYPE_QRTOKEN_ED25519, 'push': TYPE_PUSHTOKEN}
+hash_algorithms = {"sha1": 0, "sha256": 1, "sha512": 2}
+TOKEN_TYPES = {"qr": TYPE_QRTOKEN_ED25519, "push": TYPE_PUSHTOKEN}
 INV_TOKEN_TYPES = {v: k for k, v in list(TOKEN_TYPES.items())}
 
 
 # -------------------------------------------------------------------------- --
 
 
-def generate_pairing_url(token_type,
-                         partition=None,
-                         serial=None,
-                         callback_url=None,
-                         callback_sms_number=None,
-                         otp_pin_length=None,
-                         hash_algorithm=None,
-                         use_cert=False):
-
+def generate_pairing_url(
+    token_type,
+    partition=None,
+    serial=None,
+    callback_url=None,
+    callback_sms_number=None,
+    otp_pin_length=None,
+    hash_algorithm=None,
+    use_cert=False,
+):
     """
     Generates a pairing url that should be sent to the client.
 
@@ -162,11 +163,12 @@ def generate_pairing_url(token_type,
     try:
         TOKEN_TYPE = TOKEN_TYPES[token_type]
     except KeyError:
-        allowed_types = ', '.join(list(TOKEN_TYPES.keys()))
-        raise InvalidFunctionParameter('token_type',
-                                       'Unsupported token type %s. Supported '
-                                       'types for pairing are: %s' %
-                                       (token_type, allowed_types))
+        allowed_types = ", ".join(list(TOKEN_TYPES.keys()))
+        raise InvalidFunctionParameter(
+            "token_type",
+            "Unsupported token type %s. Supported "
+            "types for pairing are: %s" % (token_type, allowed_types),
+        )
 
     # ---------------------------------------------------------------------- --
 
@@ -195,7 +197,7 @@ def generate_pairing_url(token_type,
     #  size     |    1    |  1   |   4   |  ?  |
     #            ---------------------------- --
 
-    data = struct.pack('<bbI', PAIR_URL_VERSION, TOKEN_TYPE, flags)
+    data = struct.pack("<bbI", PAIR_URL_VERSION, TOKEN_TYPE, flags)
 
     # ---------------------------------------------------------------------- --
 
@@ -205,7 +207,7 @@ def generate_pairing_url(token_type,
     #  size     |  6  |     4     |  ?  |
     #            --------------------- --
 
-    data += struct.pack('<I', partition)
+    data += struct.pack("<I", partition)
 
     # ---------------------------------------------------------------------- --
 
@@ -220,8 +222,9 @@ def generate_pairing_url(token_type,
         server_public_key = get_public_key(partition)
 
         if len(server_public_key) != 32:
-            raise InvalidFunctionParameter('server_public_key',
-                                           'Public key must be 32 bytes long')
+            raise InvalidFunctionParameter(
+                "server_public_key", "Public key must be 32 bytes long"
+            )
 
         data += server_public_key
 
@@ -238,11 +241,11 @@ def generate_pairing_url(token_type,
     #            ------------------------------------------------------- --
 
     if flags & FLAG_PAIR_SERIAL:
-        data += serial.encode('utf8') + b'\x00'
+        data += serial.encode("utf8") + b"\x00"
     if flags & FLAG_PAIR_CBURL:
-        data += callback_url.encode('utf8') + b'\x00'
+        data += callback_url.encode("utf8") + b"\x00"
     if flags & FLAG_PAIR_CBSMS:
-        data += callback_sms_number.encode('utf8') + b'\x00'
+        data += callback_sms_number.encode("utf8") + b"\x00"
 
     # ---------------------------------------------------------------------- --
 
@@ -256,21 +259,23 @@ def generate_pairing_url(token_type,
     #            ------------------------------------- --
 
     if flags & FLAG_PAIR_DIGITS:
-        if not(6 <= otp_pin_length <= 12):
-            raise InvalidFunctionParameter('otp_pin_length', 'Pin length must '
-                                           'be in the range 6..12')
-        data += struct.pack('<b', otp_pin_length)
+        if not (6 <= otp_pin_length <= 12):
+            raise InvalidFunctionParameter(
+                "otp_pin_length", "Pin length must be in the range 6..12"
+            )
+        data += struct.pack("<b", otp_pin_length)
 
     if flags & FLAG_PAIR_HMAC:
         try:
             HASH_ALGO = hash_algorithms[hash_algorithm]
         except KeyError:
             allowed_values = ", ".join(list(hash_algorithms.keys()))
-            raise InvalidFunctionParameter('hash_algorithm',
-                                           'Unsupported hash algorithm %s, '
-                                           'allowed values are %s' %
-                                           (hash_algorithm, allowed_values))
-        data += struct.pack('<b', HASH_ALGO)
+            raise InvalidFunctionParameter(
+                "hash_algorithm",
+                "Unsupported hash algorithm %s, "
+                "allowed values are %s" % (hash_algorithm, allowed_values),
+            )
+        data += struct.pack("<b", HASH_ALGO)
 
     # ---------------------------------------------------------------------- --
 
@@ -285,18 +290,18 @@ def generate_pairing_url(token_type,
         server_sig = crypto_sign_detached(data, secret_key)
         data += server_sig
 
-    protocol_id = config.get('mobile_app_protocol_id', 'lseqr')
-    return protocol_id + '://pair/' + encode_base64_urlsafe(data)
+    protocol_id = config.get("mobile_app_protocol_id", "lseqr")
+    return protocol_id + "://pair/" + encode_base64_urlsafe(data)
+
 
 # -------------------------------------------------------------------------- --
 
-PairingResponse = namedtuple('PairingResponse', ['token_type', 'pairing_data'])
+PairingResponse = namedtuple("PairingResponse", ["token_type", "pairing_data"])
 
 # -------------------------------------------------------------------------- --
 
 
 def get_pairing_data_parser(token_type):
-
     """
     fetches a parser for the decrypted inner layer
     of a pairing response according to its token type.
@@ -313,14 +318,16 @@ def get_pairing_data_parser(token_type):
     if token_type == TYPE_PUSHTOKEN:
         return parse_and_verify_pushtoken_pairing_data
 
-    raise ValueError('unsupported token type %d, supported types '
-                     'are %s' % (token_type, SUPPORTED_TOKEN_TYPES))
+    raise ValueError(
+        "unsupported token type %d, supported types "
+        "are %s" % (token_type, SUPPORTED_TOKEN_TYPES)
+    )
+
 
 # -------------------------------------------------------------------------- --
 
 
 def decrypt_pairing_response(enc_pairing_response):
-
     """
     Parses and decrypts a pairing response into a named tuple PairingResponse
     consisting of
@@ -380,24 +387,25 @@ def decrypt_pairing_response(enc_pairing_response):
     #            ------------------------------------------- --
 
     if len(data) < 1 + 4 + 32 + 16:
-        raise ParameterError('Malformed pairing response')
+        raise ParameterError("Malformed pairing response")
 
     # ---------------------------------------------------------------------- --
 
     # parse header
 
     header = data[0:5]
-    version, partition = struct.unpack('<bI', header)
+    version, partition = struct.unpack("<bI", header)
 
     if version != PAIR_RESPONSE_VERSION:
-        raise ValueError('Unexpected pair-response version, '
-                         'expected: %d, got: %d' %
-                         (PAIR_RESPONSE_VERSION, version))
+        raise ValueError(
+            "Unexpected pair-response version, "
+            "expected: %d, got: %d" % (PAIR_RESPONSE_VERSION, version)
+        )
 
     # ---------------------------------------------------------------------- --
 
-    R = data[5:32+5]
-    ciphertext = data[32+5:-16]
+    R = data[5 : 32 + 5]
+    ciphertext = data[32 + 5 : -16]
     mac = data[-16:]
 
     # ---------------------------------------------------------------------- --
@@ -431,7 +439,7 @@ def decrypt_pairing_response(enc_pairing_response):
 
     plaintext_min_length = 1
     if len(data) < plaintext_min_length:
-        raise ParameterError('Malformed pairing response')
+        raise ParameterError("Malformed pairing response")
 
     # ---------------------------------------------------------------------- --
 
@@ -447,8 +455,10 @@ def decrypt_pairing_response(enc_pairing_response):
     token_type = int(plaintext[0])
 
     if token_type not in SUPPORTED_TOKEN_TYPES:
-        raise ValueError('unsupported token type %d, supported types '
-                         'are %s' % (token_type, SUPPORTED_TOKEN_TYPES))
+        raise ValueError(
+            "unsupported token type %d, supported types "
+            "are %s" % (token_type, SUPPORTED_TOKEN_TYPES)
+        )
 
     # ---------------------------------------------------------------------- --
 
@@ -464,10 +474,13 @@ def decrypt_pairing_response(enc_pairing_response):
     try:
         token_type_as_str = INV_TOKEN_TYPES[token_type]
     except KeyError:
-        raise ProgrammingError('token_type %d is in SUPPORTED_TOKEN_TYPES',
-                               'however an appropriate mapping entry in '
-                               'TOKEN_TYPES is missing' % token_type)
+        raise ProgrammingError(
+            "token_type %d is in SUPPORTED_TOKEN_TYPES",
+            "however an appropriate mapping entry in "
+            "TOKEN_TYPES is missing" % token_type,
+        )
 
     return PairingResponse(token_type_as_str, pairing_data)
+
 
 # eof #

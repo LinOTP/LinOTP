@@ -23,9 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''
+"""
 * implementation of the KeyIdentity VoiceProvider
-'''
+"""
 
 import logging
 import requests
@@ -33,6 +33,7 @@ import requests
 from linotp.provider import provider_registry
 from linotp.provider.provider_base import ProviderBase
 from linotp.provider.voiceprovider import TwillioMixin
+
 #
 # set the default connection and request timeouts
 #
@@ -42,10 +43,12 @@ DEFAULT_TIMEOUT = (3, 5)
 log = logging.getLogger(__name__)
 
 
-@provider_registry.class_entry('CustomVoiceProvider')
-@provider_registry.class_entry('linotp.provider.CustomVoiceProvider')
-@provider_registry.class_entry('linotp.provider.voiceprovider.'
-                               'custom_voice_provider.CustomVoiceProvider')
+@provider_registry.class_entry("CustomVoiceProvider")
+@provider_registry.class_entry("linotp.provider.CustomVoiceProvider")
+@provider_registry.class_entry(
+    "linotp.provider.voiceprovider."
+    "custom_voice_provider.CustomVoiceProvider"
+)
 class CustomVoiceProvider(ProviderBase, TwillioMixin):
     """
     Send a Voice notification through the Custom Voice Provider to the
@@ -72,7 +75,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
     """
 
     def __init__(self):
-        """ """
+        """"""
         self.server_url = None
         self.client_cert = None
         self.server_cert = None
@@ -117,8 +120,8 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
 
         # define the request calling endpoint and verify the url scheme
 
-        if 'server_url' not in configDict:
-            raise KeyError('missing the required server_url')
+        if "server_url" not in configDict:
+            raise KeyError("missing the required server_url")
 
         self.voice_server_url = CustomVoiceProvider.load_server_url(configDict)
 
@@ -144,8 +147,8 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
         # timeout could be a tuple of network timeout or connection timeout
 
         self.timeout = CustomVoiceProvider.load_timeout(
-                                                configDict,
-                                                DEFAULT_TIMEOUT)
+            configDict, DEFAULT_TIMEOUT
+        )
 
         # ------------------------------------------------------------------ --
 
@@ -164,8 +167,9 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
         delivery_service = configDict.get("twilioConfig")
 
         if not delivery_service:
-            raise KeyError("Missing delivery service configuration: "
-                           "twillioConfig")
+            raise KeyError(
+                "Missing delivery service configuration: twillioConfig"
+            )
 
         # prepare the twilio voice provider
         # . . . other voice services will follow here
@@ -207,9 +211,10 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
         if not messageTemplate:
             raise Exception("No message to submit!")
 
-        if '{otp}' not in messageTemplate:
-            log.warning("Missing '{otp}' in messageTemplate: %r",
-                        messageTemplate)
+        if "{otp}" not in messageTemplate:
+            log.warning(
+                "Missing '{otp}' in messageTemplate: %r", messageTemplate
+            )
 
         if not otp:
             raise Exception("Missing otp value!")
@@ -223,10 +228,11 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
         # the json call document
 
         call = {
-            'calleeNumber': calleeNumber,
-            'messageTemplate': messageTemplate,
-            'otp': otp,
-            'locale': locale}
+            "calleeNumber": calleeNumber,
+            "messageTemplate": messageTemplate,
+            "otp": otp,
+            "locale": locale,
+        }
 
         # add the voice delivery service (twilio) specific data
 
@@ -236,7 +242,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
 
         # run the request against the vcs
 
-        return self._make_http_post_request_(json={'call': call})
+        return self._make_http_post_request_(json={"call": call})
 
     def _make_http_post_request_(self, json=None):
         """
@@ -250,23 +256,20 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
 
         # adjust HTTP header for submitting the json body
 
-        headers = {
-            'Content-type': 'application/json',
-            'Accept': 'text/plain'}
+        headers = {"Content-type": "application/json", "Accept": "text/plain"}
 
         pparams = {}
 
         if self.timeout:
-            pparams['timeout'] = self.timeout
+            pparams["timeout"] = self.timeout
 
         try:  # submit the POST request
 
             http_session = self._create_http_session_()
 
-            response = http_session.post(self.voice_server_url,
-                                         json=json,
-                                         headers=headers,
-                                         **pparams)
+            response = http_session.post(
+                self.voice_server_url, json=json, headers=headers, **pparams
+            )
 
             if not response.ok:
                 result = response.reason
@@ -314,7 +317,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
             # Session.post() doesn't like unicode values in Session.verify
 
             if isinstance(server_cert, str):
-                server_cert = server_cert.encode('utf-8')
+                server_cert = server_cert.encode("utf-8")
 
             http_session.verify = server_cert
 
@@ -327,9 +330,10 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
         """
         status, response = self._make_http_post_request_(json={})
 
-        if response == 'Bad Request':
+        if response == "Bad Request":
             return True, response
 
         return False, response
+
 
 # eof

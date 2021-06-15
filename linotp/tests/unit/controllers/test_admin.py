@@ -38,63 +38,76 @@ from linotp.controllers.admin import AdminController
 class TestAdminController(unittest.TestCase):
 
     token = {
-            'LinOtp.TokenId': 201,
-            'LinOtp.TokenInfo':
-                '{\n"hashlib": "sha1", \n"timeShift": -10.0, \n"timeWindow": 180, \n"validity_period_end": "23/12/23 23:23", \n"validity_period_start": "01/01/01 01:01", \n"timeStep": "30"\n}',
-            'LinOtp.OtpLen': 6,
-            'LinOtp.TokenType': 'TOTP',
-            'LinOtp.TokenSerialnumber': 'F722362',
-            'LinOtp.CountWindow': 10,
-            'User.username': 'passthru_user1',
-            'LinOtp.TokenDesc': 'TestToken1',
-        }
+        "LinOtp.TokenId": 201,
+        "LinOtp.TokenInfo": '{\n"hashlib": "sha1", \n"timeShift": -10.0, \n"timeWindow": 180, \n"validity_period_end": "23/12/23 23:23", \n"validity_period_start": "01/01/01 01:01", \n"timeStep": "30"\n}',
+        "LinOtp.OtpLen": 6,
+        "LinOtp.TokenType": "TOTP",
+        "LinOtp.TokenSerialnumber": "F722362",
+        "LinOtp.CountWindow": 10,
+        "User.username": "passthru_user1",
+        "LinOtp.TokenDesc": "TestToken1",
+    }
 
     token2 = {
-            'LinOtp.TokenId': 201,
-            'LinOtp.TokenInfo': '',
-            'LinOtp.OtpLen': 6,
-            'LinOtp.TokenType': 'TOTP',
-            'LinOtp.TokenSerialnumber': 'F722362',
-            'LinOtp.CountWindow': 10,
-            'User.username': 'passthru_user1',
-            'LinOtp.TokenDesc': 'TestToken1',
-        }
+        "LinOtp.TokenId": 201,
+        "LinOtp.TokenInfo": "",
+        "LinOtp.OtpLen": 6,
+        "LinOtp.TokenType": "TOTP",
+        "LinOtp.TokenSerialnumber": "F722362",
+        "LinOtp.CountWindow": 10,
+        "User.username": "passthru_user1",
+        "LinOtp.TokenDesc": "TestToken1",
+    }
 
-
-    expected_subset = {'validity_period_start': '2001-01-01T01:01:00',
-                       'validity_period_end': '2023-12-23T23:23:00'}
+    expected_subset = {
+        "validity_period_start": "2001-01-01T01:01:00",
+        "validity_period_end": "2023-12-23T23:23:00",
+    }
 
     def test_parse_tokeninfo(self):
-        """"
+        """
         check if admin.parse_tokeninfo works
         """
         tok = copy.deepcopy(self.token)
 
         AdminController.parse_tokeninfo(tok)
 
-        assert isinstance(tok.get('LinOtp.TokenInfo'), dict), \
-            'TokenInfo is not of type dict!'
-        assert dict(tok.get('LinOtp.TokenInfo'), **self.expected_subset) == tok.get('LinOtp.TokenInfo'), \
-            tok.get('LinOtp.TokenInfo')
+        assert isinstance(
+            tok.get("LinOtp.TokenInfo"), dict
+        ), "TokenInfo is not of type dict!"
+        assert dict(
+            tok.get("LinOtp.TokenInfo"), **self.expected_subset
+        ) == tok.get("LinOtp.TokenInfo"), tok.get("LinOtp.TokenInfo")
 
-    @mock.patch('linotp.controllers.admin.TokenIterator')
-    @mock.patch('linotp.controllers.admin.checkPolicyPre')
-    @mock.patch('linotp.model.db.session')
-    @mock.patch('linotp.controllers.admin.response')
-    @mock.patch('linotp.controllers.admin.request')
-    @mock.patch('linotp.controllers.admin.BaseController.__init__', return_value=None)
-    def check_token(self, mock_base, mock_request, mock_response, mock_session,
-                    mock_check_policy_pre, mock_TokenIterator,
-                    with_json):
+    @mock.patch("linotp.controllers.admin.TokenIterator")
+    @mock.patch("linotp.controllers.admin.checkPolicyPre")
+    @mock.patch("linotp.model.db.session")
+    @mock.patch("linotp.controllers.admin.response")
+    @mock.patch("linotp.controllers.admin.request")
+    @mock.patch(
+        "linotp.controllers.admin.BaseController.__init__", return_value=None
+    )
+    def check_token(
+        self,
+        mock_base,
+        mock_request,
+        mock_response,
+        mock_session,
+        mock_check_policy_pre,
+        mock_TokenIterator,
+        with_json,
+    ):
         """
         call admin/show with/without argument tokeninfo_format
         and return if parse_tokeninfo has been called
         """
         request_params = {
-            'tokeninfo_format': with_json,
+            "tokeninfo_format": with_json,
         }
-        mock_check_policy_pre.return_value = {'active': False,
-                                              'admin': 'unittest'}
+        mock_check_policy_pre.return_value = {
+            "active": False,
+            "admin": "unittest",
+        }
         tok = copy.deepcopy(self.token)
         mock_TokenIterator.return_value = [tok]
 
@@ -103,14 +116,17 @@ class TestAdminController(unittest.TestCase):
         admin.request_params = request_params
         admin.show()
 
-    @mock.patch('linotp.controllers.admin.AdminController.parse_tokeninfo')
+    @mock.patch("linotp.controllers.admin.AdminController.parse_tokeninfo")
     def test_with_tokeninfo_format(self, mock_parse_tokeninfo):
-        self.check_token(with_json='json')
+        self.check_token(with_json="json")
         mock_parse_tokeninfo.assert_called()
 
-    @mock.patch('linotp.controllers.admin.AdminController.parse_tokeninfo')
-    def test_without_tokeninfo_format(self,  mock_parse_tokeninfo,):
-        self.check_token(with_json='')
+    @mock.patch("linotp.controllers.admin.AdminController.parse_tokeninfo")
+    def test_without_tokeninfo_format(
+        self,
+        mock_parse_tokeninfo,
+    ):
+        self.check_token(with_json="")
         mock_parse_tokeninfo.assert_not_called()
 
     def test_parse_empty_tokeninfo(self):
@@ -120,6 +136,6 @@ class TestAdminController(unittest.TestCase):
         tok = copy.deepcopy(self.token2)
         AdminController.parse_tokeninfo(tok)
 
-        assert tok['LinOtp.TokenInfo'] == {}
+        assert tok["LinOtp.TokenInfo"] == {}
 
         return

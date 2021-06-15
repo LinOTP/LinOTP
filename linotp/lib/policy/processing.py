@@ -47,7 +47,7 @@ LOG = logging.getLogger(__name__)
 
 
 def search_policy(param, only_active=True):
-    '''
+    """
     Function to retrieve the list of policies.
 
     attributes:
@@ -62,7 +62,7 @@ def search_policy(param, only_active=True):
 
     :return: a dictionary with the policies. The name of the policy being
              the key
-    '''
+    """
 
     #
     # filter the policies with the new engine
@@ -89,7 +89,7 @@ def search_policy(param, only_active=True):
 
 
 def getPolicy(param, only_active=True):
-    '''
+    """
     Function to retrieve the list of policies.
 
     attributes:
@@ -104,7 +104,7 @@ def getPolicy(param, only_active=True):
 
     :return: a dictionary with the policies. The name of the policy being
              the key
-    '''
+    """
 
     #
     # filter the policies with the new engine
@@ -122,8 +122,9 @@ def getPolicy(param, only_active=True):
     if only_active:
         policy_elve.filter_for_active(state=True)
 
-    if (('user' in param and param['user'] is not None) or
-       ('action' in param and param['action'] is not None)):
+    if ("user" in param and param["user"] is not None) or (
+        "action" in param and param["action"] is not None
+    ):
         policy_elve.filter_for_time()
 
     #
@@ -159,11 +160,15 @@ def _getAuthorization(scope, action):
 
     policy_elve = PolicyEvaluator(get_policies())
 
-    p_at_all = policy_elve.has_policy({'scope': scope})
+    p_at_all = policy_elve.has_policy({"scope": scope})
 
     if len(p_at_all) == 0:
-        LOG.info("No policies in scope %s found. Checking "
-                 "of scope %s be disabled.", scope, scope)
+        LOG.info(
+            "No policies in scope %s found. Checking "
+            "of scope %s be disabled.",
+            scope,
+            scope,
+        )
         active = False
         auth = True
 
@@ -172,11 +177,9 @@ def _getAuthorization(scope, action):
 
     admin_user = _getAuthenticatedUser()
 
-    LOG.debug("Evaluating policies for the user: %s", admin_user['login'])
+    LOG.debug("Evaluating policies for the user: %s", admin_user["login"])
 
-    param = {'user': admin_user['login'],
-             'scope': scope,
-             'action': action}
+    param = {"user": admin_user["login"], "scope": scope, "action": action}
 
     policies = policy_elve.set_filters(param).evaluate(policy_set=p_at_all)
     LOG.debug("Found the following policies: %r", policies)
@@ -184,15 +187,20 @@ def _getAuthorization(scope, action):
     if len(list(policies.keys())) > 0:
         auth = True
 
-    return {'active': active,
-            'auth': auth,
-            'admin': admin_user['login']}
+    return {"active": active, "auth": auth, "admin": admin_user["login"]}
 
 
-def get_client_policy(client, scope=None, action=None, realm=None,
-                          user=None, find_resolver=True, userObj=None,
-                          active_only=True):
-    '''
+def get_client_policy(
+    client,
+    scope=None,
+    action=None,
+    realm=None,
+    user=None,
+    find_resolver=True,
+    userObj=None,
+    active_only=True,
+):
+    """
     This function returns the dictionary of policies for the given client.
 
     1. First it searches for all policies matching (scope, action, realm) and
@@ -207,7 +215,7 @@ def get_client_policy(client, scope=None, action=None, realm=None,
 
     4. if nothing matched so far, we try the extended policy check
 
-    '''
+    """
 
     policy_eval = PolicyEvaluator(get_policies())
 
@@ -238,10 +246,17 @@ def get_client_policy(client, scope=None, action=None, realm=None,
     return policies
 
 
-def has_client_policy(client, scope=None, action=None, realm=None,
-                          user=None, find_resolver=True, userObj=None,
-                          active_only=True):
-    '''
+def has_client_policy(
+    client,
+    scope=None,
+    action=None,
+    realm=None,
+    user=None,
+    find_resolver=True,
+    userObj=None,
+    active_only=True,
+):
+    """
     This function returns the dictionary of policies for the given client.
 
     1. First it searches for all policies matching (scope, action, realm) and
@@ -259,31 +274,31 @@ def has_client_policy(client, scope=None, action=None, realm=None,
     The difference to the get_policy is, that it restores the already installed
     filters for an existance check
 
-    '''
+    """
 
     policy_eval = PolicyEvaluator(get_policies())
 
     param = {}
 
     if realm:
-        param['realm'] = realm
+        param["realm"] = realm
 
     if scope:
-        param['scope'] = scope
+        param["scope"] = scope
 
     if action:
-        param['action'] = action
+        param["action"] = action
 
     if active_only:
         policy_eval.filter_for_active(state=True)
 
     if client:
-        param['client'] = client
+        param["client"] = client
 
     if userObj:
-        param['user'] = userObj
+        param["user"] = userObj
     elif user:
-        param['user'] = user
+        param["user"] = user
 
     policies = policy_eval.has_policy(param)
 

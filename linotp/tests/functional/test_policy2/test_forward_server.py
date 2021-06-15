@@ -36,7 +36,6 @@ Rad_Serv = None
 
 
 class MockForwardServerPolicy(object):
-
     @staticmethod
     def do_request(servers, env, user, passw, options):
 
@@ -47,7 +46,6 @@ class MockForwardServerPolicy(object):
 
 
 class TestForwardServer(TestController):
-
     def setUp(self):
         TestController.setUp(self)
         self.create_common_resolvers()
@@ -66,45 +64,51 @@ class TestForwardServer(TestController):
         # ------------------------------------------------------------------ --
 
         params = {
-            'name': 'forward_user',
-            'realm': 'mydefrealm',
-            'action': ("forward_server=radius://127.0.0.1:1812/"
-                       "?secret=geheim1"),
-            'client': '',
-            'user': 'passthru_user1',
-            'time': '',
-            'active': True,
-            'scope': 'authentication'}
+            "name": "forward_user",
+            "realm": "mydefrealm",
+            "action": (
+                "forward_server=radius://127.0.0.1:1812/?secret=geheim1"
+            ),
+            "client": "",
+            "user": "passthru_user1",
+            "time": "",
+            "active": True,
+            "scope": "authentication",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
+        response = self.make_system_request("setPolicy", params=params)
 
-        name = params['name']
-        assert 'setPolicy ' + name in response, response
+        name = params["name"]
+        assert "setPolicy " + name in response, response
 
     def define_all_forward(self):
 
         params = {
-            'name': "forward",
-            'realm': 'mydefrealm',
-            'action': ("forward_server=radius://192.168.100.180:1812/"
-                       "?secret=geheim1"),
-            'client': '',
-            'user': '*',
-            'time': '',
-            'active': True,
-            'scope': 'authentication'}
+            "name": "forward",
+            "realm": "mydefrealm",
+            "action": (
+                "forward_server=radius://192.168.100.180:1812/"
+                "?secret=geheim1"
+            ),
+            "client": "",
+            "user": "*",
+            "time": "",
+            "active": True,
+            "scope": "authentication",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
+        response = self.make_system_request("setPolicy", params=params)
 
-        name = params['name']
-        assert 'setPolicy ' + name in response, response
+        name = params["name"]
+        assert "setPolicy " + name in response, response
 
-    @patch('linotp.lib.auth.validate.ForwardServerPolicy',
-           MockForwardServerPolicy)
+    @patch(
+        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
+    )
     def test_server_forwarding(self):
-        '''
+        """
         Checking auth forwarding with check
-        '''
+        """
 
         # ------------------------------------------------------------------ --
 
@@ -114,30 +118,27 @@ class TestForwardServer(TestController):
 
         # check passthru_user1
 
-        params = {
-            'user': 'passthru_user1',
-            'pass': 'geheim1'}
+        params = {"user": "passthru_user1", "pass": "geheim1"}
 
-        _response = self.make_validate_request(action='check', params=params)
+        _response = self.make_validate_request(action="check", params=params)
 
-        assert '127.0.0.1' in Rad_Serv, Rad_Serv
+        assert "127.0.0.1" in Rad_Serv, Rad_Serv
 
-        params = {
-            'user': 'passthru_user2',
-            'pass': 'geheim1'}
+        params = {"user": "passthru_user2", "pass": "geheim1"}
 
-        _response = self.make_validate_request(action='check', params=params)
+        _response = self.make_validate_request(action="check", params=params)
 
-        assert '127.0.0.1' not in Rad_Serv, Rad_Serv
+        assert "127.0.0.1" not in Rad_Serv, Rad_Serv
 
         return
 
-    @patch('linotp.lib.auth.validate.ForwardServerPolicy',
-           MockForwardServerPolicy)
+    @patch(
+        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
+    )
     def test_server_forwarding2(self):
-        '''
+        """
         Checking auth forwarding with check
-        '''
+        """
 
         # ------------------------------------------------------------------ --
 
@@ -147,64 +148,63 @@ class TestForwardServer(TestController):
 
         # check passthru_user1
 
-        params = {
-            'user': 'passthru_user1',
-            'pass': 'geheim1'}
+        params = {"user": "passthru_user1", "pass": "geheim1"}
 
-        _response = self.make_validate_request(action='check', params=params)
+        _response = self.make_validate_request(action="check", params=params)
 
-        assert '127.0.0.1' in Rad_Serv, Rad_Serv
+        assert "127.0.0.1" in Rad_Serv, Rad_Serv
 
-        params = {
-            'user': 'passthru_user2',
-            'pass': 'geheim1'}
+        params = {"user": "passthru_user2", "pass": "geheim1"}
 
-        _response = self.make_validate_request(action='check', params=params)
+        _response = self.make_validate_request(action="check", params=params)
 
-        assert '127.0.0.1' not in Rad_Serv, Rad_Serv
+        assert "127.0.0.1" not in Rad_Serv, Rad_Serv
 
         return
 
-
-    @patch('linotp.lib.auth.validate.ForwardServerPolicy',
-           MockForwardServerPolicy)
+    @patch(
+        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
+    )
     def test_000000_server_forwarding_with_no_token(self):
-        '''
+        """
         conditional forward request only if no user has no token
-         '''
+        """
 
         # ------------------------------------------------------------------ --
 
         # define forwarding policies
 
         params = {
-            'name': 'forward_user',
-            'realm': 'mydefrealm',
-            'action': ("forward_server=radius://127.0.0.1:1812/"
-                       "?secret=geheim1, forward_on_no_token"),
-            'client': '',
-            'user': 'passthru_user1',
-            'time': '',
-            'active': True,
-            'scope': 'authentication'}
+            "name": "forward_user",
+            "realm": "mydefrealm",
+            "action": (
+                "forward_server=radius://127.0.0.1:1812/"
+                "?secret=geheim1, forward_on_no_token"
+            ),
+            "client": "",
+            "user": "passthru_user1",
+            "time": "",
+            "active": True,
+            "scope": "authentication",
+        }
 
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response, response
 
         # ------------------------------------------------------------------ --
 
         # create token for user passthru_user1
 
         params = {
-            'type': 'pw',
-            'otpkey': 'test123!',
-            'user': 'passthru_user1',
-            'pin': 'pin',
-            'serial': 'my_pw_token'
-            }
+            "type": "pw",
+            "otpkey": "test123!",
+            "user": "passthru_user1",
+            "pin": "pin",
+            "serial": "my_pw_token",
+        }
 
-        response = self.make_admin_request('init', params=params)
-        assert 'false' not in response, response
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response, response
 
         # ----------------------------------------------------------------- --
 
@@ -213,57 +213,48 @@ class TestForwardServer(TestController):
         global Rad_Serv
         Rad_Serv = None
 
-        params = {
-            'user': 'passthru_user1',
-            'pass': 'pintest123!'}
+        params = {"user": "passthru_user1", "pass": "pintest123!"}
 
-        response = self.make_validate_request(action='check', params=params)
-        assert 'false' not in response, response
+        response = self.make_validate_request(action="check", params=params)
+        assert "false" not in response, response
         assert Rad_Serv is None, Rad_Serv
 
         # ----------------------------------------------------------------- --
 
         # remove token of passthru_user1
 
-        params = {
-            'serial': 'my_pw_token'
-            }
-        response = self.make_admin_request('disable', params=params)
-        assert 'false' not in response, response
+        params = {"serial": "my_pw_token"}
+        response = self.make_admin_request("disable", params=params)
+        assert "false" not in response, response
 
         # ----------------------------------------------------------------- --
 
         # passthru_user1 should now be forwarded
 
-        params = {
-            'user': 'passthru_user1',
-            'pass': 'geheim1'}
+        params = {"user": "passthru_user1", "pass": "geheim1"}
 
-        response = self.make_validate_request(action='check', params=params)
-        assert 'false' in response, response
+        response = self.make_validate_request(action="check", params=params)
+        assert "false" in response, response
         assert Rad_Serv is None, Rad_Serv
 
         # ----------------------------------------------------------------- --
 
         # remove token of passthru_user1
 
-        params = {
-            'serial': 'my_pw_token'
-            }
-        response = self.make_admin_request('remove', params=params)
-        assert 'false' not in response, response
+        params = {"serial": "my_pw_token"}
+        response = self.make_admin_request("remove", params=params)
+        assert "false" not in response, response
 
         # ----------------------------------------------------------------- --
 
         # passthru_user1 should now be forwarded
 
-        params = {
-            'user': 'passthru_user1',
-            'pass': 'geheim1'}
+        params = {"user": "passthru_user1", "pass": "geheim1"}
 
-        _response = self.make_validate_request(action='check', params=params)
-        assert '127.0.0.1' in Rad_Serv, Rad_Serv
+        _response = self.make_validate_request(action="check", params=params)
+        assert "127.0.0.1" in Rad_Serv, Rad_Serv
 
         return
+
 
 # eof #

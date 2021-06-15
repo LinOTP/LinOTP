@@ -49,8 +49,8 @@ class TokenView(ManageTab):
     TAB_INDEX = 1
 
     token_lines_css = "#token_table tr td:first-child div"
-    delete_button_id = 'button_delete'
-    token_table_css = 'table#token_table'
+    delete_button_id = "button_delete"
+    token_table_css = "table#token_table"
 
     delete_confirm_dialog = None
     "Dialog box shown when tokens are deleted"
@@ -58,7 +58,8 @@ class TokenView(ManageTab):
     def __init__(self, manage_ui):
         super(TokenView, self).__init__(manage_ui)
         self.delete_confirm_dialog = ManageDialog(
-            manage_ui, 'dialog_delete_token')
+            manage_ui, "dialog_delete_token"
+        )
 
     def open(self):
         """Select the 'Token View' tab"""
@@ -76,10 +77,11 @@ class TokenView(ManageTab):
         # is selected.
 
         select = Select(self.driver.find_element_by_name("rp"))
-        if(select.first_selected_option.text.strip() != '100'):
+        if select.first_selected_option.text.strip() != "100":
             # Show 100 tokens in view
             self.driver.find_element_by_css_selector(
-                "option[value=\"100\"]").click()
+                'option[value="100"]'
+            ).click()
 
         self.wait_for_grid_loading()
 
@@ -126,9 +128,10 @@ class TokenView(ManageTab):
 
         t = delete_dialog.get_text()
         assert t.startswith(
-            r"The following tokens will be permanently deleted")
+            r"The following tokens will be permanently deleted"
+        )
 
-        delete_dialog.click_button('button_delete_delete')
+        delete_dialog.click_button("button_delete_delete")
 
         self.manage.wait_for_waiting_finished()  # Wait for delete API call
         self.wait_for_grid_loading()  # Wait for flexigrid to refresh
@@ -136,11 +139,17 @@ class TokenView(ManageTab):
         tokens_after = [t.text for t in self._get_token_list()]
 
         if len(tokens_before) <= len(tokens_after):
-            logging.warn("Number of tokens did not reduce as expected. from=%s to=%s",
-                         tokens_before, tokens_after)
-            assert len(tokens_before) > len(tokens_after), \
-                "The token list should be shorter. Before:%s After:%s" % (
-                    len(tokens_before), len(tokens_after))
+            logging.warn(
+                "Number of tokens did not reduce as expected. from=%s to=%s",
+                tokens_before,
+                tokens_after,
+            )
+            assert len(tokens_before) > len(
+                tokens_after
+            ), "The token list should be shorter. Before:%s After:%s" % (
+                len(tokens_before),
+                len(tokens_after),
+            )
 
     def clear_tokens_via_api(self):
         """
@@ -152,10 +161,12 @@ class TokenView(ManageTab):
         json_response = self.manage.admin_api_call("admin/show")
 
         tokens = json_response["data"]
-        if(tokens):
+        if tokens:
             for curr_token in tokens:
-                self.manage.admin_api_call("admin/remove",
-                                           {'serial': curr_token['LinOtp.TokenSerialnumber']})
+                self.manage.admin_api_call(
+                    "admin/remove",
+                    {"serial": curr_token["LinOtp.TokenSerialnumber"]},
+                )
 
     def delete_all_tokens(self):
         self.open()
@@ -168,10 +179,10 @@ class TokenView(ManageTab):
         """
         selected_tokens = find_by_id(self.driver, "selected_tokens").text
 
-        if selected_tokens == '':
+        if selected_tokens == "":
             return []
 
-        return selected_tokens.split(', ')
+        return selected_tokens.split(", ")
 
     def token_click(self, token_serial):
         """
@@ -209,7 +220,9 @@ class TokenView(ManageTab):
 
         # Check that only the token we require is now displayed as selected
         new_selection = self.get_selected_tokens()
-        assert new_selection == [token_serial], f"Selection failed for token {token_serial}"
+        assert new_selection == [
+            token_serial
+        ], f"Selection failed for token {token_serial}"
 
     def deselect_token(self, token_serial):
         """
@@ -257,7 +270,7 @@ class TokenView(ManageTab):
         """
         contents = self.get_grid_contents()
         for t in contents:
-            if t['Serial Number'] == token_serial:
+            if t["Serial Number"] == token_serial:
                 return t
         raise RuntimeError("Token serial not found")
 
@@ -265,12 +278,13 @@ class TokenView(ManageTab):
         """
         Extracts the token info from the WebUI and returns it as a dictionary.
         """
-        keys_with_subtable = ['LinOtp.TokenInfo', 'LinOtp.RealmNames']
+        keys_with_subtable = ["LinOtp.TokenInfo", "LinOtp.RealmNames"]
         self.select_token(token_serial)
         self.driver.find_element_by_id("button_tokeninfo").click()
         token_info = {}
         rows = self.driver.find_elements_by_css_selector(
-            "#dialog_token_info > table >tbody > tr")
+            "#dialog_token_info > table >tbody > tr"
+        )
 
         # Some rows do not contain all elements
         self.testcase.disableImplicitWait()
@@ -281,15 +295,17 @@ class TokenView(ManageTab):
             value_element = tds[1]
             if key in keys_with_subtable:
                 inner_rows = value_element.find_elements_by_css_selector(
-                    'table.tokeninfoInnerTable tr')
-                if key == 'LinOtp.RealmNames':
+                    "table.tokeninfoInnerTable tr"
+                )
+                if key == "LinOtp.RealmNames":
                     token_info[key] = []
                 else:
                     token_info[key] = {}
                 for inner_row in inner_rows:
                     inner_tds = inner_row.find_elements_by_css_selector(
-                        "td.tokeninfoInnerTable")
-                    if key == 'LinOtp.RealmNames':
+                        "td.tokeninfoInnerTable"
+                    )
+                    if key == "LinOtp.RealmNames":
                         inner_value = inner_tds[0].text
                         token_info[key].append(inner_value)
                     else:

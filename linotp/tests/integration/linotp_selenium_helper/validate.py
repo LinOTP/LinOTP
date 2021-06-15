@@ -36,14 +36,16 @@ logger = logging.getLogger(__name__)
 class Validate:
     """Creates a LinOTP Validate class"""
 
-    def __init__(self, http_protocol, http_host, http_port, http_username, http_password):
+    def __init__(
+        self, http_protocol, http_host, http_port, http_username, http_password
+    ):
         """Initializes the class with the required values to call
-           https://.../validate/check
+        https://.../validate/check
         """
         self.auth = HTTPDigestAuth(http_username, http_password)
         self.validate_url = http_protocol + "://" + http_host
         if http_port:
-            self.validate_url += ':' + http_port
+            self.validate_url += ":" + http_port
 
     def _check(self, params):
         "Send a request and parse JSON result"
@@ -53,11 +55,8 @@ class Validate:
         # api hook url and its params needs to be
         # concatenated as string.
         try:
-            r = requests.get(url,
-                             params,
-                             auth=self.auth,
-                             verify=False)
-        except:
+            r = requests.get(url, params, auth=self.auth, verify=False)
+        except BaseException:
             # We need to concatenate parameter names (key)
             # and values to a valid url parameter string.
             # e.g.
@@ -68,15 +67,17 @@ class Validate:
             # Remove last '&'
             strparams = strparams[:-1]
 
-            r = requests.get(url + strparams,
-                             auth=self.auth,
-                             verify=False)
+            r = requests.get(url + strparams, auth=self.auth, verify=False)
 
         if r.status_code != 200:
             return False
         return_json = r.json()
-        assert return_json is not None, "Json response may not be empty %s" % return_json
-        assert 'result' in return_json, "Missing result in Json %s" % return_json
+        assert return_json is not None, (
+            "Json response may not be empty %s" % return_json
+        )
+        assert "result" in return_json, (
+            "Missing result in Json %s" % return_json
+        )
 
         return return_json
 
@@ -86,29 +87,28 @@ class Validate:
         and return as a string. Example: '2.9.1'
         """
         return_json = self._check({})
-        version_string = return_json['version']
-        _, version = version_string.split(' ')  # Remove 'LinOTP ' prefix
+        version_string = return_json["version"]
+        _, version = version_string.split(" ")  # Remove 'LinOTP ' prefix
         return version
 
     def validate(self, user, password):
         """Validates 'user' with 'password' (PIN+OTP)
 
-           Returns a boolean to quickly check if access was granted and the full response
-           as a JSON dictionary.
-           :return: (access_granted, return_json)
-           :rtype: (Bool, dict)
+        Returns a boolean to quickly check if access was granted and the full response
+        as a JSON dictionary.
+        :return: (access_granted, return_json)
+        :rtype: (Bool, dict)
         """
 
-        params = {'user': user, 'pass': password}
+        params = {"user": user, "pass": password}
         return_json = self._check(params)
-        result = return_json['result']
+        result = return_json["result"]
 
-        if not result['status']:
-            logger.debug("Failed validate (user=%s), result: %s" %
-                         (user, result))
+        if not result["status"]:
+            logger.debug("Failed validate (user=%s), result: %s", user, result)
             return False, return_json
 
-        logger.debug("validate (user=%s), result: %s" % (user, result))
-        assert 'value' in result, "Missing value in result %s" % (result)
-        access_granted = result['value']
+        logger.debug("validate (user=%s), result: %s", user, result)
+        assert "value" in result, "Missing value in result %s" % (result)
+        access_granted = result["value"]
         return access_granted, return_json

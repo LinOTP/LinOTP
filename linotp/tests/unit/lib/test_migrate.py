@@ -52,7 +52,6 @@ def init_crypter(passphrase, salt=None):
 
 
 class TestMigrate(unittest.TestCase):
-
     def test_decrypt_encrypt(self):
 
         config = {
@@ -92,8 +91,8 @@ class TestMigrate(unittest.TestCase):
             "PushMaxChallenges": "4",
             "DefaultCountWindow": "10",
             "resolver_lookup_cache.expiration": "64800",
-            "root": "/home/LinOTP/linotpd/src/linotp"
-            }
+            "root": "/home/LinOTP/linotpd/src/linotp",
+        }
 
         passphrase = "foobar"
         crypter = init_crypter(passphrase)
@@ -101,8 +100,7 @@ class TestMigrate(unittest.TestCase):
         for key, value in list(config.items()):
 
             # calculate encryption and add mac from mac_data
-            enc_value = crypter.encrypt(input_data=value,
-                                        just_mac=key + value)
+            enc_value = crypter.encrypt(input_data=value, just_mac=key + value)
 
             # decypt the real value
 

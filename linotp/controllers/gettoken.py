@@ -32,7 +32,10 @@ import logging
 from flask import g, current_app
 
 from linotp.flap import (
-    config, render_mako as render, request, response,
+    config,
+    render_mako as render,
+    request,
+    response,
     tmpl_context as c,
 )
 
@@ -65,7 +68,7 @@ log = logging.getLogger(__name__)
 
 class GettokenController(BaseController):
 
-    '''
+    """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server. The ValidateController is used to validate the username
     with its given OTP value.
@@ -77,7 +80,7 @@ class GettokenController(BaseController):
         https://server/gettoken/<functionname>
 
     The functions are described below in more detail.
-    '''
+    """
 
     def __before__(self, **params):
         """
@@ -88,38 +91,38 @@ class GettokenController(BaseController):
                 created by sendError with the context info 'before'
         """
 
-        action = request_context['action']
+        action = request_context["action"]
 
         try:
-            g.audit['client'] = get_client(request)
+            g.audit["client"] = get_client(request)
             check_session(request)
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r", action, exx)
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(response, exx, context='before')
+            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
 
-        g.audit['administrator'] = getUserFromRequest(request).get("login")
-        if 'serial' in request.params:
-            serial = request.params['serial']
-            g.audit['serial'] = serial
-            g.audit['token_type'] = getTokenType(serial)
+        g.audit["administrator"] = getUserFromRequest(request).get("login")
+        if "serial" in request.params:
+            serial = request.params["serial"]
+            g.audit["serial"] = serial
+            g.audit["token_type"] = getTokenType(serial)
 
         current_app.audit_obj.log(g.audit)
 
         return response
 
     def getmultiotp(self):
-        '''
+        """
         This function is used to retrieve multiple otp values for a given user
         or a given serial. If the user has more than one token, the list of
         the tokens is returend.
@@ -134,7 +137,7 @@ class GettokenController(BaseController):
 
         returns:
             JSON response
-        '''
+        """
 
         getotp_active = config.get("GETOTP_ENABLED")
         if not getotp_active:
@@ -149,41 +152,43 @@ class GettokenController(BaseController):
             curTime = getParam(param, "curTime", optional)
             view = getParam(param, "view", optional)
 
-            r1 = checkPolicyPre('admin', 'getotp', param)
+            r1 = checkPolicyPre("admin", "getotp", param)
             log.debug("[getmultiotp] admin-getotp policy: %s", r1)
 
-            max_count = checkPolicyPre('gettoken', 'max_count', param)
+            max_count = checkPolicyPre("gettoken", "max_count", param)
             log.debug("[getmultiotp] maxcount policy: %s", max_count)
             if count > max_count:
                 count = max_count
 
-            log.debug("[getmultiotp] retrieving OTP value for token %s",
-                      serial)
+            log.debug(
+                "[getmultiotp] retrieving OTP value for token %s", serial
+            )
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)
             ret["serial"] = serial
 
-            g.audit['success'] = True
+            g.audit["success"] = True
             db.session.commit()
 
             if view:
                 c.ret = ret
-                return render('/manage/multiotp_view.mako').decode('utf-8')
+                return render("/manage/multiotp_view.mako").decode("utf-8")
             else:
                 return sendResult(response, ret, 0)
 
         except PolicyException as pe:
-            log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
+            log.error("[getotp] gettoken/getotp policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
+            log.error("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
             db.session.rollback()
-            return sendError(response, "gettoken/getmultiotp failed: %r" % exx,
-                             0)
+            return sendError(
+                response, "gettoken/getmultiotp failed: %r" % exx, 0
+            )
 
     def getotp(self):
-        '''
+        """
         This function is used to retrieve the current otp value for a given
         user or a given serial. If the user has more than one token, the list
         of the tokens is returend.
@@ -199,7 +204,7 @@ class GettokenController(BaseController):
 
         returns:
             JSON response
-        '''
+        """
 
         getotp_active = config.get("GETOTP_ENABLED")
         if not getotp_active:
@@ -218,33 +223,47 @@ class GettokenController(BaseController):
             user = getUserFromParam(param)
             curTime = getParam(param, "curTime", optional)
 
-            g.audit['user'] = user.login
+            g.audit["user"] = user.login
             if "" != user.login:
-                g.audit['realm'] = user.realm or getDefaultRealm()
+                g.audit["realm"] = user.realm or getDefaultRealm()
 
             if serial:
                 log.debug("[getotp] retrieving OTP value for token %s", serial)
 
             elif user.login:
-                log.debug("[getotp] retrieving OTP value for token for user "
-                          "%s@%s", user.login, user.realm)
+                log.debug(
+                    "[getotp] retrieving OTP value for token for user "
+                    "%s@%s",
+                    user.login,
+                    user.realm,
+                )
 
                 toks = getTokens4UserOrSerial(user, serial)
                 tokennum = len(toks)
 
                 if tokennum > 1:
-                    log.debug("[getotp] The user has more than one token."
-                              "Returning the list of serials")
+                    log.debug(
+                        "[getotp] The user has more than one token."
+                        "Returning the list of serials"
+                    )
                     res = -3
                     for token in toks:
                         serials.append(token.getSerial())
                 elif 1 == tokennum:
                     serial = toks[0].getSerial()
-                    log.debug("[getotp] retrieving OTP for token %s for user"
-                              " %s@%s", serial, user.login, user.realm)
+                    log.debug(
+                        "[getotp] retrieving OTP for token %s for user"
+                        " %s@%s",
+                        serial,
+                        user.login,
+                        user.realm,
+                    )
                 else:
-                    log.debug("[getotp] no token found for user %s@%s",
-                              user.login, user.realm)
+                    log.debug(
+                        "[getotp] no token found for user %s@%s",
+                        user.login,
+                        user.realm,
+                    )
                     res = -4
             else:
                 res = -5
@@ -253,51 +272,56 @@ class GettokenController(BaseController):
             # received from the given user.
 
             if serial:
-                max_count = checkPolicyPre('gettoken', 'max_count', param)
+                max_count = checkPolicyPre("gettoken", "max_count", param)
                 log.debug("[getmultiotp] max_count policy: %s", max_count)
                 if max_count <= 0:
-                    return sendError(response, "The policy forbids receiving"
-                                     " OTP values for the token %s in "
-                                     "this realm" % serial, 1)
+                    return sendError(
+                        response,
+                        "The policy forbids receiving"
+                        " OTP values for the token %s in "
+                        "this realm" % serial,
+                        1,
+                    )
 
                 (res, pin, otpval, passw) = getOtp(serial, curTime=curTime)
 
-            g.audit['success'] = True
+            g.audit["success"] = True
 
             if int(res) < 0:
-                ret['result'] = False
+                ret["result"] = False
                 if -1 == otpval:
-                    ret['description'] = "No Token with this serial number"
+                    ret["description"] = "No Token with this serial number"
                 if -2 == otpval:
-                    ret['description'] = ("This Token does not support the"
-                                          " getOtp function")
+                    ret["description"] = (
+                        "This Token does not support the getOtp function"
+                    )
                 if -3 == otpval:
-                    ret['description'] = "The user has more than one token"
-                    ret['serials'] = serials
+                    ret["description"] = "The user has more than one token"
+                    ret["serials"] = serials
                 if -4 == otpval:
-                    ret['description'] = "No Token found for this user"
+                    ret["description"] = "No Token found for this user"
                 if -5 == otpval:
-                    ret['description'] = ("you need to provide a user or "
-                                          "a serial")
+                    ret["description"] = (
+                        "you need to provide a user or a serial"
+                    )
             else:
-                ret['result'] = True
-                ret['otpval'] = otpval
-                ret['pin'] = pin
-                ret['pass'] = passw
+                ret["result"] = True
+                ret["otpval"] = otpval
+                ret["pin"] = pin
+                ret["pass"] = passw
 
             db.session.commit()
             return sendResult(response, ret, 0)
 
         except PolicyException as pe:
-            log.exception("[getotp] gettoken/getotp policy failed: %r", pe)
+            log.error("[getotp] gettoken/getotp policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[getotp] gettoken/getotp failed: %r", exx)
+            log.error("[getotp] gettoken/getotp failed: %r", exx)
             db.session.rollback()
-            return sendError(response, "gettoken/getotp failed: %s" %
-                             exx, 0)
+            return sendError(response, "gettoken/getotp failed: %s" % exx, 0)
 
 
-#eof###########################################################################
+# eof###########################################################################

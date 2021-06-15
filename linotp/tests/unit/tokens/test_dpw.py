@@ -35,15 +35,15 @@ class TestDPWToken(unittest.TestCase):
     """
 
     def test_tagepassword_algorithm(self):
-
         class mockSecObj(object):
             def getKey(self):
-                return b'1234567890123456789012345678901234567890'
+                return b"1234567890123456789012345678901234567890"
 
         with dpwOtp(mockSecObj()) as dpw:
             day_otp = dpw.getOtp()
             res = dpw.checkOtp(anOtpVal=day_otp)
 
         assert res
+
 
 # eof #

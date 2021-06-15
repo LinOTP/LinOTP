@@ -45,11 +45,12 @@ from .util import get_copy_of_policies
 from .util import _get_client
 from .util import parse_action_value
 
-PolicyNameRegex = re.compile('^[a-zA-Z0-9_]*$')
+PolicyNameRegex = re.compile("^[a-zA-Z0-9_]*$")
 
 
 class PolicyWarning(Exception):
     pass
+
 
 log = logging.getLogger(__name__)
 
@@ -66,18 +67,19 @@ def import_policies(policies):
 
         policy_definition = policies.get(policy_name)
 
-        policy = {'name': policy_name,
-                  'action': policy_definition['action'],
-                  'active': policy_definition.get('active', "True"),
-                  'scope': policy_definition['scope'],
-                  'realm': policy_definition.get('realm', "*") or "*",
-                  'user': policy_definition.get('user', "*") or "*",
-                  'time': policy_definition.get('time', "*") or "*",
-                  'client': policy_definition.get('client', "*") or "*",
-                  }
+        policy = {
+            "name": policy_name,
+            "action": policy_definition["action"],
+            "active": policy_definition.get("active", "True"),
+            "scope": policy_definition["scope"],
+            "realm": policy_definition.get("realm", "*") or "*",
+            "user": policy_definition.get("user", "*") or "*",
+            "time": policy_definition.get("time", "*") or "*",
+            "client": policy_definition.get("client", "*") or "*",
+        }
 
-        if policy['scope'] == 'system':
-            policy['enforce'] = True
+        if policy["scope"] == "system":
+            policy["enforce"] = True
 
         ret = setPolicy(policy)
 
@@ -87,7 +89,7 @@ def import_policies(policies):
 
 
 def setPolicy(policy):
-    '''
+    """
     define and store a policy definition
 
     :param policy: dict  with the following keys:
@@ -101,28 +103,33 @@ def setPolicy(policy):
           * client
 
     :return: dict with the results of the stored entries
-    '''
+    """
 
     ret = {}
-    _ = context['translate']
+    _ = context["translate"]
 
-    name = policy.get('name')
+    name = policy.get("name")
 
-    if 'active' not in policy:
-        policy['active'] = "True"
+    if "active" not in policy:
+        policy["active"] = "True"
 
     # check that the name does not contain any bad characters
     if not PolicyNameRegex.match(name):
-        raise Exception(_("The name of the policy may only contain "
-                          "the characters  a-zA-Z0-9_."))
+        raise Exception(
+            _(
+                "The name of the policy may only contain "
+                "the characters  a-zA-Z0-9_."
+            )
+        )
 
     # verify the required policy attributes
-    required_attributes = ['action', 'scope', 'realm']
+    required_attributes = ["action", "scope", "realm"]
     for required_attribute in required_attributes:
-        if (required_attribute not in policy or
-           not policy[required_attribute]):
-            raise PolicyWarning("Missing attribute %s in "
-                                "policy %s" % (required_attribute, name))
+        if required_attribute not in policy or not policy[required_attribute]:
+            raise PolicyWarning(
+                "Missing attribute %s in "
+                "policy %s" % (required_attribute, name)
+            )
 
     # before storing the policy, we have to check the impact:
     # if there is a problem, we will raise an exception with a warning
@@ -133,8 +140,15 @@ def setPolicy(policy):
     # contain sensitive data
     policy["action"] = ForwardServerPolicy.prepare_forward(policy["action"])
 
-    attributes = ['action', 'scope', 'realm', 'user',
-                  'time', 'client', 'active']
+    attributes = [
+        "action",
+        "scope",
+        "realm",
+        "user",
+        "time",
+        "client",
+        "active",
+    ]
 
     for attr in attributes:
         key = "Policy.%s.%s" % (name, attr)
@@ -147,19 +161,21 @@ def setPolicy(policy):
 
 
 def deletePolicy(name, enforce=False):
-    '''
+    """
     Function to delete one named policy
 
     attributes:
         name:   (required) will only return the policy with the name
-    '''
+    """
     res = {}
-    if not re.match('^[a-zA-Z0-9_]*$', name):
-        raise ServerError("policy name may only contain the "
-                          "characters a-zA-Z0-9_", id=8888)
+    if not re.match("^[a-zA-Z0-9_]*$", name):
+        raise ServerError(
+            "policy name may only contain the " "characters a-zA-Z0-9_",
+            id=8888,
+        )
 
-    if context and context.get('Config'):
-        Config = context['Config']
+    if context and context.get("Config"):
+        Config = context["Config"]
     else:
         Config = getLinotpConfig()
 
@@ -172,9 +188,9 @@ def deletePolicy(name, enforce=False):
     param = policies.get(name)
     # delete is same as inactive ;-)
     if param:
-        param['active'] = "False"
-        param['name'] = name
-        param['enforce'] = enforce
+        param["active"] = "False"
+        param["name"] = name
+        param["enforce"] = enforce
         _check_policy_impact(**param)
 
     delEntries = []
@@ -184,36 +200,45 @@ def deletePolicy(name, enforce=False):
 
     for entry in delEntries:
         # delete this entry.
-        log.debug("[deletePolicy] removing key: %s" % entry)
+        log.debug("[deletePolicy] removing key: %r", entry)
         ret = removeFromConfig(entry)
         res[entry] = ret
 
     return res
 
 
-def _check_policy_impact(scope='', action='', active='True',
-                         client='', realm='', time=None, user=None, name='',
-                         enforce=False):
+def _check_policy_impact(
+    scope="",
+    action="",
+    active="True",
+    client="",
+    realm="",
+    time=None,
+    user=None,
+    name="",
+    enforce=False,
+):
     """
     check if applying the policy will lock the user out
     """
 
     # Currently only system policies are checked
-    if scope.lower() not in ['system']:
+    if scope.lower() not in ["system"]:
         return
 
-    reason = ''
+    reason = ""
     no_system_write_policy = True
     active_system_policy = False
 
-    pol = {'scope': scope,
-           'action': action,
-           'active': active,
-           'client': client,
-           'realm': realm,
-           'user': user,
-           'time': time
-           }
+    pol = {
+        "scope": scope,
+        "action": action,
+        "active": active,
+        "client": client,
+        "realm": realm,
+        "user": user,
+        "time": time,
+    }
 
     #
     # we need a copy of the policies as we want to modify them
@@ -230,19 +255,19 @@ def _check_policy_impact(scope='', action='', active='True',
     for policy in list(policies.values()):
 
         # do we have a system policy that is active?
-        p_scope = policy['scope'].lower()
-        p_active = policy['active'].lower()
+        p_scope = policy["scope"].lower()
+        p_active = policy["active"].lower()
 
-        if p_scope == 'system' and p_active == 'true':
+        if p_scope == "system" and p_active == "true":
             active_system_policy = True
 
             # get the policy actions
             p_actions = []
-            for act in policy.get('action', '').split(','):
+            for act in policy.get("action", "").split(","):
                 p_actions.append(act.strip())
 
             # check if there is a write in the actions
-            if '*' in p_actions or 'write' in p_actions:
+            if "*" in p_actions or "write" in p_actions:
                 no_system_write_policy = False
                 break
 
@@ -260,22 +285,24 @@ def _check_policy_impact(scope='', action='', active='True',
         reason = "no active system policy with 'write' permission defined!"
 
     if reason and enforce is False:
-        raise PolicyWarning("Warning: potential lockout due to policy "
-                "defintion: %s" % reason)
+        raise PolicyWarning(
+            "Warning: potential lockout due to policy "
+            "defintion: %s" % reason
+        )
 
     # admin policy could as well result in lockout
     return
 
 
 def create_policy_export_file(policy, filename):
-    '''
+    """
     This function takes a policy dictionary and creates an export file from it
-    '''
+    """
     TMP_DIRECTORY = "/tmp"
     file_name = "%s/%s" % (TMP_DIRECTORY, filename)
     if len(policy) == 0:
         f = open(file_name, "w")
-        f.write('')
+        f.write("")
         f.close()
     else:
         for value in list(policy.values()):
@@ -290,4 +317,3 @@ def create_policy_export_file(policy, filename):
             policy_file.write()
 
     return file_name
-

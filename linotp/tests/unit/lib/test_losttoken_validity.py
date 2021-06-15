@@ -36,7 +36,6 @@ from linotp.lib.token import _calculate_validity_end
 
 
 class LostTokenValidityTest(unittest.TestCase):
-
     @patch("linotp.lib.policy.get_action_value")
     def test_validty_end_in_5_days(self, patch_get_action_value):
         """
@@ -47,8 +46,9 @@ class LostTokenValidityTest(unittest.TestCase):
 
         assert "23:59" in end_date
 
-        in_five_days = (datetime.date.today() + datetime.timedelta(days=5)
-                        ).strftime("%d/%m/%y")
+        in_five_days = (
+            datetime.date.today() + datetime.timedelta(days=5)
+        ).strftime("%d/%m/%y")
 
         assert in_five_days in end_date
 
@@ -62,8 +62,9 @@ class LostTokenValidityTest(unittest.TestCase):
 
         end_date = _calculate_validity_end(" 1 H ")
 
-        in_one_hour = (datetime.datetime.now() + datetime.timedelta(hours=1)
-                       ).strftime("%d/%m/%y %H")
+        in_one_hour = (
+            datetime.datetime.now() + datetime.timedelta(hours=1)
+        ).strftime("%d/%m/%y %H")
 
         assert in_one_hour in end_date
 
@@ -79,9 +80,9 @@ class LostTokenValidityTest(unittest.TestCase):
 
         end_date = _calculate_validity_end(validity)
 
-        in_one_hour = (datetime.datetime.now() + datetime.timedelta(
-                                                        days=1, hours=1)
-                       ).strftime("%d/%m/%y %H")
+        in_one_hour = (
+            datetime.datetime.now() + datetime.timedelta(days=1, hours=1)
+        ).strftime("%d/%m/%y %H")
 
         assert in_one_hour in end_date
 
@@ -97,12 +98,13 @@ class LostTokenValidityTest(unittest.TestCase):
 
         end_date = _calculate_validity_end(validity)
 
-        in_one_hour = (datetime.datetime.now() + datetime.timedelta(
-                                                        hours=36, minutes=120)
-                       ).strftime("%d/%m/%y %H")
+        in_one_hour = (
+            datetime.datetime.now() + datetime.timedelta(hours=36, minutes=120)
+        ).strftime("%d/%m/%y %H")
 
         assert in_one_hour in end_date
 
         return
+
 
 # eof #

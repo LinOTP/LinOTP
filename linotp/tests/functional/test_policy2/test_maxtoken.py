@@ -52,14 +52,14 @@ class TestPolicyMaxtoken(TestController):
 
     def enroll_token(self, token_params=None):
         parameters = {
-                      "serial": "003e808e",
-                      "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
-                      "description": "myToken",
-                      }
+            "serial": "003e808e",
+            "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
+            "description": "myToken",
+        }
         if token_params:
             parameters.update(token_params)
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         return response
 
     def test_maxtoken_assign(self):
@@ -70,34 +70,34 @@ class TestPolicyMaxtoken(TestController):
 
         """
         policy = {
-                  'name': 'maxtoken',
-                  'realm': '*',
-                  'active': 'True',
-                  'client': "",
-                  'user': '*',
-                  'time': "",
-                  'action': "maxtoken=2, ",
-                  'scope': 'enrollment',
-                  }
+            "name": "maxtoken",
+            "realm": "*",
+            "active": "True",
+            "client": "",
+            "user": "*",
+            "time": "",
+            "action": "maxtoken=2, ",
+            "scope": "enrollment",
+        }
 
         self.create_policy(policy)
 
         for i in range(1, 4):
-            token_params = {'serial': '#TCOUNT%d' % i, }
+            token_params = {
+                "serial": "#TCOUNT%d" % i,
+            }
             response = self.enroll_token(token_params)
-            assert '#TCOUNT%d' % i in response
+            assert "#TCOUNT%d" % i in response
 
         for i in range(1, 3):
 
-            params = {'serial': '#TCOUNT%d' % i,
-                      'user': 'def'}
-            response = self.make_admin_request('assign', params=params)
+            params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+            response = self.make_admin_request("assign", params=params)
             assert '"value": true' in response, response
 
         i = 3
-        params = {'serial': '#TCOUNT%d' % i,
-                  'user': 'def'}
-        response = self.make_admin_request('assign', params=params)
+        params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+        response = self.make_admin_request("assign", params=params)
         message = "ERR411: The maximum number of allowed tokens"
         assert message in response, response
 
@@ -111,30 +111,30 @@ class TestPolicyMaxtoken(TestController):
 
         """
         policy = {
-                  'name': 'maxtoken',
-                  'realm': '*',
-                  'active': "True",
-                  'client': "",
-                  'user': '*',
-                  'time': "",
-                  'action': "maxtoken=2, ",
-                  'scope': 'enrollment',
-                  }
+            "name": "maxtoken",
+            "realm": "*",
+            "active": "True",
+            "client": "",
+            "user": "*",
+            "time": "",
+            "action": "maxtoken=2, ",
+            "scope": "enrollment",
+        }
 
         response = self.create_policy(policy)
 
         for i in range(1, 3):
-            token_params = {'serial': '#TCOUNT%d' % i,
-                            'user': 'def'}
+            token_params = {"serial": "#TCOUNT%d" % i, "user": "def"}
             response = self.enroll_token(token_params)
-            assert '#TCOUNT%d' % i in response
+            assert "#TCOUNT%d" % i in response
 
         i = 3
-        token_params = {'serial': '#TCOUNT%d' % i,
-                        'user': 'def'}
+        token_params = {"serial": "#TCOUNT%d" % i, "user": "def"}
         response = self.enroll_token(token_params)
-        message = ("ERR411: The maximum number of allowed tokens per user "
-                   "is exceeded")
+        message = (
+            "ERR411: The maximum number of allowed tokens per user "
+            "is exceeded"
+        )
         assert message in response, response
 
         return
@@ -167,120 +167,124 @@ class TestPolicyMaxtoken(TestController):
         """
 
         policy = {
-            'name': 'maxtoken',
-            'realm': '*',
-            'active': "True",
-            'client': "",
-            'user': '*',
-            'time': "",
-            'action': "maxtoken=4, maxtokenEMAIL=2, maxtokenHMAC=1 ",
-            'scope': 'enrollment',
+            "name": "maxtoken",
+            "realm": "*",
+            "active": "True",
+            "client": "",
+            "user": "*",
+            "time": "",
+            "action": "maxtoken=4, maxtokenEMAIL=2, maxtokenHMAC=1 ",
+            "scope": "enrollment",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         policy = {
-            'name': 'T1',
-            'action': ('enrollEMAIL, enrollSMS, assign, '
-                       'webprovisionGOOGLE, webprovisionGOOGLEtime, '),
-            'user': ' passthru.*.myDefRes:',
-            'realm': '*',
-            'scope': 'selfservice'
+            "name": "T1",
+            "action": (
+                "enrollEMAIL, enrollSMS, assign, "
+                "webprovisionGOOGLE, webprovisionGOOGLEtime, "
+            ),
+            "user": " passthru.*.myDefRes:",
+            "realm": "*",
+            "scope": "selfservice",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
 
         # 1. enroll email - ok
 
-        user = 'passthru_user1@myDefRealm'
-        pin = '123'
+        user = "passthru_user1@myDefRealm"
+        pin = "123"
 
-        auth_user = {
-            'login': user,
-            'password': 'geheim1'}
+        auth_user = {"login": user, "password": "geheim1"}
 
         params = {
-            'type': 'email',
-            'email_address': 'test@example.net',
-            'pin': pin
+            "type": "email",
+            "email_address": "test@example.net",
+            "pin": pin,
         }
         response = self.make_userselfservice_request(
-            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'detail' in response, response
+        assert "detail" in response, response
 
         # 2. enroll hmac - ok
 
-        params = {
-            'type': 'googleauthenticator',
-            'serial': "myGoo"
-        }
+        params = {"type": "googleauthenticator", "serial": "myGoo"}
         response = self.make_userselfservice_request(
-            'webprovision', params=params,
-            auth_user=auth_user, new_auth_cookie=True)
+            "webprovision",
+            params=params,
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
 
-        assert 'oathtoken' in response, response
+        assert "oathtoken" in response, response
 
         # 3. enroll hmac - fail, only one hmac allowed
 
         params = {
-            'type': "googleauthenticator",
+            "type": "googleauthenticator",
         }
         response = self.make_userselfservice_request(
-            'webprovision', params=params,
-            auth_user=auth_user, new_auth_cookie=True)
+            "webprovision",
+            params=params,
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
 
-        assert 'The maximum number of allowed tokens' in response, response
+        assert "The maximum number of allowed tokens" in response, response
 
         # 4. enroll email - ok
 
         params = {
-            'type': 'email',
-            'email_address': 'test@example.net',
-            'pin': pin
+            "type": "email",
+            "email_address": "test@example.net",
+            "pin": pin,
         }
         response = self.make_userselfservice_request(
-            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'detail' in response, response
+        assert "detail" in response, response
 
         # 5. enroll email - no more email token allowed
 
         params = {
-            'type': 'email',
-            'email_address': 'test@example.net',
-            'pin': pin
+            "type": "email",
+            "email_address": "test@example.net",
+            "pin": pin,
         }
         response = self.make_userselfservice_request(
-            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'allowed tokens of type email' in response, response
+        assert "allowed tokens of type email" in response, response
 
         # 6. enroll sms - ok, the 4th token
 
         params = {
-            'type': 'sms',
-            'phone': '1234456',
-            'pin': pin,
-            'serial': 'mysms'
+            "type": "sms",
+            "phone": "1234456",
+            "pin": pin,
+            "serial": "mysms",
         }
         response = self.make_userselfservice_request(
-            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'detail' in response, response
+        assert "detail" in response, response
 
         # 7. enroll sms - fail, more than 4 token
 
-        params = {
-            'type': 'sms',
-            'phone': '1234456',
-            'pin': pin
-        }
+        params = {"type": "sms", "phone": "1234456", "pin": pin}
         response = self.make_userselfservice_request(
-            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'The maximum number of allowed tokens' in response, response
+        assert "The maximum number of allowed tokens" in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -288,53 +292,57 @@ class TestPolicyMaxtoken(TestController):
 
         # 8. admin creates hmac token
 
-        params={'genkey': 1, 'serial': 'myHmac'}
-        response = self.make_admin_request('init', params=params)
+        params = {"genkey": 1, "serial": "myHmac"}
+        response = self.make_admin_request("init", params=params)
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # 9. assign - fail, due to total token limit
 
         params = {
-            'serial': 'myHmac',
+            "serial": "myHmac",
         }
         response = self.make_userselfservice_request(
-            'assign', params=params, auth_user=auth_user, new_auth_cookie=True)
+            "assign", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'The maximum number of allowed tokens' in response, response
+        assert "The maximum number of allowed tokens" in response, response
 
         # 10. admin removes one sms token
 
-        params={'serial': 'mysms'}
-        response = self.make_admin_request('remove', params=params)
+        params = {"serial": "mysms"}
+        response = self.make_admin_request("remove", params=params)
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # 11. assign - fail, due to hmac token limit
 
         params = {
-            'serial': 'myHmac',
+            "serial": "myHmac",
         }
         response = self.make_userselfservice_request(
-            'assign', params=params, auth_user=auth_user, new_auth_cookie=True)
+            "assign", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'allowed tokens of type hmac per user' in response, response
+        assert "allowed tokens of type hmac per user" in response, response
 
         # 12. admin removes old hmac token
 
-        params={'serial': 'myGoo'}
-        response = self.make_admin_request('remove', params=params)
+        params = {"serial": "myGoo"}
+        response = self.make_admin_request("remove", params=params)
 
-        assert 'false' not in response
+        assert "false" not in response
 
         # 13. assign - ok
 
         params = {
-            'serial': 'myHmac',
+            "serial": "myHmac",
         }
         response = self.make_userselfservice_request(
-            'assign', params=params, auth_user=auth_user, new_auth_cookie=True)
+            "assign", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
-        assert 'false' not in response, response
+        assert "false" not in response, response
+
 
 # eof

@@ -67,23 +67,23 @@ ORM_Models = {
     "Config": Config,
     "Token": Token,
     "TokenRealm": TokenRealm,
-    "Realm": Realm
-    }
+    "Realm": Realm,
+}
 
 # -------------------------------------------------------------------------- --
 
 # dbsnapshot commands
 
-dbsnapshot_cmds = AppGroup("dbsnapshot",
-                           help=("Manage system-independent database "
-                                 "'snapshots'"))
+dbsnapshot_cmds = AppGroup(
+    "dbsnapshot", help=("Manage system-independent database 'snapshots'")
+)
 
 
-@dbsnapshot_cmds.command("create",
-                         help="Create a snapshot of the database tables.")
+@dbsnapshot_cmds.command(
+    "create", help="Create a snapshot of the database tables."
+)
 def create_command():
-    """Create backup file for your database tables
-    """
+    """Create backup file for your database tables"""
 
     try:
         current_app.echo("Backup database ...", v=1)
@@ -94,18 +94,24 @@ def create_command():
         sys.exit(1)
 
 
-@dbsnapshot_cmds.command("restore",
-                         help="Restore a snapshot of the database tables.")
+@dbsnapshot_cmds.command(
+    "restore", help="Restore a snapshot of the database tables."
+)
 @click.option("--file", help="Name of the snapshot file.")
-@click.option("--date",
-              help=("Restore a snapshot from a given date. "
-                    "'date' must be in format '%s'." % TIME_FORMAT))
-@click.option("--table",
-              type=click.Choice(["config", "token", "audit"],
-                                case_sensitive=False),
-              help="Restore a specific table only.")
+@click.option(
+    "--date",
+    help=(
+        "Restore a snapshot from a given date. "
+        "'date' must be in format '%s'." % TIME_FORMAT
+    ),
+)
+@click.option(
+    "--table",
+    type=click.Choice(["config", "token", "audit"], case_sensitive=False),
+    help="Restore a specific table only.",
+)
 def restore_command(file=None, date=None, table=None):
-    """ restore a database snapshot
+    """restore a database snapshot
 
     @param file - the snapshot file name, could be absolute or relative
     @param date - select a snapshot to restore by date
@@ -120,11 +126,11 @@ def restore_command(file=None, date=None, table=None):
         sys.exit(1)
 
 
-@dbsnapshot_cmds.command("list",
-                         help=("List available snapshots of the database "
-                               "tables."))
+@dbsnapshot_cmds.command(
+    "list", help=("List available snapshots of the database tables.")
+)
 def list_command():
-    """ list available database snapshots."""
+    """list available database snapshots."""
     try:
         current_app.echo("Available snapshots to restore", v=1)
         for backup_date, backup_file in list_database_backups():
@@ -138,6 +144,7 @@ def list_command():
 # -------------------------------------------------------------------------- --
 
 # backend implementation
+
 
 def backup_database_tables() -> int:
     """
@@ -164,8 +171,11 @@ def backup_database_tables() -> int:
 
     db = SQLAlchemy(app)
 
-    app.echo("extracting data from: %r:%r" %
-             (db.engine.url.drivername, db.engine.url.database), v=1)
+    app.echo(
+        "extracting data from: %r:%r"
+        % (db.engine.url.drivername, db.engine.url.database),
+        v=1,
+    )
 
     # ---------------------------------------------------------------------- --
 
@@ -186,7 +196,8 @@ def backup_database_tables() -> int:
     # run the db serialisation and dump / pickle the data
 
     backup_filename = os.path.join(
-        backup_dir, backup_filename_template % now_str)
+        backup_dir, backup_filename_template % now_str
+    )
 
     app.echo("Creating backup file: %s" % backup_filename, v=1)
 
@@ -200,14 +211,17 @@ def backup_database_tables() -> int:
 
             data_query = model_class.query
 
-            pb_file = (None if app.echo.verbosity > 1
-                       else open("/dev/null", "w"))  # None => stdout
+            pb_file = (
+                None if app.echo.verbosity > 1 else open("/dev/null", "w")
+            )  # None => stdout
 
             with click.progressbar(
-                    data_query.all(), label=name, file=pb_file) as all_data:
+                data_query.all(), label=name, file=pb_file
+            ) as all_data:
                 for data in all_data:
-                    backup_file.write(binascii.hexlify(dumps(data))
-                                      .decode("utf-8"))
+                    backup_file.write(
+                        binascii.hexlify(dumps(data)).decode("utf-8")
+                    )
 
                 app.echo(".", v=2, nl=False)
 
@@ -245,11 +259,13 @@ def list_database_backups() -> list:
 
         # backup files match the "template" + "%s.sqldb" format
 
-        if (backup_file.startswith(filename_template)
-                and backup_file.endswith(".sqldb")):
+        if backup_file.startswith(filename_template) and backup_file.endswith(
+            ".sqldb"
+        ):
 
             backup_date, _, _ext = backup_file[
-                len(filename_template):].rpartition(".")
+                len(filename_template) :
+            ].rpartition(".")
 
             yield backup_date, backup_file
 
@@ -258,8 +274,10 @@ def list_database_backups() -> list:
 
 # restore
 
+
 def _get_restore_filename(
-        template: str, filename: str = None, date: str = None) -> str or None:
+    template: str, filename: str = None, date: str = None
+) -> str or None:
     """
     helper for restore, to determin a filename from a given date or file name
 
@@ -274,8 +292,7 @@ def _get_restore_filename(
     backup_dir = app.config["BACKUP_DIR"]
 
     if date:
-        backup_filename = os.path.join(
-            backup_dir, template % date)
+        backup_filename = os.path.join(backup_dir, template % date)
 
     elif filename:
 
@@ -292,8 +309,8 @@ def _get_restore_filename(
 
     if not filename and not date:
         app.echo(
-            "failed to restore - no date or file name parameter provided",
-            v=1)
+            "failed to restore - no date or file name parameter provided", v=1
+        )
         raise ValueError("no date or file name parameter provided!")
 
     # ---------------------------------------------------------------------- --
@@ -304,15 +321,19 @@ def _get_restore_filename(
 
         app.echo(
             "Failed to restore %s - not found or not accessible"
-            % backup_filename)
-        raise FileNotFoundError("failed to restore %s - not found or not"
-                                " accessible" % backup_filename)
+            % backup_filename
+        )
+        raise FileNotFoundError(
+            "failed to restore %s - not found or not"
+            " accessible" % backup_filename
+        )
 
     return backup_filename
 
 
 def restore_database_tables(
-        filename: str = None, date: str = None, table: str = None) -> int:
+    filename: str = None, date: str = None, table: str = None
+) -> int:
     """
     restore the database tables from a file or for a given date
        optionally restore only one table
@@ -350,16 +371,20 @@ def restore_database_tables(
             app.echo(
                 f"selected table {table} is not in the set "
                 "of supported tables",
-                v=1)
-            raise ValueError(f"selected table {table} is not in the set "
-                             "of supported tables")
+                v=1,
+            )
+            raise ValueError(
+                f"selected table {table} is not in the set "
+                "of supported tables"
+            )
 
     # ---------------------------------------------------------------------- --
 
     # determine the backup file for the database restore
 
     backup_filename = _get_restore_filename(
-                        "linotp_backup_%s.sqldb", filename, date)
+        "linotp_backup_%s.sqldb", filename, date
+    )
 
     # ---------------------------------------------------------------------- --
 
@@ -378,7 +403,7 @@ def restore_database_tables(
                 name = None
 
             elif line.startswith("--- BEGIN "):
-                name = line[len("--- BEGIN "):]
+                name = line[len("--- BEGIN ") :]
 
             elif line and name in restore_names:
 

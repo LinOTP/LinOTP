@@ -41,16 +41,20 @@ from linotp.flap import request, response
 from linotp.controllers.base import BaseController
 from linotp.lib.context import request_context
 
-from linotp.lib.policy import (checkAuthorisation,
-                               PolicyException,
-                               getAdminPolicies)
+from linotp.lib.policy import (
+    checkAuthorisation,
+    PolicyException,
+    getAdminPolicies,
+)
 
 from linotp.lib.realm import match_realms
 
-from linotp.lib.reply import (sendResult,
-                              sendError,
-                              sendResultIterator,
-                              sendCSVIterator)
+from linotp.lib.reply import (
+    sendResult,
+    sendError,
+    sendResultIterator,
+    sendCSVIterator,
+)
 
 from linotp.lib.reporting import ReportingIterator
 from linotp.lib.reporting import get_max_token_count_in_period
@@ -85,46 +89,46 @@ class ReportingController(BaseController):
                 created by sendError with the context info 'before'
         """
 
-        action = request_context['action']
+        action = request_context["action"]
 
         try:
 
-            g.audit['success'] = False
+            g.audit["success"] = False
 
-            g.audit['client'] = get_client(request)
+            g.audit["client"] = get_client(request)
 
             # Session handling
             check_session(request)
 
-            checkAuthorisation(scope='reporting.access', method=action)
+            checkAuthorisation(scope="reporting.access", method=action)
 
             return
 
         except Exception as exception:
-            log.exception(exception)
+            log.error(exception)
             db.session.rollback()
-            return sendError(response, exception, context='before')
+            return sendError(response, exception, context="before")
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
 
         try:
-            g.audit['administrator'] = getUserFromRequest(request).get('login')
+            g.audit["administrator"] = getUserFromRequest(request).get("login")
 
             current_app.audit_obj.log(g.audit)
             db.session.commit()  # FIXME: may not be needed
             return response
 
         except Exception as exception:
-            log.exception(exception)
+            log.error(exception)
             db.session.rollback()
-            return sendError(response, exception, context='after')
+            return sendError(response, exception, context="after")
 
     def maximum(self):
         """
@@ -158,26 +162,25 @@ class ReportingController(BaseController):
             start = datetime(year=1970, month=1, day=1)
 
             _now = datetime.utcnow()
-            end = (
-                datetime(year=_now.year, month=_now.month, day=_now.day) +
-                timedelta(days=1)
-            )
+            end = datetime(
+                year=_now.year, month=_now.month, day=_now.day
+            ) + timedelta(days=1)
             # ------------------------------------------------------------- --
 
-            request_realms = self.request_params.get('realms', '').split(',')
-            status = self.request_params.get('status', ['total'])
-            if status != ['total']:
-                status = status.split(',')
+            request_realms = self.request_params.get("realms", "").split(",")
+            status = self.request_params.get("status", ["total"])
+            if status != ["total"]:
+                status = status.split(",")
 
             realm_whitelist = []
-            policies = getAdminPolicies('maximum', scope='reporting.access')
+            policies = getAdminPolicies("maximum", scope="reporting.access")
 
-            if policies['active'] and policies['realms']:
-                realm_whitelist = policies.get('realms')
+            if policies["active"] and policies["realms"]:
+                realm_whitelist = policies.get("realms")
 
             # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = list(request_context['Realms'].keys())
+            if not realm_whitelist or "*" in realm_whitelist:
+                realm_whitelist = list(request_context["Realms"].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -190,12 +193,12 @@ class ReportingController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
             return sendError(response, policy_exception, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -249,10 +252,10 @@ class ReportingController(BaseController):
         """
         result = {}
         try:
-            request_realms = self.request_params.get('realms', '').split(',')
-            status = self.request_params.get('status', ['total'])
-            if status != ['total']:
-                status = status.split(',')
+            request_realms = self.request_params.get("realms", "").split(",")
+            status = self.request_params.get("status", ["total"])
+            if status != ["total"]:
+                status = status.split(",")
 
             # ------------------------------------------------------------- --
 
@@ -262,37 +265,36 @@ class ReportingController(BaseController):
             # if start is not given, we use the unix time start 1.1.1970
 
             start = datetime(year=1970, month=1, day=1)
-            if 'from' in self.request_params:
-                start_str = self.request_params.get('from')
+            if "from" in self.request_params:
+                start_str = self.request_params.get("from")
                 start = convert_to_datetime(start_str, TIME_FMTS)
 
             # if end is not defined, we use tomorrow at 0:0:0
 
             _now = datetime.utcnow()
-            end = (
-                datetime(year=_now.year, month=_now.month, day=_now.day) +
-                timedelta(days=1)
-            )
-            if 'to' in self.request_params:
-                end_str = self.request_params.get('to')
+            end = datetime(
+                year=_now.year, month=_now.month, day=_now.day
+            ) + timedelta(days=1)
+            if "to" in self.request_params:
+                end_str = self.request_params.get("to")
                 end = convert_to_datetime(end_str, TIME_FMTS)
 
             # ------------------------------------------------------------- --
 
             realm_whitelist = []
-            policies = getAdminPolicies('period', scope='reporting.access')
-            if policies['active'] and policies['realms']:
-                realm_whitelist = policies.get('realms')
+            policies = getAdminPolicies("period", scope="reporting.access")
+            if policies["active"] and policies["realms"]:
+                realm_whitelist = policies.get("realms")
 
             # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = request_context['Realms'].keys()
+            if not realm_whitelist or "*" in realm_whitelist:
+                realm_whitelist = request_context["Realms"].keys()
 
             realms = match_realms(request_realms, realm_whitelist)
 
-            result['realms'] = []
+            result["realms"] = []
             for realm in realms:
-                result_realm = {'name': realm}
+                result_realm = {"name": realm}
                 max_token_counts = {}
                 for stat in status:
 
@@ -312,23 +314,23 @@ class ReportingController(BaseController):
 
                     max_token_counts[stat] = max_token_stat
 
-                result_realm['maxtokencount'] = max_token_counts
-                result['realms'].append(result_realm)
+                result_realm["maxtokencount"] = max_token_counts
+                result["realms"].append(result_realm)
 
-            result['period'] = {
-                'from': start.isoformat(),
-                'to': end.isoformat()
+            result["period"] = {
+                "from": start.isoformat(),
+                "to": end.isoformat(),
             }
 
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -353,41 +355,50 @@ class ReportingController(BaseController):
         """
 
         try:
-            request_realms = self.request_params.get('realms', '').split(',')
-            status = self.request_params.get('status', ['total'])
-            if status != ['total']:
-                status = status.split(',')
+            request_realms = self.request_params.get("realms", "").split(",")
+            status = self.request_params.get("status", ["total"])
+            if status != ["total"]:
+                status = status.split(",")
 
             realm_whitelist = []
-            policies = getAdminPolicies('delete_all', scope='reporting.access')
+            policies = getAdminPolicies("delete_all", scope="reporting.access")
 
-            if policies['active'] and policies['realms']:
-                realm_whitelist = policies.get('realms')
+            if policies["active"] and policies["realms"]:
+                realm_whitelist = policies.get("realms")
 
             # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = list(request_context['Realms'].keys())
+            if not realm_whitelist or "*" in realm_whitelist:
+                realm_whitelist = list(request_context["Realms"].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
-            if '*' in status:
-                status.remove('*')
-                status.extend(['active', 'inactive', 'assigned', 'unassigned',
-                               'active&assigned', 'active&unassigned',
-                               'inactive&assigned', 'inactive&unassigned',
-                               'total'])
+            if "*" in status:
+                status.remove("*")
+                status.extend(
+                    [
+                        "active",
+                        "inactive",
+                        "assigned",
+                        "unassigned",
+                        "active&assigned",
+                        "active&unassigned",
+                        "inactive&assigned",
+                        "inactive&unassigned",
+                        "total",
+                    ]
+                )
 
             result = delete(realms=realms, status=status)
             db.session.commit()
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -417,25 +428,25 @@ class ReportingController(BaseController):
         """
 
         try:
-            request_realms = self.request_params.get('realms', '').split(',')
-            status = self.request_params.get('status', ['total'])
-            if status != ['total']:
-                status = status.split(',')
+            request_realms = self.request_params.get("realms", "").split(",")
+            status = self.request_params.get("status", ["total"])
+            if status != ["total"]:
+                status = status.split(",")
 
-            border_day = self.request_params.get('date')
+            border_day = self.request_params.get("date")
 
             # this may throw ValueError if date is in wrong format
             datetime.strptime(border_day, "%Y-%m-%d")
 
             realm_whitelist = []
-            policies = getAdminPolicies('delete_before', scope='reporting')
+            policies = getAdminPolicies("delete_before", scope="reporting")
 
-            if policies['active'] and policies['realms']:
-                realm_whitelist = policies.get('realms')
+            if policies["active"] and policies["realms"]:
+                realm_whitelist = policies.get("realms")
 
             # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = list(request_context['Realms'].keys())
+            if not realm_whitelist or "*" in realm_whitelist:
+                realm_whitelist = list(request_context["Realms"].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
@@ -444,17 +455,17 @@ class ReportingController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except ValueError as value_error:
-            log.exception(value_error)
+            log.error(value_error)
             db.session.rollback()
-            return sendError(response, str(value_error), 1)
+            return sendError(response, value_error, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)
 
@@ -497,65 +508,78 @@ class ReportingController(BaseController):
 
         try:
             param = self.request_params
-            page = param.get('page')
-            sort = param.get('sortby')
-            sortdir = param.get('sortdir')
-            psize = param.get('pagesize')
-            output_format = param.get('outform', 'json')
-            request_realms = param.get('realms', '').split(',')
-            status = param.get('status', [])
-            border_day = param.get('date')
+            page = param.get("page")
+            sort = param.get("sortby")
+            sortdir = param.get("sortdir")
+            psize = param.get("pagesize")
+            output_format = param.get("outform", "json")
+            request_realms = param.get("realms", "").split(",")
+            status = param.get("status", [])
+            border_day = param.get("date")
 
             if border_day:
                 # this may throw ValueError if date is in wrong format
                 datetime.strptime(border_day, "%Y-%m-%d")
 
             realm_whitelist = []
-            policies = getAdminPolicies('show', scope='reporting.access')
+            policies = getAdminPolicies("show", scope="reporting.access")
 
-            if policies['active'] and policies['realms']:
-                realm_whitelist = policies.get('realms')
+            if policies["active"] and policies["realms"]:
+                realm_whitelist = policies.get("realms")
 
             # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or '*' in realm_whitelist:
-                realm_whitelist = list(request_context['Realms'].keys())
+            if not realm_whitelist or "*" in realm_whitelist:
+                realm_whitelist = list(request_context["Realms"].keys())
 
             realms = match_realms(request_realms, realm_whitelist)
 
-            reports = ReportingIterator(realms=realms, status=status, date=None,
-                                        page=page, psize=psize, sort=sort,
-                                        sortdir=sortdir)
+            reports = ReportingIterator(
+                realms=realms,
+                status=status,
+                date=None,
+                page=page,
+                psize=psize,
+                sort=sort,
+                sortdir=sortdir,
+            )
             info = reports.getResultSetInfo()
 
-            g.audit['success'] = True
+            g.audit["success"] = True
             db.session.commit()
 
-            if output_format == 'csv':
+            if output_format == "csv":
                 headers = Headers()
-                headers.add('Content-Disposition', 'attachment',
-                            filename='linotp-reports.csv')
+                headers.add(
+                    "Content-Disposition",
+                    "attachment",
+                    filename="linotp-reports.csv",
+                )
                 return Response(
                     stream_with_context(
-                        sendCSVIterator(reports.iterate_reports())),
-                    mimetype='text/csv', headers=headers)
+                        sendCSVIterator(reports.iterate_reports())
+                    ),
+                    mimetype="text/csv",
+                    headers=headers,
+                )
             else:
                 return Response(
                     stream_with_context(
-                        sendResultIterator(reports.iterate_reports(),
-                                           opt=info)),
-                    mimetype='application/json')
+                        sendResultIterator(reports.iterate_reports(), opt=info)
+                    ),
+                    mimetype="application/json",
+                )
 
         except PolicyException as policy_exception:
-            log.exception(policy_exception)
+            log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, str(policy_exception), 1)
+            return sendError(response, policy_exception, 1)
 
         except ValueError as value_error:
-            log.exception(value_error)
+            log.error(value_error)
             db.session.rollback()
-            return sendError(response, str(value_error), 1)
+            return sendError(response, value_error, 1)
 
         except Exception as exc:
-            log.exception(exc)
+            log.error(exc)
             db.session.rollback()
             return sendError(response, exc)

@@ -28,11 +28,11 @@
 from linotp.lib.crypto.utils import zerome
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class secretPassword:
-
     def __init__(self, secObj):
         self.secretObject = secObj
 

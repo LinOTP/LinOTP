@@ -118,7 +118,7 @@ def find_by_xpath(driver, xpath):
 
 
 def fill_form_element(driver, element_id, data):
-    """ Clear element and fill with values """
+    """Clear element and fill with values"""
     e = find_by_id(driver, element_id)
     e.clear()
     e.send_keys(data)
@@ -129,7 +129,7 @@ def fill_element_from_dict(driver, element_id, name, data_dict):
     Verify that we have the named element in dict. Then clear the element
     and fill with the value in the data dict
     """
-    assert name in data_dict, 'Data dict needs element %s' % name
+    assert name in data_dict, "Data dict needs element %s" % name
     return fill_form_element(driver, element_id, data_dict[name])
 
 
@@ -143,12 +143,12 @@ def select(driver, select_element, option_text):
     """Select an option from a HTML <select> (dropdown)"""
 
     selections = Select(select_element)
-    if(selections.first_selected_option.text.strip() != option_text):
+    if selections.first_selected_option.text.strip() != option_text:
         selections.select_by_visible_text(option_text)
 
 
 def get_session(base_url, user=None, pwd=None):
-    '''
+    """
     return a LinOTP Session
 
     :param base_url: the linotp base url
@@ -156,17 +156,17 @@ def get_session(base_url, user=None, pwd=None):
     :param pwd: the password of the user
 
     :return: session (string)
-    '''
+    """
     session = None
     if user is not None:
-        url = base_url + 'admin/getsession'
+        url = base_url + "admin/getsession"
         r = requests.get(url, auth=HTTPDigestAuth(user, pwd), verify=False)
 
-        LOG.debug("Content:\n%s" % r.text)
+        LOG.debug("Content:\n%s", r.text)
         if r.status_code != 200:
-            raise Exception(f'Admin login failed: {r}')
+            raise Exception(f"Admin login failed: {r}")
         session = None
-        domain = urlparse(base_url).netloc.split(':')[0]
+        domain = urlparse(base_url).netloc.split(":")[0]
         exceptions = []
         for d in (domain, domain + ".local", None):
             # We try to find any cookie containing 'admin_session'. Sometimes
@@ -174,13 +174,13 @@ def get_session(base_url, user=None, pwd=None):
             # several alternatives and as last resource try to get any cookie
             # matching 'admin_session' no matter what the domain (=None).
             try:
-                session = r.cookies.get('admin_session', domain=d)
+                session = r.cookies.get("admin_session", domain=d)
                 if session:
                     break
             except requests.cookies.CookieConflictError as exc:
                 exceptions.append(exc)
         if not session:
-            raise Exception('Could not get session %r' % exceptions)
+            raise Exception("Could not get session %r" % exceptions)
     return session
 
 
@@ -192,7 +192,7 @@ def load_tconfig_from_file(filename):
 
       NOSE_TESTCONFIG_AUTOLOAD_INI=<filename>
     """
-    load_ini(filename, encoding='utf-8')
+    load_ini(filename, encoding="utf-8")
 
 
 def get_from_tconfig(key_array, default=None, required=False):
@@ -210,7 +210,8 @@ def get_from_tconfig(key_array, default=None, required=False):
 
     if required and not len(current_config):
         raise Exception(
-            "Testconfig is empty. See Readme for details (--tc-file)")
+            "Testconfig is empty. See Readme for details (--tc-file)"
+        )
 
     try:
         for key in key_array:
@@ -220,15 +221,17 @@ def get_from_tconfig(key_array, default=None, required=False):
         if not required:
             return default
         else:
-            raise Exception("Testconfig entry %s is required" %
-                            '.'.join(key_array))
+            raise Exception(
+                "Testconfig entry %s is required" % ".".join(key_array)
+            )
+
 
 # Helper for skipping tests if there is no radius server
 
 
 def is_radius_disabled():
-    disable_radius = get_from_tconfig(['radius', 'disable'], default='False')
-    return disable_radius.lower() == 'true'
+    disable_radius = get_from_tconfig(["radius", "disable"], default="False")
+    return disable_radius.lower() == "true"
 
 
 def close_alert_and_get_its_text(driver, accept=True):
@@ -247,6 +250,7 @@ def close_alert_and_get_its_text(driver, accept=True):
     else:
         alert.dismiss()
     return alert_text
+
 
 class BackendException(Exception):
     """
@@ -269,4 +273,6 @@ class BackendException(Exception):
             self.url: str = response.url
 
     def __str__(self) -> str:
-        return f"{super().__str__()} {self.url} {self.code} - {self.description}"
+        return (
+            f"{super().__str__()} {self.url} {self.code} - {self.description}"
+        )

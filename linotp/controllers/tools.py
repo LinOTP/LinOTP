@@ -47,7 +47,9 @@ from linotp.lib.util import check_session
 from linotp.lib.context import request_context
 
 from linotp.lib.tools.import_user import UserImport
-from linotp.lib.tools.import_user.SQLImportHandler import LinOTP_DatabaseContext
+from linotp.lib.tools.import_user.SQLImportHandler import (
+    LinOTP_DatabaseContext,
+)
 from linotp.lib.tools.import_user.SQLImportHandler import SQLImportHandler
 from linotp.lib.tools.import_user import DefaultFormatReader
 from linotp.lib.tools.import_user import PasswdFormatReader
@@ -69,8 +71,7 @@ log = logging.getLogger(__name__)
 
 
 class ToolsController(BaseController):
-    """
-    """
+    """"""
 
     def __before__(self, **params):
         """
@@ -81,7 +82,7 @@ class ToolsController(BaseController):
                 created by sendError with the context info 'before'
         """
 
-        action = request_context['action']
+        action = request_context["action"]
 
         try:
 
@@ -91,23 +92,23 @@ class ToolsController(BaseController):
             checkToolsAuthorisation(action, params)
 
         except PolicyException as exx:
-            log.exception("policy failed %r" % exx)
+            log.error("policy failed %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context='before')
+            return sendError(response, exx, context="before")
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r" % (action, exx))
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(response, exx, context='before')
+            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
 
         try:
             # finally create the audit entry
@@ -116,19 +117,19 @@ class ToolsController(BaseController):
             return response
 
         except Exception as exx:
-            log.exception(exx)
+            log.error(exx)
             db.session.rollback()
-            return sendError(response, exx, context='after')
+            return sendError(response, exx, context="after")
 
     def setPassword(self):
         """
         abilty to set password in managed / admin_user resolver
         """
         try:
-            old_pw = self.request_params['old_password']
-            new_pw = self.request_params['new_password']
+            old_pw = self.request_params["old_password"]
+            new_pw = self.request_params["new_password"]
 
-            username = request_context['AuthUser'].get('login', '')
+            username = request_context["AuthUser"].get("login", "")
 
             if not username:
                 raise Exception("Missing authenticated user!")
@@ -141,27 +142,28 @@ class ToolsController(BaseController):
             # any error will raise an excecption which will be displayed
             # to the user
 
-            g.audit['administrator'] = username
-            g.audit['info'] = 'setPassword'
+            g.audit["administrator"] = username
+            g.audit["info"] = "setPassword"
 
             set_pw_handler = SetPasswordHandler(DataBaseContext(sql_url))
 
-            set_pw_handler.set_password(username,
-                                        old_password=old_pw,
-                                        new_password=new_pw)
+            set_pw_handler.set_password(
+                username, old_password=old_pw, new_password=new_pw
+            )
 
-            g.audit['success'] = True
+            g.audit["success"] = True
 
-            return sendResult(response, obj=True,
-                              opt={'detail':
-                                   ('password updated for %r' % username)
-                                   })
+            return sendResult(
+                response,
+                obj=True,
+                opt={"detail": ("password updated for %r" % username)},
+            )
 
         except Exception as exx:
 
-            g.audit['success'] = False
+            g.audit["success"] = False
 
-            log.exception(exx)
+            log.error(exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -172,27 +174,27 @@ class ToolsController(BaseController):
         ret = {}
 
         try:
-            src = self.request_params['from']
-            target = self.request_params['to']
+            src = self.request_params["from"]
+            target = self.request_params["to"]
 
             from linotp.lib.resolver import getResolverList
+
             resolvers = getResolverList()
 
             src_resolver = resolvers.get(src, None)
             target_resolver = resolvers.get(target, None)
 
             if not target_resolver or not src_resolver:
-                raise Exception('Src or Target resolver is undefined!')
+                raise Exception("Src or Target resolver is undefined!")
 
             mg = MigrateResolverHandler()
-            ret = mg.migrate_resolver(src=src_resolver,
-                                      target=target_resolver)
+            ret = mg.migrate_resolver(src=src_resolver, target=target_resolver)
 
             db.session.commit()
             return sendResult(response, ret)
 
         except Exception as e:
-            log.exception("failed: %r" % e)
+            log.error("migrate resolver failed")
             db.session.rollback()
             return sendError(response, e, 1)
 
@@ -209,12 +211,12 @@ class ToolsController(BaseController):
             # processing required arguments
             try:
 
-                data_file = request.files['file']
-                resolver_name = params['resolver']
+                data_file = request.files["file"]
+                resolver_name = params["resolver"]
 
             except KeyError as exx:
 
-                log.exception("Missing parameter: %r", exx)
+                log.error("Missing parameter: %r", exx)
                 raise ParameterError("Missing parameter: %r" % exx)
 
             groupid = resolver_name
@@ -238,56 +240,58 @@ class ToolsController(BaseController):
             # -------------------------------------------------------------- --
 
             # process the other arguments
-            dryrun = boolean(params.get('dryrun', False))
+            dryrun = boolean(params.get("dryrun", False))
 
-            passwords_in_plaintext = boolean(params.get(
-                                                'passwords_in_plaintext',
-                                                False))
+            passwords_in_plaintext = boolean(
+                params.get("passwords_in_plaintext", False)
+            )
 
-            file_format = params.get('format', "csv")
+            file_format = params.get("format", "csv")
 
-            if file_format in ('password', 'passwd'):
+            if file_format in ("password", "passwd"):
 
                 column_mapping = {
-                        "userid": 2,
-                        "username": 0,
-                        "phone": 8,
-                        "mobile": 7,
-                        "email": 9,
-                        "surname": 5,
-                        "givenname": 4,
-                        "password": 1}
+                    "userid": 2,
+                    "username": 0,
+                    "phone": 8,
+                    "mobile": 7,
+                    "email": 9,
+                    "surname": 5,
+                    "givenname": 4,
+                    "password": 1,
+                }
 
                 format_reader = PasswdFormatReader()
 
-            elif file_format in ('csv'):
+            elif file_format in ("csv"):
 
-                skip_header = boolean(params.get('skip_header', False))
+                skip_header = boolean(params.get("skip_header", False))
                 if skip_header:
-                    data = '\n'.join(data.split('\n')[1:])
+                    data = "\n".join(data.split("\n")[1:])
 
                 column_mapping = {
-                        "username": 0,
-                        "userid": 1,
-                        "surname": 2,
-                        "givenname": 3,
-                        "email": 4,
-                        "phone": 5,
-                        "mobile": 6,
-                        "password": 7}
+                    "username": 0,
+                    "userid": 1,
+                    "surname": 2,
+                    "givenname": 3,
+                    "email": 4,
+                    "phone": 5,
+                    "mobile": 6,
+                    "password": 7,
+                }
 
-                delimiter = str(params.get('delimiter', ","))
-                quotechar = str(params.get('quotechar', '"'))
+                delimiter = str(params.get("delimiter", ","))
+                quotechar = str(params.get("quotechar", '"'))
 
                 format_reader = DefaultFormatReader()
                 format_reader.delimiter = delimiter
                 format_reader.quotechar = quotechar
 
-                column_mapping = params.get('column_mapping', column_mapping)
+                column_mapping = params.get("column_mapping", column_mapping)
 
             else:
 
-                raise Exception('unspecified file foramt')
+                raise Exception("unspecified file foramt")
 
             # we have to convert the column_mapping back into an dict
 
@@ -296,13 +300,15 @@ class ToolsController(BaseController):
 
             # prevent overwrite of existing unmanaged resolver
 
-            checkPolicyPre('system', 'setResolver')
+            checkPolicyPre("system", "setResolver")
 
             resolvers = getResolverList()
             if resolver_name in resolvers:
-                if not resolvers[resolver_name].get('readonly', False):
-                    raise Exception("Unmanged resolver with same name: %r"
-                                    " already exists!" % resolver_name)
+                if not resolvers[resolver_name].get("readonly", False):
+                    raise Exception(
+                        "Unmanged resolver with same name: %r"
+                        " already exists!" % resolver_name
+                    )
             # -------------------------------------------------------------- --
 
             # feed the engine :)
@@ -310,15 +316,16 @@ class ToolsController(BaseController):
             # use a LinOTP Database context for Sessions and Engine
 
             db_context = LinOTP_DatabaseContext(
-                                        SqlSession=db.session,
-                                        SqlEngine=db.engine)
+                SqlSession=db.session, SqlEngine=db.engine
+            )
 
             # define the import into an SQL database + resolver
 
             import_handler = SQLImportHandler(
-                                        groupid=groupid,
-                                        resolver_name=resolver_name,
-                                        database_context=db_context)
+                groupid=groupid,
+                resolver_name=resolver_name,
+                database_context=db_context,
+            )
 
             # create the UserImporter with the required mapping
 
@@ -329,11 +336,11 @@ class ToolsController(BaseController):
             # and run the data processing
 
             result = user_import.import_csv_users(
-                                data,
-                                dryrun=dryrun,
-                                format_reader=format_reader,
-                                passwords_in_plaintext=passwords_in_plaintext
-                                )
+                data,
+                dryrun=dryrun,
+                format_reader=format_reader,
+                passwords_in_plaintext=passwords_in_plaintext,
+            )
 
             if dryrun:
 
@@ -351,7 +358,7 @@ class ToolsController(BaseController):
 
         except PolicyException as pexx:
 
-            log.exception("Error during user import: %r", pexx)
+            log.error("Error during user import: %r", pexx)
 
             db.session.rollback()
 
@@ -359,13 +366,14 @@ class ToolsController(BaseController):
 
         except Exception as exx:
 
-            log.exception("Error during user import: %r" % exx)
+            log.error("Error during user import: %r", exx)
 
             db.session.rollback()
 
             return sendError(response, "%r" % exx)
 
         finally:
-            log.debug('done')
+            log.debug("done")
+
 
 # eof #########################################################################

@@ -32,8 +32,10 @@ from selenium.webdriver.remote.file_detector import LocalFileDetector
 import tempfile
 import os
 
+
 class TokenImportError(RuntimeError):
     pass
+
 
 class TokenImport(ManageDialog):
     """
@@ -56,8 +58,7 @@ class TokenImport(ManageDialog):
 
         # Open the appropriate Token import dialog.
         # TopMenu->Import Token File-><safenet/aladdin,oath,yubikey,...>
-        self.manage.activate_menu_item(self.menu_css,
-                                       self.menu_item_id)
+        self.manage.activate_menu_item(self.menu_css, self.menu_item_id)
         self.wait_for_dialog()
 
     def do_import(self, file_content=None, file_path=None):
@@ -72,18 +73,24 @@ class TokenImport(ManageDialog):
         :raises TokenImportError if the import failed
         """
 
-        if(not file_content and not file_path):
-            raise Exception("""Wrong test implementation. TokenImport.do_import
+        if not file_content and not file_path:
+            raise Exception(
+                """Wrong test implementation. TokenImport.do_import
                             needs file_content or file_path!
-                            """)
+                            """
+            )
 
         if not self.manage.realm_manager.get_realms_via_api():
-            raise Exception("Test problem: TokenImport requires a realm, but no"
-                            "realms are available")
+            raise Exception(
+                "Test problem: TokenImport requires a realm, but no"
+                "realms are available"
+            )
 
         if file_content:
             # Create the temp xml file with the given file_content.
-            tf = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".xml")
+            tf = tempfile.NamedTemporaryFile(
+                mode="w", delete=False, suffix=".xml"
+            )
             tf.write(file_content)
             tf.close()
             self.file_path = tf.name
@@ -92,7 +99,8 @@ class TokenImport(ManageDialog):
             self.file_path = file_path
 
         filepath_input = self.driver.find_element_by_xpath(
-            self.file_name_lineedit)
+            self.file_name_lineedit
+        )
 
         # On firefox the lineedit is not cleared after dialog re-open
         # So we have to do this explicitly
@@ -110,13 +118,15 @@ class TokenImport(ManageDialog):
         self.manage.wait_for_waiting_finished()
 
         # delete the temp file if necessary
-        if(file_content):
+        if file_content:
             os.unlink(self.file_path)
 
         # Check the alert boxes on the top of the LinOTP UI
         info = self.manage.alert_box_handler.last_line
-        if info.type != 'info' or not info.text.startswith('Token import result:'):
-            raise TokenImportError('Import failure:{}'.format(info))
+        if info.type != "info" or not info.text.startswith(
+            "Token import result:"
+        ):
+            raise TokenImportError("Import failure:{}".format(info))
 
 
 class TokenImportAladdin(TokenImport):
@@ -124,9 +134,10 @@ class TokenImportAladdin(TokenImport):
     Import an Aladdin Token file (xml).
     Create an instance and invoke the 'do_import' method.
     """
-    menu_item_id = 'menu_load_aladdin_xml_tokenfile'
-    body_id = 'dialog_import_safenet'
-    load_button_id = 'button_aladdin_load'
+
+    menu_item_id = "menu_load_aladdin_xml_tokenfile"
+    body_id = "dialog_import_safenet"
+    load_button_id = "button_aladdin_load"
     file_name_lineedit = '//*[@id="load_tokenfile_form_aladdin"]/p[2]/input'
 
     def __init__(self, manage_ui):

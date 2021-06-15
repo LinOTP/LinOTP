@@ -47,41 +47,41 @@ from linotp.lib.policy import get_autoassignment
 from linotp.lib.policy import get_auto_enrollment
 from linotp.lib.token import TokenHandler
 
-Token = namedtuple('Token', ['type'])
+Token = namedtuple("Token", ["type"])
 
 fake_context = {
-    'translate': lambda x: x,
-    'Client': '128.0.0.1',
+    "translate": lambda x: x,
+    "Client": "128.0.0.1",
 }
 
 PolicySet = {
-    'hans': {
-        'realm': '*',
-        'active': 'True',
-        'client': '*',
-        'user': 'hans',
-                'time': '* * * * * *;',
-                'action': 'dummy=2',
-                'scope': 'enrollment'
+    "hans": {
+        "realm": "*",
+        "active": "True",
+        "client": "*",
+        "user": "hans",
+        "time": "* * * * * *;",
+        "action": "dummy=2",
+        "scope": "enrollment",
     },
-    'fake_user': {
-        'realm': '*',
-        'active': 'True',
-        'client': '*',
-        'user': 'fake_user',
-                'time': '* * * * * *;',
-                'action': 'dummy1',
-                'scope': 'enrollment'
+    "fake_user": {
+        "realm": "*",
+        "active": "True",
+        "client": "*",
+        "user": "fake_user",
+        "time": "* * * * * *;",
+        "action": "dummy1",
+        "scope": "enrollment",
     },
-    'general': {
-        'realm': '*',
-        'active': 'True',
-        'client': '*',
-        'user': '*',
-                'time': '* * * * * *;',
-                'action': 'action',
-                'scope': 'enrollment'
-    }
+    "general": {
+        "realm": "*",
+        "active": "True",
+        "client": "*",
+        "user": "*",
+        "time": "* * * * * *;",
+        "action": "action",
+        "scope": "enrollment",
+    },
 }
 
 
@@ -108,34 +108,32 @@ class PolicyActionTest(unittest.TestCase):
 
     """
 
-    @patch('linotp.lib.policy.util.context', new=fake_context)
-    @patch('linotp.lib.policy.maxtoken.context', new=fake_context)
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy.processing.get_policies')
-    @patch('linotp.lib.policy.maxtoken._getUserRealms')
-    @patch('linotp.lib.policy.maxtoken._get_client')
-    @patch('linotp.lib.token.getTokens4UserOrSerial')
-    def test_maxtoken_evaluation(self,
-                                 mocked_getTokens4UserOrSerial,
-                                 mocked__get_client,
-                                 mocked__getUserRealms,
-                                 mocked__get_policies,
-                                 mocked_get_policy_definitions
-                                 ):
+    @patch("linotp.lib.policy.util.context", new=fake_context)
+    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.policy.maxtoken._getUserRealms")
+    @patch("linotp.lib.policy.maxtoken._get_client")
+    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    def test_maxtoken_evaluation(
+        self,
+        mocked_getTokens4UserOrSerial,
+        mocked__get_client,
+        mocked__getUserRealms,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
         """check if maxtoken policy works correctly."""
 
-        fake_user = LinotpUser(login='fake_user', realm='defaultrealm')
+        fake_user = LinotpUser(login="fake_user", realm="defaultrealm")
 
-        mocked_getTokens4UserOrSerial.return_value = [Token('hmac')]
-        mocked__get_client.return_value = '127.0.0.1'
-        mocked__getUserRealms.return_value = ['defaultrealm', 'otherrealm']
+        mocked_getTokens4UserOrSerial.return_value = [Token("hmac")]
+        mocked__get_client.return_value = "127.0.0.1"
+        mocked__getUserRealms.return_value = ["defaultrealm", "otherrealm"]
 
         mocked_get_policy_definitions.return_value = {
-            'enrollment': {
-                'maxtoken': {'type': 'int'}
-                }
-            }
-
+            "enrollment": {"maxtoken": {"type": "int"}}
+        }
 
         policy_set = copy.deepcopy(PolicySet)
 
@@ -143,101 +141,115 @@ class PolicyActionTest(unittest.TestCase):
 
         # verify that general policy is honored
 
-        policy_set['general']['action'] = 'maxtoken=2'
+        policy_set["general"]["action"] = "maxtoken=2"
         mocked__get_policies.return_value = policy_set
 
         try:
             check_maxtoken_for_user(user=fake_user)
         except PolicyException:
-            assert not True, '_checkTokenAssigned: Exception raised, but ' \
-                'token count was still in boundaries'
+            assert not True, (
+                "_checkTokenAssigned: Exception raised, but "
+                "token count was still in boundaries"
+            )
 
         # ----------------------------------------------------------------- --
 
         # verify that user specific policy is honored
 
-        policy_set['fake_user']['action'] = 'maxtoken="1 ", '
+        policy_set["fake_user"]["action"] = 'maxtoken="1 ", '
         mocked__get_policies.return_value = policy_set
 
         try:
             check_maxtoken_for_user(user=fake_user)
         except PolicyException:
-            assert True, '_checkTokenAssigned: Exception raised, but ' \
-                'token count was still in boundaries'
+            assert True, (
+                "_checkTokenAssigned: Exception raised, but "
+                "token count was still in boundaries"
+            )
 
-    @patch('linotp.lib.policy.util.context', new=fake_context)
-    @patch('linotp.lib.policy.maxtoken.context', new=fake_context)
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy.processing.get_policies')
-    @patch('linotp.lib.policy.maxtoken._getUserRealms')
-    @patch('linotp.lib.policy.maxtoken._get_client')
-    @patch('linotp.lib.token.getTokens4UserOrSerial')
-    def test_maxtoken_type_evaluation2(self,
-                                       mocked_getTokens4UserOrSerial,
-                                       mocked__get_client,
-                                       mocked__getUserRealms,
-                                       mocked__get_policies,
-                                       mocked_get_policy_definitions
-                                       ):
+    @patch("linotp.lib.policy.util.context", new=fake_context)
+    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.policy.maxtoken._getUserRealms")
+    @patch("linotp.lib.policy.maxtoken._get_client")
+    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    def test_maxtoken_type_evaluation2(
+        self,
+        mocked_getTokens4UserOrSerial,
+        mocked__get_client,
+        mocked__getUserRealms,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
         """Check if maxtoken type policy works correctly."""
 
-        fake_user = LinotpUser(login='fake_user', realm='defaultrealm')
+        fake_user = LinotpUser(login="fake_user", realm="defaultrealm")
 
-        mocked_getTokens4UserOrSerial.return_value = [Token('hmac')]
-        mocked__get_client.return_value = '127.0.0.1'
-        mocked__getUserRealms.return_value = ['defaultrealm', 'otherrealm']
+        mocked_getTokens4UserOrSerial.return_value = [Token("hmac")]
+        mocked__get_client.return_value = "127.0.0.1"
+        mocked__getUserRealms.return_value = ["defaultrealm", "otherrealm"]
         mocked_get_policy_definitions.return_value = {
-            'enrollment': {
-                'maxtoken': {'type': 'int'},
-                'maxtokenHMAC': {'type': 'int'},
-                'maxtokenPUSH': {'type': 'int'},
+            "enrollment": {
+                "maxtoken": {"type": "int"},
+                "maxtokenHMAC": {"type": "int"},
+                "maxtokenPUSH": {"type": "int"},
             }
         }
-        
+
         policy_set = copy.deepcopy(PolicySet)
 
         # ----------------------------------------------------------------- --
 
         # verify that general policy is honored
 
-        policy_set['general']['action'] = 'maxtokenHMAC=2, maxtokenPUSH=2,'
+        policy_set["general"]["action"] = "maxtokenHMAC=2, maxtokenPUSH=2,"
         mocked__get_policies.return_value = policy_set
 
         try:
-            check_maxtoken_for_user_by_type(fake_user, 'hmac')
+            check_maxtoken_for_user_by_type(fake_user, "hmac")
         except PolicyException:
-            assert not True, '_checkTokenAssigned: Exception raised, but ' \
-                'token count was still in boundaries'
+            assert not True, (
+                "_checkTokenAssigned: Exception raised, but "
+                "token count was still in boundaries"
+            )
 
         # ----------------------------------------------------------------- --
 
         # verify that if set, the  user specific  policy is honored
 
-        policy_set['fake_user']['action'] = 'maxtokenHMAC=1'
+        policy_set["fake_user"]["action"] = "maxtokenHMAC=1"
         mocked__get_policies.return_value = policy_set
 
         try:
-            check_maxtoken_for_user_by_type(fake_user, 'hmac')
+            check_maxtoken_for_user_by_type(fake_user, "hmac")
         except PolicyException:
-            assert True, '_checkTokenAssigned: Exception raised, but ' \
-                'token count was not in boundaries'
+            assert True, (
+                "_checkTokenAssigned: Exception raised, but "
+                "token count was not in boundaries"
+            )
 
-    @patch('linotp.lib.policy.util.context', new=fake_context)
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy.processing.get_policies')
-    @patch('linotp.lib.policy._get_client')
-    def test_tokenissuer(self, mocked__get_client, mocked__get_policies,
-                         mocked_get_policy_definitions):
+    @patch("linotp.lib.policy.util.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.policy._get_client")
+    def test_tokenissuer(
+        self,
+        mocked__get_client,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
         """Verify that the tokenissuer is evaluated from general."""
 
-        mocked__get_client.return_value = '127.0.0.1'
+        mocked__get_client.return_value = "127.0.0.1"
         mocked_get_policy_definitions.return_value = {
-            'enrollment': {
-                'tokenissuer': {
-                     'type': 'str',
-                     'desc': 'the issuer label for the google authenticator.'},
-                }
+            "enrollment": {
+                "tokenissuer": {
+                    "type": "str",
+                    "desc": "the issuer label for the google authenticator.",
+                },
             }
+        }
 
         policy_set = copy.deepcopy(PolicySet)
 
@@ -245,34 +257,39 @@ class PolicyActionTest(unittest.TestCase):
 
         # verify that general policy is honored
 
-        policy_set['general']['action'] = 'tokenissuer=<s>:<u>@<r>'
+        policy_set["general"]["action"] = "tokenissuer=<s>:<u>@<r>"
         mocked__get_policies.return_value = policy_set
 
         issuer = get_tokenissuer(
-            user='fake_user', realm='defaultrealm', serial='mySerial')
-        assert issuer == 'mySerial:fake_user@defaultrealm'
+            user="fake_user", realm="defaultrealm", serial="mySerial"
+        )
+        assert issuer == "mySerial:fake_user@defaultrealm"
 
         # ----------------------------------------------------------------- --
 
         # verify that if set, user specific policy is honored
 
-        policy_set['fake_user']['action'] = 'dummy, tokenissuer=<u>@<r>'
+        policy_set["fake_user"]["action"] = "dummy, tokenissuer=<u>@<r>"
         mocked__get_policies.return_value = policy_set
 
         issuer = get_tokenissuer(
-            user='fake_user', realm='defaultrealm', serial='mySerial')
-        assert issuer == 'fake_user@defaultrealm'
+            user="fake_user", realm="defaultrealm", serial="mySerial"
+        )
+        assert issuer == "fake_user@defaultrealm"
 
-    @patch('linotp.lib.policy.util.context', new=fake_context)
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy.processing.get_policies')
-    @patch('linotp.lib.policy._get_client')
+    @patch("linotp.lib.policy.util.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.policy._get_client")
     def test_autoassignment(
-            self, mocked__get_client, mocked__get_policies,
-            mocked_get_policy_definitions):
+        self,
+        mocked__get_client,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
         """Verify that the autoassignment is evaluated from general."""
 
-        mocked__get_client.return_value = '127.0.0.1'
+        mocked__get_client.return_value = "127.0.0.1"
 
         policy_set = copy.deepcopy(PolicySet)
 
@@ -280,115 +297,129 @@ class PolicyActionTest(unittest.TestCase):
 
         # verify that general policy is honored
 
-        policy_set['general']['action'] = 'autoassignment'
+        policy_set["general"]["action"] = "autoassignment"
         mocked__get_policies.return_value = policy_set
         mocked_get_policy_definitions.return_value = {
-            'enrollment' : {
-            'autoassignment': {
-                'type': 'bool',
-                'desc': 'users can assign a token just by using the '
-                            'unassigned token to authenticate.'},
-            }}
+            "enrollment": {
+                "autoassignment": {
+                    "type": "bool",
+                    "desc": "users can assign a token just by using the "
+                    "unassigned token to authenticate.",
+                },
+            }
+        }
 
-        fake_user = LinotpUser(login='fake_user', realm='defaultrealm')
-        assert get_autoassignment(fake_user), 'autoassigment should be set!'
+        fake_user = LinotpUser(login="fake_user", realm="defaultrealm")
+        assert get_autoassignment(fake_user), "autoassigment should be set!"
 
         # ----------------------------------------------------------------- --
 
         # verify that if set, user specific policy is honored
 
-        policy_set['fake_user']['action'] = 'tokenissuer=<u>, autoassignment'
+        policy_set["fake_user"]["action"] = "tokenissuer=<u>, autoassignment"
         mocked__get_policies.return_value = policy_set
 
         issuer = get_tokenissuer(
-            user='fake_user', realm='defaultrealm', serial='mySerial')
-        assert issuer == 'fake_user'
+            user="fake_user", realm="defaultrealm", serial="mySerial"
+        )
+        assert issuer == "fake_user"
 
-    @patch('linotp.lib.policy.util.context', new=fake_context)
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy.processing.get_policies')
-    @patch('linotp.lib.policy._get_client')
-    def test_autoenrollment(self, mocked__get_client, mocked__get_policies,
-                            mocked_get_policy_definitions):
+    @patch("linotp.lib.policy.util.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.policy._get_client")
+    def test_autoenrollment(
+        self,
+        mocked__get_client,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
         """Verify that the autoenrollment is evaluated from general."""
 
-        mocked__get_client.return_value = '127.0.0.1'
+        mocked__get_client.return_value = "127.0.0.1"
 
         policy_set = copy.deepcopy(PolicySet)
 
         mocked_get_policy_definitions.return_value = {
-            'enrollment' : {
-            'autoenrollment': {
-                'type': 'str',
-                'desc': 'users can enroll a token just by using the '
-                        'pin to authenticate and will an otp for authentication'},
-
-            }}
+            "enrollment": {
+                "autoenrollment": {
+                    "type": "str",
+                    "desc": "users can enroll a token just by using the "
+                    "pin to authenticate and will an otp for authentication",
+                },
+            }
+        }
         # ----------------------------------------------------------------- --
 
         # verify that general policy is honored
 
-        policy_set['general']['action'] = 'autoenrollment=email'
+        policy_set["general"]["action"] = "autoenrollment=email"
         mocked__get_policies.return_value = policy_set
 
-        fake_user = LinotpUser(login='fake_user', realm='defaultrealm')
+        fake_user = LinotpUser(login="fake_user", realm="defaultrealm")
         is_enabled, token_type = get_auto_enrollment(fake_user)
 
-        assert is_enabled, 'autoenrollment should be defined!'
-        assert token_type == ['email']
+        assert is_enabled, "autoenrollment should be defined!"
+        assert token_type == ["email"]
 
         # ----------------------------------------------------------------- --
 
         # verify that if set, user specific policy is honored
 
-        policy_set['fake_user']['action'] = 'autoenrollment=sms'
+        policy_set["fake_user"]["action"] = "autoenrollment=sms"
         mocked__get_policies.return_value = policy_set
 
-        fake_user = LinotpUser(login='fake_user', realm='defaultrealm')
+        fake_user = LinotpUser(login="fake_user", realm="defaultrealm")
         is_enabled, token_type = get_auto_enrollment(fake_user)
 
-        assert is_enabled, 'autoenrollment should be defined!'
-        assert token_type == ['sms']
+        assert is_enabled, "autoenrollment should be defined!"
+        assert token_type == ["sms"]
 
-
-    @patch('linotp.lib.token.context', new=fake_context)
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    @patch('linotp.lib.policy.processing.get_policies')
-    @patch('linotp.lib.token.TokenHandler.getTokenOwner')
+    @patch("linotp.lib.token.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.token.TokenHandler.getTokenOwner")
     def test_losttoken(
-            self, mocked_getTokenOwner, mocked__get_policies,
-            mocked_get_policy_definitions):
+        self,
+        mocked_getTokenOwner,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
         """Verify the policy evaluation in losttoken honores general actions."""
 
-        fake_user = LinotpUser(login='fake_user', realm='defaultrealm')
+        fake_user = LinotpUser(login="fake_user", realm="defaultrealm")
         mocked_getTokenOwner.return_value = fake_user
 
         policy_set = copy.deepcopy(PolicySet)
 
         mocked_get_policy_definitions.return_value = {
-            'enrollment' : {
-                'lostTokenPWLen': {
-                    'type': 'int',
-                    'desc': 'The length of the password in case of '
-                            'temporary token.'},
-                'lostTokenPWContents': {
-                    'type': 'str',
-                    'desc': 'The contents of the temporary password, '
-                            'described by the characters C, c, n, s.'},
-                'lostTokenValid': {
-                    'type': 'set',
-                    'value': ['int', 'duration'],
-                    'desc': 'The length of the validity for the temporary '
-                            'token as days or duration with "d"-days, "h"-hours,'
-                            ' "m"-minutes, "s"-seconds.'},
-                }
+            "enrollment": {
+                "lostTokenPWLen": {
+                    "type": "int",
+                    "desc": "The length of the password in case of "
+                    "temporary token.",
+                },
+                "lostTokenPWContents": {
+                    "type": "str",
+                    "desc": "The contents of the temporary password, "
+                    "described by the characters C, c, n, s.",
+                },
+                "lostTokenValid": {
+                    "type": "set",
+                    "value": ["int", "duration"],
+                    "desc": "The length of the validity for the temporary "
+                    'token as days or duration with "d"-days, "h"-hours,'
+                    ' "m"-minutes, "s"-seconds.',
+                },
             }
+        }
         # ----------------------------------------------------------------- --
 
         # verify that general policy is honored
 
-        policy_set['general']['action'] = (
-            'lostTokenPWLen=5, lostTokenPWContents=n, lostTokenValid=2')
+        policy_set["general"][
+            "action"
+        ] = "lostTokenPWLen=5, lostTokenPWContents=n, lostTokenValid=2"
 
         mocked__get_policies.return_value = policy_set
 
@@ -398,18 +429,19 @@ class PolicyActionTest(unittest.TestCase):
         end_date = "%s 23:59" % end_date
 
         th = TokenHandler()
-        res = th.losttoken('mySerial', 'mySerial_new')
+        res = th.losttoken("mySerial", "mySerial_new")
 
-        assert res['password'].isdigit()
-        assert len(res['password']) == 5
-        assert res['end_date'] == end_date
+        assert res["password"].isdigit()
+        assert len(res["password"]) == 5
+        assert res["end_date"] == end_date
 
         # ----------------------------------------------------------------- --
 
         # verify that user specific policy is honored
 
-        policy_set['fake_user']['action'] = (
-            'lostTokenPWLen=3, lostTokenPWContents=c, lostTokenValid=1')
+        policy_set["fake_user"][
+            "action"
+        ] = "lostTokenPWLen=3, lostTokenPWContents=c, lostTokenValid=1"
 
         mocked__get_policies.return_value = policy_set
 
@@ -419,8 +451,8 @@ class PolicyActionTest(unittest.TestCase):
         end_date = "%s 23:59" % end_date
 
         th = TokenHandler()
-        res = th.losttoken(serial='mySerial', new_serial='mySerial_new')
+        res = th.losttoken(serial="mySerial", new_serial="mySerial_new")
 
-        assert not res['password'].isdigit()
-        assert len(res['password']) == 3
-        assert res['end_date'] == end_date
+        assert not res["password"].isdigit()
+        assert len(res["password"]) == 3
+        assert res["end_date"] == end_date

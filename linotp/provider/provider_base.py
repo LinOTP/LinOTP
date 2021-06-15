@@ -23,15 +23,15 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''
-'''
+"""
+"""
 
 import requests as http_requests
 from urllib.parse import urlparse
 import os
 
-class ProviderBase(object):
 
+class ProviderBase(object):
     @staticmethod
     def load_proxy(configDict):
         """
@@ -41,32 +41,32 @@ class ProviderBase(object):
         :return: the proxy definition dict like {https: 'https_proxy' ..}
         """
 
-        if 'proxy' not in configDict:
+        if "proxy" not in configDict:
             return None
 
-        proxy_conf = configDict['proxy']
+        proxy_conf = configDict["proxy"]
 
         # verify the url scheme
         parsed_url = urlparse(proxy_conf)
-        if parsed_url.scheme not in ['http', 'https']:
+        if parsed_url.scheme not in ["http", "https"]:
             raise http_requests.exceptions.InvalidSchema(proxy_conf)
 
-        if parsed_url.path and parsed_url.path != '/':
+        if parsed_url.path and parsed_url.path != "/":
             raise http_requests.exceptions.InvalidSchema(proxy_conf)
 
         if not proxy_conf:
             return None
 
         proxy = {}
-        if proxy_conf.startswith('https:'):
-            proxy['https'] = proxy_conf
+        if proxy_conf.startswith("https:"):
+            proxy["https"] = proxy_conf
         else:
-            proxy['http'] = proxy_conf
+            proxy["http"] = proxy_conf
 
         return proxy
 
     @staticmethod
-    def load_server_url(configDict, server_url_key='server_url'):
+    def load_server_url(configDict, server_url_key="server_url"):
         """
         return the server url
 
@@ -76,7 +76,7 @@ class ProviderBase(object):
         server_url = configDict[server_url_key]
 
         parsed_url = urlparse(server_url)
-        if parsed_url.scheme not in ['http', 'https']:
+        if parsed_url.scheme not in ["http", "https"]:
             raise http_requests.exceptions.InvalidSchema(server_url)
 
         return server_url
@@ -90,7 +90,7 @@ class ProviderBase(object):
         :return: return the validated server certificate reference
         """
 
-        server_cert = configDict.get('server_certificate')
+        server_cert = configDict.get("server_certificate")
 
         if not server_cert:
             return server_cert
@@ -99,28 +99,30 @@ class ProviderBase(object):
         # None or not present (cert gets fetched from local trust
         # store) or False (no certificate verification)
 
-        if (not os.path.isfile(server_cert) and
-           not os.path.isdir(server_cert)):
-            raise IOError("server certificate verification could not"
-                          " be made as certificate could not be found"
-                          " %r" % server_cert)
+        if not os.path.isfile(server_cert) and not os.path.isdir(server_cert):
+            raise IOError(
+                "server certificate verification could not"
+                " be made as certificate could not be found"
+                " %r" % server_cert
+            )
 
         return server_cert
 
     @staticmethod
-    def load_client_cert(configDict, client_cert_key='access_certificate'):
+    def load_client_cert(configDict, client_cert_key="access_certificate"):
         """
         return the client certificate from the configuration
-        
+
         :param configDict:
         :return: return the validated client certificate reference
         """
 
         client_cert = configDict.get(client_cert_key)
         if client_cert and not os.path.isfile(client_cert):
-            raise IOError("required authenticating client"
-                          " cert could not be found %r" %
-                          client_cert)
+            raise IOError(
+                "required authenticating client"
+                " cert could not be found %r" % client_cert
+            )
 
         return client_cert
 
@@ -139,12 +141,12 @@ class ProviderBase(object):
         :return: None, a float or a tuple of connection and network timeout
         """
 
-        if 'timeout' in configDict or 'Timeout' in configDict:
-            timeout = configDict.get('timeout', configDict.get('Timeout'))
+        if "timeout" in configDict or "Timeout" in configDict:
+            timeout = configDict.get("timeout", configDict.get("Timeout"))
 
-            if ',' in timeout:
+            if "," in timeout:
 
-                conection_timeout, request_timeout = timeout.split(',')
+                conection_timeout, request_timeout = timeout.split(",")
                 return (float(conection_timeout), float(request_timeout))
 
             else:
@@ -153,5 +155,6 @@ class ProviderBase(object):
         else:
 
             return timeout_default
+
 
 # eof #

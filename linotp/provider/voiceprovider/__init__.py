@@ -23,12 +23,11 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''
-'''
+"""
+"""
 
 
-class TwillioMixin():
-
+class TwillioMixin:
     @staticmethod
     def load_twilio_definition(configDict):
         """
@@ -40,23 +39,29 @@ class TwillioMixin():
 
         twilio_config = configDict["twilioConfig"]
 
-        twilio_config_keys = ['accountSid','authToken',
-                              'voice', 'callerNumber']
+        twilio_config_keys = [
+            "accountSid",
+            "authToken",
+            "voice",
+            "callerNumber",
+        ]
 
         if "accountSid" not in twilio_config:
-            raise KeyError('missing the required account identifier')
+            raise KeyError("missing the required account identifier")
 
         if "authToken" not in twilio_config:
-            raise KeyError('missing the required authentication token')
+            raise KeyError("missing the required authentication token")
 
         if "voice" not in twilio_config:
-            twilio_config['voice'] = 'alice'
+            twilio_config["voice"] = "alice"
 
-        if 'callerNumber' not in twilio_config:
-            raise KeyError('missing the required caller number')
+        if "callerNumber" not in twilio_config:
+            raise KeyError("missing the required caller number")
 
         if set(twilio_config.keys()) != set(twilio_config_keys):
-            raise KeyError('unsupported key provided [%r]: %r!' %
-                           (twilio_config_keys, list(twilio_config.keys())))
+            raise KeyError(
+                "unsupported key provided [%r]: %r!"
+                % (twilio_config_keys, list(twilio_config.keys()))
+            )
 
-        return {'twilioConfig': twilio_config}
+        return {"twilioConfig": twilio_config}

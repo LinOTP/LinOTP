@@ -34,7 +34,6 @@ import linotp.lib.logs as logs
 
 
 class FakeLogger(object):
-
     def __init__(self, log_level=10):
         self.clear()
         self.log_level = log_level
@@ -50,12 +49,14 @@ class FakeLogger(object):
     def getEffectiveLevel(self):
         return self.log_level
 
+
 # ------------------------------------------------------------------------------
 
 
 def func(arg1, arg2):
 
-    return {'list': [arg1, arg2], 'rev_list': [arg2, arg1]}
+    return {"list": [arg1, arg2], "rev_list": [arg2, arg1]}
+
 
 # ------------------------------------------------------------------------------
 
@@ -69,7 +70,6 @@ class TestLoggingDecorators(unittest.TestCase):
     # --------------------------------------------------------------------------
 
     def test_enter_exit_decorator(self):
-
         """
         Check if arguments decorated with @log_enter_exit are logged
         """
@@ -82,16 +82,16 @@ class TestLoggingDecorators(unittest.TestCase):
 
         returnvalue = decorated(2, 1)
 
-        asserted_returnvalue = {'list': [2, 1], 'rev_list': [1, 2]}
+        asserted_returnvalue = {"list": [2, 1], "rev_list": [1, 2]}
         assert returnvalue == asserted_returnvalue
 
         # ----------------------------------------------------------------------
 
         enter_extras = {
-            'type': 'function_enter',
-            'function_name': 'func',
-            'function_args': (2, 1),
-            'function_kwargs': {}
+            "type": "function_enter",
+            "function_name": "func",
+            "function_args": (2, 1),
+            "function_kwargs": {},
         }
 
         assert fake_logger.extras[0] == enter_extras
@@ -99,9 +99,9 @@ class TestLoggingDecorators(unittest.TestCase):
         # ----------------------------------------------------------------------
 
         exit_extras = {
-            'type': 'function_exit',
-            'function_name': 'func',
-            'function_returnvalue': asserted_returnvalue
+            "type": "function_exit",
+            "function_name": "func",
+            "function_returnvalue": asserted_returnvalue,
         }
 
         assert fake_logger.extras[1] == exit_extras
@@ -109,7 +109,6 @@ class TestLoggingDecorators(unittest.TestCase):
     # --------------------------------------------------------------------------
 
     def test_log_timedelta(self):
-
         """
         Check if timedelta is logged correctly
         """
@@ -121,10 +120,10 @@ class TestLoggingDecorators(unittest.TestCase):
         # ----------------------------------------------------------------------
 
         extras = fake_logger.extras[0]
-        assert 'type' in extras
-        assert 'function_name' in extras
-        assert 'timedelta' in extras
+        assert "type" in extras
+        assert "function_name" in extras
+        assert "timedelta" in extras
 
-        assert extras['type'] == 'function_timedelta'
-        assert extras['function_name'] == 'func'
-        assert extras['timedelta'] > 0
+        assert extras["type"] == "function_timedelta"
+        assert extras["function_name"] == "func"
+        assert extras["timedelta"] > 0

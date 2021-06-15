@@ -42,23 +42,25 @@ class TestUserSearchExpression(unittest.TestCase):
     """
 
     def test_not_matching_expressions(self):
-        """ test user search expression not matching"""
+        """test user search expression not matching"""
 
         token_owner = "maxwell@hotad.example.net"
-        token_user_dict = {'match':token_owner}
+        token_user_dict = {"match": token_owner}
 
         for user_search in [
-            'maxwell',
-            'maxwell@hotad.*.ned',
-            'maxwell@hod*net',
-            'maxwell@hod*',
+            "maxwell",
+            "maxwell@hotad.*.ned",
+            "maxwell@hod*net",
+            "maxwell@hod*",
             "*o@hotad.example.net",
-            '*oxwell@hot*', ]:
+            "*oxwell@hot*",
+        ]:
 
-            serials = _user_expression_match(user_search,
-                                             list(token_user_dict.items()))
+            serials = _user_expression_match(
+                user_search, list(token_user_dict.items())
+            )
 
-            assert 'match' not in serials
+            assert "match" not in serials
 
         return
 
@@ -66,21 +68,21 @@ class TestUserSearchExpression(unittest.TestCase):
         """test user search expression matching"""
 
         token_owner = "maxwell@hotad.example.net"
-        token_user_dict = {'match':token_owner}
+        token_user_dict = {"match": token_owner}
 
         for user_search in [
-            'maxwell*',
-            'maxwell@hotad.*.net',
-            'maxwell@hot*net',
-            'maxwell@hot*',
+            "maxwell*",
+            "maxwell@hotad.*.net",
+            "maxwell@hot*net",
+            "maxwell@hot*",
             "*@hotad.example.net",
-            '*xwell@hot*',
-            ]:
+            "*xwell@hot*",
+        ]:
 
-            serials = _user_expression_match(user_search,
-                                             list(token_user_dict.items()))
+            serials = _user_expression_match(
+                user_search, list(token_user_dict.items())
+            )
 
-            assert 'match' in serials, user_search
+            assert "match" in serials, user_search
 
         return
-

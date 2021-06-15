@@ -35,17 +35,17 @@ from linotp.lib.user import User
 
 
 class TestTokenSearch(unittest.TestCase):
+    @patch("linotp.lib.tokeniterator.getTokens4UserOrSerial")
+    @patch("linotp.lib.tokeniterator.token_owner_iterator")
+    @patch("linotp.lib.tokeniterator.TokenIterator.__init__")
+    def test_singechar_wildcard(
+        self,
+        mocked_tokenIterator_init,
+        mocked_token_owner_iterator,
+        mocked_getTokens4UserOrSerial,
+    ):
 
-    @patch('linotp.lib.tokeniterator.getTokens4UserOrSerial')
-    @patch('linotp.lib.tokeniterator.token_owner_iterator')
-    @patch('linotp.lib.tokeniterator.TokenIterator.__init__')
-    def test_singechar_wildcard(self,
-                                mocked_tokenIterator_init,
-                                mocked_token_owner_iterator,
-                                mocked_getTokens4UserOrSerial
-                                ):
-
-        valid_realms = ['*']
+        valid_realms = ["*"]
 
         mocked_tokenIterator_init.return_value = None
         tik = TokenIterator(None, None)
@@ -55,7 +55,7 @@ class TestTokenSearch(unittest.TestCase):
         # test the old behaviour with '*' wildcard, which takes the
         # expensive code path
 
-        user = User(login='pass*thru', realm='user2')
+        user = User(login="pass*thru", realm="user2")
         tik._get_user_condition(user, valid_realms)
 
         assert mocked_token_owner_iterator.call_count == 1
@@ -71,12 +71,13 @@ class TestTokenSearch(unittest.TestCase):
 
         mocked_getTokens4UserOrSerial.return_value = []
 
-        user = User(login='pass.thru', realm='user2')
+        user = User(login="pass.thru", realm="user2")
         tik._get_user_condition(user, valid_realms)
 
         assert not mocked_token_owner_iterator.called
         assert mocked_getTokens4UserOrSerial.call_count == 1
 
         return
+
 
 # eof #

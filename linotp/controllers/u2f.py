@@ -61,27 +61,28 @@ class U2FController(BaseController):
         # Get the valid facets as specified in the enrollment policy 'u2f_valid_facets'
         # for the specific realm
         get_policy_params = {
-            'action': 'u2f_valid_facets',
-            'scope': 'enrollment',
-            'realm': realm
-            }
+            "action": "u2f_valid_facets",
+            "scope": "enrollment",
+            "realm": realm,
+        }
         valid_facets_action_value = get_action_value(
-                                        getPolicy(get_policy_params),
-                                        scope='enrollment',
-                                        action='u2f_valid_facets',
-                                        default='')
-        # the action value contains the semicolon-separated list of valid facets
-        valid_facets = valid_facets_action_value.split(';')
+            getPolicy(get_policy_params),
+            scope="enrollment",
+            action="u2f_valid_facets",
+            default="",
+        )
+        # the action value contains the semicolon-separated list of valid
+        # facets
+        valid_facets = valid_facets_action_value.split(";")
 
         # Prepare the response
-        response.content_type = 'application/fido.trusted-­apps+json'  # as specified by FIDO
+        response.content_type = (
+            "application/fido.trusted-­apps+json"  # as specified by FIDO
+        )
         response_dict = {
-            "trustedFacets": [{
-                "version": {"major": 1, "minor": 0},
-                "ids": []
-                }]
-            }
+            "trustedFacets": [{"version": {"major": 1, "minor": 0}, "ids": []}]
+        }
         for facet in valid_facets:
             facet = facet.strip()
-            response_dict['trustedFacets'][0]['ids'].append(facet)
+            response_dict["trustedFacets"][0]["ids"].append(facet)
         return json.dumps(response_dict)

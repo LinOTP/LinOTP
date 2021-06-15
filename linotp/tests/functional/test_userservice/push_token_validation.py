@@ -40,10 +40,10 @@ CONTENT_TYPE_PAIRING = 1
 CONTENT_TYPE_LOGIN = 2
 
 
-class Push_Token_Validation():
+class Push_Token_Validation:
 
-    uri_schema = 'lseqr'
-    tan_length = 8 
+    uri_schema = "lseqr"
+    tan_length = 8
 
     @staticmethod
     def u64_to_transaction_id(u64_int: int) -> str:
@@ -61,7 +61,7 @@ class Push_Token_Validation():
         if rest == 0:
             return str(before)
         else:
-            return '%d.%02d' % (before, rest)
+            return "%d.%02d" % (before, rest)
 
     @staticmethod
     def create_keys() -> Tuple[bytes, bytes]:
@@ -69,7 +69,7 @@ class Push_Token_Validation():
         return gen_dsa_keypair()
 
     @staticmethod
-    def create_user_token_by_pairing_url(pairing_url:str, pin:str) -> Dict:
+    def create_user_token_by_pairing_url(pairing_url: str, pin: str) -> Dict:
         """Parses the pairing url and return the extracted token data as dict.
 
         :param pairing_url: the pairing url received from the server
@@ -81,13 +81,14 @@ class Push_Token_Validation():
         # extract metadata and the public key
 
         data_encoded = pairing_url[
-            len(Push_Token_Validation.uri_schema + '://pair/'):]
+            len(Push_Token_Validation.uri_schema + "://pair/") :
+        ]
 
         data = decode_base64_urlsafe(data_encoded)
-        version, token_type, flags = struct.unpack('<bbI', data[0:6])
-        partition = struct.unpack('<I', data[6:10])[0]
+        version, token_type, flags = struct.unpack("<bbI", data[0:6])
+        partition = struct.unpack("<I", data[6:10])[0]
 
-        server_public_key = data[10:10 + 32]
+        server_public_key = data[10 : 10 + 32]
 
         # validate protocol versions and type id
 
@@ -99,36 +100,38 @@ class Push_Token_Validation():
         # extract custom data that may or may not be present
         # (depending on flags)
 
-        custom_data = data[10 + 32:]
+        custom_data = data[10 + 32 :]
 
         assert flags & FLAG_PAIR_SERIAL
-        token_serial, __, custom_data = custom_data.partition(b'\x00')
+        token_serial, __, custom_data = custom_data.partition(b"\x00")
 
         callback_url = None
         if flags & FLAG_PAIR_CBURL:
-            callback_url, __, custom_data = custom_data.partition(b'\x00')
+            callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
             raise NotImplementedError(
-                                    'Callback URL is mandatory for PushToken')
+                "Callback URL is mandatory for PushToken"
+            )
 
         # ------------------------------------------------------------------- --
 
         # save token data for later use
 
         token_info = {
-            'serial': token_serial.decode(),
-            'server_public_key': server_public_key,
-            'partition': partition,
-            'callback_url': callback_url.decode(),
-            'token_id': 1,
-            'pin': pin}
+            "serial": token_serial.decode(),
+            "server_public_key": server_public_key,
+            "partition": partition,
+            "callback_url": callback_url.decode(),
+            "token_id": 1,
+            "pin": pin,
+        }
 
         return token_info
 
     @staticmethod
     def decrypt_and_verify_challenge(
-            challenge_url:str, token_info:Dict, secret_key:bytes, action:str
-            ) -> Tuple[Dict, str]:
+        challenge_url: str, token_info: Dict, secret_key: bytes, action: str
+    ) -> Tuple[Dict, str]:
         """Decrypts the data packed in the challenge url, verifies the content.
 
         Returns the parsed data as a dictionary, calculates and returns the
@@ -169,7 +172,8 @@ class Push_Token_Validation():
         """
 
         challenge_data_encoded = challenge_url[
-            len(Push_Token_Validation.uri_schema + '://chal/'):]
+            len(Push_Token_Validation.uri_schema + "://chal/") :
+        ]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
         # ------------------------------------------------------------------ --
@@ -178,22 +182,22 @@ class Push_Token_Validation():
         # encrypted challenge data
 
         header = challenge_data[0:5]
-        version, user_token_id = struct.unpack('<bI', header)
+        version, user_token_id = struct.unpack("<bI", header)
         assert version == CHALLENGE_URL_VERSION
 
         # ------------------------------------------------------------------ --
 
         # get token from client token database
 
-        server_public_key = token_info['server_public_key']
+        server_public_key = token_info["server_public_key"]
 
         # ------------------------------------------------------------------ --
 
         # prepare decryption by seperating R from
         # ciphertext and server signature
 
-        R = challenge_data[5:5 + 32]
-        ciphertext = challenge_data[5 + 32:-64]
+        R = challenge_data[5 : 5 + 32]
+        ciphertext = challenge_data[5 + 32 : -64]
         server_signature = challenge_data[-64:]
 
         # check signature
@@ -216,7 +220,7 @@ class Push_Token_Validation():
 
         # decrypt and verify challenge
 
-        nonce_as_int = int_from_bytes(nonce, byteorder='big')
+        nonce_as_int = int_from_bytes(nonce, byteorder="big")
         ctr = Counter.new(128, initial_value=nonce_as_int)
         cipher = AES.new(sk, AES.MODE_CTR, counter=ctr)
         plaintext = cipher.decrypt(ciphertext)
@@ -231,19 +235,20 @@ class Push_Token_Validation():
         offset = 1 + 8 + 8
 
         pt_header = plaintext[0:offset]
-        (content_type,
-         transaction_id,
-         _time_stamp) = struct.unpack('<bQQ', pt_header)
+        (content_type, transaction_id, _time_stamp) = struct.unpack(
+            "<bQQ", pt_header
+        )
 
         transaction_id = Push_Token_Validation.u64_to_transaction_id(
-            transaction_id)
+            transaction_id
+        )
 
         # ------------------------------------------------------------------ --
 
         # prepare the parsed challenge data
 
         challenge = {}
-        challenge['content_type'] = content_type
+        challenge["content_type"] = content_type
 
         # ------------------------------------------------------------------ --
 
@@ -251,40 +256,42 @@ class Push_Token_Validation():
 
         if content_type == CONTENT_TYPE_PAIRING:
 
-            serial, callback_url, __ = plaintext[offset:].split(b'\x00')
-            challenge['serial'] = serial.decode()
+            serial, callback_url, __ = plaintext[offset:].split(b"\x00")
+            challenge["serial"] = serial.decode()
 
         elif content_type == CONTENT_TYPE_SIGNREQ:
 
-            message, callback_url, __ = plaintext[offset:].split(b'\x00')
-            challenge['message'] = message.decode()
+            message, callback_url, __ = plaintext[offset:].split(b"\x00")
+            challenge["message"] = message.decode()
 
         elif content_type == CONTENT_TYPE_LOGIN:
 
-            login, host, callback_url, __ = plaintext[offset:].split(b'\x00')
-            challenge['login'] = login.decode()
-            challenge['host'] = host.decode()
+            login, host, callback_url, __ = plaintext[offset:].split(b"\x00")
+            challenge["login"] = login.decode()
+            challenge["host"] = host.decode()
 
         # ------------------------------------------------------------------ --
 
         # prepare the parsed challenge data
 
-        challenge['callback_url'] = callback_url.decode()
-        challenge['transaction_id'] = transaction_id
-        challenge['user_token_id'] = user_token_id
+        challenge["callback_url"] = callback_url.decode()
+        challenge["transaction_id"] = transaction_id
+        challenge["user_token_id"] = user_token_id
 
         # calculate signature
 
         sig_base = (
-            struct.pack('<b', CHALLENGE_URL_VERSION) +
-            b'%s\0' % action.encode('utf-8') +
-            server_signature + plaintext)
+            struct.pack("<b", CHALLENGE_URL_VERSION)
+            + b"%s\0" % action.encode("utf-8")
+            + server_signature
+            + plaintext
+        )
 
         sig = crypto_sign_detached(sig_base, secret_key)
         encoded_sig = encode_base64_urlsafe(sig)
 
         return challenge, encoded_sig
-    
+
     @staticmethod
     def get_pairing_url_from_response(response: CompatibleTestResponse) -> str:
         """Extract the the pairing url from the response.
@@ -294,20 +301,23 @@ class Push_Token_Validation():
         """
 
         response_dict = response.json
-        assert 'pairing_url' in response_dict['detail']
+        assert "pairing_url" in response_dict["detail"]
 
-        pairing_url = response_dict['detail']['pairing_url']
+        pairing_url = response_dict["detail"]["pairing_url"]
         assert pairing_url is not None
         assert pairing_url.startswith(
-            Push_Token_Validation.uri_schema + '://pair/')
+            Push_Token_Validation.uri_schema + "://pair/"
+        )
 
         return pairing_url
 
-
     @staticmethod
     def create_pairing_response(
-            public_key:bytes, secret_key:bytes, token_info:Dict,
-            gda:str='DEADBEEF') -> str:
+        public_key: bytes,
+        secret_key: bytes,
+        token_info: Dict,
+        gda: str = "DEADBEEF",
+    ) -> str:
         """Creates a base64-encoded pairing response.
 
         :param public_key: the public key in bytes
@@ -319,24 +329,24 @@ class Push_Token_Validation():
         :returns base64 encoded pairing response
         """
 
-        token_serial = token_info['serial']
-        token_id = token_info.get('token_id',1)
-        server_public_key = token_info['server_public_key']
-        partition = token_info['partition']
+        token_serial = token_info["serial"]
+        token_id = token_info.get("token_id", 1)
+        server_public_key = token_info["server_public_key"]
+        partition = token_info["partition"]
 
         # ------------------------------------------------------------------ --
 
         # assemble header and plaintext
 
-        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, partition)
+        header = struct.pack("<bI", PAIR_RESPONSE_VERSION, partition)
 
-        pairing_response = b''
-        pairing_response += struct.pack('<bI', TYPE_PUSHTOKEN, token_id)
+        pairing_response = b""
+        pairing_response += struct.pack("<bI", TYPE_PUSHTOKEN, token_id)
 
         pairing_response += public_key
 
-        pairing_response += token_serial.encode('utf8') + b'\x00\x00'
-        pairing_response += gda.encode('utf-8') + b'\x00'
+        pairing_response += token_serial.encode("utf8") + b"\x00\x00"
+        pairing_response += gda.encode("utf-8") + b"\x00"
 
         signature = crypto_sign_detached(pairing_response, secret_key)
         pairing_response += signature

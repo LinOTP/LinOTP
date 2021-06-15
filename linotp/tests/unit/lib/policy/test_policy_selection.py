@@ -52,16 +52,17 @@ def fn_mock_domain_comp(user_obj, condition):
     if condition in fqn:
         return True
 
-    if condition == '*.%s:' % user_obj.resolver_config_identifier:
+    if condition == "*.%s:" % user_obj.resolver_config_identifier:
         return True
 
-    if condition == '*@%s' % user_obj.realm:
+    if condition == "*@%s" % user_obj.realm:
         return True
 
-    if condition == '*':
+    if condition == "*":
         return True
 
     return False
+
 
 # -------------------------------------------------------------------------- --
 
@@ -75,14 +76,14 @@ def create_policy(name, **params):
     using defaults
     """
     entry = {
-        'user': '',
-        'scope': 'selfservice',
-        'action': name,
-        'realm': '*',
-        'active': 'True',
-        'client': '*',
-        'time': '* * * * * *;',
-        }
+        "user": "",
+        "scope": "selfservice",
+        "action": name,
+        "realm": "*",
+        "active": "True",
+        "client": "*",
+        "time": "* * * * * *;",
+    }
     entry.update(params)
     policy = {name: entry}
     return policy
@@ -93,8 +94,8 @@ class TestPoliciesSelection(unittest.TestCase):
     unit test the policy evaluation especially wrt best user matching
     """
 
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.exists')
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.compare')
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.exists")
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.compare")
     def test_user_exact_match(self, mock_domain_comp, mock_domain_exists):
         """evaluate for user1@realm with resolver 'resolver'
 
@@ -107,25 +108,28 @@ class TestPoliciesSelection(unittest.TestCase):
         # define user
 
         user = User(
-            login='user1',
-            realm='realm',
-            resolver_config_identifier='resolver'
-            )
+            login="user1", realm="realm", resolver_config_identifier="resolver"
+        )
 
         # define policies
 
         policies = {}
-        policies.update(create_policy('self1', user='*'))
-        policies.update(create_policy('self2', user='user1'))
-        policies.update(create_policy('self3', user='user1'))
-        policies.update(create_policy('self4', user='*, user1'))
-        policies.update(create_policy('self5', user='*, user1.resolver:'))
-        policies.update(create_policy(
-            'self6', user='*@realm, *.resolver:, user2, !user1'))
-        policies.update(create_policy(
-            'self7', user='!*@realm, *.resolver:, user2.resolver, user1'))
-        policies.update(create_policy(
-            'self8', user='*, !user1@realm, user2@realm'))
+        policies.update(create_policy("self1", user="*"))
+        policies.update(create_policy("self2", user="user1"))
+        policies.update(create_policy("self3", user="user1"))
+        policies.update(create_policy("self4", user="*, user1"))
+        policies.update(create_policy("self5", user="*, user1.resolver:"))
+        policies.update(
+            create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
+        )
+        policies.update(
+            create_policy(
+                "self7", user="!*@realm, *.resolver:, user2.resolver, user1"
+            )
+        )
+        policies.update(
+            create_policy("self8", user="*, !user1@realm, user2@realm")
+        )
 
         # evaluate the policies wrt. the given user
 
@@ -135,13 +139,13 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(['self2', 'self3', 'self4', 'self5'])
+        expected_matches = set(["self2", "self3", "self4", "self5"])
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
 
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.exists')
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.compare')
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.exists")
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.compare")
     def test_user_exact_match2(self, mock_domain_comp, mock_domain_exists):
         """evaluate for user2@realm with resolver 'resolver'
 
@@ -154,25 +158,28 @@ class TestPoliciesSelection(unittest.TestCase):
         # define user
 
         user = User(
-            login='user2',
-            realm='realm',
-            resolver_config_identifier='resolver'
-            )
+            login="user2", realm="realm", resolver_config_identifier="resolver"
+        )
 
         # define policies
 
         policies = {}
-        policies.update(create_policy('self1', user='*'))
-        policies.update(create_policy('self2', user='user1'))
-        policies.update(create_policy('self3', user='user1'))
-        policies.update(create_policy('self4', user='*, user1'))
-        policies.update(create_policy('self5', user='*, user1.resolver:'))
-        policies.update(create_policy(
-            'self6', user='*@realm, *.resolver:, user2, !user1'))
-        policies.update(create_policy(
-            'self7', user='!*@realm, *.resolver:, user2.resolver:, user1'))
-        policies.update(create_policy(
-            'self8', user='*, !user1@realm, user2@realm'))
+        policies.update(create_policy("self1", user="*"))
+        policies.update(create_policy("self2", user="user1"))
+        policies.update(create_policy("self3", user="user1"))
+        policies.update(create_policy("self4", user="*, user1"))
+        policies.update(create_policy("self5", user="*, user1.resolver:"))
+        policies.update(
+            create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
+        )
+        policies.update(
+            create_policy(
+                "self7", user="!*@realm, *.resolver:, user2.resolver:, user1"
+            )
+        )
+        policies.update(
+            create_policy("self8", user="*, !user1@realm, user2@realm")
+        )
 
         # evaluate the policies wrt. the given user
 
@@ -182,13 +189,15 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(['self6', 'self8'])
+        expected_matches = set(["self6", "self8"])
 
         matching_policies_names = set(matching_policies.keys())
-        assert matching_policies_names == expected_matches, matching_policies_names
+        assert (
+            matching_policies_names == expected_matches
+        ), matching_policies_names
 
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.exists')
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.compare')
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.exists")
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.compare")
     def test_user_regex_match1(self, mock_domain_comp, mock_domain_exists):
         """evaluate for user3@realm with resolver 'resolver'
 
@@ -202,25 +211,28 @@ class TestPoliciesSelection(unittest.TestCase):
         # define user
 
         user = User(
-            login='user3',
-            realm='realm',
-            resolver_config_identifier='resolver'
-            )
+            login="user3", realm="realm", resolver_config_identifier="resolver"
+        )
 
         # define policies
 
         policies = {}
-        policies.update(create_policy('self1', user='*'))
-        policies.update(create_policy('self2', user='user1'))
-        policies.update(create_policy('self3', user='user1'))
-        policies.update(create_policy('self4', user='*, user1'))
-        policies.update(create_policy('self5', user='*, user1.resolver:'))
-        policies.update(create_policy(
-            'self6', user='*@realm, *.resolver:, user2, !user1'))
-        policies.update(create_policy(
-            'self7', user='!*@realm, *.resolver:, user2.resolver, user1'))
-        policies.update(create_policy(
-            'self8', user='*, !user1@realm, user2@realm'))
+        policies.update(create_policy("self1", user="*"))
+        policies.update(create_policy("self2", user="user1"))
+        policies.update(create_policy("self3", user="user1"))
+        policies.update(create_policy("self4", user="*, user1"))
+        policies.update(create_policy("self5", user="*, user1.resolver:"))
+        policies.update(
+            create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
+        )
+        policies.update(
+            create_policy(
+                "self7", user="!*@realm, *.resolver:, user2.resolver, user1"
+            )
+        )
+        policies.update(
+            create_policy("self8", user="*, !user1@realm, user2@realm")
+        )
 
         # evaluate the policies wrt. the given user
 
@@ -230,13 +242,13 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(['self6'])
+        expected_matches = set(["self6"])
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
 
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.exists')
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.compare')
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.exists")
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.compare")
     def test_user_regex_match2(self, mock_domain_comp, mock_domain_exists):
         """evaluate for user3@realmx with resolver 'resolver'
 
@@ -250,25 +262,30 @@ class TestPoliciesSelection(unittest.TestCase):
         # define user
 
         user = User(
-            login='user3',
-            realm='realmx',
-            resolver_config_identifier='resolver'
-            )
+            login="user3",
+            realm="realmx",
+            resolver_config_identifier="resolver",
+        )
 
         # define policies
 
         policies = {}
-        policies.update(create_policy('self1', user='*'))
-        policies.update(create_policy('self2', user='user1'))
-        policies.update(create_policy('self3', user='user1'))
-        policies.update(create_policy('self4', user='*, user1'))
-        policies.update(create_policy('self5', user='*, user1.resolver:'))
-        policies.update(create_policy(
-            'self6', user='*@realm, *.resolver:, user2, !user1'))
-        policies.update(create_policy(
-            'self7', user='!*@realm, *.resolver:, user2.resolver, user1'))
-        policies.update(create_policy(
-            'self8', user='*, !user1@realm, user2@realm'))
+        policies.update(create_policy("self1", user="*"))
+        policies.update(create_policy("self2", user="user1"))
+        policies.update(create_policy("self3", user="user1"))
+        policies.update(create_policy("self4", user="*, user1"))
+        policies.update(create_policy("self5", user="*, user1.resolver:"))
+        policies.update(
+            create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
+        )
+        policies.update(
+            create_policy(
+                "self7", user="!*@realm, *.resolver:, user2.resolver, user1"
+            )
+        )
+        policies.update(
+            create_policy("self8", user="*, !user1@realm, user2@realm")
+        )
 
         # evaluate the policies wrt. the given user
 
@@ -278,13 +295,13 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(['self6', 'self7'])
+        expected_matches = set(["self6", "self7"])
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
 
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.exists')
-    @patch('linotp.lib.policy.evaluate.UserDomainCompare.compare')
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.exists")
+    @patch("linotp.lib.policy.evaluate.UserDomainCompare.compare")
     def test_user_wild_match(self, mock_domain_comp, mock_domain_exists):
         """evaluate for user4@realmX with resolver 'resolverZ'
 
@@ -297,25 +314,30 @@ class TestPoliciesSelection(unittest.TestCase):
         # define user
 
         user = User(
-            login='user3',
-            realm='realmX',
-            resolver_config_identifier='resolverZ'
-            )
+            login="user3",
+            realm="realmX",
+            resolver_config_identifier="resolverZ",
+        )
 
         # define policies
 
         policies = {}
-        policies.update(create_policy('self1', user='*'))
-        policies.update(create_policy('self2', user='user1'))
-        policies.update(create_policy('self3', user='user1'))
-        policies.update(create_policy('self4', user='*, user1'))
-        policies.update(create_policy('self5', user='*, user1.resolver:'))
-        policies.update(create_policy(
-            'self6', user='*@realm, *.resolver:, user2, !user1'))
-        policies.update(create_policy(
-            'self7', user='!*@realm, *.resolver:, user2.resolver, user1'))
-        policies.update(create_policy(
-            'self8', user='*, !user1@realm, user2@realm'))
+        policies.update(create_policy("self1", user="*"))
+        policies.update(create_policy("self2", user="user1"))
+        policies.update(create_policy("self3", user="user1"))
+        policies.update(create_policy("self4", user="*, user1"))
+        policies.update(create_policy("self5", user="*, user1.resolver:"))
+        policies.update(
+            create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
+        )
+        policies.update(
+            create_policy(
+                "self7", user="!*@realm, *.resolver:, user2.resolver, user1"
+            )
+        )
+        policies.update(
+            create_policy("self8", user="*, !user1@realm, user2@realm")
+        )
 
         # evaluate the policies wrt. the given user
 
@@ -325,9 +347,10 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(['self1', 'self4', 'self5', 'self8'])
+        expected_matches = set(["self1", "self4", "self5", "self8"])
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
+
 
 # eof #

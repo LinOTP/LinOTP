@@ -31,19 +31,18 @@ from linotp.provider.smsprovider.RestSMSProvider import RestSMSProvider
 
 
 class TestPhoneTemplate(TestCase):
-    '''
+    """
     test the replacement of phone numbers in the template
-    '''
+    """
 
     def test_simple_phone(self):
         """
         run test vector for the template phone replacement
         """
 
-        phone = '1234567890'
+        phone = "1234567890"
 
         test_vector = [
-
             # simple text
             ("<phone>", phone),
             # empty text
@@ -54,30 +53,36 @@ class TestPhoneTemplate(TestCase):
             (1, phone),
             # text replace
             ("This is my <phone> number", "This is my %s number" % phone),
-
             # list replace
-            (['<phone>'], [phone]),
+            (["<phone>"], [phone]),
             # list replace with multiple items
-            ([1, 'phone', '<phone>', {'<phone>': '<phone>'}],
-                [1, 'phone', phone, {'<phone>': '<phone>'}]),
+            (
+                [1, "phone", "<phone>", {"<phone>": "<phone>"}],
+                [1, "phone", phone, {"<phone>": "<phone>"}],
+            ),
             # list replace with multiple items
-            (['<phone>', 'This is my <phone> number', ],
-                [phone, 'This is my %s number' % phone, ]),
-
+            (
+                [
+                    "<phone>",
+                    "This is my <phone> number",
+                ],
+                [
+                    phone,
+                    "This is my %s number" % phone,
+                ],
+            ),
             # other data types: dict
-            ({'<phone>': '<phone>'}, phone),
+            ({"<phone>": "<phone>"}, phone),
             # other data types: set
-            (set('<phone>'), phone),
+            (set("<phone>"), phone),
             # other data types: tuple
-            (('<phone>',), phone)
-
+            (("<phone>",), phone),
         ]
 
         for item in test_vector:
             template, expected = item
 
-            replaced = RestSMSProvider._apply_phone_template(
-                phone, template)
+            replaced = RestSMSProvider._apply_phone_template(phone, template)
 
             assert expected == replaced
 

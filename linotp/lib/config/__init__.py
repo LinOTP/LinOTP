@@ -23,9 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''handle all configuration items with aspekts like persitance and
+"""handle all configuration items with aspekts like persitance and
    syncronysation and provides this to all requests
-'''
+"""
 
 import logging
 import copy
@@ -49,8 +49,8 @@ linotp_config = None
 # Complete configuration tree in a hierarchical style
 linotp_config_tree = None
 
-def refresh_config():
 
+def refresh_config():
     """
     retrieves all config entries from the database and rewrites the
     global linotp_config object
@@ -66,8 +66,7 @@ def refresh_config():
 
 
 def getLinotpConfig():
-
-    '''
+    """
     Get the complete configuration and store in context
 
     Calling this function results in a number of operations:
@@ -83,7 +82,7 @@ def getLinotpConfig():
 
     :return: local config dict
     :rtype: dict
-    '''
+    """
 
     global linotp_config
     global linotp_config_tree
@@ -99,34 +98,38 @@ def getLinotpConfig():
 
     ret = {}
     try:
-        if not hasattr(c, 'linotpConfig'):
+        if not hasattr(c, "linotpConfig"):
             c.linotpConfig = LinOtpConfig()
 
         ty = type(c.linotpConfig).__name__
-        if ty != 'LinOtpConfig':
+        if ty != "LinOtpConfig":
             try:
                 c.linotpConfig = LinOtpConfig()
             except Exception as exx:
-                log.exception("Could not add LinOTP configuration to Flask "
-                              "application context. Exception was: %r", exx)
+                log.error(
+                    "Could not add LinOTP configuration to Flask "
+                    "application context. Exception was: %r",
+                    exx,
+                )
                 raise exx
         ret = c.linotpConfig
 
         if ret.delay is True:
-            if hasattr(c, 'hsm') is True and isinstance(c.hsm, dict):
-                hsm = c.hsm.get('obj')
+            if hasattr(c, "hsm") is True and isinstance(c.hsm, dict):
+                hsm = c.hsm.get("obj")
                 if hsm is not None and hsm.isReady() is True:
                     ret = LinOtpConfig()
                     c.linotpConfig = ret
 
     except Exception as exx:
-        log.debug("Bad Hack: Retrieving LinotpConfig without "
-                  "controller context")
+        log.debug(
+            "Bad Hack: Retrieving LinotpConfig without controller context"
+        )
         ret = LinOtpConfig()
 
         if ret.delay is True:
-            if hasattr(c, 'hsm') is True and isinstance(c.hsm, dict):
-                hsm = c.hsm.get('obj')
+            if hasattr(c, "hsm") is True and isinstance(c.hsm, dict):
+                hsm = c.hsm.get("obj")
                 if hsm is not None and hsm.isReady() is True:
                     ret = LinOtpConfig()
 
@@ -153,15 +156,15 @@ def storeConfig(key, val, typ=None, desc=None):
         typ, converter = type_definitions[key]
         val = converter(val)
 
-    if typ and typ.lower() in ['password', 'encrypted_data']:
-        typ = 'encrypted_data'
+    if typ and typ.lower() in ["password", "encrypted_data"]:
+        typ = "encrypted_data"
         if not isinstance(val, EncryptedData):
             val = EncryptedData.from_unencrypted(val)
 
     if isinstance(val, EncryptedData):
-        typ = 'encrypted_data'
+        typ = "encrypted_data"
 
-    log.debug('Changing config entry %r: New value is %r', key, val)
+    log.debug("Changing config entry %r: New value is %r", key, val)
     conf = getLinotpConfig()
 
     conf.addEntry(key, val, typ, desc)
@@ -170,30 +173,35 @@ def storeConfig(key, val, typ=None, desc=None):
 
 
 def updateConfig(confi):
-    '''
+    """
     update the server config entries incl. syncing it to disc
-    '''
+    """
     entries = {}
     update_entries = {}
 
     for entry in list(confi.keys()):
 
-        if entry.endswith('.type') or entry.endswith('.desc'):
-            key = entry[:-len('.type')]
+        if entry.endswith(".type") or entry.endswith(".desc"):
+            key = entry[: -len(".type")]
         else:
             key = entry
 
         if key in entries:
             continue
 
-        if (key not in type_definitions and
-            not confi.get(key + '.type') and not confi.get(key + '.desc')):
+        if (
+            key not in type_definitions
+            and not confi.get(key + ".type")
+            and not confi.get(key + ".desc")
+        ):
             update_entries[key] = confi.get(key)
 
         else:
-            entries[key] = (confi.get(key),
-                            confi.get(key + '.type'),
-                            confi.get(key + '.desc'))
+            entries[key] = (
+                confi.get(key),
+                confi.get(key + ".type"),
+                confi.get(key + ".desc"),
+            )
 
     for key, data_tuple in list(entries.items()):
 
@@ -236,7 +244,7 @@ def refreshConfig():
 
 
 def removeFromConfig(key, iCase=False):
-    log.debug('Removing config entry %r' % key)
+    log.debug("Removing config entry %r", key)
     conf = getLinotpConfig()
 
     if iCase is False:
@@ -247,13 +255,15 @@ def removeFromConfig(key, iCase=False):
         # #- might have multiple hits
         fConf = []
         for k in conf:
-            if (k.lower() == key.lower() or
-               k.lower() == 'linotp.' + key.lower()):
+            if (
+                k.lower() == key.lower()
+                or k.lower() == "linotp." + key.lower()
+            ):
                 fConf.append(k)
 
         if len(fConf) > 0:
             for k in fConf:
-                if k in conf or 'linotp.' + k in conf:
+                if k in conf or "linotp." + k in conf:
                     del conf[k]
 
     return True
@@ -278,5 +288,6 @@ def setDefaultOtpLen(otpLen):
 
 def setDefaultResetFailCount(resetFailCount):
     return storeConfig("DefaultResetFailCount", resetFailCount)
+
 
 # eof #########################################################################

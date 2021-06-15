@@ -35,35 +35,37 @@ import unittest
 import linotp.lib.policy
 from linotp.lib.policy import get_single_auth_policy
 
+
 def m_get_client_match():
     return "192.168.13.14"
+
 
 def m_get_client_no_match():
     return "172.111.1.14"
 
+
 def m_get_policies():
     policies = {
-    'qrtoken_local': {
-              'name': 'qrtoken_local',
-              'realm': '*',
-              'active': 'True',
-              'client': "*",
-              'user': '*',
-              'time': "*",
-              'action': "qrtoken_pairing_callback_url=http://local",
-              'scope': 'authentication',
-              },
-
-    'qrtoken_client': {
-              'name': 'qrtoken_client',
-              'realm': '*',
-              'active': 'True',
-              'client': "192.168.0.0/16,",
-              'user': '*',
-              'time': "*",
-              'action': "qrtoken_pairing_callback_url=http://client",
-              'scope': 'authentication',
-              }
+        "qrtoken_local": {
+            "name": "qrtoken_local",
+            "realm": "*",
+            "active": "True",
+            "client": "*",
+            "user": "*",
+            "time": "*",
+            "action": "qrtoken_pairing_callback_url=http://local",
+            "scope": "authentication",
+        },
+        "qrtoken_client": {
+            "name": "qrtoken_client",
+            "realm": "*",
+            "active": "True",
+            "client": "192.168.0.0/16,",
+            "user": "*",
+            "time": "*",
+            "action": "qrtoken_pairing_callback_url=http://client",
+            "scope": "authentication",
+        },
     }
     return policies.copy()
 
@@ -73,9 +75,9 @@ class TestGetClientPolicy(unittest.TestCase):
     """
     Policy test
     """
-    @patch('linotp.lib.policy.action.get_policy_definitions')
-    def test_get_single_auth_policy_pe(self,
-                                       mock_get_policy_definitions):
+
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    def test_get_single_auth_policy_pe(self, mock_get_policy_definitions):
         """
         verify that (more specific) policy which refers to a client is selected
 
@@ -88,22 +90,19 @@ class TestGetClientPolicy(unittest.TestCase):
         """
 
         mock_get_policy_definitions.return_value = {
-            'authentication': {
-                'qrtoken_pairing_callback_url' : {
-                    'type': 'str'}
-                }
-            }
+            "authentication": {"qrtoken_pairing_callback_url": {"type": "str"}}
+        }
         with patch.object(
-            linotp.lib.policy, '_get_client', autospec=True) \
-            as mock_get_client:
+            linotp.lib.policy, "_get_client", autospec=True
+        ) as mock_get_client:
 
             # ------------------------------------------------------------------ --
 
             # call the get_policies function which must be mocked
 
             with patch.object(
-                linotp.lib.policy.processing, 'get_policies',  autospec=True) \
-                as mock_get_policies:
+                linotp.lib.policy.processing, "get_policies", autospec=True
+            ) as mock_get_policies:
 
                 # ---------------------------------------------------------- --
 
@@ -113,15 +112,17 @@ class TestGetClientPolicy(unittest.TestCase):
                 mock_get_client.side_effect = m_get_client_match
 
                 action_value = get_single_auth_policy(
-                    'qrtoken_pairing_callback_url', realms=['*'])
+                    "qrtoken_pairing_callback_url", realms=["*"]
+                )
 
-                assert 'client' in action_value
+                assert "client" in action_value
 
                 mock_get_client.side_effect = m_get_client_no_match
                 action_value = get_single_auth_policy(
-                    'qrtoken_pairing_callback_url', realms=['*'])
+                    "qrtoken_pairing_callback_url", realms=["*"]
+                )
 
-                assert 'client' not in action_value
+                assert "client" not in action_value
 
 
 # eof #

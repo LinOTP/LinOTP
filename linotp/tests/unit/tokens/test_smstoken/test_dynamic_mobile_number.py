@@ -35,44 +35,46 @@ from mock import patch
 
 from linotp.tokens.smstoken import SmsTokenClass
 
-dynamic_mobile_policy = [{
-    'name': 'sms_dynamic_mobile_number',
-    'scope': 'authentication',
-    'realm': '*',
-    'user': 'passthru_user1',
-    'action': 'sms_dynamic_mobile_number',
-    'active': 'true',
-    'client': ''}]
+dynamic_mobile_policy = [
+    {
+        "name": "sms_dynamic_mobile_number",
+        "scope": "authentication",
+        "realm": "*",
+        "user": "passthru_user1",
+        "action": "sms_dynamic_mobile_number",
+        "active": "true",
+        "client": "",
+    }
+]
 
-fake_context = {
-    'translate': lambda x: x,
-    'Client': '127.0.0.1'}
+fake_context = {"translate": lambda x: x, "Client": "127.0.0.1"}
 
 
 class FakeUser(object):
-
     def __init__(self, login, realm):
         self.login = login
         self.realm = realm
+
 
 class TestSMSToken(unittest.TestCase):
     """
     test class for the SMS Token
     """
 
-    @patch('linotp.tokens.smstoken.context', new=fake_context)
-    @patch('linotp.tokens.smstoken.getUserDetail')
-    @patch('linotp.tokens.smstoken.get_action_value')
-    @patch('linotp.tokens.smstoken.get_client_policy')
-    @patch('linotp.tokens.smstoken.SmsTokenClass._getPhone')
-    @patch('linotp.tokens.smstoken.SmsTokenClass.__init__')
+    @patch("linotp.tokens.smstoken.context", new=fake_context)
+    @patch("linotp.tokens.smstoken.getUserDetail")
+    @patch("linotp.tokens.smstoken.get_action_value")
+    @patch("linotp.tokens.smstoken.get_client_policy")
+    @patch("linotp.tokens.smstoken.SmsTokenClass._getPhone")
+    @patch("linotp.tokens.smstoken.SmsTokenClass.__init__")
     def test_dynamic_mobile_number(
-            self,
-            mock__init__,
-            mock_getPhone,
-            mock_get_client_policy,
-            mock_get_action_value,
-            mock_getUserDetail):
+        self,
+        mock__init__,
+        mock_getPhone,
+        mock_get_client_policy,
+        mock_get_action_value,
+        mock_getUserDetail,
+    ):
         """
         test the ability to get the mobile number dynamicaly from the user
         via sms_synamic_mobile_number policy
@@ -82,9 +84,9 @@ class TestSMSToken(unittest.TestCase):
 
         # test setup with different mobile numbers
 
-        user_mobile = '12345678'
+        user_mobile = "12345678"
         token_mobile = "987654321"
-        mock_getUserDetail.return_value = {'mobile': user_mobile}
+        mock_getUserDetail.return_value = {"mobile": user_mobile}
         mock_getPhone.return_value = token_mobile
 
         # ------------------------------------------------------------------ --
@@ -93,7 +95,7 @@ class TestSMSToken(unittest.TestCase):
 
         mock__init__.return_value = None
         sms_token = SmsTokenClass()
-        fake_user = FakeUser('passthru_user1', 'myrealm')
+        fake_user = FakeUser("passthru_user1", "myrealm")
 
         # ------------------------------------------------------------------ --
 
@@ -101,7 +103,6 @@ class TestSMSToken(unittest.TestCase):
 
         mock_get_action_value.return_value = True
         mock_get_client_policy.return_value = dynamic_mobile_policy
-
 
         mobile = sms_token.get_mobile_number(fake_user)
 
@@ -139,5 +140,6 @@ class TestSMSToken(unittest.TestCase):
         assert mobile == token_mobile
 
         return
+
 
 # eof #

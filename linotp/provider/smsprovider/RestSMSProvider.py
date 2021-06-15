@@ -40,12 +40,11 @@ import os
 log = logging.getLogger(__name__)
 
 
-@provider_registry.class_entry('RestSMSProvider')
-@provider_registry.class_entry('linotp.provider.smsprovider.RestSMSProvider')
-@provider_registry.class_entry('smsprovider.RestSMSProvider.RestSMSProvider')
-@provider_registry.class_entry('smsprovider.RestSMSProvider')
+@provider_registry.class_entry("RestSMSProvider")
+@provider_registry.class_entry("linotp.provider.smsprovider.RestSMSProvider")
+@provider_registry.class_entry("smsprovider.RestSMSProvider.RestSMSProvider")
+@provider_registry.class_entry("smsprovider.RestSMSProvider")
 class RestSMSProvider(ISMSProvider):
-
     def __init__(self):
         self.config = {}
         self.client_cert = None
@@ -54,12 +53,12 @@ class RestSMSProvider(ISMSProvider):
     def loadConfig(self, configDict):
 
         if not configDict:
-            raise Exception('missing configuration')
+            raise Exception("missing configuration")
 
         self.config = configDict
 
-        self.username = configDict.get('USERNAME', None)
-        self.password = configDict.get('PASSWORD', None)
+        self.username = configDict.get("USERNAME", None)
+        self.password = configDict.get("PASSWORD", None)
 
         # proxy defintion must be in the following format:
         #
@@ -77,16 +76,16 @@ class RestSMSProvider(ISMSProvider):
         #    }
         #
 
-        self.proxy = configDict.get('PROXY', None)
+        self.proxy = configDict.get("PROXY", None)
 
-        self.auth_type = configDict.get('AUTHENTICATION', 'BASIC').lower()
-        if self.auth_type not in ['basic', 'digest']:
+        self.auth_type = configDict.get("AUTHENTICATION", "BASIC").lower()
+        if self.auth_type not in ["basic", "digest"]:
             raise Exception("no valid Authentication type provided")
 
         # support for multiple urls
 
-        self.url_config = configDict['URL']
-        self.urls = [x.strip() for x in self.url_config.split(',')]
+        self.url_config = configDict["URL"]
+        self.urls = [x.strip() for x in self.url_config.split(",")]
 
         # ------------------------------------------------------------------ --
 
@@ -98,8 +97,8 @@ class RestSMSProvider(ISMSProvider):
 
         timeout = configDict.get("TIMEOUT", (3, 30))
         if isinstance(timeout, str):
-            if ',' in timeout:
-                con_timeout, read_timeout = timeout.rpartition(',')
+            if "," in timeout:
+                con_timeout, read_timeout = timeout.rpartition(",")
                 self.timeout = (float(con_timeout), float(read_timeout))
             else:
                 self.timeout = float(timeout)
@@ -111,9 +110,9 @@ class RestSMSProvider(ISMSProvider):
         # parameter is our json payload, which will provide the
         # keys where the phone and the message is replaced within
 
-        self.payload = configDict['PAYLOAD']
-        self.headers = configDict.get('HEADERS', {})
-        self.sms_text_key = configDict['SMS_TEXT_KEY']
+        self.payload = configDict["PAYLOAD"]
+        self.headers = configDict.get("HEADERS", {})
+        self.sms_text_key = configDict["SMS_TEXT_KEY"]
         self.sms_phone_key = configDict["SMS_PHONENUMBER_KEY"]
 
         self.client_cert = configDict.get("CLIENT_CERTIFICATE_FILE")
@@ -134,8 +133,8 @@ class RestSMSProvider(ISMSProvider):
         # if the template is a simple string, we do a simple replace
 
         if isinstance(sms_phone_template, str):
-            if sms_phone_template and '<phone>' in sms_phone_template:
-                return sms_phone_template.replace('<phone>', phone)
+            if sms_phone_template and "<phone>" in sms_phone_template:
+                return sms_phone_template.replace("<phone>", phone)
 
         # if the template is a list, we replace text items
         # while others are preserved
@@ -144,9 +143,8 @@ class RestSMSProvider(ISMSProvider):
 
             sms_phone = []
             for phone_tmpl in sms_phone_template:
-                if (isinstance(phone_tmpl, str) and
-                        '<phone>' in phone_tmpl):
-                    sms_phone.append(phone_tmpl.replace('<phone>', phone))
+                if isinstance(phone_tmpl, str) and "<phone>" in phone_tmpl:
+                    sms_phone.append(phone_tmpl.replace("<phone>", phone))
                 else:
                     sms_phone.append(phone_tmpl)
             return sms_phone
@@ -156,14 +154,15 @@ class RestSMSProvider(ISMSProvider):
         return phone
 
     def _submitMessage(self, phone, message):
-        '''
+        """
         send out a message to a phone via an http sms connector
         :param phone: the phone number
         :param message: the message to submit to the phone
-        '''
+        """
 
-        log.debug("[submitMessage] submitting message "
-                  "%s to %s" % (message, phone))
+        log.debug(
+            "[submitMessage] submitting message %s to %s", message, phone
+        )
 
         pparams = {}
 
@@ -171,18 +170,19 @@ class RestSMSProvider(ISMSProvider):
 
         # care for the authentication
 
-        if self.auth_type == 'basic':
+        if self.auth_type == "basic":
             auth_method = HTTPBasicAuth
 
-        elif self.auth_type == 'digest':
+        elif self.auth_type == "digest":
             auth_method = HTTPDigestAuth
 
         else:
             auth_method = None
 
         if self.username and auth_method:
-            pparams['auth'] = auth_method(username=self.username,
-                                          password=self.password)
+            pparams["auth"] = auth_method(
+                username=self.username, password=self.password
+            )
 
         # ----------------------------------------------------------------- --
 
@@ -192,8 +192,8 @@ class RestSMSProvider(ISMSProvider):
         json_body.update(self.payload)
 
         sms_message = json_body[self.sms_text_key]
-        if sms_message and '<message>' in sms_message:
-            sms_message = sms_message.replace('<message>', message)
+        if sms_message and "<message>" in sms_message:
+            sms_message = sms_message.replace("<message>", message)
         else:
             sms_message = message
         json_body[self.sms_text_key] = sms_message
@@ -204,7 +204,7 @@ class RestSMSProvider(ISMSProvider):
         # do some phone number normalisation if MSISDN parameter is provided
 
         # prepare the phone number
-        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
+        msisdn = "true" in ("%r" % self.config.get("MSISDN", "false")).lower()
         if msisdn:
             phone = self._get_msisdn_phonenumber(phone)
 
@@ -212,8 +212,9 @@ class RestSMSProvider(ISMSProvider):
 
         # replace the phone if there is a given template for it
 
-        sms_phone = self._apply_phone_template(phone,
-                                               json_body.get(self.sms_phone_key))
+        sms_phone = self._apply_phone_template(
+            phone, json_body.get(self.sms_phone_key)
+        )
 
         json_body[self.sms_phone_key] = sms_phone
 
@@ -222,7 +223,7 @@ class RestSMSProvider(ISMSProvider):
         # care for connection timeout
 
         if self.timeout:
-            pparams['timeout'] = self.timeout
+            pparams["timeout"] = self.timeout
 
         # -------------------------------------------------------------- --
 
@@ -232,8 +233,9 @@ class RestSMSProvider(ISMSProvider):
         # with contenttype declaration:
 
         headers = {
-            'Content-type': 'application/json',
-            'Accept': 'application/json'}
+            "Content-type": "application/json",
+            "Accept": "application/json",
+        }
 
         if self.headers:
             headers.update(self.headers)
@@ -264,7 +266,7 @@ class RestSMSProvider(ISMSProvider):
         if server_cert is not None:
             # Session.post() doesn't like unicode values in Session.verify
             if isinstance(server_cert, str):
-                server_cert = server_cert.encode('utf-8')
+                server_cert = server_cert.encode("utf-8")
 
             http_session.verify = server_cert
 
@@ -276,10 +278,9 @@ class RestSMSProvider(ISMSProvider):
             try:
                 log.debug("Request Header: %r", headers)
                 log.debug("Request Content: %r", json_body)
-                response = http_session.post(self.urls[0],
-                                             json=json_body,
-                                             headers=headers,
-                                             **pparams)
+                response = http_session.post(
+                    self.urls[0], json=json_body, headers=headers, **pparams
+                )
 
                 if response.ok:
                     log.info("RestSMSProvider request success!")
@@ -291,14 +292,15 @@ class RestSMSProvider(ISMSProvider):
                 return False
 
             except requests.exceptions.Timeout as exc:
-                log.exception("RestSMSProvider timed out %r" % exc)
+                log.error("RestSMSProvider timed out %r", exc)
                 retry -= 1
                 if retry <= 0:
                     raise ProviderNotAvailable(
-                        "RestSMSProvider timed out %r" % exc)
+                        "RestSMSProvider timed out %r" % exc
+                    )
 
             except Exception as exc:
-                log.exception("RestSMSProvider %r" % exc)
+                log.error("RestSMSProvider %r", exc)
                 retry = 0
                 raise Exception("Failed to send SMS. %s" % str(exc))
 

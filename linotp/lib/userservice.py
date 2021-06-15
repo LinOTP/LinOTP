@@ -46,10 +46,7 @@ from linotp.lib.policy.action import get_action_value
 from linotp.lib.policy.action import get_selfservice_action_value
 
 
-
-from linotp.lib.util import (get_version,
-                             get_copyright_info,
-                             get_request_param)
+from linotp.lib.util import get_version, get_copyright_info, get_request_param
 
 from linotp.lib.type_utils import parse_duration
 
@@ -66,9 +63,7 @@ from linotp.tokens import tokenclass_registry
 
 from linotp.lib.challenges import Challenges
 
-from linotp.lib.user import (getUserInfo,
-                             User,
-                             getUserId)
+from linotp.lib.user import getUserInfo, User, getUserId
 
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.context import request_context
@@ -76,6 +71,7 @@ from linotp.lib.context import request_context
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
 
 import logging
+
 log = logging.getLogger(__name__)
 
 # const for encryption and iv
@@ -89,9 +85,9 @@ def get_userinfo(user):
 
     (uid, resolver, resolver_class) = getUserId(user)
     uinfo = getUserInfo(uid, resolver, resolver_class)
-    if 'cryptpass' in uinfo:
-        del uinfo['cryptpass']
-    uinfo['realm'] = user.realm
+    if "cryptpass" in uinfo:
+        del uinfo["cryptpass"]
+    uinfo["realm"] = user.realm
 
     return uinfo
 
@@ -103,31 +99,36 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
     tokenArray = []
 
     log.debug("[getTokenForUser] iterating tokens for user...")
-    log.debug("[getTokenForUser] ...user %s in realm %s.",
-              user.login, user.realm)
+    log.debug(
+        "[getTokenForUser] ...user %s in realm %s.", user.login, user.realm
+    )
 
-    tokens = getTokens4UserOrSerial(user=user, serial=None, _class=True,
-                                    active=active)
+    tokens = getTokens4UserOrSerial(
+        user=user, serial=None, _class=True, active=active
+    )
 
     for token in tokens:
 
         tok = token.token.get_vars()
-        if tok.get('LinOtp.TokenInfo', None):
-            token_info = json.loads(tok.get('LinOtp.TokenInfo'))
+        if tok.get("LinOtp.TokenInfo", None):
+            token_info = json.loads(tok.get("LinOtp.TokenInfo"))
 
             # skip the rollout tokens from the selfservice token list
 
-            path = token_info.get('scope', {}).get('path', [])
-            if set(path) & set(['userservice', 'validate']) and exclude_rollout:
+            path = token_info.get("scope", {}).get("path", [])
+            if (
+                set(path) & set(["userservice", "validate"])
+                and exclude_rollout
+            ):
                 continue
 
-            tok['LinOtp.TokenInfo'] = token_info
+            tok["LinOtp.TokenInfo"] = token_info
 
-        tok['Enrollment'] = token.get_enrollment_status()
+        tok["Enrollment"] = token.get_enrollment_status()
 
         tokenArray.append(tok)
 
-    log.debug("[getTokenForUser] found tokenarray: %r" % tokenArray)
+    log.debug("[getTokenForUser] found tokenarray: %r", tokenArray)
     return tokenArray
 
 
@@ -142,7 +143,7 @@ def _get_realms_():
     return realms
 
 
-def create_auth_cookie(user, client, state='authenticated', state_data=None):
+def create_auth_cookie(user, client, state="authenticated", state_data=None):
     """
     create and auth_cookie value from the authenticated user and client
 
@@ -180,7 +181,7 @@ def create_auth_cookie(user, client, state='authenticated', state_data=None):
         state_data = copy.deepcopy(state_data)
 
     data = [user, client, expiration, state, state_data]
-    hash_data = ("%r" % data).encode('utf-8')
+    hash_data = ("%r" % data).encode("utf-8")
 
     digest = hmac.new(key, hash_data, digestmod=hashlib.sha256).digest()
     auth_cookie = base64.urlsafe_b64encode(digest).decode().strip("=")
@@ -262,7 +263,7 @@ def check_auth_cookie(cookie, user, client):
     if client is None and not cookie_client:
         cookie_client = None
 
-    return (user == cookie_user and cookie_client == client)
+    return user == cookie_user and cookie_client == client
 
 
 def get_cookie_secret():
@@ -284,9 +285,9 @@ def get_cookie_expiry():
 
     :return: return the cookie encryption expiry
     """
-    config = request_context['Config']
+    config = request_context["Config"]
 
-    return config.get('selfservice.auth_expiry', False)
+    return config.get("selfservice.auth_expiry", False)
 
 
 def check_session(request, user, client):
@@ -306,11 +307,11 @@ def check_session(request, user, client):
     # if none is present fall back to possible
     # userauthcookie (cookie for remote self service)
 
-    session = get_request_param(request, 'session', 'no_session')
+    session = get_request_param(request, "session", "no_session")
 
-    for cookie_ref in ['user_selfservice', 'userauthcookie']:
+    for cookie_ref in ["user_selfservice", "userauthcookie"]:
 
-        cookie = request.cookies.get(cookie_ref, 'no_auth_cookie')
+        cookie = request.cookies.get(cookie_ref, "no_auth_cookie")
 
         if session == cookie:
             return check_auth_cookie(cookie, user, client)
@@ -330,25 +331,32 @@ def get_pre_context(client):
 
     # check for mfa_login, autoassign and autoenroll in policy definition
     mfa_login_action = get_selfservice_action_value(
-        action='mfa_login', default=False)
+        action="mfa_login", default=False
+    )
 
     mfa_3_fields_action = get_selfservice_action_value(
-        action='mfa_3_fields', default=False)
+        action="mfa_3_fields", default=False
+    )
 
     autoassignment_action = get_selfservice_action_value(
-        action='autoassignment', default=False)
+        action="autoassignment", default=False
+    )
 
     autoenrollment_action = get_selfservice_action_value(
-        action='autoenrollment', default=False)
+        action="autoenrollment", default=False
+    )
 
     footer_text_action = get_selfservice_action_value(
-        action='footer_text', default=None)
+        action="footer_text", default=None
+    )
 
     imprint_url_action = get_selfservice_action_value(
-        action='imprint_url', default=None)
+        action="imprint_url", default=None
+    )
 
     privacy_notice_url_action = get_selfservice_action_value(
-        action='privacy_notice_url', default=None)
+        action="privacy_notice_url", default=None
+    )
 
     return {
         "version": get_version(),
@@ -366,6 +374,7 @@ def get_pre_context(client):
             "privacy_notice_url": privacy_notice_url_action,
         },
     }
+
 
 def get_context(config, user, client):
     """
@@ -395,73 +404,94 @@ def get_context(config, user, client):
 
 ##############################################################################
 
+
 def add_dynamic_selfservice_enrollment(config, actions):
-    '''
-        add_dynamic_actions - load the html of the dynamic tokens
-            according to the policy definition
+    """
+    add_dynamic_actions - load the html of the dynamic tokens
+        according to the policy definition
 
-        :param actions: the allowd policy actions for the current scope
-        :type  actions: array of actions names
+    :param actions: the allowd policy actions for the current scope
+    :type  actions: array of actions names
 
-        :return: hash of {tokentype : html for tab}
-    '''
+    :return: hash of {tokentype : html for tab}
+    """
 
     dynanmic_actions = {}
 
     for tclass_object in set(tokenclass_registry.values()):
         tok = tclass_object.getClassType()
-        if hasattr(tclass_object, 'getClassInfo'):
+        if hasattr(tclass_object, "getClassInfo"):
 
             try:
-                selfservice = tclass_object.getClassInfo('selfservice', ret=None)
+                selfservice = tclass_object.getClassInfo(
+                    "selfservice", ret=None
+                )
                 # # check if we have a policy in the token definition for the enroll
-                if 'enroll' in selfservice and 'enroll' + tok.upper() in actions:
-                    service = selfservice.get('enroll')
-                    tab = service.get('title')
-                    c.scope = tab.get('scope')
-                    t_file = tab.get('html')
+                if (
+                    "enroll" in selfservice
+                    and "enroll" + tok.upper() in actions
+                ):
+                    service = selfservice.get("enroll")
+                    tab = service.get("title")
+                    c.scope = tab.get("scope")
+                    t_file = tab.get("html")
                     t_html = render(t_file).decode()
-                    ''' remove empty lines '''
-                    t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
-                    e_name = "%s.%s.%s" % (tok, 'selfservice', 'enroll')
+                    """ remove empty lines """
+                    t_html = "\n".join(
+                        [
+                            line
+                            for line in t_html.split("\n")
+                            if line.strip() != ""
+                        ]
+                    )
+                    e_name = "%s.%s.%s" % (tok, "selfservice", "enroll")
                     dynanmic_actions[e_name] = t_html
 
                 # # check if there are other selfserive policy actions
-                policy = tclass_object.getClassInfo('policy', ret=None)
-                if 'selfservice' in policy:
-                    selfserv_policies = list(policy.get('selfservice').keys())
+                policy = tclass_object.getClassInfo("policy", ret=None)
+                if "selfservice" in policy:
+                    selfserv_policies = list(policy.get("selfservice").keys())
                     for action in actions:
                         if action in selfserv_policies:
                             # # now lookup, if there is an additional section
                             # # in the selfservice to render
                             service = selfservice.get(action)
-                            tab = service.get('title')
-                            c.scope = tab.get('scope')
-                            t_file = tab.get('html')
+                            tab = service.get("title")
+                            c.scope = tab.get("scope")
+                            t_file = tab.get("html")
                             t_html = render(t_file).decode()
-                            ''' remove empty lines '''
-                            t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
-                            e_name = "%s.%s.%s" % (tok, 'selfservice', action)
+                            """ remove empty lines """
+                            t_html = "\n".join(
+                                [
+                                    line
+                                    for line in t_html.split("\n")
+                                    if line.strip() != ""
+                                ]
+                            )
+                            e_name = "%s.%s.%s" % (tok, "selfservice", action)
                             dynanmic_actions[e_name] = t_html
 
-
-            except Exception as e:
-                log.info('[_add_dynamic_actions] no policy for tokentype '
-                         '%s found (%r)' % (str(tok), e))
+            except Exception as exx:
+                log.info(
+                    "[_add_dynamic_actions] no policy for tokentype "
+                    "%r found (%r)",
+                    tok,
+                    exx,
+                )
 
     return dynanmic_actions
 
 
 def add_dynamic_selfservice_policies(config, actions):
-    '''
-        add_dynamic_actions - load the html of the dynamic tokens
-            according to the policy definition
+    """
+    add_dynamic_actions - load the html of the dynamic tokens
+        according to the policy definition
 
-        :param actions: the allowd policy actions for the current scope
-        :type  actions: array of actions names
+    :param actions: the allowd policy actions for the current scope
+    :type  actions: array of actions names
 
-        :return: hash of {tokentype : html for tab}
-    '''
+    :return: hash of {tokentype : html for tab}
+    """
 
     dynamic_policies = []
 
@@ -469,31 +499,37 @@ def add_dynamic_selfservice_policies(config, actions):
 
     for tok in tokenclass_registry:
         tclt = tokenclass_registry.get(tok)
-        if hasattr(tclt, 'getClassInfo'):
+        if hasattr(tclt, "getClassInfo"):
             # # check if we have a policy in the token definition
             try:
-                policy = tclt.getClassInfo('policy', ret=None)
-                if policy is not None and 'selfservice' in policy:
-                    scope_policies = list(policy.get('selfservice').keys())
-                    ''' initialize the policies '''
+                policy = tclt.getClassInfo("policy", ret=None)
+                if policy is not None and "selfservice" in policy:
+                    scope_policies = list(policy.get("selfservice").keys())
+                    """ initialize the policies """
                     if len(defined_policies) == 0:
                         for pol in actions:
-                            if '=' in pol:
-                                (name, val) = pol.split('=')
+                            if "=" in pol:
+                                (name, val) = pol.split("=")
                                 defined_policies.append(name)
 
                     for local_policy in scope_policies:
                         if local_policy not in defined_policies:
                             dynamic_policies.append(local_policy)
-            except Exception as e:
-                log.info('[_add_dynamic_actions] no policy for tokentype '
-                         '%s found (%r)' % (str(tok), e))
+            except Exception as exx:
+                log.info(
+                    "[_add_dynamic_actions] no policy for tokentype "
+                    "%r found (%r)",
+                    tok,
+                    exx,
+                )
 
     return dynamic_policies
+
 
 def add_local_policies():
 
     return
+
 
 def get_transaction_detail(transactionid):
     """Provide the information about a transaction.
@@ -516,13 +552,13 @@ def get_transaction_detail(transactionid):
         challenge_session = {}
 
     details = {
-        'received_count': challenge.received_count,
-        'received_tan': challenge.received_tan,
-        'valid_tan': challenge.valid_tan,
-        'message': challenge.getChallenge(),
-        'status': challenge.getStatus(),
-        'accept': challenge_session.get('accept', False),
-        'reject': challenge_session.get('reject', False),
+        "received_count": challenge.received_count,
+        "received_tan": challenge.received_tan,
+        "valid_tan": challenge.valid_tan,
+        "message": challenge.getChallenge(),
+        "status": challenge.getStatus(),
+        "accept": challenge_session.get("accept", False),
+        "reject": challenge_session.get("reject", False),
     }
 
     return details

@@ -35,40 +35,38 @@ FLAG_QR_HAVE_SMS = 4
 FLAG_QR_SRVSIG = 8
 
 
+class QR_Token_Validation:
 
-
-class QR_Token_Validation():
-    
-    uri = 'lseqr'
-    tan_length = 8 
+    uri = "lseqr"
+    tan_length = 8
 
     @staticmethod
     def u64_to_transaction_id(u64_int):
         # HACK! counterpart to transaction_id_to_u64 in
         # tokens.qrtokenclass
-    
+
         rest = u64_int % 100
         before = u64_int // 100
-    
+
         if rest == 0:
             return str(before)
         else:
-            return '%d.%02d' % (before, rest)
+            return "%d.%02d" % (before, rest)
 
     @staticmethod
     def create_keys():
         secret_key = os.urandom(32)
-        public_key = calc_dh_base(secret_key) 
+        public_key = calc_dh_base(secret_key)
         return secret_key, public_key
 
     @staticmethod
-    def create_user_token_by_pairing_url(pairing_url, pin='1234'):
+    def create_user_token_by_pairing_url(pairing_url, pin="1234"):
         """
         parses the pairing url and saves the extracted data in
         the fake token database of this test class.
 
         :param pairing_url: the pairing url received from the server
-        :returns: dict with all information 
+        :returns: dict with all information
                 return {
                     'serial': token_serial.decode(),
                     'server_public_key': server_public_key,
@@ -80,12 +78,12 @@ class QR_Token_Validation():
 
         # extract metadata and the public key
 
-        data_encoded = pairing_url[len(QR_Token_Validation.uri + '://pair/'):]
+        data_encoded = pairing_url[len(QR_Token_Validation.uri + "://pair/") :]
         data = decode_base64_urlsafe(data_encoded)
-        version, token_type, flags = struct.unpack('<bbI', data[0:6])
-        partition = struct.unpack('<I', data[6:10])[0]
+        version, token_type, flags = struct.unpack("<bbI", data[0:6])
+        partition = struct.unpack("<I", data[6:10])[0]
 
-        server_public_key_dsa = data[10:10 + 32]
+        server_public_key_dsa = data[10 : 10 + 32]
         server_public_key = dsa_to_dh_public(server_public_key_dsa)
 
         # validate protocol versions and type id
@@ -98,45 +96,48 @@ class QR_Token_Validation():
         # extract custom data that may or may not be present
         # (depending on flags)
 
-        custom_data = data[10 + 32:]
+        custom_data = data[10 + 32 :]
 
         token_serial = None
         if flags & FLAG_PAIR_SERIAL:
-            token_serial, __, custom_data = custom_data.partition(b'\x00')
+            token_serial, __, custom_data = custom_data.partition(b"\x00")
 
         callback_url = None
         if flags & FLAG_PAIR_CBURL:
-            callback_url, __, custom_data = custom_data.partition(b'\x00')
+            callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
-            raise NotImplementedError('SMS is not implemented. Callback URL'
-                                      'is mandatory.')
+            raise NotImplementedError(
+                "SMS is not implemented. Callback URLis mandatory."
+            )
 
         callback_sms = None
         if flags & FLAG_PAIR_CBSMS:
-            callback_sms, __, custom_data = custom_data.partition(b'\x00')
+            callback_sms, __, custom_data = custom_data.partition(b"\x00")
 
         # ------------------------------------------------------------------- --
 
         # save token data for later use
 
         ret = {
-            'serial': token_serial.decode(),
-            'server_public_key': server_public_key,
-            'partition': partition,
-            'pin': pin}
+            "serial": token_serial.decode(),
+            "server_public_key": server_public_key,
+            "partition": partition,
+            "pin": pin,
+        }
 
         if callback_sms:
-            ret['callback_sms'] = callback_sms.decode()
+            ret["callback_sms"] = callback_sms.decode()
 
         if callback_url:
-            ret['callback_url'] = callback_url.decode()
+            ret["callback_url"] = callback_url.decode()
 
         return ret
 
     @staticmethod
     def claculate_challenge_response(challenge_url, token_info, secret_key):
         return QR_Token_Validation.decrypt_and_verify_challenge(
-            challenge_url, token_info, secret_key)
+            challenge_url, token_info, secret_key
+        )
 
     @staticmethod
     def decrypt_and_verify_challenge(challenge_url, token_info, secret_key):
@@ -177,7 +178,9 @@ class QR_Token_Validation():
             cant' be sent be the server (is generated from signature)
         """
 
-        challenge_data_encoded = challenge_url[len(QR_Token_Validation.uri + '://chal/'):]
+        challenge_data_encoded = challenge_url[
+            len(QR_Token_Validation.uri + "://chal/") :
+        ]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
         # ------------------------------------------------------------------- --
@@ -186,7 +189,7 @@ class QR_Token_Validation():
         # encrypted challenge data
 
         header = challenge_data[0:5]
-        version, user_token_id = struct.unpack('<bI', header)
+        version, user_token_id = struct.unpack("<bI", header)
         assert version == QRTOKEN_VERSION
 
         # ------------------------------------------------------------------- --
@@ -198,8 +201,8 @@ class QR_Token_Validation():
         # prepare decryption by seperating R from
         # ciphertext and tag
 
-        R = challenge_data[5:5 + 32]
-        ciphertext = challenge_data[5 + 32:-16]
+        R = challenge_data[5 : 5 + 32]
+        ciphertext = challenge_data[5 + 32 : -16]
         tag = challenge_data[-16:]
 
         # ------------------------------------------------------------------- --
@@ -227,8 +230,10 @@ class QR_Token_Validation():
         # parse/check plaintext header
 
         pt_header = plaintext[0:10]
-        content_type, flags, transaction_id = struct.unpack('<bbQ', pt_header)
-        transaction_id = QR_Token_Validation.u64_to_transaction_id(transaction_id)
+        content_type, flags, transaction_id = struct.unpack("<bbQ", pt_header)
+        transaction_id = QR_Token_Validation.u64_to_transaction_id(
+            transaction_id
+        )
 
         # make sure a flag for the server signature is
         # present, if the content type is 'pairing'
@@ -245,12 +250,12 @@ class QR_Token_Validation():
             # plaintext has a server signature as a header
             # extract it and check if it is correct
 
-            server_signature = plaintext[10:10 + 32]
-            data = plaintext[10 + 32:]
+            server_signature = plaintext[10 : 10 + 32]
+            data = plaintext[10 + 32 :]
 
             # calculate secret
 
-            server_public_key = token_info['server_public_key']
+            server_public_key = token_info["server_public_key"]
             secret = calc_dh(secret_key, server_public_key)
 
             # check hmac
@@ -270,38 +275,37 @@ class QR_Token_Validation():
             # here because we need it later to create the
             # client signature
 
-            server_signature = b''
+            server_signature = b""
 
         # ------------------------------------------------------------------- --
 
         # extract message and (optional) callback
         # parameters from data
 
-        message, _, suffix = data.partition(b'\x00')
+        message, _, suffix = data.partition(b"\x00")
 
-        callback_url = token_info.get('callback_url')
+        callback_url = token_info.get("callback_url")
         if flags & FLAG_QR_HAVE_URL:
-            callback_url, _, suffix = suffix.partition(b'\x00')
+            callback_url, _, suffix = suffix.partition(b"\x00")
 
-        callback_sms = token_info.get('callback_sms')
+        callback_sms = token_info.get("callback_sms")
         if flags & FLAG_QR_HAVE_SMS:
-            callback_sms, _, suffix = suffix.partition(b'\x00')
+            callback_sms, _, suffix = suffix.partition(b"\x00")
 
         # ------------------------------------------------------------------- --
 
         # prepare the parsed challenge data
 
         challenge = {}
-        challenge['message'] = message.decode('utf-8')
-        challenge['content_type'] = content_type
-        challenge['transaction_id'] = transaction_id
-        challenge['user_token_id'] = user_token_id
+        challenge["message"] = message.decode("utf-8")
+        challenge["content_type"] = content_type
+        challenge["transaction_id"] = transaction_id
+        challenge["user_token_id"] = user_token_id
 
         if callback_url:
-            challenge['callback_url'] = callback_url.decode('utf-8')
+            challenge["callback_url"] = callback_url.decode("utf-8")
         if callback_sms:
-            challenge['callback_sms'] = callback_sms.decode('utf-8')
-
+            challenge["callback_sms"] = callback_sms.decode("utf-8")
 
         # calculate signature and tan
 
@@ -313,23 +317,22 @@ class QR_Token_Validation():
         encoded_sig = encode_base64_urlsafe(sig)
 
         return challenge, encoded_sig, tan
-    
+
     @staticmethod
     def get_pairing_url_from_response(response):
-        ''' 
+        """
         response should contain pairing url, check if it was
         sent and validate
-        '''
+        """
 
         response_dict = json.loads(response.body)
-        assert 'pairing_url' in response_dict.get('detail', {})
+        assert "pairing_url" in response_dict.get("detail", {})
 
-        pairing_url = response_dict.get('detail', {}).get('pairing_url')
+        pairing_url = response_dict.get("detail", {}).get("pairing_url")
         assert pairing_url is not None
-        assert pairing_url.startswith(QR_Token_Validation.uri + '://pair/')
+        assert pairing_url.startswith(QR_Token_Validation.uri + "://pair/")
 
         return pairing_url
-
 
     @staticmethod
     def create_pairing_response(public_key, token_info, token_id=1):
@@ -341,18 +344,18 @@ class QR_Token_Validation():
         :returns base64 encoded pairing response
         """
 
-        token_serial = token_info['serial']
-        server_public_key = token_info['server_public_key']
-        partition = token_info['partition']
+        token_serial = token_info["serial"]
+        server_public_key = token_info["server_public_key"]
+        partition = token_info["partition"]
 
-        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, partition)
+        header = struct.pack("<bI", PAIR_RESPONSE_VERSION, partition)
 
-        pairing_response = b''
-        pairing_response += struct.pack('<bI', TYPE_QRTOKEN, token_id)
+        pairing_response = b""
+        pairing_response += struct.pack("<bI", TYPE_QRTOKEN, token_id)
 
         pairing_response += public_key
 
-        pairing_response += token_serial.encode('utf8') + b'\x00\x00'
+        pairing_response += token_serial.encode("utf8") + b"\x00\x00"
 
         # ------------------------------------------------------------------- --
 

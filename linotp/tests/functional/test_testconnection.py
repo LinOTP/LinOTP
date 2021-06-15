@@ -42,11 +42,10 @@ from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
-PASSWORD = ''
+PASSWORD = ""
 
 
-class MockedResolver():
-
+class MockedResolver:
     @classmethod
     def testconnection(*argparams, **kwparams):
         """
@@ -57,12 +56,12 @@ class MockedResolver():
         global PASSWORD
 
         param = argparams[1]
-        passwd = param.get('BINDPW')
+        passwd = param.get("BINDPW")
 
         PASSWORD = passwd
 
-        desc = {'desc': "Can't contact LDAP server"}
-        status = 'error'
+        desc = {"desc": "Can't contact LDAP server"}
+        status = "error"
         return (status, desc)
 
 
@@ -75,53 +74,56 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         TestController.setUp(self)
 
     def define_ldap_resolver(self, name):
-        """
-        """
-        u_map = {"username": "sAMAccountName",
-                 "phone": "telephoneNumber",
-                 "mobile": "mobile",
-                 "email": "mail",
-                 "surname": "sn",
-                 "givenname": "givenName"}
+        """"""
+        u_map = {
+            "username": "sAMAccountName",
+            "phone": "telephoneNumber",
+            "mobile": "mobile",
+            "email": "mail",
+            "surname": "sn",
+            "givenname": "givenName",
+        }
 
         params = {
-            'BINDDN': 'cn=administrator,dc=yourdomain,dc=tld',
-            'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
-            'LDAPBASE': 'dc=yourdomain,dc=tld',
-            'name': name,
-            'CACERTIFICATE': '',
-            'LOGINNAMEATTRIBUTE': 'sAMAccountName',
-            'LDAPURI': 'ldap://linotpserver1, ldap://linotpserver2',
-            'LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
-            'UIDTYPE': 'objectGUID',
-            'BINDPW': 'Test123!',
-            'USERINFO': json.dumps(u_map),
-            'TIMEOUT': '5',
-            'SIZELIMIT': '500',
-            'NOREFERRALS': 'True',
-            'type': 'ldapresolver',
-            'EnforceTLS': 'True'}
+            "BINDDN": "cn=administrator,dc=yourdomain,dc=tld",
+            "LDAPFILTER": "(&(sAMAccountName=%s)(objectClass=user))",
+            "LDAPBASE": "dc=yourdomain,dc=tld",
+            "name": name,
+            "CACERTIFICATE": "",
+            "LOGINNAMEATTRIBUTE": "sAMAccountName",
+            "LDAPURI": "ldap://linotpserver1, ldap://linotpserver2",
+            "LDAPSEARCHFILTER": "(sAMAccountName=*)(objectClass=user)",
+            "UIDTYPE": "objectGUID",
+            "BINDPW": "Test123!",
+            "USERINFO": json.dumps(u_map),
+            "TIMEOUT": "5",
+            "SIZELIMIT": "500",
+            "NOREFERRALS": "True",
+            "type": "ldapresolver",
+            "EnforceTLS": "True",
+        }
 
-        response = self.make_system_request('setResolver', params=params)
+        response = self.make_system_request("setResolver", params=params)
 
         return response, params
 
     def _transform_(self, defintion):
         mapping = {
-           'USERINFO': 'ldap_mapping',
-           'LDAPFILTER': 'ldap_userfilter',
-           'LDAPBASE': 'ldap_basedn',
-           'BINDPW': 'ldap_password',
-           'BINDDN': 'ldap_binddn',
-           'SIZELIMIT': 'ldap_sizelimit',
-           'LDAPSEARCHFILTER': 'ldap_searchfilter',
-           'LOGINNAMEATTRIBUTE': 'ldap_loginattr',
-           'EnforceTLS': 'enforcetls',
-           'LDAPURI': 'ldap_uri',
-           'UIDTYPE': 'ldap_uidtype',
-           'NOREFERRALS': 'noreferrals',
-           'TIMEOUT': 'ldap_timeout',
-           'CACERTIFICATE': 'ldap_certificate'}
+            "USERINFO": "ldap_mapping",
+            "LDAPFILTER": "ldap_userfilter",
+            "LDAPBASE": "ldap_basedn",
+            "BINDPW": "ldap_password",
+            "BINDDN": "ldap_binddn",
+            "SIZELIMIT": "ldap_sizelimit",
+            "LDAPSEARCHFILTER": "ldap_searchfilter",
+            "LOGINNAMEATTRIBUTE": "ldap_loginattr",
+            "EnforceTLS": "enforcetls",
+            "LDAPURI": "ldap_uri",
+            "UIDTYPE": "ldap_uidtype",
+            "NOREFERRALS": "noreferrals",
+            "TIMEOUT": "ldap_timeout",
+            "CACERTIFICATE": "ldap_certificate",
+        }
 
         transform = {}
         for key, value in list(defintion.items()):
@@ -130,10 +132,12 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
 
         return transform
 
-    @patch('linotp.useridresolver.LDAPIdResolver.IdResolver.testconnection',
-           MockedResolver.testconnection)
+    @patch(
+        "linotp.useridresolver.LDAPIdResolver.IdResolver.testconnection",
+        MockedResolver.testconnection,
+    )
     def test_testresolver_for_ldap(self):
-        '''
+        """
         run the admin testresolver api for the ldap resolver definition
 
         the response for testconnection  is ignored as it is our mocking result
@@ -141,10 +145,10 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         testconnection which in case of a resolver with different
         name or uri must be empty
 
-        '''
+        """
         global PASSWORD
 
-        resolver_name = 'MyLDAP'
+        resolver_name = "MyLDAP"
 
         # before running the mocked test request, we have to register
         # the ldap resolver
@@ -154,67 +158,66 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
 
         params = {}
         params.update(self._transform_(defintion))
-        params['type'] = 'ldapresolver'
-        params['name'] = resolver_name
-        params['previous_name'] = resolver_name
+        params["type"] = "ldapresolver"
+        params["name"] = resolver_name
+        params["previous_name"] = resolver_name
 
         #
         # don't provide a password with the request - the password is taken
         # from the stored resolver of same name
 
-        pw = params['ldap_password']
-        del params['ldap_password']
+        pw = params["ldap_password"]
+        del params["ldap_password"]
 
-        response = self.make_admin_request('testresolver', params=params)
-        assert PASSWORD == 'Test123!', PASSWORD
+        response = self.make_admin_request("testresolver", params=params)
+        assert PASSWORD == "Test123!", PASSWORD
 
         # rename
         # use different name - so that no password will be added
 
-        params['name'] = resolver_name + "_dummy"
-        params['previous_name'] = resolver_name
-        response = self.make_admin_request('testresolver', params=params)
-        assert PASSWORD == 'Test123!', PASSWORD
+        params["name"] = resolver_name + "_dummy"
+        params["previous_name"] = resolver_name
+        response = self.make_admin_request("testresolver", params=params)
+        assert PASSWORD == "Test123!", PASSWORD
 
         #
         # use same resolver name but the URI is different => no password
 
-        params['name'] = resolver_name
-        params['previous_name'] = resolver_name
-        ldap_uri = params['ldap_uri']
-        params['ldap_uri'] = 'ttt' + ldap_uri
+        params["name"] = resolver_name
+        params["previous_name"] = resolver_name
+        ldap_uri = params["ldap_uri"]
+        params["ldap_uri"] = "ttt" + ldap_uri
 
-        response = self.make_admin_request('testresolver', params=params)
+        response = self.make_admin_request("testresolver", params=params)
 
-        assert "Missing parameter: ['BINDPW']" in response, \
-                        response
+        assert "Missing parameter: ['BINDPW']" in response, response
 
         #
         # use same resolver name but different URI and password => password
 
-        params['name'] = resolver_name
-        params['previous_name'] = resolver_name
-        params['ldap_password'] = pw
-        params['ldap_uri'] = 'ttt' + ldap_uri
+        params["name"] = resolver_name
+        params["previous_name"] = resolver_name
+        params["ldap_password"] = pw
+        params["ldap_uri"] = "ttt" + ldap_uri
 
-        response = self.make_admin_request('testresolver', params=params)
-        assert PASSWORD == 'Test123!', PASSWORD
+        response = self.make_admin_request("testresolver", params=params)
+        assert PASSWORD == "Test123!", PASSWORD
 
         return
 
     @pytest.mark.exclude_sqlite
     def test_testresolver_for_sql(self):
-        '''
+        """
         run the admin testresolver api for the sql resolver definition
-        '''
+        """
 
         self.setUpSQL()
 
         self.delete_all_realms()
         self.delete_all_resolvers()
 
-        resolverName = 'MySQLResolver'
-        realmName = 'sqlrealm'.lower()
+        resolverName = "MySQLResolver"
+        realmName = "sqlrealm".lower()
 
         self.addUsers()
         self.addSqlResolver(resolverName)
@@ -223,11 +226,11 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         params = {}
         params.update(self.sqlResolverDef)
 
-        params['type'] = 'sqlresolver'
-        params['name'] = resolverName
-        params['url'] = self.sqlconnect
+        params["type"] = "sqlresolver"
+        params["name"] = resolverName
+        params["url"] = self.sqlconnect
 
-        response = self.make_admin_request('testresolver', params=params)
+        response = self.make_admin_request("testresolver", params=params)
         assert '"rows": 12' in response
 
         #
@@ -236,9 +239,9 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         # retrieved from the stored configuration
         #
 
-        del params['Password']
-        params['previous_name'] = resolverName
-        response = self.make_admin_request('testresolver', params=params)
+        del params["Password"]
+        params["previous_name"] = resolverName
+        response = self.make_admin_request("testresolver", params=params)
         assert '"rows": 12' in response
 
         #
@@ -246,14 +249,15 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         # the connection will fail
         #
 
-        params['name'] = 'undefined'
-        del params['previous_name']
-        response = self.make_admin_request('testresolver', params=params)
+        params["name"] = "undefined"
+        del params["previous_name"]
+        response = self.make_admin_request("testresolver", params=params)
         assert "Missing parameter: ['Password']" in response
 
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)
 
         return
+
 
 # eof

@@ -23,9 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''
+"""
 Cryptographic utility functions
-'''
+"""
 
 import base64
 import binascii
@@ -60,16 +60,27 @@ from crypt import crypt as libcrypt
 
 from passlib.context import CryptContext
 
-PasslibHashes = CryptContext(schemes=[
-    "sha512_crypt", "sha256_crypt", "sha1_crypt",
-    "md5_crypt", "bcrypt", "bcrypt_sha256"
-])
+PasslibHashes = CryptContext(
+    schemes=[
+        "sha512_crypt",
+        "sha256_crypt",
+        "sha1_crypt",
+        "md5_crypt",
+        "bcrypt",
+        "bcrypt_sha256",
+    ]
+)
 
 log = logging.getLogger(__name__)
 
-Hashlib_map = {'md5': md5, 'sha1': sha1,
-               'sha224': sha224, 'sha256': sha256,
-               'sha384': sha384, 'sha512': sha512}
+Hashlib_map = {
+    "md5": md5,
+    "sha1": sha1,
+    "sha224": sha224,
+    "sha256": sha256,
+    "sha384": sha384,
+    "sha512": sha512,
+}
 
 
 def compare_password(password, crypted_password):
@@ -146,7 +157,7 @@ def compare(one, two):
     return res
 
 
-def get_hashalgo_from_description(description, fallback='sha1'):
+def get_hashalgo_from_description(description, fallback="sha1"):
     """
     get the hashing function from a string value
 
@@ -159,11 +170,11 @@ def get_hashalgo_from_description(description, fallback='sha1'):
         description = fallback
 
     try:
-        hash_func = Hashlib_map.get(description.lower(),
-                                    Hashlib_map[fallback.lower()])
+        hash_func = Hashlib_map.get(
+            description.lower(), Hashlib_map[fallback.lower()]
+        )
     except Exception as exx:
-        raise Exception("unsupported hash function %r:%r",
-                        description, exx)
+        raise Exception("unsupported hash function %r:%r", description, exx)
     if not callable(hash_func):
         raise Exception("hash function not callable %r", hash_func)
 
@@ -182,11 +193,11 @@ def check(st):
         sum = sum ^ x
     res = str(hex(sum % 256))[2:]
     if len(res) < 2:
-        res = '0' * (2 - len(res)) + res
+        res = "0" * (2 - len(res)) + res
     return res.upper()
 
 
-def createActivationCode(acode:str=None, checksum=True):
+def createActivationCode(acode: str = None, checksum=True):
     """
     create the activation code
 
@@ -197,12 +208,12 @@ def createActivationCode(acode:str=None, checksum=True):
     if acode is None:
         acode = geturandom(20)
     else:
-        acode =acode.encode('utf-8')
+        acode = acode.encode("utf-8")
 
     activationcode = base64.b32encode(acode)
     if checksum is True:
         chsum = check(acode)
-        activationcode = b'' + activationcode + chsum.encode('utf-8')
+        activationcode = b"" + activationcode + chsum.encode("utf-8")
 
     return activationcode.decode()
 
@@ -217,9 +228,17 @@ def createNonce(len=64):
     return binascii.hexlify(key).decode()
 
 
-def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
-         digest='SHA256', macmodule=hmac, checksum=True):
-    '''
+def kdf2(
+    sharedsecret,
+    nonce,
+    activationcode,
+    len,
+    iterations=10000,
+    digest="SHA256",
+    macmodule=hmac,
+    checksum=True,
+):
+    """
     key derivation function
 
     - takes the shared secret, an activation code and a nonce to generate
@@ -233,16 +252,15 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
     :param nonce:           hexlified binary value
     :param activationcode:  base32 encoded value
 
-    '''
-    digestmodule = get_hashalgo_from_description(digest,
-                                                 fallback='SHA256')
+    """
+    digestmodule = get_hashalgo_from_description(digest, fallback="SHA256")
 
     byte_len = 2
     salt_len = 8 * byte_len
 
-    salt = '' + nonce[-salt_len:]
+    salt = "" + nonce[-salt_len:]
     bSalt = binascii.unhexlify(salt)
-    activationcode = activationcode.replace('-', '')
+    activationcode = activationcode.replace("-", "")
 
     acode = activationcode
     if checksum is True:
@@ -260,25 +278,30 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
         checkCode = str(activationcode[-2:])
         veriCode = str(check(bcode)[-2:])
         if checkCode != veriCode:
-            raise Exception('[crypt:kdf2] activation code checksum error.'
-                            ' [%s]%s:%s' % (acode, veriCode, checkCode))
+            raise Exception(
+                "[crypt:kdf2] activation code checksum error."
+                " [%s]%s:%s" % (acode, veriCode, checkCode)
+            )
 
     activ = binascii.hexlify(bcode).decode()
 
     if not isinstance(sharedsecret, str):
         sharedsecret = sharedsecret.decode()
 
-    passphrase = '' + sharedsecret + activ + nonce[:-salt_len]
+    passphrase = "" + sharedsecret + activ + nonce[:-salt_len]
 
     keyStream = PBKDF2(
-        binascii.unhexlify(passphrase.encode('utf-8')),
-        bSalt, iterations=iterations, digestmodule=digestmodule)
+        binascii.unhexlify(passphrase.encode("utf-8")),
+        bSalt,
+        iterations=iterations,
+        digestmodule=digestmodule,
+    )
 
     key = keyStream.read(len)
     return key
 
 
-def hash_digest(val: bytes, seed:bytes, algo=None, hsm=None):
+def hash_digest(val: bytes, seed: bytes, algo=None, hsm=None):
     """
     hash_digest - hmac digest, lower level api
 
@@ -290,7 +313,7 @@ def hash_digest(val: bytes, seed:bytes, algo=None, hsm=None):
     hsm_obj = _get_hsm_obj_from_context(hsm)
 
     if algo is None:
-        algo = get_hashalgo_from_description('sha256')
+        algo = get_hashalgo_from_description("sha256")
 
     h = hsm_obj.hash_digest(val, seed, algo)
 
@@ -302,7 +325,7 @@ def hmac_digest(bkey, data_input, hsm=None, hash_algo=None):
     hsm_obj = _get_hsm_obj_from_context(hsm)
 
     if hash_algo is None:
-        hash_algo = get_hashalgo_from_description('sha1')
+        hash_algo = get_hashalgo_from_description("sha1")
 
     h = hsm_obj.hmac_digest(bkey, data_input, hash_algo)
 
@@ -320,7 +343,7 @@ def encryptPassword(password):
     return hsm_obj.encryptPassword(password)
 
 
-def encryptPin(cryptPin:bytes, iv=None, hsm=None):
+def encryptPin(cryptPin: bytes, iv=None, hsm=None):
     """Encrypt pin (i.e. token pin)
 
     :param cryptPin: pin to encrypt
@@ -344,19 +367,19 @@ def _get_hsm_obj_from_context(hsm=None):
     """
 
     if hsm:
-        hsm_obj = hsm.get('obj')
+        hsm_obj = hsm.get("obj")
     else:
-        hsm_obj = context.get('hsm', {}).get('obj')
+        hsm_obj = context.get("hsm", {}).get("obj")
 
     if not hsm_obj:
-        raise HSMException('no hsm defined in execution context!')
+        raise HSMException("no hsm defined in execution context!")
 
     if hsm_obj.isReady() is False:
-        raise HSMException('hsm not ready!')
+        raise HSMException("hsm not ready!")
     return hsm_obj
 
 
-def decryptPassword(cryptPass:str)-> bytes:
+def decryptPassword(cryptPass: str) -> bytes:
     """
     Restore the encrypted password
 
@@ -379,7 +402,7 @@ def decryptPin(cryptPin, hsm=None):
     return hsm_obj.decryptPin(cryptPin)
 
 
-def encrypt(data: str, iv: bytes, id: int=0, hsm=None) -> bytes:
+def encrypt(data: str, iv: bytes, id: int = 0, hsm=None) -> bytes:
     """
     encrypt a variable from the given input with an initialization vector
 
@@ -394,7 +417,7 @@ def encrypt(data: str, iv: bytes, id: int=0, hsm=None) -> bytes:
     """
 
     hsm_obj = _get_hsm_obj_from_context(hsm)
-    return hsm_obj.encrypt(data.encode('utf-8'), iv, id)
+    return hsm_obj.encrypt(data.encode("utf-8"), iv, id)
 
 
 def decrypt(input, iv, id=0, hsm=None):
@@ -424,12 +447,13 @@ def uencode(value):
     """
     ret = value
 
-    if (env.get("linotp.uencode_data", "").lower() == 'true'):
+    if env.get("linotp.uencode_data", "").lower() == "true":
         try:
             ret = json.dumps(value)[1:-1]
         except Exception as exx:
-            log.exception("Failed to encode value %r. Exception was %r"
-                          % (value, exx))
+            log.error(
+                "Failed to encode value %r. Exception was %r", value, exx
+            )
 
     return ret
 
@@ -443,24 +467,27 @@ def udecode(value):
     """
 
     ret = value
-    if ("linotp.uencode_data" in env
-            and env["linotp.uencode_data"].lower() == 'true'):
+    if (
+        "linotp.uencode_data" in env
+        and env["linotp.uencode_data"].lower() == "true"
+    ):
         try:
             # add surrounding "" for correct decoding
             ret = json.loads('"%s"' % value)
         except Exception as exx:
-            log.exception("Failed to decode value %r. Exception was %r"
-                          % (value, exx))
+            log.error(
+                "Failed to decode value %r. Exception was %r", value, exx
+            )
     return ret
 
 
 def get_rand_digit_str(length=16):
-    '''
+    """
     return a string of digits with a defined length using the urandom
 
     :param length: number of digits the string should return
     :return: return string, which will contain length digits
-    '''
+    """
 
     digit_str = str(1 + (struct.unpack(">I", secrets.token_bytes(4))[0] % 9))
 
@@ -471,46 +498,53 @@ def get_rand_digit_str(length=16):
 
 
 def zerome(bufferObject):
-    '''
+    """
     clear a string value from memory
 
     :param string: the string variable, which should be cleared
     :type  string: string or key buffer
 
     :return:    - nothing -
-    '''
+    """
     data = ctypes.POINTER(ctypes.c_char)()
     size = ctypes.c_int()  # Note, int only valid for python 2.5
-    ctypes.pythonapi.PyObject_AsCharBuffer(ctypes.py_object(bufferObject),
-                                           ctypes.pointer(data), ctypes.pointer(size))
+    ctypes.pythonapi.PyObject_AsCharBuffer(
+        ctypes.py_object(bufferObject),
+        ctypes.pointer(data),
+        ctypes.pointer(size),
+    )
     ctypes.memset(data, 0, size.value)
     # print repr(bufferObject)
     return
 
 
-def init_key_partition(config, partition, key_type='ed25519'):
+def init_key_partition(config, partition, key_type="ed25519"):
     """
     create an elliptic curve secret + public key pair and
     store it in the linotp config
     """
 
-    if not key_type == 'ed25519':
-        raise ValueError('Unsupported keytype: %s', key_type)
+    if not key_type == "ed25519":
+        raise ValueError("Unsupported keytype: %s", key_type)
 
     import linotp.lib.config
 
     public_key, secret_key = gen_dsa_keypair()
-    secret_key_entry = base64.b64encode(secret_key).decode('utf-8')
+    secret_key_entry = base64.b64encode(secret_key).decode("utf-8")
 
-    linotp.lib.config.storeConfig(key='SecretKey.Partition.%d' % partition,
-                                  val=secret_key_entry,
-                                  typ='encrypted_data')
+    linotp.lib.config.storeConfig(
+        key="SecretKey.Partition.%d" % partition,
+        val=secret_key_entry,
+        typ="encrypted_data",
+    )
 
-    public_key_entry = base64.b64encode(public_key).decode('utf-8')
+    public_key_entry = base64.b64encode(public_key).decode("utf-8")
 
-    linotp.lib.config.storeConfig(key='PublicKey.Partition.%d' % partition,
-                                  val=public_key_entry,
-                                  typ='encrypted_data')
+    linotp.lib.config.storeConfig(
+        key="PublicKey.Partition.%d" % partition,
+        val=public_key_entry,
+        typ="encrypted_data",
+    )
 
 
 def get_secret_key(partition):
@@ -521,21 +555,22 @@ def get_secret_key(partition):
 
     import linotp.lib.config
 
-    key = 'linotp.SecretKey.Partition.%d' % partition
+    key = "linotp.SecretKey.Partition.%d" % partition
 
     # FIXME: unencryption should not happen at this early stage
     secret_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not secret_key_b64:
-        raise ConfigAdminError('No secret key found for %d' % partition)
+        raise ConfigAdminError("No secret key found for %d" % partition)
 
     secret_key = base64.b64decode(secret_key_b64)
 
     # TODO: key type checking
 
     if len(secret_key) != 64:
-        raise ValidateError('Secret key has an invalid '
-                            'format. Key must be 64 bytes long')
+        raise ValidateError(
+            "Secret key has an invalid format. Key must be 64 bytes long"
+        )
 
     return secret_key
 
@@ -548,21 +583,22 @@ def get_public_key(partition):
 
     import linotp.lib.config
 
-    key = 'linotp.PublicKey.Partition.%d' % partition
+    key = "linotp.PublicKey.Partition.%d" % partition
 
     # FIXME: unencryption should not happen at this early stage
     public_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not public_key_b64:
-        raise ConfigAdminError('No public key found for %d' % partition)
+        raise ConfigAdminError("No public key found for %d" % partition)
 
     public_key = base64.b64decode(public_key_b64)
 
     # TODO: key type checking
 
     if len(public_key) != 32:
-        raise ValidateError('Public key has an invalid '
-                            'format. Key must be 32 bytes long')
+        raise ValidateError(
+            "Public key has an invalid format. Key must be 32 bytes long"
+        )
 
     return public_key
 
@@ -570,23 +606,23 @@ def get_public_key(partition):
 def dsa_to_dh_secret(dsa_secret_key):
 
     out = ctypes.create_string_buffer(c_libsodium.crypto_scalarmult_bytes())
-    __libsodium_check(c_libsodium.crypto_sign_ed25519_sk_to_curve25519(
-                      out,
-                      dsa_secret_key))
+    __libsodium_check(
+        c_libsodium.crypto_sign_ed25519_sk_to_curve25519(out, dsa_secret_key)
+    )
     return out.raw
 
 
 def dsa_to_dh_public(dsa_public_key):
 
     out = ctypes.create_string_buffer(c_libsodium.crypto_scalarmult_bytes())
-    __libsodium_check(c_libsodium.crypto_sign_ed25519_pk_to_curve25519(
-                      out,
-                      dsa_public_key))
+    __libsodium_check(
+        c_libsodium.crypto_sign_ed25519_pk_to_curve25519(out, dsa_public_key)
+    )
     return out.raw
 
 
 def geturandom(len=20):
-    '''
+    """
     get random - from the security module
 
     :param len:  len of the returned bytes - defalt is 20 bytes
@@ -594,7 +630,7 @@ def geturandom(len=20):
 
     :return: buffer of bytes
 
-    '''
+    """
 
     try:
         hsm_obj = _get_hsm_obj_from_context()
@@ -602,9 +638,10 @@ def geturandom(len=20):
     except (HSMException, ProgrammingError):
         return secrets.token_bytes(len)
 
+
 def get_dh_secret_key(partition):
-    """ transforms the ed25519 secret key (which is used for DSA) into
-    a Diffie-Hellman secret key """
+    """transforms the ed25519 secret key (which is used for DSA) into
+    a Diffie-Hellman secret key"""
 
     dsa_secret_key = get_secret_key(partition)
     return dsa_to_dh_secret(dsa_secret_key)
@@ -621,23 +658,23 @@ def extract_tan(signature, digits):
     :returns TAN (as string)
     """
 
-    offset = ord(signature[-1:]) & 0xf
-    itan = struct.unpack('>I', signature[offset:offset+4])[0] & 0x7fffffff
+    offset = ord(signature[-1:]) & 0xF
+    itan = struct.unpack(">I", signature[offset : offset + 4])[0] & 0x7FFFFFFF
 
     # convert the binaries of the signature to an integer based string
-    tan = "%d" % (itan % 10**digits)
+    tan = "%d" % (itan % 10 ** digits)
 
     # fill up the tan with leading zeros
-    stan = "%s%s" % ('0' * (digits - len(tan)), tan)
+    stan = "%s%s" % ("0" * (digits - len(tan)), tan)
 
     return stan
 
 
 def encode_base64_urlsafe(data):
-    """ encodes a string with urlsafe base64 and removes its padding """
-    return base64.urlsafe_b64encode(data).decode('utf8').rstrip('=')
+    """encodes a string with urlsafe base64 and removes its padding"""
+    return base64.urlsafe_b64encode(data).decode("utf8").rstrip("=")
 
 
 def decode_base64_urlsafe(data):
-    """ decodes a string encoded with :func encode_base64_urlsafe """
-    return base64.urlsafe_b64decode(data.encode() + (-len(data) % 4)*b'=')
+    """decodes a string encoded with :func encode_base64_urlsafe"""
+    return base64.urlsafe_b64decode(data.encode() + (-len(data) % 4) * b"=")

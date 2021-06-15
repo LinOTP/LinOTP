@@ -32,15 +32,19 @@ from linotp.lib.context import request_context
 from linotp.lib.monitoring import MonitorHandler
 from linotp.lib.policy import check_token_reporting
 
-from sqlalchemy import (and_, or_)
+from sqlalchemy import and_, or_
 from sqlalchemy import func
 
 STATI = [
-    'total',
-    'active', 'inactive',
-    'assigned', 'unassigned',
-    'active&assigned', 'active&unassigned',
-    'inactive&assigned', 'inactive&unassigned',
+    "total",
+    "active",
+    "inactive",
+    "assigned",
+    "unassigned",
+    "active&assigned",
+    "active&unassigned",
+    "inactive&assigned",
+    "inactive&unassigned",
 ]
 
 log = logging.getLogger(__name__)
@@ -56,7 +60,7 @@ def token_reporting(event, tokenrealms):
     """
     realms = tokenrealms
     if not tokenrealms or len(tokenrealms) == 0:
-        realms = ['/:no realm:/']
+        realms = ["/:no realm:/"]
     elif not isinstance(tokenrealms, (list, tuple)):
         realms = [tokenrealms]
 
@@ -66,15 +70,17 @@ def token_reporting(event, tokenrealms):
         counters = mh.token_count(realm, action[:])
         for key, val in list(counters.items()):
             report = Reporting(
-                event=event, realm=realm, parameter=key, count=val)
+                event=event, realm=realm, parameter=key, count=val
+            )
             try:
                 db.session.add(report)
             except Exception as exce:
-                log.exception('Error during saving report. Exception was: '
-                              '%r' % exce)
+                log.error("Error during saving report. Exception was %r", exce)
 
 
-def get_max_token_count_in_period(realm, start=None, end=None, status='active'):
+def get_max_token_count_in_period(
+    realm, start=None, end=None, status="active"
+):
     """Search for the maximum token count value in the reporing events
     in a period with the status and realm.
 
@@ -91,24 +97,28 @@ def get_max_token_count_in_period(realm, start=None, end=None, status='active'):
     if status not in STATI:
         raise Exception("unsupported status: %r" % status)
 
-    token_max_count = db.session.query(func.max(Reporting.count)).filter(
-        and_(
+    token_max_count = (
+        db.session.query(func.max(Reporting.count))
+        .filter(
             and_(
-                Reporting.timestamp >= start,
-                Reporting.timestamp < end,
-            ),
-            Reporting.realm == realm,
-            Reporting.parameter == status,
+                and_(
+                    Reporting.timestamp >= start,
+                    Reporting.timestamp < end,
+                ),
+                Reporting.realm == realm,
+                Reporting.parameter == status,
+            )
         )
-    ).scalar()
+        .scalar()
+    )
 
-    if token_max_count != None:
+    if token_max_count is not None:
         return token_max_count
 
     return -1
 
 
-def get_last_token_count_before_date(realm, before_date=None, status='active'):
+def get_last_token_count_before_date(realm, before_date=None, status="active"):
     """Search for latest reporting entry that were set before the given date.
 
     :param realm: (required)
@@ -124,13 +134,18 @@ def get_last_token_count_before_date(realm, before_date=None, status='active'):
     if status not in STATI:
         raise Exception("unsupported status: %r" % status)
 
-    last_token_count_event = db.session.query(Reporting).filter(
-        and_(
-            Reporting.timestamp < before_date,
-            Reporting.realm == realm,
-            Reporting.parameter == status,
+    last_token_count_event = (
+        db.session.query(Reporting)
+        .filter(
+            and_(
+                Reporting.timestamp < before_date,
+                Reporting.realm == realm,
+                Reporting.parameter == status,
+            )
         )
-    ).order_by(Reporting.timestamp.desc()).first()
+        .order_by(Reporting.timestamp.desc())
+        .first()
+    )
 
     if last_token_count_event:
         return last_token_count_event.count
@@ -152,7 +167,7 @@ def delete(realms, status, date=None):
     """
 
     if not isinstance(realms, (list, tuple)):
-        realms = realms.split(',')
+        realms = realms.split(",")
 
     realm_cond = tuple()
     for realm in realms:
@@ -166,7 +181,11 @@ def delete(realms, status, date=None):
     if date:
         date_cond += (and_(Reporting.timestamp < date),)
 
-    conds = (and_(*date_cond), or_(*realm_cond), or_(*status_cond),)
+    conds = (
+        and_(*date_cond),
+        or_(*realm_cond),
+        or_(*status_cond),
+    )
 
     rows = Reporting.query.filter(*conds)
     row_num = rows.count()
@@ -181,8 +200,16 @@ class ReportingIterator(object):
     support a smooth iterating through lines in reporting table
     """
 
-    def __init__(self, page=None, psize=None, sort=None, sortdir=None,
-                 realms=None, status=None, date=None):
+    def __init__(
+        self,
+        page=None,
+        psize=None,
+        sort=None,
+        sortdir=None,
+        realms=None,
+        status=None,
+        date=None,
+    ):
         """
         constructor of Tokeniterator, which gathers all conditions to build
         a sqalchemy query - iterator
@@ -207,9 +234,9 @@ class ReportingIterator(object):
         self.page = 1
         self.pages = 1
         if not isinstance(realms, (list, tuple)):
-            realms = realms.split(',')
+            realms = realms.split(",")
         if not isinstance(status, (list, tuple)):
-            status = status.split(',')
+            status = status.split(",")
 
         realm_cond = tuple()
         for realm in realms:
@@ -223,25 +250,29 @@ class ReportingIterator(object):
         if date:
             date_cond += (and_(Reporting.timestamp >= date),)
 
-        conds = (and_(*date_cond), or_(*realm_cond), or_(*status_cond),)
+        conds = (
+            and_(*date_cond),
+            or_(*realm_cond),
+            or_(*status_cond),
+        )
 
         if sort is None:
             order = Reporting.timestamp
-        elif sort == 'event':
+        elif sort == "event":
             order = Reporting.event
-        elif sort == 'realm':
+        elif sort == "realm":
             order = Reporting.realm
-        elif sort == 'parameter':
+        elif sort == "parameter":
             order = Reporting.parameter
-        elif sort == 'value':
+        elif sort == "value":
             order = Reporting.value
-        elif sort == 'count':
+        elif sort == "count":
             order = Reporting.count
-        elif sort == 'detail':
+        elif sort == "detail":
             order = Reporting.detail
-        elif sort == 'description':
+        elif sort == "description":
             order = Reporting.description
-        elif sort == 'session':
+        elif sort == "session":
             order = Reporting.session
         else:
             order = Reporting.timestamp
@@ -253,8 +284,9 @@ class ReportingIterator(object):
             order = order.asc()
 
         # query database for all reports
-        self.reports = Reporting.query.filter(*conds).order_by(
-            order).distinct()
+        self.reports = (
+            Reporting.query.filter(*conds).order_by(order).distinct()
+        )
         self.report_num = self.reports.count()
         self.pagesize = self.report_num
 
@@ -262,20 +294,27 @@ class ReportingIterator(object):
         if page is not None:
             try:
                 if psize is None:
-                    pagesize = \
-                        int(request_context.get('Config').get('pagesize', 50))
+                    pagesize = int(
+                        request_context.get("Config").get("pagesize", 50)
+                    )
                 else:
                     pagesize = int(psize)
             except Exception as exce:
-                log.debug('Reporting: Problem with pagesize detected. '
-                          'Exception was: %r' % exce)
+                log.debug(
+                    "Reporting: Problem with pagesize detected. "
+                    "Exception was: %r",
+                    exce,
+                )
                 pagesize = 20
 
             try:
                 the_page = int(page) - 1
             except Exception as exce:
-                log.debug('Reporting: Problem with page detected. '
-                          'Exception was %r' % exce)
+                log.debug(
+                    "Reporting: Problem with page detected. "
+                    "Exception was %r",
+                    exce,
+                )
                 the_page = 0
 
             if the_page < 0:
@@ -293,11 +332,12 @@ class ReportingIterator(object):
             self.reports = self.reports.slice(start, stop)
 
     def getResultSetInfo(self):
-        res_set = {"pages": self.pages,
-                   "pagesize": self.pagesize,
-                   "report_rows": self.report_num,
-                   "page": self.page
-                   }
+        res_set = {
+            "pages": self.pages,
+            "pagesize": self.pagesize,
+            "report_rows": self.report_num,
+            "page": self.page,
+        }
         return res_set
 
     def iterate_reports(self):
@@ -307,5 +347,6 @@ class ReportingIterator(object):
                 yield desc
 
         except Exception as exx:
-            log.exception("Reporting: Problem during iteration. "
-                          "Exception was %r" % exx)
+            log.error(
+                "Reporting: Problem during iteration.Exception was %r", exx
+            )

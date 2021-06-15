@@ -31,8 +31,17 @@ from typing import List, Optional
 from datetime import datetime
 from uuid import uuid4
 
-from flask import (Flask, Config as FlaskConfig, current_app, g as flask_g,
-                   jsonify, Blueprint, redirect, url_for, abort)
+from flask import (
+    Flask,
+    Config as FlaskConfig,
+    current_app,
+    g as flask_g,
+    jsonify,
+    Blueprint,
+    redirect,
+    url_for,
+    abort,
+)
 from flask.helpers import get_env
 from flask_babel import Babel, gettext
 
@@ -102,8 +111,8 @@ class ExtFlaskConfig(FlaskConfig):
     config_schema = None
 
     class RelativePathName(str):
-        """“Marker” that a string is really a relative path name.
-        """
+        """“Marker” that a string is really a relative path name."""
+
         pass
 
     def __init__(self, *args, **kwargs):
@@ -113,7 +122,7 @@ class ExtFlaskConfig(FlaskConfig):
         this can later be used to convert and verify configuration items
         as they are assigned.
         """
-        self.set_schema(kwargs.pop('config_schema', None))
+        self.set_schema(kwargs.pop("config_schema", None))
         super().__init__(*args, **kwargs)
 
     def set_schema(self, config_schema):
@@ -138,7 +147,7 @@ class ExtFlaskConfig(FlaskConfig):
         """
         if self.config_schema is not None:
             for key, value in os.environ.items():
-                if key.startswith('LINOTP_') and key != 'LINOTP_CFG':
+                if key.startswith("LINOTP_") and key != "LINOTP_CFG":
                     config_key = key[7:]
                     item = self.config_schema.find_item(config_key)
                     if item is not None:
@@ -162,8 +171,12 @@ class ExtFlaskConfig(FlaskConfig):
         """
         if self.config_schema is not None:
             value = self.config_schema.check_item(key, value)
-        if (key.endswith(('_DIR', '_FILE')) and key != 'ROOT_DIR'
-                and value and value[0] != '/'):
+        if (
+            key.endswith(("_DIR", "_FILE"))
+            and key != "ROOT_DIR"
+            and value
+            and value[0] != "/"
+        ):
             value = ExtFlaskConfig.RelativePathName(value)
         super().__setitem__(key, value)
 
@@ -178,18 +191,24 @@ class ExtFlaskConfig(FlaskConfig):
         seem to show up.
         """
         value = super().__getitem__(key)
-        root_dir = (super().__getitem__('ROOT_DIR')  # can't say 'self[…]' here
-                    if 'ROOT_DIR' in self else '/ROOT_DIR_UNSET')
+        root_dir = (
+            super().__getitem__("ROOT_DIR")  # can't say 'self[…]' here
+            if "ROOT_DIR" in self
+            else "/ROOT_DIR_UNSET"
+        )
         if isinstance(value, ExtFlaskConfig.RelativePathName):
-            return os.path.join(root_dir, '.', value)
-        if key == 'BABEL_TRANSLATION_DIRECTORIES':
+            return os.path.join(root_dir, ".", value)
+        if key == "BABEL_TRANSLATION_DIRECTORIES":
             # This is a Flask-Babel setting that we can't really change,
             # so it needs to be special-cased – it is a semicolon-separated
             # search path of directory names, any of which could be relative.
 
             return ";".join(
-                [os.path.join(root_dir, '.', fn) if fn[0] != '/' else fn
-                 for fn in value.split(';')])
+                [
+                    os.path.join(root_dir, ".", fn) if fn[0] != "/" else fn
+                    for fn in value.split(";")
+                ]
+            )
         return value
 
     def get(self, key, default=None):
@@ -202,16 +221,21 @@ class ExtFlaskConfig(FlaskConfig):
         try:
             return self[key]
         except KeyError:
-            log.warning("Relying on `.get()` to set a default for "
-                        f"'{key}' violates the DRY principle. "
-                        "Instead, ensure that the schema contains a suitable "
-                        f"default (like {default!r}).")
+            log.warning(
+                "Relying on `.get()` to set a default for "
+                f"'{key}' violates the DRY principle. "
+                "Instead, ensure that the schema contains a suitable "
+                f"default (like {default!r})."
+            )
             # raise LinOTPConfigKeyError(key)  # too drastic for now
             return default
 
     def check_directories(self):
         BASE_DIR_SETTINGS = {
-            'ROOT_DIR', 'CACHE_DIR', 'DATA_DIR', 'LOGFILE_DIR',
+            "ROOT_DIR",
+            "CACHE_DIR",
+            "DATA_DIR",
+            "LOGFILE_DIR",
         }
         if self.config_schema is None:
             return False
@@ -228,8 +252,10 @@ class ExtFlaskConfig(FlaskConfig):
             else:
                 msg = "does not exist"
             if msg:
-                print(f"Error: Directory {dir_name} ({key}) {msg}",
-                      file=sys.stderr)
+                print(
+                    f"Error: Directory {dir_name} ({key}) {msg}",
+                    file=sys.stderr,
+                )
                 err += 1
         if err:
             print("This is a fatal condition, aborting.", file=sys.stderr)
@@ -245,9 +271,9 @@ class LinOTPApp(Flask):
     """Beaker cache for this app"""
 
     def __init__(self):
-        self.cli_cmd = os.environ.get('LINOTP_CMD', '')
+        self.cli_cmd = os.environ.get("LINOTP_CMD", "")
         self.config_class = ExtFlaskConfig  # our special `Config` class
-        self.audit_obj = None               # No audit logging so far
+        self.audit_obj = None  # No audit logging so far
         self.security_provider: Optional[SecurityProvider] = None
         self.enabled_controllers: List[str] = []
         """Currently activated controller names"""
@@ -261,8 +287,9 @@ class LinOTPApp(Flask):
 
         # ------------------------------------------------------------------ --
 
-        super().__init__(__name__,
-                         static_folder='public', static_url_path='/static')
+        super().__init__(
+            __name__, static_folder="public", static_url_path="/static"
+        )
 
     def _run_setup(self):
         """
@@ -272,16 +299,20 @@ class LinOTPApp(Flask):
         """
 
         l_config = getLinotpConfig()  # SQL-based configuration
-        resolver_setup_done = config.get('resolver_setup_done', False)
+        resolver_setup_done = config.get("resolver_setup_done", False)
         if resolver_setup_done is False:
             try:
                 cache_dir = ensure_dir(
-                    self, "resolver cache", "CACHE_DIR", "resolvers",
-                    mode=0o770)
+                    self,
+                    "resolver cache",
+                    "CACHE_DIR",
+                    "resolvers",
+                    mode=0o770,
+                )
                 setupResolvers(config=l_config, cache_dir=cache_dir)
-                config['resolver_setup_done'] = True
+                config["resolver_setup_done"] = True
             except Exception as exx:
-                config['resolver_setup_done'] = False
+                config["resolver_setup_done"] = False
                 log.error("Failed to setup resolver: %r", exx)
                 raise exx
 
@@ -289,9 +320,9 @@ class LinOTPApp(Flask):
         """
         if we are in the setup cycle, we check for the linotpLicenseFile
         """
-        if "linotpLicenseFile" in config and 'license' not in config:
-            license_str = ''
-            filename = config.get("linotpLicenseFile", '')
+        if "linotpLicenseFile" in config and "license" not in config:
+            license_str = ""
+            filename = config.get("linotpLicenseFile", "")
             try:
                 with open(filename) as f:
                     license_str = f.read()
@@ -301,37 +332,37 @@ class LinOTPApp(Flask):
             if not license_str:
                 log.error("empty license file: %s", filename)
             else:
-                request_context['translate'] = gettext
+                request_context["translate"] = gettext
 
                 import linotp.lib.support
-                res, msg = linotp.lib.support.setSupportLicense(
-                    license_str)
+
+                res, msg = linotp.lib.support.setSupportLicense(license_str)
                 if res is False:
-                    log.error("failed to load license: %s: %s",
-                                license_str, msg)
+                    log.error(
+                        "failed to load license: %s: %s", license_str, msg
+                    )
 
                 else:
                     log.info("license successfully loaded")
-
 
     def start_session(self):
 
         # we add a unique request id to the request enviroment
         # so we can trace individual requests in the logging
 
-        request.environ['REQUEST_ID'] = str(uuid4())
-        request.environ['REQUEST_START_TIMESTAMP'] = datetime.now()
+        request.environ["REQUEST_ID"] = str(uuid4())
+        request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
         self.create_context(request, request.environ)
 
         try:
             user_desc = getUserFromRequest(request)
-            self.base_auth_user = user_desc.get('login', '')
+            self.base_auth_user = user_desc.get("login", "")
         except UnicodeDecodeError as exx:
             # we supress Exception here as it will be handled in the
             # controller which will return corresponding response
-            self.base_auth_user = ''
-            log.warning('Failed to identify user due to %r' % exx)
+            self.base_auth_user = ""
+            log.warning("Failed to identify user due to %r", exx)
 
     def finalise_request(self, exc):
         drop_security_module()
@@ -339,8 +370,13 @@ class LinOTPApp(Flask):
         closeResolvers()
 
         # hint for the garbage collector to make the dishes
-        data_objects = ["resolvers_loaded",
-                        "resolver_clazzes", "linotpConfig", "audit", "hsm"]
+        data_objects = [
+            "resolvers_loaded",
+            "resolver_clazzes",
+            "linotpConfig",
+            "audit",
+            "hsm",
+        ]
         for data_obj in data_objects:
             if hasattr(c, data_obj):
                 data = getattr(c, data_obj)
@@ -356,37 +392,37 @@ class LinOTPApp(Flask):
         linotp_config = getLinotpConfig()  # SQL-based configuration
 
         # make the request id available in the request context
-        request_context['RequestId'] = environment['REQUEST_ID']
+        request_context["RequestId"] = environment["REQUEST_ID"]
 
         # a request local cache to get the user info from the resolver
-        request_context['UserLookup'] = {}
+        request_context["UserLookup"] = {}
 
         # a request local cache to get the resolver from user and realm
-        request_context['UserRealmLookup'] = {}
+        request_context["UserRealmLookup"] = {}
 
-        request_context['Config'] = linotp_config
-        request_context['Policies'] = parse_policies(linotp_config)
-        request_context['PolicyDefinitions'] = {}
+        request_context["Config"] = linotp_config
+        request_context["Policies"] = parse_policies(linotp_config)
+        request_context["PolicyDefinitions"] = {}
 
-        request_context['translate'] = gettext
+        request_context["translate"] = gettext
 
-        request_context['CacheManager'] = self.cache
+        request_context["CacheManager"] = self.cache
 
-        request_context['Path'] = request.path
+        request_context["Path"] = request.path
 
         # ------------------------------------------------------------------------
 
         # setup the knowlege where we are
 
-        request_context['action'] = None
-        request_context['controller'] = None
+        request_context["action"] = None
+        request_context["controller"] = None
 
-        path = request.path.strip().strip('/').split('/')
+        path = request.path.strip().strip("/").split("/")
 
         if path[0]:
-            request_context['controller'] = path[0]
+            request_context["controller"] = path[0]
 
-        request_context['action'] = 'index' if len(path) == 1 else path[-1]
+        request_context["action"] = "index" if len(path) == 1 else path[-1]
 
         # ------------------------------------------------------------------------
 
@@ -396,9 +432,9 @@ class LinOTPApp(Flask):
         try:
             client = get_client(request=request)
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
-        request_context['Client'] = client
+        request_context["Client"] = client
 
         flask_g.audit = self.audit_obj.initialize(request, client=client)
 
@@ -406,10 +442,10 @@ class LinOTPApp(Flask):
         try:
             authUser = getUserFromRequest(request)
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
-        request_context['AuthUser'] = authUser
-        request_context['UserLookup'] = {}
+        request_context["AuthUser"] = authUser
+        request_context["UserLookup"] = {}
 
         # ------------------------------------------------------------------ --
         # get the current resolvers
@@ -418,9 +454,9 @@ class LinOTPApp(Flask):
         try:
             resolvers = getResolverList(config=linotp_config)
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
-        request_context['Resolvers'] = resolvers
+        request_context["Resolvers"] = resolvers
 
         # ------------------------------------------------------------------ --
         # get the current realms
@@ -429,9 +465,9 @@ class LinOTPApp(Flask):
         try:
             realms = getRealms()
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
-        request_context['Realms'] = realms
+        request_context["Realms"] = realms
 
         # ------------------------------------------------------------------ --
 
@@ -439,9 +475,9 @@ class LinOTPApp(Flask):
         try:
             defaultRealm = getDefaultRealm(linotp_config)
         except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r", exx)
 
-        request_context['defaultRealm'] = defaultRealm
+        request_context["defaultRealm"] = defaultRealm
 
         # ------------------------------------------------------------------ --
         # load the providers
@@ -453,7 +489,7 @@ class LinOTPApp(Flask):
         for provider_type in list(Provider_types.keys()):
             provider[provider_type] = getProvider(provider_type)
 
-        request_context['Provider'] = provider
+        request_context["Provider"] = provider
 
         # ------------------------------------------------------------------ --
 
@@ -462,7 +498,7 @@ class LinOTPApp(Flask):
         # public / private key pair
 
         partition = 0
-        if 'SecretKey.Partition.%d' % partition not in linotp_config:
+        if "SecretKey.Partition.%d" % partition not in linotp_config:
             init_key_partition(linotp_config, partition=partition)
 
     def getRadiusDictionaryPath(self):
@@ -474,10 +510,13 @@ class LinOTPApp(Flask):
         :return: path to dictionary file
         """
 
-        dict_file = os.path.join(this_dir, 'dictionary')
+        dict_file = os.path.join(this_dir, "dictionary")
 
         if not os.path.isfile(dict_file):
-            log.error("Radius settings setup failed - missing dictionary file: %s", dict_file)
+            log.error(
+                "Radius settings setup failed - missing dictionary file: %s",
+                dict_file,
+            )
 
         return dict_file
 
@@ -488,7 +527,7 @@ class LinOTPApp(Flask):
 
         An exception is thrown if the directory does not exist.
         """
-        rootdir = config.get('ROOT_DIR')
+        rootdir = config.get("ROOT_DIR")
 
         if not rootdir:
             raise ConfigurationError("Root directory (ROOT_DIR) is not set")
@@ -504,10 +543,14 @@ class LinOTPApp(Flask):
 
         A warning is logged if the cache manager is not available in the config
         """
-        cache_manager = request_context['CacheManager']
+        cache_manager = request_context["CacheManager"]
         if not cache_manager:
             import traceback
-            log.warning("[%s] Could not initialise cache due to missing manager", traceback.format_stack(None, 1))
+
+            log.warning(
+                "[%s] Could not initialise cache due to missing manager",
+                traceback.format_stack(None, 1),
+            )
 
         return cache_manager
 
@@ -522,14 +565,14 @@ class LinOTPApp(Flask):
                 request_params = request.json
             else:
                 for key in request.values:
-                    if(key.endswith('[]')):
+                    if key.endswith("[]"):
                         request_params[key[:-2]] = request.values.getlist(key)
                     else:
                         request_params[key] = request.values.get(key)
         except UnicodeDecodeError as exx:
             # we supress Exception here as it will be handled in the
             # controller which will return corresponding response
-            log.warning('Failed to access request parameters: %r' % exx)
+            log.warning("Failed to access request parameters: %r", exx)
 
         return request_params
 
@@ -554,13 +597,15 @@ class LinOTPApp(Flask):
         This function should be called during application setup
         """
         for ctrl_name in self.config["CONTROLLERS"].split():
-            bits = ctrl_name.split(':', 2)
+            bits = ctrl_name.split(":", 2)
             while len(bits) < 3:
-                bits.append('')
+                bits.append("")
             ctrl_name, url_prefix, ctrl_class_name = bits
             self.enable_controller(ctrl_name, url_prefix, ctrl_class_name)
 
-    def enable_controller(self, ctrl_name, url_prefix=None, ctrl_class_name=None):
+    def enable_controller(
+        self, ctrl_name, url_prefix=None, ctrl_class_name=None
+    ):
         """
         Initialise an individual controller and its routing
 
@@ -570,23 +615,27 @@ class LinOTPApp(Flask):
         """
         if not ctrl_name:
             raise ConfigurationError(
-                "no controller module specified: {}".format(ctrl_name))
+                "no controller module specified: {}".format(ctrl_name)
+            )
         if not ctrl_class_name:
             # "foobar" => "FoobarController"
-            ctrl_class_name = ctrl_name.title() + 'Controller'
+            ctrl_class_name = ctrl_name.title() + "Controller"
 
-        mod = importlib.import_module('.' + ctrl_name, "linotp.controllers")
+        mod = importlib.import_module("." + ctrl_name, "linotp.controllers")
         cls = getattr(mod, ctrl_class_name, None)
         if cls is None:
             raise ConfigurationError(
-                "{} does not define the '{}' class".format(ctrl_name,
-                                                           ctrl_class_name))
+                "{} does not define the '{}' class".format(
+                    ctrl_name, ctrl_class_name
+                )
+            )
 
         if not url_prefix:
-            url_prefix = cls.default_url_prefix or '/' + ctrl_name
+            url_prefix = cls.default_url_prefix or "/" + ctrl_name
 
         self.logger.debug(
-            "Registering {0} class at {1}".format(ctrl_class_name, url_prefix))
+            "Registering {0} class at {1}".format(ctrl_class_name, url_prefix)
+        )
         self.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
 
         self.enabled_controllers.append(ctrl_name)
@@ -598,55 +647,57 @@ class LinOTPApp(Flask):
         was executed. Some commands such as init and config
         need to be able to run without trying to connect to databases.
         """
-        cli_cmd = getattr(self, 'cli_cmd', '')
-        return cli_cmd not in ('init', 'config')
+        cli_cmd = getattr(self, "cli_cmd", "")
+        return cli_cmd not in ("init", "config")
 
     def setup_audit(self):
         if self.database_needed():
             self.audit_obj = getAudit(self.config)
+
 
 def init_logging(app):
     """Sets up logging for LinOTP."""
 
     if app.config["LOGGING"] is None:
         app.config["LOGGING"] = {
-            'version': 1,
-            'disable_existing_loggers': True,
-            'handlers': {
-                'console': {
-                    'level': app.config["LOGGING_CONSOLE_LEVEL"],
-                    'class': 'logging.StreamHandler',
-                    'formatter': 'linotp',
+            "version": 1,
+            "disable_existing_loggers": True,
+            "handlers": {
+                "console": {
+                    "level": app.config["LOGGING_CONSOLE_LEVEL"],
+                    "class": "logging.StreamHandler",
+                    "formatter": "linotp",
                 },
-                'file': {
-                    'level': app.config["LOGGING_FILE_LEVEL"],
-                    'class': 'logging.handlers.RotatingFileHandler',
-                    'filename': os.path.join(
-                        app.config["LOGFILE_DIR"], app.config["LOGFILE_NAME"]),
-                    'maxBytes': app.config["LOGFILE_MAX_LENGTH"],
-                    'backupCount': app.config["LOGFILE_MAX_VERSIONS"],
-                },
-            },
-            'formatters': {
-                'linotp': {
-                    'format': app.config["LOGFILE_FILE_LINE_FORMAT"],
+                "file": {
+                    "level": app.config["LOGGING_FILE_LEVEL"],
+                    "class": "logging.handlers.RotatingFileHandler",
+                    "filename": os.path.join(
+                        app.config["LOGFILE_DIR"], app.config["LOGFILE_NAME"]
+                    ),
+                    "maxBytes": app.config["LOGFILE_MAX_LENGTH"],
+                    "backupCount": app.config["LOGFILE_MAX_VERSIONS"],
                 },
             },
-            'loggers': {
-                'linotp': {
-                    'handlers': ['console', 'file'],
-                    'level': app.config["LOGGING_LEVEL"],
-                    'propagate': True,
+            "formatters": {
+                "linotp": {
+                    "format": app.config["LOGFILE_FILE_LINE_FORMAT"],
                 },
-                'sqlalchemy.engine': {
-                    'handlers': ['console', 'file'],
-                    'level': app.config["SQLALCHEMY_LOGGING_LEVEL"],
-                    'propagate': True,
+            },
+            "loggers": {
+                "linotp": {
+                    "handlers": ["console", "file"],
+                    "level": app.config["LOGGING_LEVEL"],
+                    "propagate": True,
+                },
+                "sqlalchemy.engine": {
+                    "handlers": ["console", "file"],
+                    "level": app.config["SQLALCHEMY_LOGGING_LEVEL"],
+                    "propagate": True,
                 },
             },
         }
 
-    if app.cli_cmd != 'config':
+    if app.cli_cmd != "config":
         ensure_dir(app, "log", "LOGFILE_DIR", mode=0o770)
         logging_dictConfig(app.config["LOGGING"])
 
@@ -658,12 +709,13 @@ def setup_cache(app):
     """Initialise the Beaker cache for this app."""
 
     cache_opts = {}
-    cache_opts['cache_type'] = app.config["BEAKER_CACHE_TYPE"]
-    if cache_opts['cache_type'] == 'file':
-        beaker_dir = ensure_dir(app, "file-based Beaker cache",
-                                "CACHE_DIR", "beaker", mode=0o770)
-        cache_opts['cache.data_dir'] = os.path.join(beaker_dir, 'data')
-        cache_opts['cache.lock_dir'] = os.path.join(beaker_dir, 'lock')
+    cache_opts["cache_type"] = app.config["BEAKER_CACHE_TYPE"]
+    if cache_opts["cache_type"] == "file":
+        beaker_dir = ensure_dir(
+            app, "file-based Beaker cache", "CACHE_DIR", "beaker", mode=0o770
+        )
+        cache_opts["cache.data_dir"] = os.path.join(beaker_dir, "data")
+        cache_opts["cache.lock_dir"] = os.path.join(beaker_dir, "lock")
     app.cache = CacheManager(**parse_cache_config_options(cache_opts))
 
 
@@ -671,17 +723,20 @@ def setup_cache(app):
 
 # linotp config
 
+
 def init_linotp_config(app):
-    """ initialize the app global linotp config manager """
+    """initialize the app global linotp config manager"""
 
     app.linotp_app_config = LinotpAppConfig()
+
 
 # -------------------------------------------------------------------------- --
 
 # security provider
 
+
 def init_security_provider():
-    """ Initialize the security provider.
+    """Initialize the security provider.
 
     the security provider is an manager for a pool of security module
     connections.
@@ -697,12 +752,14 @@ def init_security_provider():
         current_app.security_provider = security_provider
 
     except Exception as exx:
-        current_app.logger.error("Failed to load security provider "
-                                 "definition: {}".format(exx))
+        current_app.logger.error(
+            "Failed to load security provider definition: {}".format(exx)
+        )
         raise exx
 
+
 def allocate_security_module():
-    """ Allocate a security module for the request.
+    """Allocate a security module for the request.
 
     As the security provider has been initialized at application start, we
     can now fetch an security module connection from the SecurityProvider pool
@@ -716,11 +773,12 @@ def allocate_security_module():
     try:
         c.hsm = current_app.security_provider.getSecurityModule()
     except Exception as exx:
-        log.exception('Failed to get hsm connection for request!')
+        log.error("Failed to get hsm connection for request!")
         raise exx
 
+
 def drop_security_module():
-    """ Mark the request security module as free again.
+    """Mark the request security module as free again.
 
     drop the current security module (c.hsm) back to the security modules pool
     of security provider
@@ -728,10 +786,11 @@ def drop_security_module():
     try:
         current_app.security_provider.dropSecurityModule()
     except Exception as exx:
-        log.exception('Failed to push hsm connection back to pool! %r', c.hsm)
+        log.error("Failed to push hsm connection back to pool! %r", c.hsm)
         raise exx
 
-def _configure_app(app, config_name='default', config_extra=None):
+
+def _configure_app(app, config_name="default", config_extra=None):
     """
     Testing the configuration mechanism is a lot easier if it can be
     invoked separately from `create_app()`, which does a lot of other
@@ -765,26 +824,30 @@ def _configure_app(app, config_name='default', config_extra=None):
     # could not be read.
 
     if linotp_cfg_files:
-        for fn in linotp_cfg_files.split(':'):
+        for fn in linotp_cfg_files.split(":"):
             warn_on_error = True
-            if fn and fn[0] == '-':
+            if fn and fn[0] == "-":
                 warn_on_error = False
                 fn = fn[1:]
             fn = root_path / fn  # better message
             if fn.is_dir():
-                fn /= '*.cfg'
+                fn /= "*.cfg"
             # Check `fn` itself if glob doesn't yield results
             # (e.g., when checking `/foo/linotp.cfg` but `/foo` doesn't
             # exist).
-            for fn0 in sorted(list(fn.resolve().parent.glob(fn.name))
-                              or [str(fn)]):
+            for fn0 in sorted(
+                list(fn.resolve().parent.glob(fn.name)) or [str(fn)]
+            ):
                 if app.config.from_pyfile(fn0, silent=True):
-                    print(f"Configuration loaded from {fn0!s}",
-                          file=sys.stderr)
+                    print(
+                        f"Configuration loaded from {fn0!s}", file=sys.stderr
+                    )
                 elif warn_on_error:
-                    print(f"Configuration from {fn0!s} failed"
-                          " (check location and permissions)",
-                          file=sys.stderr)
+                    print(
+                        f"Configuration from {fn0!s} failed"
+                        " (check location and permissions)",
+                        file=sys.stderr,
+                    )
 
     if config_extra is not None:
         app.config.update(config_extra)
@@ -793,7 +856,7 @@ def _configure_app(app, config_name='default', config_extra=None):
 
     app.config.from_env_variables()
 
-    if getattr(app, 'cli_cmd', '') != 'config':
+    if getattr(app, "cli_cmd", "") != "config":
         app.config.check_directories()
 
 
@@ -824,7 +887,7 @@ def create_app(config_name=None, config_extra=None):
     # Note that we always have English even without a translation file.
 
     app.available_languages = list(
-        {'en'} | {t.language for t in babel.list_translations()}
+        {"en"} | {t.language for t in babel.list_translations()}
     )
 
     setup_mako(app)
@@ -835,7 +898,7 @@ def create_app(config_name=None, config_extra=None):
         setup_db(app)
 
         init_linotp_config(app)
-        set_config()       # ensure `request_context` exists
+        set_config()  # ensure `request_context` exists
 
         init_security_provider()
 
@@ -865,7 +928,7 @@ def create_app(config_name=None, config_extra=None):
 
         allocate_security_module()
 
-    app.add_url_rule('/healthcheck/status', 'healthcheck', healthcheck)
+    app.add_url_rule("/healthcheck/status", "healthcheck", healthcheck)
 
     # Add pre request handlers
     app.before_first_request(init_logging_config)
@@ -875,14 +938,14 @@ def create_app(config_name=None, config_extra=None):
     # Per controller setup and handlers
     app.setup_controllers()
 
-    @app.route('/')
+    @app.route("/")
     def index():
         site_root_redirect = config["SITE_ROOT_REDIRECT"]
         if site_root_redirect:
             return redirect(site_root_redirect)
 
-        if 'selfservice' in app.enabled_controllers:
-            return redirect(url_for('selfservice.index'))
+        if "selfservice" in app.enabled_controllers:
+            return redirect(url_for("selfservice.index"))
 
         return abort(404)
 
@@ -907,27 +970,35 @@ def create_app(config_name=None, config_extra=None):
         in the list that matches one of the languages that we actually
         support.
         """
-        return request.accept_languages.best_match(app.available_languages,
-                                                   "en")
+        return request.accept_languages.best_match(
+            app.available_languages, "en"
+        )
 
     # Enable profiling if desired. The options are debatable and could be
     # made more configurable. OTOH, we could all have a pony.
     profiling = False
-    if app.config['PROFILE']:
-        try:                    # Werkzeug >= 1.0.0
+    if app.config["PROFILE"]:
+        try:  # Werkzeug >= 1.0.0
             from werkzeug.middleware.profiler import ProfilerMiddleware
+
             profiling = True
         except ImportError:
-            try:                # Werkzeug < 1.0.0
+            try:  # Werkzeug < 1.0.0
                 from werkzeug.contrib.profiler import ProfilerMiddleware
+
                 profiling = True
             except ImportError:
-                log.error("PROFILE is enabled but ProfilerMiddleware could "
-                          "not be imported. No profiling for you!")
+                log.error(
+                    "PROFILE is enabled but ProfilerMiddleware could "
+                    "not be imported. No profiling for you!"
+                )
         if profiling:
             app.wsgi_app = ProfilerMiddleware(
-                app.wsgi_app, profile_dir='profile',
-                restrictions=[30], sort_by=['cumulative'])
+                app.wsgi_app,
+                profile_dir="profile",
+                restrictions=[30],
+                sort_by=["cumulative"],
+            )
             log.info("PROFILE is enabled (do not use this in production!)")
 
     return app

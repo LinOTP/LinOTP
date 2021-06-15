@@ -106,12 +106,15 @@ class ManageTab(ManageElement):
 
     def __init__(self, manage_ui):
         super(ManageTab, self).__init__(manage_ui)
-        self.tabbutton_css = 'div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type(%s) > a > span' % (
-            self.TAB_INDEX)
+        self.tabbutton_css = (
+            "div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type(%s) > a > span"
+            % (self.TAB_INDEX)
+        )
 
-        self.tabpane_css = 'div#tabs > div.ui-tabs-panel:nth-of-type(%s)' % (
-            self.TAB_INDEX)
-        self.flexigrid_css = self.tabpane_css + ' div.flexigrid'
+        self.tabpane_css = "div#tabs > div.ui-tabs-panel:nth-of-type(%s)" % (
+            self.TAB_INDEX
+        )
+        self.flexigrid_css = self.tabpane_css + " div.flexigrid"
 
     def _is_tab_open(self):
         """
@@ -132,9 +135,14 @@ class ManageTab(ManageElement):
         flexigrid_reloading_css = self.CSS_FLEXIGRID_RELOAD + ".loading"
         self.testcase.disableImplicitWait()
 
-        WebDriverWait(self.driver, self.testcase.backend_wait_time, ignored_exceptions=NoSuchElementException).until_not(
+        WebDriverWait(
+            self.driver,
+            self.testcase.backend_wait_time,
+            ignored_exceptions=NoSuchElementException,
+        ).until_not(
             EC.presence_of_element_located(
-                (By.CSS_SELECTOR, flexigrid_reloading_css))
+                (By.CSS_SELECTOR, flexigrid_reloading_css)
+            )
         )
         self.testcase.enableImplicitWait()
 
@@ -150,18 +158,20 @@ class ManageTab(ManageElement):
         tab_button = self.find_by_css(self.tabbutton_css)
 
         WebDriverWait(self.driver, 3).until(
-            EC.element_to_be_clickable(
-                (By.CSS_SELECTOR, self.tabbutton_css))
+            EC.element_to_be_clickable((By.CSS_SELECTOR, self.tabbutton_css))
         )
         if tab_button.is_enabled():
             self.manage.close_dialogs_and_click(tab_button)
 
         WebDriverWait(self.driver, 10).until(
             EC.visibility_of_element_located(
-                (By.CSS_SELECTOR, self.tabpane_css))
+                (By.CSS_SELECTOR, self.tabpane_css)
+            )
         )
 
-        assert self._is_tab_open(), "Tab should be open (css={})".format(self.tabpane_css)
+        assert self._is_tab_open(), "Tab should be open (css={})".format(
+            self.tabpane_css
+        )
 
         # Wait for tab pane to show up and return element
         tab_element = self.find_by_css(self.tabpane_css)
@@ -185,31 +195,29 @@ class ManageTab(ManageElement):
 
         grid = self.find_by_css(self.flexigrid_css)
 
-        heading_rows = grid.find_elements_by_css_selector('.hDiv table th')
+        heading_rows = grid.find_elements_by_css_selector(".hDiv table th")
         headings = [h.text for h in heading_rows]
 
-        rows = grid.find_elements_by_css_selector('.bDiv table tr')
+        rows = grid.find_elements_by_css_selector(".bDiv table tr")
 
         for row in rows:
             values = [
-                cell.text
-                for cell in row.find_elements_by_css_selector('td')
+                cell.text for cell in row.find_elements_by_css_selector("td")
             ]
-            result.append(dict(
-                zip(headings, values)
-                ))
+            result.append(dict(zip(headings, values)))
 
         return result
+
 
 class ManageDialog(ManageElement):
     """
     This class provides common access to the dialogs contained in the manage UI.
     """
 
-    CLOSEBUTTON_CSS = 'button.ui-dialog-titlebar-close'
+    CLOSEBUTTON_CSS = "button.ui-dialog-titlebar-close"
     "CSS to select the close button in a dialog"
 
-    TITLE_CSS = 'span.ui-dialog-title'
+    TITLE_CSS = "span.ui-dialog-title"
     "CSS to select the dialog title"
 
     body_id = None
@@ -223,8 +231,14 @@ class ManageDialog(ManageElement):
     menu_item_id = None
     "ID of the menu entry, if applicable (e.g. useridresolver, realms dialog)"
 
-    def __init__(self, manage_ui: 'ManageUi', dialog_body_id=None,
-                 close_button_id=None, menu_item_id=None, menu_css=None):
+    def __init__(
+        self,
+        manage_ui: "ManageUi",
+        dialog_body_id=None,
+        close_button_id=None,
+        menu_item_id=None,
+        menu_css=None,
+    ):
         """
         Initialise the dialog box
 
@@ -234,7 +248,7 @@ class ManageDialog(ManageElement):
         :param menu_item_id: The ID of the menu item to open the dialog
         :param menu_css: Default is CSS selector for the LinOTP config menu
         """
-        self.manage: 'ManageUi' = manage_ui
+        self.manage: "ManageUi" = manage_ui
 
         # Configure class. These are only set if not None, so alternatively,
         # derived classes can set these in their class definition
@@ -249,9 +263,9 @@ class ManageDialog(ManageElement):
             self.menu_css = manage_ui.MENU_LINOTP_CONFIG_CSS
 
         self.dialog_css = 'div[aria-describedby="%s"]' % self.body_id
-        self.buttonset_css = self.dialog_css + ' div.ui-dialog-buttonset'
-        self.closebutton_css = self.dialog_css + ' ' + self.CLOSEBUTTON_CSS
-        self.title_css = self.dialog_css + ' ' + self.TITLE_CSS
+        self.buttonset_css = self.dialog_css + " div.ui-dialog-buttonset"
+        self.closebutton_css = self.dialog_css + " " + self.CLOSEBUTTON_CSS
+        self.title_css = self.dialog_css + " " + self.TITLE_CSS
 
     def is_open(self):
         "Return boolean value - whether dialog is open"
@@ -264,8 +278,7 @@ class ManageDialog(ManageElement):
         Throws an assertion if this dialog does not have an associated menu entry
         """
         if not self.is_open():
-            self.manage.activate_menu_item(
-                self.menu_css, self.menu_item_id)
+            self.manage.activate_menu_item(self.menu_css, self.menu_item_id)
 
         self.reparse()
 
@@ -275,10 +288,9 @@ class ManageDialog(ManageElement):
 
         @param timeout: Maximum time to wait in seconds
         """
-        WebDriverWait(self.driver, timeout, ignored_exceptions=NoSuchElementException).until(
-            EC.element_to_be_clickable(
-                (By.CSS_SELECTOR, self.dialog_css))
-        )
+        WebDriverWait(
+            self.driver, timeout, ignored_exceptions=NoSuchElementException
+        ).until(EC.element_to_be_clickable((By.CSS_SELECTOR, self.dialog_css)))
 
     def reparse(self):
         """
@@ -294,7 +306,7 @@ class ManageDialog(ManageElement):
     def raise_if_closed(self):
         "Raise an exception if the dialog is not open"
         if not self.is_open():
-            raise RuntimeError('Dialog #%s is not open' % self.body_id)
+            raise RuntimeError("Dialog #%s is not open" % self.body_id)
 
     def click_button(self, button_id=None):
         """
@@ -302,9 +314,9 @@ class ManageDialog(ManageElement):
 
         :param button_id: ID of the element to click. Defaults to any button
         """
-        button_css = self.buttonset_css + ' button'
+        button_css = self.buttonset_css + " button"
         if button_id:
-            button_css += '#' + button_id
+            button_css += "#" + button_id
         self.find_by_css(button_css).click()
 
     def close(self):
@@ -312,7 +324,8 @@ class ManageDialog(ManageElement):
         Close the dialog
         """
         self.find_by_css(
-            self.dialog_css + ' button.ui-dialog-titlebar-close').click()
+            self.dialog_css + " button.ui-dialog-titlebar-close"
+        ).click()
 
     def close_if_open(self):
         """
@@ -352,7 +365,7 @@ class ManageDialog(ManageElement):
         @param: expected_text Check contents and raise an exception if it does not match
         """
         text = self.get_text()
-        self._verify_text('Alert text', expected_text, text)
+        self._verify_text("Alert text", expected_text, text)
 
     def check_title(self, expected_text):
         """
@@ -361,13 +374,15 @@ class ManageDialog(ManageElement):
         @param: expected_text Check title and raise an exception if it does not match
         """
         text = self.get_title()
-        self._verify_text('Dialog title', expected_text, text)
+        self._verify_text("Dialog title", expected_text, text)
 
     def _verify_text(self, description, expected_text, text_contents):
         "Check the text contents, raise an exception if not found"
         if text_contents != expected_text:
-            raise RuntimeError('%s [%s] text does not match. Expected text:"%s" Found text:"%s"' % (
-                description, self.body_id, expected_text, text_contents))
+            raise RuntimeError(
+                '%s [%s] text does not match. Expected text:"%s" Found text:"%s"'
+                % (description, self.body_id, expected_text, text_contents)
+            )
 
     def close_alert_and_get_its_text(self):
         "Close dialog and return the text contents"

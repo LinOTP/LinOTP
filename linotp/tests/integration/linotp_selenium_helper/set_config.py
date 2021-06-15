@@ -35,36 +35,40 @@ LOG = logging.getLogger(__name__)
 
 
 class SetConfig:
-
-    def __init__(self, http_protocol, http_host, http_port, http_username, http_password):
+    def __init__(
+        self, http_protocol, http_host, http_port, http_username, http_password
+    ):
         """Initializes the class with the required values to call
-           https://.../system/setConfig
+        https://.../system/setConfig
         """
         self.auth = HTTPDigestAuth(http_username, http_password)
         url = http_protocol + "://" + http_host
         if http_port:
-            url += ':' + http_port
-        url += '/'
+            url += ":" + http_port
+        url += "/"
         self.set_config_url = url + "system/setConfig?"
         self.session = get_session(url, http_username, http_password)
 
     def setConfig(self, parameters):
         """Sets the config with the parameters
-           return True if result.value and result.status is True
+        return True if result.value and result.status is True
         """
-        parameters['session'] = self.session
-        r = requests.get(self.set_config_url,
-                         params=parameters,
-                         cookies={'admin_session': self.session},
-                         auth=self.auth,
-                         verify=False)
+        parameters["session"] = self.session
+        r = requests.get(
+            self.set_config_url,
+            params=parameters,
+            cookies={"admin_session": self.session},
+            auth=self.auth,
+            verify=False,
+        )
         if r.status_code != 200:
             return False
         return_json = r.json()
-        if (return_json is None or
-               'result' not in return_json or
-               'value' not in return_json['result'] or
-               'status' not in return_json['result']):
+        if (
+            return_json is None
+            or "result" not in return_json
+            or "value" not in return_json["result"]
+            or "status" not in return_json["result"]
+        ):
             raise Exception("Invalid return value: %r" % return_json)
-        return (return_json['result']['status'])
-
+        return return_json["result"]["status"]

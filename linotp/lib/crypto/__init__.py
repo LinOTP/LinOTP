@@ -24,9 +24,10 @@
 #    Support: www.keyidentity.com
 #
 from linotp.lib.crypto.utils import compare
-'''
+
+"""
 Declare the SecretObject to encapsulate security aspects
-'''
+"""
 
 import hmac
 import logging
@@ -76,6 +77,7 @@ class SecretObj(object):
     This is to provide the functionality during startup,
     before the HSM is ready.
     """
+
     def __init__(self, val, iv, preserve=True, hsm=None):
         self.val = val
         self.iv = iv
@@ -84,7 +86,7 @@ class SecretObj(object):
         self.hsm = hsm
 
     def getKey(self):
-        log.debug('Warning: Requesting secret key as plaintext.')
+        log.debug("Warning: Requesting secret key as plaintext.")
         return utils.decrypt(self.val, self.iv, hsm=self.hsm)
 
     def calc_dh(self, partition, data):
@@ -109,10 +111,10 @@ class SecretObj(object):
         enc_otp_key = utils.encrypt(bhOtpKey, self.iv, hsm=self.hsm)
         otpKeyEnc = binascii.hexlify(enc_otp_key)
 
-        return (otpKeyEnc == self.val)
+        return otpKeyEnc == self.val
 
     def compare_password(self, password):
-        '''
+        """
         compare the password of the password token
 
         the password token contains the unix hashed (hmac256) password format
@@ -128,20 +130,19 @@ class SecretObj(object):
                          to be compared password
 
         :return: boolean
-        '''
+        """
 
-        if self.iv == b':1:':
+        if self.iv == b":1:":
 
-            return utils.compare_password(
-                password, self.val.decode('utf-8'))
+            return utils.compare_password(password, self.val.decode("utf-8"))
 
         # the legacy comparison: compare the ecrypted password
 
         enc_otp_key = utils.encrypt(password, self.iv, hsm=self.hsm)
 
         return compare(
-            binascii.hexlify(enc_otp_key),binascii.hexlify(self.val))
-
+            binascii.hexlify(enc_otp_key), binascii.hexlify(self.val)
+        )
 
     def hmac_digest(self, data_input, hash_algo=None, bkey=None):
 
@@ -153,10 +154,11 @@ class SecretObj(object):
         data = data_input
 
         if not hash_algo:
-            hash_algo = utils.get_hashalgo_from_description('sha1')
+            hash_algo = utils.get_hashalgo_from_description("sha1")
 
-        h_digest = utils.hmac_digest(bkey=b_key, data_input=data,
-                               hsm=self.hsm, hash_algo=hash_algo)
+        h_digest = utils.hmac_digest(
+            bkey=b_key, data_input=data, hsm=self.hsm, hash_algo=hash_algo
+        )
 
         if not bkey:
             self._clearKey_(preserve=self.preserve)
@@ -164,12 +166,12 @@ class SecretObj(object):
         return h_digest
 
     def aes_decrypt(self, data_input):
-        '''
+        """
         support inplace aes decryption for the yubikey
 
         :param data_input: data, that should be decrypted
         :return: the decrypted data
-        '''
+        """
         self._setupKey_()
         aes = AES.new(self.bkey, AES.MODE_ECB)
         msg_bin = aes.decrypt(data_input)
@@ -198,7 +200,7 @@ class SecretObj(object):
         """
 
         iv = utils.geturandom(16)
-        hashed_pin = utils.hash_digest(pin.encode('utf-8'), iv)
+        hashed_pin = utils.hash_digest(pin.encode("utf-8"), iv)
         return iv, hashed_pin
 
     @staticmethod
@@ -212,7 +214,7 @@ class SecretObj(object):
         :return: boolean
         """
 
-        hash_pin = utils.hash_digest(pin.encode('utf-8'), iv)
+        hash_pin = utils.hash_digest(pin.encode("utf-8"), iv)
 
         # TODO: position independend compare
         if hashed_pin == hash_pin:
@@ -230,12 +232,12 @@ class SecretObj(object):
         """
 
         iv = utils.geturandom(16)
-        enc_pin = utils.encryptPin(pin.encode('utf-8'), iv=iv)
+        enc_pin = utils.encryptPin(pin.encode("utf-8"), iv=iv)
 
         return enc_pin
 
     @staticmethod
-    def check_encrypted_pin(pin:str, encrypted_pin:bytes, iv:bytes) -> bool:
+    def check_encrypted_pin(pin: str, encrypted_pin: bytes, iv: bytes) -> bool:
         """
         check an encrypted against a given pin
 
@@ -245,10 +247,10 @@ class SecretObj(object):
         :return: boolean
         """
 
-        crypted_pin = utils.encryptPin(pin.encode('utf-8'), iv)
+        crypted_pin = utils.encryptPin(pin.encode("utf-8"), iv)
 
         # TODO: position independend compare
-        if encrypted_pin == crypted_pin.encode('utf-8'):
+        if encrypted_pin == crypted_pin.encode("utf-8"):
             return True
 
         return False
@@ -266,21 +268,20 @@ class SecretObj(object):
 
     def _setupKey_(self):
 
-        if not hasattr(self, 'bkey'):
+        if not hasattr(self, "bkey"):
             self.bkey = None
 
         if self.bkey is None:
             self.bkey = binascii.unhexlify(
-                self.decrypt(
-                    self.val, self.iv, hsm=self.hsm)
-                )
+                self.decrypt(self.val, self.iv, hsm=self.hsm)
+            )
 
         return self.bkey
 
     def _clearKey_(self, preserve=False):
         if preserve is False:
 
-            if not hasattr(self, 'bkey'):
+            if not hasattr(self, "bkey"):
                 self.bkey = None
 
             if self.bkey is not None:

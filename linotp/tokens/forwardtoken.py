@@ -46,7 +46,7 @@ log = logging.getLogger(__name__)
 
 
 def do_forward_failcounter(token):
-    '''
+    """
     this function checks the for the policy
 
         scope=authentication,
@@ -57,7 +57,7 @@ def do_forward_failcounter(token):
     :param serial: the token serial number, which allows to derive the
                    realm(s) and owner from
     :return: boolean
-    '''
+    """
     boolean = True
 
     owner = get_token_owner(token)
@@ -67,16 +67,17 @@ def do_forward_failcounter(token):
         realms = getTokenRealms(token.getSerial())
 
     if not realms:
-        realms = ['*']
+        realms = ["*"]
 
     for realm in realms:
-        params = {'scope': 'authentication',
-                  'realm': realm,
-                  'action': "forwardtoken:no_failcounter_forwarding"
-                  }
+        params = {
+            "scope": "authentication",
+            "realm": realm,
+            "action": "forwardtoken:no_failcounter_forwarding",
+        }
 
         if owner and owner.login:
-            params['user'] = owner.login
+            params["user"] = owner.login
 
         pol = getPolicy(params)
 
@@ -87,9 +88,10 @@ def do_forward_failcounter(token):
     return boolean
 
 
-@tokenclass_registry.class_entry('forward')
+@tokenclass_registry.class_entry("forward")
 @tokenclass_registry.class_entry(
-    'linotp.tokens.forwardtoken.ForwardTokenClass')
+    "linotp.tokens.forwardtoken.ForwardTokenClass"
+)
 class ForwardTokenClass(TokenClass):
     """
     The Forward token forwards an authentication request to another token.
@@ -109,7 +111,7 @@ class ForwardTokenClass(TokenClass):
         self.setType("forward")
 
         self.forwardSerial = None
-        self.mode = ['authenticate', 'challenge']
+        self.mode = ["authenticate", "challenge"]
 
         self.targetToken = None
         self.target_otp_count = -1
@@ -129,7 +131,7 @@ class ForwardTokenClass(TokenClass):
         return "LSFW"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
+    def getClassInfo(cls, key=None, ret="all"):
         """
         getClassInfo - returns a subtree of the token definition
 
@@ -139,35 +141,43 @@ class ForwardTokenClass(TokenClass):
 
         """
 
-        _ = context['translate']
+        _ = context["translate"]
 
-        res = {'type': 'forward',
-               'title': 'Forward Token',
-               'description': ('Forward token to forward the'
-                               ' otp authentication request to another token'),
-
-               'init': {'page': {'html': 'forwardtoken.mako',
-                                 'scope': 'enroll', },
-                        'title': {'html': 'forwardtoken.mako',
-                                  'scope': 'enroll.title', },
-                        },
-
-               'selfservice': {},
-               'policy': {
-                'authentication': {
-                   'forwardtoken:no_failcounter_forwarding': {
-                      'type': 'bool',
-                      'desc': _('Specify if the target token fail counter'
-                                ' should be incremented / resets or not')
-                        },
+        res = {
+            "type": "forward",
+            "title": "Forward Token",
+            "description": (
+                "Forward token to forward the"
+                " otp authentication request to another token"
+            ),
+            "init": {
+                "page": {
+                    "html": "forwardtoken.mako",
+                    "scope": "enroll",
+                },
+                "title": {
+                    "html": "forwardtoken.mako",
+                    "scope": "enroll.title",
+                },
+            },
+            "selfservice": {},
+            "policy": {
+                "authentication": {
+                    "forwardtoken:no_failcounter_forwarding": {
+                        "type": "bool",
+                        "desc": _(
+                            "Specify if the target token fail counter"
+                            " should be incremented / resets or not"
+                        ),
                     },
-                },  # end of policy
-               }
+                },
+            },  # end of policy
+        }
 
         if key is not None and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
 
         return ret
@@ -252,8 +262,11 @@ class ForwardTokenClass(TokenClass):
 
         forwardSerial = self.getFromTokenInfo("forward.serial") or ""
 
-        log.debug("checking OTP len:%r  for target serial: %r",
-                  len(passw), forwardSerial)
+        log.debug(
+            "checking OTP len:%r  for target serial: %r",
+            len(passw),
+            forwardSerial,
+        )
 
         targetToken = self._getTargetToken(forwardSerial)
 
@@ -273,18 +286,21 @@ class ForwardTokenClass(TokenClass):
             return self.targetToken
 
         from linotp.lib.token import getTokens4UserOrSerial
+
         tokens = getTokens4UserOrSerial(serial=forwardSerial)
 
         if not tokens:
-            raise Exception('no target token with serial %r found' %
-                            forwardSerial)
+            raise Exception(
+                "no target token with serial %r found" % forwardSerial
+            )
 
         self.targetToken = tokens[0]
         return self.targetToken
 
-    def checkResponse4Challenge(self, user, passw, options=None,
-                                challenges=None):
-        '''
+    def checkResponse4Challenge(
+        self, user, passw, options=None, challenges=None
+    ):
+        """
         This method verifies if the given ``passw`` matches any
         existing ``challenge`` of the token.
 
@@ -303,7 +319,7 @@ class ForwardTokenClass(TokenClass):
         :param challenges: A sorted list of valid challenges for this token.
         :return: tuple of (otpcounter and the list of matching challenges)
 
-        '''
+        """
         if not challenges:
             return -1, []
 

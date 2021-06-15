@@ -30,6 +30,7 @@
 
 from flask import current_app
 
+
 def expand_here(value):
     """
     expand the %(here)s string with the linotp root location
@@ -40,7 +41,7 @@ def expand_here(value):
 
     if isinstance(value, str) and "%(here)s" in value:
 
-        linotp_root = current_app.config['ROOT_DIR']
+        linotp_root = current_app.config["ROOT_DIR"]
 
         return value.replace("%(here)s", linotp_root)
 

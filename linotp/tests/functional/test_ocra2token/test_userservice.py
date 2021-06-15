@@ -32,9 +32,9 @@ from . import OcraOtp
 
 
 class UserserviceOcra2TokenTest(TestController):
-    '''
+    """
     support userservice api endpoint to enroll an ocra2 token
-    '''
+    """
 
     def setUp(self):
 
@@ -50,32 +50,31 @@ class UserserviceOcra2TokenTest(TestController):
         self.create_common_resolvers()
         self.create_common_realms()
 
-
     def tearDown(self):
         TestController.tearDown(self)
 
-
     def test_enroll_ocra2(self):
-        """ verify userservice enrollment and activation of an ocra2 token """
+        """verify userservice enrollment and activation of an ocra2 token"""
 
         auth_user = {
-            'login': 'passthru_user1@myDefRealm',
-            'password': 'geheim1'}
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
 
         # ------------------------------------------------------------------ --
 
         # setup the permissions
 
         policy = {
-            'name': 'T1',
-            'action': 'activate_OCRA2, enrollOCRA2, delete, ',
-            'user': ' passthru.*.myDefRes:',
-            'realm': '*',
-            'scope': 'selfservice'
+            "name": "T1",
+            "action": "activate_OCRA2, enrollOCRA2, delete, ",
+            "user": " passthru.*.myDefRes:",
+            "realm": "*",
+            "scope": "selfservice",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -84,16 +83,17 @@ class UserserviceOcra2TokenTest(TestController):
         ocra_otp = OcraOtp()
 
         params = {
-            'genkey': '1', 
-            'description': 'self enrolled', 
-            'type': 'ocra2', 
-            'sharedsecret': '1',
+            "genkey": "1",
+            "description": "self enrolled",
+            "type": "ocra2",
+            "sharedsecret": "1",
         }
         response = self.make_userselfservice_request(
-            'enroll', params=params, auth_user=auth_user, new_auth_cookie=True)
+            "enroll", params=params, auth_user=auth_user, new_auth_cookie=True
+        )
 
         assert "<img" in response
-        serial = response.json['detail']['serial']
+        serial = response.json["detail"]["serial"]
 
         # update state to our ocra otp object
 
@@ -106,17 +106,20 @@ class UserserviceOcra2TokenTest(TestController):
         activationcode = createActivationCode()
 
         params = {
-            'activationcode': activationcode, 
-            'type': 'ocra2', 
-            'genkey': '1', 
-            'serial': serial
+            "activationcode": activationcode,
+            "type": "ocra2",
+            "genkey": "1",
+            "serial": serial,
         }
 
         response = self.make_userselfservice_request(
-                                    'activateocratoken', params=params, 
-                                    auth_user=auth_user, new_auth_cookie=True)
+            "activateocratoken",
+            params=params,
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
 
-        assert response.json['result']['status'], response.body
+        assert response.json["result"]["status"], response.body
 
         # update state to our ocra otp object and extract challenge and transid
 
@@ -127,17 +130,20 @@ class UserserviceOcra2TokenTest(TestController):
         # finish the roll out by using the dedicated userservice endpoint
 
         params = {
-            'serial': serial,
-            'transactionid': transid,
-            'pass': ocra_otp.callcOtp(challenge),
-            'type': 'ocra2'
-            }
+            "serial": serial,
+            "transactionid": transid,
+            "pass": ocra_otp.callcOtp(challenge),
+            "type": "ocra2",
+        }
 
         response = self.make_userselfservice_request(
-                                    'finishocra2token', params=params,
-                                    auth_user=auth_user, new_auth_cookie=True)
+            "finishocra2token",
+            params=params,
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
 
-        assert 'false' not in response, response
+        assert "false" not in response, response
 
 
 # eof

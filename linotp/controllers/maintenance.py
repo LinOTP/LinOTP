@@ -65,7 +65,7 @@ class MaintenanceController(BaseController):
                 created by sendError with the context info 'before'
         """
 
-        env_var = config.get('MAINTENANCE_VERIFY_CLIENT_ENV_VAR', False)
+        env_var = config.get("MAINTENANCE_VERIFY_CLIENT_ENV_VAR", False)
 
         if env_var:
 
@@ -75,7 +75,6 @@ class MaintenanceController(BaseController):
                 abort(401)
 
     def setLogLevel(self):
-
         """
         set the log level of a certain logger which is identified by
         the url parameter loggerName.
@@ -95,15 +94,17 @@ class MaintenanceController(BaseController):
             # if no logger name is supplied we default to '' (which translates
             # to the root logger in the python stdlib logging api)
 
-            name = self.request_params.get('loggerName', '')
+            name = self.request_params.get("loggerName", "")
 
             # ----------------------------------------------------------------
 
             try:
-                level = self.request_params.get('level', 0)
+                level = self.request_params.get("level", 0)
                 level = int(level)
             except ValueError as e:
-                raise Exception("debug level {} contains nondigits!".format(level))
+                raise Exception(
+                    "debug level {} contains nondigits!".format(level)
+                )
 
             # ----------------------------------------------------------------------
 
@@ -113,7 +114,7 @@ class MaintenanceController(BaseController):
 
         except Exception as exx:
             db.session.rollback()
-            log.exception(exx)
+            log.error(exx)
             return sendError(response, exx, 1)
 
     def check_status(self):
@@ -128,13 +129,14 @@ class MaintenanceController(BaseController):
 
             # Using the session makes this easier to mock in tests.
             config_count = db.session.query(Config).count()
-            opt['config'] = {'entries': config_count}
+            opt["config"] = {"entries": config_count}
 
             return sendResult(response, True, 0, opt=opt)
 
         except Exception as exx:
             db.session.rollback()  # why?
-            log.exception(exx)
+            log.error(exx)
             raise InternalServerError(str(exx))
+
 
 # eof #

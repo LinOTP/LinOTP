@@ -59,7 +59,7 @@ class LinotpAppConfig:
 
     def getConfig(self):
         """
-            retrieve (the deep copy of) the actual config
+        retrieve (the deep copy of) the actual config
         """
         self.configLock.acquire_read()
         try:
@@ -70,13 +70,14 @@ class LinotpAppConfig:
 
     def setConfig(self, config, replace=False):
         """
-            set the app global config for linotp
+        set the app global config for linotp
         """
         self.configLock.acquire_write()
         try:
             if not isinstance(config, dict):
                 raise Exception(
-                    'cannot set global config from object %r' % config)
+                    "cannot set global config from object %r" % config
+                )
 
             conf = copy.deepcopy(config)
             if replace is True:
@@ -88,7 +89,7 @@ class LinotpAppConfig:
             self.configLock.release()
 
     def isConfigComplete(self):
-        """ check if the linotp config read is completed.
+        """check if the linotp config read is completed.
 
         purpose of this flag is that the configuration might be read
         but when the security module was not loaded, the config entry
@@ -103,8 +104,7 @@ class LinotpAppConfig:
         return False
 
     def setConfigIncomplete(self, val=False):
-        """ set the status that the config reading is completed
-        """
+        """set the status that the config reading is completed"""
         self.configLock.acquire_write()
         try:
             self.config_incomplete = val
@@ -113,7 +113,7 @@ class LinotpAppConfig:
 
     def delConfig(self, conf):
         """
-            delete one entry in the appl_globals
+        delete one entry in the appl_globals
         """
         self.configLock.acquire_write()
 
@@ -129,5 +129,6 @@ class LinotpAppConfig:
 
         finally:
             self.configLock.release()
+
 
 # eof #

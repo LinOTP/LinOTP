@@ -38,12 +38,12 @@ import integration_data as data
 
 
 class TestSmsToken(TestCase):
-
     @pytest.fixture(autouse=True)
     def setUp(self):
         self.realm_name = "SE_smstoken"
         self.reset_resolvers_and_realms(
-            data.sepasswd_resolver, self.realm_name)
+            data.sepasswd_resolver, self.realm_name
+        )
         self.manage_ui.token_view.delete_all_tokens()
 
     def test_enroll(self):
@@ -55,12 +55,13 @@ class TestSmsToken(TestCase):
         realm_name = self.realm_name
 
         radius_server = get_from_tconfig(
-            ['radius', 'server'],
-            default=self.http_host.split(':')[0],
+            ["radius", "server"],
+            default=self.http_host.split(":")[0],
         )
-        radius_secret = get_from_tconfig(['radius', 'secret'], required=True)
+        radius_secret = get_from_tconfig(["radius", "secret"], required=True)
         disable_radius = get_from_tconfig(
-            ['radius', 'disable'], default='False')
+            ["radius", "disable"], default="False"
+        )
 
         # Enroll sms token
         username = "rollo"
@@ -73,63 +74,95 @@ class TestSmsToken(TestCase):
         user_view.select_user(username)
 
         sms_token = self.manage_ui.token_enroll.create_sms_token(
-                             pin=sms_token_pin,
-                             phone=phone_number,
-                             description=description)
+            pin=sms_token_pin, phone=phone_number, description=description
+        )
 
         token_view = self.manage_ui.token_view
         token_info = token_view.get_token_info(sms_token)
-        assert phone_number == token_info['LinOtp.TokenInfo']['phone'], \
-                         "Wrong phone number was set for sms token."
+        assert (
+            phone_number == token_info["LinOtp.TokenInfo"]["phone"]
+        ), "Wrong phone number was set for sms token."
 
         # Authenticate with RADIUS
-        if disable_radius.lower() == 'true':
-            print("Testconfig option radius.disable is set to True. Skipping RADIUS test!")
+        if disable_radius.lower() == "true":
+            print(
+                "Testconfig option radius.disable is set to True. Skipping RADIUS test!"
+            )
         else:
             call_array = "linotp-auth-radius -f ../../../test.ini".split()
-            call_array.extend(['-u', username + "@" + realm_name,
-                               '-p', '1234',
-                               '-s', radius_secret,
-                               '-r', radius_server])
+            call_array.extend(
+                [
+                    "-u",
+                    username + "@" + realm_name,
+                    "-p",
+                    "1234",
+                    "-s",
+                    radius_secret,
+                    "-r",
+                    radius_server,
+                ]
+            )
             with SMSProviderServer(self, 10) as smtpsvc:
                 rad1 = check_output(call_array)
                 m = re.search(r"State:\['(\d+)'\]", rad1)
-                assert m is not None, \
-                                "'State' not found in linotp-auth-radius output. %r" % rad1
+                assert m is not None, (
+                    "'State' not found in linotp-auth-radius output. %r" % rad1
+                )
                 state = m.group(1)
                 print("State: %s" % state)
                 otp = smtpsvc.get_otp()
 
             call_array = "linotp-auth-radius -f ../../../test.ini".split()
-            call_array.extend(['-u', username + "@" + realm_name,
-                               '-p', otp,
-                               '-t', state,
-                               '-s', radius_secret,
-                               '-r', radius_server])
+            call_array.extend(
+                [
+                    "-u",
+                    username + "@" + realm_name,
+                    "-p",
+                    otp,
+                    "-t",
+                    state,
+                    "-s",
+                    radius_secret,
+                    "-r",
+                    radius_server,
+                ]
+            )
             rad2 = check_output(call_array)
-            assert "Access granted to user " + username in rad2, \
-                            "Access not granted to user. %r" % rad2
+            assert "Access granted to user " + username in rad2, (
+                "Access not granted to user. %r" % rad2
+            )
 
         # Authenticate over Web API
-        validate = Validate(self.http_protocol, self.http_host, self.http_port,
-                            self.http_username, self.http_password)
+        validate = Validate(
+            self.http_protocol,
+            self.http_host,
+            self.http_port,
+            self.http_username,
+            self.http_password,
+        )
 
         with SMSProviderServer(self, 10) as smtpsvc:
-            access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
-                                                              password=sms_token_pin)
-            assert not access_granted, \
-                             "Should return false because this request only triggers the challenge."
+            access_granted, validate_resp = validate.validate(
+                user=username + "@" + realm_name, password=sms_token_pin
+            )
+            assert (
+                not access_granted
+            ), "Should return false because this request only triggers the challenge."
             try:
-                message = validate_resp['detail']['message']
+                message = validate_resp["detail"]["message"]
             except KeyError:
-                self.fail("detail.message should be present %r" %
-                          validate_resp)
-            assert message == \
-                             "sms submitted", \
-                             "Wrong validate response %r" % validate_resp
+                self.fail(
+                    "detail.message should be present %r" % validate_resp
+                )
+            assert message == "sms submitted", (
+                "Wrong validate response %r" % validate_resp
+            )
             otp = smtpsvc.get_otp()
 
-        access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
-                                                          password=sms_token_pin + otp)
-        assert access_granted, \
-                        "Could not authenticate user %s %r" % (username, validate_resp)
+        access_granted, validate_resp = validate.validate(
+            user=username + "@" + realm_name, password=sms_token_pin + otp
+        )
+        assert access_granted, "Could not authenticate user %s %r" % (
+            username,
+            validate_resp,
+        )

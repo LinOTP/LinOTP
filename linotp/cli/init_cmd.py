@@ -52,8 +52,8 @@ from linotp.model import init_db_tables, setup_db
 
 from linotp.cli import get_backup_filename, main as cli_main
 
-KEY_COUNT = 3                    # Number of keys in the `SECRET_FILE`
-KEY_LENGTH = 32                  # Number of bytes per key in the `SECRET_FILE`
+KEY_COUNT = 3  # Number of keys in the `SECRET_FILE`
+KEY_LENGTH = 32  # Number of bytes per key in the `SECRET_FILE`
 SECRET_FILE_PERMISSIONS = 0o400
 
 
@@ -61,16 +61,21 @@ SECRET_FILE_PERMISSIONS = 0o400
 # Subroutines of general interest
 # ----------------------------------------------------------------------
 
+
 def _overwrite_check(what: str, filename: str) -> bool:
     n = "n" if what[0].lower() in "aeio" else ""
-    click.echo(f"There is already a{n} {what} in '{filename}'.\n"
-               "Overwriting this might have Dire Consequences.\n")
+    click.echo(
+        f"There is already a{n} {what} in '{filename}'.\n"
+        "Overwriting this might have Dire Consequences.\n"
+    )
     answer = click.prompt(
-        f"Overwrite existing {what}", default="no",
-        type=click.Choice(['yes', 'no'], case_sensitive=True),
-        show_choices=True)
-    if answer != 'yes':
-        click.echo(f'Not overwriting existing {what}.')
+        f"Overwrite existing {what}",
+        default="no",
+        type=click.Choice(["yes", "no"], case_sensitive=True),
+        show_choices=True,
+    )
+    if answer != "yes":
+        click.echo(f"Not overwriting existing {what}.")
         return False
     return True
 
@@ -97,54 +102,62 @@ def _run_command(task: str, cmd: List[str], **kwargs: Dict[str, Any]) -> bool:
         exit_code: int = 0
         output: str = ""
 
-    kwargs.update({'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT})
+    kwargs.update({"stdout": subprocess.PIPE, "stderr": subprocess.STDOUT})
     try:
         result = subprocess.run(cmd, **kwargs)
     except OSError as ex:
         ret = CmdResult(True, None, str(ex))
     else:
-        ret = CmdResult(False, result.returncode,
-                        result.stdout.decode("utf-8"))
+        ret = CmdResult(
+            False, result.returncode, result.stdout.decode("utf-8")
+        )
     if ret.exception or ret.exit_code != 0:
         cmd_str = " ".join(cmd)
         current_app.echo(f"{task} failed:")
         if ret.exception:
-            current_app.echo(
-                f"Command '{cmd_str}' raised exception")
+            current_app.echo(f"Command '{cmd_str}' raised exception")
         elif ret.exit_code < 0:
             current_app.echo(
-                f"Command '{cmd_str}' terminated by signal {-ret.exit_code}")
+                f"Command '{cmd_str}' terminated by signal {-ret.exit_code}"
+            )
         else:
             current_app.echo(
-                f"Command '{cmd_str}' returned exit code {ret.exit_code}")
+                f"Command '{cmd_str}' returned exit code {ret.exit_code}"
+            )
         current_app.echo(f"Output was:\n{ret.output}")
 
     return ret
 
 
-init_cmds = AppGroup('init')
+init_cmds = AppGroup("init")
 
 
 # ----------------------------------------------------------------------
 # Command `linotp init database`
 # ----------------------------------------------------------------------
 
+
 def erase_confirm(ctx, param, value):
-    if ctx.params['erase_all_data']:
+    if ctx.params["erase_all_data"]:
         # The user asked for data to be erased. We now look for a confirmation
         # or prompt the user
         if not value:
-            prompt = click.prompt('Do you really want to erase the database?',
-                                  type=click.BOOL)
+            prompt = click.prompt(
+                "Do you really want to erase the database?", type=click.BOOL
+            )
             if not prompt:
                 sys.exit(0)
 
 
-@init_cmds.command('database', help="Create tables in the database")
-@click.option('--erase-all-data', is_flag=True, help="Erase ALL existing data")
-@click.option('--yes', is_flag=True, callback=erase_confirm,
-              expose_value=False,
-              help="Erase data without prompting for confirmation")
+@init_cmds.command("database", help="Create tables in the database")
+@click.option("--erase-all-data", is_flag=True, help="Erase ALL existing data")
+@click.option(
+    "--yes",
+    is_flag=True,
+    callback=erase_confirm,
+    expose_value=False,
+    help="Erase data without prompting for confirmation",
+)
 @with_appcontext
 def init_db_command(erase_all_data):
     """
@@ -154,22 +167,22 @@ def init_db_command(erase_all_data):
     """
 
     if erase_all_data:
-        info = 'Recreating database'
+        info = "Recreating database"
     else:
-        info = 'Creating database'
+        info = "Creating database"
 
     current_app.echo(info, v=1)
     try:
         # Even though we skip initialising the database when doing
         # `linotp init …`, at this point we do need a database engine
         # after all.
-        current_app.cli_cmd = 'init-database'  # anything but `init`
+        current_app.cli_cmd = "init-database"  # anything but `init`
         setup_db(current_app)
         init_db_tables(current_app, erase_all_data)
     except Exception as exx:
-        current_app.echo(f'Failed to create database: {exx!s}')
+        current_app.echo(f"Failed to create database: {exx!s}")
         raise sys.exit(1)
-    current_app.echo('Database created', v=1)
+    current_app.echo("Database created", v=1)
 
 
 # ----------------------------------------------------------------------
@@ -185,38 +198,49 @@ def dump_key(filename, instructions=True):
 
     if instructions:
         click.echo(f"{filename} {datetime.datetime.now().isoformat()}\n")
-        click.echo("INSTRUCTIONS: Print this and store it in a safe place. "
-                   "Remember where you put\nit.\n\n"
-                   "To recover the keys, concatenate the FIRST column of each "
-                   "line and pass the\nresult to `linotp init enc-key` "
-                   "using the `--keys` option (spaces are\n"
-                   "allowed to make the key data easier to enter):\n\n"
-                   "  linotp init enc-key --keys "
-                   f"'{secret_key[:12]}...{secret_key[-12:]}'\n\n"
-                   "Compare the output to this list; if the values on the "
-                   "final lines agree,\neverything is probably OK. "
-                   "Otherwise compare the values in the second columns;\n"
-                   "if there is a mismatch, then the data in the first "
-                   "column on that line\ncontains one or more typoes. "
-                   "Enjoy!\n")
+        click.echo(
+            "INSTRUCTIONS: Print this and store it in a safe place. "
+            "Remember where you put\nit.\n\n"
+            "To recover the keys, concatenate the FIRST column of each "
+            "line and pass the\nresult to `linotp init enc-key` "
+            "using the `--keys` option (spaces are\n"
+            "allowed to make the key data easier to enter):\n\n"
+            "  linotp init enc-key --keys "
+            f"'{secret_key[:12]}...{secret_key[-12:]}'\n\n"
+            "Compare the output to this list; if the values on the "
+            "final lines agree,\neverything is probably OK. "
+            "Otherwise compare the values in the second columns;\n"
+            "if there is a mismatch, then the data in the first "
+            "column on that line\ncontains one or more typoes. "
+            "Enjoy!\n"
+        )
 
     m = hashlib.sha1()
     for k in range(0, len(secret_key), CHUNK_SIZE):
-        chunk = secret_key[k:k+CHUNK_SIZE]
-        check = binascii.crc32(chunk.encode('ascii')) & 0xffffffff
-        m.update(chunk.encode('ascii'))
+        chunk = secret_key[k : k + CHUNK_SIZE]
+        check = binascii.crc32(chunk.encode("ascii")) & 0xFFFFFFFF
+        m.update(chunk.encode("ascii"))
         click.echo(f"{chunk} {check:08x}")
     click.echo(f"{' '*CHUNK_SIZE} {m.hexdigest()[:8]}")
 
 
-@init_cmds.command('enc-key',
-                   help='Generate AES keys for encryption and decryption')
-@click.option('--force', '-f', is_flag=True,
-              help='Overwrite key file if it exists already.')
-@click.option('--dump', is_flag=True,
-              help='Output paper emergency-backup version of the key file.')
-@click.option('--keys', default='',
-              help='Decode key from emergency backup data.')
+@init_cmds.command(
+    "enc-key", help="Generate AES keys for encryption and decryption"
+)
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    help="Overwrite key file if it exists already.",
+)
+@click.option(
+    "--dump",
+    is_flag=True,
+    help="Output paper emergency-backup version of the key file.",
+)
+@click.option(
+    "--keys", default="", help="Decode key from emergency backup data."
+)
 def init_enc_key_cmd(force, dump, keys):
     """Creates a LinOTP secret file to encrypt and decrypt values in database
 
@@ -235,7 +259,7 @@ def init_enc_key_cmd(force, dump, keys):
             sys.exit(1)
 
     try:
-        create_secret_key(filename, data=keys.replace(' ', ''))
+        create_secret_key(filename, data=keys.replace(" ", ""))
         current_app.echo(f"Wrote enc-key to {filename}", v=1)
     except OSError as ex:
         current_app.echo(f"Error writing enc-key to {filename}: {ex!s}")
@@ -245,7 +269,7 @@ def init_enc_key_cmd(force, dump, keys):
         dump_key(filename, instructions=dump)
 
 
-def create_secret_key(filename, data=''):
+def create_secret_key(filename, data=""):
     """Creates a LinOTP secret file to encrypt and decrypt values in database
 
     The key file is used via the default security provider to encrypt
@@ -254,28 +278,33 @@ def create_secret_key(filename, data=''):
     The key file contains 3 key of length 256 bit (32 Byte) each.
     """
 
-    with tempfile.NamedTemporaryFile(mode='wb',
-                                     dir=os.path.dirname(filename),
-                                     delete=False) as f:
+    with tempfile.NamedTemporaryFile(
+        mode="wb", dir=os.path.dirname(filename), delete=False
+    ) as f:
         os.fchmod(f.fileno(), SECRET_FILE_PERMISSIONS)
         if not data:
             f.write(os.urandom(KEY_COUNT * KEY_LENGTH))
         else:
             f.write(bytes.fromhex(data))
-    os.replace(f.name, filename)     # atomic rename, since Python 3.3
+    os.replace(f.name, filename)  # atomic rename, since Python 3.3
 
 
 # ----------------------------------------------------------------------
 # Command `linotp init audit-keys`
 # ----------------------------------------------------------------------
 
-AUDIT_PRIVKEY_BITS = 2048       # Number of bits in a private audit key
+AUDIT_PRIVKEY_BITS = 2048  # Number of bits in a private audit key
 
 
-@init_cmds.command('audit-keys',
-                   help='Generate RSA key pair for audit log signing')
-@click.option('--force', '-f', is_flag=True,
-              help='Overwrite key pair if it exists already.')
+@init_cmds.command(
+    "audit-keys", help="Generate RSA key pair for audit log signing"
+)
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    help="Overwrite key pair if it exists already.",
+)
 @with_appcontext
 def init_audit_keys_cmd(force):
     privkey_filename = current_app.config["AUDIT_PRIVATE_KEY_FILE"]
@@ -290,23 +319,28 @@ def init_audit_keys_cmd(force):
 
     try:
         create_audit_keys(privkey_filename, pubkey_filename)
-        current_app.echo(
-            f"Wrote private audit key to {privkey_filename}",v=1
-            )
+        current_app.echo(f"Wrote private audit key to {privkey_filename}", v=1)
         current_app.echo(
             f"Extracted public audit key to {pubkey_filename}", v=1
-            )
+        )
     except Exception as ex:
         current_app.echo(
             f"Error writing audit key to {privkey_filename}: {ex!s}"
-            )
+        )
         sys.exit(1)
 
 
 def create_audit_keys(privkey_filename, pubkey_filename):
-    ret = _run_command("Creating private audit key",
-                       ["openssl", "genrsa", "-out", privkey_filename,
-                        str(AUDIT_PRIVKEY_BITS)])
+    ret = _run_command(
+        "Creating private audit key",
+        [
+            "openssl",
+            "genrsa",
+            "-out",
+            privkey_filename,
+            str(AUDIT_PRIVKEY_BITS),
+        ],
+    )
 
     if ret.exit_code != 0:
         raise Exception(ret.output)
@@ -314,9 +348,18 @@ def create_audit_keys(privkey_filename, pubkey_filename):
     # The public key can always be reconstructed from the private key, so
     # we don't worry about a backup of the public key file.
 
-    ret = _run_command("Extracting public audit key",
-                       ["openssl", "rsa", "-in", privkey_filename,
-                        "-pubout", "-out", pubkey_filename])
+    ret = _run_command(
+        "Extracting public audit key",
+        [
+            "openssl",
+            "rsa",
+            "-in",
+            privkey_filename,
+            "-pubout",
+            "-out",
+            pubkey_filename,
+        ],
+    )
 
     if ret.exit_code != 0:
         raise Exception(ret.output)
@@ -326,19 +369,23 @@ def create_audit_keys(privkey_filename, pubkey_filename):
 # Command `linotp init all`
 # ----------------------------------------------------------------------
 
-@init_cmds.command('all',
-                   help='Execute all "init" subcommands in sequence.')
-@click.option('--force', '-f', is_flag=True,
-              help='Pass the `--force` option to all subcommands.')
+
+@init_cmds.command("all", help='Execute all "init" subcommands in sequence.')
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    help="Pass the `--force` option to all subcommands.",
+)
 @with_appcontext
 def init_all_cmd(force):
     cmds = {
-        'enc-key': True,
-        'audit-keys': True,
-        'database': False,
+        "enc-key": True,
+        "audit-keys": True,
+        "database": False,
     }
     for cmd, use_force in cmds.items():
-        args = ['init', cmd]
+        args = ["init", cmd]
         if force and use_force:  # The Force is strong in this one
-            args.append('--force')
+            args.append("--force")
         cli_main(args, standalone_mode=False)

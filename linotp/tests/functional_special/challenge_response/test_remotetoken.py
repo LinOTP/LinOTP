@@ -54,6 +54,7 @@ log = logging.getLogger(__name__)
 HTTP_RESPONSE_FUNC = None
 HTTP_RESPONSE = None
 
+
 def mocked_http_request(HttpObject, *argparams, **kwparams):
 
     resp = 200
@@ -61,11 +62,8 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     content = {
         "version": "LinOTP MOCK",
         "jsonrpc": "2.0",
-        "result": {
-            "status": True,
-            "value": True
-        },
-        "id": 0
+        "result": {"status": True, "value": True},
+        "id": 0,
     }
 
     global HTTP_RESPONSE
@@ -79,7 +77,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     global HTTP_RESPONSE_FUNC
     if HTTP_RESPONSE_FUNC:
         test_func = HTTP_RESPONSE_FUNC
-        body = kwparams.get('body')
+        body = kwparams.get("body")
         params = dict(urllib.parse.parse_qsl(body))
         resp, content = test_func(params)
         HTTP_RESPONSE_FUNC = None
@@ -87,13 +85,11 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     return resp, json.dumps(content)
 
 
-
 class TestRemotetokenChallengeController(TestChallengeResponseController):
-
     def setUp(self):
-        '''
+        """
         This sets up all the resolvers and realms
-        '''
+        """
         TestChallengeResponseController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
@@ -120,119 +116,109 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         self.delete_all_resolvers()
         TestChallengeResponseController.tearDown(self)
 
-
-    def setup_remote_token(self,
-                           typ="pw",
-                           otpkey="123456",
-                           remoteurl=None):
+    def setup_remote_token(self, typ="pw", otpkey="123456", remoteurl=None):
         if remoteurl is None:
             remoteurl = self.remote_url
         # local token
         serials = []
         params_list = [
-                  # the token set with remote pin checking
-                  {
-                        "serial": "LSRE001",
-                        "type": "remote",
-                        "otpkey": otpkey,
-                        "otppin": "",
-                        "user": "remoteuser",
-                        "pin": "lpin",
-                        "description": "RemoteToken1",
-                        'remote.server': remoteurl,
-                        'remote.local_checkpin': 0,
-                        'remote.serial': 'LSPW1',
-                        'session': self.session,
-                      },
-                  # target is accessed via serial, so no user is required
-                  {
-                        "serial": "LSPW1",
-                        "type": typ,
-                        "otpkey": otpkey,
-                        "otppin": "",
-                        "user": "",
-                        "pin": "rpin",
-                        'session': self.session,
-                  },
-                  # the token set with local pin checking
-                  {
-                        "serial": "LSRE002",
-                        "type": "remote",
-                        "otpkey": otpkey,
-                        "user": "localuser",
-                        "pin": "lpin",
-                        "description": "RemoteToken2",
-                        'remote.server': remoteurl,
-                        'remote.local_checkpin': 1,
-                        'remote.serial': 'LSPW2',
-                        'session': self.session,
-                        },
-                  # the target is accessed via serial, so no user is required
-                  {
-                        "serial": "LSPW2",
-                        "type": typ,
-                        "otpkey": otpkey,
-                        "otppin": "",
-                        "user": "",
-                        "pin": "",
-                        'session': self.session,
-                         },
-                  ]
+            # the token set with remote pin checking
+            {
+                "serial": "LSRE001",
+                "type": "remote",
+                "otpkey": otpkey,
+                "otppin": "",
+                "user": "remoteuser",
+                "pin": "lpin",
+                "description": "RemoteToken1",
+                "remote.server": remoteurl,
+                "remote.local_checkpin": 0,
+                "remote.serial": "LSPW1",
+                "session": self.session,
+            },
+            # target is accessed via serial, so no user is required
+            {
+                "serial": "LSPW1",
+                "type": typ,
+                "otpkey": otpkey,
+                "otppin": "",
+                "user": "",
+                "pin": "rpin",
+                "session": self.session,
+            },
+            # the token set with local pin checking
+            {
+                "serial": "LSRE002",
+                "type": "remote",
+                "otpkey": otpkey,
+                "user": "localuser",
+                "pin": "lpin",
+                "description": "RemoteToken2",
+                "remote.server": remoteurl,
+                "remote.local_checkpin": 1,
+                "remote.serial": "LSPW2",
+                "session": self.session,
+            },
+            # the target is accessed via serial, so no user is required
+            {
+                "serial": "LSPW2",
+                "type": typ,
+                "otpkey": otpkey,
+                "otppin": "",
+                "user": "",
+                "pin": "",
+                "session": self.session,
+            },
+        ]
         for params in params_list:
-            serials.append(params.get('serial'))
-            response = self.make_admin_request(action='init', params=params)
+            serials.append(params.get("serial"))
+            response = self.make_admin_request(action="init", params=params)
             assert '"value": true' in response, response
 
         # enforce the awareness of policy changes
         params = {
-            'enableReplication': 'true',
-            'session': self.session,
-            }
-        resp = self.make_system_request(action='setConfig', params=params)
-        assert('"setConfig enableReplication:true": true' in resp)
+            "enableReplication": "true",
+            "session": self.session,
+        }
+        resp = self.make_system_request(action="setConfig", params=params)
+        assert '"setConfig enableReplication:true": true' in resp
 
         return serials
 
-    @patch.object(httplib2.Http, 'request', mocked_http_request)
+    @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_remotetoken_regression(self):
-        '''
+        """
         Challenge Response Test: regression remoteToken can splits passw localy or remote
-        '''
+        """
         global HTTP_RESPONSE_FUNC
         serials = self.setup_remote_token()
 
         def check_func1(params):
             resp = 200
-            value = params.get('pass') == 'rpin123456'
+            value = params.get("pass") == "rpin123456"
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": value
-                },
-                "id": 0
+                "result": {"status": True, "value": value},
+                "id": 0,
             }
             return resp, content
 
         HTTP_RESPONSE_FUNC = check_func1
 
         params = {"user": "remoteuser", "pass": "rpin123456"}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         assert '"value": true' in response, response
 
         def check_func2(params):
             resp = 200
-            value = params.get('pass') == '123456'
+            value = params.get("pass") == "123456"
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": value
-                },
-                "id": 0
+                "result": {"status": True, "value": value},
+                "id": 0,
             }
 
             return resp, content
@@ -240,7 +226,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         HTTP_RESPONSE_FUNC = check_func2
 
         params = {"user": "localuser", "pass": "lpin123456"}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         assert '"value": true' in response, response
 
@@ -249,11 +235,11 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         return
 
-    @patch.object(httplib2.Http, 'request', mocked_http_request)
+    @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_remote_challenge(self):
-        '''
+        """
         Challenge Response Test: remoteToken with with remote pin check
-        '''
+        """
         global HTTP_RESPONSE_FUNC
 
         counter = 0
@@ -262,17 +248,22 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         remoteurl = self.remote_url
 
         # setup the remote token pairs
-        serials = self.setup_remote_token(typ="hmac", otpkey=otpkey,
-                                          remoteurl=remoteurl)
+        serials = self.setup_remote_token(
+            typ="hmac", otpkey=otpkey, remoteurl=remoteurl
+        )
 
         # now switch policy on for challenge_response for hmac token
-        response = self.setPinPolicy(name="ch_resp", realm='*',
-                                action='challenge_response=hmac remote')
+        response = self.setPinPolicy(
+            name="ch_resp", realm="*", action="challenge_response=hmac remote"
+        )
         assert '"status": true,' in response, response
 
-        response = self.setPinPolicy(name="ch_resp", realm='*',
-                                action='challenge_response=hmac remote',
-                                remoteurl=remoteurl)
+        response = self.setPinPolicy(
+            name="ch_resp",
+            realm="*",
+            action="challenge_response=hmac remote",
+            remoteurl=remoteurl,
+        )
         assert '"status": true,' in response, response
 
         # 1. part - pin belongs to remote token
@@ -282,15 +273,12 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         # define validation function
         def check_func1(params):
             resp = 200
-            value = params.get('pass') == 'rpin' + otp
+            value = params.get("pass") == "rpin" + otp
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": value
-                },
-                "id": 0
+                "result": {"status": True, "value": value},
+                "id": 0,
             }
 
             return resp, content
@@ -299,7 +287,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         HTTP_RESPONSE_FUNC = check_func1
 
         params = {"user": user, "pass": "rpin" + otp}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         assert '"value": true' in response, response
 
@@ -309,17 +297,13 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         # define validation function
         def check_func2(params):
             resp = 200
-            value = params.get('pass') == 'rpin'
+            value = params.get("pass") == "rpin"
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": not value
-                },
-                "detail" : {'message': "text",
-                            'transactionid':'012345678901'},
-                "id": 0
+                "result": {"status": True, "value": not value},
+                "detail": {"message": "text", "transactionid": "012345678901"},
+                "id": 0,
             }
 
             return resp, content
@@ -328,13 +312,13 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         HTTP_RESPONSE_FUNC = check_func2
 
         params = {"user": user, "pass": "rpin"}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         assert '"value": false' in response, response
 
         body = json.loads(response.body)
-        state = body.get('detail', {}).get('transactionid', '')
-        assert state != '', response
+        state = body.get("detail", {}).get("transactionid", "")
+        assert state != "", response
 
         # 1.2 check the challenge
         otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
@@ -346,18 +330,17 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
             # now check if we are part of the triggered
             # remote transaction forwarding
-            if (params.get('pass') == otp and
-                params.get('state') == '012345678901'):
+            if (
+                params.get("pass") == otp
+                and params.get("state") == "012345678901"
+            ):
                 value = True
 
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": value
-                },
-                "id": 0
+                "result": {"status": True, "value": value},
+                "id": 0,
             }
 
             return resp, content
@@ -366,7 +349,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         HTTP_RESPONSE_FUNC = check_func3
 
         params = {"user": user, "pass": otp, "state": state}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         # hey, if this ok, we are done for the remote pin check
         assert '"value": true' in response, response
@@ -378,11 +361,11 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         return
 
-    @patch.object(httplib2.Http, 'request', mocked_http_request)
+    @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_local_challenge(self):
-        '''
+        """
         Challenge Response Test: remoteToken with with local pin check
-        '''
+        """
         global HTTP_RESPONSE_FUNC
 
         counter = 0
@@ -391,20 +374,22 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         remoteurl = self.remote_url
 
         # setup the remote token pairs
-        serials = self.setup_remote_token(typ="hmac",
-                                          otpkey=otpkey,
-                                          remoteurl=remoteurl)
+        serials = self.setup_remote_token(
+            typ="hmac", otpkey=otpkey, remoteurl=remoteurl
+        )
 
         # now switch policy on for challenge_response for hmac token
-        response = self.setPinPolicy(name="ch_resp",
-                                     realm='*',
-                                     action='challenge_response=hmac remote')
+        response = self.setPinPolicy(
+            name="ch_resp", realm="*", action="challenge_response=hmac remote"
+        )
         assert '"status": true,' in response, response
 
-        response = self.setPinPolicy(name="ch_resp",
-                                     realm='*',
-                                     action='challenge_response=hmac remote',
-                                     remoteurl=remoteurl)
+        response = self.setPinPolicy(
+            name="ch_resp",
+            realm="*",
+            action="challenge_response=hmac remote",
+            remoteurl=remoteurl,
+        )
 
         # now we have to test the local pin
         # when using the local pin, we will keep the challenge in the
@@ -417,15 +402,12 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         # define validation function
         def check_func1(params):
             resp = 200
-            value = params.get('pass') == otp
+            value = params.get("pass") == otp
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": value
-                },
-                "id": 0
+                "result": {"status": True, "value": value},
+                "id": 0,
             }
 
             return resp, content
@@ -434,7 +416,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         HTTP_RESPONSE_FUNC = check_func1
 
         params = {"user": user, "pass": "lpin" + otp}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         assert '"value": true' in response, response
 
@@ -445,15 +427,12 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         # define validation function
         def check_func2(params):
             resp = 200
-            value = params.get('pass') == otp
+            value = params.get("pass") == otp
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": value
-                },
-                "id": 0
+                "result": {"status": True, "value": value},
+                "id": 0,
             }
 
             return resp, content
@@ -462,13 +441,13 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         HTTP_RESPONSE_FUNC = check_func2
 
         params = {"user": user, "pass": "lpin"}
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         assert '"value": false' in response, response
 
         body = json.loads(response.body)
-        state = body.get('detail', {}).get('transactionid', '')
-        assert state != '', response
+        state = body.get("detail", {}).get("transactionid", "")
+        assert state != "", response
 
         # 2.2 check the challenge
         counter = counter + 1
@@ -477,15 +456,12 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         # define validation function
         def check_func3(params):
             resp = 200
-            value = params.get('pass') == otp
+            value = params.get("pass") == otp
             content = {
                 "version": "LinOTP MOCK",
                 "jsonrpc": "2.0",
-                "result": {
-                    "status": True,
-                    "value": value
-                },
-                "id": 0
+                "result": {"status": True, "value": value},
+                "id": 0,
             }
 
             return resp, content
@@ -493,8 +469,8 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         # establish this in the global context as validation hook
         HTTP_RESPONSE_FUNC = check_func3
 
-        params = {"user": user, "pass": otp, "state" : state}
-        response = self.make_validate_request('check', params=params)
+        params = {"user": user, "pass": otp, "state": state}
+        response = self.make_validate_request("check", params=params)
 
         # hey, if this ok, we are done for the remote pin check
         assert '"value": true' in response, response
@@ -505,5 +481,6 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         self.delete_policy(name="ch_resp")
 
         return
+
 
 ##eof##########################################################################

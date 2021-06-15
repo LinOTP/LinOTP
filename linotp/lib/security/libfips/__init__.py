@@ -50,7 +50,6 @@ class SSLError(Exception):
 
 
 class FipsModule(object):
-
     def __init__(self, library):
 
         # this will raise an OSError exception, in case of an error.
@@ -90,9 +89,15 @@ class FipsModule(object):
         # unsigned char *HMAC(const EVP_MD *, const void *, int,
         #                     const unsigned char *, int, unsigned char *,
         #                     unsigned int *)
-        _libcrypto.HMAC.argtypes = [c_void_p, c_void_p, c_int,
-                                    c_char_p, c_int, c_char_p,
-                                    c_void_p]
+        _libcrypto.HMAC.argtypes = [
+            c_void_p,
+            c_void_p,
+            c_int,
+            c_char_p,
+            c_int,
+            c_char_p,
+            c_void_p,
+        ]
 
         _libcrypto.HMAC.restype = c_char_p
 
@@ -147,10 +152,9 @@ class FipsModule(object):
         digest = ctypes.create_string_buffer(self._libcrypto.EVP_MD_size(md))
 
         # call OpenSSL
-        res = self._libcrypto.HMAC(md,
-                                   key, len(key),
-                                   msg, len(msg),
-                                   digest, None)
+        res = self._libcrypto.HMAC(
+            md, key, len(key), msg, len(msg), digest, None
+        )
 
         # OpenSSL will return NULL (None for us) to indicate an error
         if res is None:
@@ -187,5 +191,6 @@ class FipsModule(object):
         A 64 byte long 'bytes' array with the requested digest is returned.
         """
         return self._HMAC(self._sha512, key, msg)
+
 
 # --

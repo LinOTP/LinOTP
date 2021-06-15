@@ -29,14 +29,16 @@
 from linotp.flap import config
 
 import logging
+
 log = logging.getLogger(__name__)
 
+
 def get_imprint(realm):
-    '''
+    """
     This function returns the imprint for a certain realm.
     This is just the contents of the file <realm>.imprint in the directory
     <imprint_directory>
-    '''
+    """
     res = ""
     realm = realm.lower()
     directory = config.get("linotp.imprint_directory", "/etc/linotp/imprint")
@@ -47,7 +49,8 @@ def get_imprint(realm):
         res = f.read()
         f.close()
     except Exception as e:
-        log.info("[get_imprint] can not read imprint file: %s. (%r)"
-                 % (filename, e))
+        log.info(
+            "[get_imprint] can not read imprint file: %s. (%r)", filename, e
+        )
 
     return res

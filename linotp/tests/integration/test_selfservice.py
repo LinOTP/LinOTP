@@ -26,13 +26,18 @@
 """LinOTP Selenium Test that tests the selfservice in the WebUI"""
 
 import pytest
-from linotp_selenium_helper import TestCase, Policy, SelfService, AngularSelfService
+from linotp_selenium_helper import (
+    TestCase,
+    Policy,
+    SelfService,
+    AngularSelfService,
+)
 
 
 class TestSelfservice(TestCase):
     """TestCase class that tests the minimal compatiblity between the two
-       selfservice alternatives legacy mako-based selfservice and the new
-       angular-based selfservice.
+    selfservice alternatives legacy mako-based selfservice and the new
+    angular-based selfservice.
     """
 
     @pytest.fixture(scope="module", params=[SelfService, AngularSelfService])
@@ -42,19 +47,20 @@ class TestSelfservice(TestCase):
     def test_selfservice(self, musicians_realm, selfservice):
         """Creates User-Id-Resolvers"""
         self.manage_ui.policy_view.clear_policies_via_api()
-        Policy(self.manage_ui,
-               "SE_policy_selfservice",
-               "selfservice", "setOTPPIN, enrollPW, enrollHMAC",
-               musicians_realm)
+        Policy(
+            self.manage_ui,
+            "SE_policy_selfservice",
+            "selfservice",
+            "setOTPPIN, enrollPW, enrollHMAC",
+            musicians_realm,
+        )
 
         selfservice.open()
 
         login_user = "郎"
         login_password = "Test123!"
-        selfservice.login(
-            login_user, login_password, musicians_realm)
+        selfservice.login(login_user, login_password, musicians_realm)
 
-        selfservice.expect_ui_state(
-            tokens=0, enrollment_options=2)
+        selfservice.expect_ui_state(tokens=0, enrollment_options=2)
 
         selfservice.logout()

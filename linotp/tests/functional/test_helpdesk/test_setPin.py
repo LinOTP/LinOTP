@@ -41,20 +41,21 @@ from . import MockedSMTP
 from linotp.tests import TestController
 
 
-@pytest.mark.app_config({
-    'CONTROLLERS': 'admin system helpdesk',
-})
+@pytest.mark.app_config(
+    {
+        "CONTROLLERS": "admin system helpdesk",
+    }
+)
 class TestHelpdeskSetPin(TestController):
-
     def setUp(self):
-        """ setup for std resolver / realms"""
+        """setup for std resolver / realms"""
 
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        """ clean up for all token and resolver / realms """
+        """clean up for all token and resolver / realms"""
 
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -71,81 +72,81 @@ class TestHelpdeskSetPin(TestController):
         # define the email provider
 
         email_config = {
-            "SMTP_SERVER":"mail.example.com",
-            "SMTP_USER":"secret_user",
-            "SMTP_PASSWORD":"secret_pasword",
-            "EMAIL_FROM":"linotp@example.com",
-            "EMAIL_SUBJECT":"New token pin set"
+            "SMTP_SERVER": "mail.example.com",
+            "SMTP_USER": "secret_user",
+            "SMTP_PASSWORD": "secret_pasword",
+            "EMAIL_FROM": "linotp@example.com",
+            "EMAIL_SUBJECT": "New token pin set",
         }
 
         params = {
-            'name': 'setPinProvider',
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
-            'timeout': '120',
-            'type': 'email',
-            'config': json.dumps(email_config)
+            "name": "setPinProvider",
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+            "timeout": "120",
+            "type": "email",
+            "config": json.dumps(email_config),
         }
-        self.make_system_request('setProvider', params=params)
+        self.make_system_request("setProvider", params=params)
 
         # ------------------------------------------------------------------ --
 
         # define the notification provider policy
 
         policy = {
-            'name': 'notify_enrollement',
-            'action': 'setPin=email::setPinProvider ',
-            'scope': 'notification',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "notify_enrollement",
+            "action": "setPin=email::setPinProvider ",
+            "scope": "notification",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # define admin policy which denies the enrollemt for the helpdesk user
 
         policy = {
-            'name': 'admin',
-            'action': '*',
-            'scope': 'admin',
-            'active': True,
-            'realm': '*',
-            'user': 'superadmin, admin',
-            'client': '*',
+            "name": "admin",
+            "action": "*",
+            "scope": "admin",
+            "active": True,
+            "realm": "*",
+            "user": "superadmin, admin",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # define the restricted admin policy for helpdesk user 'helpdesk'
 
         policy = {
-            'name': 'helpdesk',
-            'scope': 'admin',
-            'active': True,
-            'user': 'helpdesk,',
-            'action': 'setOTPPIN,',
-            'realm': 'myotherrealm',
-            'client': '*',
+            "name": "helpdesk",
+            "scope": "admin",
+            "active": True,
+            "user": "helpdesk,",
+            "action": "setOTPPIN,",
+            "realm": "myotherrealm",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         params = {
-            'type': 'email',
-            'user': 'hans',
-            'realm': 'mydefrealm',
-            'email_address': 'hans@example.com'
-            }
-        response = self.make_admin_request('init', params)
-        assert 'false' not in response, response
+            "type": "email",
+            "user": "hans",
+            "realm": "mydefrealm",
+            "email_address": "hans@example.com",
+        }
+        response = self.make_admin_request("init", params)
+        assert "false" not in response, response
 
         jresp = json.loads(response.body)
-        serial = jresp['detail']['serial']
+        serial = jresp["detail"]["serial"]
 
         # ------------------------------------------------------------------ --
 
@@ -156,10 +157,10 @@ class TestHelpdeskSetPin(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'serial': serial}
-            response = self.make_helpdesk_request('setPin', params=params)
+            params = {"serial": serial}
+            response = self.make_helpdesk_request("setPin", params=params)
 
-            assert 'not have the administrative right' in response, response
+            assert "not have the administrative right" in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -167,16 +168,16 @@ class TestHelpdeskSetPin(TestController):
         # email tokens in the realm mydefrealm as well
 
         policy = {
-            'name': 'helpdesk',
-            'scope': 'admin',
-            'active': True,
-            'user': 'helpdesk,',
-            'action': 'setOTPPIN,',
-            'realm': 'myotherrealm, mydefrealm',
-            'client': '*',
+            "name": "helpdesk",
+            "scope": "admin",
+            "active": True,
+            "user": "helpdesk,",
+            "action": "setOTPPIN,",
+            "realm": "myotherrealm, mydefrealm",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -187,18 +188,18 @@ class TestHelpdeskSetPin(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'serial': serial}
-            response = self.make_helpdesk_request('setPin', params=params)
+            params = {"serial": serial}
+            response = self.make_helpdesk_request("setPin", params=params)
 
-            assert 'have the administrative right' not in response, response
+            assert "have the administrative right" not in response, response
             assert serial in response, response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _email_from, email_to, email_message = call_args[0]
 
-            assert email_to == 'hans@example.com'
-            assert (': new pin set for token ' + serial) in email_message
-            assert ('been set for your token: ' + serial) in email_message
+            assert email_to == "hans@example.com"
+            assert (": new pin set for token " + serial) in email_message
+            assert ("been set for your token: " + serial) in email_message
 
         return
 
@@ -210,53 +211,53 @@ class TestHelpdeskSetPin(TestController):
         # define the email provider
 
         email_config = {
-            "SMTP_SERVER":"mail.example.com",
-            "SMTP_USER":"secret_user",
-            "SMTP_PASSWORD":"secret_pasword",
-            "EMAIL_FROM":"linotp@example.com",
-            "EMAIL_SUBJECT":"New token pin set"
+            "SMTP_SERVER": "mail.example.com",
+            "SMTP_USER": "secret_user",
+            "SMTP_PASSWORD": "secret_pasword",
+            "EMAIL_FROM": "linotp@example.com",
+            "EMAIL_SUBJECT": "New token pin set",
         }
 
         params = {
-            'name': 'setPinProvider',
-            'class': 'linotp.provider.emailprovider.SMTPEmailProvider',
-            'timeout': '120',
-            'type': 'email',
-            'config': json.dumps(email_config)
+            "name": "setPinProvider",
+            "class": "linotp.provider.emailprovider.SMTPEmailProvider",
+            "timeout": "120",
+            "type": "email",
+            "config": json.dumps(email_config),
         }
-        self.make_system_request('setProvider', params=params)
+        self.make_system_request("setProvider", params=params)
 
         # ------------------------------------------------------------------ --
 
         # define the notification provider policy
 
         policy = {
-            'name': 'notify_enrollement',
-            'action': 'setPin=email::setPinProvider ',
-            'scope': 'notification',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "notify_enrollement",
+            "action": "setPin=email::setPinProvider ",
+            "scope": "notification",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # enroll token for hans via admin
 
         params = {
-            'type': 'email',
-            'user': 'hans',
-            'realm': 'mydefrealm',
-            'email_address': 'hans@example.com'
-            }
-        response = self.make_admin_request('init', params)
-        assert 'false' not in response, response
+            "type": "email",
+            "user": "hans",
+            "realm": "mydefrealm",
+            "email_address": "hans@example.com",
+        }
+        response = self.make_admin_request("init", params)
+        assert "false" not in response, response
 
         jresp = json.loads(response.body)
-        serial = jresp['detail']['serial']
+        serial = jresp["detail"]["serial"]
 
         # ------------------------------------------------------------------ --
 
@@ -267,32 +268,32 @@ class TestHelpdeskSetPin(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'serial': serial, 'pin': 'Test123!'}
-            response = self.make_helpdesk_request('setPin', params=params)
+            params = {"serial": serial, "pin": "Test123!"}
+            response = self.make_helpdesk_request("setPin", params=params)
 
             assert serial in response, response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _email_from, _email_to, email_message = call_args[0]
 
-            assert 'Test123!' in email_message
+            assert "Test123!" in email_message
 
         # ------------------------------------------------------------------ --
 
         # define random pin policy especially to use digits only
 
         policy = {
-            'name': 'enrollment_pin_policy',
-            'action': 'otp_pin_random=12, otp_pin_random_content=n',
-            'scope': 'enrollment',
-            'active': True,
-            'realm': '*',
-            'user': '*',
-            'client': '*',
+            "name": "enrollment_pin_policy",
+            "action": "otp_pin_random=12, otp_pin_random_content=n",
+            "scope": "enrollment",
+            "active": True,
+            "realm": "*",
+            "user": "*",
+            "client": "*",
         }
 
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
@@ -302,16 +303,16 @@ class TestHelpdeskSetPin(TestController):
 
             mock_smtp_instance.sendmail.return_value = []
 
-            params = {'serial': serial, 'pin': 'Test123!'}
-            response = self.make_helpdesk_request('setPin', params=params)
+            params = {"serial": serial, "pin": "Test123!"}
+            response = self.make_helpdesk_request("setPin", params=params)
 
             assert serial in response, response
 
             call_args = mock_smtp_instance.sendmail.call_args
             _email_from, _email_to, email_message = call_args[0]
 
-            assert 'Test123!' not in email_message
-            content = email_message.split('\n')[7]
+            assert "Test123!" not in email_message
+            content = email_message.split("\n")[7]
             pin = content.split()[3]
 
             assert len(pin) == 12
@@ -327,88 +328,82 @@ class TestHelpdeskSetPin(TestController):
         # enroll token for hans
 
         params = {
-            'type': 'email',
-            'user': 'hans',
-            'realm': 'mydefrealm',
-            'email_address': 'hans@example.com'
-            }
-        response = self.make_admin_request('init', params)
-        assert 'false' not in response, response
+            "type": "email",
+            "user": "hans",
+            "realm": "mydefrealm",
+            "email_address": "hans@example.com",
+        }
+        response = self.make_admin_request("init", params)
+        assert "false" not in response, response
 
         jresp = json.loads(response.body)
-        serial = jresp['detail']['serial']
+        serial = jresp["detail"]["serial"]
 
         # ------------------------------------------------------------------ --
 
         # define admin policy which denies the enrollemt for the helpdesk user
 
         policy = {
-            'name': 'admin',
-            'action': '*',
-            'scope': 'admin',
-            'active': True,
-            'realm': '*',
-            'user': 'superadmin, admin',
-            'client': '*',
+            "name": "admin",
+            "action": "*",
+            "scope": "admin",
+            "active": True,
+            "realm": "*",
+            "user": "superadmin, admin",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # define the restricted admin policy for helpdesk user 'helpdesk'
 
         policy = {
-            'name': 'helpdesk',
-            'scope': 'admin',
-            'active': True,
-            'user': 'helpdesk,',
-            'action': 'show,',
-            'realm': 'myotherrealm',
-            'client': '*',
+            "name": "helpdesk",
+            "scope": "admin",
+            "active": True,
+            "user": "helpdesk,",
+            "action": "show,",
+            "realm": "myotherrealm",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # query the tokens of hans: h*
 
-        params = {
-            'qtype': 'loginname',
-            'query': 'h*'
-            }
-        response = self.make_helpdesk_request('tokens', params=params)
-        assert 'false' not in response
+        params = {"qtype": "loginname", "query": "h*"}
+        response = self.make_helpdesk_request("tokens", params=params)
+        assert "false" not in response
         assert serial not in response
-        assert 'mydefrealm' not in response
+        assert "mydefrealm" not in response
 
         # ------------------------------------------------------------------ --
 
         # define the restricted admin policy for helpdesk user 'helpdesk'
 
         policy = {
-            'name': 'helpdesk',
-            'scope': 'admin',
-            'active': True,
-            'user': 'helpdesk,',
-            'action': 'show,',
-            'realm': 'myotherrealm, mydefrealm',
-            'client': '*',
+            "name": "helpdesk",
+            "scope": "admin",
+            "active": True,
+            "user": "helpdesk,",
+            "action": "show,",
+            "realm": "myotherrealm, mydefrealm",
+            "client": "*",
         }
-        response = self.make_system_request('setPolicy', params=policy)
-        assert 'false' not  in response
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response
 
         # ------------------------------------------------------------------ --
 
         # query the tokens of hans: h*
 
-        params = {
-            'qtype': 'loginname',
-            'query': 'h*'
-            }
-        response = self.make_helpdesk_request('tokens', params=params)
-        assert 'false' not in response
+        params = {"qtype": "loginname", "query": "h*"}
+        response = self.make_helpdesk_request("tokens", params=params)
+        assert "false" not in response
         assert serial in response
-        assert 'mydefrealm' in response
+        assert "mydefrealm" in response
 
         return
 
@@ -420,73 +415,62 @@ class TestHelpdeskSetPin(TestController):
         # enroll token for hans
 
         params = {
-            'type': 'email',
-            'user': 'hans',
-            'realm': 'mydefrealm',
-            'email_address': 'hans@example.com',
-            'description': 'the token description',
-            }
-        response = self.make_admin_request('init', params)
-        assert 'false' not in response, response
+            "type": "email",
+            "user": "hans",
+            "realm": "mydefrealm",
+            "email_address": "hans@example.com",
+            "description": "the token description",
+        }
+        response = self.make_admin_request("init", params)
+        assert "false" not in response, response
 
         jresp = json.loads(response.body)
-        serial = jresp['detail']['serial']
+        serial = jresp["detail"]["serial"]
 
         # ------------------------------------------------------------------ --
 
         # query the tokens of hans: h*
 
-        params = {
-            'qtype': 'loginname',
-            'query': 'h*'
-            }
-        response = self.make_helpdesk_request('tokens', params=params)
-        assert 'false' not in response
+        params = {"qtype": "loginname", "query": "h*"}
+        response = self.make_helpdesk_request("tokens", params=params)
+        assert "false" not in response
         assert serial in response
-        assert 'mydefrealm' in response
+        assert "mydefrealm" in response
         assert '"total": 1' in response
 
         # ------------------------------------------------------------------ --
 
         # query the tokens of realm: mydefrealm
 
-        params = {
-            'qtype': 'realm',
-            'query': 'mydefrealm'
-            }
-        response = self.make_helpdesk_request('tokens', params=params)
-        assert 'false' not in response
+        params = {"qtype": "realm", "query": "mydefrealm"}
+        response = self.make_helpdesk_request("tokens", params=params)
+        assert "false" not in response
         assert serial in response
-        assert 'mydefrealm' in response
+        assert "mydefrealm" in response
         assert '"total": 1' in response
 
         # query the tokens of realm: myotherrealm
 
-        params = {
-            'qtype': 'realm',
-            'query': 'myotherrealm'
-            }
-        response = self.make_helpdesk_request('tokens', params=params)
+        params = {"qtype": "realm", "query": "myotherrealm"}
+        response = self.make_helpdesk_request("tokens", params=params)
 
-        assert 'false' not in response
+        assert "false" not in response
         assert serial not in response
-        assert 'mydefrealm' not in response
+        assert "mydefrealm" not in response
         assert '"total": 0' in response
 
         # ------------------------------------------------------------------ --
 
         # query the tokens of realm: mydefrealm
 
-        params = {
-            'qtype': 'all',
-            'query': 'the token'
-            }
-        response = self.make_helpdesk_request('tokens', params=params)
-        assert 'false' not in response
+        params = {"qtype": "all", "query": "the token"}
+        response = self.make_helpdesk_request("tokens", params=params)
+        assert "false" not in response
         assert serial in response
-        assert 'mydefrealm' in response
+        assert "mydefrealm" in response
         assert '"total": 1' in response
 
         return
+
 
 # eof

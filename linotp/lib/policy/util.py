@@ -33,27 +33,28 @@ from linotp.lib.user import getUserRealms
 
 LOG = logging.getLogger(__name__)
 
-lowercase = 'abcdefghijklmnopqrstuvwxyz'
-uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+lowercase = "abcdefghijklmnopqrstuvwxyz"
+uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 letters = lowercase + uppercase
 ascii_lowercase = lowercase
 ascii_uppercase = uppercase
 ascii_letters = ascii_lowercase + ascii_uppercase
-digits = '0123456789'
+digits = "0123456789"
 special_characters = "!#$%&()*+,-./:;<=>?@[]^_"
 
 
 def _getUserRealms(user):
-    return getUserRealms(user,
-                         allRealms=context['Realms'],
-                         defaultRealm=context['defaultRealm'])
+    return getUserRealms(
+        user, allRealms=context["Realms"], defaultRealm=context["defaultRealm"]
+    )
 
 
 def _get_pin_values(config):
     REG_POLICY_C = config.get("linotpPolicy.pin_c", "[a-zA-Z]")
     REG_POLICY_N = config.get("linotpPolicy.pin_n", "[0-9]")
-    REG_POLICY_S = config.get("linotpPolicy.pin_s",
-                              "[.:,;-_<>+*!/()=?$§%&#~\^]")
+    REG_POLICY_S = config.get(
+        "linotpPolicy.pin_s", r"[.:,;-_<>+*!/()=?$§%&#~\^]"
+    )
 
     return REG_POLICY_C, REG_POLICY_N, REG_POLICY_S
 
@@ -62,7 +63,7 @@ def _getAuthenticatedUser():
     """
     replace the 'getUserFromRequest
     """
-    auth_user = context['AuthUser']
+    auth_user = context["AuthUser"]
     return auth_user
 
 
@@ -73,30 +74,30 @@ def _getLinotpConfig(config=None):
 
 
 def get_policies():
-    return context['Policies']
+    return context["Policies"]
 
 
 def get_copy_of_policies():
-    lPolicies = deepcopy(context['Policies'])
+    lPolicies = deepcopy(context["Policies"])
     return lPolicies
 
 
 def _get_client():
-    client = context['Client']
+    client = context["Client"]
     return client
 
 
 def _getUserFromParam():
-    user = context['RequestUser']
+    user = context["RequestUser"]
     return user
 
 
 def _getDefaultRealm():
-    return context['defaultRealm']
+    return context["defaultRealm"]
 
 
 def _getRealms():
-    return context['Realms']
+    return context["Realms"]
 
 
 def are_the_same(dict1, dict2):
@@ -137,13 +138,12 @@ def _tokenise_action(action_value, separators=None, escapes=None):
     # separators are used to split the tokens
 
     if not separators:
-        separators = ['=', ',']
+        separators = ["=", ","]
 
     # escape of literals for text in "
 
     if not escapes:
         escapes = ['"', "'"]
-
 
     start = 0
     escape_mode = []
@@ -198,7 +198,7 @@ def _parse_action(action_value):
 
     for entry in _tokenise_action("%s," % action_value):
 
-        if entry != ',':  # in case of an ',' the key=value is completed
+        if entry != ",":  # in case of an ',' the key=value is completed
             action.append(entry)
             continue
 
@@ -225,7 +225,7 @@ def _parse_action(action_value):
         action = []
 
     if action:
-        raise Exception('non terminated action %r' % action)
+        raise Exception("non terminated action %r" % action)
 
     return
 
@@ -241,12 +241,15 @@ def _strip_quotes(value):
     # make sure that if it starts with a quote and
     for quote in ["'", '"']:
 
-        if (value.startswith(quote) and not value.endswith(quote) or
-            not value.startswith(quote) and value.endswith(quote)):
+        if (
+            value.startswith(quote)
+            and not value.endswith(quote)
+            or not value.startswith(quote)
+            and value.endswith(quote)
+        ):
 
             if quote not in value[1:-1]:
-                raise Exception(
-                    'non terminated string value entry %r' % value)
+                raise Exception("non terminated string value entry %r" % value)
 
     for quote in ["'", '"']:
         if value.startswith(quote) and value.endswith(quote):
@@ -254,6 +257,7 @@ def _strip_quotes(value):
                 value = value.strip(quote)
 
     return value
+
 
 def parse_action_value(action_value):
     """
@@ -285,12 +289,17 @@ def split_value(policy, attribute="client", marks=False):
 
     attrs_array = []
     if marks:
-        attrs_array = [co.strip()[:-1] for co in attrs.split(',')
-                       if len(co.strip()) and co.strip()[-1] == ":"]
+        attrs_array = [
+            co.strip()[:-1]
+            for co in attrs.split(",")
+            if len(co.strip()) and co.strip()[-1] == ":"
+        ]
     else:
-        attrs_array = [co.strip()
-                       for co in attrs.split(',')
-                       if len(co.strip()) and co.strip()[-1] != ":"]
+        attrs_array = [
+            co.strip()
+            for co in attrs.split(",")
+            if len(co.strip()) and co.strip()[-1] != ":"
+        ]
 
     # if for some reason the first element is empty, delete it.
     if len(attrs_array) and attrs_array[0] == "":
@@ -310,8 +319,8 @@ def get_realm_from_policies(policies):
     realms = set()
 
     for _pol, val in list(policies.items()):
-        pol_realm = val.get('realm', '') or ''
-        pol_realms = [x.strip() for x in pol_realm.split(',')]
+        pol_realm = val.get("realm", "") or ""
+        pol_realms = [x.strip() for x in pol_realm.split(",")]
         realms.update(pol_realms)
 
     return list(realms)
@@ -327,12 +336,12 @@ def get_resolvers_for_realms(realms):
 
     resolvers = set()
 
-    all_realms = context['Realms']
+    all_realms = context["Realms"]
 
     for realm in realms:
         if realm in all_realms:
             realm_conf = all_realms[realm]
-            for resolver in realm_conf['useridresolver']:
+            for resolver in realm_conf["useridresolver"]:
                 resolvers.add(resolver.strip(" "))
 
     return list(resolvers)
@@ -356,9 +365,12 @@ def parse_policies(lConfig):
                 value = lConfig.get(entry)
 
                 # prepare the value to be at least an empty string
-                if (key in ('user', 'client', 'realm', 'time') and
-                   value is None or value.strip() == 'None'):
-                    value = ''
+                if (
+                    key in ("user", "client", "realm", "time")
+                    and value is None
+                    or value.strip() == "None"
+                ):
+                    value = ""
 
                 if key == "realm":
                     value = value.lower()
@@ -377,24 +389,26 @@ def parse_policies(lConfig):
 
         # time has not been used before, so we can define the empty as wildcard
 
-        if 'time' in policy and policy['time'] == '':
-            policy['time'] = '* * * * * *;'
+        if "time" in policy and policy["time"] == "":
+            policy["time"] = "* * * * * *;"
 
-        if 'active' not in policy:
-            policy['active'] = True
+        if "active" not in policy:
+            policy["active"] = True
 
-        if 'active' in policy and policy['active'] == '':
-            policy['active'] = True
+        if "active" in policy and policy["active"] == "":
+            policy["active"] = True
 
-        if 'scope' in policy and policy['scope'] in ['selfservice',
-                                                     'admin',
-                                                     'enrollment',
-                                                     'authorization',
-                                                     'authentication', ]:
+        if "scope" in policy and policy["scope"] in [
+            "selfservice",
+            "admin",
+            "enrollment",
+            "authorization",
+            "authentication",
+        ]:
 
-            if 'user' in policy and policy['user'] == '':
-                policy['user'] = '*'
-            if 'client' in policy and policy['client'] == '':
-                policy['client'] = '*'
+            if "user" in policy and policy["user"] == "":
+                policy["user"] = "*"
+            if "client" in policy and policy["client"] == "":
+                policy["client"] = "*"
 
     return Policies

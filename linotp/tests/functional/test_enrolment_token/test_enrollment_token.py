@@ -52,20 +52,15 @@ class TestRolloutToken(TestController):
         TestController.tearDown(self)
 
     def user_service_login(self, user, password, otp):
-        """
-        """
+        """"""
         response, auth_cookie = self._user_service_login(
-            auth_user=user,
-            password=password,
-            otp=otp)
+            auth_user=user, password=password, otp=otp
+        )
 
         return response
 
     def validate_check(self, user, pin, password):
-        params = {
-            "user": user,
-            "pass": pin+password
-        }
+        params = {"user": user, "pass": pin + password}
         response = self.make_validate_request("check", params=params)
 
         return response
@@ -77,35 +72,33 @@ class TestRolloutToken(TestController):
         test token with both scopes defined
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
             "description": "enrollment test token",
-            "scope": json.dumps({
-                "path": ["validate", "userservice"]})
+            "scope": json.dumps({"path": ["validate", "userservice"]}),
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
@@ -121,33 +114,32 @@ class TestRolloutToken(TestController):
         test token with both scopes defined
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
-            "description": "enrollment test token"
+            "description": "enrollment test token",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
@@ -163,35 +155,33 @@ class TestRolloutToken(TestController):
         test token with both scopes defined
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
             "description": "enrollment test token",
-            "scope": json.dumps({
-                "path": ["userservice"]})
+            "scope": json.dumps({"path": ["userservice"]}),
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
@@ -207,34 +197,33 @@ class TestRolloutToken(TestController):
         test token with both scopes defined
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
             "description": "enrollment test token",
-            "rollout": "True"
+            "rollout": "True",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
@@ -250,35 +239,33 @@ class TestRolloutToken(TestController):
         test token with both scopes defined
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
             "description": "enrollment test token",
-            "scope": json.dumps({
-                "path": ["validate"]})
+            "scope": json.dumps({"path": ["validate"]}),
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         response = self.validate_check(user, pin, otp)
@@ -295,33 +282,33 @@ class TestRolloutToken(TestController):
         test janitor - remove rollout token via validate/check
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
         params = {
-            'name': 'purge',
-            'scope': 'enrollment',
-            'action': 'purge_rollout_token',
-            'user': '*',
-            'realm': 'myMixedRealm',
-            'active': True
+            "name": "purge",
+            "scope": "enrollment",
+            "action": "purge_rollout_token",
+            "user": "*",
+            "realm": "myMixedRealm",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
@@ -329,24 +316,23 @@ class TestRolloutToken(TestController):
             "pin": pin,
             "type": "pw",
             "serial": "KIPW0815",
-            "scope": json.dumps({
-                "path": ["userservice"]})
+            "scope": json.dumps({"path": ["userservice"]}),
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # enroll second token - the enrollment token should disapear now
 
         params = {
-            "otpkey": 'second',
+            "otpkey": "second",
             "user": user,
             "pin": "Test123!",
             "type": "pw",
             "description": "second token",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
@@ -359,23 +345,25 @@ class TestRolloutToken(TestController):
         response = self.user_service_login(user, password, otp)
         assert ' "value": true' in response, response
 
-        response = self.make_admin_request('show', params=params)
-        assert 'KIPW0815' in response, response
+        response = self.make_admin_request("show", params=params)
+        assert "KIPW0815" in response, response
 
         # ------------------------------------------------------------------ --
 
         # verify that the default description of the token is 'rollout token'
 
-        tokens = json.loads(response.body).get(
-            'result', {}).get(
-            'value', {}).get(
-            'data', [])
+        tokens = (
+            json.loads(response.body)
+            .get("result", {})
+            .get("value", {})
+            .get("data", [])
+        )
 
         assert len(tokens) > 1
 
         for token in tokens:
             if token["LinOtp.TokenSerialnumber"] == "KIPW0815":
-                assert token['LinOtp.TokenDesc'] == 'rollout token'
+                assert token["LinOtp.TokenDesc"] == "rollout token"
                 break
 
         # ------------------------------------------------------------------ --
@@ -383,11 +371,11 @@ class TestRolloutToken(TestController):
         # after the valid authentication with the second token
         # the rollout token should have disappeared
 
-        response = self.validate_check(user, pin="Test123!", password='second')
+        response = self.validate_check(user, pin="Test123!", password="second")
         assert ' "value": true' in response, response
 
-        response = self.make_admin_request('show', params=params)
-        assert 'KIPW0815' not in response, response
+        response = self.make_admin_request("show", params=params)
+        assert "KIPW0815" not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -396,20 +384,20 @@ class TestRolloutToken(TestController):
         found_in_audit_log = False
 
         params = {
-            'rp': 20,
-            'page': 1,
-            'sortorder': 'desc',
-            'sortname': 'number',
-            'qtype': 'action',
-            'query': 'validate/check',
+            "rp": 20,
+            "page": 1,
+            "sortorder": "desc",
+            "sortname": "number",
+            "qtype": "action",
+            "query": "validate/check",
         }
 
-        response = self.make_audit_request('search', params=params)
+        response = self.make_audit_request("search", params=params)
 
-        entries = json.loads(response.body).get('rows', [])
+        entries = json.loads(response.body).get("rows", [])
         for entry in entries:
-            data = entry['cell']
-            if 'purged rollout tokens:KIPW0815' in data[12]:
+            data = entry["cell"]
+            if "purged rollout tokens:KIPW0815" in data[12]:
                 found_in_audit_log = True
                 break
 
@@ -422,60 +410,58 @@ class TestRolloutToken(TestController):
         test janitor - remove rollout token via selfservice login
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
         params = {
-            'name': 'purge',
-            'scope': 'enrollment',
-            'action': 'purge_rollout_token',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "purge",
+            "scope": "enrollment",
+            "action": "purge_rollout_token",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
             "description": "enrollment test token",
-            "scope": json.dumps({
-                "path": ["userservice"]})
+            "scope": json.dumps({"path": ["userservice"]}),
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # enroll second token
 
         params = {
-            "otpkey": 'second',
+            "otpkey": "second",
             "user": user,
             "pin": "Test123!",
             "type": "pw",
             "description": "second token",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
@@ -493,19 +479,19 @@ class TestRolloutToken(TestController):
         # the valid authentication with the rollout token
         # should make the rollout token not disappeared
 
-        response = self.make_admin_request('show', params=params)
-        assert 'KIPW0815' in response, response
+        response = self.make_admin_request("show", params=params)
+        assert "KIPW0815" in response, response
 
         # ------------------------------------------------------------------ --
 
         # after the valid authentication with the second token
         # the rollout token should have disappeared
 
-        response = self.user_service_login(user, password, otp='second')
+        response = self.user_service_login(user, password, otp="second")
         assert ' "value": true' in response, response
 
-        response = self.make_admin_request('show', params=params)
-        assert 'KIPW0815' not in response, response
+        response = self.make_admin_request("show", params=params)
+        assert "KIPW0815" not in response, response
 
         return
 
@@ -514,48 +500,46 @@ class TestRolloutToken(TestController):
         test janitor - do not remove rollout token via selfservice login
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
             "description": "enrollment test token",
-            "scope": json.dumps({
-                "path": ["userservice"]})
+            "scope": json.dumps({"path": ["userservice"]}),
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # enroll second token
 
         params = {
-            "otpkey": 'second',
+            "otpkey": "second",
             "user": user,
             "pin": "Test123!",
             "type": "pw",
             "description": "second token",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # ------------------------------------------------------------------ --
@@ -573,19 +557,19 @@ class TestRolloutToken(TestController):
         # the valid authentication with the rollout token
         # should make the rollout token not disappeared
 
-        response = self.make_admin_request('show', params=params)
-        assert 'KIPW0815' in response, response
+        response = self.make_admin_request("show", params=params)
+        assert "KIPW0815" in response, response
 
         # ------------------------------------------------------------------ --
 
         # after the valid authentication with the second token
         # the rollout token should not disappeared as the policy is not set
 
-        response = self.user_service_login(user, password, otp='second')
+        response = self.user_service_login(user, password, otp="second")
         assert ' "value": true' in response, response
 
-        response = self.make_admin_request('show', params=params)
-        assert 'KIPW0815' in response, response
+        response = self.make_admin_request("show", params=params)
+        assert "KIPW0815" in response, response
 
         return
 
@@ -595,59 +579,57 @@ class TestRolloutToken(TestController):
         userservice AND validate
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        response = self.make_system_request("setPolicy", params)
+        self.assertTrue("false" not in response, response)
 
         params = {
-            'name': 'purge',
-            'scope': 'enrollment',
-            'action': 'purge_rollout_token',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "purge",
+            "scope": "enrollment",
+            "action": "purge_rollout_token",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        response = self.make_system_request("setPolicy", params)
+        self.assertTrue("false" not in response, response)
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
-            "scope": json.dumps({
-                "path": scope})
+            "scope": json.dumps({"path": scope}),
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         self.assertTrue('"value": true' in response, response)
 
         # enroll second token
 
         params = {
-            "otpkey": 'second',
+            "otpkey": "second",
             "user": user,
             "pin": "Test123!",
             "type": "pw",
             "description": "second token",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         self.assertTrue('"value": true' in response, response)
 
         # ------------------------------------------------------------------ --
@@ -672,21 +654,25 @@ class TestRolloutToken(TestController):
         # the valid authentication with the rollout token
         # should not have purged the rollout token
 
-        response = self.make_admin_request('show')
-        token_info = response.json['result']['value']['data'][0]
-        self.assertEquals(token_info['LinOtp.TokenSerialnumber'], 'KIPW0815', response)
-        self.assertEquals(token_info['LinOtp.TokenDesc'], 'rollout token', response)
+        response = self.make_admin_request("show")
+        token_info = response.json["result"]["value"]["data"][0]
+        self.assertEquals(
+            token_info["LinOtp.TokenSerialnumber"], "KIPW0815", response
+        )
+        self.assertEquals(
+            token_info["LinOtp.TokenDesc"], "rollout token", response
+        )
 
         # ------------------------------------------------------------------ --
 
         # after the valid authentication with the second token the
         # rollout token should have been purged as the policy is set
 
-        response = self.user_service_login(user, password, otp='second')
+        response = self.user_service_login(user, password, otp="second")
         self.assertTrue(' "value": true' in response, response)
 
-        response = self.make_admin_request('show')
-        self.assertTrue('KIPW0815' not in response, response)
+        response = self.make_admin_request("show")
+        self.assertTrue("KIPW0815" not in response, response)
 
     def test_enroll_token_purge_scope_validate(self):
         """
@@ -708,23 +694,23 @@ class TestRolloutToken(TestController):
         """
 
         params = {
-            'name': 'purge',
-            'scope': 'enrollment',
-            'action': 'purge_rollout_token',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "purge",
+            "scope": "enrollment",
+            "action": "purge_rollout_token",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        self.assertTrue('false' not in response, response)
+        response = self.make_system_request("setPolicy", params)
+        self.assertTrue("false" not in response, response)
 
         # enroll first token
 
-        user = 'passthru_user1@myDefRealm'
-        otpkey = 'secret'
-        pin1 = 'pin1'
-        pin2 = 'pin2'
+        user = "passthru_user1@myDefRealm"
+        otpkey = "secret"
+        pin1 = "pin1"
+        pin2 = "pin2"
 
         params = {
             "user": user,
@@ -735,7 +721,7 @@ class TestRolloutToken(TestController):
             "description": "first token",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         self.assertTrue('"value": true' in response, response)
 
         # enroll second token
@@ -749,7 +735,7 @@ class TestRolloutToken(TestController):
             "description": "second token",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         self.assertTrue('"value": true' in response, response)
 
         # ------------------------------------------------------------------ --
@@ -766,56 +752,55 @@ class TestRolloutToken(TestController):
         # after the valid authentications with both tokens, both tokens
         # should not have been purged
 
-        response = self.make_admin_request('show')
-        self.assertTrue('KIPW01' in response, response)
-        self.assertTrue('KIPW02' in response, response)
+        response = self.make_admin_request("show")
+        self.assertTrue("KIPW01" in response, response)
+        self.assertTrue("KIPW02" in response, response)
 
     def test_selfservice_usertokenlist(self):
         """
         test token with both scopes defined
         """
         params = {
-            'name': 'mfa',
-            'scope': 'selfservice',
-            'action': 'mfa_login, mfa_3_fields',
-            'user': '*',
-            'realm': '*',
-            'active': True
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
         }
 
-        response = self.make_system_request('setPolicy', params)
-        assert 'false' not in response, response
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
 
-        user = 'passthru_user1@myDefRealm'
-        password = 'geheim1'
-        otp = 'verry_verry_secret'
-        pin = '1234567890'
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
 
         params = {
             "otpkey": otp,
             "user": user,
             "pin": pin,
-
             "type": "pw",
             "serial": "KIPW0815",
             "description": "enrollment test token",
-            "rollout": "True"
+            "rollout": "True",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # enroll second token
 
         params = {
-            "otpkey": 'second',
+            "otpkey": "second",
             "user": user,
             "pin": "Test123!",
             "type": "pw",
             "description": "second token",
         }
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"value": true' in response, response
 
         # ----------------------------------------------------------------- --
@@ -823,23 +808,26 @@ class TestRolloutToken(TestController):
         # now login into selfservice and query the users token list
 
         auth_user = {
-            'login': 'passthru_user1@myDefRealm',
-            'password': 'geheim1',
-            'otp': otp
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+            "otp": otp,
         }
 
         response = self.make_userselfservice_request(
-            'usertokenlist', auth_user=auth_user)
+            "usertokenlist", auth_user=auth_user
+        )
 
         # verify that the rollout token is not in the list
 
-        assert 'KIPW0815' in response, response
-        assert 'LinOtp.TokenSerialnumber' in response, response
+        assert "KIPW0815" in response, response
+        assert "LinOtp.TokenSerialnumber" in response, response
 
         response = self.make_selfservice_request(
-            'usertokenlist', None, auth_user=auth_user)
-        assert 'KIPW0815' not in response.body, response
+            "usertokenlist", None, auth_user=auth_user
+        )
+        assert "KIPW0815" not in response.body, response
 
         return
+
 
 # eof

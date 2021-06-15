@@ -49,7 +49,7 @@ class SQLTestController(TestController):
         """
         sql connection setup
         """
-        self.sqlconnect = connect or self.app.config.get('DATABASE_URI')
+        self.sqlconnect = connect or self.app.config.get("DATABASE_URI")
         sqlUser = SqlUserDB(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
         return
@@ -66,26 +66,34 @@ class SQLTestController(TestController):
         except Exception as e:
             userAdd.dropTable()
             userAdd.createTable()
-            log.error(" create user table error: %r " % e)
+            log.error(" create user table error: %r ", e)
             userAdd.delUsers()
 
     def addUser(
-            self, login, uid, password, givenname, surname,
-            mobile, telephonenumber, mail):
+        self,
+        login,
+        uid,
+        password,
+        givenname,
+        surname,
+        mobile,
+        telephonenumber,
+        mail,
+    ):
         """
         add a user to the user db
         """
 
         userAdd = SqlUserDB(connect=self.sqlconnect)
         user = {
-            'user': login,
-            'uid': uid,
-            'telephonenumber': telephonenumber or '',
-            'mobile': mobile or '',
-            'sn': surname or '',
-            'givenname': givenname or '',
-            'password': password or '',
-            'mail': mail or ''
+            "user": login,
+            "uid": uid,
+            "telephonenumber": telephonenumber or "",
+            "mobile": mobile or "",
+            "sn": surname or "",
+            "givenname": givenname or "",
+            "password": password or "",
+            "mail": mail or "",
         }
         userAdd.addUser(**user)
 
@@ -103,16 +111,18 @@ class SQLTestController(TestController):
 
         for i in range(1, usercount + 1):
             user = {
-            'user': 'hey%d' % i,
-            'telephonenumber': '012345-678-%d' % i,
-            'mobile': '00123-456-%d' % i,
-            'sn': 'yak%d' % i,
-            'givenname': 'kayak%d' % i,
-            'password': 'JT7bTACk0ud6U',
-            'uid': i,
+                "user": "hey%d" % i,
+                "telephonenumber": "012345-678-%d" % i,
+                "mobile": "00123-456-%d" % i,
+                "sn": "yak%d" % i,
+                "givenname": "kayak%d" % i,
+                "password": "JT7bTACk0ud6U",
+                "uid": i,
             }
-            user['mail'] = ("%s.%s@example.com" % (
-                                        user['sn'], user['givenname']))
+            user["mail"] = "%s.%s@example.com" % (
+                user["sn"],
+                user["givenname"],
+            )
             userAdd.addUser(**user)
 
         resolverDefinition = userAdd.getResolverDefinition()
@@ -134,34 +144,33 @@ class SQLTestController(TestController):
         """
         parameters = copy.deepcopy(self.sqlResolverDef)
 
-        parameters['name'] = name
-        parameters['type'] = 'sqlresolver'
-        parameters['Limit'] = '20'
+        parameters["name"] = name
+        parameters["type"] = "sqlresolver"
+        parameters["Limit"] = "20"
 
-        resp = self.make_system_request(action='setResolver',
-                                        params=parameters)
+        resp = self.make_system_request(
+            action="setResolver", params=parameters
+        )
 
         assert '"value": true' in resp, resp
 
-        resp = self.make_system_request(action='getResolvers')
+        resp = self.make_system_request(action="getResolvers")
         assert '"resolvername": "%s"' % (name) in resp, resp
 
-        param2 = {
-            'resolver': name
-            }
-        resp = self.make_system_request(action='getResolver',
-                                        params=param2)
+        param2 = {"resolver": name}
+        resp = self.make_system_request(action="getResolver", params=param2)
         assert '"Table": "User2"' in resp, resp
 
         return
 
     def delSqlResolver(self, name):
-        """ delete the sql resolver """
+        """delete the sql resolver"""
         parameters = {
-            'resolver': name,
-            }
-        resp = self.make_system_request(action='delResolver',
-                                        params=parameters)
+            "resolver": name,
+        }
+        resp = self.make_system_request(
+            action="delResolver", params=parameters
+        )
         assert '"value": true' in resp, resp
 
         return resp
@@ -170,38 +179,31 @@ class SQLTestController(TestController):
         """
         add resolver to realm
         """
-        resolver = 'useridresolver.SQLIdResolver.IdResolver.%s' % resolverName
-        parameters = {
-            'resolvers': resolver,
-            'realm': realmName
-            }
+        resolver = "useridresolver.SQLIdResolver.IdResolver.%s" % resolverName
+        parameters = {"resolvers": resolver, "realm": realmName}
 
-        resp = self.make_system_request('setRealm', params=parameters)
+        resp = self.make_system_request("setRealm", params=parameters)
         assert '"value": true' in resp, resp
 
         if defaultRealm:
-            params = {
-                'realm': realmName
-                }
-            resp = self.make_system_request('setDefaultRealm', params=params)
+            params = {"realm": realmName}
+            resp = self.make_system_request("setDefaultRealm", params=params)
             assert '"value": true' in resp, resp
         return
 
     def delSqlRealm(self, realmName):
-        """ delete realm """
+        """delete realm"""
 
         parameters = {
-            'realm': realmName,
-            }
-        resp = self.make_system_request(action='delRealm',
-                                        params=parameters)
+            "realm": realmName,
+        }
+        resp = self.make_system_request(action="delRealm", params=parameters)
         assert '"result": true' in resp, resp
 
         return resp
 
     def dropUsers(self):
-        """ shutdown the db"""
+        """shutdown the db"""
 
         userAdd = SqlUserDB(connect=self.sqlconnect)
         userAdd.dropTable()
-

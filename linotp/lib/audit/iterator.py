@@ -30,12 +30,13 @@ import json
 
 import linotp.lib.crypto
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class AuditQuery(object):
-    """ build the the audit query and return result iterator
-    """
+    """build the the audit query and return result iterator"""
+
     def __init__(self, param, audit_obj, user=None, columns=None):
         self.page = 1
         self.headers = False
@@ -45,7 +46,7 @@ class AuditQuery(object):
 
         self.audit_obj = audit_obj
 
-        if 'headers' in param:
+        if "headers" in param:
             self.headers = True
 
         if columns:
@@ -53,84 +54,85 @@ class AuditQuery(object):
             self._columns = columns
         else:
             # Use all columns
-            self._columns = ['number',
-                             'date',
-                             'sig_check',
-                             'missing_line',
-                             'action',
-                             'success',
-                             'serial',
-                             'token_type',
-                             'user',
-                             'realm',
-                             'administrator',
-                             'action_detail',
-                             'info',
-                             'linotp_server',
-                             'client',
-                             'log_level',
-                             'clearance_level'
-                             ]
+            self._columns = [
+                "number",
+                "date",
+                "sig_check",
+                "missing_line",
+                "action",
+                "success",
+                "serial",
+                "token_type",
+                "user",
+                "realm",
+                "administrator",
+                "action_detail",
+                "info",
+                "linotp_server",
+                "client",
+                "log_level",
+                "clearance_level",
+            ]
 
         if "query" in param:
-            if "extsearch" == param['qtype']:
+            if "extsearch" == param["qtype"]:
                 # search patterns are delimited with ;
-                search_list = param['query'].split(";")
+                search_list = param["query"].split(";")
                 for s in search_list:
                     key, e, value = s.partition("=")
                     key = key.strip()
                     value = value.strip()
 
-                    ## unicode escape search parameter to match
-                    ## encoding in db, which stores audit
-                    ## entries in escaped format
+                    # unicode escape search parameter to match
+                    # encoding in db, which stores audit
+                    # entries in escaped format
                     value = linotp.lib.crypto.utils.uencode(value)
                     self._search_dict[key] = value
             else:
-                ## unicode escape search parameter to match
-                ## encoding in db, which stores audit
-                ## entries in escaped format
+                # unicode escape search parameter to match
+                # encoding in db, which stores audit
+                # entries in escaped format
                 value = param["query"]
                 value = linotp.lib.crypto.utils.uencode(value)
-                self._search_dict[param['qtype']] = value
+                self._search_dict[param["qtype"]] = value
         else:
             for key, value in list(param.items()):
-                ## unicode escape search parameter to match
-                ## encoding in db, which stores audit
-                ## entries in escaped format
+                # unicode escape search parameter to match
+                # encoding in db, which stores audit
+                # entries in escaped format
                 value = linotp.lib.crypto.utils.uencode(value)
                 self._search_dict[key] = value
 
-        if 'page' in param:
+        if "page" in param:
             try:
-                self.page = int(param.get('page', '1') or '1')
+                self.page = int(param.get("page", "1") or "1")
                 if self.page < 0 or self.page > sys.maxsize:
                     self.page = 1
             except ValueError:
                 self.page = 1
-            self._rp_dict['page'] = self.page
+            self._rp_dict["page"] = self.page
 
         # verify that rows per page is uint
-        if 'rp' in param:
+        if "rp" in param:
             try:
-                rp = int(param.get('rp', '15') or '15')
+                rp = int(param.get("rp", "15") or "15")
                 if rp < 0 or rp > sys.maxsize:
                     rp = 15
             except ValueError:
                 rp = 15
-            self._rp_dict['rp'] = "%d" % rp
+            self._rp_dict["rp"] = "%d" % rp
 
-        self._rp_dict['sortname'] = param.get('sortname')
+        self._rp_dict["sortname"] = param.get("sortname")
 
         # verify sort order: could be one of ['asc', 'desc']
-        sortorder = param.get('sortorder', 'asc') or 'asc'
-        if sortorder not in ['desc', 'asc']:
-            sortorder = 'asc'
-        self._rp_dict['sortorder'] = sortorder
+        sortorder = param.get("sortorder", "asc") or "asc"
+        if sortorder not in ["desc", "asc"]:
+            sortorder = "asc"
+        self._rp_dict["sortorder"] = sortorder
 
         if user:
-            self._search_dict['user'] = user.login
-            self._search_dict['realm'] = user.realm
+            self._search_dict["user"] = user.login
+            self._search_dict["realm"] = user.realm
 
         return
 
@@ -145,16 +147,17 @@ class AuditQuery(object):
 
     def get_query_result(self):
 
-        self.audit_search = self.audit_obj.searchQuery(self._search_dict,
-                                                       rp_dict=self._rp_dict)
+        self.audit_search = self.audit_obj.searchQuery(
+            self._search_dict, rp_dict=self._rp_dict
+        )
         return self.audit_search
 
     def get_entry(self, row):
         entry = {}
-        if type(row) != dict:
-            ## convert table data to dict!
+        if not isinstance(row, dict):
+            # convert table data to dict!
             row = self.audit_obj.row2dict(row)
-        if 'number' in row:
+        if "number" in row:
             cell = []
             for col in self._columns:
                 # In the previous implementation there were two conflicting ways
@@ -165,17 +168,18 @@ class AuditQuery(object):
                 # null.
                 # In order to differentiate between the empty string (which could be
                 # a valid value for most fields) and non-existence I chose the second
-                # option. If this causes problems, the issue has to be revisited.
+                # option. If this causes problems, the issue has to be
+                # revisited.
                 cell.append(row.get(col))
-            entry = {'id': row['number'],
-                     'cell': cell}
+            entry = {"id": row["number"], "cell": cell}
             if self.headers is True:
-                entry['data'] = self._columns
+                entry["data"] = self._columns
 
         return entry
 
     def get_total(self):
         return self.audit_obj.getTotal(self._search_dict)
+
 
 class JSONAuditIterator(object):
     """
@@ -183,9 +187,9 @@ class JSONAuditIterator(object):
     """
 
     def __init__(self, audit_query):
-        '''
+        """
         create the iterator from the AuditQuery object
-        '''
+        """
         self.audit_query = audit_query
         self.result = iter(audit_query.get_query_result())
         self.page = audit_query.get_page()
@@ -203,7 +207,7 @@ class JSONAuditIterator(object):
             res = prefix
             self.i = 1
         else:
-            res = ', '
+            res = ", "
             self.i = self.i + 1
 
         try:
@@ -213,7 +217,10 @@ class JSONAuditIterator(object):
 
         except StopIteration as exx:
             if self.closed is False:
-                res = '%s ], "total": %d }' % (prefix, self.audit_query.get_total())
+                res = '%s ], "total": %d }' % (
+                    prefix,
+                    self.audit_query.get_total(),
+                )
                 self.closed = True
             else:
                 raise exx
@@ -223,15 +230,16 @@ class JSONAuditIterator(object):
     def __iter__(self):
         return self
 
+
 class CSVAuditIterator(object):
     """
     create cvs output by iterating over result
     """
 
     def __init__(self, audit_query, delimiter):
-        '''
+        """
         create the iterator from the AuditQuery object
-        '''
+        """
         self.audit_query = audit_query
         self.result = iter(audit_query.get_query_result())
         self.page = audit_query.get_page()
@@ -239,7 +247,6 @@ class CSVAuditIterator(object):
         self.i = 0
         self.closed = False
         self.delimiter = delimiter
-
 
     def __next__(self):
         """
@@ -250,21 +257,25 @@ class CSVAuditIterator(object):
 
             headers = ""
             if self.i == 0 and self.audit_query.with_headers():
-                headers = "%s\n" % json.dumps(self.audit_query.get_headers(),
-                                              ensure_ascii=False)[1:-1]
+                headers = (
+                    "%s\n"
+                    % json.dumps(
+                        self.audit_query.get_headers(), ensure_ascii=False
+                    )[1:-1]
+                )
                 res = headers
 
             row_data = next(self.result)
             entry = self.audit_query.get_entry(row_data)
 
-            raw_row = entry.get('cell', [])
+            raw_row = entry.get("cell", [])
 
-        ## we must escape some dump entries, which destroy the
-        ## import of the csv data - like SMSProviderConfig 8-(
+            # we must escape some dump entries, which destroy the
+            # import of the csv data - like SMSProviderConfig 8-(
             row = []
             for row_entry in raw_row:
                 if isinstance(row_entry, str):
-                    row_entry = row_entry.replace('\"', "'")
+                    row_entry = row_entry.replace('"', "'")
                 row.append(row_entry)
 
             r_str = json.dumps(row, ensure_ascii=False)[1:-1]
@@ -282,5 +293,6 @@ class CSVAuditIterator(object):
 
     def __iter__(self):
         return self
+
 
 ###eof#########################################################################

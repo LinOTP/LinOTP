@@ -25,7 +25,7 @@
 #
 
 
-'''
+"""
 LinOTP is an open solution for strong two-factor authentication
        with One Time Passwords.
 
@@ -33,7 +33,7 @@ SMSProvider is the iterface to the final sms submitting service
 LinOTP provides  3 types of implementation: HTTPSMS, SMTP and Device
 sms submitt.
 
-'''
+"""
 
 
 # IMPORTANT! This file is imported by setup.py, therefore do not (directly or
@@ -44,8 +44,7 @@ __copyright__ = "Copyright (C) arxes-tolina GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@keyidentity.com"
-__version__ = '2.12'
-
+__version__ = "2.12"
 
 
 class ISMSProvider(object):
@@ -53,7 +52,7 @@ class ISMSProvider(object):
     Interface class for the SMS providers
     """
 
-    provider_type = 'sms'
+    provider_type = "sms"
 
     def __init__(self):
         self.config = {}
@@ -70,8 +69,9 @@ class ISMSProvider(object):
         }
         """
         config_mapping = {
-                'timeout': ('Timeout', None),
-                'config': ('Config', 'encrypted_data')}
+            "timeout": ("Timeout", None),
+            "config": ("Config", "encrypted_data"),
+        }
 
         return config_mapping
 
@@ -80,8 +80,9 @@ class ISMSProvider(object):
         return {}
 
     def _submitMessage(self, phone, message):
-        raise NotImplementedError("Every subclass of ISMSProvider has to "
-                                  "implement this method.")
+        raise NotImplementedError(
+            "Every subclass of ISMSProvider has to implement this method."
+        )
 
     def submitMessage(self, phone, message):
         """
@@ -94,17 +95,17 @@ class ISMSProvider(object):
         """
 
         # should we transform the phone number according to the MSISDN standard
-        msisdn = ISMSProvider.get_bool(self.config, 'MSISDN', False)
+        msisdn = ISMSProvider.get_bool(self.config, "MSISDN", False)
         if msisdn:
             phone = self._get_msisdn_phonenumber(phone)
 
         # suppress_prefix is about to cut off the leading prefix e.g. '+' sign
         # leading with the meaning, that there are only leading white spaces
-        suppress_prefix = self.config.get('SUPPRESS_PREFIX', '')
+        suppress_prefix = self.config.get("SUPPRESS_PREFIX", "")
         if suppress_prefix:
             phone = phone.lstrip()
-            if phone[0:len(suppress_prefix)] == suppress_prefix:
-                phone = phone[len(suppress_prefix):]
+            if phone[0 : len(suppress_prefix)] == suppress_prefix:
+                phone = phone[len(suppress_prefix) :]
 
         return self._submitMessage(phone, message)
 
@@ -130,7 +131,7 @@ class ISMSProvider(object):
         """
         msisdn = []
         prefix = False
-        if phonenumber.strip()[0] == '+':
+        if phonenumber.strip()[0] == "+":
             prefix = True
         for character in phonenumber:
             if character.isdigit():
@@ -152,7 +153,7 @@ class ISMSProvider(object):
         the %r to print the representation to generalize the processing
         """
         as_str = str(config.get(key, default))
-        return as_str.lower() == 'true'
+        return as_str.lower() == "true"
 
 
 def getSMSProviderClass(packageName, className):
@@ -171,10 +172,13 @@ def getSMSProviderClass(packageName, className):
     mod = __import__(packageName, globals(), locals(), [className], 1)
     klass = getattr(mod, className)
     if not hasattr(klass, "submitMessage"):
-        raise NameError("SMSProvider AttributeError: %r.%r "
-                        "instance of SMSProvider has no method 'submitMessage'"
-                        % (packageName, className))
+        raise NameError(
+            "SMSProvider AttributeError: %r.%r "
+            "instance of SMSProvider has no method 'submitMessage'"
+            % (packageName, className)
+        )
     else:
         return klass
+
 
 # eof #

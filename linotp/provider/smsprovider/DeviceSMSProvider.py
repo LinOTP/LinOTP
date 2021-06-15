@@ -48,57 +48,67 @@ import subprocess
 import string
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
-@provider_registry.class_entry('DeviceSMSProvider')
-@provider_registry.class_entry('linotp.provider.smsprovider.DeviceSMSProvider')
-@provider_registry.class_entry('smsprovider.DeviceSMSProvider.DeviceSMSProvider')
-@provider_registry.class_entry('smsprovider.DeviceSMSProvider')
+@provider_registry.class_entry("DeviceSMSProvider")
+@provider_registry.class_entry("linotp.provider.smsprovider.DeviceSMSProvider")
+@provider_registry.class_entry(
+    "smsprovider.DeviceSMSProvider.DeviceSMSProvider"
+)
+@provider_registry.class_entry("smsprovider.DeviceSMSProvider")
 class DeviceSMSProvider(ISMSProvider):
-
     def __init__(self):
         self.config = {}
 
     def _submitMessage(self, phone, message):
-        '''
-            submitMessage()
-            - send out a message to a phone
+        """
+        submitMessage()
+        - send out a message to a phone
 
-        '''
-        if ("CONFIGFILE" not in self.config):
+        """
+        if "CONFIGFILE" not in self.config:
             log.error("[submitMessage] No config key CONFIGFILE found!")
             return False
 
         # NOTE 1: The LinOTP service account need rw-access to /dev/ttyXXX
-        # NOTE 2: we need gnokii 0.6.29 or higher, since 0.6.28 will crash with a bug
-        args = ["gnokii",
-                "--config",
-                self.config.get("CONFIGFILE"),
-                "--sendsms",
-                phone,
-                ]
+        # NOTE 2: we need gnokii 0.6.29 or higher, since 0.6.28 will crash with
+        # a bug
+        args = [
+            "gnokii",
+            "--config",
+            self.config.get("CONFIGFILE"),
+            "--sendsms",
+            phone,
+        ]
 
-        if ("SMSC" in self.config):
+        if "SMSC" in self.config:
             args.append("--smsc")
             args.append(self.config.get("SMSC"))
 
-        log.info("[submitMessage] sending SMS : %s" % " ".join(args) )
-        proc = subprocess.Popen(args,
-                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                close_fds=True)
+        log.info("[submitMessage] sending SMS : %s", " ".join(args))
+        proc = subprocess.Popen(
+            args,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            close_fds=True,
+        )
 
         (smsout, smserr) = proc.communicate(message)
 
         if proc.returncode == 0:
-            log.debug("[submitMessage] output: %s" % smsout)
+            log.debug("[submitMessage] output: %s", smsout)
             return True
 
-        log.error("[submitMessage] output: %s" % smsout)
-        log.error("[submitMessage] SMS sending failed, return code: %s" % proc.returncode)
+        log.error("[submitMessage] output: %s", smsout)
+        log.error(
+            "[submitMessage] SMS sending failed, return code: %s",
+            proc.returncode,
+        )
 
         return False
-
 
     def loadConfig(self, configDict):
         self.config = configDict
@@ -110,8 +120,9 @@ def main(phone, message):
 
     # echo "text" | gnokii --config <filename> <ziel>
 
-    config = {'CONFIGFILE': '/home/user/.gnokiirc',
-              }
+    config = {
+        "CONFIGFILE": "/home/user/.gnokiirc",
+    }
 
     sms = getSMSProviderClass("DeviceSMSProvider", "DeviceSMSProvider")()
 
@@ -122,7 +133,7 @@ def main(phone, message):
 
 if __name__ == "__main__":
     phone = "+4901234567890"
-    #phone      = "015154294800"
+    # phone      = "015154294800"
     message = "DeviceSMSProviderClass test. blocking. :-/"
     main(phone, message)
     print("... done!")

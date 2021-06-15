@@ -29,6 +29,7 @@ Pytest fixtures for linotp tests
 
 # pylint: disable=redefined-outer-name
 
+from linotp import app as app_py
 import flask
 import os
 from linotp.cli import Echo
@@ -57,6 +58,7 @@ def pytest_configure(config):
 
 # Definition of Database
 
+
 def pytest_addoption(parser):
     """Allow the developer to specify a database to test against directly"""
 
@@ -64,11 +66,13 @@ def pytest_addoption(parser):
         "--database-uri",
         dest="database_uri",
         action="store",
-        default=os.environ.get(
-            'LINOTP_PYTEST_DATABASE_URI', "sqlite:///{}"),
-        help=("sqlalchemy database URI to allow tests to run "
-              "against a particular database (envvar: LINOTP_PYTEST_DATABASE_URI)")
-        )
+        default=os.environ.get("LINOTP_PYTEST_DATABASE_URI", "sqlite:///{}"),
+        help=(
+            "sqlalchemy database URI to allow tests to run "
+            "against a particular database (envvar: LINOTP_PYTEST_DATABASE_URI)"
+        ),
+    )
+
 
 @pytest.fixture(scope="session")
 def key_directory(tmp_path_factory):
@@ -81,6 +85,7 @@ def key_directory(tmp_path_factory):
     """
     return tmp_path_factory.mktemp("keys")
 
+
 @pytest.fixture
 def sqlalchemy_uri(request):
     """The SQL alchemy URI to use to configure the database used for tests"""
@@ -88,7 +93,7 @@ def sqlalchemy_uri(request):
 
     # Prevent override through the environment
     try:
-        del os.environ['LINOTP_DATABASE_URI']
+        del os.environ["LINOTP_DATABASE_URI"]
     except KeyError:
         pass
     return uri
@@ -112,7 +117,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
 
         # if sqlalchemy_uri is the fallback, establish a temp file
 
-        if sqlalchemy_uri == 'sqlite:///{}':
+        if sqlalchemy_uri == "sqlite:///{}":
             db_fd, db_path = tempfile.mkstemp()
             sqlalchemy_uri = sqlalchemy_uri.format(db_path)
 
@@ -122,7 +127,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
 
         if sqlalchemy_uri.startswith("sqlite:"):
 
-            if request.node.get_closest_marker('exclude_sqlite'):
+            if request.node.get_closest_marker("exclude_sqlite"):
                 pytest.skip("non sqlite database required for test")
 
         # ------------------------------------------------------------------ --
@@ -130,7 +135,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
         # create the app with common test config
 
         base_app_config = dict(
-            ENV='testing',      # doesn't make a huge difference for us
+            ENV="testing",  # doesn't make a huge difference for us
             TESTING=True,
             DATABASE_URI=sqlalchemy_uri,
             SQLALCHEMY_TRACK_MODIFICATIONS=False,
@@ -152,27 +157,29 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
         os.environ["LINOTP_CFG"] = ""
 
         # Pre-generate the important directories
-        for key in ('CACHE_DIR', 'DATA_DIR', 'LOGFILE_DIR'):
+        for key in ("CACHE_DIR", "DATA_DIR", "LOGFILE_DIR"):
             os.makedirs(base_app_config[key], mode=0o770, exist_ok=True)
 
         # -----------------------------------------------------------------------
 
         # Fake running `linotp init enc-key`
-        secret_file = base_app_config['SECRET_FILE']
+        secret_file = base_app_config["SECRET_FILE"]
         if not os.path.exists(secret_file):
             sec_key = 3 * "0123456789abcdef" * 4
             create_secret_key(filename=secret_file, data=sec_key)
 
         # Fake running `linotp init audit-keys`
-        audit_private_key_file = str(base_app_config['AUDIT_PRIVATE_KEY_FILE'])
+        audit_private_key_file = str(base_app_config["AUDIT_PRIVATE_KEY_FILE"])
         if not os.path.exists(audit_private_key_file):
-            create_audit_keys(audit_private_key_file,
-                            str(base_app_config['AUDIT_PUBLIC_KEY_FILE']))
+            create_audit_keys(
+                audit_private_key_file,
+                str(base_app_config["AUDIT_PUBLIC_KEY_FILE"]),
+            )
 
         # -----------------------------------------------------------------------
 
         os.environ["LINOTP_CMD"] = "init-database"
-        app = create_app('testing', base_app_config)
+        app = create_app("testing", base_app_config)
 
         # Fake running `linotp init database`
         with app.app_context():
@@ -193,16 +200,13 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             os.unlink(db_path)
 
 
-from linotp import app as app_py
-
-
 @pytest.fixture
 def app(base_app, monkeypatch):
     """
     Provide an app and configured application context
     """
     # Disable request time logging
-    monkeypatch.setattr(app_py, 'log_request_timedelta', lambda self: None)
+    monkeypatch.setattr(app_py, "log_request_timedelta", lambda self: None)
 
     with base_app.app_context():
         set_config()
@@ -242,26 +246,29 @@ def adminclient(app, client):
             """
             Add authorization headers & cookies
             """
-            session = 'justatest'
-            if 'json' in kwargs:
+            session = "justatest"
+            if "json" in kwargs:
                 # Add session to JSON body
-                kwargs['json']['session']=session
+                kwargs["json"]["session"] = session
             else:
                 # Add session to query_string parameter
-                params = kwargs.setdefault('query_string', {})
-                params['session'] = session
+                params = kwargs.setdefault("query_string", {})
+                params["session"] = session
 
-            headers = kwargs.setdefault('headers', {})
-            headers["Authorization"] = TestController.get_http_digest_header(username='admin')
+            headers = kwargs.setdefault("headers", {})
+            headers["Authorization"] = TestController.get_http_digest_header(
+                username="admin"
+            )
 
-            self.set_cookie('local', "admin_session", session)
+            self.set_cookie("local", "admin_session", session)
 
-            return super(AuthClient,self).open( *args, **kwargs)
+            return super(AuthClient, self).open(*args, **kwargs)
 
     app.test_client_class = AuthClient
     client = app.test_client()
 
     return client
+
 
 @pytest.fixture
 def hsm_obj(app):
@@ -272,7 +279,8 @@ def hsm_obj(app):
     """
     app.preprocess_request()
 
-    return c['hsm']['obj']
+    return c["hsm"]["obj"]
+
 
 @pytest.fixture
 def set_policy(adminclient):
@@ -288,11 +296,12 @@ def set_policy(adminclient):
         """
         response = adminclient.post("system/setPolicy", json=params)
         assert response.status_code == 200
-        assert response.json["result"]["status"] == True
+        assert response.json["result"]["status"]
 
         getResponse = adminclient.get("system/getPolicy", json=params)
         assert (
-            getResponse.json["result"]["value"]["autosms"]["action"] == params["action"]
+            getResponse.json["result"]["value"]["autosms"]["action"]
+            == params["action"]
         )
 
     return _setPolicy

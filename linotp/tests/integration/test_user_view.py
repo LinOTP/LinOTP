@@ -33,6 +33,7 @@ from linotp_selenium_helper.user_view import UserView
 
 import integration_data as data
 
+
 class TestAuth(TestCase):
     """
     TestCase class that tests the auth/index forms
@@ -41,7 +42,9 @@ class TestAuth(TestCase):
     @pytest.fixture(autouse=True)
     def setUp(self):
         self.realm_name = "se_test_auth"
-        self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
+        self.reset_resolvers_and_realms(
+            data.sepasswd_resolver, self.realm_name
+        )
 
     def test_user_filter(self):
         m = ManageUi(self)

@@ -28,10 +28,14 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    StaleElementReferenceException,
+)
 
 from .manage_elements import ManageTab
 from .helper import select, fill_form_element
+
 
 class PolicyManager(ManageTab):
     policy_entries_css_selector = "table#policy_table > tbody > tr"
@@ -48,17 +52,19 @@ class PolicyManager(ManageTab):
         # Get the policies in json format
         policies = self.manage.admin_api_call("system/getPolicy")
 
-        if(policies):
+        if policies:
             for curr_policy in policies:
-                self.manage.admin_api_call("system/delPolicy",
-                                           {'name': policies[curr_policy]['name']})
+                self.manage.admin_api_call(
+                    "system/delPolicy", {"name": policies[curr_policy]["name"]}
+                )
 
     def clear_policies(self):
         self.open_tab()
 
         while True:
             policies = self.driver.find_elements_by_css_selector(
-                self.policy_entries_css_selector)
+                self.policy_entries_css_selector
+            )
             if not policies:
                 break
             self.delete_policy(policies[0])
@@ -74,12 +80,17 @@ class PolicyManager(ManageTab):
         policy_name_element.clear()
 
         def policy_name_empty(_):
-            return policy_name_element.get_attribute('value') == ""
-        WebDriverWait(self.driver, self.testcase.backend_wait_time).until(policy_name_empty)
+            return policy_name_element.get_attribute("value") == ""
+
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until(
+            policy_name_empty
+        )
 
         # Select policy to delete
         p.click()
-        WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(policy_name_empty)
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(
+            policy_name_empty
+        )
 
         # Delete the policy
         self.find_by_id(self.policy_delete_button_id).click()
@@ -93,8 +104,10 @@ class PolicyManager(ManageTab):
             except StaleElementReferenceException:
                 return False
 
-        WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(policy_still_visible)
-        assert info.check_last_message('Policy deleted.')
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(
+            policy_still_visible
+        )
+        assert info.check_last_message("Policy deleted.")
 
     def set_new_policy(self, policy):
         """
@@ -109,7 +122,7 @@ class PolicyManager(ManageTab):
 
         fill_form_element(driver, "policy_name", policy.name)
 
-        scope_select = self.find_by_id('policy_scope_combo')
+        scope_select = self.find_by_id("policy_scope_combo")
         select(driver, scope_select, policy.scope)
 
         fill_form_element(driver, "policy_action", policy.action)

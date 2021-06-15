@@ -32,40 +32,42 @@ from linotp.lib.user import getUserFromRequest
 class TestgetUserFromRequest(unittest.TestCase):
     class Request(object):
         def __init__(self, environ):
-            self.params = ''
+            self.params = ""
             self.environ = environ
 
-    login = 'Hans Wurst'
-    password = 'Enemenemuh'
+    login = "Hans Wurst"
+    password = "Enemenemuh"
 
     def run_and_assert(self, request):
         authentification = getUserFromRequest(request)
-        assert authentification['login'] == self.login, \
-                         'Input was: %r' % request.environ
+        assert authentification["login"] == self.login, (
+            "Input was: %r" % request.environ
+        )
         return authentification
 
     def test_remote_authentification(self):
-        request = self.Request({'REMOTE_USER': self.login})
+        request = self.Request({"REMOTE_USER": self.login})
         self.run_and_assert(request)
 
     def test_basic_authentification(self):
-        auth_info = (self.login + ':' + self.password).encode('utf-8')
-        basicstring = "Basic %s" % str(base64.b64encode(auth_info), 'utf-8')
-        request = self.Request({'HTTP_AUTHORIZATION': basicstring})
+        auth_info = (self.login + ":" + self.password).encode("utf-8")
+        basicstring = "Basic %s" % str(base64.b64encode(auth_info), "utf-8")
+        request = self.Request({"HTTP_AUTHORIZATION": basicstring})
         self.run_and_assert(request)
 
     def test_digest_authentifictaion(self):
         digest = "Digest username=%s, Digest Password=Enemenemuh" % self.login
-        request = self.Request({'HTTP_AUTHORIZATION': digest})
+        request = self.Request({"HTTP_AUTHORIZATION": digest})
         authentification = self.run_and_assert(request)
-        assert authentification['Digest Password'] == self.password, \
-                         'Input was: %r' % request.environ
+        assert authentification["Digest Password"] == self.password, (
+            "Input was: %r" % request.environ
+        )
 
     def test_SSL_CLIENT_authentifictaion(self):
-        request = self.Request({'SSL_CLIENT_S_DN_CN': self.login})
+        request = self.Request({"SSL_CLIENT_S_DN_CN": self.login})
         self.run_and_assert(request)
 
     def test_empty_auth(self):
         request = self.Request({})
         authentification = getUserFromRequest(request)
-        assert authentification['login'] == '', 'Input was empty'
+        assert authentification["login"] == "", "Input was empty"

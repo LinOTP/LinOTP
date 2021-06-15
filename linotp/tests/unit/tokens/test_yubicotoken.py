@@ -32,7 +32,7 @@ from linotp.tokens.yubicotoken import YubicoTokenClass
 from linotp.tokens.yubicotoken import YubicoApikeyException
 
 
-class DummyDBToken():
+class DummyDBToken:
     """Dummy db token class - required to instantiate a linotp token."""
 
     def setType(self, typ):
@@ -40,7 +40,7 @@ class DummyDBToken():
         self.typ = typ
 
 
-@patch('linotp.tokens.yubicotoken.getFromConfig')
+@patch("linotp.tokens.yubicotoken.getFromConfig")
 def test_yubico_no_api_key(m_getFromConfig):
     """Verify that by default there is no apikey."""
 
@@ -48,7 +48,7 @@ def test_yubico_no_api_key(m_getFromConfig):
 
     yubikey_token = YubicoTokenClass(DummyDBToken())
     with pytest.raises(YubicoApikeyException) as exx:
-        yubikey_token.checkOtp('1213', counter=2, window=2)
+        yubikey_token.checkOtp("1213", counter=2, window=2)
 
-    assert exx.typename == 'YubicoApikeyException'
-    assert str(exx.value) == 'Yubico apiKey or apiId not configured!'
+    assert exx.typename == "YubicoApikeyException"
+    assert str(exx.value) == "Yubico apiKey or apiId not configured!"

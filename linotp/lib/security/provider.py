@@ -47,7 +47,7 @@ log = logging.getLogger(__name__)
 
 
 class SecurityProvider(object):
-    '''
+    """
     the security provider is the singleton in the server who provides
     the security modules to run security relevant methods
 
@@ -57,10 +57,10 @@ class SecurityProvider(object):
     - free the hsm from session after usage
 
     the thread id is used as session identifier
-    '''
+    """
 
     def __init__(self):
-        '''
+        """
         setup the security provider, which is called on server startup
         from the flask app init
 
@@ -69,40 +69,50 @@ class SecurityProvider(object):
 
         :return: -
 
-        '''
+        """
         self.config = {}
         self.security_modules = {}
-        self.activeOne = 'default'
+        self.activeOne = "default"
         self.hsmpool = {}
         self.rwLock = RWLock()
         self.max_retry = 5
 
     def load_config(self, config):
-        '''
+        """
         load the security modules configuration
-        '''
+        """
 
         try:
-            security_provider = config.get('ACTIVE_SECURITY_MODULE', 'default')
-            self.activeOne = security_provider # self.active one is legacy.. therefore we set it here
-            log.debug("[SecurityProvider:load_config] setting active"
-                      " security module: %s", self.activeOne)
-            
+            security_provider = config.get("ACTIVE_SECURITY_MODULE", "default")
+            # self.active one is legacy.. therefore we set it here
+            self.activeOne = security_provider
+            log.debug(
+                "[SecurityProvider:load_config] setting active"
+                " security module: %s",
+                self.activeOne,
+            )
+
             # add active provider config to self.config with the active
             # provider as key and the config dict as value
-            if self.activeOne == 'default':
-                default_security_provider_config = config.get('HSM_DEFAULT_CONFIG')
-                keyFile = config['SECRET_FILE']
-                default_security_provider_config['file'] = keyFile
-                security_provider_config = {'default': default_security_provider_config}       
-                self.config.update(security_provider_config)        
-            
-            if self.activeOne ==  'pkcs11':
-                security_provider_config = {'pkcs11': config.get('HSM_PKCS11_CONFIG')}
+            if self.activeOne == "default":
+                default_security_provider_config = config.get(
+                    "HSM_DEFAULT_CONFIG"
+                )
+                keyFile = config["SECRET_FILE"]
+                default_security_provider_config["file"] = keyFile
+                security_provider_config = {
+                    "default": default_security_provider_config
+                }
+                self.config.update(security_provider_config)
+
+            if self.activeOne == "pkcs11":
+                security_provider_config = {
+                    "pkcs11": config.get("HSM_PKCS11_CONFIG")
+                }
                 self.config.update(security_provider_config)
 
         except Exception as e:
-            log.exception("[load_config] failed to identify module")
+            log.error("[load_config] failed to identify module")
             error = "failed to identify module: %r " % e
             raise HSMException(error, id=707)
 
@@ -117,7 +127,7 @@ class SecurityProvider(object):
         return
 
     def loadSecurityModule(self, id=None):
-        '''
+        """
         return the specified security module
 
         :param id:  identifier for the security module (from the configuration)
@@ -125,29 +135,29 @@ class SecurityProvider(object):
 
         :return:    None or the created object
         :rtype:     security module
-        '''
+        """
 
         ret = None
 
         if id is None:
             id = self.activeOne
 
-        log.debug("[loadSecurityModule] Loading module %s" % id)
+        log.debug("[loadSecurityModule] Loading module %s", id)
 
         if id not in self.config:
             return ret
 
         config = self.config.get(id)
-        if 'module' not in config:
+        if "module" not in config:
             return ret
 
-        module = config.get('module')
+        module = config.get("module")
         methods = ["encrypt", "decrypt", "random", "setup_module"]
         method = ""
 
-        parts = module.split('.')
+        parts = module.split(".")
         className = parts[-1]
-        packageName = '.'.join(parts[:-1])
+        packageName = ".".join(parts[:-1])
 
         mod = __import__(packageName, globals(), locals(), [className], 0)
         klass = getattr(mod, className)
@@ -156,15 +166,17 @@ class SecurityProvider(object):
 
         for method in methods:
             if hasattr(klass, method) is False:
-                error = ("[loadSecurityModule] Security Module %r misses the "
-                         "following interface: %r" % (module, method))
+                error = (
+                    "[loadSecurityModule] Security Module %r misses the "
+                    "following interface: %r" % (module, method)
+                )
                 log.error(error)
                 raise NameError(error)
 
         ret = klass(config, add_conf=additional_config)
         self.security_modules[id] = ret
 
-        log.debug("[loadSecurityModule] returning %r" % ret)
+        log.debug("[loadSecurityModule] returning %r", ret)
 
         return ret
 
@@ -177,8 +189,8 @@ class SecurityProvider(object):
 
         for provider, provider_config in list(self.config.items()):
 
-            module = provider_config.get('module')
-            provider_class = module.split('.')[-1]
+            module = provider_config.get("module")
+            provider_class = module.split(".")[-1]
             if provider_class in config_name:
                 merged_config = self.config[provider]
 
@@ -191,27 +203,29 @@ class SecurityProvider(object):
         return ret
 
     def setupModule(self, hsm_id, config=None):
-        '''
+        """
         setupModule is called during runtime to define
         the config parameters like password or connection strings
-        '''
+        """
         self.rwLock.acquire_write()
         try:
             pool = self._getHsmPool_(hsm_id)
             if pool is None:
-                error = ("[setupModule] failed to retieve pool "
-                         "for hsm_id: %r" % hsm_id)
+                error = (
+                    "[setupModule] failed to retieve pool "
+                    "for hsm_id: %r" % hsm_id
+                )
                 log.error(error)
                 raise HSMException(error, id=707)
 
             for entry in pool:
-                hsm = entry.get('obj')
+                hsm = entry.get("obj")
                 hsm.setup_module(config)
 
             self.activeOne = hsm_id
         except Exception as e:
             error = "[setupModule] failed to load hsm : %r" % e
-            log.exception(error)
+            log.error(error)
             raise HSMException(error, id=707)
 
         finally:
@@ -219,9 +233,9 @@ class SecurityProvider(object):
         return self.activeOne
 
     def createHSMPool(self, hsm_id=None, *args, **kw):
-        '''
+        """
         setup a pool of security providers
-        '''
+        """
         pool = None
         # amount has to be taken from the hsm-id config
         if hsm_id is None:
@@ -237,32 +251,34 @@ class SecurityProvider(object):
 
         for provider_id in provider_ids:
             pool = self._getHsmPool_(provider_id)
-            log.debug("[createHSMPool] already got this pool: %r" % pool)
+            log.debug("[createHSMPool] already got this pool: %r", pool)
             if pool is None:
                 # get the number of entries from the hsd (id) config
                 conf = self.config.get(provider_id)
-                poolsize = int(conf.get('poolsize', 10))
-                log.debug("[createHSMPool] creating pool for %r with size %r",
-                          provider_id, poolsize)
+                poolsize = int(conf.get("poolsize", 10))
+                log.debug(
+                    "[createHSMPool] creating pool for %r with size %r",
+                    provider_id,
+                    poolsize,
+                )
 
                 pool = []
                 for _i in range(0, poolsize):
-                    error = ''
+                    error = ""
                     hsm = None
                     try:
                         hsm = self.loadSecurityModule(provider_id)
                     except FatalHSMException as exx:
-                        log.exception("[createHSMPool] %r %r ",
-                                      provider_id, exx)
+                        log.error("[createHSMPool] %r %r ", provider_id, exx)
                         if provider_id == self.activeOne:
                             raise exx
                         error = "%r: %r" % (provider_id, exx)
 
                     except Exception as exx:
-                        log.exception("[createHSMPool] %r ", exx)
+                        log.error("[createHSMPool] %r ", exx)
                         error = "%r: %r" % (provider_id, exx)
 
-                    pool.append({'obj': hsm, 'session': 0, 'error': error})
+                    pool.append({"obj": hsm, "session": 0, "error": error})
 
                 self.hsmpool[provider_id] = pool
         return pool
@@ -271,7 +287,7 @@ class SecurityProvider(object):
         found = None
         # find session
         for hsm in pool:
-            hsession = hsm.get('session')
+            hsession = hsm.get("session")
             if hsession == sessionId:
                 found = hsm
         return found
@@ -279,9 +295,9 @@ class SecurityProvider(object):
     def _createHSM4Session(self, pool, sessionId):
         found = None
         for hsm in pool:
-            hsession = hsm.get('session')
-            if str(hsession) == '0':
-                hsm['session'] = sessionId
+            hsession = hsm.get("session")
+            if str(hsession) == "0":
+                hsm["session"] = sessionId
                 found = hsm
                 break
         return found
@@ -289,9 +305,9 @@ class SecurityProvider(object):
     def _freeHSMSession(self, pool, sessionId):
         hsm = None
         for hsm in pool:
-            hsession = hsm.get('session')
+            hsession = hsm.get("session")
             if str(hsession) == str(sessionId):
-                hsm['session'] = 0
+                hsm["session"] = 0
                 break
         return hsm
 
@@ -303,8 +319,10 @@ class SecurityProvider(object):
             sessionId = str(_thread.get_ident())
 
         if hsm_id not in self.config:
-            error = ('[SecurityProvider:dropSecurityModule] no config found '
-                     'for hsm with id %r ' % hsm_id)
+            error = (
+                "[SecurityProvider:dropSecurityModule] no config found "
+                "for hsm with id %r " % hsm_id
+            )
             log.error(error)
             raise HSMException(error, id=707)
             return None
@@ -315,8 +333,11 @@ class SecurityProvider(object):
             self.rwLock.acquire_write()
             found = self._findHSM4Session(pool, sessionId)
             if found is None:
-                log.info('[SecurityProvider:dropSecurityModule] could not bind '
-                         'hsm to session %r ' % hsm_id)
+                log.info(
+                    "[SecurityProvider:dropSecurityModule] could not bind "
+                    "hsm to session %r ",
+                    hsm_id,
+                )
             else:
                 self._freeHSMSession(pool, sessionId)
         finally:
@@ -331,8 +352,10 @@ class SecurityProvider(object):
             sessionId = str(_thread.get_ident())
 
         if hsm_id not in self.config:
-            error = ('[SecurityProvider:getSecurityModule] no config found for '
-                     'hsm with id %r ' % hsm_id)
+            error = (
+                "[SecurityProvider:getSecurityModule] no config found for "
+                "hsm with id %r " % hsm_id
+            )
             log.error(error)
             raise HSMException(error, id=707)
 
@@ -353,25 +376,37 @@ class SecurityProvider(object):
                     locked = False
                     retry = False
                     log.debug(
-                        "[getSecurityModule] using existing pool session %s" % found)
+                        "[getSecurityModule] using existing pool session %s",
+                        found,
+                    )
                     return found
                 else:
                     # create new entry
-                    log.debug("[getSecurityModule] getting new Session (%s) "
-                              "from pool %s" % (sessionId, pool))
+                    log.debug(
+                        "[getSecurityModule] getting new Session (%s) "
+                        "from pool %s",
+                        sessionId,
+                        pool,
+                    )
                     found = self._createHSM4Session(pool, sessionId)
                     self.rwLock.release()
                     locked = False
                     if found is None:
                         tries += 1
                         delay = 1 + int(0.2 * tries)
-                        log.warning('try %d: could not bind hsm to session  - '
-                                    'going to sleep for %r' % (tries, delay))
+                        log.warning(
+                            "try %d: could not bind hsm to session  - "
+                            "going to sleep for %r",
+                            tries,
+                            delay,
+                        )
                         time.sleep(delay)
                         if tries >= self.max_retry:
-                            error = ('[SecurityProvider:getSecurityModule] '
-                                     '%d retries: could not bind hsm to '
-                                     'session for %d seconds' % (tries, delay))
+                            error = (
+                                "[SecurityProvider:getSecurityModule] "
+                                "%d retries: could not bind hsm to "
+                                "session for %d seconds" % (tries, delay)
+                            )
                             log.error(error)
                             raise Exception(error)
                         retry = True
@@ -386,9 +421,7 @@ class SecurityProvider(object):
 
 
 def main():
-
-    class DummySecLock():
-
+    class DummySecLock:
         def release(self):
             return
 
@@ -398,33 +431,33 @@ def main():
     # hook for local provider test
     sep = SecurityProvider(secLock=DummySecLock())
     sep.load_config({})
-    sep.createHSMPool('default')
-    sep.setupModule('default', {'passwd': 'test123'})
+    sep.createHSMPool("default")
+    sep.setupModule("default", {"passwd": "test123"})
 
     # runtime catch an hsm for session
     hsm = sep.getSecurityModule()
 
-    passwo = 'password'
+    passwo = "password"
     encpass = hsm.encryptPassword(passwo)
     passw = hsm.decryptPassword(encpass)
 
     zerome(passw)
 
-    hsm2 = sep.getSecurityModule(sessionId='session2')
+    hsm2 = sep.getSecurityModule(sessionId="session2")
 
-    passwo = 'password'
+    passwo = "password"
     encpass = hsm2.encryptPassword(passwo)
     passw = hsm2.decryptPassword(encpass)
 
     zerome(passw)
 
     # session shutdown
-    sep.dropSecurityModule(sessionId='session2')
+    sep.dropSecurityModule(sessionId="session2")
     sep.dropSecurityModule()
 
     return True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     main()

@@ -33,6 +33,8 @@ from linotp.lib.crypto.encrypted_data import EncryptedData
 TEST_STRING = "test string to be encrypted"
 
 # pylint:disable=redefined-outer-name
+
+
 @pytest.fixture
 def data():
     """
@@ -45,11 +47,13 @@ def data():
 
     return instance
 
+
 def test_str(data):
     """
     str() should return the string itself
     """
     assert str(data) == TEST_STRING
+
 
 def test_repr(data):
     """
@@ -59,7 +63,8 @@ def test_repr(data):
     assert TEST_STRING not in rep
     assert rep == "XXXXXX"
 
-@pytest.mark.usefixtures('hsm_obj')
+
+@pytest.mark.usefixtures("hsm_obj")
 def test_round_trip(app):
     orig_string = TEST_STRING
 

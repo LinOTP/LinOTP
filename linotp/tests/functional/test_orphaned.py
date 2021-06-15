@@ -41,15 +41,12 @@ import unittest
 import pytest
 
 
-
-
 log = logging.getLogger(__name__)
 
 
 class SQLUser(object):
-
-    def __init__(self, connect='sqlite://'):
-        self.tableName = 'User2'
+    def __init__(self, connect="sqlite://"):
+        self.tableName = "User2"
         self.usercol = '"user"'
         self.userTable = '"%s"' % (self.tableName)
 
@@ -58,29 +55,33 @@ class SQLUser(object):
             self.engine = create_engine(connect)
             connection = self.engine.connect()
             self.sqlurl = self.engine.url
-            if self.sqlurl.drivername.startswith('mysql'):
-                self.userTable = ("%s.%s"
-                                  % (self.sqlurl.database, self.tableName))
-                self.usercol = 'user'
+            if self.sqlurl.drivername.startswith("mysql"):
+                self.userTable = "%s.%s" % (
+                    self.sqlurl.database,
+                    self.tableName,
+                )
+                self.usercol = "user"
 
         except Exception as e:
             print("%r" % e)
         self.connection = connection
 
-        umap = {"userid": "id",
-                "username": "user",
-                "phone": "telephonenumber",
-                "mobile": "mobile",
-                "email": "mail",
-                "surname": "sn",
-                "givenname": "givenname",
-                "password": "password",
-                "salt": "salt"}
+        umap = {
+            "userid": "id",
+            "username": "user",
+            "phone": "telephonenumber",
+            "mobile": "mobile",
+            "email": "mail",
+            "surname": "sn",
+            "givenname": "givenname",
+            "password": "password",
+            "salt": "salt",
+        }
 
         self.resolverDef = {
-            'Table': self.tableName,
-            'Map': json.dumps(umap),
-         }
+            "Table": self.tableName,
+            "Map": json.dumps(umap),
+        }
 
         # extend the dict with userid resolver attributes from the connect
         conn_dict = self._parse_connection(connect)
@@ -97,22 +98,22 @@ class SQLUser(object):
 
         """
 
-        dbdrive_port, _sep, rest = connect.partition('//')
-        dbdrive, _sep, port = dbdrive_port.partition(':')
-        user_pass, _sep, host_db = rest.partition('@')
-        user, _sep, passw = user_pass.partition(':')
-        host, _sep, db = host_db.partition('/')
+        dbdrive_port, _sep, rest = connect.partition("//")
+        dbdrive, _sep, port = dbdrive_port.partition(":")
+        user_pass, _sep, host_db = rest.partition("@")
+        user, _sep, passw = user_pass.partition(":")
+        host, _sep, db = host_db.partition("/")
 
         conn = {
-             'Database': db,
-             'Driver': dbdrive,
-             'Server': host,
-             'User': user,
-             'Password': passw,
-             'type': 'sqlresolver',
-            }
+            "Database": db,
+            "Driver": dbdrive,
+            "Server": host,
+            "User": user,
+            "Password": passw,
+            "type": "sqlresolver",
+        }
         if port:
-            conn['Port'] = port
+            conn["Port"] = port
         return conn
 
     def getResolverDefinition(self):
@@ -133,7 +134,10 @@ class SQLUser(object):
               id text,
               mail text
             )
-            """ % (self.userTable, self.usercol)
+            """ % (
+            self.userTable,
+            self.usercol,
+        )
         t = sqlalchemy.sql.expression.text(createStr)
         self.connection.execute(t)
         return
@@ -143,22 +147,43 @@ class SQLUser(object):
         t = sqlalchemy.sql.expression.text(dropStr)
         self.connection.execute(t)
 
-    def addUser(self, user, telephonenumber, mobile, sn, givenname,
-                password, salt, uid, mail):
+    def addUser(
+        self,
+        user,
+        telephonenumber,
+        mobile,
+        sn,
+        givenname,
+        password,
+        salt,
+        uid,
+        mail,
+    ):
         intoStr = """
             INSERT INTO %s( %s, telephonenumber, mobile,
             sn, givenname, password, salt, id, mail)
             VALUES (:user, :telephonenumber, :mobile, :sn, :givenname,
                     :password, :salt, :id, :mail);
-            """ % (self.userTable, self.usercol)
+            """ % (
+            self.userTable,
+            self.usercol,
+        )
         t = sqlalchemy.sql.expression.text(intoStr)
 
-        self.connection.execute(t, user=user, telephonenumber=telephonenumber,
-                                mobile=mobile, sn=sn,
-                                givenname=givenname, password=password,
-                                salt=salt, id=uid, mail=mail)
+        self.connection.execute(
+            t,
+            user=user,
+            telephonenumber=telephonenumber,
+            mobile=mobile,
+            sn=sn,
+            givenname=givenname,
+            password=password,
+            salt=salt,
+            id=uid,
+            mail=mail,
+        )
 
-        #execute(sqlalchemy.sql.expression.text("""SELECT COUNT(*)
+        # execute(sqlalchemy.sql.expression.text("""SELECT COUNT(*)
         # FROM Config WHERE Config.Key = :key"""), key=REPLICATION_CONFIG_KEY)
 
     def query(self):
@@ -173,17 +198,17 @@ class SQLUser(object):
     def delUsers(self, uid=None, username=None):
 
         if username is not None:
-            delStr = 'DELETE FROM %s  WHERE user=:user;' % (self.userTable)
+            delStr = "DELETE FROM %s  WHERE user=:user;" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, user=username)
 
-        elif type(uid) in (str, ''):
-            delStr = 'DELETE FROM %s  WHERE id=:id;' % (self.userTable)
+        elif type(uid) in (str, ""):
+            delStr = "DELETE FROM %s  WHERE id=:id;" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t, id=uid)
 
         elif uid is None:
-            delStr = 'DELETE FROM %s ;' % (self.userTable)
+            delStr = "DELETE FROM %s ;" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
             self.connection.execute(t)
 
@@ -195,10 +220,9 @@ class SQLUser(object):
 
 
 class OrphandTestHelpers(object):
-
     def setUpSQL(self):
 
-        self.sqlconnect = self.app.config.get('DATABASE_URI')
+        self.sqlconnect = self.app.config.get("DATABASE_URI")
         sqlUser = SQLUser(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
         return
@@ -212,57 +236,69 @@ class OrphandTestHelpers(object):
         except Exception as e:
             userAdd.dropTable()
             userAdd.creatTable()
-            log.error(" create user table error: %r " % e)
+            log.error(" create user table error: %r ", e)
             userAdd.delUsers()
 
         for i in range(1, usercount):
-            user = 'hey%d' % i
-            telephonenumber = '012345-678-%d' % i
-            mobile = '00123-456-%d' % i
-            sn = 'yak%d' % i
-            givenname = 'kayak%d' % i
-            password = 'safr2r32'
-            salt = 't123'
-            uid = '__%d' % i
-            mail = sn + '.' + givenname + "@example.com"
+            user = "hey%d" % i
+            telephonenumber = "012345-678-%d" % i
+            mobile = "00123-456-%d" % i
+            sn = "yak%d" % i
+            givenname = "kayak%d" % i
+            password = "safr2r32"
+            salt = "t123"
+            uid = "__%d" % i
+            mail = sn + "." + givenname + "@example.com"
 
-            userAdd.addUser(user, telephonenumber, mobile, sn, givenname,
-                            password, salt, uid, mail)
+            userAdd.addUser(
+                user,
+                telephonenumber,
+                mobile,
+                sn,
+                givenname,
+                password,
+                salt,
+                uid,
+                mail,
+            )
 
-        u_dict = [{
-            'user': 'kn_t',
-            'telephonenumber': '012345-678-99999',
-            'mobile': '00123-456-99999',
-            'sn': 'kn_t',
-            'givenname': 'knöt',
-            'password': 'safr2r32',
-            'salt': 't123',
-            'uid': '__9999',
+        u_dict = [
+            {
+                "user": "kn_t",
+                "telephonenumber": "012345-678-99999",
+                "mobile": "00123-456-99999",
+                "sn": "kn_t",
+                "givenname": "knöt",
+                "password": "safr2r32",
+                "salt": "t123",
+                "uid": "__9999",
             },
             {
-            'user': 'knöt',
-            'telephonenumber': '012345-678-99998',
-            'mobile': '00123-456-99998',
-            'sn': 'knöt',
-            'givenname': 'knöt',
-            'password': 'safr2r32',
-            'salt': 't123',
-            'uid': '__9998',
+                "user": "knöt",
+                "telephonenumber": "012345-678-99998",
+                "mobile": "00123-456-99998",
+                "sn": "knöt",
+                "givenname": "knöt",
+                "password": "safr2r32",
+                "salt": "t123",
+                "uid": "__9998",
             },
             {
-            'user': 'kn%t',
-            'telephonenumber': '012345-678-99997',
-            'mobile': '00123-456-99997',
-            'sn': 'kn%t',
-            'givenname': 'kn%t',
-            'password': 'safr2r32',
-            'salt': 't123',
-            'uid': '__9997',
+                "user": "kn%t",
+                "telephonenumber": "012345-678-99997",
+                "mobile": "00123-456-99997",
+                "sn": "kn%t",
+                "givenname": "kn%t",
+                "password": "safr2r32",
+                "salt": "t123",
+                "uid": "__9997",
             },
-            ]
+        ]
         for user in u_dict:
-            user['mail'] = ("%s.%s@example.com"
-                            % (user['sn'], user['givenname']))
+            user["mail"] = "%s.%s@example.com" % (
+                user["sn"],
+                user["givenname"],
+            )
             userAdd.addUser(**user)
 
         resolverDefinition = userAdd.getResolverDefinition()
@@ -280,22 +316,21 @@ class OrphandTestHelpers(object):
 
         parameters = copy.deepcopy(self.sqlResolverDef)
 
-        parameters['name'] = name
-        parameters['type'] = 'sqlresolver'
-        parameters['Limit'] = '20'
+        parameters["name"] = name
+        parameters["type"] = "sqlresolver"
+        parameters["Limit"] = "20"
 
-        resp = self.make_system_request(action='setResolver',
-                                        params=parameters)
+        resp = self.make_system_request(
+            action="setResolver", params=parameters
+        )
 
         assert '"value": true' in resp, resp
 
-        resp = self.make_system_request(action='getResolvers')
+        resp = self.make_system_request(action="getResolvers")
         assert '"resolvername": "%s"' % (name) in resp, resp
 
-        param2 = {'resolver': name
-                  }
-        resp = self.make_system_request(action='getResolver',
-                                        params=param2)
+        param2 = {"resolver": name}
+        resp = self.make_system_request(action="getResolver", params=param2)
         assert '"Table": "User2"' in resp, resp
 
         return
@@ -303,108 +338,105 @@ class OrphandTestHelpers(object):
     def delSqlResolver(self, name):
 
         parameters = {
-            'resolver': name,
+            "resolver": name,
         }
-        resp = self.make_system_request(action='delResolver',
-                                        params=parameters)
+        resp = self.make_system_request(
+            action="delResolver", params=parameters
+        )
         assert '"value": true' in resp, resp
 
         return resp
 
     def addSqlRealm(self, realmName, resolverName, defaultRealm=False):
-        resolver = 'useridresolver.SQLIdResolver.IdResolver.%s' % resolverName
-        parameters = {'resolvers': resolver,
-                      'realm': realmName}
+        resolver = "useridresolver.SQLIdResolver.IdResolver.%s" % resolverName
+        parameters = {"resolvers": resolver, "realm": realmName}
 
-        resp = self.make_system_request('setRealm', params=parameters)
+        resp = self.make_system_request("setRealm", params=parameters)
         assert '"value": true' in resp, resp
 
         if defaultRealm:
-            params = {'realm': realmName}
-            resp = self.make_system_request('setDefaultRealm', params=params)
+            params = {"realm": realmName}
+            resp = self.make_system_request("setDefaultRealm", params=params)
             assert '"value": true' in resp, resp
         return
 
     def delSqlRealm(self, realmName):
         parameters = {
-            'realm': realmName,
+            "realm": realmName,
         }
-        resp = self.make_system_request(action='delRealm',
-                                        params=parameters)
+        resp = self.make_system_request(action="delRealm", params=parameters)
         assert '"result": true' in resp, resp
 
         return resp
 
     def getUserList(self, resolver):
 
-        param = {'username': '*', 'resConf': resolver}
-        response = self.make_admin_request(action='userlist',
-                                           params=param)
+        param = {"username": "*", "resConf": resolver}
+        response = self.make_admin_request(action="userlist", params=param)
         if ("error") in response:
             body = json.loads(response.body)
-            result = body.get('result')
-            error = result.get('error')
-            raise Exception(error.get('message'))
+            result = body.get("result")
+            error = result.get("error")
+            raise Exception(error.get("message"))
         else:
             assert '"status": true,' in response, response
 
         body = json.loads(response.body)
-        result = body.get('result')
-        userList = result.get('value')
+        result = body.get("result")
+        userList = result.get("value")
 
         return userList
 
     def addToken(self, user):
 
-        param = {'user': user,
-                 'pin': user,
-                 'serial': 's' + user,
-                 'type': 'spass'}
+        param = {
+            "user": user,
+            "pin": user,
+            "serial": "s" + user,
+            "type": "spass",
+        }
 
-        response = self.make_admin_request(action='init',
-                                           params=param)
+        response = self.make_admin_request(action="init", params=param)
         assert '"status": true,' in response, response
 
         return
 
     def authToken(self, user):
 
-        param = {'user': user, 'pass': user}
-        response = self.make_validate_request(action='check',
-                                              params=param)
+        param = {"user": user, "pass": user}
+        response = self.make_validate_request(action="check", params=param)
         return response
 
     def showTokens(self):
 
         param = None
-        response = self.make_admin_request(action='show',
-                                           params=param)
+        response = self.make_admin_request(action="show", params=param)
         assert '"status": true,' in response, response
         return response
 
+
 @pytest.mark.exclude_sqlite
 class TestOrphandTokens(TestController, OrphandTestHelpers):
-
     def setUp(self):
         TestController.setUp(self)
         self.setUpSQL()
 
     def test_orphandTokens_byUser(self):
-        '''
-            test an orphand token - where the user is removed in the sql database
+        """
+        test an orphand token - where the user is removed in the sql database
 
-            Description:
-            - create a SQL User Database with a certain number of users
-            - create a SQLResolver, who refers to this user database
-            - create a realm for this sql resolver
-            - create a token for one of the SQL users
-            - admin/show should show the token user
-            - run authentication for this user
-            - remove users from the SQL database
-            - admin/show should show the /:no user info:/
-            - authentication should fail
+        Description:
+        - create a SQL User Database with a certain number of users
+        - create a SQLResolver, who refers to this user database
+        - create a realm for this sql resolver
+        - create a token for one of the SQL users
+        - admin/show should show the token user
+        - run authentication for this user
+        - remove users from the SQL database
+        - admin/show should show the /:no user info:/
+        - authentication should fail
 
-        '''
+        """
         self.setUpSQL()
 
         self.delete_all_realms()
@@ -413,20 +445,20 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         params = {
             "user_lookup_cache.enabled": False,
             "resolver_lookup_cache.enabled": False,
-            }
+        }
 
-        response = self.make_system_request('setConfig', params)
+        response = self.make_system_request("setConfig", params)
         assert '"status": true' in response.body, response
 
-        resolverName = 'MySQLResolver'
-        realmName = 'sqlrealm'.lower()
+        resolverName = "MySQLResolver"
+        realmName = "sqlrealm".lower()
 
         self.addUsers()
         self.addSqlResolver(resolverName)
         self.addSqlRealm(realmName, resolverName, defaultRealm=True)
 
         users = self.getUserList(resolverName)
-        user = users[0].get('username')
+        user = users[0].get("username")
 
         self.addToken(user)
         ret = self.authToken(user)
@@ -448,30 +480,30 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         return
 
     def test_orphandTokens_byResolver(self):
-        '''
-            test an orphaned token by resolver - where the user is not retrievable by the resolver any more
+        """
+        test an orphaned token by resolver - where the user is not retrievable by the resolver any more
 
-            Description:
-            - create a SQL User Database with a certain number of users
-            - create a SQLResolver, who refers to this user database
-            - create a realm for this sql resolver
-            - create a token for one of the SQL users
-            - admin/show should show the token user
-            - run authentication for this user
+        Description:
+        - create a SQL User Database with a certain number of users
+        - create a SQLResolver, who refers to this user database
+        - create a realm for this sql resolver
+        - create a token for one of the SQL users
+        - admin/show should show the token user
+        - run authentication for this user
 
-            - remove the SQLResolver
+        - remove the SQLResolver
 
-            - admin/show should show the /:no user info:/
-            - authentication should fail
+        - admin/show should show the /:no user info:/
+        - authentication should fail
 
-        '''
+        """
         self.setUpSQL()
 
         self.delete_all_realms()
         self.delete_all_resolvers()
 
-        resolverName = 'MySQLResolver'
-        realmName = 'sqlrealm'.lower()
+        resolverName = "MySQLResolver"
+        realmName = "sqlrealm".lower()
 
         self.addUsers()
         self.addSqlResolver(resolverName)
@@ -480,7 +512,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         users = self.getUserList(resolverName)
         assert len(users) > 0, users
 
-        user = users[0].get('username')
+        user = users[0].get("username")
 
         self.addToken(user)
         ret = self.authToken(user)
@@ -489,7 +521,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)
 
-        message = ''
+        message = ""
         try:
             empty_user_list = self.getUserList(resolverName)
         except Exception as e:
@@ -523,61 +555,67 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         self.delete_all_realms()
         self.delete_all_resolvers()
 
-        resolverName = 'MySQLResolver'
-        realmName = 'sqlrealm'.lower()
+        resolverName = "MySQLResolver"
+        realmName = "sqlrealm".lower()
 
         self.addUsers()
         self.addSqlResolver(resolverName)
         self.addSqlRealm(realmName, resolverName, defaultRealm=True)
 
-        parameters = {'username': 'knöt'}
-        response = self.make_admin_request(action='userlist',
-                                           params=parameters)
+        parameters = {"username": "knöt"}
+        response = self.make_admin_request(
+            action="userlist", params=parameters
+        )
 
         assert '"userid": "__9998"' in response, response
         assert '"userid": "__9997"' not in response, response
         assert '"userid": "__9999"' not in response, response
 
         # ignore SQL wildcards
-        parameters = {'username': 'kn%t'}
-        response = self.make_admin_request(action='userlist',
-                                           params=parameters)
+        parameters = {"username": "kn%t"}
+        response = self.make_admin_request(
+            action="userlist", params=parameters
+        )
 
         assert '"userid": "__9998"' not in response, response
         assert '"userid": "__9997"' in response, response
         assert '"userid": "__9999"' not in response, response
 
         # ignore SQL wildcards
-        parameters = {'username': 'kn_t'}
-        response = self.make_admin_request(action='userlist',
-                                           params=parameters)
+        parameters = {"username": "kn_t"}
+        response = self.make_admin_request(
+            action="userlist", params=parameters
+        )
 
         assert '"userid": "__9998"' not in response, response
         assert '"userid": "__9997"' not in response, response
         assert '"userid": "__9999"' in response, response
 
         # support LinOTP wildcards
-        parameters = {'username': 'kn*t'}
-        response = self.make_admin_request(action='userlist',
-                                           params=parameters)
+        parameters = {"username": "kn*t"}
+        response = self.make_admin_request(
+            action="userlist", params=parameters
+        )
 
         assert '"userid": "__9998"' in response, response
         assert '"userid": "__9997"' in response, response
         assert '"userid": "__9999"' in response, response
 
         # support LinOTP wildcards
-        parameters = {'username': 'kn.t'}
-        response = self.make_admin_request(action='userlist',
-                                           params=parameters)
+        parameters = {"username": "kn.t"}
+        response = self.make_admin_request(
+            action="userlist", params=parameters
+        )
 
         assert '"userid": "__9998"' in response, response
         assert '"userid": "__9997"' in response, response
         assert '"userid": "__9999"' in response, response
 
         # support LinOTP wildcards for other fields
-        parameters = {'userid': '*9*'}
-        response = self.make_admin_request(action='userlist',
-                                           params=parameters)
+        parameters = {"userid": "*9*"}
+        response = self.make_admin_request(
+            action="userlist", params=parameters
+        )
 
         assert '"userid": "__9"' in response, response
         assert '"userid": "__9998"' in response, response
@@ -585,5 +623,6 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         assert '"userid": "__9999"' in response, response
 
         return
+
 
 ###eof#########################################################################

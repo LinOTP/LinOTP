@@ -25,32 +25,26 @@
 #
 """ contains the tokeniterator """
 
-ENCODING = "utf-8"
-
-import re
-import logging
-import fnmatch
-
-import json
-
-from sqlalchemy import or_, and_, not_
-
-import linotp
-from linotp.lib.error import UserError
-
-from linotp.lib.token import (getTokenRealms,
-                              getTokens4UserOrSerial,
-                              token_owner_iterator
-                              )
-from linotp.lib.user import getUserId, getUserInfo
-from linotp.lib.user import User
-from linotp.lib.realm import getRealms
-
-from linotp.lib.user import NoResolverFound
-
+from linotp.lib.config import getFromConfig
 from linotp.model import db, Token, Realm, TokenRealm
+from linotp.lib.user import NoResolverFound
+from linotp.lib.realm import getRealms
+from linotp.lib.user import User
+from linotp.lib.user import getUserId, getUserInfo
+from linotp.lib.token import (
+    getTokenRealms,
+    getTokens4UserOrSerial,
+    token_owner_iterator,
+)
+from linotp.lib.error import UserError
+import linotp
+from sqlalchemy import or_, and_, not_
+import json
+import fnmatch
+import logging
+import re
 
-from linotp.lib.config  import getFromConfig
+ENCODING = "utf-8"
 
 
 log = logging.getLogger(__name__)
@@ -63,7 +57,8 @@ def _compile_regex(search_text):
     """
 
     searcH_regex = re.compile(
-        "^%s$" % search_text.replace('.', '\.').replace('*', '.*'))
+        "^%s$" % search_text.replace(".", r"\.").replace("*", ".*")
+    )
 
     return searcH_regex
 
@@ -83,12 +78,12 @@ def _compare_regex(regex, compare_string):
         if compare_string is None:
             return False
 
-        match = regex.match('' + compare_string.lower())
+        match = regex.match("" + compare_string.lower())
         if match is not None:
             return True
 
     except Exception as exx:
-        log.exception("error with regular expression matching %r", exx)
+        log.error("error with regular expression matching %r", exx)
 
     return False
 
@@ -116,9 +111,9 @@ def _user_expression_match(login_user, token_owner_iterator):
 
 
 class TokenIterator(object):
-    '''
+    """
     TokenIterator class - support a smooth iterating through the tokens
-    '''
+    """
 
     def _get_serial_condition(self, serial, allowed_realm):
         """
@@ -145,7 +140,7 @@ class TokenIterator(object):
 
         # if we have a serial and no realm, we return a un-resolvable condition
         if serial and not allowed:
-            scondition = and_(Token.LinOtpTokenSerialnumber == '')
+            scondition = and_(Token.LinOtpTokenSerialnumber == "")
             return scondition
 
         if "*" in serial:
@@ -164,11 +159,11 @@ class TokenIterator(object):
             return ucondition
 
         loginUser = user.login.lower()
-        loginUser = loginUser.replace('"', '')
-        loginUser = loginUser.replace("'", '')
+        loginUser = loginUser.replace('"', "")
+        loginUser = loginUser.replace("'", "")
 
         searchType = "any"
-        ## search for a 'blank' user
+        # search for a 'blank' user
         if len(loginUser) == 0 and len(user.login) > 0:
             searchType = "blank"
         elif loginUser == "/:no user:/" or loginUser == "/:none:/":
@@ -178,12 +173,13 @@ class TokenIterator(object):
         elif "*" in loginUser:
             searchType = "wildcard"
         else:
-            ## no blank and no wildcard search
+            # no blank and no wildcard search
             searchType = "exact"
 
         if searchType == "blank":
-            ucondition = and_(or_(Token.LinOtpUserid == '',
-                                  Token.LinOtpUserid is None))
+            ucondition = and_(
+                or_(Token.LinOtpUserid == "", Token.LinOtpUserid is None)
+            )
 
         if searchType == "exact":
             serials = []
@@ -198,7 +194,7 @@ class TokenIterator(object):
                 # from loginname and entry of the valid realms.
                 # In case of a '*' wildcard in the list, we take all available
                 # realms
-                if '*' in valid_realms:
+                if "*" in valid_realms:
                     valid_realm_list = list(getRealms().keys())
                 else:
                     valid_realm_list = valid_realms
@@ -211,18 +207,21 @@ class TokenIterator(object):
             userlist = []
             for usr in users:
                 urealm = usr.realm
-                if urealm == '*':
+                if urealm == "*":
                     # if the realm is set to *, the getUserId
                     # triggers the identification of all resolvers, where the
                     # user might reside: trigger the user resolver lookup
                     for realm in list(getRealms().keys()):
-                        if realm in valid_realms or '*' in valid_realms:
+                        if realm in valid_realms or "*" in valid_realms:
                             usr.realm = realm
                             try:
-                                (_uid, _resolver, _resolverClass) = getUserId(usr)
+                                (_uid, _resolver, _resolverClass) = getUserId(
+                                    usr
+                                )
                             except UserError as exx:
-                                log.info('User %r not found in realm %r',
-                                         usr, realm)
+                                log.info(
+                                    "User %r not found in realm %r", usr, realm
+                                )
                                 continue
                             userlist.extend(usr.getUserPerConf())
                 else:
@@ -234,10 +233,9 @@ class TokenIterator(object):
                     for tok in tokens:
                         serials.append(tok.LinOtpTokenSerialnumber)
                 except UserError as ex:
-                    ## we get an exception if the user is not found
-                    log.debug('[TokenIterator::init] no exact user: %r'
-                              % (user))
-                    log.debug('[TokenIterator::init] %r' % ex)
+                    # we get an exception if the user is not found
+                    log.debug("[TokenIterator::init] no exact user: %r", user)
+                    log.debug("[TokenIterator::init] %r", ex)
 
             if len(serials) > 0:
                 # if tokens found, search for their serials
@@ -245,9 +243,9 @@ class TokenIterator(object):
             else:
                 # if no token is found, block search for user
                 # and return nothing
-                ucondition = and_(Token.LinOtpTokenSerialnumber == '')
+                ucondition = and_(Token.LinOtpTokenSerialnumber == "")
 
-        ## handle case, when nothing found in former cases
+        # handle case, when nothing found in former cases
         if searchType == "wildcard":
 
             serials = _user_expression_match(loginUser, token_owner_iterator())
@@ -262,7 +260,7 @@ class TokenIterator(object):
             if len(serials) > 0:
                 ucondition = and_(Token.LinOtpTokenSerialnumber.in_(serials))
             else:
-                ucondition = and_(Token.LinOtpTokenSerialnumber == '')
+                ucondition = and_(Token.LinOtpTokenSerialnumber == "")
         return ucondition
 
     def _get_filter_confition(self, filter):
@@ -270,45 +268,65 @@ class TokenIterator(object):
 
         if filter is None:
             condition = None
-        elif filter in ['/:active:/', '/:enabled:/',
-                        '/:token is active:/', '/:token is enabled:/' ]:
+        elif filter in [
+            "/:active:/",
+            "/:enabled:/",
+            "/:token is active:/",
+            "/:token is enabled:/",
+        ]:
             condition = and_(Token.LinOtpIsactive is True)
-        elif filter in ['/:inactive:/', '/:disabled:/',
-                        '/:token is inactive:/', '/:token is disabled:/']:
+        elif filter in [
+            "/:inactive:/",
+            "/:disabled:/",
+            "/:token is inactive:/",
+            "/:token is disabled:/",
+        ]:
             condition = and_(Token.LinOtpIsactive is False)
         else:
             # search in other colums
             filter = linotp.lib.crypto.utils.uencode(filter)
-            condition = or_(Token.LinOtpTokenDesc.contains(filter),
-                            Token.LinOtpIdResClass.contains(filter),
-                            Token.LinOtpTokenSerialnumber.contains(filter),
-                            Token.LinOtpUserid.contains(filter),
-                            Token.LinOtpTokenType.contains(filter))
+            condition = or_(
+                Token.LinOtpTokenDesc.contains(filter),
+                Token.LinOtpIdResClass.contains(filter),
+                Token.LinOtpTokenSerialnumber.contains(filter),
+                Token.LinOtpUserid.contains(filter),
+                Token.LinOtpTokenType.contains(filter),
+            )
         return condition
 
     def _get_realm_condition(self, valid_realms, filterRealm):
         """
-         create the condition for only getting certain realms!
+        create the condition for only getting certain realms!
         """
         rcondition = None
-        if '*' in valid_realms:
-            log.debug("[TokenIterator::init] wildcard for realm '*' found."
-                      " Tokens of all realms will be displayed")
+        if "*" in valid_realms:
+            log.debug(
+                "[TokenIterator::init] wildcard for realm '*' found."
+                " Tokens of all realms will be displayed"
+            )
             return rcondition
 
         if len(valid_realms) > 0:
-            log.debug("[TokenIterator::init] adding filter condition"
-                      " for realm %r" % valid_realms)
+            log.debug(
+                "[TokenIterator::init] adding filter condition"
+                " for realm %r",
+                valid_realms,
+            )
 
             # get all matching realms
             token_ids = self._get_tokens_in_realm(valid_realms)
             rcondition = and_(Token.LinOtpTokenId.in_(token_ids))
             return rcondition
 
-        if ("''" in filterRealm or '""' in filterRealm or
-              "/:no realm:/" in filterRealm):
-            log.debug("[TokenIterator::init] search for all tokens, which are"
-                      " in no realm")
+        if (
+            "''" in filterRealm
+            or '""' in filterRealm
+            or "/:no realm:/" in filterRealm
+        ):
+            log.debug(
+                "[TokenIterator::init] search for all tokens, which are"
+                " in no realm"
+            )
 
             # get all tokenrealm ids
             token_id_tuples = db.session.query(TokenRealm.token_id).all()
@@ -316,7 +334,7 @@ class TokenIterator(object):
             for token_tuple in token_id_tuples:
                 token_ids.add(token_tuple[0])
 
-            ## define the token id not condition
+            # define the token id not condition
             rcondition = and_(not_(Token.LinOtpTokenId.in_(token_ids)))
             return rcondition
 
@@ -340,15 +358,21 @@ class TokenIterator(object):
         return rcondition
 
     def _get_tokens_in_realm(self, valid_realms):
-        ## get all matching realms
-        realm_id_tuples = db.session.query(Realm.id).\
-                            filter(Realm.name.in_(valid_realms)).all()
+        # get all matching realms
+        realm_id_tuples = (
+            db.session.query(Realm.id)
+            .filter(Realm.name.in_(valid_realms))
+            .all()
+        )
         realm_ids = set()
         for realm_tuple in realm_id_tuples:
             realm_ids.add(realm_tuple[0])
-        ## get all tokenrealm ids
-        token_id_tuples = db.session.query(TokenRealm.token_id).\
-                    filter(TokenRealm.realm_id.in_(realm_ids)).all()
+        # get all tokenrealm ids
+        token_id_tuples = (
+            db.session.query(TokenRealm.token_id)
+            .filter(TokenRealm.realm_id.in_(realm_ids))
+            .all()
+        )
         token_ids = set()
         for token_tuple in token_id_tuples:
             token_ids.add(token_tuple[0])
@@ -362,20 +386,30 @@ class TokenIterator(object):
         """
         resolvers = set()
         realms = getRealms()
-        if '*' in valid_realms:
+        if "*" in valid_realms:
             search_realms = list(realms.keys())
         else:
             search_realms = valid_realms
 
         for realm in search_realms:
-            resolvers.update(realms.get(realm, {}).get('useridresolver', []))
+            resolvers.update(realms.get(realm, {}).get("useridresolver", []))
 
         return list(resolvers)
 
-    def __init__(self, user, serial, page=None, psize=None, filter=None,
-                 sort=None, sortdir=None, filterRealm=None, user_fields=None,
-                 params=None):
-        '''
+    def __init__(
+        self,
+        user,
+        serial,
+        page=None,
+        psize=None,
+        filter=None,
+        sort=None,
+        sortdir=None,
+        filterRealm=None,
+        user_fields=None,
+        params=None,
+    ):
+        """
         constructor of Tokeniterator, which gathers all conditions to build
         a sqalchemy query - iterator
 
@@ -402,7 +436,7 @@ class TokenIterator(object):
 
         :return: - nothing / None
 
-        '''
+        """
 
         if params is None:
             params = {}
@@ -416,14 +450,14 @@ class TokenIterator(object):
             self.user_fields = []
 
         if isinstance(filterRealm, str):
-            filterRealm = filterRealm.split(',')
+            filterRealm = filterRealm.split(",")
 
         if type(filterRealm) in [list]:
             s_realms = []
             for f in filterRealm:
                 #  support for multiple realm filtering in the ui
                 #  as a coma separated string
-                for s_realm in f.split(','):
+                for s_realm in f.split(","):
                     s_realms.append(s_realm.strip())
             filterRealm = s_realms
 
@@ -431,7 +465,7 @@ class TokenIterator(object):
         #  based on the list of the existing ones
         valid_realms = []
         realms = list(getRealms().keys())
-        if '*' in filterRealm:
+        if "*" in filterRealm:
             valid_realms.append("*")
         else:
             for realm in realms:
@@ -447,7 +481,7 @@ class TokenIterator(object):
         #  create the final condition as AND of all conditions
         condTuple = ()
         for conn in (fcondition, ucondition, scondition, rcondition):
-            if type(conn).__name__ != 'NoneType':
+            if type(conn).__name__ != "NoneType":
                 condTuple += (conn,)
 
         condition = and_(*condTuple)
@@ -497,11 +531,15 @@ class TokenIterator(object):
 
         #  care for the result pageing
         if page is None:
-            self.toks = Token.query.filter(
-                condition).order_by(order).distinct()
+            self.toks = (
+                Token.query.filter(condition).order_by(order).distinct()
+            )
             self.tokens = self.toks.count()
 
-            log.debug("[TokenIterator] DB-Query returned # of objects: %i" % self.tokens)
+            log.debug(
+                "[TokenIterator] DB-Query returned # of objects: %r",
+                self.tokens,
+            )
             self.pagesize = self.tokens
             self.it = iter(self.toks)
             return
@@ -511,12 +549,12 @@ class TokenIterator(object):
                 pagesize = int(getFromConfig("pagesize", 50))
             else:
                 pagesize = int(psize)
-        except:
+        except BaseException:
             pagesize = 20
 
         try:
-            thePage = int (page) - 1
-        except:
+            thePage = int(page) - 1
+        except BaseException:
             thePage = 0
         if thePage < 0:
             thePage = 0
@@ -526,7 +564,10 @@ class TokenIterator(object):
 
         self.toks = Token.query.filter(condition).order_by(order).distinct()
         self.tokens = self.toks.count()
-        log.debug("[TokenIterator::init] DB-Query returned # of objects: %i" % self.tokens)
+        log.debug(
+            "[TokenIterator::init] DB-Query returned # of objects: %r",
+            self.tokens,
+        )
         self.page = thePage + 1
         fpages = float(self.tokens) / float(pagesize)
         self.pages = int(fpages)
@@ -540,35 +581,38 @@ class TokenIterator(object):
         return
 
     def getResultSetInfo(self):
-        resSet = {"pages"   : self.pages,
-                  "pagesize" : self.pagesize,
-                  "tokens"  : self.tokens,
-                  "page"    : self.page}
+        resSet = {
+            "pages": self.pages,
+            "pagesize": self.pagesize,
+            "tokens": self.tokens,
+            "page": self.page,
+        }
         return resSet
 
     def getUserDetail(self, tok):
         userInfo = {}
         uInfo = {}
 
-        userInfo["User.description"] = ''
-        userInfo["User.userid"] = ''
-        userInfo["User.username"] = ''
+        userInfo["User.description"] = ""
+        userInfo["User.userid"] = ""
+        userInfo["User.username"] = ""
         for field in self.user_fields:
-            userInfo["User.%s" % field] = ''
+            userInfo["User.%s" % field] = ""
 
         if tok.LinOtpUserid:
             # userInfo["User.description"]    = u'/:no user info:/'
-            userInfo["User.userid"] = '/:no user info:/'
-            userInfo["User.username"] = '/:no user info:/'
+            userInfo["User.userid"] = "/:no user info:/"
+            userInfo["User.username"] = "/:no user info:/"
 
             uInfo = None
 
             try:
 
                 uInfo = getUserInfo(
-                                tok.LinOtpUserid,
-                                tok.LinOtpIdResolver,
-                                tok.LinOtpIdResClass)
+                    tok.LinOtpUserid,
+                    tok.LinOtpIdResolver,
+                    tok.LinOtpIdResClass,
+                )
 
             except NoResolverFound:
                 log.error("no user info found!")
@@ -596,7 +640,7 @@ class TokenIterator(object):
 
         tok = next(self.it)
         desc = tok.get_vars(save=True)
-        ''' add userinfo to token description '''
+        """ add userinfo to token description """
         userInfo = {}
         try:
             (userInfo, _ret) = self.getUserDetail(tok)
@@ -608,5 +652,6 @@ class TokenIterator(object):
 
     def __iter__(self):
         return self
+
 
 # eof #########################################################################

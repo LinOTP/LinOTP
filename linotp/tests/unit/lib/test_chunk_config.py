@@ -33,9 +33,11 @@ import unittest
 
 from mock import patch
 
-from linotp.lib.config.db_api import (_store_continous_entry_db,
-                                      _storeConfigDB,
-                                      _retrieveConfigDB)
+from linotp.lib.config.db_api import (
+    _store_continous_entry_db,
+    _storeConfigDB,
+    _retrieveConfigDB,
+)
 from linotp.model import db, Config
 
 big_value = """-----BEGIN CERTIFICATE-----
@@ -152,9 +154,7 @@ TestConfigEntries = {}
 
 def storeConfigEntryDB(key, val, typ=None, desc=None):
 
-    TestConfigEntries[key] = {'type': typ,
-                              'value': val,
-                              'desc': desc}
+    TestConfigEntries[key] = {"type": typ, "value": val, "desc": desc}
 
 
 class ContEntries(object):
@@ -171,16 +171,17 @@ class ContEntries(object):
     def __iter__(self):
         return iter([])
 
+
 @pytest.fixture
 def deleteconfig(app):
     # Clear all config entries before starting each test
-    Config.query.delete(synchronize_session='fetch')
+    Config.query.delete(synchronize_session="fetch")
     db.session.commit()
+
 
 @pytest.mark.usefixtures("app")
 class TestChunkConfigCase(unittest.TestCase):
-
-    @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
+    @patch("linotp.lib.config.db_api._storeConfigEntryDB", storeConfigEntryDB)
     def test_chunked_config(self):
         """
         test for storing long values
@@ -189,16 +190,17 @@ class TestChunkConfigCase(unittest.TestCase):
         from linotp.lib.text_utils import simple_slice
         from linotp.lib.config.db_api import MAX_VALUE_LEN
 
-        key_name = 'linotp.chunk_test'
-        key_type = 'text'
-        key_desc = 'description'
+        key_name = "linotp.chunk_test"
+        key_type = "text"
+        key_desc = "description"
 
         chunks = []
         for cont_value in simple_slice(big_value, MAX_VALUE_LEN):
             chunks.append(cont_value)
 
-        _store_continous_entry_db(chunks, key=key_name, val=big_value,
-                                  typ=key_type, desc=key_desc)
+        _store_continous_entry_db(
+            chunks, key=key_name, val=big_value, typ=key_type, desc=key_desc
+        )
 
         conf_keys = list(TestConfigEntries.keys())
 
@@ -210,8 +212,8 @@ class TestChunkConfigCase(unittest.TestCase):
         assert key_name in conf_keys, TestConfigEntries
 
         entry = TestConfigEntries[key_name]
-        value = entry['value']
-        from_, to_ = entry['desc'].split(':')
+        value = entry["value"]
+        from_, to_ = entry["desc"].split(":")
 
         # we count from 0 to eg 3 so we have 4 entries
         assert len(conf_keys) == int(to_) + 1, conf_keys
@@ -224,7 +226,7 @@ class TestChunkConfigCase(unittest.TestCase):
             entry_key = "%s__[%d:%d]" % (key_name, i, int(to_))
             assert entry_key in TestConfigEntries
 
-            value += TestConfigEntries[entry_key]['value']
+            value += TestConfigEntries[entry_key]["value"]
 
         assert value == big_value
 
@@ -232,8 +234,8 @@ class TestChunkConfigCase(unittest.TestCase):
         # last entry
 
         entry_key = "%s__[%d:%d]" % (key_name, int(to_), int(to_))
-        entry_type = TestConfigEntries[entry_key]['type']
-        entry_desc = TestConfigEntries[entry_key]['desc']
+        entry_type = TestConfigEntries[entry_key]["type"]
+        entry_desc = TestConfigEntries[entry_key]["desc"]
 
         assert entry_type == key_type
         assert entry_desc == key_desc
@@ -247,16 +249,16 @@ class TestChunkConfigCase(unittest.TestCase):
 
         return
 
-    @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
-    @patch('linotp.model.db.session')
+    @patch("linotp.lib.config.db_api._storeConfigEntryDB", storeConfigEntryDB)
+    @patch("linotp.model.db.session")
     def test__storeConfigDB_text(self, mock_session):
         """
         test for storing long text entries
         """
 
-        key = 'linotp.test_data'
+        key = "linotp.test_data"
         val = big_value
-        typ = 'text'
+        typ = "text"
         desc = None
 
         continous_entries = ContEntries()
@@ -269,7 +271,7 @@ class TestChunkConfigCase(unittest.TestCase):
         assert key in conf_keys, TestConfigEntries
 
         entry = TestConfigEntries[key]
-        _from_, to_ = entry['desc'].split(':')
+        _from_, to_ = entry["desc"].split(":")
 
         # we count from 0 to eg 3 so we have 4 entries
         assert len(conf_keys) == int(to_) + 1, conf_keys
@@ -283,17 +285,17 @@ class TestChunkConfigCase(unittest.TestCase):
 
         return
 
-    @patch('linotp.lib.config.db_api.encryptPassword')
-    @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
-    @patch('linotp.model.db.session')
+    @patch("linotp.lib.config.db_api.encryptPassword")
+    @patch("linotp.lib.config.db_api._storeConfigEntryDB", storeConfigEntryDB)
+    @patch("linotp.model.db.session")
     def test__storeConfigDB_password(self, mock_session, mock_encryptPassword):
         """
         test for storing long crypted password entries
         """
 
-        key = 'linotp.test_data'
+        key = "linotp.test_data"
         val = big_value
-        typ = 'password'
+        typ = "password"
         desc = None
 
         mock_encryptPassword.return_value = big_value
@@ -309,7 +311,7 @@ class TestChunkConfigCase(unittest.TestCase):
         assert key in conf_keys, TestConfigEntries
 
         entry = TestConfigEntries[key]
-        _from_, to_ = entry['desc'].split(':')
+        _from_, to_ = entry["desc"].split(":")
 
         # we count from 0 to eg 3 so we have 4 entries
         assert len(conf_keys) == int(to_) + 1, conf_keys
@@ -323,17 +325,17 @@ class TestChunkConfigCase(unittest.TestCase):
 
         return
 
-    @patch('linotp.lib.config.db_api._storeConfigEntryDB', storeConfigEntryDB)
-    @patch('linotp.model.db.session')
+    @patch("linotp.lib.config.db_api._storeConfigEntryDB", storeConfigEntryDB)
+    @patch("linotp.model.db.session")
     def test__storeConfigDB_int(self, mock_session):
         """
         test for storing int values
         """
 
-        key = 'linotp.test_data'
+        key = "linotp.test_data"
         val = 1313123131231231313213
-        typ = 'int'
-        desc = 'long int'
+        typ = "int"
+        desc = "long int"
 
         continous_entries = ContEntries()
 
@@ -348,8 +350,8 @@ class TestChunkConfigCase(unittest.TestCase):
 
         assert len(TestConfigEntries) == 1
 
-        entry = TestConfigEntries['linotp.test_data']
-        assert entry['value'] == val
+        entry = TestConfigEntries["linotp.test_data"]
+        assert entry["value"] == val
 
         # --------------------------------------------------------------------
 
@@ -368,28 +370,34 @@ class TestConfigStoreCase(unittest.TestCase):
         # Test round trip of _storeConfigDB with entries that require
         # encoding of special characters
         conf = {
-            'Key': 'linotp.TËST',
-            'Value': 'VALUEÄ',
-            'Type': 'TYPEß',
-            'Description': 'DESCRIPTIÖN',
+            "Key": "linotp.TËST",
+            "Value": "VALUEÄ",
+            "Type": "TYPEß",
+            "Description": "DESCRIPTIÖN",
         }
 
-        _storeConfigDB(conf['Key'], conf['Value'],
-                       conf['Type'], conf['Description'])
+        _storeConfigDB(
+            conf["Key"], conf["Value"], conf["Type"], conf["Description"]
+        )
 
         # Check value is correctly returned
-        stored_value = _retrieveConfigDB(conf['Key'])
-        assert conf['Value'] == stored_value
+        stored_value = _retrieveConfigDB(conf["Key"])
+        assert conf["Value"] == stored_value
 
         # Check type, description in database
         entries = Config.query.all()
 
-        assert(len(entries) == 1)
+        assert len(entries) == 1
         stored_conf = entries[0]
 
         for key in list(conf.keys()):
-            assert conf[key] == getattr(stored_conf, key), \
-                             "Key should match key:%s - expected %r, recevied %r" % (key, conf[key], getattr(stored_conf, key))
+            assert conf[key] == getattr(
+                stored_conf, key
+            ), "Key should match key:%s - expected %r, recevied %r" % (
+                key,
+                conf[key],
+                getattr(stored_conf, key),
+            )
 
     def test_updateExisting(self):
         # Test the following conditions:
@@ -399,9 +407,9 @@ class TestConfigStoreCase(unittest.TestCase):
         # Verify that the resulting config entry has
         # correctly set the type and description
 
-        key = 'linotp.testupdate'
-        longvalue = '*' * 2000
-        value = 'value'
+        key = "linotp.testupdate"
+        longvalue = "*" * 2000
+        value = "value"
         typ = None
         description = None
 
@@ -419,5 +427,6 @@ class TestConfigStoreCase(unittest.TestCase):
         assert entry.Value == value
         assert entry.Description == description
         assert entry.Type == typ
+
 
 # eof #

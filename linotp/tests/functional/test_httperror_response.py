@@ -43,8 +43,6 @@ log = logging.getLogger(__name__)
 
 
 class TestHTTPError(TestController):
-
-
     def tearDown(self):
         self._del_errors_from_config()
         return TestController.tearDown(self)
@@ -54,37 +52,39 @@ class TestHTTPError(TestController):
         Default case: No httperror sent. Response is JSON 200 OK
         """
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            }
-        response = self.make_admin_request('init', params)
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+        }
+        response = self.make_admin_request("init", params)
         content = response.json
 
-        assert response.status == '200 OK'
-        assert response.content_type == 'application/json'
-        assert 'result' in content
-        assert 'status' in content['result']
-        assert not content['result']['status']
-        assert 'error' in content['result']
-        assert 'message' in content['result']['error']
-        assert 'code' in content['result']['error']
+        assert response.status == "200 OK"
+        assert response.content_type == "application/json"
+        assert "result" in content
+        assert "status" in content["result"]
+        assert not content["result"]["status"]
+        assert "error" in content["result"]
+        assert "message" in content["result"]["error"]
+        assert "code" in content["result"]["error"]
         # ERR1112: getUserResolverId failed
-        assert content['result']['error']['code'] == 1112
+        assert content["result"]["error"]["code"] == 1112
 
     def test_httperror(self):
         """
         Send 'httperror' in request and verify same HTTP status is returned.
         """
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            'httperror': 444,
-            }
-        response = self._make_admin_request_custom_status('init', params, '444')
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+            "httperror": 444,
+        }
+        response = self._make_admin_request_custom_status(
+            "init", params, "444"
+        )
 
-        assert 'text/html' in response.content_type.split(';')
+        assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
 
     def test_empty_httperror(self):
@@ -92,14 +92,16 @@ class TestHTTPError(TestController):
         Send empty 'httperror' in request and verify status 500 is returned.
         """
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            'httperror': '',
-            }
-        response = self._make_admin_request_custom_status('init', params, '500')
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+            "httperror": "",
+        }
+        response = self._make_admin_request_custom_status(
+            "init", params, "500"
+        )
 
-        assert 'text/html' in response.content_type.split(';')
+        assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
 
     def test_httperror_errid_in_config(self):
@@ -110,32 +112,35 @@ class TestHTTPError(TestController):
         raised (1112 in this case) is contained in that list, then a HTTP
         status 'httperror' is returned.
         """
-        self._set_errors_in_config('233,567,1112')
+        self._set_errors_in_config("233,567,1112")
 
         # Test request httperror 444
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            'httperror': 444,
-            }
-        response = self._make_admin_request_custom_status('init', params, '444')
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+            "httperror": 444,
+        }
+        response = self._make_admin_request_custom_status(
+            "init", params, "444"
+        )
 
-        assert 'text/html' in response.content_type.split(';')
+        assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
 
         # Test request httperror empty
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            'httperror': '',
-            }
-        response = self._make_admin_request_custom_status('init', params, '500')
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+            "httperror": "",
+        }
+        response = self._make_admin_request_custom_status(
+            "init", params, "500"
+        )
 
-        assert 'text/html' in response.content_type.split(';')
+        assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
-
 
     def test_httperror_errid_not_in_config(self):
         """
@@ -145,48 +150,47 @@ class TestHTTPError(TestController):
         raised (1112 in this case) is NOT in that list, then a regular JSON
         response is returned.
         """
-        self._set_errors_in_config('233,567')
+        self._set_errors_in_config("233,567")
 
         # Test request httperror 444
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            'httperror': 444,
-            }
-        response = self.make_admin_request('init', params)
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+            "httperror": 444,
+        }
+        response = self.make_admin_request("init", params)
         content = response.json
 
-        assert response.content_type == 'application/json'
-        assert 'result' in content
-        assert 'status' in content['result']
-        assert not content['result']['status']
-        assert 'error' in content['result']
-        assert 'message' in content['result']['error']
-        assert 'code' in content['result']['error']
+        assert response.content_type == "application/json"
+        assert "result" in content
+        assert "status" in content["result"]
+        assert not content["result"]["status"]
+        assert "error" in content["result"]
+        assert "message" in content["result"]["error"]
+        assert "code" in content["result"]["error"]
         # ERR1112: getUserResolverId failed
-        assert content['result']['error']['code'] == 1112
+        assert content["result"]["error"]["code"] == 1112
 
         # Test request httperror empty
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            'httperror': '',
-            }
-        response = self.make_admin_request('init', params)
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+            "httperror": "",
+        }
+        response = self.make_admin_request("init", params)
         content = response.json
 
-        assert response.content_type == 'application/json'
-        assert 'result' in content
-        assert 'status' in content['result']
-        assert not content['result']['status']
-        assert 'error' in content['result']
-        assert 'message' in content['result']['error']
-        assert 'code' in content['result']['error']
+        assert response.content_type == "application/json"
+        assert "result" in content
+        assert "status" in content["result"]
+        assert not content["result"]["status"]
+        assert "error" in content["result"]
+        assert "message" in content["result"]["error"]
+        assert "code" in content["result"]["error"]
         # ERR1112: getUserResolverId failed
-        assert content['result']['error']['code'] == 1112
-
+        assert content["result"]["error"]["code"] == 1112
 
     def test_no_httperror_with_config(self):
         """
@@ -196,27 +200,26 @@ class TestHTTPError(TestController):
         long as no 'httperror' parameter is not sent in the request. A JSON 200
         OK response is returned.
         """
-        self._set_errors_in_config('233,567')
+        self._set_errors_in_config("233,567")
 
         # Test request (no httperror)
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            }
-        response = self.make_admin_request('init', params)
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+        }
+        response = self.make_admin_request("init", params)
         content = response.json
 
-        assert response.content_type == 'application/json'
-        assert 'result' in content
-        assert 'status' in content['result']
-        assert not content['result']['status']
-        assert 'error' in content['result']
-        assert 'message' in content['result']['error']
-        assert 'code' in content['result']['error']
+        assert response.content_type == "application/json"
+        assert "result" in content
+        assert "status" in content["result"]
+        assert not content["result"]["status"]
+        assert "error" in content["result"]
+        assert "message" in content["result"]["error"]
+        assert "code" in content["result"]["error"]
         # ERR1112: getUserResolverId failed
-        assert content['result']['error']['code'] == 1112
-
+        assert content["result"]["error"]["code"] == 1112
 
     def test_httperror_and_config_set_but_empty(self):
         """
@@ -225,32 +228,35 @@ class TestHTTPError(TestController):
         If 'errors' in LinOTP Config is set but empty all errIds cause HTTP
         status 'httperror' to be returned.
         """
-        self._set_errors_in_config('')
+        self._set_errors_in_config("")
 
         # Test request httperror 444
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            'httperror': 444,
-            }
-        response = self._make_admin_request_custom_status('init', params, '444')
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+            "httperror": 444,
+        }
+        response = self._make_admin_request_custom_status(
+            "init", params, "444"
+        )
 
-        assert 'text/html' in response.content_type.split(';')
+        assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
 
         # Test request httperror emtpy
         params = {
-            'user': 'doesnotexist',
-            'type': 'spass',
-            'genkey': 1,
-            'httperror': '',
-            }
-        response = self._make_admin_request_custom_status('init', params, '500')
+            "user": "doesnotexist",
+            "type": "spass",
+            "genkey": 1,
+            "httperror": "",
+        }
+        response = self._make_admin_request_custom_status(
+            "init", params, "500"
+        )
 
-        assert 'text/html' in response.content_type.split(';')
+        assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
-
 
     def test_httperror_and_invalid_utf8(self):
         """
@@ -264,16 +270,17 @@ class TestHTTPError(TestController):
         """
         # Test request httperror 444
         params = {
-            'user': 'doesnotexist\xc0',
-            'type': 'spass',
-            'genkey': 1,
-            'httperror': 444,
-            }
-        response = self._make_admin_request_custom_status('init', params, '444')
+            "user": "doesnotexist\xc0",
+            "type": "spass",
+            "genkey": 1,
+            "httperror": 444,
+        }
+        response = self._make_admin_request_custom_status(
+            "init", params, "444"
+        )
 
-        assert 'text/html' in response.content_type.split(';')
+        assert "text/html" in response.content_type.split(";")
         assert "getUserId failed: no user >doesnotexist" in response.body
-
 
     def test_no_httperror_and_invalid_utf8(self):
         """
@@ -288,24 +295,23 @@ class TestHTTPError(TestController):
 
         # Test request no httperror
         params = {
-            'user': 'doesnotexist\xc0',
-            'type': 'spass',
-            'genkey': 1,
-            }
-        response = self.make_admin_request('init', params, method='GET')
+            "user": "doesnotexist\xc0",
+            "type": "spass",
+            "genkey": 1,
+        }
+        response = self.make_admin_request("init", params, method="GET")
         content = response.json
 
-        assert response.status == '200 OK'
-        assert response.content_type == 'application/json'
-        assert 'result' in content
-        assert 'status' in content['result']
-        assert not content['result']['status']
-        assert 'error' in content['result']
-        assert 'message' in content['result']['error']
-        assert 'code' in content['result']['error']
+        assert response.status == "200 OK"
+        assert response.content_type == "application/json"
+        assert "result" in content
+        assert "status" in content["result"]
+        assert not content["result"]["status"]
+        assert "error" in content["result"]
+        assert "message" in content["result"]["error"]
+        assert "code" in content["result"]["error"]
         # ERR1112: getUserResolverId failed
-        assert content['result']['error']['code'] == 1112
-
+        assert content["result"]["error"]["code"] == 1112
 
     def _make_admin_request_custom_status(self, action, params, status):
         """
@@ -315,23 +321,23 @@ class TestHTTPError(TestController):
         """
         response = self.make_admin_request(action, params)
         assert response.status == status
-        
+
         return response
 
     def _del_errors_from_config(self):
         """
         Removes the 'errors' entry from LinOTP Config
         """
-        params = {'key': 'errors'}
-        response = self.make_system_request('delConfig', params)
+        params = {"key": "errors"}
+        response = self.make_system_request("delConfig", params)
         content = response.json
 
-        assert 'result' in content
-        assert 'status' in content['result']
-        assert content['result']['status']
-        assert 'value' in content['result']
-        assert 'delConfig errors' in content['result']['value']
-        assert content['result']['value']['delConfig errors']
+        assert "result" in content
+        assert "status" in content["result"]
+        assert content["result"]["status"]
+        assert "value" in content["result"]
+        assert "delConfig errors" in content["result"]["value"]
+        assert content["result"]["value"]["delConfig errors"]
 
     def _set_errors_in_config(self, errors):
         """
@@ -339,14 +345,13 @@ class TestHTTPError(TestController):
 
         :param errors: A string of comma-separated integers (e.g. '233,567')
         """
-        params = {'errors': errors}
-        response = self.make_system_request('setConfig', params)
+        params = {"errors": errors}
+        response = self.make_system_request("setConfig", params)
         content = response.json
 
-        assert 'result' in content
-        assert 'status' in content['result']
-        assert content['result']['status']
-        assert 'value' in content['result']
-        assert 'setConfig errors:%s' % errors in content['result']['value']
-        assert content['result']['value']['setConfig errors:%s' % errors]
-
+        assert "result" in content
+        assert "status" in content["result"]
+        assert content["result"]["status"]
+        assert "value" in content["result"]
+        assert "setConfig errors:%s" % errors in content["result"]["value"]
+        assert content["result"]["value"]["setConfig errors:%s" % errors]

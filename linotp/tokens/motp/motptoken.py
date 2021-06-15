@@ -36,25 +36,26 @@ from linotp.lib.error import ParameterError
 from linotp.tokens import tokenclass_registry
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 ###############################################
-@tokenclass_registry.class_entry('motp')
-@tokenclass_registry.class_entry('linotp.tokens.motptoken.MotpTokenClass')
+@tokenclass_registry.class_entry("motp")
+@tokenclass_registry.class_entry("linotp.tokens.motptoken.MotpTokenClass")
 class MotpTokenClass(TokenClass):
-    '''
+    """
     implementation of the mOTP token class
     - see: http://motp.sourceforge.net/
-    '''
+    """
 
     @classmethod
     def getClassType(cls):
-        '''
+        """
         static method to return the token class identifier
 
         :return: fixed string
-        '''
+        """
 
         return "motp"
 
@@ -63,8 +64,8 @@ class MotpTokenClass(TokenClass):
         return "LSMO"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
-        '''
+    def getClassInfo(cls, key=None, ret="all"):
+        """
         getClassInfo - returns all or a subtree of the token definition
 
         :param key: subsection identifier
@@ -76,68 +77,68 @@ class MotpTokenClass(TokenClass):
         :return: subsection if key exists or user defined
         :rtype : s.o.
 
-        '''
+        """
 
         res = {
-               'type'           : 'motp',
-               'title'          : 'mOTP Token',
-               'description'    : ('mobile otp token'),
-
-               'init': {
-                   'page': {
-                       'html': 'motp/motptoken.mako',
-                       'scope'      : 'enroll',
+            "type": "motp",
+            "title": "mOTP Token",
+            "description": ("mobile otp token"),
+            "init": {
+                "page": {
+                    "html": "motp/motptoken.mako",
+                    "scope": "enroll",
+                },
+                "title": {
+                    "html": "motp/motptoken.mako",
+                    "scope": "enroll.title",
+                },
+            },
+            "config": {
+                "page": {
+                    "html": "motp/motptoken.mako",
+                    "scope": "config",
+                },
+                "title": {
+                    "html": "motp/motptoken.mako",
+                    "scope": "config.title",
+                },
+            },
+            "selfservice": {
+                "enroll": {
+                    "page": {
+                        "html": "motp/motptoken.mako",
+                        "scope": "selfservice.enroll",
                     },
-                   'title': {
-                       'html': 'motp/motptoken.mako',
-                       'scope'     : 'enroll.title', },
-                   },
-
-               'config': {
-                   'page': {
-                       'html': 'motp/motptoken.mako',
-                       'scope': 'config',
-                       },
-                   'title': {
-                       'html': 'motp/motptoken.mako',
-                       'scope': 'config.title', },
-                   },
-
-               'selfservice': {
-                   'enroll': {
-                       'page': {
-                           'html': 'motp/motptoken.mako',
-                           'scope': 'selfservice.enroll',
-                           },
-                       'title': {
-                           'html': 'motp/motptoken.mako',
-                           'scope': 'selfservice.title.enroll', },
-                       },
+                    "title": {
+                        "html": "motp/motptoken.mako",
+                        "scope": "selfservice.title.enroll",
                     },
-               }
+                },
+            },
+        }
 
         if key and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
 
         return ret
 
     def __init__(self, a_token):
-        '''
+        """
         constructor - create a token object
 
         :param a_token: instance of the orm db object
         :type a_token:  orm object
-        '''
+        """
         TokenClass.__init__(self, a_token)
         self.setType("mOTP")
 
         return
 
     def update(self, param, reset_failcount=True):
-        '''
+        """
         update - process initialization parameters
 
         :param param: dict of initialization parameters
@@ -145,14 +146,14 @@ class MotpTokenClass(TokenClass):
 
         :return: nothing
 
-        '''
+        """
 
-        if 'otpkey' not in param:
+        if "otpkey" not in param:
             raise ParameterError("Missing parameter: 'otpkey'")
 
         # motp token specific
         try:
-            otpPin = param['otppin']
+            otpPin = param["otppin"]
         except KeyError:
             raise ParameterError("Missing parameter: 'otppin'")
 
@@ -163,7 +164,7 @@ class MotpTokenClass(TokenClass):
         return
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
-        '''
+        """
         checkOtp - validate the token otp against a given otpvalue
 
         :param anOtpVal: the to be verified otpvalue
@@ -181,29 +182,27 @@ class MotpTokenClass(TokenClass):
         :return: the counter state or -1
         :rtype: int
 
-        '''
+        """
 
         otplen = self.token.LinOtpOtpLen
 
-        #otime contains the previous verification time
+        # otime contains the previous verification time
         # the new one must be newer than this!
         otime = self.token.LinOtpCount
         secObj = self._get_secret_object()
         window = self.token.LinOtpCountWindow
         key, iv = self.token.getUserPin()
-        secPinObj = SecretObj(key, iv, hsm=context.get('hsm'))
+        secPinObj = SecretObj(key, iv, hsm=context.get("hsm"))
 
         mtimeOtp = mTimeOtp(secObj, secPinObj, otime, otplen)
         res = mtimeOtp.checkOtp(anOtpVal, window, options=options)
 
-        if (res != -1):
-            res = res - 1  ## later on this will be incremented by 1
+        if res != -1:
+            res = res - 1  # later on this will be incremented by 1
         if res == -1:
             msg = "verification failed"
         else:
             msg = "verifiction was successful"
 
-        log.debug("[checkOtp] %s :res %r" % (msg, res))
+        log.debug("[checkOtp] %s :res %r", msg, res)
         return res
-
-

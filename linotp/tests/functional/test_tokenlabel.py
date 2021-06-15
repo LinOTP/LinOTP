@@ -34,7 +34,6 @@ from linotp.tests import TestController
 
 
 class TestTokenlabel(TestController):
-
     def setUp(self):
         self.create_common_resolvers()
         self.create_common_realms()
@@ -49,109 +48,105 @@ class TestTokenlabel(TestController):
         """test setting the token label"""
         # enroll a token max1
         params = {
-            'user': 'max1',
-            'realm': 'myOtherRealm',
-            'serial': 'hmac1',
-            'type': 'hmac',
-            'genkey': 1
-            }
-        response = self.make_admin_request(action='init', params=params)
+            "user": "max1",
+            "realm": "myOtherRealm",
+            "serial": "hmac1",
+            "type": "hmac",
+            "genkey": 1,
+        }
+        response = self.make_admin_request(action="init", params=params)
 
         jresp = response.json
-        googleurl = jresp['detail']['googleurl']['value']
+        googleurl = jresp["detail"]["googleurl"]["value"]
 
         uri = urlparse(googleurl)
-        token_label = uri.path.partition(':')[2]
+        token_label = uri.path.partition(":")[2]
 
-        assert token_label == 'max1', response
-        assert uri.hostname == 'hotp'
+        assert token_label == "max1", response
+        assert uri.hostname == "hotp"
 
         params = {
-            'name': 'tokenlabel',
-            'scope': 'enrollment',
-            'realm': 'myOtherRealm',
-            'user': '*',
-            'action': "tokenlabel=<s>:<u>@<r>",
-            'client': '',
-            }
+            "name": "tokenlabel",
+            "scope": "enrollment",
+            "realm": "myOtherRealm",
+            "user": "*",
+            "action": "tokenlabel=<s>:<u>@<r>",
+            "client": "",
+        }
 
-        response = self.make_system_request(action='setPolicy', params=params)
+        response = self.make_system_request(action="setPolicy", params=params)
         jresp = response.json
-        assert (
-            jresp['result']['value']['setPolicy tokenlabel']
-            ), response
+        assert jresp["result"]["value"]["setPolicy tokenlabel"], response
 
         # enroll a token max1
         params = {
-            'user': 'max1',
-            'realm': 'myOtherRealm',
-            'serial': 'hmac1',
-            'type': 'hmac',
-            'genkey': 1
-            }
-        response = self.make_admin_request(action='init', params=params)
+            "user": "max1",
+            "realm": "myOtherRealm",
+            "serial": "hmac1",
+            "type": "hmac",
+            "genkey": 1,
+        }
+        response = self.make_admin_request(action="init", params=params)
 
         jresp = response.json
-        googleurl = jresp['detail']['googleurl']['value']
+        googleurl = jresp["detail"]["googleurl"]["value"]
 
         uri = urlparse(googleurl)
-        token_label = uri.path.partition(':')[2]
+        token_label = uri.path.partition(":")[2]
 
-        assert token_label == 'hmac1%3Amax1%40myOtherRealm', response
-        assert uri.hostname == 'hotp'
+        assert token_label == "hmac1%3Amax1%40myOtherRealm", response
+        assert uri.hostname == "hotp"
 
     def test_token_issuer(self):
         """test setting the token issuer"""
 
         # enroll token for max2 without token issuer
         params = {
-            'user': 'max2',
-            'realm': 'myOtherRealm',
-            'serial': 'hmac2',
-            'type': 'totp',
-            'genkey': 1
-            }
+            "user": "max2",
+            "realm": "myOtherRealm",
+            "serial": "hmac2",
+            "type": "totp",
+            "genkey": 1,
+        }
 
-        response = self.make_admin_request(action='init', params=params)
+        response = self.make_admin_request(action="init", params=params)
         jresp = response.json
-        googleurl = jresp['detail']['googleurl']['value']
+        googleurl = jresp["detail"]["googleurl"]["value"]
 
         uri = urlparse(googleurl)
-        issuer = uri.path.partition(':')[0]
+        issuer = uri.path.partition(":")[0]
 
-        assert issuer == '/LinOTP', response
-        assert uri.hostname == 'totp'
+        assert issuer == "/LinOTP", response
+        assert uri.hostname == "totp"
 
         params = {
-            'name': 'tokenissuer',
-            'scope': 'enrollment',
-            'realm': 'myOtherRealm',
-            'user': '*',
-            'action': "tokenissuer=\"it's me\"",
-            'client': '',
-            }
+            "name": "tokenissuer",
+            "scope": "enrollment",
+            "realm": "myOtherRealm",
+            "user": "*",
+            "action": 'tokenissuer="it\'s me"',
+            "client": "",
+        }
 
-        response = self.make_system_request(action='setPolicy', params=params)
+        response = self.make_system_request(action="setPolicy", params=params)
         jresp = response.json
-        assert (
-            jresp['result']['value']['setPolicy tokenissuer']
-            ), response
+        assert jresp["result"]["value"]["setPolicy tokenissuer"], response
 
         # enroll token for max2
         params = {
-            'user': 'max2',
-            'realm': 'myOtherRealm',
-            'serial': 'hmac2',
-            'type': 'totp',
-            'genkey': 1
-            }
+            "user": "max2",
+            "realm": "myOtherRealm",
+            "serial": "hmac2",
+            "type": "totp",
+            "genkey": 1,
+        }
 
-        response = self.make_admin_request(action='init', params=params)
+        response = self.make_admin_request(action="init", params=params)
         jresp = response.json
-        googleurl = jresp['detail']['googleurl']['value']
+        googleurl = jresp["detail"]["googleurl"]["value"]
 
         uri = urlparse(googleurl)
-        issuer = uri.path.partition(':')[0]
+        issuer = uri.path.partition(":")[0]
 
-        assert issuer == '/it%27s%20me', response
-        assert uri.hostname == 'totp'
+        assert issuer == "/it%27s%20me", response
+        assert uri.hostname == "totp"

@@ -35,9 +35,8 @@ from copy import deepcopy
 from linotp.tests import TestController
 
 import logging
+
 log = logging.getLogger(__name__)
-
-
 
 
 class TestRandompinController(TestController):
@@ -49,14 +48,26 @@ class TestRandompinController(TestController):
     # tests. Instead copy it and then use it.
     tokens = [
         {
-            'key': '3132333435363738393031323334353637383930',
-            'type': 'hmac',
-            'serial': None,
-            'otplen': 6,
-            'otps': deque(['755224', '287082', '359152', '969429', '338314',
-                           '254676', '287922', '162583', '399871', '520489']),
-            }
-        ]
+            "key": "3132333435363738393031323334353637383930",
+            "type": "hmac",
+            "serial": None,
+            "otplen": 6,
+            "otps": deque(
+                [
+                    "755224",
+                    "287082",
+                    "359152",
+                    "969429",
+                    "338314",
+                    "254676",
+                    "287922",
+                    "162583",
+                    "399871",
+                    "520489",
+                ]
+            ),
+        }
+    ]
     # set up in setUp
     policies_for_deletion = None
     token_for_deletion = None
@@ -92,28 +103,24 @@ class TestRandompinController(TestController):
         case (because PIN has been set to an unknown value).
         """
         # Enroll token
-        user = 'aἰσχύλος'  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
         # Login with only OTP succeeds
         self._validate(
             user,
-            token['otps'].popleft(),
-            )
+            token["otps"].popleft(),
+        )
 
-        self._create_randompin_policy('myDefRealm')
+        self._create_randompin_policy("myDefRealm")
 
         # Enroll new token
         token2 = deepcopy(self.tokens[0])
         self._enroll_token(token2, user=user)
 
         # Login with only OTP fails
-        self._validate(
-            user,
-            token2['otps'].popleft(),
-            expected='value-false'
-            )
+        self._validate(user, token2["otps"].popleft(), expected="value-false")
         return
 
     def test_simple_assign(self):
@@ -125,46 +132,40 @@ class TestRandompinController(TestController):
         as in test_simple_enroll.
         """
         # Enroll token
-        user = 'aἰσχύλος'  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token)
 
         # Login with only OTP succeeds
         self._validate_check_s(
-            token['serial'],
-            token['otps'].popleft(),
-            )
+            token["serial"],
+            token["otps"].popleft(),
+        )
 
-        self._assign(token['serial'], user)
+        self._assign(token["serial"], user)
 
         # Login with only OTP succeeds
         self._validate(
             user,
-            token['otps'].popleft(),
-            )
+            token["otps"].popleft(),
+        )
 
-        self._create_randompin_policy('myDefRealm')
+        self._create_randompin_policy("myDefRealm")
 
         # Enroll token
-        user = 'aἰσχύλος'  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm
         token2 = deepcopy(self.tokens[0])
         self._enroll_token(token2)
 
         # Login with only OTP fails (PIN unknown)
         self._validate_check_s(
-            token2['serial'],
-            token2['otps'].popleft(),
-            expected='value-false'
-            )
+            token2["serial"], token2["otps"].popleft(), expected="value-false"
+        )
 
-        self._assign(token2['serial'], user)
+        self._assign(token2["serial"], user)
 
         # Login with only OTP fails (PIN unknown)
-        self._validate(
-            user,
-            token2['otps'].popleft(),
-            expected='value-false'
-            )
+        self._validate(user, token2["otps"].popleft(), expected="value-false")
         return
 
     def test_selfservice(self):
@@ -181,31 +182,27 @@ class TestRandompinController(TestController):
                             commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
 
-        self._create_randompin_policy('myDefRealm')
-        self._create_selfservice_policy('myDefRealm')
+        self._create_randompin_policy("myDefRealm")
+        self._create_selfservice_policy("myDefRealm")
 
         # Enroll token
-        user = 'aἰσχύλος'  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
         # Login with only OTP fails (because PIN is unknown)
-        self._validate(
-            user,
-            token['otps'].popleft(),
-            expected='value-false'
-            )
+        self._validate(user, token["otps"].popleft(), expected="value-false")
 
         # User logs into selfservice and sets PIN
-        pwd = 'Πέρσαι'
-        pin = 'mytokenpin'
-        self._set_pin_in_selfservice(user, pwd, token['serial'], pin)
+        pwd = "Πέρσαι"
+        pin = "mytokenpin"
+        self._set_pin_in_selfservice(user, pwd, token["serial"], pin)
 
         # authenticate successfully with PIN+OTP
         self._validate(
             user,
-            pin + token['otps'].popleft(),
-            )
+            pin + token["otps"].popleft(),
+        )
         return
 
     def test_admin_setpin(self):
@@ -218,46 +215,42 @@ class TestRandompinController(TestController):
                                 commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
 
-        self._create_randompin_policy('myDefRealm')
-        self._create_selfservice_policy('myDefRealm')
+        self._create_randompin_policy("myDefRealm")
+        self._create_selfservice_policy("myDefRealm")
 
         # Enroll token
-        user = 'aἰσχύλος'  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
         # Login with only OTP fails (because PIN is unknown)
-        self._validate(
-            user,
-            token['otps'].popleft(),
-            expected='value-false'
-            )
+        self._validate(user, token["otps"].popleft(), expected="value-false")
 
         # Admin sets PIN
-        self._set_pin(token['serial'], 'admin-set-pin')
+        self._set_pin(token["serial"], "admin-set-pin")
         # authenticate successfully with PIN+OTP
         self._validate(
             user,
-            'admin-set-pin' + token['otps'].popleft(),
-            )
+            "admin-set-pin" + token["otps"].popleft(),
+        )
 
         # User logs into selfservice and sets PIN
-        pwd = 'Πέρσαι'
-        pin = 'mytokenpin'
-        self._set_pin_in_selfservice(user, pwd, token['serial'], pin)
+        pwd = "Πέρσαι"
+        pin = "mytokenpin"
+        self._set_pin_in_selfservice(user, pwd, token["serial"], pin)
         # authenticate successfully with PIN+OTP
         self._validate(
             user,
-            pin + token['otps'].popleft(),
-            )
+            pin + token["otps"].popleft(),
+        )
 
         # Admin sets PIN again
-        self._set_pin(token['serial'], 'second-admin-set-pin')
+        self._set_pin(token["serial"], "second-admin-set-pin")
         # authenticate successfully with PIN+OTP
         self._validate(
             user,
-            'second-admin-set-pin' + token['otps'].popleft(),
-            )
+            "second-admin-set-pin" + token["otps"].popleft(),
+        )
         return
 
     def test_assign_other_user(self):
@@ -272,95 +265,89 @@ class TestRandompinController(TestController):
         https://github.com/Pylons/webtest/
                                 commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
-        self._create_randompin_policy('myDefRealm')
-        self._create_selfservice_policy('myDefRealm')
+        self._create_randompin_policy("myDefRealm")
+        self._create_selfservice_policy("myDefRealm")
 
         # Enroll token
-        user = 'aἰσχύλος'  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
         # Login with only OTP fails (because PIN is unknown)
-        self._validate(
-            user,
-            token['otps'].popleft(),
-            expected='value-false'
-            )
+        self._validate(user, token["otps"].popleft(), expected="value-false")
 
         # User logs into selfservice and sets PIN
-        pwd = 'Πέρσαι'
-        pin = 'mytokenpin'
-        self._set_pin_in_selfservice(user, pwd, token['serial'], pin)
+        pwd = "Πέρσαι"
+        pin = "mytokenpin"
+        self._set_pin_in_selfservice(user, pwd, token["serial"], pin)
         # authenticate successfully with PIN+OTP
         self._validate(
             user,
-            pin + token['otps'].popleft(),
-            )
+            pin + token["otps"].popleft(),
+        )
 
         # Assign token to new user
-        new_user = 'beckett'
-        self._assign(token['serial'], new_user)
+        new_user = "beckett"
+        self._assign(token["serial"], new_user)
 
         # authenticate fails because old PIN is no longer valid (i.e. was
         # overwritten with a random value during assignment)
         self._validate(
             new_user,
-            pin + token['otps'].popleft(),
-            expected='value-false',
-            )
+            pin + token["otps"].popleft(),
+            expected="value-false",
+        )
 
         # Admin sets the PIN
-        self._set_pin(token['serial'], 'admin-set-pin')
+        self._set_pin(token["serial"], "admin-set-pin")
 
         # Now assign the token to a user in a realm without otp_pin_random
         # policy
-        user3 = 'shakespeare@mymixrealm'
-        self._assign(token['serial'], user3)
+        user3 = "shakespeare@mymixrealm"
+        self._assign(token["serial"], user3)
 
         # authenticate succeeds because PIN is NOT overwritten (in a real
         # scenario it is assumed the new user does not know the PIN of the
         # previous one)
         self._validate(
             user3,
-            'admin-set-pin' + token['otps'].popleft(),
-            )
+            "admin-set-pin" + token["otps"].popleft(),
+        )
         return
 
     def test_randompin_with_autoassignment(self):
         """
         Enroll with randompin and then autoassign token -> PIN is user password
         """
-        self._create_randompin_policy('myDefRealm')
+        self._create_randompin_policy("myDefRealm")
 
         token = deepcopy(self.tokens[0])
         self._enroll_token(token)
 
         # Login with only OTP fails (because PIN is unknown)
         self._validate_check_s(
-            token['serial'],
-            token['otps'].popleft(),
-            expected='value-false'
-            )
+            token["serial"], token["otps"].popleft(), expected="value-false"
+        )
 
         # Create autoassignment policy
-        self._create_autoassignment_policy('myDefRealm')
+        self._create_autoassignment_policy("myDefRealm")
         # Set token realm for autoassignment to work
-        self._set_token_realm(token['serial'], 'myDefRealm')
+        self._set_token_realm(token["serial"], "myDefRealm")
 
         # autoassign the token
-        user = 'aἰσχύλος'
-        pwd = 'Πέρσαι'
+        user = "aἰσχύλος"
+        pwd = "Πέρσαι"
         self._validate(
             user,
-            pwd + token['otps'].popleft(),
-            )
+            pwd + token["otps"].popleft(),
+        )
 
         # The user password is set as PIN
         for _ in range(3):
             self._validate(
                 user,
-                pwd + token['otps'].popleft(),
-                )
+                pwd + token["otps"].popleft(),
+            )
         return
 
     # -------- Private helper methods ----- --
@@ -369,13 +356,13 @@ class TestRandompinController(TestController):
         Creates an otp_pin_random policy for 'realm'. Schedules the policy for
         deletion on tearDown.
         """
-        policy_name = 'randompin'
+        policy_name = "randompin"
         params = {
-            'name': policy_name,
-            'scope': 'enrollment',
-            'action': 'otp_pin_random=12',
-            'realm': realm,
-            }
+            "name": policy_name,
+            "scope": "enrollment",
+            "action": "otp_pin_random=12",
+            "realm": realm,
+        }
         self.create_policy(params)
         self.policies_for_deletion.add(policy_name)
         return
@@ -385,13 +372,13 @@ class TestRandompinController(TestController):
         Creates a selfservice policy for 'realm'. Schedules the policy for
         deletion on tearDown.
         """
-        policy_name = 'selfservice'
+        policy_name = "selfservice"
         params = {
-            'name': policy_name,
-            'scope': 'selfservice',
-            'action': 'setOTPPIN',
-            'realm': realm,
-            }
+            "name": policy_name,
+            "scope": "selfservice",
+            "action": "setOTPPIN",
+            "realm": realm,
+        }
         self.create_policy(params)
         self.policies_for_deletion.add(policy_name)
         return
@@ -401,13 +388,13 @@ class TestRandompinController(TestController):
         Creates an autoassignment policy for 'realm'. Schedules the policy for
         deletion on tearDown.
         """
-        policy_name = 'autoassignment'
+        policy_name = "autoassignment"
         params = {
-            'name': policy_name,
-            'scope': 'enrollment',
-            'action': 'autoassignment',
-            'realm': realm,
-            }
+            "name": policy_name,
+            "scope": "enrollment",
+            "action": "autoassignment",
+            "realm": realm,
+        }
         self.create_policy(params)
         self.policies_for_deletion.add(policy_name)
         return
@@ -423,21 +410,21 @@ class TestRandompinController(TestController):
         """
         # enroll token
         params = {
-            "otpkey": token['key'],
-            "type": token['type'],
-            "otplen": token['otplen'],
-            }
+            "otpkey": token["key"],
+            "type": token["type"],
+            "otplen": token["otplen"],
+        }
         if user:
-            params['user'] = user.encode('utf-8')
-        response = self.make_admin_request('init', params=params)
+            params["user"] = user.encode("utf-8")
+        response = self.make_admin_request("init", params=params)
         content = response.json
-        assert content['result']['status']
-        assert content['result']['value']
-        token['serial'] = content['detail']['serial']
-        self.token_for_deletion.add(token['serial'])
+        assert content["result"]["status"]
+        assert content["result"]["value"]
+        token["serial"] = content["detail"]["serial"]
+        self.token_for_deletion.add(token["serial"])
         return
 
-    def _validate(self, user, pwd, expected='success', err_msg=None):
+    def _validate(self, user, pwd, expected="success", err_msg=None):
         """
         runs a validate/check request and verifies the response is as 'expected'
 
@@ -448,18 +435,15 @@ class TestRandompinController(TestController):
         :param err_msg: An error message to display if assert fails
         :return: The content (JSON object)
         """
-        params = {
-            'user': user.encode('utf-8'),
-            'pass': pwd.encode('utf-8')
-            }
+        params = {"user": user.encode("utf-8"), "pass": pwd.encode("utf-8")}
         return self._validate_base(
             params,
-            action='check',
+            action="check",
             expected=expected,
             err_msg=err_msg,
-            )
+        )
 
-    def _validate_check_s(self, serial, pwd, expected='success', err_msg=None):
+    def _validate_check_s(self, serial, pwd, expected="success", err_msg=None):
         """
         Makes a validate/check_s request and verifies the response is as
         'expected'
@@ -471,19 +455,17 @@ class TestRandompinController(TestController):
         :param err_msg: An error message to display if assert fails
         :return: The content (JSON object)
         """
-        params = {
-            'serial': serial,
-            'pass': pwd.encode('utf-8')
-            }
+        params = {"serial": serial, "pass": pwd.encode("utf-8")}
         return self._validate_base(
             params,
-            action='check_s',
+            action="check_s",
             expected=expected,
             err_msg=err_msg,
-            )
+        )
 
-    def _validate_base(self, params, action='check', expected='success',
-                       err_msg=None):
+    def _validate_base(
+        self, params, action="check", expected="success", err_msg=None
+    ):
         """
         Base method for /validate/<action> requests
 
@@ -502,20 +484,20 @@ class TestRandompinController(TestController):
             err_msg = "validate/%s failed for %r. Response: %r" % (
                 action,
                 params,
-                content
-                )
-        if expected == 'success':
-            assert content['result']['status'], err_msg
-            assert content['result']['value'], err_msg
-        elif expected == 'value-false':
-            assert content['result']['status'], err_msg
-            assert not content['result']['value'], err_msg
-        elif expected == 'status-false':
-            assert not content['result']['status'], err_msg
-            assert content['result']['value'], err_msg
-        elif expected == 'both-false':
-            assert not content['result']['status'], err_msg
-            assert not content['result']['value'], err_msg
+                content,
+            )
+        if expected == "success":
+            assert content["result"]["status"], err_msg
+            assert content["result"]["value"], err_msg
+        elif expected == "value-false":
+            assert content["result"]["status"], err_msg
+            assert not content["result"]["value"], err_msg
+        elif expected == "status-false":
+            assert not content["result"]["status"], err_msg
+            assert content["result"]["value"], err_msg
+        elif expected == "both-false":
+            assert not content["result"]["status"], err_msg
+            assert not content["result"]["value"], err_msg
         else:
             self.fail("Unknown 'expected' %s" % expected)
         return content
@@ -529,13 +511,13 @@ class TestRandompinController(TestController):
         :return: None
         """
         params = {
-            'serial': serial,
-            'user': user.encode('utf-8'),
-            }
-        response = self.make_admin_request('assign', params=params)
+            "serial": serial,
+            "user": user.encode("utf-8"),
+        }
+        response = self.make_admin_request("assign", params=params)
         content = response.json
-        assert content['result']['status']
-        assert content['result']['value']
+        assert content["result"]["status"]
+        assert content["result"]["value"]
         return
 
     def _set_pin_in_selfservice(self, user, pwd, serial, pin):
@@ -548,19 +530,18 @@ class TestRandompinController(TestController):
         :param pin: The PIN to be set
         """
         params = {
-            'serial': serial,
-            'userpin': pin,
-            }
+            "serial": serial,
+            "userpin": pin,
+        }
 
-        response = self.make_userservice_request('setpin', params,
-                                                 auth_user=(user, pwd))
+        response = self.make_userservice_request(
+            "setpin", params, auth_user=(user, pwd)
+        )
 
         content = response.json
-        assert content['result']['status']
-        expected = {
-            "set userpin": 1
-            }
-        assert expected == content['result']['value']
+        assert content["result"]["status"]
+        expected = {"set userpin": 1}
+        assert expected == content["result"]["value"]
         return
 
     def _set_pin(self, serial, pin):
@@ -568,13 +549,13 @@ class TestRandompinController(TestController):
         Set the token PIN 'pin' for the token identified by 'serial'
         """
         params = {
-            'serial': serial,
-            'pin': pin,
-            }
-        response = self.make_admin_request('set', params=params)
+            "serial": serial,
+            "pin": pin,
+        }
+        response = self.make_admin_request("set", params=params)
         content = response.json
-        assert content['result']['status']
-        assert content['result']['value']
+        assert content["result"]["status"]
+        assert content["result"]["value"]
         return
 
     def _set_token_realm(self, serial, realm):
@@ -583,11 +564,11 @@ class TestRandompinController(TestController):
         """
         assert serial and realm, "Both 'serial' and 'realm' required"
         params = {
-            'serial': serial,
-            'realms': realm,
+            "serial": serial,
+            "realms": realm,
         }
-        response = self.make_admin_request('tokenrealm', params=params)
+        response = self.make_admin_request("tokenrealm", params=params)
         content = response.json
-        assert content['result']['status']
-        assert 1 == content['result']['value']
+        assert content["result"]["status"]
+        assert 1 == content["result"]["value"]
         return

@@ -39,8 +39,9 @@ def create_provider_config():
     provider_config = {}
     for provider_type in list(Provider_types.keys()):
 
-        providers = get_all_new_providers(provider_type,
-                                          show_managed_config=True)
+        providers = get_all_new_providers(
+            provider_type, show_managed_config=True
+        )
 
         provider_config[provider_type] = providers
 
@@ -48,7 +49,7 @@ def create_provider_config():
 
     for provider_type, providers in list(provider_config.items()):
         for provider in list(providers.keys()):
-            section = '%s:%s' % (provider_type, provider)
+            section = "%s:%s" % (provider_type, provider)
             ini.add_section(section)
 
             provider_config = providers.get(provider)

@@ -58,8 +58,11 @@ from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized, Forbidden
 
 from linotp.flap import (
-    request, response, config, tmpl_context as c,
-    render_mako as render
+    request,
+    response,
+    config,
+    tmpl_context as c,
+    render_mako as render,
 )
 
 from mako.exceptions import CompileException
@@ -68,70 +71,68 @@ from linotp.controllers.base import BaseController
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.challenges import Challenges
 
-from linotp.lib.policy import (checkPolicyPre,
-                               checkPolicyPost,
-                               PolicyException,
-                               getOTPPINEncrypt,
-                               checkOTPPINPolicy,
-                               get_client_policy,
-                               )
+from linotp.lib.policy import (
+    checkPolicyPre,
+    checkPolicyPost,
+    PolicyException,
+    getOTPPINEncrypt,
+    checkOTPPINPolicy,
+    get_client_policy,
+)
 
 from linotp.lib.policy.action import get_selfservice_action_value
 
 from linotp.lib.reply import sendResult as sendResponse
 
-from linotp.lib.reply import (sendError,
-                              sendQRImageResult,
-                              create_img,
-                              create_img_src
-                              )
+from linotp.lib.reply import (
+    sendError,
+    sendQRImageResult,
+    create_img,
+    create_img_src,
+)
 
-from linotp.lib.util import (generate_otpkey,
-                             get_client,
-                             remove_empty_lines
-                             )
+from linotp.lib.util import generate_otpkey, get_client, remove_empty_lines
 
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.realm import getRealms
 
-from linotp.lib.user import (getUserInfo,
-                             getRealmBox,
-                             User,
-                             getUserId,
-                             splitUser)
+from linotp.lib.user import (
+    getUserInfo,
+    getRealmBox,
+    User,
+    getUserId,
+    splitUser,
+)
 
-from linotp.lib.token import (resetToken,
-                              setPin,
-                              setPinUser,
-                              getTokenRealms,
-                              get_multi_otp,
-                              getTokenType,
-                              getTokens4UserOrSerial,
-                              )
+from linotp.lib.token import (
+    resetToken,
+    setPin,
+    setPinUser,
+    getTokenRealms,
+    get_multi_otp,
+    getTokenType,
+    getTokens4UserOrSerial,
+)
 
 from linotp.tokens import tokenclass_registry
 
 from linotp.lib.token import TokenHandler
 
-from linotp.lib.apps import (create_google_authenticator,
-                             create_oathtoken_url
-                             )
+from linotp.lib.apps import create_google_authenticator, create_oathtoken_url
 
-from linotp.lib.audit.base import (get_token_num_info,
-                                   search as audit_search
-                                   )
+from linotp.lib.audit.base import get_token_num_info, search as audit_search
 
-from linotp.lib.userservice import (get_userinfo,
-                                    get_cookie_authinfo,
-                                    check_session,
-                                    get_pre_context,
-                                    get_context,
-                                    create_auth_cookie,
-                                    getTokenForUser,
-                                    remove_auth_cookie,
-                                    get_transaction_detail,
-                                    )
-
+from linotp.lib.userservice import (
+    get_userinfo,
+    get_cookie_authinfo,
+    check_session,
+    get_pre_context,
+    get_context,
+    create_auth_cookie,
+    getTokenForUser,
+    remove_auth_cookie,
+    get_transaction_detail,
+)
 
 
 from linotp.lib.resolver import getResolverObject
@@ -149,14 +150,11 @@ log = logging.getLogger(__name__)
 
 ENCODING = "utf-8"
 
-HASHLIB_MAP = {
-    1: 'sha1',
-    2: 'sha256',
-    3: 'sha512'
-}
+HASHLIB_MAP = {1: "sha1", 2: "sha256", 3: "sha512"}
 
 
 # -------------------------------------------------------------------------- --
+
 
 def secure_cookie():
     """
@@ -164,7 +162,8 @@ def secure_cookie():
     there is probaly no https defined. So we switch secure cookies off.
     this is done in the settings.py
     """
-    return config['SESSION_COOKIE_SECURE']
+    return config["SESSION_COOKIE_SECURE"]
+
 
 # -------------------------------------------------------------------------- --
 
@@ -187,11 +186,12 @@ def get_auth_user(request):
 
     # for the form based selfservice we have the 'user_selfservice' cookie
 
-    selfservice_cookie = request.cookies.get('user_selfservice')
+    selfservice_cookie = request.cookies.get("user_selfservice")
 
     if selfservice_cookie:
         user, _client, state, _state_data = get_cookie_authinfo(
-                                                    selfservice_cookie)
+            selfservice_cookie
+        )
         auth_type = "user_selfservice"
 
         return auth_type, user, state
@@ -201,19 +201,21 @@ def get_auth_user(request):
     # for the remote selfservice or userservice api via /userservice/auth
     # we have the 'userauthcookie'
 
-    remote_selfservice_cookie = request.cookies.get('userauthcookie')
+    remote_selfservice_cookie = request.cookies.get("userauthcookie")
 
     if remote_selfservice_cookie:
         user, _client, state, _state_data = get_cookie_authinfo(
-                                                    remote_selfservice_cookie)
+            remote_selfservice_cookie
+        )
         auth_type = "userservice"
 
         return auth_type, user, state
 
-    return 'unauthenticated', None, None
+    return "unauthenticated", None, None
+
 
 def unauthorized(response_proxy, exception, status=401):
-    """ extend the standard sendResult to handle cookies """
+    """extend the standard sendResult to handle cookies"""
 
     response = sendError(_response=None, exception=exception)
 
@@ -232,11 +234,13 @@ def unauthorized(response_proxy, exception, status=401):
 
     return Unauthorized(response=response)
 
+
 def sendResult(response_proxy, obj, id=1, opt=None, status=True):
-    """ extend the standard sendResult to handle cookies """
+    """extend the standard sendResult to handle cookies"""
 
     response = sendResponse(
-        response=None, obj=obj, id=id, opt=opt, status=status)
+        response=None, obj=obj, id=id, opt=opt, status=status
+    )
 
     if response_proxy and response_proxy.delete_cookies:
         for delete_cookie in response_proxy.delete_cookies:
@@ -252,8 +256,7 @@ def sendResult(response_proxy, obj, id=1, opt=None, status=True):
     return response
 
 
-class LocalResponseProxy():
-
+class LocalResponseProxy:
     def __init__(self):
         self.delete_cookies = set()
         self.cookies = []
@@ -264,6 +267,7 @@ class LocalResponseProxy():
 
     def delete_cookie(self, key):
         self.delete_cookies.add(key)
+
 
 class UserserviceController(BaseController):
     """
@@ -292,31 +296,31 @@ class UserserviceController(BaseController):
         # for seamless migration from pylons to flask
         self.response = LocalResponseProxy()
 
-        action = request_context['action']
+        action = request_context["action"]
 
-        self.client = get_client(request) or ''
+        self.client = get_client(request) or ""
 
         # ------------------------------------------------------------------ --
 
         # build up general available variables
 
         context = get_pre_context(self.client)
-        self.mfa_login = context['settings']['mfa_login']
-        self.autoassign = context['settings']['autoassign']
-        self.autoenroll = context['settings']['autoenroll']
+        self.mfa_login = context["settings"]["mfa_login"]
+        self.autoassign = context["settings"]["autoassign"]
+        self.autoenroll = context["settings"]["autoenroll"]
 
         # ------------------------------------------------------------------ --
 
         # setup the audit for general availibility
 
-        g.audit['success'] = False
-        g.audit['client'] = self.client
+        g.audit["success"] = False
+        g.audit["client"] = self.client
 
         # ------------------------------------------------------------------ --
 
         # the following actions dont require an authenticated session
 
-        if action in ['auth', 'pre_context', 'login', 'logout']:
+        if action in ["auth", "pre_context", "login", "logout"]:
 
             return
 
@@ -327,10 +331,12 @@ class UserserviceController(BaseController):
 
         auth_type, identity, auth_state = get_auth_user(request)
 
-        if (not identity or
-           auth_type not in ["userservice", 'user_selfservice']):
+        if not identity or auth_type not in [
+            "userservice",
+            "user_selfservice",
+        ]:
 
-            raise unauthorized(self.response, _('No valid session'))
+            raise unauthorized(self.response, _("No valid session"))
 
         # ------------------------------------------------------------------ --
 
@@ -343,10 +349,10 @@ class UserserviceController(BaseController):
         # as we require the authenticated user in the __after__ method for
         # audit and reporting
 
-        request_context['AuthUser'] = {
-            'login': self.authUser.login,
-            'realm': self.authUser.realm
-            }
+        request_context["AuthUser"] = {
+            "login": self.authUser.login,
+            "realm": self.authUser.realm,
+        }
 
         c.user = identity.login
         c.realm = identity.realm
@@ -357,13 +363,13 @@ class UserserviceController(BaseController):
 
         if not check_session(request, self.authUser, self.client):
 
-            raise unauthorized(self.response, _('No valid session'))
+            raise unauthorized(self.response, _("No valid session"))
 
         # ------------------------------------------------------------------ --
 
         # the usertokenlist could be catched in any identified state
 
-        if action in ['usertokenlist', 'userinfo']:
+        if action in ["usertokenlist", "userinfo"]:
 
             return
 
@@ -371,9 +377,9 @@ class UserserviceController(BaseController):
 
         # any other action requires a full ' state
 
-        if auth_state != 'authenticated':
+        if auth_state != "authenticated":
 
-            raise unauthorized(self.response,_('No valid session'))
+            raise unauthorized(self.response, _("No valid session"))
 
         # ------------------------------------------------------------------ --
 
@@ -381,50 +387,61 @@ class UserserviceController(BaseController):
 
     @staticmethod
     def __after__(response):
-        '''
+        """
         __after__ is called after every action
 
         :param response: the previously created response - for modification
         :return: return the response
-        '''
+        """
 
-        action = request_context['action']
+        action = request_context["action"]
 
-        authUser = request_context['AuthUser']
+        authUser = request_context["AuthUser"]
 
         try:
-            if g.audit['action'] not in ['userservice/context',
-                                         'userservice/pre_context',
-                                         'userservice/userinfo'
-                                         ]:
+            if g.audit["action"] not in [
+                "userservice/context",
+                "userservice/pre_context",
+                "userservice/userinfo",
+            ]:
 
-                g.audit['user'] = authUser.get('login', '')
-                g.audit['realm'] = authUser.get('realm', '')
+                g.audit["user"] = authUser.get("login", "")
+                g.audit["realm"] = authUser.get("realm", "")
 
-                log.debug("[__after__] authenticating as %s in realm %s!"
-                          % (g.audit['user'], g.audit['realm']))
+                log.debug(
+                    "[__after__] authenticating as %s in realm %s!",
+                    g.audit["user"],
+                    g.audit["realm"],
+                )
 
-                if 'serial' in request.params:
-                    serial = request.params['serial']
-                    g.audit['serial'] = serial
-                    g.audit['token_type'] = getTokenType(serial)
+                if "serial" in request.params:
+                    serial = request.params["serial"]
+                    g.audit["serial"] = serial
+                    g.audit["token_type"] = getTokenType(serial)
 
                 # --------------------------------------------------------- --
 
                 # actions which change the token amount do some reporting
 
-                if action in ['assign', 'unassign', 'enable', 'disable',
-                              'enroll', 'delete', 'finishocra2token']:
-                    event = 'token_' + action
+                if action in [
+                    "assign",
+                    "unassign",
+                    "enable",
+                    "disable",
+                    "enroll",
+                    "delete",
+                    "finishocra2token",
+                ]:
+                    event = "token_" + action
 
-                    if g.audit.get('source_realm'):
-                        source_realms = g.audit.get('source_realm')
+                    if g.audit.get("source_realm"):
+                        source_realms = g.audit.get("source_realm")
                         token_reporting(event, source_realms)
 
-                    target_realms = g.audit.get('realm')
+                    target_realms = g.audit.get("realm")
                     token_reporting(event, target_realms)
 
-                    g.audit['action_detail'] += get_token_num_info()
+                    g.audit["action_detail"] += get_token_num_info()
 
                 current_app.audit_obj.log(g.audit)
                 db.session.commit()
@@ -433,8 +450,8 @@ class UserserviceController(BaseController):
 
         except Exception as acc:
             # the exception, when an abort() is called if forwarded
-            log.exception("[__after__::%r] webob.exception %r" % (action, acc))
-            return sendError(response, acc, context='__after__')
+            log.error("[__after__::%r] webob.exception %r", action, acc)
+            return sendError(response, acc, context="__after__")
 
     def _identify_user(self, params):
         """
@@ -451,12 +468,12 @@ class UserserviceController(BaseController):
         """
 
         try:
-            username = params['login']
+            username = params["login"]
         except KeyError as exx:
             log.error("Missing Key: %r", exx)
             return None
 
-        realm = params.get('realm', '').strip().lower()
+        realm = params.get("realm", "").strip().lower()
 
         # if we have an realmbox, we take the user as it is
         # - the realm is always given
@@ -493,8 +510,8 @@ class UserserviceController(BaseController):
 
         return None
 
-###############################################################################
-# authentication hooks
+    ##########################################################################
+    # authentication hooks
 
     def auth(self):
         """
@@ -520,32 +537,32 @@ class UserserviceController(BaseController):
 
             user = self._identify_user(params=param)
             if not user:
-                log.info("User %r not found", param.get('login'))
-                g.audit['action_detail'] = ("User %r not found" %
-                                            param.get('login'))
-                g.audit['success'] = False
+                log.info("User %r not found", param.get("login"))
+                g.audit["action_detail"] = "User %r not found" % param.get(
+                    "login"
+                )
+                g.audit["success"] = False
                 return sendResult(self.response, False, 0)
 
             uid = "%s@%s" % (user.login, user.realm)
 
             self.authUser = user
-            request_context['authUser'] = user
+            request_context["authUser"] = user
 
             # -------------------------------------------------------------- --
 
             # extract password
 
             try:
-                password = param['password']
+                password = param["password"]
             except KeyError as exx:
 
                 log.info("Missing password for user %r", uid)
-                g.audit['action_detail'] = (
-                    "Missing password for user %r" % uid)
-                g.audit['success'] = False
+                g.audit["action_detail"] = "Missing password for user %r" % uid
+                g.audit["success"] = False
                 return sendResult(self.response, False, 0)
 
-            (otp, passw) = password.split(':')
+            (otp, passw) = password.split(":")
             otp = base64.b32decode(otp)
             passw = base64.b32decode(passw)
 
@@ -564,34 +581,37 @@ class UserserviceController(BaseController):
             if not res:
 
                 log.info("User %r failed to authenticate!", uid)
-                g.audit['action_detail'] = (
-                    "User %r failed to authenticate!" % uid)
-                g.audit['success'] = False
+                g.audit["action_detail"] = (
+                    "User %r failed to authenticate!" % uid
+                )
+                g.audit["success"] = False
                 return sendResult(self.response, False, 0)
 
             # -------------------------------------------------------------- --
 
             log.debug("Successfully authenticated user %s:", uid)
 
-            (cookie_value, expires,
-             expiration) = create_auth_cookie(user, self.client)
+            (cookie_value, expires, expiration) = create_auth_cookie(
+                user, self.client
+            )
 
             self.response.set_cookie(
-                'userauthcookie',
+                "userauthcookie",
                 value=cookie_value,
                 secure=secure_cookie(),
-                expires=expires)
+                expires=expires,
+            )
 
-            g.audit['action_detail'] = "expires: %s " % expiration
-            g.audit['success'] = True
+            g.audit["action_detail"] = "expires: %s " % expiration
+            g.audit["success"] = True
 
             db.session.commit()
             return sendResult(self.response, True, 0)
 
         except Exception as exx:
 
-            g.audit['info'] = ("%r" % exx)[:80]
-            g.audit['success'] = False
+            g.audit["info"] = ("%r" % exx)[:80]
+            g.audit["success"] = False
 
             db.session.rollback()
             return sendError(response, exx)
@@ -609,21 +629,18 @@ class UserserviceController(BaseController):
         user, _client, auth_state, _state_data = get_cookie_authinfo(cookie)
 
         if not user:
-            raise UserNotFound('no user info in authentication cache')
+            raise UserNotFound("no user info in authentication cache")
 
-        request_context['selfservice'] = {
-            'state': auth_state,
-            'user': user
-            }
+        request_context["selfservice"] = {"state": auth_state, "user": user}
 
-        if auth_state == 'credentials_verified':
+        if auth_state == "credentials_verified":
             return self._login_with_cookie_credentials(cookie, params)
 
-        elif auth_state == 'challenge_triggered':
+        elif auth_state == "challenge_triggered":
             return self._login_with_cookie_challenge(cookie, params)
 
         else:
-            raise NotImplementedError('unknown state %r' % auth_state)
+            raise NotImplementedError("unknown state %r" % auth_state)
 
     def _login_with_cookie_credentials(self, cookie, params):
         """
@@ -640,20 +657,20 @@ class UserserviceController(BaseController):
 
         # -------------------------------------------------------------- --
 
-        otp = params.get('otp', '')
-        serial = params.get('serial')
+        otp = params.get("otp", "")
+        serial = params.get("serial")
 
         # in case of a challenge trigger, provide default qr and push settings
-        if 'data' not in params and 'content_type' not in params:
-            params['data'] = _(
-                'Selfservice Login Request\nUser: {}'.format(user.login))
-            params['content_type'] = 0
+        if "data" not in params and "content_type" not in params:
+            params["data"] = _(
+                "Selfservice Login Request\nUser: {}".format(user.login)
+            )
+            params["content_type"] = 0
 
         vh = ValidationHandler()
 
-        if 'serial' in params:
-            res, reply = vh.checkSerialPass(
-                                        serial, passw=otp, options=params)
+        if "serial" in params:
+            res, reply = vh.checkSerialPass(serial, passw=otp, options=params)
         else:
             res, reply = vh.checkUserPass(user, passw=otp, options=params)
 
@@ -666,11 +683,14 @@ class UserserviceController(BaseController):
             ret = create_auth_cookie(user, self.client)
             (cookie, expires, _exp) = ret
 
-            self.response.set_cookie('user_selfservice', cookie,
-                                     secure=secure_cookie(),
-                                     expires=expires)
+            self.response.set_cookie(
+                "user_selfservice",
+                cookie,
+                secure=secure_cookie(),
+                expires=expires,
+            )
 
-            g.audit['info'] = ("User %r authenticated from otp" % user)
+            g.audit["info"] = "User %r authenticated from otp" % user
 
             db.session.commit()
             return sendResult(self.response, res, 0)
@@ -682,25 +702,31 @@ class UserserviceController(BaseController):
 
         if not res and reply:
 
-            if 'message' in reply and "://chal/" in reply['message']:
-                reply['img_src'] = create_img_src(reply['message'])
+            if "message" in reply and "://chal/" in reply["message"]:
+                reply["img_src"] = create_img_src(reply["message"])
 
             ret = create_auth_cookie(
-                user, self.client, state='challenge_triggered', state_data=reply
+                user,
+                self.client,
+                state="challenge_triggered",
+                state_data=reply,
             )
             cookie, expires, expiration = ret
 
-            self.response.set_cookie('user_selfservice', cookie,
-                                     secure=secure_cookie(),
-                                     expires=expires)
+            self.response.set_cookie(
+                "user_selfservice",
+                cookie,
+                secure=secure_cookie(),
+                expires=expires,
+            )
 
-            g.audit['success'] = False
+            g.audit["success"] = False
 
             # -------------------------------------------------------------- --
 
             # determine the tokentype and adjust the offline, online reply
 
-            token_type = reply.get('linotp_tokentype')
+            token_type = reply.get("linotp_tokentype")
 
             # announce available reply channels via reply_mode
             # - online: token supports online mode where the user can
@@ -709,14 +735,14 @@ class UserserviceController(BaseController):
             # - offline: token supports offline mode where the user needs
             #   to manually enter an OTP.
 
-            reply_mode = ''
+            reply_mode = ""
 
-            if token_type == 'push':
-                reply_mode =  ['online']
-            elif token_type == 'qr':
-                reply_mode =  ['offline', 'online']
+            if token_type == "push":
+                reply_mode = ["online"]
+            elif token_type == "qr":
+                reply_mode = ["offline", "online"]
             else:
-                reply_mode = ['offline']
+                reply_mode = ["offline"]
 
             reply["replyMode"] = reply_mode
 
@@ -724,21 +750,21 @@ class UserserviceController(BaseController):
 
             # add transaction data wrt to the new spec
 
-            if reply.get('img_src'):
-                reply["transactionData"] = reply['message']
+            if reply.get("img_src"):
+                reply["transactionData"] = reply["message"]
 
             # ------------------------------------------------------------- --
 
             # care for the messages as it is done with verify
 
-            if token_type == 'qr':
-                reply['message'] = _('Please scan the provided qr code')
+            if token_type == "qr":
+                reply["message"] = _("Please scan the provided qr code")
 
             # ------------------------------------------------------------- --
 
             # adjust the transactionid to transactionId for api conformance
 
-            if 'transactionid' in reply:
+            if "transactionid" in reply:
                 transaction_id = reply["transactionid"]
                 del reply["transactionid"]
                 reply["transactionId"] = transaction_id
@@ -768,19 +794,19 @@ class UserserviceController(BaseController):
         user, _client, _auth_state, state_data = get_cookie_authinfo(cookie)
 
         if not state_data:
-            raise Exception('invalid state data')
+            raise Exception("invalid state data")
 
         # if there has been a challenge triggerd before, we can extract
         # the the transaction info from the cookie cached data
 
-        transid = state_data.get('transactionid')
+        transid = state_data.get("transactionid")
 
-        if 'otp' in params:
+        if "otp" in params:
             return self._login_with_cookie_challenge_check_otp(
-                user, transid, params)
+                user, transid, params
+            )
 
-        return self._login_with_cookie_challenge_check_status(
-            user, transid)
+        return self._login_with_cookie_challenge_check_status(user, transid)
 
     def _login_with_cookie_challenge_check_otp(self, user, transid, params):
         """Verify challenge against the otp.
@@ -796,18 +822,23 @@ class UserserviceController(BaseController):
 
         vh = ValidationHandler()
         res, _reply = vh.check_by_transactionid(
-            transid, passw=params['otp'], options={'transactionid': transid})
+            transid, passw=params["otp"], options={"transactionid": transid}
+        )
 
         if res:
-            (cookie, expires,
-             expiration) = create_auth_cookie(user, self.client)
+            (cookie, expires, expiration) = create_auth_cookie(
+                user, self.client
+            )
 
             self.response.set_cookie(
-                'user_selfservice', cookie,
-                secure=secure_cookie(), expires=expires)
+                "user_selfservice",
+                cookie,
+                secure=secure_cookie(),
+                expires=expires,
+            )
 
-            g.audit['action_detail'] = "expires: %s " % expiration
-            g.audit['info'] = "%r logged in " % user
+            g.audit["action_detail"] = "expires: %s " % expiration
+            g.audit["info"] = "%r logged in " % user
 
         db.session.commit()
         return sendResult(self.response, res, 0)
@@ -826,23 +857,30 @@ class UserserviceController(BaseController):
         """
 
         va = ValidationHandler()
-        ok, opt = va.check_status(transid=transid, user=user, password='')
+        ok, opt = va.check_status(transid=transid, user=user, password="")
 
         verified = False
         if ok and opt:
-            verified = opt.get(
-                'transactions', {}).get(transid,{}).get('valid_tan', False)
+            verified = (
+                opt.get("transactions", {})
+                .get(transid, {})
+                .get("valid_tan", False)
+            )
 
         if verified:
-            (cookie, expires,
-             expiration) = create_auth_cookie(user, self.client)
+            (cookie, expires, expiration) = create_auth_cookie(
+                user, self.client
+            )
 
             self.response.set_cookie(
-                'user_selfservice', cookie,
-                secure=secure_cookie(), expires=expires)
+                "user_selfservice",
+                cookie,
+                secure=secure_cookie(),
+                expires=expires,
+            )
 
-            g.audit['action_detail'] = "expires: %s " % expiration
-            g.audit['info'] = "%r logged in " % user
+            g.audit["action_detail"] = "expires: %s " % expiration
+            g.audit["info"] = "%r logged in " % user
 
         detail = get_transaction_detail(transid)
 
@@ -861,9 +899,8 @@ class UserserviceController(BaseController):
         if not user.checkPass(passw):
 
             log.info("User %r failed to authenticate!", user)
-            g.audit['action_detail'] = ("User %r failed to authenticate!"
-                                        % user)
-            g.audit['success'] = False
+            g.audit["action_detail"] = "User %r failed to authenticate!" % user
+            g.audit["success"] = False
 
             db.session.commit()
             return sendResult(self.response, False, 0)
@@ -872,7 +909,7 @@ class UserserviceController(BaseController):
 
         # if there is an otp, we can do a direct otp authentication
 
-        otp = param.get('otp', '')
+        otp = param.get("otp", "")
         if otp:
 
             vh = ValidationHandler()
@@ -881,22 +918,24 @@ class UserserviceController(BaseController):
             if res:
                 log.debug("Successfully authenticated user %r:", user)
 
-                (cookie_value, expires,
-                 expiration) = create_auth_cookie(user, self.client)
+                (cookie_value, expires, expiration) = create_auth_cookie(
+                    user, self.client
+                )
 
                 self.response.set_cookie(
-                    'user_selfservice',
+                    "user_selfservice",
                     value=cookie_value,
                     secure=secure_cookie(),
-                    expires=expires)
+                    expires=expires,
+                )
 
-                g.audit['action_detail'] = "expires: %s " % expiration
-                g.audit['info'] = "%r logged in " % user
+                g.audit["action_detail"] = "expires: %s " % expiration
+                g.audit["info"] = "%r logged in " % user
 
             elif not res and reply:
                 log.error("challenge trigger though otp is provided")
 
-            g.audit['success'] = res
+            g.audit["success"] = res
 
             db.session.commit()
             return sendResult(self.response, res, 0, reply)
@@ -906,30 +945,31 @@ class UserserviceController(BaseController):
         # last step - we have no otp but mfa_login request - so we
         # create the 'credentials_verified state'
 
-        (cookie_value, expires,
-         expiration) = create_auth_cookie(
-                            user, self.client,
-                            state='credentials_verified')
+        (cookie_value, expires, expiration) = create_auth_cookie(
+            user, self.client, state="credentials_verified"
+        )
 
         self.response.set_cookie(
-            'user_selfservice',
+            "user_selfservice",
             value=cookie_value,
             secure=secure_cookie(),
-            expires=expires)
+            expires=expires,
+        )
 
         tokenList = getTokenForUser(
-            self.authUser, active=True, exclude_rollout=False)
+            self.authUser, active=True, exclude_rollout=False
+        )
 
         reply = {
-            'message': 'credential verified - '
-                        'additional authentication parameter required',
-            'tokenList': tokenList,
-            }
+            "message": "credential verified - "
+            "additional authentication parameter required",
+            "tokenList": tokenList,
+        }
 
-        g.audit['action_detail'] = "expires: %s " % expiration
-        g.audit['info'] = "%r credentials verified" % user
+        g.audit["action_detail"] = "expires: %s " % expiration
+        g.audit["info"] = "%r credentials verified" % user
 
-        g.audit['success'] = True
+        g.audit["success"] = True
         db.session.commit()
 
         return sendResult(self.response, False, 0, opt=reply)
@@ -945,17 +985,19 @@ class UserserviceController(BaseController):
         res = user.checkPass(password)
 
         if res:
-            (cookie_value, expires,
-             _expiration) = create_auth_cookie(user, self.client)
+            (cookie_value, expires, _expiration) = create_auth_cookie(
+                user, self.client
+            )
 
             self.response.set_cookie(
-                'user_selfservice',
+                "user_selfservice",
                 value=cookie_value,
                 secure=secure_cookie(),
-                expires=expires)
+                expires=expires,
+            )
 
-        g.audit['success'] = res
-        g.audit['info'] = "%r logged in " % user
+        g.audit["success"] = res
+        g.audit["info"] = "%r logged in " % user
 
         db.session.commit()
 
@@ -983,23 +1025,24 @@ class UserserviceController(BaseController):
             # the new selfservice provides the parameter 'username' instead of
             # 'login'. As all lower llayers expect 'login' we switch the case
 
-            if 'login' not in param and 'username' in param:
-                param['login'] = param['username']
-                del param['username']
+            if "login" not in param and "username" in param:
+                param["login"] = param["username"]
+                del param["username"]
 
             # -------------------------------------------------------------- --
 
             # if this is an pre-authenticated login we continue
             # with the authentication states
 
-            user_selfservice_cookie = request.cookies.get('user_selfservice')
+            user_selfservice_cookie = request.cookies.get("user_selfservice")
 
             # check if this cookie is still valid
 
             auth_info = get_cookie_authinfo(user_selfservice_cookie)
 
-            if (auth_info[0] and
-                check_session(request, auth_info[0], auth_info[1])):
+            if auth_info[0] and check_session(
+                request, auth_info[0], auth_info[1]
+            ):
 
                 return self._login_with_cookie(user_selfservice_cookie, param)
 
@@ -1008,7 +1051,7 @@ class UserserviceController(BaseController):
 
             if user_selfservice_cookie and not auth_info[0]:
 
-                self.response.delete_cookie('user_selfservice')
+                self.response.delete_cookie("user_selfservice")
 
             # -------------------------------------------------------------- --
 
@@ -1016,14 +1059,14 @@ class UserserviceController(BaseController):
 
             user = self._identify_user(params=param)
             if not user:
-                raise UserNotFound('user %r not found!' % param.get('login'))
+                raise UserNotFound("user %r not found!" % param.get("login"))
 
             self.authUser = user
-            request_context['authUser'] = user
+            request_context["authUser"] = user
 
             # -------------------------------------------------------------- --
 
-            password = param['password']
+            password = param["password"]
 
             if self.mfa_login:
 
@@ -1034,8 +1077,12 @@ class UserserviceController(BaseController):
                 tokenArray = getTokenForUser(self.authUser)
 
                 policy = get_client_policy(
-                    client=self.client, scope='selfservice',
-                    action='mfa_passOnNoToken', userObj=user, active_only=True)
+                    client=self.client,
+                    scope="selfservice",
+                    action="mfa_passOnNoToken",
+                    userObj=user,
+                    active_only=True,
+                )
 
                 if policy and not tokenArray:
 
@@ -1051,19 +1098,19 @@ class UserserviceController(BaseController):
 
         except (Unauthorized, Forbidden) as exx:
 
-            log.error('userservice login failed: %r', exx)
+            log.error("userservice login failed: %r", exx)
 
-            g.audit['info'] = ("%r" % exx)[:80]
-            g.audit['success'] = False
+            g.audit["info"] = ("%r" % exx)[:80]
+            g.audit["success"] = False
 
             raise exx
 
         except Exception as exx:
 
-            log.error('userservice login failed: %r', exx)
+            log.error("userservice login failed: %r", exx)
 
-            g.audit['info'] = ("%r" % exx)[:80]
-            g.audit['success'] = False
+            g.audit["info"] = ("%r" % exx)[:80]
+            g.audit["success"] = False
 
             db.session.rollback()
             return sendResult(self.response, False, 0)
@@ -1119,10 +1166,11 @@ class UserserviceController(BaseController):
 
                 # if no token no otp, we might trigger an aouto enroll
                 elif self.autoenroll and not otp:
-                    (auto_enroll_return, reply) = th.auto_enrollToken(password,
-                                                                      user)
+                    (auto_enroll_return, reply) = th.auto_enrollToken(
+                        password, user
+                    )
                     if auto_enroll_return is False:
-                        error = ("autoenroll: %r" % reply.get('error', ''))
+                        error = "autoenroll: %r" % reply.get("error", "")
                         raise Exception(error)
                     # we always have to return a false, as we have
                     # a challenge tiggered
@@ -1135,26 +1183,27 @@ class UserserviceController(BaseController):
         return ret
 
     def usertokenlist(self):
-        '''
+        """
         This returns a tokenlist as html output
-        '''
+        """
 
         try:
-            if self.request_params.get('active', '').lower() in ['true']:
+            if self.request_params.get("active", "").lower() in ["true"]:
                 active = True
-            elif self.request_params.get('active', '').lower() in ['false']:
+            elif self.request_params.get("active", "").lower() in ["false"]:
                 active = True
             else:
                 active = None
 
-            tokenArray = getTokenForUser(self.authUser, active=active,
-                                         exclude_rollout=False)
+            tokenArray = getTokenForUser(
+                self.authUser, active=active, exclude_rollout=False
+            )
 
             db.session.commit()
             return sendResult(self.response, tokenArray, 0)
 
         except Exception as exx:
-            log.exception("failed with error: %r", exx)
+            log.error("failed with error: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
@@ -1167,16 +1216,16 @@ class UserserviceController(BaseController):
 
             uinfo = get_userinfo(self.authUser)
 
-            g.audit['success'] = True
+            g.audit["success"] = True
 
             db.session.commit()
             return sendResult(self.response, uinfo, 0)
 
         except Exception as exx:
             db.session.rollback()
-            error = ('error (%r) ' % exx)
-            log.exception(error)
-            return '<pre>%s</pre>' % error
+            error = "error (%r) " % exx
+            log.error(error)
+            return "<pre>%s</pre>" % error
 
         finally:
             db.session.close()
@@ -1188,67 +1237,60 @@ class UserserviceController(BaseController):
 
         try:
 
-            cookie = request.cookies.get('user_selfservice')
+            cookie = request.cookies.get("user_selfservice")
             remove_auth_cookie(cookie)
-            self.response.delete_cookie(key='user_selfservice')
+            self.response.delete_cookie(key="user_selfservice")
 
-            g.audit['success'] = True
+            g.audit["success"] = True
 
             db.session.commit()
             return sendResult(self.response, True, 0)
 
         except Exception as exx:
             db.session.rollback()
-            error = ('error (%r) ' % exx)
-            log.exception(error)
-            return '<pre>%s</pre>' % error
+            error = "error (%r) " % exx
+            log.error(error)
+            return "<pre>%s</pre>" % error
 
         finally:
-            log.debug('done')
+            log.debug("done")
 
-
-###############################################################################
-# context setup functions
+    ##########################################################################
+    # context setup functions
     def pre_context(self):
-        '''
+        """
         This is the authentication to self service
         If you want to do ANYTHING with selfservice, you need to be
         authenticated. The _before_ is executed before any other function
         in this controller.
-        '''
+        """
         try:
             pre_context = get_pre_context(self.client)
-            return sendResult(self.response,
-                              True,
-                              opt=pre_context)
+            return sendResult(self.response, True, opt=pre_context)
 
-        except Exception as e:
-            log.exception("failed with error: %r" % e)
+        except Exception as exx:
+            log.error("pre_context failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(response, exx)
 
     def context(self):
-        '''
+        """
         This is the authentication to self service
         If you want to do ANYTHING with selfservice, you need to be
         authenticated. The _before_ is executed before any other function
         in this controller.
-        '''
+        """
 
         try:
             context = get_context(config, self.authUser, self.client)
-            return sendResult(self.response,
-                              True,
-                              opt=context)
+            return sendResult(self.response, True, opt=context)
 
         except Exception as e:
-            log.exception("[context] failed with error: %r" % e)
+            log.error("[context] failed with error: %r", e)
             db.session.rollback()
             return sendError(response, e)
 
-
-# action hooks for the js methods #############################################
-
+    # action hooks for the js methods ########################################
 
     def enable(self):
         """
@@ -1274,33 +1316,38 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userenable', param,
-                           authUser=self.authUser)
+            checkPolicyPre(
+                "selfservice", "userenable", param, authUser=self.authUser
+            )
             th = TokenHandler()
             if th.isTokenOwner(serial, self.authUser):
-                log.info("[userenable] user %s@%s is enabling his token with "
-                         "serial %s." % (self.authUser.login,
-                                         self.authUser.realm, serial))
+                log.info(
+                    "[userenable] user %s@%s is enabling his token with "
+                    "serial %s.",
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
+                )
                 ret = th.enableToken(True, None, serial)
                 res["enable token"] = ret
 
-                g.audit['realm'] = self.authUser.realm
-                g.audit['success'] = ret
+                g.audit["realm"] = self.authUser.realm
+                g.audit["success"] = ret
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("[enable] policy failed %r" % pe)
+            log.error("[enable] policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("[enable] failed: %r" % e)
+            log.error("[enable] failed: %r", e)
             db.session.rollback()
             return sendError(response, e, 1)
 
-########################################################
+    ########################################################
     def disable(self):
         """
         disables a token
@@ -1326,43 +1373,48 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userdisable', param,
-                           authUser=self.authUser)
+            checkPolicyPre(
+                "selfservice", "userdisable", param, authUser=self.authUser
+            )
             th = TokenHandler()
             if th.isTokenOwner(serial, self.authUser):
-                log.info("user %s@%s is disabling his token with serial %s."
-                         % (self.authUser.login, self.authUser.realm, serial))
+                log.info(
+                    "user %s@%s is disabling his token with serial %s.",
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
+                )
                 ret = th.enableToken(False, None, serial)
                 res["disable token"] = ret
 
-                g.audit['realm'] = self.authUser.realm
-                g.audit['success'] = ret
+                g.audit["realm"] = self.authUser.realm
+                g.audit["success"] = ret
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed %r" % pe)
+            log.error("policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("failed: %r" % e)
+            log.error("failed: %r", e)
             db.session.rollback()
             return sendError(response, e, 1)
 
     def delete(self):
-        '''
+        """
         This is the internal delete token function that is called from within
         the self service portal. The user is only allowed to delete token,
         that belong to him.
-        '''
+        """
         param = self.request_params
         res = {}
 
         try:
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userdelete', param, self.authUser)
+            checkPolicyPre("selfservice", "userdelete", param, self.authUser)
 
             try:
                 serial = param["serial"]
@@ -1371,80 +1423,90 @@ class UserserviceController(BaseController):
 
             th = TokenHandler()
             if th.isTokenOwner(serial, self.authUser):
-                log.info("[userdelete] user %s@%s is deleting his token with "
-                         "serial %s." % (self.authUser.login,
-                                         self.authUser.realm, serial))
+                log.info(
+                    "[userdelete] user %s@%s is deleting his token with "
+                    "serial %s.",
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
+                )
                 ret = th.removeToken(serial=serial)
                 res["delete token"] = ret
 
-                g.audit['realm'] = self.authUser.realm
-                g.audit['success'] = ret
+                g.audit["realm"] = self.authUser.realm
+                g.audit["success"] = ret
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("[userdelete] policy failed: %r" % pe)
+            log.error("[userdelete] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("[userdelete] deleting token %s of user %s failed! %r"
-                      % (serial, c.user, e))
+            log.error(
+                "[userdelete] deleting token %s of user %s failed!",
+                serial,
+                c.user,
+            )
             db.session.rollback()
             return sendError(response, e, 1)
 
     def reset(self):
-        '''
+        """
         This internally resets the failcounter of the given token.
-        '''
+        """
         res = {}
         param = self.request_params
         serial = None
 
         try:
-            checkPolicyPre('selfservice', 'userreset', param, self.authUser)
+            checkPolicyPre("selfservice", "userreset", param, self.authUser)
             try:
                 serial = param["serial"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if (True == th.isTokenOwner(serial, self.authUser)):
-                log.info("[userreset] user %s@%s is resetting the failcounter"
-                                " of his token with serial %s"
-                        % (self.authUser.login, self.authUser.realm, serial))
+            if True == th.isTokenOwner(serial, self.authUser):
+                log.info(
+                    "[userreset] user %s@%s is resetting the failcounter"
+                    " of his token with serial %s",
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
+                )
                 ret = resetToken(serial=serial)
                 res["reset Failcounter"] = ret
 
-                g.audit['success'] = ret
+                g.audit["success"] = ret
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("error resetting token with serial %s: %r"
-                      % (serial, e))
+            log.error("error resetting token with serial %s: %r", serial, e)
             db.session.rollback()
             return sendError(response, e, 1)
 
     def unassign(self):
-        '''
+        """
         This is the internal unassign function that is called from within
         the self service portal. The user is only allowed to unassign token,
         that belong to him.
-        '''
+        """
         param = self.request_params
         res = {}
 
         try:
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userunassign', param, self.authUser)
+            checkPolicyPre("selfservice", "userunassign", param, self.authUser)
 
             try:
                 serial = param["serial"]
@@ -1454,41 +1516,46 @@ class UserserviceController(BaseController):
             upin = param.get("pin", None)
 
             th = TokenHandler()
-            if (True == th.isTokenOwner(serial, self.authUser)):
-                log.info("user %s@%s is unassigning his token with serial %s."
-                         % (self.authUser.login, self.authUser.realm, serial))
+            if True == th.isTokenOwner(serial, self.authUser):
+                log.info(
+                    "user %s@%s is unassigning his token with serial %s.",
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
+                )
 
                 ret = th.unassignToken(serial, None, upin)
                 res["unassign token"] = ret
 
-                g.audit['success'] = ret
-                g.audit['realm'] = self.authUser.realm
+                g.audit["success"] = ret
+                g.audit["realm"] = self.authUser.realm
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("unassigning token %s of user %s failed! %r"
-                       % (serial, c.user, e))
+            log.error(
+                "unassigning token %s of user %s failed! %r", serial, c.user, e
+            )
             db.session.rollback()
             return sendError(response, e, 1)
 
     def setpin(self):
-        '''
+        """
         When the user hits the set pin button, this function is called.
-        '''
+        """
         res = {}
         param = self.request_params
 
         # # if there is a pin
         try:
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'usersetpin', param, self.authUser)
+            checkPolicyPre("selfservice", "usersetpin", param, self.authUser)
 
             try:
                 userPin = param["userpin"]
@@ -1497,53 +1564,60 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if (True == th.isTokenOwner(serial, self.authUser)):
-                log.info("user %s@%s is setting the OTP PIN "
-                         "for token with serial %s" %
-                         (self.authUser.login, self.authUser.realm, serial))
+            if True == th.isTokenOwner(serial, self.authUser):
+                log.info(
+                    "user %s@%s is setting the OTP PIN "
+                    "for token with serial %s",
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
+                )
 
                 check_res = checkOTPPINPolicy(userPin, self.authUser)
 
-                if not check_res['success']:
-                    log.warning("Setting of OTP PIN for Token %s"
-                                " by user %s failed: %s" %
-                                        (serial, self.authUser.login,
-                                         check_res['error']))
+                if not check_res["success"]:
+                    log.warning(
+                        "Setting of OTP PIN for Token %s"
+                        " by user %s failed: %s",
+                        serial,
+                        self.authUser.login,
+                        check_res["error"],
+                    )
 
-                    return sendError(response, _("Error: %s")
-                                                        % check_res['error'])
+                    return sendError(
+                        response, _("Error: %s") % check_res["error"]
+                    )
 
-                if 1 == getOTPPINEncrypt(serial=serial,
-                                         user=self.authUser):
-                    param['encryptpin'] = "True"
+                if 1 == getOTPPINEncrypt(serial=serial, user=self.authUser):
+                    param["encryptpin"] = "True"
                 ret = setPin(userPin, None, serial, param)
                 res["set userpin"] = ret
 
-                g.audit['success'] = ret
+                g.audit["success"] = ret
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
-            log.exception("policy failed: %r" % pex)
+            log.error("policy failed: %r", pex)
             db.session.rollback()
-            return sendError(response, str(pex), 1)
+            return sendError(response, pex, 1)
 
         except Exception as exx:
-            log.exception("Error setting OTP PIN: %r" % exx)
+            log.error("Error setting OTP PIN: %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
     def setmpin(self):
-        '''
+        """
         When the user hits the set pin button, this function is called.
-        '''
+        """
         res = {}
         param = self.request_params
         # # if there is a pin
         try:
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'usersetmpin', param, self.authUser)
+            checkPolicyPre("selfservice", "usersetmpin", param, self.authUser)
             try:
                 pin = param["pin"]
                 serial = param["serial"]
@@ -1551,33 +1625,37 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if (True == th.isTokenOwner(serial, self.authUser)):
-                log.info("user %s@%s is setting the mOTP PIN"
-                         " for token with serial %s"
-                          % (self.authUser.login, self.authUser.realm, serial))
+            if True == th.isTokenOwner(serial, self.authUser):
+                log.info(
+                    "user %s@%s is setting the mOTP PIN"
+                    " for token with serial %s",
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
+                )
                 ret = setPinUser(pin, serial)
                 res["set userpin"] = ret
 
-                g.audit['success'] = ret
+                g.audit["success"] = ret
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
-            log.exception("policy failed: %r" % pex)
+            log.error("policy failed: %r", pex)
             db.session.rollback()
-            return sendError(response, str(pex), 1)
+            return sendError(response, pex, 1)
 
         except Exception as exx:
-            log.exception("Error setting the mOTP PIN %r" % exx)
+            log.error("Error setting the mOTP PIN %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
     def resync(self):
-        '''
+        """
         This is the internal resync function that is called from within
         the self service portal
-        '''
+        """
 
         res = {}
         param = self.request_params
@@ -1585,7 +1663,7 @@ class UserserviceController(BaseController):
 
         try:
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userresync', param, self.authUser)
+            checkPolicyPre("selfservice", "userresync", param, self.authUser)
 
             try:
                 serial = param["serial"]
@@ -1595,31 +1673,33 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if (True == th.isTokenOwner(serial, self.authUser)):
-                log.info("user %s@%s is resyncing his "
-                          "token with serial %s"
-                        % (self.authUser.login, self.authUser.realm, serial))
+            if True == th.isTokenOwner(serial, self.authUser):
+                log.info(
+                    "user %s@%s is resyncing his token with serial %s",
+                    self.authUser.login,
+                    self.authUser.realm,
+                    serial,
+                )
                 ret = th.resyncToken(otp1, otp2, None, serial)
                 res["resync Token"] = ret
 
-                g.audit['success'] = ret
+                g.audit["success"] = ret
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("error resyncing token with serial %s:%r"
-                       % (serial, e))
+            log.error("error resyncing token with serial %s:%r", serial, e)
             db.session.rollback()
             return sendError(response, e, 1)
 
     def verify(self):
-        '''
+        """
         verify a token, identified by a serial number
 
         after a successful authentication and a valid session, the idenitfied
@@ -1644,33 +1724,35 @@ class UserserviceController(BaseController):
                "version": "LinOTP 2.XX",
                "id": 1
         }
-        '''
+        """
 
         try:
             params = self.request_params
 
-            checkPolicyPre('selfservice', 'userverify', params, self.authUser)
+            checkPolicyPre("selfservice", "userverify", params, self.authUser)
 
             # -------------------------------------------------------------- --
 
             # setup - get the tokens from the serial or transactionid/state
 
-            transaction_id = params.get('transactionid', params.get('state'))
-            serial = params.get('serial')
+            transaction_id = params.get("transactionid", params.get("state"))
+            serial = params.get("serial")
 
             if not serial and not transaction_id:
                 raise ParameterError(
-                    "Missing parameter: serial or transactionid")
+                    "Missing parameter: serial or transactionid"
+                )
 
             # -------------------------------------------------------------- --
 
             # check for invalid params
 
-            supported_params = ['serial', 'transactionid', 'otp', 'session']
+            supported_params = ["serial", "transactionid", "otp", "session"]
             unknown_params = [p for p in params if p not in supported_params]
             if len(unknown_params) > 0:
                 raise ParameterError(
-                    "unsupported parameters: %r" % unknown_params)
+                    "unsupported parameters: %r" % unknown_params
+                )
 
             # -------------------------------------------------------------- --
 
@@ -1682,20 +1764,21 @@ class UserserviceController(BaseController):
                 _expired_challenges, valid_challenges = reply
 
                 if _expired_challenges:
-                    raise Exception('challenge already expired!')
+                    raise Exception("challenge already expired!")
 
                 if not valid_challenges:
-                    raise Exception('no valid challenge found!')
+                    raise Exception("no valid challenge found!")
 
                 if len(valid_challenges) != 1:
                     raise Exception(
-                        'Could not uniquely identify challenge for '
-                        'transaction id {} '.format(transaction_id))
+                        "Could not uniquely identify challenge for "
+                        "transaction id {} ".format(transaction_id)
+                    )
 
                 challenge = valid_challenges[0]
 
                 serials = [c.tokenserial for c in valid_challenges]
-                serials = list(set(serials)) # remove duplicates
+                serials = list(set(serials))  # remove duplicates
 
                 tokens = []
                 for serial in serials:
@@ -1729,19 +1812,19 @@ class UserserviceController(BaseController):
             action = None
 
             # verify the transaction if we have an otp
-            if transaction_id and 'otp' in params:
+            if transaction_id and "otp" in params:
                 action = "verify transaction"
 
             # only a transaction id, so we query the transaction status
-            elif transaction_id and 'otp' not in params:
+            elif transaction_id and "otp" not in params:
                 action = "query transaction"
 
             # if no transaction id but otp, we directly verify the otp
-            elif not transaction_id and 'otp' in params:
+            elif not transaction_id and "otp" in params:
                 action = "verify otp"
 
             # no transaction id and no OTP - trigger a challenge
-            elif not transaction_id and 'otp' not in params:
+            elif not transaction_id and "otp" not in params:
                 action = "trigger challenge"
 
             # -------------------------------------------------------------- --
@@ -1749,7 +1832,8 @@ class UserserviceController(BaseController):
             if action == "verify transaction":
                 vh = ValidationHandler()
                 (res, _opt) = vh.check_by_transactionid(
-                    transid=transaction_id, passw=params['otp'], options=params)
+                    transid=transaction_id, passw=params["otp"], options=params
+                )
 
                 db.session.commit()
                 return sendResult(self.response, res)
@@ -1762,7 +1846,8 @@ class UserserviceController(BaseController):
 
                 db.session.commit()
                 return sendResult(
-                    self.response, detail.get('valid_tan', False), opt=detail)
+                    self.response, detail.get("valid_tan", False), opt=detail
+                )
 
             # -------------------------------------------------------------- --
 
@@ -1770,7 +1855,8 @@ class UserserviceController(BaseController):
 
                 vh = ValidationHandler()
                 (res, _opt) = vh.checkUserPass(
-                    self.authUser, passw=params['otp'], options=params)
+                    self.authUser, passw=params["otp"], options=params
+                )
 
                 db.session.commit()
                 return sendResult(self.response, res)
@@ -1787,40 +1873,43 @@ class UserserviceController(BaseController):
                 # 'authenticate': default for non-challenge response tokens
                 #                 like ['hmac', 'totp', 'motp']
 
-                if 'authenticate' in token.mode:
-                    message = _('Please enter your otp')
+                if "authenticate" in token.mode:
+                    message = _("Please enter your otp")
 
                 # 'challenge': tokens that do not have a direct authentication
                 #              mode need a challenge to be tested
 
-                elif 'challenge' in token.mode:
-                    data = _('SelfService token test\n\nToken: {0}\n'
-                             'Serial: {1}\nUser: {2}').format(
-                                token.type, token.token.LinOtpTokenSerialnumber,
-                                self.authUser.login)
+                elif "challenge" in token.mode:
+                    data = _(
+                        "SelfService token test\n\nToken: {0}\n"
+                        "Serial: {1}\nUser: {2}"
+                    ).format(
+                        token.type,
+                        token.token.LinOtpTokenSerialnumber,
+                        self.authUser.login,
+                    )
 
-                    options = {
-                        'content_type': '0',
-                        'data': data
-                    }
+                    options = {"content_type": "0", "data": data}
 
                     res, reply = Challenges.create_challenge(
-                        token, options=options)
+                        token, options=options
+                    )
                     if not res:
                         raise Exception(
-                            'failed to trigger challenge {:r}'.format(reply))
+                            "failed to trigger challenge {:r}".format(reply)
+                        )
 
-                    if token.type == 'qr':
-                        transaction_data = reply['message']
-                        message = _('Please scan the provided qr code')
+                    if token.type == "qr":
+                        transaction_data = reply["message"]
+                        message = _("Please scan the provided qr code")
 
                     else:
-                        message = reply['message']
+                        message = reply["message"]
 
-                    transaction_id = reply['transactionid']
+                    transaction_id = reply["transactionid"]
 
                 else:
-                    raise Exception('unsupported token mode')
+                    raise Exception("unsupported token mode")
 
                 # announce available reply channels via reply_mode
                 # - online: token supports online mode where the user can
@@ -1829,12 +1918,12 @@ class UserserviceController(BaseController):
                 # - offline: token supports offline mode where the user needs
                 #   to manually enter an OTP.
 
-                if token.type == 'push':
-                    reply_mode =  ['online']
-                elif token.type == 'qr':
-                    reply_mode =  ['offline', 'online']
+                if token.type == "push":
+                    reply_mode = ["online"]
+                elif token.type == "qr":
+                    reply_mode = ["offline", "online"]
                 else:
-                    reply_mode = ['offline']
+                    reply_mode = ["offline"]
 
                 # ---------------------------------------------------------- --
 
@@ -1842,40 +1931,38 @@ class UserserviceController(BaseController):
 
                 detail_response = {
                     "message": message,  # localized user facing message
-                    "replyMode": reply_mode
+                    "replyMode": reply_mode,
                 }
 
                 if transaction_id:
-                    detail_response['transactionId'] = transaction_id
+                    detail_response["transactionId"] = transaction_id
 
                 if transaction_data:
-                    detail_response['transactionData'] = transaction_data
+                    detail_response["transactionData"] = transaction_data
 
                 # ---------------------------------------------------------- --
 
                 # close down the session and submit the result
 
                 db.session.commit()
-                return sendResult(
-                    self.response, False, opt=detail_response)
+                return sendResult(self.response, False, opt=detail_response)
 
         except PolicyException as pe:
-            log.error("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
             return sendError(response, pe)
 
         except Exception as exx:
-            g.audit['success'] = False
-            log.error("error verifying token with serial %s: %r"
-                      % (serial, exx))
+            g.audit["success"] = False
+            log.error("error verifying token with serial %s: %r", serial, exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
     def assign(self):
-        '''
+        """
         This is the internal assign function that is called from within
         the self service portal
-        '''
+        """
         param = self.request_params
         res = {}
 
@@ -1890,29 +1977,38 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userassign', param, self.authUser)
+            checkPolicyPre("selfservice", "userassign", param, self.authUser)
 
             # check if token is in another realm
             realm_list = getTokenRealms(serial)
-            if (not self.authUser.realm.lower() in realm_list
-                        and len(realm_list)):
+            if not self.authUser.realm.lower() in realm_list and len(
+                realm_list
+            ):
                 # if the token is assigned to realms, then the user must be in
                 # one of the realms, otherwise the token can not be assigned
-                raise Exception(_("The token you want to assign is "
-                                  "not contained in your realm!"))
+                raise Exception(
+                    _(
+                        "The token you want to assign is "
+                        "not contained in your realm!"
+                    )
+                )
             th = TokenHandler()
 
             if th.hasOwner(serial):
-                raise Exception(_("The token is already assigned "
-                                             "to another user."))
+                raise Exception(
+                    _("The token is already assigned to another user.")
+                )
 
             # -------------------------------------------------------------- --
 
             # assign  token to user
 
-            log.info("user %s@%s is assign the token with "
-                                                "serial %s to himself."
-                    % (self.authUser.login, self.authUser.realm, serial))
+            log.info(
+                "user %s@%s is assign the token with serial %s to himself.",
+                self.authUser.login,
+                self.authUser.realm,
+                serial,
+            )
 
             ret_assign = th.assignToken(serial, self.authUser, upin)
 
@@ -1927,29 +2023,28 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
-
             res["assign token"] = ret_assign
 
-            g.audit['realm'] = self.authUser.realm
-            g.audit['success'] = ret_assign
+            g.audit["realm"] = self.authUser.realm
+            g.audit["success"] = ret_assign
 
-            checkPolicyPost('selfservice', 'userassign', param, self.authUser)
+            checkPolicyPost("selfservice", "userassign", param, self.authUser)
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("[userassign] policy failed: %r" % pe)
+            log.error("[userassign] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[userassign] token assignment failed! %r" % exx)
+            log.error("[userassign] token assignment failed! %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
     def getSerialByOtp(self):
-        '''
+        """
          method:
             selfservice/usergetSerialByOtp
 
@@ -1971,13 +2066,14 @@ class UserserviceController(BaseController):
         exception:
             if an error occurs an exception is serialized and returned
 
-        '''
+        """
         param = self.request_params
         res = {}
         try:
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'usergetserialbyotp', param,
-                                self.authUser)
+            checkPolicyPre(
+                "selfservice", "usergetserialbyotp", param, self.authUser
+            )
             try:
                 otp = param["otp"]
             except KeyError as exx:
@@ -1985,25 +2081,26 @@ class UserserviceController(BaseController):
 
             ttype = param.get("type", None)
 
-            g.audit['token_type'] = ttype
+            g.audit["token_type"] = ttype
             th = TokenHandler()
-            serial, _username, _resolverClass = th.get_serial_by_otp(None,
-                    otp, 10, typ=ttype, realm=self.authUser.realm, assigned=0)
-            res = {'serial': serial}
+            serial, _username, _resolverClass = th.get_serial_by_otp(
+                None, otp, 10, typ=ttype, realm=self.authUser.realm, assigned=0
+            )
+            res = {"serial": serial}
 
-            g.audit['success'] = 1
-            g.audit['serial'] = serial
+            g.audit["success"] = 1
+            g.audit["serial"] = serial
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("token getSerialByOtp failed! %r" % exx)
+            log.error("token getSerialByOtp failed! %r", exx)
             db.session.rollback()
             return sendError(response, exx, 1)
 
@@ -2027,95 +2124,111 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userinit', param, self.authUser)
+            checkPolicyPre("selfservice", "userinit", param, self.authUser)
 
-            serial = param.get('serial', None)
-            prefix = param.get('prefix', None)
+            serial = param.get("serial", None)
+            prefix = param.get("prefix", None)
 
             # --------------------------------------------------------- --
 
             # enrollment of hotp (hmac) or totp token
 
-            if tok_type in ['hmac', 'totp']:
-                if 'otpkey' not in param:
-                    param['genkey'] = param.get('genkey','1')
+            if tok_type in ["hmac", "totp"]:
+                if "otpkey" not in param:
+                    param["genkey"] = param.get("genkey", "1")
 
-            if tok_type == 'hmac':
+            if tok_type == "hmac":
 
                 # --------------------------------------------------------- --
 
                 # query for hmac_otplen
 
                 hmac_otplen = get_selfservice_action_value(
-                    'hmac_otplen', user=self.authUser,  default=6)
+                    "hmac_otplen", user=self.authUser, default=6
+                )
 
-                param['otplen'] = param.get('otplen', hmac_otplen)
+                param["otplen"] = param.get("otplen", hmac_otplen)
 
                 # --------------------------------------------------------- --
 
                 # query for hashlib
 
                 hmac_hashlib = get_selfservice_action_value(
-                   'hmac_hashlib', user=self.authUser,  default=1)
+                    "hmac_hashlib", user=self.authUser, default=1
+                )
 
-                param['hashlib'] = param.get(
-                    'hashlib', HASHLIB_MAP[hmac_hashlib])
+                param["hashlib"] = param.get(
+                    "hashlib", HASHLIB_MAP[hmac_hashlib]
+                )
 
-            elif tok_type == 'totp':
+            elif tok_type == "totp":
 
                 # --------------------------------------------------------- --
 
                 # query for timestep
 
                 totp_timestep = get_selfservice_action_value(
-                    'totp_timestep', user=self.authUser, default=30)
+                    "totp_timestep", user=self.authUser, default=30
+                )
 
-                param['timeStep'] = param.get('timeStep', totp_timestep)
+                param["timeStep"] = param.get("timeStep", totp_timestep)
 
                 # --------------------------------------------------------- --
 
                 # query for totp_otplen
 
                 totp_otplen = get_selfservice_action_value(
-                    'totp_otplen', user=self.authUser, default=6)
+                    "totp_otplen", user=self.authUser, default=6
+                )
 
-                param['otplen'] = param.get('totp_otplen', totp_otplen)
+                param["otplen"] = param.get("totp_otplen", totp_otplen)
 
                 # --------------------------------------------------------- --
 
                 # query for totp hashlib
 
                 totp_hashlib = get_selfservice_action_value(
-                    'totp_hashlib', user=self.authUser, default=1)
+                    "totp_hashlib", user=self.authUser, default=1
+                )
 
-                param['hashlib'] = param.get(
-                    'totp_hashlib', HASHLIB_MAP[totp_hashlib])
+                param["hashlib"] = param.get(
+                    "totp_hashlib", HASHLIB_MAP[totp_hashlib]
+                )
 
             th = TokenHandler()
             if not serial:
                 serial = th.genSerial(tok_type, prefix)
-                param['serial'] = serial
+                param["serial"] = serial
 
-            desc = param.get("description", '')
+            desc = param.get("description", "")
             otppin = param.get("otppin")
 
-            log.info("[userinit] initialize a token with serial %s "
-                     "and type %s by user %s@%s"
-                % (serial, tok_type, self.authUser.login, self.authUser.realm))
+            log.info(
+                "[userinit] initialize a token with serial %s "
+                "and type %s by user %s@%s",
+                serial,
+                tok_type,
+                self.authUser.login,
+                self.authUser.realm,
+            )
 
-            log.debug("[userinit] Initializing the token serial: %s,"
-                      " desc: %s, otppin: %s for user %s @ %s." %
-            (serial, desc, otppin, self.authUser.login, self.authUser.realm))
+            log.debug(
+                "[userinit] Initializing the token serial: %s,"
+                " desc: %s, otppin: %s for user %s @ %s.",
+                serial,
+                desc,
+                otppin,
+                self.authUser.login,
+                self.authUser.realm,
+            )
             log.debug(param)
 
             # extend the interface by parameters, so that decisssion could
             # be made in the token update method
-            param['::scope::'] = {'selfservice': True,
-                                  'user': self.authUser
-                                  }
+            param["::scope::"] = {"selfservice": True, "user": self.authUser}
 
             (ret, tokenObj) = th.initToken(param, self.authUser)
-            if tokenObj is not None and hasattr(tokenObj, 'getInfo'):
+            if tokenObj is not None and hasattr(tokenObj, "getInfo"):
                 info = tokenObj.getInfo()
                 response_detail.update(info)
 
@@ -2127,48 +2240,48 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            g.audit['serial'] = response_detail.get('serial', '')
-            g.audit['success'] = ret
-            g.audit['user'] = self.authUser.login
-            g.audit['realm'] = self.authUser.realm
+            g.audit["serial"] = response_detail.get("serial", "")
+            g.audit["success"] = ret
+            g.audit["user"] = self.authUser.login
+            g.audit["realm"] = self.authUser.realm
 
-            g.audit['success'] = ret
+            g.audit["success"] = ret
 
             # -------------------------------------------------------------- --
 
             # in the checkPolicyPost for selfservice, the serial is used
 
-            if 'serial' not in param:
-                param['serial'] = response_detail.get('serial', '')
+            if "serial" not in param:
+                param["serial"] = response_detail.get("serial", "")
 
             # -------------------------------------------------------------- --
 
-            checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
+            checkPolicyPost("selfservice", "enroll", param, user=self.authUser)
 
             db.session.commit()
 
             # # finally we render the info as qr image, if the qr parameter
             # # is provided and if the token supports this
-            if 'qr' in param and tokenObj is not None:
+            if "qr" in param and tokenObj is not None:
                 (rdata, hparam) = tokenObj.getQRImageData(response_detail)
                 hparam.update(response_detail)
-                hparam['qr'] = param.get('qr') or 'html'
+                hparam["qr"] = param.get("qr") or "html"
                 return sendQRImageResult(response, rdata, hparam)
             else:
                 return sendResult(self.response, ret, opt=response_detail)
 
         except PolicyException as pe:
-            log.exception("[userinit] policy failed: %r" % pe)
+            log.error("[userinit] policy failed: %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("[userinit] token initialization failed! %r" % e)
+            log.error("[userinit] token initialization failed! %r", e)
             db.session.rollback()
             return sendError(response, e, 1)
 
     def webprovision(self):
-        '''
+        """
         This function is called, when the create OATHtoken button is hit.
         This is used for web provisioning. See:
             http://code.google.com/p/oathtoken/wiki/WebProvisioning
@@ -2182,12 +2295,16 @@ class UserserviceController(BaseController):
             description: string containing a description for the token
 
         It returns the data and the URL containing the HMAC key
-        '''
+        """
         log.debug("[userwebprovision] calling function")
         param = self.request_params.copy()
 
-        valid_tokens = ["googleauthenticator", "googleauthenticator_time",
-                        "oathtoken", "ocra2"]
+        valid_tokens = [
+            "googleauthenticator",
+            "googleauthenticator_time",
+            "oathtoken",
+            "ocra2",
+        ]
 
         try:
             ret = {}
@@ -2195,42 +2312,48 @@ class UserserviceController(BaseController):
 
             typ = param["type"]
 
-            if typ not in ["oathtoken", "googleauthenticator",
-                           "googleauthenticator_time", "ocra2"]:
+            if typ not in [
+                "oathtoken",
+                "googleauthenticator",
+                "googleauthenticator_time",
+                "ocra2",
+            ]:
                 raise Exception(
                     "Unsupported token type: valid types are %s. "
-                    "You provided %s" % (', '.join(valid_tokens),typ))
+                    "You provided %s" % (", ".join(valid_tokens), typ)
+                )
 
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userwebprovision',
-                           param, self.authUser)
+            checkPolicyPre(
+                "selfservice", "userwebprovision", param, self.authUser
+            )
 
             # -------------------------------------------------------------- --
 
             # handle description parameter
 
-            description = param.get('description')
+            description = param.get("description")
 
             # -------------------------------------------------------------- --
 
             typ = param["type"]
             t_type = "hmac"
 
-            serial = param.get('serial', None)
-            prefix = param.get('prefix', None)
+            serial = param.get("serial", None)
+            prefix = param.get("prefix", None)
 
             # date = datetime.datetime.now().strftime("%y%m%d%H%M%S")
             # rNum = random.randrange(1000, 9999)
             th = TokenHandler()
 
             if typ.lower() == "oathtoken":
-                t_type = 'hmac'
+                t_type = "hmac"
 
                 if description is None:
                     description = "OATHtoken web provisioning"
 
                 if prefix is None:
-                    prefix = 'LSAO'
+                    prefix = "LSAO"
                 if serial is None:
                     serial = th.genSerial(t_type, prefix)
 
@@ -2240,39 +2363,52 @@ class UserserviceController(BaseController):
                 # Usually the URL is 106 bytes long
                 otpkey = generate_otpkey(20)
 
-                log.debug("[userwebprovision] Initializing the token serial:"
-                          " %s, desc: %s for user %s @ %s." %
-                          (serial, description, self.authUser.login,
-                           self.authUser.realm))
+                log.debug(
+                    "[userwebprovision] Initializing the token serial:"
+                    " %s, desc: %s for user %s @ %s.",
+                    serial,
+                    description,
+                    self.authUser.login,
+                    self.authUser.realm,
+                )
 
-                (ret1, _tokenObj) = th.initToken({'type': t_type,
-                                'serial': serial,
-                                'description': description,
-                                'otpkey': otpkey,
-                                'otplen': 6,
-                                'timeStep': 30,
-                                'timeWindow': 180,
-                                'hashlib': "sha1"
-                                }, self.authUser)
+                (ret1, _tokenObj) = th.initToken(
+                    {
+                        "type": t_type,
+                        "serial": serial,
+                        "description": description,
+                        "otpkey": otpkey,
+                        "otplen": 6,
+                        "timeStep": 30,
+                        "timeWindow": 180,
+                        "hashlib": "sha1",
+                    },
+                    self.authUser,
+                )
 
                 if ret1:
-                    url = create_oathtoken_url(self.authUser.login,
-                                               self.authUser.realm,
-                                               otpkey, serial=serial)
+                    url = create_oathtoken_url(
+                        self.authUser.login,
+                        self.authUser.realm,
+                        otpkey,
+                        serial=serial,
+                    )
                     ret = {
-                        'url': url,
-                        'img': create_img(url, width=300, alt=serial),
-                        'key': otpkey,
-                        'name': serial,
-                        'serial': serial,
-                        'timeBased': False,
-                        'counter': 0,
-                        'numDigits': 6,
-                        'lockdown': True
+                        "url": url,
+                        "img": create_img(url, width=300, alt=serial),
+                        "key": otpkey,
+                        "name": serial,
+                        "serial": serial,
+                        "timeBased": False,
+                        "counter": 0,
+                        "numDigits": 6,
+                        "lockdown": True,
                     }
 
-            elif typ.lower() in ["googleauthenticator",
-                                 "googleauthenticator_time"]:
+            elif typ.lower() in [
+                "googleauthenticator",
+                "googleauthenticator_time",
+            ]:
 
                 if description is None:
                     description = "Google Authenticator web prov"
@@ -2288,73 +2424,89 @@ class UserserviceController(BaseController):
                 if serial is None:
                     serial = th.genSerial(t_type, prefix)
 
-                log.debug("Initializing the token serial: "
-                          "%s, description: %s for user %s @ %s." %
-                        (serial, description, self.authUser.login,
-                         self.authUser.realm))
+                log.debug(
+                    "Initializing the token serial: "
+                    "%s, description: %s for user %s @ %s.",
+                    serial,
+                    description,
+                    self.authUser.login,
+                    self.authUser.realm,
+                )
 
-                (ret1, _tokenObj) = th.initToken({'type': t_type,
-                                'serial': serial,
-                                'otplen': 6,
-                                'description': description,
-                                'otpkey': otpkey,
-                                'timeStep': 30,
-                                'timeWindow': 180,
-                                'hashlib': "sha1"
-                                }, self.authUser)
+                (ret1, _tokenObj) = th.initToken(
+                    {
+                        "type": t_type,
+                        "serial": serial,
+                        "otplen": 6,
+                        "description": description,
+                        "otpkey": otpkey,
+                        "timeStep": 30,
+                        "timeWindow": 180,
+                        "hashlib": "sha1",
+                    },
+                    self.authUser,
+                )
 
                 if ret1:
-                        pparam = {'user.login': self.authUser.login,
-                                  'user.realm': self.authUser.realm,
-                                  'otpkey': otpkey,
-                                  'serial': serial,
-                                  'type': t_type,
-                                  'description': description,
-                                  }
-                        url = create_google_authenticator(pparam,
-                                                user=self.authUser)
-                        label = "%s@%s" % (self.authUser.login,
-                                           self.authUser.realm)
-                        ret = {
-                            'url': url,
-                            'img': create_img(url, width=300, alt=serial),
-                            'key': otpkey,
-                            'label': label,
-                            'serial': serial,
-                            'counter': 0,
-                            'digits': 6,
-                        }
+                    pparam = {
+                        "user.login": self.authUser.login,
+                        "user.realm": self.authUser.realm,
+                        "otpkey": otpkey,
+                        "serial": serial,
+                        "type": t_type,
+                        "description": description,
+                    }
+                    url = create_google_authenticator(
+                        pparam, user=self.authUser
+                    )
+                    label = "%s@%s" % (
+                        self.authUser.login,
+                        self.authUser.realm,
+                    )
+                    ret = {
+                        "url": url,
+                        "img": create_img(url, width=300, alt=serial),
+                        "key": otpkey,
+                        "label": label,
+                        "serial": serial,
+                        "counter": 0,
+                        "digits": 6,
+                    }
             else:
-                return sendError(response, _(
-                "valid types are 'oathtoken' and 'googleauthenticator' and "
-                "'googleauthenticator_time'. You provided %s") % typ)
+                return sendError(
+                    response, _(
+                        "valid types are 'oathtoken' and 'googleauthenticator' and "
+                        "'googleauthenticator_time'. You provided %s") %
+                    typ, )
 
-            g.audit['serial'] = serial
+            g.audit["serial"] = serial
             # the Google and OATH are always HMAC; sometimes (FUTURE) totp"
-            g.audit['token_type'] = t_type
-            g.audit['success'] = ret1
-            param['serial'] = serial
+            g.audit["token_type"] = t_type
+            g.audit["success"] = ret1
+            param["serial"] = serial
 
-            checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
+            checkPolicyPost("selfservice", "enroll", param, user=self.authUser)
 
             db.session.commit()
-            return sendResult(self.response, {'init': ret1,
-                                         'setpin': False,
-                                         'oathtoken': ret})
+            return sendResult(
+                self.response,
+                {"init": ret1, "setpin": False, "oathtoken": ret},
+            )
 
         except PolicyException as pe:
-            log.exception("[userwebprovision] policy failed: %r" % pe)
+            log.error("[userwebprovision] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[userwebprovision] token initialization failed! %r"
-                          % exx)
+            log.error(
+                "[userwebprovision] token initialization failed! %r", exx
+            )
             db.session.rollback()
             return sendError(response, exx, 1)
 
     def getmultiotp(self):
-        '''
+        """
         Using this function the user may receive OTP values for his own tokens.
 
         method:
@@ -2367,7 +2519,7 @@ class UserserviceController(BaseController):
 
         returns:
             JSON response
-        '''
+        """
 
         getotp_active = config.get("GETOTP_ENABLED")
         if not getotp_active:
@@ -2386,45 +2538,53 @@ class UserserviceController(BaseController):
             curTime = param.get("curTime", None)
 
             th = TokenHandler()
-            if (True != th.isTokenOwner(serial, self.authUser)):
-                error = (_("The serial %s does not belong to user %s@%s") %
-                          (serial, self.authUser.login, self.authUser.realm))
+            if True != th.isTokenOwner(serial, self.authUser):
+                error = _("The serial %s does not belong to user %s@%s") % (
+                    serial,
+                    self.authUser.login,
+                    self.authUser.realm,
+                )
                 log.error(error)
                 return sendError(response, error, 1)
 
-            max_count = checkPolicyPre('selfservice', 'max_count', param,
-                                self.authUser)
-            log.debug("checkpolicypre returned %s" % max_count)
+            max_count = checkPolicyPre(
+                "selfservice", "max_count", param, self.authUser
+            )
+            log.debug("checkpolicypre returned %s", max_count)
 
             if count > max_count:
                 count = max_count
 
-            log.debug("[usergetmultiotp] retrieving OTP value for token %s",
-                      serial)
+            log.debug(
+                "[usergetmultiotp] retrieving OTP value for token %s", serial
+            )
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)
-            if ret['result'] is False and max_count == -1:
-                ret['error'] = "%s - %s" % (ret['error'], _("see policy"
-                                                            " definition."))
+            if ret["result"] is False and max_count == -1:
+                ret["error"] = "%s - %s" % (
+                    ret["error"],
+                    _("see policy definition."),
+                )
 
             ret["serial"] = serial
-            g.audit['success'] = True
+            g.audit["success"] = True
 
             db.session.commit()
             return sendResult(self.response, ret, 0)
 
         except PolicyException as pe:
-            log.exception("[usergetmultiotp] policy failed: %r" % pe)
+            log.error("[usergetmultiotp] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            log.exception("[usergetmultiotp] gettoken/getmultiotp failed: %r" % e)
+            log.error("[usergetmultiotp] gettoken/getmultiotp failed: %r", e)
             db.session.rollback()
-            return sendError(response, _("selfservice/usergetmultiotp failed:"
-                                         " %r") % e, 0)
+            return sendError(
+                response, _("selfservice/usergetmultiotp failed: %r") % e, 0
+            )
 
     def history(self):
-        '''
+        """
         This returns the list of the tokenactions of this user
         It returns the audit information for the given search pattern
 
@@ -2445,48 +2605,56 @@ class UserserviceController(BaseController):
                 ('query', u''), ('qtype', u'serial')]
         returns:
             JSON response
-        '''
+        """
 
         param = self.request_params
         res = {}
 
         try:
-            log.debug("params: %s" % param)
-            checkPolicyPre('selfservice', 'userhistory', param, self.authUser)
+            log.debug("params: %r", param)
+            checkPolicyPre("selfservice", "userhistory", param, self.authUser)
 
-            lines, total, page = audit_search(param, user=self.authUser,
-                                columns=['date', 'action', 'success', 'serial',
-                                        'token_type', 'administrator',
-                                        'action_detail', 'info'])
+            lines, total, page = audit_search(
+                param,
+                user=self.authUser,
+                columns=[
+                    "date",
+                    "action",
+                    "success",
+                    "serial",
+                    "token_type",
+                    "administrator",
+                    "action_detail",
+                    "info",
+                ],
+            )
 
-            response.content_type = 'application/json'
+            response.content_type = "application/json"
 
             if not total:
                 total = len(lines)
 
-            res = {"page": page,
-                   "total": total,
-                   "rows": lines}
+            res = {"page": page, "total": total, "rows": lines}
 
-            g.audit['success'] = True
+            g.audit["success"] = True
 
             db.session.commit()
             return json.dumps(res, indent=3)
 
         except PolicyException as pe:
-            log.exception("[search] policy failed: %r" % pe)
+            log.error("[search] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as exx:
-            log.exception("[search] audit/search failed: %r" % exx)
+            log.error("[search] audit/search failed: %r", exx)
             db.session.rollback()
-            return sendError(response, _("audit/search failed: %s")
-                                                        % str(exx), 0)
+            return sendError(
+                response, _("audit/search failed: %s") % str(exx), 0
+            )
 
     def activateocratoken(self):
-        '''
-
+        """
         activateocratoken - called from the selfservice web ui to activate the  OCRA token
 
         :param type:    'ocra2'
@@ -2504,7 +2672,7 @@ class UserserviceController(BaseController):
                                                    self.authUser.realm),
                         'serial' :  serial,
                     }  }
-        '''
+        """
         param = self.request_params
         ret = {}
 
@@ -2512,7 +2680,8 @@ class UserserviceController(BaseController):
             # check selfservice authorization
 
             checkPolicyPre(
-                'selfservice', 'useractivateocra2token', param, self.authUser)
+                "selfservice", "useractivateocra2token", param, self.authUser
+            )
 
             try:
                 typ = param["type"]
@@ -2520,22 +2689,23 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             if typ and typ.lower() not in ["ocra2"]:
-                return sendError(response, _("valid types is 'ocra2'. "
-                                             "You provided %s")
-                                 % typ)
+                return sendError(
+                    response,
+                    _("valid types is 'ocra2'. You provided %s") % typ,
+                )
 
             helper_param = {}
-            helper_param['type'] = typ
+            helper_param["type"] = typ
             try:
-                helper_param['serial'] = param["serial"]
+                helper_param["serial"] = param["serial"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             acode = param["activationcode"]
-            helper_param['activationcode'] = acode.upper()
+            helper_param["activationcode"] = acode.upper()
 
             try:
-                helper_param['genkey'] = param["genkey"]
+                helper_param["genkey"] = param["genkey"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
@@ -2548,41 +2718,41 @@ class UserserviceController(BaseController):
                 info = tokenObj.getInfo()
                 serial = tokenObj.getSerial()
             else:
-                raise Exception('Token not found!')
+                raise Exception("Token not found!")
 
-            url = info.get('app_import')
-            trans = info.get('transactionid')
+            url = info.get("app_import")
+            trans = info.get("transactionid")
 
             ret = {
-                'url'       : url,
-                'img'       : create_img(url, width=400, alt=url),
-                'label'     : "%s@%s" % (self.authUser.login,
-                                            self.authUser.realm),
-                'serial'    : serial,
-                'transaction' : trans,
+                "url": url,
+                "img": create_img(url, width=400, alt=url),
+                "label": "%s@%s" % (self.authUser.login, self.authUser.realm),
+                "serial": serial,
+                "transaction": trans,
             }
 
-            g.audit['serial'] = serial
-            g.audit['token_type'] = typ
-            g.audit['success'] = True
-            g.audit['realm'] = self.authUser.realm
+            g.audit["serial"] = serial
+            g.audit["token_type"] = typ
+            g.audit["success"] = True
+            g.audit["realm"] = self.authUser.realm
 
             db.session.commit()
-            return sendResult(self.response, {'activate': True, 'ocratoken': ret})
+            return sendResult(
+                self.response, {"activate": True, "ocratoken": ret}
+            )
 
         except PolicyException as pe:
-            log.exception("policy failed: %r" % pe)
+            log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("token initialization failed! %r" % e)
+        except Exception as exx:
+            log.error("token initialization failed! %r", exx)
             db.session.rollback()
-            return sendError(response, e, 1)
-
+            return sendError(response, exx, 1)
 
     def finishocra2token(self):
-        '''
+        """
 
         finishocra2token - called from the selfservice web ui to finish
                         the OCRA2 token to run the final check_t for the token
@@ -2597,16 +2767,16 @@ class UserserviceController(BaseController):
                       'failcount' = int(failcount)
                     }
 
-        '''
+        """
 
         param = self.request_params.copy()
 
-        if 'session' in param:
-            del param['session']
+        if "session" in param:
+            del param["session"]
 
         value = {}
         ok = False
-        typ = ''
+        typ = ""
         opt = None
 
         try:
@@ -2618,63 +2788,66 @@ class UserserviceController(BaseController):
             # check selfservice authorization
 
             checkPolicyPre(
-                'selfservice', 'userwebprovision', param, self.authUser)
+                "selfservice", "userwebprovision", param, self.authUser
+            )
 
             passw = param.get("pass", None)
             if not passw:
                 raise ParameterError("Missing parameter: pass")
 
-            transid = param.get('state', param.get('transactionid', None))
+            transid = param.get("state", param.get("transactionid", None))
             if not transid:
-                raise ParameterError("Missing parameter: state or "
-                                     "transactionid!")
+                raise ParameterError(
+                    "Missing parameter: state or transactionid!"
+                )
 
             vh = ValidationHandler()
-            (ok, reply) = vh.check_by_transactionid(transid=transid,
-                                                    passw=passw,
-                                                    options=param)
+            (ok, reply) = vh.check_by_transactionid(
+                transid=transid, passw=passw, options=param
+            )
 
-            value['value'] = ok
-            value['failcount'] = int(reply.get('failcount', 0))
+            value["value"] = ok
+            value["failcount"] = int(reply.get("failcount", 0))
 
-            g.audit['transactionid'] = transid
-            g.audit['token_type'] = reply['token_type']
-            g.audit['success'] = ok
-            g.audit['realm'] = self.authUser.realm
+            g.audit["transactionid"] = transid
+            g.audit["token_type"] = reply["token_type"]
+            g.audit["success"] = ok
+            g.audit["realm"] = self.authUser.realm
 
             db.session.commit()
             return sendResult(self.response, value, opt)
 
         except PolicyException as pe:
-            log.exception("[userfinishocra2token] policy failed: %r" % pe)
+            log.error("[userfinishocra2token] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
         except Exception as e:
-            error = "[userfinishocra2token] token initialization failed! %r" % e
-            log.exception(error)
+            error = (
+                "[userfinishocra2token] token initialization failed! %r" % e
+            )
+            log.error(error)
             db.session.rollback()
             return sendError(response, error, 1)
 
     def token_call(self):
-        '''
-            the generic method call for an dynamic token
-        '''
+        """
+        the generic method call for an dynamic token
+        """
         param = self.request_params.copy()
 
         res = {}
 
         try:
             # # method could be part of the virtual url
-            context = request.path_info.split('/')
+            context = request.path_info.split("/")
             if len(context) > 2:
                 method = context[2]
             else:
                 try:
                     method = param["method"]
                 except KeyError as exx:
-                    raise ParameterError("Missing parameter: '%s'"
-                                         % str(exx))
+                    raise ParameterError("Missing parameter: '%s'" % str(exx))
 
             try:
                 typ = param["type"]
@@ -2684,16 +2857,22 @@ class UserserviceController(BaseController):
             serial = param.get("serial", None)
 
             # check selfservice authorization for this dynamic method
-            pols = get_client_policy(self.client, scope="selfservice",
-                                     realm=self.authUser.realm,
-                                     action=method,
-                                     userObj=self.authUser.realm,
-                                     find_resolver=False)
+            pols = get_client_policy(
+                self.client,
+                scope="selfservice",
+                realm=self.authUser.realm,
+                action=method,
+                userObj=self.authUser.realm,
+                find_resolver=False,
+            )
             if not pols or len(pols) == 0:
-                log.error('user %r not authorized to call %s'
-                          % (self.authUser, method))
-                raise PolicyException('user %r not authorized to call %s'
-                                      % (self.authUser, method))
+                log.error(
+                    "user %r not authorized to call %s", self.authUser, method
+                )
+                raise PolicyException(
+                    "user %r not authorized to call %s"
+                    % (self.authUser, method)
+                )
 
             if typ in tokenclass_registry:
                 token_cls = tokenclass_registry.get(typ)
@@ -2709,7 +2888,7 @@ class UserserviceController(BaseController):
                 # static method call
                 if tclt is None:
                     tclt = token_cls
-                method = '' + method.strip()
+                method = "" + method.strip()
                 if hasattr(tclt, method):
                     # TODO: check that method name is a function / method
                     ret = getattr(tclt, method)(param)
@@ -2717,25 +2896,32 @@ class UserserviceController(BaseController):
                         res = ret[0]
                     if len(ret) > 1:
                         res = ret[1]
-                    g.audit['success'] = res
+                    g.audit["success"] = res
                 else:
-                    res['status'] = ('method %s.%s not supported!'
-                                    % (typ, method))
-                    g.audit['success'] = False
+                    res["status"] = "method %s.%s not supported!" % (
+                        typ,
+                        method,
+                    )
+                    g.audit["success"] = False
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pe:
-            log.exception("[token_call] policy failed: %r" % pe)
+            log.error("[token_call] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, str(pe), 1)
+            return sendError(response, pe, 1)
 
-        except Exception as e:
-            log.exception("[token_call] calling method %s.%s of user %s failed! %r"
-                      % (typ, method, c.user, e))
+        except Exception as exx:
+            log.error(
+                "[token_call] calling method %s.%s of user %s failed! %r",
+                typ,
+                method,
+                c.user,
+                exx,
+            )
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(response, exx, 1)
 
     def setdescription(self):
         """
@@ -2766,30 +2952,36 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             checkPolicyPre(
-                'selfservice', 'usersetdescription', param, self.authUser)
+                "selfservice", "usersetdescription", param, self.authUser
+            )
 
             th = TokenHandler()
 
             if not th.isTokenOwner(serial, self.authUser):
-                raise Exception("User %r is not owner of the token" %
-                                self.authUser.login)
+                raise Exception(
+                    "User %r is not owner of the token" % self.authUser.login
+                )
 
-            log.info("user %s@%s is changing description of token with "
-                     "serial %s.",
-                     self.authUser.login, self.authUser.realm, serial)
+            log.info(
+                "user %s@%s is changing description of token with "
+                "serial %s.",
+                self.authUser.login,
+                self.authUser.realm,
+                serial,
+            )
 
             ret = th.setDescription(description, serial=serial)
 
             res = {"set description": ret}
 
-            g.audit['realm'] = self.authUser.realm
-            g.audit['success'] = ret
+            g.audit["realm"] = self.authUser.realm
+            g.audit["success"] = ret
 
             db.session.commit()
             return sendResult(self.response, res, 1)
 
         except PolicyException as pex:
-            log.exception("[setdescription] policy failed")
+            log.error("[setdescription] policy failed")
             db.session.rollback()
             return sendError(response, pex, 1)
 
@@ -2798,4 +2990,5 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, 1)
 
-#eof##########################################################################
+
+# eof##########################################################################

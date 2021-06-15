@@ -57,6 +57,7 @@ log = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- --
 
+
 def get_voice_message(user="", realm=""):
     """
     This function returns the voice message as defined in the policy
@@ -68,24 +69,28 @@ def get_voice_message(user="", realm=""):
 
     voice_text = "{otp}"
 
-    pol = get_client_policy(context['Client'],
-                            scope="authentication",
-                            realm=realm,
-                            user=user,
-                            action="voice_message")
+    pol = get_client_policy(
+        context["Client"],
+        scope="authentication",
+        realm=realm,
+        user=user,
+        action="voice_message",
+    )
 
     if len(pol) > 0:
         voice_text = get_action_value(
-            pol, scope='authentication', action="voice_message", default='')
+            pol, scope="authentication", action="voice_message", default=""
+        )
 
         log.debug("[get_voice_message] got the voice_message = %s", voice_text)
 
     return voice_text
 
+
 # --------------------------------------------------------------------------- --
 
-def get_voice_language(user="", realm=""):
 
+def get_voice_language(user="", realm=""):
     """
     This function returns the voice language as defined in the policy
     authentication/voice_language. If no such policy is defined, the
@@ -96,25 +101,30 @@ def get_voice_language(user="", realm=""):
 
     voice_language = "en"
 
-    pol = get_client_policy(context['Client'],
-                            scope="authentication",
-                            realm=realm,
-                            user=user,
-                            action="voice_language")
+    pol = get_client_policy(
+        context["Client"],
+        scope="authentication",
+        realm=realm,
+        user=user,
+        action="voice_language",
+    )
 
     voice_language = get_action_value(
-            pol, scope='authentication', action="voice_language", default='')
+        pol, scope="authentication", action="voice_language", default=""
+    )
 
-    log.debug("[get_voice_language] got the voice_language = %s",
-              voice_language)
+    log.debug(
+        "[get_voice_language] got the voice_language = %s", voice_language
+    )
 
     return voice_language
+
 
 # --------------------------------------------------------------------------- --
 
 
-@tokenclass_registry.class_entry('voice')
-@tokenclass_registry.class_entry('linotp.tokens.voicetoken.VoicetokenClass')
+@tokenclass_registry.class_entry("voice")
+@tokenclass_registry.class_entry("linotp.tokens.voicetoken.VoicetokenClass")
 class VoiceTokenClass(HmacTokenClass):
     """
     Voice token class implementation
@@ -131,13 +141,13 @@ class VoiceTokenClass(HmacTokenClass):
 
         HmacTokenClass.__init__(self, token_obj)
 
-        self.setType('voice')
+        self.setType("voice")
 
         self.hashlibStr = "sha256"
 
         # the token support only challenge based authentication
 
-        self.mode = ['challenge']
+        self.mode = ["challenge"]
 
     @classmethod
     def getClassType(cls):
@@ -156,7 +166,7 @@ class VoiceTokenClass(HmacTokenClass):
     # ---------------------------------------------------------------------- --
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
+    def getClassInfo(cls, key=None, ret="all"):
         """
         getClassInfo - returns a subtree of the token definition
 
@@ -170,62 +180,72 @@ class VoiceTokenClass(HmacTokenClass):
         :rtype: s.o.
         """
 
-        log.debug("[getClassInfo] begin. Get class render info for section: "
-                  "key %r, ret %r ", key, ret)
+        log.debug(
+            "[getClassInfo] begin. Get class render info for section: "
+            "key %r, ret %r ",
+            key,
+            ret,
+        )
 
-        _ = context['translate']
+        _ = context["translate"]
 
         res = {
-            'type': 'voice',
-            'title': 'Voice Token',
-            'description': 'A voice token.',
-            'init': {
-                'page': {
-                    'html': 'voicetoken/voicetoken.mako',
-                    'scope': 'enroll',
+            "type": "voice",
+            "title": "Voice Token",
+            "description": "A voice token.",
+            "init": {
+                "page": {
+                    "html": "voicetoken/voicetoken.mako",
+                    "scope": "enroll",
                 },
-                'title': {
-                    'html': 'voicetoken/voicetoken.mako',
-                    'scope': 'enroll.title',
-                },
-            },
-            'config': {
-                'title': {
-                    'html': 'voicetoken/voicetoken.mako',
-                    'scope': 'config.title',
-                },
-                'page': {
-                    'html': 'voicetoken/voicetoken.mako',
-                    'scope': 'config',
+                "title": {
+                    "html": "voicetoken/voicetoken.mako",
+                    "scope": "enroll.title",
                 },
             },
-            'policy': {
-                'authentication': {
-                    'voice_language': {
-                        'type': 'str',
-                        'desc': _('Define the language which should be used'
-                                  'to render the voice message.')
+            "config": {
+                "title": {
+                    "html": "voicetoken/voicetoken.mako",
+                    "scope": "config.title",
+                },
+                "page": {
+                    "html": "voicetoken/voicetoken.mako",
+                    "scope": "config",
+                },
+            },
+            "policy": {
+                "authentication": {
+                    "voice_language": {
+                        "type": "str",
+                        "desc": _(
+                            "Define the language which should be used"
+                            "to render the voice message."
+                        ),
                     },
-                    'voice_message': {
-                        'type': 'str',
-                        'desc': _('Define the message which will be send'
-                                  'to the voice service for the phone'
-                                  'call.')
+                    "voice_message": {
+                        "type": "str",
+                        "desc": _(
+                            "Define the message which will be send"
+                            "to the voice service for the phone"
+                            "call."
+                        ),
                     },
-                    'voice_dynamic_mobile_number': {
-                        'type': 'bool',
-                        'desc': _('If set, a new mobile number will be '
-                                  'retrieved from the user info instead '
-                                  'of the token')
+                    "voice_dynamic_mobile_number": {
+                        "type": "bool",
+                        "desc": _(
+                            "If set, a new mobile number will be "
+                            "retrieved from the user info instead "
+                            "of the token"
+                        ),
                     },
                 }
-            }
+            },
         }
 
         if key and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
 
         log.debug("Returned the configuration section: ret %r ", ret)
@@ -248,18 +268,18 @@ class VoiceTokenClass(HmacTokenClass):
 
         # set the required phone / mobile number
 
-        if 'phone' not in param:
+        if "phone" not in param:
             raise ParameterError("Missing parameter: 'phone'")
 
-        self.set_phone(param['phone'])
+        self.set_phone(param["phone"])
 
         # ------------------------------------------------------------------ --
 
         # lower layer should generate the token seed and
         # use the sha256 for the hmac operations
 
-        param['genkey'] = 1
-        param['hashlib'] = 'sha256'
+        param["genkey"] = 1
+        param["hashlib"] = "sha256"
 
         # ------------------------------------------------------------------ --
 
@@ -267,10 +287,11 @@ class VoiceTokenClass(HmacTokenClass):
 
         HmacTokenClass.update(self, param, reset_fail_count)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
-    def is_challenge_response(self, passw, user, options=None,
-                              challenges=None):
+    def is_challenge_response(
+        self, passw, user, options=None, challenges=None
+    ):
         """
         check if the request contains the result of a challenge
 
@@ -289,13 +310,11 @@ class VoiceTokenClass(HmacTokenClass):
         # during the verification that
 
         (policy_type, pin, otp_val) = split_pin_otp(
-                                            self,
-                                            passw,
-                                            user=user,
-                                            options=options)
+            self, passw, user=user, options=options
+        )
 
         if policy_type >= 0 and len(otp_val) == self.getOtpLen():
-                return check_pin(self, pin, user=user, options=options)
+            return check_pin(self, pin, user=user, options=options)
 
         return False
 
@@ -335,11 +354,11 @@ class VoiceTokenClass(HmacTokenClass):
 
         success = True
         trans_id = transaction_id
-        message = 'challenge init ok'
+        message = "challenge init ok"
         attributes = {}
 
         now = datetime.datetime.now()
-        blocking_time = int(getFromConfig('VoiceBlockingTimeout', 60))
+        blocking_time = int(getFromConfig("VoiceBlockingTimeout", 60))
 
         # reuse challenge
         for challenge in challenges:
@@ -349,17 +368,19 @@ class VoiceTokenClass(HmacTokenClass):
 
             # TODO: clarify, if blocking should be supported?
 
-            start = challenge.get('timestamp')
+            start = challenge.get("timestamp")
             expiry = start + datetime.timedelta(seconds=blocking_time)
 
             # check if there is already a challenge underway
             if now <= expiry:
                 trans_id = challenge.getTransactionId()
-                message = 'voice call with otp already submitted'
+                message = "voice call with otp already submitted"
                 success = False
 
-                attributes = {'info': 'challenge already submitted',
-                              'state': trans_id}
+                attributes = {
+                    "info": "challenge already submitted",
+                    "state": trans_id,
+                }
                 break
 
         return success, trans_id, message, attributes
@@ -392,22 +413,22 @@ class VoiceTokenClass(HmacTokenClass):
 
         success, info = self._submit_to_provider(otp_value)
 
-        options['state'] = transaction_id
+        options["state"] = transaction_id
 
         if success is True:
-            message = 'voice call triggered'
+            message = "voice call triggered"
         else:
-            attributes = {'state': ''}
-            message = 'triggering voice call failed'
+            attributes = {"state": ""}
+            message = "triggering voice call failed"
             if info:
                 message = info
 
         # prepare parameter to return
-        data = {'counter': str(random_int)}
+        data = {"counter": str(random_int)}
         # add state to attributes which will be set to a challenges dict
         # after this method. Radius will send the transactionID in the
         # state parameter, so this is for radius compatibility
-        attributes = {'state': transaction_id}
+        attributes = {"state": transaction_id}
 
         return success, message, data, attributes
 
@@ -420,13 +441,15 @@ class VoiceTokenClass(HmacTokenClass):
         :param length: length in bytes
         :return: random number with length of len bytes
         """
-        hsm_obj = context.get('hsm', {}).get('obj')
+        hsm_obj = context.get("hsm", {}).get("obj")
         random_bytes = hsm_obj.random(len=length)
         return int(binascii.hexlify(random_bytes), 16)
 
-# --------------------------------------------------------------------------- --
+    # --------------------------------------------------------------------------- --
 
-    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
+    def checkResponse4Challenge(
+        self, user, passw, options=None, challenges=None
+    ):
         """
         verify the response of a previous challenge
 
@@ -450,7 +473,7 @@ class VoiceTokenClass(HmacTokenClass):
 
         for challenge in challenges:
 
-            otp_input_data = int(challenge.get('data').get('counter'))
+            otp_input_data = int(challenge.get("data").get("counter"))
 
             challenge_otp = self._calc_otp(otp_input_data)
 
@@ -461,32 +484,37 @@ class VoiceTokenClass(HmacTokenClass):
         return -1, []
 
     def get_mobile_number(self, user=None):
-        '''
+        """
         get the mobile number
             - from the token info or
             - if the policy allowes it, from the user info
-        '''
+        """
 
         if not user:
             return self.get_phone()
 
-        pol = get_client_policy(context['Client'],
-                                scope="authentication",
-                                user=user,
-                                action="voice_dynamic_mobile_number")
+        pol = get_client_policy(
+            context["Client"],
+            scope="authentication",
+            user=user,
+            action="voice_dynamic_mobile_number",
+        )
 
         if not pol:
             return self.get_phone()
 
         get_dynamic = get_action_value(
-            pol, scope='authentication', action="voice_dynamic_mobile_number",
-            default=False)
+            pol,
+            scope="authentication",
+            action="voice_dynamic_mobile_number",
+            default=False,
+        )
 
         if not get_dynamic:
             return self.get_phone()
 
         user_detail = getUserDetail(user)
-        return user_detail.get('mobile', self.get_phone())
+        return user_detail.get("mobile", self.get_phone())
 
     def _submit_to_provider(self, otp_value):
         """
@@ -502,24 +530,23 @@ class VoiceTokenClass(HmacTokenClass):
         language = get_voice_language(owner, owner.realm)
 
         voice_provider = loadProviderFromPolicy(
-                                            provider_type='voice',
-                                            realm=owner.realm,
-                                            user=owner)
+            provider_type="voice", realm=owner.realm, user=owner
+        )
 
         success, result = voice_provider.submitVoiceMessage(
-                                calleeNumber=self.get_mobile_number(owner),
-                                messageTemplate=message,
-                                otp=otp_value,
-                                locale=language)
+            calleeNumber=self.get_mobile_number(owner),
+            messageTemplate=message,
+            otp=otp_value,
+            locale=language,
+        )
 
         return success, result
 
     def getOtp(self, curTime=None):
-
         """
         :raises NotImplementedError
         """
-        raise NotImplemented('method getOtp is not implemented for VoiceToken')
+        raise NotImplemented("method getOtp is not implemented for VoiceToken")
 
     def _calc_otp(self, input_data):
         """
@@ -535,14 +562,20 @@ class VoiceTokenClass(HmacTokenClass):
         try:
             otp_length = int(self.token.LinOtpOtpLen)
         except ValueError as value_error_ex:
-            log.exception('[getOTP]: Could not convert otplen - value error '
-                          '%r' % (value_error_ex))
+            log.error(
+                "[getOTP]: Could not convert otplen - value error " "%r",
+                value_error_ex,
+            )
             raise value_error_ex
 
         # get otp for data using secret object and hotp algorithm
         secret_object = self._get_secret_object()
-        hmac_otp_obj = HmacOtp(secret_object, input_data, otp_length,
-                               self.getHashlib(self.hashlibStr))
+        hmac_otp_obj = HmacOtp(
+            secret_object,
+            input_data,
+            otp_length,
+            self.getHashlib(self.hashlibStr),
+        )
         otp_value = hmac_otp_obj.generate(inc_counter=False)
 
         return otp_value
@@ -597,22 +630,22 @@ class VoiceTokenClass(HmacTokenClass):
 
     # todo as @property
     def get_phone(self):
-        '''
+        """
         getter for the phone number
 
         :return:  phone number
         :rtype:  string
-        '''
+        """
 
         return self.getFromTokenInfo("phone")
 
     def getInitDetail(self, params, user=None):
-
         """
         Returns additional details upon initialisation of the token
         """
 
-        response_detail = {'serial': self.getSerial()}
+        response_detail = {"serial": self.getSerial()}
         return response_detail
+
 
 # eof #

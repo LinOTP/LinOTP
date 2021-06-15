@@ -23,7 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-'''The Controller's Base class '''
+"""The Controller's Base class """
 
 import functools
 from inspect import getfullargspec
@@ -70,14 +70,14 @@ class ControllerMetaClass(type):
 
         cls = super(ControllerMetaClass, meta).__new__(meta, name, bases, dct)
 
-        if name == 'BaseController':
+        if name == "BaseController":
             cls._url_methods = set()
         else:
             cls._url_methods = {
-                m for b in bases for m in getattr(b, '_url_methods', [])
+                m for b in bases for m in getattr(b, "_url_methods", [])
             }
             for key, value in list(dct.items()):
-                if key[0] != '_' and isinstance(value, FunctionType):
+                if key[0] != "_" and isinstance(value, FunctionType):
                     cls._url_methods.add(key)
         return cls
 
@@ -107,7 +107,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
     2. The controller's `base_url_prefix` setting
     3. The name of the controller"""
 
-    def __init__(self, name, install_name='', **kwargs):
+    def __init__(self, name, install_name="", **kwargs):
         super(BaseController, self).__init__(name, __name__, **kwargs)
 
         # These methods will be called before each request
@@ -115,8 +115,10 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
         self.before_request(self.parse_requesting_user)
         self.before_request(self.before_handler)
 
-        if hasattr(self, '__after__'):
-            self.after_request(self.__after__)    # noqa pylint: disable=no-member
+        if hasattr(self, "__after__"):
+            self.after_request(
+                self.__after__
+            )  # noqa pylint: disable=no-member
 
         # Add routes for all the routeable endpoints in this "controller",
         # as well as base classes.
@@ -125,32 +127,34 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             # Route the method to a URL of the same name,
             # except for index, which is routed to
             # /<controller-name>/
-            if method_name == 'index':
-                url = '/'
+            if method_name == "index":
+                url = "/"
             else:
-                url = '/' + method_name
+                url = "/" + method_name
 
             method = getattr(self, method_name)
 
             # We can't set attributes on instancemethod objects but we
             # can set attributes on the underlying function objects.
-            if not hasattr(method.__func__, 'methods'):
-                method.__func__.methods = ('GET', 'POST')
+            if not hasattr(method.__func__, "methods"):
+                method.__func__.methods = ("GET", "POST")
 
             # Add another route if the method has an optional second
             # parameter called `id` (and no parameters after that).
             args, _, _, defaults, _, _, _ = getfullargspec(method)
-            if ((len(args) == 2 and args[1] == 'id')
-                and (defaults is not None and len(defaults) == 1
-                     and defaults[0] is None)):
+            if (len(args) == 2 and args[1] == "id") and (
+                defaults is not None
+                and len(defaults) == 1
+                and defaults[0] is None
+            ):
                 self.add_url_rule(url, method_name, view_func=method)
-                self.add_url_rule(url + '/<id>', method_name, view_func=method)
+                self.add_url_rule(url + "/<id>", method_name, view_func=method)
             else:
                 # Otherwise, add any parameters of the method to the end
                 # of the route, in order.
                 for arg in args:
-                    if arg != 'self':
-                        url += '/<' + arg + '>'
+                    if arg != "self":
+                        url += "/<" + arg + ">"
                 self.add_url_rule(url, method_name, view_func=method)
 
                 # Some URLs have historically been documented as
@@ -172,10 +176,12 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                 # routes if the URL in question doesn't contain an
                 # underscore to begin with.)
 
-                if '_' in url and getattr(method.__func__,
-                                          'hyphenated_url', False):
-                    self.add_url_rule(url.replace('_', '-'), method_name,
-                                      view_func=method)
+                if "_" in url and getattr(
+                    method.__func__, "hyphenated_url", False
+                ):
+                    self.add_url_rule(
+                        url.replace("_", "-"), method_name, view_func=method
+                    )
 
     def parse_requesting_user(self):
         """
@@ -183,8 +189,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
         The result is placed into request_context['RequestUser']
         """
-        from linotp.useridresolver.UserIdResolver import (
-            ResolverNotAvailable)
+        from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
         requestUser = None
         try:
@@ -194,7 +199,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
         except (ResolverNotAvailable, NoResolverFound) as exx:
             log.error("Failed to connect to server %r", exx)
 
-        request_context['RequestUser'] = requestUser
+        request_context["RequestUser"] = requestUser
 
     def _parse_request_params(self):
         """
@@ -216,17 +221,20 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
         """
         params = self.request_params
 
-        if hasattr(self, '__before__'):
+        if hasattr(self, "__before__"):
 
             response = self.__before__(**params)  # pylint: disable=no-member
             if response == request:
                 # Pylons style before handler
-                warn("Returning Request is no longer necessary", DeprecationWarning)
+                warn(
+                    "Returning Request is no longer necessary",
+                    DeprecationWarning,
+                )
                 return None
             return response
 
 
-def methods(mm=['GET']):
+def methods(mm=["GET"]):
     """
     Decorator to specify the allowable HTTP methods for a
     controller/blueprint method. It turns out that `Flask.add_url_rule`
@@ -238,6 +246,7 @@ def methods(mm=['GET']):
     def inner(func):
         func.methods = mm[:]
         return func
+
     return inner
 
 
@@ -260,18 +269,21 @@ class SessionCookieMixin(object):
         def set_session_cookie(response):
             try:
                 random_key = secrets.token_hex(SESSION_KEY_LENGTH)
-                log.debug(f"[getsession] adding session cookie {random_key} "
-                          "to response.")
+                log.debug(
+                    f"[getsession] adding session cookie {random_key} "
+                    "to response."
+                )
 
                 params = {}
-                if current_app.config['SESSION_COOKIE_SECURE']:
-                    params['secure'] = True
+                if current_app.config["SESSION_COOKIE_SECURE"]:
+                    params["secure"] = True
 
-                response.set_cookie(self.session_cookie_name,
-                                    value=random_key, **params)
+                response.set_cookie(
+                    self.session_cookie_name, value=random_key, **params
+                )
                 return response
             except Exception as ex:
-                log.exception("[getsession] unable to create a session cookie")
+                log.error("[getsession] unable to create a session cookie")
                 db.session.rollback()
                 return sendError(response, ex)
 
@@ -292,8 +304,9 @@ class SessionCookieMixin(object):
     # our methods.
 
     _url_methods = {
-        'getsession': getsession,
-        'dropsession': dropsession,
+        "getsession": getsession,
+        "dropsession": dropsession,
     }
+
 
 # eof ########################################################################

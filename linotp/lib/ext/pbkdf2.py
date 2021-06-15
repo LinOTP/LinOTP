@@ -50,6 +50,8 @@
 ###########################################################################
 
 
+from binascii import b2a_hex as _b2a_hex
+from base64 import b64encode as _b64encode
 from struct import pack
 
 import sys
@@ -58,41 +60,46 @@ import hmac
 from hashlib import sha1
 
 __version__ = "1.3"
-__all__ = ['PBKDF2', 'crypt']
+__all__ = ["PBKDF2", "crypt"]
 
 
-_0xffffffffL = 0xffffffff
+_0xffffffffL = 0xFFFFFFFF
+
 
 def isunicode(s):
     return isinstance(s, str)
 
+
 def isbytes(s):
     return isinstance(s, bytes)
+
 
 def isinteger(n):
     return isinstance(n, int)
 
+
 def callable(obj):
-    return hasattr(obj, '__call__')
+    return hasattr(obj, "__call__")
+
 
 def b(s):
     return s.encode("latin-1")
 
+
 def binxor(a, b):
     return bytes([x ^ y for (x, y) in zip(a, b)])
 
-from base64 import b64encode as _b64encode
 
 def b64encode(data, chars="+/"):
     if isunicode(chars):
-        return _b64encode(data, chars.encode('utf-8')).decode('utf-8')
+        return _b64encode(data, chars.encode("utf-8")).decode("utf-8")
     else:
         return _b64encode(data, chars)
 
-from binascii import b2a_hex as _b2a_hex
 
 def b2a_hex(s):
-    return _b2a_hex(s).decode('us-ascii')
+    return _b2a_hex(s).decode("us-ascii")
+
 
 xrange = range
 
@@ -117,16 +124,23 @@ class PBKDF2(object):
     passphrases they are derived from.
     """
 
-    def __init__(self, passphrase, salt, iterations=1000,
-                 digestmodule=sha1, macmodule=hmac):
+    def __init__(
+        self,
+        passphrase,
+        salt,
+        iterations=1000,
+        digestmodule=sha1,
+        macmodule=hmac,
+    ):
         self.__macmodule = macmodule
         self.__digestmodule = digestmodule
         self._setup(passphrase, salt, iterations, self._pseudorandom)
 
     def _pseudorandom(self, key, msg):
         """Pseudorandom function.  e.g. HMAC-SHA1"""
-        return self.__macmodule.new(key=key, msg=msg,
-                                    digestmod=self.__digestmodule).digest()
+        return self.__macmodule.new(
+            key=key, msg=msg, digestmod=self.__digestmodule
+        ).digest()
 
     def read(self, _bytes):
         """Read the specified number of key bytes."""
@@ -226,9 +240,9 @@ def crypt(word, salt=None, iterations=None):
 
     # salt must be a string or the us-ascii subset of unicode
     if isunicode(salt):
-        salt = salt.encode('us-ascii').decode('us-ascii')
+        salt = salt.encode("us-ascii").decode("us-ascii")
     elif isbytes(salt):
-        salt = salt.decode('us-ascii')
+        salt = salt.decode("us-ascii")
     else:
         raise TypeError("salt must be a string")
 
@@ -253,7 +267,9 @@ def crypt(word, salt=None, iterations=None):
                 raise ValueError("Invalid salt")
 
     # Make sure the salt matches the allowed character set
-    allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./"
+    allowed = (
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./"
+    )
     for ch in salt:
         if ch not in allowed:
             raise ValueError("Illegal character %r in salt" % (ch,))
@@ -278,7 +294,7 @@ def _makesalt():
 
     This function is not suitable for generating cryptographic secrets.
     """
-    return b64encode(secrets.token_bytes(6), b'./')
+    return b64encode(secrets.token_bytes(6), b"./")
 
 
 # vim:set ts=4 sw=4 sts=4 expandtab:

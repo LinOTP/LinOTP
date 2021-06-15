@@ -46,7 +46,7 @@ def app():
     """
     app = LinOTPApp()
     config = {
-        'TESTING': True,
+        "TESTING": True,
     }
     app.config.update(config)
     return app
@@ -56,16 +56,20 @@ def app():
 # Tests for `get_backup_filename()`
 # ----------------------------------------------------------------------
 
-@pytest.mark.parametrize('fmt,filename,now', [
-    ('%Y-%m-%d_%H-%M', 'foo.2020-08-18_19-25', None),
-    ('%Y-%m-%d_%H-%M', 'bar.2000-01-01_00-00', "2000-01-01T00:00:00"),
-    ('%d%m%Y', 'baz.18082020', None),
-    ('%d%m%Y', 'quux.01012000', "2000-01-01T00:00:00"),
-])
+
+@pytest.mark.parametrize(
+    "fmt,filename,now",
+    [
+        ("%Y-%m-%d_%H-%M", "foo.2020-08-18_19-25", None),
+        ("%Y-%m-%d_%H-%M", "bar.2000-01-01_00-00", "2000-01-01T00:00:00"),
+        ("%d%m%Y", "baz.18082020", None),
+        ("%d%m%Y", "quux.01012000", "2000-01-01T00:00:00"),
+    ],
+)
 def test_get_backup_filename(freezer, monkeypatch, app, fmt, filename, now):
     freezer.move_to("2020-08-18 19:25:33")
-    monkeypatch.setitem(app.config, 'BACKUP_FILE_TIME_FORMAT', fmt)
-    fn = filename[:filename.rfind('.')]
+    monkeypatch.setitem(app.config, "BACKUP_FILE_TIME_FORMAT", fmt)
+    fn = filename[: filename.rfind(".")]
     now_dt = datetime.fromisoformat(now) if isinstance(now, str) else None
     bfn = get_backup_filename(fn, now_dt)
     assert bfn == filename

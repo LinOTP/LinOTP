@@ -76,48 +76,48 @@ class TestPolicySetrealm(TestController):
         TestController.tearDown(self)
 
     def define_setrealm_policies(self):
-        """ define setrealm policy with resolver selector """
+        """define setrealm policy with resolver selector"""
 
         # ------------------------------------------------------------------ --
 
         # define the policies
 
         params = {
-            'name': 'set_realm_test',
-            'action': 'setrealm=mydefrealm',
-            'user': 'myDefRes:',
-            'realm': 'mymixrealm',
-            'scope': 'authorization'}
+            "name": "set_realm_test",
+            "action": "setrealm=mydefrealm",
+            "user": "myDefRes:",
+            "realm": "mymixrealm",
+            "scope": "authorization",
+        }
 
-        response = self.make_system_request('setPolicy', params)
+        response = self.make_system_request("setPolicy", params)
         assert '"active": true' in response, response
 
         params = {
-            'name': 'passthru',
-            'action': 'passthru',
-            'user': '*',
-            'realm': 'mydefrealm',
-            'scope': 'authentication'}
+            "name": "passthru",
+            "action": "passthru",
+            "user": "*",
+            "realm": "mydefrealm",
+            "scope": "authentication",
+        }
 
-        response = self.make_system_request('setPolicy', params)
+        response = self.make_system_request("setPolicy", params)
         assert '"active": true' in response, response
 
     def test_setrealm_policy_negative(self):
-        """ test setrealm with resolver selector """
+        """test setrealm with resolver selector"""
 
         self.define_setrealm_policies()
 
         # asigne an token to the user
 
-        user = 'max1@mymixrealm'
-        user_pass = 'password1'
-        token_pin = 'Test123!'
+        user = "max1@mymixrealm"
+        user_pass = "password1"
+        token_pin = "Test123!"
 
-        params = {'type': 'spass',
-                  'user': user,
-                  'pin': token_pin}
+        params = {"type": "spass", "user": user, "pin": token_pin}
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"otpkey"' in response, response
 
         # ------------------------------------------------------------------ --
@@ -125,36 +125,32 @@ class TestPolicySetrealm(TestController):
         # check by the authentication, that the user is not mapped in
         # the passthru realm
 
-        params = {'user': user,
-                  'pass': user_pass}
+        params = {"user": user, "pass": user_pass}
 
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response, response
 
-        params = {'user': user,
-                  'pass': token_pin}
+        params = {"user": user, "pass": token_pin}
 
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         assert '"value": true' in response, response
 
         return
 
     def test_setrealm_policy_positiv(self):
-        """ test setrealm with resolver selector """
+        """test setrealm with resolver selector"""
 
         self.define_setrealm_policies()
 
         # asigne an token to the user
 
-        user = 'passthru_user1@mymixrealm'
-        user_pass = 'geheim1'
-        token_pin = 'Test123!'
+        user = "passthru_user1@mymixrealm"
+        user_pass = "geheim1"
+        token_pin = "Test123!"
 
-        params = {'type': 'spass',
-                  'user': user,
-                  'pin': token_pin}
+        params = {"type": "spass", "user": user, "pin": token_pin}
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"otpkey"' in response, response
 
         # ------------------------------------------------------------------ --
@@ -162,12 +158,12 @@ class TestPolicySetrealm(TestController):
         # check by the authentication, that the user is mapped in
         # the passthru realm
 
-        params = {'user': user,
-                  'pass': user_pass}
+        params = {"user": user, "pass": user_pass}
 
-        response = self.make_validate_request('check', params)
+        response = self.make_validate_request("check", params)
         assert '"value": true' in response, response
 
         return
+
 
 # eof #

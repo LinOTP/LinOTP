@@ -28,8 +28,9 @@ This file contains sample data for the integration tests
 """
 
 # LDAP resolvers
-ldap_ca_cert = \
-    """-----BEGIN CERTIFICATE-----
+from typing import Dict, List, Union
+
+ldap_ca_cert = """-----BEGIN CERTIFICATE-----
 MIIFgzCCA2ugAwIBAgIBADANBgkqhkiG9w0BAQ0FADBPMQswCQYDVQQGEwJERTEq
 MCgGA1UECgwhTFNFIExlYWRpbmcgU2VjdXJpdHkgRXhwZXJ0cyBHbWJIMRQwEgYD
 VQQDDAtMU0UgQ0EgMjAxNTAiGA8yMDE1MDQwMTAwMDAwMFoYDzIwMjcwNDAxMDAw
@@ -62,63 +63,72 @@ iDCfI7WTMiUSMthBqBysBkLTVODcoK3C0QmJMbGAczHglK65tVInkK504+SdRREz
 D73172agRToOg0Sid2C4iipj//OA3q4=
 -----END CERTIFICATE-----"""
 
-from typing import Dict, List, Union
 
-
-musicians_ldap_resolver : Dict[str, Union[str, int, bool, List]] = {
-    'name': "SE_musicians",
-    'title': "Musicians LDAP (Blackdog)",
-    'type': 'ldapresolver',
-    'uri': "ldaps://blackdog.corp.lsexperts.de",
-    'certificate': ldap_ca_cert,
-    'only_trusted_certs': True,
-    'basedn': "ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de",
+musicians_ldap_resolver: Dict[str, Union[str, int, bool, List]] = {
+    "name": "SE_musicians",
+    "title": "Musicians LDAP (Blackdog)",
+    "type": "ldapresolver",
+    "uri": "ldaps://blackdog.corp.lsexperts.de",
+    "certificate": ldap_ca_cert,
+    "only_trusted_certs": True,
+    "basedn": "ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de",
     # You may also use cn="Wolfgang Amadeus Mozart"
-    'binddn': 'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de',
-    'password': "Test123!",
-    'preset_ldap': True,
-    'expected_users': 10,
-    'users': ['bach', 'beethoven', 'berlioz', 'brahms', 'debussy', 'dvořák',
-              'haydn', 'mozart', 'حافظ', '郎']
+    "binddn": 'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de',
+    "password": "Test123!",
+    "preset_ldap": True,
+    "expected_users": 10,
+    "users": [
+        "bach",
+        "beethoven",
+        "berlioz",
+        "brahms",
+        "debussy",
+        "dvořák",
+        "haydn",
+        "mozart",
+        "حافظ",
+        "郎",
+    ],
 }
 
 physics_ldap_resolver = {
-    'name': "SE_physics",
-    'title': "Physics LDAP (Blackdog)",
-    'type': 'ldapresolver',
-    'uri': "ldaps://hottybotty.corp.lsexperts.de",
-    'certificate': ldap_ca_cert,
-    'only_trusted_certs': True,
-    'basedn': 'dc=hotad,dc=example,dc=net',
-    'binddn': 'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
-    'password': "Test123!",
-    'preset_ad': True,
-    'expected_users': 26,
+    "name": "SE_physics",
+    "title": "Physics LDAP (Blackdog)",
+    "type": "ldapresolver",
+    "uri": "ldaps://hottybotty.corp.lsexperts.de",
+    "certificate": ldap_ca_cert,
+    "only_trusted_certs": True,
+    "basedn": "dc=hotad,dc=example,dc=net",
+    "binddn": 'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
+    "password": "Test123!",
+    "preset_ad": True,
+    "expected_users": 26,
 }
 
 sql_resolver = {
-    'name': "SE_mySql",
-    'type': 'sqlresolver',
-    'driver': 'mysql',
-    'server': 'blackdog.corp.lsexperts.de',
-    'database': 'userdb',
-    'user': 'resolver_user',
-    'password': 'Test123!',
-    'table': 'user',
-    'limit': 500,
-    'encoding': 'latin1',
-    'expected_users': 5,
-    'users': ['corny', 'kay', 'eric', 'knöt', 'bianca']
+    "name": "SE_mySql",
+    "type": "sqlresolver",
+    "driver": "mysql",
+    "server": "blackdog.corp.lsexperts.de",
+    "database": "userdb",
+    "user": "resolver_user",
+    "password": "Test123!",
+    "table": "user",
+    "limit": 500,
+    "encoding": "latin1",
+    "expected_users": 5,
+    "users": ["corny", "kay", "eric", "knöt", "bianca"],
 }
 
 # Expected content of /etc/se_mypasswd is:
 #
 # hans:x:42:0:Hans Müller,Room 22,+49(0)1234-22,+49(0)5678-22,hans@example.com:x:x
 # susi:x:1336:0:Susanne Bauer,Room 23,+49(0)1234-24,+49(0)5678-23,susanne@example.com:x:x
-# rollo:x:21:0:Rollobert Fischer,Room 24,+49(0)1234-24,+49(0)5678-24,rollo@example.com:x:x
+# rollo:x:21:0:Rollobert Fischer,Room
+# 24,+49(0)1234-24,+49(0)5678-24,rollo@example.com:x:x
 sepasswd_resolver = {
-    'name': 'SE_myPasswd',
-    'type': 'passwdresolver',
-    'filename': '/etc/se_mypasswd',
-    'expected_users': 3,
+    "name": "SE_myPasswd",
+    "type": "passwdresolver",
+    "filename": "/etc/se_mypasswd",
+    "expected_users": 3,
 }

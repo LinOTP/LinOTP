@@ -35,7 +35,6 @@ log = logging.getLogger(__name__)
 
 
 class UserDomainCompare(object):
-
     def __init__(self):
         self._compare = None
 
@@ -60,17 +59,17 @@ class UserDomainCompare(object):
         return self._compare(userObj, user_def)
 
     def _parse(self, user_def):
-        '''
+        """
         parse the domain user string and distinguis if there
         is a user + domain or a sinple user only comparison required
         accordin to this the comparison method is adjusted
 
         :param user_def: user definition from the policy entry 'user'
-        '''
+        """
 
-        if '@' in user_def:
+        if "@" in user_def:
             self._compare = self._compareDomain
-        elif ':' in user_def.strip()[-1]:
+        elif ":" in user_def.strip()[-1]:
             self._compare = self._compareResolver
         else:
             self._compare = self._compareUser
@@ -87,14 +86,14 @@ class UserDomainCompare(object):
 
         """
         # first compare the domain case insensitiv
-        def_domain = user_def.split('@')[-1]
-        domain_pattern = re.compile(def_domain + '$', re.IGNORECASE)
+        def_domain = user_def.split("@")[-1]
+        domain_pattern = re.compile(def_domain + "$", re.IGNORECASE)
         compare_result = re.match(domain_pattern, userObj.realm)
         if not compare_result:
             return False
 
         # remove the domain from the user and compare
-        simple_user_def, _sep, _dom = user_def.rpartition('@')
+        simple_user_def, _sep, _dom = user_def.rpartition("@")
         return self._compareUser(userObj, simple_user_def)
 
     def _compareUser(self, userObj, user_def):
@@ -108,17 +107,17 @@ class UserDomainCompare(object):
 
         """
         # for wildcard, we can return immediatly
-        if user_def == '*':
+        if user_def == "*":
             return True
 
         # support easy wildcard '*' to express regex wildcard '.*'
-        if '*' in user_def:
-            user_def = user_def.replace('*', '.*')
+        if "*" in user_def:
+            user_def = user_def.replace("*", ".*")
             # revert double replacements
-            user_def = user_def.replace('..*', '.*')
+            user_def = user_def.replace("..*", ".*")
 
         # otherwise compare the username
-        user_pattern = re.compile(user_def + '$')
+        user_pattern = re.compile(user_def + "$")
         compare_result = re.match(user_pattern, userObj.login)
         return compare_result is not None
 
@@ -140,11 +139,12 @@ class UserDomainCompare(object):
         def_resolver = user_def[:-1]
 
         # if there is a prefixed user, split it from
-        if '.' in def_resolver:
-            def_resolver = def_resolver.split('.')[-1]
+        if "." in def_resolver:
+            def_resolver = def_resolver.split(".")[-1]
 
         # check if the resolver is defined at all
         from linotp.lib.resolver import similar_resolver_exists
+
         if not similar_resolver_exists(def_resolver):
             return False
 
@@ -155,7 +155,7 @@ class UserDomainCompare(object):
         user_resolver = user_def[:-1]
         # remove the resolver from the user and compare
         simple_user_def = user_resolver
-        if '.' in user_resolver:
+        if "." in user_resolver:
             simple_user_def, _sep, _res = user_resolver.rpartition(".")
 
         return self._compareUser(userObj, simple_user_def)
@@ -193,37 +193,37 @@ class AttributeCompare(object):
         :param user_def: the specification from the policy
         """
         # analyse the key + value comparison
-        udef, key_val = user_def.split('#', 1)
-        if '==' in key_val:
-            key, val = key_val.split('==')
-            op = 'equal'
+        udef, key_val = user_def.split("#", 1)
+        if "==" in key_val:
+            key, val = key_val.split("==")
+            op = "equal"
             self.set_key_val_compare(key.strip(), val.strip(), op)
-        elif '!=' in key_val:
-            key, val = key_val.split('!=')
-            op = 'not equal'
+        elif "!=" in key_val:
+            key, val = key_val.split("!=")
+            op = "not equal"
             self.set_key_val_compare(key.strip(), val.strip(), op)
-        elif '~=' in key_val:
-            key, val = key_val.split('~=')
-            op = 'is in'
+        elif "~=" in key_val:
+            key, val = key_val.split("~=")
+            op = "is in"
             self.set_key_val_compare(key.strip(), val.strip(), op)
 
         else:
             key = key_val.strip()
             val = None
-            op = 'exist'
+            op = "exist"
             self.set_key_val_compare(key, val, op)
 
         # analysed the user definition
         if not udef:
             # only attribute compare
-            self.set_user_access(udef, 'attribute_only')
+            self.set_user_access(udef, "attribute_only")
         else:
-            if '@' in udef:
-                self.set_user_access(udef, 'domain_compare')
-            elif ':' == udef[-1]:  # resolver match
-                self.set_user_access(udef, 'get_resolver')
+            if "@" in udef:
+                self.set_user_access(udef, "domain_compare")
+            elif ":" == udef[-1]:  # resolver match
+                self.set_user_access(udef, "get_resolver")
             elif len(udef) > 0:  # simple username compare
-                self.set_user_access(udef, 'simple_name')
+                self.set_user_access(udef, "simple_name")
 
     def _attr_equal(self, user_info):
         """
@@ -264,7 +264,7 @@ class AttributeCompare(object):
         :return: boolean
         """
 
-        return not(self._attr_equal(user_info))
+        return not (self._attr_equal(user_info))
 
     def _attr_exist(self, user_info):
         """
@@ -288,13 +288,13 @@ class AttributeCompare(object):
         """
         self.key = key
         self.val = val
-        if operator == 'exist':
+        if operator == "exist":
             self.operator = self._attr_exist
-        elif operator == 'equal':
+        elif operator == "equal":
             self.operator = self._attr_equal
-        elif operator == 'not equal':
+        elif operator == "not equal":
             self.operator = self._attr_not_equal
-        elif operator == 'is in':
+        elif operator == "is in":
             self.operator = self._attr_is_in
 
     def _userinfo_direct(self):
@@ -340,13 +340,13 @@ class AttributeCompare(object):
 
         # get the userspec resolver from the user_spec
         def_resolver = self.user_spec[:-1]
-        if '.' in def_resolver:
-            def_resolver = def_resolver.split('.')[-1]
+        if "." in def_resolver:
+            def_resolver = def_resolver.split(".")[-1]
 
         # get the user_info from the target resolver
         return self.userObj.getUserInfo(def_resolver)
 
-    def set_user_access(self, user_spec, typ='attribute_only'):
+    def set_user_access(self, user_spec, typ="attribute_only"):
         """
         setup, which user lookup should be made by function overloading
 
@@ -357,13 +357,13 @@ class AttributeCompare(object):
         """
 
         self.user_spec = user_spec
-        if typ == 'attribute_only':
+        if typ == "attribute_only":
             self.access_user = self._userinfo_direct
-        elif typ == 'simple_name':
+        elif typ == "simple_name":
             self.access_user = self._user_domain_compare
-        elif typ == 'domain_compare':
+        elif typ == "domain_compare":
             self.access_user = self._user_domain_compare
-        elif typ == 'get_resolver':
+        elif typ == "get_resolver":
             self.access_user = self._resolver_compare
 
     def compare(self, userObj, user_def):
@@ -382,5 +382,6 @@ class AttributeCompare(object):
         if not user_info:
             return False
         return self.operator(user_info)
+
 
 # eof #########################################################################

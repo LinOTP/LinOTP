@@ -30,9 +30,8 @@
 
 from linotp.tests import TestController
 
+
 class TestPoliciesBase(TestController):
-
-
     def _read_data(self, data_file):
         """
         helper to read token data files
@@ -46,8 +45,9 @@ class TestPoliciesBase(TestController):
 
             return data
 
-    def upload_tokens(self, file_name, data=None, params=None,
-                      auth_user='admin'):
+    def upload_tokens(
+        self, file_name, data=None, params=None, auth_user="admin"
+    ):
         """
         helper to upload a token file via admin/loadtokens file upload
         like it is done in the browser
@@ -63,10 +63,12 @@ class TestPoliciesBase(TestController):
 
         upload_files = [("file", file_name, data)]
 
-        response = self.make_admin_request('loadtokens',
-                                           params=params,
-                                           method='POST',
-                                           upload_files=upload_files,
-                                           auth_user=auth_user)
+        response = self.make_admin_request(
+            "loadtokens",
+            params=params,
+            method="POST",
+            upload_files=upload_files,
+            auth_user=auth_user,
+        )
 
         return response

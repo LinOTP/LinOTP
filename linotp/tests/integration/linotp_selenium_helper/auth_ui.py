@@ -34,7 +34,7 @@ in the Selenium tests
 
 
 class AuthUi(object):
-    """Base for managing parts of the manage page """
+    """Base for managing parts of the manage page"""
 
     URL = "/auth/index"
 
@@ -62,7 +62,7 @@ class AuthUi(object):
         self.driver = testcase.driver
         self.base_url = testcase.base_url
 
-    CSS_AUTH_SUBMIT = "input[type=\"submit\"]"
+    CSS_AUTH_SUBMIT = 'input[type="submit"]'
 
     def open_page(self, page):
         self.driver.get(self.base_url + page)
@@ -70,35 +70,35 @@ class AuthUi(object):
     def fill_form_element(self, field_id, value):
         return fill_form_element(self.driver, field_id, value)
 
-    def auth_using_index(self, user, pin, otp=''):
-        self.open_page('/auth/index')
+    def auth_using_index(self, user, pin, otp=""):
+        self.open_page("/auth/index")
 
-        self.fill_form_element('user', user)
+        self.fill_form_element("user", user)
         password = pin + otp
-        self.fill_form_element('pass', password)
+        self.fill_form_element("pass", password)
         self.driver.find_element_by_css_selector(self.CSS_AUTH_SUBMIT).click()
         return self._get_result()
 
     def auth_using_index3(self, user, pin, otp):
-        self.open_page('/auth/index3')
+        self.open_page("/auth/index3")
 
-        self.fill_form_element('user3', user)
-        self.fill_form_element('pass3', pin)
-        self.fill_form_element('otp3', otp)
+        self.fill_form_element("user3", user)
+        self.fill_form_element("pass3", pin)
+        self.fill_form_element("otp3", otp)
         self.driver.find_element_by_css_selector(self.CSS_AUTH_SUBMIT).click()
         return self._get_result()
 
     def _get_result(self):
-        '''
+        """
         Parse alert box text and return result code
-        '''
+        """
         alert = self.driver.switch_to.alert
         alert_text = alert.text
-        logging.debug("Auth result: %s" % alert_text)
+        logging.debug("Auth result: %s", alert_text)
         alert.accept()
         if alert_text == "User successfully authenticated!":
             return self.AUTH_SUCCESS
-        elif alert_text == 'User failed to authenticate!':
+        elif alert_text == "User failed to authenticate!":
             return self.AUTH_FAIL
 
         raise RuntimeError("Unknown auth result received: %s" % alert_text)

@@ -39,7 +39,6 @@ log = logging.getLogger(__name__)
 
 
 class TestCheckStatus(TestController):
-
     def setUp(self):
         TestController.setUp(self)
         # clean setup
@@ -59,8 +58,13 @@ class TestCheckStatus(TestController):
         self.delete_all_resolvers()
         self.delete_all_policies()
 
-    def create_hmac_token(self, user='root', pin='pin', serial='F722362',
-                          otpkey="AD8EABE235FC57C815B26CEF3709075580B44738"):
+    def create_hmac_token(
+        self,
+        user="root",
+        pin="pin",
+        serial="F722362",
+        otpkey="AD8EABE235FC57C815B26CEF3709075580B44738",
+    ):
         """
         create simple hmac token  with 10 known values
         """
@@ -74,104 +78,115 @@ class TestCheckStatus(TestController):
             "217219",
             "250710",
             "478893",
-            "517407"
+            "517407",
         ]
 
-        parameters = {"serial": serial,
-                      "otpkey": otpkey,
-                      "user": user,
-                      "pin": pin,
-                      "description": "check_status" + serial,
-                      }
+        parameters = {
+            "serial": serial,
+            "otpkey": otpkey,
+            "user": user,
+            "pin": pin,
+            "description": "check_status" + serial,
+        }
 
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
 
         return serial, otps
 
-
-###############################################################################
+    ##########################################################################
     def test_single_token(self):
-        '''
+        """
         setup hmac token to support multiple challenges
-        '''
-        policy = {'name': 'hmac_challenge_response',
-                  'scope': 'authentication',
-                  'action': 'challenge_response=hmac',
-                  'realm': '*',
-                  'user': '*',
-                  }
+        """
+        policy = {
+            "name": "hmac_challenge_response",
+            "scope": "authentication",
+            "action": "challenge_response=hmac",
+            "realm": "*",
+            "user": "*",
+        }
 
         # define challenge response for hmac token
-        response = self.make_system_request('setPolicy', params=policy)
+        response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
 
-        param = {'DefaultChallengeValidityTime': '120'}
-        response = self.make_system_request('setConfig', params=param)
+        param = {"DefaultChallengeValidityTime": "120"}
+        response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
-        serial, otps = self.create_hmac_token(user='passthru_user1',
-                                              pin='123!')
+        serial, otps = self.create_hmac_token(
+            user="passthru_user1", pin="123!"
+        )
 
         # trigger challenge
-        params = {'user': 'passthru_user1',
-                  'pass': '123!'}
-        response = self.make_validate_request('check', params)
+        params = {"user": "passthru_user1", "pass": "123!"}
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response, response
 
         # and extract the transaction id
         jresp = json.loads(response.body)
-        transid = jresp.get('detail', {}).get('transactionid', None)
+        transid = jresp.get("detail", {}).get("transactionid", None)
         assert transid is not None, response
 
         # now check for the status
-        params = {'user': 'passthru_user1',
-                  'pass': '123!',
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": "123!",
+            "transactionid": transid,
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         assert '"received_tan": false' in response, response
         assert '"valid_tan": false' in response, response
         assert '"received_count": 0' in response, response
 
         # invalidate request
-        params = {'user': 'passthru_user1',
-                  'pass': '112233',
-                  'transactionid': transid}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "passthru_user1",
+            "pass": "112233",
+            "transactionid": transid,
+        }
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response, response
 
         # now check for the status
-        params = {'user': 'passthru_user1',
-                  'pass': '123!',
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": "123!",
+            "transactionid": transid,
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         assert '"received_tan": true' in response, response
         assert '"valid_tan": false' in response, response
         assert '"received_count": 1' in response, response
 
         # validate request
-        params = {'user': 'passthru_user1',
-                  'pass': otps[0],
-                  'transactionid': transid}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "passthru_user1",
+            "pass": otps[0],
+            "transactionid": transid,
+        }
+        response = self.make_validate_request("check", params)
         assert '"value": true' in response, response
 
         # now check for the status
-        params = {'user': 'passthru_user1',
-                  'pass': '123!',
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": "123!",
+            "transactionid": transid,
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
 
         assert '"received_tan": true' in response, response
         assert '"valid_tan": true' in response, response
         assert '"received_count": 2' in response, response
 
         # verify that the challenge expires
-        param = {'DefaultChallengeValidityTime': '1'}
-        response = self.make_system_request('setConfig', params=param)
+        param = {"DefaultChallengeValidityTime": "1"}
+        response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
         start = datetime.datetime.now()
@@ -179,75 +194,84 @@ class TestCheckStatus(TestController):
             while True:
 
                 # now check for the status
-                params = {'user': 'passthru_user1',
-                          'pass': '123!',
-                          'transactionid': transid}
+                params = {
+                    "user": "passthru_user1",
+                    "pass": "123!",
+                    "transactionid": transid,
+                }
 
-                response_stat = self.make_validate_request('check_status',
-                                                           params)
+                response_stat = self.make_validate_request(
+                    "check_status", params
+                )
                 if '"value": false' in response_stat:
                     break
 
                 now = datetime.datetime.now()
-                assert now < start + datetime.timedelta(seconds=3), \
-                                "challenge did not expire: %r" % response
+                assert now < start + datetime.timedelta(seconds=3), (
+                    "challenge did not expire: %r" % response
+                )
 
         finally:
             # reset to default expiration time
-            param = {'DefaultChallengeValidityTime': '120'}
-            response = self.make_system_request('setConfig', params=param)
+            param = {"DefaultChallengeValidityTime": "120"}
+            response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
         self.delete_token(serial)
-        self.delete_policy('hmac_challenge_response')
+        self.delete_policy("hmac_challenge_response")
 
         return
 
     def test_multiple_token(self):
-        '''
+        """
         test for check_status with multiple hmac token in challenge response
-        '''
-        policy = {'name': 'hmac_challenge_response',
-                  'scope': 'authentication',
-                  'action': 'challenge_response=hmac',
-                  'realm': '*',
-                  'user': '*',
-                  }
+        """
+        policy = {
+            "name": "hmac_challenge_response",
+            "scope": "authentication",
+            "action": "challenge_response=hmac",
+            "realm": "*",
+            "user": "*",
+        }
 
         # define challenge response for hmac token
-        response = self.make_system_request('setPolicy', params=policy)
+        response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
 
-        param = {'DefaultChallengeValidityTime': '120'}
-        response = self.make_system_request('setConfig', params=param)
+        param = {"DefaultChallengeValidityTime": "120"}
+        response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
-        serial, otps = self.create_hmac_token(user='passthru_user1',
-                                              pin='123!')
+        serial, otps = self.create_hmac_token(
+            user="passthru_user1", pin="123!"
+        )
 
         otpkey2 = "6CEF3709075580B44738AD8EABE235FC57C815B2"
-        serial2, _otps = self.create_hmac_token(user='passthru_user1',
-                                                pin='123!',
-                                                serial=serial + '_2',
-                                                otpkey=otpkey2)
+        serial2, _otps = self.create_hmac_token(
+            user="passthru_user1",
+            pin="123!",
+            serial=serial + "_2",
+            otpkey=otpkey2,
+        )
 
         # trigger challenge
-        params = {'user': 'passthru_user1',
-                  'pass': '123!'}
-        response = self.make_validate_request('check', params)
+        params = {"user": "passthru_user1", "pass": "123!"}
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response, response
 
         # and extract the transaction id
         jresp = json.loads(response.body)
-        transid = jresp.get('detail', {}).get('transactionid', None)
+        transid = jresp.get("detail", {}).get("transactionid", None)
         assert transid is not None, response
 
         # now check for the status
-        params = {'user': 'passthru_user1',
-                  'pass': '123!',
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": "123!",
+            "transactionid": transid,
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         assert '"received_tan": false' in response, response
         assert '"valid_tan": false' in response, response
         assert '"received_count": 0' in response, response
@@ -256,18 +280,22 @@ class TestCheckStatus(TestController):
         assert '"valid_tan": true' not in response, response
 
         # invalidate request
-        params = {'user': 'passthru_user1',
-                  'pass': '112233',
-                  'transactionid': transid}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "passthru_user1",
+            "pass": "112233",
+            "transactionid": transid,
+        }
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response, response
 
         # now check for the status
-        params = {'user': 'passthru_user1',
-                  'pass': '123!',
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": "123!",
+            "transactionid": transid,
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         assert '"received_tan": true' in response, response
         assert '"valid_tan": false' in response, response
         assert '"received_count": 1' in response, response
@@ -277,18 +305,22 @@ class TestCheckStatus(TestController):
         assert '"received_tan": false' not in response, response
 
         # validate request
-        params = {'user': 'passthru_user1',
-                  'pass': otps[0],
-                  'transactionid': transid}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "passthru_user1",
+            "pass": otps[0],
+            "transactionid": transid,
+        }
+        response = self.make_validate_request("check", params)
         assert '"value": true' in response, response
 
         # now check for the status
-        params = {'user': 'passthru_user1',
-                  'pass': '123!',
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": "123!",
+            "transactionid": transid,
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
 
         assert '"received_tan": true' in response, response
         assert '"valid_tan": true' in response, response
@@ -297,8 +329,8 @@ class TestCheckStatus(TestController):
         assert '"received_count": 1' in response, response
 
         # verify that the challenge expires
-        param = {'DefaultChallengeValidityTime': '1'}
-        response = self.make_system_request('setConfig', params=param)
+        param = {"DefaultChallengeValidityTime": "1"}
+        response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
         start = datetime.datetime.now()
@@ -306,83 +338,88 @@ class TestCheckStatus(TestController):
             while True:
 
                 # now check for the status
-                params = {'user': 'passthru_user1',
-                          'pass': '123!',
-                          'transactionid': transid}
+                params = {
+                    "user": "passthru_user1",
+                    "pass": "123!",
+                    "transactionid": transid,
+                }
 
-                response_stat = self.make_validate_request('check_status',
-                                                           params)
+                response_stat = self.make_validate_request(
+                    "check_status", params
+                )
                 if '"value": false' in response_stat:
                     break
 
                 now = datetime.datetime.now()
-                assert now < start + datetime.timedelta(seconds=3), \
-                                "challenge did not expire: %r" % response
+                assert now < start + datetime.timedelta(seconds=3), (
+                    "challenge did not expire: %r" % response
+                )
 
         finally:
             # reset to default expiration time
-            param = {'DefaultChallengeValidityTime': '120'}
-            response = self.make_system_request('setConfig', params=param)
+            param = {"DefaultChallengeValidityTime": "120"}
+            response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
         self.delete_token(serial)
         self.delete_token(serial2)
-        self.delete_policy('hmac_challenge_response')
+        self.delete_policy("hmac_challenge_response")
 
         return
 
     def test_otppin_2(self):
-
         """
         check, if empty pass on otp pin policy 2 validates correctly
         """
 
-        policy = {'name': 'hmac_challenge_response',
-                  'scope': 'authentication',
-                  'action': 'challenge_response=hmac',
-                  'realm': '*',
-                  'user': '*',
-                  }
+        policy = {
+            "name": "hmac_challenge_response",
+            "scope": "authentication",
+            "action": "challenge_response=hmac",
+            "realm": "*",
+            "user": "*",
+        }
 
         # define challenge response for hmac token
-        response = self.make_system_request('setPolicy', params=policy)
+        response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
 
-        policy = {'name': 'otppin_policy',
-                  'scope': 'authentication',
-                  'action': 'otppin=2',
-                  'realm': '*',
-                  'user': '*',
-                  }
+        policy = {
+            "name": "otppin_policy",
+            "scope": "authentication",
+            "action": "otppin=2",
+            "realm": "*",
+            "user": "*",
+        }
 
         # define challenge response for hmac token
-        response = self.make_system_request('setPolicy', params=policy)
+        response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
 
-        param = {'DefaultChallengeValidityTime': '120'}
-        response = self.make_system_request('setConfig', params=param)
+        param = {"DefaultChallengeValidityTime": "120"}
+        response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
-        serial, otps = self.create_hmac_token(user='passthru_user1',
-                                              pin='ignored')
+        serial, otps = self.create_hmac_token(
+            user="passthru_user1", pin="ignored"
+        )
 
         # trigger challenge
-        params = {'user': 'passthru_user1', 'pass': ''}
-        response = self.make_validate_request('check', params)
+        params = {"user": "passthru_user1", "pass": ""}
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response, response
 
         # and extract the transaction id
         jresp = json.loads(response.body)
-        transid = jresp.get('detail', {}).get('transactionid', None)
+        transid = jresp.get("detail", {}).get("transactionid", None)
         assert transid is not None, response
 
         # ----------------------------------------------------------------------
 
         # now check for the status with missing pass param
-        params = {'user': 'passthru_user1',
-                  'transactionid': transid}
+        params = {"user": "passthru_user1", "transactionid": transid}
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         assert not ('"received_tan": false' in response), response
         assert not ('"valid_tan": false' in response), response
         assert not ('"received_count": 0' in response), response
@@ -390,11 +427,13 @@ class TestCheckStatus(TestController):
         # ----------------------------------------------------------------------
 
         # now check for the status with empty pass param
-        params = {'user': 'passthru_user1',
-                  'pass': '',
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": "",
+            "transactionid": transid,
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         assert '"received_tan": false' in response, response
         assert '"valid_tan": false' in response, response
         assert '"received_count": 0' in response, response
@@ -403,18 +442,22 @@ class TestCheckStatus(TestController):
 
         # make invalid request
 
-        params = {'user': 'passthru_user1',
-                  'pass': '112233',
-                  'transactionid': transid}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "passthru_user1",
+            "pass": "112233",
+            "transactionid": transid,
+        }
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response, response
 
         # now check for the status with empty pass param
-        params = {'user': 'passthru_user1',
-                  'pass': '',
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": "",
+            "transactionid": transid,
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         assert '"received_tan": true' in response, response
         assert '"valid_tan": false' in response, response
         assert '"received_count": 1' in response, response
@@ -422,18 +465,22 @@ class TestCheckStatus(TestController):
         # ----------------------------------------------------------------------
 
         # make valid request
-        params = {'user': 'passthru_user1',
-                  'pass': otps[0],
-                  'transactionid': transid}
-        response = self.make_validate_request('check', params)
+        params = {
+            "user": "passthru_user1",
+            "pass": otps[0],
+            "transactionid": transid,
+        }
+        response = self.make_validate_request("check", params)
         assert '"value": true' in response, response
 
         # now check for the status with empty pass param
-        params = {'user': 'passthru_user1',
-                  'pass': '',
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": "",
+            "transactionid": transid,
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
 
         assert '"received_tan": true' in response, response
         assert '"valid_tan": true' in response, response
@@ -441,130 +488,141 @@ class TestCheckStatus(TestController):
 
         # ----------------------------------------------------------------------
 
-        self.delete_policy('hmac_challenge_response')
-        self.delete_policy('otppin_policy')
+        self.delete_policy("hmac_challenge_response")
+        self.delete_policy("otppin_policy")
 
         return
 
-
     def test_single_token_wo_pin(self):
-        '''
+        """
         test check_status does work without pin
-        '''
+        """
 
-        empty_pin = ''
+        empty_pin = ""
 
         # define challenge response for hmac token
 
-        policy = {'name': 'hmac_challenge_response',
-                  'scope': 'authentication',
-                  'action': 'challenge_response=hmac',
-                  'realm': '*',
-                  'user': '*',
-                  }
+        policy = {
+            "name": "hmac_challenge_response",
+            "scope": "authentication",
+            "action": "challenge_response=hmac",
+            "realm": "*",
+            "user": "*",
+        }
 
-        response = self.make_system_request('setPolicy', params=policy)
+        response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
 
-        param = {'DefaultChallengeValidityTime': '120'}
-        response = self.make_system_request('setConfig', params=param)
+        param = {"DefaultChallengeValidityTime": "120"}
+        response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
-        serial, _otps = self.create_hmac_token(user='passthru_user1',
-                                               pin=empty_pin)
+        serial, _otps = self.create_hmac_token(
+            user="passthru_user1", pin=empty_pin
+        )
 
         # trigger challenge end extract the transaction id
 
-        params = {'user': 'passthru_user1',
-                  'pass': ''}
-        response = self.make_validate_request('check', params)
+        params = {"user": "passthru_user1", "pass": ""}
+        response = self.make_validate_request("check", params)
         assert '"value": false' in response, response
 
         jresp = json.loads(response.body)
-        transid = jresp.get('detail', {}).get('transactionid', '')
+        transid = jresp.get("detail", {}).get("transactionid", "")
 
         # now check for the status
-        params = {'user': 'passthru_user1',
-                  'pass': empty_pin,
-                  'transactionid': transid}
+        params = {
+            "user": "passthru_user1",
+            "pass": empty_pin,
+            "transactionid": transid,
+        }
 
-        response_stat = self.make_validate_request('check_status',
-                                                   params)
+        response_stat = self.make_validate_request("check_status", params)
         jresp = json.loads(response_stat.body)
-        status = jresp.get('detail', {}).get(
-                           'transactions', {}).get(
-                            transid, {}).get('status')
+        status = (
+            jresp.get("detail", {})
+            .get("transactions", {})
+            .get(transid, {})
+            .get("status")
+        )
         assert status == "open"
 
         self.delete_token(serial)
-        self.delete_policy('hmac_challenge_response')
+        self.delete_policy("hmac_challenge_response")
 
         return
 
     def test_check_status_wo_username(self):
-        '''
+        """
         test check_status does work without pin
-        '''
+        """
 
-        empty_pin = ''
+        empty_pin = ""
 
         # define challenge response for hmac token
 
-        policy = {'name': 'hmac_challenge_response',
-                  'scope': 'authentication',
-                  'action': 'challenge_response=hmac',
-                  'realm': '*',
-                  'user': '*',
-                  }
+        policy = {
+            "name": "hmac_challenge_response",
+            "scope": "authentication",
+            "action": "challenge_response=hmac",
+            "realm": "*",
+            "user": "*",
+        }
 
-        response = self.make_system_request('setPolicy', params=policy)
+        response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
 
-        param = {'DefaultChallengeValidityTime': '120'}
-        response = self.make_system_request('setConfig', params=param)
+        param = {"DefaultChallengeValidityTime": "120"}
+        response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
-        serial, _otps = self.create_hmac_token(user='passthru_user1',
-                                               pin=empty_pin)
+        serial, _otps = self.create_hmac_token(
+            user="passthru_user1", pin=empty_pin
+        )
 
         # trigger challenge end extract the transaction id
 
-        params = {'serial': serial,
-                  'pass': ''}
-        response = self.make_validate_request('check_s', params)
+        params = {"serial": serial, "pass": ""}
+        response = self.make_validate_request("check_s", params)
         assert '"value": false' in response, response
 
         jresp = json.loads(response.body)
-        transid = jresp.get('detail', {}).get('transactionid', '')
+        transid = jresp.get("detail", {}).get("transactionid", "")
 
         # now check for the status
-        params = {'serial': serial,
-                  'pass': empty_pin,
-                  'transactionid': transid}
+        params = {
+            "serial": serial,
+            "pass": empty_pin,
+            "transactionid": transid,
+        }
 
-        response_stat = self.make_validate_request('check_status',
-                                                   params)
+        response_stat = self.make_validate_request("check_status", params)
         jresp = json.loads(response_stat.body)
-        status = jresp.get('detail', {}).get(
-                           'transactions', {}).get(
-                            transid, {}).get('status')
+        status = (
+            jresp.get("detail", {})
+            .get("transactions", {})
+            .get(transid, {})
+            .get("status")
+        )
         assert status == "open", jresp
 
         # now check for the status
-        params = {'pass': empty_pin,
-                  'transactionid': transid}
+        params = {"pass": empty_pin, "transactionid": transid}
 
-        response_stat = self.make_validate_request('check_status',
-                                                   params)
+        response_stat = self.make_validate_request("check_status", params)
         jresp = json.loads(response_stat.body)
-        status = jresp.get('detail', {}).get(
-                           'transactions', {}).get(
-                            transid, {}).get('status')
+        status = (
+            jresp.get("detail", {})
+            .get("transactions", {})
+            .get(transid, {})
+            .get("status")
+        )
         assert status == "open"
 
         self.delete_token(serial)
-        self.delete_policy('hmac_challenge_response')
+        self.delete_policy("hmac_challenge_response")
 
         return
+
 
 # eof #########################################################################

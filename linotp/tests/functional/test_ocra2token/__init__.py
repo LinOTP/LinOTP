@@ -31,7 +31,9 @@
 import logging
 import binascii
 
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import json
 
 from datetime import datetime
@@ -55,8 +57,8 @@ from linotp.lib.crypto.utils import check
 
 log = logging.getLogger(__name__)
 
-class OcraOtp():
 
+class OcraOtp:
     def __init__(self, ocrapin=None):
         self.ocra = None
         self.bkey = None
@@ -68,20 +70,20 @@ class OcraOtp():
         self.counter = 0
 
     def init_1(self, response):
-        ''' take the response of the first init to setup the OcraOtp'''
+        """take the response of the first init to setup the OcraOtp"""
 
         jresp = json.loads(response.body)
-        assert 'detail' in jresp, response.body
-        app_import = str(jresp.get('detail', {}).get('app_import'))
-        self.sharedsecret = str(jresp.get('detail', {}).get('sharedsecret'))
-        self.serial = str(jresp.get('detail', {}).get('serial'))
+        assert "detail" in jresp, response.body
+        app_import = str(jresp.get("detail", {}).get("app_import"))
+        self.sharedsecret = str(jresp.get("detail", {}).get("sharedsecret"))
+        self.serial = str(jresp.get("detail", {}).get("serial"))
 
         # now parse the appurl for the ocrasuite
-        uri = urlparse(app_import.replace('lseqr://', 'http://'))
+        uri = urlparse(app_import.replace("lseqr://", "http://"))
         qs = uri.query
         qdict = parse_qs(qs)
 
-        ocrasuite = qdict.get('os', None)
+        ocrasuite = qdict.get("os", None)
         if ocrasuite is not None and len(ocrasuite) > 0:
             ocrasuite = ocrasuite[0]
 
@@ -100,21 +102,21 @@ class OcraOtp():
         if o[3]:  # query
             qs = o[3]
         elif o[2]:  # path
-            qs = o[2].lstrip('?')
+            qs = o[2].lstrip("?")
         else:
-            raise Exception('no query parameter defined!')
+            raise Exception("no query parameter defined!")
 
         params = parse_qs(qs)
-        if 'si' not in params:
+        if "si" not in params:
             return None
-        si = params['si'][0]
-        data = lseqr_url.split('&si=')[0]
+        si = params["si"][0]
+        data = lseqr_url.split("&si=")[0]
 
         if self.ocra is None:
             self._setup_()
 
-        signature = self.ocra.signData(data.encode('utf-8'), key=self.bkey)
-        if si.encode('utf-8') == signature:
+        signature = self.ocra.signData(data.encode("utf-8"), key=self.bkey)
+        if si.encode("utf-8") == signature:
             return True
 
         return False
@@ -124,27 +126,26 @@ class OcraOtp():
         self.activationkey = activationKey
 
         jresp = json.loads(response.body)
-        if 'detail' in jresp:
-            detail = jresp['detail']
+        if "detail" in jresp:
+            detail = jresp["detail"]
         else:
-            detail = jresp['result']['value']['ocratoken']
+            detail = jresp["result"]["value"]["ocratoken"]
 
         assert detail, response.body
-        
-        self.transid = detail.get('transactionid', detail.get('transaction'))
+
+        self.transid = detail.get("transactionid", detail.get("transaction"))
 
         # now parse the appurl for challenge and nonce
 
-        app_import = detail.get('app_import', detail.get('url'))
-        uri = urlparse(app_import.replace('lseqr://', 'http://'))
+        app_import = detail.get("app_import", detail.get("url"))
+        uri = urlparse(app_import.replace("lseqr://", "http://"))
         qdict = parse_qs(uri.query)
 
-        nonce = qdict.get('no', [])
+        nonce = qdict.get("no", [])
         if nonce is not None and len(nonce) > 0:
             self.nonce = nonce[0]
 
-
-        challenge = qdict.get('ch', [])
+        challenge = qdict.get("ch", [])
         if challenge:
             self.challenge = challenge[0]
 
@@ -159,13 +160,14 @@ class OcraOtp():
             return
 
         key_len = 20
-        if self.ocrasuite.find('-SHA256'):
+        if self.ocrasuite.find("-SHA256"):
             key_len = 32
-        elif self.ocrasuite.find('-SHA512'):
+        elif self.ocrasuite.find("-SHA512"):
             key_len = 64
 
-        self.bkey = kdf2(self.sharedsecret, self.nonce, self.activationkey,
-                         len=key_len)
+        self.bkey = kdf2(
+            self.sharedsecret, self.nonce, self.activationkey, len=key_len
+        )
         self.ocra = OcraSuite(self.ocrasuite)
 
         self.counter = 0
@@ -186,17 +188,17 @@ class OcraOtp():
             counter = self.counter
 
         param = {}
-        param['C'] = counter
-        param['Q'] = challenge
-        param['P'] = ocrapin
-        param['S'] = ''
+        param["C"] = counter
+        param["Q"] = challenge
+        param["P"] = ocrapin
+        param["S"] = ""
         if self.ocra.T is not None:
             # Default value for G is 1M, i.e., time-step size is one minute and
             # the T represents the number of minutes since epoch time [UT].
             now = datetime.utcnow()
             stime = now.strftime("%s")
             itime = int(stime)
-            param['T'] = itime
+            param["T"] = itime
 
         data = self.ocra.combineData(**param)
         otp = self.ocra.compute(data, self.bkey)

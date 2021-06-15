@@ -24,7 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
-class ToolsHandler(object):
 
+class ToolsHandler(object):
     def __init__(self):
         pass

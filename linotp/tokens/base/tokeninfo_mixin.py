@@ -35,7 +35,6 @@ log = logging.getLogger(__name__)
 
 
 class TokenInfoMixin(object):
-
     def getTokenInfo(self):
         info = {}
 
@@ -44,14 +43,14 @@ class TokenInfoMixin(object):
             try:
                 info = json.loads(tokeninfo)
             except Exception as e:
-                log.exception('JSON loading error in token info: %r' % (e))
+                log.error("JSON loading error in token info: %r", e)
 
         return info
 
     def setTokenInfo(self, info):
 
         if info is not None:
-            tokeninfo = '' + json.dumps(info, indent=0)
+            tokeninfo = "" + json.dumps(info, indent=0)
             self.token.setInfo(tokeninfo)
 
     def addToTokenInfo(self, key, value):
@@ -79,5 +78,6 @@ class TokenInfoMixin(object):
         if key in info:
             del info[key]
             self.setTokenInfo(info)
+
 
 # eof #

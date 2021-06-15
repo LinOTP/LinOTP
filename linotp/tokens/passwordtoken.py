@@ -39,15 +39,16 @@ log = logging.getLogger(__name__)
 ###############################################
 
 
-@tokenclass_registry.class_entry('pw')
+@tokenclass_registry.class_entry("pw")
 @tokenclass_registry.class_entry(
-    'linotp.tokens.passwordtoken.PasswordTokenClass')
+    "linotp.tokens.passwordtoken.PasswordTokenClass"
+)
 class PasswordTokenClass(HmacTokenClass):
-    '''
+    """
     This Token does use a static Password as the OTP value.
     In addition, the OTP PIN can be used with this token.
     This Token can be used for a scenario like losttoken
-    '''
+    """
 
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
@@ -63,8 +64,8 @@ class PasswordTokenClass(HmacTokenClass):
         return "kipw"
 
     @classmethod
-    def getClassInfo(cls, key=None, ret='all'):
-        '''
+    def getClassInfo(cls, key=None, ret="all"):
+        """
         getClassInfo - returns a subtree of the token definition
 
         :param key: subsection identifier
@@ -76,45 +77,55 @@ class PasswordTokenClass(HmacTokenClass):
         :return: subsection if key exists or user defined
         :rtype: s.o.
 
-        '''
+        """
 
         res = {
-            'type': 'pw',
-            'title': 'Password Token',
-            'description': ('A token with a fixed password. Can be combined '
-                            'with the OTP PIN. Is used for the lost token '
-                            'scenario.'),
-            'init': {
-                'page': {
-                   'html': 'passwordtoken.mako',
-                   'scope': 'enroll', },
-                'title': {
-                    'html': 'passwordtoken.mako',
-                    'scope': 'enroll.title', }, },
-
-            'config': {
-                'page': {
-                    'html': 'passwordtoken.mako',
-                    'scope': 'config', },
-                'title': {
-                    'html': 'passwordtoken.mako',
-                    'scope': 'config.title', }, },
-
-            'selfservice': {
-                'enroll': {
-                    'page': {
-                        'html': 'passwordtoken.mako',
-                        'scope': 'selfservice.enroll', },
-                    'title': {
-                        'html': 'passwordtoken.mako',
-                        'scope': 'selfservice.title.enroll', }, }, },
-
-            'policy': {}, }
+            "type": "pw",
+            "title": "Password Token",
+            "description": (
+                "A token with a fixed password. Can be combined "
+                "with the OTP PIN. Is used for the lost token "
+                "scenario."
+            ),
+            "init": {
+                "page": {
+                    "html": "passwordtoken.mako",
+                    "scope": "enroll",
+                },
+                "title": {
+                    "html": "passwordtoken.mako",
+                    "scope": "enroll.title",
+                },
+            },
+            "config": {
+                "page": {
+                    "html": "passwordtoken.mako",
+                    "scope": "config",
+                },
+                "title": {
+                    "html": "passwordtoken.mako",
+                    "scope": "config.title",
+                },
+            },
+            "selfservice": {
+                "enroll": {
+                    "page": {
+                        "html": "passwordtoken.mako",
+                        "scope": "selfservice.enroll",
+                    },
+                    "title": {
+                        "html": "passwordtoken.mako",
+                        "scope": "selfservice.title.enroll",
+                    },
+                },
+            },
+            "policy": {},
+        }
 
         if key and key in res:
             ret = res.get(key)
         else:
-            if ret == 'all':
+            if ret == "all":
                 ret = res
         return ret
 
@@ -130,13 +141,13 @@ class PasswordTokenClass(HmacTokenClass):
 
         """
 
-        if 'otpkey' not in param:
+        if "otpkey" not in param:
 
             raise ParameterError("Missing Parameter 'otpkey'!")
 
         TokenClass.update(self, param)
 
-        TokenClass.setOtpLen(self, len(param['otpkey']))
+        TokenClass.setOtpLen(self, len(param["otpkey"]))
 
     def setOtpKey(self, otpKey, reset_failcount=True):
         """
@@ -148,13 +159,14 @@ class PasswordTokenClass(HmacTokenClass):
         :param reset_failcount: boolean, if the failcounter should be reseted
         """
 
-        password_hash = utils.crypt_password(otpKey).encode('utf-8')
+        password_hash = utils.crypt_password(otpKey).encode("utf-8")
 
-        self.token.set_encrypted_seed(password_hash, b":1:",
-                                      reset_failcount=reset_failcount)
+        self.token.set_encrypted_seed(
+            password_hash, b":1:", reset_failcount=reset_failcount
+        )
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
-        '''
+        """
         checks the static password - using the secret object password
         comparison method
 
@@ -164,7 +176,7 @@ class PasswordTokenClass(HmacTokenClass):
         :param options: - not used for the password token -
 
         :return: counter, which is 0 for success and -1 for failure
-        '''
+        """
 
         secObj = self._get_secret_object()
 
@@ -176,5 +188,6 @@ class PasswordTokenClass(HmacTokenClass):
 
     def check_otp_exist(self, otp, window=10, user=None, autoassign=False):
         return self.checkOtp(otp, counter=None, window=None)
+
 
 # eof #

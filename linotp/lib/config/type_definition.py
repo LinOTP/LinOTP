@@ -37,20 +37,20 @@ from linotp.lib.type_utils import check_time_format_string
 
 
 Config_Types = {
-    'linotp.user_lookup_cache.expiration': ('duration', is_duration),
-    'linotp.resolver_lookup_cache.expiration': ('duration', is_duration),
-    'linotp.client.FORWARDED_PROXY': ('network', check_networks_expression),
-    'linotp.token.last_access': (
-                        'time_format_string', check_time_format_string
-                        ),
-    }
+    "linotp.user_lookup_cache.expiration": ("duration", is_duration),
+    "linotp.resolver_lookup_cache.expiration": ("duration", is_duration),
+    "linotp.client.FORWARDED_PROXY": ("network", check_networks_expression),
+    "linotp.token.last_access": (
+        "time_format_string",
+        check_time_format_string,
+    ),
+}
 
 
 type_definitions = {
-
     # legacy provider defintion require an extra conversion step
-    'linotp.EmailProviderConfig': ('encrypted_data', encrypted_data),
-    'linotp.SMSProviderConfig': ('encrypted_data', encrypted_data),
-    }
+    "linotp.EmailProviderConfig": ("encrypted_data", encrypted_data),
+    "linotp.SMSProviderConfig": ("encrypted_data", encrypted_data),
+}
 
 # EOF #

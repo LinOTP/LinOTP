@@ -73,14 +73,14 @@ def reload_classes():
 
         # remove the filesystem base
 
-        rel = root.replace(base_dir, '').replace(path.sep, '.').strip('.')
+        rel = root.replace(base_dir, "").replace(path.sep, ".").strip(".")
 
         if rel:
-            rel = rel + '.'
+            rel = rel + "."
 
         for sfile in sfiles:
 
-            if sfile.endswith('.py') and not sfile.startswith('__'):
+            if sfile.endswith(".py") and not sfile.startswith("__"):
 
                 token_module = import_base + rel + sfile[:-3]
 
@@ -104,9 +104,9 @@ def load_module(mod_rel):
         return True
 
     except TokenTypeNotSupportedError:
-        log.warning('Token type not supported on this setup: %s', mod_rel)
+        log.warning("Token type not supported on this setup: %s", mod_rel)
 
     except Exception as exx:
-        log.warning('unable to load token module : %r (%r)', mod_rel, exx)
+        log.warning("unable to load token module : %r (%r)", mod_rel, exx)
 
     return False

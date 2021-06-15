@@ -28,8 +28,8 @@
 def test_auth_challenge_response_hyphenated(app, client):
     # Make sure both URLs work and their results are identical
 
-    rv_us = client.get('/auth/challenge_response')
+    rv_us = client.get("/auth/challenge_response")
     assert rv_us.status_code == 200
-    rv_hy = client.get('/auth/challenge-response')
+    rv_hy = client.get("/auth/challenge-response")
     assert rv_hy.status_code == 200
     assert rv_hy.data == rv_us.data

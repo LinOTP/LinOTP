@@ -32,19 +32,20 @@ from linotp.tests import TestController
 
 
 class TestTokensearch(TestController):
-    '''
+    """
     test the search on a token list
-    '''
+    """
+
     serials = []
 
     def setUp(self):
-        ''' setup the Test Controller'''
+        """setup the Test Controller"""
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
     def tearDown(self):
-        ''' make the dishes'''
+        """make the dishes"""
         self.remove_tokens()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -52,77 +53,79 @@ class TestTokensearch(TestController):
         return
 
     def remove_tokens(self):
-        '''
+        """
         remove all tokens, which are in the internal array of serial
 
         :return: - nothing -
-        '''
+        """
         for serial in self.serials:
             param = {"serial": serial}
-            response = self.make_admin_request('remove', params=param)
-            assert 'value' in response
+            response = self.make_admin_request("remove", params=param)
+            assert "value" in response
 
         return
 
     def test_singel_character_wildcard_search(self):
-        """ single char wildcard test for user lookup in token view"""
+        """single char wildcard test for user lookup in token view"""
 
         # ------------------------------------------------------------------ --
 
         response = self.make_system_request(
-                    'getConfig',
-                    params={'key': 'splitAtSign'})
+            "getConfig", params={"key": "splitAtSign"}
+        )
 
         jresp = json.loads(response.body)
-        splitAtSig = jresp.get(
-                        'result', {}).get(
-                            'value', {}).get(
-                                'getConfig splitAtSig')
+        splitAtSig = (
+            jresp.get("result", {})
+            .get("value", {})
+            .get("getConfig splitAtSig")
+        )
 
         # ------------------------------------------------------------------ --
 
         response = self.make_system_request(
-                    'setConfig',
-                    params={'splitAtSign': 'false'})
+            "setConfig", params={"splitAtSign": "false"}
+        )
 
         msg = '"setConfig splitAtSign:false": true'
 
         assert msg in response
 
         # create token
-        params = {'type': 'spass',
-                  'user': 'pass.thru@example.com'}
+        params = {"type": "spass", "user": "pass.thru@example.com"}
 
-        response = self.make_admin_request('init', params=params)
-        assert 'serial' in response
+        response = self.make_admin_request("init", params=params)
+        assert "serial" in response
 
         jresp = json.loads(response.body)
-        serial = jresp.get('detail', {}).get('serial', '')
+        serial = jresp.get("detail", {}).get("serial", "")
         if serial:
             self.serials.append(serial)
 
         # search for token which belong to a certain user
-        params = {'user': 'pass.thru@example.com'}
-        response = self.make_admin_request('show', params=params)
+        params = {"user": "pass.thru@example.com"}
+        response = self.make_admin_request("show", params=params)
         assert serial in response
 
         # search with wildcard for token which belong to a certain user
-        params = {'user': 'pass*thru@example.com'}
-        response = self.make_admin_request('show', params=params)
+        params = {"user": "pass*thru@example.com"}
+        response = self.make_admin_request("show", params=params)
         assert serial in response
 
         # ----------------------------------------------------------------- --
 
         if splitAtSig is None:
             response = self.make_system_request(
-                        'delConfig', params={'key': 'splitAtSign'})
+                "delConfig", params={"key": "splitAtSign"}
+            )
 
         else:
             response = self.make_system_request(
-                        'setConfig',
-                        params={'splitAtSign': splitAtSig})
+                "setConfig", params={"splitAtSign": splitAtSig}
+            )
 
         # ----------------------------------------------------------------- --
         return
+
 
 # eof #

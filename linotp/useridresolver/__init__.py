@@ -26,12 +26,12 @@
 #    Support: www.keyidentity.com
 #
 
-'''
+"""
 The useridresolver is responsible for getting userids for loginnames and vice versa.
 
 This base module contains the base class UserIdResolver.UserIdResolver and also the
 community class PasswdIdResolver.IdResolver, that is inherited from the base class.
-'''
+"""
 
 from os import path, listdir
 import logging
@@ -47,7 +47,7 @@ __copyright__ = "Copyright (C) arxes-tolina GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@keyidentity.com"
-__version__ = '2.12'
+__version__ = "2.12"
 
 
 # ------------------------------------------------------------------------------
@@ -68,9 +68,8 @@ class ClassRegistry(dict):
     """
 
     def class_entry(self, registry_key=None):
-
-        """ decorator factory to insert classes into
-        this registry """
+        """decorator factory to insert classes into
+        this registry"""
 
         def _inner(cls_):
 
@@ -87,6 +86,7 @@ class ClassRegistry(dict):
 
         return _inner
 
+
 resolver_registry = ClassRegistry()
 
 
@@ -94,9 +94,8 @@ resolver_registry = ClassRegistry()
 
 
 def reload_classes():
-
-    """ iterates through the modules in this package
-    and import every single one of them """
+    """iterates through the modules in this package
+    and import every single one of them"""
 
     # Find out the path this file resides in
     abs_file = path.abspath(__file__)
@@ -107,14 +106,16 @@ def reload_classes():
 
     for fn in files_in_ext_path:
         # filter python files
-        if fn.endswith('.py') and not fn == '__init__.py':
+        if fn.endswith(".py") and not fn == "__init__.py":
             # translate them into module syntax
             # and import
             mod_rel = fn[0:-3]
             try:
                 __import__(mod_rel, globals=globals(), level=1)
             except Exception as exx:
-                log.warning('unable to load resolver module : %r (%r)'
-                            % (mod_rel, exx))
+                log.warning(
+                    "unable to load resolver module : %r (%r)", mod_rel, exx
+                )
+
 
 reload_classes()

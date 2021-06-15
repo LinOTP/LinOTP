@@ -59,44 +59,44 @@ log = logging.getLogger(__name__)
 
 
 def email_otp_func(call_args):
-    '''
+    """
     callback to extract the otp value from the mock interface parameters
 
     :param call_args: arguments to the smtp.SMTP.sendmail method
     :return: the extracted otp value as string
-    '''
+    """
     otp = None
     try:
         ordered_args = call_args[0]
         _email_from = ordered_args[0]
         _email_to = ordered_args[1]
         message = ordered_args[2]
-        matches = re.search('\d{6}', message)
+        matches = re.search(r"\d{6}", message)
         otp = matches.group(0)
     except Exception as exx:
-        log.error('email_otp failed: %r' % exx)
+        log.error("email_otp failed: %r", exx)
     return otp
 
 
 def sms_otp_func(call_args):
-    '''
+    """
     callback to extract the otp value from the mock interface parameters
 
     :param call_args: arguments to the smtp.SMTP.sendmail method
     :return: the extracted otp value as string
-    '''
+    """
     otp = None
     try:
         ordered_args = call_args[0]
         _phone = ordered_args[0]
         otp = ordered_args[1]
     except Exception as exx:
-        log.error('sms_otp failed: %r' % exx)
+        log.error("sms_otp failed: %r", exx)
     return otp
 
 
-def get_otp(counter=0, otpkey=None, mock_obj=None, otp_func=None, typ='hmac'):
-    '''
+def get_otp(counter=0, otpkey=None, mock_obj=None, otp_func=None, typ="hmac"):
+    """
     extract from the context the otp value
     - if we have a mock_obj and a extractor callback, we are using this one
     - else we take the given otp value and the secret to calculate the new one
@@ -105,12 +105,12 @@ def get_otp(counter=0, otpkey=None, mock_obj=None, otp_func=None, typ='hmac'):
     :param otpkey: the otpkey secret
     :param mock_obj: the mock hooked function which recieved the parameters
     :param otp_func: the otp extractor function
-    '''
+    """
     otp = None
     if mock_obj is not None:
         call_args = mock_obj.call_args
         # compare type of otp_func with known function
-        if otp_func is not None and type(otp_func) == type(get_otp):
+        if otp_func is not None and isinstance(otp_func, type(get_otp)):
             otp = otp_func(call_args)
 
     if otp is None:
@@ -121,7 +121,7 @@ def get_otp(counter=0, otpkey=None, mock_obj=None, otp_func=None, typ='hmac'):
 
 
 def calcOTP(key, counter=0, digits=6, typ=None):
-    '''
+    """
     as we have to use this method in a not class related function
     this function is extracted
 
@@ -130,9 +130,9 @@ def calcOTP(key, counter=0, digits=6, typ=None):
     :param digits: the number of to be returned digits
 
     :return: the otp value as string
-    '''
+    """
     htoken = HmacOtp(digits=digits)
-    if typ == 'totp':
+    if typ == "totp":
         log.debug("waiting for next time slot")
         timestep = 30
         time.sleep(timestep + 1)
@@ -142,7 +142,9 @@ def calcOTP(key, counter=0, digits=6, typ=None):
 
     return otp
 
+
 HTTP_RESPONSE_FUNC = None
+
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
 
@@ -151,11 +153,8 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     content = {
         "version": "LinOTP MOCK",
         "jsonrpc": "2.0",
-        "result": {
-            "status": True,
-            "value": True
-        },
-        "id": 0
+        "result": {"status": True, "value": True},
+        "id": 0,
     }
     status, response = TestChallengeResponseController.HTTP_RESPONSE
     if response:
@@ -165,12 +164,13 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     global HTTP_RESPONSE_FUNC
     test_func = HTTP_RESPONSE_FUNC
     if test_func:
-        body = kwparams.get('body')
+        body = kwparams.get("body")
         params = dict(urllib.parse.parse_qsl(body))
         resp, content = test_func(params)
         HTTP_RESPONSE_FUNC = None
 
     return resp, json.dumps(content)
+
 
 class TestChallengeResponseController(TestSpecialController):
 
@@ -179,8 +179,9 @@ class TestChallengeResponseController(TestSpecialController):
 
     @classmethod
     def setup_class(cls):
-        cls.radius_proc = cls.start_radius_server(cls.radius_authport,
-                                                     cls.radius_acctport)
+        cls.radius_proc = cls.start_radius_server(
+            cls.radius_authport, cls.radius_acctport
+        )
         TestSpecialController.setup_class()
 
     @classmethod
@@ -190,9 +191,9 @@ class TestChallengeResponseController(TestSpecialController):
         TestSpecialController.teardown_class()
 
     def setUp(self):
-        '''
+        """
         This sets up all the resolvers and realms
-        '''
+        """
         TestSpecialController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
@@ -210,9 +211,10 @@ class TestChallengeResponseController(TestSpecialController):
         self.delete_all_policies()
 
         self.remote_url = "http://127.0.0.1:%s" % self.paster_port
-        self.sms_url = ("http://localhost:%s/testing/http2sms" %
-                        self.paster_port)
-        self.radius_url = 'localhost:%s' % self.radius_authport,
+        self.sms_url = (
+            "http://localhost:%s/testing/http2sms" % self.paster_port
+        )
+        self.radius_url = ("localhost:%s" % self.radius_authport,)
         return
 
     def tearDown(self):
@@ -227,17 +229,22 @@ class TestChallengeResponseController(TestSpecialController):
         self.delete_all_resolvers()
         TestSpecialController.tearDown(self)
 
-    def calcOTP(self, key, counter=0, digits=6, typ='hmac'):
+    def calcOTP(self, key, counter=0, digits=6, typ="hmac"):
         otp = calcOTP(key, counter=counter, digits=digits, typ=typ)
         return otp
 
-    def createToken(self, serial='F722362', user='root', pin="pin",
-                    description="TestToken1", typ='hmac',
-                    otpkey="AD8EABE235FC57C815B26CEF3709075580B44738",
-                    phone=None,
-                    email_address=None,
-                    realm=None
-                    ):
+    def createToken(
+        self,
+        serial="F722362",
+        user="root",
+        pin="pin",
+        description="TestToken1",
+        typ="hmac",
+        otpkey="AD8EABE235FC57C815B26CEF3709075580B44738",
+        phone=None,
+        email_address=None,
+        realm=None,
+    ):
 
         params = {
             "serial": serial,
@@ -246,34 +253,40 @@ class TestChallengeResponseController(TestSpecialController):
             "pin": pin,
             "type": typ,
             "description": description,
-            'session': self.session,
-            }
+            "session": self.session,
+        }
         if realm:
-            params['realm'] = realm
+            params["realm"] = realm
         if phone is not None:
-            params['phone'] = phone
+            params["phone"] = phone
         if email_address is not None:
-            params['email_address'] = email_address
+            params["email_address"] = email_address
 
-        response = self.make_admin_request(action='init', params=params)
+        response = self.make_admin_request(action="init", params=params)
         assert '"value": true' in response, response
         self.serials.append(serial)
         return serial
 
-    def setPinPolicy(self, name='otpPin', realm='ldap_realm',
-                     action='otppin=1, ', scope='authentication',
-                     active=True, remoteurl=None):
+    def setPinPolicy(
+        self,
+        name="otpPin",
+        realm="ldap_realm",
+        action="otppin=1, ",
+        scope="authentication",
+        active=True,
+        remoteurl=None,
+    ):
         params = {
-            'name': name,
-            'user': '*',
-            'action': action,
-            'scope': scope,
-            'realm': realm,
-            'time': '',
-            'client': '',
-            'active': active,
-            'session': self.session,
-            }
+            "name": name,
+            "user": "*",
+            "action": action,
+            "scope": scope,
+            "realm": realm,
+            "time": "",
+            "client": "",
+            "active": active,
+            "session": self.session,
+        }
 
         response = self.make_system_request("setPolicy", params=params)
         assert '"status": true' in response, response
@@ -289,21 +302,14 @@ class TestChallengeResponseController(TestSpecialController):
         Delete policy on remote LinOTP found at url
         """
         params = {
-            'name': name,
-            'session': self.session,
-            }
+            "name": name,
+            "session": self.session,
+        }
         cookies = {"admin_session": self.session}
 
         r_url = "%s/%s" % (url, "system/delPolicy")
-        response = self.do_http_request(r_url,
-                                        params=params,
-                                        cookies=cookies)
+        response = self.do_http_request(r_url, params=params, cookies=cookies)
         return response
-
-
-
-
-
 
 
 ##eof##########################################################################

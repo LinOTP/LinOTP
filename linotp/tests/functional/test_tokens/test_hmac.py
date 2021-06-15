@@ -49,6 +49,7 @@ def time2counter(t_time, t_step=60):
     t_delta = (t_time - unix_start_time).total_seconds()
     counts = t_delta / t_step
     import math
+
     return math.floor(counts)
 
 
@@ -59,7 +60,6 @@ def get_otp(key, counter=None, digits=8, hashfunc=sha1):
 
 
 class TestHmacTokenController(TestController):
-
     def test_change_otplen_4_hotp(self):
         """Verify that changing the otp len of a hmac token works.
 
@@ -67,29 +67,26 @@ class TestHmacTokenController(TestController):
         2. call admin/set to change the otp len and verify the next otp
         """
 
-        serial = 'hmac_one'
-        pin = '123!'
+        serial = "hmac_one"
+        pin = "123!"
 
         params = {
-            'type': 'hmac',
-            'otplen': '6',
-            'otpkey': seed,
-            'hashlib': 'sha1',
-            'serial': serial,
-            'pin': pin,
-            }
+            "type": "hmac",
+            "otplen": "6",
+            "otpkey": seed,
+            "hashlib": "sha1",
+            "serial": serial,
+            "pin": pin,
+        }
 
-        response = self.make_admin_request('init', params=params)
-        assert 'false' not in response
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response
 
         otp = get_otp(key=seed, counter=1, digits=6, hashfunc=sha1)
 
-        params = {
-            'serial': serial,
-            'pass': pin + otp
-            }
-        response = self.make_validate_request('check_s', params=params)
-        assert 'false' not in response
+        params = {"serial": serial, "pass": pin + otp}
+        response = self.make_validate_request("check_s", params=params)
+        assert "false" not in response
 
         # ----------------------------------------------------------------- --
 
@@ -97,20 +94,17 @@ class TestHmacTokenController(TestController):
         # works
 
         params = {
-            'serial': serial,
-            'OtpLen': '8',
-            }
-        response = self.make_admin_request('set', params)
-        assert 'false' not in response
+            "serial": serial,
+            "OtpLen": "8",
+        }
+        response = self.make_admin_request("set", params)
+        assert "false" not in response
 
         otp = get_otp(key=seed, counter=2, digits=8, hashfunc=sha1)
 
-        params = {
-            'serial': serial,
-            'pass': pin + otp
-            }
-        response = self.make_validate_request('check_s', params=params)
-        assert 'false' not in response
+        params = {"serial": serial, "pass": pin + otp}
+        response = self.make_validate_request("check_s", params=params)
+        assert "false" not in response
 
     def test_change_otplen_4_totp(self):
         """Verify that changing the otp len of a totp token works.
@@ -119,21 +113,20 @@ class TestHmacTokenController(TestController):
         2. call admin/set to change the otp len and verify the next otp
         """
 
-        serial = 'totp_one'
-        pin = '123!'
+        serial = "totp_one"
+        pin = "123!"
 
         params = {
-            'type': 'totp',
-            'otplen': '6',
-            'otpkey': seed,
-            'hashlib': 'sha1',
-            'serial': serial,
-            'pin': pin,
-            }
+            "type": "totp",
+            "otplen": "6",
+            "otpkey": seed,
+            "hashlib": "sha1",
+            "serial": serial,
+            "pin": pin,
+        }
 
-        response = self.make_admin_request('init', params=params)
-        assert 'false' not in response
-
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response
 
         t_now = datetime.utcnow()
 
@@ -142,13 +135,10 @@ class TestHmacTokenController(TestController):
 
             counter = time2counter(t_time, t_step=30)
             otp = get_otp(key=seed, counter=counter, digits=6, hashfunc=sha1)
-    
-            params = {
-                'serial': serial,
-                'pass': pin + otp
-                }
-            response = self.make_validate_request('check_s', params=params)
-            assert 'false' not in response
+
+            params = {"serial": serial, "pass": pin + otp}
+            response = self.make_validate_request("check_s", params=params)
+            assert "false" not in response
 
         # ----------------------------------------------------------------- --
 
@@ -156,11 +146,11 @@ class TestHmacTokenController(TestController):
         # still works
 
         params = {
-            'serial': serial,
-            'OtpLen': '8',
-            }
-        response = self.make_admin_request('set', params)
-        assert 'false' not in response
+            "serial": serial,
+            "OtpLen": "8",
+        }
+        response = self.make_admin_request("set", params)
+        assert "false" not in response
 
         t_time = t_now
         with freeze_time(t_time):
@@ -168,12 +158,9 @@ class TestHmacTokenController(TestController):
             counter = time2counter(t_time, t_step=30)
             otp = get_otp(key=seed, counter=counter, digits=8, hashfunc=sha1)
 
-            params = {
-                'serial': serial,
-                'pass': pin + otp
-                }
-            response = self.make_validate_request('check_s', params=params)
-            assert 'false' not in response
+            params = {"serial": serial, "pass": pin + otp}
+            response = self.make_validate_request("check_s", params=params)
+            assert "false" not in response
 
     def test_change_timestep_4_totp(self):
         """Verify that changing the timestep of a totp token works.
@@ -183,29 +170,27 @@ class TestHmacTokenController(TestController):
         3. verify the next otp with timeStep difference ahead
         """
 
-        params = {
-            "totp.timeStep": '60'
-            }
-        response = self.make_system_request('setConfig', params=params)
-        assert 'false' not in response
+        params = {"totp.timeStep": "60"}
+        response = self.make_system_request("setConfig", params=params)
+        assert "false" not in response
 
-        serial = 'totp_two'
-        pin = '123!'
+        serial = "totp_two"
+        pin = "123!"
 
-        timeStep = '30'
+        timeStep = "30"
 
         params = {
-            'type': 'totp',
-            'otplen': '6',
-            'timeStep': timeStep,
-            'otpkey': seed,
-            'hashlib': 'sha1',
-            'serial': serial,
-            'pin': pin,
-            }
+            "type": "totp",
+            "otplen": "6",
+            "timeStep": timeStep,
+            "otpkey": seed,
+            "hashlib": "sha1",
+            "serial": serial,
+            "pin": pin,
+        }
 
-        response = self.make_admin_request('init', params=params)
-        assert 'false' not in response
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response
 
         t_now = datetime.utcnow()
         t_time = t_now - timedelta(minutes=2)
@@ -213,13 +198,10 @@ class TestHmacTokenController(TestController):
 
             counter = time2counter(t_time, t_step=int(timeStep))
             otp = get_otp(key=seed, counter=counter, digits=6, hashfunc=sha1)
-    
-            params = {
-                'serial': serial,
-                'pass': pin + otp
-                }
-            response = self.make_validate_request('check_s', params=params)
-            assert 'false' not in response
+
+            params = {"serial": serial, "pass": pin + otp}
+            response = self.make_validate_request("check_s", params=params)
+            assert "false" not in response
 
         # ----------------------------------------------------------------- --
 
@@ -227,14 +209,14 @@ class TestHmacTokenController(TestController):
         # - it did't work as the last otp count rememberd was in 30 sec steps
         #   and jumping over this in seconds since 1970 * 2 which is far ahead
 
-        timeStep = '60'
+        timeStep = "60"
 
         params = {
-            'serial': serial,
-            'timeStep': timeStep,
-            }
-        response = self.make_admin_request('set', params)
-        assert 'false' not in response
+            "serial": serial,
+            "timeStep": timeStep,
+        }
+        response = self.make_admin_request("set", params)
+        assert "false" not in response
 
         t_time = t_now
         with freeze_time(t_time):
@@ -242,9 +224,6 @@ class TestHmacTokenController(TestController):
             counter = time2counter(t_time, t_step=int(timeStep))
             otp = get_otp(key=seed, counter=counter, digits=6, hashfunc=sha1)
 
-            params = {
-                'serial': serial,
-                'pass': pin + otp
-                }
-            response = self.make_validate_request('check_s', params=params)
-            assert 'false' not in response
+            params = {"serial": serial, "pass": pin + otp}
+            response = self.make_validate_request("check_s", params=params)
+            assert "false" not in response

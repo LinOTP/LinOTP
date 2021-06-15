@@ -57,15 +57,13 @@ TIME_FORMAT = "%y%m%d%H%M"
 
 # backup legacy commands: restore (+ backup == to be implemented and tested)
 
-backup_cmds = AppGroup("backup",
-                       help="Manage database-specific backups")
+backup_cmds = AppGroup("backup", help="Manage database-specific backups")
 
 
-@backup_cmds.command("restore",
-                     help="Restore a MySQL backup file.")
+@backup_cmds.command("restore", help="Restore a MySQL backup file.")
 @click.option("--file", help="name of the MySQL backup file")
 def restore_mysql_command(file):
-    """ Restore MySQL backups."""
+    """Restore MySQL backups."""
     try:
         current_app.echo("Restoring legacy database ...", v=1)
         restore_mysql_database(filename=file)
@@ -75,10 +73,9 @@ def restore_mysql_command(file):
         sys.exit(1)
 
 
-@backup_cmds.command("create",
-                     help="Create a backup of a MySQL database.")
+@backup_cmds.command("create", help="Create a backup of a MySQL database.")
 def backup_mysql_command():
-    """ Backup MySQL database."""
+    """Backup MySQL database."""
     try:
         current_app.echo("Backup MySQL database ...", v=1)
         backup_mysql_database()
@@ -92,8 +89,9 @@ def backup_mysql_command():
 
 # backend implementation
 
+
 def backup_mysql_database():
-    """ backup the mysql database via mysqldump
+    """backup the mysql database via mysqldump
 
     similar to the original bash script, thus
     - using the same time-stamp format
@@ -115,9 +113,11 @@ def backup_mysql_database():
     engine = create_engine(sql_uri)
 
     if "mysql" not in engine.url.drivername:
-        app.echo("MySQL backup file can only be created from a"
-                 " MySQL database. current database driver "
-                 f"is {engine.url.drivername!r}")
+        app.echo(
+            "MySQL backup file can only be created from a"
+            " MySQL database. current database driver "
+            f"is {engine.url.drivername!r}"
+        )
         raise click.Abort()
 
     # ---------------------------------------------------------------------- --
@@ -131,7 +131,8 @@ def backup_mysql_database():
         f"--port={engine.url.port or 3306}",
         f"--host={engine.url.host}",
         f"--result-file={backup_filename}",
-        engine.url.database]
+        engine.url.database,
+    ]
 
     # ---------------------------------------------------------------------- --
 
@@ -172,9 +173,11 @@ def restore_mysql_database(filename: str):
     engine = create_engine(sql_uri)
 
     if "mysql" not in engine.url.drivername:
-        app.echo("MySQL backup file can only be restored to a "
-                 "MySQL database. Current database driver "
-                 f"is {engine.url.drivername!r}")
+        app.echo(
+            "MySQL backup file can only be restored to a "
+            "MySQL database. Current database driver "
+            f"is {engine.url.drivername!r}"
+        )
         raise click.Abort()
 
     # ---------------------------------------------------------------------- --
@@ -187,8 +190,9 @@ def restore_mysql_database(filename: str):
         f"--password={engine.url.password_original}",
         f"--host={engine.url.host}",
         f"--port={engine.url.port or 3306}",
-        "-D", engine.url.database
-        ]
+        "-D",
+        engine.url.database,
+    ]
 
     # ---------------------------------------------------------------------- --
 
@@ -200,11 +204,14 @@ def restore_mysql_database(filename: str):
 
     with open(backup_filename, "r") as backup_file:
         result = subprocess.run(
-            command, stdin=backup_file, capture_output=True)
+            command, stdin=backup_file, capture_output=True
+        )
 
         if result.returncode != 0:
-            app.echo("Failed to restore MySQL backup file: "
-                     f"{result.stderr.decode('utf-8')!s}")
+            app.echo(
+                "Failed to restore MySQL backup file: "
+                f"{result.stderr.decode('utf-8')!s}"
+            )
             raise click.Abort()
 
         msg = result.stdout.decode("utf-8")

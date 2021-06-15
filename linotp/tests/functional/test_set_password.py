@@ -45,7 +45,6 @@ log = logging.getLogger(__name__)
 
 
 class TestSetAdminPassword(TestController):
-
     def drop_admin_user(self):
         """
         for the tests, we will drop the imported user table
@@ -65,13 +64,14 @@ class TestSetAdminPassword(TestController):
         for testing we require the admin user to exist
         """
 
-        db_context = None       # not required
+        db_context = None  # not required
 
         SetPasswordHandler.create_table(db_context)
         SetPasswordHandler.create_admin_user(
-                        db_context,
-                        username='admin',
-                        crypted_password=utils.crypt_password('nimda'))
+            db_context,
+            username="admin",
+            crypted_password=utils.crypt_password("nimda"),
+        )
 
     def test_set_simple_password(self):
         """
@@ -83,12 +83,12 @@ class TestSetAdminPassword(TestController):
         self.create_admin_user()
 
         params = {}
-        params['old_password'] = 'nimda'
-        params['new_password'] = 'admin'
+        params["old_password"] = "nimda"
+        params["new_password"] = "admin"
 
-        response = self.make_tools_request('setPassword',
-                                           params=params,
-                                           auth_user='admin')
+        response = self.make_tools_request(
+            "setPassword", params=params, auth_user="admin"
+        )
 
         msg = '"detail": "password updated for \'admin\'"'
         assert msg in response

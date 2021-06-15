@@ -43,31 +43,29 @@ def mocked_translate(input_data=None):
 
 
 class TestActivationMako(unittest.TestCase):
-
     class MyContext(object):
-        scope = 'selfservice.activate'
-        user = 'me'
-        realm = 'home'
+        scope = "selfservice.activate"
+        user = "me"
+        realm = "home"
         _ = mocked_translate
 
     def setUp(self):
         os.path.abspath(__file__)
         self.dirname = os.path.dirname(__file__)
         self.lib_token_dir = os.path.abspath(
-            os.path.dirname(
-                self.dirname + '/../../../../../linotp/tokens/'))
+            os.path.dirname(self.dirname + "/../../../../../linotp/tokens/")
+        )
 
         unittest.TestCase.setUp(self)
 
     def test_qrtoken_activate(self):
 
         qrtemplate = Template(
-            filename=self.lib_token_dir + '/qrtoken/qrtoken.mako')
+            filename=self.lib_token_dir + "/qrtoken/qrtoken.mako"
+        )
 
         buf = StringIO()
-        ctx = Context(buf,
-                      c=self.MyContext(),
-                      _=mocked_translate)
+        ctx = Context(buf, c=self.MyContext(), _=mocked_translate)
         _res = qrtemplate.render_context(ctx)
         content = buf.getvalue()
         assert "params['user'] = 'me@home';" in content
@@ -77,12 +75,11 @@ class TestActivationMako(unittest.TestCase):
     def test_pushtoken_activate(self):
 
         qrtemplate = Template(
-            filename=self.lib_token_dir + '/pushtoken/pushtoken.mako')
+            filename=self.lib_token_dir + "/pushtoken/pushtoken.mako"
+        )
 
         buf = StringIO()
-        ctx = Context(buf,
-                      c=self.MyContext(),
-                      _=mocked_translate)
+        ctx = Context(buf, c=self.MyContext(), _=mocked_translate)
         _res = qrtemplate.render_context(ctx)
         content = buf.getvalue()
         assert "params['user'] = 'me@home';" in content

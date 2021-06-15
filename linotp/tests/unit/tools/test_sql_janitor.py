@@ -38,7 +38,7 @@ def setup_audit_table(app):
     """Add AUDIT_AMOUNT_ENTRIES entries into the fresh audit database"""
 
     entry = {
-        'action': 'validate/check',
+        "action": "validate/check",
     }
     for count in range(AUDIT_AMOUNT_ENTRIES):
         app.audit_obj.log_entry(entry)
@@ -66,9 +66,9 @@ def runner(app, tmp_path):
     audit-janitor` command
     """
     env = {
-        'LINOTP_AUDIT_DATABASE_URI': 'SHARED',
-        'LINOTP_PYTEST_DATABASE_URI': str(app.audit_obj.engine.url),
-        }
+        "LINOTP_AUDIT_DATABASE_URI": "SHARED",
+        "LINOTP_PYTEST_DATABASE_URI": str(app.audit_obj.engine.url),
+    }
     return app.test_cli_runner(env=env, mix_stderr=False)
 
 
@@ -80,7 +80,7 @@ def test_run_janitor(app, runner, setup_audit_table):
     """
 
     # run linotp audit-janitor
-    result = runner.invoke(cli_main, ['audit', 'cleanup'])
+    result = runner.invoke(cli_main, ["audit", "cleanup"])
     assert result.exit_code == 0
 
 
@@ -94,19 +94,25 @@ def test_run_janitor_with_params(app, runner, setup_audit_table, export_dir):
     min = 5
 
     # run linotp audit-janitor --max 10 --min 5
-    result = runner.invoke(cli_main, [
-        'audit',
-        'cleanup',
-        '--max', max,
-        '--min', min,
-        '--exportdir', str(export_dir),
-        ])
+    result = runner.invoke(
+        cli_main,
+        [
+            "audit",
+            "cleanup",
+            "--max",
+            max,
+            "--min",
+            min,
+            "--exportdir",
+            str(export_dir),
+        ],
+    )
     assert result.exit_code == 0
 
     list_of_files = export_dir.glob("*")
     export_file = None
     for f in list_of_files:
-        if 'SQLData' in str(f):
+        if "SQLData" in str(f):
             export_file = export_dir / f
             break
 
@@ -120,10 +126,15 @@ def test_run_janitor_max_min(app, runner, setup_audit_table):
     max = 5
     min = 5
     # run linotp audit-janitor
-    result = runner.invoke(cli_main, [
-        'audit',
-        'cleanup',
-        '--max', max,
-        '--min', min,
-    ])
+    result = runner.invoke(
+        cli_main,
+        [
+            "audit",
+            "cleanup",
+            "--max",
+            max,
+            "--min",
+            min,
+        ],
+    )
     assert result.exit_code == 1

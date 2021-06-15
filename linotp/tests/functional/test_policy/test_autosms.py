@@ -56,8 +56,12 @@ class TestAutoSmsPolicy(TestController):
         TestController.tearDown(self)
 
     @pytest.fixture(autouse=True)
-    def set_policy_fixture(self, set_policy):  # pylint: disable=redefined-outer-name
-        self.set_policy = set_policy  # pylint: disable=attribute-defined-outside-init
+    def set_policy_fixture(
+        self, set_policy
+    ):  # pylint: disable=redefined-outer-name
+        self.set_policy = (
+            set_policy  # pylint: disable=attribute-defined-outside-init
+        )
 
     def do_autosms_test(self, policy, user, client_ip, expected_result):
         new_policy = {
@@ -81,7 +85,10 @@ class TestAutoSmsPolicy(TestController):
         autosms enabled with no client and no user. Will do for all clients in a realm
         """
         self.do_autosms_test(
-            None, "horst", "1.2.3.4", True,
+            None,
+            "horst",
+            "1.2.3.4",
+            True,
         )
 
     def test_allowed_ip(self):
@@ -89,7 +96,10 @@ class TestAutoSmsPolicy(TestController):
         autosms enabled for a client. Will send autosms for a client in the subnet
         """
         self.do_autosms_test(
-            {"client": "172.16.200.0/24"}, "horst", "172.16.200.123", True,
+            {"client": "172.16.200.0/24"},
+            "horst",
+            "172.16.200.123",
+            True,
         )
 
     def test_ip_not_allowed(self):
@@ -97,7 +107,10 @@ class TestAutoSmsPolicy(TestController):
         autosms enabled for a client. Will not send autosms for a client outside this subnet
         """
         self.do_autosms_test(
-            {"client": "172.16.200.0/24"}, "horst", "192.168.20.1", False,
+            {"client": "172.16.200.0/24"},
+            "horst",
+            "192.168.20.1",
+            False,
         )
 
     def test_client_and_user_policy(self):

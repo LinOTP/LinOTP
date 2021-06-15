@@ -28,10 +28,9 @@ error controller - to display errors
 """
 
 
-
 from html import escape
 
-from linotp.flap import (request, error_document_template)
+from linotp.flap import request, error_document_template
 
 from paste.urlparser import PkgResourcesParser
 
@@ -42,51 +41,51 @@ from linotp.lib.util import str2unicode
 
 
 class ErrorController(BaseController):
-
     def document(self):
         """Render the error document"""
 
         # TODO: this will break - adjust to flask response
 
-        resp = request.environ.get('pylons.original_response')
+        resp = request.environ.get("pylons.original_response")
         if resp is not None:
             unicode_body = str2unicode(resp.body)
             content = literal(unicode_body)
         else:
-            message = request.GET.get('message',
-                                      request.POST.get('message', ''))
+            message = request.GET.get(
+                "message", request.POST.get("message", "")
+            )
             content = escape(message)
 
-        code = request.GET.get('code',
-                               request.POST.get('code',
-                                               str(resp.status_int)))
+        code = request.GET.get(
+            "code", request.POST.get("code", str(resp.status_int))
+        )
 
-        page = error_document_template % \
-            dict(prefix=request.environ.get('SCRIPT_NAME', ''),
-                 code=escape(code),
-                 message=content)
+        page = error_document_template % dict(
+            prefix=request.environ.get("SCRIPT_NAME", ""),
+            code=escape(code),
+            message=content,
+        )
         return page
-
 
     def img(self, id):
         """Serve Pylons' stock images"""
-        return self._serve_file('/'.join(['media/img', id]))
-
+        return self._serve_file("/".join(["media/img", id]))
 
     def style(self, id):
         """Serve Pylons' stock stylesheets"""
-        return self._serve_file('/'.join(['media/style', id]))
-
+        return self._serve_file("/".join(["media/style", id]))
 
     def _serve_file(self, path):
         """Call Paste's FileApp (a WSGI application) to serve the file
         at the specified path
         """
-        request.environ['PATH_INFO'] = '/%s' % path
-        return ('<html><body>'
-                '<p>Failed to forward to WSGI application (Pylons '
-                'incompatibility).</p>'
-                '</body></html>')
+        request.environ["PATH_INFO"] = "/%s" % path
+        return (
+            "<html><body>"
+            "<p>Failed to forward to WSGI application (Pylons "
+            "incompatibility).</p>"
+            "</body></html>"
+        )
 
 
-#eof###########################################################################
+# eof###########################################################################

@@ -41,12 +41,12 @@ class AngularSelfService(object):
 
     URL = "/selfservice"
 
-    def __init__(self, testcase: 'TestCase'):
+    def __init__(self, testcase: "TestCase"):
         """
         Initialise the helper for the angular based self service
 
         """
-        self.testcase: 'TestCase' = testcase
+        self.testcase: "TestCase" = testcase
         "The UnitTest class that is running the tests"
 
     @property
@@ -73,7 +73,7 @@ class AngularSelfService(object):
         @param realm: Realm name will be appended to username if given
         """
         if realm:
-            login = '%s@%s' % (user, realm)
+            login = "%s@%s" % (user, realm)
         else:
             login = user
 
@@ -81,28 +81,37 @@ class AngularSelfService(object):
         find_by_css(self.driver, "input[name='password']").send_keys(password)
         find_by_css(self.driver, "input[name='password']").submit()
 
-        assert find_by_css(self.driver, 'app-token-list')
+        assert find_by_css(self.driver, "app-token-list")
 
     def expect_ui_state(self, tokens, enrollment_options):
         if tokens == 0 and enrollment_options == 0:
-            assert find_by_css(self.driver, "#emptyStateSection"), \
-                "Expected the section informing the user of no options " \
+            assert find_by_css(self.driver, "#emptyStateSection"), (
+                "Expected the section informing the user of no options "
                 "being available"
+            )
 
         if tokens > 0:
-            token_cards = find_all_by_css(self.driver,
-                                          "#activeAuthSection > app-token-card") or []
-            assert len(token_cards) == tokens, \
-                f"Expected {tokens} active tokens to be visible " \
+            token_cards = (
+                find_all_by_css(
+                    self.driver, "#activeAuthSection > app-token-card"
+                )
+                or []
+            )
+            assert len(token_cards) == tokens, (
+                f"Expected {tokens} active tokens to be visible "
                 f"but found {len(token_cards)}."
+            )
 
         if enrollment_options > 0:
-            enrollment_cards = find_all_by_css(self.driver,
-                                               "app-enrollment-grid > mat-card") or []
-            assert len(enrollment_cards) == enrollment_options, \
-                f"Expected {enrollment_options} enrollment options " \
+            enrollment_cards = (
+                find_all_by_css(self.driver, "app-enrollment-grid > mat-card")
+                or []
+            )
+            assert len(enrollment_cards) == enrollment_options, (
+                f"Expected {enrollment_options} enrollment options "
                 f"to be visible but found {len(enrollment_cards)}."
+            )
 
     def logout(self):
         find_by_xpath(self.driver, "//button[contains(., 'Logout')]").click()
-        assert find_by_css(self.driver, 'app-login')
+        assert find_by_css(self.driver, "app-login")

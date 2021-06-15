@@ -41,23 +41,30 @@ DEFAULT_TIMEFORMAT = "%a, %d %b %Y %H:%M:%S GMT"
 
 log = logging.getLogger(__name__)
 
+
 class DurationParsingException(Exception):
     pass
 
-duration_regex = re.compile(r'((?P<weeks>\d+?)(w|week|weeks))?'
-                            r'((?P<days>\d+?)(d|day|days))?'
-                            r'((?P<hours>\d+?)(h|hour|hours))?'
-                            r'((?P<minutes>\d+?)(m|minute|minutes))?'
-                            r'((?P<seconds>\d+?)(s|second|seconds))?$')
+
+duration_regex = re.compile(
+    r"((?P<weeks>\d+?)(w|week|weeks))?"
+    r"((?P<days>\d+?)(d|day|days))?"
+    r"((?P<hours>\d+?)(h|hour|hours))?"
+    r"((?P<minutes>\d+?)(m|minute|minutes))?"
+    r"((?P<seconds>\d+?)(s|second|seconds))?$"
+)
 
 
-iso8601_duration_regex = re.compile(r'P((?P<years>\d+)Y)?'
-                                    r'((?P<months>\d+)M)?'
-                                    r'((?P<weeks>\d+)W)?'
-                                    r'((?P<days>\d+)D)?'
-                                    r'(T((?P<hours>\d+)H)?'
-                                    r'((?P<minutes>\d+)M)?'
-                                    r'((?P<seconds>\d+)S)?)?')
+iso8601_duration_regex = re.compile(
+    r"P((?P<years>\d+)Y)?"
+    r"((?P<months>\d+)M)?"
+    r"((?P<weeks>\d+)W)?"
+    r"((?P<days>\d+)D)?"
+    r"(T((?P<hours>\d+)H)?"
+    r"((?P<minutes>\d+)M)?"
+    r"((?P<seconds>\d+)S)?)?"
+)
+
 
 def parse_duration(duration_str, time_delta_compliant=False):
     """
@@ -72,26 +79,28 @@ def parse_duration(duration_str, time_delta_compliant=False):
     """
 
     # remove all white spaces for easier parsing
-    duration_str = ''.join(duration_str.split())
+    duration_str = "".join(duration_str.split())
 
-    if duration_str.upper().startswith('P'):
+    if duration_str.upper().startswith("P"):
         parts = iso8601_duration_regex.match(duration_str.upper())
     else:
         parts = duration_regex.match(duration_str.lower())
 
     if not parts:
         raise DurationParsingException(
-            "must be of type 'duration': %r" % duration_str)
+            "must be of type 'duration': %r" % duration_str
+        )
 
     parts = parts.groupdict()
 
     if time_delta_compliant:
-        if 'months' in parts or 'weeks' in parts or 'years' in parts:
+        if "months" in parts or "weeks" in parts or "years" in parts:
             # iso8601 defines month, weeks and years, while the python
             # timedelta does not support it for good reasons
             raise DurationParsingException(
-                'definition %s is not python timedelta supported!'
-                % duration_str)
+                "definition %s is not python timedelta supported!"
+                % duration_str
+            )
 
     time_params = {}
 
@@ -100,14 +109,14 @@ def parse_duration(duration_str, time_delta_compliant=False):
         if not param:
             continue
 
-        if name == 'months':
-            name = 'days'
+        if name == "months":
+            name = "days"
             param = 30 * float(param)
-        elif name == 'weeks':
-            name = 'days'
+        elif name == "weeks":
+            name = "days"
             param = 7 * float(param)
         elif name == "years":
-            name = 'days'
+            name = "days"
             param = 365 * float(param)
 
         if name in time_params:
@@ -136,7 +145,7 @@ def get_duration(value):
     """
     try:
 
-        return(int(value))
+        return int(value)
 
     except ValueError:
 
@@ -189,7 +198,7 @@ def encrypted_data(value):
 
     if not isinstance(value, str) and not isinstance(value, str):
 
-        raise Exception('Unable to encode non textual data')
+        raise Exception("Unable to encode non textual data")
 
     # if value is already encrypted we can just return
 
@@ -199,14 +208,15 @@ def encrypted_data(value):
 
     return EncryptedData.from_unencrypted(value)
 
-def get_timeout(timeout, seperator=','):
+
+def get_timeout(timeout, seperator=","):
     """
     get the timeout or timeout tuple from timeout input
     """
     if isinstance(timeout, tuple):
         return timeout
 
-    if isinstance(timeout, (float, int) ):
+    if isinstance(timeout, (float, int)):
         return timeout
 
     if not isinstance(timeout, str):
@@ -214,17 +224,19 @@ def get_timeout(timeout, seperator=','):
 
     try:
         if seperator not in timeout:
-                return float(timeout)
+            return float(timeout)
 
     except ValueError:
-        raise ValueError('Failed to convert timeout %r values!' % timeout)
+        raise ValueError("Failed to convert timeout %r values!" % timeout)
 
     try:
-        timeouts= tuple(float(x.strip())
-                   for x in timeout.strip().strip(seperator).split(seperator))
+        timeouts = tuple(
+            float(x.strip())
+            for x in timeout.strip().strip(seperator).split(seperator)
+        )
 
     except ValueError:
-        raise ValueError('Failed to convert timeout %r values!' % timeout)
+        raise ValueError("Failed to convert timeout %r values!" % timeout)
 
     if len(timeouts) == 1:
         return timeouts[0]
@@ -235,10 +247,9 @@ def get_timeout(timeout, seperator=','):
     raise Exception("Unsupported timeout format %r", timeout)
 
 
-
 def boolean(value):
     """
-        type converter for boolean config entries
+    type converter for boolean config entries
     """
     true_def = ("yes", "true")
     false_def = ("no", "false")
@@ -250,6 +261,7 @@ def boolean(value):
         raise Exception("unable to convert %r" % value)
 
     return value.lower() in true_def
+
 
 def check_time_format_string(time_format_string):
     """
@@ -263,7 +275,7 @@ def check_time_format_string(time_format_string):
 
     if time_format_string in [True, False]:
         return True
-    if time_format_string.lower() in ('true','false'):
+    if time_format_string.lower() in ("true", "false"):
         return True
 
     # verify that the given format could be applied
@@ -275,9 +287,10 @@ def check_time_format_string(time_format_string):
         return True
     except ValueError as exx:
         log.error(
-            'invalid time filter format: %r: %r', time_format_string, exx
-            )
+            "invalid time filter format: %r: %r", time_format_string, exx
+        )
         return False
+
 
 def check_networks_expression(networks):
     """
@@ -294,12 +307,12 @@ def check_networks_expression(networks):
     networks = networks.strip()
 
     # we require to accept, otherwise the setConfig will fail
-    if networks == '':
+    if networks == "":
         return True
 
     ok = True
 
-    for network in networks.split(','):
+    for network in networks.split(","):
         ok = ok and is_network(network)
     return ok
 
@@ -338,8 +351,8 @@ def get_ip_network(network):
 
             # support for cidr on named network like 'keyidentity.com/29'
             cidr = None
-            if '/' in network:
-                network, _sep, cidr = network.rpartition('/')
+            if "/" in network:
+                network, _sep, cidr = network.rpartition("/")
 
             ip_addr = socket.gethostbyname(network)
 
@@ -399,7 +412,8 @@ def is_ip_address(address):
     """
     return get_ip_address(address) is not None
 
-def parse_timeout(timeout_val, seperator=','):
+
+def parse_timeout(timeout_val, seperator=","):
     """
     parse a timeout value which migth be a single value or a tuple of
     connection and response timeouts
@@ -423,15 +437,15 @@ def parse_timeout(timeout_val, seperator=','):
     if isinstance(timeout_val, (float, int)):
         return timeout_val
 
-    raise ValueError('unsupported timeout format')
+    raise ValueError("unsupported timeout format")
 
 
 def convert_to_datetime(date_str, time_formats):
-    '''Convert a string to a datetime object by one of the time format strings.
+    """Convert a string to a datetime object by one of the time format strings.
 
     :param date_str: date string
     :param time_formats: list of time formats, which the date string should match
-    '''
+    """
     if not isinstance(date_str, str):
         raise Exception("given parameter is not a string")
 
@@ -445,4 +459,4 @@ def convert_to_datetime(date_str, time_formats):
 
     raise Exception(
         "Failed to convert start time paramter to timestamp %r" % err
-        )
+    )

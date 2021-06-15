@@ -43,14 +43,14 @@ from linotp.tests import TestController
 
 
 def calc_totp_OTP(key, digits=6, timestep=30):
-    '''
+    """
 
     :param key: the otpkey secret
     :param digits: the number of to be returned digits
     :param timestep: the time stepping 60 or 30 sec
 
     :return: the otp value as string
-    '''
+    """
     htoken = HmacOtp(digits=digits)
     counter = int((time.time() / timestep) + 0.5)
     otp = htoken.generate(counter=counter, key=binascii.unhexlify(key))
@@ -61,12 +61,12 @@ def calc_totp_OTP(key, digits=6, timestep=30):
 class TestChallengeResponseController(TestController):
 
     otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
-    user = 'passthru_user1'
+    user = "passthru_user1"
 
     def setUp(self):
-        '''
+        """
         This sets up all the resolvers and realms
-        '''
+        """
         TestController.setUp(self)
 
         self.create_common_resolvers()
@@ -82,36 +82,42 @@ class TestChallengeResponseController(TestController):
 
         TestController.tearDown(self)
 
-    def create_totp_token(self, serial='KITO_2714', pin="pin",
-                          description="TestToken1"):
+    def create_totp_token(
+        self, serial="KITO_2714", pin="pin", description="TestToken1"
+    ):
 
         params = {
             "serial": serial,
             "otpkey": self.otpkey,
             "user": self.user,
             "pin": pin,
-            "type": 'totp',
+            "type": "totp",
             "description": description,
-            'session': self.session,
+            "session": self.session,
         }
-        response = self.make_admin_request(action='init', params=params)
+        response = self.make_admin_request(action="init", params=params)
         assert '"value": true' in response, response
         return serial
 
-    def setPolicy(self, name='otpPin', realm='ldap_realm',
-                  action='otppin=1, ', scope='authentication',
-                  active=True):
+    def setPolicy(
+        self,
+        name="otpPin",
+        realm="ldap_realm",
+        action="otppin=1, ",
+        scope="authentication",
+        active=True,
+    ):
 
         params = {
-            'name': name,
-            'user': '*',
-            'action': action,
-            'scope': scope,
-            'realm': realm,
-            'time': '',
-            'client': '',
-            'active': active,
-            'session': self.session,
+            "name": name,
+            "user": "*",
+            "action": action,
+            "scope": scope,
+            "realm": realm,
+            "time": "",
+            "client": "",
+            "active": active,
+            "session": self.session,
         }
 
         response = self.make_system_request("setPolicy", params=params)
@@ -122,7 +128,7 @@ class TestChallengeResponseController(TestController):
 
         return response
 
-    def do_auth(self, pin='', otpkey=None):
+    def do_auth(self, pin="", otpkey=None):
         """
         run a set of different authentication schemes:
         * std auth with pin+otp
@@ -146,8 +152,9 @@ class TestChallengeResponseController(TestController):
 
             otp = calc_totp_OTP(otpkey)
             params = {"user": user, "pass": pin + otp}
-            response = self.make_validate_request(action='check',
-                                                  params=params)
+            response = self.make_validate_request(
+                action="check", params=params
+            )
             assert '"value": true' in response, response
 
             # -------------------------------------------------------------- --
@@ -155,9 +162,13 @@ class TestChallengeResponseController(TestController):
             # 2. challenge response with pin+otp
             # 2.1. create challenge
 
-            params = {"user": user, "pass": pin, }
-            response = self.make_validate_request(action='check',
-                                                  params=params)
+            params = {
+                "user": user,
+                "pass": pin,
+            }
+            response = self.make_validate_request(
+                action="check", params=params
+            )
             assert '"value": false' in response, response
 
             # -------------------------------------------------------------- --
@@ -169,8 +180,9 @@ class TestChallengeResponseController(TestController):
             otp = calc_totp_OTP(otpkey)
 
             params = {"user": user, "pass": pin + otp}
-            response = self.make_validate_request(action='check',
-                                                  params=params)
+            response = self.make_validate_request(
+                action="check", params=params
+            )
 
             assert '"value": true' in response, response
 
@@ -180,13 +192,14 @@ class TestChallengeResponseController(TestController):
             # 3.1 trigger challenge
 
             params = {"user": user, "pass": pin}
-            response = self.make_validate_request(action='check',
-                                                  params=params)
+            response = self.make_validate_request(
+                action="check", params=params
+            )
 
             assert '"value": false' in response, response
 
             body = json.loads(response.body)
-            state = body.get('detail').get('transactionid')
+            state = body.get("detail").get("transactionid")
 
             # -------------------------------------------------------------- --
 
@@ -198,8 +211,9 @@ class TestChallengeResponseController(TestController):
             otp = calc_totp_OTP(otpkey)
 
             params = {"user": user, "pass": otp, "state": state}
-            response = self.make_validate_request(action='check',
-                                                  params=params)
+            response = self.make_validate_request(
+                action="check", params=params
+            )
 
             assert '"value": true' in response, response
 
@@ -209,8 +223,9 @@ class TestChallengeResponseController(TestController):
             # 4.1 trigger challenge
 
             params = {"user": user, "pass": pin}
-            response = self.make_validate_request(action='check',
-                                                  params=params)
+            response = self.make_validate_request(
+                action="check", params=params
+            )
 
             assert '"value": false' in response, response
 
@@ -223,8 +238,9 @@ class TestChallengeResponseController(TestController):
             otp = calc_totp_OTP(otpkey)
 
             params = {"user": user, "pass": pin + otp}
-            response = self.make_validate_request(action='check',
-                                                  params=params)
+            response = self.make_validate_request(
+                action="check", params=params
+            )
 
             assert '"value": true' in response, response
 
@@ -235,14 +251,17 @@ class TestChallengeResponseController(TestController):
     # running challenge response tests with 3 different pin policies
 
     def test_totp_auth(self):
-        '''
+        """
         Challenge Response Test: totp token challenge
-        '''
+        """
         serial = self.create_totp_token(pin="shortpin")
 
         # now switch policy on for challenge_response
-        response = self.setPolicy(name="ch_resp", realm='myDefRealm',
-                                  action='challenge_response=hmac totp,')
+        response = self.setPolicy(
+            name="ch_resp",
+            realm="myDefRealm",
+            action="challenge_response=hmac totp,",
+        )
         assert '"status": true,' in response, response
 
         self.do_auth("shortpin")
@@ -253,19 +272,22 @@ class TestChallengeResponseController(TestController):
         return
 
     def test_totp_auth_otppin_1(self):
-        '''
+        """
         Challenge Response Test: totp token challenge with otppin=1
-        '''
+        """
 
         serial = self.create_totp_token(pin="shortpin")
 
         # now switch policy on for challenge_response
-        response = self.setPolicy(name="ch_resp", realm='myDefRealm',
-                                  action='challenge_response=hmac totp,')
+        response = self.setPolicy(
+            name="ch_resp",
+            realm="myDefRealm",
+            action="challenge_response=hmac totp,",
+        )
         assert '"status": true,' in response, response
 
         # with otppin==1 the pin should be the same as the password
-        response = self.setPolicy(realm='myDefRealm', action='otppin=1, ')
+        response = self.setPolicy(realm="myDefRealm", action="otppin=1, ")
         assert '"status": true,' in response, response
 
         self.do_auth("geheim1")
@@ -276,19 +298,22 @@ class TestChallengeResponseController(TestController):
         return
 
     def test_totp_auth_otppin_2(self):
-        '''
+        """
         Challenge Response Test: totp token challenge with otppin=2
-        '''
+        """
 
         serial = self.create_totp_token(pin="shortpin")
 
         # now switch policy on for challenge_response
-        response = self.setPolicy(name="ch_resp", realm='myDefRealm',
-                                  action='challenge_response=hmac totp,')
+        response = self.setPolicy(
+            name="ch_resp",
+            realm="myDefRealm",
+            action="challenge_response=hmac totp,",
+        )
         assert '"status": true,' in response, response
 
         # with otppin==2 the pin should be the same as the password
-        response = self.setPolicy(realm='myDefRealm', action='otppin=2, ')
+        response = self.setPolicy(realm="myDefRealm", action="otppin=2, ")
         assert '"status": true,' in response, response
 
         self.do_auth("")
@@ -297,5 +322,6 @@ class TestChallengeResponseController(TestController):
         self.delete_all_policies()
 
         return
+
 
 # eof #

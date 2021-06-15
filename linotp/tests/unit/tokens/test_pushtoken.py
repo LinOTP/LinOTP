@@ -42,24 +42,22 @@ from linotp.tokens.pushtoken.pushtoken import PushTokenClass
 
 
 class FakeHSM(object):
-
     def isReady(self):
         return True
 
     def hmac_digest(self, key, data, algo):
-        return 'foo'
+        return "foo"
 
     def decryptPassword(self, crypted):
-        return 2*'MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI' + '=='
+        return 2 * "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI" + "=="
 
 
-fake_hsm_wrapper = {'obj': FakeHSM()}
+fake_hsm_wrapper = {"obj": FakeHSM()}
 
 # -------------------------------------------------------------------------- --
 
 
 class FakeTokenModel(object):
-
     def __init__(self):
         self.info_dict = {}
 
@@ -67,7 +65,7 @@ class FakeTokenModel(object):
         self.info_dict = json.loads(json_str)
 
     def getSerial(self):
-        return 'QRfoo123'
+        return "QRfoo123"
 
     def setType(self, type_):
         pass
@@ -76,7 +74,8 @@ class FakeTokenModel(object):
         return json.dumps(self.info_dict)
 
     def get_encrypted_seed(self):
-        return 'foo', 'bar'
+        return "foo", "bar"
+
 
 # -------------------------------------------------------------------------- --
 
@@ -85,10 +84,9 @@ class PushTokenClassUnitTestCase(object):
 
     # ---------------------------------------------------------------------- --
 
-    @patch('linotp.tokens.pushtoken.pushtoken.get_secret_key')
+    @patch("linotp.tokens.pushtoken.pushtoken.get_secret_key")
     def test_url_protocol_id(self, base_app, mocked_get_secret_key):
-
-        """ PUSHTOKEN: Test url protocol id customization """
+        """PUSHTOKEN: Test url protocol id customization"""
 
         public_key, secret_key = crypto_sign_keypair()
 
@@ -98,52 +96,61 @@ class PushTokenClassUnitTestCase(object):
         fake = FakeTokenModel()
 
         token = PushTokenClass(fake)
-        token.addToTokenInfo('partition', 0)
-        token.addToTokenInfo('user_token_id', 123)
-        token.addToTokenInfo('user_dsa_public_key', user_public_key)
+        token.addToTokenInfo("partition", 0)
+        token.addToTokenInfo("user_token_id", 123)
+        token.addToTokenInfo("user_dsa_public_key", user_public_key)
 
         with base_app.test_request_context():
 
-            if 'mobile_app_protocol_id' in config:
-                del config['mobile_app_protocol_id']
+            if "mobile_app_protocol_id" in config:
+                del config["mobile_app_protocol_id"]
 
-            request_context['hsm'] = fake_hsm_wrapper
+            request_context["hsm"] = fake_hsm_wrapper
 
             # if no mobile_app_protocol_id is set, it should default
             # to lseqr
 
-            message = 'here are the 2,750 quit you asked for. can i move' + \
-                      'to OT I level now? - tom'
+            message = (
+                "here are the 2,750 quit you asked for. can i move"
+                + "to OT I level now? - tom"
+            )
 
-            url, _ = token.create_challenge_url(transaction_id='1234567890',
-                                                content_type=0,
-                                                message=message,
-                                                callback_url='foo')
+            url, _ = token.create_challenge_url(
+                transaction_id="1234567890",
+                content_type=0,
+                message=message,
+                callback_url="foo",
+            )
 
-            assert url.startswith('lseqr://')
+            assert url.startswith("lseqr://")
 
         # ------------------------------------------------------------------ --
 
         fake = FakeTokenModel()
 
         token = PushTokenClass(fake)
-        token.addToTokenInfo('partition', 0)
-        token.addToTokenInfo('user_token_id', 123)
-        token.addToTokenInfo('user_dsa_public_key', user_public_key)
+        token.addToTokenInfo("partition", 0)
+        token.addToTokenInfo("user_token_id", 123)
+        token.addToTokenInfo("user_dsa_public_key", user_public_key)
 
         with base_app.test_request_context():
-            config['mobile_app_protocol_id'] = 'yolo'
+            config["mobile_app_protocol_id"] = "yolo"
 
-            request_context['hsm'] = fake_hsm_wrapper
+            request_context["hsm"] = fake_hsm_wrapper
 
-            message = 'here are the 2,750 quit you asked for. can i move' + \
-                      'to OT I level now? - tom'
+            message = (
+                "here are the 2,750 quit you asked for. can i move"
+                + "to OT I level now? - tom"
+            )
 
-            url, _ = token.create_challenge_url(transaction_id='1234567890',
-                                                content_type=0,
-                                                message=message,
-                                                callback_url='foo')
+            url, _ = token.create_challenge_url(
+                transaction_id="1234567890",
+                content_type=0,
+                message=message,
+                callback_url="foo",
+            )
 
-            assert url.startswith('yolo://')
+            assert url.startswith("yolo://")
+
 
 # eof #

@@ -33,27 +33,27 @@ will try to verify the user in different situations.
 
 from linotp.tests import TestController
 
+
 class TestUserPrincipalController(TestController):
-    """ verify the handling of users in UserPrincipal style """
+    """verify the handling of users in UserPrincipal style"""
 
     def setUp(self):
 
         self.tokens = {}
 
-        params = {'splitAtSign': True}
-        response = self.make_system_request('setConfig', params=params)
-        assert 'false' not in response.body
+        params = {"splitAtSign": True}
+        response = self.make_system_request("setConfig", params=params)
+        assert "false" not in response.body
 
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
-
     def tearDown(self):
 
-        params = {'splitAtSign': True}
-        response = self.make_system_request('setConfig', params=params)
-        assert 'false' not in response.body
+        params = {"splitAtSign": True}
+        response = self.make_system_request("setConfig", params=params)
+        assert "false" not in response.body
 
         return TestController.tearDown(self)
 
@@ -66,16 +66,13 @@ class TestUserPrincipalController(TestController):
 
         """
 
-        params = {
-            'splitAtSign': False
-            }
-        response = self.make_system_request('setConfig', params=params)
-        assert 'false' not in response, response
-
+        params = {"splitAtSign": False}
+        response = self.make_system_request("setConfig", params=params)
+        assert "false" not in response, response
 
         user = "pass@user"
         pin = "1234"
-        realm = 'myDefRealm'
+        realm = "myDefRealm"
         serial = "F722362"
         # Initialize authorization (we need authorization in
         # token creation/deletion)...
@@ -83,44 +80,37 @@ class TestUserPrincipalController(TestController):
         params = {
             "realm": realm,
             "serial": serial,
-            'pin': pin,
+            "pin": pin,
             "otpkey": "AD8EABE235FC57C815B26CEF37090755",
-            "type": 'spass'
-            }
+            "type": "spass",
+        }
 
         # Create test token...
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert serial in response, response
 
         # although not needed, we assign token...
-        params = {
-            'serial': serial,
-            'user': user,
-            'realm': realm
-            }
-        response = self.make_admin_request('assign', params=params)
+        params = {"serial": serial, "user": user, "realm": realm}
+        response = self.make_admin_request("assign", params=params)
         assert '"status": true' in response, response
 
         params = {
-            'serial': serial,
-            }
+            "serial": serial,
+        }
 
-        response = self.make_admin_request('enable', params=params)
+        response = self.make_admin_request("enable", params=params)
         assert '"status": true' in response, response
 
         # test user-principal authentication
-        params = {
-            'user': user,
-            'pass': pin,
-            'realm': realm
-            }
+        params = {"user": user, "pass": pin, "realm": realm}
 
-        response = self.make_validate_request('check', params=params)
+        response = self.make_validate_request("check", params=params)
 
         params = {
-            'serial': serial,
-            }
+            "serial": serial,
+        }
 
-        response = self.make_admin_request('remove', params=params)
+        response = self.make_admin_request("remove", params=params)
+
 
 # eof

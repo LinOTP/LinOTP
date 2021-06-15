@@ -48,7 +48,7 @@ class TestCreateRealmDialog(TestCase):
         resolver_data = data.musicians_ldap_resolver
         m.create_resolver_via_api(resolver_data)
 
-        r.create("test_clear_realm", resolver_data['name'])
+        r.create("test_clear_realm", resolver_data["name"])
 
         realms = r.get_realms_list()
         assert len(realms) == 1, "Realm count should be 1"

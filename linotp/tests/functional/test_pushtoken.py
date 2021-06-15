@@ -76,13 +76,13 @@ def u64_to_transaction_id(u64_int):
     if rest == 0:
         return str(before)
     else:
-        return '%d.%02d' % (before, rest)
+        return "%d.%02d" % (before, rest)
+
 
 # -------------------------------------------------------------------------- --
 
 
 class TestPushToken(TestController):
-
     def setUp(self):
 
         self.delete_all_policies()
@@ -96,7 +96,7 @@ class TestPushToken(TestController):
 
         # ------------------------------------------------------------------ --
 
-        self.gda = 'DEADBEEF'
+        self.gda = "DEADBEEF"
         self.tokens = defaultdict(dict)
 
         # ------------------------------------------------------------------ --
@@ -115,32 +115,38 @@ class TestPushToken(TestController):
         # ------------------------------------------------------------------ --
 
         # make dummy provider config
-        p_config = {"push_url": "https://pushproxy.keyidentity.com",
-                    "access_certificate": self.dummy_temp_cert.name,
-                    "server_certificate": ""}
+        p_config = {
+            "push_url": "https://pushproxy.keyidentity.com",
+            "access_certificate": self.dummy_temp_cert.name,
+            "server_certificate": "",
+        }
 
-        params = {'name': 'dummy_provider',
-                  'class': 'DefaultPushProvider',
-                  'config': json.dumps(p_config),
-                  'timeout': '120',
-                  'type': 'push'}
+        params = {
+            "name": "dummy_provider",
+            "class": "DefaultPushProvider",
+            "config": json.dumps(p_config),
+            "timeout": "120",
+            "type": "push",
+        }
 
-        self.make_system_request('setProvider', params=params)
+        self.make_system_request("setProvider", params=params)
 
         # ------------------------------------------------------------------ --
 
-        params = {'name': 'dummy_push_policy',
-                  'scope': 'authentication',
-                  'action': 'push_provider=dummy_provider',
-                  'user': '*',
-                  'realm': '*',
-                  'client': '',
-                  'time': ''}
+        params = {
+            "name": "dummy_push_policy",
+            "scope": "authentication",
+            "action": "push_provider=dummy_provider",
+            "user": "*",
+            "realm": "*",
+            "client": "",
+            "time": "",
+        }
 
         self.create_policy(params=params)
-        self.uri = self.app.config.get('MOBILE_APP_PROTOCOLL_ID', 'lseqr')
+        self.uri = self.app.config.get("MOBILE_APP_PROTOCOLL_ID", "lseqr")
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def tearDown(self):
 
@@ -154,10 +160,9 @@ class TestPushToken(TestController):
 
         # delete dummy provider config
 
-        params = {'name': 'dummy_provider_config',
-                  'type': 'push'}
+        params = {"name": "dummy_provider_config", "type": "push"}
 
-        self.make_system_request('delProvider', params=params)
+        self.make_system_request("delProvider", params=params)
 
         # ------------------------------------------------------------------ --
 
@@ -165,41 +170,41 @@ class TestPushToken(TestController):
 
         self.dummy_temp_cert.close()
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def setPolicy(self, params):
+        """sets a system policy defined by param"""
 
-        """ sets a system policy defined by param """
-
-        response = self.make_system_request('setPolicy', params)
+        response = self.make_system_request("setPolicy", params)
         response_dict = json.loads(response.body)
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
 
         assert status
 
-        response = self.make_system_request('getPolicy', params)
+        response = self.make_system_request("getPolicy", params)
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def create_dummy_cb_policies(self):
-
-        """ sets some dummy callback policies. callback policies get ignored
-        by the tests, but are nonetheless necessary for the backend """
+        """sets some dummy callback policies. callback policies get ignored
+        by the tests, but are nonetheless necessary for the backend"""
 
         # ------------------------------------------------------------------ --
 
         # set pairing callback policies
 
-        params = {'name': 'dummy1',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'pushtoken_pairing_callback_url=foo',
-                  'user': '*'}
+        params = {
+            "name": "dummy1",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "pushtoken_pairing_callback_url=foo",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
@@ -207,18 +212,19 @@ class TestPushToken(TestController):
 
         # set challenge callback policies
 
-        params = {'name': 'dummy2',
-                  'scope': 'authentication',
-                  'realm': '*',
-                  'action': 'pushtoken_challenge_callback_url=foo',
-                  'user': '*'}
+        params = {
+            "name": "dummy2",
+            "scope": "authentication",
+            "realm": "*",
+            "action": "pushtoken_challenge_callback_url=foo",
+            "user": "*",
+        }
 
         self.setPolicy(params)
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
-    def enroll_pushtoken(self, user=None, pin='1234', serial=None):
-
+    def enroll_pushtoken(self, user=None, pin="1234", serial=None):
         """
         enrolls a pushtoken
 
@@ -231,15 +237,15 @@ class TestPushToken(TestController):
 
         # initialize an unfinished token on the server
 
-        params = {'type': 'push', 'pin': pin}
+        params = {"type": "push", "pin": pin}
 
         if user:
-            params['user'] = user
+            params["user"] = user
 
         if serial:
-            params['serial'] = serial
+            params["serial"] = serial
 
-        response = self.make_admin_request('init', params)
+        response = self.make_admin_request("init", params)
 
         # ------------------------------------------------------------------ --
 
@@ -247,28 +253,28 @@ class TestPushToken(TestController):
         # sent and validate
 
         response_dict = json.loads(response.body)
-        assert 'pairing_url' in response_dict.get('detail', {})
+        assert "pairing_url" in response_dict.get("detail", {})
 
-        pairing_url = response_dict.get('detail', {}).get('pairing_url')
+        pairing_url = response_dict.get("detail", {}).get("pairing_url")
         assert pairing_url is not None
-        assert pairing_url.startswith(self.uri + '://pair/')
+        assert pairing_url.startswith(self.uri + "://pair/")
 
         return pairing_url
 
-# -------------------------------------------------------------------------- --
-    def activate_token(self, user_token_id, data='', retry_activation=1):
+    # -------------------------------------------------------------------------- --
+    def activate_token(self, user_token_id, data="", retry_activation=1):
         """
-            activate the token
-            - create the activation challenge by calling /validate/check
-            - calculate the resonse in the test user token
-            - send the signature to /validate/accept_transaction
+           activate the token
+           - create the activation challenge by calling /validate/check
+           - calculate the resonse in the test user token
+           - send the signature to /validate/accept_transaction
 
-         :param user_token_id: the id to the to be used token
-         :param data: the data which is used during activation
-         :return: the activation challenge and signature
+        :param user_token_id: the id to the to be used token
+        :param data: the data which is used during activation
+        :return: the activation challenge and signature
         """
 
-        for i in range(0,retry_activation):
+        for i in range(0, retry_activation):
 
             # ------------------------------------------------------------- --
 
@@ -281,38 +287,45 @@ class TestPushToken(TestController):
             # parse, descrypt and verify the challenge url
 
             challenge, sig = self.decrypt_and_verify_challenge(
-                                                challenge_url, action='ACCEPT')
+                challenge_url, action="ACCEPT"
+            )
 
             # ------------------------------------------------------------- --
 
             # check if the content type is right (we are doing pairing
             # right now, so type must be CONTENT_TYPE_PAIRING)
 
-            content_type = challenge['content_type']
+            content_type = challenge["content_type"]
             assert content_type == CONTENT_TYPE_PAIRING
 
         # ----------------------------------------------------------------- --
 
         # prepare params for validate
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'signature': sig}
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "signature": sig,
+        }
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('accept_transaction', params)
+        response = self.make_validate_request("accept_transaction", params)
         response_dict = json.loads(response.body)
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
         assert value, response
 
-
-    def execute_correct_pairing(self, user=None, pin='1234' , serial=None,
-                                retry_pairing=1, retry_activation=1):
-
+    def execute_correct_pairing(
+        self,
+        user=None,
+        pin="1234",
+        serial=None,
+        retry_pairing=1,
+        retry_activation=1,
+    ):
         """
         enroll token and pair it
 
@@ -343,16 +356,15 @@ class TestPushToken(TestController):
 
         # activate the token
 
-        self.activate_token(user_token_id, data='',
-                                retry_activation=retry_activation)
-
+        self.activate_token(
+            user_token_id, data="", retry_activation=retry_activation
+        )
 
         return user_token_id
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
-    def pair_token(self, pairing_url, pin='1234'):
-
+    def pair_token(self, pairing_url, pin="1234"):
         """
         Pair an enrolled token
         - use the qr url to instantiate the test user token and
@@ -374,7 +386,8 @@ class TestPushToken(TestController):
         # create the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-                                                                user_token_id)
+            user_token_id
+        )
 
         # ------------------------------------------------------------------ --
 
@@ -386,25 +399,22 @@ class TestPushToken(TestController):
 
         # check if returned json is correct
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
         assert not value
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert status
 
         return user_token_id
 
+    # -------------------------------------------------------------------------- --
 
-
-# -------------------------------------------------------------------------- --
-
-    def create_user_token_by_pairing_url(self, pairing_url, pin='1234'):
-
+    def create_user_token_by_pairing_url(self, pairing_url, pin="1234"):
         """
         parses the pairing url and saves the extracted data in
         the fake token database of this test class.
@@ -417,12 +427,12 @@ class TestPushToken(TestController):
 
         # extract metadata and the public key
 
-        data_encoded = pairing_url[len(self.uri + '://pair/'):]
+        data_encoded = pairing_url[len(self.uri + "://pair/") :]
         data = decode_base64_urlsafe(data_encoded)
-        version, token_type, flags = struct.unpack('<bbI', data[0:6])
-        partition = struct.unpack('<I', data[6:10])[0]
+        version, token_type, flags = struct.unpack("<bbI", data[0:6])
+        partition = struct.unpack("<I", data[6:10])[0]
 
-        server_public_key = data[10:10 + 32]
+        server_public_key = data[10 : 10 + 32]
 
         # validate protocol versions and type id
 
@@ -434,18 +444,19 @@ class TestPushToken(TestController):
         # extract custom data that may or may not be present
         # (depending on flags)
 
-        custom_data = data[10 + 32:]
+        custom_data = data[10 + 32 :]
 
         token_serial = None
         if flags & FLAG_PAIR_SERIAL:
-            token_serial, __, custom_data = custom_data.partition(b'\x00')
+            token_serial, __, custom_data = custom_data.partition(b"\x00")
 
         callback_url = None
         if flags & FLAG_PAIR_CBURL:
-            callback_url, __, custom_data = custom_data.partition(b'\x00')
+            callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
             raise NotImplementedError(
-                                    'Callback URL is mandatory for PushToken')
+                "Callback URL is mandatory for PushToken"
+            )
 
         # ------------------------------------------------------------------ --
 
@@ -453,21 +464,20 @@ class TestPushToken(TestController):
 
         user_token_id = len(self.tokens)
         self.tokens[user_token_id] = {
-            'serial': token_serial.decode(),
-            'server_public_key': server_public_key,
-            'partition': partition,
-            'callback_url': callback_url.decode(),
-            'pin': pin}
+            "serial": token_serial.decode(),
+            "server_public_key": server_public_key,
+            "partition": partition,
+            "callback_url": callback_url.decode(),
+            "pin": pin,
+        }
 
         # ------------------------------------------------------------------ --
 
         return user_token_id
 
-
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def decrypt_and_verify_challenge(self, challenge_url, action):
-
         """
         Decrypts the data packed in the challenge url, verifies
         its content, returns the parsed data as a dictionary,
@@ -507,7 +517,7 @@ class TestPushToken(TestController):
             respond to the challenge
         """
 
-        challenge_data_encoded = challenge_url[len(self.uri + '://chal/'):]
+        challenge_data_encoded = challenge_url[len(self.uri + "://chal/") :]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
         # ------------------------------------------------------------------ --
@@ -516,7 +526,7 @@ class TestPushToken(TestController):
         # encrypted challenge data
 
         header = challenge_data[0:5]
-        version, user_token_id = struct.unpack('<bI', header)
+        version, user_token_id = struct.unpack("<bI", header)
         assert version == CHALLENGE_URL_VERSION
 
         # ------------------------------------------------------------------ --
@@ -524,15 +534,15 @@ class TestPushToken(TestController):
         # get token from client token database
 
         token = self.tokens[user_token_id]
-        server_public_key = token['server_public_key']
+        server_public_key = token["server_public_key"]
 
         # ------------------------------------------------------------------ --
 
         # prepare decryption by seperating R from
         # ciphertext and server signature
 
-        R = challenge_data[5:5 + 32]
-        ciphertext = challenge_data[5 + 32:-64]
+        R = challenge_data[5 : 5 + 32]
+        ciphertext = challenge_data[5 + 32 : -64]
         server_signature = challenge_data[-64:]
 
         # check signature
@@ -555,7 +565,7 @@ class TestPushToken(TestController):
 
         # decrypt and verify challenge
 
-        nonce_as_int = int_from_bytes(nonce, byteorder='big')
+        nonce_as_int = int_from_bytes(nonce, byteorder="big")
         ctr = Counter.new(128, initial_value=nonce_as_int)
         cipher = AES.new(sk, AES.MODE_CTR, counter=ctr)
         plaintext = cipher.decrypt(ciphertext)
@@ -570,9 +580,9 @@ class TestPushToken(TestController):
         offset = 1 + 8 + 8
 
         pt_header = plaintext[0:offset]
-        (content_type,
-         transaction_id,
-         _time_stamp) = struct.unpack('<bQQ', pt_header)
+        (content_type, transaction_id, _time_stamp) = struct.unpack(
+            "<bQQ", pt_header
+        )
 
         transaction_id = u64_to_transaction_id(transaction_id)
 
@@ -581,7 +591,7 @@ class TestPushToken(TestController):
         # prepare the parsed challenge data
 
         challenge = {}
-        challenge['content_type'] = content_type
+        challenge["content_type"] = content_type
 
         # ------------------------------------------------------------------ --
 
@@ -589,72 +599,77 @@ class TestPushToken(TestController):
 
         if content_type == CONTENT_TYPE_PAIRING:
 
-            serial, callback_url, __ = plaintext[offset:].split(b'\x00')
-            challenge['serial'] = serial.decode()
+            serial, callback_url, __ = plaintext[offset:].split(b"\x00")
+            challenge["serial"] = serial.decode()
 
         elif content_type == CONTENT_TYPE_SIGNREQ:
 
-            message, callback_url, __ = plaintext[offset:].split(b'\x00')
-            challenge['message'] = message.decode()
+            message, callback_url, __ = plaintext[offset:].split(b"\x00")
+            challenge["message"] = message.decode()
 
         elif content_type == CONTENT_TYPE_LOGIN:
 
-            login, host, callback_url, __ = plaintext[offset:].split(b'\x00')
-            challenge['login'] = login.decode()
-            challenge['host'] = host.decode()
+            login, host, callback_url, __ = plaintext[offset:].split(b"\x00")
+            challenge["login"] = login.decode()
+            challenge["host"] = host.decode()
 
         # ------------------------------------------------------------------ --
 
         # prepare the parsed challenge data
 
-        challenge['callback_url'] = callback_url.decode()
-        challenge['transaction_id'] = transaction_id
-        challenge['user_token_id'] = user_token_id
+        challenge["callback_url"] = callback_url.decode()
+        challenge["transaction_id"] = transaction_id
+        challenge["user_token_id"] = user_token_id
 
         # calculate signature
 
         sig_base = (
-            struct.pack('<b', CHALLENGE_URL_VERSION) +
-            b'%s\0' % action.encode('utf-8') +
-            server_signature + plaintext)
+            struct.pack("<b", CHALLENGE_URL_VERSION)
+            + b"%s\0" % action.encode("utf-8")
+            + server_signature
+            + plaintext
+        )
 
         sig = crypto_sign_detached(sig_base, self.secret_key)
         encoded_sig = encode_base64_urlsafe(sig)
 
         return challenge, encoded_sig
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_correct_pairing(self):
-        """ PushToken: Check if pairing works correctly """
+        """PushToken: Check if pairing works correctly"""
         self.execute_correct_pairing()
 
     def test_multiple_pairing_activations(self):
-        """ PushToken: Check if pairing works multiple times correctly """
+        """PushToken: Check if pairing works multiple times correctly"""
         self.execute_correct_pairing(retry_pairing=3, retry_activation=3)
 
     def test_pairing_spoofing_detection(self):
-        """ pairing with same pairing url and different gda will fail """
+        """pairing with same pairing url and different gda will fail"""
 
         # ------------------------------------------------------------------ --
 
         # enroll the push token and parse the pairing url
 
         pairing_url = self.enroll_pushtoken(
-                            user=None, pin='123', serial='myPush')
+            user=None, pin="123", serial="myPush"
+        )
 
         user_token_id = self.create_user_token_by_pairing_url(
-                            pairing_url, pin='123')
+            pairing_url, pin="123"
+        )
 
         # ------------------------------------------------------------------ --
 
         # create and send the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-                                            user_token_id, gda="DEADBEEF")
+            user_token_id, gda="DEADBEEF"
+        )
 
         response_dict = self.send_pairing_response(pairing_response)
-        assert response_dict['result']['status'] == True
+        assert response_dict["result"]["status"]
 
         # ------------------------------------------------------------------ --
 
@@ -662,25 +677,26 @@ class TestPushToken(TestController):
         # create and send the pairing response with a different gda
 
         pairing_response = self.create_pairing_response_by_serial(
-                                            user_token_id, gda="BEEFDEAD")
+            user_token_id, gda="BEEFDEAD"
+        )
 
         response_dict = self.send_pairing_response(pairing_response)
-        assert response_dict['result']['status'] == False
+        assert response_dict["result"]["status"] == False
 
         # ------------------------------------------------------------------ --
 
         # retry with same gda works
 
         pairing_response = self.create_pairing_response_by_serial(
-                                            user_token_id, gda="DEADBEEF")
+            user_token_id, gda="DEADBEEF"
+        )
 
         response_dict = self.send_pairing_response(pairing_response)
-        assert response_dict['result']['status'] == True
+        assert response_dict["result"]["status"]
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def create_pairing_response_by_serial(self, user_token_id, gda=None):
-
         """
         Creates a base64-encoded pairing response that identifies
         the token by its serial
@@ -692,23 +708,23 @@ class TestPushToken(TestController):
         if not gda:
             gda = self.gda
 
-        token_serial = self.tokens[user_token_id]['serial']
-        server_public_key = self.tokens[user_token_id]['server_public_key']
-        partition = self.tokens[user_token_id]['partition']
+        token_serial = self.tokens[user_token_id]["serial"]
+        server_public_key = self.tokens[user_token_id]["server_public_key"]
+        partition = self.tokens[user_token_id]["partition"]
 
         # ------------------------------------------------------------------ --
 
         # assemble header and plaintext
 
-        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, partition)
+        header = struct.pack("<bI", PAIR_RESPONSE_VERSION, partition)
 
-        pairing_response = b''
-        pairing_response += struct.pack('<bI', TYPE_PUSHTOKEN, user_token_id)
+        pairing_response = b""
+        pairing_response += struct.pack("<bI", TYPE_PUSHTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
-        pairing_response += token_serial.encode('utf8') + b'\x00\x00'
-        pairing_response += gda.encode('utf-8') + b'\x00'
+        pairing_response += token_serial.encode("utf8") + b"\x00\x00"
+        pairing_response += gda.encode("utf-8") + b"\x00"
 
         signature = crypto_sign_detached(pairing_response, self.secret_key)
         pairing_response += signature
@@ -741,39 +757,37 @@ class TestPushToken(TestController):
 
         return encode_base64_urlsafe(header + R + ciphertext + tag)
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def send_pairing_response(self, pairing_response):
+        """sends a pairing response to /validate/pair"""
 
-        """ sends a pairing response to /validate/pair """
-
-        params = {'pairing_response': pairing_response}
+        params = {"pairing_response": pairing_response}
 
         # we use the standard calback url in here
         # in a real client we would use the callback
         # defined in the pairing url (and saved in
         # the 'token database' of the user)
 
-        response = self.make_validate_request('pair', params)
+        response = self.make_validate_request("pair", params)
         response_dict = json.loads(response.body)
 
         return response_dict
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def trigger_challenge(self, user_token_id, content_type=None, data=None):
 
-        serial = self.tokens[user_token_id]['serial']
-        pin = self.tokens[user_token_id]['pin']
+        serial = self.tokens[user_token_id]["serial"]
+        pin = self.tokens[user_token_id]["pin"]
 
-        params = {'serial': serial,
-                  'pass': pin}
+        params = {"serial": serial, "pass": pin}
 
         if content_type is not None:
-            params['content_type'] = content_type
+            params["content_type"] = content_type
 
         if data is not None:
-            params['data'] = data
+            params["data"] = data
 
         # ------------------------------------------------------------------ --
 
@@ -781,23 +795,25 @@ class TestPushToken(TestController):
         # push_notification) to get the generated challenge_url passed
         # to it (which would normaly be sent over the PNP)
 
-        with mock.patch.object(default_provider.DefaultPushProvider,
-                               'push_notification',
-                               autospec=True) as mock_push_notification:
+        with mock.patch.object(
+            default_provider.DefaultPushProvider,
+            "push_notification",
+            autospec=True,
+        ) as mock_push_notification:
 
             mock_push_notification.return_value = (True, None)
-            response = self.make_validate_request('check_s', params)
+            response = self.make_validate_request("check_s", params)
             challenge_url = mock_push_notification.call_args[0][1]
 
             response_dict = json.loads(response.body)
-            assert 'result' in response_dict
+            assert "result" in response_dict
 
-            result = response_dict.get('result')
-            assert 'status' in result
-            assert 'value' in result
+            result = response_dict.get("result")
+            assert "status" in result
+            assert "value" in result
 
-            status = result.get('status')
-            value = result.get('value')
+            status = result.get("status")
+            value = result.get("value")
 
             assert status
             assert not value
@@ -806,95 +822,110 @@ class TestPushToken(TestController):
 
         return challenge_url
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_signreq(self):
+        """PushToken: Check if signing transactions works correctly"""
 
-        """ PushToken: Check if signing transactions works correctly """
+        user_token_id = self.execute_correct_pairing(user="root")
+        challenge_url = self.trigger_challenge(
+            user_token_id,
+            data=(
+                "Yes, I want to know why doctors hate this guy. Take these "
+                "6000 $ with all my sincere benevolence and send me the black "
+                "magic diet pill they don't want me to know about"
+            ),
+            content_type=CONTENT_TYPE_SIGNREQ,
+        )
 
-        user_token_id = self.execute_correct_pairing(user='root')
-        challenge_url = self.trigger_challenge(user_token_id, data=(
-            'Yes, I want to know why doctors hate this guy. Take these '
-            '6000 $ with all my sincere benevolence and send me the black '
-            'magic diet pill they don\'t want me to know about'),
-            content_type=CONTENT_TYPE_SIGNREQ)
-
-        challenge, sig = self.decrypt_and_verify_challenge(challenge_url,
-                                                           action='ACCEPT')
+        challenge, sig = self.decrypt_and_verify_challenge(
+            challenge_url, action="ACCEPT"
+        )
 
         # ------------------------------------------------------------------ --
 
         # check if the content type is right
 
-        content_type = challenge['content_type']
+        content_type = challenge["content_type"]
         assert content_type == CONTENT_TYPE_SIGNREQ
 
         # ------------------------------------------------------------------ --
 
         # prepare params for validate
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'signature': sig}
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "signature": sig,
+        }
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('accept_transaction', params)
+        response = self.make_validate_request("accept_transaction", params)
         response_dict = json.loads(response.body)
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
         assert value, response
 
         # ------------------------------------------------------------------ --
 
         # status check
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'user': 'root', 'pass': '1234'}
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "user": "root",
+            "pass": "1234",
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         response_dict = json.loads(response.body)
 
-        transactions = response_dict.get('detail', {}).get('transactions', {})
-        transaction = transactions[challenge['transaction_id']]
+        transactions = response_dict.get("detail", {}).get("transactions", {})
+        transaction = transactions[challenge["transaction_id"]]
 
-        assert transaction['status'] == 'closed', response
-        assert transaction['accept'], response
-        assert transaction['valid_tan'], response
+        assert transaction["status"] == "closed", response
+        assert transaction["accept"], response
+        assert transaction["valid_tan"], response
 
-        assert 'KIPT' in transaction['token']['serial'], response
+        assert "KIPT" in transaction["token"]["serial"], response
 
         return
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_multiple_signreq(self):
-        """ PushToken: Check if signing multiple transactions works correctly """
+        """PushToken: Check if signing multiple transactions works correctly"""
 
-        user_token_id = self.execute_correct_pairing(user='root',
-                                                     serial='KIPuOne')
+        user_token_id = self.execute_correct_pairing(
+            user="root", serial="KIPuOne"
+        )
 
         # ------------------------------------------------------------------ --
 
         created_challenges = []
         for i in range(0, 10):
 
-            challenge_url = self.trigger_challenge(user_token_id, data=(
-                'Yes, I want to know why doctors hate this guy. Take these '
-                '%d000 $ with all my sincere benevolence and send me the black '
-                'magic diet pill they don\'t want me to know about' % i),
-                content_type=CONTENT_TYPE_SIGNREQ)
+            challenge_url = self.trigger_challenge(
+                user_token_id,
+                data=(
+                    "Yes, I want to know why doctors hate this guy. Take these "
+                    "%d000 $ with all my sincere benevolence and send me the black "
+                    "magic diet pill they don't want me to know about" % i
+                ),
+                content_type=CONTENT_TYPE_SIGNREQ,
+            )
 
             challenge, sig = self.decrypt_and_verify_challenge(
-                challenge_url, action='ACCEPT')
+                challenge_url, action="ACCEPT"
+            )
 
             # ------------------------------------------------------------------ --
 
             # check if the content type is right
 
-            content_type = challenge['content_type']
+            content_type = challenge["content_type"]
             assert content_type == CONTENT_TYPE_SIGNREQ
 
             created_challenges.append((challenge_url, challenge, sig))
@@ -903,18 +934,18 @@ class TestPushToken(TestController):
 
         # verify that all challenges are kept
 
-        params = {'serial': 'KIPuOne',
-                  'open': True}
+        params = {"serial": "KIPuOne", "open": True}
 
-        response = self.make_admin_request('checkstatus', params)
+        response = self.make_admin_request("checkstatus", params)
         response_dict = json.loads(response.body)
 
-        challenges = response_dict.get(
-            'result', {}).get(
-                'value', {}).get(
-                    'values', {}).get(
-                        'KIPuOne', {}).get(
-                            'challenges', [])
+        challenges = (
+            response_dict.get("result", {})
+            .get("value", {})
+            .get("values", {})
+            .get("KIPuOne", {})
+            .get("challenges", [])
+        )
 
         # remark:
         # we have here one additonal challenge, which was the inital
@@ -931,63 +962,69 @@ class TestPushToken(TestController):
 
         # prepare params for validate
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'signature': sig}
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "signature": sig,
+        }
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('accept_transaction', params)
+        response = self.make_validate_request("accept_transaction", params)
         response_dict = json.loads(response.body)
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
         assert value, response
 
         # ------------------------------------------------------------------ --
 
         # status check
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'user': 'root', 'pass': '1234'}
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "user": "root",
+            "pass": "1234",
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         response_dict = json.loads(response.body)
 
-        transactions = response_dict.get('detail', {}).get('transactions', {})
-        transaction = transactions[challenge['transaction_id']]
+        transactions = response_dict.get("detail", {}).get("transactions", {})
+        transaction = transactions[challenge["transaction_id"]]
 
-        assert transaction['status'] == 'closed', response
-        assert transaction['accept'], response
-        assert transaction['valid_tan'], response
+        assert transaction["status"] == "closed", response
+        assert transaction["accept"], response
+        assert transaction["valid_tan"], response
 
         # verify that all challenges are kept
 
-        params = {'serial': 'KIPuOne', 'open': True}
+        params = {"serial": "KIPuOne", "open": True}
 
-        response = self.make_admin_request('checkstatus', params)
+        response = self.make_admin_request("checkstatus", params)
         response_dict = json.loads(response.body)
 
-        challenges = response_dict.get(
-            'result', {}).get(
-                'value', {}).get(
-                    'values', {}).get(
-                        'KIPuOne', {}).get(
-                            'challenges', [])
+        challenges = (
+            response_dict.get("result", {})
+            .get("value", {})
+            .get("values", {})
+            .get("KIPuOne", {})
+            .get("challenges", [])
+        )
 
         open_challenges = 0
         accept_challenges = 0
 
         for challenge in list(challenges.values()):
 
-            status = challenge['session']['status']
-            accept = challenge['session'].get('accept')
+            status = challenge["session"]["status"]
+            accept = challenge["session"].get("accept")
 
-            if status == 'open':
+            if status == "open":
                 open_challenges += 1
 
-            if status == 'closed' and accept:
+            if status == "closed" and accept:
                 accept_challenges += 1
 
         assert open_challenges == 9
@@ -995,128 +1032,143 @@ class TestPushToken(TestController):
 
         return
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_signreq_reject(self):
+        """PushToken: Check if reject signing transactions works correctly"""
 
-        """ PushToken: Check if reject signing transactions works correctly """
+        user_token_id = self.execute_correct_pairing(user="root", pin="1234")
+        challenge_url = self.trigger_challenge(
+            user_token_id,
+            data=(
+                "Yes, I want to know why doctors hate this guy. Take these "
+                "6000 $ with all my sincere benevolence and send me the black "
+                "magic diet pill they don't want me to know about"
+            ),
+            content_type=CONTENT_TYPE_SIGNREQ,
+        )
 
-        user_token_id = self.execute_correct_pairing(user='root', pin='1234')
-        challenge_url = self.trigger_challenge(user_token_id, data=(
-            'Yes, I want to know why doctors hate this guy. Take these '
-            '6000 $ with all my sincere benevolence and send me the black '
-            'magic diet pill they don\'t want me to know about'),
-            content_type=CONTENT_TYPE_SIGNREQ)
-
-        challenge, sig = self.decrypt_and_verify_challenge(challenge_url,
-                                                           action='DENY')
+        challenge, sig = self.decrypt_and_verify_challenge(
+            challenge_url, action="DENY"
+        )
 
         # ------------------------------------------------------------------ --
 
         # check if the content type is right
 
-        content_type = challenge['content_type']
+        content_type = challenge["content_type"]
         assert content_type == CONTENT_TYPE_SIGNREQ
 
         # ------------------------------------------------------------------ --
 
         # prepare params for validate
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'signature': sig}
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "signature": sig,
+        }
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('reject_transaction', params)
+        response = self.make_validate_request("reject_transaction", params)
         response_dict = json.loads(response.body)
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
         assert value, response
 
         # ------------------------------------------------------------------ --
 
         # status check
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'user': 'root', 'pass': '1234'}
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "user": "root",
+            "pass": "1234",
+        }
 
-        response = self.make_validate_request('check_status', params)
+        response = self.make_validate_request("check_status", params)
         response_dict = json.loads(response.body)
 
-        transactions = response_dict.get('detail', {}).get('transactions', {})
-        transaction = transactions[challenge['transaction_id']]
+        transactions = response_dict.get("detail", {}).get("transactions", {})
+        transaction = transactions[challenge["transaction_id"]]
 
-        assert transaction['status'] == 'closed', response
-        assert transaction['reject'], response
-        assert not transaction['valid_tan'], response
+        assert transaction["status"] == "closed", response
+        assert transaction["reject"], response
+        assert not transaction["valid_tan"], response
 
         return
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_failed_signreq(self):
-
-        """ PushToken: Check if signing transactions fails correctly """
+        """PushToken: Check if signing transactions fails correctly"""
 
         user_token_id = self.execute_correct_pairing()
-        challenge_url = self.trigger_challenge(user_token_id, data=(
-            'Yes, I want to know why doctors hate this guy. Take these '
-            '6000 $ with all my sincere benevolence and send me the black '
-            'magic diet pill they don\'t want me to know about'),
-            content_type=CONTENT_TYPE_SIGNREQ)
+        challenge_url = self.trigger_challenge(
+            user_token_id,
+            data=(
+                "Yes, I want to know why doctors hate this guy. Take these "
+                "6000 $ with all my sincere benevolence and send me the black "
+                "magic diet pill they don't want me to know about"
+            ),
+            content_type=CONTENT_TYPE_SIGNREQ,
+        )
 
-        challenge, __ = self.decrypt_and_verify_challenge(challenge_url,
-                                                          action='ACCEPT')
+        challenge, __ = self.decrypt_and_verify_challenge(
+            challenge_url, action="ACCEPT"
+        )
 
-        wrong_sig = 'DEADBEEF' * 32
+        wrong_sig = "DEADBEEF" * 32
 
         # ------------------------------------------------------------------ --
 
         # check if the content type is right
 
-        content_type = challenge['content_type']
+        content_type = challenge["content_type"]
         assert content_type == CONTENT_TYPE_SIGNREQ
 
         # ------------------------------------------------------------------ --
 
         # prepare params for validate
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'signature': wrong_sig}
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "signature": wrong_sig,
+        }
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('accept_transaction', params)
+        response = self.make_validate_request("accept_transaction", params)
         response_dict = json.loads(response.body)
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
         assert not value, response
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_repairing(self):
-
-        """ PushToken: Check if repairing works correctly """
+        """PushToken: Check if repairing works correctly"""
 
         user_token_id = self.execute_correct_pairing()
 
         # temporarily switch the gda
 
         tmp_gda = self.gda
-        self.gda = '7777'
+        self.gda = "7777"
 
         # ------------------------------------------------------------------ --
 
         # send repairing pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-                                                                user_token_id)
+            user_token_id
+        )
 
         response_dict = self.send_pairing_response(pairing_response)
 
@@ -1124,15 +1176,15 @@ class TestPushToken(TestController):
 
         # check if returned json is correct
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
         assert not value
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert status
 
         # ------------------------------------------------------------------ --
@@ -1141,11 +1193,10 @@ class TestPushToken(TestController):
 
         self.gda = tmp_gda
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_repairing_fail_sig(self):
-
-        """ PushToken: Check if repairing fails correctly (wrong sig) """
+        """PushToken: Check if repairing fails correctly (wrong sig)"""
 
         user_token_id = self.execute_correct_pairing()
 
@@ -1159,7 +1210,8 @@ class TestPushToken(TestController):
         # send repairing pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-                                                                user_token_id)
+            user_token_id
+        )
 
         response_dict = self.send_pairing_response(pairing_response)
 
@@ -1167,15 +1219,15 @@ class TestPushToken(TestController):
 
         # check if returned json is correct
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
         assert not value
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert not status
 
         # ------------------------------------------------------------------ --
@@ -1184,11 +1236,10 @@ class TestPushToken(TestController):
 
         self.secret_key = tmp_secret_key
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_repairing_fail_pubkey(self):
-
-        """ PushToken: Check if repairing fails correctly (wrong pubkey) """
+        """PushToken: Check if repairing fails correctly (wrong pubkey)"""
 
         user_token_id = self.execute_correct_pairing()
 
@@ -1206,7 +1257,8 @@ class TestPushToken(TestController):
         # send repairing pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
-                                                                user_token_id)
+            user_token_id
+        )
 
         response_dict = self.send_pairing_response(pairing_response)
 
@@ -1214,15 +1266,15 @@ class TestPushToken(TestController):
 
         # check if returned json is correct
 
-        assert 'result' in response_dict
-        result = response_dict.get('result')
+        assert "result" in response_dict
+        result = response_dict.get("result")
 
-        assert 'value' in result
-        value = result.get('value')
+        assert "value" in result
+        value = result.get("value")
         assert not value
 
-        assert 'status' in result
-        status = result.get('status')
+        assert "status" in result
+        status = result.get("status")
         assert not status
 
         # ------------------------------------------------------------------ --
@@ -1232,72 +1284,77 @@ class TestPushToken(TestController):
         self.secret_key = tmp_secret_key
         self.public_key = tmp_public_key
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_login(self):
-
-        """ PushToken: Check if signing logins works correctly """
+        """PushToken: Check if signing logins works correctly"""
 
         user_token_id = self.execute_correct_pairing()
-        challenge_url = self.trigger_challenge(user_token_id, data='root@foo',
-                                               content_type=CONTENT_TYPE_LOGIN)
+        challenge_url = self.trigger_challenge(
+            user_token_id, data="root@foo", content_type=CONTENT_TYPE_LOGIN
+        )
 
-        challenge, sig = self.decrypt_and_verify_challenge(challenge_url,
-                                                           action='ACCEPT')
+        challenge, sig = self.decrypt_and_verify_challenge(
+            challenge_url, action="ACCEPT"
+        )
 
         # ------------------------------------------------------------------ --
 
         # check if the content type is right
 
-        content_type = challenge['content_type']
+        content_type = challenge["content_type"]
         assert content_type == CONTENT_TYPE_LOGIN
 
         # ------------------------------------------------------------------ --
 
         # prepare params for validate
 
-        params = {'transactionid': challenge['transaction_id'],
-                  'signature': sig}
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "signature": sig,
+        }
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('accept_transaction', params)
+        response = self.make_validate_request("accept_transaction", params)
         response_dict = json.loads(response.body)
 
-        status = response_dict.get('result', {}).get('status')
+        status = response_dict.get("result", {}).get("status")
         assert status
 
-        value = response_dict.get('result', {}).get('value')
+        value = response_dict.get("result", {}).get("value")
         assert value, response
 
-# -------------------------------------------------------------------------- --
+    # -------------------------------------------------------------------------- --
 
     def test_unsupported_content_type(self):
-
-        """ PushToken: Check for unsupported content types """
+        """PushToken: Check for unsupported content types"""
 
         user_token_id = self.execute_correct_pairing()
 
-        serial = self.tokens[user_token_id]['serial']
-        pin = self.tokens[user_token_id]['pin']
+        serial = self.tokens[user_token_id]["serial"]
+        pin = self.tokens[user_token_id]["pin"]
 
-        params = {'serial': serial,
-                  'pass': pin,
-                  'data': 'wohoooo',
-                  'content_type': 99999999999}
+        params = {
+            "serial": serial,
+            "pass": pin,
+            "data": "wohoooo",
+            "content_type": 99999999999,
+        }
 
-        response = self.make_validate_request('check_s', params)
+        response = self.make_validate_request("check_s", params)
         response_dict = json.loads(response.body)
-        assert 'result' in response_dict
+        assert "result" in response_dict
 
-        result = response_dict.get('result')
-        assert 'status' in result
-        assert 'value' in result
+        result = response_dict.get("result")
+        assert "status" in result
+        assert "value" in result
 
-        status = result.get('status')
-        value = result.get('value')
+        status = result.get("status")
+        value = result.get("value")
 
         assert not status
         assert not value
+
 
 # -------------------------------------------------------------------------- --

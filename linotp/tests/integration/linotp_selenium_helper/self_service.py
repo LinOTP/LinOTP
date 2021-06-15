@@ -33,7 +33,9 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from . import helper
 from linotp_selenium_helper.helper import (
-    fill_form_element, close_alert_and_get_its_text)
+    fill_form_element,
+    close_alert_and_get_its_text,
+)
 from selenium.common.exceptions import TimeoutException
 
 if TYPE_CHECKING:
@@ -44,21 +46,21 @@ class SelfService(object):
 
     URL = "/selfservice-legacy"
 
-    tab_register_motp = 'Register mOTP'
-    tab_disable_token = 'Disable Token'
-    tab_resync_token = 'Resync Token'
-    tab_set_pin = 'set PIN'
-    tab_set_motp_pin = 'set mOTP PIN'
+    tab_register_motp = "Register mOTP"
+    tab_disable_token = "Disable Token"
+    tab_resync_token = "Resync Token"
+    tab_set_pin = "set PIN"
+    tab_set_motp_pin = "set mOTP PIN"
 
     selected_token_css = 'div[role="tabpanel"][style=""] input.selectedToken'
 
-    def __init__(self, testcase: 'TestCase'):
+    def __init__(self, testcase: "TestCase"):
         """
         Initialise the self service helper
 
         @param base_url: URL of the LinOTP service
         """
-        self.testcase: 'TestCase' = testcase
+        self.testcase: "TestCase" = testcase
         "The UnitTest class that is running the tests"
 
     @property
@@ -82,7 +84,8 @@ class SelfService(object):
     def find_by_class(self, class_name):
         """Return the element by its class name"""
         return WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
-            EC.visibility_of_element_located((By.CLASS_NAME, class_name)))
+            EC.visibility_of_element_located((By.CLASS_NAME, class_name))
+        )
 
     def _find_by_css(self, css_value) -> WebElement:
         """
@@ -99,11 +102,11 @@ class SelfService(object):
     def find_by_xpath(self, xpath):
         """Return the element by its xpath"""
         return WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
-            EC.visibility_of_element_located((By.XPATH, xpath)))
+            EC.visibility_of_element_located((By.XPATH, xpath))
+        )
 
     def open(self):
         self.driver.get(self.selfservice_url + "/login")
-
 
     def login(self, user, password, realm=None):
         """
@@ -112,40 +115,45 @@ class SelfService(object):
         @param realm: Realm name will be appended to username if given
         """
         if realm:
-            login = '%s@%s' % (user, realm)
+            login = "%s@%s" % (user, realm)
         else:
             login = user
 
-        self.wait_for_element_visibility('login-box', 20)
+        self.wait_for_element_visibility("login-box", 20)
 
         fill_form_element(self.driver, "login", login)
         fill_form_element(self.driver, "password", password)
         self._find_by_id("password").submit()
-        self.wait_for_element_visibility('tabs', 20)
+        self.wait_for_element_visibility("tabs", 20)
 
     def wait_for_element_visibility(self, element_id, delay=5):
         WebDriverWait(self.driver, delay).until(
-            EC.visibility_of_element_located((By.ID, element_id)))
+            EC.visibility_of_element_located((By.ID, element_id))
+        )
 
     def expect_ui_state(self, tokens, enrollment_options):
         if tokens == 0:
-            assert self._find_by_css(".empty-token-list"), \
-                "Expected no tokens to be visible"
+            assert self._find_by_css(
+                ".empty-token-list"
+            ), "Expected no tokens to be visible"
         if tokens > 0:
-            token_list = self._find_all_by_css(
-                "#tokenDiv .token") or []
-            assert len(token_list) == tokens, \
-                f"Expected {tokens} tokens to be visible " \
+            token_list = self._find_all_by_css("#tokenDiv .token") or []
+            assert len(token_list) == tokens, (
+                f"Expected {tokens} tokens to be visible "
                 f"but found {len(token_list)}."
+            )
 
-        tabs = self._find_all_by_css(
-            "#tabs > ul > li.ui-tabs-tab a") or []
+        tabs = self._find_all_by_css("#tabs > ul > li.ui-tabs-tab a") or []
 
-        enrollment_tabs = [tab for tab in tabs if
-                           tab.get_attribute("href").endswith(".enroll")]
-        assert len(enrollment_tabs) == enrollment_options, \
-            f"Expected {enrollment_options} enrollment tabs to be visible " \
+        enrollment_tabs = [
+            tab
+            for tab in tabs
+            if tab.get_attribute("href").endswith(".enroll")
+        ]
+        assert len(enrollment_tabs) == enrollment_options, (
+            f"Expected {enrollment_options} enrollment tabs to be visible "
             f"but found {len(enrollment_tabs)}."
+        )
 
     def select_tab(self, text):
         """
@@ -155,12 +163,14 @@ class SelfService(object):
         """
         driver = self.driver
         tab = driver.find_element_by_xpath(
-            "//div[@id='tabs']/ul/li/a/span[text()='%s']/ancestor::*[@role='tab']" % text)
+            "//div[@id='tabs']/ul/li/a/span[text()='%s']/ancestor::*[@role='tab']"
+            % text
+        )
 
-        tab_pane_id = tab.get_attribute('aria-controls')
+        tab_pane_id = tab.get_attribute("aria-controls")
 
-        assert tab_pane_id is not None, 'Tab pane ID could not be found'
-        if tab.get_attribute('aria-expanded') == 'false':
+        assert tab_pane_id is not None, "Tab pane ID could not be found"
+        if tab.get_attribute("aria-expanded") == "false":
             tab.click()
 
         # Wait for tab pane to be shown
@@ -175,19 +185,23 @@ class SelfService(object):
         self.select_tab(tabname)
         # Now wait for token field to be visible
         WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR,
-                                              self.selected_token_css)))
+            EC.visibility_of_element_located(
+                (By.CSS_SELECTOR, self.selected_token_css)
+            )
+        )
 
         # Assume, that there is any token/button in the token list
         # on the left side.
         WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '//*[@id="tokenDiv"]/ul/li/button')))
+            EC.presence_of_element_located(
+                (By.XPATH, '//*[@id="tokenDiv"]/ul/li/button')
+            )
+        )
 
         # Here we get ALL buttons on the page. Doesn't matter, since there
         # shouldn't be one, whoms text starts with the token serial;
         # Except the token button we search.
-        buttons = self.driver.find_elements(By.XPATH, '//button')
+        buttons = self.driver.find_elements(By.XPATH, "//button")
 
         for button in buttons:
             # == 0 means here, starts with.
@@ -198,12 +212,16 @@ class SelfService(object):
         # Wait for token field value to update
         try:
             WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
-                EC.text_to_be_present_in_element_value((By.CSS_SELECTOR,
-                                                        self.selected_token_css), token))
+                EC.text_to_be_present_in_element_value(
+                    (By.CSS_SELECTOR, self.selected_token_css), token
+                )
+            )
         except TimeoutException:
             logging.error(
-                'selfservice was not able to activate tab:%s token:%s',
-                tabname, token)
+                "selfservice was not able to activate tab:%s token:%s",
+                tabname,
+                token,
+            )
             raise
 
     def set_pin(self, token, pin):
@@ -212,14 +230,40 @@ class SelfService(object):
         the given PINs and checking for a given
         message
         """
-        self.fill_pin_form(token, self.tab_set_pin, "pin1", "pin2",
-                           "button_setpin", pin, pin, "PIN set successfully")
+        self.fill_pin_form(
+            token,
+            self.tab_set_pin,
+            "pin1",
+            "pin2",
+            "button_setpin",
+            pin,
+            pin,
+            "PIN set successfully",
+        )
 
     def set_motp_pin(self, token, pin):
-        self.fill_pin_form(token, self.tab_set_motp_pin, "mpin1", "mpin2",
-                           "button_setmpin", pin, pin, "mOTP PIN set successfully")
+        self.fill_pin_form(
+            token,
+            self.tab_set_motp_pin,
+            "mpin1",
+            "mpin2",
+            "button_setmpin",
+            pin,
+            pin,
+            "mOTP PIN set successfully",
+        )
 
-    def fill_pin_form(self, token, tabname, pin1_id, pin2_id, button_id, pin1, pin2, expected_msg):
+    def fill_pin_form(
+        self,
+        token,
+        tabname,
+        pin1_id,
+        pin2_id,
+        button_id,
+        pin1,
+        pin2,
+        expected_msg,
+    ):
         """
         set PIN / set mOTP PIN form
         Select tab and token, fill in form and check message
@@ -231,8 +275,9 @@ class SelfService(object):
         fill_form_element(driver, pin2_id, pin2)
         driver.find_element_by_id(button_id).click()
         msg = close_alert_and_get_its_text(self.driver)
-        assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
-            expected_msg, msg)
+        assert (
+            msg == expected_msg
+        ), "Unexpected message - Expected:%s - Found:%s" % (expected_msg, msg)
 
         # Allow dialog to finish closing
         WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
@@ -251,8 +296,9 @@ class SelfService(object):
         driver.find_element_by_id("button_resync").click()
         msg = close_alert_and_get_its_text(self.driver)
         expected_msg = "Token resynced successfully"
-        assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
-            expected_msg, msg)
+        assert (
+            msg == expected_msg
+        ), "Unexpected message - Expected:%s - Found:%s" % (expected_msg, msg)
 
     def disable_token(self, token):
         """
@@ -264,8 +310,9 @@ class SelfService(object):
         driver.find_element_by_id("button_disable").click()
         msg = close_alert_and_get_its_text(self.driver)
         expected_msg = "Token disabled successfully"
-        assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
-            expected_msg, msg)
+        assert (
+            msg == expected_msg
+        ), "Unexpected message - Expected:%s - Found:%s" % (expected_msg, msg)
 
     def logout(self):
         # To avoid state and Javascript problems in the browser we

@@ -37,13 +37,13 @@ log = logging.getLogger(__name__)
 
 
 def parseSafeNetXML(xml):
-    '''
+    """
     This function parses XML data of a Aladdin/SafeNet XML
     file for eToken PASS
 
     It returns a dictionary of
         serial : { hmac_key , counter, type }
-    '''
+    """
 
     TOKENS = {}
     elem_tokencontainer = etree.fromstring(xml)
@@ -58,13 +58,16 @@ def parseSafeNetXML(xml):
         DESCRIPTION = None
         if getTagName(elem_token) == "Token":
             SERIAL = elem_token.get("serial")
-            log.debug("Found token with serial %s" % SERIAL)
+            log.debug("Found token with serial %r", SERIAL)
             for elem_tdata in list(elem_token):
                 tag = getTagName(elem_tdata)
                 if "ProductName" == tag:
                     DESCRIPTION = elem_tdata.text
-                    log.debug("The Token with the serial %s has the productname %s" % (
-                        SERIAL, DESCRIPTION))
+                    log.debug(
+                        "The Token with the serial %s has the productname %s",
+                        SERIAL,
+                        DESCRIPTION,
+                    )
                 if "Applications" == tag:
                     for elem_apps in elem_tdata:
                         if getTagName(elem_apps) == "Application":
@@ -83,13 +86,14 @@ def parseSafeNetXML(xml):
                         hashlib = "sha256"
 
                     TOKENS[SERIAL] = {
-                        'hmac_key': HMAC,
-                        'counter': COUNTER,
-                        'type': 'HMAC',
-                        'hashlib': hashlib
+                        "hmac_key": HMAC,
+                        "counter": COUNTER,
+                        "type": "HMAC",
+                        "hashlib": hashlib,
                     }
                 else:
                     log.error(
-                        "Found token %s without a element 'Seed'" % SERIAL)
+                        "Found token %s without a element 'Seed'", SERIAL
+                    )
 
     return TOKENS

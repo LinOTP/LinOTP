@@ -39,59 +39,61 @@ class TestProviderTestCase(unittest.TestCase):
     """
 
     provider_ini = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '../testdata/provider.ini')
+        os.path.dirname(os.path.abspath(__file__)), "../testdata/provider.ini"
+    )
 
     testdata = [
         {
-            'name': 'Test1',
-            'default': 'False',
-            'config': '{\n'
-                      '"push_url": "https://push.keyidentity.com/send",\n'
-                      '"access_certificate": "/etc/linotp/push-license.pem",\n'
-                      '"server_certificate": "/etc/linotp/push-ca-bundle.crt"\n'
-                      '}',
-            'timeout': '120',
-            'type': 'push',
-            'class': 'DefaultPushProvider'
+            "name": "Test1",
+            "default": "False",
+            "config": "{\n"
+            '"push_url": "https://push.keyidentity.com/send",\n'
+            '"access_certificate": "/etc/linotp/push-license.pem",\n'
+            '"server_certificate": "/etc/linotp/push-ca-bundle.crt"\n'
+            "}",
+            "timeout": "120",
+            "type": "push",
+            "class": "DefaultPushProvider",
         },
         {
-            'name': 'newone',
-            'default': 'True',
-            'config': '{"file":"/tmp/müßte_gèhn"}',
-            'timeout': '301',
-            'type': 'sms',
-            'class': 'smsprovider.FileSMSProvider.FileSMSProvider'
+            "name": "newone",
+            "default": "True",
+            "config": '{"file":"/tmp/müßte_gèhn"}',
+            "timeout": "301",
+            "type": "sms",
+            "class": "smsprovider.FileSMSProvider.FileSMSProvider",
         },
         {
-            'managed': '$6$..hNcgTtOhvkQlIW$fuF/LWmmXPmPVjvEWd8kCdZN3KetoNQRn9Dn././0XAOFtoHDUIBow3qU2eO1ngV0bxwaPmgDGjqvlSG4HizE.',
-            'name': 'managed_one',
-            'default': 'False',
-            'type': 'sms',
-            'timeout': '301',
-            'config': '{"file":"/tmp/newone"}',
-            'class': 'smsprovider.FileSMSProvider.FileSMSProvider',
+            "managed": "$6$..hNcgTtOhvkQlIW$fuF/LWmmXPmPVjvEWd8kCdZN3KetoNQRn9Dn././0XAOFtoHDUIBow3qU2eO1ngV0bxwaPmgDGjqvlSG4HizE.",
+            "name": "managed_one",
+            "default": "False",
+            "type": "sms",
+            "timeout": "301",
+            "config": '{"file":"/tmp/newone"}',
+            "class": "smsprovider.FileSMSProvider.FileSMSProvider",
         },
-        ]
+    ]
 
     class MockedFileSMSProvider(object):
         def getConfigMapping(self):
             config_mapping = {
-                'timeout': ('Timeout', None),
-                'config': ('Config', 'password')
+                "timeout": ("Timeout", None),
+                "config": ("Config", "password"),
             }
             return config_mapping
 
-    @patch('linotp.provider.setProvider')
+    @patch("linotp.provider.setProvider")
     def test_load_provider_ini(self, mock_setProvider):
         mock_setProvider.return_value = (True, {})
         load_provider_ini(self.provider_ini)
         for data in self.testdata:
             mock_setProvider.assert_any_call(data)
 
-    @patch('linotp.provider._load_provider_class')
-    @patch('linotp.provider.storeConfig')
-    def test_save_managed_provider_from_ini(self, mock_storeConfig, mock_load_provider):
+    @patch("linotp.provider._load_provider_class")
+    @patch("linotp.provider.storeConfig")
+    def test_save_managed_provider_from_ini(
+        self, mock_storeConfig, mock_load_provider
+    ):
         """
         save provider from ini file
         """
@@ -99,32 +101,35 @@ class TestProviderTestCase(unittest.TestCase):
         mock_load_provider.return_value = self.MockedFileSMSProvider()
 
         params = self.testdata[2]
-        provider_type = params['type']
-        provider_name = params['name']
-        provider_prefix = 'linotp.SMSProvider.managed_one'
-
+        provider_type = params["type"]
+        provider_name = params["name"]
+        provider_prefix = "linotp.SMSProvider.managed_one"
 
         res = save_new_provider(provider_type, provider_name, params)
         try:
             mock_storeConfig.assert_any_call(
-                key=provider_prefix + '.' + 'Config',
+                key=provider_prefix + "." + "Config",
                 val='{"file":"/tmp/newone"}',
-                typ='password')
+                typ="password",
+            )
             mock_storeConfig.assert_any_call(
-                key=provider_prefix + '.' + 'Managed',
-                val=params['managed'],
-                typ=None)
+                key=provider_prefix + "." + "Managed",
+                val=params["managed"],
+                typ=None,
+            )
             mock_storeConfig.assert_any_call(
-                key=provider_prefix + '.' + 'Timeout',
-                val='301',
-                typ=None)
+                key=provider_prefix + "." + "Timeout", val="301", typ=None
+            )
             mock_storeConfig.assert_any_call(
                 key=provider_prefix,
-                val='smsprovider.FileSMSProvider.FileSMSProvider')
+                val="smsprovider.FileSMSProvider.FileSMSProvider",
+            )
 
         except AssertionError as aserror:
             call_args_list = mock_storeConfig.call_args_list
-            raise Exception('Error was: %r, calls were: %r' % (
-                aserror.message, call_args_list))
+            raise Exception(
+                "Error was: %r, calls were: %r"
+                % (aserror.message, call_args_list)
+            )
 
         assert res == (True, {})

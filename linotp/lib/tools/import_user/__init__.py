@@ -49,12 +49,13 @@ class FormatReader(object):
     """
     support for special csv formats
     """
+
     pass
 
 
 class DefaultFormatReader(FormatReader):
 
-    delimiter = ','
+    delimiter = ","
     quotechar = '"'
 
     @classmethod
@@ -64,7 +65,7 @@ class DefaultFormatReader(FormatReader):
 
 class PasswdFormatReader(FormatReader):
 
-    delimiter = ':'
+    delimiter = ":"
     quotechar = '"'
 
     @classmethod
@@ -77,20 +78,20 @@ class PasswdFormatReader(FormatReader):
 
         # support for extend password format, which contains email++
 
-        if ',' in row[4]:
-            attr = row[4].split(',')
+        if "," in row[4]:
+            attr = row[4].split(",")
             if len(attr) < 5:
                 attr.append("")
         else:
-            attr = ',,,,'.split(',')
+            attr = ",,,,".split(",")
             attr[0] = row[4]
 
         # now split the name into surname and lastname
 
-        if ' ' in attr[0]:
-            ext_name = attr[0].split(' ', 1)
+        if " " in attr[0]:
+            ext_name = attr[0].split(" ", 1)
         else:
-            ext_name = (attr[0] + " ").split(' ', 1)
+            ext_name = (attr[0] + " ").split(" ", 1)
 
         # finally we concat all
 
@@ -102,18 +103,18 @@ class PasswdFormatReader(FormatReader):
 
 
 class UserImport(object):
-
     def __init__(self, ImportHandler):
 
         self.user_column_mapping = {}
         self.import_handler = ImportHandler
-        self.encoding = 'UTF-8'
+        self.encoding = "UTF-8"
 
     def set_mapping(self, mapping):
         self.user_column_mapping = mapping
 
-    def get_users_from_data(self, csv_data, format_reader,
-                            passwords_in_plaintext=False):
+    def get_users_from_data(
+        self, csv_data, format_reader, passwords_in_plaintext=False
+    ):
         """
         for each row
         - iterate over all available database columns and
@@ -123,9 +124,11 @@ class UserImport(object):
 
         """
 
-        reader = csv.reader(csv_data.split('\n'),
-                            delimiter=format_reader.delimiter,
-                            quotechar=format_reader.quotechar)
+        reader = csv.reader(
+            csv_data.split("\n"),
+            delimiter=format_reader.delimiter,
+            quotechar=format_reader.quotechar,
+        )
 
         for row in reader:
 
@@ -148,14 +151,18 @@ class UserImport(object):
 
                 user.set(entry, value)
 
-                if entry == 'password' and passwords_in_plaintext:
+                if entry == "password" and passwords_in_plaintext:
                     user.creat_password_hash(row[column_id])
 
             yield user
 
-    def import_csv_users(self, csv_data, dryrun=False,
-                         format_reader=DefaultFormatReader,
-                         passwords_in_plaintext=False):
+    def import_csv_users(
+        self,
+        csv_data,
+        dryrun=False,
+        format_reader=DefaultFormatReader,
+        passwords_in_plaintext=False,
+    ):
         """
         insert and update users
 
@@ -183,19 +190,23 @@ class UserImport(object):
             # update or insert all user from the csv data
 
             for user in self.get_users_from_data(
-                             csv_data,
-                             format_reader,
-                             passwords_in_plaintext=passwords_in_plaintext):
+                csv_data,
+                format_reader,
+                passwords_in_plaintext=passwords_in_plaintext,
+            ):
 
                 # only store valid users that have a userid and a username
                 if not user.userid or not user.username:
                     continue
 
                 # prevent processing user multiple times
-                if (user.userid in list(processed_users.keys()) or
-                    user.username in list(processed_users.values())):
-                    raise Exception("Violation of unique constraint - "
-                                    "duplicate user in data: %r" % user)
+                if user.userid in list(
+                    processed_users.keys()
+                ) or user.username in list(processed_users.values()):
+                    raise Exception(
+                        "Violation of unique constraint - "
+                        "duplicate user in data: %r" % user
+                    )
                 else:
                     processed_users[user.userid] = user.username
 
@@ -232,11 +243,11 @@ class UserImport(object):
                     self.import_handler.delete_by_id(del_userid)
 
             result = {
-                'created': users_created,
-                'updated': users_not_modified,
-                'modified': users_modified,
-                'deleted': users_deleted,
-                }
+                "created": users_created,
+                "updated": users_not_modified,
+                "modified": users_modified,
+                "deleted": users_deleted,
+            }
 
             if not dryrun:
                 self.import_handler.commit()
@@ -246,18 +257,21 @@ class UserImport(object):
         except Exception as exx:
 
             self.import_handler.rollback()
-            log.exception(exx)
+            log.error(exx)
             raise exx
 
         finally:
             self.import_handler.close()
+
 
 # ------------------------------------------------------------------------- --
 
 
 def main():
 
-    from linotp.lib.tools.import_user.SQLImportHandler import Shell_DatabaseContext
+    from linotp.lib.tools.import_user.SQLImportHandler import (
+        Shell_DatabaseContext,
+    )
     from linotp.lib.tools.import_user.SQLImportHandler import SQLImportHandler
 
     # in the test main() we use a password file, which is prepared
@@ -267,34 +281,37 @@ def main():
         csv_data = f.read()
 
     user_column_map = {
-            "userid": 2,
-            "username": 0,
-            "phone": 8,
-            "mobile": 7,
-            "email": 9,
-            "surname": 5,
-            "givenname": 4,
-            "password": 1}
+        "userid": 2,
+        "username": 0,
+        "phone": 8,
+        "mobile": 7,
+        "email": 9,
+        "surname": 5,
+        "givenname": 4,
+        "password": 1,
+    }
 
-    sql_url = 'postgres://otpd:linotp2d@localhost/otpdb'
+    sql_url = "postgres://otpd:linotp2d@localhost/otpdb"
     shell_db_context = Shell_DatabaseContext(sql_url=sql_url)
 
     import_handler = SQLImportHandler(
-                                 groupid="Hello",
-                                 resolver_name="TestResolver",
-                                 database_context=shell_db_context)
+        groupid="Hello",
+        resolver_name="TestResolver",
+        database_context=shell_db_context,
+    )
 
     user_import = UserImport(import_handler)
 
     user_import.set_mapping(user_column_map)
 
     result = user_import.import_csv_users(
-                                csv_data,
-                                format_reader=PasswdFormatReader())
+        csv_data, format_reader=PasswdFormatReader()
+    )
 
     print(result)
 
     return
+
 
 if __name__ == "__main__":
 

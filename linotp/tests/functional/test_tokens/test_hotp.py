@@ -36,13 +36,9 @@ from linotp.lib.HMAC import HmacOtp
 
 from linotp.tests import TestController
 
-HASH_LOOKUP = {
-    'sha1': sha1,
-    'sha256': sha256,
-    'sha512': sha512
-    }
+HASH_LOOKUP = {"sha1": sha1, "sha256": sha256, "sha512": sha512}
 
-'''
+"""
   +-------------+--------------+------------------+----------+--------+
   |  Time (sec) |   UTC Time   | Value of T (hex) |   TOTP   |  Mode  |
   +-------------+--------------+------------------+----------+--------+
@@ -88,74 +84,82 @@ HASH_LOOKUP = {
 
 
 
-'''
+"""
 SEED = "3132333435363738393031323334353637383930"
 SEED32 = "3132333435363738393031323334353637383930313233343536373839303132"
-SEED64 = ("313233343536373839303132333435363738393031323334353637383930313233"
-          "34353637383930313233343536373839303132333435363738393031323334")
+SEED64 = (
+    "313233343536373839303132333435363738393031323334353637383930313233"
+    "34353637383930313233343536373839303132333435363738393031323334"
+)
 
 TEST_VECTORS = [
     {
-    'params': {
-        'otpkey': SEED,
-        'otplen': 8,
-        'hashlib': 'sha1',
-        'oath_type': 'hmac',
-        'serial': 'HOTPsha1'
+        "params": {
+            "otpkey": SEED,
+            "otplen": 8,
+            "hashlib": "sha1",
+            "oath_type": "hmac",
+            "serial": "HOTPsha1",
         },
-    'test': {
-        "0000000000000001": "94287082",
-        "00000000023523EC": "07081804",
-        "00000000023523ED": "14050471",
-        "000000000273EF07": "89005924",
-        "0000000003F940AA": "69279037",
-        "0000000027BC86AA": "65353130",
-        }
+        "test": {
+            "0000000000000001": "94287082",
+            "00000000023523EC": "07081804",
+            "00000000023523ED": "14050471",
+            "000000000273EF07": "89005924",
+            "0000000003F940AA": "69279037",
+            "0000000027BC86AA": "65353130",
+        },
     },
     {
-    'params': {
-        'otpkey': SEED32,
-        'otplen': 8,
-        'hashlib': 'sha256',
-        'oath_type': 'hmac',
-        'serial': 'HOTPsha256'
+        "params": {
+            "otpkey": SEED32,
+            "otplen": 8,
+            "hashlib": "sha256",
+            "oath_type": "hmac",
+            "serial": "HOTPsha256",
         },
-    'test': {
-      '0000000000000001': "46119246",
-      '00000000023523EC': "68084774",
-      "00000000023523ED": "67062674",
-      "000000000273EF07": "91819424",
-      "0000000003F940AA": "90698825",
-      "0000000027BC86AA": "77737706"
-        }
+        "test": {
+            "0000000000000001": "46119246",
+            "00000000023523EC": "68084774",
+            "00000000023523ED": "67062674",
+            "000000000273EF07": "91819424",
+            "0000000003F940AA": "90698825",
+            "0000000027BC86AA": "77737706",
+        },
     },
     {
-    'params': {
-        'otpkey': SEED64,
-        'otplen': 8,
-        'hashlib': 'sha512',
-        'oath_type': 'hmac',
-        'serial': 'HOTPsha512'
+        "params": {
+            "otpkey": SEED64,
+            "otplen": 8,
+            "hashlib": "sha512",
+            "oath_type": "hmac",
+            "serial": "HOTPsha512",
         },
-    'test': {
-      "0000000000000001": "90693936",
-      "00000000023523EC": "25091201",
-      "00000000023523ED": "99943326",
-      "000000000273EF07": "93441116",
-      "0000000003F940AA": "38618901",
-      "0000000027BC86AA": "47863826",
-        }
-    }
-    ]
+        "test": {
+            "0000000000000001": "90693936",
+            "00000000023523EC": "25091201",
+            "00000000023523ED": "99943326",
+            "000000000273EF07": "93441116",
+            "0000000003F940AA": "38618901",
+            "0000000027BC86AA": "47863826",
+        },
+    },
+]
 
-class HotpTest():
+
+class HotpTest:
     """
     helper class for testing hmac otps with given set of parameters
     """
 
     def __init__(
-            self, otpkey: bytes, otplen: int, hashlib: str,
-            oath_type: str, serial: str):
+        self,
+        otpkey: bytes,
+        otplen: int,
+        hashlib: str,
+        oath_type: str,
+        serial: str,
+    ):
 
         self.otpkey = otpkey
         self.otplen = otplen
@@ -172,7 +176,8 @@ class HotpTest():
         """
         hmac = HmacOtp(digits=self.otplen, hashfunc=self.hashlib)
         return hmac.generate(
-            counter=counter, key=binascii.unhexlify(self.otpkey))
+            counter=counter, key=binascii.unhexlify(self.otpkey)
+        )
 
 
 class TestHotpController(TestController):
@@ -181,7 +186,7 @@ class TestHotpController(TestController):
     """
 
     def setUp(self):
-        """ test setup - we require an default realm with an user """
+        """test setup - we require an default realm with an user"""
 
         TestController.setUp(self)
 
@@ -195,7 +200,7 @@ class TestHotpController(TestController):
 
         test_vector = TEST_VECTORS[0]
 
-        test_params = test_vector['params']
+        test_params = test_vector["params"]
         hotp_test = HotpTest(**test_params)
 
         # ------------------------------------------------------------------ --
@@ -209,27 +214,27 @@ class TestHotpController(TestController):
 
         # create mixed string with '-', ' ' and chars of seed
 
-        params['otpkey'] = ' -'.join(params['otpkey'])
+        params["otpkey"] = " -".join(params["otpkey"])
 
-        assert '-' in params['otpkey']
+        assert "-" in params["otpkey"]
 
         # ------------------------------------------------------------------ --
 
-        params['pin'] = '123'
-        params['user'] = 'passthru_user1@myDefRealm'
+        params["pin"] = "123"
+        params["user"] = "passthru_user1@myDefRealm"
 
-        response = self.make_admin_request('init', params=params)
+        response = self.make_admin_request("init", params=params)
         assert '"status": true' in response
 
-        for counter in range(1,3):
+        for counter in range(1, 3):
             calc_otp = hotp_test.get_otp(counter=counter)
 
             params = {
-                'user': 'passthru_user1@myDefRealm',
-                'pass': '123' + calc_otp
-                }
-            response = self.make_validate_request('check', params=params)
-            assert 'false' not in response
+                "user": "passthru_user1@myDefRealm",
+                "pass": "123" + calc_otp,
+            }
+            response = self.make_validate_request("check", params=params)
+            assert "false" not in response
 
     def test_gettoken_otps(self):
         """
@@ -242,41 +247,39 @@ class TestHotpController(TestController):
 
         # first enable the controller at all
 
-        params = {
-            'GETOTP_ENABLED': True
-        }
-        response = self.make_system_request('setConfig', params=params)
-        assert 'false' not in response
+        params = {"GETOTP_ENABLED": True}
+        response = self.make_system_request("setConfig", params=params)
+        assert "false" not in response
 
         # ----------------------------------------------------------------- --
 
         # allow the admin to query getotp
 
         params = {
-            'name': 'admin_getotp',
-            'scope': 'admin',
-            'active': True,
-            'action': 'getotp, *',
-            'user': '*',
-            'realm': '*',
+            "name": "admin_getotp",
+            "scope": "admin",
+            "active": True,
+            "action": "getotp, *",
+            "user": "*",
+            "realm": "*",
         }
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response.body
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response.body
 
         # ----------------------------------------------------------------- --
 
         # define how many otps could be retreived
 
         params = {
-            'name': 'gettokenmaxcount',
-            'scope': 'gettoken',
-            'active': True,
-            'action': 'max_count_hotp=5,max_count_totp=5,',
-            'user': '*',
-            'realm': 'mydefrealm',
+            "name": "gettokenmaxcount",
+            "scope": "gettoken",
+            "active": True,
+            "action": "max_count_hotp=5,max_count_totp=5,",
+            "user": "*",
+            "realm": "mydefrealm",
         }
-        response = self.make_system_request('setPolicy', params=params)
-        assert 'false' not in response.body
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response.body
 
         # ----------------------------------------------------------------- --
 
@@ -286,7 +289,7 @@ class TestHotpController(TestController):
 
         for test_vector in TEST_VECTORS:
 
-            test_params = test_vector['params']
+            test_params = test_vector["params"]
             hotp_test = HotpTest(**test_params)
 
             # create params for token enrollment
@@ -294,21 +297,22 @@ class TestHotpController(TestController):
             params = {}
             params.update(test_params)
 
-            params['user'] = 'passthru_user1@myDefRealm'
-            response = self.make_admin_request('init', params=params)
+            params["user"] = "passthru_user1@myDefRealm"
+            response = self.make_admin_request("init", params=params)
             assert '"status": true' in response
 
-            getmultiotp_params = {
-                'serial': params['serial'],
-                'count': 5
-            }
+            getmultiotp_params = {"serial": params["serial"], "count": 5}
             response = self.make_gettoken_request(
-                'getmultiotp', params=getmultiotp_params)
+                "getmultiotp", params=getmultiotp_params
+            )
 
-            assert 'false' not in response
+            assert "false" not in response
 
-            for counter, otp in response.json['result']['value']['otp'].items():
+            for counter, otp in response.json["result"]["value"][
+                "otp"
+            ].items():
                 calc_otp = hotp_test.get_otp(counter=int(counter))
                 assert otp == calc_otp
+
 
 # eof
