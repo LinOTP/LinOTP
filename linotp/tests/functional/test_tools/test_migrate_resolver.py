@@ -46,7 +46,7 @@ class TestImportUser(TestController):
     resolver_name = "myresolv"
     target_realm = "myrealm"
     resolver_spec = (
-        "useridresolver." "SQLIdResolver." "IdResolver." + resolver_name
+        "useridresolver.SQLIdResolver.IdResolver." + resolver_name
     )
 
     def setUp(self):

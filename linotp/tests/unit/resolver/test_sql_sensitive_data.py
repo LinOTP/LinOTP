@@ -42,7 +42,7 @@ class TestSQLResolverSensitiveData(object):
     @patch("linotp.lib.crypto.encrypted_data.decryptPassword")
     @patch("linotp.lib.crypto.encrypted_data.encryptPassword")
     def load_resolver(self, mocked_encryptPassword, mocked_decryptPassword):
-        """ "Read sql resolver configuration from a given JSON file."""
+        """Read sql resolver configuration from a given JSON file."""
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
 

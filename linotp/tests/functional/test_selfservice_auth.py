@@ -65,7 +65,7 @@ class TestSelfserviceAuthController(TestController):
         }
         self.resolvers = {
             "adminResolver": (
-                "useridresolver.PasswdIdResolver." "IdResolver.adminResolver"
+                "useridresolver.PasswdIdResolver.IdResolver.adminResolver"
             ),
         }
         params = resolver_params["adminResolver"]

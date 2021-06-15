@@ -261,7 +261,7 @@ def generate_pairing_url(
     if flags & FLAG_PAIR_DIGITS:
         if not (6 <= otp_pin_length <= 12):
             raise InvalidFunctionParameter(
-                "otp_pin_length", "Pin length must " "be in the range 6..12"
+                "otp_pin_length", "Pin length must be in the range 6..12"
             )
         data += struct.pack("<b", otp_pin_length)
 

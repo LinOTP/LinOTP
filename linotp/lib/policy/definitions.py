@@ -143,7 +143,7 @@ POLICY_DEFINTIONS = {
         "mfa_passOnNoToken": {
             "type": "bool",
             "desc": (
-                "support mfa login if user has no token " "with password only"
+                "support mfa login if user has no token with password only"
             ),
         },
         "show_landing_page": {
@@ -252,13 +252,13 @@ POLICY_DEFINTIONS = {
         "autoenrollment": {
             "type": "str",
             "description": (
-                "provider to be used for " "enrollment notification"
+                "provider to be used for enrollment notification"
             ),
         },
         "enrollment": {
             "type": "str",
             "description": (
-                "provider to be used for " "enrollment notification"
+                "provider to be used for enrollment notification"
             ),
         },
         "setPin": {
@@ -293,11 +293,11 @@ POLICY_DEFINTIONS = {
         },
         "email_provider": {
             "type": "str",
-            "desc": "The email provider that should be used to " "send emails",
+            "desc": "The email provider that should be used to send emails",
         },
         "sms_provider": {
             "type": "str",
-            "desc": "The sms provider that should be used to " "submit sms",
+            "desc": "The sms provider that should be used to submit sms",
         },
         "trigger_sms": {
             "type": "bool",

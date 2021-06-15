@@ -64,7 +64,7 @@ class HttpSMSProvider(ISMSProvider):
             return
 
         log.debug(
-            "[submitMessage] submitting message " "%s to %s", message, phone
+            "[submitMessage] submitting message %s to %s", message, phone
         )
 
         method = self.config.get("HTTP_Method", "POST")
@@ -150,7 +150,7 @@ class HttpSMSProvider(ISMSProvider):
                     "definition"
                 )
                 raise Exception(
-                    "We received a none success reply from the " "SMS Gateway."
+                    "We received a none success reply from the SMS Gateway."
                 )
 
         elif "RETURN_FAIL_REGEX" in self.config:
@@ -158,7 +158,7 @@ class HttpSMSProvider(ISMSProvider):
             if ret is not None:
                 log.warning("[_check_success] sending SMS fail")
                 raise Exception(
-                    "We received a predefined error from the " "SMS Gateway."
+                    "We received a predefined error from the SMS Gateway."
                 )
             else:
                 log.debug(
@@ -178,7 +178,7 @@ class HttpSMSProvider(ISMSProvider):
                     "not match the RETURN_SUCCESS definition"
                 )
                 raise Exception(
-                    "We received a none success reply from the " "SMS Gateway."
+                    "We received a none success reply from the SMS Gateway."
                 )
 
         elif "RETURN_FAIL" in self.config:
@@ -187,7 +187,7 @@ class HttpSMSProvider(ISMSProvider):
             if reply[: len(fail)] == fail:
                 log.warning("[_check_success] sending SMS fail")
                 raise Exception(
-                    "We received a predefined error from the " "SMS Gateway."
+                    "We received a predefined error from the SMS Gateway."
                 )
             else:
                 log.debug(

@@ -65,7 +65,7 @@ class TestAdminController(unittest.TestCase):
     }
 
     def test_parse_tokeninfo(self):
-        """ "
+        """
         check if admin.parse_tokeninfo works
         """
         tok = copy.deepcopy(self.token)

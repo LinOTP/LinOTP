@@ -196,14 +196,14 @@ def check_session(request, scope="admin"):
         try:
             if netaddr.IPAddress(client) in netaddr.IPNetwork(network):
                 log.debug(
-                    "skipping session check since client" " %s in allowed: %s",
+                    "skipping session check since client %s in allowed: %s",
                     client,
                     no_session_clients,
                 )
                 return
         except Exception as ex:
             log.warning(
-                "misconfiguration in linotpNoSessionCheck: " "%r - %r",
+                "misconfiguration in linotpNoSessionCheck: %r - %r",
                 network,
                 ex,
             )
@@ -556,7 +556,7 @@ def int_from_bytes(bytes_, byteorder="little"):
 
     if byteorder not in ["little", "big"]:
         raise InvalidFunctionParameter(
-            "byteorder", "byte order can only " "be 'little' or 'big'"
+            "byteorder", "byte order can only be 'little' or 'big'"
         )
 
     order = -1 if byteorder == "little" else 1

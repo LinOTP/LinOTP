@@ -405,7 +405,7 @@ class TestImportOTP(TestController):
 
         assert "<status>False</status>" in response, response
         assert (
-            "Error loading tokens. File" " or Type empty!" in response
+            "Error loading tokens. File or Type empty!" in response
         ), response
 
         return

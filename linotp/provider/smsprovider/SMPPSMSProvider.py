@@ -78,12 +78,12 @@ class SMPPSMSProvider(ISMSProvider):
                 "teleservice used on the air interface."
             ),
             "source_addr_npi": (
-                "Numbering Plan Indicator for source " "address."
+                "Numbering Plan Indicator for source address."
             ),
             # 'dest_addr_npi': ('Numbering Plan Indicator for dest '
             #                    'address.'),
             "source_addr_ton": (
-                "Type of number of the ESME source " "address"
+                "Type of number of the ESME source address"
             ),
             # 'dest_addr_ton': ('Type of number of the ESME destination'
             #                   ' address'),

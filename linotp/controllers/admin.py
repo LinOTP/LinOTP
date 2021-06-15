@@ -1544,7 +1544,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting hashlib failed"
                 hashlib = param["hashlib".lower()]
                 log.info(
-                    "[set] setting hashlib (%r) for token with serial" " %r",
+                    "[set] setting hashlib (%r) for token with serial %r",
                     hashlib,
                     serial,
                 )
@@ -1572,7 +1572,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting timeStep failed"
                 timeStep = int(param["timeStep".lower()])
                 log.info(
-                    "[set] setting timeStep (%r) for token with " "serial %r",
+                    "[set] setting timeStep (%r) for token with serial %r",
                     timeStep,
                     serial,
                 )
@@ -1588,7 +1588,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 msg = "[set] setting timeShift failed"
                 timeShift = int(param["timeShift".lower()])
                 log.info(
-                    "[set] setting timeShift (%r) for token with serial" " %r",
+                    "[set] setting timeShift (%r) for token with serial %r",
                     timeShift,
                     serial,
                 )
@@ -2550,7 +2550,7 @@ class AdminController(BaseController, SessionCookieMixin):
                 log.debug("[loadtokens] importing token %s", TOKENS[serial])
 
                 log.info(
-                    "[loadtokens] initialize token. " "serial: %r, realm: %r",
+                    "[loadtokens] initialize token. serial: %r, realm: %r",
                     serial,
                     tokenrealm,
                 )

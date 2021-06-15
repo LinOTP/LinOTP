@@ -138,7 +138,7 @@ class TokenHandler(object):
                     list(tokenclass_registry.keys()),
                 )
                 raise TokenAdminError(
-                    "[initToken] failed: unknown token " "type %r" % typ,
+                    "[initToken] failed: unknown token type %r" % typ,
                     id=1610,
                 )
             token = createToken(serial)
@@ -165,7 +165,7 @@ class TokenHandler(object):
                     list(tokenclass_registry.keys()),
                 )
                 raise TokenAdminError(
-                    "[initToken] failed: unknown token" " type %r" % typ,
+                    "[initToken] failed: unknown token type %r" % typ,
                     id=1610,
                 )
 
@@ -2036,12 +2036,12 @@ def getTokenType(serial):
 
 
 def add_last_accessed_info(list_of_tokens):
-    """ " small wrapper to set the accessed time info"""
+    """small wrapper to set the accessed time info"""
     add_time_info(list_of_tokens, mode="accessed")
 
 
 def add_last_verified_info(list_of_tokens):
-    """ " small wrapper to set the verified time info"""
+    """small wrapper to set the verified time info"""
     add_time_info(list_of_tokens, mode="verified")
 
 

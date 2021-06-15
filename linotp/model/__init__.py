@@ -1265,28 +1265,28 @@ def set_defaults(app):
         key="DefaultMaxFailCount",
         value="10",
         typ="int",
-        description=("The default maximum count for" " unsuccessful logins"),
+        description=("The default maximum count for unsuccessful logins"),
     )
 
     _set_config(
         key="DefaultCountWindow",
         value="10",
         typ="int",
-        description=("The default lookup window for tokens " "out of sync "),
+        description=("The default lookup window for tokens out of sync "),
     )
 
     _set_config(
         key="DefaultSyncWindow",
         value="1000",
         typ="int",
-        description=("The default lookup window for tokens " "out of sync "),
+        description=("The default lookup window for tokens out of sync "),
     )
 
     _set_config(
         key="DefaultChallengeValidityTime",
         value="120",
         typ="int",
-        description=("The default time, a challenge is regarded" " as valid."),
+        description=("The default time, a challenge is regarded as valid."),
     )
 
     _set_config(
@@ -1315,7 +1315,7 @@ def set_defaults(app):
         value="150",
         typ="int",
         description=(
-            "The default qrtoken time, a challenge is " "regarded as valid."
+            "The default qrtoken time, a challenge is regarded as valid."
         ),
     )
 
@@ -1331,7 +1331,7 @@ def set_defaults(app):
         value="150",
         typ="int",
         description=(
-            "The pushtoken default time, a challenge is " "regarded as valid."
+            "The pushtoken default time, a challenge is regarded as valid."
         ),
     )
 
@@ -1400,7 +1400,7 @@ def set_defaults(app):
         key="totp.timeWindow",
         value="300",
         typ="int",
-        description=("Lookahead time window of the time based " "otp token "),
+        description=("Lookahead time window of the time based otp token "),
     )
 
     _set_config(
@@ -1430,7 +1430,7 @@ def set_defaults(app):
         value="600",
         typ="int",
         description=(
-            "Time that an e-mail token challenge stays valid" " (seconds)"
+            "Time that an e-mail token challenge stays valid (seconds)"
         ),
     )
     _set_config(
@@ -1495,7 +1495,7 @@ def set_defaults(app):
             key="NewPolicyEvaluation.compare",
             value="False",
             typ="boolean",
-            description=("compare the new policy engine with " "the old one"),
+            description=("compare the new policy engine with the old one"),
         )
 
 

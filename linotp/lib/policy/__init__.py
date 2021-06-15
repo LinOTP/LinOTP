@@ -171,7 +171,7 @@ def checkAuthorisation(scope, method):
     auth = _getAuthorization(scope, method)
     if auth["active"] and not auth["auth"]:
         log.warning(
-            "the user >%r< is not allowed to " "do %s", auth["admin"], scope
+            "the user >%r< is not allowed to do %s", auth["admin"], scope
         )
 
         ret = _(
@@ -225,7 +225,7 @@ def _checkAdminPolicyPost(
         log.error("an unknown method <<%s>> was passed.", method)
 
         raise PolicyException(
-            _("Failed to run getPolicyPost. " "Unknown method: %s") % method
+            _("Failed to run getPolicyPost. Unknown method: %s") % method
         )
 
     # ------------------------------------------------------------------ --
@@ -240,7 +240,7 @@ def _checkAdminPolicyPost(
             new_pin = createRandomPin(user, min_pin_length=randomPINLength)
 
             log.debug(
-                "setting random pin for token with serial %s and user: " "%s",
+                "setting random pin for token with serial %s and user: %s",
                 serial,
                 user,
             )
@@ -290,7 +290,7 @@ def _checkAdminPolicyPost(
             admin = context["AuthUser"]
 
             log.warning(
-                "the maximum tokens for the realm " "%s is exceeded.",
+                "the maximum tokens for the realm %s is exceeded.",
                 tokenrealm,
             )
 
@@ -314,7 +314,7 @@ def _checkAdminPolicyPost(
         ):
 
             log.warning(
-                "the admin >%s< is not allowed to get " "serial of token %s",
+                "the admin >%s< is not allowed to get serial of token %s",
                 policies["admin"],
                 serial,
             )
@@ -373,7 +373,7 @@ def _checkSystemPolicyPost(method, param=None, user=None):
             pol = getAdminPolicies("")
             if pol["active"]:
                 log.debug(
-                    "the admin has policies " "in these realms: %r",
+                    "the admin has policies in these realms: %r",
                     pol["realms"],
                 )
 
@@ -437,7 +437,7 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
             new_pin = createRandomPin(user, min_pin_length=randomPINLength)
 
             log.debug(
-                "setting random pin for token with serial " "%s and user: %s",
+                "setting random pin for token with serial %s and user: %s",
                 serial,
                 user,
             )
@@ -647,7 +647,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             if not _check_token_count(realm=r):
 
                 log.warning(
-                    "the maximum tokens for the realm %s is " "exceeded.", r
+                    "the maximum tokens for the realm %s is exceeded.", r
                 )
 
                 raise PolicyException(
@@ -850,7 +850,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 policies = {}
                 log.error("Unknown token type: %s", ttype)
                 raise Exception(
-                    _("The tokentype '%s' could not be " "found.") % ttype
+                    _("The tokentype '%s' could not be found.") % ttype
                 )
 
         # We need to assure, that an admin does not enroll a token into a
@@ -889,7 +889,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if policies["active"] and len(policies["realms"]) == 0:
 
             log.warning(
-                "the admin >%s< is not allowed to enroll " "a token at all.",
+                "the admin >%s< is not allowed to enroll a token at all.",
                 policies["admin"],
             )
 
@@ -1077,7 +1077,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             ):
 
                 log.warning(
-                    "the admin >%s< is not allowed to setPIN for " "token %s.",
+                    "the admin >%s< is not allowed to setPIN for token %s.",
                     policies["admin"],
                     serial,
                 )
@@ -1309,7 +1309,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             if not _check_token_count(realm=r):
 
                 log.warning(
-                    "the maximum tokens for the " "realm %s is exceeded.", r
+                    "the maximum tokens for the realm %s is exceeded.", r
                 )
 
                 raise PolicyException(
@@ -1355,7 +1355,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if policies["active"] and len(policies["realms"]) == 0:
 
             log.warning(
-                "the admin >%s< is not allowed to import a " "token at all.",
+                "the admin >%s< is not allowed to import a token at all.",
                 policies["admin"],
             )
 
@@ -1414,7 +1414,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if not _check_token_count(realm=tokenrealm):
 
             log.warning(
-                "the maximum tokens for the realm " "%s is exceeded.",
+                "the maximum tokens for the realm %s is exceeded.",
                 tokenrealm,
             )
 
@@ -1456,7 +1456,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         log.error("an unknown method <<%s>> was passed.", method)
 
         raise PolicyException(
-            _("Failed to run checkPolicyPre. " "Unknown method: %s") % method
+            _("Failed to run checkPolicyPre. Unknown method: %s") % method
         )
 
     return ret
@@ -1527,7 +1527,7 @@ def _checkAuditPolicyPre(method, param=None, authUser=None, user=None):
         if auth["active"] and not auth["auth"]:
 
             log.warning(
-                "the admin >%r< is not allowed to " "view the audit trail",
+                "the admin >%r< is not allowed to view the audit trail",
                 auth["admin"],
             )
 
@@ -1541,7 +1541,7 @@ def _checkAuditPolicyPre(method, param=None, authUser=None, user=None):
         log.error("an unknown method was passed in : %s", method)
 
         raise PolicyException(
-            _("Failed to run checkPolicyPre. Unknown " "method: %s") % method
+            _("Failed to run checkPolicyPre. Unknown method: %s") % method
         )
 
     return ret
@@ -1565,7 +1565,7 @@ def _checkToolsPolicyPre(method, param=None, authUser=None, user=None):
     if auth["active"] and not auth["auth"]:
 
         log.warning(
-            "the admin >%r< is not allowed to " "view the audit trail",
+            "the admin >%r< is not allowed to view the audit trail",
             auth["admin"],
         )
 
@@ -1762,13 +1762,13 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
                 return ret
 
         log.warning(
-            "user %r@%r is not allowed to call " "this function!",
+            "user %r@%r is not allowed to call this function!",
             authUser.login,
             authUser.realm,
         )
 
         raise PolicyException(
-            _("The policy settings do not allow you " "to issue this request!")
+            _("The policy settings do not allow you to issue this request!")
         )
 
     elif method == "userassign":
@@ -1776,7 +1776,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
         if not get_selfservice_actions(authUser, "assign"):
 
             log.warning(
-                "user %r@%r is not allowed to call " "this function!",
+                "user %r@%r is not allowed to call this function!",
                 authUser.login,
                 authUser.realm,
             )
@@ -1912,7 +1912,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
             authUser.realm,
         )
         raise PolicyException(
-            _("The policy settings do not allow you " "to issue this request!")
+            _("The policy settings do not allow you to issue this request!")
         )
 
         # Here we check, if the tokennum exceeds the allowed tokens
@@ -2005,7 +2005,7 @@ def _checkSystemPolicyPre(method, param=None, authUser=None, user=None):
         log.error("an unknown method was passed in system: %s", method)
 
         raise PolicyException(
-            _("Failed to run checkPolicyPre. " "Unknown method: %s") % method
+            _("Failed to run checkPolicyPre. Unknown method: %s") % method
         )
 
     auth = _getAuthorization(scope="system", action=SYSTEM_ACTIONS[method])
@@ -2656,7 +2656,7 @@ def getOTPPINEncrypt(serial=None, user=None):
 
 
 def _getOTPPINPolicies(user, scope="selfservice"):
-    """ "get the PIN policies for a realm.
+    """get the PIN policies for a realm.
 
     This internal function returns the PIN policies for a realm.
     These policies can either be in the scope "selfservice" or "admin"
@@ -2809,7 +2809,7 @@ def checkOTPPINPolicy(pin, user):
 
         if pol["contents"][0] == "+":
             log.debug(
-                "checking for an additive character " "group: %s",
+                "checking for an additive character group: %s",
                 pol["contents"],
             )
             if (
@@ -3019,7 +3019,7 @@ def checkPolicyPre(controller, method, param=None, authUser=None, user=None):
         log.error("an unknown controller <<%r>> was passed.", controller)
 
         raise PolicyException(
-            _("Failed to run getPolicyPre. Unknown " "controller: %s")
+            _("Failed to run getPolicyPre. Unknown controller: %s")
             % controller
         )
 
@@ -3066,7 +3066,7 @@ def checkPolicyPost(controller, method, param=None, user=None):
         log.error("an unknown constroller <<%s>> was passed.", controller)
 
         raise PolicyException(
-            _("Failed to run getPolicyPost. " "Unknown controller: %s")
+            _("Failed to run getPolicyPost. Unknown controller: %s")
             % controller
         )
 
@@ -3583,11 +3583,11 @@ def check_auth_tokentype(serial, exception=False, user=None):
     if len(toks) > 1:
 
         log.error(
-            "multiple tokens with serial %s found" " - cannot get OTP!", serial
+            "multiple tokens with serial %s found - cannot get OTP!", serial
         )
 
         raise PolicyException(
-            _("multiple tokens found - " "cannot determine tokentype!")
+            _("multiple tokens found - cannot determine tokentype!")
         )
 
     elif len(toks) == 1:
@@ -3612,7 +3612,7 @@ def check_auth_tokentype(serial, exception=False, user=None):
     if res is False and exception:
 
         g.audit["action_detail"] = (
-            "failed due to " "authorization/tokentype policy"
+            "failed due to authorization/tokentype policy"
         )
 
         raise AuthorizeException(
@@ -3692,7 +3692,7 @@ def check_auth_serial(serial, exception=False, user=None):
 
     if res is False and exception:
         g.audit["action_detail"] = (
-            "failed due to authorization/" "serial policy"
+            "failed due to authorization/serial policy"
         )
         raise AuthorizeException(
             "Authorization for token %s failed on "

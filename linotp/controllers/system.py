@@ -718,7 +718,7 @@ class SystemController(BaseController):
 
                 if param["type"] != previous_resolver["type"]:
                     raise Exception(
-                        "Modification of resolver type is not " "supported!"
+                        "Modification of resolver type is not supported!"
                     )
 
             (param, missing, primary_key_changed) = prepare_resolver_parameter(
@@ -1437,7 +1437,7 @@ class SystemController(BaseController):
 
         except Exception as exx:
             log.error(
-                "[getPolicyDef] error getting policy " "definitions: %r", exx
+                "[getPolicyDef] error getting policy definitions: %r", exx
             )
             db.session.rollback()
             return sendError(response, exx)
@@ -1930,7 +1930,7 @@ class SystemController(BaseController):
 
         except Exception as exx:
             log.error(
-                "[getSupportInfo] : failed to access support info:" " %r", exx
+                "[getSupportInfo] : failed to access support info: %r", exx
             )
             db.session.rollback()
             return sendError(response, exx)
@@ -2040,7 +2040,7 @@ class SystemController(BaseController):
                 licField = request.files["license"]
             except KeyError as _keyerr:
                 return sendErrorMethod(
-                    response, "No key 'license': " "Not a form request"
+                    response, "No key 'license': Not a form request"
                 )
 
             response_format = self.request_params.get("format", "")
@@ -2276,7 +2276,7 @@ class SystemController(BaseController):
 
                 if "managed" not in self.request_params:
                     raise Exception(
-                        "Not allowed to delete the " "managed provider"
+                        "Not allowed to delete the managed provider"
                     )
 
                 password = self.request_params["managed"]
@@ -2284,7 +2284,7 @@ class SystemController(BaseController):
 
                 if not utils.compare_password(password, crypt_password):
                     raise Exception(
-                        "Not allowed to delete the " "managed provider"
+                        "Not allowed to delete the managed provider"
                     )
 
             res, reply = delProvider(provider_type, provider_name)

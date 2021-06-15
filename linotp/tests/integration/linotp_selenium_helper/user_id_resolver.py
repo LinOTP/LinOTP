@@ -142,7 +142,7 @@ class UserIdResolverManager(ManageDialog):
         """
         r = [r for r in self.resolvers if r.name == name]
         assert len(r) == 1, (
-            "Resolver name %r not found " "in current resolver list" % name
+            "Resolver name %r not found in current resolver list" % name
         )
         resolver = r[0]
         return resolver

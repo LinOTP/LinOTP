@@ -217,7 +217,7 @@ class TestGetOtpController(TestController):
             "scope": "gettoken",
             "realm": "mydefrealm",
             "action": (
-                "max_count_dpw=10, max_count_hotp=10, " "max_count_totp=10"
+                "max_count_dpw=10, max_count_hotp=10, max_count_totp=10"
             ),
             "user": "admin",
         }
@@ -403,7 +403,7 @@ class TestGetOtpController(TestController):
                 "scope": "selfservice",
                 "realm": "mydefrealm",
                 "action": (
-                    "max_count_dpw=10, max_count_hotp=10, " "max_count_totp=10"
+                    "max_count_dpw=10, max_count_hotp=10, max_count_totp=10"
                 ),
             }
             response = self.make_system_request(

@@ -348,5 +348,5 @@ class ReportingIterator(object):
 
         except Exception as exx:
             log.error(
-                "Reporting: Problem during iteration." "Exception was %r", exx
+                "Reporting: Problem during iteration.Exception was %r", exx
             )

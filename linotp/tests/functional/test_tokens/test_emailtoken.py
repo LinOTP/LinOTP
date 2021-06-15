@@ -213,7 +213,7 @@ class TestEmailtoken(TestController):
             "SMTP_USER": "secret_user",
             "SMTP_PASSWORD": "secret_pasword",
             "EMAIL_SUBJECT": (
-                "Your requested otp ${otp} for " "token ${serial} and ${user}"
+                "Your requested otp ${otp} for token ${serial} and ${user}"
             ),
             "TEMPLATE": inline_template,
         }
@@ -303,7 +303,7 @@ class TestEmailtoken(TestController):
             "SMTP_USER": "secret_user",
             "SMTP_PASSWORD": "secret_pasword",
             "EMAIL_SUBJECT": (
-                "Your requested otp ${otp} for " "token ${serial} and ${user}"
+                "Your requested otp ${otp} for token ${serial} and ${user}"
             ),
         }
         email_provider_definition = {

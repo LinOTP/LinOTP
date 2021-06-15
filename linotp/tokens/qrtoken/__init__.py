@@ -115,7 +115,7 @@ def parse_qrtoken_pairing_data(plaintext):
 
     if len(serial) > 63:
         raise ParameterError(
-            "Malformed pairing response for type QrToken:" "Serial too long"
+            "Malformed pairing response for type QrToken:Serial too long"
         )
 
     if len(user_login) > 255:

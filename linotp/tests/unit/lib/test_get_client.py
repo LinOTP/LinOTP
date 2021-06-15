@@ -139,7 +139,7 @@ class TestGetClientCase(unittest.TestCase):
         environ = {
             "REMOTE_ADDR": "123.234.123.234",  # the last requester, the proxy
             "HTTP_X_FORWARDED_FOR": (
-                "11.22.33.44 , " "12.22.33.44, " "123.234.123.234"
+                "11.22.33.44 , 12.22.33.44, 123.234.123.234"
             ),  # the originator
         }
 

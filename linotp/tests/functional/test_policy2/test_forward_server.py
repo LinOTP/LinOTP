@@ -67,7 +67,7 @@ class TestForwardServer(TestController):
             "name": "forward_user",
             "realm": "mydefrealm",
             "action": (
-                "forward_server=radius://127.0.0.1:1812/" "?secret=geheim1"
+                "forward_server=radius://127.0.0.1:1812/?secret=geheim1"
             ),
             "client": "",
             "user": "passthru_user1",

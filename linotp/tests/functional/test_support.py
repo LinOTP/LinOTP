@@ -209,7 +209,7 @@ class TestSupport(TestController):
             return self.check_appliance_demo_licence()
 
         with patch(
-            "linotp.controllers.system." "running_on_appliance"
+            "linotp.controllers.system.running_on_appliance"
         ) as mocked_running_on_appliance:
 
             mocked_running_on_appliance.return_value = True

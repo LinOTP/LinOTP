@@ -779,7 +779,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         if not cb_url:
             raise Exception(
-                _("Policy pushtoken_pairing_callback_url must " "have a value")
+                _("Policy pushtoken_pairing_callback_url must have a value")
             )
 
         partition = get_partition(realms, owner)
@@ -1007,7 +1007,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         if len(utf8_callback_url) > 511:
             raise InvalidFunctionParameter(
                 "callback_url",
-                "max string " "length (encoded as utf8) is " "511",
+                "max string length (encoded as utf8) is 511",
             )
 
         # ------------------------------------------------------------------- --
@@ -1041,7 +1041,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             if message is None:
                 raise InvalidFunctionParameter(
                     "message",
-                    "message must be " "supplied for content type " "SIGNREQ",
+                    "message must be supplied for content type SIGNREQ",
                 )
 
             #            ------------------------------------------
@@ -1057,7 +1057,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             if len(utf8_message) > 511:
                 raise InvalidFunctionParameter(
                     "message",
-                    "max string " "length (encoded as utf8) is " "511",
+                    "max string length (encoded as utf8) is 511",
                 )
 
             plaintext += utf8_message + b"\00" + utf8_callback_url + b"\00"
@@ -1069,12 +1069,12 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             if login is None:
                 raise InvalidFunctionParameter(
                     "login",
-                    "login must be " "supplied for content type " "LOGIN",
+                    "login must be supplied for content type LOGIN",
                 )
             if host is None:
                 raise InvalidFunctionParameter(
                     "host",
-                    "host must be " "supplied for content type " "LOGIN",
+                    "host must be supplied for content type LOGIN",
                 )
 
             #            -----------------------------------------------------
@@ -1090,11 +1090,11 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             if len(utf8_login) > 127:
                 raise InvalidFunctionParameter(
-                    "login", "max string " "length (encoded as utf8) is " "127"
+                    "login", "max string length (encoded as utf8) is 127"
                 )
             if len(utf8_host) > 255:
                 raise InvalidFunctionParameter(
-                    "host", "max string " "length (encoded as utf8) is " "255"
+                    "host", "max string length (encoded as utf8) is 255"
                 )
 
             plaintext += utf8_login + b"\00"

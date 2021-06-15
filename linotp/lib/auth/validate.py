@@ -736,7 +736,7 @@ class ValidationHandler(object):
                 ):
 
                     audit_entry["action_detail"] = (
-                        "Realm mismatch for " "token and user"
+                        "Realm mismatch for token and user"
                     )
 
                     continue
@@ -784,7 +784,7 @@ class ValidationHandler(object):
             ):
 
                 audit_entry["action_detail"] = (
-                    "Authentication validity " "period mismatch!"
+                    "Authentication validity period mismatch!"
                 )
 
                 token.incOtpFailCounter()
@@ -868,7 +868,7 @@ class ValidationHandler(object):
                 reply = "%r" % exx
                 audit_entry[
                     "action_detail"
-                ] = "checking token %r " "failed: %r" % (token, exx)
+                ] = "checking token %r failed: %r" % (token, exx)
 
                 audit_entry["info"] = audit_entry.get("info", "") + "%r" % exx
 
@@ -943,7 +943,7 @@ class ValidationHandler(object):
                 Challenges.delete_challenges(None, expired)
 
         log.debug(
-            "Number of valid tokens found " "(validTokenNum): %d",
+            "Number of valid tokens found (validTokenNum): %d",
             len(valid_tokens),
         )
 

@@ -48,7 +48,7 @@ class TestBaseController(object):
         "linotp.controllers.BaseController.__init__", return_value=None
     )
     def test_multidict_params(self, _mock_base, base_app):
-        """ "
+        """
         check if global request.params gets parsed to a plain dict correctly
         """
 
@@ -78,7 +78,7 @@ class TestBaseController(object):
         "linotp.controllers.BaseController.__init__", return_value=None
     )
     def test_jsondict_params(self, _mock_base, base_app):
-        """ "
+        """
         check if global request.json_body gets parsed correctly
         """
 
@@ -103,7 +103,7 @@ class TestBaseController(object):
         "linotp.controllers.BaseController.__init__", return_value=None
     )
     def test_both_given(self, _mock_base, base_app):
-        """ "
+        """
         check if json is give as content type the other params are ignored
         """
 

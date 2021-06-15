@@ -519,7 +519,7 @@ class IdResolver(UserIdResolver):
             )
 
             log.debug(
-                "[testconnection] testing connection with " "connect str: %r",
+                "[testconnection] testing connection with connect str: %r",
                 connect_str,
             )
 
@@ -634,7 +634,7 @@ class IdResolver(UserIdResolver):
 
         if result:
             log.info(
-                "[checkPass] successfully authenticated " "user uid %s", uid
+                "[checkPass] successfully authenticated user uid %s", uid
             )
             return True
 
@@ -704,7 +704,7 @@ class IdResolver(UserIdResolver):
         if missing:
             log.error("missing config entries: %r", missing)
             raise ResolverLoadConfigError(
-                " missing config entries:" " %r" % missing
+                " missing config entries: %r" % missing
             )
 
         self.managed = l_config.get("readonly", False)
@@ -1098,7 +1098,7 @@ class IdResolver(UserIdResolver):
         column_name = self.sqlUserInfo.get("username")
         if column_name is None:
             log.error(
-                "[__getUserIdFilter] username column " "definition required!"
+                "[__getUserIdFilter] username column definition required!"
             )
             raise Exception("username column definition required!")
         log.debug("[__getUserIdFilter] type loginName: %s", type(loginName))

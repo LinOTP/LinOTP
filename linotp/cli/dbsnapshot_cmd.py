@@ -75,7 +75,7 @@ ORM_Models = {
 # dbsnapshot commands
 
 dbsnapshot_cmds = AppGroup(
-    "dbsnapshot", help=("Manage system-independent database " "'snapshots'")
+    "dbsnapshot", help=("Manage system-independent database 'snapshots'")
 )
 
 
@@ -127,7 +127,7 @@ def restore_command(file=None, date=None, table=None):
 
 
 @dbsnapshot_cmds.command(
-    "list", help=("List available snapshots of the database " "tables.")
+    "list", help=("List available snapshots of the database tables.")
 )
 def list_command():
     """list available database snapshots."""

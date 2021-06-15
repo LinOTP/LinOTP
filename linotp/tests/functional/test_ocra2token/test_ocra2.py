@@ -2946,7 +2946,7 @@ class OcraTest(TestController):
             pass
 
         skip_reason = (
-            "SQLite and MySQL silently truncate " "the data. See #12324."
+            "SQLite and MySQL silently truncate the data. See #12324."
         )
         self.skipTest(skip_reason)
 

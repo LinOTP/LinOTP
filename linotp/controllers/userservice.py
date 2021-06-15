@@ -1675,7 +1675,7 @@ class UserserviceController(BaseController):
             th = TokenHandler()
             if True == th.isTokenOwner(serial, self.authUser):
                 log.info(
-                    "user %s@%s is resyncing his " "token with serial %s",
+                    "user %s@%s is resyncing his token with serial %s",
                     self.authUser.login,
                     self.authUser.realm,
                     serial,
@@ -1996,7 +1996,7 @@ class UserserviceController(BaseController):
 
             if th.hasOwner(serial):
                 raise Exception(
-                    _("The token is already assigned " "to another user.")
+                    _("The token is already assigned to another user.")
                 )
 
             # -------------------------------------------------------------- --
@@ -2004,7 +2004,7 @@ class UserserviceController(BaseController):
             # assign  token to user
 
             log.info(
-                "user %s@%s is assign the token with " "serial %s to himself.",
+                "user %s@%s is assign the token with serial %s to himself.",
                 self.authUser.login,
                 self.authUser.realm,
                 serial,
@@ -2474,13 +2474,10 @@ class UserserviceController(BaseController):
                     }
             else:
                 return sendError(
-                    response,
-                    _(
+                    response, _(
                         "valid types are 'oathtoken' and 'googleauthenticator' and "
-                        "'googleauthenticator_time'. You provided %s"
-                    )
-                    % typ,
-                )
+                        "'googleauthenticator_time'. You provided %s") %
+                    typ, )
 
             g.audit["serial"] = serial
             # the Google and OATH are always HMAC; sometimes (FUTURE) totp"
@@ -2565,7 +2562,7 @@ class UserserviceController(BaseController):
             if ret["result"] is False and max_count == -1:
                 ret["error"] = "%s - %s" % (
                     ret["error"],
-                    _("see policy" " definition."),
+                    _("see policy definition."),
                 )
 
             ret["serial"] = serial
@@ -2583,7 +2580,7 @@ class UserserviceController(BaseController):
             log.error("[usergetmultiotp] gettoken/getmultiotp failed: %r", e)
             db.session.rollback()
             return sendError(
-                response, _("selfservice/usergetmultiotp failed:" " %r") % e, 0
+                response, _("selfservice/usergetmultiotp failed: %r") % e, 0
             )
 
     def history(self):
@@ -2694,7 +2691,7 @@ class UserserviceController(BaseController):
             if typ and typ.lower() not in ["ocra2"]:
                 return sendError(
                     response,
-                    _("valid types is 'ocra2'. " "You provided %s") % typ,
+                    _("valid types is 'ocra2'. You provided %s") % typ,
                 )
 
             helper_param = {}
@@ -2801,7 +2798,7 @@ class UserserviceController(BaseController):
             transid = param.get("state", param.get("transactionid", None))
             if not transid:
                 raise ParameterError(
-                    "Missing parameter: state or " "transactionid!"
+                    "Missing parameter: state or transactionid!"
                 )
 
             vh = ValidationHandler()

@@ -81,7 +81,7 @@ class ISMSProvider(object):
 
     def _submitMessage(self, phone, message):
         raise NotImplementedError(
-            "Every subclass of ISMSProvider has to " "implement this method."
+            "Every subclass of ISMSProvider has to implement this method."
         )
 
     def submitMessage(self, phone, message):

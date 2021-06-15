@@ -32,7 +32,7 @@ Test token enrollment
 from linotp.tests import TestController
 
 NOT_ALLOWED_ERROR = (
-    "The policy settings do not allow you to issue this " "request!"
+    "The policy settings do not allow you to issue this request!"
 )
 
 

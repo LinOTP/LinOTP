@@ -70,7 +70,7 @@ class SmtpSMSProvider(ISMSProvider):
         }
         parameters["mailserver_port"] = {
             "type": "int",
-            "description": "your mail server port" " - if not default",
+            "description": "your mail server port - if not default",
         }
 
         parameters["start_tls"] = {
@@ -93,7 +93,7 @@ class SmtpSMSProvider(ISMSProvider):
 
         parameters["use_ssl"] = {
             "type": "bool",
-            "description": "use_ssl to secure " "the mail communication.",
+            "description": "use_ssl to secure the mail communication.",
         }
 
         parameters["mailuser"] = {
@@ -102,7 +102,7 @@ class SmtpSMSProvider(ISMSProvider):
         }
         parameters["mailpassword"] = {
             "type": "password",
-            "description": "the password of the " "login user",
+            "description": "the password of the login user",
         }
 
         parameters["mailsender"] = {
@@ -237,7 +237,7 @@ class SmtpSMSProvider(ISMSProvider):
             if user:
                 if serv.has_extn("AUTH"):
                     log.debug(
-                        "authenticating to mailserver, user: %s, " "pass: %r",
+                        "authenticating to mailserver, user: %s, pass: %r",
                         user,
                         sha256(password).hexdigest(),
                     )
@@ -256,7 +256,7 @@ class SmtpSMSProvider(ISMSProvider):
             log.error("Error: could not connect to server")
             if boolean(self.config.get("raise_exception", True)):
                 raise ProviderNotAvailable(
-                    "Error: could not connect " "to server: %r" % exc
+                    "Error: could not connect to server: %r" % exc
                 )
             ret = False
 

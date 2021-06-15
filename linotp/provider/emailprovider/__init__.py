@@ -93,7 +93,7 @@ class IEmailProvider(object):
         :rtype: bool, string
         """
         raise NotImplementedError(
-            "Every subclass of IEmailProvider has to " "implement this method."
+            "Every subclass of IEmailProvider has to implement this method."
         )
 
     def loadConfig(self, configDict):
@@ -110,7 +110,7 @@ class IEmailProvider(object):
 
 @provider_registry.class_entry("SMTPEmailProvider")
 @provider_registry.class_entry(
-    "linotp.provider.emailprovider." "SMTPEmailProvider"
+    "linotp.provider.emailprovider.SMTPEmailProvider"
 )
 @provider_registry.class_entry("linotp.lib.emailprovider.SMTPEmailProvider")
 class SMTPEmailProvider(IEmailProvider):
@@ -150,7 +150,7 @@ class SMTPEmailProvider(IEmailProvider):
 
         if not self.smtp_server:
             raise Exception(
-                "Invalid EmailProviderConfig. SMTP_SERVER is " "required"
+                "Invalid EmailProviderConfig. SMTP_SERVER is required"
             )
 
         self.start_tls = boolean(self.config.get("START_TLS", False))
@@ -493,7 +493,7 @@ class SMTPEmailProvider(IEmailProvider):
 
         if not self.smtp_server:
             raise Exception(
-                "Invalid EmailProviderConfig. SMTP_SERVER is " "required"
+                "Invalid EmailProviderConfig. SMTP_SERVER is required"
             )
 
         # ------------------------------------------------------------------ --
@@ -547,7 +547,7 @@ class SMTPEmailProvider(IEmailProvider):
             if not smtp_connection.has_extn("AUTH"):
                 LOG.error("AUTH not supported:")
                 raise Exception(
-                    "AUTH not supported" " by server %r" % self.smtp_server
+                    "AUTH not supported by server %r" % self.smtp_server
                 )
 
             LOG.debug("authenticating to mailserver, user: %r", self.smtp_user)

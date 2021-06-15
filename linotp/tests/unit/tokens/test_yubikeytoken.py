@@ -179,7 +179,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s " "should fail." % otp
+            "verification for malicous prefix: %s should fail." % otp
         )
 
         logger.disabled = False
@@ -195,7 +195,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s " "should fail." % otp
+            "verification for malicous prefix: %s should fail." % otp
         )
 
         logger.disabled = False
@@ -221,7 +221,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s " "should fail." % otp
+            "verification for malicous prefix: %s should fail." % otp
         )
 
         logger.disabled = False
@@ -237,7 +237,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s " "should fail." % otp
+            "verification for malicous prefix: %s should fail." % otp
         )
 
         logger.disabled = False

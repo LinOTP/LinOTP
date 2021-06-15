@@ -841,7 +841,7 @@ class Ocra2TokenClass(TokenClass):
 
         except Exception as ex:
             log.error(
-                "[Ocra2TokenClass] challenge verification failed: " "%s,%r: ",
+                "[Ocra2TokenClass] challenge verification failed: %s,%r: ",
                 challenge,
                 ex,
             )

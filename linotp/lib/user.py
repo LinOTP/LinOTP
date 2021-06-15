@@ -661,7 +661,7 @@ def getUserFromRequest(request, config=None):
             d_auth["login"] = request.environ["REMOTE_USER"]
 
             log.debug(
-                "[getUserFromRequest] BasicAuth: found the " "REMOTE_USER: %r",
+                "[getUserFromRequest] BasicAuth: found the REMOTE_USER: %r",
                 d_auth,
             )
 
@@ -921,7 +921,7 @@ def getResolvers(user):
             user_resolvers = get_resolvers_of_user(user.login, lookup_realm)
             if not user_resolvers:
                 log.info(
-                    "no user %r found in realm " "%r", user.login, lookup_realm
+                    "no user %r found in realm %r", user.login, lookup_realm
                 )
 
         else:
@@ -1052,7 +1052,7 @@ def get_resolvers_of_user(login, realm):
 
         if not Resolvers:
             raise NoResolverFound(
-                "no user %r found in realm " "%r" % (login, realm)
+                "no user %r found in realm %r" % (login, realm)
             )
 
         return Resolvers
@@ -1208,7 +1208,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
         if not y:
             log.error("[resolver with spec %r not found!]", resolver_spec)
             raise NoResolverFound(
-                "Failed to access Resolver:" " %r" % resolver_spec
+                "Failed to access Resolver: %r" % resolver_spec
             )
 
         if login:
@@ -1216,7 +1216,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             if not r_user_id:
                 log.error("Failed get user info for login %r", login)
                 raise NoResolverFound(
-                    "Failed get user info for " "login %r" % login
+                    "Failed get user info for login %r" % login
                 )
 
             r_user_info = y.getUserInfo(r_user_id)
@@ -1228,7 +1228,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             if not r_user_info:
                 log.error("Failed get user info for user_id %r", user_id)
                 raise NoResolverFound(
-                    "Failed get user info " "for user_id %r" % user_id
+                    "Failed get user info for user_id %r" % user_id
                 )
 
             r_login = r_user_info.get("username")
@@ -1237,7 +1237,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
         else:
 
             log.error("neither user_id nor login id provided!")
-            raise NoResolverFound("neither user_id nor login " "id provided!")
+            raise NoResolverFound("neither user_id nor login id provided!")
 
     # ---------------------------------------------------------------------- --
 
@@ -1544,7 +1544,7 @@ def getSearchFields(user):
     log.debug("[getSearchFields] entering function getSearchFields")
 
     for resolver_spec in getResolvers(user):
-        """ """
+        """"""
         _cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if len(user.resolver_config_identifier) > 0:
@@ -1799,7 +1799,7 @@ def getUserPhone(user, phone_type="phone"):
         return userinfo[phone_type]
     else:
         log.warning(
-            "[getUserPhone] userobject (%r,%r,%r) has no phone of " "type %r.",
+            "[getUserPhone] userobject (%r,%r,%r) has no phone of type %r.",
             uid,
             resId,
             resClass,
@@ -1888,7 +1888,7 @@ def get_authenticated_user(
 
             if found_uid and uid != found_uid:
                 raise Exception(
-                    "user login %r : missmatch for userid: " "%r:%r",
+                    "user login %r : missmatch for userid: %r:%r",
                     user.login,
                     found_uid,
                     uid,

@@ -702,7 +702,7 @@ class TestQRToken(TestController):
             callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
             raise NotImplementedError(
-                "SMS is not implemented. Callback URL" "is mandatory."
+                "SMS is not implemented. Callback URLis mandatory."
             )
 
         callback_sms = None
@@ -1102,7 +1102,7 @@ class TestQRToken(TestController):
 
         self.enroll_qrtoken()
         response_dict = self.send_pairing_response(
-            "look, mom! i'm crashing " "the server"
+            "look, mom! i'm crashing the server"
         )
 
         # ------------------------------------------------------------------- --

@@ -753,7 +753,7 @@ def init_security_provider():
 
     except Exception as exx:
         current_app.logger.error(
-            "Failed to load security provider " "definition: {}".format(exx)
+            "Failed to load security provider definition: {}".format(exx)
         )
         raise exx
 

@@ -254,7 +254,7 @@ class MigrateController(BaseController):
                     else:
                         if not mig:
                             raise Exception(
-                                "MigrationHandler not " "initialized!"
+                                "MigrationHandler not initialized!"
                             )
                         else:
                             log.info("unknown entry")

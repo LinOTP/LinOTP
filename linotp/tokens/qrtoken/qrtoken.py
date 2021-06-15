@@ -315,7 +315,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         if content_type == CONTENT_TYPE_PAIRING and message != serial:
             raise InvalidFunctionParameter(
-                "message", "message must be equal " "to serial in pairing mode"
+                "message", "message must be equal to serial in pairing mode"
             )
 
         if content_type == CONTENT_TYPE_AUTH:
@@ -425,7 +425,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         if content_type == CONTENT_TYPE_FREE and len(utf8_message) > 511:
             raise ParameterError(
-                "message (encoded as utf8) can only be 511 " "characters long"
+                "message (encoded as utf8) can only be 511 characters long"
             )
 
         elif content_type == CONTENT_TYPE_PAIRING and len(utf8_message) > 63:
@@ -468,7 +468,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             if len(utf8_callback_url) > 511:
                 raise InvalidFunctionParameter(
                     "callback_url",
-                    "max string " "length (encoded as utf8) is " "511",
+                    "max string length (encoded as utf8) is 511",
                 )
 
             data_package += utf8_callback_url + b"\x00"
@@ -482,7 +482,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             if len(utf8_callback_sms_number) > 31:
                 raise InvalidFunctionParameter(
                     "callback_sms_number",
-                    "max string length (encoded " "as utf8) is 31",
+                    "max string length (encoded as utf8) is 31",
                 )
 
             data_package += utf8_callback_sms_number + b"\x00"

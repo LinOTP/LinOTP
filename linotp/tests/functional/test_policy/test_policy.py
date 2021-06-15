@@ -166,7 +166,7 @@ class TestPolicies(TestPoliciesBase):
             "name": "adm201",
             "scope": "admin",
             "realm": "*",
-            "action": ("initSPASS, initHMAC, initETNG, " "initSMS, initMOTP"),
+            "action": ("initSPASS, initHMAC, initETNG, initSMS, initMOTP"),
             "user": "admin_init",
         }
         response = self.make_system_request(

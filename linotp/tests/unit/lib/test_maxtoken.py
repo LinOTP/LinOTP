@@ -28,7 +28,7 @@ def fake_get_client_policy(client, scope, action, realm, user, userObj):
                 "client": "",
                 "user": "",
                 "time": "",
-                "action": "maxtoken=2, maxtokenPUSH=1, " "maxtokenHMAC",
+                "action": "maxtoken=2, maxtokenPUSH=1, maxtokenHMAC",
                 "scope": "enrollment",
             }
         }

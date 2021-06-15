@@ -80,7 +80,7 @@ def parse_resolver(composite_key, value):
     if len(parts) < 3:
         raise ConfigNotRecognized(
             composite_key,
-            "This legacy resolver " "description is not supported anymore.",
+            "This legacy resolver description is not supported anymore.",
         )
     # ------------------------------------------------------------------------ -
 
@@ -325,7 +325,7 @@ def getResolverList(filter_resolver_type=None, config=None):
                         readonly = boolean(conf[readonly_entry])
                     except Exception as _exx:
                         log.info(
-                            "Failed to convert 'readonly' attribute" " %r:%r",
+                            "Failed to convert 'readonly' attribute %r:%r",
                             readonly_entry,
                             conf[readonly_entry],
                         )
@@ -821,7 +821,7 @@ def initResolvers():
 
     except Exception as exx:
         log.error(
-            "Failed to initialize resolver for context. " "Exception was %r",
+            "Failed to initialize resolver for context. Exception was %r",
             exx,
         )
     return context
@@ -837,7 +837,7 @@ def closeResolvers():
             if hasattr(resolver, "close"):
                 resolver.close()
     except Exception as exx:
-        log.error("Failed to close resolver in context. " "Error was %r", exx)
+        log.error("Failed to close resolver in context. Error was %r", exx)
     return
 
 

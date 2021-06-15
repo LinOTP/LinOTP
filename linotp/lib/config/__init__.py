@@ -123,7 +123,7 @@ def getLinotpConfig():
 
     except Exception as exx:
         log.debug(
-            "Bad Hack: Retrieving LinotpConfig without " "controller context"
+            "Bad Hack: Retrieving LinotpConfig without controller context"
         )
         ret = LinOtpConfig()
 

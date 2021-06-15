@@ -70,7 +70,7 @@ class TestSQLResolver_Password(object):
 
         password = "password"
         password_hash = (
-            "$2a$12$NT0I31Sa7ihGEWpka9ASYeEFk" "huTNeBQ2xfZskIiiJeyFXhRgS.Sy"
+            "$2a$12$NT0I31Sa7ihGEWpka9ASYeEFkhuTNeBQ2xfZskIiiJeyFXhRgS.Sy"
         )
         res = check_password(password, password_hash)
         assert res

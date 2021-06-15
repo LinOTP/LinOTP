@@ -211,7 +211,7 @@ class HttpRequest(RemoteRequest):
 
         except Exception as exx:
             log.error(
-                "Error %r getting response from " "remote Server (%r):%r",
+                "Error %r getting response from remote Server (%r):%r",
                 exx,
                 request_url,
                 content,
@@ -252,7 +252,7 @@ class RadiusRequest(RemoteRequest):
 
         # here we also need to check for radius.user
         log.debug(
-            "Checking OTP with length %s on radius server %s" "(user: %s)",
+            "Checking OTP with length %s on radius server %s(user: %s)",
             len(password),
             radiusServer,
             radiusUser,
@@ -316,14 +316,14 @@ class RadiusRequest(RemoteRequest):
 
             elif response.code == pyrad.packet.AccessAccept:
                 log.info(
-                    "Radius: Server %s granted " "access to user %s.",
+                    "Radius: Server %s granted access to user %s.",
                     r_server,
                     radiusUser,
                 )
                 res = True
             else:
                 log.warning(
-                    "Radius: Server %s" "rejected access to user %s.",
+                    "Radius: Server %srejected access to user %s.",
                     r_server,
                     radiusUser,
                 )

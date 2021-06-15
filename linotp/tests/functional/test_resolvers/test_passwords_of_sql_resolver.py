@@ -137,7 +137,7 @@ class SQLResolverPasswordTest(SQLTestController):
 
         brahms_password = "password"
         brahms_password_hash = (
-            "$2a$12$NT0I31Sa7ihGEWpka9ASYrEFk" "huTNeBQ2xfZskIiiJeyFXhRgS.Sy"
+            "$2a$12$NT0I31Sa7ihGEWpka9ASYrEFkhuTNeBQ2xfZskIiiJeyFXhRgS.Sy"
         )
 
         users["brahms"] = {

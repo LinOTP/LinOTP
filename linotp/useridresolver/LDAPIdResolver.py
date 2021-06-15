@@ -959,13 +959,13 @@ class IdResolver(UserIdResolver):
         except Exception as exx:
             log.error("failed to parse configuration: %r", exx)
             raise ResolverLoadConfigError(
-                "failed to parse configuration:" " %r" % exx
+                "failed to parse configuration: %r" % exx
             )
 
         if missing:
             log.error("missing config entries: %r", missing)
             raise ResolverLoadConfigError(
-                " missing config entries:" " %r" % missing
+                " missing config entries: %r" % missing
             )
 
         # ------------------------------------------------------------------ --
@@ -1729,7 +1729,7 @@ def ldap_test(
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s %(levelname)s: [%(name)s]" " %(message)s"
+            "%(asctime)s %(levelname)s: [%(name)s] %(message)s"
         )
         ch.setFormatter(formatter)
         log.addHandler(ch)

@@ -479,7 +479,7 @@ def delProvider(provider_type, provider_name):
     if provider_name in provider_policies:
         detail = {
             "message": (
-                _("Unable to delete - provider used in " "policies!\n[%s]")
+                _("Unable to delete - provider used in policies!\n[%s]")
                 % ",".join(provider_policies[provider_name])
             )
         }

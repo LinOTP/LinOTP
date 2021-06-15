@@ -73,7 +73,7 @@ class IPushProvider(object):
         :return: A tuple of success and result message
         """
         raise NotImplementedError(
-            "Every subclass of IPushProvider has to " "implement this method."
+            "Every subclass of IPushProvider has to implement this method."
         )
 
     def loadConfig(self, configDict):

@@ -190,7 +190,7 @@ def parseSupportLicense(licString: str):
     ):
         log.error("Invalid licence: Format error: %r", licString[0:40])
         raise InvalidLicenseException(
-            "Format error - not a valid license " "file!",
+            "Format error - not a valid license file!",
             type="INVALID_FORMAT",
         )
 
@@ -217,7 +217,7 @@ def parseSupportLicense(licString: str):
             "Format error - not a valid license file! %r", licString[0:40]
         )
         raise InvalidLicenseException(
-            "Format error - not a valid " "license file!",
+            "Format error - not a valid license file!",
             type="INVALID_FORMAT",
         )
 
@@ -354,7 +354,7 @@ def do_nagging(lic_info, nag_days=7):
     # in case there is no duration definition in 'xx days' we do the nagging
     if not lic_info.license_expiration:
         log.error(
-            "Download license format error: " "Missing expiration definition!"
+            "Download license format error: Missing expiration definition!"
         )
         return True
 
@@ -556,7 +556,7 @@ def set_duration(lic_dict, raiseException=False):
         days = int(days)
     except ValueError as _val:
         raise Exception(
-            "Unable to interpret duration in" " license description"
+            "Unable to interpret duration in license description"
         )
 
     # we have a timely limited version, so we have to check if there is
@@ -693,7 +693,7 @@ def verify_signature(lic_dict, lic_sign, licStr=None):
         lic_str = licStr
 
     log.debug(
-        "Licence Signature check: Licence text is %r, " "signature is %r",
+        "Licence Signature check: Licence text is %r, signature is %r",
         lic_str,
         lic_sign,
     )
@@ -808,7 +808,7 @@ def verify_volume(lic_dict):
         return verify_user_volume(lic_dict)
 
     raise InvalidLicenseException(
-        "licenses is neither token nor" " user based!"
+        "licenses is neither token nor user based!"
     )
 
 
@@ -914,11 +914,11 @@ def get_public_keys():
                 pubKeys[idx] = key_text
             else:
                 log.error(
-                    "Licence: Public key file is not valid " "(%r)", key_file
+                    "Licence: Public key file is not valid (%r)", key_file
                 )
         except Exception as exx:
             log.error(
-                "Licence: error during reading " "public key file (%s): %r",
+                "Licence: error during reading public key file (%s): %r",
                 key_file,
                 exx,
             )

@@ -107,7 +107,7 @@ class QR_Token_Validation:
             callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
             raise NotImplementedError(
-                "SMS is not implemented. Callback URL" "is mandatory."
+                "SMS is not implemented. Callback URLis mandatory."
             )
 
         callback_sms = None

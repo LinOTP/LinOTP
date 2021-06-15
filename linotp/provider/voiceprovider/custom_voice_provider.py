@@ -75,7 +75,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
     """
 
     def __init__(self):
-        """ """
+        """"""
         self.server_url = None
         self.client_cert = None
         self.server_cert = None
@@ -168,7 +168,7 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
 
         if not delivery_service:
             raise KeyError(
-                "Missing delivery service configuration: " "twillioConfig"
+                "Missing delivery service configuration: twillioConfig"
             )
 
         # prepare the twilio voice provider

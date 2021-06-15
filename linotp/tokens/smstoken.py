@@ -381,7 +381,7 @@ class SmsTokenClass(HmacTokenClass):
                 u_phone = u_info.get("mobile", u_info.get("phone", None))
                 if u_phone != phone:
                     raise Exception(
-                        _("User is not allowed to " "set phone number")
+                        _("User is not allowed to set phone number")
                     )
 
         self.setPhone(phone)
@@ -1014,7 +1014,7 @@ class SmsTokenClass(HmacTokenClass):
 
         if not available:
             raise AllResourcesUnavailable(
-                "unable to connect to any " "SMSProvider %r" % providers
+                "unable to connect to any SMSProvider %r" % providers
             )
 
         log.debug("[sendSMS] message submitted")
@@ -1035,7 +1035,7 @@ class SmsTokenClass(HmacTokenClass):
             timeout = int(getFromConfig("SMSProviderTimeout", 5 * 60))
         except Exception as ex:
             log.warning(
-                "SMSProviderTimeout: value error %r - reset " "to 5*60", ex
+                "SMSProviderTimeout: value error %r - reset to 5*60", ex
             )
             timeout = 5 * 60
 

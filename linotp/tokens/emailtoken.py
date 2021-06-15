@@ -268,7 +268,7 @@ class EmailTokenClass(HmacTokenClass):
                 u_email = u_info.get("email", None)
                 if u_email.strip() != self._email_address.strip():
                     raise Exception(
-                        _("User is not allowed to set " "email address")
+                        _("User is not allowed to set email address")
                     )
 
         # in case of the e-mail token, only the server must know the otpkey

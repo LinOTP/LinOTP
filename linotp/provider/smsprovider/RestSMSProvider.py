@@ -161,7 +161,7 @@ class RestSMSProvider(ISMSProvider):
         """
 
         log.debug(
-            "[submitMessage] submitting message " "%s to %s", message, phone
+            "[submitMessage] submitting message %s to %s", message, phone
         )
 
         pparams = {}

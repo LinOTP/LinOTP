@@ -569,7 +569,7 @@ def get_secret_key(partition):
 
     if len(secret_key) != 64:
         raise ValidateError(
-            "Secret key has an invalid " "format. Key must be 64 bytes long"
+            "Secret key has an invalid format. Key must be 64 bytes long"
         )
 
     return secret_key
@@ -597,7 +597,7 @@ def get_public_key(partition):
 
     if len(public_key) != 32:
         raise ValidateError(
-            "Public key has an invalid " "format. Key must be 32 bytes long"
+            "Public key has an invalid format. Key must be 32 bytes long"
         )
 
     return public_key

@@ -181,13 +181,13 @@ class LDAPInProcessTests(LDAPResolverTest):
         for effect in [ldap.CONNECT_ERROR, ldap.UNAVAILABLE]:
 
             with mock.patch(
-                "linotp.useridresolver.LDAPIdResolver." "ldap.initialize",
+                "linotp.useridresolver.LDAPIdResolver.ldap.initialize",
                 autospec=True,
             ) as mock_ldap_init:
                 l_obj = mock_ldap_init.return_value
                 mock_start_tls = l_obj.start_tls_s
                 mock_start_tls.side_effect = effect(
-                    "This exception should " "be caught"
+                    "This exception should be caught"
                 )
 
                 caller = deepcopy(self.ldap_y)

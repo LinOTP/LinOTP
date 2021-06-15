@@ -599,7 +599,7 @@ def check_key_validity(s: str, type_: str) -> bool:
 
 
 @pytest.mark.parametrize(
-    ("args,input,output,has_file," "makes_file,check_backup,result"),
+    ("args,input,output,has_file,makes_file,check_backup,result"),
     [
         (
             ["-v", "init", "audit-keys"],

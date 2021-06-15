@@ -64,7 +64,7 @@ if Fips.hmac_sha1(20 * b"\xaa", 50 * b"\xdd") != unhexlify(
 # test case 4
 if (
     Fips.hmac_sha1(
-        unhexlify("0102030405060708090a0b0c0d0e0f10111213141516" "171819"),
+        unhexlify("0102030405060708090a0b0c0d0e0f10111213141516171819"),
         50 * b"\xcd",
     )
     != unhexlify("4c9007f4026250c6bc8414f9bf50c86c2d7235da")
@@ -103,7 +103,7 @@ try:
     ripemd160 = Fips._libcrypto.EVP_ripemd160()
     Fips._HMAC(ripemd160, b"foo", b"bar")
     raise Exception(
-        "HMAC with ripemd160 hash should be " "disabled by FIPS mode!"
+        "HMAC with ripemd160 hash should be disabled by FIPS mode!"
     )
 except SSLError:
     pass  # that is what we want

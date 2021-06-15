@@ -113,7 +113,7 @@ class TestReplyTestCase(object):
             )
         except ProgrammingError:
             assert False, (
-                "request_context was used outside" "of request_context_safety"
+                "request_context was used outsideof request_context_safety"
             )
 
         result = ""
