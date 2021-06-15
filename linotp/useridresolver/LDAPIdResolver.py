@@ -585,8 +585,23 @@ class IdResolver(UserIdResolver):
         if not loginname:
             return ""
 
-        ufilter = self._replace_macros(self.filter)
-        fil = ldap.filter.filter_format(ufilter, [loginname])
+        user_filter_expression = self._replace_macros(self.filter)
+
+        # ------------------------------------------------------------------ --
+
+        # the login name replacement '%s' could occur multiple times in the
+        # user filter, e.g.:
+        #
+        # (&(|(sAMAccountName=%s)(userPrincipalName=%s))(objectClass=user))
+        #
+        # thus we build up the format_values array with the login name
+
+        format_values = [loginname] * user_filter_expression.count("%s")
+
+        user_filter_string = ldap.filter.filter_format(
+            user_filter_expression, format_values
+        )
+
         l_obj = self.bind()
 
         if not l_obj:
@@ -594,8 +609,8 @@ class IdResolver(UserIdResolver):
 
         # ----------------------------------------------------------------- --
 
-        # prepare the list of attributes that we wish to recieve
-        # Remark: the elememnts each must be of type string utf-8
+        # prepare the list of attributes that we wish to receive
+        # Remark: the elements each must be of type string utf-8
 
         attrlist = []
         if self.uidType.lower() != "dn":
@@ -609,7 +624,7 @@ class IdResolver(UserIdResolver):
             l_id = l_obj.search_ext(
                 self.base,
                 ldap.SCOPE_SUBTREE,
-                filterstr=fil,
+                filterstr=user_filter_string,
                 sizelimit=self.sizelimit,
                 attrlist=attrlist,
                 timeout=self.response_timeout,
