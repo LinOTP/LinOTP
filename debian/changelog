@@ -12,6 +12,9 @@ linotp (3.1~0dev-0) experimental; urgency=low
   * Simplify the HMAC acountname and tokenissuer fallback rules for a more predictable
     behavior in the google authenticator url.
 
+  Fixes:
+  * motp tokens can now be used in challenge response mode
+
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 
 linotp (3.0~rc4-1) buster-dev; urgency=low
