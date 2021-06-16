@@ -2474,10 +2474,13 @@ class UserserviceController(BaseController):
                     }
             else:
                 return sendError(
-                    response, _(
+                    response,
+                    _(
                         "valid types are 'oathtoken' and 'googleauthenticator' and "
-                        "'googleauthenticator_time'. You provided %s") %
-                    typ, )
+                        "'googleauthenticator_time'. You provided %s"
+                    )
+                    % typ,
+                )
 
             g.audit["serial"] = serial
             # the Google and OATH are always HMAC; sometimes (FUTURE) totp"

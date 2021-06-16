@@ -735,9 +735,9 @@ class ValidationHandler(object):
                     and u_realm.lower() not in t_realms
                 ):
 
-                    audit_entry["action_detail"] = (
-                        "Realm mismatch for token and user"
-                    )
+                    audit_entry[
+                        "action_detail"
+                    ] = "Realm mismatch for token and user"
 
                     continue
 
@@ -783,9 +783,9 @@ class ValidationHandler(object):
                 and now < token.validity_period_start
             ):
 
-                audit_entry["action_detail"] = (
-                    "Authentication validity period mismatch!"
-                )
+                audit_entry[
+                    "action_detail"
+                ] = "Authentication validity period mismatch!"
 
                 token.incOtpFailCounter()
 

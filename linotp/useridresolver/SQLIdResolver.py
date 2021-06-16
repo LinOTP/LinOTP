@@ -633,9 +633,7 @@ class IdResolver(UserIdResolver):
         )
 
         if result:
-            log.info(
-                "[checkPass] successfully authenticated user uid %s", uid
-            )
+            log.info("[checkPass] successfully authenticated user uid %s", uid)
             return True
 
         log.warning("[checkPass] user %s failed to authenticate.", uid)

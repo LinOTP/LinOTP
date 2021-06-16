@@ -292,18 +292,18 @@ class GettokenController(BaseController):
                 if -1 == otpval:
                     ret["description"] = "No Token with this serial number"
                 if -2 == otpval:
-                    ret["description"] = (
-                        "This Token does not support the getOtp function"
-                    )
+                    ret[
+                        "description"
+                    ] = "This Token does not support the getOtp function"
                 if -3 == otpval:
                     ret["description"] = "The user has more than one token"
                     ret["serials"] = serials
                 if -4 == otpval:
                     ret["description"] = "No Token found for this user"
                 if -5 == otpval:
-                    ret["description"] = (
-                        "you need to provide a user or a serial"
-                    )
+                    ret[
+                        "description"
+                    ] = "you need to provide a user or a serial"
             else:
                 ret["result"] = True
                 ret["otpval"] = otpval

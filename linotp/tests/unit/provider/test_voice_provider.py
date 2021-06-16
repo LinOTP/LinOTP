@@ -82,9 +82,8 @@ class TestVoiceProvider(unittest.TestCase):
         }
 
         configDict["Timeout"] = "30"
-        configDict["server_url"] = (
-            "http://vcs-service.keyidentity.com/v1/twilio/call"
-        )
+        vcs_url = "http://vcs-service.keyidentity.com/v1/twilio/call"
+        configDict["server_url"] = vcs_url
         custom_provider.loadConfig(configDict)
 
         with patch(

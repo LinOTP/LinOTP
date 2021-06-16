@@ -112,8 +112,9 @@ class TestReplyTestCase(object):
                 request_context_copy=request_context_copy,
             )
         except ProgrammingError:
-            assert False, (
-                "request_context was used outsideof request_context_safety"
+            assert (
+                False,
+                "request_context was used outsideof request_context_safety",
             )
 
         result = ""

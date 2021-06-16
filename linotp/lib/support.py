@@ -555,9 +555,7 @@ def set_duration(lic_dict, raiseException=False):
     try:
         days = int(days)
     except ValueError as _val:
-        raise Exception(
-            "Unable to interpret duration in license description"
-        )
+        raise Exception("Unable to interpret duration in license description")
 
     # we have a timely limited version, so we have to check if there is
     # already a license like this installed by comparing the signatures
@@ -807,9 +805,7 @@ def verify_volume(lic_dict):
     elif "user-num" in lic_dict:
         return verify_user_volume(lic_dict)
 
-    raise InvalidLicenseException(
-        "licenses is neither token nor user based!"
-    )
+    raise InvalidLicenseException("licenses is neither token nor user based!")
 
 
 def verify_user_volume(lic_dict):
