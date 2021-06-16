@@ -28,8 +28,9 @@
 Test the passthrough Policy in combination with the passOnNoToken
 """
 
-from mock import patch
 import unittest
+
+from mock import patch
 
 from linotp.lib.policy.evaluate import PolicyEvaluator
 

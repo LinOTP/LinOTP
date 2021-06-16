@@ -30,12 +30,10 @@ totp token - linotp hmac compliance test
 
 
 import binascii
-
 from datetime import datetime
 from hashlib import sha1, sha256, sha512
 
 from linotp.lib.HMAC import HmacOtp
-
 
 SEED = "3132333435363738393031323334353637383930"
 SEED32 = "3132333435363738393031323334353637383930313233343536373839303132"

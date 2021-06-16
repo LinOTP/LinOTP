@@ -30,10 +30,9 @@
 import logging
 
 import pyrad.packet
-from pyrad.client import Client
 import pyrad.server
-
 from mock import patch
+from pyrad.client import Client
 
 from linotp.tests import TestController
 

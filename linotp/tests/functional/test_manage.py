@@ -29,9 +29,9 @@
 """
 
 
+import json
 import logging
 import os
-import json
 
 from linotp.tests import TestController
 

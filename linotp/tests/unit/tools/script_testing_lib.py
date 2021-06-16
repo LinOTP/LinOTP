@@ -34,7 +34,6 @@ from sqlalchemy.engine import create_engine
 # from linotp.lib.audit.SQLAudit import metadata as audit_metadata
 from linotp.model import db
 
-
 # -------------------------------------------------------------------------- --
 
 

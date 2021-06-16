@@ -29,7 +29,6 @@ provider notification handling
 import logging
 
 import linotp.lib.policy
-
 from linotp.lib.context import request_context
 from linotp.lib.policy.action import get_action_value
 

@@ -31,6 +31,7 @@ unit test for the dynamoc mobile number policy of the smstoken
 
 
 import unittest
+
 from mock import patch
 
 from linotp.tokens.smstoken import SmsTokenClass

@@ -28,8 +28,8 @@
 
 import unittest
 
-from mock import patch
 from configobj import ConfigObj
+from mock import patch
 
 from linotp.lib.policy.manage import import_policies
 

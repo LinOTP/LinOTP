@@ -30,21 +30,20 @@
 
 import logging
 import os
-import requests
-
 from urllib.parse import urlparse
 
-from requests.exceptions import Timeout
-from requests.exceptions import ConnectionError
-from requests.exceptions import ConnectTimeout
-from requests.exceptions import ReadTimeout
-from requests.exceptions import TooManyRedirects
+import requests
+from requests.exceptions import (
+    ConnectionError,
+    ConnectTimeout,
+    ReadTimeout,
+    Timeout,
+    TooManyRedirects,
+)
 
+from linotp.lib.resources import AllResourcesUnavailable, ResourceScheduler
 from linotp.provider import provider_registry
 from linotp.provider.pushprovider import IPushProvider
-
-from linotp.lib.resources import ResourceScheduler
-from linotp.lib.resources import AllResourcesUnavailable
 
 #
 # set the default connection and request timeouts

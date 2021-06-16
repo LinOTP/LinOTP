@@ -24,13 +24,14 @@
 #    Support: www.keyidentity.com
 #
 
-import unittest
 import json
+import unittest
 
-from linotp.tokens.qrtoken.qrtoken import QrTokenClass
 from mock import patch
+
 from linotp.flap import config
 from linotp.lib.context import request_context
+from linotp.tokens.qrtoken.qrtoken import QrTokenClass
 
 
 class FakeHSM(object):

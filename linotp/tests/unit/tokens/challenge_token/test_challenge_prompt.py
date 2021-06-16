@@ -25,13 +25,14 @@
 #
 
 import unittest
+
 from mock import patch
 
 from linotp.tokens.hmactoken import HmacTokenClass
-from linotp.tokens.totptoken import TimeHmacTokenClass
-from linotp.tokens.yubikeytoken import YubikeyTokenClass
 from linotp.tokens.passwordtoken import PasswordTokenClass
 from linotp.tokens.smstoken import SmsTokenClass
+from linotp.tokens.totptoken import TimeHmacTokenClass
+from linotp.tokens.yubikeytoken import YubikeyTokenClass
 
 # ---------------------------------------------------------------------------- -
 

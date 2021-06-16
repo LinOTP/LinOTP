@@ -29,13 +29,13 @@ U2F controller - interface to the list of valid facets
 """
 
 import json
-from linotp.flap import response
-from linotp.controllers.base import BaseController
-from linotp.lib.realm import getDefaultRealm
-from linotp.lib.policy.action import get_action_value
-from linotp.lib.policy import getPolicy
 
+from linotp.controllers.base import BaseController
+from linotp.flap import response
 from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicy
+from linotp.lib.policy.action import get_action_value
+from linotp.lib.realm import getDefaultRealm
 
 optional = True
 required = False

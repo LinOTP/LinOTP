@@ -34,7 +34,6 @@ import logging
 
 from linotp.lib.error import TokenStateError
 
-
 log = logging.getLogger(__name__)
 
 

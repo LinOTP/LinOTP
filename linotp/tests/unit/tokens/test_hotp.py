@@ -1,4 +1,5 @@
 import json
+
 from mock import patch
 
 from linotp.tokens.hmactoken import HmacTokenClass

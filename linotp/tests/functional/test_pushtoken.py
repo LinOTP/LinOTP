@@ -24,31 +24,32 @@
 #    Support: www.keyidentity.com
 #
 
-import os
 import json
+import os
 import struct
-import mock
-
-from tempfile import NamedTemporaryFile
 from collections import defaultdict
-from linotp.tests import TestController
-from linotp.lib.crypto.utils import dsa_to_dh_public
-from linotp.lib.crypto.utils import dsa_to_dh_secret
-from linotp.lib.crypto.utils import encode_base64_urlsafe
-from linotp.lib.crypto.utils import decode_base64_urlsafe
-from linotp.lib.util import int_from_bytes
-from pysodium import crypto_scalarmult_curve25519 as calc_dh
-from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
-from pysodium import crypto_sign_keypair as gen_dsa_keypair
-from pysodium import crypto_sign_detached
-from pysodium import crypto_sign_verify_detached
-from pysodium import crypto_sign_keypair
+from tempfile import NamedTemporaryFile
 
-import linotp.provider.pushprovider.default_push_provider as default_provider
-
+import mock
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
 from Cryptodome.Util import Counter
+from pysodium import crypto_scalarmult_curve25519 as calc_dh
+from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
+from pysodium import crypto_sign_detached
+from pysodium import crypto_sign_keypair
+from pysodium import crypto_sign_keypair as gen_dsa_keypair
+from pysodium import crypto_sign_verify_detached
+
+import linotp.provider.pushprovider.default_push_provider as default_provider
+from linotp.lib.crypto.utils import (
+    decode_base64_urlsafe,
+    dsa_to_dh_public,
+    dsa_to_dh_secret,
+    encode_base64_urlsafe,
+)
+from linotp.lib.util import int_from_bytes
+from linotp.tests import TestController
 
 FLAG_PAIR_PK = 1 << 0
 FLAG_PAIR_SERIAL = 1 << 1

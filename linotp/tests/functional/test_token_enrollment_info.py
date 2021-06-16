@@ -30,6 +30,7 @@ test the token class api that displays the token status:
   enrolled but not active
 """
 import json
+
 from linotp.tests import TestController
 
 

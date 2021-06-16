@@ -34,6 +34,7 @@ import urllib.parse
 import urllib.request
 
 import qrcode
+
 from flask import Response, current_app, jsonify
 from flask import request as flask_request
 

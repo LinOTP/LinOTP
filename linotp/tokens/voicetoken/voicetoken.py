@@ -24,33 +24,26 @@
 #    Support: www.keyidentity.com
 #
 
-import datetime
 import binascii
+import datetime
+import logging
 
-from linotp.lib.HMAC import HmacOtp
-
-from linotp.lib.user import getUserDetail
-
-from linotp.lib.auth.validate import check_pin
-from linotp.lib.auth.validate import check_otp
-from linotp.lib.auth.validate import split_pin_otp
-
+from linotp.lib.auth.validate import check_otp, check_pin, split_pin_otp
 from linotp.lib.config import getFromConfig
-
-from linotp.lib.token import get_token_owner
-
-from linotp.lib.policy.action import get_action_value
-from linotp.lib.policy import getPolicy, get_client_policy
-from linotp.lib.policy import trigger_phone_call_on_empty_pin
-from linotp.provider import loadProviderFromPolicy
-
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ParameterError
-
-from linotp.tokens.hmactoken import HmacTokenClass
+from linotp.lib.HMAC import HmacOtp
+from linotp.lib.policy import (
+    get_client_policy,
+    getPolicy,
+    trigger_phone_call_on_empty_pin,
+)
+from linotp.lib.policy.action import get_action_value
+from linotp.lib.token import get_token_owner
+from linotp.lib.user import getUserDetail
+from linotp.provider import loadProviderFromPolicy
 from linotp.tokens import tokenclass_registry
-
-import logging
+from linotp.tokens.hmactoken import HmacTokenClass
 
 log = logging.getLogger(__name__)
 

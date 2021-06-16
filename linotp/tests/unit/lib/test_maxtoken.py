@@ -1,12 +1,14 @@
 import unittest
-import pytest
-from mock import patch
 from collections import namedtuple
 
-from linotp.lib.policy.maxtoken import check_maxtoken_for_user
-from linotp.lib.policy.maxtoken import check_maxtoken_for_user_by_type
+import pytest
+from mock import patch
 
 from linotp.lib.policy import PolicyException
+from linotp.lib.policy.maxtoken import (
+    check_maxtoken_for_user,
+    check_maxtoken_for_user_by_type,
+)
 
 User = namedtuple("User", ["login"])
 Token = namedtuple("Token", ["type"])

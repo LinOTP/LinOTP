@@ -25,10 +25,10 @@
 #
 """LinOTP Selenium Test that creates UserIdResolvers in the WebUI"""
 
-import pytest
-from linotp_selenium_helper import TestCase
-
 import integration_data as data
+import pytest
+
+from linotp_selenium_helper import TestCase
 
 
 class TestCreateRealmDialog(TestCase):

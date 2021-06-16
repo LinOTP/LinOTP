@@ -27,8 +27,8 @@
 """ test for ValidateController """
 
 import logging
-import pytest
 
+import pytest
 from mock import mock
 
 from linotp.controllers.validate import ValidateController

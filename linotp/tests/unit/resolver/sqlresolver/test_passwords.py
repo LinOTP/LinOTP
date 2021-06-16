@@ -29,7 +29,6 @@ SQL Resolver unit test - test passwords formats
 """
 
 import pytest
-
 from passlib.context import CryptContext
 from passlib.exc import MissingBackendError
 from passlib.hash import atlassian_pbkdf2_sha1

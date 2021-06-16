@@ -42,30 +42,20 @@ Common rules
 
 """
 
-import json
-import sys
-
 import binascii
+import json
 import logging
-
+import sys
 from datetime import datetime
 
 import sqlalchemy as sa
-
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relation
 
-from flask_sqlalchemy import SQLAlchemy
-
+from linotp.lib.crypto.utils import get_rand_digit_str, geturandom, hash_digest
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
-
-from linotp.model.migrate import run_data_model_migration
-from linotp.model.migrate import Migration
-
-from linotp.lib.crypto.utils import geturandom
-from linotp.lib.crypto.utils import hash_digest
-
-from linotp.lib.crypto.utils import get_rand_digit_str
+from linotp.model.migrate import Migration, run_data_model_migration
 
 log = logging.getLogger(__name__)
 
@@ -212,8 +202,8 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
         if admin_username and admin_password:
             echo("Setting up cloud admin user...", v=1)
             from .lib.tools.set_password import (
-                SetPasswordHandler,
                 DataBaseContext,
+                SetPasswordHandler,
             )
 
             db_context = DataBaseContext(sql_url=db.engine.url)

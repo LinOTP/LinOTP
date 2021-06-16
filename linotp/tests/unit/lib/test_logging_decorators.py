@@ -28,6 +28,7 @@ Tests the logging decorators
 """
 
 import unittest
+
 import linotp.lib.logs as logs
 
 # ------------------------------------------------------------------------------

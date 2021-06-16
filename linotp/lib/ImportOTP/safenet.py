@@ -28,10 +28,9 @@ parses XML data of a Aladdin/SafeNet XML
 """
 
 import logging
-
 import xml.etree.ElementTree as etree
 
-from linotp.lib.ImportOTP import getTagName, ImportException
+from linotp.lib.ImportOTP import ImportException, getTagName
 
 log = logging.getLogger(__name__)
 

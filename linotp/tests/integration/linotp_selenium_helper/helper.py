@@ -25,18 +25,17 @@
 #
 """Contains helper functions"""
 
-import requests
-from requests.auth import HTTPDigestAuth
 import logging
-from pytest_testconfig import config, load_ini
 from urllib.parse import urlparse
 
+import requests
+from pytest_testconfig import config, load_ini
+from requests.auth import HTTPDigestAuth
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.select import Select
-
+from selenium.webdriver.support.ui import WebDriverWait
 
 LOG = logging.getLogger(__name__)
 

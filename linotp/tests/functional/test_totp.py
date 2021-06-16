@@ -26,20 +26,19 @@
 
 
 """"""
-import json
 import binascii
 import datetime
-from hashlib import sha1, sha256, sha512
 import hmac
+import json
 import random
 import struct
 import time
+from hashlib import sha1, sha256, sha512
 
 from freezegun import freeze_time
 
 from linotp.lib.crypto.utils import geturandom
 from linotp.tests import TestController
-
 
 """
   +-------------+--------------+------------------+----------+--------+

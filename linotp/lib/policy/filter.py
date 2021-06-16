@@ -27,9 +27,8 @@
  user entry comparison processing
 """
 
-import re
 import logging
-
+import re
 
 log = logging.getLogger(__name__)
 

@@ -1,17 +1,18 @@
-from dataclasses import dataclass
 import json
 import os
 import textwrap
-from typing import Any, Type, Callable
+from dataclasses import dataclass
+from typing import Any, Callable, Type
 
 import click
-from flask import current_app
-from flask.cli import AppGroup
 from jsonschema import Draft4Validator
 
-from .lib.type_utils import boolean as to_boolean
-from .lib.security.pkcs11 import Pkcs11SecurityModule
+from flask import current_app
+from flask.cli import AppGroup
+
 from .lib.security import provider
+from .lib.security.pkcs11 import Pkcs11SecurityModule
+from .lib.type_utils import boolean as to_boolean
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 

@@ -26,12 +26,12 @@
 """establish a global context object"""
 
 
-from linotp.lib.local import LocalContainer, release_local
-from linotp.lib.error import ProgrammingError
 from contextlib import contextmanager
 from functools import partial
 
 from linotp.flap import tmpl_context as request_context
+from linotp.lib.error import ProgrammingError
+from linotp.lib.local import LocalContainer, release_local
 
 # --------------------------------------------------------------------------- --
 # Context stack tracing

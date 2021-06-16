@@ -31,7 +31,6 @@ methodes to iterate through users
 import json
 import logging
 
-
 log = logging.getLogger(__name__)
 
 

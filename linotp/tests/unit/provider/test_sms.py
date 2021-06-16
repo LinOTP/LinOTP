@@ -24,15 +24,15 @@
 #    Support: www.keyidentity.com
 #
 
+import asyncore
+import smtpd
 import unittest
 from unittest import TestCase
 
-import smtpd
-import asyncore
-
-from linotp.provider.smsprovider import getSMSProviderClass
-from linotp.provider import ProviderNotAvailable
 import pytest
+
+from linotp.provider import ProviderNotAvailable
+from linotp.provider.smsprovider import getSMSProviderClass
 
 
 class CustomSMTPServer(smtpd.SMTPServer):

@@ -33,10 +33,9 @@
     - enrollment
 """
 
-import re
-
 import copy
 import logging
+import re
 
 import pytest
 

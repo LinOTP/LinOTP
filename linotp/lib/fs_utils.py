@@ -27,11 +27,11 @@
 """File system utility functions."""
 
 import errno
+import logging
 import os
 
 # from typing import Protocol     # Only from Python 3.8 on
 
-import logging
 
 logger = logging.getLogger(__name__)
 

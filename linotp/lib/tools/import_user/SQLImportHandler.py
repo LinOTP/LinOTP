@@ -32,20 +32,18 @@
     * define the resolver
 
 """
-import logging
 import json
+import logging
 
 from sqlalchemy import schema, types
 from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-from linotp.useridresolver.SQLIdResolver import IdResolver as sql_resolver
-
-from linotp.lib.resolver import defineResolver
-
-from linotp.lib.tools.import_user.ImportHandler import ImportHandler
 from linotp.lib.crypto import utils
+from linotp.lib.resolver import defineResolver
+from linotp.lib.tools.import_user.ImportHandler import ImportHandler
+from linotp.useridresolver.SQLIdResolver import IdResolver as sql_resolver
 
 log = logging.getLogger(__name__)
 

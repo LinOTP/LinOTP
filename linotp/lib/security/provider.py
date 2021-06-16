@@ -29,12 +29,12 @@ random, crypt, decrypt, sign
 """
 
 import _thread
-import time
 import logging
+import time
 
-from linotp.lib.rw_lock import RWLock
 from linotp.lib.crypto.utils import zerome
 from linotp.lib.error import HSMException
+from linotp.lib.rw_lock import RWLock
 from linotp.lib.security import FatalHSMException
 
 DEFAULT_KEY = 0

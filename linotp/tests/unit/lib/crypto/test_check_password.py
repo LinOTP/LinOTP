@@ -23,8 +23,7 @@
 #    Support: www.keyidentity.com
 #
 
-from linotp.lib.crypto import SecretObj
-from linotp.lib.crypto import utils
+from linotp.lib.crypto import SecretObj, utils
 
 
 def test_compare_password():

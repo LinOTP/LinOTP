@@ -27,15 +27,16 @@
 Parsing of pskc files:
     http://tools.ietf.org/search/rfc6030
 """
-from linotp.lib.ImportOTP import getTagName, ImportException
-import linotp.lib.crypto.pbkdf2 as pbkdf2
-import logging
-import xml.etree.cElementTree as etree
-import re
-import binascii
 import base64
-import hmac
+import binascii
 import hashlib
+import hmac
+import logging
+import re
+import xml.etree.cElementTree as etree
+
+import linotp.lib.crypto.pbkdf2 as pbkdf2
+from linotp.lib.ImportOTP import ImportException, getTagName
 
 sha = hashlib.sha1
 md5 = hashlib.md5

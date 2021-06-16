@@ -26,9 +26,10 @@
 """
 """
 
-import requests as http_requests
-from urllib.parse import urlparse
 import os
+from urllib.parse import urlparse
+
+import requests as http_requests
 
 
 class ProviderBase(object):

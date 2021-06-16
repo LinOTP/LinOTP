@@ -33,8 +33,8 @@ This base module contains the base class UserIdResolver.UserIdResolver and also 
 community class PasswdIdResolver.IdResolver, that is inherited from the base class.
 """
 
-from os import path, listdir
 import logging
+from os import listdir, path
 
 log = logging.getLogger(__name__)
 

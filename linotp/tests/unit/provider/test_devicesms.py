@@ -25,10 +25,11 @@
 #
 
 import os
+import subprocess
 import sys
 import unittest
-import subprocess
 from unittest import TestCase
+
 from mock import MagicMock, Mock, patch
 
 from linotp.provider.smsprovider.DeviceSMSProvider import DeviceSMSProvider

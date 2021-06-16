@@ -25,12 +25,14 @@
 #
 """Contains TokenImport class"""
 
-from .manage_ui import ManageDialog
-from linotp_selenium_helper.manage_ui import ManageUi, MsgType
+import os
+import tempfile
+
 from selenium.webdriver.remote.file_detector import LocalFileDetector
 
-import tempfile
-import os
+from linotp_selenium_helper.manage_ui import ManageUi, MsgType
+
+from .manage_ui import ManageDialog
 
 
 class TokenImportError(RuntimeError):

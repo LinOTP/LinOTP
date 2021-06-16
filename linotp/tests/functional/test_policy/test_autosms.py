@@ -33,7 +33,6 @@ from linotp.lib.policy import get_auth_AutoSMSPolicy
 from linotp.lib.user import getUserFromParam
 from linotp.tests import TestController
 
-
 ##########################################################################
 #
 #  AutoSMS

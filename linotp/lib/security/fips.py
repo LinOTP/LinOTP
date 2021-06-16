@@ -30,14 +30,14 @@ fips mode mixin - to overwriting the parent provider methods
 """
 
 
-import logging
 import hashlib
+import logging
+
 import Cryptodome.Hash
 
-from linotp.lib.security.libfips import FipsModule
-from linotp.lib.security.libfips import SSLError
-from linotp.lib.security.default import DefaultSecurityModule
 from linotp.lib.security import FatalHSMException
+from linotp.lib.security.default import DefaultSecurityModule
+from linotp.lib.security.libfips import FipsModule, SSLError
 
 log = logging.getLogger(__name__)
 

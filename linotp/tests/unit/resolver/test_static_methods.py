@@ -24,8 +24,8 @@
 #    Support: www.keyidentity.com
 #
 
-import unittest
 import json
+import unittest
 
 # -------------------------------------------------------------------------- --
 

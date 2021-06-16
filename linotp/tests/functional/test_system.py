@@ -27,10 +27,10 @@
 
 """
 """
-import os
 import logging
-from linotp.tests import TestController
+import os
 
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 

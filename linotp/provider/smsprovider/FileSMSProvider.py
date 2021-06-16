@@ -26,14 +26,12 @@
 
 """ the SMS Provider Interface """
 
-from linotp.provider.smsprovider import ISMSProvider
-from linotp.provider import provider_registry
-from linotp.provider import ProviderNotAvailable
-
-import os
 import logging
+import os
 
 from linotp.lib.util import str2unicode
+from linotp.provider import ProviderNotAvailable, provider_registry
+from linotp.provider.smsprovider import ISMSProvider
 
 log = logging.getLogger(__name__)
 

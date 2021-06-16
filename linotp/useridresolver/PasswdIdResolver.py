@@ -34,28 +34,27 @@ Remarks:
 
 """
 
+import logging
 import os
 import re
-import logging
 from typing import Any, Callable, Dict, Tuple, Union
 
 from passlib.hash import (
+    des_crypt,
     md5_crypt,
     sha1_crypt,
     sha256_crypt,
     sha512_crypt,
-    des_crypt,
 )
 
 from linotp.lib.type_utils import text
 
-
 from . import resolver_registry
-
-from .UserIdResolver import UserIdResolver
-from .UserIdResolver import ResolverLoadConfigError
-from .UserIdResolver import getResolverClass
-
+from .UserIdResolver import (
+    ResolverLoadConfigError,
+    UserIdResolver,
+    getResolverClass,
+)
 
 log = logging.getLogger(__name__)
 

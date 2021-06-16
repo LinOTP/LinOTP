@@ -41,17 +41,14 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 import json
 import logging
 import urllib.parse
+from datetime import datetime, timedelta
+
 import requests
-from datetime import datetime
-from datetime import timedelta
-
 from freezegun import freeze_time
-
 from mock import patch
 
-from linotp.tests.functional_special import TestSpecialController
-
 import linotp.provider.smsprovider.RestSMSProvider
+from linotp.tests.functional_special import TestSpecialController
 
 REQUEST_BODY = ""
 REQUEST_HEADERS = {}

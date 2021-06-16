@@ -28,8 +28,9 @@ Tests a very small subset of linotp.lib.reply
 
 import json
 
-import flask
 import pytest
+
+import flask
 
 from linotp.lib import reply
 from linotp.lib.context import request_context
@@ -112,8 +113,9 @@ class TestReplyTestCase(object):
                 request_context_copy=request_context_copy,
             )
         except ProgrammingError:
-            assert False, (
-                "request_context was used outsideof request_context_safety"
+            assert (
+                False,
+                "request_context was used outsideof request_context_safety",
             )
 
         result = ""

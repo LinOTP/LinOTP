@@ -28,6 +28,7 @@
 """
 
 import logging
+
 import requests
 
 from linotp.provider import provider_registry

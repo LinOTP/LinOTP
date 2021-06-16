@@ -26,11 +26,9 @@
 """LinOTP integration test for LDAP connections."""
 
 import pytest
-
 from click.testing import CliRunner
 
 from linotp.useridresolver.LDAPIdResolver import ldap_test
-
 
 # This test inspects the output of the `linotp ldap-test` command,
 # which does an exhaustive run through all the different ways to

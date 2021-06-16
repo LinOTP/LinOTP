@@ -29,26 +29,23 @@ from linotp.lib.crypto.utils import compare
 Declare the SecretObject to encapsulate security aspects
 """
 
-import hmac
-import logging
-import struct
 import base64
 import binascii
+import ctypes
+import hmac
+import json
+import logging
 import os
 import stat
-import json
+import struct
 import sys
-import ctypes
-import linotp
-
 from crypt import crypt as libcrypt
 
+from Cryptodome.Cipher import AES
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 
-from Cryptodome.Cipher import AES
-
+import linotp
 from linotp.lib.crypto import utils
-
 
 log = logging.getLogger(__name__)
 

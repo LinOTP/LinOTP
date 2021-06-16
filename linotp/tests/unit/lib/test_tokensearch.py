@@ -28,6 +28,7 @@ Tests the token search
 """
 
 import unittest
+
 from mock import patch
 
 from linotp.lib.tokeniterator import TokenIterator  # _get_user_condition

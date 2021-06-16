@@ -26,16 +26,14 @@
 """This is the SMSClass to send SMS via HTTP Post Rest Interface Gateways"""
 
 
-from linotp.provider.smsprovider import ISMSProvider
-from linotp.provider import provider_registry
-from linotp.provider import ProviderNotAvailable
-
-import requests
-from requests.auth import HTTPBasicAuth
-from requests.auth import HTTPDigestAuth
-
 import logging
 import os
+
+import requests
+from requests.auth import HTTPBasicAuth, HTTPDigestAuth
+
+from linotp.provider import ProviderNotAvailable, provider_registry
+from linotp.provider.smsprovider import ISMSProvider
 
 log = logging.getLogger(__name__)
 

@@ -29,24 +29,24 @@ Test challenge response functionality for the radius token
 """
 
 import binascii
-import smtplib
-import httplib2
-import re
-import time
 import json
 import logging
+import re
+import smtplib
+import time
 import urllib.parse
+
+import httplib2
+import pyrad.packet as packet
+from mock import patch
 
 # we need this for the radius token
 from pyrad.client import Client
-import pyrad.packet as packet
-from pyrad.packet import AccessAccept, AccessReject, AccessChallenge
+from pyrad.packet import AccessAccept, AccessChallenge, AccessReject
 
-from mock import patch
 from linotp.lib.HMAC import HmacOtp
 
 from . import TestChallengeResponseController
-
 
 log = logging.getLogger(__name__)
 

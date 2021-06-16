@@ -34,8 +34,8 @@ import unittest
 
 from mock import patch
 
-from linotp.lib.user import User
 from linotp.lib.policy.evaluate import PolicyEvaluator
+from linotp.lib.user import User
 
 # -------------------------------------------------------------------------- --
 

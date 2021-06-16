@@ -25,7 +25,6 @@
 #
 
 from linotp.lib.crypto.utils import createActivationCode
-
 from linotp.tests import TestController
 
 from . import OcraOtp

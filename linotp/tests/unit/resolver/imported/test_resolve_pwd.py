@@ -26,11 +26,12 @@
 #    Support: www.keyidentity.com
 #
 
-import pytest
 import tempfile
 
-from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
+import pytest
+
 from linotp.useridresolver.PasswdIdResolver import IdResolver as PasswdResolver
+from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
 
 @pytest.fixture

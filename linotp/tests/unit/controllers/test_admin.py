@@ -25,8 +25,8 @@
 #
 import copy
 import unittest
-import pytest
 
+import pytest
 from mock import mock
 
 import flask

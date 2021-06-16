@@ -26,9 +26,9 @@
 """ logic for the selfservice processing """
 
 
-from linotp.flap import config
-
 import logging
+
+from linotp.flap import config
 
 log = logging.getLogger(__name__)
 

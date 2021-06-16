@@ -30,27 +30,18 @@ migration controller -
     new encryption key or new hsm
 """
 
-import os
-import json
-
 import binascii
 import hashlib
+import json
 import logging
-
-from linotp.flap import response
+import os
 
 from linotp.controllers.base import BaseController
-
-from linotp.model import db
-
-from linotp.lib.reply import sendResult
-from linotp.lib.reply import sendError
-
+from linotp.flap import response
+from linotp.lib.migrate import DecryptionError, MigrationHandler
 from linotp.lib.policy import PolicyException
-
-from linotp.lib.migrate import MigrationHandler
-from linotp.lib.migrate import DecryptionError
-
+from linotp.lib.reply import sendError, sendResult
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 

@@ -26,18 +26,16 @@
 """default SecurityModules which takes the enc keys from a file"""
 
 
-import logging
 import binascii
+import hmac
+import logging
 import os
+from hashlib import sha256
 
 from Cryptodome.Cipher import AES
 
-import hmac
-from hashlib import sha256
-
 from linotp.lib.crypto.utils import zerome
 from linotp.lib.security import SecurityModule
-
 
 TOKEN_KEY = 0
 CONFIG_KEY = 1

@@ -31,14 +31,13 @@ Test challenge response functionality for the totp token
 
 
 import binascii
-import time
-import json
 import datetime
+import json
+import time
 
 from freezegun import freeze_time
 
 from linotp.lib.HMAC import HmacOtp
-
 from linotp.tests import TestController
 
 

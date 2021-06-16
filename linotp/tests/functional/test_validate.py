@@ -28,24 +28,22 @@
 """"""
 
 
-import httplib2
-import time
 import binascii
 import hashlib
 import json
-import freezegun
-
+import time
 from datetime import datetime
+
+import freezegun
+import httplib2
+import pytest
+from mock import patch
 
 # we need this for the radius token
 from pyrad.client import Client
 from pyrad.packet import AccessAccept
 
 from linotp.lib.HMAC import HmacOtp as LinHmac
-
-from mock import patch
-import pytest
-
 from linotp.tests import TestController
 
 

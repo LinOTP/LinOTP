@@ -24,16 +24,17 @@
 #    Support: www.keyidentity.com
 #
 
+import datetime
 import json
 import logging
-import datetime
+
+from sqlalchemy import and_, desc
 
 from flask import g
 
-from sqlalchemy import desc, and_
 import linotp
-from linotp.model import db, Challenge
 from linotp.lib.context import request_context as context
+from linotp.model import Challenge, db
 
 log = logging.getLogger(__name__)
 

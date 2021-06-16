@@ -32,13 +32,13 @@ the admin/testresolver api could be used wo password, if the resolver
 is already known in LinOTP
 """
 import json
-from mock import patch
 import logging
 
 import pytest
+from mock import patch
 
-from linotp.tests.functional.test_orphaned import OrphandTestHelpers
 from linotp.tests import TestController
+from linotp.tests.functional.test_orphaned import OrphandTestHelpers
 
 log = logging.getLogger(__name__)
 

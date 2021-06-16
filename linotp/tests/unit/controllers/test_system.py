@@ -24,10 +24,12 @@
 #    Support: www.keyidentity.com
 #
 
-import pytest
 import unittest
-from flask import appcontext_pushed
+
+import pytest
 from mock import patch
+
+from flask import appcontext_pushed
 
 from linotp.controllers.system import SystemController
 from linotp.flap import tmpl_context as context

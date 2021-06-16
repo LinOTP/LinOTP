@@ -28,43 +28,38 @@
 tools controller
 """
 import json
-
-from flask import current_app, g
-from werkzeug.datastructures import FileStorage
-
-from linotp.flap import request, response, tmpl_context as c
-
-from linotp.controllers.base import BaseController
-from linotp.lib.reply import sendError
-from linotp.lib.reply import sendResult
-from linotp.lib.error import ParameterError
-
-from linotp.lib.policy import PolicyException
-from linotp.lib.policy import checkToolsAuthorisation
-from linotp.lib.policy import checkPolicyPre
-
-from linotp.lib.util import check_session
-from linotp.lib.context import request_context
-
-from linotp.lib.tools.import_user import UserImport
-from linotp.lib.tools.import_user.SQLImportHandler import (
-    LinOTP_DatabaseContext,
-)
-from linotp.lib.tools.import_user.SQLImportHandler import SQLImportHandler
-from linotp.lib.tools.import_user import DefaultFormatReader
-from linotp.lib.tools.import_user import PasswdFormatReader
-
-from linotp.lib.tools.set_password import SetPasswordHandler
-from linotp.lib.tools.set_password import DataBaseContext
-
-from linotp.lib.realm import getRealms
-from linotp.lib.user import setRealm
-from linotp.lib.resolver import getResolverList
-
-from linotp.lib.type_utils import boolean
-
 import logging
 
+from werkzeug.datastructures import FileStorage
+
+from flask import current_app, g
+
+from linotp.controllers.base import BaseController
+from linotp.flap import request, response
+from linotp.flap import tmpl_context as c
+from linotp.lib.context import request_context
+from linotp.lib.error import ParameterError
+from linotp.lib.policy import (
+    PolicyException,
+    checkPolicyPre,
+    checkToolsAuthorisation,
+)
+from linotp.lib.realm import getRealms
+from linotp.lib.reply import sendError, sendResult
+from linotp.lib.resolver import getResolverList
+from linotp.lib.tools.import_user import (
+    DefaultFormatReader,
+    PasswdFormatReader,
+    UserImport,
+)
+from linotp.lib.tools.import_user.SQLImportHandler import (
+    LinOTP_DatabaseContext,
+    SQLImportHandler,
+)
+from linotp.lib.tools.set_password import DataBaseContext, SetPasswordHandler
+from linotp.lib.type_utils import boolean
+from linotp.lib.user import setRealm
+from linotp.lib.util import check_session
 from linotp.model import db
 
 log = logging.getLogger(__name__)

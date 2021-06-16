@@ -29,16 +29,14 @@ The `main()` function in this file is installed as a console entry point
 in `setup.py()`, so that the shell command `linotp` calls that function.
 """
 
-from datetime import datetime
 import os
 import sys
+from datetime import datetime
 
 import click
 
 from flask import current_app
-
-from flask.cli import with_appcontext
-from flask.cli import FlaskGroup
+from flask.cli import FlaskGroup, with_appcontext
 
 from linotp.app import create_app
 

@@ -27,18 +27,16 @@
    syncronysation and provides this to all requests
 """
 
-import logging
 import copy
+import logging
 
 from linotp.flap import tmpl_context as c
-
-from linotp.lib.config.parsing import parse_config
 from linotp.lib.config.config_class import LinOtpConfig
-from linotp.lib.config.util import expand_here
 from linotp.lib.config.db_api import _retrieveAllConfigDB
-from linotp.lib.crypto.encrypted_data import EncryptedData
-
+from linotp.lib.config.parsing import parse_config
 from linotp.lib.config.type_definition import type_definitions
+from linotp.lib.config.util import expand_here
+from linotp.lib.crypto.encrypted_data import EncryptedData
 
 log = logging.getLogger(__name__)
 

@@ -37,10 +37,9 @@ Engine = meta.engine
 """
 import csv
 import json
-
 import logging
-from linotp.lib.tools.import_user.ImportHandler import ImportHandler
 
+from linotp.lib.tools.import_user.ImportHandler import ImportHandler
 
 log = logging.getLogger(__name__)
 
@@ -271,8 +270,8 @@ def main():
 
     from linotp.lib.tools.import_user.SQLImportHandler import (
         Shell_DatabaseContext,
+        SQLImportHandler,
     )
-    from linotp.lib.tools.import_user.SQLImportHandler import SQLImportHandler
 
     # in the test main() we use a password file, which is prepared
     # for splitting the description fields into csv data

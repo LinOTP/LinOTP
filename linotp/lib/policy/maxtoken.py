@@ -28,14 +28,10 @@
 import logging
 
 import linotp
-
 from linotp.lib.context import request_context as context
-
-from linotp.lib.policy.util import _get_client, _getUserRealms
 from linotp.lib.policy.action import get_action_value
-
 from linotp.lib.policy.processing import get_client_policy
-
+from linotp.lib.policy.util import _get_client, _getUserRealms
 
 # Define the map for the maxtoken policy lookup
 #   in selfservice/webprovision the provided token type parameter

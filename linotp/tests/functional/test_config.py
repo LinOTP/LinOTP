@@ -31,14 +31,13 @@ Test the handling of large config entries
 
 import base64
 import binascii
-import random
-
-import os
 import json
 import logging
-from linotp.tests import TestController
-from linotp.tests import url
+import os
+import random
 import threading
+
+from linotp.tests import TestController, url
 
 #
 # helper method to create random data

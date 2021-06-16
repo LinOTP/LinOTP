@@ -26,9 +26,8 @@
 
 
 """ the SMS Provider Interface """
+from linotp.provider import ProviderNotAvailable, provider_registry
 from linotp.provider.smsprovider import ISMSProvider
-from linotp.provider import provider_registry
-from linotp.provider import ProviderNotAvailable
 
 try:
     import smpplib
@@ -82,9 +81,7 @@ class SMPPSMSProvider(ISMSProvider):
             ),
             # 'dest_addr_npi': ('Numbering Plan Indicator for dest '
             #                    'address.'),
-            "source_addr_ton": (
-                "Type of number of the ESME source address"
-            ),
+            "source_addr_ton": ("Type of number of the ESME source address"),
             # 'dest_addr_ton': ('Type of number of the ESME destination'
             #                   ' address'),
             # 'registered_delivery': ('delivery receipt required'),

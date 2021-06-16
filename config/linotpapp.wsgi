@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import os
+
 from linotp.app import create_app
 
-application = create_app('production')
+application = create_app("production")
 
 ## To enable the interactive debugger uncomment
 ## the following lines. You can find the debugger PIN in

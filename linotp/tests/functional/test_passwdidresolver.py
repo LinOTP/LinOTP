@@ -29,12 +29,11 @@
 """
 
 
-import os
 import logging
-
-from linotp.useridresolver.UserIdResolver import getResolverClass
+import os
 
 from linotp.tests import TestController
+from linotp.useridresolver.UserIdResolver import getResolverClass
 
 log = logging.getLogger(__name__)
 

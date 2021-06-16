@@ -26,34 +26,22 @@
 """ contains utility functions """
 
 import binascii
-import string
+import logging
 import re
+import secrets
+import string
 
 import netaddr
 
-import logging
-import secrets
-
-from linotp.flap import config, abort
-
-from linotp.lib.crypto.utils import geturandom
-
-from linotp.lib.error import ParameterError
-from linotp.lib.error import InvalidFunctionParameter
-from linotp.lib.config import getFromConfig
-
-from linotp.lib.type_utils import boolean
-from linotp.lib.type_utils import get_ip_network
-from linotp.lib.type_utils import get_ip_address
-
-from linotp import (
-    __version__ as linotp_version,
-    __copyright__ as linotp_copyright,
-    __product__ as linotp_product,
-)
-
 from linotp import __api__ as linotp_api
-
+from linotp import __copyright__ as linotp_copyright
+from linotp import __product__ as linotp_product
+from linotp import __version__ as linotp_version
+from linotp.flap import abort, config
+from linotp.lib.config import getFromConfig
+from linotp.lib.crypto.utils import geturandom
+from linotp.lib.error import InvalidFunctionParameter, ParameterError
+from linotp.lib.type_utils import boolean, get_ip_address, get_ip_network
 
 SESSION_KEY_LENGTH = 32
 hostname_regex = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)

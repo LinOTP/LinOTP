@@ -31,45 +31,43 @@ The LinOTP server imports this module to use SQL databases as a userstore.
 Dependencies: UserIdResolver
 """
 
-import re
 import base64
 import hashlib
-import urllib.request
-import urllib.parse
-import urllib.error
 import json
-
 import logging
+import re
+import urllib.error
+import urllib.parse
+import urllib.request
+from typing import Any, Callable, Dict, Tuple, Union
 
-# from sqlalchemy.event import listen
+from passlib.context import CryptContext
+from passlib.exc import MissingBackendError
+from sqlalchemy import MetaData, Table, create_engine, types
+from sqlalchemy.exc import NoSuchColumnError
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import expression
+from sqlalchemy.sql import text as sql_text
 
 from flask import current_app
 
-from sqlalchemy import create_engine
-from sqlalchemy import types
-from sqlalchemy.sql import expression
-from sqlalchemy.sql import text as sql_text
-from sqlalchemy import Table, MetaData
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import NoSuchColumnError
-
-from typing import Any, Callable, Dict, Tuple, Union
+from linotp.lib.type_utils import encrypted_data, text
+from linotp.useridresolver.UserIdResolver import (
+    ResolverLoadConfigError,
+    ResolverNotAvailable,
+    UserIdResolver,
+)
 
 from . import resolver_registry
-from linotp.useridresolver.UserIdResolver import UserIdResolver
-from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
-from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
-from linotp.lib.type_utils import encrypted_data
-from linotp.lib.type_utils import text
+# from sqlalchemy.event import listen
+
 
 # ------------------------------------------------------------------------- --
 
-from passlib.exc import MissingBackendError
 
 # establish the passlib crypt context different password formats
 
-from passlib.context import CryptContext
 
 # format like {ssha1}adsadasdad - from the RFC 2307
 Ldap_crypt_schemes = [
@@ -633,9 +631,7 @@ class IdResolver(UserIdResolver):
         )
 
         if result:
-            log.info(
-                "[checkPass] successfully authenticated user uid %s", uid
-            )
+            log.info("[checkPass] successfully authenticated user uid %s", uid)
             return True
 
         log.warning("[checkPass] user %s failed to authenticate.", uid)

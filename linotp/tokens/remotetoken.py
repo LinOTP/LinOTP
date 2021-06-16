@@ -25,23 +25,20 @@
 #
 """This file file contains the Remote token class"""
 
-import logging
 import copy
+import json
+import logging
+import urllib.error
+import urllib.parse
+import urllib.request
 
 import httplib2
-import urllib.request
-import urllib.parse
-import urllib.error
 
-from linotp.tokens.base import TokenClass
-from linotp.tokens import tokenclass_registry
-
-from linotp.lib.auth.validate import split_pin_otp
-from linotp.lib.auth.validate import check_pin
+from linotp.lib.auth.validate import check_pin, split_pin_otp
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
-
-import json
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
 
 optional = True
 required = False

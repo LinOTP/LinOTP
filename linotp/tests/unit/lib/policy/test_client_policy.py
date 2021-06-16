@@ -28,15 +28,12 @@
 """ unit test for policy query honoring client"""
 
 import unittest
-import pytest
 
+import pytest
 from mock import patch
 
+from linotp.lib.policy import get_partition, getOTPPINEncrypt, supports_offline
 from linotp.lib.user import User as LinotpUser
-
-from linotp.lib.policy import supports_offline
-from linotp.lib.policy import get_partition
-from linotp.lib.policy import getOTPPINEncrypt
 
 
 class Token:

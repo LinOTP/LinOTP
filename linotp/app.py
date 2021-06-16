@@ -20,71 +20,53 @@
 
 import importlib
 import logging
-from logging.config import dictConfig as logging_dictConfig
+import os
 import stat
 import sys
-import os
-from pathlib import Path
 import time
-from typing import List, Optional
-
 from datetime import datetime
+from logging.config import dictConfig as logging_dictConfig
+from pathlib import Path
+from typing import List, Optional
 from uuid import uuid4
-
-from flask import (
-    Flask,
-    Config as FlaskConfig,
-    current_app,
-    g as flask_g,
-    jsonify,
-    Blueprint,
-    redirect,
-    url_for,
-    abort,
-)
-from flask.helpers import get_env
-from flask_babel import Babel, gettext
 
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
+from flask_babel import Babel, gettext
 
-from .lib.config import getLinotpConfig
-
-from .lib.context import request_context
-
-from .lib.crypto.utils import init_key_partition
-
-from .lib.security.provider import SecurityProvider
-from .lib.config.global_api import LinotpAppConfig
-
-from .lib.error import LinotpError
-
-from .lib.logs import init_logging_config
-from .lib.logs import log_request_timedelta
-
-from .lib.policy.util import parse_policies
-
-from .lib.resolver import initResolvers
-from .lib.resolver import setupResolvers
-from .lib.resolver import closeResolvers
-from .lib.resolver import getResolverList
-
-from .lib.user import getUserFromRequest
-
-from .lib.realm import getDefaultRealm
-from .lib.realm import getRealms
-from .lib.reply import sendError
-
-from .lib.util import get_client
-from .lib.fs_utils import ensure_dir
+from flask import Blueprint
+from flask import Config as FlaskConfig
+from flask import Flask, abort, current_app
+from flask import g as flask_g
+from flask import jsonify, redirect, url_for
+from flask.helpers import get_env
 
 from . import __version__
-from .flap import config, set_config, tmpl_context as c, request, setup_mako
+from .flap import config, request, set_config, setup_mako
+from .flap import tmpl_context as c
+from .lib.audit.base import getAudit
+from .lib.config import getLinotpConfig
+from .lib.config.global_api import LinotpAppConfig
+from .lib.context import request_context
+from .lib.crypto.utils import init_key_partition
+from .lib.error import LinotpError
+from .lib.fs_utils import ensure_dir
+from .lib.logs import init_logging_config, log_request_timedelta
+from .lib.policy.util import parse_policies
+from .lib.realm import getDefaultRealm, getRealms
+from .lib.reply import sendError
+from .lib.resolver import (
+    closeResolvers,
+    getResolverList,
+    initResolvers,
+    setupResolvers,
+)
+from .lib.security.provider import SecurityProvider
+from .lib.user import getUserFromRequest
+from .lib.util import get_client
+from .model import setup_db
 from .settings import configs
 from .tokens import reload_classes as reload_token_classes
-from .lib.audit.base import getAudit
-
-from .model import setup_db
 
 log = logging.getLogger(__name__)
 
@@ -482,8 +464,7 @@ class LinOTPApp(Flask):
         # ------------------------------------------------------------------ --
         # load the providers
 
-        from linotp.provider import Provider_types
-        from linotp.provider import getProvider
+        from linotp.provider import Provider_types, getProvider
 
         provider = {}
         for provider_type in list(Provider_types.keys()):

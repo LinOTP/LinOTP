@@ -27,51 +27,35 @@
 
 import binascii
 import datetime
+import json
 import logging
+import os
 import string
 
-import os
-
-import json
+from sqlalchemy import and_, func, or_
+from sqlalchemy.exc import ResourceClosedError
 
 from flask import g
 
-from sqlalchemy import or_, and_
-from sqlalchemy import func
-from sqlalchemy.exc import ResourceClosedError
-
-from linotp.lib.challenges import Challenges
-
-from linotp.lib.error import TokenAdminError
-from linotp.lib.error import ParameterError
-
-from linotp.lib.user import getUserId, getUserInfo
-from linotp.lib.user import User, getUserRealms
-from linotp.lib.user import get_authenticated_user
-
-from linotp.lib.util import generate_password
-from linotp.lib.type_utils import boolean
-
-from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
-
-from linotp.lib.realm import realm2Objects
-
 import linotp
 import linotp.lib.policy
-
-from linotp.model import db, Token, createToken, Realm, TokenRealm
-
+from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
-
-from linotp.lib.realm import createDBRealm, getRealmObject
-
-from linotp.lib.type_utils import parse_duration
-
 from linotp.lib.context import request_context as context
+from linotp.lib.error import ParameterError, TokenAdminError
+from linotp.lib.realm import createDBRealm, getRealmObject, realm2Objects
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT, boolean, parse_duration
+from linotp.lib.user import (
+    User,
+    get_authenticated_user,
+    getUserId,
+    getUserInfo,
+    getUserRealms,
+)
+from linotp.lib.util import generate_password
+from linotp.model import Realm, Token, TokenRealm, createToken, db
+from linotp.provider.notification import NotificationException, notify_user
 from linotp.tokens import tokenclass_registry
-
-from linotp.provider.notification import notify_user
-from linotp.provider.notification import NotificationException
 
 log = logging.getLogger(__name__)
 

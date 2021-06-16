@@ -6,17 +6,16 @@ import logging
 import os.path
 from builtins import KeyError
 
-from mako.lookup import TemplateLookup
+from flask_babel import get_locale
 from mako.exceptions import text_error_template
-
-import flask
-from flask import Response as response
-from flask import abort, redirect
+from mako.lookup import TemplateLookup
 from werkzeug.exceptions import Forbidden as HTTPForbidden
 from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
 from werkzeug.local import LocalProxy
 
-from flask_babel import get_locale
+import flask
+from flask import Response as response
+from flask import abort, redirect
 
 from linotp.lib.fs_utils import ensure_dir
 

@@ -45,24 +45,25 @@ directory.
 
 import base64
 import copy
-from datetime import datetime
-from distutils.version import LooseVersion
 import hashlib
 import io
 import json
 import logging
 import os
 import warnings
-
-from flask import Flask, g, request, Response
-from flask import _request_ctx_stack as flask_request_ctx_stack
+from datetime import datetime
+from distutils.version import LooseVersion
 from unittest import TestCase
 from uuid import uuid4
+
 import pkg_resources
 import pytest
 
-from linotp.app import create_app
+from flask import Flask, Response
+from flask import _request_ctx_stack as flask_request_ctx_stack
+from flask import g, request
 
+from linotp.app import create_app
 
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 

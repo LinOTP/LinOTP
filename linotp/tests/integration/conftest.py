@@ -30,9 +30,10 @@ Pytest fixtures for linotp integration tests
 # pylint: disable=redefined-outer-name
 
 from typing import Dict
-import pytest
 
 import integration_data as data
+import pytest
+
 from linotp_selenium_helper.manage_ui import ManageUi
 from linotp_selenium_helper.test_case import TestCase
 

@@ -26,24 +26,16 @@
 """realm processing logic"""
 
 import json
-
-
+import logging
 from functools import partial
-
-from linotp.model import db, Realm, TokenRealm
-
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.config import storeConfig
-from linotp.lib.config import getFromConfig
-from linotp.lib.config.parsing import ConfigTree
-from linotp.lib.config.parsing import ConfigNotRecognized
-from linotp.lib.context import request_context as context
-from linotp.lib.cache import get_cache
 
 from sqlalchemy import func
 
-
-import logging
+from linotp.lib.cache import get_cache
+from linotp.lib.config import getFromConfig, getLinotpConfig, storeConfig
+from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
+from linotp.lib.context import request_context as context
+from linotp.model import Realm, TokenRealm, db
 
 log = logging.getLogger(__name__)
 

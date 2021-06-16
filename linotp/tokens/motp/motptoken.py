@@ -27,15 +27,14 @@
               - http://motp.sourceforge.net/ -
 """
 
-from linotp.lib.crypto import SecretObj
+import logging
 
-from linotp.tokens.motp import mTimeOtp
-from linotp.tokens.base import TokenClass
 from linotp.lib.context import request_context as context
+from linotp.lib.crypto import SecretObj
 from linotp.lib.error import ParameterError
 from linotp.tokens import tokenclass_registry
-
-import logging
+from linotp.tokens.base import TokenClass
+from linotp.tokens.motp import mTimeOtp
 
 log = logging.getLogger(__name__)
 

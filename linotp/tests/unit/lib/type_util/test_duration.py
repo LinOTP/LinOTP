@@ -30,9 +30,9 @@ tests for the type utils
 
 import unittest
 
-from linotp.lib.type_utils import parse_duration
-from linotp.lib.type_utils import DurationParsingException
 import pytest
+
+from linotp.lib.type_utils import DurationParsingException, parse_duration
 
 
 class DurationTestCase(unittest.TestCase):

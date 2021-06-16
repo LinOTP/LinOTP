@@ -27,8 +27,8 @@
 
 
 from typing import Dict
-from linotp.lib.context import request_context
 
+from linotp.lib.context import request_context
 
 SYSTEM_ACTIONS = {
     "setDefault": "write",
@@ -251,15 +251,11 @@ POLICY_DEFINTIONS = {
     "notification": {
         "autoenrollment": {
             "type": "str",
-            "description": (
-                "provider to be used for enrollment notification"
-            ),
+            "description": ("provider to be used for enrollment notification"),
         },
         "enrollment": {
             "type": "str",
-            "description": (
-                "provider to be used for enrollment notification"
-            ),
+            "description": ("provider to be used for enrollment notification"),
         },
         "setPin": {
             "type": "str",

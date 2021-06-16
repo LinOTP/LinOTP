@@ -34,11 +34,12 @@ test for setPin
 """
 
 import json
+
 import pytest
 
-from . import MockedSMTP
-
 from linotp.tests import TestController
+
+from . import MockedSMTP
 
 
 @pytest.mark.app_config(

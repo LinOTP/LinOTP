@@ -18,9 +18,11 @@ Tests the create of audit entries
 """
 
 import unittest
+
 from mock import patch
-from linotp.lib.user import User
+
 from linotp.lib.auth.validate import ValidationHandler
+from linotp.lib.user import User
 
 mocked_context = {"audit": {}}
 

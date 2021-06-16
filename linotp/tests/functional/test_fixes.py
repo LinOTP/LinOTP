@@ -31,7 +31,6 @@ Tests for some miscellaneous fixes
 
 
 import json
-
 import threading
 
 from linotp.tests import TestController

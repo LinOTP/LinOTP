@@ -28,13 +28,12 @@ read the CSV data as created by the Yubico personalization GUI.
 """
 
 import binascii
-from linotp.lib.util import modhex_decode
-from linotp.lib.util import modhex_encode
 import logging
 import os
 
 from Cryptodome.Cipher import AES
 
+from linotp.lib.util import modhex_decode, modhex_encode
 
 log = logging.getLogger(__name__)
 

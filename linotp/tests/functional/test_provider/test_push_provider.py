@@ -24,20 +24,18 @@
 #    Support: www.keyidentity.com
 #
 
-import os
 import logging
+import os
+
+import pytest
 import requests
-
 from mock import patch
-
 from requests.exceptions import ConnectionError
 
-from linotp.tests import TestController
 from linotp.provider.pushprovider.default_push_provider import (
     DefaultPushProvider,
 )
-import pytest
-
+from linotp.tests import TestController
 
 """
     functional test for the DefaultPushProvider:

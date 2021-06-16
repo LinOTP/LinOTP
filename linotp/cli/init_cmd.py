@@ -32,25 +32,23 @@ linotp init audit-keys
 """
 
 import binascii
-from dataclasses import dataclass
 import datetime
 import hashlib
 import os
 import subprocess
 import sys
 import tempfile
+from dataclasses import dataclass
 from typing import Any, Dict, List
 
 import click
 
 from flask import current_app
+from flask.cli import AppGroup, with_appcontext
 
-from flask.cli import AppGroup
-from flask.cli import with_appcontext
-
+from linotp.cli import get_backup_filename
+from linotp.cli import main as cli_main
 from linotp.model import init_db_tables, setup_db
-
-from linotp.cli import get_backup_filename, main as cli_main
 
 KEY_COUNT = 3  # Number of keys in the `SECRET_FILE`
 KEY_LENGTH = 32  # Number of bytes per key in the `SECRET_FILE`

@@ -28,9 +28,10 @@
 """
 Test the support for userservice controller including authentication
 """
-import os
-import pytest
 import logging
+import os
+
+import pytest
 
 from linotp.tests import TestController
 

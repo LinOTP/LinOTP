@@ -24,12 +24,11 @@
 #    Support: www.keyidentity.com
 #
 
+import integration_data as data
 import pytest
 
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.auth_ui import AuthUi
-
-import integration_data as data
 
 
 class TestAuth(TestCase):

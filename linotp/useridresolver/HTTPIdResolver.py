@@ -33,16 +33,16 @@ Dependencies: UserIdResolver
 
 # from sqlalchemy.event import listen
 
-import urllib.parse
-import urllib.error
-import urllib.request
 import base64
-from . import resolver_registry
+import json
+import logging
+import urllib.error
+import urllib.parse
+import urllib.request
+
 from linotp.useridresolver.UserIdResolver import UserIdResolver
 
-import json
-
-import logging
+from . import resolver_registry
 
 log = logging.getLogger(__name__)
 

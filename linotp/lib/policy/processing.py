@@ -39,9 +39,8 @@
 
 import logging
 
-from linotp.lib.policy.util import _getAuthenticatedUser
-from linotp.lib.policy.util import get_policies
 from linotp.lib.policy.evaluate import PolicyEvaluator
+from linotp.lib.policy.util import _getAuthenticatedUser, get_policies
 
 LOG = logging.getLogger(__name__)
 

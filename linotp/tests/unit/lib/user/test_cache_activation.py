@@ -24,11 +24,10 @@
 #    Support: www.keyidentity.com
 #
 
-import pytest
 import unittest
 
+import pytest
 from mock import patch
-
 
 from linotp.lib.user import _get_user_lookup_cache
 

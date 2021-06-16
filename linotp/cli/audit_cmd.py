@@ -43,18 +43,15 @@
             - linotpAudit.janitor.logdir = /var/log/linotp/
 """
 
+import datetime
 import os
 import sys
-import click
-import datetime
 
-from sqlalchemy import MetaData, Table
-from sqlalchemy import desc, select, func, asc
+import click
+from sqlalchemy import MetaData, Table, asc, desc, func, select
 
 from flask import current_app
-
-from flask.cli import AppGroup
-from flask.cli import with_appcontext
+from flask.cli import AppGroup, with_appcontext
 
 # -------------------------------------------------------------------------- --
 

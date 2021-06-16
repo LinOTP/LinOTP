@@ -7,9 +7,9 @@
 # Pytest interface to test-upgrade tool
 
 import os
-import pytest
+from subprocess import DEVNULL, STDOUT, run
 
-from subprocess import run, DEVNULL, STDOUT
+import pytest
 
 
 def run_test_upgrade_command(cmd: str):

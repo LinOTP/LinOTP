@@ -23,16 +23,15 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-from contextlib import closing
-from smtpd import SMTPServer
-
 import asyncore
 import email
 import logging
 import socket
+from contextlib import closing
+from multiprocessing import Process, Queue
+from smtpd import SMTPServer
 
 from .set_config import SetConfig
-from multiprocessing import Process, Queue
 
 """
 This file contains functionality to set up an SMTP

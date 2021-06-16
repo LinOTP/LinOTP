@@ -25,8 +25,9 @@
 #
 
 import unittest
+
 import pytest
-from mock import patch, ANY
+from mock import ANY, patch
 
 from linotp.lib import resolver
 

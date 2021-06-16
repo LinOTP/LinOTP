@@ -29,22 +29,18 @@ migration handler -
   migration of assigned tokens to a different resolver
 """
 
+import logging
 from datetime import datetime
-
-from flask import g
-
-from linotp.lib.tools import ToolsHandler
-from linotp.lib.user import getUserInfo
-from linotp.lib.resolver import getResolverObject
-from linotp.lib.resolver import getResolverClassName
-
-from linotp.lib.context import request_context as context
-
-from linotp.model import db, Token
 
 from sqlalchemy import and_
 
-import logging
+from flask import g
+
+from linotp.lib.context import request_context as context
+from linotp.lib.resolver import getResolverClassName, getResolverObject
+from linotp.lib.tools import ToolsHandler
+from linotp.lib.user import getUserInfo
+from linotp.model import Token, db
 
 log = logging.getLogger(__name__)
 

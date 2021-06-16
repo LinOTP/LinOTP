@@ -27,66 +27,54 @@
 """ policy processing """
 
 import logging
-
 import re
-
 from copy import deepcopy
+from typing import Dict
 
 from flask import g
 
 import linotp
-
-from typing import Dict
-
 import linotp.lib.support
 import linotp.lib.token
-
-from linotp.lib.user import User
-from linotp.lib.user import getResolversOfUser
-
-from linotp.lib.error import LinotpError
-from linotp.lib.error import ParameterError
-
-from linotp.lib.config.parsing import ConfigTree
-from linotp.lib.config.parsing import ConfigNotRecognized
+from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
+from linotp.lib.context import request_context
 from linotp.lib.context import request_context as context
-
-from linotp.lib.policy.definitions import SYSTEM_ACTIONS
-
-from linotp.lib.policy.processing import _getAuthorization
-from linotp.lib.policy.processing import getPolicy
-from linotp.lib.policy.processing import get_client_policy
-from linotp.lib.policy.processing import search_policy
-from linotp.lib.policy.processing import has_client_policy
-
-from linotp.lib.policy.util import get_realm_from_policies
-from linotp.lib.policy.util import get_resolvers_for_realms
+from linotp.lib.error import LinotpError, ParameterError
 from linotp.lib.policy.action import get_action_value
-from linotp.lib.policy.util import _getAuthenticatedUser
-from linotp.lib.policy.util import _get_client
-from linotp.lib.policy.util import _get_pin_values
-from linotp.lib.policy.util import _getDefaultRealm
-from linotp.lib.policy.util import _getLinotpConfig
-from linotp.lib.policy.util import _getRealms
-from linotp.lib.policy.util import _getUserFromParam
-from linotp.lib.policy.util import _getUserRealms
-
-from linotp.lib.policy.util import letters, digits, special_characters
-from linotp.lib.policy.util import ascii_lowercase, ascii_uppercase
-from linotp.lib.policy.util import parse_action_value
-
+from linotp.lib.policy.definitions import SYSTEM_ACTIONS
 from linotp.lib.policy.maxtoken import check_maxtoken
-
-from .action import get_selfservice_actions
-
-from linotp.lib.util import uniquify
-
+from linotp.lib.policy.processing import (
+    _getAuthorization,
+    get_client_policy,
+    getPolicy,
+    has_client_policy,
+    search_policy,
+)
+from linotp.lib.policy.util import (
+    _get_client,
+    _get_pin_values,
+    _getAuthenticatedUser,
+    _getDefaultRealm,
+    _getLinotpConfig,
+    _getRealms,
+    _getUserFromParam,
+    _getUserRealms,
+    ascii_lowercase,
+    ascii_uppercase,
+    digits,
+    get_realm_from_policies,
+    get_resolvers_for_realms,
+    letters,
+    parse_action_value,
+    special_characters,
+)
 from linotp.lib.realm import getRealms
+from linotp.lib.user import User, getResolversOfUser
 
 # for generating random passwords
-from linotp.lib.util import generate_password
+from linotp.lib.util import generate_password, uniquify
 
-from linotp.lib.context import request_context
+from .action import get_selfservice_actions
 
 log = logging.getLogger(__name__)
 
@@ -3611,9 +3599,9 @@ def check_auth_tokentype(serial, exception=False, user=None):
 
     if res is False and exception:
 
-        g.audit["action_detail"] = (
-            "failed due to authorization/tokentype policy"
-        )
+        g.audit[
+            "action_detail"
+        ] = "failed due to authorization/tokentype policy"
 
         raise AuthorizeException(
             "Authorization for token %s with type %s "
@@ -3691,9 +3679,7 @@ def check_auth_serial(serial, exception=False, user=None):
         res = True
 
     if res is False and exception:
-        g.audit["action_detail"] = (
-            "failed due to authorization/serial policy"
-        )
+        g.audit["action_detail"] = "failed due to authorization/serial policy"
         raise AuthorizeException(
             "Authorization for token %s failed on "
             "client %s" % (serial, client)

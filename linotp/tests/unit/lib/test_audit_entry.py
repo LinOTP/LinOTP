@@ -26,14 +26,14 @@
 Tests the create of audit entries
 """
 
-import pytest
 import unittest
+
+import pytest
 from mock import patch
 
 from flask import g
 
 from linotp.lib.auth.finishtokens import FinishTokens
-
 
 mocked_context = {"audit": {}}
 

@@ -27,20 +27,19 @@ from linotp_selenium_helper.self_service import SelfService
 
 """LinOTP Selenium Test for Scenario 01 - General functionality tests"""
 
-import time
-import re
 import binascii
 import logging
 import os
-import pytest
-
-from linotp_selenium_helper import TestCase, Policy
-from linotp_selenium_helper.token_import import TokenImportAladdin
-from linotp_selenium_helper.validate import Validate
-
-from linotp.lib.HMAC import HmacOtp
+import re
+import time
 
 import integration_data as data
+import pytest
+
+from linotp.lib.HMAC import HmacOtp
+from linotp_selenium_helper import Policy, TestCase
+from linotp_selenium_helper.token_import import TokenImportAladdin
+from linotp_selenium_helper.validate import Validate
 
 LOGGER = logging.getLogger(__name__)
 

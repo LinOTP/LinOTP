@@ -30,42 +30,37 @@ validate controller - to check the authentication request
 
 import logging
 
-from flask import current_app, g
 from flask_babel import gettext as _
 
+from flask import current_app, g
+
 from linotp import flap
-from linotp.flap import request, response, config, tmpl_context as c, abort
-
-from linotp.lib.auth.validate import ValidationHandler
 from linotp.controllers.base import BaseController
+from linotp.flap import abort, config, request, response
+from linotp.flap import tmpl_context as c
+from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.config import getFromConfig
-from linotp.lib.error import ParameterError
-
-from linotp.lib.policy import AuthorizeException
-from linotp.lib.policy import check_auth_serial
-from linotp.lib.policy import check_auth_tokentype
-from linotp.lib.policy import check_user_authorization
-from linotp.lib.policy import is_auth_return
-from linotp.lib.policy import set_realm
-
-from linotp.lib.realm import getDefaultRealm
-from linotp.lib.reply import sendQRImageResult
-from linotp.lib.reply import sendResult, sendError
-from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.token import get_tokenserial_of_transaction
-from linotp.tokens.base import TokenClass
-
-from linotp.lib.user import User
-from linotp.lib.user import getUserFromParam
-from linotp.lib.user import getUserId
-from linotp.lib.user import getUserInfo
-from linotp.lib.util import get_client
-
 from linotp.lib.context import request_context
-from linotp.lib.error import ValidateError
+from linotp.lib.error import ParameterError, ValidateError
 from linotp.lib.pairing import decrypt_pairing_response
-
+from linotp.lib.policy import (
+    AuthorizeException,
+    check_auth_serial,
+    check_auth_tokentype,
+    check_user_authorization,
+    is_auth_return,
+    set_realm,
+)
+from linotp.lib.realm import getDefaultRealm
+from linotp.lib.reply import sendError, sendQRImageResult, sendResult
+from linotp.lib.token import (
+    get_tokenserial_of_transaction,
+    getTokens4UserOrSerial,
+)
+from linotp.lib.user import User, getUserFromParam, getUserId, getUserInfo
+from linotp.lib.util import get_client
 from linotp.model import db
+from linotp.tokens.base import TokenClass
 
 CONTENT_TYPE_PAIRING = 1
 

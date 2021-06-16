@@ -29,9 +29,11 @@
 LDAP Resolver unit test - search for multiple login names
 """
 
-import pytest
 import unittest
+
+import pytest
 from mock import patch
+
 from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
 
 from . import Bindresult

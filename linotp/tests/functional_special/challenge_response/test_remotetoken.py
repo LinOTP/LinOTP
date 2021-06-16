@@ -31,22 +31,21 @@ Test challenge response functionality for the remote token
 
 
 import binascii
-from mock import patch
-import smtplib
-import httplib2
-import re
-import time
 import json
 import logging
+import re
+import smtplib
+import time
 import urllib.parse
 
+import httplib2
+from mock import patch
+
+import linotp.provider.smsprovider.HttpSMSProvider
+from linotp.lib.HMAC import HmacOtp
 from linotp.tests import url
 
-from linotp.lib.HMAC import HmacOtp
-import linotp.provider.smsprovider.HttpSMSProvider
-
-from . import TestChallengeResponseController
-from . import calcOTP
+from . import TestChallengeResponseController, calcOTP
 
 log = logging.getLogger(__name__)
 

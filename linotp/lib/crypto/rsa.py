@@ -28,10 +28,9 @@
 
 import logging
 
-from Cryptodome.Signature.pkcs1_15 import PKCS115_SigScheme
 from Cryptodome.Hash import SHA256
 from Cryptodome.PublicKey import RSA
-
+from Cryptodome.Signature.pkcs1_15 import PKCS115_SigScheme
 
 log = logging.getLogger(__name__)
 

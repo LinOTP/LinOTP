@@ -27,8 +27,8 @@
 
 """ used to do functional testing of the forward token"""
 
-import logging
 import json
+import logging
 
 from linotp.tests import TestController
 

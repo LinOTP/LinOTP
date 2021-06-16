@@ -31,6 +31,7 @@ Test the autoassignment Policy.
 import json
 
 from mock import patch
+
 from linotp.tests import TestController
 
 REQUEST_BODY = ""

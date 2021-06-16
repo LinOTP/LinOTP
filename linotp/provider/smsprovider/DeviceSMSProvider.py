@@ -39,15 +39,12 @@ connection = serial
 """
 
 
-from linotp.provider.smsprovider import getSMSProviderClass
-from linotp.provider.smsprovider import ISMSProvider
-from linotp.provider import provider_registry
-from linotp.provider import ProviderNotAvailable
-
-import subprocess
-import string
-
 import logging
+import string
+import subprocess
+
+from linotp.provider import ProviderNotAvailable, provider_registry
+from linotp.provider.smsprovider import ISMSProvider, getSMSProviderClass
 
 log = logging.getLogger(__name__)
 

@@ -41,10 +41,10 @@ Defines the rough interface for a UserId Resolver
 
 """
 
-from typing import List, Any, Callable, Dict, Tuple, Union
-from linotp.lib.type_utils import boolean
 import logging
+from typing import Any, Callable, Dict, List, Tuple, Union
 
+from linotp.lib.type_utils import boolean
 
 log = logging.getLogger(__name__)
 

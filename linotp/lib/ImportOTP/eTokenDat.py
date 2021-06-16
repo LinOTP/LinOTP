@@ -25,18 +25,18 @@
 #
 """eToken dat file importer"""
 
-import sys
 import datetime
-from getopt import getopt, GetoptError
-import urllib.request
-import urllib.parse
-import urllib.error
-import logging
-import json
-import http.cookies
-import httplib2
 import getpass
+import http.cookies
+import json
+import logging
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+from getopt import GetoptError, getopt
 
+import httplib2
 
 LOG = logging.getLogger(__name__)
 

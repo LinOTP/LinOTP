@@ -26,11 +26,12 @@
 """LinOTP Selenium Test that tests the selfservice in the WebUI"""
 
 import pytest
+
 from linotp_selenium_helper import (
-    TestCase,
+    AngularSelfService,
     Policy,
     SelfService,
-    AngularSelfService,
+    TestCase,
 )
 
 

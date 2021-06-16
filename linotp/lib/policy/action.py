@@ -27,20 +27,14 @@
 """policy action processing"""
 
 import logging
-
+from typing import Any, Dict
 from warnings import warn
-from typing import Dict, Any
 
 from linotp.lib.user import User
-
-from .processing import get_client_policy
-
-from .util import _get_client
-from .util import parse_action_value
 
 from .definitions import get_policy_definitions
-
-from linotp.lib.user import User
+from .processing import get_client_policy
+from .util import _get_client, parse_action_value
 
 log = logging.getLogger(__name__)
 

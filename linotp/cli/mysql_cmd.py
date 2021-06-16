@@ -41,15 +41,15 @@ instance from MySQL to PostgreSQL (for example).
 """
 
 import os
+import subprocess
 import sys
 from datetime import datetime
-import subprocess
+
 import click
+from sqlalchemy import create_engine
 
 from flask import current_app
 from flask.cli import AppGroup
-
-from sqlalchemy import create_engine
 
 TIME_FORMAT = "%y%m%d%H%M"
 

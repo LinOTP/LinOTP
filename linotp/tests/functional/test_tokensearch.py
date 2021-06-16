@@ -28,6 +28,7 @@
 """
 """
 import json
+
 from linotp.tests import TestController
 
 

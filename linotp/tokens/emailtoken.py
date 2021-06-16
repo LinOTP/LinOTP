@@ -30,25 +30,19 @@ This file contains the e-mail token implementation:
 import datetime
 import logging
 
-from linotp.provider import loadProviderFromPolicy
-from linotp.provider.emailprovider import DEFAULT_MESSAGE
-
-from linotp.lib.token import get_token_owner
-from linotp.tokens import tokenclass_registry
-
-from linotp.lib.auth.validate import split_pin_otp
-from linotp.lib.auth.validate import check_pin
-
-from linotp.lib.HMAC import HmacOtp
+from linotp.lib.auth.validate import check_pin, split_pin_otp
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
+from linotp.lib.context import request_context as context
+from linotp.lib.HMAC import HmacOtp
 from linotp.lib.policy import get_client_policy
 from linotp.lib.policy.action import get_action_value
-
-from linotp.tokens.hmactoken import HmacTokenClass
+from linotp.lib.token import get_token_owner
 from linotp.lib.user import getUserDetail
-from linotp.lib.context import request_context as context
-
+from linotp.provider import loadProviderFromPolicy
+from linotp.provider.emailprovider import DEFAULT_MESSAGE
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.hmactoken import HmacTokenClass
 
 optional = True
 required = False

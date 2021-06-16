@@ -26,8 +26,9 @@
 
 import unittest
 
-from linotp.lib import resolver
 import pytest
+
+from linotp.lib import resolver
 
 
 class TestResolverConfig(unittest.TestCase):

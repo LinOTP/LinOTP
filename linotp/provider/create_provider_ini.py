@@ -33,8 +33,7 @@ def create_provider_config():
     not used but implemented to generate templates of provider configs
     'contents' contains the ini file
     """
-    from linotp.provider import Provider_types
-    from linotp.provider import get_all_new_providers
+    from linotp.provider import Provider_types, get_all_new_providers
 
     provider_config = {}
     for provider_type in list(Provider_types.keys()):

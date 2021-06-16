@@ -27,6 +27,7 @@
 """Tests for text_util re_encode which is required for linotp2 migration """
 
 import logging
+
 import pytest
 
 from linotp.model.migrate import re_encode

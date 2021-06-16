@@ -27,10 +27,9 @@
 
 
 import importlib
+import logging
 import pkgutil
 import sys
-
-import logging
 
 log = logging.getLogger(__name__)
 

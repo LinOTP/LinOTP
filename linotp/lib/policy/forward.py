@@ -26,15 +26,12 @@
 """ policy processing """
 
 import logging
-
-import urllib.request
-import urllib.parse
 import urllib.error
+import urllib.parse
+import urllib.request
 
 from linotp.lib.crypto import SecretObj
-
-from linotp.lib.request import HttpRequest
-from linotp.lib.request import RadiusRequest
+from linotp.lib.request import HttpRequest, RadiusRequest
 
 log = logging.getLogger(__name__)
 

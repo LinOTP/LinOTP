@@ -32,10 +32,7 @@
 #
 
 import ctypes
-from ctypes import c_int
-from ctypes import c_void_p
-from ctypes import c_char_p
-from ctypes import CDLL
+from ctypes import CDLL, c_char_p, c_int, c_void_p
 
 __all__ = ["FipsModule", "SSLError", "ParameterError"]
 

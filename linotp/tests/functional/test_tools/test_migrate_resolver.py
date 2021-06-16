@@ -32,9 +32,9 @@ Testing the migration of tokens from one resolver to a different one
 
 """
 
-import os
 import json
 import logging
+import os
 
 from linotp.tests import TestController
 
@@ -45,9 +45,7 @@ class TestImportUser(TestController):
 
     resolver_name = "myresolv"
     target_realm = "myrealm"
-    resolver_spec = (
-        "useridresolver.SQLIdResolver.IdResolver." + resolver_name
-    )
+    resolver_spec = "useridresolver.SQLIdResolver.IdResolver." + resolver_name
 
     def setUp(self):
 

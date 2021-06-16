@@ -27,10 +27,10 @@
 import json
 import os
 import unittest
+
 from mock import patch
 
-from linotp.provider import load_provider_ini
-from linotp.provider import save_new_provider
+from linotp.provider import load_provider_ini, save_new_provider
 
 
 class TestProviderTestCase(unittest.TestCase):

@@ -25,29 +25,30 @@
 #
 import logging
 import re
+import time
 from contextlib import contextmanager
 from typing import Optional, Union
-from flaky import flaky
+from unittest.case import SkipTest
+
 import pytest
-import time
 import urllib3
-
-
+from flaky import flaky
 from pkg_resources import parse_version
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
-from selenium.common.exceptions import StaleElementReferenceException
+from selenium.common.exceptions import (
+    StaleElementReferenceException,
+    TimeoutException,
+    WebDriverException,
+)
 from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.file_detector import UselessFileDetector
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.remote.file_detector import UselessFileDetector
 
 from .helper import get_from_tconfig, load_tconfig_from_file
 from .manage_ui import ManageUi
 from .validate import Validate
-from unittest.case import SkipTest
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = logging.getLogger(__name__)

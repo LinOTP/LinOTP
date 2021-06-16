@@ -25,8 +25,8 @@
 #
 """ helper for the secure formatter objects"""
 
-from logging import Formatter
 import string
+from logging import Formatter
 
 
 class SecureFormatter(Formatter):

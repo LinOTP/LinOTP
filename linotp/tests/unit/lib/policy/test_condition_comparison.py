@@ -27,17 +27,16 @@
 """ unit test for complex policy comparisons """
 
 import unittest
-
 from datetime import datetime
 
-from linotp.lib.policy.evaluate import time_list_compare
-from linotp.lib.policy.evaluate import user_list_compare
-from linotp.lib.policy.evaluate import ip_list_compare
-from linotp.lib.policy.evaluate import value_list_compare
-from linotp.lib.policy.evaluate import wildcard_list_compare
-from linotp.lib.policy.evaluate import action_compare
-
-
+from linotp.lib.policy.evaluate import (
+    action_compare,
+    ip_list_compare,
+    time_list_compare,
+    user_list_compare,
+    value_list_compare,
+    wildcard_list_compare,
+)
 from linotp.lib.user import User
 
 

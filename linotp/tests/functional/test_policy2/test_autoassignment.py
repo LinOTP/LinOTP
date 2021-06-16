@@ -29,13 +29,13 @@
 Test the autoassignment Policy.
 """
 import json
-
 from copy import deepcopy
-
-from flask import g
 
 import pytest
 from mock import patch
+
+from flask import g
+
 from linotp.tests import TestController
 
 

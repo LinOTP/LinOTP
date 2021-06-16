@@ -24,18 +24,15 @@
 #    Support: www.keyidentity.com
 #
 """ policy evaluation """
+from datetime import datetime
 from typing import Dict
 
-from datetime import datetime
+from netaddr import IPAddress, IPNetwork
 
-from netaddr import IPAddress
-from netaddr import IPNetwork
-
-from linotp.lib.user import User
 from linotp.lib.realm import getRealms
+from linotp.lib.user import User
 
-from .filter import UserDomainCompare
-from .filter import AttributeCompare
+from .filter import AttributeCompare, UserDomainCompare
 from .util import parse_action_value
 
 WILDCARD_MATCH = "wildcard:match"

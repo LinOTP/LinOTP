@@ -28,60 +28,49 @@
 manage controller - In provides the web gui management interface
 """
 import base64
-import os
-import logging
 import json
+import logging
+import os
 
-from flask import current_app, g, redirect
 from flask_babel import gettext as _
-
-from linotp.flap import (
-    config,
-    render_mako as render,
-    request,
-    response,
-    tmpl_context as c,
-)
-
 from mako.exceptions import CompileException
 
+from flask import current_app, g, redirect
+
+import linotp
 from linotp.controllers.base import BaseController
+from linotp.flap import config
+from linotp.flap import render_mako as render
+from linotp.flap import request, response
+from linotp.flap import tmpl_context as c
+from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
+from linotp.lib.ImportOTP import getImportText, getKnownTypes
+from linotp.lib.policy import PolicyException, checkPolicyPre, getAdminPolicies
+from linotp.lib.policy.definitions import get_policy_definitions
+from linotp.lib.realm import getRealms
+from linotp.lib.reply import sendError, sendResult
+from linotp.lib.token import getTokenType
 
 # Our Token stuff
 from linotp.lib.tokeniterator import TokenIterator
-from linotp.lib.token import getTokenType
-
-from linotp.tokens import tokenclass_registry
-
-
-from linotp.lib.user import getUserFromParam, getUserFromRequest
-from linotp.lib.user import getUserList, User
-
-from linotp.lib.util import check_session
-from linotp.lib.util import get_version
-from linotp.lib.util import get_copyright_info
 from linotp.lib.type_utils import boolean
-
-from linotp.lib.reply import sendError
-from linotp.lib.reply import sendResult
-
-from linotp.lib.util import remove_empty_lines
-from linotp.lib.util import get_client
-from linotp.lib.util import unicode_compare
-from linotp.lib.realm import getRealms
-
-from linotp.lib.policy import checkPolicyPre
-from linotp.lib.policy import PolicyException
-from linotp.lib.policy import getAdminPolicies
-from linotp.lib.policy.definitions import get_policy_definitions
-
-from linotp.lib.context import request_context
-
-from linotp.lib.ImportOTP import getKnownTypes, getImportText
-import linotp
-
+from linotp.lib.user import (
+    User,
+    getUserFromParam,
+    getUserFromRequest,
+    getUserList,
+)
+from linotp.lib.util import (
+    check_session,
+    get_client,
+    get_copyright_info,
+    get_version,
+    remove_empty_lines,
+    unicode_compare,
+)
 from linotp.model import db
+from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 

@@ -107,37 +107,31 @@
 import binascii
 import datetime
 import logging
+import sys
 import time
-
-from linotp.lib.config import getFromConfig
-from linotp.lib.crypto.utils import createNonce
-from linotp.lib.crypto.utils import kdf2
-from linotp.lib.crypto import SecretObj
-
-from linotp.lib.policy import getPolicy
-from linotp.lib.policy.action import get_action_value
-
-from linotp.lib.auth.validate import check_pin
-
-# TODO: move this as ocra specific methods
-from linotp.lib.token import getRolloutToken4User
-from linotp.tokens import tokenclass_registry
-from linotp.lib.util import normalize_activation_code
-
-from . import OcraSuite
-
-from linotp.lib.challenges import Challenges
-from linotp.lib.reply import create_img
-
-from linotp.tokens.base import TokenClass
-from linotp.lib.context import request_context as context
+import urllib.error
+import urllib.parse
 
 # needed for ocra token
 import urllib.request
-import urllib.parse
-import urllib.error
 
-import sys
+from linotp.lib.auth.validate import check_pin
+from linotp.lib.challenges import Challenges
+from linotp.lib.config import getFromConfig
+from linotp.lib.context import request_context as context
+from linotp.lib.crypto import SecretObj
+from linotp.lib.crypto.utils import createNonce, kdf2
+from linotp.lib.policy import getPolicy
+from linotp.lib.policy.action import get_action_value
+from linotp.lib.reply import create_img
+
+# TODO: move this as ocra specific methods
+from linotp.lib.token import getRolloutToken4User
+from linotp.lib.util import normalize_activation_code
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
+
+from . import OcraSuite
 
 optional = True
 required = False

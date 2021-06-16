@@ -39,26 +39,23 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 
 
 import binascii
-from mock import patch
-import smtplib
-import freezegun
-
-from datetime import datetime
-from datetime import timedelta
-
-import re
-import time
 import json
 import logging
+import re
+import smtplib
+import time
+from datetime import datetime, timedelta
 
-import linotp.provider.smsprovider.HttpSMSProvider
+import freezegun
+from mock import patch
+
 import linotp.provider.emailprovider
-
+import linotp.provider.smsprovider.HttpSMSProvider
+from linotp.lib.HMAC import HmacOtp
 from linotp.tests.functional_special import TestSpecialController
 
 # from linotp.tests import url
 
-from linotp.lib.HMAC import HmacOtp
 
 log = logging.getLogger(__name__)
 

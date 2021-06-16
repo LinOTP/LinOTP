@@ -26,17 +26,19 @@
 import logging
 from typing import TYPE_CHECKING, List, Union
 
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebElement
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from . import helper
+from selenium.webdriver.support.wait import WebDriverWait
+
 from linotp_selenium_helper.helper import (
-    fill_form_element,
     close_alert_and_get_its_text,
+    fill_form_element,
 )
-from selenium.common.exceptions import TimeoutException
+
+from . import helper
 
 if TYPE_CHECKING:
     from .test_case import TestCase

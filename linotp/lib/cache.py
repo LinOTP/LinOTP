@@ -1,14 +1,12 @@
 import logging
+from typing import Optional
+
+from beaker.cache import Cache
 
 from flask import current_app
 
-from typing import Optional
-
 from linotp.lib.context import request_context as context
-from linotp.lib.type_utils import get_duration
-from linotp.lib.type_utils import boolean
-
-from beaker.cache import Cache
+from linotp.lib.type_utils import boolean, get_duration
 
 log = logging.getLogger(__name__)
 

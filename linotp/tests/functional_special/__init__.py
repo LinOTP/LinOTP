@@ -33,11 +33,12 @@ The TestSpecialController gathers some of these common methods.
 
 """
 import logging
-import urllib.request
-import urllib.parse
-import urllib.error
-import httplib2
 import os
+import urllib.error
+import urllib.parse
+import urllib.request
+
+import httplib2
 
 from linotp.tests import TestController
 

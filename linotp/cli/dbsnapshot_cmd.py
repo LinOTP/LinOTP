@@ -41,24 +41,20 @@ as MySQL is your thing) but `dbsnapshot` lets you migrate your LinOTP
 instance from MySQL to PostgreSQL (for example).
 """
 
+import binascii
 import os
 import sys
-import binascii
-import click
-
 from datetime import datetime
 
-from flask import current_app
-from sqlalchemy.ext.serializer import loads, dumps
-
+import click
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.serializer import dumps, loads
 
+from flask import current_app
 from flask.cli import AppGroup
 
-from linotp.model import Config, Token, TokenRealm, Realm
-
 from linotp.lib.audit.SQLAudit import AuditTable
-
+from linotp.model import Config, Realm, Token, TokenRealm
 
 TIME_FORMAT = "%Y-%m-%d_%H-%M"
 

@@ -43,23 +43,23 @@
 
 """
 
-from linotp.lib.security.default import DefaultSecurityModule
-
-from ctypes import *
-import string
 import binascii
+import getpass
 import logging
-
-
-from linotp.lib.security.provider import DEFAULT_KEY
-from linotp.lib.security.provider import CONFIG_KEY
-from linotp.lib.security.provider import TOKEN_KEY
-from linotp.lib.security.provider import VALUE_KEY
+import string
+import sys
+from ctypes import *
+from getopt import GetoptError, getopt
 
 from Cryptodome.Cipher import AES as AESCipher
-from getopt import getopt, GetoptError
-import sys
-import getpass
+
+from linotp.lib.security.default import DefaultSecurityModule
+from linotp.lib.security.provider import (
+    CONFIG_KEY,
+    DEFAULT_KEY,
+    TOKEN_KEY,
+    VALUE_KEY,
+)
 
 log = logging.getLogger(__name__)
 

@@ -28,13 +28,12 @@
 sql resolver tests
 """
 
-import logging
 import json
+import logging
 
 from passlib.hash import atlassian_pbkdf2_sha1
 from passlib.hash import bcrypt as passlib_bcrypt
 from passlib.hash import phpass as passlib_phpass
-
 
 from .sql_test_controller import SQLTestController
 

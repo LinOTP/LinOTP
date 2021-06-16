@@ -28,32 +28,22 @@
 """
 """
 
-import logging
 import binascii
-
-import urllib.request
-import urllib.parse
-import urllib.error
 import json
-
-from datetime import datetime
-from datetime import timedelta
-
-from urllib.parse import urlparse
-from urllib.parse import parse_qs
-from urllib.parse import urlsplit
+import logging
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import datetime, timedelta
+from urllib.parse import parse_qs, urlparse, urlsplit
 
 from Cryptodome.Hash import SHA256 as SHA256
 
 import linotp.lib.crypto
+from linotp.lib.crypto.utils import check, createActivationCode, kdf2
 from linotp.lib.ext.pbkdf2 import PBKDF2
 from linotp.lib.reply import create_img
-
 from linotp.tokens.ocra2token import OcraSuite
-from linotp.lib.crypto.utils import kdf2
-from linotp.lib.crypto.utils import createActivationCode
-from linotp.lib.crypto.utils import check
-
 
 log = logging.getLogger(__name__)
 

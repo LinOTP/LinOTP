@@ -27,22 +27,20 @@
 import base64
 import datetime
 import os
-from pathlib import Path
 import stat
 import subprocess
+from pathlib import Path
 from typing import List
 from unittest.mock import patch
 
-import pytest
-
 import click.termui
-
-from linotp.app import LinOTPApp
-from linotp.cli import main, Echo, get_backup_filename
-import linotp.cli.init_cmd as c
-
+import pytest
 from sqlalchemy import create_engine
-from linotp.model import db, Config, setup_db, init_db_tables
+
+import linotp.cli.init_cmd as c
+from linotp.app import LinOTPApp
+from linotp.cli import Echo, get_backup_filename, main
+from linotp.model import Config, db, init_db_tables, setup_db
 
 
 @pytest.fixture

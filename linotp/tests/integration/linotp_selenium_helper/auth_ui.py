@@ -24,8 +24,9 @@
 #    Support: www.keyidentity.com
 #
 
-from linotp_selenium_helper.helper import fill_form_element
 import logging
+
+from linotp_selenium_helper.helper import fill_form_element
 
 """
 This file contains classes for interacting with the auth pages

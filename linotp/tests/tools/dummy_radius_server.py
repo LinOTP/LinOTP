@@ -39,19 +39,17 @@ or:
 etc.
 """
 
-from pyrad.server import Server as RadiusServer
-from pyrad.server import ServerPacketError
-from pyrad.server import RemoteHost
-from pyrad.dictionary import Dictionary
-
-import pyrad.packet as packet
-from pyrad.packet import AccessAccept, AccessReject, AccessChallenge
-
+import os.path
 import socket
 import sys
-import os.path
+from getopt import GetoptError, getopt
 
-from getopt import getopt, GetoptError
+import pyrad.packet as packet
+from pyrad.dictionary import Dictionary
+from pyrad.packet import AccessAccept, AccessChallenge, AccessReject
+from pyrad.server import RemoteHost
+from pyrad.server import Server as RadiusServer
+from pyrad.server import ServerPacketError
 
 try:
     myIP = socket.gethostbyname(socket.gethostname())

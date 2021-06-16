@@ -26,24 +26,23 @@
 """This file containes the RADIUS token class"""
 
 
-import logging
-
 import binascii
-
-from flask import current_app
-
-# for update, we require the TokenClass
-from linotp.tokens.base import TokenClass
-from linotp.tokens.remotetoken import RemoteTokenClass
-from linotp.tokens import tokenclass_registry
-from linotp.lib.error import ParameterError
+import logging
 
 # we need this for the radius token
 import pyrad.packet
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
-from linotp.flap import config as env
 
+from flask import current_app
+
+from linotp.flap import config as env
+from linotp.lib.error import ParameterError
+from linotp.tokens import tokenclass_registry
+
+# for update, we require the TokenClass
+from linotp.tokens.base import TokenClass
+from linotp.tokens.remotetoken import RemoteTokenClass
 
 log = logging.getLogger(__name__)
 

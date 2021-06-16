@@ -27,11 +27,11 @@
 """
 sql user db helper
 """
+import json
 import logging
 
-import json
-from sqlalchemy.engine import create_engine
 import sqlalchemy
+from sqlalchemy.engine import create_engine
 
 log = logging.getLogger(__name__)
 

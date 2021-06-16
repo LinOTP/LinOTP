@@ -100,44 +100,38 @@
 
 """
 
-import time
 import datetime
-
-from linotp.lib.HMAC import HmacOtp
-
-from linotp.lib.user import getUserDetail
-from linotp.lib.user import getUserFromParam
-from linotp.lib.user import get_user_from_options
-from linotp.lib.user import User
-
-from linotp.lib.auth.validate import check_pin
-from linotp.lib.auth.validate import check_otp
-from linotp.lib.auth.validate import split_pin_otp
-
-from linotp.lib.config import getFromConfig
-from linotp.lib.token import get_token_owner
-
-from linotp.lib.policy.action import get_action_value
-from linotp.lib.policy import getPolicy, get_client_policy
-from linotp.lib.policy import get_auth_AutoSMSPolicy
-from linotp.lib.policy import trigger_sms
-
-from linotp.lib.context import request_context as context
-
-from linotp.provider import get_provider_from_policy
-from linotp.provider import loadProvider
-from linotp.provider import loadProviderFromPolicy
-from linotp.provider import ProviderNotAvailable
-
-from linotp.lib.resources import ResourceScheduler
-from linotp.lib.resources import AllResourcesUnavailable
-
-from linotp.lib.error import ParameterError
-
-from linotp.tokens.hmactoken import HmacTokenClass
-from linotp.tokens import tokenclass_registry
-
 import logging
+import time
+
+from linotp.lib.auth.validate import check_otp, check_pin, split_pin_otp
+from linotp.lib.config import getFromConfig
+from linotp.lib.context import request_context as context
+from linotp.lib.error import ParameterError
+from linotp.lib.HMAC import HmacOtp
+from linotp.lib.policy import (
+    get_auth_AutoSMSPolicy,
+    get_client_policy,
+    getPolicy,
+    trigger_sms,
+)
+from linotp.lib.policy.action import get_action_value
+from linotp.lib.resources import AllResourcesUnavailable, ResourceScheduler
+from linotp.lib.token import get_token_owner
+from linotp.lib.user import (
+    User,
+    get_user_from_options,
+    getUserDetail,
+    getUserFromParam,
+)
+from linotp.provider import (
+    ProviderNotAvailable,
+    get_provider_from_policy,
+    loadProvider,
+    loadProviderFromPolicy,
+)
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.hmactoken import HmacTokenClass
 
 log = logging.getLogger(__name__)
 

@@ -28,11 +28,11 @@
 
 import logging
 
+from linotp.lib.crypto import utils
+from linotp.lib.error import ParameterError
+from linotp.tokens import tokenclass_registry
 from linotp.tokens.base import TokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
-from linotp.tokens import tokenclass_registry
-from linotp.lib.error import ParameterError
-from linotp.lib.crypto import utils
 
 log = logging.getLogger(__name__)
 

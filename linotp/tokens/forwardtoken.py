@@ -27,18 +27,12 @@
 
 import logging
 
+from linotp.lib.auth.validate import check_pin, split_pin_otp
 from linotp.lib.context import request_context as context
-
 from linotp.lib.policy import getPolicy
-
-from linotp.lib.auth.validate import check_pin
-from linotp.lib.auth.validate import split_pin_otp
-
-from linotp.tokens.base import TokenClass
-from linotp.lib.token import getTokenRealms
-from linotp.lib.token import get_token_owner
+from linotp.lib.token import get_token_owner, getTokenRealms
 from linotp.tokens import tokenclass_registry
-
+from linotp.tokens.base import TokenClass
 
 log = logging.getLogger(__name__)
 

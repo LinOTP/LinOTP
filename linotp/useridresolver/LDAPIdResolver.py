@@ -32,13 +32,11 @@
 """
 
 
-import logging
-from typing import Any, Callable, Dict, Tuple, Union
-
 import json
+import logging
 import sys
-
 from datetime import datetime
+from typing import Any, Callable, Dict, Tuple, Union
 
 import ldap
 import ldap.filter
@@ -50,24 +48,20 @@ try:
 except ImportError:
     ldap_api_version = 2.4
 
+import click
 from ldap.controls import SimplePagedResultsControl
 
-import click
 from flask import current_app
 from flask.cli import with_appcontext
 
-from linotp.lib.type_utils import encrypted_data
-from linotp.lib.type_utils import text
-from linotp.lib.type_utils import boolean
-
-from linotp.lib.resources import ResourceScheduler
-from linotp.lib.resources import string_to_list
-
-from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
-from linotp.useridresolver.UserIdResolver import UserIdResolver
-from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
-
+from linotp.lib.resources import ResourceScheduler, string_to_list
+from linotp.lib.type_utils import boolean, encrypted_data, text
 from linotp.useridresolver import resolver_registry
+from linotp.useridresolver.UserIdResolver import (
+    ResolverLoadConfigError,
+    ResolverNotAvailable,
+    UserIdResolver,
+)
 
 log = logging.getLogger(__name__)
 

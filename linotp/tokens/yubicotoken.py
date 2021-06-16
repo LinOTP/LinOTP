@@ -25,38 +25,31 @@
 #
 """ This file contains the Yubico token class"""
 
-import logging
-
-from linotp.lib.config import getFromConfig
-from hashlib import sha1
-import urllib.request
-import urllib.parse
-import urllib.error
-import urllib.request
-import urllib.error
-import urllib.parse
-import re
-import os
 import binascii
-
 import datetime
+import logging
+import os
+import re
+import urllib.error
+import urllib.parse
+import urllib.request
+from hashlib import sha1
 
 import requests
+from requests.exceptions import (
+    ConnectionError,
+    ConnectTimeout,
+    ReadTimeout,
+    Timeout,
+    TooManyRedirects,
+)
 
-from requests.exceptions import Timeout
-from requests.exceptions import ConnectionError
-from requests.exceptions import ConnectTimeout
-from requests.exceptions import ReadTimeout
-from requests.exceptions import TooManyRedirects
-
-from linotp.tokens.base import TokenClass
-from linotp.tokens import tokenclass_registry
+from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
-
-from linotp.lib.resources import ResourceScheduler
-from linotp.lib.resources import AllResourcesUnavailable
-
+from linotp.lib.resources import AllResourcesUnavailable, ResourceScheduler
 from linotp.lib.type_utils import parse_timeout
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
 
 YUBICO_LEN_ID = 12
 YUBICO_LEN_OTP = 44
