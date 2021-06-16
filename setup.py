@@ -35,6 +35,9 @@ from linotp import __version__
 # Taken from kennethreitz/requests/setup.py
 package_directory = os.path.realpath(os.path.dirname(__file__))
 
+# LinOTP runtime dependencies
+# install with
+# > pip install -e .
 install_requirements = [
     "Flask",
     "Flask-Babel",
@@ -80,11 +83,24 @@ test_requirements = [
     "mockldap",
     "freezegun",
     "coverage",
-    "pylint",
-    "autopep8",
     "flaky",
 ]
 
+# Additional packages useful to improve and guarantee
+# code quality
+# > pip install -e ".[code_quality]"
+code_quality_requirements = [
+    "pylint",
+    "autopep8",
+    "black",
+    "pre-commit",
+    "mypy",
+    "sqlalchemy-stubs",
+]
+
+# packages needed to build the api documentation
+# install with
+# > pip install -e ".[apidocs]"
 apidocs_requirements = [
     "Sphinx>3.0",
     "Sphinx!=3.4.2",
@@ -95,6 +111,17 @@ apidocs_requirements = [
 setup_requirements = [
     "Babel",
 ]
+
+# all packages that are required during development of LinOTP
+# install with
+# > pip install -e ".[develop]"
+development_requirements = (
+    test_requirements
+    + code_quality_requirements
+    + apidocs_requirements
+    + setup_requirements
+)
+
 
 # install with
 # > pip install -e ".[postgres]"
@@ -146,6 +173,8 @@ setup(
         "postgres": postgres_requirements,
         "mysql": mysql_requirements,
         "test": test_requirements,
+        "code_quality": code_quality_requirements,
+        "develop": development_requirements,
         "apidocs": apidocs_requirements,
     },
     tests_require=test_requirements,

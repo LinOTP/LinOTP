@@ -12,6 +12,8 @@ The steps in a nutshell:
 4. Run the LinOTP development server
 5. Run unit, functional and integration tests
 6. Use MyPy for typechecking
+7. Use pre-commit hooks for consistent formatting
+8. Build the LinOTP debian package
 
 
 ## Get the LinOTP source code
@@ -313,10 +315,10 @@ You can find sample test files under `linotpd/src/linotp/tests/integration`.
 
 ## Use MyPy for typechecking
 
-To run a type check on the source code, install MyPy and the stubs for
-SQLAlchemy:
+To run a type check on the source code, install `mypy` and `sqlalchemy-stubs`.
+Both requirements are part of the develop requirements:
 ```terminal
-$ pip3 install mypy sqlalchemy-stubs
+$ pip3 install -e ".[develop]"
 ```
 Then run `mypy` on a directory of your choice like
 ```terminal
@@ -327,6 +329,32 @@ the `--follow-imports=silent` flag.
 
 The `--show-column-numbers` flag can also be helpful when looking for
 the exact location of a problem.
+
+
+## pre-commit hooks for consistent formatting
+
+This repository is using the [pre-commit](https://pre-commit.com/) framework
+to ensure a consistent style across the whole project. Inspect
+[.pre-commit-config.yaml](.pre-commit-config.yaml) for the configured tools and our [pyproject.toml](pyproject.toml)
+file for the configuration.
+
+Install `pre-commit` manually via pip or as part of our develop dependencies:
+```terminal
+$ pip3 install -e ".[develop]"
+```
+Then install the pre-commit hook in git so that it runs before a commit to
+ensure correct formatting. The same hook is tested in CI, so we strongly
+advise to install the hook, even if you use all of the tools in your IDE.
+This way, you will never push a commit that fails the pre-check. 
+```terminal
+$ pre-commit install
+```
+
+You can also run the pre-commit hook manually`:
+```terminal
+$ pre-commit run
+```
+Use the arguments `--files …` or `--all-files` to change what files are checked.
 
 
 ## Debian packages
@@ -351,7 +379,7 @@ directory by passing it to `make` as the value of the `DESTDIR`
 variable.
 
 
-## Using Docker
+### Using Docker to build the Debian package
 
 You can use the `Makefile` provided by the LinOTP distribution to
 build various Docker container images that help with LinOTP
