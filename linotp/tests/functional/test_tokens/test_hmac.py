@@ -28,16 +28,12 @@
 """Test for HMAC tokens with changing otp len and timeShift."""
 
 import binascii
-
-
-from datetime import datetime
-from datetime import timedelta
-
+from datetime import datetime, timedelta
 from hashlib import sha1
+
 from freezegun import freeze_time
 
 from linotp.lib.HMAC import HmacOtp
-
 from linotp.tests import TestController
 
 seed = "3132333435363738393031323334353637383930"

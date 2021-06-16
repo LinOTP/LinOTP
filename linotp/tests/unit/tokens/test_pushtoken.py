@@ -24,20 +24,16 @@
 #    Support: www.keyidentity.com
 #
 
-import unittest
-import json
 import base64
+import json
+import unittest
 
 import pytest
-
+from mock import patch
 from pysodium import crypto_sign_keypair
 
 from linotp.flap import config
-
-from mock import patch
-
-from linotp.lib.context import request_context_safety
-from linotp.lib.context import request_context
+from linotp.lib.context import request_context, request_context_safety
 from linotp.tokens.pushtoken.pushtoken import PushTokenClass
 
 

@@ -28,8 +28,9 @@
 
 import unittest
 
-from linotp.lib.policy.util import parse_action_value
 import pytest
+
+from linotp.lib.policy.util import parse_action_value
 
 
 class TestParseActionValue(unittest.TestCase):

@@ -25,7 +25,9 @@
 #
 
 import json
+
 from mock import patch
+
 from linotp.tests import TestController
 
 

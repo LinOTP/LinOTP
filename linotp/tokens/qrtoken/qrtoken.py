@@ -25,42 +25,35 @@
 #
 
 import logging
+import secrets
 import struct
 import zlib
-import secrets
-
-from base64 import b64encode
-from base64 import b64decode
-from linotp.flap import config
-from pysodium import crypto_scalarmult_curve25519 as calc_dh
-from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
-from Cryptodome.Cipher import AES
-
+from base64 import b64decode, b64encode
 from hashlib import sha256
-
-from linotp.lib.policy import get_partition
-from linotp.lib.policy import get_single_auth_policy
-from linotp.lib.challenges import Challenges
-from linotp.lib.challenges import transaction_id_to_u64
-from linotp.lib.reply import create_img
-from linotp.tokens.base import TokenClass
-from linotp.tokens.base.stateful_mixin import StatefulTokenMixin
-from linotp.lib.token import get_token_owner
-from linotp.tokens import tokenclass_registry
-
-from linotp.lib.crypto.utils import zerome
-from linotp.lib.crypto.utils import extract_tan
-from linotp.lib.crypto.utils import encode_base64_urlsafe
-from linotp.lib.crypto.utils import decode_base64_urlsafe
-from linotp.lib.config import getFromConfig
-from linotp.lib.error import InvalidFunctionParameter
-from linotp.lib.error import ParameterError
-from linotp.lib.pairing import generate_pairing_url
-
 from hmac import compare_digest
 
-from linotp.lib.context import request_context as context
+from Cryptodome.Cipher import AES
+from pysodium import crypto_scalarmult_curve25519 as calc_dh
+from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 
+from linotp.flap import config
+from linotp.lib.challenges import Challenges, transaction_id_to_u64
+from linotp.lib.config import getFromConfig
+from linotp.lib.context import request_context as context
+from linotp.lib.crypto.utils import (
+    decode_base64_urlsafe,
+    encode_base64_urlsafe,
+    extract_tan,
+    zerome,
+)
+from linotp.lib.error import InvalidFunctionParameter, ParameterError
+from linotp.lib.pairing import generate_pairing_url
+from linotp.lib.policy import get_partition, get_single_auth_policy
+from linotp.lib.reply import create_img
+from linotp.lib.token import get_token_owner
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
+from linotp.tokens.base.stateful_mixin import StatefulTokenMixin
 
 log = logging.getLogger(__name__)
 

@@ -27,104 +27,93 @@
 """
 system controller - to configure the system
 """
-import os
-
-import json
 import binascii
-from configobj import ConfigObj
+import json
+import logging
+import os
+from html import escape
 
-from flask import current_app, g, send_file as flask_send_file
+from configobj import ConfigObj
 from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
 
-from linotp import flap
-from linotp.flap import config, request, response, tmpl_context as c
+from flask import current_app, g
+from flask import send_file as flask_send_file
 
+from linotp import flap
+from linotp.flap import config, request, response
+from linotp.flap import tmpl_context as c
+from linotp.lib.config import (
+    getFromConfig,
+    getLinotpConfig,
+    removeFromConfig,
+    storeConfig,
+    updateConfig,
+)
+from linotp.lib.context import request_context
+from linotp.lib.crypto import utils
+from linotp.lib.error import ParameterError
+from linotp.lib.policy import (
+    PolicyException,
+    checkPolicyPost,
+    checkPolicyPre,
+    get_client_policy,
+    getPolicy,
+    search_policy,
+)
+from linotp.lib.policy.definitions import get_policy_definitions
+from linotp.lib.policy.manage import (
+    create_policy_export_file,
+    deletePolicy,
+    import_policies,
+    setPolicy,
+)
+from linotp.lib.realm import (
+    deleteRealm,
+    getDefaultRealm,
+    getRealms,
+    isRealmDefined,
+    setDefaultRealm,
+)
+from linotp.lib.reply import sendError, sendResult, sendXMLError, sendXMLResult
+from linotp.lib.resolver import (
+    defineResolver,
+    deleteResolver,
+    getResolverInfo,
+    getResolverList,
+    getResolverObject,
+    parse_resolver_spec,
+    prepare_resolver_parameter,
+)
+from linotp.lib.support import (
+    do_nagging,
+    getSupportLicenseInfo,
+    isSupportLicenseValid,
+    running_on_appliance,
+    setDemoSupportLicense,
+    setSupportLicense,
+)
+from linotp.lib.tools.migrate_resolver import MigrateResolverHandler
+from linotp.lib.type_utils import boolean
+from linotp.lib.user import (
+    delete_realm_resolver_cache,
+    delete_resolver_user_cache,
+    getUserFromRequest,
+    setRealm,
+)
+from linotp.lib.util import check_session, get_client, getLowerParams
+from linotp.model import db
+from linotp.provider import (
+    delProvider,
+    getProvider,
+    loadProvider,
+    setDefaultProvider,
+    setProvider,
+)
+from linotp.tokens import tokenclass_registry
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
 from .base import BaseController
-
-from linotp.lib.config import storeConfig
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.config import getFromConfig
-from linotp.lib.config import updateConfig
-from linotp.lib.config import removeFromConfig
-
-from linotp.lib.realm import setDefaultRealm
-from linotp.lib.realm import isRealmDefined
-
-from linotp.lib.util import check_session
-from linotp.lib.util import get_client
-from linotp.lib.util import getLowerParams
-
-from linotp.lib.resolver import defineResolver
-from linotp.lib.resolver import getResolverObject
-from linotp.lib.resolver import getResolverList
-from linotp.lib.resolver import getResolverInfo
-from linotp.lib.resolver import deleteResolver
-from linotp.lib.resolver import parse_resolver_spec
-from linotp.lib.resolver import prepare_resolver_parameter
-
-from linotp.lib.tools.migrate_resolver import MigrateResolverHandler
-
-from linotp.lib.error import ParameterError
-
-from linotp.lib.reply import sendResult
-from linotp.lib.reply import sendError
-from linotp.lib.reply import sendXMLResult
-from linotp.lib.reply import sendXMLError
-
-from linotp.lib.realm import getRealms
-from linotp.lib.realm import getDefaultRealm
-from linotp.lib.realm import deleteRealm
-
-
-from linotp.lib.user import setRealm
-from linotp.lib.user import getUserFromRequest
-from linotp.lib.user import delete_resolver_user_cache
-from linotp.lib.user import delete_realm_resolver_cache
-
-
-from linotp.tokens import tokenclass_registry
-
-from linotp.lib.policy import checkPolicyPre
-from linotp.lib.policy import checkPolicyPost
-from linotp.lib.policy import PolicyException
-
-from linotp.lib.policy import getPolicy
-from linotp.lib.policy import search_policy
-
-from linotp.lib.policy.manage import setPolicy
-from linotp.lib.policy.manage import deletePolicy
-from linotp.lib.policy.manage import import_policies
-from linotp.lib.policy.definitions import get_policy_definitions
-
-from linotp.lib.policy.manage import create_policy_export_file
-from linotp.lib.policy import get_client_policy
-
-from linotp.lib.support import getSupportLicenseInfo
-from linotp.lib.support import setSupportLicense
-from linotp.lib.support import do_nagging
-from linotp.lib.support import isSupportLicenseValid
-from linotp.lib.support import setDemoSupportLicense
-from linotp.lib.support import running_on_appliance
-
-from linotp.provider import getProvider
-from linotp.provider import setProvider
-from linotp.provider import loadProvider
-from linotp.provider import delProvider
-from linotp.provider import setDefaultProvider
-
-from linotp.lib.type_utils import boolean
-
-from linotp.lib.crypto import utils
-
-from html import escape
-
-from linotp.lib.context import request_context
-
-import logging
-from linotp.model import db
 
 log = logging.getLogger(__name__)
 

@@ -24,14 +24,14 @@
 #    Support: www.keyidentity.com
 #
 
-import logging
-import unittest
 import binascii
 import json
-import pytest
+import logging
+import unittest
 
-from mock import MagicMock, patch
+import pytest
 from Cryptodome.Cipher import AES
+from mock import MagicMock, patch
 
 
 def _aes_decrypt_constructor(hex_key):
@@ -62,8 +62,8 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        from linotp.tokens.yubikeytoken import YubikeyTokenClass
         import linotp.lib.crypto
+        from linotp.tokens.yubikeytoken import YubikeyTokenClass
 
         # Without this logging in the tested class fails
         logging.basicConfig()

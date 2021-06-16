@@ -30,11 +30,10 @@ Test the autoassignment Policy.
 """
 import json
 
-import linotp.provider.emailprovider
-from linotp.tests import TestController
-
 from mock import patch
 
+import linotp.provider.emailprovider
+from linotp.tests import TestController
 
 REQUEST_BODY = ""
 REQUEST_HEADERS = {}

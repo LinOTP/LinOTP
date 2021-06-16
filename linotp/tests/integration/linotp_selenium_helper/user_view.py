@@ -26,12 +26,12 @@
 """Contains UserView class"""
 
 
-from .manage_elements import ManageTab
-from .helper import select
-
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from .helper import select
+from .manage_elements import ManageTab
 
 
 class UserViewException(Exception):

@@ -34,8 +34,8 @@ from mock import patch
 
 import flask
 
-from linotp.lib.user import User
 from linotp.controllers.userservice import UserserviceController
+from linotp.lib.user import User
 
 
 class MockUserserviceController(UserserviceController):

@@ -49,7 +49,6 @@ from mock import patch
 
 from linotp.tests.functional_special import TestSpecialController
 
-
 # mocking hook is startting here
 HTTP_RESPONSE_FUNC = None
 HTTP_RESPONSE = None

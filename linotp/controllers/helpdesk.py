@@ -27,58 +27,46 @@
 """
 helpdesk controller - interfaces to administrate LinOTP as helpdesk
 """
-import os
 import logging
+import os
 
 from flask import current_app, g
 
-from linotp.flap import config, request, response
-
-
 from linotp.controllers.base import BaseController, SessionCookieMixin
-
-from linotp.lib.reply import sendResult
-from linotp.lib.reply import sendError
-
-from linotp.lib.user import User
-
-from linotp.lib.user import getUserFromParam
-from linotp.lib.user import getUserFromRequest
-
-from linotp.lib.policy import checkPolicyPre
-from linotp.lib.policy import checkPolicyPost
-from linotp.lib.policy import PolicyException
-
-from linotp.lib.policy import getAdminPolicies
-from linotp.lib.policy import createRandomPin
-
-from linotp.tokens import tokenclass_registry
-from linotp.lib.token import get_token_owner
-from linotp.lib.token import TokenHandler
-from linotp.lib.token import getTokens4UserOrSerial
-
-from linotp.lib.tokeniterator import TokenIterator
-
-from linotp.lib.util import get_client
-
-from linotp.lib.error import ParameterError
-from linotp.lib.error import TokenAdminError
-
-from linotp.lib.context import request_context
-from linotp.lib.realm import getRealms
-
-from linotp.lib.user import getUserList
-
-from linotp.lib.util import unicode_compare, SESSION_KEY_LENGTH
-from linotp.lib.util import check_session
-
-from linotp.provider.notification import notify_user
-
+from linotp.flap import config, request, response
 from linotp.lib.audit.base import get_token_num_info
-
-from linotp.lib.realm import get_realms_from_params
-
+from linotp.lib.context import request_context
+from linotp.lib.error import ParameterError, TokenAdminError
+from linotp.lib.policy import (
+    PolicyException,
+    checkPolicyPost,
+    checkPolicyPre,
+    createRandomPin,
+    getAdminPolicies,
+)
+from linotp.lib.realm import get_realms_from_params, getRealms
+from linotp.lib.reply import sendError, sendResult
+from linotp.lib.token import (
+    TokenHandler,
+    get_token_owner,
+    getTokens4UserOrSerial,
+)
+from linotp.lib.tokeniterator import TokenIterator
+from linotp.lib.user import (
+    User,
+    getUserFromParam,
+    getUserFromRequest,
+    getUserList,
+)
+from linotp.lib.util import (
+    SESSION_KEY_LENGTH,
+    check_session,
+    get_client,
+    unicode_compare,
+)
 from linotp.model import db
+from linotp.provider.notification import notify_user
+from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 

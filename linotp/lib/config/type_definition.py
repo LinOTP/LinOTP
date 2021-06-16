@@ -30,11 +30,12 @@
 """
 
 
-from linotp.lib.type_utils import is_duration
-from linotp.lib.type_utils import encrypted_data
-from linotp.lib.type_utils import check_networks_expression
-from linotp.lib.type_utils import check_time_format_string
-
+from linotp.lib.type_utils import (
+    check_networks_expression,
+    check_time_format_string,
+    encrypted_data,
+    is_duration,
+)
 
 Config_Types = {
     "linotp.user_lookup_cache.expiration": ("duration", is_duration),

@@ -50,14 +50,13 @@
 ###########################################################################
 
 
-from binascii import b2a_hex as _b2a_hex
-from base64 import b64encode as _b64encode
-from struct import pack
-
-import sys
-import secrets
 import hmac
+import secrets
+import sys
+from base64 import b64encode as _b64encode
+from binascii import b2a_hex as _b2a_hex
 from hashlib import sha1
+from struct import pack
 
 __version__ = "1.3"
 __all__ = ["PBKDF2", "crypt"]

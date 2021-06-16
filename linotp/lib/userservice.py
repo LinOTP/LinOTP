@@ -25,52 +25,35 @@
 #
 """ logic for the userservice processing """
 
+import base64
 import binascii
-import os
 import copy
 import datetime
-import hmac
 import hashlib
-import base64
+import hmac
 import json
+import logging
+import os
 
 # for the temporary rendering context, we use 'c'
-from linotp.flap import (
-    tmpl_context as c,
-    render_mako as render,
-)
-
-from linotp.lib.policy.processing import get_client_policy
-from linotp.lib.policy.action import get_selfservice_actions
-from linotp.lib.policy.action import get_action_value
-from linotp.lib.policy.action import get_selfservice_action_value
-
-
-from linotp.lib.util import get_version, get_copyright_info, get_request_param
-
-from linotp.lib.type_utils import parse_duration
-
-from linotp.lib.realm import getRealms
-
-from linotp.lib.selfservice import get_imprint
-
-from linotp.lib.user import getRealmBox
-
-from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.token import get_token_owner
-
-from linotp.tokens import tokenclass_registry
-
+from linotp.flap import render_mako as render
+from linotp.flap import tmpl_context as c
 from linotp.lib.challenges import Challenges
-
-from linotp.lib.user import getUserInfo, User, getUserId
-
-from linotp.lib.realm import getDefaultRealm
 from linotp.lib.context import request_context
-
+from linotp.lib.policy.action import (
+    get_action_value,
+    get_selfservice_action_value,
+    get_selfservice_actions,
+)
+from linotp.lib.policy.processing import get_client_policy
+from linotp.lib.realm import getDefaultRealm, getRealms
+from linotp.lib.selfservice import get_imprint
+from linotp.lib.token import get_token_owner, getTokens4UserOrSerial
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
-
-import logging
+from linotp.lib.type_utils import parse_duration
+from linotp.lib.user import User, getRealmBox, getUserId, getUserInfo
+from linotp.lib.util import get_copyright_info, get_request_param, get_version
+from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 

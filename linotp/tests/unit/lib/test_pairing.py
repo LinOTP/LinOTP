@@ -24,12 +24,13 @@
 #    Support: www.keyidentity.com
 #
 
-import pytest
 import unittest
+
+import pytest
+from mock import patch
 
 from linotp.flap import config
 from linotp.lib.pairing import generate_pairing_url
-from mock import patch
 
 
 @pytest.mark.usefixtures("app")

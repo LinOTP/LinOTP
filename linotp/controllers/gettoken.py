@@ -29,36 +29,29 @@ gettoken controller - to retrieve OTP values
 
 import logging
 
-from flask import g, current_app
-
-from linotp.flap import (
-    config,
-    render_mako as render,
-    request,
-    response,
-    tmpl_context as c,
-)
-
-from linotp.model import db
+from flask import current_app, g
 
 from linotp.controllers.base import BaseController
-
-from linotp.lib.util import getParam, check_session
-from linotp.lib.util import get_client
-from linotp.lib.user import getUserFromParam
-from linotp.lib.user import getDefaultRealm
-from linotp.lib.user import getUserFromRequest
-
-
-from linotp.lib.token import getTokenType
-from linotp.lib.token import getOtp
-from linotp.lib.token import get_multi_otp
-from linotp.lib.token import getTokens4UserOrSerial
-
-from linotp.lib.policy import checkPolicyPre, PolicyException
-from linotp.lib.reply import sendResult, sendError
-
+from linotp.flap import config
+from linotp.flap import render_mako as render
+from linotp.flap import request, response
+from linotp.flap import tmpl_context as c
 from linotp.lib.context import request_context
+from linotp.lib.policy import PolicyException, checkPolicyPre
+from linotp.lib.reply import sendError, sendResult
+from linotp.lib.token import (
+    get_multi_otp,
+    getOtp,
+    getTokens4UserOrSerial,
+    getTokenType,
+)
+from linotp.lib.user import (
+    getDefaultRealm,
+    getUserFromParam,
+    getUserFromRequest,
+)
+from linotp.lib.util import check_session, get_client, getParam
+from linotp.model import db
 
 optional = True
 required = False

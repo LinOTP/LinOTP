@@ -36,10 +36,8 @@ from sqlalchemy.exc import ProgrammingError
 
 from linotp.lib.crypto import utils
 from linotp.lib.tools.set_password import SetPasswordHandler
-
-from linotp.tests import TestController
-
 from linotp.model import db
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 

@@ -31,38 +31,26 @@ import logging
 
 from flask import current_app, g
 
-from linotp.flap import request, response, config, tmpl_context as c
-
 from linotp.controllers.base import BaseController
+from linotp.flap import config, request, response
+from linotp.flap import tmpl_context as c
+from linotp.lib.context import request_context
 from linotp.lib.error import HSMException
-
-from linotp.lib.util import check_session
-from linotp.lib.util import get_client
-from linotp.lib.user import (
-    getUserFromRequest,
+from linotp.lib.monitoring import MonitorHandler
+from linotp.lib.policy import (
+    PolicyException,
+    checkAuthorisation,
+    getAdminPolicies,
 )
-
-
 from linotp.lib.realm import match_realms
-
-from linotp.lib.reply import sendResult, sendError
-
-from linotp.lib.policy import PolicyException
-
-from linotp.lib.policy import checkAuthorisation
-from linotp.lib.policy import getAdminPolicies
-
-
+from linotp.lib.reply import sendError, sendResult
 from linotp.lib.support import (
     InvalidLicenseException,
     getSupportLicenseInfo,
     verifyLicenseInfo,
 )
-
-from linotp.lib.monitoring import MonitorHandler
-
-from linotp.lib.context import request_context
-
+from linotp.lib.user import getUserFromRequest
+from linotp.lib.util import check_session, get_client
 from linotp.model import db
 
 log = logging.getLogger(__name__)

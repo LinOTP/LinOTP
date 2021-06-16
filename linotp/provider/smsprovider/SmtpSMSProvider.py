@@ -26,18 +26,14 @@
 
 """  This is the SMSClass to send SMS via HTTP Gateways """
 
+import logging
+import smtplib
+import string
 from hashlib import sha256
 
-import string
-import smtplib
-
-import logging
-
-from linotp.provider.smsprovider import ISMSProvider
-from linotp.provider import provider_registry
-from linotp.provider import ProviderNotAvailable
-
 from linotp.lib.type_utils import boolean
+from linotp.provider import ProviderNotAvailable, provider_registry
+from linotp.provider.smsprovider import ISMSProvider
 
 log = logging.getLogger(__name__)
 

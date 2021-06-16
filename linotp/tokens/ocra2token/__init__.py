@@ -202,17 +202,15 @@ Description of OCRA algorithm::
 
 """
 
-import sys
-import logging
 import binascii
-from datetime import datetime
-
 import hmac
+import logging
 import re
 import secrets
+import sys
+from datetime import datetime
 
 from linotp.lib.crypto.utils import get_hashalgo_from_description
-
 
 log = logging.getLogger(__name__)
 

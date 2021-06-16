@@ -26,10 +26,10 @@
 
 import json
 import unittest
+
 from mock import patch
 
-from linotp.lib.user import get_user_from_options
-from linotp.lib.user import User
+from linotp.lib.user import User, get_user_from_options
 
 
 class TestGetUserFromOptions(unittest.TestCase):

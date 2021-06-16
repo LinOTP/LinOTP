@@ -26,9 +26,10 @@
 " verfify that the userservice pre_context works as intended"
 
 import unittest
-import pytest
 
+import pytest
 from mock import patch
+
 from linotp.lib.userservice import get_pre_context
 
 

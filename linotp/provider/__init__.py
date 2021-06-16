@@ -27,27 +27,25 @@
 provider handling
 """
 
-from linotp.lib.config import linotp_config_tree
 import json
 import logging
-from functools import partial
 from configparser import ConfigParser
+from functools import partial
 
 from flask_babel import gettext as _
 
 import linotp.lib.policy
-
-from linotp.lib.config import storeConfig
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.config import removeFromConfig
-from linotp.lib.config.parsing import ConfigTree
-from linotp.lib.config.parsing import ConfigNotRecognized
-
-from linotp.lib.policy.action import get_action_value
+from linotp.lib.config import (
+    getLinotpConfig,
+    linotp_config_tree,
+    removeFromConfig,
+    storeConfig,
+)
+from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
 from linotp.lib.context import request_context
-
-from linotp.lib.registry import ClassRegistry
 from linotp.lib.module_loader import import_submodules
+from linotp.lib.policy.action import get_action_value
+from linotp.lib.registry import ClassRegistry
 
 log = logging.getLogger(__name__)
 

@@ -28,8 +28,7 @@
 import os
 from binascii import unhexlify
 
-from linotp.lib.security.libfips import FipsModule
-from linotp.lib.security.libfips import SSLError
+from linotp.lib.security.libfips import FipsModule, SSLError
 
 # assune the cryptolib is in the same directory as libfips
 

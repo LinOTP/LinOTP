@@ -26,8 +26,8 @@
 """Contains Realm class"""
 
 import logging
-import time
 import re
+import time
 from typing import List, Union
 
 from selenium.webdriver.common.action_chains import ActionChains
@@ -36,7 +36,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from .helper import find_by_css, fill_form_element
+from .helper import fill_form_element, find_by_css
 from .manage_elements import ManageDialog
 from .user_id_resolver import UserIdResolverManager
 

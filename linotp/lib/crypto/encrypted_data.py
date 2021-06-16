@@ -29,8 +29,7 @@ This module implements the encapsulation of encrypted data which
 for example are used in config entries
 """
 
-from linotp.lib.crypto.utils import decryptPassword
-from linotp.lib.crypto.utils import encryptPassword
+from linotp.lib.crypto.utils import decryptPassword, encryptPassword
 
 
 class EncryptedData(str):

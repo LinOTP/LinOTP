@@ -25,7 +25,6 @@
 #
 
 import os
-
 import unittest
 
 from linotp.lib.ImportOTP.oath import parseOATHcsv

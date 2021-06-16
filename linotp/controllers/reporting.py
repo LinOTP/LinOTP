@@ -30,44 +30,36 @@
 reporting controller - interfaces for Reporting
 """
 import logging
+from datetime import datetime, timedelta
 
-from datetime import datetime
-from datetime import timedelta
-
-from flask import Response, stream_with_context, g, current_app
 from werkzeug.datastructures import Headers
 
-from linotp.flap import request, response
-from linotp.controllers.base import BaseController
-from linotp.lib.context import request_context
+from flask import Response, current_app, g, stream_with_context
 
+from linotp.controllers.base import BaseController
+from linotp.flap import request, response
+from linotp.lib.context import request_context
 from linotp.lib.policy import (
-    checkAuthorisation,
     PolicyException,
+    checkAuthorisation,
     getAdminPolicies,
 )
-
 from linotp.lib.realm import match_realms
-
 from linotp.lib.reply import (
-    sendResult,
-    sendError,
-    sendResultIterator,
     sendCSVIterator,
+    sendError,
+    sendResult,
+    sendResultIterator,
 )
-
-from linotp.lib.reporting import ReportingIterator
-from linotp.lib.reporting import get_max_token_count_in_period
-from linotp.lib.reporting import get_last_token_count_before_date
-from linotp.lib.reporting import delete
-
+from linotp.lib.reporting import (
+    ReportingIterator,
+    delete,
+    get_last_token_count_before_date,
+    get_max_token_count_in_period,
+)
 from linotp.lib.type_utils import convert_to_datetime
-
 from linotp.lib.user import getUserFromRequest
-
-from linotp.lib.util import check_session
-from linotp.lib.util import get_client
-
+from linotp.lib.util import check_session, get_client
 from linotp.model import db
 
 log = logging.getLogger(__name__)

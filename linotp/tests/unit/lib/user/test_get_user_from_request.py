@@ -26,6 +26,7 @@
 
 import base64
 import unittest
+
 from linotp.lib.user import getUserFromRequest
 
 

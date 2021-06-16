@@ -28,8 +28,9 @@ Tests a very small subset of linotp.lib.reply
 
 import json
 
-import flask
 import pytest
+
+import flask
 
 from linotp.lib import reply
 from linotp.lib.context import request_context

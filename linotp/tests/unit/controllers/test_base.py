@@ -29,13 +29,13 @@
 import copy
 import unittest
 
-import flask
 import pytest
-
 from mock import mock
+from werkzeug.datastructures import CombinedMultiDict, MultiDict
+
+import flask
 
 from linotp.controllers.base import BaseController
-from werkzeug.datastructures import MultiDict, CombinedMultiDict
 
 
 @pytest.mark.usefixtures("app")

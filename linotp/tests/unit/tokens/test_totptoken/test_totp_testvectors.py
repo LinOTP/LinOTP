@@ -29,16 +29,12 @@ totp token - linotp hmac compliance test
 """
 
 
-import unittest
 import binascii
-
+import unittest
 from datetime import datetime
-
 from hashlib import sha1, sha256, sha512
 
-
 from linotp.lib.HMAC import HmacOtp as LinHmacOtp
-
 
 """
 +-------------+----------------------+------------------+----------+--------+

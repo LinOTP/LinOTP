@@ -25,17 +25,17 @@
 #
 """LinOTP Selenium Test for e-mail token"""
 
-from subprocess import check_output, CalledProcessError
 import logging
 import re
+from subprocess import CalledProcessError, check_output
+
+import integration_data as data
 import pytest
 
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.helper import get_from_tconfig, is_radius_disabled
-from linotp_selenium_helper.validate import Validate
 from linotp_selenium_helper.smtp_server import EmailProviderServer
-
-import integration_data as data
+from linotp_selenium_helper.validate import Validate
 
 logger = logging.getLogger(__name__)
 

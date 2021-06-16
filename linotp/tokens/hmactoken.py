@@ -26,31 +26,25 @@
 """ This file containes the dynamic hmac token implementation:
               - HmacTokenClas   (HOTP)
 """
+import logging
 import time
 from datetime import datetime
 
-from Cryptodome.Hash import SHA1
-from Cryptodome.Hash import SHA256
-from Cryptodome.Hash import SHA512
+from Cryptodome.Hash import SHA1, SHA256, SHA512
 
-from linotp.lib.HMAC import HmacOtp
-
-from linotp.lib.config import getFromConfig
-from linotp.tokens.base import TokenClass
-from linotp.tokens import tokenclass_registry
-
-from linotp.lib.auth.validate import check_pin
-from linotp.lib.auth.validate import check_otp
+from linotp.lib.apps import (
+    NoOtpAuthTokenException,
+    create_google_authenticator,
+    create_oathtoken_url,
+)
+from linotp.lib.auth.validate import check_otp, check_pin
 from linotp.lib.challenges import Challenges
-
-from linotp.lib.reply import create_img
-from linotp.lib.apps import create_google_authenticator
-from linotp.lib.apps import NoOtpAuthTokenException
-from linotp.lib.apps import create_oathtoken_url
-
+from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
-
-import logging
+from linotp.lib.HMAC import HmacOtp
+from linotp.lib.reply import create_img
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
 
 log = logging.getLogger(__name__)
 

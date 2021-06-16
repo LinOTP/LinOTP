@@ -26,13 +26,12 @@
 """ contains utility functions for type checking """
 
 
+import logging
 import re
 import socket
-import netaddr
-import logging
+from datetime import datetime, timedelta
 
-from datetime import datetime
-from datetime import timedelta
+import netaddr
 from netaddr.ip import IPNetwork
 
 from linotp.lib.crypto.encrypted_data import EncryptedData

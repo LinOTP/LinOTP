@@ -45,7 +45,6 @@ from mock import patch
 from linotp.lib.util import str2unicode
 from linotp.tests.functional_special import TestSpecialController
 
-
 log = logging.getLogger(__name__)
 
 # mocking hook is startting here

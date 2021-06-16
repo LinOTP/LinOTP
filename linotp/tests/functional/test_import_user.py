@@ -48,18 +48,19 @@ the check is made by a dryrun
 
 """
 import io
-import os
 import json
 import logging
+import os
+
 import pytest
-
-# for drop Table we require some sql
-
-from sqlalchemy.engine import create_engine
 from sqlalchemy import sql
+from sqlalchemy.engine import create_engine
 from sqlalchemy.exc import ProgrammingError
 
 from linotp.tests import TestController
+
+# for drop Table we require some sql
+
 
 log = logging.getLogger(__name__)
 

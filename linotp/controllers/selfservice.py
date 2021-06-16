@@ -29,64 +29,47 @@ selfservice controller - This is the controller for the self service interface,
 
 """
 import base64
-import os
 import json
+import logging
+import os
 
-from flask import redirect, Response, current_app, g, url_for
 from flask_babel import gettext as _
+from mako.exceptions import CompileException
 from werkzeug.exceptions import Unauthorized
 
+from flask import Response, current_app, g, redirect, url_for
+
 from linotp import flap
-from linotp.flap import (
-    request,
-    response,
-    config,
-    tmpl_context as c,
-    render_mako as render,
-)
-
-from mako.exceptions import CompileException
-
-from linotp.model import db
-
 from linotp.controllers.base import BaseController
-from linotp.lib.error import ParameterError
-
-from linotp.lib.token import getTokenType
-from linotp.lib.token import getTokens4UserOrSerial
-
-from linotp.lib.policy.action import get_selfservice_actions
-from linotp.lib.policy import _get_auth_PinPolicy
-
-from linotp.lib.util import remove_empty_lines
-
-from linotp.lib.reply import sendError
-
-from linotp.lib.realm import getRealms
-from linotp.lib.realm import getDefaultRealm
-
-from linotp.lib.user import getRealmBox
-
-from linotp.lib.util import get_version
-from linotp.lib.util import get_copyright_info
-from linotp.lib.util import get_client
-
-
-from linotp.lib.userservice import add_dynamic_selfservice_enrollment
-from linotp.lib.userservice import add_dynamic_selfservice_policies
-from linotp.lib.userservice import get_pre_context
-from linotp.lib.userservice import remove_auth_cookie
-from linotp.lib.userservice import check_session
-
-from linotp.lib.selfservice import get_imprint
-
-from linotp.controllers.userservice import get_auth_user
-from linotp.controllers.userservice import getTokenForUser
-
-from linotp.tokens import tokenclass_registry
+from linotp.controllers.userservice import get_auth_user, getTokenForUser
+from linotp.flap import config
+from linotp.flap import render_mako as render
+from linotp.flap import request, response
+from linotp.flap import tmpl_context as c
 from linotp.lib.context import request_context
-
-import logging
+from linotp.lib.error import ParameterError
+from linotp.lib.policy import _get_auth_PinPolicy
+from linotp.lib.policy.action import get_selfservice_actions
+from linotp.lib.realm import getDefaultRealm, getRealms
+from linotp.lib.reply import sendError
+from linotp.lib.selfservice import get_imprint
+from linotp.lib.token import getTokens4UserOrSerial, getTokenType
+from linotp.lib.user import getRealmBox
+from linotp.lib.userservice import (
+    add_dynamic_selfservice_enrollment,
+    add_dynamic_selfservice_policies,
+    check_session,
+    get_pre_context,
+    remove_auth_cookie,
+)
+from linotp.lib.util import (
+    get_client,
+    get_copyright_info,
+    get_version,
+    remove_empty_lines,
+)
+from linotp.model import db
+from linotp.tokens import tokenclass_registry
 
 ENCODING = "utf-8"
 log = logging.getLogger(__name__)

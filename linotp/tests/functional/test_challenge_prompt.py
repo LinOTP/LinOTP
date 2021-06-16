@@ -28,15 +28,14 @@
   Test the Challenge Prompt
 """
 
+import binascii
 import json
 import time
-import binascii
 
 import pytest
 from mock import patch
 
 import linotp.provider.smsprovider.HttpSMSProvider
-
 from linotp.lib.HMAC import HmacOtp
 from linotp.tests import TestController
 

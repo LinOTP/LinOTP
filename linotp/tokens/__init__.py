@@ -24,12 +24,13 @@
 #    Support: www.keyidentity.com
 #
 
+import logging
+from os import path, walk
+
 import flask
 
-from linotp.lib.registry import ClassRegistry
 from linotp.lib.error import TokenTypeNotSupportedError
-from os import path, walk
-import logging
+from linotp.lib.registry import ClassRegistry
 
 log = logging.getLogger(__name__)
 

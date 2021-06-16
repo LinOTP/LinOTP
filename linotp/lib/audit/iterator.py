@@ -25,11 +25,11 @@
 #
 """ the iterators for the audit objects """
 
-import sys
 import json
+import logging
+import sys
 
 import linotp.lib.crypto
-import logging
 
 log = logging.getLogger(__name__)
 

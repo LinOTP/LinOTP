@@ -29,13 +29,13 @@
      part of the functional tests
 """
 
-from unittest import TestCase
-from linotp.lib.crypto.pbkdf2 import pbkdf2
-from linotp.lib.ImportOTP.PSKC import parsePSKCdata
-from linotp.lib.ImportOTP.DPWplain import parseDPWdata
-
 import binascii
 import tempfile
+from unittest import TestCase
+
+from linotp.lib.crypto.pbkdf2 import pbkdf2
+from linotp.lib.ImportOTP.DPWplain import parseDPWdata
+from linotp.lib.ImportOTP.PSKC import parsePSKCdata
 
 
 class PBKDF2(TestCase):

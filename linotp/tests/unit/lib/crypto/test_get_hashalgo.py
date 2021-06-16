@@ -29,9 +29,9 @@
 import unittest
 from hashlib import sha1
 
-from linotp.lib.crypto.utils import Hashlib_map
-from linotp.lib.crypto.utils import get_hashalgo_from_description
 import pytest
+
+from linotp.lib.crypto.utils import Hashlib_map, get_hashalgo_from_description
 
 
 class TestGetHashAlgoFromDescription(unittest.TestCase):

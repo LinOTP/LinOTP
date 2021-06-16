@@ -27,88 +27,77 @@
 """
 admin controller - interfaces to administrate LinOTP
 """
-from datetime import datetime
 import json
-
-from flask import current_app
-
-from linotp.controllers.base import BaseController, SessionCookieMixin
-from linotp.flap import (
-    config,
-    request,
-    response,
-    HTTPUnauthorized,
-)
-from linotp.lib.audit.base import get_token_num_info
-
-from linotp.lib.challenges import Challenges
-
-from linotp.lib.context import request_context
-
-from linotp.lib.error import ParameterError
-from linotp.lib.error import TokenAdminError
-
-from linotp.lib.policy import PolicyException
-from linotp.lib.policy import checkPolicyPost
-from linotp.lib.policy import checkPolicyPre
-from linotp.lib.policy import getOTPPINEncrypt
-
-from linotp.lib.realm import getDefaultRealm
-from linotp.lib.realm import getRealms
-
-from linotp.lib.reply import sendCSVResult
-from linotp.lib.reply import sendError
-from linotp.lib.reply import sendQRImageResult
-from linotp.lib.reply import sendResult
-from linotp.lib.reply import sendResultIterator
-from linotp.lib.reply import sendXMLError
-from linotp.lib.reply import sendXMLResult
-
-from linotp.lib.reporting import token_reporting
-
-from linotp.lib.resolver import get_resolver_class
-from linotp.lib.resolver import prepare_resolver_parameter
-
-from linotp.lib.token import TokenHandler
-from linotp.lib.token import getTokenRealms
-from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.token import resetToken
-from linotp.lib.token import setPin
-from linotp.lib.token import setPinSo
-from linotp.lib.token import setPinUser
-from linotp.lib.token import setRealms, getTokenType
-
-from linotp.lib.tokeniterator import TokenIterator
-
-from linotp.lib.user import User
-from linotp.lib.user import getSearchFields
-from linotp.lib.user import getUserFromParam
-from linotp.lib.user import getUserFromRequest
-from linotp.lib.user import getUserListIterators
-
-from linotp.lib.useriterator import iterate_users
-
-from linotp.lib.util import SESSION_KEY_LENGTH
-from linotp.lib.util import check_session
-from linotp.lib.util import getLowerParams
-from linotp.lib.util import get_client
-
-from linotp.model import db
-
-from linotp.tokens import tokenclass_registry
 import logging
 import os
+from datetime import datetime
 
-from flask import Response, after_this_request, current_app, g
-from flask import stream_with_context
-from werkzeug.datastructures import FileStorage
 from flask_babel import gettext as _
+from werkzeug.datastructures import FileStorage
 
+from flask import (
+    Response,
+    after_this_request,
+    current_app,
+    g,
+    stream_with_context,
+)
+
+from linotp.controllers.base import BaseController, SessionCookieMixin
+from linotp.flap import HTTPUnauthorized, config, request, response
+from linotp.lib.audit.base import get_token_num_info
+from linotp.lib.challenges import Challenges
+from linotp.lib.context import request_context
+from linotp.lib.error import ParameterError, TokenAdminError
 from linotp.lib.ImportOTP.oath import parseOATHcsv
-from linotp.lib.ImportOTP.safenet import ImportException
-from linotp.lib.ImportOTP.safenet import parseSafeNetXML
+from linotp.lib.ImportOTP.safenet import ImportException, parseSafeNetXML
 from linotp.lib.ImportOTP.yubico import parseYubicoCSV
-
+from linotp.lib.policy import (
+    PolicyException,
+    checkPolicyPost,
+    checkPolicyPre,
+    getOTPPINEncrypt,
+)
+from linotp.lib.realm import getDefaultRealm, getRealms
+from linotp.lib.reply import (
+    sendCSVResult,
+    sendError,
+    sendQRImageResult,
+    sendResult,
+    sendResultIterator,
+    sendXMLError,
+    sendXMLResult,
+)
+from linotp.lib.reporting import token_reporting
+from linotp.lib.resolver import get_resolver_class, prepare_resolver_parameter
+from linotp.lib.token import (
+    TokenHandler,
+    getTokenRealms,
+    getTokens4UserOrSerial,
+    getTokenType,
+    resetToken,
+    setPin,
+    setPinSo,
+    setPinUser,
+    setRealms,
+)
+from linotp.lib.tokeniterator import TokenIterator
+from linotp.lib.user import (
+    User,
+    getSearchFields,
+    getUserFromParam,
+    getUserFromRequest,
+    getUserListIterators,
+)
+from linotp.lib.useriterator import iterate_users
+from linotp.lib.util import (
+    SESSION_KEY_LENGTH,
+    check_session,
+    get_client,
+    getLowerParams,
+)
+from linotp.model import db
+from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 

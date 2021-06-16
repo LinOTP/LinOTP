@@ -30,13 +30,11 @@ error controller - to display errors
 
 from html import escape
 
-from linotp.flap import request, error_document_template
-
 from paste.urlparser import PkgResourcesParser
-
 from webhelpers.html.builder import literal
 
 from linotp.controllers.base import BaseController
+from linotp.flap import error_document_template, request
 from linotp.lib.util import str2unicode
 
 

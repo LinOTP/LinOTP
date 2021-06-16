@@ -25,8 +25,9 @@
 #
 
 import json
-import pytest
 import unittest
+
+import pytest
 from mock import MagicMock
 
 

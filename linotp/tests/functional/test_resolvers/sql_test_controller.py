@@ -35,6 +35,7 @@ import copy
 import logging
 
 from linotp.tests import TestController
+
 from .sql_user import SqlUserDB
 
 log = logging.getLogger(__name__)

@@ -25,12 +25,11 @@
 #
 """Contains UserIdResolver class"""
 
-import re
 import logging
+import re
+from typing import Dict, List
 
-from typing import List, Dict
-
-from .helper import find_by_css, find_by_id, fill_element_from_dict
+from .helper import fill_element_from_dict, find_by_css, find_by_id
 from .manage_elements import ManageDialog
 
 

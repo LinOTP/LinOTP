@@ -29,16 +29,12 @@ import os
 
 from werkzeug.exceptions import InternalServerError
 
-from linotp.flap import request, response, abort, config
-
-from linotp.lib.context import request_context
-
-from linotp.lib.reply import sendResult
-from linotp.lib.reply import sendError
 from linotp.controllers.base import BaseController
+from linotp.flap import abort, config, request, response
+from linotp.lib.context import request_context
 from linotp.lib.logs import set_logging_level
-
-from linotp.model import db, Config
+from linotp.lib.reply import sendError, sendResult
+from linotp.model import Config, db
 
 log = logging.getLogger(__name__)
 

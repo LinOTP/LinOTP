@@ -29,6 +29,7 @@
 """
 
 import datetime
+
 import pytest
 
 from linotp.tests import TestController

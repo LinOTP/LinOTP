@@ -30,9 +30,7 @@ HMAC-OTP (RFC 4226)
 import hmac
 import logging
 import struct
-
 from hashlib import sha1
-
 
 log = logging.getLogger(__name__)
 

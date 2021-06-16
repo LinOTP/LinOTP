@@ -32,9 +32,10 @@ the test does not cover restore_legacy as this could only be verified
 against a mysql database which could not be used in a unit test
 """
 
-import pytest
 from datetime import datetime
 from pathlib import Path
+
+import pytest
 
 from linotp.cli import main as cli_main
 

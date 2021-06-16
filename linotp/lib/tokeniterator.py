@@ -25,24 +25,24 @@
 #
 """ contains the tokeniterator """
 
+import fnmatch
+import json
+import logging
+import re
+
+from sqlalchemy import and_, not_, or_
+
+import linotp
 from linotp.lib.config import getFromConfig
-from linotp.model import db, Token, Realm, TokenRealm
-from linotp.lib.user import NoResolverFound
+from linotp.lib.error import UserError
 from linotp.lib.realm import getRealms
-from linotp.lib.user import User
-from linotp.lib.user import getUserId, getUserInfo
 from linotp.lib.token import (
     getTokenRealms,
     getTokens4UserOrSerial,
     token_owner_iterator,
 )
-from linotp.lib.error import UserError
-import linotp
-from sqlalchemy import or_, and_, not_
-import json
-import fnmatch
-import logging
-import re
+from linotp.lib.user import NoResolverFound, User, getUserId, getUserInfo
+from linotp.model import Realm, Token, TokenRealm, db
 
 ENCODING = "utf-8"
 

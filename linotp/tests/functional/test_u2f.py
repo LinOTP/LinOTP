@@ -29,22 +29,19 @@
   using a demo certificate and a hard-coded key handle
 """
 
-from linotp.tests import TestController
-from hashlib import sha256
-
-
-import json
-import binascii
 import base64
-import sys
-
+import binascii
+import json
 import logging
+import sys
+from hashlib import sha256
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives import serialization
+
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 

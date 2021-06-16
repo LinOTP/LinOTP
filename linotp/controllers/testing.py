@@ -28,20 +28,14 @@ testing controller - for testing purposes
 """
 
 import logging
-
-from linotp.flap import response
-from linotp.controllers.base import BaseController
-
-from linotp.lib.error import ParameterError
-
-from linotp.lib.reply import sendResult, sendError
-
-from linotp.lib.policy import get_auth_AutoSMSPolicy
-
 import secrets
 
+from linotp.controllers.base import BaseController
+from linotp.flap import response
+from linotp.lib.error import ParameterError
+from linotp.lib.policy import get_auth_AutoSMSPolicy
+from linotp.lib.reply import sendError, sendResult
 from linotp.model import db
-
 
 CLICKATEL_ID_MAX = 1000
 

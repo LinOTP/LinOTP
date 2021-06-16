@@ -27,8 +27,8 @@
 
 
 from typing import Dict
-from linotp.lib.context import request_context
 
+from linotp.lib.context import request_context
 
 SYSTEM_ACTIONS = {
     "setDefault": "write",

@@ -23,16 +23,16 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-from subprocess import check_output
-import pytest
 import re
+from subprocess import check_output
+
+import integration_data as data
+import pytest
 
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.helper import get_from_tconfig
-from linotp_selenium_helper.validate import Validate
 from linotp_selenium_helper.smtp_server import SMSProviderServer
-
-import integration_data as data
+from linotp_selenium_helper.validate import Validate
 
 """LinOTP Selenium Test for sms token"""
 

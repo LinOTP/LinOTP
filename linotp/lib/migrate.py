@@ -25,26 +25,21 @@
 #
 """ contains the hsm migration handler"""
 
-from Cryptodome.Protocol.KDF import PBKDF2
-
-import hmac
 import binascii
+import hmac
 import secrets
 from hashlib import sha256
 
-
 from Cryptodome.Cipher import AES
-
-
-from linotp.model import db
-from linotp.model import Token as model_token
-from linotp.model import Config as model_config
+from Cryptodome.Protocol.KDF import PBKDF2
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.config.db_api import _storeConfigDB
-
-from linotp.lib.crypto import SecretObj
 from linotp.lib.context import request_context as context
+from linotp.lib.crypto import SecretObj
+from linotp.model import Config as model_config
+from linotp.model import Token as model_token
+from linotp.model import db
 
 
 class DecryptionError(Exception):

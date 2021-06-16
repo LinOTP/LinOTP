@@ -1,14 +1,13 @@
 # Unit tests for the LinOTP 3 configuration mechanism
 
 import os
-from pathlib import PosixPath
 import re
+from pathlib import PosixPath
 
 import pytest  # noqa: F401
 
 from linotp import settings as s
 from linotp.app import ExtFlaskConfig, _configure_app
-
 
 # Tests for validation functions.
 

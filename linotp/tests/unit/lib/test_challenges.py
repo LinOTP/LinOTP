@@ -29,9 +29,11 @@ Test lib challenge methods
 """
 
 import unittest
-from mock import patch
-from linotp.lib.challenges import Challenges
+
 import pytest
+from mock import patch
+
+from linotp.lib.challenges import Challenges
 
 
 @pytest.mark.usefixtures("app")

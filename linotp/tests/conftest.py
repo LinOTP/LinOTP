@@ -29,20 +29,24 @@ Pytest fixtures for linotp tests
 
 # pylint: disable=redefined-outer-name
 
-from linotp import app as app_py
-import flask
 import os
-from linotp.cli import Echo
-import pytest
 import tempfile
 from unittest import mock
 
-from linotp.app import create_app, init_logging
-from linotp.flap import set_config, tmpl_context as c
-from linotp.cli.init_cmd import create_secret_key, create_audit_keys
-from linotp.model import db, init_db_tables
-from . import TestController
+import pytest
+
+import flask
 from flask.testing import FlaskClient
+
+from linotp import app as app_py
+from linotp.app import create_app, init_logging
+from linotp.cli import Echo
+from linotp.cli.init_cmd import create_audit_keys, create_secret_key
+from linotp.flap import set_config
+from linotp.flap import tmpl_context as c
+from linotp.model import db, init_db_tables
+
+from . import TestController
 
 
 def pytest_configure(config):

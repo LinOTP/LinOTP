@@ -29,11 +29,9 @@
 
 import logging
 
-from linotp.tokens.base import TokenClass
-from linotp.tokens import tokenclass_registry
-
 from linotp.lib.auth.validate import check_pin
-
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
 
 log = logging.getLogger(__name__)
 

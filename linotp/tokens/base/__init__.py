@@ -39,52 +39,35 @@ directive 'TOKEN_MODULES' in a linotp.cfg file.
 import binascii
 import datetime
 import json
-
-from hashlib import sha1
 import logging
-
+from hashlib import sha1
 from typing import Any
-
-import linotp
-
-from linotp.lib.challenges import Challenges
-from linotp.lib.config import getFromConfig
-from linotp.lib.crypto import SecretObj
-from linotp.lib.crypto.utils import get_hashalgo_from_description
-from linotp.lib.crypto.utils import compare
-
-from linotp.lib.error import ParameterError
-from linotp.lib.error import TokenAdminError
-from linotp.lib.user import getUserResolverId
-from linotp.lib.util import generate_otpkey
-
-from linotp.lib.type_utils import boolean
-
-from linotp.lib.reply import create_img
-
-from linotp.lib.auth.validate import check_pin
-from linotp.lib.auth.validate import check_otp
-from linotp.lib.auth.validate import split_pin_otp
-
-from .validity_mixin import TokenValidityMixin
-from .tokenproperty_mixin import TokenPropertyMixin
-
-from linotp.tokens import tokenclass_registry
 
 from sqlalchemy import asc, desc
 
+import linotp
+from linotp.lib.auth.validate import check_otp, check_pin, split_pin_otp
+from linotp.lib.challenges import Challenges
+from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
+from linotp.lib.crypto import SecretObj
+from linotp.lib.crypto.utils import compare, get_hashalgo_from_description
+from linotp.lib.error import ParameterError, TokenAdminError
+from linotp.lib.policy import get_pin_policies
+from linotp.lib.realm import getDefaultRealm
+from linotp.lib.reply import create_img
+from linotp.lib.token import getTokenRealms
+from linotp.lib.type_utils import boolean
+from linotp.lib.user import User, getUserResolverId
+from linotp.lib.util import generate_otpkey
+from linotp.model import Token, db
+from linotp.tokens import tokenclass_registry
+
+from .tokenproperty_mixin import TokenPropertyMixin
+from .validity_mixin import TokenValidityMixin
 
 # from linotp.lib.error import TokenStateError
 
-from linotp.lib.policy import get_pin_policies
-from linotp.lib.token import getTokenRealms
-from linotp.lib.realm import getDefaultRealm
-from linotp.lib.user import User
-
-from linotp.model import Token
-
-from linotp.model import db
 
 required = False
 

@@ -1,10 +1,9 @@
 import functools
 import logging
-
 from datetime import datetime
-from linotp.model import db, LoggingConfig
 
 from linotp.flap import request
+from linotp.model import LoggingConfig, db
 
 # ------------------------------------------------------------------------------
 

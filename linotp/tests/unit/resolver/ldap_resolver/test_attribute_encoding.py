@@ -28,9 +28,11 @@
 LDAP Resolver unit test
 """
 
-import pytest
 import unittest
+
+import pytest
 from mock import patch
+
 from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
 
 from . import Bindresult

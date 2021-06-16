@@ -24,15 +24,13 @@
 #    Support: www.keyidentity.com
 #
 
+import integration_data as data
+import pytest
 import requests
 from requests.auth import HTTPDigestAuth
 
-import pytest
-
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.validate import Validate
-
-import integration_data as data
 
 
 class TestYubikey(TestCase):

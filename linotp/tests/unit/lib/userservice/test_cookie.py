@@ -27,13 +27,12 @@
 
 import binascii
 import datetime
-import pytest
-
-from linotp.lib.userservice import create_auth_cookie
-
 import unittest
+
+import pytest
 from mock import patch
 
+from linotp.lib.userservice import create_auth_cookie
 
 Secret = "012345678901234567890123456789012"
 RFC6265_TIMEFORMAT = "%a, %d %b %Y %H:%M:%S GMT"

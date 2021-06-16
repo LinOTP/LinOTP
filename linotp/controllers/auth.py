@@ -30,17 +30,14 @@ auth controller - to do authentication tests
 
 import logging
 
-
-from linotp.flap import render_mako as render, response, tmpl_context as c
-
 from linotp.controllers.base import BaseController, add_hyphenated_url
-from linotp.lib.util import get_version
-from linotp.lib.util import get_copyright_info
-from linotp.lib.reply import sendError
-
+from linotp.flap import render_mako as render
+from linotp.flap import response
+from linotp.flap import tmpl_context as c
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.context import request_context
-
+from linotp.lib.reply import sendError
+from linotp.lib.util import get_copyright_info, get_version
 from linotp.model import db
 
 log = logging.getLogger(__name__)

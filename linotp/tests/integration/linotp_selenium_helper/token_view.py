@@ -26,15 +26,15 @@
 """Contains TokenView class"""
 
 import logging
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-
 from selenium.webdriver.support.select import Select
-from .manage_elements import ManageTab, ManageDialog
+from selenium.webdriver.support.ui import WebDriverWait
+
 from .helper import fill_form_element, find_by_id
+from .manage_elements import ManageDialog, ManageTab
 
 logger = logging.getLogger(__name__)
 

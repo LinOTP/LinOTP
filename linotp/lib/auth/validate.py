@@ -25,52 +25,42 @@
 #
 """ validation processing logic"""
 
-import json
-from hashlib import sha256
-from datetime import datetime
 import binascii
+import json
+import logging
+from datetime import datetime
+from hashlib import sha256
 
 from flask import g
 
 from linotp.flap import config as env
-
 from linotp.lib.auth.finishtokens import FinishTokens
-
 from linotp.lib.challenges import Challenges
-
 from linotp.lib.context import request_context as context
-
 from linotp.lib.error import ParameterError
-
+from linotp.lib.policy import (
+    delete_on_authentication_exceed,
+    disable_on_authentication_exceed,
+    get_auth_forward,
+    get_auth_forward_on_no_token,
+    get_auth_passOnNoToken,
+    get_auth_passthru,
+    get_pin_policies,
+    supports_offline,
+)
+from linotp.lib.policy.forward import ForwardServerPolicy
 from linotp.lib.realm import getDefaultRealm
-
 from linotp.lib.resolver import getResolverObject
-
-from linotp.lib.token import TokenHandler
-from linotp.lib.token import get_token_owner
-from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.token import add_last_accessed_info
-from linotp.lib.token import add_last_verified_info
-
-from linotp.tokens import tokenclass_registry
-
+from linotp.lib.token import (
+    TokenHandler,
+    add_last_accessed_info,
+    add_last_verified_info,
+    get_token_owner,
+    getTokens4UserOrSerial,
+)
 from linotp.lib.user import User, getUserId, getUserInfo
 from linotp.lib.util import modhex_decode
-
-from linotp.lib.policy import supports_offline
-from linotp.lib.policy import get_auth_forward
-
-from linotp.lib.policy import disable_on_authentication_exceed
-from linotp.lib.policy import delete_on_authentication_exceed
-from linotp.lib.policy import get_pin_policies
-from linotp.lib.policy import get_auth_passthru
-from linotp.lib.policy import get_auth_passOnNoToken
-from linotp.lib.policy import get_auth_forward_on_no_token
-
-from linotp.lib.policy.forward import ForwardServerPolicy
-
-import logging
-
+from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 

@@ -27,18 +27,16 @@
 
 """"""
 
+import json
 import logging
 import random
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
-import json
-
-from sqlalchemy.engine import create_engine
+import pytest
 import sqlalchemy
+from sqlalchemy.engine import create_engine
 
 from linotp.tests import TestController
-import pytest
 
 log = logging.getLogger(__name__)
 

@@ -29,11 +29,11 @@
 """
 
 import datetime
+import logging
 
-from linotp.tests import TestController
 from freezegun import freeze_time
 
-import logging
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 

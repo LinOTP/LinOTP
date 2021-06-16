@@ -46,105 +46,79 @@ Remarks:
 
 """
 
-import os
 import base64
-import logging
 import json
-
-
-from flask import g, current_app
+import logging
+import os
 
 from flask_babel import gettext as _
-from werkzeug.exceptions import Unauthorized, Forbidden
-
-from linotp.flap import (
-    request,
-    response,
-    config,
-    tmpl_context as c,
-    render_mako as render,
-)
-
 from mako.exceptions import CompileException
+from werkzeug.exceptions import Forbidden, Unauthorized
+
+from flask import current_app, g
 
 from linotp.controllers.base import BaseController
+from linotp.flap import config
+from linotp.flap import render_mako as render
+from linotp.flap import request, response
+from linotp.flap import tmpl_context as c
+from linotp.lib.apps import create_google_authenticator, create_oathtoken_url
+from linotp.lib.audit.base import get_token_num_info
+from linotp.lib.audit.base import search as audit_search
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.challenges import Challenges
-
+from linotp.lib.context import request_context
+from linotp.lib.error import ParameterError
 from linotp.lib.policy import (
-    checkPolicyPre,
-    checkPolicyPost,
     PolicyException,
-    getOTPPINEncrypt,
     checkOTPPINPolicy,
+    checkPolicyPost,
+    checkPolicyPre,
     get_client_policy,
+    getOTPPINEncrypt,
 )
-
 from linotp.lib.policy.action import get_selfservice_action_value
-
-from linotp.lib.reply import sendResult as sendResponse
-
+from linotp.lib.realm import getDefaultRealm, getRealms
 from linotp.lib.reply import (
-    sendError,
-    sendQRImageResult,
     create_img,
     create_img_src,
+    sendError,
+    sendQRImageResult,
 )
-
-from linotp.lib.util import generate_otpkey, get_client, remove_empty_lines
-
-from linotp.lib.realm import getDefaultRealm
-from linotp.lib.realm import getRealms
-
-from linotp.lib.user import (
-    getUserInfo,
-    getRealmBox,
-    User,
-    getUserId,
-    splitUser,
-)
-
+from linotp.lib.reply import sendResult as sendResponse
+from linotp.lib.reporting import token_reporting
+from linotp.lib.resolver import getResolverObject
 from linotp.lib.token import (
+    TokenHandler,
+    get_multi_otp,
+    getTokenRealms,
+    getTokens4UserOrSerial,
+    getTokenType,
     resetToken,
     setPin,
     setPinUser,
-    getTokenRealms,
-    get_multi_otp,
-    getTokenType,
-    getTokens4UserOrSerial,
 )
-
-from linotp.tokens import tokenclass_registry
-
-from linotp.lib.token import TokenHandler
-
-from linotp.lib.apps import create_google_authenticator, create_oathtoken_url
-
-from linotp.lib.audit.base import get_token_num_info, search as audit_search
-
+from linotp.lib.user import (
+    User,
+    getRealmBox,
+    getUserId,
+    getUserInfo,
+    splitUser,
+)
 from linotp.lib.userservice import (
-    get_userinfo,
-    get_cookie_authinfo,
     check_session,
-    get_pre_context,
-    get_context,
     create_auth_cookie,
+    get_context,
+    get_cookie_authinfo,
+    get_pre_context,
+    get_transaction_detail,
+    get_userinfo,
     getTokenForUser,
     remove_auth_cookie,
-    get_transaction_detail,
 )
-
-
-from linotp.lib.resolver import getResolverObject
-
-from linotp.lib.error import ParameterError
-
-from linotp.lib.context import request_context
-
-from linotp.lib.reporting import token_reporting
-
-
+from linotp.lib.util import generate_otpkey, get_client, remove_empty_lines
 from linotp.model import db
+from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 

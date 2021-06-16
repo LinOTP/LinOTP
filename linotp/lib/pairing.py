@@ -26,22 +26,28 @@
 
 import struct
 from collections import namedtuple
-from linotp.lib.crypto.utils import encode_base64_urlsafe
-from linotp.lib.crypto.utils import decode_base64_urlsafe
-from linotp.lib.crypto.utils import get_secret_key
-from linotp.lib.crypto.utils import get_dh_secret_key
-from linotp.lib.crypto.utils import get_public_key
-from linotp.lib.error import InvalidFunctionParameter
-from linotp.lib.error import ParameterError
-from linotp.lib.error import ProgrammingError
-from linotp.flap import config
-from pysodium import crypto_sign_detached
-from pysodium import crypto_scalarmult_curve25519 as calc_dh
+
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
-from linotp.lib.crypto.utils import zerome
-from linotp.tokens.qrtoken import parse_qrtoken_pairing_data
+from pysodium import crypto_scalarmult_curve25519 as calc_dh
+from pysodium import crypto_sign_detached
+
+from linotp.flap import config
+from linotp.lib.crypto.utils import (
+    decode_base64_urlsafe,
+    encode_base64_urlsafe,
+    get_dh_secret_key,
+    get_public_key,
+    get_secret_key,
+    zerome,
+)
+from linotp.lib.error import (
+    InvalidFunctionParameter,
+    ParameterError,
+    ProgrammingError,
+)
 from linotp.tokens.pushtoken import parse_and_verify_pushtoken_pairing_data
+from linotp.tokens.qrtoken import parse_qrtoken_pairing_data
 
 """
 This module provides functions and constants for the generation of

@@ -26,11 +26,11 @@
 
 """
 
-import unittest
 import binascii
+import unittest
+from hashlib import sha1
 
 from linotp.lib.crypto.pbkdf2 import pbkdf2
-from hashlib import sha1
 
 
 class TestComparePDKDF(unittest.TestCase):

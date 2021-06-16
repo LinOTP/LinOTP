@@ -29,12 +29,13 @@
   Test linotp.tokens.emailtoken with template file and inline template
 """
 
+import json
+import os
+import smtplib
+from unittest.mock import patch
+
 from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
 from linotp.tests import TestController
-import os
-from unittest.mock import patch
-import json
-import smtplib
 
 
 class MockedSMTP(object):

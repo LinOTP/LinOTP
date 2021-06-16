@@ -25,13 +25,15 @@
 
 import json
 import os
-from mock import patch
-import flask
+
 import pytest
+from mock import patch
 from sqlalchemy.exc import OperationalError
 
-from linotp.flap import config, HTTPUnauthorized
-from linotp.model import db, Config, LoggingConfig
+import flask
+
+from linotp.flap import HTTPUnauthorized, config
+from linotp.model import Config, LoggingConfig, db
 
 
 @pytest.mark.usefixtures("app")

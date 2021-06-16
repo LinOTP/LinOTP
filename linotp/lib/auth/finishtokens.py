@@ -23,21 +23,22 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+import logging
+
 from flask import g
 
 from linotp.lib.challenges import Challenges
 from linotp.lib.error import UserError
-
-from linotp.lib.policy import supports_offline
-from linotp.lib.policy import get_pin_policies
-from linotp.lib.policy import purge_enrollment_token
-
-from linotp.lib.token import get_token_owner
-from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.token import remove_token
-
-
-import logging
+from linotp.lib.policy import (
+    get_pin_policies,
+    purge_enrollment_token,
+    supports_offline,
+)
+from linotp.lib.token import (
+    get_token_owner,
+    getTokens4UserOrSerial,
+    remove_token,
+)
 
 log = logging.getLogger(__name__)
 

@@ -28,17 +28,17 @@ Tests the chunked data handling in the config
 """
 
 
-import pytest
 import unittest
 
+import pytest
 from mock import patch
 
 from linotp.lib.config.db_api import (
+    _retrieveConfigDB,
     _store_continous_entry_db,
     _storeConfigDB,
-    _retrieveConfigDB,
 )
-from linotp.model import db, Config
+from linotp.model import Config, db
 
 big_value = """-----BEGIN CERTIFICATE-----
 MIIGlTCCBH2gAwIBAgIED////zANBgkqhkiG9w0BAQsFADBaMQswCQYDVQQGEwJO
@@ -187,8 +187,8 @@ class TestChunkConfigCase(unittest.TestCase):
         test for storing long values
         """
 
-        from linotp.lib.text_utils import simple_slice
         from linotp.lib.config.db_api import MAX_VALUE_LEN
+        from linotp.lib.text_utils import simple_slice
 
         key_name = "linotp.chunk_test"
         key_type = "text"

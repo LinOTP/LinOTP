@@ -26,22 +26,23 @@
 
 " support redirecting requests to remote systems on base of policy defintion "
 
-import logging
+import copy
 
 # this is needed for the http request
 import json
-import copy
-import httplib2
-import urllib.request
-import urllib.parse
+import logging
 import urllib.error
+import urllib.parse
+import urllib.request
 
-from flask import current_app
+import httplib2
 
 # this is needed for the radius request
 import pyrad.packet
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
+
+from flask import current_app
 
 log = logging.getLogger(__name__)
 

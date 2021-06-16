@@ -29,8 +29,9 @@
 Test the passthrough Policy in combination with the passOnNoToken
 """
 
-from mock import patch
 import unittest
+
+from mock import patch
 
 import linotp.lib.policy
 from linotp.lib.policy import get_single_auth_policy

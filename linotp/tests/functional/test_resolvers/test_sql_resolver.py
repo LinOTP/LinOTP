@@ -28,8 +28,9 @@
 sql resolver tests
 """
 
-import logging
 import json
+import logging
+
 import pytest
 
 from .sql_test_controller import SQLTestController

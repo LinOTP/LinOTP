@@ -31,12 +31,10 @@ set password handler -
 
 import logging
 
-from linotp.lib.tools import ToolsHandler
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+
 from linotp.lib.crypto import utils
-
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.exc import MultipleResultsFound
-
+from linotp.lib.tools import ToolsHandler
 from linotp.model import db
 
 log = logging.getLogger(__name__)

@@ -28,14 +28,12 @@
 """
 """
 import json
-
-from linotp.tests import TestController
-from linotp.lib.ImportOTP import eTokenDat
-from linotp.lib.ImportOTP import PSKC
-from linotp.lib.ImportOTP.yubico import parseYubicoCSV
-from linotp.lib.ImportOTP.safenet import parseSafeNetXML
-
 import os
+
+from linotp.lib.ImportOTP import PSKC, eTokenDat
+from linotp.lib.ImportOTP.safenet import parseSafeNetXML
+from linotp.lib.ImportOTP.yubico import parseYubicoCSV
+from linotp.tests import TestController
 
 
 class TestImportOTP(TestController):

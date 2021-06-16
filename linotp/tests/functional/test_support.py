@@ -29,22 +29,17 @@
 Testing the set license
 """
 
-import os
-import logging
 import json
-
-from mock import patch
-
-from datetime import datetime
-from datetime import timedelta
+import logging
+import os
+from datetime import datetime, timedelta
 
 from freezegun import freeze_time
-
-from linotp.tests import TestController
+from mock import patch
 
 import linotp.lib.support
 from linotp.lib.support import InvalidLicenseException
-
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 

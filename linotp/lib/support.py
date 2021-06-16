@@ -25,28 +25,22 @@
 #
 """ methods to handle support files """
 
-import os
-
-
 import base64
 import binascii
-
 import datetime
 import logging
+import os
 
-from linotp.lib.config import refreshConfig
-from linotp.lib.config import getFromConfig
-from linotp.lib.config import storeConfig
-from linotp.lib.config import removeFromConfig
-
-from linotp.lib.token import getTokenNumResolver
-from linotp.lib.token import getNumTokenUsers
-
+from linotp.lib.config import (
+    getFromConfig,
+    refreshConfig,
+    removeFromConfig,
+    storeConfig,
+)
+from linotp.lib.context import request_context as context
 from linotp.lib.crypto.encrypted_data import EncryptedData
 from linotp.lib.crypto.rsa import verify_rsa_signature
-
-from linotp.lib.context import request_context as context
-
+from linotp.lib.token import getNumTokenUsers, getTokenNumResolver
 
 log = logging.getLogger(__name__)
 

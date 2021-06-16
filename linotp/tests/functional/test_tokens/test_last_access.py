@@ -28,12 +28,12 @@
 """ check if last access configuration does work """
 
 import json
-import freezegun
-
 from datetime import datetime, timedelta
 
-from linotp.tests import TestController
+import freezegun
+
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
+from linotp.tests import TestController
 
 
 class TestLastAccess(TestController):

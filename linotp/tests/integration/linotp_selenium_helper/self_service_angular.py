@@ -25,13 +25,13 @@
 #
 from typing import TYPE_CHECKING, List, Union
 
-from .helper import find_all_by_css, find_by_css, find_by_xpath
-
 from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebElement
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+
+from .helper import find_all_by_css, find_by_css, find_by_xpath
 
 if TYPE_CHECKING:
     from .test_case import TestCase

@@ -30,8 +30,8 @@ import unittest
 
 from mock import patch
 
-from linotp.lib.user import User
 from linotp.lib.auth.validate import check_pin
+from linotp.lib.user import User
 
 
 class FakeToken:

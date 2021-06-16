@@ -26,13 +26,11 @@
 Tests a very small subset of linotp.lib.reply
 """
 import os
-
-from mako.template import Template
-
-from mako.runtime import Context
+import unittest
 from io import StringIO
 
-import unittest
+from mako.runtime import Context
+from mako.template import Template
 
 
 def mocked_translate(input_data=None):

@@ -28,32 +28,24 @@
 """
 """
 
-import logging
 import binascii
+import json
+import logging
 import random
 import urllib.parse
-import json
-
-from datetime import datetime
-from datetime import timedelta
-
-from urllib.parse import urlparse
-from urllib.parse import parse_qs
-
-from Cryptodome.Hash import SHA256 as SHA256
-
-from linotp.lib.ext.pbkdf2 import PBKDF2
-from linotp.lib.reply import create_img
-
-from linotp.tokens.ocra2token import OcraSuite
-from linotp.lib.crypto.utils import kdf2
-from linotp.lib.crypto.utils import createActivationCode
-from linotp.lib.crypto.utils import check
-
-from . import OcraOtp
+from datetime import datetime, timedelta
+from urllib.parse import parse_qs, urlparse
 
 import pytest
+from Cryptodome.Hash import SHA256 as SHA256
+
+from linotp.lib.crypto.utils import check, createActivationCode, kdf2
+from linotp.lib.ext.pbkdf2 import PBKDF2
+from linotp.lib.reply import create_img
 from linotp.tests import TestController
+from linotp.tokens.ocra2token import OcraSuite
+
+from . import OcraOtp
 
 log = logging.getLogger(__name__)
 

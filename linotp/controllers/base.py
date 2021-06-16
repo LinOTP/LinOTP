@@ -26,22 +26,19 @@
 """The Controller's Base class """
 
 import functools
-from inspect import getfullargspec
-from types import FunctionType
 import logging
 import secrets
+from inspect import getfullargspec
+from types import FunctionType
 from warnings import warn
 
-from flask import after_this_request, current_app, Blueprint
+from flask import Blueprint, after_this_request, current_app
 
 from linotp.flap import request
-
 from linotp.lib.context import request_context
 from linotp.lib.reply import sendError, sendResult
-from linotp.lib.user import getUserFromParam
-from linotp.lib.user import NoResolverFound
+from linotp.lib.user import NoResolverFound, getUserFromParam
 from linotp.lib.util import SESSION_KEY_LENGTH
-
 from linotp.model import db
 
 log = logging.getLogger(__name__)

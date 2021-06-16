@@ -24,43 +24,41 @@
 #    Support: www.keyidentity.com
 #
 
+import logging
+import secrets
 import struct
 import time
+from base64 import b64decode, b64encode
 
-import secrets
-
-from linotp.tokens.base import TokenClass
-from linotp.tokens.base.stateful_mixin import StatefulTokenMixin
-from linotp.lib.challenges import transaction_id_to_u64
-from linotp.lib.challenges import Challenges
-from linotp.lib.error import InvalidFunctionParameter
-from linotp.lib.policy import get_partition
-from linotp.lib.crypto.utils import zerome
-from linotp.lib.crypto.utils import get_secret_key
-from linotp.lib.crypto.utils import encode_base64_urlsafe
-from linotp.lib.crypto.utils import decode_base64_urlsafe
-from linotp.lib.crypto.utils import dsa_to_dh_public
-from linotp.lib.util import int_from_bytes
-from linotp.lib.token import get_token_owner
-from linotp.tokens import tokenclass_registry
-from linotp.lib.context import request_context as context
-from linotp.lib.reply import create_img
-from linotp.lib.pairing import generate_pairing_url
-from linotp.lib.config import getFromConfig
-from linotp.lib.policy import get_single_auth_policy
-from linotp.provider import loadProviderFromPolicy
-from linotp.flap import config
+from Cryptodome.Cipher import AES
+from Cryptodome.Hash import SHA256
+from Cryptodome.Util import Counter
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_detached
 from pysodium import crypto_sign_verify_detached as verify_sig
-from base64 import b64encode
-from base64 import b64decode
-from Cryptodome.Cipher import AES
-from Cryptodome.Hash import SHA256
-from Cryptodome.Util import Counter
 
-import logging
+from linotp.flap import config
+from linotp.lib.challenges import Challenges, transaction_id_to_u64
+from linotp.lib.config import getFromConfig
+from linotp.lib.context import request_context as context
+from linotp.lib.crypto.utils import (
+    decode_base64_urlsafe,
+    dsa_to_dh_public,
+    encode_base64_urlsafe,
+    get_secret_key,
+    zerome,
+)
+from linotp.lib.error import InvalidFunctionParameter
+from linotp.lib.pairing import generate_pairing_url
+from linotp.lib.policy import get_partition, get_single_auth_policy
+from linotp.lib.reply import create_img
+from linotp.lib.token import get_token_owner
+from linotp.lib.util import int_from_bytes
+from linotp.provider import loadProviderFromPolicy
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
+from linotp.tokens.base.stateful_mixin import StatefulTokenMixin
 
 log = logging.getLogger(__name__)
 

@@ -32,12 +32,9 @@ linotp admin  fix-db-encoding
 import sys
 
 from flask import current_app
-from flask.cli import AppGroup
-from flask.cli import with_appcontext
-
+from flask.cli import AppGroup, with_appcontext
 
 from linotp.model import fix_db_encoding
-
 
 admin_cmds = AppGroup(
     "admin",

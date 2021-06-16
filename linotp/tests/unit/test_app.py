@@ -2,7 +2,7 @@ import os
 
 import pytest  # noqa: F401
 
-from flask import url_for, request
+from flask import request, url_for
 
 from linotp import __version__ as linotp_version
 from linotp.app import LinOTPApp

@@ -28,8 +28,8 @@
 """
 Test wether policies, which specify a username, are prefered over wildcard policies
 """
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
+
 from linotp.tests import TestController
 
 

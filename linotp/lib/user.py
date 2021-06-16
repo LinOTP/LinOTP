@@ -26,38 +26,32 @@
 """ contains user - related functions """
 
 import base64
+import json
 import logging
 import re
-import json
+from functools import partial
 
 from flask import g
 
-from linotp.lib.error import UserError
-
-from linotp.lib.context import request_context
-
-from linotp.lib.config import getFromConfig, storeConfig
-from linotp.lib.config import getLinotpConfig
 from linotp.lib.cache import get_cache
-
-from linotp.lib.realm import setDefaultRealm
-from linotp.lib.realm import getDefaultRealm
-from linotp.lib.realm import getRealms
-from linotp.lib.realm import createDBRealm
-
-from linotp.lib.resolver import parse_resolver_spec
-from linotp.lib.resolver import getResolverObject
-
-from linotp.lib.resolver import getResolverClassName
-from linotp.lib.resolver import getResolverList
-
-from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
-
+from linotp.lib.config import getFromConfig, getLinotpConfig, storeConfig
+from linotp.lib.context import request_context
+from linotp.lib.error import UserError
+from linotp.lib.realm import (
+    createDBRealm,
+    getDefaultRealm,
+    getRealms,
+    setDefaultRealm,
+)
+from linotp.lib.resolver import (
+    getResolverClassName,
+    getResolverList,
+    getResolverObject,
+    parse_resolver_spec,
+)
 from linotp.lib.type_utils import get_duration
-
 from linotp.lib.util import get_request_param
-
-from functools import partial
+from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 ENCODING = "utf-8"
 

@@ -29,18 +29,16 @@ LDAP Resolver unit test
 """
 
 import unittest
+
+import pytest
+from freezegun import freeze_time
+from ldap import INVALID_CREDENTIALS, LDAPError
 from mock import patch
-from ldap import LDAPError
-from ldap import INVALID_CREDENTIALS
 
-from linotp.lib.resources import ResourceScheduler, DictResourceRegistry
-
+from linotp.lib.resources import DictResourceRegistry, ResourceScheduler
 from linotp.useridresolver import LDAPIdResolver as ldap_resolver_module
 from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
-
-from freezegun import freeze_time
-import pytest
 
 TRIES = 2
 

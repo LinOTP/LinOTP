@@ -28,19 +28,15 @@
 totp token - timeshift unit tests
 """
 
-import logging
-import unittest
 import binascii
 import json
-
-from datetime import datetime
-from datetime import timedelta
-
-from linotp.tokens.totptoken import time2counter
-from linotp.tokens.totptoken import counter2time
+import logging
+import unittest
+from datetime import datetime, timedelta
 
 from mock import MagicMock, patch
 
+from linotp.tokens.totptoken import counter2time, time2counter
 
 fake_context = {"translate": lambda x: x, "Client": "127.0.0.1"}
 

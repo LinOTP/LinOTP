@@ -25,25 +25,23 @@
 #
 """ static policy definitions """
 
-import re
 import logging
+import re
 
 from configobj import ConfigObj
 
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.config import removeFromConfig
-from linotp.lib.config import storeConfig
-
-from linotp.lib.error import ServerError
+from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
 from linotp.lib.context import request_context as context
+from linotp.lib.error import ServerError
 from linotp.lib.policy.forward import ForwardServerPolicy
 
 from .processing import get_client_policy
-
-from .util import get_policies
-from .util import get_copy_of_policies
-from .util import _get_client
-from .util import parse_action_value
+from .util import (
+    _get_client,
+    get_copy_of_policies,
+    get_policies,
+    parse_action_value,
+)
 
 PolicyNameRegex = re.compile("^[a-zA-Z0-9_]*$")
 

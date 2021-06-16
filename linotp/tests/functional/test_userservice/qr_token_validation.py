@@ -1,17 +1,19 @@
-import struct
-import os
 import json
+import os
+import struct
+from base64 import b64encode
 
-from linotp.lib.crypto.utils import encode_base64_urlsafe
-from linotp.lib.crypto.utils import decode_base64_urlsafe
-from linotp.lib.crypto.utils import extract_tan
-from linotp.lib.crypto.utils import dsa_to_dh_public
+from Cryptodome.Cipher import AES
+from Cryptodome.Hash import HMAC, SHA256
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
-from Cryptodome.Hash import SHA256
-from Cryptodome.Hash import HMAC
-from Cryptodome.Cipher import AES
-from base64 import b64encode
+
+from linotp.lib.crypto.utils import (
+    decode_base64_urlsafe,
+    dsa_to_dh_public,
+    encode_base64_urlsafe,
+    extract_tan,
+)
 
 FLAG_PAIR_PK = 1 << 0
 FLAG_PAIR_SERIAL = 1 << 1

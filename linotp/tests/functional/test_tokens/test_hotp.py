@@ -28,12 +28,9 @@
 """ verify gettoken/getmultiotp support for different hash methods """
 
 import binascii
-
-
 from hashlib import sha1, sha256, sha512
 
 from linotp.lib.HMAC import HmacOtp
-
 from linotp.tests import TestController
 
 HASH_LOOKUP = {"sha1": sha1, "sha256": sha256, "sha512": sha512}

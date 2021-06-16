@@ -31,21 +31,18 @@
 """
 
 import logging
-
 from datetime import datetime
 
 from flask import current_app
 
-from linotp.lib.config.util import expand_here
-
-from linotp.lib.config.db_api import _removeConfigDB
-from linotp.lib.config.db_api import _retrieveAllConfigDB
-from linotp.lib.config.db_api import _storeConfigDB
-from linotp.lib.config.db_api import _retrieveConfigDB
-
-
+from linotp.lib.config.db_api import (
+    _removeConfigDB,
+    _retrieveAllConfigDB,
+    _retrieveConfigDB,
+    _storeConfigDB,
+)
 from linotp.lib.config.type_definition import Config_Types
-
+from linotp.lib.config.util import expand_here
 
 log = logging.getLogger(__name__)
 

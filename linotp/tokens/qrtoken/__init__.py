@@ -26,6 +26,7 @@
 
 import struct
 from collections import namedtuple
+
 from linotp.lib.error import ParameterError
 
 _QRTokenPairingData = namedtuple(

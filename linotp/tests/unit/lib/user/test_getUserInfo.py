@@ -26,10 +26,10 @@
 
 
 import unittest
+
 from mock import patch
 
-from linotp.lib.user import getUserInfo
-from linotp.lib.user import User
+from linotp.lib.user import User, getUserInfo
 
 
 class TestGetUserInfo(unittest.TestCase):

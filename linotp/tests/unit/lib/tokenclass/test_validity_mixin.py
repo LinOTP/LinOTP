@@ -28,8 +28,7 @@ Tests the logging decorators
 """
 
 import unittest
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from linotp.tokens.base.validity_mixin import TokenValidityMixin
 

@@ -25,44 +25,34 @@
 #
 """ paralell test"""
 
-import threading
-import logging
-import unittest
-import binascii
 import base64
+import binascii
+import json
+import logging
+import os
 import random
-import time
 import sys
-
-from linotp.lib.ext.pbkdf2 import PBKDF2
+import threading
+import time
+import unittest
+from datetime import datetime, timedelta
+from urllib.parse import parse_qs, urlparse
 
 from Cryptodome.Hash import HMAC
 from Cryptodome.Hash import SHA as SHA1
 from Cryptodome.Hash import SHA256 as SHA256
 
 # FIXME:  from linotp.tokens.ocra import OcraSuite
-from linotp.lib.crypto.utils import kdf2
-from linotp.lib.crypto.utils import geturandom
-from linotp.lib.crypto.utils import encrypt, decrypt
-from linotp.lib.crypto.utils import createActivationCode, check
-
+from linotp.lib.crypto.utils import (
+    check,
+    createActivationCode,
+    decrypt,
+    encrypt,
+    geturandom,
+    kdf2,
+)
+from linotp.lib.ext.pbkdf2 import PBKDF2
 from linotp.tests import *
-
-from datetime import datetime
-from datetime import timedelta
-import time
-import os
-
-import json
-
-from urllib.parse import urlparse
-from urllib.parse import parse_qs
-
-import unittest
-import binascii
-
-
-import logging
 
 log = logging.getLogger(__name__)
 

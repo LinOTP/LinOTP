@@ -32,9 +32,9 @@ Testing the migration of tokens from one resolver to a different one
 
 """
 
-import os
 import json
 import logging
+import os
 
 from linotp.tests import TestController
 

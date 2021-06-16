@@ -43,13 +43,10 @@ import logging
 import tempfile
 import urllib.parse
 
-
-from linotp.lib.util import str2unicode
-from linotp.tests.functional_special import TestSpecialController
-
 import linotp.provider.smsprovider.FileSMSProvider
 import linotp.provider.smsprovider.HttpSMSProvider
-
+from linotp.lib.util import str2unicode
+from linotp.tests.functional_special import TestSpecialController
 
 # mocking hook is startting here
 HTTP_RESPONSE_FUNC = None

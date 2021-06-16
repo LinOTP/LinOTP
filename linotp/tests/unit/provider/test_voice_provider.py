@@ -27,6 +27,7 @@
 
 import os
 import unittest
+
 from mock import patch
 
 import linotp.provider.voiceprovider.custom_voice_provider

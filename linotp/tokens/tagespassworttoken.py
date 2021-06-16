@@ -27,19 +27,14 @@
               - TagespasswortTokenClass   (DPW)"""
 
 import logging
-
+from datetime import datetime, timedelta
 from hashlib import md5
-from datetime import datetime
-from datetime import timedelta
 
-from linotp.lib.crypto.utils import zerome
-from linotp.tokens.base import TokenClass
 from linotp.lib.context import request_context
-
-from linotp.lib.error import TokenAdminError
-from linotp.lib.error import ParameterError
-
+from linotp.lib.crypto.utils import zerome
+from linotp.lib.error import ParameterError, TokenAdminError
 from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
 
 log = logging.getLogger(__name__)
 

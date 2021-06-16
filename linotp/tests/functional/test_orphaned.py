@@ -28,18 +28,16 @@
 """
 """
 
-import logging
-from linotp.tests import TestController
 import copy
-
-
 import json
-from sqlalchemy.engine import create_engine
-import sqlalchemy
-
+import logging
 import unittest
-import pytest
 
+import pytest
+import sqlalchemy
+from sqlalchemy.engine import create_engine
+
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 

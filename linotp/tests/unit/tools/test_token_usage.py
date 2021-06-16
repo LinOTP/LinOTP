@@ -24,8 +24,8 @@
 #    Support: www.keyidentity.com
 #
 
-import pytest
 import mock
+import pytest
 
 from .script_testing_lib import ScriptTester
 

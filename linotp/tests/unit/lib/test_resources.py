@@ -27,14 +27,16 @@
 unit test for the ResourceScheduler handling, which supports circuit breaking
 """
 
-import unittest
 import datetime
+import unittest
 
 from freezegun import freeze_time
 
-
-from linotp.lib.resources import ResourceScheduler, string_to_list
-from linotp.lib.resources import DictResourceRegistry
+from linotp.lib.resources import (
+    DictResourceRegistry,
+    ResourceScheduler,
+    string_to_list,
+)
 
 
 class DummyException(Exception):

@@ -25,10 +25,10 @@
 #
 """ Tages Password importer"""
 
-from linotp.lib.ImportOTP import ImportException
+import logging
 import re
 
-import logging
+from linotp.lib.ImportOTP import ImportException
 
 log = logging.getLogger(__name__)
 

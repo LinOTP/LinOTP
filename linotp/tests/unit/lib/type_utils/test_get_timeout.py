@@ -1,8 +1,9 @@
 import unittest
 from datetime import datetime
 
-from linotp.lib.type_utils import get_timeout
 import pytest
+
+from linotp.lib.type_utils import get_timeout
 
 
 class GetTimeoutTest(unittest.TestCase):

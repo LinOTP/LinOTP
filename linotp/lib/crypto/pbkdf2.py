@@ -28,6 +28,7 @@ inplace replacement for the former used library method
 """
 
 from hashlib import sha1
+
 from linotp.lib.ext.pbkdf2 import PBKDF2
 
 

@@ -29,10 +29,11 @@
   Test linotp.tokens.emailtoken
 """
 
-from mock import patch
-import smtplib
 import re
+import smtplib
 import time
+
+from mock import patch
 
 from linotp.tests import TestController
 

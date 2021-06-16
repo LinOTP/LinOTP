@@ -26,27 +26,19 @@
 """ resolver objects and processing """
 
 
-import logging
-
 import json
+import logging
 import re
-
 from functools import partial
 
-from linotp.lib.context import request_context as context
 from linotp.lib.cache import get_cache
-
-from linotp.lib.config import storeConfig
-from linotp.lib.config import removeFromConfig
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.config.parsing import ConfigTree
-from linotp.lib.config.parsing import ConfigNotRecognized
-
+from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
+from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
+from linotp.lib.context import request_context as context
+from linotp.lib.crypto.encrypted_data import EncryptedData
 from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
-
-from linotp.lib.crypto.encrypted_data import EncryptedData
 
 # -------------------------------------------------------------------------- --
 
@@ -649,8 +641,10 @@ def _flush_user_resolver_cache(resolver_spec):
     :return: - nothing -
     """
 
-    from linotp.lib.user import delete_resolver_user_cache
-    from linotp.lib.user import delete_realm_resolver_cache
+    from linotp.lib.user import (
+        delete_realm_resolver_cache,
+        delete_resolver_user_cache,
+    )
 
     delete_resolver_user_cache(resolver_spec)
 

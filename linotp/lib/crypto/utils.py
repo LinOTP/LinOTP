@@ -29,36 +29,29 @@ Cryptographic utility functions
 
 import base64
 import binascii
-
 import ctypes
 import hmac
 import json
 import logging
 import secrets
-
-from linotp.flap import config as env
-from pysodium import sodium as c_libsodium
-from pysodium import __check as __libsodium_check
-from pysodium import crypto_sign_keypair as gen_dsa_keypair
 import struct
-
-from hashlib import md5
-from hashlib import sha1
-from hashlib import sha224
-from hashlib import sha256
-from hashlib import sha384
-from hashlib import sha512
-
-from linotp.lib.ext.pbkdf2 import PBKDF2
-from linotp.lib.context import request_context as context
-from linotp.lib.error import ConfigAdminError
-from linotp.lib.error import HSMException
-from linotp.lib.error import ProgrammingError
-from linotp.lib.error import ValidateError
-
 from crypt import crypt as libcrypt
+from hashlib import md5, sha1, sha224, sha256, sha384, sha512
 
 from passlib.context import CryptContext
+from pysodium import __check as __libsodium_check
+from pysodium import crypto_sign_keypair as gen_dsa_keypair
+from pysodium import sodium as c_libsodium
+
+from linotp.flap import config as env
+from linotp.lib.context import request_context as context
+from linotp.lib.error import (
+    ConfigAdminError,
+    HSMException,
+    ProgrammingError,
+    ValidateError,
+)
+from linotp.lib.ext.pbkdf2 import PBKDF2
 
 PasslibHashes = CryptContext(
     schemes=[

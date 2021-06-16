@@ -27,9 +27,9 @@
 
 import unittest
 
-from linotp.lib.security.provider import SecurityProvider
-
 from mock import patch
+
+from linotp.lib.security.provider import SecurityProvider
 
 
 class TestHSMPool(unittest.TestCase):

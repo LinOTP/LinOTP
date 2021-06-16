@@ -26,21 +26,15 @@
 
 """
 
-import pytest
-import unittest
 import socket
+import unittest
+
 import netaddr
-
-
+import pytest
 from mock import patch
 
-
-from linotp.lib.util import _get_client_from_request
-from linotp.lib.util import _is_addr_in_network
-
-from linotp.lib.type_utils import get_ip_network
-from linotp.lib.type_utils import get_ip_address
-
+from linotp.lib.type_utils import get_ip_address, get_ip_network
+from linotp.lib.util import _get_client_from_request, _is_addr_in_network
 
 netw_dict = {
     "136.243.104.66/29": netaddr.IPNetwork("136.243.104.66/29"),

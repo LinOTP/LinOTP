@@ -27,11 +27,11 @@ Tests for google authenticator url
 """
 
 import unittest
+
 from mock import patch
 
 from linotp.lib.apps import create_google_authenticator
-from linotp.lib.policy import get_tokenissuer
-from linotp.lib.policy import get_tokenlabel
+from linotp.lib.policy import get_tokenissuer, get_tokenlabel
 
 
 class TestTokenLabel(unittest.TestCase):

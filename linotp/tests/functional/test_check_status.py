@@ -31,9 +31,9 @@ Test for check_status, which could be used to support polling
 
 import datetime
 import json
-from linotp.tests import TestController
 import logging
 
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 

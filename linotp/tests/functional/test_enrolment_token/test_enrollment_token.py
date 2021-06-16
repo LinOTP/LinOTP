@@ -29,6 +29,7 @@
 Test the onetime token for the selfservice login
 """
 import json
+
 import pytest
 
 from linotp.tests import TestController

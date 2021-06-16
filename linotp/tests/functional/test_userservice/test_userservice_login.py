@@ -26,26 +26,22 @@
 #
 
 import json
+from tempfile import NamedTemporaryFile
+from typing import Dict, Tuple
 
 import mock
 from mock import patch
 
-from typing import Dict, Tuple
-from tempfile import NamedTemporaryFile
+import linotp.provider.pushprovider.default_push_provider as default_provider
+import linotp.provider.smsprovider.FileSMSProvider
+from linotp.tests import CompatibleTestResponse, url
 
 from . import TestUserserviceController
-from linotp.tests import url
-from linotp.tests import CompatibleTestResponse
-
-import linotp.provider.smsprovider.FileSMSProvider
-import linotp.provider.pushprovider.default_push_provider as default_provider
-
-from .qr_token_validation import QR_Token_Validation as QR
-
-from .push_token_validation import Push_Token_Validation as Push
 from .push_token_validation import (
     CONTENT_TYPE_SIGNREQ as PUSH_CONTENT_TYPE_SIGNREQ,
 )
+from .push_token_validation import Push_Token_Validation as Push
+from .qr_token_validation import QR_Token_Validation as QR
 
 SMS_MESSAGE_OTP = None
 SMS_MESSAGE_CONFIG = None

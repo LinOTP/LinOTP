@@ -26,9 +26,8 @@
 
 
 """ the SMS Provider Interface """
+from linotp.provider import ProviderNotAvailable, provider_registry
 from linotp.provider.smsprovider import ISMSProvider
-from linotp.provider import provider_registry
-from linotp.provider import ProviderNotAvailable
 
 try:
     import smpplib

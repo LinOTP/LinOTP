@@ -28,24 +28,25 @@
 """ unit test for policy query with actions """
 
 import copy
-
-import unittest
-import pytest
 import datetime
-
-from mock import patch
-
+import unittest
 from collections import namedtuple
 
-from linotp.lib.user import User as LinotpUser
-from linotp.lib.policy import PolicyException
+import pytest
+from mock import patch
 
-from linotp.lib.policy.maxtoken import check_maxtoken_for_user
-from linotp.lib.policy.maxtoken import check_maxtoken_for_user_by_type
-from linotp.lib.policy import get_tokenissuer
-from linotp.lib.policy import get_autoassignment
-from linotp.lib.policy import get_auto_enrollment
+from linotp.lib.policy import (
+    PolicyException,
+    get_auto_enrollment,
+    get_autoassignment,
+    get_tokenissuer,
+)
+from linotp.lib.policy.maxtoken import (
+    check_maxtoken_for_user,
+    check_maxtoken_for_user_by_type,
+)
 from linotp.lib.token import TokenHandler
+from linotp.lib.user import User as LinotpUser
 
 Token = namedtuple("Token", ["type"])
 

@@ -29,11 +29,11 @@
 Test the support for resolver definitions in system or admin policy user entry
 """
 
-import os
 import base64
 import logging
-from linotp.tests import TestController
+import os
 
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 

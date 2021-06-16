@@ -25,12 +25,11 @@
 #
 
 import logging
-
 import sys
 import unittest
 
-from mock import MagicMock, Mock, patch
 import pytest
+from mock import MagicMock, Mock, patch
 
 
 class U2FTokenClassTestCase(unittest.TestCase):

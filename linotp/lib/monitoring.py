@@ -29,23 +29,15 @@ library for monitoring controller
 
 import datetime
 
-from linotp.lib.resolver import parse_resolver_spec
+from sqlalchemy import and_, not_, or_
 
-from linotp.model import db, Token, Realm, TokenRealm
-from linotp.model import Config as config_model
-
-from linotp.lib.config import LinOtpConfig
-from linotp.lib.config import storeConfig
-from linotp.lib.config import getFromConfig
-
-from linotp.lib.useriterator import iterate_users
-
-from linotp.lib.user import getUserListIterators, getUserList
-from linotp.lib.user import getUserFromParam
-
+from linotp.lib.config import LinOtpConfig, getFromConfig, storeConfig
 from linotp.lib.context import request_context as context
-
-from sqlalchemy import and_, or_, not_
+from linotp.lib.resolver import parse_resolver_spec
+from linotp.lib.user import getUserFromParam, getUserList, getUserListIterators
+from linotp.lib.useriterator import iterate_users
+from linotp.model import Config as config_model
+from linotp.model import Realm, Token, TokenRealm, db
 
 
 class MonitorHandler(object):

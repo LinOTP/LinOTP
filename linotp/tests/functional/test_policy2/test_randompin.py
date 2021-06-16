@@ -29,12 +29,11 @@
 Test the otp_pin_random policy
 """
 
+import logging
 from collections import deque
 from copy import deepcopy
 
 from linotp.tests import TestController
-
-import logging
 
 log = logging.getLogger(__name__)
 

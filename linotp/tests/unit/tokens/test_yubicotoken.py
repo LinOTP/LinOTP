@@ -25,11 +25,9 @@
 #    Support: www.keyidentity.com
 #
 import pytest
-
 from mock import patch
 
-from linotp.tokens.yubicotoken import YubicoTokenClass
-from linotp.tokens.yubicotoken import YubicoApikeyException
+from linotp.tokens.yubicotoken import YubicoApikeyException, YubicoTokenClass
 
 
 class DummyDBToken:

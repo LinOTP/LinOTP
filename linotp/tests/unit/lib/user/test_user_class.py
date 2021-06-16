@@ -25,9 +25,9 @@
 #
 
 
-from mock import patch
-
 import unittest
+
+from mock import patch
 
 from linotp.lib.user import User
 

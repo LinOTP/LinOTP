@@ -26,9 +26,10 @@
 #    Support: www.keyidentity.com
 #
 
-import os
 import json
+import os
 from unittest import TestCase
+
 from mock import patch
 
 from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver

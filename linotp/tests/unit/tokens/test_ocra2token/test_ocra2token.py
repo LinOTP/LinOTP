@@ -1,4 +1,5 @@
 import unittest
+
 from mock import patch
 
 from linotp.tokens.ocra2token.ocra2token import get_qrtan_url

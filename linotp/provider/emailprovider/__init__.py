@@ -26,21 +26,19 @@
 """Interface to an EMail provider and implementation of the SMPT email provider
 """
 
-import logging
-import smtplib
-import os
 import copy
-
+import logging
+import os
+import smtplib
+from email.header import Header
+from email.mime.text import MIMEText
 from hashlib import sha256
 
 from mako.template import Template
 
-from email.mime.text import MIMEText
-from email.header import Header
-
-from linotp.provider import provider_registry
-from linotp.lib.type_utils import boolean
 from linotp.lib.context import request_context
+from linotp.lib.type_utils import boolean
+from linotp.provider import provider_registry
 
 DEFAULT_MESSAGE = "<otp>"
 

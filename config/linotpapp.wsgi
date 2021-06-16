@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+
 from linotp.app import create_app
 
 application = create_app("production")

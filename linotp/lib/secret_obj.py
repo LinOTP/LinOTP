@@ -25,9 +25,9 @@
 #
 """ checks the given static password against the otpkey."""
 
-from linotp.lib.crypto.utils import zerome
-
 import logging
+
+from linotp.lib.crypto.utils import zerome
 
 log = logging.getLogger(__name__)
 

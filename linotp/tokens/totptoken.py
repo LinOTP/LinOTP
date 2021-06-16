@@ -25,22 +25,19 @@
 #
 """This file containes the dynamic time based hmac token implementation"""
 
+import datetime
 import logging
 import time
-from typing import Union, Any
-import datetime
+from typing import Any, Union
 
-
-from linotp.lib.HMAC import HmacOtp
-from linotp.lib.util import generate_otpkey
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
+from linotp.lib.HMAC import HmacOtp
 from linotp.lib.type_utils import boolean
-
-
+from linotp.lib.util import generate_otpkey
+from linotp.tokens import tokenclass_registry
 from linotp.tokens.base import TokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
-from linotp.tokens import tokenclass_registry
 
 keylen = {"sha1": 20, "sha256": 32, "sha512": 64}
 

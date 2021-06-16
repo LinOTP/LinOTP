@@ -25,6 +25,7 @@
 #
 
 from threading import get_ident as get_thread_ident
+
 from linotp.lib.error import ProgrammingError
 
 """

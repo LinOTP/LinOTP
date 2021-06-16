@@ -26,21 +26,20 @@
 #
 
 
-import math
-import json
 import binascii
+import json
+import math
 import time
-
 from datetime import datetime
-from hashlib import sha1, md5
+from hashlib import md5, sha1
+
 from mock import patch
 
 import linotp.provider.smsprovider.FileSMSProvider
+from linotp.lib.HMAC import HmacOtp
 from linotp.provider.emailprovider import SMTPEmailProvider
 
 from . import TestUserserviceController
-from linotp.lib.HMAC import HmacOtp
-
 from .qr_token_validation import QR_Token_Validation as QR
 
 # mocking hook is starting here

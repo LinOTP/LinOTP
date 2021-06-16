@@ -24,35 +24,28 @@
 #    Support: www.keyidentity.com
 #
 
-import json
 import base64
-import struct
 import binascii
+import json
+import struct
+from hashlib import sha256
+
+from cryptography import x509
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+
+from linotp.lib.auth.validate import check_otp, check_pin
+from linotp.lib.challenges import Challenges
+from linotp.lib.error import ParameterError, TokenTypeNotSupportedError
+from linotp.lib.policy import getPolicy
+from linotp.lib.policy.action import get_action_value
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
 
 # x509 certificate support and elliptic signature verification
 
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives import serialization
-from cryptography.exceptions import InvalidSignature
-
-
-from hashlib import sha256
-
-from linotp.lib.auth.validate import check_otp
-from linotp.lib.auth.validate import check_pin
-
-from linotp.tokens.base import TokenClass
-from linotp.lib.challenges import Challenges
-
-from linotp.lib.policy import getPolicy
-from linotp.lib.policy.action import get_action_value
-
-from linotp.lib.error import TokenTypeNotSupportedError
-from linotp.lib.error import ParameterError
-from linotp.tokens import tokenclass_registry
 
 """
     This file contains the U2F V2 token implementation as specified by the FIDO Alliance

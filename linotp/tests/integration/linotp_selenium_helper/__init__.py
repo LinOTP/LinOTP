@@ -25,19 +25,19 @@
 #
 """Helper classes for LinOTP Selenium Tests"""
 
-from .test_case import TestCase
+from . import helper
 from .policy import Policy
-from .user_id_resolver import (
-    UserIdResolverManager,
-    UserIdResolver,
-    SqlUserIdResolver,
-    PasswdUserIdResolver,
-    LdapUserIdResolver,
-)
 from .self_service import SelfService
 from .self_service_angular import AngularSelfService
+from .test_case import TestCase
 from .token_enroll import EnrollTokenDialog
-from . import helper
+from .user_id_resolver import (
+    LdapUserIdResolver,
+    PasswdUserIdResolver,
+    SqlUserIdResolver,
+    UserIdResolver,
+    UserIdResolverManager,
+)
 
 __all__ = [
     "helper",

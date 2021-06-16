@@ -27,7 +27,7 @@
 import os
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 from setuptools.command.build_py import build_py
 
 from linotp import __version__

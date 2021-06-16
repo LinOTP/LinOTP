@@ -27,20 +27,18 @@
 
 """ unit test for policy query selfservice actions """
 
-from collections import namedtuple
-
 import copy
 import unittest
+from collections import namedtuple
+
+import pytest
+from mock import patch
 
 from linotp.lib.policy.action import (
-    get_selfservice_actions,
     get_selfservice_action_value,
+    get_selfservice_actions,
 )
 from linotp.lib.user import User as LinotpUser
-
-from mock import patch
-import pytest
-
 
 Token = namedtuple("Token", ["type"])
 fake_context = {

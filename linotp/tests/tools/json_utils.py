@@ -33,9 +33,9 @@ The most useful are:
 
 import json
 import re
+from distutils.version import LooseVersion
 
 import pkg_resources
-from distutils.version import LooseVersion
 
 # RegexType is only a reference to Regular-Expression
 # runtime type. In order to identify a Regular-Expression

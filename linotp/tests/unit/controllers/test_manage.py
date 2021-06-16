@@ -26,8 +26,9 @@
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 
-import flask
 import pytest
+
+import flask
 
 
 @pytest.mark.usefixtures("app")

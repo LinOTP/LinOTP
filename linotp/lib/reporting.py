@@ -26,14 +26,12 @@
 import json
 import logging
 
-from linotp.model import db, Reporting
+from sqlalchemy import and_, func, or_
 
 from linotp.lib.context import request_context
 from linotp.lib.monitoring import MonitorHandler
 from linotp.lib.policy import check_token_reporting
-
-from sqlalchemy import and_, or_
-from sqlalchemy import func
+from linotp.model import Reporting, db
 
 STATI = [
     "total",

@@ -25,15 +25,15 @@
 #
 """ test the linotp.lib.crypto.rsa cryptography """
 
+import base64
 import unittest
 
-import base64
-
+from linotp.lib.crypto.rsa import (
+    RSA_Signature,
+    create_rsa_signature,
+    verify_rsa_signature,
+)
 from linotp.lib.support import PUB_KEY_LINOTP as LINOTP_PUB_KEY
-
-from linotp.lib.crypto.rsa import verify_rsa_signature, create_rsa_signature
-from linotp.lib.crypto.rsa import RSA_Signature
-
 
 TEST_PUB_KEY = """-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0NGW3OnnZzQaFIVT9znr

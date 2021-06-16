@@ -29,27 +29,20 @@ audit controller - to search the audit trail
 
 import logging
 
-from flask import Response, stream_with_context, current_app, g
-
-from linotp.flap import request, response, config
+from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController
-
-
-from linotp.lib.util import check_session
-from linotp.lib.user import getUserFromRequest
-from linotp.lib.policy import checkPolicyPre
-from linotp.lib.policy import PolicyException
-
-from linotp.lib.reply import sendError
-from linotp.lib.audit.iterator import AuditQuery
-from linotp.lib.audit.iterator import CSVAuditIterator
-from linotp.lib.audit.iterator import JSONAuditIterator
-
-from linotp.lib.util import get_client
-
+from linotp.flap import config, request, response
+from linotp.lib.audit.iterator import (
+    AuditQuery,
+    CSVAuditIterator,
+    JSONAuditIterator,
+)
 from linotp.lib.context import request_context
-
+from linotp.lib.policy import PolicyException, checkPolicyPre
+from linotp.lib.reply import sendError
+from linotp.lib.user import getUserFromRequest
+from linotp.lib.util import check_session, get_client
 from linotp.model import db
 
 optional = True

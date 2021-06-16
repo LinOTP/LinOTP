@@ -31,15 +31,13 @@ This file contains utilities to generates the URL for smartphone apps like
 
 """
 
-import binascii
 import base64
-
+import binascii
+import logging
 import urllib
 from urllib.parse import quote
 
-import logging
-
-from linotp.lib.policy import get_tokenlabel, get_tokenissuer
+from linotp.lib.policy import get_tokenissuer, get_tokenlabel
 
 Valid_Token_Types = {
     "hmac": "hotp",

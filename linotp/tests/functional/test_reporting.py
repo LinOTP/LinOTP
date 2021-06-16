@@ -27,19 +27,14 @@
 import json
 import logging
 import os
+from datetime import datetime, timedelta
 
 from freezegun import freeze_time
-
-from datetime import datetime
-from datetime import timedelta
-from linotp.flap import config
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from freezegun import freeze_time
-
+from linotp.flap import config
 from linotp.model import Reporting
-
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)

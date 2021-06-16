@@ -25,14 +25,16 @@
 #
 
 from datetime import datetime, timedelta
-from mock import patch
 from unittest import TestCase
+
+import pytest
+from mock import patch
+
 from linotp.lib.remote_service import (
-    RemoteServiceList,
     AllServicesUnavailable,
+    RemoteServiceList,
     State,
 )
-import pytest
 
 
 class CustomException(Exception):

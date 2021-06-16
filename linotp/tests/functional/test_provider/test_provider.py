@@ -33,14 +33,14 @@ test the administrative handling of providers:
   * fallback to default if policy does not match
 """
 
-from mock import patch
-import logging
 import json
+import logging
 import os
+
+from mock import patch
 
 import linotp.provider.smsprovider.FileSMSProvider
 import linotp.provider.voiceprovider.custom_voice_provider
-
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)

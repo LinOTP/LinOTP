@@ -26,14 +26,15 @@
 #    Support: www.keyidentity.com
 #
 import os
-import mock
-import unittest
 import subprocess
-import ldap
-
+import unittest
 from copy import deepcopy
-from linotp.useridresolver.UserIdResolver import getResolverClass
+
+import ldap
+import mock
+
 from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
+from linotp.useridresolver.UserIdResolver import getResolverClass
 
 
 @unittest.skip("Broken 'no hsm defined in execution context'")

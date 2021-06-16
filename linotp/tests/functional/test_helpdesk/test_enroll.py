@@ -33,17 +33,16 @@ test the helpdesk enrollment api
 - user might be in one or more realms
 """
 
+import base64
 import json
 import os
-import pytest
 import re
 
-from . import MockedSMTP
+import pytest
 
 from linotp.tests import TestController
 
-
-import base64
+from . import MockedSMTP
 
 
 def get_email_content(email_message):

@@ -36,25 +36,20 @@ uses a public/private key for signing the log entries
 """
 
 import datetime
-from sqlalchemy import schema, types, orm, and_, or_, asc, desc
+import logging.config
+import traceback
+from binascii import hexlify, unhexlify
+
+from sqlalchemy import and_, asc, create_engine, desc, or_, orm, schema, types
 
 from flask import current_app
 
-from binascii import hexlify
-from binascii import unhexlify
-from sqlalchemy import create_engine
+import linotp
 from linotp.flap import config
 from linotp.lib.audit.base import AuditBase
-from linotp.model import db
-
 from linotp.lib.crypto.rsa import RSA_Signature
-
-import logging.config
-import traceback
-
-import linotp
-
 from linotp.lib.text_utils import utf8_slice
+from linotp.model import db
 
 log = logging.getLogger(__name__)
 

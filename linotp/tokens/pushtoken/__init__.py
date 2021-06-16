@@ -26,8 +26,10 @@
 
 import struct
 from collections import namedtuple
-from linotp.lib.error import ParameterError
+
 from pysodium import crypto_sign_verify_detached
+
+from linotp.lib.error import ParameterError
 
 _PushTokenPairingData = namedtuple(
     "_PushTokenPairingData",

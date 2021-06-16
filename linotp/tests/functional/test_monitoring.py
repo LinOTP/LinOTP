@@ -28,19 +28,19 @@
 
 import json
 import logging
+
 import pytest
 
 from linotp.flap import config
-
+from linotp.lib.support import (
+    InvalidLicenseException,
+    getSupportLicenseInfo,
+    isSupportLicenseValid,
+    readLicenseInfo,
+    removeSupportLicenseInfo,
+    setSupportLicenseInfo,
+)
 from linotp.tests import TestController
-
-
-from linotp.lib.support import getSupportLicenseInfo
-from linotp.lib.support import setSupportLicenseInfo
-from linotp.lib.support import removeSupportLicenseInfo
-from linotp.lib.support import readLicenseInfo
-from linotp.lib.support import isSupportLicenseValid
-from linotp.lib.support import InvalidLicenseException
 
 log = logging.getLogger(__name__)
 

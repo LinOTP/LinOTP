@@ -28,17 +28,15 @@
 sql resolver tests
 """
 
-import logging
 import json
+import logging
 
 from mock import patch
 
-from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
-from linotp.useridresolver.LDAPIdResolver import IdResolver as ldap_resolver
-
 from linotp.lib.user import lookup_user_in_resolver
-
 from linotp.tests import TestController
+from linotp.useridresolver.LDAPIdResolver import IdResolver as ldap_resolver
+from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 getUserId_call_count = 0
 raise_exception = False

@@ -30,12 +30,10 @@
 import binascii
 import logging
 
-from linotp.tokens.base import TokenClass
-from linotp.tokens import tokenclass_registry
 from linotp.lib.auth.validate import check_pin
-
-from linotp.lib.util import modhex_decode
-from linotp.lib.util import checksum
+from linotp.lib.util import checksum, modhex_decode
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
 
 log = logging.getLogger(__name__)
 

@@ -28,8 +28,8 @@
 """
 """
 
-import logging
 import json
+import logging
 
 from linotp.tests import TestController
 

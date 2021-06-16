@@ -27,14 +27,11 @@
 database schema migration hook
 """
 import logging
-
 from typing import Optional
 
 import sqlalchemy as sa
+from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
-from sqlalchemy import text
-from sqlalchemy import inspect
-
 from sqlalchemy.exc import OperationalError
 
 from linotp import model

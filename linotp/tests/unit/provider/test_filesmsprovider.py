@@ -26,7 +26,6 @@
 
 import os
 import tempfile
-
 from unittest import TestCase
 
 from linotp.provider.smsprovider.FileSMSProvider import FileSMSProvider

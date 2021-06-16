@@ -25,9 +25,9 @@
 #
 """Contains Validate class to verify OTP values"""
 
-import requests
 import logging
 
+import requests
 from requests.auth import HTTPDigestAuth
 
 logger = logging.getLogger(__name__)

@@ -26,6 +26,7 @@
 
 import json
 import unittest
+
 from mock import patch
 
 from linotp.lib.user import getUserFromParam

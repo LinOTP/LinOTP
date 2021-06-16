@@ -33,11 +33,9 @@ ResourceScheduler - handle iteration on resources list with blocking
                     will be scheduled again
 """
 
-from typing import Dict, Any
-from datetime import datetime
-from datetime import timedelta
-
 import logging
+from datetime import datetime, timedelta
+from typing import Any, Dict
 
 # ------------------------------------------------------------------------- --
 

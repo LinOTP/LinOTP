@@ -25,17 +25,18 @@
 #
 
 import unittest
+
 import pytest
+from mock import patch
 
 from flask import g
 
-from mock import patch
-
+from linotp.lib.policy import (
+    get_autoassignment_from_realm,
+    get_autoassignment_without_pass,
+)
 from linotp.lib.token import TokenHandler
 from linotp.lib.user import User
-
-from linotp.lib.policy import get_autoassignment_without_pass
-from linotp.lib.policy import get_autoassignment_from_realm
 from linotp.tokens.passwordtoken import PasswordTokenClass
 
 

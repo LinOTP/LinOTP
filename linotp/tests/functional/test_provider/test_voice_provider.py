@@ -30,17 +30,17 @@
 """
 
 import json
-import os
 import logging
-import requests
+import os
 
+import pytest
+import requests
 from mock import patch
 
-from linotp.tests import TestController
 from linotp.provider.voiceprovider.custom_voice_provider import (
     CustomVoiceProvider,
 )
-import pytest
+from linotp.tests import TestController
 
 VALID_REQUEST = "You received an authentication request."
 

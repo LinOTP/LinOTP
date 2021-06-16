@@ -25,10 +25,11 @@
 #
 
 import unittest
+
 from mock import patch
 
-from linotp.lib.user import User
 from linotp.lib.token import TokenHandler
+from linotp.lib.user import User
 
 
 class MockedToken:

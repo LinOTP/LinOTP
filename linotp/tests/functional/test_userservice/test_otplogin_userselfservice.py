@@ -25,10 +25,10 @@
 #
 
 
-import pytest
-
-import logging
 import json
+import logging
+
+import pytest
 
 from linotp.tests import TestController, url
 
