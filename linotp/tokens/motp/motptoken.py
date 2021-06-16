@@ -33,7 +33,7 @@ from linotp.lib.context import request_context as context
 from linotp.lib.crypto import SecretObj
 from linotp.lib.error import ParameterError
 from linotp.tokens import tokenclass_registry
-from linotp.tokens.base import TokenClass
+from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.tokens.motp import mTimeOtp
 
 log = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ log = logging.getLogger(__name__)
 ###############################################
 @tokenclass_registry.class_entry("motp")
 @tokenclass_registry.class_entry("linotp.tokens.motptoken.MotpTokenClass")
-class MotpTokenClass(TokenClass):
+class MotpTokenClass(HmacTokenClass):
     """
     implementation of the mOTP token class
     - see: http://motp.sourceforge.net/
@@ -131,7 +131,7 @@ class MotpTokenClass(TokenClass):
         :param a_token: instance of the orm db object
         :type a_token:  orm object
         """
-        TokenClass.__init__(self, a_token)
+        HmacTokenClass.__init__(self, a_token)
         self.setType("mOTP")
 
         return
@@ -158,7 +158,7 @@ class MotpTokenClass(TokenClass):
 
         self.setUserPin(otpPin)
 
-        TokenClass.update(self, param, reset_failcount)
+        HmacTokenClass.update(self, param, reset_failcount)
 
         return
 
