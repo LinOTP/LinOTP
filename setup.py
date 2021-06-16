@@ -96,6 +96,7 @@ code_quality_requirements = [
     "pre-commit",
     "mypy",
     "sqlalchemy-stubs",
+    "isort",
 ]
 
 # packages needed to build the api documentation
