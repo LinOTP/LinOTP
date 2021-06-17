@@ -43,6 +43,7 @@ from linotp.tests.functional.test_orphaned import OrphandTestHelpers
 log = logging.getLogger(__name__)
 
 PASSWORD = ""
+LDAPURI = ""
 
 
 class MockedResolver:
@@ -54,11 +55,12 @@ class MockedResolver:
         :return: just always return an connection error, which is ignored
         """
         global PASSWORD
+        global LDAPURI
 
         param = argparams[1]
-        passwd = param.get("BINDPW")
 
-        PASSWORD = passwd
+        PASSWORD = param.get("BINDPW")
+        LDAPURI = param.get("LDAPURI")
 
         desc = {"desc": "Can't contact LDAP server"}
         status = "error"
@@ -137,78 +139,52 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         MockedResolver.testconnection,
     )
     def test_testresolver_for_ldap(self):
-        """
-        run the admin testresolver api for the ldap resolver definition
+        """admin testresolver api for the ldap resolver definition
 
-        the response for testconnection  is ignored as it is our mocking result
-        we are only interested, which PASSWORD is provided to the
-        testconnection which in case of a resolver with different
-        name or uri must be empty
+        - provided parameters are ignored
+        - verify that for the testconnection the resolver configuration is
+            loaded though no parameters are provided.
 
         """
         global PASSWORD
+        PASSWORD = None
 
         resolver_name = "MyLDAP"
 
-        # before running the mocked test request, we have to register
-        # the ldap resolver
-
         response, defintion = self.define_ldap_resolver(resolver_name)
-        assert '"value": true' in response
+        assert response.json["result"]["value"], response
 
-        params = {}
-        params.update(self._transform_(defintion))
-        params["type"] = "ldapresolver"
-        params["name"] = resolver_name
-        params["previous_name"] = resolver_name
-
-        #
-        # don't provide a password with the request - the password is taken
-        # from the stored resolver of same name
-
-        pw = params["ldap_password"]
-        del params["ldap_password"]
-
+        params = {
+            "name": resolver_name,
+        }
         response = self.make_admin_request("testresolver", params=params)
-        assert PASSWORD == "Test123!", PASSWORD
+        value = response.json["result"]["value"]
+        assert value["desc"]["desc"] == ("Can't contact LDAP server")
 
-        # rename
-        # use different name - so that no password will be added
+        # verify the method is called and a password is loaded from the config
+        assert PASSWORD is not None
 
-        params["name"] = resolver_name + "_dummy"
-        params["previous_name"] = resolver_name
+        global LDAPURI
+        LDAPURI = None
+
+        params = {
+            "name": resolver_name,
+            "LDAPURI": "ldap_uri",
+        }
         response = self.make_admin_request("testresolver", params=params)
-        assert PASSWORD == "Test123!", PASSWORD
+        value = response.json["result"]["value"]
+        assert value["desc"]["desc"] == ("Can't contact LDAP server")
 
-        #
-        # use same resolver name but the URI is different => no password
-
-        params["name"] = resolver_name
-        params["previous_name"] = resolver_name
-        ldap_uri = params["ldap_uri"]
-        params["ldap_uri"] = "ttt" + ldap_uri
-
-        response = self.make_admin_request("testresolver", params=params)
-
-        assert "Missing parameter: ['BINDPW']" in response, response
-
-        #
-        # use same resolver name but different URI and password => password
-
-        params["name"] = resolver_name
-        params["previous_name"] = resolver_name
-        params["ldap_password"] = pw
-        params["ldap_uri"] = "ttt" + ldap_uri
-
-        response = self.make_admin_request("testresolver", params=params)
-        assert PASSWORD == "Test123!", PASSWORD
-
-        return
+        # verify the method is called and "LDAPURI" parameter is ignored
+        assert LDAPURI != "ldap_uri"
+        assert LDAPURI is not None
 
     @pytest.mark.exclude_sqlite
     def test_testresolver_for_sql(self):
         """
         run the admin testresolver api for the sql resolver definition
+
+        - no parameters other than the resolver name, must be specified
         """
 
         self.setUpSQL()
@@ -223,41 +199,13 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         self.addSqlResolver(resolverName)
         self.addSqlRealm(realmName, resolverName, defaultRealm=True)
 
-        params = {}
-        params.update(self.sqlResolverDef)
-
-        params["type"] = "sqlresolver"
-        params["name"] = resolverName
-        params["url"] = self.sqlconnect
+        params = {"name": resolverName}
 
         response = self.make_admin_request("testresolver", params=params)
         assert '"rows": 12' in response
-
-        #
-        # the connection test even works, if the password is missing
-        # as the resolver name is already stored and the password could
-        # retrieved from the stored configuration
-        #
-
-        del params["Password"]
-        params["previous_name"] = resolverName
-        response = self.make_admin_request("testresolver", params=params)
-        assert '"rows": 12' in response
-
-        #
-        # in case of an undefined resolver no password could be retrieved and
-        # the connection will fail
-        #
-
-        params["name"] = "undefined"
-        del params["previous_name"]
-        response = self.make_admin_request("testresolver", params=params)
-        assert "Missing parameter: ['Password']" in response
 
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)
-
-        return
 
 
 # eof
