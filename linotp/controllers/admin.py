@@ -69,7 +69,11 @@ from linotp.lib.reply import (
     sendXMLResult,
 )
 from linotp.lib.reporting import token_reporting
-from linotp.lib.resolver import get_resolver_class, prepare_resolver_parameter
+from linotp.lib.resolver import (
+    get_resolver_class,
+    getResolverInfo,
+    getResolverObject,
+)
 from linotp.lib.token import (
     TokenHandler,
     getTokenRealms,
@@ -2693,63 +2697,33 @@ class AdminController(BaseController, SessionCookieMixin):
         """
 
         try:
-            request_params = self.request_params.copy()
-
+            request_params = self.request_params
             try:
-
-                typ = request_params["type"]
-
-                # adjust legacy key words, we require the resolver class type
-
-                if typ == "ldap":
-                    typ = "ldapresolver"
-
-                elif typ in "sql":
-                    typ = "sqlresolver"
-
-                new_resolver_name = request_params["name"]
+                resolvername = self.request_params["name"]
 
             except KeyError as exx:
                 raise ParameterError(_("Missing parameter: %r") % exx)
 
+            if resolvername not in request_context["Resolvers"]:
+                raise Exception("no such resolver %r defined!" % resolvername)
+
             # ---------------------------------------------------------- --
 
-            # this code could be removed, when the webui is adjusted, to
-            # use the same parameters as the system/setResolver
+            # from the request context fetch the resolver details and
+            # call the class method 'testconnection' with the retrieved
+            # resolver configuration data
 
-            param = request_params
-            param["type"] = typ
+            resolver_info = getResolverInfo(resolvername)
 
-            if typ == "ldapresolver":
-                param = self._ldap_parameter_mapping(request_params)
+            resolver_cls = get_resolver_class(resolver_info["type"])
 
-            previous_name = param.get("previous_name", "")
-
-            log.debug("[testresolver] testing resolver of type %s", typ)
-
-            (
-                param,
-                missing,
-                _primary_key_changed,
-            ) = prepare_resolver_parameter(
-                new_resolver_name=new_resolver_name,
-                param=param,
-                previous_name=previous_name,
-            )
-
-            if missing:
-                raise ParameterError(_("Missing parameter: %r") % missing)
-
-            # now we can test the connection
-
-            resolver_cls = get_resolver_class(param["type"])
-
-            if resolver_cls is None:
+            if not callable(resolver_cls.testconnection):
                 raise Exception(
-                    "no such resolver type '%r' defined!" % param["type"]
+                    "resolver %r does not support a connection test",
+                    resolvername,
                 )
 
-            (status, desc) = resolver_cls.testconnection(param)
+            (status, desc) = resolver_cls.testconnection(resolver_info["data"])
 
             res = {"result": status, "desc": desc}
 
