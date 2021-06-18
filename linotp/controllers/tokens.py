@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+from http.client import LineTooLong
 
 from flask import current_app, g
 
@@ -73,6 +74,12 @@ class TokensController(BaseController, JWTMixin):
         )
 
         self.add_url_rule("/", "tokens", self.get_tokens, methods=["GET"])
+        self.add_url_rule(
+            "/<string:serial>",
+            "token_by_serial",
+            self.get_token_by_serial,
+            methods=["GET"],
+        )
 
     def __before__(self, **params):
         """
@@ -249,6 +256,81 @@ class TokensController(BaseController, JWTMixin):
 
         except Exception as e:
             log.exception("[get_tokens] failed: {}".format(e))
+            db.session.rollback()
+            return sendError(None, e)
+
+    def get_token_by_serial(self, serial):
+        """
+        Method: GET /api/v2/tokens/<serial>
+
+        Display all the information on a single token.
+
+        :param serial: the unique token serial
+        :type serial: string
+
+        :return:
+            a JSON-RPC response with ``result`` in the following format:
+
+            .. code::
+
+                {
+                    "status": boolean,
+                    "value": Token
+                }
+
+        :raises PolicyException:
+            if the logged-in admin does not have the correct permissions to view
+            the token, the exception message is serialized and returned
+        :raises Exception:
+            if any other error occurs the exception message is serialized and returned
+        """
+
+        param = self.request_params
+        try:
+            user = getUserFromParam(param)
+            check_result = checkPolicyPre("admin", "show", param, user=user)
+
+            # realms:
+            filter_realm = ["*"]
+
+            # If they are active, restrict the result to the tokens in the
+            # realms that the admin is allowed to see:
+            if check_result["active"] and check_result["realms"]:
+                filter_realm = check_result["realms"]
+
+            tokens = TokenIterator(user, serial, filterRealm=filter_realm)
+
+            # put in the result
+            result = {}
+
+            result_count = tokens.getResultSetInfo()["tokens"]
+
+            if result_count > 1:
+                raise Exception(
+                    "Multiple tokens found with serial {}".format(serial)
+                )
+
+            formatted_token = {}
+
+            if result_count == 1:
+                token = next(tokens)
+                formatted_token = Token(token).to_JSON_format()
+
+            g.audit["success"] = True
+            g.audit["info"] = "realm: {}".format(filter_realm)
+
+            db.session.commit()
+            return sendResult(response, formatted_token)
+
+        except PolicyException as pe:
+            log.exception("[get_token_by_serial] policy failed: {}".format(pe))
+            db.session.rollback()
+            error = sendError(None, pe)
+            error.status_code = 403
+            return error
+
+        except Exception as e:
+            log.exception("[get_token_by_serial] failed: {}".format(e))
             db.session.rollback()
             return sendError(None, e)
 
