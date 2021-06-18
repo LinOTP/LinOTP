@@ -3143,8 +3143,44 @@ function save_file_config(){
     });
 }
 
+function test_sql_config(){
+        $('#progress_test_sql').show();
+        var url = '/admin/testresolver';
+        var params = {};
+        params['name'] = $('#sql_resolvername').val();
 
-function save_sql_config(){
+        clientUrlFetch(url, params, function(xhdr, textStatus) {
+            var resp = xhdr.responseText;
+            var obj = jQuery.parseJSON(resp);
+            $('#progress_test_sql').hide();
+            if (obj.result.status) {
+                rows = obj.result.value.desc.rows;
+                if (rows >= 0) { // show number of found users
+                    alert_box({
+                        title: "SQL Test",
+                        text: "text_sql_config_success",
+                        param: escape(rows),
+                        is_escaped: true
+                    });
+                } else {
+                    alert_box({
+                        title: "SQL Test",
+                        text: "text_sql_config_fail",
+                        param: escape(obj.result.value.desc.err_string),
+                        is_escaped: true
+                    });
+                }
+            } else {
+                alert_box({
+                    title: "SQL Test",
+                    text : escape(obj.result.error.message),
+                    is_escaped: true
+                });
+            }
+         });
+}
+
+function save_sql_config(callback = null){
     // Save all SQL config
     var resolvername = $('#sql_resolvername').val();
     var resolvertype = "sqlresolver";
@@ -3190,11 +3226,18 @@ function save_sql_config(){
                              'type': ERROR,
                              'is_escaped': true});
         } else {
+            g.current_resolver_name = resolvername;
+            originalSqlFormData = $('#form_sqlconfig').serialize();
+            $('#form_sqlconfig').trigger("change");
             resolvers_load();
-            $dialog_sql_resolver.dialog('close');
+
+            if (callback) {
+               callback();
+            } else {
+                $dialog_sql_resolver.dialog('close');
+            }
         }
     });
-    return false;
 }
 
 
@@ -4319,6 +4362,22 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
+            'Test': {
+                click: function(){
+                    if ($("#form_sqlconfig").valid()) {
+                        if($("#button_test_sql").data("save-resolver")) {
+                            save_sql_config(function() {
+                                test_sql_config();
+                            });
+                        } else {
+                            test_sql_config();
+                        }
+                    }
+                },
+                id: "button_test_sql",
+                icon: "ui-icon-check",
+                text: i18n.gettext("Test connection")
+            },
             'Cancel': {
                 click: function(){
                     $(this).dialog('close');
@@ -4343,58 +4402,12 @@ $(document).ready(function(){
             });
 
             $(this).dialog_icons();
+        },
+        close: function() {
+            $("#form_sqlconfig").off("change");
         }
     });
 
-    $('#button_test_sql').click(function(event){
-        $('#progress_test_sql').show();
-        var url = '/admin/testresolver';
-        var params = {};
-        params['type']              = 'sql';
-        params['name']              = $('#sql_resolvername').val();
-        params['previous_name']     = g.current_resolver_name;
-
-        params['Driver']        = $('#sql_driver').val();
-        params['User']          = $('#sql_user').val();
-        params['Password']      = $('#sql_password').val();
-        params['Server']        = $('#sql_server').val();
-        params['Port']          = $('#sql_port').val();
-        params['Database']      = $('#sql_database').val();
-        params['Table']         = $('#sql_table').val();
-        params['Where']         = $('#sql_where').val();
-        params['Map']           = $('#sql_mapping').val();
-        params['ConnectionParams']     = $('#sql_conparams').val();
-        params['Encoding']      = $('#sql_encoding').val();
-        params['Limit']         = $('#sql_limit').val();
-
-        clientUrlFetch(url, params, function(xhdr, textStatus) {
-                    var resp = xhdr.responseText;
-                    var obj = jQuery.parseJSON(resp);
-                    $('#progress_test_sql').hide();
-                    if (obj.result.status == true) {
-                        rows = obj.result.value.desc.rows;
-                        if (rows > -1) {
-                            // show number of found users
-                            alert_box({'title': "SQL Test",
-                                       'text': "text_sql_config_success",
-                                       'param': escape(rows),
-                                       'is_escaped': true});
-                        } else {
-                            err_string = escape(obj.result.value.desc.err_string);
-                            alert_box({'title': "SQL Test",
-                                       'text': "text_sql_config_fail",
-                                       'param': err_string,
-                                       'is_escaped': true});
-                        }
-                    } else {
-                        alert_box({'title': "SQL Test",
-                                   'text' : escape(obj.result.error.message),
-                                   'is_escaped': true});
-                    }
-                    return false;
-                 });
-        return false;
-    });
 
     $dialog_file_resolver = $('#dialog_file_resolver').dialog({
         autoOpen: false,
@@ -7116,6 +7129,8 @@ function resolver_http(name, duplicate){
     });
 }
 
+var originalSqlFormData = null;
+
 function resolver_set_sql(obj) {
     $('#sql_driver').val(obj.result.value.data.Driver);
     $('#sql_server').val(obj.result.value.data.Server);
@@ -7129,6 +7144,18 @@ function resolver_set_sql(obj) {
     $('#sql_where').val(obj.result.value.data.Where);
     $('#sql_conparams').val(obj.result.value.data.conParams);
     $('#sql_encoding').val(obj.result.value.data.Encoding);
+
+    // indicate whether the resolver will be saved during test
+    originalSqlFormData = $('#form_sqlconfig').serialize();
+    changeListener = $("#form_sqlconfig").on("change", function() {
+        $("#button_test_sql").data("save-resolver", $(this).serialize() != originalSqlFormData)
+        if($("#button_test_sql").data("save-resolver")){
+            $("#button_test_sql").button('option', 'label', i18n.gettext("Save & test resolver"));
+        } else {
+            $("#button_test_sql").button('option', 'label', i18n.gettext("Test resolver"));
+        }
+
+    }).trigger( "change" );
 }
 
 /**
