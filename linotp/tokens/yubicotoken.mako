@@ -85,11 +85,7 @@ function yubico_get_config_params(){
 <fieldset>
 	<legend>${_("Yubico settings")}</legend>
 	<p>
-		${_("You get your own API key from the yubico website ")}
-		<a href="https://upgrade.yubico.com/getapikey/" target="yubico">upgrade.yubico.com</a>.
-	</p>
-	<p>
-		${_("If you do not use your own API key, the LinOTP demo API key will be used!")}
+    ${_("Enter your Yubico API key:")}
 	</p>
 	<table>
 	<tr>
@@ -122,7 +118,12 @@ function yubico_get_config_params(){
         value="3.05, 15"></td>
     </tr>
 
-	</table>
+  </table>
+  <p>
+    ${_("Get your API key from")}
+    <a href="https://upgrade.yubico.com/getapikey/" target="_blank" rel=“noopener noreferrer“>upgrade.yubico.com</a>.
+  </p>
+
 </fieldset>
 </form>
 %endif
