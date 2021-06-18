@@ -2046,8 +2046,6 @@
                         <label for=ldap_noreferrals>${_("No anonymous referral chasing")}</label></td></tr>
             </table>
 
-            <button class="action-button" id="button_test_ldap">${_("Test LDAP Server connection")}</button>
-            <div id="progress_test_ldap"><img src="/static/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connection ...")} </div>
         </fieldset>
 
         <fieldset>
@@ -2079,7 +2077,6 @@
 <script type="text/javascript">
     function translate_dialog_ldap_resolver() {
         $("#dialog_ldap_resolver" ).dialog( "option", "title", '${_("LDAP Resolver")}' );
-        $('#button_test_ldap').button("option", "label", '${_("Test LDAP connection")}');
         $('#button_preset_ad').button("option", "label", '${_("Preset AD")}');
         $('#button_preset_ldap').button("option", "label", '${_("Preset LDAP")}');
         $('#button_resolver_ldap_cancel').button("option", "label", '${_("Cancel")}');
@@ -2259,7 +2256,6 @@
 <script type="text/javascript">
     function translate_dialog_sql_resolver() {
         $("#dialog_sql_resolver" ).dialog( "option", "title", '${_("SQL Resolver")}' );
-        $('#button_test_sql').button("option", "label", '${_("Test SQL connection")}');
         $('#button_resolver_sql_cancel').button("option", "label", '${_("Cancel")}');
         $('#button_resolver_sql_save').button("option", "label", '${_("Save")}');
     }

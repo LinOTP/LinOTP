@@ -2923,7 +2923,17 @@ function setSystemConfig(values) {
     });
 }
 
-function save_ldap_config(){
+function test_ldap_config(){
+    $('#progress_test_ldap').show();
+    var url = '/admin/testresolver';
+    var params = {};
+    params['name'] = $('#ldap_resolvername').val();
+    params["session"] = getsession();
+
+    clientUrlFetch(url, params, processLDAPTestResponse);
+}
+
+function save_ldap_config(callback = null){
     // Save all LDAP config
     var resolvername = $('#ldap_resolvername').val();
     var resolvertype = "ldapresolver";
@@ -2976,11 +2986,18 @@ function save_ldap_config(){
                              'type': ERROR,
                              'is_escaped': true});
         } else {
+            g.current_resolver_name = resolvername;
+            originalLdapFormData = $('#form_ldapconfig').serialize();
+            $('#form_ldapconfig').trigger("change");
             resolvers_load();
-            $dialog_ldap_resolver.dialog('close');
+
+            if (callback) {
+               callback();
+            } else {
+                $dialog_ldap_resolver.dialog('close');
+            }
         }
     });
-    return false;
 }
 
 
@@ -4139,6 +4156,22 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
+            'Test': {
+                click: function(){
+                    if ($("#form_ldapconfig").valid()) {
+                        if($("#button_test_ldap").data("save-resolver")) {
+                            save_ldap_config(function() {
+                                test_ldap_config();
+                            });
+                        } else {
+                            test_ldap_config();
+                        }
+                    }
+                },
+                id: "button_test_ldap",
+                icon: "ui-icon-check",
+                text: i18n.gettext("Test connection")
+            },
             'Cancel': {
                 click: function(){
                     $(this).dialog('close');
@@ -4163,44 +4196,20 @@ $(document).ready(function(){
             });
 
             $(this).dialog_icons();
+        },
+        close: function() {
+            $("#form_ldapconfig").off("change");
         }
     });
 
-    $('#button_test_ldap').click(function(event){
-        $('#progress_test_ldap').show();
-
-        var url = '/admin/testresolver';
-        var params = {};
-        params['type']              = 'ldap';
-        params['name']              = $('#ldap_resolvername').val();
-        params['previous_name']     = g.current_resolver_name;
-
-        params['ldap_uri']          = $('#ldap_uri').val();
-        params['ldap_basedn']       = $('#ldap_basedn').val();
-        params['ldap_binddn']       = $('#ldap_binddn').val();
-        params['ldap_password']     = $('#ldap_password').val();
-        params['ldap_timeout']      = $('#ldap_timeout').val();
-        params['ldap_loginattr']    = $('#ldap_loginattr').val();
-        params['ldap_searchfilter'] = $('#ldap_searchfilter').val();
-        params['ldap_userfilter']   = $('#ldap_userfilter').val();
-        params['ldap_mapping']      = $('#ldap_mapping').val();
-        params['ldap_sizelimit']    = $('#ldap_sizelimit').val();
-        params['ldap_uidtype']      = $('#ldap_uidtype').val();
-
-        // checkboxes
-        params["NOREFERRALS"] = $("#ldap_noreferrals").is(':checked') ? "True" : "False";
-        params["EnforceTLS"] = $("#ldap_enforce_tls").is(':checked') ? "True" : "False";
-        params["only_trusted_certs"] = $("#ldap_only_trusted_certs").is(':checked') ? "True" : "False";
-
-        clientUrlFetch(url, params, processLDAPTestResponse);
-        return false;
-    });
     $('#button_preset_ad').click(function(event){
         $('#ldap_loginattr').val('sAMAccountName');
         $('#ldap_searchfilter').val('(sAMAccountName=*)(objectClass=user)');
         $('#ldap_userfilter').val('(&(sAMAccountName=%s)(objectClass=user))');
         $('#ldap_mapping').val('{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
         $('#ldap_uidtype').val('objectGUID');
+
+        $('#form_ldapconfig').trigger("change");
     });
     $('#button_preset_ldap').click(function(event){
         $('#ldap_loginattr').val('uid');
@@ -4208,6 +4217,8 @@ $(document).ready(function(){
         $('#ldap_userfilter').val('(&(uid=%s)(objectClass=inetOrgPerson))');
         $('#ldap_mapping').val('{ "username": "uid", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
         $('#ldap_uidtype').val('entryUUID');
+
+        $('#form_ldapconfig').trigger("change");
     });
 
 
@@ -6766,8 +6777,7 @@ function check_for_selected_resolvers(){
     }); // end of each
 }
 
-
-
+var originalLdapFormData = null;
 function resolver_set_ldap(obj) {
 
     var data = obj.result.value.data;
@@ -6797,6 +6807,18 @@ function resolver_set_ldap(obj) {
     $('#ldap_noreferrals').prop('checked', data.NOREFERRALS == "True");
 
     handler_ldaps_starttls_show();
+
+    // indicate whether the resolver will be saved during test
+    originalLdapFormData = $('#form_ldapconfig').serialize();
+    changeListener = $("#form_ldapconfig").on("change", function() {
+        $("#button_test_ldap").data("save-resolver", $(this).serialize() != originalLdapFormData)
+        if($("#button_test_ldap").data("save-resolver")){
+            $("#button_test_ldap").button('option', 'label', i18n.gettext("Save & test resolver"));
+        } else {
+            $("#button_test_ldap").button('option', 'label', i18n.gettext("Test resolver"));
+        }
+
+    }).trigger( "change" );
 }
 
 
