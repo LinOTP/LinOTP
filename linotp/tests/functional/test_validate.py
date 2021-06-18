@@ -140,20 +140,6 @@ class TestValidateController(TestController):
         self.delete_all_resolvers()
         TestController.tearDown(self)
 
-    def createMOtpToken(self):
-        parameters = {
-            "serial": "M722362",
-            "type": "motp",
-            "otpkey": "1234567890123456",
-            "otppin": "1234",
-            "user": "root",
-            "pin": "pin",
-            "description": "TestToken1",
-        }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
-
     def createTOtpToken(self, hashlib_def):
         """
         // Seed for HMAC-SHA1 - 20 bytes
@@ -1353,34 +1339,6 @@ class TestValidateController(TestController):
         assert '"value": false' in response, response
 
         self.delete_token("T2")
-
-    def test_checkMOtp(self):
-
-        self.createMOtpToken()
-
-        parameters = {"serial": "M722362"}
-        response = self.make_admin_request("show", params=parameters)
-        assert '"LinOtp.FailCount": 0' in response, response
-
-        parameters = {"user": "root", "pass": "pin7215e7"}
-        response = self.make_validate_request("check", params=parameters)
-        assert '"value": false' in response, response
-
-        parameters = {"serial": "M722362"}
-        response = self.make_admin_request("show", params=parameters)
-        assert '"LinOtp.FailCount": 1' in response, response
-
-        # we use a fixed date to check if the otp calc is still okay
-        old_day = datetime(year=2018, month=12, day=12, hour=12, minute=12)
-
-        with freezegun.freeze_time(old_day):
-
-            parameters = {"user": "root", "pass": "pin488ccf"}
-            response = self.make_validate_request("check", params=parameters)
-
-            assert '"value": true' in response, response
-
-        self.delete_token("M722362")
 
     def test_checkOTPAlgo(self):
         """
