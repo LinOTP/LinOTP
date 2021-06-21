@@ -772,6 +772,9 @@ msgstr ""
 msgid "Enter token seed"
 msgstr "Tokenseed eingeben"
 
+msgid "Enter your Yubico API key:"
+msgstr "Geben Sie ihren Yubico API Key ein:"
+
 msgid ""
 "Enter your username and OTP PIN to trigger a challenge and submit the OTP "
 "value after you recieved it."
@@ -1140,6 +1143,9 @@ msgstr "Bestimme Seriennummer über OTP-Wert"
 msgid "Get Temporary Token"
 msgstr "Temporären Token erzeugen"
 
+msgid "Get your API key from"
+msgstr "Sie bekommen einen eigenen API Key von"
+
 msgid "Given Name"
 msgstr "Vorname"
 
@@ -1279,8 +1285,7 @@ msgstr ""
 "Hier können Sie die Authentisierung mit Ihrem LinOTP Push-Token testen."
 
 msgid "Here you may try to authenticate using your LinOTP QR Token."
-msgstr ""
-"Hier können Sie die Authentisierung mit Ihrem LinOTP QR-Token testen."
+msgstr "Hier können Sie die Authentisierung mit Ihrem LinOTP QR-Token testen."
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
 msgstr "Hier können Sie sich mit Ihrem OCRA-OTP-Token authentisieren."
@@ -1384,12 +1389,6 @@ msgstr ""
 "Wenn Sie keine remote Seriennumer und auch keinen remote Benutzernamen "
 "angeben, dann wird die Authentisierungsanfrage an den Benutzer mit dem "
 "gleichen Benutzernamen weitergeleitet."
-
-msgid ""
-"If you do not use your own API key, the LinOTP demo API key will be used!"
-msgstr ""
-"Wenn Sie keinen eigenen API Key eingeben, wird ein LinOTP DEMO API Key "
-"verwendet!"
 
 msgid ""
 "If you have questions about our products or your evaluation we are happy to "
@@ -3607,9 +3606,6 @@ msgstr ""
 msgid "You entered invalid data. Please check all the Tabs!"
 msgstr "Sie haben ungültige Daten eingegeben. Bitte prüfen Sie alle Reiter!"
 
-msgid "You get your own API key from the yubico website "
-msgstr "Sie können Ihren eigenen API Key auf der Yubico Webseite erhalten "
-
 msgid ""
 "You have defined UserIdResolvers. But you need to create at least one realm "
 "that contains some of your UserIdResolvers. The realm Dialog will now open "
@@ -4487,6 +4483,12 @@ msgstr "WebUI generiert"
 #~ "Wenn Sie STARTTLS oder LDAPS verwenden, können Sie hier das CA-Zertifikat "
 #~ "im PEM-Format einfügen."
 
+#~ msgid ""
+#~ "If you do not use your own API key, the LinOTP demo API key will be used!"
+#~ msgstr ""
+#~ "Wenn Sie keinen eigenen API Key eingeben, wird ein LinOTP DEMO API Key "
+#~ "verwendet!"
+
 #~ msgid "Import tokens from Vasco DPX file"
 #~ msgstr "VASCO-DPX-Tokendatei importieren"
 
@@ -4896,6 +4898,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "You do not have the rights to monitor these realms."
 #~ msgstr "Sie haben keine Rechte die folgenden Realms zu monitoren."
+
+#~ msgid "You get your own API key from the yubico website "
+#~ msgstr "Sie können Ihren eigenen API Key auf der Yubico Webseite erhalten "
 
 #~ msgid ""
 #~ "You may resync the token <span id=tokenid_resync></span>. Therefor please "
