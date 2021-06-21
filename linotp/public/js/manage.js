@@ -6854,10 +6854,8 @@ function resolver_ldap(name, duplicate){
         }
     };
 
-    g.current_resolver_name = (duplicate ? "" : name);
-     $('#ldap_resolvername').val(g.current_resolver_name);
-
-    var critical_inputs = $('#ldap_uri, #ldap_basedn, #ldap_binddn');
+    g.current_resolver_name = duplicate ? "" : name;
+    $('#ldap_resolvername').val(g.current_resolver_name);
 
     if (name) {
         // load the config of the resolver "name".
@@ -6874,11 +6872,19 @@ function resolver_ldap(name, duplicate){
                            'is_escaped': true});
             }
         });
+    } else {
+        resolver_set_ldap(obj);
     }
 
+    var critical_inputs = $('#ldap_uri, #ldap_basedn, #ldap_binddn');
+    
+    // reset critical input password requirement validation
+    critical_inputs.off("change keyup");
+    $("#ldap_password").removeClass("input-placeholder-warning");
+    
+    // enable critical input password requirement validation for resolver edits 
     if(g.current_resolver_name) {
         $('#ldap_password').attr("placeholder", password_placeholder_not_changed);
-
         critical_inputs.on('change keyup', function(e) {
             var sth_changed = $('#ldap_uri').val()    != obj.result.value.data.LDAPURI
                            || $('#ldap_basedn').val() != obj.result.value.data.LDAPBASE
@@ -6901,11 +6907,6 @@ function resolver_ldap(name, duplicate){
     }
     else {
         $('#ldap_password').attr("placeholder", password_placeholder_required);
-        $("#ldap_password").removeClass("input-placeholder-warning");
-
-        critical_inputs.off("change keyup");
-
-        resolver_set_ldap(obj);
     }
 
     $('#progress_test_ldap').hide();
