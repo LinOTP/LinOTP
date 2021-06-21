@@ -26,7 +26,49 @@
 
 import pytest
 
-from linotp.provider.smsprovider.RestSMSProvider import RestSMSProvider
+from linotp.provider.smsprovider.RestSMSProvider import (
+    RestSMSProvider,
+    json_replace,
+)
+
+
+class TestJSONReplace:
+    """
+    Test the nested replacement mechanism for JSON data structures.
+    """
+
+    @pytest.mark.parametrize(
+        "base,path,expected",
+        [
+            ({"foo": "bar"}, "foo", {"foo": "MOD"}),
+            ({"foo": {"bar": "baz"}}, "foo.bar", {"foo": {"bar": "MOD"}}),
+            ({"foo": ["bar", "baz"]}, "foo.1", {"foo": ["bar", "MOD"]}),
+            ({"foo": ["bar", "baz"]}, "foo[1]", {"foo": ["bar", "MOD"]}),
+            ({"foo": ["bar"]}, "foo[1]", {"foo": ["bar", "MOD"]}),
+            ({"foo": ["bar"]}, "foo[2]", {"foo": ["bar", "MOD"]}),
+            (
+                {"foo": [{"bar": "baz"}]},
+                "foo[0].bar",
+                {"foo": [{"bar": "MOD"}]},
+            ),
+            (
+                {"foo": [["bar", "baz"], ["quux", "glorp"]]},
+                "foo[1][0]",
+                {"foo": [["bar", "baz"], ["MOD", "glorp"]]},
+            ),
+            ({"foo": "bar"}, "foo.bar.baz", TypeError),
+        ],
+    )
+    def test_json_replace(self, base, path, expected):
+        # Exception classes (like all classes) are instances of `type`.
+        # `dict` objects (like all objects) are instances of `object`.
+        if isinstance(expected, type):  # This is an (exception) class
+            with pytest.raises(expected):
+                json_replace(base, path, "MOD")
+        else:  # This is an expected object
+            replaced = json_replace(base, path, "MOD")
+            assert expected == replaced
+
 
 PHONE = "1234567890"
 
