@@ -14,6 +14,8 @@ linotp (3.1~0dev-0) experimental; urgency=low
 
   Fixes:
   * motp tokens can now be used in challenge response mode
+  * adjust yubico token config text which clarifies that a dedicated
+    api key from yubico is required.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 
