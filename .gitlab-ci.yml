@@ -6,7 +6,9 @@ variables:
   DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
   DEPENDENCY_DEB_REPO: http://avocado.corp.lsexperts.de/deb-repo buster-dev linotp
-  DEPENDENCY_GPG_KEYID: 7CC736921C5A21B7
+  # DEPENDENCY_GPG_KEYID: 7CC736921C5A21B7
+  DEPENDENCY_GPG_KEYID: ""
+  DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/ki-archive-keyring.gpg
   DOCKER_TAGS: $CI_PIPELINE_ID
   CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
   NOSE_COVER_PACKAGE: linotp
