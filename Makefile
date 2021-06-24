@@ -229,8 +229,6 @@ DEBIAN_MIRROR=deb.debian.org
 # Override to change the dependency repository used to install required packages
 ifndef DEPENDENCY_DEB_REPO
 DEPENDENCY_DEB_REPO=http://www.linotp.org/apt/debian buster linotp
-endif
-ifndef DEPENDENCY_GPG_KEYID
 DEPENDENCY_GPG_KEYID=913DFF12F86258E5
 endif
 
