@@ -24,69 +24,90 @@
 #    Support: www.keyidentity.com
 #
 
-import unittest
-from unittest import TestCase
+import pytest
 
-from linotp.provider.smsprovider.RestSMSProvider import RestSMSProvider
+from linotp.provider.smsprovider.RestSMSProvider import (
+    RestSMSProvider,
+    json_replace,
+)
 
 
-class TestPhoneTemplate(TestCase):
+class TestJSONReplace:
+    """
+    Test the nested replacement mechanism for JSON data structures.
+    """
+
+    @pytest.mark.parametrize(
+        "base,path,expected",
+        [
+            ({"foo": "bar"}, "foo", {"foo": "MOD"}),
+            ({"foo": {"bar": "baz"}}, "foo.bar", {"foo": {"bar": "MOD"}}),
+            ({"foo": ["bar", "baz"]}, "foo.1", {"foo": ["bar", "MOD"]}),
+            ({"foo": ["bar", "baz"]}, "foo[1]", {"foo": ["bar", "MOD"]}),
+            ({"foo": ["bar"]}, "foo[1]", {"foo": ["bar", "MOD"]}),
+            ({"foo": ["bar"]}, "foo[2]", {"foo": ["bar", "MOD"]}),
+            (
+                {"foo": [{"bar": "baz"}]},
+                "foo[0].bar",
+                {"foo": [{"bar": "MOD"}]},
+            ),
+            (
+                {"foo": [["bar", "baz"], ["quux", "glorp"]]},
+                "foo[1][0]",
+                {"foo": [["bar", "baz"], ["MOD", "glorp"]]},
+            ),
+            ({"foo": "bar"}, "foo.bar.baz", TypeError),
+        ],
+    )
+    def test_json_replace(self, base, path, expected):
+        # Exception classes (like all classes) are instances of `type`.
+        # `dict` objects (like all objects) are instances of `object`.
+        if isinstance(expected, type):  # This is an (exception) class
+            with pytest.raises(expected):
+                json_replace(base, path, "MOD")
+        else:  # This is an expected object
+            replaced = json_replace(base, path, "MOD")
+            assert expected == replaced
+
+
+PHONE = "1234567890"
+
+
+class TestPhoneTemplate:
     """
     test the replacement of phone numbers in the template
     """
 
-    def test_simple_phone(self):
-        """
-        run test vector for the template phone replacement
-        """
-
-        phone = "1234567890"
-
-        test_vector = [
-            # simple text
-            ("<phone>", phone),
-            # empty text
-            ("", phone),
-            # none
-            (None, phone),
-            # other simple type
-            (1, phone),
-            # text replace
-            ("This is my <phone> number", "This is my %s number" % phone),
-            # list replace
-            (["<phone>"], [phone]),
-            # list replace with multiple items
+    @pytest.mark.parametrize(
+        "template,expected",
+        [
+            ("<phone>", PHONE),  # Simple text
+            ("", PHONE),  # Empty text
+            (None, PHONE),  # None
+            (1, PHONE),  # Other simple type
+            # Text replace
+            ("This is my <phone> number", f"This is my {PHONE} number"),
+            # List replace
+            (["<phone>"], [PHONE]),
+            # List replace with multiple items
             (
                 [1, "phone", "<phone>", {"<phone>": "<phone>"}],
-                [1, "phone", phone, {"<phone>": "<phone>"}],
+                [1, "phone", PHONE, {"<phone>": "<phone>"}],
             ),
-            # list replace with multiple items
-            (
-                [
-                    "<phone>",
-                    "This is my <phone> number",
-                ],
-                [
-                    phone,
-                    "This is my %s number" % phone,
-                ],
-            ),
-            # other data types: dict
-            ({"<phone>": "<phone>"}, phone),
-            # other data types: set
-            (set("<phone>"), phone),
-            # other data types: tuple
-            (("<phone>",), phone),
-        ]
-
-        for item in test_vector:
-            template, expected = item
-
-            replaced = RestSMSProvider._apply_phone_template(phone, template)
-
-            assert expected == replaced
-
-        return
+            # Other data types: dict
+            ({"<phone>": "<phone>"}, PHONE),
+            # Other data types: set
+            (set("<phone>"), PHONE),
+            # Other data types: tuple
+            (("<phone>",), PHONE),
+        ],
+    )
+    def test_simple_phone(self, template, expected):
+        """
+        run tests for the template phone replacement
+        """
+        replaced = RestSMSProvider._apply_phone_template(PHONE, template)
+        assert expected == replaced
 
 
 # eof
