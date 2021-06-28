@@ -1970,30 +1970,53 @@ function parseXML(xml, textStatus){
     var value = $(xml).find('value').text();
     var message = $(xml).find('message').text();
 
-    if ("error" == textStatus) {
-        alert_info_text({'text': "text_linotp_comm_fail",
-                         'type': ERROR,
-                         'is_escaped': true});
-    }
-    else {
-        if ("False" == status) {
-            alert_info_text({'text': "text_token_import_failed",
-                             'param': escape(message),
-                             'type': ERROR,
-                             'is_escaped': true,
-                             });
-        }
-        else {
-            // reload the token_table
-            $('#token_table').flexReload();
-            $('#selected_tokens').html('');
-            disable_all_buttons();
-            alert_info_text({'text': "text_token_import_result",
-                             'param': escape(value),
-                             'is_escaped': true,
-                             });
+    textStatus = textStatus.toLowerCase();
+    status = status.toLowerCase();
 
+    /* no xml response: try to interpret the result as json */
+    if (textStatus == "parsererror") {
+        var json_response = JSON.parse(xml.responseText);
+
+        var error_message = json_response
+            && json_response.result
+            && json_response.result.error
+            && json_response.result.error.message
+            || xml.responseText;
+
+        if(error_message.length > 200) {
+            error_message = error_message.substring(0, 200) + "…";
         }
+
+        alert_info_text({
+            text: "Token import failed: " + error_message,
+            type: ERROR,
+            is_escaped: false
+        });
+
+    } else if (textStatus == "error") {
+        alert_info_text({
+            text: "text_linotp_comm_fail",
+            type: ERROR,
+            is_escaped: true
+        });
+    } else if (status == "false") {
+        alert_info_text({
+            text: "text_token_import_failed",
+            param: escape(message),
+            type: ERROR,
+            is_escaped: true,
+        });
+    } else {
+        // reload the token_table
+        $('#token_table').flexReload();
+        $('#selected_tokens').html('');
+        disable_all_buttons();
+        alert_info_text({
+            text: "text_token_import_result",
+            param: escape(value),
+            is_escaped: true,
+        });
+
     }
     hide_waiting();
 };
