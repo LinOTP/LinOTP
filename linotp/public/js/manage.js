@@ -7190,12 +7190,10 @@ function resolver_sql(name, duplicate){
         }
     };
 
-    g.current_resolver_name = (duplicate ? "" : name);
+    g.current_resolver_name = duplicate ? "" : name;
     $('#sql_resolvername').val(g.current_resolver_name);
 
     $('#progress_test_sql').hide();
-
-    var critical_inputs = $('#sql_driver, #sql_server, #sql_port, #sql_database, #sql_user');
 
     if (name) {
         // load the config of the resolver "name".
@@ -7212,7 +7210,17 @@ function resolver_sql(name, duplicate){
                            'is_escaped':true});
             }
         });
+    } else {
+        resolver_set_sql(obj);
     }
+
+    var critical_inputs = $('#sql_driver, #sql_server, #sql_port, #sql_database, #sql_user');
+
+    // reset critical input password requirement validation
+    critical_inputs.off("change keyup");
+    $("#sql_password").removeClass("input-placeholder-warning");
+    
+    // enable critical input password requirement validation for resolver edits 
     if(g.current_resolver_name) {
         $('#sql_password').attr("placeholder", password_placeholder_not_changed);
 
@@ -7240,10 +7248,6 @@ function resolver_sql(name, duplicate){
     }
     else {
         $('#sql_password').attr("placeholder", password_placeholder_required);
-
-        critical_inputs.off("change keyup");
-
-        resolver_set_sql(obj);
     }
 
     $dialog_sql_resolver.dialog('open');
