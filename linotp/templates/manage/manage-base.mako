@@ -2069,8 +2069,8 @@
                     <td><input type="text" name="ldap_uidtype" id="ldap_uidtype" size="20"></td></tr>
                 </table>
                 <table width="100%"><tr>
-                <td><button class="action-button" id="button_preset_ad">${_("Preset Active Directory")}</button></td>
-                <td><button class="action-button" id="button_preset_ldap">${_("Preset LDAP")}</button></td>
+                <td><button class="action-button" id="button_preset_ad" type="button">${_("Preset Active Directory")}</button></td>
+                <td><button class="action-button" id="button_preset_ldap" type="button">${_("Preset LDAP")}</button></td>
                 </tr>
             </table>
         </fieldset>

@@ -4201,7 +4201,6 @@ $(document).ready(function(){
         $('#ldap_userfilter').val('(&(sAMAccountName=%s)(objectClass=user))');
         $('#ldap_mapping').val('{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
         $('#ldap_uidtype').val('objectGUID');
-        return false;
     });
     $('#button_preset_ldap').click(function(event){
         $('#ldap_loginattr').val('uid');
@@ -4209,8 +4208,6 @@ $(document).ready(function(){
         $('#ldap_userfilter').val('(&(uid=%s)(objectClass=inetOrgPerson))');
         $('#ldap_mapping').val('{ "username": "uid", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
         $('#ldap_uidtype').val('entryUUID');
-        // CKO: we need to return false, otherwise the page will be reloaded!
-        return false;
     });
 
 
