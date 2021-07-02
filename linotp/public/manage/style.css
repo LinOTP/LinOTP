@@ -816,3 +816,8 @@ span.managed-tag {
 div#dialog_setexpiration p, div#dialog_setexpiration div {
   margin: 10px 0;
 }
+
+#button_test_ldap, #button_test_sql {
+  position: absolute;
+  left: 1em;
+}

@@ -2923,7 +2923,17 @@ function setSystemConfig(values) {
     });
 }
 
-function save_ldap_config(){
+function test_ldap_config(){
+    $('#progress_test_ldap').show();
+    var url = '/admin/testresolver';
+    var params = {};
+    params['name'] = $('#ldap_resolvername').val();
+    params["session"] = getsession();
+
+    clientUrlFetch(url, params, processLDAPTestResponse);
+}
+
+function save_ldap_config(callback = null){
     // Save all LDAP config
     var resolvername = $('#ldap_resolvername').val();
     var resolvertype = "ldapresolver";
@@ -2976,11 +2986,18 @@ function save_ldap_config(){
                              'type': ERROR,
                              'is_escaped': true});
         } else {
+            g.current_resolver_name = resolvername;
+            originalLdapFormData = $('#form_ldapconfig').serialize();
+            $('#form_ldapconfig').trigger("change");
             resolvers_load();
-            $dialog_ldap_resolver.dialog('close');
+
+            if (callback) {
+               callback();
+            } else {
+                $dialog_ldap_resolver.dialog('close');
+            }
         }
     });
-    return false;
 }
 
 
@@ -3126,8 +3143,44 @@ function save_file_config(){
     });
 }
 
+function test_sql_config(){
+        $('#progress_test_sql').show();
+        var url = '/admin/testresolver';
+        var params = {};
+        params['name'] = $('#sql_resolvername').val();
 
-function save_sql_config(){
+        clientUrlFetch(url, params, function(xhdr, textStatus) {
+            var resp = xhdr.responseText;
+            var obj = jQuery.parseJSON(resp);
+            $('#progress_test_sql').hide();
+            if (obj.result.status) {
+                rows = obj.result.value.desc.rows;
+                if (rows >= 0) { // show number of found users
+                    alert_box({
+                        title: "SQL Test",
+                        text: "text_sql_config_success",
+                        param: escape(rows),
+                        is_escaped: true
+                    });
+                } else {
+                    alert_box({
+                        title: "SQL Test",
+                        text: "text_sql_config_fail",
+                        param: escape(obj.result.value.desc.err_string),
+                        is_escaped: true
+                    });
+                }
+            } else {
+                alert_box({
+                    title: "SQL Test",
+                    text : escape(obj.result.error.message),
+                    is_escaped: true
+                });
+            }
+         });
+}
+
+function save_sql_config(callback = null){
     // Save all SQL config
     var resolvername = $('#sql_resolvername').val();
     var resolvertype = "sqlresolver";
@@ -3173,11 +3226,18 @@ function save_sql_config(){
                              'type': ERROR,
                              'is_escaped': true});
         } else {
+            g.current_resolver_name = resolvername;
+            originalSqlFormData = $('#form_sqlconfig').serialize();
+            $('#form_sqlconfig').trigger("change");
             resolvers_load();
-            $dialog_sql_resolver.dialog('close');
+
+            if (callback) {
+               callback();
+            } else {
+                $dialog_sql_resolver.dialog('close');
+            }
         }
     });
-    return false;
 }
 
 
@@ -4139,6 +4199,22 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
+            'Test': {
+                click: function(){
+                    if ($("#form_ldapconfig").valid()) {
+                        if($("#button_test_ldap").data("save-resolver")) {
+                            save_ldap_config(function() {
+                                test_ldap_config();
+                            });
+                        } else {
+                            test_ldap_config();
+                        }
+                    }
+                },
+                id: "button_test_ldap",
+                icon: "ui-icon-check",
+                text: i18n.gettext("Test connection")
+            },
             'Cancel': {
                 click: function(){
                     $(this).dialog('close');
@@ -4163,45 +4239,20 @@ $(document).ready(function(){
             });
 
             $(this).dialog_icons();
+        },
+        close: function() {
+            $("#form_ldapconfig").off("change");
         }
     });
 
-    $('#button_test_ldap').click(function(event){
-        $('#progress_test_ldap').show();
-
-        var url = '/admin/testresolver';
-        var params = {};
-        params['type']              = 'ldap';
-        params['name']              = $('#ldap_resolvername').val();
-        params['previous_name']     = g.current_resolver_name;
-
-        params['ldap_uri']          = $('#ldap_uri').val();
-        params['ldap_basedn']       = $('#ldap_basedn').val();
-        params['ldap_binddn']       = $('#ldap_binddn').val();
-        params['ldap_password']     = $('#ldap_password').val();
-        params['ldap_timeout']      = $('#ldap_timeout').val();
-        params['ldap_loginattr']    = $('#ldap_loginattr').val();
-        params['ldap_searchfilter'] = $('#ldap_searchfilter').val();
-        params['ldap_userfilter']   = $('#ldap_userfilter').val();
-        params['ldap_mapping']      = $('#ldap_mapping').val();
-        params['ldap_sizelimit']    = $('#ldap_sizelimit').val();
-        params['ldap_uidtype']      = $('#ldap_uidtype').val();
-
-        // checkboxes
-        params["NOREFERRALS"] = $("#ldap_noreferrals").is(':checked') ? "True" : "False";
-        params["EnforceTLS"] = $("#ldap_enforce_tls").is(':checked') ? "True" : "False";
-        params["only_trusted_certs"] = $("#ldap_only_trusted_certs").is(':checked') ? "True" : "False";
-
-        clientUrlFetch(url, params, processLDAPTestResponse);
-        return false;
-    });
     $('#button_preset_ad').click(function(event){
         $('#ldap_loginattr').val('sAMAccountName');
         $('#ldap_searchfilter').val('(sAMAccountName=*)(objectClass=user)');
         $('#ldap_userfilter').val('(&(sAMAccountName=%s)(objectClass=user))');
         $('#ldap_mapping').val('{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
         $('#ldap_uidtype').val('objectGUID');
-        return false;
+
+        $('#form_ldapconfig').trigger("change");
     });
     $('#button_preset_ldap').click(function(event){
         $('#ldap_loginattr').val('uid');
@@ -4209,8 +4260,8 @@ $(document).ready(function(){
         $('#ldap_userfilter').val('(&(uid=%s)(objectClass=inetOrgPerson))');
         $('#ldap_mapping').val('{ "username": "uid", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
         $('#ldap_uidtype').val('entryUUID');
-        // CKO: we need to return false, otherwise the page will be reloaded!
-        return false;
+
+        $('#form_ldapconfig').trigger("change");
     });
 
 
@@ -4311,6 +4362,22 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
+            'Test': {
+                click: function(){
+                    if ($("#form_sqlconfig").valid()) {
+                        if($("#button_test_sql").data("save-resolver")) {
+                            save_sql_config(function() {
+                                test_sql_config();
+                            });
+                        } else {
+                            test_sql_config();
+                        }
+                    }
+                },
+                id: "button_test_sql",
+                icon: "ui-icon-check",
+                text: i18n.gettext("Test connection")
+            },
             'Cancel': {
                 click: function(){
                     $(this).dialog('close');
@@ -4335,58 +4402,12 @@ $(document).ready(function(){
             });
 
             $(this).dialog_icons();
+        },
+        close: function() {
+            $("#form_sqlconfig").off("change");
         }
     });
 
-    $('#button_test_sql').click(function(event){
-        $('#progress_test_sql').show();
-        var url = '/admin/testresolver';
-        var params = {};
-        params['type']              = 'sql';
-        params['name']              = $('#sql_resolvername').val();
-        params['previous_name']     = g.current_resolver_name;
-
-        params['Driver']        = $('#sql_driver').val();
-        params['User']          = $('#sql_user').val();
-        params['Password']      = $('#sql_password').val();
-        params['Server']        = $('#sql_server').val();
-        params['Port']          = $('#sql_port').val();
-        params['Database']      = $('#sql_database').val();
-        params['Table']         = $('#sql_table').val();
-        params['Where']         = $('#sql_where').val();
-        params['Map']           = $('#sql_mapping').val();
-        params['ConnectionParams']     = $('#sql_conparams').val();
-        params['Encoding']      = $('#sql_encoding').val();
-        params['Limit']         = $('#sql_limit').val();
-
-        clientUrlFetch(url, params, function(xhdr, textStatus) {
-                    var resp = xhdr.responseText;
-                    var obj = jQuery.parseJSON(resp);
-                    $('#progress_test_sql').hide();
-                    if (obj.result.status == true) {
-                        rows = obj.result.value.desc.rows;
-                        if (rows > -1) {
-                            // show number of found users
-                            alert_box({'title': "SQL Test",
-                                       'text': "text_sql_config_success",
-                                       'param': escape(rows),
-                                       'is_escaped': true});
-                        } else {
-                            err_string = escape(obj.result.value.desc.err_string);
-                            alert_box({'title': "SQL Test",
-                                       'text': "text_sql_config_fail",
-                                       'param': err_string,
-                                       'is_escaped': true});
-                        }
-                    } else {
-                        alert_box({'title': "SQL Test",
-                                   'text' : escape(obj.result.error.message),
-                                   'is_escaped': true});
-                    }
-                    return false;
-                 });
-        return false;
-    });
 
     $dialog_file_resolver = $('#dialog_file_resolver').dialog({
         autoOpen: false,
@@ -6769,8 +6790,7 @@ function check_for_selected_resolvers(){
     }); // end of each
 }
 
-
-
+var originalLdapFormData = null;
 function resolver_set_ldap(obj) {
 
     var data = obj.result.value.data;
@@ -6800,6 +6820,18 @@ function resolver_set_ldap(obj) {
     $('#ldap_noreferrals').prop('checked', data.NOREFERRALS == "True");
 
     handler_ldaps_starttls_show();
+
+    // indicate whether the resolver will be saved during test
+    originalLdapFormData = $('#form_ldapconfig').serialize();
+    changeListener = $("#form_ldapconfig").on("change", function() {
+        $("#button_test_ldap").data("save-resolver", $(this).serialize() != originalLdapFormData)
+        if($("#button_test_ldap").data("save-resolver")){
+            $("#button_test_ldap").button('option', 'label', i18n.gettext("Save & test resolver"));
+        } else {
+            $("#button_test_ldap").button('option', 'label', i18n.gettext("Test resolver"));
+        }
+
+    }).trigger( "change" );
 }
 
 
@@ -6835,10 +6867,8 @@ function resolver_ldap(name, duplicate){
         }
     };
 
-    g.current_resolver_name = (duplicate ? "" : name);
-     $('#ldap_resolvername').val(g.current_resolver_name);
-
-    var critical_inputs = $('#ldap_uri, #ldap_basedn, #ldap_binddn');
+    g.current_resolver_name = duplicate ? "" : name;
+    $('#ldap_resolvername').val(g.current_resolver_name);
 
     if (name) {
         // load the config of the resolver "name".
@@ -6855,11 +6885,19 @@ function resolver_ldap(name, duplicate){
                            'is_escaped': true});
             }
         });
+    } else {
+        resolver_set_ldap(obj);
     }
 
+    var critical_inputs = $('#ldap_uri, #ldap_basedn, #ldap_binddn');
+    
+    // reset critical input password requirement validation
+    critical_inputs.off("change keyup");
+    $("#ldap_password").removeClass("input-placeholder-warning");
+    
+    // enable critical input password requirement validation for resolver edits 
     if(g.current_resolver_name) {
         $('#ldap_password').attr("placeholder", password_placeholder_not_changed);
-
         critical_inputs.on('change keyup', function(e) {
             var sth_changed = $('#ldap_uri').val()    != obj.result.value.data.LDAPURI
                            || $('#ldap_basedn').val() != obj.result.value.data.LDAPBASE
@@ -6882,11 +6920,6 @@ function resolver_ldap(name, duplicate){
     }
     else {
         $('#ldap_password').attr("placeholder", password_placeholder_required);
-        $("#ldap_password").removeClass("input-placeholder-warning");
-
-        critical_inputs.off("change keyup");
-
-        resolver_set_ldap(obj);
     }
 
     $('#progress_test_ldap').hide();
@@ -7096,6 +7129,8 @@ function resolver_http(name, duplicate){
     });
 }
 
+var originalSqlFormData = null;
+
 function resolver_set_sql(obj) {
     $('#sql_driver').val(obj.result.value.data.Driver);
     $('#sql_server').val(obj.result.value.data.Server);
@@ -7109,6 +7144,18 @@ function resolver_set_sql(obj) {
     $('#sql_where').val(obj.result.value.data.Where);
     $('#sql_conparams').val(obj.result.value.data.conParams);
     $('#sql_encoding').val(obj.result.value.data.Encoding);
+
+    // indicate whether the resolver will be saved during test
+    originalSqlFormData = $('#form_sqlconfig').serialize();
+    changeListener = $("#form_sqlconfig").on("change", function() {
+        $("#button_test_sql").data("save-resolver", $(this).serialize() != originalSqlFormData)
+        if($("#button_test_sql").data("save-resolver")){
+            $("#button_test_sql").button('option', 'label', i18n.gettext("Save & test resolver"));
+        } else {
+            $("#button_test_sql").button('option', 'label', i18n.gettext("Test resolver"));
+        }
+
+    }).trigger( "change" );
 }
 
 /**
@@ -7143,12 +7190,10 @@ function resolver_sql(name, duplicate){
         }
     };
 
-    g.current_resolver_name = (duplicate ? "" : name);
+    g.current_resolver_name = duplicate ? "" : name;
     $('#sql_resolvername').val(g.current_resolver_name);
 
     $('#progress_test_sql').hide();
-
-    var critical_inputs = $('#sql_driver, #sql_server, #sql_port, #sql_database, #sql_user');
 
     if (name) {
         // load the config of the resolver "name".
@@ -7165,7 +7210,17 @@ function resolver_sql(name, duplicate){
                            'is_escaped':true});
             }
         });
+    } else {
+        resolver_set_sql(obj);
     }
+
+    var critical_inputs = $('#sql_driver, #sql_server, #sql_port, #sql_database, #sql_user');
+
+    // reset critical input password requirement validation
+    critical_inputs.off("change keyup");
+    $("#sql_password").removeClass("input-placeholder-warning");
+    
+    // enable critical input password requirement validation for resolver edits 
     if(g.current_resolver_name) {
         $('#sql_password').attr("placeholder", password_placeholder_not_changed);
 
@@ -7193,10 +7248,6 @@ function resolver_sql(name, duplicate){
     }
     else {
         $('#sql_password').attr("placeholder", password_placeholder_required);
-
-        critical_inputs.off("change keyup");
-
-        resolver_set_sql(obj);
     }
 
     $dialog_sql_resolver.dialog('open');

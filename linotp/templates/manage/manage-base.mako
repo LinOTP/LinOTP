@@ -2046,8 +2046,6 @@
                         <label for=ldap_noreferrals>${_("No anonymous referral chasing")}</label></td></tr>
             </table>
 
-            <button class="action-button" id="button_test_ldap">${_("Test LDAP Server connection")}</button>
-            <div id="progress_test_ldap"><img src="/static/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connection ...")} </div>
         </fieldset>
 
         <fieldset>
@@ -2069,8 +2067,8 @@
                     <td><input type="text" name="ldap_uidtype" id="ldap_uidtype" size="20"></td></tr>
                 </table>
                 <table width="100%"><tr>
-                <td><button class="action-button" id="button_preset_ad">${_("Preset Active Directory")}</button></td>
-                <td><button class="action-button" id="button_preset_ldap">${_("Preset LDAP")}</button></td>
+                <td><button class="action-button" id="button_preset_ad" type="button">${_("Preset Active Directory")}</button></td>
+                <td><button class="action-button" id="button_preset_ldap" type="button">${_("Preset LDAP")}</button></td>
                 </tr>
             </table>
         </fieldset>
@@ -2079,7 +2077,6 @@
 <script type="text/javascript">
     function translate_dialog_ldap_resolver() {
         $("#dialog_ldap_resolver" ).dialog( "option", "title", '${_("LDAP Resolver")}' );
-        $('#button_test_ldap').button("option", "label", '${_("Test LDAP connection")}');
         $('#button_preset_ad').button("option", "label", '${_("Preset AD")}');
         $('#button_preset_ldap').button("option", "label", '${_("Preset LDAP")}');
         $('#button_resolver_ldap_cancel').button("option", "label", '${_("Cancel")}');
@@ -2238,8 +2235,6 @@
             <tr><td><label for=sql_conparams>${_("Additional connection parameters")}:</label></td>
                 <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30"></td></tr>
         </table>
-        <button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
-        <div id="progress_test_sql"><img src="/static/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
     </fieldset>
 
     <fieldset>
@@ -2259,7 +2254,6 @@
 <script type="text/javascript">
     function translate_dialog_sql_resolver() {
         $("#dialog_sql_resolver" ).dialog( "option", "title", '${_("SQL Resolver")}' );
-        $('#button_test_sql').button("option", "label", '${_("Test SQL connection")}');
         $('#button_resolver_sql_cancel').button("option", "label", '${_("Cancel")}');
         $('#button_resolver_sql_save').button("option", "label", '${_("Save")}');
     }
