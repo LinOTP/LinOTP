@@ -15,10 +15,10 @@ linotp (3.1~0dev-0) experimental; urgency=low
   * Token monitoring now better sanitizes the status parameter
 
   Fixes:
-  * motp tokens can now be used in challenge response mode
-  * adjust yubico token config text which clarifies that a dedicated
-    api key from yubico is required.
-  * display error message in Manage UI if token import fails
+  * mOTP tokens can now be used in challenge response mode
+  * Adjust yubico token config text to make it clear that a dedicated
+    API key from yubico is required.
+  * An error message is now shown in the Manage UI if a token import fails
   * API /admin/testconnection accepts only the name of an existing resolver as
     parameter. Other parameters are ignored. This fixes the ability to submit
     unauthorized ldap connection requests.
