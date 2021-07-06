@@ -2978,8 +2978,8 @@ function save_ldap_config(callback = null){
 
     show_waiting();
 
-    $.post(url, params,
-     function(data, textStatus, XMLHttpRequest){
+    $.post(url, params, function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
         if (data.result.status == false) {
             alert_info_text({'text': "text_error_ldap",
                              'param': escape(data.result.error.message),
@@ -3117,6 +3117,7 @@ function save_tokenrealm_config(){
 * save the passwd resolver config
 */
 function save_file_config(){
+    var url = '/system/setResolver';
     var resolvername = $('#file_resolvername').val();
     var resolvertype = "passwdresolver";
     var fileName = $('#file_filename').val();
@@ -3129,8 +3130,8 @@ function save_file_config(){
     params['fileName'] = fileName;
     params['session'] = getsession();
     show_waiting();
-    $.post('/system/setResolver', params,
-     function(data, textStatus, XMLHttpRequest){
+    $.post(url, params, function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
         if (data.result.status == false) {
             alert_info_text({'text': "text_error_save_file",
                              'param': escape(data.result.error.message),
@@ -3218,8 +3219,8 @@ function save_sql_config(callback = null){
 
     show_waiting();
 
-    $.post(url, params,
-     function(data, textStatus, XMLHttpRequest){
+    $.post(url, params, function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
         if (data.result.status == false) {
             alert_info_text({'text': "text_error_save_sql",
                              'param': escape(data.result.error.message),

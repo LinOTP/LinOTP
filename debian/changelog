@@ -21,6 +21,7 @@ linotp (3.1~0dev-0) experimental; urgency=low
   * API /admin/testconnection accepts only the name of an existing resolver as
     parameter. Other parameters are ignored. This fixes the ability to submit
     unauthorized ldap connection requests.
+  * Manage-UI no longer hangs on failed resolver save requests.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 
