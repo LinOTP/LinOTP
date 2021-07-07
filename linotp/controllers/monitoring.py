@@ -147,13 +147,16 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-            # extract the list of requested stati
+            # extract and strip the list of requested statuses + default
+            # statuses and ignore empty values.
 
-            status_set = set(self.request_params.get("status", "").split(","))
-            status_set.add("total")
-            status_set.add("total users")
-
-            status = list(status_set)
+            status_params = self.request_params.get("status", "").split(",")
+            status = list(
+                set(
+                    ["total", "total users"]
+                    + [s.strip() for s in status_params if s.strip()]
+                )
+            )
 
             request_realms = self.request_params.get("realms", "").split(",")
 
