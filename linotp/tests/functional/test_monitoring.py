@@ -264,20 +264,21 @@ class TestMonitoringController(TestController):
         """
         test the handling of token in multiple realms
         """
-        sqlconnect = self.app.config.get("DATABASE_URI")
-        if sqlconnect.startswith(("mysql", "sqlite")):
-            pytest.xfail("monitoring query problem LINOTP-1540")
-
         # create some tokens
 
+        self.create_token(serial="0040")
         self.create_token(serial="0041")
         self.create_token(serial="0042", user="root", realm="mydefrealm")
 
         # set multiple realms for this token
 
-        newrealms = {"realms": "myotherrealm,mydefrealm", "serial": "0042"}
         response = self.make_authenticated_request(
-            controller="admin", action="tokenrealm", params=newrealms
+            controller="admin",
+            action="tokenrealm",
+            params={
+                "realms": "myotherrealm,mydefrealm",
+                "serial": "0042",
+            },
         )
         assert '"value": 1' in response, response
 

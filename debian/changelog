@@ -22,6 +22,8 @@ linotp (3.1~0dev-0) experimental; urgency=low
     parameter. Other parameters are ignored. This fixes the ability to submit
     unauthorized ldap connection requests.
   * Manage-UI no longer hangs on failed resolver save requests.
+  * Token monitoring now correctly counts tokens that are assigned to multiple realms
+    only once in mysql and sqlite databases.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 

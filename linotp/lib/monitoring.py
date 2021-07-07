@@ -96,28 +96,28 @@ class MonitorHandler(object):
 
         if "total" in status:
 
-            # count all tokens in an realm
-
-            token_query = db.session.query(TokenRealm, Realm, Token)
-            token_query = token_query.filter(r_condition)
-            token_query = token_query.distinct(Token.LinOtpTokenId)
-
-            result["total"] = token_query.count()
+            # count all tokens in the given realms
+            result["total"] = (
+                db.session.query(Token.LinOtpTokenId)
+                .filter(r_condition)
+                .distinct()
+                .count()
+            )
 
         if "total users" in status:
 
-            # according to the token users license spec, we count only
-            # the distinct users of all assigned and active tokens of an realm
+            # according to the token users license spec, we count only the
+            # distinct users of all assigned and active tokens in the given
+            # realms
 
-            user_query = db.session.query(TokenRealm, Realm, Token)
-            user_query = user_query.filter(r_condition)
-            user_query = user_query.filter(Token.LinOtpUserid != "")
-            user_query = user_query.filter(Token.LinOtpIsactive)
-            user_query = user_query.distinct(
-                Token.LinOtpUserid, Token.LinOtpIdResClass
+            result["total users"] = (
+                db.session.query(Token.LinOtpUserid, Token.LinOtpIdResClass)
+                .filter(r_condition)
+                .filter(Token.LinOtpUserid != "")
+                .filter(Token.LinOtpIsactive)
+                .distinct()
+                .count()
             )
-
-            result["total users"] = user_query.count()
 
         for stat in status:
 
@@ -152,9 +152,11 @@ class MonitorHandler(object):
 
             #  create the final condition as AND of all conditions
             condition = and_(*conditions)
+
             result[stat] = (
-                db.session.query(TokenRealm, Realm, Token)
+                db.session.query(Token.LinOtpTokenId)
                 .filter(condition)
+                .distinct()
                 .count()
             )
 
