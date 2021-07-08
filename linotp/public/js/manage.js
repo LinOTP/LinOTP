@@ -2978,13 +2978,16 @@ function save_ldap_config(callback = null){
 
     show_waiting();
 
-    $.post(url, params,
-     function(data, textStatus, XMLHttpRequest){
+    $.post(url, params, function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
         if (data.result.status == false) {
-            alert_info_text({'text': "text_error_ldap",
-                             'param': escape(data.result.error.message),
-                             'type': ERROR,
-                             'is_escaped': true});
+            alert_box({
+                'title': i18n.gettext("LDAP resolver"),
+                'text': "text_error_ldap",
+                'param': escape(data.result.error.message),
+                'type': ERROR,
+                'is_escaped': true
+            });
         } else {
             g.current_resolver_name = resolvername;
             originalLdapFormData = $('#form_ldapconfig').serialize();
@@ -3117,6 +3120,7 @@ function save_tokenrealm_config(){
 * save the passwd resolver config
 */
 function save_file_config(){
+    var url = '/system/setResolver';
     var resolvername = $('#file_resolvername').val();
     var resolvertype = "passwdresolver";
     var fileName = $('#file_filename').val();
@@ -3129,13 +3133,15 @@ function save_file_config(){
     params['fileName'] = fileName;
     params['session'] = getsession();
     show_waiting();
-    $.post('/system/setResolver', params,
-     function(data, textStatus, XMLHttpRequest){
+    $.post(url, params, function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
         if (data.result.status == false) {
-            alert_info_text({'text': "text_error_save_file",
-                             'param': escape(data.result.error.message),
-                             'type': ERROR,
-                             'is_escaped': true});
+            alert_box({
+                'title':i18n.gettext("File resolver"),
+                'text': "text_error_save_file",
+                'param': escape(data.result.error.message),
+                'is_escaped': true
+            });
         } else {
             resolvers_load();
             $dialog_file_resolver.dialog('close');
@@ -3218,13 +3224,15 @@ function save_sql_config(callback = null){
 
     show_waiting();
 
-    $.post(url, params,
-     function(data, textStatus, XMLHttpRequest){
+    $.post(url, params, function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
         if (data.result.status == false) {
-            alert_info_text({'text': "text_error_save_sql",
-                             'param': escape(data.result.error.message),
-                             'type': ERROR,
-                             'is_escaped': true});
+            alert_box({
+                'title': i18n.gettext("SQL resolver"),
+                'text': "text_error_save_sql",
+                'param': escape(data.result.error.message),
+                'is_escaped': true
+            });
         } else {
             g.current_resolver_name = resolvername;
             originalSqlFormData = $('#form_sqlconfig').serialize();
