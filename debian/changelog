@@ -12,6 +12,7 @@ linotp (3.1~0dev-0) experimental; urgency=low
   Improvement:
   * Simplify the HMAC acountname and tokenissuer fallback rules for a more predictable
     behavior in the google authenticator url.
+  * Token monitoring now better sanitizes the status parameter
 
   Fixes:
   * motp tokens can now be used in challenge response mode
@@ -22,6 +23,8 @@ linotp (3.1~0dev-0) experimental; urgency=low
     parameter. Other parameters are ignored. This fixes the ability to submit
     unauthorized ldap connection requests.
   * Manage-UI no longer hangs on failed resolver save requests.
+  * Token monitoring now correctly counts tokens that are assigned to multiple realms
+    only once in mysql and sqlite databases.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 

@@ -199,9 +199,17 @@ class TestMonitoringController(TestController):
         resp = json.loads(response.body)
         r_values = resp.get("result").get("value").get("Realms", {})
 
+        # we expect those keys to be the exact list of keys in each section
+        exp_keys = [
+            "total",
+            "total users",
+            "active",
+        ]
+
         # in the mydefrealm we have 2 active tokens, one belongs to an user
 
         mydefrealm = r_values.get("mydefrealm", {})
+        assert list(mydefrealm.keys()) == exp_keys, response
         assert mydefrealm.get("total", -1) == 2, response
         assert mydefrealm.get("total users", -1) == 1, response
         assert mydefrealm.get("active", -1) == 2, response
@@ -209,6 +217,7 @@ class TestMonitoringController(TestController):
         # in the myotherrealm we have 1 inactive tokens, belongs to no one
 
         myotherrealm = r_values.get("myotherrealm", {})
+        assert list(myotherrealm.keys()) == exp_keys, response
         assert myotherrealm.get("total", -1) == 1, response
         assert myotherrealm.get("total users", -1) == 0, response
         assert myotherrealm.get("active", -1) == 0, response
@@ -217,6 +226,7 @@ class TestMonitoringController(TestController):
         #  2 inactive tokens, 1 token belongs to an user and 3 tokens
 
         s_values = resp.get("result").get("value").get("Summary", {})
+        assert list(s_values.keys()) == exp_keys, response
         assert s_values.get("total", -1) == 3, response
         assert s_values.get("total users", -1) == 1, response
         assert s_values.get("active", -1) == 2, response
@@ -243,20 +253,27 @@ class TestMonitoringController(TestController):
         resp = json.loads(response.body)
         values = resp.get("result").get("value").get("Realms")
 
-        assert values.get("mydefrealm").get("total", -1) == 2, response
+        # we expect those keys to be the exact list of keys in each section
+        exp_keys = [
+            "total",
+            "total users",
+            "unassigned&inactive",
+        ]
 
-        assert values.get("myotherrealm").get("total", -1) == 3, response
+        mydefrealm = values.get("mydefrealm", {})
+        assert list(mydefrealm.keys()) == exp_keys, response
+        assert mydefrealm.get("total", -1) == 2, response
+        assert mydefrealm.get("unassigned&inactive", -1) == 0, response
 
-        assert (
-            values.get("myotherrealm").get("unassigned&inactive", -1) == 1
-        ), response
-
-        assert (
-            values.get("mydefrealm").get("unassigned&inactive", -1) == 0
-        ), response
+        myotherrealm = values.get("myotherrealm", {})
+        assert list(myotherrealm.keys()) == exp_keys, response
+        assert myotherrealm.get("total", -1) == 3, response
+        assert myotherrealm.get("unassigned&inactive", -1) == 1, response
 
         s_values = resp.get("result").get("value").get("Summary")
+        assert list(s_values.keys()) == exp_keys, response
         assert s_values.get("total", -1) == 5, response
+        assert s_values.get("unassigned&inactive", -1) == 1, response
 
         return
 
@@ -264,20 +281,21 @@ class TestMonitoringController(TestController):
         """
         test the handling of token in multiple realms
         """
-        sqlconnect = self.app.config.get("DATABASE_URI")
-        if sqlconnect.startswith(("mysql", "sqlite")):
-            pytest.xfail("monitoring query problem LINOTP-1540")
-
         # create some tokens
 
+        self.create_token(serial="0040")
         self.create_token(serial="0041")
         self.create_token(serial="0042", user="root", realm="mydefrealm")
 
         # set multiple realms for this token
 
-        newrealms = {"realms": "myotherrealm,mydefrealm", "serial": "0042"}
         response = self.make_authenticated_request(
-            controller="admin", action="tokenrealm", params=newrealms
+            controller="admin",
+            action="tokenrealm",
+            params={
+                "realms": "myotherrealm,mydefrealm",
+                "serial": "0042",
+            },
         )
         assert '"value": 1' in response, response
 
