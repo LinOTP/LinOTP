@@ -1466,36 +1466,27 @@ def getUserId(user, check_existance=False):
 
             # -------------------------------------------------------------- --
 
-            # if the username / login from the user info is not the same
-            # as the requesting one, the user has been renamed and we have
-            # to do some cache cleanup, especialy the user+realm -> resolver
-            # cache
+            # with the "user existence" check, we gathered the user information
+            # from the user resolver. We can now update the user cache by
+            # deleting the current cache entry.
 
-            if user_info["username"] != user.login:
+            realm = user.realm or getDefaultRealm()
+            realm = realm.lower()
 
-                realm = user.realm or getDefaultRealm()
-                realm = realm.lower()
+            delete_from_realm_resolver_cache(user.login, realm)
+            delete_from_realm_resolver_local_cache(user.login, realm)
 
-                delete_from_realm_resolver_cache(user.login, realm)
-                delete_from_realm_resolver_local_cache(user.login, realm)
+            delete_from_user_cache(user.login, uid, resolver_spec)
 
-                delete_from_resolver_user_cache(
-                    user.login, None, resolver_spec
-                )
-                delete_from_resolver_user_cache(user.login, uid, resolver_spec)
+            # … and feeding the current user info back into the cache
 
-                delete_from_local_cache(user.login, None, resolver_spec)
-                delete_from_local_cache(user.login, uid, resolver_spec)
+            lookup_user_in_resolver(
+                user_info["username"], uid, resolver_spec, user_info
+            )
 
-                # and feed the correct info back into the cache
-
-                lookup_user_in_resolver(
-                    user_info["username"], uid, resolver_spec, user_info
-                )
-
-                lookup_user_in_resolver(
-                    user_info["username"], None, resolver_spec, user_info
-                )
+            lookup_user_in_resolver(
+                user_info["username"], None, resolver_spec, user_info
+            )
 
             # -------------------------------------------------------------- --
 
