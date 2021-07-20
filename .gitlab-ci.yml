@@ -65,9 +65,6 @@ include:
     - docker pull debian:${DEBIAN_RELEASE_NAME}
     - docker pull $BUILDER_CACHE_IMAGE || true
     - docker pull $LINOTP_CACHE_IMAGE || true
-    # Update changelog to modify the build version for snapshot or
-    # release packages
-    - ci/update-debian-changelog
     # Build the images
     - >
         make

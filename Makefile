@@ -322,7 +322,8 @@ $(BUILDDIR)/apt/Packages:
 	docker cp . $(DOCKER_CONTAINER_NAME)-apt:/build
 	docker exec \
 		$(DOCKER_CONTAINER_NAME)-apt \
-			make deb-install DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\"
+			make deb-install DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\" \
+				CI_COMMIT_TAG=$(CI_COMMIT_TAG)
 	docker cp \
 		$(DOCKER_CONTAINER_NAME)-apt:/build/apt $(DESTDIR)
 	docker rm -f $(DOCKER_CONTAINER_NAME)-apt
