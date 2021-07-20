@@ -130,6 +130,7 @@ ppa-preprocess: source
 .PHONY: builddeb
 builddeb:
 	# Target: builddeb (Makefile.linotp)
+	./ci/update-debian-changelog .
 	$(MAKE) -f Makefile.linotp prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
 	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot $(DPKG_BUILDPACKAGE_ARGS)
 

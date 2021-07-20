@@ -303,7 +303,8 @@ $(BUILDDIR)/apt/Packages:
 
 	docker exec \
 		$(DOCKER_CONTAINER_NAME)-apt \
-			make deb-install BUILDDIR=/build/build DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\"
+			make deb-install BUILDDIR=/build/build DESTDIR=/build/apt \
+				DEBUILD_OPTS=\"$(DEBUILD_OPTS)\" CI_COMMIT_TAG=$(CI_COMMIT_TAG)
 
 	rm -rf ./apt
 
