@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes curl gnupg2 
 RUN test -z "$DEPENDENCY_SOURCE" || echo "deb $DEPENDENCY_SOURCE $DEBIAN_RELEASE_NAME $DEPENDENCY_COMPONENT" > /etc/apt/sources.list.d/kideps.list
 RUN test -z "$DEPENDENCY_GPG_KEYID" || apt-key adv --keyserver hkp://hkps.pool.sks-keyservers.net --recv-keys $DEPENDENCY_GPG_KEYID
 RUN test -z "$DEPENDENCY_GPG_KEY_URL" || curl $DEPENDENCY_GPG_KEY_URL | apt-key adv --import
-
+RUN cat /etc/apt/sources.list.d/kideps.list || true
 RUN apt-get update && apt-get install --no-install-recommends --yes \
         build-essential \
         devscripts \
