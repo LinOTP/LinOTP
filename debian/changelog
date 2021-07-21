@@ -30,6 +30,7 @@ linotp (3.1~0dev-0) experimental; urgency=low
     The policies sms_dynamic_mobile_number, dynamic_email_address, and
     voice_dynamic_mobile_number therefore directly reflect external user data
     changes.
+  * Remove references to the deactivated newsletter and former company names
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 
