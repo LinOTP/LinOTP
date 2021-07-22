@@ -5495,26 +5495,6 @@ $(document).ready(function(){
         $dialog_load_tokens_dat.dialog('open');
     });
 
-
-    /***********************************************************************
-     *  Alert dialog
-     */
-    $('#dialog_alert').dialog({
-        autoOpen: false,
-        open: function(){
-
-        },
-        modal: true,
-        buttons: {
-            'OK': {click: function(){
-                $(this).dialog('close');
-                },
-                id: "button_alert_ok",
-                text: "OK"
-                }
-        }
-    });
-
     /*******************************************************
      * Enrolling tokens
      */
