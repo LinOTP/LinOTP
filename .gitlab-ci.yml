@@ -2,7 +2,7 @@ variables:
   LANG: C.UTF-8
   DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
-  DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
+  DEPENDENCY_SOURCE: http://debs-devel.corp.linotp.de/linotp2
   DEPENDENCY_SOURCE_COMPONENT: linotp
   DEPENDENCY_GPG_KEYID: ""
   DEPENDENCY_GPG_KEY_URL: "http://avocado.corp.lsexperts.de/deb-repo/ki-archive-keyring.gpg"
@@ -68,6 +68,7 @@ stages:
 build-test-environment:debian-jessie:
   extends: .build-test-environment-debian
   variables:
+    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
     DEPENDENCY_SOURCE_COMPONENT: kideps
     DEBIAN_RELEASE_NAME: jessie
 
@@ -302,6 +303,7 @@ build:buster:
 build-linotp-docker-image:jessie:
   extends: .build-linotp-docker-image
   variables:
+    DEPENDENCY_SOURCE: http://avocado.corp.lsexperts.de/deb-repo
     DEPENDENCY_SOURCE_COMPONENT: kideps
     DEBIAN_RELEASE_NAME: jessie
 
