@@ -3904,10 +3904,37 @@ $(document).ready(function(){
         Logout($('#login-status-logout').attr("data-logout-url"));
     });
 
+    var alertBoxConfig = {
+        autoOpen: false,
+        modal: true,
+        buttons: {
+                Ok: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+     };
+
     // right after document loading we need to get the session
     getsession();
 
-    var server_config = get_server_config();
+    // with the session, we can now load the server config
+    var server_config;
+    try {
+        server_config = get_server_config();
+    } catch (e) {
+        // the alert_box dialog needs to be prepared here to be able to show the
+        // error message this early.
+        $( "#alert_box" ).dialog(alertBoxConfig);
+        alert_box({
+            'title':i18n.gettext("Configuration error"),
+            'text': sprintf(
+                i18n.gettext("Unable to load the server configuration.<br><br>Error: \"%s\""),
+                escape(e)
+            ),
+            'is_escaped': true
+        });
+        return;
+    }
 
     // set linotp version to global object as dom is loaded now
     g.linotp_version = $('#linotp_version').text();
@@ -5690,17 +5717,9 @@ $(document).ready(function(){
         return false;
     });
 
-    $( "#alert_box" ).dialog({
-        autoOpen: false,
-        modal: true,
-        buttons: {
-                Ok: function() {
-                    $( this ).dialog( "close" );
-                }
-            }
-     });
+    $( "#alert_box" ).dialog(alertBoxConfig);
 
-     $('#text_no_realm').dialog({
+    $('#text_no_realm').dialog({
         autoOpen: false,
         modal: true,
         show: {
