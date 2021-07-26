@@ -1280,7 +1280,7 @@ function get_token_type(){
             alert_info_text({'text': "text_fetching_tokentype_failed",
                              'param': escape(e),
                              'type': ERROR,
-                             'is_escape': true});
+                             'is_escaped': true});
         }
         return ttype;
     }
@@ -1301,7 +1301,7 @@ function token_info_save(){
     var serial = tokens[0];
     if (count != 1) {
         alert_info_text({'text': "text_only_one_token_ti",
-                         'is_escape': true});
+                         'is_escaped': true});
         return false;
     }
     else {
@@ -1416,7 +1416,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
         alert_info_text({'text': "text_error_creating_token",
                          'param': escape(obj.result.error.message),
                          'type':ERROR,
-                         'is_escape': true});
+                         'is_escaped': true});
     }
     reset_buttons();
 }
@@ -3363,7 +3363,7 @@ function resolver_delete(){
             alert_info_text({'text': "text_resolver_delete_fail",
                              'param': escape(data.result.error.message),
                              'type': ERROR,
-                             'is_escape': true});
+                             'is_escaped': true});
         }
         hide_waiting();
     });
