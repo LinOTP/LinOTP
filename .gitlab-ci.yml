@@ -5,7 +5,7 @@ variables:
   LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
   DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
-  DEPENDENCY_DEB_REPO: http://avocado.corp.lsexperts.de/deb-repo buster-dev linotp
+  DEPENDENCY_DEB_REPO: http://debs-devel.corp.linotp.de/linotp3 buster linotp
   # DEPENDENCY_GPG_KEYID: 7CC736921C5A21B7
   DEPENDENCY_GPG_KEYID: ""
   DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/ki-archive-keyring.gpg
@@ -31,7 +31,6 @@ stages:
   - coverage-report
   - apidocs
   - upload-debian-packages
-  - copy-to-golden
 
 .docker-registry: &docker-registry
   before_script:
@@ -114,6 +113,8 @@ pre-commit-check:
     - docker push "$REGISTRY_IMAGE-softhsm:${CI_PIPELINE_ID}"
     # Log all the images to stdout
     - docker images
+    # Save build job id to artifacts for later uploads
+    - echo "$CI_JOB_ID" > apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt
 
 build:debian-buster:
   extends: .build-debs-and-images
@@ -450,9 +451,6 @@ apidocs:
       - api-doc
     expire_in: 2 weeks
 
-# Upload deb packages to development repository.
-# We use scp to upload all the files to an incoming directory.
-
 .before_upload: &before_upload
   before_script:
     # Ensure required variables have been set
@@ -469,38 +467,38 @@ apidocs:
     - echo "CheckHostIP no" >>~/.ssh/config
     - echo "$DEV_REPO_KNOWN_HOSTS" >~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
+    - export BUILD_JOB_ID=$(cat apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt)
 
-upload-debs:
+# Upload deb packages to development repository.
+upload-debs:buster:
   stage: upload-debian-packages
   image: debian:latest
   rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'           # Nightly jobs do not upload
+    - if: $CI_PIPELINE_SOURCE == 'schedule'                # Nightly jobs do not upload
       when: never
-    - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/' # Auto upload if merged to stable or master
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^release/' # Auto upload if tagged
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/'      # Auto upload if merged to stable or master
       when: always
-    - if: $CI_COMMIT_TAG                              # Auto upload if tagged
-      when: always
-    - when: manual                                    # Otherwise allow manual upload from branch
+    - when: manual                                         # Otherwise allow manual upload from branch
       allow_failure: true
   <<: *before_upload
   script:
     - find apt/* -ls
-    # scp all files referenced by the changes files to the repository
-    - dcmd scp apt/*.changes dists@$DEV_REPO_HOST:deb-repo/incoming
+    - ssh debs@$DEV_REPO_HOST repo-tool gpull linotp3 "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
+  variables:
+    DEBIAN_RELEASE_NAME: buster
 
-# Copy packages to `buster-golden` if they have a `release` tag.
-# Note that this must come after `upload-debs`.
 
-copy-to-buster-golden:
-  stage: copy-to-golden
+# Upload packages to `buster-golden` if we are on a `release` tag.
+upload-golden-debs:buster:
+  stage: upload-debian-packages
   image: debian:latest
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^release/'
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^release/'
       when: always
-    - when: manual
-      allow_failure: true
   <<: *before_upload
   script:
-    - ci/copy-to-golden "$DEBIAN_RELEASE_NAME" apt/*.changes
+    - ssh debs@$DEV_REPO_HOST repo-tool gpull linotp3-golden "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
   variables:
     DEBIAN_RELEASE_NAME: buster

@@ -34,7 +34,7 @@ ARG DEBIAN_MIRROR=deb.debian.org
 RUN sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" /etc/apt/sources.list \
     && apt-get update \
     && apt-get --no-install-recommends --yes install \
-        build-essential devscripts equivs libfile-fcntllock-perl rename
+        build-essential devscripts equivs libfile-fcntllock-perl rename git git-buildpackage
 
 # Use the control files from the packages to install a list of packages needed for builds.
 # We copy in just the control files at this point in order to make maximum use of
