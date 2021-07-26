@@ -129,8 +129,8 @@ RUN apt-get update && apt-get install eatmydata \
 RUN test -z "$DEPENDENCY_DEB_REPO" \
     || (echo "deb $DEPENDENCY_DEB_REPO" > /etc/apt/sources.list.d/linotp-deps.list \
     && cat /etc/apt/sources.list.d/linotp-deps.list)
-# RUN test -z "$DEPENDENCY_GPG_KEYID" \
-#     || apt-key adv --keyserver hkp://hkps.pool.sks-keyservers.net --recv-keys $DEPENDENCY_GPG_KEYID
+RUN test -z "$DEPENDENCY_GPG_KEYID" \
+    || apt-key adv --keyserver hkp://hkps.pool.sks-keyservers.net --recv-keys $DEPENDENCY_GPG_KEYID
 RUN test -z "$DEPENDENCY_GPG_KEY_URL" \
     || curl $DEPENDENCY_GPG_KEY_URL | apt-key adv --import
 
