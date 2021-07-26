@@ -188,5 +188,32 @@ class TokenValidityMixin(object):
         """
         self.removeFromTokenInfo("validity_period_start")
 
+    def is_not_yet_valid(self):
+        now = datetime.now()
+        return self.validity_period_start and now < self.validity_period_start
+
+    def is_expired(self):
+        now = datetime.now()
+        return self.validity_period_end and now > self.validity_period_end
+
+    def has_exceeded_success(self):
+        return (
+            self.count_auth_success_max > 0
+            and self.count_auth_success >= self.count_auth_success_max
+        )
+
+    def has_exceeded_usage(self):
+        return (
+            self.count_auth_max > 0 and self.count_auth >= self.count_auth_max
+        )
+
+    def is_valid(self):
+        return not (
+            self.is_not_yet_valid()
+            or self.is_expired()
+            or self.has_exceeded_success()
+            or self.has_exceeded_usage()
+        )
+
 
 # eof

@@ -766,48 +766,23 @@ class ValidationHandler(object):
 
             # token validity handling
 
-            now = datetime.now()
-
-            if (
-                token.validity_period_start
-                and now < token.validity_period_start
-            ):
-
-                audit_entry[
-                    "action_detail"
-                ] = "Authentication validity period mismatch!"
-
+            if token.is_not_yet_valid():
+                msg = "Authentication validity period mismatch!"
+                audit_entry["action_detail"] = msg
                 token.incOtpFailCounter()
-
                 continue
 
-            token_success_excceed = (
-                token.count_auth_success_max > 0
-                and token.count_auth_success >= token.count_auth_success_max
-            )
-
-            token_access_exceed = (
-                token.count_auth_max > 0
-                and token.count_auth >= token.count_auth_max
-            )
-
-            token_expiry = (
-                token.validity_period_end and now >= token.validity_period_end
-            )
-
-            if token_success_excceed or token_access_exceed or token_expiry:
-
-                if token_access_exceed:
+            if not token.is_valid():
+                if token.has_exceeded_usage():
                     msg = "Authentication counter exceeded"
-
-                if token_success_excceed:
+                elif token.has_exceeded_success():
                     msg = "Authentication sucess counter exceeded"
-
-                if token_expiry:
-                    msg = "Authentication validity period exceeded!"
+                elif token.is_expired():
+                    msg = "Authentication validity period exceeded"
+                else:
+                    raise Exception("Validity check failed without reason")
 
                 audit_entry["action_detail"] = msg
-
                 token.incOtpFailCounter()
 
                 # what should happen with exceeding tokens
