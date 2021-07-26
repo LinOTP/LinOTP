@@ -13,6 +13,8 @@ linotp (3.1~0dev-0) experimental; urgency=low
   * Simplify the HMAC acountname and tokenissuer fallback rules for a more predictable
     behavior in the google authenticator url.
   * Token monitoring now better sanitizes the status parameter
+  * Improved Manage-UI error message if something fails in the initial config
+    load phase.
 
   Fixes:
   * mOTP tokens can now be used in challenge response mode
@@ -31,6 +33,10 @@ linotp (3.1~0dev-0) experimental; urgency=low
     voice_dynamic_mobile_number therefore directly reflect external user data
     changes.
   * Remove references to the deactivated newsletter and former company names
+  * Legacy Selfservice now correctly recognizes type=yubikey tokens in MFA login. 
+  * Manage-UI no longer gets stuck in the interface initializtaion if the logged
+    in user is missing required admin permissions. Now, it is guaranteed that a
+    logout is always possible.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 

@@ -24,7 +24,7 @@
 #    Support: www.keyidentity.com
 #
 """ This file contains the YubiKey token class where the YubiKey is
-    run in Yubico Mode"""
+    run in Yubico AES mode without the YubiCloud"""
 
 
 import binascii
@@ -45,7 +45,7 @@ log = logging.getLogger(__name__)
 )
 class YubikeyTokenClass(TokenClass):
     """
-    The YubiKey Token in the Yubico AES mode
+    The YubiKey Token in Yubico AES mode
     """
 
     def __init__(self, aToken):

@@ -589,7 +589,7 @@ function init_$tokentypes(){
  *
  */
 function get_server_config(search_key) {
-    if ((search_key === undefined) === false) {
+    if (search_key) {
         var params = {'key': search_key};
     } else {
         var params = {};
@@ -597,24 +597,19 @@ function get_server_config(search_key) {
 
     var $systemConfig = {};
     var resp = clientUrlFetchSync('/system/getConfig', params);
-    try {
-        var data = jQuery.parseJSON(resp);
-        if (data.result.status == false) {
-            throw("" + data.result.error.message);
-        }else {
-            if ((search_key === undefined) === false) {
-                var config_dict = data.result.value;
-                for (var key in config_dict) {
-                    key_replace = key.replace('getConfig ','');
-                    $systemConfig[key_replace] = config_dict[key];
-                }
-            } else {
-                $systemConfig = data.result.value;
+    var data = jQuery.parseJSON(resp);
+    if (!data.result.status) {
+        throw (data.result.error.message);
+    } else {
+        if (search_key) {
+            var config_dict = data.result.value;
+            for (var key in config_dict) {
+                key_replace = key.replace('getConfig ','');
+                $systemConfig[key_replace] = config_dict[key];
             }
+        } else {
+            $systemConfig = data.result.value;
         }
-    }
-    catch (e) {
-        throw(e);
     }
     return $systemConfig;
 }
@@ -1285,7 +1280,7 @@ function get_token_type(){
             alert_info_text({'text': "text_fetching_tokentype_failed",
                              'param': escape(e),
                              'type': ERROR,
-                             'is_escape': true});
+                             'is_escaped': true});
         }
         return ttype;
     }
@@ -1306,7 +1301,7 @@ function token_info_save(){
     var serial = tokens[0];
     if (count != 1) {
         alert_info_text({'text': "text_only_one_token_ti",
-                         'is_escape': true});
+                         'is_escaped': true});
         return false;
     }
     else {
@@ -1421,7 +1416,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
         alert_info_text({'text': "text_error_creating_token",
                          'param': escape(obj.result.error.message),
                          'type':ERROR,
-                         'is_escape': true});
+                         'is_escaped': true});
     }
     reset_buttons();
 }
@@ -3368,7 +3363,7 @@ function resolver_delete(){
             alert_info_text({'text': "text_resolver_delete_fail",
                              'param': escape(data.result.error.message),
                              'type': ERROR,
-                             'is_escape': true});
+                             'is_escaped': true});
         }
         hide_waiting();
     });
@@ -3903,10 +3898,43 @@ function tokenbuttons(){
 // =================================================================
 
 $(document).ready(function(){
+    // initialize the logout button first to prevent a deadlock
+    // where the user can no longer logout
+    $('#login-status-logout').click(function () {
+        Logout($('#login-status-logout').attr("data-logout-url"));
+    });
+
+    var alertBoxConfig = {
+        autoOpen: false,
+        modal: true,
+        buttons: {
+                Ok: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+     };
+
     // right after document loading we need to get the session
     getsession();
 
-    var server_config = get_server_config();
+    // with the session, we can now load the server config
+    var server_config;
+    try {
+        server_config = get_server_config();
+    } catch (e) {
+        // the alert_box dialog needs to be prepared here to be able to show the
+        // error message this early.
+        $( "#alert_box" ).dialog(alertBoxConfig);
+        alert_box({
+            'title':i18n.gettext("Configuration error"),
+            'text': sprintf(
+                i18n.gettext("Unable to load the server configuration.<br><br>Error: \"%s\""),
+                escape(e)
+            ),
+            'is_escaped': true
+        });
+        return;
+    }
 
     // set linotp version to global object as dom is loaded now
     g.linotp_version = $('#linotp_version').text();
@@ -5494,26 +5522,6 @@ $(document).ready(function(){
         $dialog_load_tokens_dat.dialog('open');
     });
 
-
-    /***********************************************************************
-     *  Alert dialog
-     */
-    $('#dialog_alert').dialog({
-        autoOpen: false,
-        open: function(){
-
-        },
-        modal: true,
-        buttons: {
-            'OK': {click: function(){
-                $(this).dialog('close');
-                },
-                id: "button_alert_ok",
-                text: "OK"
-                }
-        }
-    });
-
     /*******************************************************
      * Enrolling tokens
      */
@@ -5709,17 +5717,9 @@ $(document).ready(function(){
         return false;
     });
 
-    $( "#alert_box" ).dialog({
-        autoOpen: false,
-        modal: true,
-        buttons: {
-                Ok: function() {
-                    $( this ).dialog( "close" );
-                }
-            }
-     });
+    $( "#alert_box" ).dialog(alertBoxConfig);
 
-     $('#text_no_realm').dialog({
+    $('#text_no_realm').dialog({
         autoOpen: false,
         modal: true,
         show: {
@@ -5822,10 +5822,6 @@ $(document).ready(function(){
     // Log Div
     $("#logAccordion").accordion({
         fillSpace: true
-    });
-
-    $('#login-status-logout').click(function(){
-        Logout($('#login-status-logout').attr("data-logout-url"));
     });
 
     $('#login-status-password, #menu_tools_changepassword').click(function(){

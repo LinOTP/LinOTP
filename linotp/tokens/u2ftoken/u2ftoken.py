@@ -396,10 +396,10 @@ class U2FTokenClass(TokenClass):
             raise Exception("Wrong client data format!")
 
         # validate typ
-        if clientDataType is "registration":
+        if clientDataType == "registration":
             if cdType != "navigator.id.finishEnrollment":
                 raise Exception("Incorrect client data object received!")
-        elif clientDataType is "authentication":
+        elif clientDataType == "authentication":
             if cdType != "navigator.id.getAssertion":
                 raise Exception("Incorrect client data object received!")
         else:
@@ -782,7 +782,7 @@ class U2FTokenClass(TokenClass):
         USER_PUBLIC_KEY_LEN = 65
 
         # first byte has to be 0x05
-        if ord(registrationData[:1]) is not 0x05:
+        if ord(registrationData[:1]) != 0x05:
             log.error(
                 "Wrong registration data format: Reserved byte does not match"
             )
