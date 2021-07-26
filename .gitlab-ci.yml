@@ -74,7 +74,6 @@ build-test-environment:debian-jessie:
 
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -116,7 +115,6 @@ unit-test:debian-jessie:
 
 unit-test:debian-buster:
   extends: .test-debian
-  allow_failure: true
   stage: test
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -204,7 +202,6 @@ func:jessie:
 
 functional-test:buster:
   extends: .functional-test
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -215,7 +212,6 @@ functional-special-test:jessie:
 
 functional-special-test:buster:
   extends: .functional-special-test
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -240,7 +236,6 @@ coverage-report:jessie:
 
 coverage-report:buster:
   extends: .coverage-report
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -309,7 +304,6 @@ build-linotp-docker-image:jessie:
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
-  allow_failure: true
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -373,7 +367,6 @@ e2e-2:jessie:mysql-5.5:
     DB: mysql:5.5
 
 e2e-1:jessie:mariadb:10.1:
-  allow_failure: true
   extends: .e2e-test
   script:
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
@@ -382,7 +375,6 @@ e2e-1:jessie:mariadb:10.1:
     DB: mariadb:10.1
 
 e2e-2:jessie:mariadb-10.1:
-  allow_failure: true
   extends: .e2e-test
   script:
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
