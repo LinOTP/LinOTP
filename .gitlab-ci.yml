@@ -425,11 +425,6 @@ upload-debs:jessie:
   variables:
     DEBIAN_RELEASE_NAME: jessie
 
-upload-debs:stretch:
-  extends: .upload-to-incoming
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-
 # Use the "repo-tool gpull" method for buster
 upload-debs:buster:
   extends: .upload-debs
