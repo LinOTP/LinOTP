@@ -54,3 +54,9 @@ linotpd/src/data/testdata/testlicense*.pem
 
 # rope analysis data
 .ropeproject
+
+# LinOTP generated files for default configuration
+linotp.sqlite
+linotp/audit-private.pem
+linotp/audit-public.pem
+linotp/encKey
