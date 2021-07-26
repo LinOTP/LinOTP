@@ -5,7 +5,7 @@ variables:
   LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
   DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
-  DEPENDENCY_DEB_REPO: http://avocado.corp.lsexperts.de/deb-repo buster-dev linotp
+  DEPENDENCY_DEB_REPO: http://debs-devel.corp.linotp.de/linotp3 buster linotp
   # DEPENDENCY_GPG_KEYID: 7CC736921C5A21B7
   DEPENDENCY_GPG_KEYID: ""
   DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/ki-archive-keyring.gpg
