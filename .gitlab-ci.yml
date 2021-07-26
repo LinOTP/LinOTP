@@ -368,7 +368,6 @@ e2e-2:jessie:mysql-5.5:
     DB: mysql:5.5
 
 e2e-1:jessie:mariadb:10.1:
-  allow_failure: true
   extends: .e2e-test
   script:
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
@@ -377,7 +376,6 @@ e2e-1:jessie:mariadb:10.1:
     DB: mariadb:10.1
 
 e2e-2:jessie:mariadb-10.1:
-  allow_failure: true
   extends: .e2e-test
   script:
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
