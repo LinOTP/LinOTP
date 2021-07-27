@@ -425,11 +425,7 @@ upload-debs:jessie:
   variables:
     DEBIAN_RELEASE_NAME: jessie
 
-upload-debs:stretch:
-  extends: .upload-to-incoming
-  variables:
-    DEBIAN_RELEASE_NAME: stretch
-
+# Use the "repo-tool gpull" method for buster
 upload-debs:buster:
   extends: .upload-debs
   rules:
@@ -444,22 +440,6 @@ upload-debs:buster:
   script:
     - find pkg/apt/buster -ls
     - ssh debs@$DEV_REPO_HOST repo-tool gpull linotp3 "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
-
-# Use the "repo-tool gpull" method for buster
-upload-debs:buster:
-  extends: .upload-debs
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'                # Nightly jobs do not upload
-      when: never
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^release/' # No auto upload if tagged
-      when: never
-    - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/'      # Auto upload if merged to stable or master
-      when: always
-    - when: manual                                         # Otherwise allow manual upload from branch
-      allow_failure: true
-  script:
-    - find apt/* -ls
-    - ssh debs@$DEV_REPO_HOST repo-tool gpull linotp3 "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
   variables:
     DEBIAN_RELEASE_NAME: buster
 
@@ -470,7 +450,7 @@ upload-golden-debs:buster:
     - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^release/'
       when: always
   script:
-    - find apt/* -ls
+    - find pkg/apt/buster -ls
     - ssh debs@$DEV_REPO_HOST repo-tool gpull linotp3-golden "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
   variables:
     DEBIAN_RELEASE_NAME: buster
