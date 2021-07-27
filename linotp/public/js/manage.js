@@ -2285,7 +2285,7 @@ function check_for_welcome_screen() {
         var title = i18n.gettext("Welcome to LinOTP");
         var text = '<p>' + i18n.gettext("Welcome to your fresh LinOTP installation.") + '</p>'
             + '<p>' + i18n.gettext("If you have questions about the setup or installation of LinOTP, please <a href='https://linotp.org/doc' target='_blank'>refer to our documentation</a>.") + '</p>'
-            + '<p>' + i18n.gettext("<a href='https://linotp.de'>netgo</a> provides LinOTP as an enterprise MFA solution.") + '</p>'
+            + '<p>' + i18n.gettext("<a href='https://linotp.de'>netgo provides LinOTP</a> as an enterprise MFA solution.") + '</p>'
             + '<p>' + i18n.gettext("If you are interested in our MFA platform using LinOTP at its core and want to know more, feel free to <a href='https://linotp.de/en/contact.html'>contact us</a>.")
             + '</p>'
             + '<br/>'
@@ -2328,7 +2328,7 @@ function check_for_welcome_screen() {
             });
 
             var title = i18n.gettext("Thank you for using LinOTP");
-            var text = '<p>' + i18n.gettext("We are pleased that you are using LinOTP powered by <a href='https://linotp.de'>netgo</a> as your MFA solution.") + '</p>'
+            var text = '<p>' + i18n.gettext("We are pleased that you are using <a href='https://linotp.de'>LinOTP powered by netgo</a> as your MFA solution.") + '</p>'
                 + '<p>' + i18n.gettext("If you are interested in our MFA platform using LinOTP at its core and want to know more, feel free to <a href='https://linotp.de/en/contact.html'>contact us</a>.")
                 + '<p>' + i18n.gettext("We would be happy to receive your feedback about LinOTP.") + '</p>'
                 + '<br/>'
