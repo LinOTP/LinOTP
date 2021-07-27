@@ -597,9 +597,19 @@ function get_server_config(search_key) {
 
     var $systemConfig = {};
     var resp = clientUrlFetchSync('/system/getConfig', params);
-    var data = jQuery.parseJSON(resp);
-    if (!data.result.status) {
-        throw (data.result.error.message);
+
+    var data;
+    try {
+        data = jQuery.parseJSON(resp);
+    } catch (error) {
+        throw i18n.gettext("Unable to load the server configuration.");
+    }
+    if (!data || !data.result || !data.result.status) {
+        var message = data && data.result && data.result.error && data.result.error.message
+        if (!message) {
+            message = i18n.gettext("Unable to load the server configuration.")
+        }
+        throw message;
     } else {
         if (search_key) {
             var config_dict = data.result.value;
@@ -3927,10 +3937,7 @@ $(document).ready(function(){
         $( "#alert_box" ).dialog(alertBoxConfig);
         alert_box({
             'title':i18n.gettext("Configuration error"),
-            'text': sprintf(
-                i18n.gettext("Unable to load the server configuration.<br><br>Error: \"%s\""),
-                escape(e)
-            ),
+            'text': escape(e),
             'is_escaped': true
         });
         return;
