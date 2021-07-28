@@ -597,9 +597,19 @@ function get_server_config(search_key) {
 
     var $systemConfig = {};
     var resp = clientUrlFetchSync('/system/getConfig', params);
-    var data = jQuery.parseJSON(resp);
-    if (!data.result.status) {
-        throw (data.result.error.message);
+
+    var data;
+    try {
+        data = jQuery.parseJSON(resp);
+    } catch (error) {
+        throw i18n.gettext("Unable to load the server configuration.");
+    }
+    if (!data || !data.result || !data.result.status) {
+        var message = data && data.result && data.result.error && data.result.error.message
+        if (!message) {
+            message = i18n.gettext("Unable to load the server configuration.")
+        }
+        throw message;
     } else {
         if (search_key) {
             var config_dict = data.result.value;
@@ -2275,7 +2285,7 @@ function check_for_welcome_screen() {
         var title = i18n.gettext("Welcome to LinOTP");
         var text = '<p>' + i18n.gettext("Welcome to your fresh LinOTP installation.") + '</p>'
             + '<p>' + i18n.gettext("If you have questions about the setup or installation of LinOTP, please <a href='https://linotp.org/doc' target='_blank'>refer to our documentation</a>.") + '</p>'
-            + '<p>' + i18n.gettext("<a href='https://linotp.de'>netgo</a> provides LinOTP as an enterprise MFA solution.") + '</p>'
+            + '<p>' + i18n.gettext("<a href='https://linotp.de'>netgo provides LinOTP</a> as an enterprise MFA solution.") + '</p>'
             + '<p>' + i18n.gettext("If you are interested in our MFA platform using LinOTP at its core and want to know more, feel free to <a href='https://linotp.de/en/contact.html'>contact us</a>.")
             + '</p>'
             + '<br/>'
@@ -2318,7 +2328,7 @@ function check_for_welcome_screen() {
             });
 
             var title = i18n.gettext("Thank you for using LinOTP");
-            var text = '<p>' + i18n.gettext("We are pleased that you are using LinOTP powered by <a href='https://linotp.de'>netgo</a> as your MFA solution.") + '</p>'
+            var text = '<p>' + i18n.gettext("We are pleased that you are using <a href='https://linotp.de'>LinOTP powered by netgo</a> as your MFA solution.") + '</p>'
                 + '<p>' + i18n.gettext("If you are interested in our MFA platform using LinOTP at its core and want to know more, feel free to <a href='https://linotp.de/en/contact.html'>contact us</a>.")
                 + '<p>' + i18n.gettext("We would be happy to receive your feedback about LinOTP.") + '</p>'
                 + '<br/>'
@@ -3927,10 +3937,7 @@ $(document).ready(function(){
         $( "#alert_box" ).dialog(alertBoxConfig);
         alert_box({
             'title':i18n.gettext("Configuration error"),
-            'text': sprintf(
-                i18n.gettext("Unable to load the server configuration.<br><br>Error: \"%s\""),
-                escape(e)
-            ),
+            'text': escape(e),
             'is_escaped': true
         });
         return;
