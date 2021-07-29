@@ -251,7 +251,9 @@ class TestAdminController(TestController):
 
         self.delete_token("F722362")
         response = self.removeTokenByUser("root")
-        assert '"value": 2' in response, response
+
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"] == 2, response
 
     def test_remove(self):
         self.createToken()
