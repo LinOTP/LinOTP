@@ -468,9 +468,6 @@ class AdminController(BaseController, SessionCookieMixin):
 
             g.audit["realm"] = "%r" % realms
 
-            # check admin authorization
-            checkPolicyPre("admin", "remove", param)
-
             log.info(
                 "[remove] removing token with serial %r for user %r",
                 serials,
@@ -478,12 +475,20 @@ class AdminController(BaseController, SessionCookieMixin):
             )
 
             ret = 0
+            check_params = {}
+            check_params.update(param)
 
             th = TokenHandler()
             for serial in set(serials):
-                ret = th.removeToken(user, serial)
 
-            g.audit["success"] = ret
+                # check admin authorization
+                check_params["serial"] = serial
+                checkPolicyPre("admin", "remove", check_params)
+
+                ret = ret + th.removeToken(user, serial)
+
+            g.audit["success"] = 0
+            g.audit["serial"] = " ".join(serials)
 
             opt_result_dict = {}
 
