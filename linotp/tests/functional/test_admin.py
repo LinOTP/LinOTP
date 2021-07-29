@@ -391,6 +391,62 @@ class TestAdminController(TestController):
 
         self.delete_token("003e808e")
 
+    def test_assign_tokens(self):
+        """Verify the admin/assign api suports the handling of multiple serials."""
+
+        # ----------------------------------------------------------------- --
+
+        # create a set of tokens and query their serials into a list
+
+        self.createToken()
+        response = self.make_admin_request("show")
+
+        data = response.json["result"]["value"]["data"]
+
+        serials = []
+        fake_serials = []
+        for entry in data:
+            serials.append(entry["LinOtp.TokenSerialnumber"])
+            fake_serials.append("fake_" + entry["LinOtp.TokenSerialnumber"])
+
+        # ----------------------------------------------------------------- --
+
+        # assign the tokens to the root user within one request
+
+        params = {"serial[]": serials, "user": "root"}
+        response = self.make_admin_request("assign", params=params)
+
+        assert response.json["result"]["value"]
+        assert response.json["result"]["status"]
+
+        # now try to assign the tokens of non existing token within one request
+
+        params = {"serial[]": fake_serials, "user": "root"}
+        response = self.make_admin_request("assign", params=params)
+
+        assert response.json["result"]["status"] is False
+        assert response.json["result"]["error"]["code"] == 1102
+
+        # ----------------------------------------------------------------- --
+
+        # submit the delete of the tokens within one request
+
+        params = {"serial[]": serials}
+        response = self.make_admin_request("remove", params=params)
+
+        jresp = response.json
+        assert response.json["result"]["status"]
+        assert response.json["result"]["value"] == len(serials)
+
+        # submit the delete of the tokens within one request
+
+        params = {"serial[]": fake_serials}
+        response = self.make_admin_request("remove", params=params)
+
+        jresp = response.json
+        assert response.json["result"]["status"] is False
+        assert response.json["result"]["error"]["code"] == 1119
+
     def test_assign(self):
 
         serial = self.createToken2(serial="F722362")
