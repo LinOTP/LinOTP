@@ -860,7 +860,7 @@ class TokenHandler(object):
         if len(toks) > 1:
             raise TokenAdminError("multiple tokens found!", id=1101)
         if len(toks) == 0:
-            raise TokenAdminError("no token found!", id=1102)
+            raise TokenAdminError("no token %r found!" % serial, id=1102)
 
         token = toks[0]
         if user.login == "":
