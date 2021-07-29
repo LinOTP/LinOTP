@@ -1081,16 +1081,16 @@ class TokenHandler(object):
 
         tokenList = getTokens4UserOrSerial(user, serial, _class=False)
 
-        serials = []
-        tokens = []
-        token_ids = []
+        serials = set()
+        tokens = set()
+        token_ids = set()
         try:
 
             for token in tokenList:
                 ser = token.getSerial()
-                serials.append(ser)
-                token_ids.append(token.LinOtpTokenId)
-                tokens.append(token)
+                serials.add(ser)
+                token_ids.add(token.LinOtpTokenId)
+                tokens.add(token)
 
             #  we cleanup the challenges
             challenges = set()
@@ -1105,7 +1105,7 @@ class TokenHandler(object):
             #  foreign key relation could not be deleted
             #  so we do this manualy
 
-            for t_id in token_ids:
+            for t_id in set(token_ids):
                 TokenRealm.query.filter(TokenRealm.token_id == t_id).delete()
 
             db.session.commit()
@@ -1118,7 +1118,7 @@ class TokenHandler(object):
                 "removeToken: Token update failed: %r" % exx, id=1132
             )
 
-        return len(tokenList)
+        return len(serials)
 
     def setCounterWindow(self, countWindow, user, serial):
 
