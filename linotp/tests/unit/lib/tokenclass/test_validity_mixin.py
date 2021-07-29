@@ -28,7 +28,8 @@ Tests the logging decorators
 """
 
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+
 from freezegun import freeze_time
 
 from linotp.tokens.base.validity_mixin import TokenValidityMixin
@@ -258,7 +259,8 @@ class TestTokenValidityMixin(unittest.TestCase):
             "%d/%m/%y %H:%M"
         )
 
-        with freeze_time(current_time) as frozen_time:
+        with freeze_time(current_time, tz_offset=5) as frozen_time:
+
             assert (
                 not fake_token.is_expired()
             ), "the token should not be expired as current time before expiration"
@@ -277,6 +279,7 @@ class TestTokenValidityMixin(unittest.TestCase):
         assert (
             not fake_token.is_not_yet_valid()
         ), "the token should be valid as no validity start time set"
+
         current_time = datetime(year=2020, month=2, day=2, hour=2, minute=2)
         activation_time = current_time + timedelta(hours=1)
 
@@ -284,7 +287,8 @@ class TestTokenValidityMixin(unittest.TestCase):
             "%d/%m/%y %H:%M"
         )
 
-        with freeze_time(current_time) as frozen_time:
+        with freeze_time(current_time, tz_offset=5) as frozen_time:
+
             assert (
                 fake_token.is_not_yet_valid()
             ), "the token should not be valid as current time before validity start time"

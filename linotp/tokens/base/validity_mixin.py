@@ -189,11 +189,11 @@ class TokenValidityMixin(object):
         self.removeFromTokenInfo("validity_period_start")
 
     def is_not_yet_valid(self):
-        now = datetime.now()
+        now = datetime.utcnow()
         return self.validity_period_start and now < self.validity_period_start
 
     def is_expired(self):
-        now = datetime.now()
+        now = datetime.utcnow()
         return self.validity_period_end and now > self.validity_period_end
 
     def has_exceeded_success(self):
