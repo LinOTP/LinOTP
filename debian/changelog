@@ -22,6 +22,8 @@ linotp (3.1~0dev-0) experimental; urgency=low
   * No longer support AUDIT_POOL_RECYCLE configuration setting.
   * Sqlite audit databases can no longer share the same file with LinOTP. If configured
     to share the same file, LinOTP will add a suffix to the audit database file name.
+  * Audit database timestamp is now ISO 8601 formatted. The timestamp is saved in UTC
+    timezone instead of server local time.
 
   Fixes:
   * mOTP tokens can now be used in challenge response mode

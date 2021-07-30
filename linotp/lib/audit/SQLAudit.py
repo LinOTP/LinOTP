@@ -51,9 +51,14 @@ from linotp.model import db, implicit_returning
 log = logging.getLogger(__name__)
 
 
-def now():
-    u_now = "%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-    return u_now
+def now() -> str:
+    """
+    Returns an ISO datetime representation in UTC timezone with millisecond
+    precision to fit in the AuditTable.timestamp column
+    """
+    return datetime.datetime.now(datetime.timezone.utc).isoformat(
+        timespec="milliseconds"
+    )
 
 
 ######################## MODEL ################################################
