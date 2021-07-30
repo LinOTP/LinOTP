@@ -39,15 +39,14 @@ import datetime
 import logging
 from binascii import unhexlify
 
-from sqlalchemy import and_, asc, create_engine, desc, or_, orm, schema, types
+from sqlalchemy import Column, and_, asc, desc, or_, schema, types
+from sqlalchemy.orm import validates
 
 from flask import current_app
 
-from linotp.flap import config
 from linotp.lib.audit.base import AuditBase
 from linotp.lib.crypto.rsa import RSA_Signature
-from linotp.lib.text_utils import utf8_slice
-from linotp.model import db
+from linotp.model import db, implicit_returning
 
 log = logging.getLogger(__name__)
 
@@ -58,123 +57,57 @@ def now():
 
 
 ######################## MODEL ################################################
-table_prefix = ""
-
-audit_table_name = "%saudit" % table_prefix
-
-audit_table = schema.Table(
-    audit_table_name,
-    db.metadata,
-    schema.Column(
-        "id",
-        types.Integer,
-        schema.Sequence("audit_seq_id", optional=True),
-        primary_key=True,
-    ),
-    schema.Column("timestamp", types.Unicode(30), default=now, index=True),
-    schema.Column("signature", types.Unicode(512), default=""),
-    schema.Column("action", types.Unicode(30), index=True),
-    schema.Column("success", types.Unicode(30), default="False"),
-    schema.Column("serial", types.Unicode(30), index=True),
-    schema.Column("tokentype", types.Unicode(40)),
-    schema.Column("user", types.Unicode(255), index=True),
-    schema.Column("realm", types.Unicode(255), index=True),
-    schema.Column("administrator", types.Unicode(255)),
-    schema.Column("action_detail", types.Unicode(512), default=""),
-    schema.Column("info", types.Unicode(512), default=""),
-    schema.Column("linotp_server", types.Unicode(80)),
-    schema.Column("client", types.Unicode(80)),
-    schema.Column("log_level", types.Unicode(20), default="INFO", index=True),
-    schema.Column("clearance_level", types.Integer, default=0),
-)
 
 
 class AuditTable(db.Model):
+    __table_args__ = {
+        "implicit_returning": implicit_returning,
+    }
 
-    __table__ = audit_table
+    __tablename__ = "audit"
+    id = Column(
+        types.Integer,
+        schema.Sequence("audit_seq_id", optional=True),
+        primary_key=True,
+    )
+    timestamp = Column(types.Unicode(30), default=now, index=True)
+    signature = Column(types.Unicode(512), default="")
+    action = Column(types.Unicode(30), index=True)
+    success = Column(types.Unicode(30), default="0")
+    serial = Column(types.Unicode(30), index=True)
+    tokentype = Column(types.Unicode(40))
+    user = Column(types.Unicode(255), index=True)
+    realm = Column(types.Unicode(255), index=True)
+    administrator = Column(types.Unicode(255))
+    action_detail = Column(types.Unicode(512), default="")
+    info = Column(types.Unicode(512), default="")
+    linotp_server = Column(types.Unicode(80))
+    client = Column(types.Unicode(80))
+    log_level = Column(types.Unicode(20), default="INFO", index=True)
+    clearance_level = Column(types.Integer, default=0)
 
-    def __init__(
-        self,
-        serial="",
-        action="",
-        success="False",
-        tokentype="",
-        user="",
-        realm="",
-        administrator="",
-        action_detail="",
-        info="",
-        linotp_server="",
-        client="",
-        log_level="INFO",
-        clearance_level=0,
-        config_param=None,
-    ):
-        """
-        build an audit db entry
+    @validates(
+        "serial",
+        "action",
+        "success",
+        "tokentype",
+        "user",
+        "realm",
+        "administrator",
+        "linotp_server",
+        "client",
+        "log_level",
+    )
+    def convert_str(self, _, value):
+        """Converts the validated fields to string on insert"""
+        return str(value or "")
 
-        *parmeters require to be compliant to the table defintion, which
-         implies that type unicode is recomended where appropriate
-
-        :param serial: token serial number
-        :type serial: unicode
-        :param action: the scope of the audit entry, eg. admin/show
-        :type action: unicode
-        :param success: the result of the action
-        :type success: unicode
-        :param tokentype: which token type was involved
-        :type tokentype: unicode
-        :param user: user login
-        :type user: unicode
-        :param realm: the involved realm
-        :type realm: unicode
-        :param administrator: the admin involved
-        :type administrator: unicode
-        :param action_detail: the additional action details
-        :type action_detail: unicode
-        :param info: additional info for failures
-        :type info: unicode
-        :param linotp_server: the server name
-        :type linotp_server: unicode
-        :param client: info about the requesting client
-        :type client: unicode
-        :param loglevel: the loglevel of the action
-        :type loglevel: unicode
-        :param clearance_level: *??*
-        :type clearance_level: integer
-
-        """
-
-        log.debug("[__init__] creating AuditTable object, action = %s", action)
-
-        super().__init__()
-
-        if config_param:
-            self.config = config_param
-        else:
-            self.config = config
-        self.trunc_as_err = current_app.config["AUDIT_ERROR_ON_TRUNCATION"]
-        self.serial = str(serial or "")
-        self.action = str(action or "")
-        self.success = str(success or "0")
-        self.tokentype = str(tokentype or "")
-        self.user = str(user or "")
-        self.realm = str(realm or "")
-        self.administrator = str(administrator or "")
-
-        #
-        # we have to truncate the 'action_detail' and the 'info' data
-        # in utf-8 compliant way
-        #
-        self.action_detail = next(utf8_slice(str(action_detail or ""), 512))
-        self.info = next(utf8_slice(str(info or ""), 512))
-
-        self.linotp_server = str(linotp_server or "")
-        self.client = str(client or "")
-        self.log_level = str(log_level or "")
-        self.clearance_level = clearance_level
-        self.timestamp = now()
-        self.siganture = " "
+    @validates("action_detail", "info")
+    def validate_truncate(self, key, value):
+        max_len = getattr(self.__class__, key).prop.columns[0].type.length
+        if value and len(value) > max_len:
+            value = value[: max_len]
+        return value
 
 
 ###############################################################################
@@ -353,7 +286,7 @@ class Audit(AuditBase):
         at = AuditTable(
             serial=param.get("serial"),
             action=param.get("action").lstrip("/"),
-            success=1 if param.get("success") else 0,
+            success="1" if param.get("success") else "0",
             tokentype=param.get("token_type"),
             user=param.get("user"),
             realm=param.get("realm"),
@@ -364,7 +297,6 @@ class Audit(AuditBase):
             client=param.get("client"),
             log_level=param.get("log_level"),
             clearance_level=param.get("clearance_level"),
-            config_param=self.config,
         )
 
         self.session.add(at)
