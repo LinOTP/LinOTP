@@ -148,9 +148,6 @@ class AuditBase(object):
 
         return
 
-    def getAuditId(self):
-        return self.name
-
     def getTotal(self, param, AND=True, display_error=True):
         """
         This method returns the total number of audit entries in the audit store

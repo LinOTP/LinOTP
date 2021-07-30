@@ -36,15 +36,13 @@ uses a public/private key for signing the log entries
 """
 
 import datetime
-import logging.config
-import traceback
-from binascii import hexlify, unhexlify
+import logging
+from binascii import unhexlify
 
 from sqlalchemy import and_, asc, create_engine, desc, or_, orm, schema, types
 
 from flask import current_app
 
-import linotp
 from linotp.flap import config
 from linotp.lib.audit.base import AuditBase
 from linotp.lib.crypto.rsa import RSA_Signature
@@ -89,22 +87,6 @@ audit_table = schema.Table(
     schema.Column("log_level", types.Unicode(20), default="INFO", index=True),
     schema.Column("clearance_level", types.Integer, default=0),
 )
-
-
-AUDIT_ENCODE = [
-    "action",
-    "serial",
-    "success",
-    "user",
-    "realm",
-    "tokentype",
-    "administrator",
-    "action_detail",
-    "info",
-    "linotp_server",
-    "client",
-    "log_level",
-]
 
 
 class AuditTable(db.Model):
@@ -193,56 +175,6 @@ class AuditTable(db.Model):
         self.clearance_level = clearance_level
         self.timestamp = now()
         self.siganture = " "
-
-    def _get_field_len(self, col_name):
-        leng = -1
-        try:
-            ll = audit_table.columns[col_name]
-            ty = ll.type
-            leng = ty.length
-        except Exception as exx:
-            leng = -1
-
-        return leng
-
-
-# orm.mapper(AuditTable, audit_table)
-
-
-# replace sqlalchemy-migrate by the ability to ad a column
-def add_column(engine, table, column):
-    """
-    small helper to add a column by calling a native 'ALTER TABLE' to
-    replace the need for sqlalchemy-migrate
-
-    from:
-    http://stackoverflow.com/questions/7300948/add-column-to-sqlalchemy-table
-
-    :param engine: the running sqlalchemy
-    :param table: in which table should this column be added
-    :param column: the sqlalchemy definition of a column
-
-    :return: boolean of success or not
-    """
-
-    result = False
-
-    table_name = table.description
-    column_name = column.compile(dialect=engine.dialect)
-    column_type = column.type.compile(engine.dialect)
-
-    try:
-        engine.execute(
-            "ALTER TABLE %s ADD COLUMN %s %s"
-            % (table_name, column_name, column_type)
-        )
-        result = True
-
-    except Exception as exx:
-        # Obviously we already migrated the database.
-        result = False
-
-    return result
 
 
 ###############################################################################
