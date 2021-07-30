@@ -5943,6 +5943,7 @@ function openExpirationDialog() {
                             alert_info_text({'text': i18n.gettext("Expiration set successfully"),
                                              'is_escaped': true});
                             dialog.dialog('close');
+                            tokeninfo_redisplay();
                         }
                         else {
                             var message = i18n.gettext("An error occurred during saving expiration.");
