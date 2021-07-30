@@ -145,3 +145,7 @@ class LinOTPGroup(FlaskGroup):
 @with_appcontext
 def main(verbose, quiet):
     current_app.echo = Echo(-1 if quiet else verbose)
+
+
+if __name__ == "__main__":
+    main()  # pylint: disable=no-value-for-parameter
