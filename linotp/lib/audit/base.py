@@ -40,11 +40,7 @@ log = logging.getLogger(__name__)
 
 def getAudit(config):
 
-    audit_url = config.get("AUDIT_DATABASE_URI")
-
-    if audit_url is None:
-        # Default to shared database if not set
-        audit_url = "SHARED"
+    audit_url = config["AUDIT_DATABASE_URI"]
 
     if audit_url == "OFF":
         log.warning(
