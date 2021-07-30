@@ -139,6 +139,17 @@ def setup_db(app) -> None:
     # Initialise the SQLAlchemy engine
 
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
+
+    audit_database_uri = app.config["AUDIT_DATABASE_URI"]
+
+    if audit_database_uri == "SHARED":
+        audit_database_uri = app.config["DATABASE_URI"]
+
+    if audit_database_uri != "OFF":
+        app.config["SQLALCHEMY_BINDS"] = {
+            "auditdb": audit_database_uri,
+        }
+
     db.init_app(app)
 
     table_names = db.engine.table_names()
@@ -182,6 +193,12 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
     echo(f"Setting up database...", v=1)
 
     try:
+        if app.config["AUDIT_DATABASE_URI"] != "OFF":
+            # The audit table is created in the configured audit database
+            # connection if audit is not turned off. The database model is
+            # added to SQLAlchemy if the file is imported.
+            import linotp.lib.audit.SQLAudit
+
         if drop_data:
             echo("Dropping tables to erase all data...", v=1)
             db.drop_all()

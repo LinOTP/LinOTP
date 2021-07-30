@@ -48,10 +48,14 @@ import os
 import sys
 
 import click
-from sqlalchemy import MetaData, Table, asc, desc, func, select
+from sqlalchemy import asc, desc
+from sqlalchemy.sql.functions import count
 
 from flask import current_app
 from flask.cli import AppGroup, with_appcontext
+
+from linotp.lib.audit.SQLAudit import AuditTable
+from linotp.model import db
 
 # -------------------------------------------------------------------------- --
 
@@ -150,13 +154,6 @@ class SQLJanitor:
         self.export_dir = export
 
         self.app = current_app
-        engine = current_app.audit_obj.engine
-
-        engine.echo = False  # We want to see the SQL we're creating
-        metadata = MetaData(engine)
-        # The audit table already exists, so no need to redefine it. Just
-        # load it from the database using the "autoload" feature.
-        self.audit = Table("audit", metadata, autoload=True)
 
     def export_data(self, max_id):
         """
@@ -179,27 +176,30 @@ class SQLJanitor:
         )
 
         with open(os.path.join(self.export_dir, filename), "w") as f:
-            s = self.audit.select(self.audit.c.id < max_id).order_by(
-                desc(self.audit.c.id)
+
+            result = (
+                db.session.query(AuditTable)
+                .filter(AuditTable.id < max_id)
+                .order_by(desc(AuditTable.id))
+                .all()
             )
-            result = s.execute()
 
             # write the csv header
-            keys = list(result.keys())
-            prin = "; ".join(keys)
-            f.write(prin)
+            audit_columns = AuditTable.__table__.columns
+            csv_header = "; ".join([column.name for column in audit_columns])
+            f.write(csv_header)
             f.write("\n")
 
-            for row in result:
+            for audit_row in result:
                 row_data = []
-                vals = list(row.values())
-                for val in vals:
+                for column in audit_columns:
+                    val = getattr(audit_row, column.name)
                     if isinstance(val, int):
                         row_data.append("%d" % val)
                     elif isinstance(val, str):
                         row_data.append('"%s"' % val)
                     elif val is None:
-                        row_data.append(" ")
+                        row_data.append("")
                     else:
                         row_data.append("?")
                         self.app.echo(
@@ -242,27 +242,29 @@ class SQLJanitor:
             "time_taken": 0,
         }
 
-        t1 = datetime.datetime.now()
-        id_pos = 0
-        overall_number = 0
+        start_time = datetime.datetime.now()
 
         # TODO: replace with a select between query
 
-        rows = select([func.count()]).select_from(self.audit).execute()
-        row = rows.fetchone()
-        overall_number = int(row[id_pos])
+        total = int(db.session.query(count(AuditTable.id)).scalar())
 
-        cleanup_infos["entries_in_audit"] = overall_number
-        if overall_number >= max_entries:
+        cleanup_infos["entries_in_audit"] = total
+        if total >= max_entries:
 
-            s = self.audit.select().order_by(asc(self.audit.c.id)).limit(1)
-            rows = s.execute()
-            first_id = int(rows.fetchone()[id_pos])
+            first_id = int(
+                db.session.query(AuditTable.id)
+                .order_by(asc(AuditTable.id))
+                .limit(1)
+                .scalar()
+            )
             cleanup_infos["first_entry_id"] = first_id
 
-            s = self.audit.select().order_by(desc(self.audit.c.id)).limit(1)
-            rows = s.execute()
-            last_id = int(rows.fetchone()[id_pos])
+            last_id = int(
+                db.session.query(AuditTable.id)
+                .order_by(desc(AuditTable.id))
+                .limit(1)
+                .scalar()
+            )
             cleanup_infos["last_entry_id"] = last_id
 
             delete_from = last_id - min_entries
@@ -270,13 +272,17 @@ class SQLJanitor:
                 # if export is enabled, we start the export now
                 export_filename = self.export_data(delete_from)
                 cleanup_infos["export_filename"] = export_filename
-                s = self.audit.delete(self.audit.c.id < delete_from)
-                s.execute()
-                cleanup_infos["entries_deleted"] = overall_number - min_entries
+
+                db.session.query(AuditTable).filter(
+                    AuditTable.id < delete_from
+                ).delete()
+
+                cleanup_infos["entries_deleted"] = total - min_entries
                 cleanup_infos["cleaned"] = True
 
-        t2 = datetime.datetime.now()
+        end_time = datetime.datetime.now()
 
-        duration = t2 - t1
+        duration = end_time - start_time
         cleanup_infos["time_taken"] = duration.seconds
+
         return cleanup_infos

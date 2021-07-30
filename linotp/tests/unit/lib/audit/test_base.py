@@ -30,16 +30,25 @@ Unit tests for audit base
 
 import pytest
 
-from linotp.lib.audit.base import getAudit
-from linotp.model import db
+from linotp.lib.audit.base import AuditBase, getAudit
+from linotp.lib.audit.SQLAudit import Audit
 
 
 class TestAuditSetup(object):
-    def test_sqlaudit_none(self, app):
-        # GIVEN an empty configuration
-
-        # WHEN I request an audit engine
+    @pytest.mark.app_config(
+        {
+            "AUDIT_DATABASE_URI": "OFF",
+        }
+    )
+    def test_sqlaudit_off(self, app):
         audit = getAudit(app.config)
 
-        # THEN The engine is shared with the main database
-        assert audit.engine and audit.engine == db.engine
+        # audit object should be a dummy class without implementation
+        assert isinstance(audit, AuditBase)
+
+    @pytest.mark.app_config({})
+    def test_sqlaudit_sqlaudit(self, app):
+        audit = getAudit(app.config)
+
+        # audit object should be a database audit
+        assert isinstance(audit, Audit)

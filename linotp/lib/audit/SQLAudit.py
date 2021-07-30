@@ -60,6 +60,9 @@ def now():
 
 
 class AuditTable(db.Model):
+    # query against the "auditdb" database session
+    __bind_key__ = "auditdb"
+
     __table_args__ = {
         "implicit_returning": implicit_returning,
     }
@@ -119,87 +122,24 @@ class Audit(AuditBase):
     backend which has a separate database connection.
     """
 
-    name = "SQlAudit"
-
-    engine = None
-    """Database backend engine"""
-
-    session = None
-    """Database scoped session maker"""
-
-    def __init__(self, config, engine=None):
+    def __init__(self, config):
         """
         Initialise the audit backend
 
-        Here the audit backend is initialised from the given configuration,
-        encryption configuration is setup and a database connection opened.
+        Here the audit backend is initialised.
 
-        By supplying an `engine` parameter to the constructor, it is possible
-        to use an existing instance as the backend, so that the audit table
-        can form a part of the main database. Note, this is not recommended
-        for large production systems because this table will be written to
-        frequently.
+        The SQLAlchemy connection is configured via flask_sqlalchemy in
+        :func:`~linotp.model.setup_db`.
 
         @param config Dict of configuration values
-        @param engine Use the given existing engine
         """
 
         super(Audit, self).__init__(config)
-
-        ########################## SESSION ##################################
-
-        self._init_db()
-        self._init_sessionmaker()
-        self._createdb()
 
         # initialize signing keys
         self.readKeys()
 
         self.rsa = RSA_Signature(private=self.private.encode("utf-8"))
-
-    def _init_db(self):
-        """
-        Get SQL Alchemy engine and sessionmaker for the audit interface
-        """
-
-        connect_string = current_app.config["AUDIT_DATABASE_URI"]
-        pool_recycle = current_app.config["AUDIT_POOL_RECYCLE"]
-
-        # If implicit_returning is explicitly set to True, we
-        # get lots of mysql errors
-        # AttributeError: 'MySQLCompiler_mysqldb' object has no
-        # attribute 'returning_clause'
-        # So we do not mention explicit_returning at all
-        implicit_returning = self.config.get(
-            "linotpSQL.implicit_returning", True
-        )
-
-        self.engine = create_engine(
-            connect_string,
-            pool_recycle=pool_recycle,
-            implicit_returning=implicit_returning,
-        )
-
-    def _init_sessionmaker(self):
-        """
-        Set up session maker in `self.session`
-        """
-        # Set up the session
-        sm = orm.sessionmaker(
-            bind=self.engine,
-            autoflush=True,
-            autocommit=True,
-            expire_on_commit=True,
-        )
-        self.session = orm.scoped_session(sm)
-
-    def _createdb(self):
-        """
-        Create database tables
-        """
-        # metadata.bind = self.engine
-        # metadata.create_all()
-        db.create_all()
 
     def _attr_to_dict(self, audit_line):
 
@@ -272,7 +212,7 @@ class Audit(AuditBase):
 
         except Exception as exx:
             log.error("[log] error writing log message")
-            self.session.rollback()
+            db.session.rollback()
             raise exx
 
         return
@@ -299,12 +239,11 @@ class Audit(AuditBase):
             clearance_level=param.get("clearance_level"),
         )
 
-        self.session.add(at)
-        self.session.flush()
-        # At this point "at" contains the primary key id
+        db.session.add(at)
+        db.session.flush()
+        # At this point "at" contains the primary key id and we can sign the audit entry
         at.signature = self._sign(at)
-        self.session.merge(at)
-        self.session.flush()
+        db.session.commit()
 
     def initialize_log(self, param):
         """
@@ -456,10 +395,10 @@ class Audit(AuditBase):
                 order_dir = desc(order)
 
         if condition is None:
-            audit_q = self.session.query(AuditTable).order_by(order_dir)
+            audit_q = db.session.query(AuditTable).order_by(order_dir)
         else:
             audit_q = (
-                self.session.query(AuditTable)
+                db.session.query(AuditTable)
                 .filter(condition)
                 .order_by(order_dir)
             )
@@ -487,7 +426,7 @@ class Audit(AuditBase):
 
         # we drop here the ORM due to memory consumption
         # and return a resultproxy for row iteration
-        result = self.session.execute(audit_q.statement)
+        result = db.session.execute(audit_q.statement)
         return result
 
     def getTotal(self, param, AND=True, display_error=True):
@@ -497,9 +436,9 @@ class Audit(AuditBase):
         """
         condition = self._buildCondition(param, AND)
         if type(condition).__name__ == "NoneType":
-            c = self.session.query(AuditTable).count()
+            c = db.session.query(AuditTable).count()
         else:
-            c = self.session.query(AuditTable).filter(condition).count()
+            c = db.session.query(AuditTable).filter(condition).count()
 
         return c
 
@@ -541,40 +480,3 @@ def getAsBytes(data):
     for signing
     """
     return bytes(getAsString(data), "utf-8")
-
-
-class AuditLinOTPDB(Audit):
-    """
-    SQL audit backend that uses LinOTP database
-
-    This backend is mainly to allow simple configuration scenario
-    where a separate engine is not required
-    """
-
-    name = "SQLAudit-LinOTPDB"
-
-    def __init__(self, config):
-        """
-        Iniailise the audit backend using the LinOTP
-        database backend
-        """
-        super().__init__(config, None)
-
-    def _init_db(self):
-        """
-        Initialise engine using LinOTP DB
-        """
-        self.engine = db.engine
-
-    def _init_sessionmaker(self):
-        """
-        Set up session maker in `self.session`
-        """
-        self.session = db.session
-
-    def log_entry(self, param):
-        super().log_entry(param)
-        self.session.commit()
-
-
-###eof#########################################################################

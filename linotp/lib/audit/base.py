@@ -51,11 +51,8 @@ def getAudit(config):
     else:
         from . import SQLAudit
 
-        if audit_url == "SHARED":
-            # Share with main database
-            audit = SQLAudit.AuditLinOTPDB(config)
-        else:
-            audit = SQLAudit.Audit(config, audit_url)
+        audit = SQLAudit.Audit(config)
+
     return audit
 
 
