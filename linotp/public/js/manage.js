@@ -31,9 +31,8 @@ var password_placeholder_not_changed = "<" + i18n.gettext("not changed") + ">";
 
 
 function error_handling(message, file, line) {
-    Fehler = "We are sorry. An internal error occurred:\n" + message + "\nin file:" + file + "\nin line:" + line +
-        "\nTo go on, reload this web page.";
-    alert(escape(Fehler));
+    error_message = `We are sorry. An internal error occurred:\n${message}\nin file:${file}\nin line:${line}\nTo go on, reload this web page.`;
+    alert(escape(error_message));
     return true;
 }
 
