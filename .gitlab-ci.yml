@@ -414,7 +414,7 @@ e2e-test-mariadb:
       alias: test-linotp
     - name: ${DB}
       alias: db
-    - name: selenium/standalone-chrome-debug
+    - name: selenium/standalone-chrome-debug:3.141.59-20210713
       alias: test-chrome
 
 # End to end test using Soft HSM image
@@ -431,7 +431,7 @@ e2e-test-softhsm:
       alias: test-linotp
     - name: ${DB}
       alias: db
-    - name: selenium/standalone-chrome-debug
+    - name: selenium/standalone-chrome-debug:3.141.59-20210713
       alias: test-chrome
 
 # Auto-generate API docs using Sphinx.
