@@ -242,9 +242,9 @@ class TestHotpController(TestController):
 
         # ----------------------------------------------------------------- --
 
-        # first enable the controller at all
+        # first enable the get otp functionality  at all
 
-        params = {"GETOTP_ENABLED": True}
+        params = {"linotpGetotp.active": True}
         response = self.make_system_request("setConfig", params=params)
         assert "false" not in response
 

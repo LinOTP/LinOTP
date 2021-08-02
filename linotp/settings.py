@@ -626,17 +626,6 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "GETOTP_ENABLED",
-            bool,
-            convert=to_boolean,
-            default=False,
-            help=(
-                "Whether users can retrieve OTPs for their own tokens. "
-                "This is helpful for corner cases like printed "
-                "OTP lists."
-            ),
-        ),
-        ConfigItem(
             "ACTIVE_SECURITY_MODULE",
             str,
             default="default",
@@ -803,7 +792,6 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     SESSION_COOKIE_SECURE = False
-    GETOTP_ENABLED = True
     LOGGING_LEVEL = "DEBUG"
     DATABASE_URI = os.getenv(
         "LINOTP_DATABASE_URI"

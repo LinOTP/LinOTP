@@ -889,6 +889,15 @@ class TestTotpController(TestController):
         """
         totp test: test the getotp - verify that in the list of getotp is the correct start otp of our test vector
         """
+        # ----------------------------------------------------------------- --
+
+        # first enable the get otp functionality  at all
+
+        params = {"linotpGetotp.active": True}
+        response = self.make_system_request("setConfig", params=params)
+        assert "false" not in response
+
+        # ----------------------------------------------------------------- --
 
         parameters = {
             "name": "getmultitoken",

@@ -43,6 +43,7 @@ from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
 from linotp.lib.ImportOTP import getImportText, getKnownTypes
@@ -328,7 +329,7 @@ class ManageController(BaseController):
         """
         c.title = "LinOTP Management"
         c.tokenArray = []
-        c.getotp_active = config.get("linotpGetotp.active", "False") == "True"
+        c.getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
         return render("/manage/tokenview.mako")
 
     def userview(self):

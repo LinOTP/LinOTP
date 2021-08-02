@@ -784,6 +784,17 @@ class TestSelfserviceController(TestController):
         2. define system policy which allows the hotp lookup
           -> the lookup will be successfull
         """
+        # ----------------------------------------------------------------- --
+
+        # first enable the get otp functionality  at all
+
+        params = {"linotpGetotp.active": True}
+        response = self.make_system_request("setConfig", params=params)
+        assert response.json["result"]["value"][
+            "setConfig linotpGetotp.active:True"
+        ], response
+
+        # ----------------------------------------------------------------- --
 
         user = "passthru_user1@myDefRealm"
         selfservice_user = {"login": user, "password": "geheim1"}
