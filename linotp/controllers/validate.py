@@ -53,10 +53,7 @@ from linotp.lib.policy import (
 )
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.reply import sendError, sendQRImageResult, sendResult
-from linotp.lib.token import (
-    get_tokenserial_of_transaction,
-    getTokens4UserOrSerial,
-)
+from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.user import User, getUserFromParam, getUserId, getUserInfo
 from linotp.lib.util import get_client
 from linotp.model import db
