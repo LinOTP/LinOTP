@@ -39,6 +39,7 @@ from linotp.controllers.base import BaseController
 from linotp.flap import abort, config, request, response
 from linotp.flap import tmpl_context as c
 from linotp.lib.auth.validate import ValidationHandler
+from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError, ValidateError
@@ -53,7 +54,7 @@ from linotp.lib.policy import (
 )
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.reply import sendError, sendQRImageResult, sendResult
-from linotp.lib.token import getTokens4UserOrSerial
+from linotp.lib.token import get_token_owner, getTokens4UserOrSerial
 from linotp.lib.user import User, getUserFromParam, getUserId, getUserInfo
 from linotp.lib.util import get_client
 from linotp.model import db
@@ -302,6 +303,30 @@ class ValidateController(BaseController):
                 password=passw,
                 use_offline=use_offline,
             )
+
+            serials = []
+            types = []
+            owner = None
+            challenges = Challenges.lookup_challenges(transid=transid)
+
+            for ch in challenges:
+                tokens = getTokens4UserOrSerial(serial=ch.getTokenSerial())
+                if not tokens:
+                    continue
+
+                for token in tokens:
+                    serials.append(token.getSerial())
+                    types.append(token.getType())
+
+                    if not owner:
+                        owner = get_token_owner(token)
+
+            if owner:
+                g.audit["user"] = g.audit["user"] or owner.login
+                g.audit["realm"] = g.audit["realm"] or owner.realm
+
+            g.audit["serial"] = " ".join(serials)
+            g.audit["token_type"] = " ".join(types)
 
             g.audit["success"] = ok
             g.audit["info"] = str(opt)

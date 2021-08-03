@@ -99,7 +99,6 @@ class TestCheckStatus(TestController):
         return serial, otps
 
     ##########################################################################
-    @pytest.mark.xfail(reason="known bug LINOTP-1278")
     def test_single_token(self):
         """
         setup hmac token to support multiple challenges
@@ -246,7 +245,6 @@ class TestCheckStatus(TestController):
 
         return
 
-    @pytest.mark.xfail(reason="known bug LINOTP-1278")
     def test_multiple_token(self):
         """
         test for check_status with multiple hmac token in challenge response
@@ -606,7 +604,6 @@ class TestCheckStatus(TestController):
 
         return
 
-    @pytest.mark.xfail(reason="known bug LINOTP-1278")
     def test_check_status_wo_username(self):
         """
         test check_status does work without pin
