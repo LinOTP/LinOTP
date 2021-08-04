@@ -211,7 +211,7 @@ class Audit(AuditBase):
                     self.log_entry(p)
 
         except Exception as exx:
-            log.error("[log] error writing log message")
+            log.error("[log] error writing log message: %r", exx)
             db.session.rollback()
             raise exx
 
