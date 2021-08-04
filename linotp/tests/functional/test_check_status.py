@@ -33,6 +33,10 @@ import datetime
 import json
 import logging
 
+import pytest
+
+from flask import g
+
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
@@ -95,6 +99,7 @@ class TestCheckStatus(TestController):
         return serial, otps
 
     ##########################################################################
+    @pytest.mark.xfail(reason="known bug LINOTP-1278")
     def test_single_token(self):
         """
         setup hmac token to support multiple challenges
@@ -135,11 +140,30 @@ class TestCheckStatus(TestController):
             "pass": "123!",
             "transactionid": transid,
         }
-
         response = self.make_validate_request("check_status", params)
         assert '"received_tan": false' in response, response
         assert '"valid_tan": false' in response, response
         assert '"received_count": 0' in response, response
+        assert (
+            g.audit["user"] == "passthru_user1"
+        ), "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
+            g.audit["user"]
+        )
+        assert (
+            g.audit["realm"] == "mydefrealm"
+        ), "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
+            g.audit["realm"]
+        )
+        assert (
+            g.audit["token_type"] == "HMAC"
+        ), "token type 'HMAC' should have been written to audit log instead of '{}'".format(
+            g.audit["token_type"]
+        )
+        assert (
+            g.audit["serial"] == serial
+        ), "serial {} should have been written to audit log instead of '{}'".format(
+            serial, g.audit["serial"]
+        )
 
         # invalidate request
         params = {
@@ -222,6 +246,7 @@ class TestCheckStatus(TestController):
 
         return
 
+    @pytest.mark.xfail(reason="known bug LINOTP-1278")
     def test_multiple_token(self):
         """
         test for check_status with multiple hmac token in challenge response
@@ -278,6 +303,35 @@ class TestCheckStatus(TestController):
 
         assert '"received_tan": true' not in response, response
         assert '"valid_tan": true' not in response, response
+
+        assert (
+            g.audit["user"] == "passthru_user1"
+        ), "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
+            g.audit["user"]
+        )
+        assert (
+            g.audit["realm"] == "mydefrealm"
+        ), "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
+            g.audit["realm"]
+        )
+        assert (
+            g.audit["token_type"] == "HMAC HMAC"
+        ), "token type 'HMAC' should have been written twice to audit log instead of '{}'".format(
+            g.audit["token_type"]
+        )
+        assert (
+            g.audit["serial"] is not None
+        ), "serials should have been written to audit log instead of '{}'".format(
+            g.audit["serial"]
+        )
+
+        serials = g.audit["serial"].split(" ")
+        assert (
+            serial in serials
+        ), "serial {} should have been written to audit log".format(serial)
+        assert (
+            serial2 in serials
+        ), "serial {} should have been written to audit log".format(serial2)
 
         # invalidate request
         params = {
@@ -552,6 +606,7 @@ class TestCheckStatus(TestController):
 
         return
 
+    @pytest.mark.xfail(reason="known bug LINOTP-1278")
     def test_check_status_wo_username(self):
         """
         test check_status does work without pin
@@ -605,6 +660,26 @@ class TestCheckStatus(TestController):
             .get("status")
         )
         assert status == "open", jresp
+        assert (
+            g.audit["user"] == "passthru_user1"
+        ), "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
+            g.audit["user"]
+        )
+        assert (
+            g.audit["realm"] == "mydefrealm"
+        ), "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
+            g.audit["realm"]
+        )
+        assert (
+            g.audit["token_type"] == "HMAC"
+        ), "token type 'HMAC' should have been written to audit log instead of '{}'".format(
+            g.audit["token_type"]
+        )
+        assert (
+            g.audit["serial"] == serial
+        ), "serial {} should have been written to audit log instead of '{}'".format(
+            serial, g.audit["serial"]
+        )
 
         # now check for the status
         params = {"pass": empty_pin, "transactionid": transid}
