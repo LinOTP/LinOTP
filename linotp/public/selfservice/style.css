@@ -424,3 +424,9 @@ div.empty-token-list {
   padding-right: .5em;
   font-weight: bold
 }
+
+@media print {
+  .no-print {
+     visibility: hidden;
+  }
+}

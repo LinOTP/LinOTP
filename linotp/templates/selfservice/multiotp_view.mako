@@ -65,6 +65,6 @@ ${c.ret.get("error")}
 %endfor
 </table>
 
-<button onclick="window.print();">Print Page</button>
+<button class="no-print" onclick="window.print();">Print Page</button>
 </body>
 </html>
