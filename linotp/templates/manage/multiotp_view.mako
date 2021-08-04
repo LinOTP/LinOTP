@@ -30,7 +30,7 @@
 <head>
 <title>${_("OTP values")}</title>
 
-<link type="text/css" rel="stylesheet" href="/selfservice/style.css">
+<link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
 <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
 
 <%
