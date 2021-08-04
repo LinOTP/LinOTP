@@ -784,25 +784,19 @@ class DevelopmentConfig(Config):
     SESSION_COOKIE_SECURE = False
     LOGGING_LEVEL = "DEBUG"
     LOGGING_FILE_LEVEL = LOGGING_LEVEL
-    DATABASE_URI = os.getenv(
-        "LINOTP_DATABASE_URI"
-    ) or "sqlite:///" + os.path.join(basedir, "linotp-dev.sqlite")
+    DATABASE_URI = "sqlite:///" + os.path.join(basedir, "linotp-dev.sqlite")
 
 
 class TestingConfig(Config):
     TESTING = True
     SESSION_COOKIE_SECURE = False
     LOGGING_LEVEL = "DEBUG"
-    DATABASE_URI = os.getenv(
-        "LINOTP_DATABASE_URI"
-    ) or "sqlite:///" + os.path.join(basedir, "linotp-test.sqlite")
+    DATABASE_URI = "sqlite:///" + os.path.join(basedir, "linotp-test.sqlite")
 
 
 class ProductionConfig(Config):
     SESSION_COOKIE_SECURE = True
-    DATABASE_URI = os.getenv(
-        "LINOTP_DATABASE_URI"
-    ) or "sqlite:///" + os.path.join(basedir, "linotp.sqlite")
+    DATABASE_URI = "sqlite:///" + os.path.join(basedir, "linotp.sqlite")
 
 
 configs = {
