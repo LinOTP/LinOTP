@@ -137,31 +137,53 @@ class AuditController(BaseController):
                 self.request_params.get("outform", "json") or "json"
             )
 
-            streamed_response = None
+            delimiter = self.request_params.get("delimiter", ",") or ","
 
             audit_obj = current_app.audit_obj
             audit_query = AuditQuery(search_params, audit_obj)
 
+            # ------------------------------------------------------------- --
+
+            # check if we are running with sqlite which does not support
+            # streaming responses
+
+            stream_output = True
+
+            db_uri = current_app.config["AUDIT_DATABASE_URI"]
+            if db_uri == "SHARED":
+                db_uri = current_app.config["DATABASE_URI"]
+
+            if db_uri.startswith("sqlite"):
+                stream_output = False
+
             if output_format == "csv":
-                delimiter = self.request_params.get("delimiter", ",") or ","
-
-                streamed_response = Response(
-                    stream_with_context(
-                        CSVAuditIterator(audit_query, delimiter)
-                    ),
-                    mimetype="text/csv",
-                )
-                streamed_response.headers.set(
-                    "Content-disposition",
-                    "attachment",
-                    filename="linotp-audit.csv",
-                )
-
+                audit_iterator = CSVAuditIterator(audit_query, delimiter)
+                mimetype = "text/csv"
+                reponse_headers_args = {
+                    "_key": "Content-disposition",
+                    "_value": "attachment",
+                    "filename": "linotp-audit.csv",
+                }
             else:
-                streamed_response = Response(
-                    stream_with_context(JSONAuditIterator(audit_query)),
-                    mimetype="application/json",
-                )
+                audit_iterator = JSONAuditIterator(audit_query)
+                mimetype = "application/json"
+                reponse_headers_args = {}
+
+            if stream_output:
+                audit_output = stream_with_context(audit_iterator)
+            else:
+                audit_output = ""
+                try:
+                    while True:
+                        audit_output = audit_output + next(audit_iterator)
+                except StopIteration:
+                    # continue if all data is joined
+                    pass
+
+            streamed_response = Response(audit_output, mimetype=mimetype)
+
+            if reponse_headers_args:
+                streamed_response.headers.set(**reponse_headers_args)
 
             g.audit["success"] = True
             db.session.commit()

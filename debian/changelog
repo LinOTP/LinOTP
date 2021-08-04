@@ -15,6 +15,8 @@ linotp (3.1~0dev-0) experimental; urgency=low
   * Token monitoring now better sanitizes the status parameter
   * Improved Manage-UI error message if something fails in the initial config
     load phase.
+  * sqlite can be used as audit database - the response of audit/search
+    now skips streaming the response data for sqlite audit databases.
 
   Fixes:
   * mOTP tokens can now be used in challenge response mode
