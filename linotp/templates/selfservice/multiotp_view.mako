@@ -52,7 +52,7 @@ ${c.ret.get("error")}
 %endif
 </p>
 <table class=getotp>
-%for k in sorted(otps.iterkeys()):
+%for k in sorted(otps):
 <tr class=getotp>
 %if type.lower()=="totp":
 <td class="getotp key">${otps[k]["time"]}</td>
