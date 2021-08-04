@@ -165,23 +165,22 @@ div#header {
 table.getotp {
   color: #121212;
   border: 1px solid #AAAAAA;
-  margin: 1px 1px 5px 0
+  margin: 1em .5em;
+  border-spacing: 2px;
 }
 
-td.getotp {
+table.getotp td {
   color: #121212;
   border: 1px solid #AAAAAA;
-  margin: 1px 1px 5px 0
+  padding: .5em 1em;
 }
 
-td.value {
-  color: red;
-  padding: 0 10px;
+table.getotp td.value {
+  font-weight: bold;
 }
 
-td.key {
-  color: green;
-  padding: 0 10px;
+.getotp-print-button {
+  margin: 1em .5em;
 }
 
 label.error {

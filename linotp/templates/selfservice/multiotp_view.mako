@@ -51,20 +51,20 @@ ${_("Failed to retrieve the OTP values of your token:")}
 ${c.ret.get("error")}
 %endif
 </p>
-<table class=getotp>
+<table class="getotp">
 %for k in sorted(otps):
-<tr class=getotp>
+<tr>
 %if type.lower()=="totp":
-<td class="getotp key">${otps[k]["time"]}</td>
-<td class="getotp key">${otps[k]["otpval"]}</td>
+<td class="key">${otps[k]["time"]}</td>
+<td class="key">${otps[k]["otpval"]}</td>
 %else:
-<td class="getotp key">${k}</td>
-<td class="getotp value">${otps[k]}</td>
+<td class="key">${k}</td>
+<td class="value">${otps[k]}</td>
 %endif
 </tr>
 %endfor
 </table>
 
-<button class="no-print" onclick="window.print();">Print Page</button>
+<button class="no-print getotp-print-button" onclick="window.print();">Print Page</button>
 </body>
 </html>
