@@ -8,6 +8,7 @@ linotp (3.1~0dev-0) experimental; urgency=low
   * Userservice allows enrollment of HOTP tokens with the webprovisionGOOGLE policy.
   * Userservice allows enrollment of TOTP tokens with the webprovisionGOOGLEtime policy.
   * RestSMSProvider allows access to nested JSON request data structure items by path.
+  * Use database config value to enable get_otp feature
 
   Improvement:
   * Simplify the HMAC acountname and tokenissuer fallback rules for a more predictable
@@ -41,6 +42,7 @@ linotp (3.1~0dev-0) experimental; urgency=low
     logout is always possible.
   * support the assignment of multiple tokens within one request to
     prevent raceconditions for example with token_count policies
+  * getotp view is now working with python3
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 

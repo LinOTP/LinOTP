@@ -67,6 +67,7 @@ from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.audit.base import search as audit_search
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.challenges import Challenges
+from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
 from linotp.lib.policy import (
@@ -98,6 +99,7 @@ from linotp.lib.token import (
     setPin,
     setPinUser,
 )
+from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     User,
     getRealmBox,
@@ -2498,7 +2500,7 @@ class UserserviceController(BaseController):
             JSON response
         """
 
-        getotp_active = config.get("GETOTP_ENABLED")
+        getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
         if not getotp_active:
             return sendError(response, _("getotp is not activated."), 0)
 

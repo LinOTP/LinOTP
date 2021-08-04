@@ -36,6 +36,7 @@ from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
@@ -45,6 +46,7 @@ from linotp.lib.token import (
     getTokens4UserOrSerial,
     getTokenType,
 )
+from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     getDefaultRealm,
     getUserFromParam,
@@ -132,7 +134,7 @@ class GettokenController(BaseController):
             JSON response
         """
 
-        getotp_active = config.get("GETOTP_ENABLED")
+        getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
         if not getotp_active:
             return sendError(response, "getotp is not activated.", 0)
 
@@ -164,7 +166,9 @@ class GettokenController(BaseController):
 
             if view:
                 c.ret = ret
-                return render("/manage/multiotp_view.mako").decode("utf-8")
+                return render("/selfservice/multiotp_view.mako").decode(
+                    "utf-8"
+                )
             else:
                 return sendResult(response, ret, 0)
 
@@ -199,7 +203,7 @@ class GettokenController(BaseController):
             JSON response
         """
 
-        getotp_active = config.get("GETOTP_ENABLED")
+        getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
         if not getotp_active:
             return sendError(response, "getotp is not activated.", 0)
 

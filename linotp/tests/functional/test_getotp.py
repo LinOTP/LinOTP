@@ -33,6 +33,7 @@ import logging
 
 from freezegun import freeze_time
 
+from linotp.lib.type_utils import boolean
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
@@ -70,7 +71,17 @@ class TestGetOtpController(TestController):
         self.create_common_realms()
         self.curTime = datetime.datetime(2012, 5, 16, 9, 0, 52, 227413)
         self.TOTPcurTime = datetime.datetime.fromtimestamp(1337292860.585256)
+        self.allow_getotp()
         self.initToken()
+
+    def allow_getotp(self):
+        """setup 'get otp' functionality"""
+
+        params = {"linotpGetotp.active": True}
+        response = self.make_system_request("setConfig", params=params)
+        assert "false" not in response
+
+        # ----------------------------------------------------------------- --
 
     def tearDown(self):
         TestController.tearDown(self)
@@ -227,7 +238,12 @@ class TestGetOtpController(TestController):
         assert '"status": true' in response, response
 
         response = self.make_system_request(action="getConfig", params={})
-        assert '"status": true' in response, response
+
+        assert response.json["result"]["status"], response
+        config = response.json["result"]["value"]
+
+        assert "linotpGetotp.active" in config, response
+        assert boolean(config["linotpGetotp.active"]) is True
 
         return
 

@@ -27,44 +27,46 @@
  *
 </%doc>
 <html>
+
 <head>
-<title>${_("OTP values")}</title>
+    <title>${_("OTP values")}</title>
 
-<link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
-<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
+    <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
+    <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
 
-<%
-type=c.ret.get('type',"")
-otps=c.ret.get('otp',{})
-serial=c.ret.get('serial',"")
-%>
+    <%
+        type=c.ret.get('type',"")
+        otps=c.ret.get('otp',{})
+        serial=c.ret.get('serial',"")
+    %>
 
 </head>
 
 <body>
-<p>
-${_("Your token")} ${serial} ${_("is of type")} ${type}.
-</p>
-<p>
-%if c.ret.get("result") == False:
-${_("Failed to retrieve the OTP values of your token:")}
-${c.ret.get("error")}
-%endif
-</p>
-<table class=getotp>
-%for k in sorted(otps.iterkeys()):
-<tr class=getotp>
-%if type.lower()=="totp":
-<td class="getotp key">${otps[k]["time"]}</td>
-<td class="getotp key">${otps[k]["otpval"]}</td>
-%else:
-<td class="getotp key">${k}</td>
-<td class="getotp value">${otps[k]}</td>
-%endif
-</tr>
-%endfor
-</table>
+    <p>
+        ${_("Your token")} ${serial} ${_("is of type")} ${type}.
+    </p>
+    <p>
+        %if c.ret.get("result") == False:
+        ${_("Failed to retrieve the OTP values of your token:")}
+        ${c.ret.get("error")}
+        %endif
+    </p>
+    <table class="getotp">
+        %for k in sorted(otps):
+        <tr>
+            %if type.lower()=="totp":
+            <td class="key">${otps[k]["time"]}</td>
+            <td class="key">${otps[k]["otpval"]}</td>
+            %else:
+            <td class="key">${k}</td>
+            <td class="value">${otps[k]}</td>
+            %endif
+        </tr>
+        %endfor
+    </table>
 
-<button onclick="window.print();">Print Page</button>
+    <button class="no-print getotp-print-button" onclick="window.print();">Print Page</button>
 </body>
+
 </html>
