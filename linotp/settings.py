@@ -502,19 +502,6 @@ _config_schema = ConfigSchema(
             help=("The private key used for the audit log."),
         ),
         ConfigItem(
-            "AUDIT_POOL_RECYCLE",
-            int,
-            validate=check_int_in_range(min=0),
-            default=3600,
-            help=(
-                "Recycle time for the SQLAlchemy connection pool used "
-                "for the audit database (in seconds). Connections that "
-                "are older than the value of this parameter are "
-                "invalidated and replaced when the application requests "
-                "a new connection."
-            ),
-        ),
-        ConfigItem(
             "CUSTOM_TEMPLATES_DIR",
             str,
             default=None,
