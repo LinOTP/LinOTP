@@ -40,21 +40,21 @@ def runner(app):
 @pytest.mark.parametrize(
     "name,options,value,expected",
     [
-        ("AUDIT_POOL_RECYCLE", [], None, "AUDIT_POOL_RECYCLE=<>\n"),
-        ("AUDIT_POOL_RECYCLE", ["--values"], None, "<>\n"),
-        ("AUDIT_POOL_RECYCLE", ["-V"], None, "<>\n"),
-        ("AUDIT_POOL_RECYCLE", ["--modified"], None, ""),
-        ("AUDIT_POOL_RECYCLE", ["-m"], None, ""),
-        ("AUDIT_POOL_RECYCLE", [], 1000, "AUDIT_POOL_RECYCLE=1000\n"),
+        ("LOGFILE_MAX_VERSIONS", [], None, "LOGFILE_MAX_VERSIONS=<>\n"),
+        ("LOGFILE_MAX_VERSIONS", ["--values"], None, "<>\n"),
+        ("LOGFILE_MAX_VERSIONS", ["-V"], None, "<>\n"),
+        ("LOGFILE_MAX_VERSIONS", ["--modified"], None, ""),
+        ("LOGFILE_MAX_VERSIONS", ["-m"], None, ""),
+        ("LOGFILE_MAX_VERSIONS", [], 42, "LOGFILE_MAX_VERSIONS=42\n"),
         (
-            "AUDIT_POOL_RECYCLE",
+            "LOGFILE_MAX_VERSIONS",
             ["--modified"],
-            1000,
-            "AUDIT_POOL_RECYCLE=1000\n",
+            42,
+            "LOGFILE_MAX_VERSIONS=42\n",
         ),
-        ("AUDIT_POOL_RECYCLE", ["-m"], 1000, "AUDIT_POOL_RECYCLE=1000\n"),
-        ("AUDIT_POOL_RECYCLE", ["-V", "-m"], None, ""),
-        ("AUDIT_POOL_RECYCLE", ["-V", "-m"], 1000, "1000\n"),
+        ("LOGFILE_MAX_VERSIONS", ["-m"], 42, "LOGFILE_MAX_VERSIONS=42\n"),
+        ("LOGFILE_MAX_VERSIONS", ["-V", "-m"], None, ""),
+        ("LOGFILE_MAX_VERSIONS", ["-V", "-m"], 42, "42\n"),
     ],
 )
 def test_config_show_single(app, runner, name, options, value, expected):
@@ -69,32 +69,32 @@ def test_config_show_single(app, runner, name, options, value, expected):
     "names,options,values,expected",
     [
         (
-            ["AUDIT_POOL_RECYCLE", "LOGFILE_NAME"],
+            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
             [],
             {},
-            "AUDIT_POOL_RECYCLE=<AUDIT_POOL_RECYCLE>\nLOGFILE_NAME=<LOGFILE_NAME>\n",
+            "LOGFILE_MAX_VERSIONS=<LOGFILE_MAX_VERSIONS>\nLOGFILE_NAME=<LOGFILE_NAME>\n",
         ),
         (
-            ["AUDIT_POOL_RECYCLE", "LOGFILE_NAME"],
+            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
             ["--values"],
             {},
-            "<AUDIT_POOL_RECYCLE>\n<LOGFILE_NAME>\n",
+            "<LOGFILE_MAX_VERSIONS>\n<LOGFILE_NAME>\n",
         ),
         (
-            ["AUDIT_POOL_RECYCLE", "LOGFILE_NAME"],
+            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
             [],
             {"LOGFILE_NAME": "foo"},
-            "AUDIT_POOL_RECYCLE=<AUDIT_POOL_RECYCLE>\nLOGFILE_NAME=foo\n",
+            "LOGFILE_MAX_VERSIONS=<LOGFILE_MAX_VERSIONS>\nLOGFILE_NAME=foo\n",
         ),
-        (["AUDIT_POOL_RECYCLE", "LOGFILE_NAME"], ["--modified"], {}, ""),
+        (["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"], ["--modified"], {}, ""),
         (
-            ["AUDIT_POOL_RECYCLE", "LOGFILE_NAME"],
+            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
             ["--modified"],
             {"LOGFILE_NAME": "foo"},
             "LOGFILE_NAME=foo\n",
         ),
         (
-            ["AUDIT_POOL_RECYCLE", "LOGFILE_NAME"],
+            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
             ["--modified", "--values"],
             {"LOGFILE_NAME": "foo"},
             "foo\n",
@@ -219,20 +219,16 @@ def test_config_show_all(app, runner):
             ),
         ),
         (
-            "AUDIT_POOL_RECYCLE",
+            "LOGFILE_MAX_VERSIONS",
             [],
             None,
             (
-                "AUDIT_POOL_RECYCLE:\n"
+                "LOGFILE_MAX_VERSIONS:\n"
                 "  Type: int\n"
                 "  Constraints: value >= 0\n"
-                "  Default value: 3600\n"
-                "  Current value: 3600\n"
-                "  Description: Recycle time for the SQLAlchemy connection pool used\n"
-                "    for the audit database (in seconds). Connections that are older\n"
-                "    than the value of this parameter are invalidated and replaced "
-                "when\n"
-                "    the application requests a new connection.\n"
+                "  Default value: 10\n"
+                "  Current value: 10\n"
+                "  Description: Up to this many old log files will be kept.\n"
             ),
         ),
         ("FIZZBIN", [], None, "No information on FIZZBIN\n"),
@@ -248,7 +244,7 @@ def test_config_explain_single(app, runner, name, options, value, expected):
 
 def test_config_explain_multiple(runner):
     result = runner.invoke(
-        cli_main, ["config", "explain", "BABEL_DOMAIN", "AUDIT_POOL_RECYCLE"]
+        cli_main, ["config", "explain", "BABEL_DOMAIN", "LOGFILE_MAX_VERSIONS"]
     )
     assert result.exit_code == 0
     assert result.output == (
@@ -258,16 +254,12 @@ def test_config_explain_multiple(runner):
         "  Current value: linotp\n"
         "  Description: LinOTP message catalog files are called `linotp.mo`.\n"
         "    Tweak this setting at your own risk.\n"
-        "AUDIT_POOL_RECYCLE:\n"
+        "LOGFILE_MAX_VERSIONS:\n"
         "  Type: int\n"
         "  Constraints: value >= 0\n"
-        "  Default value: 3600\n"
-        "  Current value: 3600\n"
-        "  Description: Recycle time for the SQLAlchemy connection pool used\n"
-        "    for the audit database (in seconds). Connections that are older\n"
-        "    than the value of this parameter are invalidated and replaced "
-        "when\n"
-        "    the application requests a new connection.\n"
+        "  Default value: 10\n"
+        "  Current value: 10\n"
+        "  Description: Up to this many old log files will be kept.\n"
     )
 
 
@@ -279,7 +271,7 @@ def test_config_explain_multiple_sample(runner):
             "explain",
             "--sample-file",
             "BABEL_DOMAIN",
-            "AUDIT_POOL_RECYCLE",
+            "LOGFILE_MAX_VERSIONS",
         ],
     )
     assert result.exit_code == 0
@@ -302,17 +294,11 @@ def test_config_explain_multiple_sample(runner):
         "\n"
         "## BABEL_DOMAIN = 'linotp'\n"
         "\n"
-        "# AUDIT_POOL_RECYCLE: Recycle time for the SQLAlchemy connection "
-        "pool\n"
-        "# used for the audit database (in seconds). Connections that are "
-        "older\n"
-        "# than the value of this parameter are invalidated and replaced "
-        "when\n"
-        "# the application requests a new connection.\n"
+        "# LOGFILE_MAX_VERSIONS: Up to this many old log files will be kept.\n"
         "#\n"
         "# Constraints: value >= 0\n"
         "\n"
-        "## AUDIT_POOL_RECYCLE = 3600\n"
+        "## LOGFILE_MAX_VERSIONS = 10\n"
         "\n"
     )
 
