@@ -51,6 +51,7 @@ def app(tmp_path, monkeypatch):
         "TESTING": True,
         "BACKUP_FILE_TIME_FORMAT": "%Y-%m-%d_%H-%M",
         "DATABASE_URI": "sqlite:///" + str(tmp_path / "linotp.sqlite"),
+        "AUDIT_DATABASE_URI": "SHARED",
         "ADMIN_USERNAME": "",
         "ADMIN_PASSWORD": "",
     }

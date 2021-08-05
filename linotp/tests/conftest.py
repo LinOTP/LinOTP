@@ -142,6 +142,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             ENV="testing",  # doesn't make a huge difference for us
             TESTING=True,
             DATABASE_URI=sqlalchemy_uri,
+            AUDIT_DATABASE_URI="SHARED",
             SQLALCHEMY_TRACK_MODIFICATIONS=False,
             ROOT_DIR=tmp_path,
             CACHE_DIR=tmp_path / "cache",
