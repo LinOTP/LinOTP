@@ -30,6 +30,8 @@ Tests the logging decorators
 import unittest
 from datetime import datetime, timedelta
 
+from freezegun import freeze_time
+
 from linotp.tokens.base.validity_mixin import TokenValidityMixin
 
 
@@ -76,10 +78,13 @@ class TestTokenValidityMixin(unittest.TestCase):
 
             fake_token.count_auth = fake_token.count_auth + 1
 
-            if fake_token.count_auth > fake_token.count_auth_max:
+            if fake_token.count_auth >= fake_token.count_auth_max:
+                assert fake_token.has_exceeded_usage()
                 break
+            else:
+                assert not fake_token.has_exceeded_usage()
 
-        assert fake_token.count_auth == 4, fake_token
+        assert fake_token.count_auth == 3, fake_token
 
         return
 
@@ -139,11 +144,14 @@ class TestTokenValidityMixin(unittest.TestCase):
 
             if (
                 fake_token.count_auth_success
-                > fake_token.count_auth_success_max
+                >= fake_token.count_auth_success_max
             ):
+                assert fake_token.has_exceeded_success()
                 break
+            else:
+                assert not fake_token.has_exceeded_success()
 
-        assert fake_token.count_auth_success == 4, fake_token
+        assert fake_token.count_auth_success == 3, fake_token
 
         return
 
@@ -240,19 +248,26 @@ class TestTokenValidityMixin(unittest.TestCase):
         """
 
         fake_token = FakeTokenClass()
+        assert (
+            not fake_token.is_expired()
+        ), "the token should not be expired as no expiration time set"
 
-        now = datetime.now()
-        end_time = now - timedelta(minutes=1)
+        current_time = datetime(year=2020, month=2, day=2, hour=2, minute=2)
+        expiration_time = current_time + timedelta(hours=1)
 
-        end_time_str = datetime.strftime(end_time, "%d/%m/%y %H:%M")
-        fake_token.validity_period_end = end_time_str
+        fake_token.validity_period_end = expiration_time.strftime(
+            "%d/%m/%y %H:%M"
+        )
 
-        assert fake_token.validity_period_end, fake_token
-        assert fake_token.validity_period_end < now, fake_token
+        with freeze_time(current_time, tz_offset=5) as frozen_time:
 
-        assert not fake_token.validity_period_start, fake_token
-
-        return
+            assert (
+                not fake_token.is_expired()
+            ), "the token should not be expired as current time before expiration"
+            frozen_time.tick(delta=timedelta(hours=1, minutes=1))
+            assert (
+                fake_token.is_expired()
+            ), "the token should be expired as current time after expiration"
 
     def test_for_expiry_start(self):
         """
@@ -261,41 +276,26 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         fake_token = FakeTokenClass()
 
-        now = datetime.now()
-        start_time = now + timedelta(minutes=1)
-
-        start_time_str = datetime.strftime(start_time, "%d/%m/%y %H:%M")
-        fake_token.validity_period_start = start_time_str
-
-        assert fake_token.validity_period_start, fake_token
-        assert fake_token.validity_period_start > now, fake_token
-
-        assert not fake_token.validity_period_end, fake_token
-
-    def test_for_not_expiry(self):
-        """
-        check for not expiration
-        """
-
-        fake_token = FakeTokenClass()
-
-        now = datetime.now()
-        start_time = now - timedelta(minutes=1)
-        end_time = now + timedelta(minutes=1)
-
-        start_time_str = datetime.strftime(start_time, "%d/%m/%y %H:%M")
-        fake_token.validity_period_start = start_time_str
-
-        end_time_str = datetime.strftime(end_time, "%d/%m/%y %H:%M")
-        fake_token.validity_period_end = end_time_str
-
-        assert fake_token.validity_period_start, fake_token
-        assert fake_token.validity_period_end, fake_token
-
         assert (
-            fake_token.validity_period_start < now
-            and fake_token.validity_period_end > now
-        ), fake_token
+            not fake_token.is_not_yet_valid()
+        ), "the token should be valid as no validity start time set"
+
+        current_time = datetime(year=2020, month=2, day=2, hour=2, minute=2)
+        activation_time = current_time + timedelta(hours=1)
+
+        fake_token.validity_period_start = activation_time.strftime(
+            "%d/%m/%y %H:%M"
+        )
+
+        with freeze_time(current_time, tz_offset=5) as frozen_time:
+
+            assert (
+                fake_token.is_not_yet_valid()
+            ), "the token should not be valid as current time before validity start time"
+            frozen_time.tick(delta=timedelta(hours=1, minutes=1))
+            assert (
+                not fake_token.is_not_yet_valid()
+            ), "the token should be valid as current time after validity start time"
 
 
 # eof #

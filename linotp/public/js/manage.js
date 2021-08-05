@@ -30,10 +30,9 @@ var password_placeholder_required = "<" + i18n.gettext("password required") + ">
 var password_placeholder_not_changed = "<" + i18n.gettext("not changed") + ">";
 
 
-function error_handling(message, file, line){
-    Fehler = "We are sorry. An internal error occurred:\n" + message + "\nin file:" + file + "\nin line:" + line +
-    "\nTo go on, reload this web page.";
-    alert(escape(Fehler));
+function error_handling(message, file, line) {
+    error_message = `We are sorry. An internal error occurred:\n${message}\nin file:${file}\nin line:${line}\nTo go on, reload this web page.`;
+    alert(escape(error_message));
     return true;
 }
 
@@ -44,7 +43,7 @@ function error_handling(message, file, line){
 function Logout(logout_url) {
     var done = false;
     done = document.execCommand("ClearAuthenticationCache", false);
-    $.cookie("admin_session", "invalid", {expires: 0,  path: '/'});
+    $.cookie("admin_session", "invalid", { expires: 0, path: '/' });
 
     if (done == true) {
         window.location.href = document.URL;
@@ -97,33 +96,37 @@ var g = {
 var ERROR = "error";
 
 var support_license_dict = {
-    'comment' : i18n.gettext('Description'),
-    'issuer' : i18n.gettext('Issuer'),
-    'token-num' : i18n.gettext('Number of tokens'),
-    'licensee' : i18n.gettext('Licensee'),
-    'address' : i18n.gettext('Address'),
-    'contact-name' : i18n.gettext('Contact name'),
-    'contact-email' : i18n.gettext('Contact EMail'),
-    'contact-phone' : i18n.gettext('Contact phone'),
-    'date' : i18n.gettext('Date'),
-    'expire' : i18n.gettext('Expiration'),
-    'subscription' : i18n.gettext('Subscription'),
-    'version' : i18n.gettext('Version'),
+    'comment': i18n.gettext('Description'),
+    'issuer': i18n.gettext('Issuer'),
+    'token-num': i18n.gettext('Number of tokens'),
+    'licensee': i18n.gettext('Licensee'),
+    'address': i18n.gettext('Address'),
+    'contact-name': i18n.gettext('Contact name'),
+    'contact-email': i18n.gettext('Contact EMail'),
+    'contact-phone': i18n.gettext('Contact phone'),
+    'date': i18n.gettext('Date'),
+    'expire': i18n.gettext('Expiration'),
+    'subscription': i18n.gettext('Subscription'),
+    'version': i18n.gettext('Version'),
 };
 
-function error_flexi(data){
+function error_flexi(data) {
     // we might do some mods here...
-    alert_info_text({'text': "text_error_fetching_list",
-                     "type": ERROR,
-                    'is_escaped': true});
+    alert_info_text({
+        'text': "text_error_fetching_list",
+        "type": ERROR,
+        'is_escaped': true
+    });
 }
 
-function pre_flexi(data){
+function pre_flexi(data) {
     // adjust the input for the linotp api version >= 2.0
     if (data.result) {
         if (data.result.status === false) {
-            alert_info_text({'text': escape(data.result.error.message),
-                            'is_escaped': true});
+            alert_info_text({
+                'text': escape(data.result.error.message),
+                'is_escaped': true
+            });
             return;
         } else if (data.jsonrpc) {
             var api_version = parseFloat(data.jsonrpc);
@@ -138,23 +141,23 @@ function pre_flexi(data){
 /*
  * callback, to add in parameters to the flexi grid
  */
-function on_submit_flexi(){
+function on_submit_flexi() {
     var active_realm = $('#realm').val();
     var session = getsession();
 
     var params = [
-        {name: 'realm', value: active_realm},
-        {name: 'session', value: session},
-        ];
+        { name: 'realm', value: active_realm },
+        { name: 'session', value: session },
+    ];
 
     var policy_params = [
-        {name: 'session', value: session},
-        ];
+        { name: 'session', value: session },
+    ];
 
-    $('#user_table').flexOptions({params: params});
-    $('#audit_table').flexOptions({params: params});
-    $('#token_table').flexOptions({params: params});
-    $('#policy_table').flexOptions({params: policy_params});
+    $('#user_table').flexOptions({ params: params });
+    $('#audit_table').flexOptions({ params: params });
+    $('#token_table').flexOptions({ params: params });
+    $('#policy_table').flexOptions({ params: policy_params });
 
     return true;
 }
@@ -174,8 +177,7 @@ function alert_info_text(params) {
     var display_type = params['type'] || '';
     var is_escaped = params['is_escaped'] || false;
 
-    if (is_escaped == false)
-    {
+    if (is_escaped == false) {
         text_container = escape(text_container);
         s = escape(s);
     }
@@ -185,10 +187,10 @@ function alert_info_text(params) {
     str = s;
     try {
         if (text_container) {
-            $('#'+s+' .text_param1').html(text_container);
+            $('#' + s + ' .text_param1').html(text_container);
         }
-        if ( $('#'+s).length > 0 ) { // Element exists!
-            s = $('#'+s).html();
+        if ($('#' + s).length > 0) { // Element exists!
+            s = $('#' + s).html();
         } else {
             s = str;
         }
@@ -198,7 +200,7 @@ function alert_info_text(params) {
         s = str;
     }
 
-    new_info_bar = $('#info_bar').clone(true,true)
+    new_info_bar = $('#info_bar').clone(true, true)
     new_info_bar.removeAttr('id');
     new_info_bar.children('span').removeAttr('id');
 
@@ -230,7 +232,7 @@ function toggle_close_all_link() {
     visible_boxes = $("#info_box > div").filter(":visible");
     close_all = $("a.close_all");
     if (visible_boxes.length > 1) {
-        close_all.click(function( event ) {
+        close_all.click(function (event) {
             event.preventDefault();
             visible_boxes.hide('blind', {}, 500);
             $(this).hide('blind', {}, 500);
@@ -239,7 +241,7 @@ function toggle_close_all_link() {
         close_all.css("display", "block");
     }
     else {
-       close_all.hide('blind', {}, 500);
+        close_all.hide('blind', {}, 500);
     }
 }
 
@@ -255,8 +257,7 @@ function alert_box(params) {
     var s = params['text'] || '';
     var param1 = params['param'] || '';
 
-    if (escaped == false)
-    {
+    if (escaped == false) {
         title = escape(title);
         s = escape(s);
         param1 = escape(param1);
@@ -265,10 +266,10 @@ function alert_box(params) {
     str = s;
     try {
         if (param1) {
-            $('#'+s+' .text_param1').html(param1);
+            $('#' + s + ' .text_param1').html(param1);
         }
-        if ( $('#'+s).length > 0 ) { // Element exists!
-            s=$('#'+s).html();
+        if ($('#' + s).length > 0) { // Element exists!
+            s = $('#' + s).html();
         } else {
             s = str;
         }
@@ -279,18 +280,18 @@ function alert_box(params) {
     }
     title_t = title;
     try {
-        if ($('#'+title).length > 0 ) {
-            title_t=$('#'+title).text();
+        if ($('#' + title).length > 0) {
+            title_t = $('#' + title).text();
         } else {
             title_t = title;
         }
-    } catch(e) {
+    } catch (e) {
         title_t = title;
     }
 
-     $('#alert_box').dialog("option", "title", title_t);
-     $('#alert_box_text').html(s);
-     $('#alert_box').dialog("open");
+    $('#alert_box').dialog("option", "title", title_t);
+    $('#alert_box_text').html(s);
+    $('#alert_box').dialog("open");
 
 }
 
@@ -299,10 +300,10 @@ function alert_box(params) {
 //  functions for seletected tokens and selected users
 //
 
-function get_selected_tokens(){
+function get_selected_tokens() {
     var selectedTokenItems = new Array();
     var tt = $("#token_table");
-    $('.trSelected', tt).each(function(){
+    $('.trSelected', tt).each(function () {
         var id = $(this).attr('id');
         var serial = id.replace(/row/, "");
         //var serial = $(this).attr('cells')[0].textContent;
@@ -317,30 +318,32 @@ function get_selected_tokens(){
  *  - login
  *  - resolver
  */
-function get_selected_user(){
+function get_selected_user() {
     var selectedUserItems = new Array();
     var tt = $("#user_table");
     var selected = $('.trSelected', tt);
-    if (selected.length > 1){
+    if (selected.length > 1) {
         // unselect all selected users - as the last selected could not be identified easily
         selected.removeClass('trSelected');
-        alert_box({'title': i18n.gettext("User selection:"),
-                   'text' : i18n.gettext("Selection of more than one user is not supported!")+"<p>"
-                            + i18n.gettext("Please select only one user.") + "</p>",
-                   'is_escaped': true});
+        alert_box({
+            'title': i18n.gettext("User selection:"),
+            'text': i18n.gettext("Selection of more than one user is not supported!") + "<p>"
+                + i18n.gettext("Please select only one user.") + "</p>",
+            'is_escaped': true
+        });
         return selectedUserItems;
     }
     var actual_realm = $('#realm').val();
-    selected.each(function(){
+    selected.each(function () {
         var user = new Object();
-        user = { resolver:"" , login:"" , realm:actual_realm };
+        user = { resolver: "", login: "", realm: actual_realm };
         column = $('td', $(this));
-        column.each(function(){
+        column.each(function () {
             var attr = $(this).attr("abbr");
             if (attr == "useridresolver") {
                 var loc = $('div', $(this)).html();
                 var resolver = escape(loc.split('.'));
-                user.resolver = resolver[resolver.length-1];
+                user.resolver = resolver[resolver.length - 1];
             }
         });
 
@@ -351,10 +354,10 @@ function get_selected_user(){
     return selectedUserItems;
 }
 
-function get_selected_policy(){
+function get_selected_policy() {
     var selectedPolicy = new Array();
     var pt = $('#policy_table');
-    $('.trSelected', pt).each(function(){
+    $('.trSelected', pt).each(function () {
         var id = $(this).attr('id');
         var policy = id.replace(/row/, "");
         selectedPolicy.push(policy);
@@ -368,31 +371,31 @@ function get_selected_policy(){
 function get_scope_actions(scope) {
     var actions = Array();
     var resp = clientUrlFetchSync("/system/getPolicyDef",
-                                  {"scope" : scope},
-                                  true, "Error fetching policy definitions:");
+        { "scope": scope },
+        true, "Error fetching policy definitions:");
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
-            for (var k in obj.result.value) {
-                action = k;
-                if ("int"==obj.result.value[k].type) {
-                    action = k+"=<int>";
+        for (var k in obj.result.value) {
+            action = k;
+            if ("int" == obj.result.value[k].type) {
+                action = k + "=<int>";
+            } else
+                if ("str" == obj.result.value[k].type) {
+                    action = k + "=<string>";
                 } else
-                if ("str"==obj.result.value[k].type) {
-                    action = k+"=<string>";
-                } else
-                if ("set"==obj.result.value[k].type) {
-                    var values = obj.result.value[k].value;
-                    var arrayLength = values.length;
-                    var desc = "";
-                    var sep = ""
-                    for (var i = 0; i < arrayLength; i++) {
-                        if (i != 0) { sep = " "; }
-                        desc = desc + sep + "<" +values[i] + ">";
-                    }
-                    action = k+ "= <" + desc + ">";
-                };
-                actions.push(action);
-            }
+                    if ("set" == obj.result.value[k].type) {
+                        var values = obj.result.value[k].value;
+                        var arrayLength = values.length;
+                        var desc = "";
+                        var sep = ""
+                        for (var i = 0; i < arrayLength; i++) {
+                            if (i != 0) { sep = " "; }
+                            desc = desc + sep + "<" + values[i] + ">";
+                        }
+                        action = k + "= <" + desc + ">";
+                    };
+            actions.push(action);
+        }
     }
     return actions.sort();
 }
@@ -404,27 +407,27 @@ function get_scope_actions(scope) {
 function get_policy(definition) {
     var policies = Array();
     var resp = clientUrlFetchSync("/system/getPolicy",
-                                  definition,
-                                  true, "Error fetching policy definitions:");
+        definition,
+        true, "Error fetching policy definitions:");
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
-            for (var k in obj.result.value) {
-                policy = obj.result.value[k];
-                policies.push(policy);
-            }
+        for (var k in obj.result.value) {
+            policy = obj.result.value[k];
+            policies.push(policy);
+        }
     }
     return policies;
 }
 
-function get_selected_mobile(){
+function get_selected_mobile() {
     var selectedMobileItems = new Array();
     var tt = $("#user_table");
 
     var yourAbbr = "mobile";
     var column = tt.parent(".bDiv").siblings(".hDiv").find("table tr th").index($("th[abbr='" + yourAbbr + "']",
-                ".flexigrid:has(#user_table)"));
+        ".flexigrid:has(#user_table)"));
 
-    $('.trSelected', tt).each(function(){
+    $('.trSelected', tt).each(function () {
         //var value = tt.children("td").eq(column).text();
         var value = $('.trSelected td:eq(5)', tt).text();
         selectedMobileItems.push(value);
@@ -436,9 +439,9 @@ function get_selected_email() {
     var selectedEmailItems = new Array();
     var tt = $('#user_table');
     var yourAbbr = "email";
-    var column = tt.parent(".bDiv").siblings(".hDiv").find("table tr th").index($("th[abbr='"+yourAbbr+"']",
-                 ".flexigrid:has(#user_table)"));
-    $('.trSelected', tt).each(function(){
+    var column = tt.parent(".bDiv").siblings(".hDiv").find("table tr th").index($("th[abbr='" + yourAbbr + "']",
+        ".flexigrid:has(#user_table)"));
+    $('.trSelected', tt).each(function () {
         //var value = tt.children("td").eq(column).text();
         var value = $('.trSelected td:eq(4)', tt).text();
         selectedEmailItems.push(value);
@@ -446,11 +449,11 @@ function get_selected_email() {
     return selectedEmailItems;
 }
 
-function get_token_owner(token_serial){
+function get_token_owner(token_serial) {
 
     // sorry: we need to do this synchronously
     var resp = clientUrlFetchSync('/admin/getTokenOwner',
-                                    {'serial': token_serial});
+        { 'serial': token_serial });
     if (resp == undefined) {
         alert('Server is not responding');
         return 0;
@@ -460,23 +463,23 @@ function get_token_owner(token_serial){
 
 }
 
-function show_selected_status(){
+function show_selected_status() {
     var selectedUserItems = get_selected_user();
     var selectedTokenItems = get_selected_tokens();
     $('#selected_tokens').html(escape(selectedTokenItems.join(", ")));
     // we can only select a single user
-    if ( selectedUserItems.length > 0 )
+    if (selectedUserItems.length > 0)
         $('#selected_users').html(escape(selectedUserItems[0].login));
     else
         $('#selected_users').html("");
 }
 
-function get_selected(){
+function get_selected() {
     var selectedUserItems = get_selected_user();
     var selectedTokenItems = get_selected_tokens();
     $('#selected_tokens').html(escape(selectedTokenItems.join(", ")));
     // we can only select a single user
-    if ( selectedUserItems.length > 0 )
+    if (selectedUserItems.length > 0)
         $('#selected_users').html(escape(selectedUserItems[0].login));
     else
         $('#selected_users').html("");
@@ -504,7 +507,7 @@ function get_selected(){
             $('#button_losttoken').button("enable");
             $('#button_getmulti').button("enable");
             $("#button_tokeninfo").button("enable");
-          }
+        }
         else if (selectedTokenItems.length > 1) {
             $("#button_resync").button("disable");
             $("#button_losttoken").button("disable");
@@ -521,35 +524,37 @@ function get_selected(){
     if ($('#tabs').tabs('option', 'active') == 2) {
         policy = get_selected_policy().join(',');
         if (policy) {
-            var params = {'name' : policy,
-                                        'display_inactive': '1',
-                    'session':getsession()};
+            var params = {
+                'name': policy,
+                'display_inactive': '1',
+                'session': getsession()
+            };
             $.post('/system/getPolicy', params,
-             function(data, textStatus, XMLHttpRequest){
-                if (data.result.status == true) {
-                    policies = policy.split(',');
-                    pol = policies[0];
-                    var pol_active = data.result.value[pol].active;
-                    if (pol_active == undefined) {
-                        pol_active = "True";
+                function (data, textStatus, XMLHttpRequest) {
+                    if (data.result.status == true) {
+                        policies = policy.split(',');
+                        pol = policies[0];
+                        var pol_active = data.result.value[pol].active;
+                        if (pol_active == undefined) {
+                            pol_active = "True";
+                        }
+                        $('#policy_active').prop('checked', pol_active == "True");
+                        $('#policy_name').val(pol);
+                        $('#policy_action').val(data.result.value[pol].action);
+                        $('#policy_scope').val(data.result.value[pol].scope);
+                        $('#policy_scope_combo').val(data.result.value[pol].scope);
+                        $('#policy_realm').val(data.result.value[pol].realm);
+                        $('#policy_user').val(data.result.value[pol].user);
+                        $('#policy_time').val(data.result.value[pol].time);
+                        $('#policy_client').val(data.result.value[pol].client || "");
+                        renew_policy_actions();
                     }
-                    $('#policy_active').prop('checked', pol_active=="True");
-                    $('#policy_name').val(pol);
-                    $('#policy_action').val(data.result.value[pol].action);
-                    $('#policy_scope').val(data.result.value[pol].scope);
-                    $('#policy_scope_combo').val(data.result.value[pol].scope);
-                    $('#policy_realm').val(data.result.value[pol].realm);
-                    $('#policy_user').val(data.result.value[pol].user);
-                    $('#policy_time').val(data.result.value[pol].time);
-                    $('#policy_client').val(data.result.value[pol].client || "");
-                    renew_policy_actions();
-                }
-            });
+                });
         }
     }
 };
 
-function disable_all_buttons(){
+function disable_all_buttons() {
     $('#button_assign').button("disable");
     $('#button_unassign').button("disable");
     $('#button_tokenrealm').button("disable");
@@ -569,15 +574,15 @@ function disable_all_buttons(){
  * initalize the list of all avaliable token types
  * - required to show and hide the dynamic enrollment section
  */
-function init_$tokentypes(){
+function init_$tokentypes() {
     var options = $('#tokentype > option');
-    if ($tokentypes == undefined) {$tokentypes = {};};
+    if ($tokentypes == undefined) { $tokentypes = {}; };
     options.each(
-      function(i){
-        var key = $(this).val();
-        var title = $(this).text();
-        $tokentypes[key] = title;
-      }
+        function (i) {
+            var key = $(this).val();
+            var title = $(this).text();
+            $tokentypes[key] = title;
+        }
     );
 }
 
@@ -590,7 +595,7 @@ function init_$tokentypes(){
  */
 function get_server_config(search_key) {
     if (search_key) {
-        var params = {'key': search_key};
+        var params = { 'key': search_key };
     } else {
         var params = {};
     }
@@ -614,7 +619,7 @@ function get_server_config(search_key) {
         if (search_key) {
             var config_dict = data.result.value;
             for (var key in config_dict) {
-                key_replace = key.replace('getConfig ','');
+                key_replace = key.replace('getConfig ', '');
                 $systemConfig[key_replace] = config_dict[key];
             }
         } else {
@@ -630,34 +635,34 @@ function load_token_config() {
 
     var selectTag = $('#tab_token_settings');
     selectTag.find('div').each(
-        function() {
-          var attr =$(this).attr('id');
-          var n= attr.split("_");
-          var tt = n[0];
-          $tokenConfigCallbacks[tt] = tt+'_get_config_params';
-          $tokenConfigInbacks[tt]   = tt+'_get_config_val';
+        function () {
+            var attr = $(this).attr('id');
+            var n = attr.split("_");
+            var tt = n[0];
+            $tokenConfigCallbacks[tt] = tt + '_get_config_params';
+            $tokenConfigInbacks[tt] = tt + '_get_config_val';
         }
     );
     $('#tab_token_settings div form :input').change(
-        function(){
+        function () {
             var attr = $(this).closest("form").closest("div").attr('id');
-            var n= attr.split("_");
+            var n = attr.split("_");
             var tt = n[0];
             $token_config_changed.push(tt);
-            var nn = "#" +tt + "_token_settings";
-            var label = $("#tab_token_settings [href='"+nn+"']").closest('a').text();
+            var nn = "#" + tt + "_token_settings";
+            var label = $("#tab_token_settings [href='" + nn + "']").closest('a').text();
 
             var marker = "* ";
 
             if (label.substring(0, marker.length) !== marker) {
-                $("#tab_token_settings [href='"+nn+"']").closest('a').text(marker + label);
+                $("#tab_token_settings [href='" + nn + "']").closest('a').text(marker + label);
                 //$("#tab_token_settings [href='"+nn+"']").closest('a').attr( "class", 'token_config_changed');
             }
         }
     );
 
     // reset form validation
-    $('#tab_token_settings div form').each(function(){
+    $('#tab_token_settings div form').each(function () {
         var validator = $(this).validate();
         validator.resetForm();
     })
@@ -666,8 +671,8 @@ function load_token_config() {
     $systemConfig = get_server_config();
 
     for (tt in $tokenConfigInbacks) {
-        try{
-            var functionString = ''+$tokenConfigInbacks[tt]+'';
+        try {
+            var functionString = '' + $tokenConfigInbacks[tt] + '';
             var funct = window[functionString];
             var exi = typeof funct;
             var l_params = {};
@@ -676,25 +681,25 @@ function load_token_config() {
             }
 
             for (var key in l_params) {
-                var elem = $('#'+l_params[key]);
+                var elem = $('#' + l_params[key]);
                 if (key in $systemConfig) {
-                    try{
-                        if(elem.is(":checkbox")) {
+                    try {
+                        if (elem.is(":checkbox")) {
                             var checked = $systemConfig[key].toLowerCase() == "true";
                             elem.prop('checked', checked);
                         }
                         else {
-                            elem.val( $systemConfig[key] );
+                            elem.val($systemConfig[key]);
                         }
-                    } catch(err) {
+                    } catch (err) {
                         //console_log('error ' + err + "  " + key + ": " + l_params[key] + '  ' + 'not found!')
                     }
                 }
-                else if(elem.is("select")) {
+                else if (elem.is("select")) {
                     var defaultselected = $("option:first", elem).val();
                     // check if a different than the first option is default
-                    $("option", elem).each(function(){
-                        if(this.defaultSelected){
+                    $("option", elem).each(function () {
+                        if (this.defaultSelected) {
                             defaultselected = $(this).val();
                             return false;
                         }
@@ -703,7 +708,7 @@ function load_token_config() {
                 }
             }
         }
-        catch(err) {
+        catch (err) {
             //console_log('callbacack for ' + tt + ' not found!')
         }
     }
@@ -713,15 +718,15 @@ function load_token_config() {
 /*
 callback save_token_config()
 */
-function save_token_config(){
+function save_token_config() {
     show_waiting();
 
     /* for every token call the getParamCallback */
     var params = {};
     for (tt in $tokenConfigCallbacks) {
-        try{
-            if ($.inArray(tt, $token_config_changed)!==-1) {
-                var functionString = ''+$tokenConfigCallbacks[tt];
+        try {
+            if ($.inArray(tt, $token_config_changed) !== -1) {
+                var functionString = '' + $tokenConfigCallbacks[tt];
                 var funct = window[functionString];
                 var exi = typeof funct;
                 var l_params = {};
@@ -733,7 +738,7 @@ function save_token_config(){
                 }
             }
         }
-        catch(err) {}
+        catch (err) { }
     }
 
     setSystemConfig(params);
@@ -743,14 +748,14 @@ function save_token_config(){
  * returns the admin_session cookie or requests it from the server if not set
  * @return {String} admin_session
  */
-function getsession(){
-    var session="";
+function getsession() {
+    var session = "";
     if (document.cookie) {
         session = getcookie("admin_session");
     }
 
-   // Retrieve session cookie if it does not exist
-   if ("" == session) {
+    // Retrieve session cookie if it does not exist
+    if ("" == session) {
         // we need to get the session ID synchronous or we will have unpredictiable
         // behavious
         var resp = $.ajax({
@@ -761,7 +766,7 @@ function getsession(){
         var data = jQuery.parseJSON(resp);
 
         if (data.result.value == true)
-            session=getcookie("admin_session");
+            session = getcookie("admin_session");
     }
     return session;
 }
@@ -784,22 +789,22 @@ function reset_waiting() {
  * @remark: introduced the params (:dict:) so we could switch to
  *          a POST request, which will allow more and secure data
  */
-function clientUrlFetch(myUrl, params, callback, parameter){
+function clientUrlFetch(myUrl, params, callback, parameter) {
     if (!('session' in params)) {
         params['session'] = getsession();
     }
 
     show_waiting();
 
-    g.running_requests = g.running_requests +1 ;
+    g.running_requests = g.running_requests + 1;
 
     promise = $.ajax({
         url: myUrl,
-        data : params,
+        data: params,
         async: true,
         type: 'POST',
-        complete: function(xhdr, textStatus) {
-            g.running_requests = g.running_requests -1;
+        complete: function (xhdr, textStatus) {
+            g.running_requests = g.running_requests - 1;
             if (g.running_requests <= 0) {
                 hide_waiting();
                 g.running_requests = 0;
@@ -808,7 +813,7 @@ function clientUrlFetch(myUrl, params, callback, parameter){
                 callback(xhdr, textStatus, parameter);
             }
         }
-      });
+    });
     return promise
 }
 
@@ -818,7 +823,7 @@ function clientUrlFetch(myUrl, params, callback, parameter){
  * @remark: introduced the params (:dict:) so we could switch to
  *          a POST request, which will allow more and secure data
  */
-function clientUrlFetchSync(myUrl,params){
+function clientUrlFetchSync(myUrl, params) {
     var session = getsession();
     //myUrl     = myUrl + "&session=" + session;
     params['session'] = session;
@@ -827,10 +832,10 @@ function clientUrlFetchSync(myUrl,params){
 
     var resp = $.ajax({
         url: myUrl,
-        data : params,
+        data: params,
         async: false,
         type: 'POST',
-        }
+    }
     ).responseText;
     hide_waiting();
     return resp;
@@ -839,10 +844,12 @@ function clientUrlFetchSync(myUrl,params){
 
 // ####################################################
 // get overall number of tokens
-function get_tokennum(){
+function get_tokennum() {
     // sorry: we need to do this synchronously
-    var resp = clientUrlFetchSync('/admin/show', {'page':1,'pagesize':1,
-                                                  'filter' : '/:token is active:/'});
+    var resp = clientUrlFetchSync('/admin/show', {
+        'page': 1, 'pagesize': 1,
+        'filter': '/:token is active:/'
+    });
     if (resp == undefined) {
         alert('Server is not responding');
         return 0;
@@ -852,16 +859,17 @@ function get_tokennum(){
 }
 
 /* call the server license check*/
-function check_license(){
-    var resp = clientUrlFetchSync('/system/isSupportValid',{});
+function check_license() {
+    var resp = clientUrlFetchSync('/system/isSupportValid', {});
     var obj = jQuery.parseJSON(resp);
     if (obj.result.value === false) {
-       message = escape(obj.detail.reason);
-       intro = escape($('#text_support_lic_error').html());
-       alert_info_text({'text': intro + " " + message,
-                        'type': ERROR,
-                        'is_escaped': true
-                        });
+        message = escape(obj.detail.reason);
+        intro = escape($('#text_support_lic_error').html());
+        alert_info_text({
+            'text': intro + " " + message,
+            'type': ERROR,
+            'is_escaped': true
+        });
     }
     if (obj['detail'] && obj.detail['download_licence_info']) {
         $('#dialog_support_contact').html(obj.detail['download_licence_info']);
@@ -875,7 +883,7 @@ function check_license(){
  * @return {Boolean} true if a valid license was found
  */
 function is_license_valid() {
-    var resp = clientUrlFetchSync('/system/isSupportValid',{});
+    var resp = clientUrlFetchSync('/system/isSupportValid', {});
     var obj = jQuery.parseJSON(resp);
     return obj.result.value === true;
 }
@@ -895,9 +903,11 @@ function assign_callback(xhdr, textStatus, serials) {
     resp = xhdr.responseText;
     obj = jQuery.parseJSON(resp);
     if (obj.result.status == false) {
-        alert_info_text({'text': escape(obj.result.error.message),
-                         'type': ERROR,
-                         'is_esacped': true});
+        alert_info_text({
+            'text': escape(obj.result.error.message),
+            'type': ERROR,
+            'is_esacped': true
+        });
     } else
         view_setpin_after_assigning(serials);
     reset_buttons();
@@ -909,10 +919,10 @@ function assign_callback(xhdr, textStatus, serials) {
  */
 function token_operations_callback(responses) {
     var error_messages = [];
-    $.each(responses, function(index, responseData){
+    $.each(responses, function (index, responseData) {
         // "responseData" will contain an array of response information for each specific request
         if (responseData.length !== 3 || responseData[1] !== 'success') {
-            error_messages.push('Request ' + index +  ' unsucessful')
+            error_messages.push('Request ' + index + ' unsucessful')
             return true; // skip to next item of each loop
         }
         var obj = responseData[0];
@@ -926,9 +936,11 @@ function token_operations_callback(responses) {
     });
 
     if (error_messages.length > 0) {
-        alert_info_text({'text': escape(error_messages.join(" -- ")),
-                         'type': ERROR,
-                         'is_escaped': true});
+        alert_info_text({
+            'text': escape(error_messages.join(" -- ")),
+            'type': ERROR,
+            'is_escaped': true
+        });
     }
     reset_buttons();
 }
@@ -958,7 +970,7 @@ function token_operation(tokens, url, params) {
     // input) we make sure 'reset_buttons()' is execute ONCE after ALL the
     // deletion requests have finished.
     var defer = $.when.apply($, requests);
-    defer.done(function(){
+    defer.done(function () {
         var responses = [];
         if (requests.length == 1) {
             // "arguments" will be the array of response information for the request
@@ -994,7 +1006,7 @@ function tokens_operation(tokens, url, params) {
     // input) we make sure 'reset_buttons()' is execute ONCE after ALL the
     // deletion requests have finished.
     var defer = $.when.apply($, requests);
-    defer.done(function(){
+    defer.done(function () {
         var responses = [];
         if (requests.length == 1) {
             // "arguments" will be the array of response information for the request
@@ -1008,43 +1020,44 @@ function tokens_operation(tokens, url, params) {
 }
 
 
-function token_delete(){
+function token_delete() {
     var tokens = get_selected_tokens();
     tokens_operation(tokens, "/admin/remove", {});
 }
 
-function token_unassign(){
+function token_unassign() {
     var tokens = get_selected_tokens();
     token_operation(tokens, "/admin/unassign", {});
 }
 
-function token_reset(){
+function token_reset() {
     var tokens = get_selected_tokens();
     token_operation(tokens, "/admin/reset", {});
 }
 
-function token_disable(){
+function token_disable() {
     var tokens = get_selected_tokens();
     token_operation(tokens, "/admin/disable", {});
 }
 
-function token_enable(){
+function token_enable() {
     var tokens = get_selected_tokens();
     check_license();
     token_operation(tokens, "/admin/enable", {});
 }
 
-function token_assign(){
+function token_assign() {
 
     tokentab = 0;
     tokens = get_selected_tokens();
     user = get_selected_user();
     count = tokens.length;
     clientUrlFetch("/admin/assign", {
-            "serial": tokens,
-            "user": user[0].login,
-            'resConf':user[0].resolver,
-            'realm': $('#realm').val()},
+        "serial": tokens,
+        "user": user[0].login,
+        'resConf': user[0].resolver,
+        'realm': $('#realm').val()
+    },
         assign_callback, tokens);
 }
 
@@ -1052,34 +1065,36 @@ function token_resync_callback(xhdr, textStatus) {
     var resp = xhdr.responseText;
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
-            if (obj.result.value)
-                alert_info_text({'text': "text_resync_success",
-                                 'is_escaped': true,
-                                 });
-            else
-                alert_info_text({'text': "text_resync_fail",
-                                 'type': ERROR,
-                                 'is_escaped': true,
-                                 });
+        if (obj.result.value)
+            alert_info_text({
+                'text': "text_resync_success",
+                'is_escaped': true,
+            });
+        else
+            alert_info_text({
+                'text': "text_resync_fail",
+                'type': ERROR,
+                'is_escaped': true,
+            });
     } else {
         message = escape(obj.result.error.message);
-        alert_info_text({'text': message, 'type': ERROR, 'is_escaped': true});
+        alert_info_text({ 'text': message, 'type': ERROR, 'is_escaped': true });
     }
 
     reset_buttons();
 }
 
-function token_resync(){
+function token_resync() {
     var tokentab = 0;
     var tokens = get_selected_tokens();
     var count = tokens.length;
     for (i = 0; i < count; i++) {
         var serial = tokens[i];
-        clientUrlFetch("/admin/resync", {"serial" : serial, "otp1" : $('#otp1').val(), "otp2":  $('#otp2').val()}, token_resync_callback);
+        clientUrlFetch("/admin/resync", { "serial": serial, "otp1": $('#otp1').val(), "otp2": $('#otp2').val() }, token_resync_callback);
     }
 }
 
-function losttoken_callback(xhdr, textStatus){
+function losttoken_callback(xhdr, textStatus) {
     var resp = xhdr.responseText;
 
     obj = jQuery.parseJSON(resp);
@@ -1087,18 +1102,20 @@ function losttoken_callback(xhdr, textStatus){
         var serial = obj.result.value.serial;
         var end_date = obj.result.value.end_date;
         var password = '';
-        if ('password' in obj.result.value){
-            password = obj.result.value.password ;
+        if ('password' in obj.result.value) {
+            password = obj.result.value.password;
             $('#temp_token_password').text(password);
         }
         $('#temp_token_serial').html(escape(serial));
         $('#temp_token_enddate').html(escape(end_date));
         $dialog_view_temporary_token.dialog("open");
     } else {
-        alert_info_text({'text': "text_losttoken_failed",
-                         'param': escape(obj.result.error.message),
-                         'type': ERROR,
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_losttoken_failed",
+            'param': escape(obj.result.error.message),
+            'type': ERROR,
+            'is_escaped': true
+        });
     }
     $("#token_table").flexReload();
     $('#selected_tokens').html('');
@@ -1115,7 +1132,7 @@ function token_losttoken(token_type) {
     /* this for loop is unused as the gui allows only the losttoken action
      * if only one token is selected (count is 1) */
     for (i = 0; i < count; i++) {
-        var params = {"serial" : tokens[i]};
+        var params = { "serial": tokens[i] };
 
         if (token_type === 'password' ||
             token_type === 'email' ||
@@ -1123,7 +1140,7 @@ function token_losttoken(token_type) {
             params['type'] = token_type;
 
         resp = clientUrlFetch("/admin/losttoken",
-                                params, losttoken_callback);
+            params, losttoken_callback);
     }
 }
 
@@ -1136,28 +1153,31 @@ function setpin_callback(xhdr, textStatus) {
     var resp = xhdr.responseText;
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
-            if (obj.result.value)
-                alert_info_text({'text': "text_setpin_success",
-                                 'is_escaped': true});
-            else
-                alert_info_text({'text': "text_setpin_failed",
-                                 'param': escape(obj.result.error.message),
-                                 'type': ERROR,
-                                 'is_escaped': true,
-                                 });
-        }
+        if (obj.result.value)
+            alert_info_text({
+                'text': "text_setpin_success",
+                'is_escaped': true
+            });
+        else
+            alert_info_text({
+                'text': "text_setpin_failed",
+                'param': escape(obj.result.error.message),
+                'type': ERROR,
+                'is_escaped': true,
+            });
+    }
 }
 
 /**
  * token_setpin is used to process the "set pin" dialog in the token view
  * @throws {PinMatchError} both entered pins must be equal
  **/
-function token_setpin(){
+function token_setpin() {
     var token_string = $('#setpin_tokens').val();
     var tokens = token_string.split(",");
     var count = tokens.length;
 
-    if(!checkpins('#pin1, #pin2')) {
+    if (!checkpins('#pin1, #pin2')) {
         throw "PinMatchError";
     }
 
@@ -1165,19 +1185,21 @@ function token_setpin(){
 
     var pintype = $('#pintype').val();
 
-    for ( i = 0; i < count; i++) {
+    for (i = 0; i < count; i++) {
         var serial = tokens[i];
         if (pintype.toLowerCase() == "otp") {
-            clientUrlFetch("/admin/set", {"serial" : serial , "pin" : pin}, setpin_callback);
+            clientUrlFetch("/admin/set", { "serial": serial, "pin": pin }, setpin_callback);
         } else if ((pintype.toLowerCase() == "motp")) {
-            clientUrlFetch("/admin/setPin", {"serial" : serial, "userpin" : pin}, setpin_callback);
+            clientUrlFetch("/admin/setPin", { "serial": serial, "userpin": pin }, setpin_callback);
         } else if ((pintype.toLowerCase() == "ocrapin")) {
-            clientUrlFetch("/admin/setPin", {"serial" : serial, "userpin" : pin}, setpin_callback);
+            clientUrlFetch("/admin/setPin", { "serial": serial, "userpin": pin }, setpin_callback);
         } else
-            alert_info_text({'text': "text_unknown_pintype",
-                             'param': pintype,
-                             'type': ERROR,
-                             'is_escaped': true});
+            alert_info_text({
+                'text': "text_unknown_pintype",
+                'param': pintype,
+                'type': ERROR,
+                'is_escaped': true
+            });
     }
     return true;
 }
@@ -1206,10 +1228,12 @@ function view_setpin_after_assigning(tokens) {
     var display_setPin = true;
 
     var selected_users = get_selected_user();
-    var policy_def = {'scope':'enrollment',
-                  'action': 'otp_pin_random'};
-        policy_def['realm'] = selected_users[0].realm;
-        policy_def['user']  = selected_users[0].login;
+    var policy_def = {
+        'scope': 'enrollment',
+        'action': 'otp_pin_random'
+    };
+    policy_def['realm'] = selected_users[0].realm;
+    policy_def['user'] = selected_users[0].login;
 
     var rand_pin = get_policy(policy_def);
     if (rand_pin.length > 0) {
@@ -1228,12 +1252,14 @@ function view_setpin_after_assigning(tokens) {
  *                          or false if # of selected tokens not feasible
  */
 
-function token_info(){
+function token_info() {
     var tokens = get_selected_tokens();
 
     if (tokens.length !== 1) {
-        alert_info_text({'text': "text_only_one_token_ti",
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_only_one_token_ti",
+            'is_escaped': true
+        });
         return false;
     }
 
@@ -1249,7 +1275,7 @@ function token_info(){
  * @param  {string} serial    the serial of the token to match
  * @return {Promise.<Object>} returns a promise that resolves the token object requested from LinOTP
  */
-function getTokenDetails(serial){
+function getTokenDetails(serial) {
     return $.ajax({
         url: '/admin/show',
         type: 'post',
@@ -1258,9 +1284,9 @@ function getTokenDetails(serial){
             "tokeninfo_format": "json",
             "session": getsession()
         }
-    }).then(function(response, status, promise) {
+    }).then(function (response, status, promise) {
         var result = response.result.value;
-        if(result && result.data && result.data.length === 1) {
+        if (result && result.data && result.data.length === 1) {
             return $.Deferred().resolve(result.data[0]).promise();
         }
         return $.Deferred().reject("Request failed").promise();
@@ -1268,28 +1294,32 @@ function getTokenDetails(serial){
 }
 
 
-function get_token_type(){
+function get_token_type() {
     var tokentab = 0;
     var tokens = get_selected_tokens();
     var count = tokens.length;
     var ttype = "";
     if (count != 1) {
-        alert_info_text({'text': "text_only_one_token_type",
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_only_one_token_type",
+            'is_escaped': true
+        });
         return false;
     }
     else {
         var serial = tokens[0];
-        var resp = clientUrlFetchSync("/admin/show",{"serial" : serial});
+        var resp = clientUrlFetchSync("/admin/show", { "serial": serial });
         try {
             var obj = jQuery.parseJSON(resp);
             ttype = obj['result']['value']['data'][0]['LinOtp.TokenType'];
         }
         catch (e) {
-            alert_info_text({'text': "text_fetching_tokentype_failed",
-                             'param': escape(e),
-                             'type': ERROR,
-                             'is_escaped': true});
+            alert_info_text({
+                'text': "text_fetching_tokentype_failed",
+                'param': escape(e),
+                'type': ERROR,
+                'is_escaped': true
+            });
         }
         return ttype;
     }
@@ -1301,7 +1331,7 @@ function tokeninfo_redisplay() {
     set_tokeninfo_buttons();
 }
 
-function token_info_save(){
+function token_info_save() {
     var info_type = $('input[name="info_type"]').val();
     var info_value = $('#info_value').val();
 
@@ -1309,13 +1339,15 @@ function token_info_save(){
     var count = tokens.length;
     var serial = tokens[0];
     if (count != 1) {
-        alert_info_text({'text': "text_only_one_token_ti",
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_only_one_token_ti",
+            'is_escaped': true
+        });
         return false;
     }
     else {
         // see: http://stackoverflow.com/questions/10640159/key-for-javascript-dictionary-is-not-stored-as-value-but-as-variable-name
-        var param={"serial" : serial};
+        var param = { "serial": serial };
         param[info_type] = info_value;
         var resp = clientUrlFetchSync("/admin/set", param);
         var rObj = jQuery.parseJSON(resp);
@@ -1339,14 +1371,16 @@ function enroll_callback(xhdr, textStatus, p_serial) {
     $('#dialog_enroll').hide();
     if (obj.result.status) {
         if (obj.hasOwnProperty('detail')) {
-           var detail = obj.detail;
-           if (detail.hasOwnProperty('serial')) {
-              serial = detail.serial;
-           }
+            var detail = obj.detail;
+            if (detail.hasOwnProperty('serial')) {
+                serial = detail.serial;
+            }
         }
-        alert_info_text({'text': "text_created_token",
-                         'param': escape(serial),
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_created_token",
+            'param': escape(serial),
+            'is_escaped': true
+        });
         if (true == g.enroll_display_qrcodes) {
 
             // display the QR-Code of the URL. tab
@@ -1358,7 +1392,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
                 var user = login;
                 var email = escape(jQuery.trim(emails[0]))
                 if (email.length > 0) {
-                    user = "<a href=mailto:" +email+">"+login+"</a>"
+                    user = "<a href=mailto:" + email + ">" + login + "</a>"
                 }
                 // the input parts for the fragment are already escaped
                 $('#token_enroll_user').html(user);
@@ -1373,7 +1407,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             // while the content is defined in mako files
             for (var k in obj.detail) {
                 var theDetail = obj.detail[k];
-                if (theDetail != null && theDetail.hasOwnProperty('description') ){
+                if (theDetail != null && theDetail.hasOwnProperty('description')) {
                     // fallback, if no ordering is defined
                     if (theDetail.hasOwnProperty('order')) {
                         order = theDetail.order;
@@ -1381,11 +1415,11 @@ function enroll_callback(xhdr, textStatus, p_serial) {
                         order = k;
                     }
                     var description = escape(theDetail.description);
-                    if ( $("#description_" +k ).length !== 0) {
+                    if ($("#description_" + k).length !== 0) {
                         // we only require the text value of the description
-                        description = $("#description_" +k ).text();
+                        description = $("#description_" + k).text();
                     }
-                    dia_tabs[order] = '<li><a href="#url_content_'+k+'">'+ description + '</a></li>';
+                    dia_tabs[order] = '<li><a href="#url_content_' + k + '">' + description + '</a></li>';
                     dia_tabs_content[order] = _extract_tab_content(theDetail, k);
                 }
             };
@@ -1411,7 +1445,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
                 dia_text += dia_tabs_content[order];
             }
             // serial number
-            dia_text += '<input type=hidden id=enroll_token_serial value='+serial+'>';
+            dia_text += '<input type=hidden id=enroll_token_serial value=' + serial + '>';
             // end of qr_url_tabs
             dia_text += '</div>';
 
@@ -1422,29 +1456,31 @@ function enroll_callback(xhdr, textStatus, p_serial) {
         }
     }
     else {
-        alert_info_text({'text': "text_error_creating_token",
-                         'param': escape(obj.result.error.message),
-                         'type':ERROR,
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_error_creating_token",
+            'param': escape(obj.result.error.message),
+            'type': ERROR,
+            'is_escaped': true
+        });
     }
     reset_buttons();
 }
 
 function _extract_tab_content(theDetail, k) {
     var value = theDetail.value;
-    var img   = theDetail.img;
+    var img = theDetail.img;
 
     var annotation = '';
-    if($('#annotation_' + k).length !== 0) {
+    if ($('#annotation_' + k).length !== 0) {
         annotation = $('#annotation_' + k).html();
     }
     annotation = escape(annotation);
 
-    var dia_text ='';
-    dia_text += '<div id="url_content_'+k+'">';
+    var dia_text = '';
+    dia_text += '<div id="url_content_' + k + '">';
     dia_text += "<p>";
     dia_text += "<div class='enrollment_annotation'>" + annotation + "</div>";
-    dia_text += "<a href='"+ value+ "'>"+img+"</a>";
+    dia_text += "<a href='" + value + "'>" + img + "</a>";
     dia_text += "<br/>";
     dia_text += "<div class='enrollment_value'>" + value + "</div>";
     dia_text += "</p></div>";
@@ -1454,13 +1490,13 @@ function _extract_tab_content(theDetail, k) {
 /**
  * @throws {PinMatchError} token pins must match
  */
-function token_enroll(){
+function token_enroll() {
     check_license();
 
     // stop here if pins do not match
     var pin_inputs = $('.token_enroll_frame.active-frame [name="pin1"],' +
-                       '.token_enroll_frame.active-frame [name="pin2"]');
-    if(!checkpins(pin_inputs)) {
+        '.token_enroll_frame.active-frame [name="pin2"]');
+    if (!checkpins(pin_inputs)) {
         throw "PinMatchError";
     }
 
@@ -1479,7 +1515,7 @@ function token_enroll(){
     // get the token type and call the geturl_params() method for this token - if exist
     var typ = $('#tokentype').val();
     // dynamic tokens might overwrite this description
-    params['description']='webGUI_generated';
+    params['description'] = 'webGUI_generated';
 
     /* switch can be removed by default, if token migration is completed*/
 
@@ -1487,11 +1523,11 @@ function token_enroll(){
         case 'ocra':
             params['sharedsecret'] = 1;
             // If we got to generate the hmac key, we do it here:
-            if  ( $('#ocra_key_cb').is(':checked') ) {
-                params['genkey']    = 1;
+            if ($('#ocra_key_cb').is(':checked')) {
+                params['genkey'] = 1;
             } else {
                 // OTP Key
-                params['otpkey']    = $('#ocra_key').val();
+                params['otpkey'] = $('#ocra_key').val();
             }
             if ($('#ocra_pin1').val() != '') {
                 params['pin'] = $('#ocra_pin1').val();
@@ -1499,8 +1535,7 @@ function token_enroll(){
             break;
 
         default:
-            if (typ in $tokentypes)
-            {  /*
+            if (typ in $tokentypes) {  /*
                 * the dynamic tokens must provide a function to gather all data from the form
                 */
                 var params = {};
@@ -1509,28 +1544,30 @@ function token_enroll(){
                 var exi = typeof funct;
 
                 if (exi == 'undefined') {
-                    alert('undefined function '+ escape(functionString) +
-                          ' for tokentype ' + escape(typ)  );
+                    alert('undefined function ' + escape(functionString) +
+                        ' for tokentype ' + escape(typ));
                 }
                 if (exi == 'function') {
                     params = window[functionString]();
                 }
             } else {
-                alert_info_text({'text': "text_enroll_type_error",
-                                 'type': ERROR,
-                                 'is_escaped': true});
+                alert_info_text({
+                    'text': "text_enroll_type_error",
+                    'type': ERROR,
+                    'is_escaped': true
+                });
                 return false;
             }
     }
     params['type'] = typ;
-    if (params['genkey'] == 1 || typ == "qr"){
+    if (params['genkey'] == 1 || typ == "qr") {
         g.enroll_display_qrcodes = true;
     }
     clientUrlFetch(url, params, enroll_callback, serial);
     return true;
 }
 
-function get_enroll_infotext(){
+function get_enroll_infotext() {
     var users = get_selected_user();
     $("#enroll_info_text_user").hide();
     $("#enroll_info_text_nouser").hide();
@@ -1539,7 +1576,7 @@ function get_enroll_infotext(){
         $("#enroll_info_text_user").show();
         var login = escape(users[0].login);
         var resolver = escape(users[0].resolver);
-        $('#enroll_info_user').html($.parseHTML( login +" ("+resolver+")"));
+        $('#enroll_info_user').html($.parseHTML(login + " (" + resolver + ")"));
     }
     else
         if (users.length == 0) {
@@ -1550,18 +1587,18 @@ function get_enroll_infotext(){
         }
 }
 
-function tokentype_changed(){
+function tokentype_changed() {
     var $tokentype = $("#tokentype").val();
 
     // might raise an error, which must be catched by the caller
     $systemConfig = get_server_config();
 
-    try{
+    try {
         $('.token_enroll_frame').not('#token_enroll_' + $tokentype).removeClass('active-frame').hide();
         $('#token_enroll_' + $tokentype).addClass('active-frame').show();
 
-        if($tokentype !== "ocra") {
-            var functionString = ''+$tokentype+'_enroll_setup_defaults';
+        if ($tokentype !== "ocra") {
+            var functionString = '' + $tokentype + '_enroll_setup_defaults';
             var funct = window[functionString];
             var exi = typeof funct;
 
@@ -1570,12 +1607,14 @@ function tokentype_changed(){
                 var options = {};
                 var selected_users = get_selected_user();
                 if (selected_users.length == 1) {
-                    var policy_def = {'scope':'enrollment',
-                                  'action': 'otp_pin_random'};
+                    var policy_def = {
+                        'scope': 'enrollment',
+                        'action': 'otp_pin_random'
+                    };
                     policy_def['realm'] = selected_users[0].realm;
-                    policy_def['user']  = selected_users[0].login;
+                    policy_def['user'] = selected_users[0].login;
                     rand_pin = get_policy(policy_def).length;
-                    options = {'otp_pin_random':rand_pin}
+                    options = { 'otp_pin_random': rand_pin }
                 }
                 var l_params = window[functionString]($systemConfig, options);
             }
@@ -1583,29 +1622,31 @@ function tokentype_changed(){
 
         // enable visual pin validation and trigger it for the first time
         var pin_inputs = $('.token_enroll_frame.active-frame [name="pin1"],' +
-                           '.token_enroll_frame.active-frame [name="pin2"]');
+            '.token_enroll_frame.active-frame [name="pin2"]');
 
-        pin_inputs.on('change keyup', function(e) {
+        pin_inputs.on('change keyup', function (e) {
             checkpins(pin_inputs);
         }).change();
     }
-    catch(err) {
-        alert_box({'title': i18n.gettext('unknown token type'),
+    catch (err) {
+        alert_box({
+            'title': i18n.gettext('unknown token type'),
             'text': i18n.gettext('Error during token type change processing for type "' + $tokentype + '".<br><pre>' + err + "</pre>"),
             'type': ERROR,
-            'is_escaped': true});
+            'is_escaped': true
+        });
     }
 }
 
 /**
  * enables jquery ui components
  */
-$.fn.enableUIComponents = function(){
-    $('.ui-button', this).each(function() {
+$.fn.enableUIComponents = function () {
+    $('.ui-button', this).each(function () {
         var config = {};
 
-        if($(this).attr("data-ui-icon"))
-            config.icons = {primary: $(this).attr("data-ui-icon")};
+        if ($(this).attr("data-ui-icon"))
+            config.icons = { primary: $(this).attr("data-ui-icon") };
 
         $(this).button(config);
     });
@@ -1616,7 +1657,7 @@ $.fn.enableUIComponents = function(){
 /**
  * adds icons to the given dialogs buttons
  */
-$.fn.dialog_icons = function(){
+$.fn.dialog_icons = function () {
     var buttons = this.parent().find('.ui-dialog-buttonpane');
 
     buttons.find('button:contains("Cancel")').button({
@@ -1712,71 +1753,71 @@ $.fn.dialog_icons = function(){
 //
 // realms and resolver functions
 //
-function _fill_resolvers(widget){
-    var params = {'session':getsession()};
+function _fill_resolvers(widget) {
+    var params = { 'session': getsession() };
     $.post('/system/getResolvers', params,
-     function(data, textStatus, XMLHttpRequest){
-        var resolversOptions = "";
-        var value = {};
-        if (data.hasOwnProperty('result')) {
-            value = data.result.value;
-        }
-        for (var i in value) {
-            var resolver_val = escape(i);
-            resolversOptions += "<option>";
-            resolversOptions += resolver_val;
-            resolversOptions += "</option>";
-        }
-        widget.html(resolversOptions);
-    });
+        function (data, textStatus, XMLHttpRequest) {
+            var resolversOptions = "";
+            var value = {};
+            if (data.hasOwnProperty('result')) {
+                value = data.result.value;
+            }
+            for (var i in value) {
+                var resolver_val = escape(i);
+                resolversOptions += "<option>";
+                resolversOptions += resolver_val;
+                resolversOptions += "</option>";
+            }
+            widget.html(resolversOptions);
+        });
     return;
 }
 
-function _fill_realms(widget, also_none_realm){
+function _fill_realms(widget, also_none_realm) {
     var defaultRealm = "";
-    var params = {'session':getsession()};
+    var params = { 'session': getsession() };
     $.post('/system/getRealms', params,
-     function(data, textStatus, XMLHttpRequest){
-        // value._default_.realmname
-        // value.XXXX.realmname
-        //var realms = "Realms: <select id=realm>"
-        var realms = "";
-        // we need to calculate the length:
-        if (1==also_none_realm) {
-            realms += "<option></option>";
-        }
-        var realmCount = 0;
-        var value = {};
-        if (data.hasOwnProperty('result')) {
-            value = data.result.value;
-        }
-        for (var i in value) {
-            realmCount += 1;
-        }
-        var defaultRealm;
-        for (var i in value) {
-            var realm_val = escape(i);
-            if (value[i]['default']) {
-                realms += "<option selected>";
-                defaultRealm = realm_val;
+        function (data, textStatus, XMLHttpRequest) {
+            // value._default_.realmname
+            // value.XXXX.realmname
+            //var realms = "Realms: <select id=realm>"
+            var realms = "";
+            // we need to calculate the length:
+            if (1 == also_none_realm) {
+                realms += "<option></option>";
             }
-            else
-                if (realmCount == 1) {
+            var realmCount = 0;
+            var value = {};
+            if (data.hasOwnProperty('result')) {
+                value = data.result.value;
+            }
+            for (var i in value) {
+                realmCount += 1;
+            }
+            var defaultRealm;
+            for (var i in value) {
+                var realm_val = escape(i);
+                if (value[i]['default']) {
                     realms += "<option selected>";
                     defaultRealm = realm_val;
                 }
-                else {
-                    realms += "<option>";
-                }
-            //realms += data.result.value[i].realmname;
-            // we use the lowercase realm name
-            realms += realm_val;
-            realms += "</option>";
-        }
+                else
+                    if (realmCount == 1) {
+                        realms += "<option selected>";
+                        defaultRealm = realm_val;
+                    }
+                    else {
+                        realms += "<option>";
+                    }
+                //realms += data.result.value[i].realmname;
+                // we use the lowercase realm name
+                realms += realm_val;
+                realms += "</option>";
+            }
 
-        //realms += "</select>";
-        widget.html(realms);
-    });
+            //realms += "</select>";
+            widget.html(realms);
+        });
     return defaultRealm;
 }
 
@@ -1785,16 +1826,16 @@ function fill_realms() {
     return defaultRealm;
 }
 
-function get_defaulrealm(){
+function get_defaulrealm() {
     var realms = new Array();
     var url = '/system/getDefaultRealm';
 
     var resp = $.ajax({
-            url: url,
-            async: false,
-            data: { 'session':getsession()},
-            type: "GET"
-        }).responseText;
+        url: url,
+        async: false,
+        data: { 'session': getsession() },
+        type: "GET"
+    }).responseText;
     var data = jQuery.parseJSON(resp);
     for (var i in data.result.value) {
         realms.push(i);
@@ -1802,14 +1843,14 @@ function get_defaulrealm(){
     return realms;
 }
 
-function get_realms(){
+function get_realms() {
     var realms = new Array();
     var resp = $.ajax({
-            url: '/system/getRealms',
-            async: false,
-            data: { 'session':getsession()},
-            type: "GET"
-        }).responseText;
+        url: '/system/getRealms',
+        async: false,
+        data: { 'session': getsession() },
+        type: "GET"
+    }).responseText;
     var data = jQuery.parseJSON(resp);
     for (var i in data.result.value) {
         realms.push(i);
@@ -1820,14 +1861,14 @@ function get_realms(){
 /*
  * return the list of the resolver names
  */
-function get_resolvers(){
+function get_resolvers() {
     var resolvers = new Array();
     var resp = $.ajax({
-            url: '/system/getResolvers',
-            async: false,
-            data: { 'session':getsession()},
-            type: "POST"
-        }).responseText;
+        url: '/system/getResolvers',
+        async: false,
+        data: { 'session': getsession() },
+        type: "POST"
+    }).responseText;
     var data = jQuery.parseJSON(resp);
     for (var i in data.result.value) {
         resolvers.push(i);
@@ -1845,35 +1886,43 @@ function get_serial_by_otp_callback(xhdr, textStatus) {
     var resp = xhdr.responseText;
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status == true) {
-        if (obj.result.value.success==true) {
-            if (""!=obj.result.value.serial) {
+        if (obj.result.value.success == true) {
+            if ("" != obj.result.value.serial) {
 
                 var text = i18n.gettext("Found the token: ") +
-                           escape(obj.result.value.serial);
+                    escape(obj.result.value.serial);
 
                 if (obj.result.value.user_login != "") {
 
                     text += "\n" +
-                            i18n.gettext("The token belongs to ") +
-                            escape(obj.result.value.user_login) +
-                            " ("+ escape(obj.result.value.user_resolver) +")";
+                        i18n.gettext("The token belongs to ") +
+                        escape(obj.result.value.user_login) +
+                        " (" + escape(obj.result.value.user_resolver) + ")";
                 }
-                alert_info_text({'text': text,
-                                 'is_escaped': true});
+                alert_info_text({
+                    'text': text,
+                    'is_escaped': true
+                });
             }
             else
-                alert_info_text({'text': "text_get_serial_no_otp",
-                                 'is_escaped': true});
-        }else{
-            alert_info_text({"text": "text_get_serial_error",
-                             'type': ERROR,
-                             'is_escaped': true});
+                alert_info_text({
+                    'text': "text_get_serial_no_otp",
+                    'is_escaped': true
+                });
+        } else {
+            alert_info_text({
+                "text": "text_get_serial_error",
+                'type': ERROR,
+                'is_escaped': true
+            });
         }
     } else {
-        alert_info_text({'text': "text_failed",
-                         'param': escape(obj.result.error.message),
-                         'type': ERROR,
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_failed",
+            'param': escape(obj.result.error.message),
+            'type': ERROR,
+            'is_escaped': true
+        });
     }
 }
 
@@ -1883,13 +1932,13 @@ function get_serial_by_otp_callback(xhdr, textStatus) {
 function getSerialByOtp(otp, type, assigned, realm) {
     var param = {};
     param["otp"] = otp;
-    if (""!=type) {
-        param["type"]=type;
+    if ("" != type) {
+        param["type"] = type;
     }
-    if (""!=assigned) {
+    if ("" != assigned) {
         param["assigned"] = assigned;
     }
-    if (""!=realm) {
+    if ("" != realm) {
         param["realm"] = realm;
     }
     clientUrlFetch('/admin/getSerialByOtp', param, get_serial_by_otp_callback);
@@ -1968,7 +2017,7 @@ function http_resolver_https() {
 }
 
 
-function parseXML(xml, textStatus){
+function parseXML(xml, textStatus) {
     var version = $(xml).find('version').text();
     var status = $(xml).find('status').text();
     var value = $(xml).find('value').text();
@@ -1987,7 +2036,7 @@ function parseXML(xml, textStatus){
             && json_response.result.error.message
             || xml.responseText;
 
-        if(error_message.length > 200) {
+        if (error_message.length > 200) {
             error_message = error_message.substring(0, 200) + "…";
         }
 
@@ -2032,31 +2081,37 @@ function parsePolicyImport(xml, textStatus) {
     var message = $(xml).find('message').text();
 
     if ("error" == textStatus) {
-        alert_info_text({'text': "text_linotp_comm_fail",
-                         'type': ERROR,
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_linotp_comm_fail",
+            'type': ERROR,
+            'is_escaped': true
+        });
     }
     else {
         if ("False" == status) {
-            alert_info_text({'text': "text_policy_import_failed",
-                             'param': escape(message),
-                             'is_escaped': true});
+            alert_info_text({
+                'text': "text_policy_import_failed",
+                'param': escape(message),
+                'is_escaped': true
+            });
         }
         else {
             // reload the token_table
             $('#policy_table').flexReload();
-            alert_info_text({'text': "text_policy_import_result",
-                             'param': escape(value),
-                             'is_escaped': true});
+            alert_info_text({
+                'text': "text_policy_import_result",
+                'param': escape(value),
+                'is_escaped': true
+            });
         }
     }
     hide_waiting();
 };
 
 //calback to handle response when license has been submitted
-function parseLicense(response, textStatus, xhr){
+function parseLicense(response, textStatus, xhr) {
 
-    if(response &&
+    if (response &&
         response.result &&
         response.result.status &&
         response.result.value) {
@@ -2069,9 +2124,9 @@ function parseLicense(response, textStatus, xhr){
     } else {
 
         var message = i18n.gettext('The upload of your support and ' +
-                                   'subscription license failed: ');
+            'subscription license failed: ');
 
-        if(response &&
+        if (response &&
             response.result &&
             response.result.error &&
             response.result.error.message) {
@@ -2085,29 +2140,29 @@ function parseLicense(response, textStatus, xhr){
             'text': message,
             'type': ERROR,
             'is_escaped': true
-            });
+        });
 
         alert_box({
             'title': i18n.gettext('License upload'),
             'text': message,
             'is_escaped': true
-            })
+        })
 
     }
 
     hide_waiting();
 };
 
-function testXMLObject(xml){
-    try{
-        if($(xml).find('version').text() == ""){
+function testXMLObject(xml) {
+    try {
+        if ($(xml).find('version').text() == "") {
             throw "Error: xml needs reparsing";
         }
-        else{
+        else {
             state = "successful"
             return true;
         }
-    }catch(e){
+    } catch (e) {
         return false;
     }
 }
@@ -2115,7 +2170,7 @@ function testXMLObject(xml){
 function import_policy() {
     show_waiting();
     $('#load_policies').ajaxSubmit({
-        data: { session:getsession() },
+        data: { session: getsession() },
         type: "POST",
         error: parsePolicyImport,
         success: parsePolicyImport,
@@ -2124,11 +2179,11 @@ function import_policy() {
     return false;
 }
 
-function load_tokenfile(type){
+function load_tokenfile(type) {
     show_waiting();
     if ("aladdin-xml" == type) {
         $('#load_tokenfile_form_aladdin').ajaxSubmit({
-            data: { session:getsession() },
+            data: { session: getsession() },
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2137,7 +2192,7 @@ function load_tokenfile(type){
     }
     else if ("feitian" == type) {
         $('#load_tokenfile_form_feitian').ajaxSubmit({
-            data: { session:getsession() },
+            data: { session: getsession() },
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2146,7 +2201,7 @@ function load_tokenfile(type){
     }
     else if ("pskc" == type) {
         $('#load_tokenfile_form_pskc').ajaxSubmit({
-            data: { session:getsession() },
+            data: { session: getsession() },
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2155,7 +2210,7 @@ function load_tokenfile(type){
     }
     else if ("dpw" == type) {
         $('#load_tokenfile_form_dpw').ajaxSubmit({
-            data: { session:getsession() },
+            data: { session: getsession() },
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2164,7 +2219,7 @@ function load_tokenfile(type){
     }
     else if ("dat" == type) {
         $('#load_tokenfile_form_dat').ajaxSubmit({
-            data: { session:getsession() },
+            data: { session: getsession() },
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2173,7 +2228,7 @@ function load_tokenfile(type){
     }
     else if ("oathcsv" == type) {
         $('#load_tokenfile_form_oathcsv').ajaxSubmit({
-            data: { session:getsession() },
+            data: { session: getsession() },
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2182,7 +2237,7 @@ function load_tokenfile(type){
     }
     else if ("yubikeycsv" == type) {
         $('#load_tokenfile_form_yubikeycsv').ajaxSubmit({
-            data: { session:getsession() },
+            data: { session: getsession() },
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2190,72 +2245,76 @@ function load_tokenfile(type){
         });
     }
     else {
-        alert_info_text({'text': "text_import_unknown_type",
-                         'type': ERROR,
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_import_unknown_type",
+            'type': ERROR,
+            'is_escaped': true
+        });
     };
     return false;
 }
 
-function support_set(){
+function support_set() {
     show_waiting();
     //check for extension .pem:
     var filename = $('#license_file').val();
     var extension = /\.pem$/;
-    if (extension.exec(filename) ) {
-    $('#set_support_form').ajaxSubmit({
-        data: { session:getsession() },
-        type: "POST",
-        error: parseLicense,
-        success: parseLicense,
-        dataType: 'json'
-    });
+    if (extension.exec(filename)) {
+        $('#set_support_form').ajaxSubmit({
+            data: { session: getsession() },
+            type: "POST",
+            error: parseLicense,
+            success: parseLicense,
+            dataType: 'json'
+        });
     } else {
-        alert_info_text({'text': "text_import_pem",
-                         'type': ERROR,
-                         'is_escaped': true});
+        alert_info_text({
+            'text': "text_import_pem",
+            'type': ERROR,
+            'is_escaped': true
+        });
     }
     hide_waiting();
     return false;
 }
 
-function support_view(){
+function support_view() {
 
     // clean out old data
     $("#dialog_support_view").html("");
 
-    var params = { 'session':getsession()};
+    var params = { 'session': getsession() };
     $.post('/system/getSupportInfo', params,
-     function(data, textStatus, XMLHttpRequest){
-        support_info = data.result.value;
+        function (data, textStatus, XMLHttpRequest) {
+            support_info = data.result.value;
 
-        if ($.isEmptyObject(support_info)) {
-            var info = "";
-            info += '<h2 class="contact_info center-text">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
-            info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchase.'),
-                        '<p class="contact_info center-text"><a href="mailto:sales@keyidentity.com">arxes-tolina GmbH</a></p>');
-            $("#dialog_support_view").html($.parseHTML(info));
+            if ($.isEmptyObject(support_info)) {
+                var info = "";
+                info += '<h2 class="contact_info center-text">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
+                info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchase.'),
+                    '<p class="contact_info center-text"><a href="mailto:sales@keyidentity.com">arxes-tolina GmbH</a></p>');
+                $("#dialog_support_view").html($.parseHTML(info));
 
-        } else {
-            var info = "";
-            info += '<h2 class="contact_info center-text">' + i18n.gettext('Your LinOTP support subscription') + '</h2>';
-            info += "<table><tbody>";
-            $.map(support_info, function(value,key){
-                if ( support_license_dict.hasOwnProperty(key) ) {
-                    key = i18n.gettext(support_license_dict[key]);
-                }
-                if (value && value.length > 0) {
-                    info += "<tr><td class='subscription_detail'>" + key + "</td><td class='subscription_detail'>" + value + "</td></tr>";
-                }
-            });
-            info += "</tbody></table>";
-            info += "<div class='subscription_info'><br>" +
-                i18n.gettext("For support and subscription please contact us at") +
-                " <a href='https://www.keyidentity.com/' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
-                i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@keyidentity.com</div>";
-            $("#dialog_support_view").html($.parseHTML(info));
-        }
-    });
+            } else {
+                var info = "";
+                info += '<h2 class="contact_info center-text">' + i18n.gettext('Your LinOTP support subscription') + '</h2>';
+                info += "<table><tbody>";
+                $.map(support_info, function (value, key) {
+                    if (support_license_dict.hasOwnProperty(key)) {
+                        key = i18n.gettext(support_license_dict[key]);
+                    }
+                    if (value && value.length > 0) {
+                        info += "<tr><td class='subscription_detail'>" + key + "</td><td class='subscription_detail'>" + value + "</td></tr>";
+                    }
+                });
+                info += "</tbody></table>";
+                info += "<div class='subscription_info'><br>" +
+                    i18n.gettext("For support and subscription please contact us at") +
+                    " <a href='https://www.keyidentity.com/' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
+                    i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@keyidentity.com</div>";
+                $("#dialog_support_view").html($.parseHTML(info));
+            }
+        });
     return false;
 }
 
@@ -2264,7 +2323,7 @@ function support_view(){
  */
 function check_for_welcome_screen() {
 
-    if(is_license_valid()) {
+    if (is_license_valid()) {
         return;
     }
 
@@ -2273,7 +2332,7 @@ function check_for_welcome_screen() {
 
     var currentMinorVersion = parseMinorVersionNumber(g.linotp_version);
 
-    if(!isDefinedKey(serverConfig, "welcome_screen.version")) {
+    if (!isDefinedKey(serverConfig, "welcome_screen.version")) {
 
         setSystemConfig({
             "welcome_screen.version": currentMinorVersion,
@@ -2296,7 +2355,7 @@ function check_for_welcome_screen() {
         var currentMajorVersion = parseMajorVersionNumber(g.linotp_version);
         var welcomeScreenVersion = parseMajorVersionNumber(serverConfig["welcome_screen.version"]);
 
-        var timedelta = 1000*60*60*24*7;
+        var timedelta = 1000 * 60 * 60 * 24 * 7;
 
         if (compareVersionNumbers(currentMajorVersion, welcomeScreenVersion) !== 0) {
 
@@ -2319,8 +2378,8 @@ function check_for_welcome_screen() {
 
             show_welcome_screen(title, text, button);
         }
-        else if(serverConfig["welcome_screen.opt_out"].toLowerCase() !== "true" &&
-                parseInt(serverConfig["welcome_screen.last_shown"]) + timedelta < currenttime) {
+        else if (serverConfig["welcome_screen.opt_out"].toLowerCase() !== "true" &&
+            parseInt(serverConfig["welcome_screen.last_shown"]) + timedelta < currenttime) {
 
             setSystemConfig({
                 "welcome_screen.last_shown": currenttime
@@ -2367,17 +2426,17 @@ function show_welcome_screen(title, text, button_text) {
             {
                 text: button_text,
                 id: 'welcome_screen_close',
-                click: function() {
-                    if($('#welcome_screen_option').is(':checked')) {
+                click: function () {
+                    if ($('#welcome_screen_option').is(':checked')) {
                         setSystemConfig({
                             "welcome_screen.opt_out": true
                         });
                     }
-                    $( this ).dialog( "close" );
+                    $(this).dialog("close");
                 }
             }
         ],
-        create: function() {
+        create: function () {
             $('#welcome-buttons .newsletter-button').button({
                 icons: { primary: 'ui-icon-mail-closed' },
                 classes: {
@@ -2391,388 +2450,389 @@ function show_welcome_screen(title, text, button_text) {
                 }
             });
         },
-        open: function() {
+        open: function () {
             $('#welcome-buttons').children().first().focus();
         }
     });
 }
 
-function load_sms_providers(){
+function load_sms_providers() {
     show_waiting();
-    var params = {'type': 'sms',
-                  'session':getsession(),
-                  };
+    var params = {
+        'type': 'sms',
+        'session': getsession(),
+    };
     $.get('/system/getProvider', params,
-      function(data, textStatus, XMLHttpRequest){
-        smsProviders = data.result.value;
+        function (data, textStatus, XMLHttpRequest) {
+            smsProviders = data.result.value;
 
-        // Set selected provider globally
-        selectedSMSProvider = null;
+            // Set selected provider globally
+            selectedSMSProvider = null;
 
-        var providers = $('<ol id="sms_providers_select" class="select_list ui-selectable"></ol>');
-        var count = 0;
+            var providers = $('<ol id="sms_providers_select" class="select_list ui-selectable"></ol>');
+            var count = 0;
 
-        $.each(smsProviders, function(key, provider){
-            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
-            if(provider.Default === true){
-                element += ' <span class="default">(Default)</span>';
-            }
-            element += '</li>';
-            providers.append(element);
-            count++;
-        });
+            $.each(smsProviders, function (key, provider) {
+                var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+                if (provider.Default === true) {
+                    element += ' <span class="default">(Default)</span>';
+                }
+                element += '</li>';
+                providers.append(element);
+                count++;
+            });
 
-        $("#button_sms_provider_edit").button("disable");
-        $("#button_sms_provider_delete").button("disable");
-        $("#button_sms_provider_set_default").button("disable");
+            $("#button_sms_provider_edit").button("disable");
+            $("#button_sms_provider_delete").button("disable");
+            $("#button_sms_provider_set_default").button("disable");
 
-        if (count > 0) {
-            $('#sms_providers_list').html(providers);
+            if (count > 0) {
+                $('#sms_providers_list').html(providers);
 
-            $('#sms_providers_select').selectable({
-                stop: function(event, ui){
-                    if($("#sms_providers_select .ui-selected").length > 0){
-                        selectedSMSProvider = escape($("#sms_providers_select .ui-selected .name").html());
-                        $("#button_sms_provider_edit").button("enable");
-                        $("#button_sms_provider_delete").button("enable");
-                        if(smsProviders[selectedSMSProvider].Default !== true){
-                            $("#button_sms_provider_set_default").button("enable");
+                $('#sms_providers_select').selectable({
+                    stop: function (event, ui) {
+                        if ($("#sms_providers_select .ui-selected").length > 0) {
+                            selectedSMSProvider = escape($("#sms_providers_select .ui-selected .name").html());
+                            $("#button_sms_provider_edit").button("enable");
+                            $("#button_sms_provider_delete").button("enable");
+                            if (smsProviders[selectedSMSProvider].Default !== true) {
+                                $("#button_sms_provider_set_default").button("enable");
+                            }
+                            else {
+                                $("#button_sms_provider_set_default").button("disable");
+                            }
                         }
-                        else{
+                        else {
+                            selectedSMSProvider = null;
+                            $("#button_sms_provider_edit").button("disable");
+                            $("#button_sms_provider_delete").button("disable");
                             $("#button_sms_provider_set_default").button("disable");
                         }
+                    },
+                    selected: function (event, ui) {
+                        // Prevent the selection of multiple items
+                        $(ui.selected).siblings().removeClass("ui-selected");
                     }
-                    else{
-                        selectedSMSProvider = null;
-                        $("#button_sms_provider_edit").button("disable");
-                        $("#button_sms_provider_delete").button("disable");
-                        $("#button_sms_provider_set_default").button("disable");
-                    }
-                },
-                selected: function(event, ui) {
-                    // Prevent the selection of multiple items
-                    $(ui.selected).siblings().removeClass("ui-selected");
-                }
-            });
-        }
-        else {
-            $('#sms_providers_list').html("");
-        };
-        hide_waiting();
-    });
+                });
+            }
+            else {
+                $('#sms_providers_list').html("");
+            };
+            hide_waiting();
+        });
 }
 
-function load_email_providers(){
+function load_email_providers() {
     show_waiting();
 
-    var params = { 'type': 'email', 'session':getsession()};
+    var params = { 'type': 'email', 'session': getsession() };
     $.post('/system/getProvider', params,
-     function(data, textStatus, XMLHttpRequest){
-        emailProviders = data.result.value;
+        function (data, textStatus, XMLHttpRequest) {
+            emailProviders = data.result.value;
 
-        // Set selected provider globally
-        selectedEmailProvider = null;
+            // Set selected provider globally
+            selectedEmailProvider = null;
 
-        var providers = $('<ol id="email_providers_select" class="select_list ui-selectable"></ol>');
-        var count = 0;
+            var providers = $('<ol id="email_providers_select" class="select_list ui-selectable"></ol>');
+            var count = 0;
 
-        $.each(emailProviders, function(key, provider){
-            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
-            if(provider.Default === true){
-                element += ' <span class="default">(Default)</span>';
-            }
-            element += '</li>';
-            providers.append(element);
-            count++;
-        });
+            $.each(emailProviders, function (key, provider) {
+                var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+                if (provider.Default === true) {
+                    element += ' <span class="default">(Default)</span>';
+                }
+                element += '</li>';
+                providers.append(element);
+                count++;
+            });
 
-        $("#button_email_provider_edit").button("disable");
-        $("#button_email_provider_delete").button("disable");
-        $("#button_email_provider_set_default").button("disable");
+            $("#button_email_provider_edit").button("disable");
+            $("#button_email_provider_delete").button("disable");
+            $("#button_email_provider_set_default").button("disable");
 
-        if (count > 0) {
-            $('#email_providers_list').html(providers);
+            if (count > 0) {
+                $('#email_providers_list').html(providers);
 
-            $('#email_providers_select').selectable({
-                stop: function(event, ui){
-                    if($("#email_providers_select .ui-selected").length > 0){
-                        selectedEmailProvider = escape($("#email_providers_select .ui-selected .name").html());
-                        $("#button_email_provider_edit").button("enable");
-                        $("#button_email_provider_delete").button("enable");
-                        if(emailProviders[selectedEmailProvider].Default !== true){
-                            $("#button_email_provider_set_default").button("enable");
+                $('#email_providers_select').selectable({
+                    stop: function (event, ui) {
+                        if ($("#email_providers_select .ui-selected").length > 0) {
+                            selectedEmailProvider = escape($("#email_providers_select .ui-selected .name").html());
+                            $("#button_email_provider_edit").button("enable");
+                            $("#button_email_provider_delete").button("enable");
+                            if (emailProviders[selectedEmailProvider].Default !== true) {
+                                $("#button_email_provider_set_default").button("enable");
+                            }
+                            else {
+                                $("#button_email_provider_set_default").button("disable");
+                            }
                         }
-                        else{
+                        else {
+                            selectedEmailProvider = null;
+                            $("#button_email_provider_edit").button("disable");
+                            $("#button_email_provider_delete").button("disable");
                             $("#button_email_provider_set_default").button("disable");
                         }
+                    },
+                    selected: function (event, ui) {
+                        // Prevent the selection of multiple items
+                        $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
+                            function (key, value) {
+                                $(value).find('*').removeClass("ui-selected");
+                            }
+                        );
                     }
-                    else{
-                        selectedEmailProvider = null;
-                        $("#button_email_provider_edit").button("disable");
-                        $("#button_email_provider_delete").button("disable");
-                        $("#button_email_provider_set_default").button("disable");
-                    }
-                },
-                selected: function(event, ui) {
-                    // Prevent the selection of multiple items
-                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
-                        function(key,value){
-                            $(value).find('*').removeClass("ui-selected");
-                        }
-                    );
-                }
-            });
-        }
-        else {
-            $('#email_providers_list').html("");
-        };
-        hide_waiting();
-    });
+                });
+            }
+            else {
+                $('#email_providers_list').html("");
+            };
+            hide_waiting();
+        });
 }
 
-function load_push_providers(){
+function load_push_providers() {
     show_waiting();
 
-    var params = { 'type': 'push', 'session': getsession()};
+    var params = { 'type': 'push', 'session': getsession() };
     $.post('/system/getProvider', params,
-     function(data, textStatus, XMLHttpRequest){
-        pushProviders = data.result.value;
+        function (data, textStatus, XMLHttpRequest) {
+            pushProviders = data.result.value;
 
-        // Set selected provider globally
-        selectedPushProvider = null;
+            // Set selected provider globally
+            selectedPushProvider = null;
 
-        var providers = $('<ol id="push_providers_select" class="select_list ui-selectable"></ol>');
-        var count = 0;
+            var providers = $('<ol id="push_providers_select" class="select_list ui-selectable"></ol>');
+            var count = 0;
 
-        $.each(pushProviders, function(key, provider){
-            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
-            if(provider.Default === true){
-                element += ' <span class="default">(Default)</span>';
-            }
-            element += '</li>';
-            providers.append(element);
-            count++;
-        });
+            $.each(pushProviders, function (key, provider) {
+                var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+                if (provider.Default === true) {
+                    element += ' <span class="default">(Default)</span>';
+                }
+                element += '</li>';
+                providers.append(element);
+                count++;
+            });
 
-        $("#button_push_provider_edit").button("disable");
-        $("#button_push_provider_delete").button("disable");
-        $("#button_push_provider_set_default").button("disable");
+            $("#button_push_provider_edit").button("disable");
+            $("#button_push_provider_delete").button("disable");
+            $("#button_push_provider_set_default").button("disable");
 
-        if (count > 0) {
-            $('#push_providers_list').html(providers);
+            if (count > 0) {
+                $('#push_providers_list').html(providers);
 
-            $('#push_providers_select').selectable({
-                stop: function(event, ui){
-                    if($("#push_providers_select .ui-selected").length > 0){
-                        selectedPushProvider = escape($("#push_providers_select .ui-selected .name").html());
-                        $("#button_push_provider_edit").button("enable");
-                        $("#button_push_provider_delete").button("enable");
-                        if(pushProviders[selectedPushProvider].Default !== true){
-                            $("#button_push_provider_set_default").button("enable");
+                $('#push_providers_select').selectable({
+                    stop: function (event, ui) {
+                        if ($("#push_providers_select .ui-selected").length > 0) {
+                            selectedPushProvider = escape($("#push_providers_select .ui-selected .name").html());
+                            $("#button_push_provider_edit").button("enable");
+                            $("#button_push_provider_delete").button("enable");
+                            if (pushProviders[selectedPushProvider].Default !== true) {
+                                $("#button_push_provider_set_default").button("enable");
+                            }
+                            else {
+                                $("#button_push_provider_set_default").button("disable");
+                            }
                         }
-                        else{
+                        else {
+                            selectedEmailProvider = null;
+                            $("#button_push_provider_edit").button("disable");
+                            $("#button_push_provider_delete").button("disable");
                             $("#button_push_provider_set_default").button("disable");
                         }
+                    },
+                    selected: function (event, ui) {
+                        // Prevent the selection of multiple items
+                        $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
+                            function (key, value) {
+                                $(value).find('*').removeClass("ui-selected");
+                            }
+                        );
                     }
-                    else{
-                        selectedEmailProvider = null;
-                        $("#button_push_provider_edit").button("disable");
-                        $("#button_push_provider_delete").button("disable");
-                        $("#button_push_provider_set_default").button("disable");
-                    }
-                },
-                selected: function(event, ui) {
-                    // Prevent the selection of multiple items
-                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
-                        function(key,value){
-                            $(value).find('*').removeClass("ui-selected");
-                        }
-                    );
-                }
-            });
-        }
-        else {
-            $('#push_providers_list').html("");
-        };
-        hide_waiting();
-    });
+                });
+            }
+            else {
+                $('#push_providers_list').html("");
+            };
+            hide_waiting();
+        });
 }
 
 /* voice provider */
-function load_voice_providers(){
+function load_voice_providers() {
     show_waiting();
 
-    var params = { 'type': 'voice', 'session': getsession()};
+    var params = { 'type': 'voice', 'session': getsession() };
     $.post('/system/getProvider', params,
-     function(data, textStatus, XMLHttpRequest){
-        voiceProviders = data.result.value;
+        function (data, textStatus, XMLHttpRequest) {
+            voiceProviders = data.result.value;
 
-        // Set selected provider globally
-        selectedPushProvider = null;
+            // Set selected provider globally
+            selectedPushProvider = null;
 
-        var providers = $('<ol id="voice_providers_select" class="select_list ui-selectable"></ol>');
-        var count = 0;
+            var providers = $('<ol id="voice_providers_select" class="select_list ui-selectable"></ol>');
+            var count = 0;
 
-        $.each(voiceProviders, function(key, provider){
-            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
-            if(provider.Default === true){
-                element += ' <span class="default">(Default)</span>';
-            }
-            element += '</li>';
-            providers.append(element);
-            count++;
-        });
+            $.each(voiceProviders, function (key, provider) {
+                var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+                if (provider.Default === true) {
+                    element += ' <span class="default">(Default)</span>';
+                }
+                element += '</li>';
+                providers.append(element);
+                count++;
+            });
 
-        $("#button_voice_provider_edit").button("disable");
-        $("#button_voice_provider_delete").button("disable");
-        $("#button_voice_provider_set_default").button("disable");
+            $("#button_voice_provider_edit").button("disable");
+            $("#button_voice_provider_delete").button("disable");
+            $("#button_voice_provider_set_default").button("disable");
 
-        if (count > 0) {
-            $('#voice_providers_list').html(providers);
+            if (count > 0) {
+                $('#voice_providers_list').html(providers);
 
-            $('#voice_providers_select').selectable({
-                stop: function(event, ui){
-                    if($("#voice_providers_select .ui-selected").length > 0){
-                        selectedVoiceProvider = escape($("#voice_providers_select .ui-selected .name").html());
-                        $("#button_voice_provider_edit").button("enable");
-                        $("#button_voice_provider_delete").button("enable");
-                        if(voiceProviders[selectedVoiceProvider].Default !== true){
-                            $("#button_voice_provider_set_default").button("enable");
+                $('#voice_providers_select').selectable({
+                    stop: function (event, ui) {
+                        if ($("#voice_providers_select .ui-selected").length > 0) {
+                            selectedVoiceProvider = escape($("#voice_providers_select .ui-selected .name").html());
+                            $("#button_voice_provider_edit").button("enable");
+                            $("#button_voice_provider_delete").button("enable");
+                            if (voiceProviders[selectedVoiceProvider].Default !== true) {
+                                $("#button_voice_provider_set_default").button("enable");
+                            }
+                            else {
+                                $("#button_voice_provider_set_default").button("disable");
+                            }
                         }
-                        else{
+                        else {
+                            selectedVoiceProvider = null;
+                            $("#button_voice_provider_edit").button("disable");
+                            $("#button_voice_provider_delete").button("disable");
                             $("#button_voice_provider_set_default").button("disable");
                         }
+                    },
+                    selected: function (event, ui) {
+                        // Prevent the selection of multiple items
+                        $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
+                            function (key, value) {
+                                $(value).find('*').removeClass("ui-selected");
+                            }
+                        );
                     }
-                    else{
-                        selectedVoiceProvider = null;
-                        $("#button_voice_provider_edit").button("disable");
-                        $("#button_voice_provider_delete").button("disable");
-                        $("#button_voice_provider_set_default").button("disable");
-                    }
-                },
-                selected: function(event, ui) {
-                    // Prevent the selection of multiple items
-                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
-                        function(key,value){
-                            $(value).find('*').removeClass("ui-selected");
-                        }
-                    );
-                }
-            });
-        }
-        else {
-            $('#voice_providers_list').html("");
-        };
-        hide_waiting();
-    });
+                });
+            }
+            else {
+                $('#voice_providers_list').html("");
+            };
+            hide_waiting();
+        });
 }
 /* voice provider end*/
 
-function load_system_config(){
+function load_system_config() {
     show_waiting();
-    var params = {'session':getsession()};
+    var params = { 'session': getsession() };
     $.post('/system/getConfig', params,
-     function(data, textStatus, XMLHttpRequest){
-        // checkboxes this way:
-        checkBoxes = new Array();
-        if (data.result.value.allowSamlAttributes == "True") {
-            checkBoxes.push("sys_allowSamlAttributes");
-        };
-        if (data.result.value.PrependPin == "True") {
-            checkBoxes.push("sys_prependPin");
-        };
-        if (data.result.value.FailCounterIncOnFalsePin == "True") {
-            checkBoxes.push("sys_failCounterInc");
-        };
-        if (data.result.value.AutoResync == "True") {
-            checkBoxes.push("sys_autoResync");
-        };
-        if (data.result.value.PassOnUserNotFound == "True") {
-            checkBoxes.push("sys_passOnUserNotFound");
-        };
-        if (data.result.value.PassOnUserNoToken == "True") {
-            checkBoxes.push("sys_passOnUserNoToken");
-        };
-        if (data.result.value['selfservice.realmbox'] == "True") {
-            checkBoxes.push("sys_realmbox");
-        }
-        $("input:checkbox").val(checkBoxes);
-
-        /* *****************************************************************
-         * handle the tri state token.last_access, which are
-         *     False, True, or date time format
-         */
-
-        $('#token_last_access_check').prop('checked', false);
-        $('#token_last_access_entry').attr({'disabled': true});
-        $('#token_last_access_entry').val('');
-
-        var token_last_access = data.result.value['token.last_access'];
-
-         if (token_last_access !== undefined && token_last_access.toLowerCase() !== 'false') {
-
-            $('#token_last_access_check').prop('checked', true);
-            $('#token_last_access_entry').attr({'disabled': false});
-
-             if (token_last_access.toLowerCase() !== 'true') {
-                $('#token_last_access_entry').val(token_last_access);
+        function (data, textStatus, XMLHttpRequest) {
+            // checkboxes this way:
+            checkBoxes = new Array();
+            if (data.result.value.allowSamlAttributes == "True") {
+                checkBoxes.push("sys_allowSamlAttributes");
+            };
+            if (data.result.value.PrependPin == "True") {
+                checkBoxes.push("sys_prependPin");
+            };
+            if (data.result.value.FailCounterIncOnFalsePin == "True") {
+                checkBoxes.push("sys_failCounterInc");
+            };
+            if (data.result.value.AutoResync == "True") {
+                checkBoxes.push("sys_autoResync");
+            };
+            if (data.result.value.PassOnUserNotFound == "True") {
+                checkBoxes.push("sys_passOnUserNotFound");
+            };
+            if (data.result.value.PassOnUserNoToken == "True") {
+                checkBoxes.push("sys_passOnUserNoToken");
+            };
+            if (data.result.value['selfservice.realmbox'] == "True") {
+                checkBoxes.push("sys_realmbox");
             }
-        }
+            $("input:checkbox").val(checkBoxes);
 
-        /* ***************************************************************** */
+            /* *****************************************************************
+             * handle the tri state token.last_access, which are
+             *     False, True, or date time format
+             */
 
-        $('#sys_autoResyncTimeout').val(data.result.value.AutoResyncTimeout);
-        $('#sys_mayOverwriteClient').val(data.result.value.mayOverwriteClient);
+            $('#token_last_access_check').prop('checked', false);
+            $('#token_last_access_entry').attr({ 'disabled': true });
+            $('#token_last_access_entry').val('');
 
-        if (data.result.value.splitAtSign === "False") {
-            $('#sys_splitAtSign').prop('checked', false);
-        } else {
-            $('#sys_splitAtSign').prop('checked', true);
-        };
+            var token_last_access = data.result.value['token.last_access'];
 
-        if (data.result.value['client.X_FORWARDED_FOR'] == "True") {
-            $('#sys_x_forwarded_for').prop('checked', true);
-        }
-        else {
-            $('#sys_x_forwarded_for').prop('checked', false);
-        }
+            if (token_last_access !== undefined && token_last_access.toLowerCase() !== 'false') {
 
-        if (data.result.value['client.FORWARDED'] == "True") {
-            $('#sys_forwarded').prop('checked', true);
-        } else {
-            $('#sys_forwarded').prop('checked', false);
-        }
+                $('#token_last_access_check').prop('checked', true);
+                $('#token_last_access_entry').attr({ 'disabled': false });
 
-        $('#sys_forwarded_proxy').val(data.result.value['client.FORWARDED_PROXY']);
+                if (token_last_access.toLowerCase() !== 'true') {
+                    $('#token_last_access_entry').val(token_last_access);
+                }
+            }
 
-        /*todo call the 'tok_fill_config.js */
+            /* ***************************************************************** */
 
-        /* caching settings */
-        if (data.result.value['resolver_lookup_cache.enabled'] == "True") {
-            $('#sys_resolver_cache_enable').prop('checked', true);
-        } else {
-            $('#sys_resolver_cache_enable').prop('checked', false);
-        }
+            $('#sys_autoResyncTimeout').val(data.result.value.AutoResyncTimeout);
+            $('#sys_mayOverwriteClient').val(data.result.value.mayOverwriteClient);
 
-        var exp = data.result.value['resolver_lookup_cache.expiration'];
-        $('#sys_resolver_cache_expiration').val(exp || 123600);
+            if (data.result.value.splitAtSign === "False") {
+                $('#sys_splitAtSign').prop('checked', false);
+            } else {
+                $('#sys_splitAtSign').prop('checked', true);
+            };
 
-        if (data.result.value['user_lookup_cache.enabled'] == "True") {
-            $('#sys_user_cache_enable').prop('checked', true);
-        } else {
-            $('#sys_user_cache_enable').prop('checked', false);
-        }
-        var exp = data.result.value['user_lookup_cache.expiration'];
-        $('#sys_user_cache_expiration').val(exp || 123600);
-        hide_waiting();
-    });
+            if (data.result.value['client.X_FORWARDED_FOR'] == "True") {
+                $('#sys_x_forwarded_for').prop('checked', true);
+            }
+            else {
+                $('#sys_x_forwarded_for').prop('checked', false);
+            }
+
+            if (data.result.value['client.FORWARDED'] == "True") {
+                $('#sys_forwarded').prop('checked', true);
+            } else {
+                $('#sys_forwarded').prop('checked', false);
+            }
+
+            $('#sys_forwarded_proxy').val(data.result.value['client.FORWARDED_PROXY']);
+
+            /*todo call the 'tok_fill_config.js */
+
+            /* caching settings */
+            if (data.result.value['resolver_lookup_cache.enabled'] == "True") {
+                $('#sys_resolver_cache_enable').prop('checked', true);
+            } else {
+                $('#sys_resolver_cache_enable').prop('checked', false);
+            }
+
+            var exp = data.result.value['resolver_lookup_cache.expiration'];
+            $('#sys_resolver_cache_expiration').val(exp || 123600);
+
+            if (data.result.value['user_lookup_cache.enabled'] == "True") {
+                $('#sys_user_cache_enable').prop('checked', true);
+            } else {
+                $('#sys_user_cache_enable').prop('checked', false);
+            }
+            var exp = data.result.value['user_lookup_cache.expiration'];
+            $('#sys_user_cache_expiration').val(exp || 123600);
+            hide_waiting();
+        });
 }
 
 /*
  * click event handler for token.last_access
  *  - will be called when the last_access_check checkbox is pressed
  */
-function token_last_access_constrain(){
+function token_last_access_constrain() {
 
     if ($('#token_last_access_check').is(':checked')) {
         $('#token_last_access_entry').prop('disabled', false);
@@ -2781,7 +2841,7 @@ function token_last_access_constrain(){
     }
 }
 
-function save_system_config(){
+function save_system_config() {
     show_waiting();
 
     // block of config values which are input based
@@ -2792,8 +2852,8 @@ function save_system_config(){
         'totp.timeStep': $('#totp_timeStep').val(),
         'totp.timeWindow': $('#totp_timeWindow').val(),
         'client.FORWARDED_PROXY': $('#sys_forwarded_proxy').val(),
-        'user_lookup_cache.expiration':  $('#sys_user_cache_expiration').val(),
-        'resolver_lookup_cache.expiration':  $('#sys_resolver_cache_expiration').val()
+        'user_lookup_cache.expiration': $('#sys_user_cache_expiration').val(),
+        'resolver_lookup_cache.expiration': $('#sys_resolver_cache_expiration').val()
     }
 
     setSystemConfig(params);
@@ -2861,17 +2921,17 @@ function save_system_config(){
     }
 
     var params = {
-        'PrependPin' :prepend,
-        'FailCounterIncOnFalsePin' : fcounter ,
-        'splitAtSign' : splitatsign,
-        'AutoResync' :    autoresync,
-        'PassOnUserNotFound' : passOUNFound,
-        'PassOnUserNoToken' : passOUNToken,
-        'selfservice.realmbox' : realmbox,
-        'allowSamlAttributes' : allowsaml,
-        'client.FORWARDED' : client_forward,
-        'client.X_FORWARDED_FOR' : client_x_forward,
-        'allowSamlAttributes' : allowsaml,
+        'PrependPin': prepend,
+        'FailCounterIncOnFalsePin': fcounter,
+        'splitAtSign': splitatsign,
+        'AutoResync': autoresync,
+        'PassOnUserNotFound': passOUNFound,
+        'PassOnUserNoToken': passOUNToken,
+        'selfservice.realmbox': realmbox,
+        'allowSamlAttributes': allowsaml,
+        'client.FORWARDED': client_forward,
+        'client.X_FORWARDED_FOR': client_x_forward,
+        'allowSamlAttributes': allowsaml,
         'user_lookup_cache.enabled': user_cache_enabled,
         'resolver_lookup_cache.enabled': resolver_cache_enabled,
         'user_lookup_cache.enabled': user_cache_enabled,
@@ -2889,22 +2949,24 @@ function save_system_config(){
 function setSystemConfig(values) {
     values["session"] = getsession();
     $.post('/system/setConfig', values,
-     function(data, textStatus, XMLHttpRequest){
-        if (data.result.status == false) {
-            var message = "Error saving system configuration. Please check your configuration and your server.";
-            // if a more specific server error is available use this one
-            if (data.result.error && data.result.error.message)
-                message += "<br>" + escape(data.result.error.message);
+        function (data, textStatus, XMLHttpRequest) {
+            if (data.result.status == false) {
+                var message = "Error saving system configuration. Please check your configuration and your server.";
+                // if a more specific server error is available use this one
+                if (data.result.error && data.result.error.message)
+                    message += "<br>" + escape(data.result.error.message);
 
-            alert_info_text({'text': message,
-                             'type': ERROR,
-                             'is_escaped': true});
-        }
-        hide_waiting();
-    });
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            }
+            hide_waiting();
+        });
 }
 
-function test_ldap_config(){
+function test_ldap_config() {
     $('#progress_test_ldap').show();
     var url = '/admin/testresolver';
     var params = {};
@@ -2914,7 +2976,7 @@ function test_ldap_config(){
     clientUrlFetch(url, params, processLDAPTestResponse);
 }
 
-function save_ldap_config(callback = null){
+function save_ldap_config(callback = null) {
     // Save all LDAP config
     var resolvername = $('#ldap_resolvername').val();
     var resolvertype = "ldapresolver";
@@ -2929,14 +2991,14 @@ function save_ldap_config(callback = null){
         '#ldap_userfilter': 'LDAPFILTER',
         '#ldap_mapping': 'USERINFO',
         '#ldap_uidtype': 'UIDTYPE',
-        '#ldap_noreferrals' : 'NOREFERRALS',
+        '#ldap_noreferrals': 'NOREFERRALS',
         '#ldap_enforce_tls': 'EnforceTLS',
         '#ldap_only_trusted_certs': 'only_trusted_certs',
     };
     var url = '/system/setResolver';
     var params = {}
 
-    params['name']= resolvername;
+    params['name'] = resolvername;
     params['previous_name'] = g.current_resolver_name;
 
     params['type'] = resolvertype;
@@ -2953,13 +3015,13 @@ function save_ldap_config(callback = null){
 
     params["session"] = getsession();
 
-    if($('#ldap_password').val().length > 0){
+    if ($('#ldap_password').val().length > 0) {
         params["BINDPW"] = $('#ldap_password').val();
     }
 
     show_waiting();
 
-    $.post(url, params, function(data, textStatus, XMLHttpRequest){
+    $.post(url, params, function (data, textStatus, XMLHttpRequest) {
         hide_waiting();
         if (data.result.status == false) {
             alert_box({
@@ -2976,7 +3038,7 @@ function save_ldap_config(callback = null){
             resolvers_load();
 
             if (callback) {
-               callback();
+                callback();
             } else {
                 $dialog_ldap_resolver.dialog('close');
             }
@@ -2985,7 +3047,7 @@ function save_ldap_config(callback = null){
 }
 
 
-function save_http_config(){
+function save_http_config() {
     // Save all HTTP config
     var resolvername = $('#http_resolvername').val();
     var resolvertype = "httpresolver";
@@ -3002,7 +3064,7 @@ function save_http_config(){
     show_waiting();
 
     clientUrlFetch(url, params,
-         function(xhdr, textStatus, XMLHttpRequest){
+        function (xhdr, textStatus, XMLHttpRequest) {
             var resp = xhdr.responseText;
             var data = jQuery.parseJSON(resp);
             if (data.result.status == false) {
@@ -3024,15 +3086,15 @@ function save_http_config(){
  */
 function set_default_realm(realm) {
     var params = {
-        'realm' : realm,
-        'session':getsession()
-        };
+        'realm': realm,
+        'session': getsession()
+    };
 
     $.post('/system/setDefaultRealm', params,
-       function(){
-          realms_load();
-          fill_realms();
-      });
+        function () {
+            realms_load();
+            fill_realms();
+        });
 }
 
 /*
@@ -3040,40 +3102,44 @@ function set_default_realm(realm) {
  *
  * @param - #realm_name is extracted from form entry
  */
-function save_realm_config(){
+function save_realm_config() {
     check_license();
     var realm = $('#realm_name').val();
     show_waiting();
     var params = {
-        'realm' :realm,
-        'resolvers' : g.resolvers_in_realm_to_edit,
-        'session':getsession()
-        };
+        'realm': realm,
+        'resolvers': g.resolvers_in_realm_to_edit,
+        'session': getsession()
+    };
 
     $.post('/system/setRealm', params,
-     function(data, textStatus, XMLHttpRequest){
-        if (data.result.status == false) {
-            alert_info_text({'text': "text_error_realm",
-                             'param': escape(data.result.error.message),
-                             'type': ERROR,
-                             'is_escaped': true});
-        } else {
-            fill_realms();
-            realms_load();
-            alert_info_text({'text': "text_realm_created",
-                             'param': escape(realm),
-                             'is_escaped': true});
-        }
-    });
+        function (data, textStatus, XMLHttpRequest) {
+            if (data.result.status == false) {
+                alert_info_text({
+                    'text': "text_error_realm",
+                    'param': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            } else {
+                fill_realms();
+                realms_load();
+                alert_info_text({
+                    'text': "text_realm_created",
+                    'param': escape(realm),
+                    'is_escaped': true
+                });
+            }
+        });
 }
 
-function save_tokenrealm_config(){
+function save_tokenrealm_config() {
     var tokens = get_selected_tokens();
     var realms = g.realms_of_token.join(",");
     var params = {
-            'realms' : realms,
-            'session':getsession()
-            };
+        'realms': realms,
+        'session': getsession()
+    };
     for (var i = 0; i < tokens.length; ++i) {
         serial = tokens[i];
         params['serial'] = serial;
@@ -3081,26 +3147,28 @@ function save_tokenrealm_config(){
         show_waiting();
 
         $.post('/admin/tokenrealm', params,
-         function(data, textStatus, XMLHttpRequest){
-            if (data.result.status == false) {
-                alert_info_text({'text': "text_error_set_realm",
-                                 'param': escape(data.result.error.message),
-                                 'type': ERROR,
-                                 'is_escaped': true});
-            }
-            else {
-                $('#token_table').flexReload();
-                $('#selected_tokens').html('');
-            }
-            hide_waiting();
-         });
+            function (data, textStatus, XMLHttpRequest) {
+                if (data.result.status == false) {
+                    alert_info_text({
+                        'text': "text_error_set_realm",
+                        'param': escape(data.result.error.message),
+                        'type': ERROR,
+                        'is_escaped': true
+                    });
+                }
+                else {
+                    $('#token_table').flexReload();
+                    $('#selected_tokens').html('');
+                }
+                hide_waiting();
+            });
     }
 }
 
 /*
 * save the passwd resolver config
 */
-function save_file_config(){
+function save_file_config() {
     var url = '/system/setResolver';
     var resolvername = $('#file_resolvername').val();
     var resolvertype = "passwdresolver";
@@ -3114,11 +3182,11 @@ function save_file_config(){
     params['fileName'] = fileName;
     params['session'] = getsession();
     show_waiting();
-    $.post(url, params, function(data, textStatus, XMLHttpRequest){
+    $.post(url, params, function (data, textStatus, XMLHttpRequest) {
         hide_waiting();
         if (data.result.status == false) {
             alert_box({
-                'title':i18n.gettext("File resolver"),
+                'title': i18n.gettext("File resolver"),
                 'text': "text_error_save_file",
                 'param': escape(data.result.error.message),
                 'is_escaped': true
@@ -3130,44 +3198,44 @@ function save_file_config(){
     });
 }
 
-function test_sql_config(){
-        $('#progress_test_sql').show();
-        var url = '/admin/testresolver';
-        var params = {};
-        params['name'] = $('#sql_resolvername').val();
+function test_sql_config() {
+    $('#progress_test_sql').show();
+    var url = '/admin/testresolver';
+    var params = {};
+    params['name'] = $('#sql_resolvername').val();
 
-        clientUrlFetch(url, params, function(xhdr, textStatus) {
-            var resp = xhdr.responseText;
-            var obj = jQuery.parseJSON(resp);
-            $('#progress_test_sql').hide();
-            if (obj.result.status) {
-                rows = obj.result.value.desc.rows;
-                if (rows >= 0) { // show number of found users
-                    alert_box({
-                        title: "SQL Test",
-                        text: "text_sql_config_success",
-                        param: escape(rows),
-                        is_escaped: true
-                    });
-                } else {
-                    alert_box({
-                        title: "SQL Test",
-                        text: "text_sql_config_fail",
-                        param: escape(obj.result.value.desc.err_string),
-                        is_escaped: true
-                    });
-                }
+    clientUrlFetch(url, params, function (xhdr, textStatus) {
+        var resp = xhdr.responseText;
+        var obj = jQuery.parseJSON(resp);
+        $('#progress_test_sql').hide();
+        if (obj.result.status) {
+            rows = obj.result.value.desc.rows;
+            if (rows >= 0) { // show number of found users
+                alert_box({
+                    title: "SQL Test",
+                    text: "text_sql_config_success",
+                    param: escape(rows),
+                    is_escaped: true
+                });
             } else {
                 alert_box({
                     title: "SQL Test",
-                    text : escape(obj.result.error.message),
+                    text: "text_sql_config_fail",
+                    param: escape(obj.result.value.desc.err_string),
                     is_escaped: true
                 });
             }
-         });
+        } else {
+            alert_box({
+                title: "SQL Test",
+                text: escape(obj.result.error.message),
+                is_escaped: true
+            });
+        }
+    });
 }
 
-function save_sql_config(callback = null){
+function save_sql_config(callback = null) {
     // Save all SQL config
     var resolvername = $('#sql_resolvername').val();
     var resolvertype = "sqlresolver";
@@ -3182,7 +3250,7 @@ function save_sql_config(callback = null){
         '#sql_mapping': 'Map',
         '#sql_where': 'Where',
         '#sql_conparams': 'conParams',
-        '#sql_encoding' : 'Encoding'
+        '#sql_encoding': 'Encoding'
     };
     var url = '/system/setResolver';
     var params = {};
@@ -3199,13 +3267,13 @@ function save_sql_config(callback = null){
     }
     params['session'] = getsession();
 
-    if($('#sql_password').val().length > 0){
+    if ($('#sql_password').val().length > 0) {
         params["Password"] = $('#sql_password').val();
     }
 
     show_waiting();
 
-    $.post(url, params, function(data, textStatus, XMLHttpRequest){
+    $.post(url, params, function (data, textStatus, XMLHttpRequest) {
         hide_waiting();
         if (data.result.status == false) {
             alert_box({
@@ -3221,7 +3289,7 @@ function save_sql_config(callback = null){
             resolvers_load();
 
             if (callback) {
-               callback();
+                callback();
             } else {
                 $dialog_sql_resolver.dialog('close');
             }
@@ -3232,46 +3300,46 @@ function save_sql_config(callback = null){
 
 // ----------------------------------------------------------------
 //   Realms
-function realms_load(){
+function realms_load() {
 
     g.realm_to_edit = "";
     show_waiting();
     var params = { 'session': getsession() };
     $.post('/system/getRealms', params,
-     function(data, textStatus, XMLHttpRequest){
-        var realms = '<ol id="realms_select" class="select_list" class="ui-selectable">';
-        for (var key in data.result.value) {
-            var default_realm = "";
-            var resolvers = "";
-            var resolver_list = data.result.value[key].useridresolver;
-            for (var reso in resolver_list) {
-                var r = resolver_list[reso].split(".");
-                resolvers += r[r.length - 1] + " ";
-            }
+        function (data, textStatus, XMLHttpRequest) {
+            var realms = '<ol id="realms_select" class="select_list" class="ui-selectable">';
+            for (var key in data.result.value) {
+                var default_realm = "";
+                var resolvers = "";
+                var resolver_list = data.result.value[key].useridresolver;
+                for (var reso in resolver_list) {
+                    var r = resolver_list[reso].split(".");
+                    resolvers += r[r.length - 1] + " ";
+                }
 
-            if (data.result.value[key]['default']) {
-                default_realm = " (Default) ";
+                if (data.result.value[key]['default']) {
+                    default_realm = " (Default) ";
+                }
+                var e_key = escape(key);
+                var e_default_realm = escape(default_realm);
+                var e_resolvers = escape(resolvers)
+                realms += '<li class="ui-widget-content">' + e_key + e_default_realm + ' [' + e_resolvers + ']</li>';
             }
-            var e_key = escape(key);
-            var e_default_realm = escape(default_realm);
-            var e_resolvers = escape(resolvers)
-            realms += '<li class="ui-widget-content">' + e_key + e_default_realm + ' [' + e_resolvers + ']</li>';
-        }
-        realms += '</ol>';
-        $('#realm_list').html($.parseHTML(realms));
-        $('#realms_select').selectable({
-            stop: function(){
-                $(".ui-selected", this).each(function(){
-                    var index = $("#realms_select li").index(this);
-                    g.realm_to_edit = escape($(this).html());
-                }); // end of each
-            } // end of stop function
-        }); // end of selectable
-        hide_waiting();
-    }); // end of $.post
+            realms += '</ol>';
+            $('#realm_list').html($.parseHTML(realms));
+            $('#realms_select').selectable({
+                stop: function () {
+                    $(".ui-selected", this).each(function () {
+                        var index = $("#realms_select li").index(this);
+                        g.realm_to_edit = escape($(this).html());
+                    }); // end of each
+                } // end of stop function
+            }); // end of selectable
+            hide_waiting();
+        }); // end of $.post
 }
 
-function realm_ask_delete(){
+function realm_ask_delete() {
     // replace in case of normal realms
     var realm = g.realm_to_edit.replace(/^(\S+)\s+\[(.*)$/, "$1");
     // replace in case of default realm
@@ -3285,140 +3353,152 @@ function realm_ask_delete(){
 //   Resolvers
 
 
-function resolvers_load(){
+function resolvers_load() {
     show_waiting();
-    var params = {'session':getsession()};
+    var params = { 'session': getsession() };
     $.post('/system/getResolvers', params,
-     function(data, textStatus, XMLHttpRequest){
-        var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
-        var count = 0;
-        for (var key in data.result.value) {
-            var e_key = escape(key);
-            var e_reolver_type = escape(data.result.value[key].type);
-            var managed = escape(data.result.value[key].readonly);
-            resolvers += '<li class="ui-widget-content' + (managed? " managed" : "") + '">'
+        function (data, textStatus, XMLHttpRequest) {
+            var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
+            var count = 0;
+            for (var key in data.result.value) {
+                var e_key = escape(key);
+                var e_reolver_type = escape(data.result.value[key].type);
+                var managed = escape(data.result.value[key].readonly);
+                resolvers += '<li class="ui-widget-content' + (managed ? " managed" : "") + '">'
                     + '<span class="name">' + e_key + ' [' + e_reolver_type + ']</span>'
-                    + (managed ? ' <span class="managed-tag">'+i18n.gettext("managed")+'</span>' : '')
+                    + (managed ? ' <span class="managed-tag">' + i18n.gettext("managed") + '</span>' : '')
                     + '</li>';
-            count = count +1 ;
-        }
-        resolvers += '</ol>';
+                count = count + 1;
+            }
+            resolvers += '</ol>';
 
-        g.resolver_to_edit = null;
-        $("#button_resolver_edit").button("disable");
-        $("#button_resolver_duplicate").button("disable");
-        $("#button_resolver_delete").button("disable");
+            g.resolver_to_edit = null;
+            $("#button_resolver_edit").button("disable");
+            $("#button_resolver_duplicate").button("disable");
+            $("#button_resolver_delete").button("disable");
 
-        if (count > 0) {
-            $('#resolvers_list').html(resolvers);
+            if (count > 0) {
+                $('#resolvers_list').html(resolvers);
 
-            $('#resolvers_select').selectable({
-                stop: function(){
-                    if($("#resolvers_select .ui-selected:not(.managed)").length > 0){
-                        $("#button_resolver_edit").button("enable");
-                        $("#button_resolver_duplicate").button("enable");
-                        $("#button_resolver_delete").button("enable");
-                    }
-                    else{
-                        $("#button_resolver_edit").button("disable");
-                        $("#button_resolver_duplicate").button("disable");
-                        $("#button_resolver_delete").button("disable");
-                    }
+                $('#resolvers_select').selectable({
+                    stop: function () {
+                        if ($("#resolvers_select .ui-selected:not(.managed)").length > 0) {
+                            $("#button_resolver_edit").button("enable");
+                            $("#button_resolver_duplicate").button("enable");
+                            $("#button_resolver_delete").button("enable");
+                        }
+                        else {
+                            $("#button_resolver_edit").button("disable");
+                            $("#button_resolver_duplicate").button("disable");
+                            $("#button_resolver_delete").button("disable");
+                        }
 
-                    if($("#resolvers_select .ui-selected").length > 0){
-                        g.resolver_to_edit = escape($("#resolvers_select .ui-selected .name").text());
-                        $("#button_resolver_delete").button("enable");
+                        if ($("#resolvers_select .ui-selected").length > 0) {
+                            g.resolver_to_edit = escape($("#resolvers_select .ui-selected .name").text());
+                            $("#button_resolver_delete").button("enable");
+                        }
+                        else {
+                            g.resolver_to_edit = null;
+                            $("#button_resolver_delete").button("disable");
+                        }
+                    },
+                    selected: function (event, ui) {
+                        // Prevent the selection of multiple items
+                        $(ui.selected).siblings().removeClass("ui-selected");
                     }
-                    else{
-                        g.resolver_to_edit = null;
-                        $("#button_resolver_delete").button("disable");
-                    }
-                },
-                selected: function(event, ui) {
-                    // Prevent the selection of multiple items
-                    $(ui.selected).siblings().removeClass("ui-selected");
-                }
-            });
-        }
-        else {
-            $('#resolvers_list').html("");
-            g.resolver_to_edit = "";
-        };
-        hide_waiting();
-    }); // end of $.post
+                });
+            }
+            else {
+                $('#resolvers_list').html("");
+                g.resolver_to_edit = "";
+            };
+            hide_waiting();
+        }); // end of $.post
 }
 
 
-function resolver_delete(){
+function resolver_delete() {
     var reso = $('#delete_resolver_name').html();
-    var params = { 'resolver' : reso, 'session':getsession()};
+    var params = { 'resolver': reso, 'session': getsession() };
 
     show_waiting();
     $.post('/system/delResolver', params,
-     function(data, textStatus, XMLHttpRequest){
-        if (data.result.status == true) {
-            resolvers_load();
-            if (data.result.value == true)
-                alert_info_text({'text': "text_resolver_delete_success",
-                                 'param': escape(reso),
-                                 'is_escaped': true});
-            else
-                alert_info_text({'text': "text_resolver_delete_fail",
-                                 'param': escape(reso),
-                                 'type': ERROR,
-                                 'is_escaped': true});
-        }
-        else {
-            alert_info_text({'text': "text_resolver_delete_fail",
-                             'param': escape(data.result.error.message),
-                             'type': ERROR,
-                             'is_escaped': true});
-        }
-        hide_waiting();
-    });
+        function (data, textStatus, XMLHttpRequest) {
+            if (data.result.status == true) {
+                resolvers_load();
+                if (data.result.value == true)
+                    alert_info_text({
+                        'text': "text_resolver_delete_success",
+                        'param': escape(reso),
+                        'is_escaped': true
+                    });
+                else
+                    alert_info_text({
+                        'text': "text_resolver_delete_fail",
+                        'param': escape(reso),
+                        'type': ERROR,
+                        'is_escaped': true
+                    });
+            }
+            else {
+                alert_info_text({
+                    'text': "text_resolver_delete_fail",
+                    'param': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            }
+            hide_waiting();
+        });
 }
 
-function realm_delete(){
+function realm_delete() {
     var realm = $('#realm_delete_name').html();
-    var params = {'realm' : realm,'session':getsession()};
+    var params = { 'realm': realm, 'session': getsession() };
     $.post('/system/delRealm', params,
-     function(data, textStatus, XMLHttpRequest){
-        if (data.result.status == true) {
-            fill_realms();
-            realms_load();
-            alert_info_text({'text': "text_realm_delete_success",
-                             'param': escape(realm),
-                            'is_escaped': true});
+        function (data, textStatus, XMLHttpRequest) {
+            if (data.result.status == true) {
+                fill_realms();
+                realms_load();
+                alert_info_text({
+                    'text': "text_realm_delete_success",
+                    'param': escape(realm),
+                    'is_escaped': true
+                });
+            }
+            else {
+                alert_info_text({
+                    'text': "text_realm_delete_fail",
+                    'param': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            }
+        });
+}
+
+function resolver_ask_delete() {
+    if (g.resolver_to_edit.length > 0) {
+        if (g.resolver_to_edit.match(/(\S+)\s(\S+)/)) {
+            var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
+            var type = g.resolver_to_edit.replace(/\S+\s+(\S+)/, "$1");
+
+            $('#delete_resolver_type').html(escape(type));
+            $('#delete_resolver_name').html(escape(reso));
+            $dialog_resolver_ask_delete.dialog('open');
         }
         else {
-            alert_info_text({'text': "text_realm_delete_fail",
-                             'param': escape(data.result.error.message),
-                             'type': ERROR,
-                            'is_escaped': true});
+            alert_info_text({
+                'text': "text_regexp_error",
+                'param': escape(g.resolver_to_edit),
+                'type': ERROR,
+                'is_escaped': true
+            });
         }
-    });
+    }
 }
 
-function resolver_ask_delete(){
-   if (g.resolver_to_edit.length >0 ) {
-    if (g.resolver_to_edit.match(/(\S+)\s(\S+)/)) {
-        var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
-        var type = g.resolver_to_edit.replace(/\S+\s+(\S+)/, "$1");
-
-        $('#delete_resolver_type').html(escape(type));
-        $('#delete_resolver_name').html(escape(reso));
-        $dialog_resolver_ask_delete.dialog('open');
-    }
-    else {
-        alert_info_text({'text': "text_regexp_error",
-                         'param': escape(g.resolver_to_edit),
-                         'type': ERROR,
-                         'is_escaped': true});
-    }
-   }
-}
-
-function resolver_edit_type(){
+function resolver_edit_type() {
     var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
     var type = g.resolver_to_edit.replace(/\S+\s+\[(\S+)\]/, "$1");
 
@@ -3438,7 +3518,7 @@ function resolver_edit_type(){
     }
 }
 
-function resolver_duplicate(){
+function resolver_duplicate() {
     var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
     var type = g.resolver_to_edit.replace(/\S+\s+\[(\S+)\]/, "$1");
 
@@ -3458,7 +3538,7 @@ function resolver_duplicate(){
     }
 }
 
-function resolver_new_type(){
+function resolver_new_type() {
     check_license();
     $dialog_ask_new_resolvertype.dialog('open');
 }
@@ -3468,12 +3548,12 @@ function resolver_new_type(){
  * As tokeninfo HTML is read from the server via /manage/tokeninfo
  * jqeuery needs to activate the buttons after each call.
  */
-function set_tokeninfo_buttons(){
+function set_tokeninfo_buttons() {
     $('#ti_button_desc').button({
         icons: { primary: 'ui-icon-pencil' },
         text: false
     });
-    $('#ti_button_desc').click(function(){
+    $('#ti_button_desc').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="description">\
                 <input id=info_value name=info_value></input>\
                 ');
@@ -3485,7 +3565,7 @@ function set_tokeninfo_buttons(){
         icons: { primary: 'ui-icon-pencil' },
         text: false
     });
-    $('#ti_button_otplen').click(function(){
+    $('#ti_button_otplen').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="otpLen">\
             <select id=info_value name=info_value>\
             <option value=6>6 digits</option>\
@@ -3499,7 +3579,7 @@ function set_tokeninfo_buttons(){
         icons: { primary: 'ui-icon-pencil' },
         text: false
     });
-    $('#ti_button_sync').click(function(){
+    $('#ti_button_sync').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="syncWindow">\
             <input id=info_value name=info_value></input>\
             ');
@@ -3512,7 +3592,7 @@ function set_tokeninfo_buttons(){
         icons: { primary: 'ui-icon-pencil' },
         text: false
     });
-    $('#ti_button_countwindow').click(function(){
+    $('#ti_button_countwindow').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="counterWindow">\
                     <input id=info_value name=info_value></input>\
                     ');
@@ -3524,7 +3604,7 @@ function set_tokeninfo_buttons(){
         icons: { primary: 'ui-icon-pencil' },
         text: false
     });
-    $('#ti_button_maxfail').click(function(){
+    $('#ti_button_maxfail').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="maxFailCount">\
             <input id=info_value name=info_value></input>\
             ');
@@ -3537,18 +3617,18 @@ function set_tokeninfo_buttons(){
         text: false
         //label: "Reset Failcounter"
     });
-    $('#ti_button_failcount').click(function(){
+    $('#ti_button_failcount').click(function () {
         serial = get_selected_tokens()[0];
-        clientUrlFetchSync("/admin/reset", {"serial" : serial});
+        clientUrlFetchSync("/admin/reset", { "serial": serial });
         tokeninfo_redisplay();
     });
 
     $('#ti_button_hashlib').button({
-        icons: { primary: 'ui-icon-locked'},
-        text : false,
+        icons: { primary: 'ui-icon-locked' },
+        text: false,
         label: "hashlib"
     });
-    $('#ti_button_hashlib').click(function(){
+    $('#ti_button_hashlib').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="hashlib">\
             <select id=info_value name=info_value>\
             <option value=sha1>sha1</option>\
@@ -3559,18 +3639,18 @@ function set_tokeninfo_buttons(){
     });
 
     $('#ti_button_expiration').button({
-        icons: { primary: 'ui-icon-calendar'}
-    }).click(function() {
+        icons: { primary: 'ui-icon-calendar' }
+    }).click(function () {
         $().dialog('close');
         openExpirationDialog();
     });
 
     $('#ti_button_mobile_phone').button({
-        icons: { primary: 'ui-icon-signal'},
-        text : false,
+        icons: { primary: 'ui-icon-signal' },
+        text: false,
         label: "mobile phone"
     });
-    $('#ti_button_mobile_phone').click(function(){
+    $('#ti_button_mobile_phone').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="phone">\
             <input id=info_value name=info_value></input>\
             ');
@@ -3582,11 +3662,11 @@ function set_tokeninfo_buttons(){
      * time buttons
      */
     $('#ti_button_time_window').button({
-        icons: { primary: 'ui-icon-newwin'},
-        text : false,
+        icons: { primary: 'ui-icon-newwin' },
+        text: false,
         label: "time window"
     });
-    $('#ti_button_time_window').click(function(){
+    $('#ti_button_time_window').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="timeWindow">\
             <input id=info_value name=info_value></input>\
             ');
@@ -3595,11 +3675,11 @@ function set_tokeninfo_buttons(){
     });
 
     $('#ti_button_time_shift').button({
-        icons: { primary: 'ui-icon-seek-next'},
-        text : false,
+        icons: { primary: 'ui-icon-seek-next' },
+        text: false,
         label: "time shift"
     });
-    $('#ti_button_time_shift').click(function(){
+    $('#ti_button_time_shift').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="timeShift">\
             <input id=info_value name=info_value></input>\
             ');
@@ -3608,11 +3688,11 @@ function set_tokeninfo_buttons(){
     });
 
     $('#ti_button_time_step').button({
-        icons: { primary: 'ui-icon-clock'},
-        text : false,
+        icons: { primary: 'ui-icon-clock' },
+        text: false,
         label: "time step"
     });
-    $('#ti_button_time_step').click(function(){
+    $('#ti_button_time_step').click(function () {
         $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="timeStep">\
             <select id=info_value name=info_value>\
             <option value=30>30 seconds</option>\
@@ -3629,7 +3709,7 @@ function set_tokeninfo_buttons(){
  * As tokeninfo HTML is read from the server via /manage/tokeninfo
  * jqeuery needs to activate the buttons after each call.
  */
-function tokenbuttons(){
+function tokenbuttons() {
     $('#button_tokenrealm').button({
         icons: {
             primary: 'ui-icon-home'
@@ -3665,39 +3745,41 @@ function tokenbuttons(){
         width: 400,
         modal: true,
         buttons: {
-            'Get Temporary Token': {click: function() {
-                var token_type =  $('#dialog_lost_token select').val();
-                if (token_type == "password_token") {
-                    token_losttoken('password');
-                }
-                if (token_type == "email_token") {
-                    token_losttoken('email');
-                }
-                if (token_type == "sms_token") {
-                    token_losttoken('sms');
-                }
-                $(this).dialog('close');
+            'Get Temporary Token': {
+                click: function () {
+                    var token_type = $('#dialog_lost_token select').val();
+                    if (token_type == "password_token") {
+                        token_losttoken('password');
+                    }
+                    if (token_type == "email_token") {
+                        token_losttoken('email');
+                    }
+                    if (token_type == "sms_token") {
+                        token_losttoken('sms');
+                    }
+                    $(this).dialog('close');
                 },
                 id: "button_losttoken_ok",
                 text: i18n.gettext("Get Temporary Token")
             },
-            'Cancel': {click: function() {
-                $(this).dialog('close');
+            'Cancel': {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_losttoken_cancel",
                 text: i18n.gettext("Cancel")
-                }
-            },
-        open: function() {
+            }
+        },
+        open: function () {
             /* get_selected_tokens() returns a list of tokens.
              * We can only handle one selected token (token == 1).
              */
             var tokens = get_selected_tokens();
-            if (tokens.length == 1){
+            if (tokens.length == 1) {
                 $("#dialog_lost_token select option[value=email_token]").
-                    attr('disabled','disabled');
+                    attr('disabled', 'disabled');
                 $("#dialog_lost_token select option[value=sms_token]").
-                    attr('disabled','disabled');
+                    attr('disabled', 'disabled');
 
                 // as the spass token has only a password, it could only be
                 // replaced by a pw token
@@ -3714,7 +3796,7 @@ function tokenbuttons(){
                     }
                 }
                 $("#dialog_lost_token select option[value=select_token]").
-                    attr('selected',true);
+                    attr('selected', true);
                 $('#lost_token_serial').html(escape(token_string));
 
                 $(this).dialog_icons();
@@ -3724,8 +3806,8 @@ function tokenbuttons(){
             }
         }
     });
-    $('#button_losttoken').click(function(){
-        $('#dialog_lost_token_select').prop('selectedIndex',0);
+    $('#button_losttoken').click(function () {
+        $('#dialog_lost_token_select').prop('selectedIndex', 0);
         $dialog_losttoken.dialog('open');
     });
 
@@ -3737,21 +3819,23 @@ function tokenbuttons(){
         width: 400,
         modal: true,
         buttons: {
-            'Resync': {click: function(){
-                token_resync();
-                $(this).dialog('close');
+            'Resync': {
+                click: function () {
+                    token_resync();
+                    $(this).dialog('close');
                 },
                 id: "button_resync_resync",
                 text: "Resync"
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_resync_cancel",
                 text: "Cancel"
-                }
+            }
         },
-        open: function() {
+        open: function () {
             tokens = get_selected_tokens();
             token_string = tokens.join(", ");
             /* delete otp values in dialog */
@@ -3763,7 +3847,7 @@ function tokenbuttons(){
             translate_dialog_resync_token();
         }
     });
-    $('#button_resync').click(function(){
+    $('#button_resync').click(function () {
         $dialog_resync_token.dialog('open');
         return false;
     });
@@ -3775,12 +3859,13 @@ function tokenbuttons(){
             var pHtml = $.parseHTML(tokeninfo);
             $dialog_token_info.html(pHtml);
             buttons = {
-                Close: {click: function(){
-                    $(this).dialog('close');
+                Close: {
+                    click: function () {
+                        $(this).dialog('close');
                     },
                     id: "button_ti_close",
                     text: "Close"
-                    }
+                }
             };
             $dialog_token_info.dialog('option', 'buttons', buttons);
             $dialog_token_info.dialog('open');
@@ -3788,7 +3873,7 @@ function tokenbuttons(){
             set_tokeninfo_buttons();
         }
         /* event.preventDefault(); */
-       return false;
+        return false;
     }
     );
 
@@ -3799,21 +3884,23 @@ function tokenbuttons(){
         modal: true,
         maxHeight: 400,
         buttons: {
-            'Cancel': { click: function(){
-                                $(this).dialog('close');
-                            },
-                        id: "button_tokenrealm_cancel",
-                        text: "Cancel"
+            'Cancel': {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_tokenrealm_cancel",
+                text: "Cancel"
             },
-            'Save': { click: function(){
-                            save_tokenrealm_config();
-                            $(this).dialog('close');
-                            },
-                    id: "button_tokenrealm_save",
-                    text: "Set Realm"
+            'Save': {
+                click: function () {
+                    save_tokenrealm_config();
+                    $(this).dialog('close');
+                },
+                id: "button_tokenrealm_save",
+                text: "Set Realm"
             }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
             translate_dialog_token_realm();
         }
@@ -3826,24 +3913,26 @@ function tokenbuttons(){
         width: 400,
         modal: true,
         buttons: {
-            'Get OTP values': {click: function(){
-                var serial = get_selected_tokens()[0];
-                var count  = $('#otp_values_count').val();
-                var session = getsession();
-                window.open('/gettoken/getmultiotp?serial='+serial+'&session='+session+'&count='+count+'&view=1','getotp_window',"status=1,toolbar=1,menubar=1");
-                $(this).dialog('close');
+            'Get OTP values': {
+                click: function () {
+                    var serial = get_selected_tokens()[0];
+                    var count = $('#otp_values_count').val();
+                    var session = getsession();
+                    window.open('/gettoken/getmultiotp?serial=' + serial + '&session=' + session + '&count=' + count + '&view=1', 'getotp_window', "status=1,toolbar=1,menubar=1");
+                    $(this).dialog('close');
                 },
                 id: "button_getmulti_ok",
                 text: "Get OTP values"
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_getmulti_cancel",
                 text: "Cancel"
-                }
+            }
         },
-        open: function() {
+        open: function () {
             token_string = get_selected_tokens()[0];
             $('#tokenid_getmulti').html(escape(token_string));
 
@@ -3851,48 +3940,50 @@ function tokenbuttons(){
             translate_dialog_getmulti();
         }
     });
-    $('#button_getmulti').click(function(){
+    $('#button_getmulti').click(function () {
         $dialog_getmulti.dialog('open');
     });
 
-    $('#button_tokenrealm').click(function(event){
+    $('#button_tokenrealm').click(function (event) {
         var tokens = get_selected_tokens();
         var token_string = tokens.join(", ");
         g.realms_of_token = Array();
 
         // get all realms the admin is allowed to view
         var realms = '';
-        var params = {'session':getsession()}
+        var params = { 'session': getsession() }
         $.post('/system/getRealms', params,
-         function(data, textStatus, XMLHttpRequest){
-            realms = '<ol id="tokenrealm_select" class="select_list" class="ui-selectable">';
-            for (var key in data.result.value) {
-                var klass = 'class="ui-widget-content"';
-                var e_key = escape(key);
-                realms += '<li ' + klass + '>' + e_key + '</li>';
-            }
-            realms += '</ol>';
+            function (data, textStatus, XMLHttpRequest) {
+                realms = '<ol id="tokenrealm_select" class="select_list" class="ui-selectable">';
+                for (var key in data.result.value) {
+                    var klass = 'class="ui-widget-content"';
+                    var e_key = escape(key);
+                    realms += '<li ' + klass + '>' + e_key + '</li>';
+                }
+                realms += '</ol>';
 
-            $('#tokenid_realm').html(escape(token_string));
-            $('#realm_name').val(token_string);
-            $('#token_realm_list').html(realms);
+                $('#tokenid_realm').html(escape(token_string));
+                $('#realm_name').val(token_string);
+                $('#token_realm_list').html(realms);
 
-            $('#tokenrealm_select').selectable({
-                stop: function(){
-                    $(".ui-selected", this).each(function(){
-                        // fill realms of token
-                        var index = $("#tokenrealm_select li").index(this);
-                        var realm = escape($(this).html());
-                        g.realms_of_token.push(realm);
+                $('#tokenrealm_select').selectable({
+                    stop: function () {
+                        $(".ui-selected", this).each(function () {
+                            // fill realms of token
+                            var index = $("#tokenrealm_select li").index(this);
+                            var realm = escape($(this).html());
+                            g.realms_of_token.push(realm);
 
-                    }); // end of stop function
-                } // end stop function
-            }); // end of selectable
-        }); // end of $.post
+                        }); // end of stop function
+                    } // end stop function
+                }); // end of selectable
+            }); // end of $.post
         if (tokens.length === 0) {
-            alert_box({'title': i18n.gettext("Set Token Realm"),
-                       'text': i18n.gettext("Please select the token first."),
-                       'is_escaped': true});
+            alert_box({
+                'title': i18n.gettext("Set Token Realm"),
+                'text': i18n.gettext("Please select the token first."),
+                'is_escaped': true
+            });
         } else {
             $dialog_edit_tokenrealm.dialog('open');
         }
@@ -3906,7 +3997,7 @@ function tokenbuttons(){
 // =================================================================
 // =================================================================
 
-$(document).ready(function(){
+$(document).ready(function () {
     // initialize the logout button first to prevent a deadlock
     // where the user can no longer logout
     $('#login-status-logout').click(function () {
@@ -3917,11 +4008,11 @@ $(document).ready(function(){
         autoOpen: false,
         modal: true,
         buttons: {
-                Ok: function() {
-                    $( this ).dialog( "close" );
-                }
+            Ok: function () {
+                $(this).dialog("close");
             }
-     };
+        }
+    };
 
     // right after document loading we need to get the session
     getsession();
@@ -3933,9 +4024,9 @@ $(document).ready(function(){
     } catch (e) {
         // the alert_box dialog needs to be prepared here to be able to show the
         // error message this early.
-        $( "#alert_box" ).dialog(alertBoxConfig);
+        $("#alert_box").dialog(alertBoxConfig);
         alert_box({
-            'title':i18n.gettext("Configuration error"),
+            'title': i18n.gettext("Configuration error"),
             'text': escape(e),
             'is_escaped': true
         });
@@ -3956,34 +4047,34 @@ $(document).ready(function(){
     });
 
     // Button functions
-    $('#button_assign').click(function(event){
+    $('#button_assign').click(function (event) {
         token_assign();
         event.preventDefault();
     });
 
-    $('#button_enable').click(function(event){
+    $('#button_enable').click(function (event) {
         token_enable();
         //event.preventDefault();
         return false;
     });
 
-    $('#button_disable').click(function(event){
+    $('#button_disable').click(function (event) {
         token_disable();
         event.preventDefault();
     });
 
-    $('#button_resetcounter').click(function(event){
+    $('#button_resetcounter').click(function (event) {
         token_reset();
         event.preventDefault();
     });
 
-    $('#button_setexpiration').click(function(e) {
+    $('#button_setexpiration').click(function (e) {
         openExpirationDialog();
     });
 
     /* register the token.last_access click event handler for the checkbox*/
     $("#token_last_access_check").click(
-        function(event) {
+        function (event) {
             token_last_access_constrain();
         }
     );
@@ -3992,7 +4083,7 @@ $(document).ready(function(){
     $('body').enableUIComponents();
 
     // Info box
-    $('.button_info_text').click(function(){
+    $('.button_info_text').click(function () {
         $(this).parent().hide('blind', {}, 500, toggle_close_all_link);
     });
 
@@ -4016,7 +4107,7 @@ $(document).ready(function(){
     $trash.droppable({
         accept: '#gallery > li',
         activeClass: 'ui-state-highlight',
-        drop: function(ev, ui){
+        drop: function (ev, ui) {
             deleteImage(ui.draggable);
         }
     });
@@ -4025,7 +4116,7 @@ $(document).ready(function(){
     $gallery.droppable({
         accept: '#trash li',
         activeClass: 'custom-state-active',
-        drop: function(ev, ui){
+        drop: function (ev, ui) {
             recycleImage(ui.draggable);
         }
     });
@@ -4037,27 +4128,33 @@ $(document).ready(function(){
         modal: true,
         maxHeight: 400,
         buttons: {
-            'Cancel': { click: function(){
-                            $(this).dialog('close');
-                        },
-                        id: "button_editrealms_cancel",
-                        text: "Cancel"
+            'Cancel': {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_editrealms_cancel",
+                text: "Cancel"
             },
-            'Save': { click: function(){
+            'Save': {
+                click: function () {
                     if ($("#form_realmconfig").valid()) {
                         if (!g.resolvers_in_realm_to_edit.length) {
-                            alert_box({'title': i18n.gettext("Cannot save realm"),
-                                        'text': i18n.gettext("Please select at least one UserIdResolver from the list"),
-                                        'is_escaped': true});
+                            alert_box({
+                                'title': i18n.gettext("Cannot save realm"),
+                                'text': i18n.gettext("Please select at least one UserIdResolver from the list"),
+                                'is_escaped': true
+                            });
                             return;
                         }
                         /* first check if there is at least one resolver selected */
                         var resolvers = g.resolvers_in_realm_to_edit.split(',');
                         if (resolvers.length == 1 &&
                             resolvers[0].length == 0) {
-                            alert_box({'title': i18n.gettext("No resolver selected"),
-                                       'text': i18n.gettext("Please select at least one resolver from the resolver list."),
-                                       'is_escaped': true});
+                            alert_box({
+                                'title': i18n.gettext("No resolver selected"),
+                                'text': i18n.gettext("Please select at least one resolver from the resolver list."),
+                                'is_escaped': true
+                            });
 
                         } else {
                             save_realm_config();
@@ -4069,7 +4166,7 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
             translate_dialog_realm_edit();
         }
@@ -4084,14 +4181,15 @@ $(document).ready(function(){
         width: 400,
         modal: false,
         buttons: {
-            Close: {click: function(){
-                $(this).dialog('close');
+            Close: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_view_temporary_token_close",
                 text: i18n.gettext("Close")
-                },
+            },
         },
-        open: function() {
+        open: function () {
             translate_dialog_view_temptoken();
         }
     });
@@ -4099,32 +4197,33 @@ $(document).ready(function(){
      * Special resolver dialogs.
      */
     $dialog_resolver_ask_delete = $('#dialog_resolver_ask_delete').dialog({
-            autoOpen: false,
-            title: 'Deleting resolver',
-            width: 600,
-            height: 500,
-            modal: true,
-            buttons: {
-                'Delete': { click: function(){
-                                resolver_delete();
-                                $(this).dialog('close');
-                            },
-                            id: "button_resolver_ask_delete_delete",
-                            text: "Delete"
+        autoOpen: false,
+        title: 'Deleting resolver',
+        width: 600,
+        height: 500,
+        modal: true,
+        buttons: {
+            'Delete': {
+                click: function () {
+                    resolver_delete();
+                    $(this).dialog('close');
                 },
-                "Cancel": {
-                    click: function(){
-                        $(this).dialog('close');
-                    },
-                    id: "button_resolver_ask_delete_cancel",
-                    text: "Cancel"
-                }
+                id: "button_resolver_ask_delete_delete",
+                text: "Delete"
             },
-            open: function() {
-                $(this).dialog_icons();
-                translate_dialog_resolver_ask_delete();
+            "Cancel": {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_resolver_ask_delete_cancel",
+                text: "Cancel"
             }
-        });
+        },
+        open: function () {
+            $(this).dialog_icons();
+            translate_dialog_resolver_ask_delete();
+        }
+    });
 
     var dialog_resolver_create_config = {
         autoOpen: false,
@@ -4133,22 +4232,25 @@ $(document).ready(function(){
         height: 500,
         modal: true,
         buttons: {
-            'Cancel': { click: function(){
-                $(this).dialog('close');
+            'Cancel': {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_new_resolver_type_cancel",
                 text: "Cancel"
             },
-            'LDAP': { click: function(){
-                        // calling with no parameter, creates a new resolver
-                        resolver_ldap("", false);
-                        $(this).dialog('close');
-                    },
-                    id: "button_new_resolver_type_ldap",
-                    text: "LDAP"
+            'LDAP': {
+                click: function () {
+                    // calling with no parameter, creates a new resolver
+                    resolver_ldap("", false);
+                    $(this).dialog('close');
+                },
+                id: "button_new_resolver_type_ldap",
+                text: "LDAP"
 
             },
-            'SQL': { click: function(){
+            'SQL': {
+                click: function () {
                     // calling with no parameter, creates a new resolver
                     resolver_sql("", false);
                     $(this).dialog('close');
@@ -4156,24 +4258,25 @@ $(document).ready(function(){
                 id: "button_new_resolver_type_sql",
                 text: "SQL"
             },
-            'Flatfile': { click: function(){
-                // calling with no parameter, creates a new resolver
-                resolver_file("", false);
-                $(this).dialog('close');
-            },
-            id: "button_new_resolver_type_file",
-            text: "Flatfile"
+            'Flatfile': {
+                click: function () {
+                    // calling with no parameter, creates a new resolver
+                    resolver_file("", false);
+                    $(this).dialog('close');
+                },
+                id: "button_new_resolver_type_file",
+                text: "Flatfile"
             }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
             translate_dialog_resolver_create();
         }
     };
 
-    if(server_config['httpresolver_active'] == "True"){
+    if (server_config['httpresolver_active'] == "True") {
         dialog_resolver_create_config.buttons.HTTP = {
-            click: function(){
+            click: function () {
                 // calling with no parameter, creates a new resolver
                 resolver_http("", false);
                 $(this).dialog('close');
@@ -4191,21 +4294,23 @@ $(document).ready(function(){
         width: 600,
         modal: true,
         buttons: {
-            'import policy file': { click: function(){
-                import_policy();
-                $(this).dialog('close');
+            'import policy file': {
+                click: function () {
+                    import_policy();
+                    $(this).dialog('close');
                 },
                 id: "button_policy_load",
                 text: "Import policy file"
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_policy_cancel",
                 text: "Cancel"
-                }
+            }
         },
-        open: function(){
+        open: function () {
             $(this).dialog_icons();
             translate_import_policy();
         }
@@ -4219,10 +4324,10 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Test': {
-                click: function(){
+                click: function () {
                     if ($("#form_ldapconfig").valid()) {
-                        if($("#button_test_ldap").data("save-resolver")) {
-                            save_ldap_config(function() {
+                        if ($("#button_test_ldap").data("save-resolver")) {
+                            save_ldap_config(function () {
                                 test_ldap_config();
                             });
                         } else {
@@ -4235,14 +4340,14 @@ $(document).ready(function(){
                 text: i18n.gettext("Test connection")
             },
             'Cancel': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_ldap_resolver_cancel",
                 text: "Cancel"
             },
             'Save': {
-                click: function(){
+                click: function () {
                     if ($("#form_ldapconfig").valid()) {
                         save_ldap_config();
                     }
@@ -4251,20 +4356,20 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: function() {
+        open: function () {
             // fix table after the browser balances the widths
-            $("table tr:first-child td", this).each(function() {
+            $("table tr:first-child td", this).each(function () {
                 $(this).css("width", $(this).width());
             });
 
             $(this).dialog_icons();
         },
-        close: function() {
+        close: function () {
             $("#form_ldapconfig").off("change");
         }
     });
 
-    $('#button_preset_ad').click(function(event){
+    $('#button_preset_ad').click(function (event) {
         $('#ldap_loginattr').val('sAMAccountName');
         $('#ldap_searchfilter').val('(sAMAccountName=*)(objectClass=user)');
         $('#ldap_userfilter').val('(&(sAMAccountName=%s)(objectClass=user))');
@@ -4273,7 +4378,7 @@ $(document).ready(function(){
 
         $('#form_ldapconfig').trigger("change");
     });
-    $('#button_preset_ldap').click(function(event){
+    $('#button_preset_ldap').click(function (event) {
         $('#ldap_loginattr').val('uid');
         $('#ldap_searchfilter').val('(uid=*)(objectClass=inetOrgPerson)');
         $('#ldap_userfilter').val('(&(uid=%s)(objectClass=inetOrgPerson))');
@@ -4291,24 +4396,24 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Cancel': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_http_resolver_cancel",
                 text: "Cancel"
             },
             'Save': {
-                click: function(){
+                click: function () {
                     if ($("#form_httpconfig").valid()) {
                         save_http_config();
                     }
                     else {
                         // get error list
                         var error = $("#form_httpconfig").validate().errorList[0];
-                        if(error !== undefined) {
+                        if (error !== undefined) {
                             // open tab that contains the first faulty input if it is hidden in another tab
                             var tab_id = $(error.element.closest(".ui-tabs-panel")).attr("id")
-                            if(tab_id !== undefined) {
+                            if (tab_id !== undefined) {
                                 var index = $('#http_setting_tabs a[href="#' + tab_id + '"]').parent().index();
                                 $("#http_setting_tabs").tabs("option", "active", index);
                             }
@@ -4321,11 +4426,11 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: function() {
+        open: function () {
             http_resolver_https();
 
             // fix table after the browser balances the widths
-            $("table tr:first-child td", this).each(function() {
+            $("table tr:first-child td", this).each(function () {
                 $(this).css("width", $(this).width());
             });
 
@@ -4333,45 +4438,51 @@ $(document).ready(function(){
         }
     });
 
-    $('#button_test_http').click(function(event){
+    $('#button_test_http').click(function (event) {
         $('#progress_test_http').show();
 
         var params = get_form_input("form_httpconfig");
 
         var url = '/admin/testresolver';
-        params['type']              = 'http';
-        params['previous_name']     = g.current_resolver_name;
+        params['type'] = 'http';
+        params['previous_name'] = g.current_resolver_name;
 
-        clientUrlFetch(url, params, function(xhdr, textStatus) {
-                    var resp = xhdr.responseText;
-                    var obj = jQuery.parseJSON(resp);
-                    $('#progress_test_http').hide();
-                    if (obj.result.status == true) {
-                        result = obj.result.value.result;
-                        if (result.lastIndexOf("success", 0) === 0 ) {
-                            var limit = "";
-                            // show number of found users
-                            var userarray = obj.result.value.desc;
-                            var usr_msg = sprintf(i18n.gettext("Number of users found: %d"),userarray.length);
-                            var msg = i18n.gettext("Connection Test: successful") +
-                                      "<p>" + usr_msg + "</p><p class='hint'>" + limit + "</p>";
-                            alert_box({'title': i18n.gettext("HTTP Connection Test"),
-                                        'text': msg,
-                                        'is_escaped': true});
-                        }
-                        else {
-                            alert_box({'title': i18n.gettext("HTTP Test"),
-                                        'text': obj.result.value.desc,
-                                        'is_escaped': true});
-                        }
-                    }
-                    else {
-                        alert_box({'title': i18n.gettext("HTTP Test"),
-                                        'text': obj.result.error.message,
-                                        'is_escaped': true});
-                    }
-                    return false;
-                 });
+        clientUrlFetch(url, params, function (xhdr, textStatus) {
+            var resp = xhdr.responseText;
+            var obj = jQuery.parseJSON(resp);
+            $('#progress_test_http').hide();
+            if (obj.result.status == true) {
+                result = obj.result.value.result;
+                if (result.lastIndexOf("success", 0) === 0) {
+                    var limit = "";
+                    // show number of found users
+                    var userarray = obj.result.value.desc;
+                    var usr_msg = sprintf(i18n.gettext("Number of users found: %d"), userarray.length);
+                    var msg = i18n.gettext("Connection Test: successful") +
+                        "<p>" + usr_msg + "</p><p class='hint'>" + limit + "</p>";
+                    alert_box({
+                        'title': i18n.gettext("HTTP Connection Test"),
+                        'text': msg,
+                        'is_escaped': true
+                    });
+                }
+                else {
+                    alert_box({
+                        'title': i18n.gettext("HTTP Test"),
+                        'text': obj.result.value.desc,
+                        'is_escaped': true
+                    });
+                }
+            }
+            else {
+                alert_box({
+                    'title': i18n.gettext("HTTP Test"),
+                    'text': obj.result.error.message,
+                    'is_escaped': true
+                });
+            }
+            return false;
+        });
         return false;
     });
 
@@ -4382,10 +4493,10 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Test': {
-                click: function(){
+                click: function () {
                     if ($("#form_sqlconfig").valid()) {
-                        if($("#button_test_sql").data("save-resolver")) {
-                            save_sql_config(function() {
+                        if ($("#button_test_sql").data("save-resolver")) {
+                            save_sql_config(function () {
                                 test_sql_config();
                             });
                         } else {
@@ -4398,14 +4509,14 @@ $(document).ready(function(){
                 text: i18n.gettext("Test connection")
             },
             'Cancel': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_resolver_sql_cancel",
                 text: "Cancel"
             },
             'Save': {
-                click: function(){
+                click: function () {
                     if ($("#form_sqlconfig").valid()) {
                         save_sql_config();
                     }
@@ -4414,15 +4525,15 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: function() {
+        open: function () {
             // fix table after the browser balances the widths
-            $("table tr:first-child td", this).each(function() {
+            $("table tr:first-child td", this).each(function () {
                 $(this).css("width", $(this).width());
             });
 
             $(this).dialog_icons();
         },
-        close: function() {
+        close: function () {
             $("#form_sqlconfig").off("change");
         }
     });
@@ -4436,14 +4547,14 @@ $(document).ready(function(){
         maxHeight: 500,
         buttons: {
             'Cancel': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_resolver_file_cancel",
                 text: "Cancel"
             },
             'Save': {
-                click: function(){
+                click: function () {
                     if ($("#form_fileconfig").valid()) {
                         save_file_config();
                     }
@@ -4452,9 +4563,9 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: function() {
+        open: function () {
             // fix table after the browser balances the widths
-            $("table tr:first-child td", this).each(function() {
+            $("table tr:first-child td", this).each(function () {
                 $(this).css("width", $(this).width());
             });
 
@@ -4470,53 +4581,59 @@ $(document).ready(function(){
         height: 500,
         modal: true,
         buttons: {
-            'New': { click:  function(){
-                        resolver_new_type();
-                        resolvers_load();
-                        },
-                    id: "button_resolver_new",
-                    text: "New"
+            'New': {
+                click: function () {
+                    resolver_new_type();
+                    resolvers_load();
+                },
+                id: "button_resolver_new",
+                text: "New"
             },
-            'Edit': { click: function(){
-                            resolver_edit_type();
-                            resolvers_load();
-                            },
-                        id:"button_resolver_edit",
-                        text: "Edit"
+            'Edit': {
+                click: function () {
+                    resolver_edit_type();
+                    resolvers_load();
+                },
+                id: "button_resolver_edit",
+                text: "Edit"
             },
-            'Duplicate': { click: function(){
-                            resolver_duplicate();
-                            resolvers_load();
-                            },
-                        id:"button_resolver_duplicate",
-                        text: "Duplicate"
+            'Duplicate': {
+                click: function () {
+                    resolver_duplicate();
+                    resolvers_load();
+                },
+                id: "button_resolver_duplicate",
+                text: "Duplicate"
             },
-            'Delete': { click: function(){
-                            resolver_ask_delete();
-                            resolvers_load();
-                            },
-                        id: "button_resolver_delete",
-                        text:"Delete"
+            'Delete': {
+                click: function () {
+                    resolver_ask_delete();
+                    resolvers_load();
+                },
+                id: "button_resolver_delete",
+                text: "Delete"
             },
-            'Close': { click: function(){
-                            $(this).dialog('close');
-                            var resolvers = get_resolvers();
-                            if (resolvers.length > 0) {
-                                var realms = get_realms();
-                                if (realms.length == 0) {
-                                    $('#text_no_realm').dialog('open');
-                            }   }
-                        },
-                        id: "button_resolver_close",
-                        text:"Close"
+            'Close': {
+                click: function () {
+                    $(this).dialog('close');
+                    var resolvers = get_resolvers();
+                    if (resolvers.length > 0) {
+                        var realms = get_realms();
+                        if (realms.length == 0) {
+                            $('#text_no_realm').dialog('open');
+                        }
+                    }
+                },
+                id: "button_resolver_close",
+                text: "Close"
             }
         },
-        open: function(){
+        open: function () {
             $(this).dialog_icons();
             translate_dialog_resolvers();
         }
     });
-    $('#menu_edit_resolvers').click(function(){
+    $('#menu_edit_resolvers').click(function () {
         resolvers_load();
         $dialog_resolvers.dialog('open');
     });
@@ -4526,19 +4643,19 @@ $(document).ready(function(){
      *  Tools
      */
     $dialog_tools_getserial = create_tools_getserial_dialog();
-    $('#menu_tools_getserial').click(function(){
-        _fill_realms($('#tools_getserial_realm'),1);
+    $('#menu_tools_getserial').click(function () {
+        _fill_realms($('#tools_getserial_realm'), 1);
         $dialog_tools_getserial.dialog('open');
     });
 
     $dialog_tools_copytokenpin = create_tools_copytokenpin_dialog();
-    $('#menu_tools_copytokenpin').click(function(){
+    $('#menu_tools_copytokenpin').click(function () {
         //_fill_realms($('#tools_getserial_realm'),1)
         $dialog_tools_copytokenpin.dialog('open');
     });
 
     $dialog_tools_checkpolicy = create_tools_checkpolicy_dialog();
-    $('#menu_tools_checkpolicy').click(function(){
+    $('#menu_tools_checkpolicy').click(function () {
         $dialog_tools_checkpolicy.dialog('open');
         $('#cp_allowed').hide();
         $('#cp_forbidden').hide();
@@ -4546,22 +4663,22 @@ $(document).ready(function(){
     });
 
     var $dialog_tools_exporttoken = create_tools_exporttoken_dialog();
-    $('#menu_tools_exporttoken').click(function(){
+    $('#menu_tools_exporttoken').click(function () {
         $dialog_tools_exporttoken.dialog('open');
     });
 
     var $dialog_tools_exportaudit = create_tools_exportaudit_dialog();
-    $('#menu_tools_exportaudit').click(function(){
+    $('#menu_tools_exportaudit').click(function () {
         $dialog_tools_exportaudit.dialog('open');
     });
 
     var $dialog_tools_importusers = create_tools_importusers_dialog();
-    $('#menu_tools_importusers').click(function(){
+    $('#menu_tools_importusers').click(function () {
         $dialog_tools_importusers.dialog('open');
     });
 
     var $dialog_tools_migrateresolver = create_tools_migrateresolver_dialog();
-    $('#menu_tools_migrateresolver').click(function(){
+    $('#menu_tools_migrateresolver').click(function () {
         //_fill_realms($('#tools_getserial_realm'),1)
         _fill_resolvers($('#copy_to_resolver'))
         _fill_resolvers($('#copy_from_resolver'))
@@ -4580,14 +4697,15 @@ $(document).ready(function(){
         width: 750,
         modal: false,
         buttons: {
-            'OK': {click:function() {
+            'OK': {
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_show_enroll_ok",
                 text: "Ok"
             }
         },
-        open: function() {
+        open: function () {
             translate_dialog_show_enroll_url();
         }
     });
@@ -4601,22 +4719,24 @@ $(document).ready(function(){
         width: 600,
         modal: true,
         buttons: {
-            'Delete': {click: function(){
-                $(this).dialog('close');
-                show_waiting();
-                realm_delete();
+            'Delete': {
+                click: function () {
+                    $(this).dialog('close');
+                    show_waiting();
+                    realm_delete();
                 },
                 id: "button_realm_ask_delete_delete",
                 text: "Delete"
             },
-            Cancel: {click:function(){
-                $(this).dialog('close');
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_realm_ask_delete_cancel",
                 text: "Cancel"
             }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
             translate_dialog_realm_ask_delete();
         }
@@ -4629,70 +4749,80 @@ $(document).ready(function(){
         height: 500,
         modal: true,
         buttons: {
-            'New': { click: function(){
+            'New': {
+                click: function () {
                     realm_modify('');
                 },
                 id: "button_realms_new",
                 text: "New"
-                },
-            'Edit': { click: function(){
+            },
+            'Edit': {
+                click: function () {
                     realm_modify(g.realm_to_edit);
                 },
                 id: "button_realms_edit",
                 text: "Edit"
-                },
-            'Delete': {click: function(){
-                realm_ask_delete();
-                realms_load();
-                fill_realms();
+            },
+            'Delete': {
+                click: function () {
+                    realm_ask_delete();
+                    realms_load();
+                    fill_realms();
                 },
                 id: "button_realms_delete",
                 text: "Delete"
-                },
-            'Close': { click: function(){
-                $(this).dialog('close');
+            },
+            'Close': {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_realms_close",
                 text: "Close"
-                },
-            'Set Default': {click: function(){
-                var realm = "";
-                if (g.realm_to_edit.match(/^(\S+)\s\[(.+)\]/)) {
-                    realm = g.realm_to_edit.replace(/^(\S+)\s+\[(.+)\]/, "$1");
-                    set_default_realm(realm);
-                }
-                else if (g.realm_to_edit.match(/^\S+\s+\(Default\)\s+\[.+\]/)) {
-                    alert_info_text({'text': "text_already_default_realm",
-                                     "type": ERROR,
-                                    'is_escaped': true});
-                }
-                else {
-                    alert_info_text({'text': "text_realm_regexp_error",
-                                     "type": ERROR,
-                                     'is_escaped': true});
-                }
+            },
+            'Set Default': {
+                click: function () {
+                    var realm = "";
+                    if (g.realm_to_edit.match(/^(\S+)\s\[(.+)\]/)) {
+                        realm = g.realm_to_edit.replace(/^(\S+)\s+\[(.+)\]/, "$1");
+                        set_default_realm(realm);
+                    }
+                    else if (g.realm_to_edit.match(/^\S+\s+\(Default\)\s+\[.+\]/)) {
+                        alert_info_text({
+                            'text': "text_already_default_realm",
+                            "type": ERROR,
+                            'is_escaped': true
+                        });
+                    }
+                    else {
+                        alert_info_text({
+                            'text': "text_realm_regexp_error",
+                            "type": ERROR,
+                            'is_escaped': true
+                        });
+                    }
                 },
                 id: "button_realms_setdefault",
-                text:"Set Default"
-                },
-            'Clear Default': {click: function(){
-                var params = {'session':getsession()};
-                $.post('/system/setDefaultRealm', params,
-                 function(){
-                    realms_load();
-                    fill_realms();
-                });
+                text: "Set Default"
+            },
+            'Clear Default': {
+                click: function () {
+                    var params = { 'session': getsession() };
+                    $.post('/system/setDefaultRealm', params,
+                        function () {
+                            realms_load();
+                            fill_realms();
+                        });
                 },
                 id: "button_realms_cleardefault",
                 text: "Clear Default"
-                }
+            }
         },
-        open: function(){
+        open: function () {
             $(this).dialog_icons();
             translate_dialog_realms();
         }
     });
-    $('#menu_edit_realms').click(function(){
+    $('#menu_edit_realms').click(function () {
         realms_load();
         $dialog_realms.dialog('open');
     });
@@ -4712,12 +4842,12 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Save config': {
-                click: function(){
+                click: function () {
                     var validation_fails = "";
                     $('#dialog_token_settings').find('form').each(
-                        function( index ) {
+                        function (index) {
                             var attr = $(this).closest("form").closest("div").attr('id');
-                            var tt= attr.split("_")[0];
+                            var tt = attr.split("_")[0];
 
                             if ($.inArray(tt, $token_config_changed) !== -1) {
                                 var valid = $(this).valid();
@@ -4727,36 +4857,37 @@ $(document).ready(function(){
                                         formName = $(this).find('label').first().text();
                                     }
                                     validation_fails = validation_fails +
-                                                "<li>" + escape(jQuery.trim(formName)) +"</li>";
+                                        "<li>" + escape(jQuery.trim(formName)) + "</li>";
                                 }
                             }
                         }
                     );
                     if (validation_fails.length > 0) {
-                        alert_box({'title': i18n.gettext("Form Validation Error"),
-                                   'text': "text_form_validation_error1",
-                                   'param':validation_fails,
-                                   'is_escaped': true});
+                        alert_box({
+                            'title': i18n.gettext("Form Validation Error"),
+                            'text': "text_form_validation_error1",
+                            'param': validation_fails,
+                            'is_escaped': true
+                        });
                     }
-                    else
-                    {
+                    else {
                         save_token_config();
                         dialog_force_close = true;
                         $(this).dialog('close');
                     }
                 },
                 id: "button_token_save",
-                text:"Save Token config"
-                },
+                text: "Save Token config"
+            },
             Cancel: {
-                click: function(){
+                click: function () {
                     $dialog_token_config.dialog('close');
                 },
                 id: "button_token_cancel",
                 text: "Cancel"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
 
             load_token_config();
 
@@ -4764,8 +4895,8 @@ $(document).ready(function(){
              * we reset all tab labels to not contain the leading star, which shows
              * something has changed before
              */
-            var tabs = $('#tab_token_settings li a').each( function() {
-                var label = $(this).text().replace("* ","");
+            var tabs = $('#tab_token_settings li a').each(function () {
+                var label = $(this).text().replace("* ", "");
                 $(this).text(label);
             });
 
@@ -4778,21 +4909,21 @@ $(document).ready(function(){
             $(this).dialog_icons();
             translate_token_settings();
         },
-        beforeClose: function(event, ui) {
-            if (dialog_force_close != true && $token_config_changed.length  !== 0) {
-                        var dialog_name = i18n.gettext("Token Config");
-                        var defer = confirm_cancel_dialog(dialog_name);
+        beforeClose: function (event, ui) {
+            if (dialog_force_close != true && $token_config_changed.length !== 0) {
+                var dialog_name = i18n.gettext("Token Config");
+                var defer = confirm_cancel_dialog(dialog_name);
 
-                        // if dialog should really be closed, do it!
-                        defer.done(function(){
-                            dialog_force_close = true;
-                            $dialog_token_config.dialog('close');
-                        });
-                        return false;
-                    }
-                    else {
-                        return true;
-                    }
+                // if dialog should really be closed, do it!
+                defer.done(function () {
+                    dialog_force_close = true;
+                    $dialog_token_config.dialog('close');
+                });
+                return false;
+            }
+            else {
+                return true;
+            }
         }
     });
     $('#tab_token_settings').tabs();
@@ -4840,36 +4971,40 @@ $(document).ready(function(){
         minHeight: 300,
         modal: true,
         buttons: {
-            'New': { click:  function(){
+            'New': {
+                click: function () {
                     sms_provider_form_dialog("");
-                    },
+                },
                 id: "button_sms_provider_new",
                 text: "New"
             },
-            'Edit': { click: function(){
-                    if(selectedSMSProvider){
+            'Edit': {
+                click: function () {
+                    if (selectedSMSProvider) {
                         sms_provider_form_dialog(selectedSMSProvider);
                     }
                 },
-                id:"button_sms_provider_edit",
+                id: "button_sms_provider_edit",
                 text: "Edit"
             },
-            'Delete': { click: function(){
-                    if(selectedSMSProvider){
+            'Delete': {
+                click: function () {
+                    if (selectedSMSProvider) {
                         $('#dialog_sms_provider_delete').dialog("open");
                     }
                 },
                 id: "button_sms_provider_delete",
-                text:"Delete"
+                text: "Delete"
             },
-            'Close': { click: function(){
+            'Close': {
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_sms_providers_close",
-                text:"Close"
+                text: "Close"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $('.ui-dialog :button', this).blur();
 
             $(this).dialog_icons();
@@ -4883,13 +5018,15 @@ $(document).ready(function(){
         width: 600,
         modal: true,
         buttons: {
-            'Cancel': {click: function(){
+            'Cancel': {
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_sms_provider_cancel",
                 text: "Cancel"
-                },
-            'Save': {click: function(){
+            },
+            'Save': {
+                click: function () {
                     if ($("#form_smsprovider").valid()) {
                         save_sms_provider_config();
                     }
@@ -4898,11 +5035,11 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $(this).dialog_icons();
             translate_dialog_sms_provider_edit();
         },
-        close: function(event, ui) {
+        close: function (event, ui) {
             load_sms_providers();
         }
     });
@@ -4914,7 +5051,7 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Delete': {
-                click: function(){
+                click: function () {
                     delete_sms_provider(selectedSMSProvider);
                     $(this).dialog('close');
                 },
@@ -4922,24 +5059,24 @@ $(document).ready(function(){
                 text: "Delete"
             },
             "Cancel": {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_sms_provider_delete_cancel",
                 text: "Cancel"
             }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
             translate_dialog_sms_provider_delete();
         },
-        close: function(event, ui) {
+        close: function (event, ui) {
             load_sms_providers();
         }
     });
 
-    $('#button_sms_provider_set_default').click(function(){
-        if(selectedSMSProvider){
+    $('#button_sms_provider_set_default').click(function () {
+        if (selectedSMSProvider) {
             set_default_provider('sms', selectedSMSProvider);
         }
     });
@@ -4958,36 +5095,40 @@ $(document).ready(function(){
         minHeight: 300,
         modal: true,
         buttons: {
-            'New': { click:  function(){
+            'New': {
+                click: function () {
                     email_provider_form_dialog("");
-                    },
+                },
                 id: "button_email_provider_new",
                 text: "New"
             },
-            'Edit': { click: function(){
-                    if(selectedEmailProvider){
+            'Edit': {
+                click: function () {
+                    if (selectedEmailProvider) {
                         email_provider_form_dialog(selectedEmailProvider);
                     }
                 },
-                id:"button_email_provider_edit",
+                id: "button_email_provider_edit",
                 text: "Edit"
             },
-            'Delete': { click: function(){
-                    if(selectedEmailProvider){
+            'Delete': {
+                click: function () {
+                    if (selectedEmailProvider) {
                         $('#dialog_email_provider_delete').dialog("open");
                     }
                 },
                 id: "button_email_provider_delete",
-                text:"Delete"
+                text: "Delete"
             },
-            'Close': { click: function(){
+            'Close': {
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_email_providers_close",
-                text:"Close"
+                text: "Close"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $('.ui-dialog :button', this).blur();
 
             $(this).dialog_icons();
@@ -5002,14 +5143,14 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Cancel': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_email_provider_cancel",
                 text: "Cancel"
-                },
+            },
             'Save': {
-                click: function(){
+                click: function () {
                     if ($("#form_emailprovider").valid()) {
                         save_email_provider_config();
                     }
@@ -5018,48 +5159,48 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $(this).dialog_icons();
             translate_dialog_email_provider_edit();
         },
-        close: function(event, ui) {
+        close: function (event, ui) {
             load_email_providers();
         }
     });
 
     $dialog_email_provider_delete = $('#dialog_email_provider_delete').dialog({
-            autoOpen: false,
-            title: 'Deleting EMail provider',
-            width: 600,
-            modal: true,
-            buttons: {
-                'Delete': {
-                    click: function(){
-                        delete_email_provider(selectedEmailProvider);
-                        $(this).dialog('close');
-                    },
-                    id: "button_email_provider_delete_delete",
-                    text: "Delete"
+        autoOpen: false,
+        title: 'Deleting EMail provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Delete': {
+                click: function () {
+                    delete_email_provider(selectedEmailProvider);
+                    $(this).dialog('close');
                 },
-                "Cancel": {
-                    click: function(){
-                        $(this).dialog('close');
-                    },
-                    id: "button_email_provider_delete_cancel",
-                    text: "Cancel"
-                }
+                id: "button_email_provider_delete_delete",
+                text: "Delete"
             },
-            open: function() {
-                $(this).dialog_icons();
-                translate_dialog_email_provider_delete();
-            },
-            close: function(event, ui) {
-                load_email_providers();
+            "Cancel": {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_email_provider_delete_cancel",
+                text: "Cancel"
             }
-        });
+        },
+        open: function () {
+            $(this).dialog_icons();
+            translate_dialog_email_provider_delete();
+        },
+        close: function (event, ui) {
+            load_email_providers();
+        }
+    });
 
-    $('#button_email_provider_set_default').click(function(){
-        if(selectedEmailProvider){
+    $('#button_email_provider_set_default').click(function () {
+        if (selectedEmailProvider) {
             set_default_provider('email', selectedEmailProvider);
         }
     });
@@ -5077,36 +5218,40 @@ $(document).ready(function(){
         minHeight: 300,
         modal: true,
         buttons: {
-            'New': { click:  function(){
+            'New': {
+                click: function () {
                     push_provider_form_dialog("");
-                    },
+                },
                 id: "button_push_provider_new",
                 text: "New"
             },
-            'Edit': { click: function(){
-                    if(selectedPushProvider){
+            'Edit': {
+                click: function () {
+                    if (selectedPushProvider) {
                         push_provider_form_dialog(selectedPushProvider);
                     }
                 },
-                id:"button_push_provider_edit",
+                id: "button_push_provider_edit",
                 text: "Edit"
             },
-            'Delete': { click: function(){
-                    if(selectedPushProvider){
+            'Delete': {
+                click: function () {
+                    if (selectedPushProvider) {
                         $('#dialog_push_provider_delete').dialog("open");
                     }
                 },
                 id: "button_push_provider_delete",
-                text:"Delete"
+                text: "Delete"
             },
-            'Close': { click: function(){
+            'Close': {
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_push_providers_close",
-                text:"Close"
+                text: "Close"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $('.ui-dialog :button', this).blur();
 
             $(this).dialog_icons();
@@ -5121,14 +5266,14 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Cancel': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_push_provider_cancel",
                 text: "Cancel"
-                },
+            },
             'Save': {
-                click: function(){
+                click: function () {
                     if ($("#form_pushprovider").valid()) {
                         save_push_provider_config();
                     }
@@ -5137,48 +5282,48 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $(this).dialog_icons();
             translate_dialog_push_provider_edit();
         },
-        close: function(event, ui) {
+        close: function (event, ui) {
             load_push_providers();
         }
     });
 
     $dialog_push_provider_delete = $('#dialog_push_provider_delete').dialog({
-            autoOpen: false,
-            title: 'Deleting Push provider',
-            width: 600,
-            modal: true,
-            buttons: {
-                'Delete': {
-                    click: function(){
-                        delete_push_provider(selectedPushProvider);
-                        $(this).dialog('close');
-                    },
-                    id: "button_push_provider_delete_delete",
-                    text: "Delete"
+        autoOpen: false,
+        title: 'Deleting Push provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Delete': {
+                click: function () {
+                    delete_push_provider(selectedPushProvider);
+                    $(this).dialog('close');
                 },
-                "Cancel": {
-                    click: function(){
-                        $(this).dialog('close');
-                    },
-                    id: "button_push_provider_delete_cancel",
-                    text: "Cancel"
-                }
+                id: "button_push_provider_delete_delete",
+                text: "Delete"
             },
-            open: function() {
-                $(this).dialog_icons();
-                translate_dialog_push_provider_delete();
-            },
-            close: function(event, ui) {
-                load_push_providers();
+            "Cancel": {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_push_provider_delete_cancel",
+                text: "Cancel"
             }
-        });
+        },
+        open: function () {
+            $(this).dialog_icons();
+            translate_dialog_push_provider_delete();
+        },
+        close: function (event, ui) {
+            load_push_providers();
+        }
+    });
 
-    $('#button_push_provider_set_default').click(function(){
-        if(selectedPushProvider){
+    $('#button_push_provider_set_default').click(function () {
+        if (selectedPushProvider) {
             set_default_provider('push', selectedPushProvider);
         }
     });
@@ -5196,36 +5341,40 @@ $(document).ready(function(){
         minHeight: 300,
         modal: true,
         buttons: {
-            'New': { click:  function(){
+            'New': {
+                click: function () {
                     voice_provider_form_dialog("");
-                    },
+                },
                 id: "button_voice_provider_new",
                 text: "New"
             },
-            'Edit': { click: function(){
-                    if(selectedVoiceProvider){
+            'Edit': {
+                click: function () {
+                    if (selectedVoiceProvider) {
                         voice_provider_form_dialog(selectedVoiceProvider);
                     }
                 },
-                id:"button_voice_provider_edit",
+                id: "button_voice_provider_edit",
                 text: "Edit"
             },
-            'Delete': { click: function(){
-                    if(selectedVoiceProvider){
+            'Delete': {
+                click: function () {
+                    if (selectedVoiceProvider) {
                         $('#dialog_voice_provider_delete').dialog("open");
                     }
                 },
                 id: "button_voice_provider_delete",
-                text:"Delete"
+                text: "Delete"
             },
-            'Close': { click: function(){
+            'Close': {
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_voice_providers_close",
-                text:"Close"
+                text: "Close"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $('.ui-dialog :button', this).blur();
 
             $(this).dialog_icons();
@@ -5240,14 +5389,14 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Cancel': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_voice_provider_cancel",
                 text: "Cancel"
-                },
+            },
             'Save': {
-                click: function(){
+                click: function () {
                     if ($("#form_voiceprovider").valid()) {
                         save_voice_provider_config();
                     }
@@ -5256,48 +5405,48 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $(this).dialog_icons();
             translate_dialog_voice_provider_edit();
         },
-        close: function(event, ui) {
+        close: function (event, ui) {
             load_voice_providers();
         }
     });
 
     $dialog_voice_provider_delete = $('#dialog_voice_provider_delete').dialog({
-            autoOpen: false,
-            title: 'Deleting Voice provider',
-            width: 600,
-            modal: true,
-            buttons: {
-                'Delete': {
-                    click: function(){
-                        delete_voice_provider(selectedVoiceProvider);
-                        $(this).dialog('close');
-                    },
-                    id: "button_voice_provider_delete_delete",
-                    text: "Delete"
+        autoOpen: false,
+        title: 'Deleting Voice provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Delete': {
+                click: function () {
+                    delete_voice_provider(selectedVoiceProvider);
+                    $(this).dialog('close');
                 },
-                "Cancel": {
-                    click: function(){
-                        $(this).dialog('close');
-                    },
-                    id: "button_voice_provider_delete_cancel",
-                    text: "Cancel"
-                }
+                id: "button_voice_provider_delete_delete",
+                text: "Delete"
             },
-            open: function() {
-                $(this).dialog_icons();
-                translate_dialog_voice_provider_delete();
-            },
-            close: function(event, ui) {
-                load_voice_providers();
+            "Cancel": {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_voice_provider_delete_cancel",
+                text: "Cancel"
             }
-        });
+        },
+        open: function () {
+            $(this).dialog_icons();
+            translate_dialog_voice_provider_delete();
+        },
+        close: function (event, ui) {
+            load_voice_providers();
+        }
+    });
 
-    $('#button_voice_provider_set_default').click(function(){
-        if(selectedVoiceProvider){
+    $('#button_voice_provider_set_default').click(function () {
+        if (selectedVoiceProvider) {
             set_default_provider('voice', selectedVoiceProvider);
         }
     });
@@ -5314,71 +5463,77 @@ $(document).ready(function(){
         width: 600,
         modal: true,
         buttons: {
-            'Save config': {click: function(){
-                if ($("#form_sysconfig").valid()) {
-                    save_system_config();
-                    $(this).dialog('close');
-                } else {
-                    alert_box({'title': "",
-                               'text': "text_error_saving_system_config",
-                               'is_escaped': true});
-                }
+            'Save config': {
+                click: function () {
+                    if ($("#form_sysconfig").valid()) {
+                        save_system_config();
+                        $(this).dialog('close');
+                    } else {
+                        alert_box({
+                            'title': "",
+                            'text': "text_error_saving_system_config",
+                            'is_escaped': true
+                        });
+                    }
                 },
                 id: "button_system_save",
-                text:"Save config"
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+                text: "Save config"
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_system_cancel",
                 text: "Cancel"
-                }
+            }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $(this).dialog_icons();
             translate_system_settings();
         }
     });
     $('#tab_system_settings').tabs();
 
-    $('#menu_system_config').click(function(){
+    $('#menu_system_config').click(function () {
         load_system_config();
         $dialog_system_config.dialog('open');
     });
 
-    $('#menu_sms_provider_config').click(function(){
+    $('#menu_sms_provider_config').click(function () {
         load_sms_providers();
         $dialog_sms_provider_config.dialog('open');
     });
 
-    $('#menu_email_provider_config').click(function(){
+    $('#menu_email_provider_config').click(function () {
         load_email_providers();
         $dialog_email_provider_config.dialog('open');
     });
 
-    $('#menu_push_provider_config').click(function(){
+    $('#menu_push_provider_config').click(function () {
         load_push_providers();
         $dialog_push_provider_config.dialog('open');
     });
 
-    $('#menu_voice_provider_config').click(function(){
+    $('#menu_voice_provider_config').click(function () {
         load_voice_providers();
         $dialog_voice_provider_config.dialog('open');
     });
 
-    $('#menu_token_config').click(function(){
+    $('#menu_token_config').click(function () {
         try {
-          $dialog_token_config.dialog('open');
+            $dialog_token_config.dialog('open');
         } catch (error) {
-          alert_box({'title': '',
-                     'text': "text_catching_generic_error",
-                     'param': escape(error),
-                     'is_escaped': true});
+            alert_box({
+                'title': '',
+                'text': "text_catching_generic_error",
+                'param': escape(error),
+                'is_escaped': true
+            });
         }
     });
 
 
-    $('#menu_policies').click(function(){
+    $('#menu_policies').click(function () {
         $('#tabs').tabs('option', 'active', 2);
     });
 
@@ -5391,14 +5546,15 @@ $(document).ready(function(){
         width: 600,
         modal: true,
         buttons: {
-            'Ok': {click: function(){
+            'Ok': {
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_support_contact_close",
                 text: "Ok"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             translate_support_contact();
         }
 
@@ -5414,28 +5570,28 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Setup Support': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                     $dialog_set_support.dialog('open');
                 },
                 id: "button_support_setup",
-                text:"Setup support subscription"
+                text: "Setup support subscription"
             },
             'Close': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_support_close",
                 text: "Close"
             }
         },
-        open: function(event, ui) {
+        open: function (event, ui) {
             $(this).dialog_icons();
             translate_support_view();
         }
 
     });
-    $('#menu_view_support').click(function(){
+    $('#menu_view_support').click(function () {
         support_view();
         $dialog_view_support.dialog('open');
     });
@@ -5447,7 +5603,7 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Set subscription': {
-                click: function(){
+                click: function () {
                     support_set();
                     $(this).dialog('close');
                 },
@@ -5455,19 +5611,19 @@ $(document).ready(function(){
                 text: "Set subscription"
             },
             Cancel: {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_support_cancel",
                 text: "Cancel"
             }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
             translate_support_set();
         }
     });
-    $('#menu_set_support').click(function(){
+    $('#menu_set_support').click(function () {
         support_set();
         $dialog_set_support.dialog('open');
     });
@@ -5479,17 +5635,17 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Close': {
-                click: function(){ $(this).dialog('close');},
-                    id: "button_about_close",
-                    text: "Close"
-                }
+                click: function () { $(this).dialog('close'); },
+                id: "button_about_close",
+                text: "Close"
+            }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
             translate_about();
         }
     });
-    $('#menu_about').click(function(){
+    $('#menu_about').click(function () {
         $dialog_about.dialog('open');
     });
 
@@ -5498,7 +5654,7 @@ $(document).ready(function(){
      * loading token file
      */
 
-    var $dialog_load_tokens_pskc  = create_pskc_dialog();
+    var $dialog_load_tokens_pskc = create_pskc_dialog();
     var $dialog_load_tokens_feitian = create_feitian_dialog();
     var $dialog_load_tokens_dpw = create_dpw_dialog();
     var $dialog_load_tokens_dat = create_dat_dialog();
@@ -5506,41 +5662,43 @@ $(document).ready(function(){
     var $dialog_load_tokens_oathcsv = create_oathcsv_dialog();
     var $dialog_load_tokens_yubikeycsv = create_yubikeycsv_dialog();
 
-    $('#menu_load_aladdin_xml_tokenfile').click(function(){
+    $('#menu_load_aladdin_xml_tokenfile').click(function () {
         $dialog_load_tokens_aladdin.dialog('open');
     });
-    $('#menu_load_oath_csv_tokenfile').click(function(){
-         $dialog_load_tokens_oathcsv.dialog('open');
+    $('#menu_load_oath_csv_tokenfile').click(function () {
+        $dialog_load_tokens_oathcsv.dialog('open');
     });
-    $('#menu_load_yubikey_csv_tokenfile').click(function(){
-         $dialog_load_tokens_yubikeycsv.dialog('open');
+    $('#menu_load_yubikey_csv_tokenfile').click(function () {
+        $dialog_load_tokens_yubikeycsv.dialog('open');
     });
-    $('#menu_load_feitian').click(function(){
+    $('#menu_load_feitian').click(function () {
         $dialog_load_tokens_feitian.dialog('open');
     });
-    $('#menu_load_pskc').click(function(){
+    $('#menu_load_pskc').click(function () {
         $dialog_load_tokens_pskc.dialog('open');
     });
-    $('#menu_load_dpw').click(function(){
+    $('#menu_load_dpw').click(function () {
         $dialog_load_tokens_dpw.dialog('open');
     });
-    $('#menu_load_dat').click(function(){
+    $('#menu_load_dat').click(function () {
         $dialog_load_tokens_dat.dialog('open');
     });
 
     /*******************************************************
      * Enrolling tokens
      */
-    function button_enroll(){
+    function button_enroll() {
 
         init_$tokentypes();
         try {
             tokentype_changed();
         } catch (error) {
-            alert_box({'title': '',
-                       'text': "text_catching_generic_error",
-                       'param': escape(error),
-                       'is_escaped': true});
+            alert_box({
+                'title': '',
+                'text': "text_catching_generic_error",
+                'param': escape(error),
+                'is_escaped': true
+            });
             return false;
         }
         // ajax call  w. callback//
@@ -5559,47 +5717,49 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Enroll': {
-                click: function(){
+                click: function () {
                     try {
                         token_enroll();
                         $(this).dialog('close');
                     }
-                    catch(e) {
-                        alert_box({'title': i18n.gettext('Failed to enroll token'),
-                                   'text': i18n.gettext('The entered PINs do not match!'),
-                                   'type': ERROR,
-                                   'is_escaped': true});
+                    catch (e) {
+                        alert_box({
+                            'title': i18n.gettext('Failed to enroll token'),
+                            'text': i18n.gettext('The entered PINs do not match!'),
+                            'type': ERROR,
+                            'is_escaped': true
+                        });
                     }
                 },
                 id: "button_enroll_enroll",
                 text: "Enroll"
             },
             'Cancel': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_enroll_cancel",
                 text: "Cancel"
             }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
         }
     });
 
     $('#button_enroll').click(button_enroll);
-   //jQuery(document).bind('keydown', 'Alt+e', button_enroll());
+    //jQuery(document).bind('keydown', 'Alt+e', button_enroll());
 
 
 
-    $('#realms').change(function(){
+    $('#realms').change(function () {
         var new_realm = $('#realm').val();
         $('#user_table').flexOptions({
             params: [{
                 name: 'realm',
                 value: new_realm
             }],
-            newp : 1
+            newp: 1
         });
         $('#user_table').flexReload();
         // remove the selected user display
@@ -5614,40 +5774,42 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'Set PIN': {
-                click: function(){
+                click: function () {
                     try {
                         token_setpin();
                         $(this).dialog('close');
                     }
                     catch (e) {
-                        alert_box({'title': i18n.gettext('Failed to set PIN'),
-                           'text': i18n.gettext('The entered PINs do not match!'),
-                           'type': ERROR,
-                           'is_escaped': true});
+                        alert_box({
+                            'title': i18n.gettext('Failed to set PIN'),
+                            'text': i18n.gettext('The entered PINs do not match!'),
+                            'type': ERROR,
+                            'is_escaped': true
+                        });
                     }
                 },
                 id: "button_setpin_setpin",
                 text: "Set PIN"
             },
             'Cancel': {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_setpin_cancel",
                 text: "Cancel"
             }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
             translate_set_pin();
         },
-        close: function() {
+        close: function () {
             $('#pin1').val('');
             $('#pin2').val('');
         }
     });
 
-    $('#button_setpin').click(function(){
+    $('#button_setpin').click(function () {
         tokens = get_selected_tokens();
         view_setpin_dialog(tokens);
         return false;
@@ -5660,21 +5822,23 @@ $(document).ready(function(){
         width: 400,
         modal: true,
         buttons: {
-            'Unassign tokens': {click: function(){
-                token_unassign();
-                $(this).dialog('close');
+            'Unassign tokens': {
+                click: function () {
+                    token_unassign();
+                    $(this).dialog('close');
                 },
                 id: "button_unassign_unassign",
                 text: "Unassign tokens"
-                },
-            Cancel: { click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_unassign_cancel",
                 text: "Cancel"
-                }
+            }
         },
-        open: function() {
+        open: function () {
             tokens = get_selected_tokens();
             token_string = tokens.join(", ");
             $('#tokenid_unassign').html(escape(token_string));
@@ -5683,7 +5847,7 @@ $(document).ready(function(){
             translate_dialog_unassign();
         }
     });
-    $('#button_unassign').click(function(){
+    $('#button_unassign').click(function () {
         $dialog_unassign_token.dialog('open');
         return false;
     });
@@ -5696,21 +5860,23 @@ $(document).ready(function(){
         width: 400,
         modal: true,
         buttons: {
-            'Delete tokens': {click: function(){
-                token_delete();
-                $(this).dialog('close');
+            'Delete tokens': {
+                click: function () {
+                    token_delete();
+                    $(this).dialog('close');
                 },
                 id: "button_delete_delete",
                 text: "Delete tokens"
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_delete_cancel",
                 text: "Cancel"
-                }
+            }
         },
-        open: function(){
+        open: function () {
             tokens = get_selected_tokens();
             $('#delete_info').html(escape(tokens.join(", ")));
 
@@ -5718,31 +5884,31 @@ $(document).ready(function(){
             translate_dialog_delete_token();
         }
     });
-    $('#button_delete').click(function(){
+    $('#button_delete').click(function () {
         $dialog_delete_token.dialog('open');
         return false;
     });
 
-    $( "#alert_box" ).dialog(alertBoxConfig);
+    $("#alert_box").dialog(alertBoxConfig);
 
     $('#text_no_realm').dialog({
         autoOpen: false,
         modal: true,
         show: {
-            effect : "fade",
+            effect: "fade",
             duration: 1000
         },
         hide: {
-            effect : "fade",
+            effect: "fade",
             duration: 500
         },
         buttons: {
-            Ok: function() {
+            Ok: function () {
                 $(this).dialog("close");
                 $dialog_realms.dialog("open");
             }
         }
-     });
+    });
 
 
     /******************************************************************+
@@ -5752,7 +5918,7 @@ $(document).ready(function(){
     $("#tabs").tabs({
         collapsible: false,
         spinner: 'Retrieving data...',
-        beforeLoad: function( event, ui ) {
+        beforeLoad: function (event, ui) {
             // The purpose of the following is to prevent automatic reloads
             // of the tab. When the tab loads for the first time the 'loaded'
             // option is set.
@@ -5760,23 +5926,23 @@ $(document).ready(function(){
             // the controls provided inside the tab.
             // Tab Option 'cache: true' (used before for this same purpose)
             // was removed in jQuery UI version 1.10
-            if ( ui.tab.data( "loaded" )  ) {
+            if (ui.tab.data("loaded")) {
                 event.preventDefault();
             }
             else {
                 ui.jqXHR.then(function () {
-                    ui.tab.data ( "loaded", true );
+                    ui.tab.data("loaded", true);
                 });
                 // Following replaces ajaxOptions error function. ajaxOptions was
                 // removed in jQuery UI 1.10
-                ui.jqXHR.fail(function (){
+                ui.jqXHR.fail(function () {
                     ui.panel.html("Couldn't load this tab. " +
                         "Please contact your administrator.");
                 });
             }
             return;
         },
-        load: function(event, ui){
+        load: function (event, ui) {
             $(ui.panel).enableUIComponents();
         }
     });
@@ -5791,19 +5957,21 @@ $(document).ready(function(){
         width: 400,
         modal: true,
         buttons: {
-            OK: {click: function(){
-                token_info_save();
-                $(this).dialog('close');
+            OK: {
+                click: function () {
+                    token_info_save();
+                    $(this).dialog('close');
                 },
                 id: "button_tokeninfo_ok",
                 text: "OK"
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_tokeninfo_cancel",
                 text: "Cancel"
-                }
+            }
         }
     });
     $dialog_tokeninfo_set.html('<select id=hashlib name=hashlib>\
@@ -5817,7 +5985,7 @@ $(document).ready(function(){
         resizeable: true,
         width: 800,
         modal: true,
-        open: function(){
+        open: function () {
             $(this).dialog_icons();
             translate_dialog_token_info();
         }
@@ -5830,12 +5998,12 @@ $(document).ready(function(){
         fillSpace: true
     });
 
-    $('#login-status-password, #menu_tools_changepassword').click(function(){
+    $('#login-status-password, #menu_tools_changepassword').click(function () {
         $('#dialog_change_password').dialog({
             title: i18n.gettext("Change password"),
             width: 650,
             modal: true,
-            open: function() {
+            open: function () {
                 $("form", this).validate({
                     rules: {
                         password_old: {
@@ -5856,7 +6024,7 @@ $(document).ready(function(){
                 $("input", this).val("");
 
                 // fix table after the browser balances the widths
-                $("table tr:first-child td", this).each(function() {
+                $("table tr:first-child td", this).each(function () {
                     $(this).css("width", $(this).width());
                 });
             },
@@ -5866,7 +6034,7 @@ $(document).ready(function(){
                     icons: {
                         primary: 'ui-icon-cancel'
                     },
-                    click: function() {
+                    click: function () {
                         $(this).dialog("close");
                     }
                 },
@@ -5875,8 +6043,8 @@ $(document).ready(function(){
                     icons: {
                         primary: 'ui-icon-disk'
                     },
-                    click: function() {
-                        if($("form", this).valid()) {
+                    click: function () {
+                        if ($("form", this).valid()) {
                             changePassword();
                             $(this).dialog("close");
                         }
@@ -5908,25 +6076,25 @@ function openExpirationDialog() {
         modal: true,
         buttons: [
             {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_setexpiration_cancel",
                 text: i18n.gettext("Cancel")
             },
             {
-                click: function(){
+                click: function () {
                     var dialog = $(this);
 
-                    if(!setexpiration_validator.valid()) {
+                    if (!setexpiration_validator.valid()) {
                         return;
                     }
 
                     var validityPeriodStart = $("#setexpiration_period_start").datetimepicker('getValue');
-                    validityPeriodStart = $("#setexpiration_period_start").val() ? parseInt(validityPeriodStart.valueOf()/1000) : "unlimited";
+                    validityPeriodStart = $("#setexpiration_period_start").val() ? parseInt(validityPeriodStart.valueOf() / 1000) : "unlimited";
 
                     var validityPeriodEnd = $("#setexpiration_period_end").datetimepicker('getValue');
-                    validityPeriodEnd = $("#setexpiration_period_end").val() ? parseInt(validityPeriodEnd.valueOf()/1000) : "unlimited";
+                    validityPeriodEnd = $("#setexpiration_period_end").val() ? parseInt(validityPeriodEnd.valueOf() / 1000) : "unlimited";
 
                     var data = {
                         "tokens": get_selected_tokens(),
@@ -5938,11 +6106,14 @@ function openExpirationDialog() {
                     }
 
 
-                    $.post("/admin/setValidity", data, function(data, textStatus, XMLHttpRequest) {
+                    $.post("/admin/setValidity", data, function (data, textStatus, XMLHttpRequest) {
                         if (data.result && data.result.status == true) {
-                            alert_info_text({'text': i18n.gettext("Expiration set successfully"),
-                                             'is_escaped': true});
+                            alert_info_text({
+                                'text': i18n.gettext("Expiration set successfully"),
+                                'is_escaped': true
+                            });
                             dialog.dialog('close');
+                            tokeninfo_redisplay();
                         }
                         else {
                             var message = i18n.gettext("An error occurred during saving expiration.");
@@ -5961,7 +6132,7 @@ function openExpirationDialog() {
                 text: i18n.gettext("Save")
             }
         ],
-        open: function() {
+        open: function () {
             var tokens = get_selected_tokens();
             $('#dialog_setexpiration_tokens').text(tokens.join(", "));
 
@@ -5970,12 +6141,12 @@ function openExpirationDialog() {
 
             var showWarning = tokens.length > 1;
 
-            if(showWarning) {
+            if (showWarning) {
                 $(".multiple-tokens.warning .tokencount", this).text(tokens.length);
             }
-            else if(tokens.length === 1) {
+            else if (tokens.length === 1) {
                 show_waiting();
-                getTokenDetails(tokens[0]).then(function(token) {
+                getTokenDetails(tokens[0]).then(function (token) {
                     var countRequests = token["LinOtp.TokenInfo"]["count_auth_max"];
                     var countSuccess = token["LinOtp.TokenInfo"]["count_auth_success_max"];
 
@@ -5988,17 +6159,17 @@ function openExpirationDialog() {
                     // append timezone to and wrap backend datetime string twice to convert
                     // it to a valid and localized js date time object
                     var timezone = "+0000";
-                    if(periodStartISO) {
+                    if (periodStartISO) {
                         var periodStart = new Date(new Date(periodStartISO + timezone));
-                        $('#setexpiration_period_start').datetimepicker({value: periodStart});
+                        $('#setexpiration_period_start').datetimepicker({ value: periodStart });
                     }
-                    if(periodEndISO) {
+                    if (periodEndISO) {
                         var periodEnd = new Date(new Date(periodEndISO + timezone));
-                        $('#setexpiration_period_end').datetimepicker({value: periodEnd});
+                        $('#setexpiration_period_end').datetimepicker({ value: periodEnd });
                     }
 
                     hide_waiting();
-                }, function() {
+                }, function () {
                     var message = i18n.gettext("An error occurred during token processing.");
                     alert_box({
                         'title': i18n.gettext('Error loading token info'),
@@ -6014,11 +6185,11 @@ function openExpirationDialog() {
             $(".multiple-tokens.warning").toggleClass("hidden", !showWarning);
 
         },
-        create: function() {
+        create: function () {
             $(".multiple-tokens.warning", this).html(sprintf($(".multiple-tokens.warning", this).text(), "<span class='tokencount'></span>"));
 
-            $("input", this).change(function() {
-                if($(this).val() === "0") {
+            $("input", this).change(function () {
+                if ($(this).val() === "0") {
                     $(this).val("");
                 }
             });
@@ -6030,15 +6201,15 @@ function openExpirationDialog() {
                 dtConfig = {
                     format: "Y-m-d H:i (T)",
                     dayOfWeekStart: 1,
-                    onShow: function(event, $input) {
-                        if(!$input.is(":focus")) {
-                            setTimeout(function() {$input.datetimepicker("hide");});
+                    onShow: function (event, $input) {
+                        if (!$input.is(":focus")) {
+                            setTimeout(function () { $input.datetimepicker("hide"); });
                         }
                     }
                 };
 
             function dtStartOnChange() {
-                if(dtStart.datetimepicker('getValue') > dtEnd.datetimepicker('getValue')) {
+                if (dtStart.datetimepicker('getValue') > dtEnd.datetimepicker('getValue')) {
                     dtEnd.datetimepicker("reset");
                     dtEndOnChange();
                 }
@@ -6048,9 +6219,9 @@ function openExpirationDialog() {
             }
             function dtEndOnChange() {
                 var invalidPeriod = dtStart.val().length !== 0
-                        && dtEnd.val().length !== 0
-                        && dtStart.datetimepicker('getValue') > dtEnd.datetimepicker('getValue');
-                if(invalidPeriod) {
+                    && dtEnd.val().length !== 0
+                    && dtStart.datetimepicker('getValue') > dtEnd.datetimepicker('getValue');
+                if (invalidPeriod) {
                     var valid_cfg = {};
                     valid_cfg[dtEnd.attr("name")] = i18n.gettext("Invalid time period");
                     setexpiration_validator.showErrors(valid_cfg);
@@ -6058,13 +6229,13 @@ function openExpirationDialog() {
                 else {
                     setexpiration_validator.errorList.pop(dtEnd);
                     dtEnd.next().hide(); // hide the error label so that error is not shown anymore.
-                                         // JQuery-validates data model is updated correct, but the label
-                                         // is not removed, so we do it manually.
+                    // JQuery-validates data model is updated correct, but the label
+                    // is not removed, so we do it manually.
                 }
             }
 
-            dtStart.datetimepicker($.extend({"onChangeDateTime":dtStartOnChange}, dtConfig));
-            dtEnd.datetimepicker($.extend({"onChangeDateTime":dtEndOnChange}, dtConfig));
+            dtStart.datetimepicker($.extend({ "onChangeDateTime": dtStartOnChange }, dtConfig));
+            dtEnd.datetimepicker($.extend({ "onChangeDateTime": dtEndOnChange }, dtConfig));
 
             $(this).dialog_icons();
         }
@@ -6083,8 +6254,8 @@ function changePassword() {
 
     show_waiting();
 
-    $.post('/tools/setPassword', params).always(function(data, textStatus, XMLHttpRequest){
-        if(data.result && data.result.status == true && data.result.value == true) {
+    $.post('/tools/setPassword', params).always(function (data, textStatus, XMLHttpRequest) {
+        if (data.result && data.result.status == true && data.result.value == true) {
             alert_info_text({
                 'text': i18n.gettext('Password was successfully changed'),
                 'is_escaped': true
@@ -6111,14 +6282,14 @@ function changePassword() {
  *  SMS Provider edit
  */
 
-function sms_provider_form_dialog(name){
-    if(name){
+function sms_provider_form_dialog(name) {
+    if (name) {
         $("#sms_provider_name").val(name);
         $("#sms_provider_class").val(smsProviders[name].Class);
         $("#sms_provider_config").val(smsProviders[name].Config);
         $("#sms_provider_timeout").val(smsProviders[name].Timeout);
     }
-    else{
+    else {
         $("#sms_provider_name").val($("#sms_provider_name").attr("placeholder"));
         // to be replaced by getProviderDef
         $("#sms_provider_class").val($("#sms_provider_class").attr("placeholder"));
@@ -6143,7 +6314,7 @@ function sms_provider_form_dialog(name){
     });
 }
 
-function save_sms_provider_config(){
+function save_sms_provider_config() {
     // Load Values from still opened form
     var provider = $('#sms_provider_name').val();
     var params = {
@@ -6158,32 +6329,38 @@ function save_sms_provider_config(){
     show_waiting();
 
     $.post('/system/setProvider', params,
-      function(data, textStatus, XMLHttpRequest){
-        load_sms_providers();
-        if (data.result.status == true && data.result.value == true) {
-            $dialog_sms_provider_edit.dialog('close');
-        } else if (data.result.value == false) {
-            alert_box({'title': i18n.gettext('Failed to save provider'),
-                       'text': escape(data.detail.message),
-                       'type': ERROR,
-                       'is_escaped': true});
+        function (data, textStatus, XMLHttpRequest) {
+            load_sms_providers();
+            if (data.result.status == true && data.result.value == true) {
+                $dialog_sms_provider_edit.dialog('close');
+            } else if (data.result.value == false) {
+                alert_box({
+                    'title': i18n.gettext('Failed to save provider'),
+                    'text': escape(data.detail.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
 
-            var message = sprintf(i18n.gettext('Failed to save provider %s'),
-                                  escape(provider));
-            alert_info_text({'text': message,
-                             'type': ERROR,
-                             'is_escaped': true});
-        } else {
-            alert_box({'title': i18n.gettext('Error saving provider'),
-                       'text': escape(data.result.error.message),
-                       'type': ERROR,
-                       'is_escaped': true});
-        }
-        hide_waiting();
-    });
+                var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            } else {
+                alert_box({
+                    'title': i18n.gettext('Error saving provider'),
+                    'text': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            }
+            hide_waiting();
+        });
 }
 
-function delete_sms_provider(provider){
+function delete_sms_provider(provider) {
     show_waiting();
     var params = {
         'name': provider,
@@ -6191,36 +6368,44 @@ function delete_sms_provider(provider){
         'session': getsession()
     };
     $.post('/system/delProvider', params,
-        function(data, textStatus, XMLHttpRequest){
+        function (data, textStatus, XMLHttpRequest) {
             load_sms_providers();
             if (data.result.status == true && data.result.value == true) {
                 var message = sprintf(i18n.gettext('Provider %s deleted'),
-                                      escape(provider));
-                alert_info_text({'text': message,
-                                 'is_escaped': true});
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'is_escaped': true
+                });
             } else if (data.result.value == false) {
                 var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
-                alert_box({'title': i18n.gettext('Failed to delete provider'),
-                           'text': reason_text,
-                           'type': ERROR,
-                           'is_escaped': true});
+                alert_box({
+                    'title': i18n.gettext('Failed to delete provider'),
+                    'text': reason_text,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
                 var message = sprintf(i18n.gettext('Failed to delete provider %s'),
-                                      escape(provider));
-                alert_info_text({'text': message,
-                                 'type': ERROR,
-                                 'is_escaped': true});
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
             } else {
-                alert_box({'title': i18n.gettext('Error deleting provider'),
-                           'text': escape(data.result.error.message),
-                           'type': ERROR,
-                           'is_escaped': true});
+                alert_box({
+                    'title': i18n.gettext('Error deleting provider'),
+                    'text': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
             }
             hide_waiting();
         }
     );
 }
 
-function set_default_provider(type, provider){
+function set_default_provider(type, provider) {
     show_waiting();
     var params = {
         'name': provider,
@@ -6228,28 +6413,36 @@ function set_default_provider(type, provider){
         'session': getsession()
     };
     $.post('/system/setDefaultProvider', params,
-        function(data, textStatus, XMLHttpRequest){
-            window['load_'+type+'_providers']();
+        function (data, textStatus, XMLHttpRequest) {
+            window['load_' + type + '_providers']();
             if (data.result.status == true && data.result.value == true) {
                 var message = sprintf(i18n.gettext('Provider %s set as default'),
-                                      escape(provider));
-                alert_info_text({'text': message,
-                                 'is_escaped': true});
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'is_escaped': true
+                });
             } else if (data.result.value == false) {
-                alert_box({'title': i18n.gettext('Failed to set default provider'),
-                           'text': escape(data.detail.message),
-                           'type': ERROR,
-                           'is_escaped': true});
+                alert_box({
+                    'title': i18n.gettext('Failed to set default provider'),
+                    'text': escape(data.detail.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
                 var message = sprintf(i18n.gettext('Failed to set default provider %s'),
-                                      escape(provider));
-                alert_info_text({'text': message,
-                                 'type': ERROR,
-                                 'is_escaped': true});
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
             } else {
-                alert_box({'title': i18n.gettext('Error setting default provider'),
-                           'text': escape(data.result.error.message),
-                           'type': ERROR,
-                           'is_escaped': true});
+                alert_box({
+                    'title': i18n.gettext('Error setting default provider'),
+                    'text': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
             }
             hide_waiting();
         }
@@ -6261,14 +6454,14 @@ function set_default_provider(type, provider){
  *  Email provider edit
  */
 
-function email_provider_form_dialog(name){
-    if(name){
+function email_provider_form_dialog(name) {
+    if (name) {
         $("#email_provider_name").val(name);
         $("#email_provider_class").val(emailProviders[name].Class);
         $("#email_provider_config").val(emailProviders[name].Config);
         $("#email_provider_timeout").val(emailProviders[name].Timeout);
     }
-    else{
+    else {
         $("#email_provider_name").val($("#email_provider_name").attr("placeholder"));
         // to be replaced by getProviderDef
         $("#email_provider_class").val($("#email_provider_class").attr("placeholder"));
@@ -6293,7 +6486,7 @@ function email_provider_form_dialog(name){
     });
 }
 
-function save_email_provider_config(){
+function save_email_provider_config() {
     // Load Values from still opened form
     var provider = $('#email_provider_name').val();
     var params = {
@@ -6307,61 +6500,75 @@ function save_email_provider_config(){
     show_waiting();
 
     $.post('/system/setProvider', params,
-    function(data, textStatus, XMLHttpRequest){
-        if (data.result.status == true && data.result.value == true) {
-            $dialog_email_provider_edit.dialog('close');
-        } else if (data.result.value == false) {
-            alert_box({'title': i18n.gettext('Failed to save provider'),
-                       'text': escape(data.detail.message),
-                       'type': ERROR,
-                       'is_escaped': true});
+        function (data, textStatus, XMLHttpRequest) {
+            if (data.result.status == true && data.result.value == true) {
+                $dialog_email_provider_edit.dialog('close');
+            } else if (data.result.value == false) {
+                alert_box({
+                    'title': i18n.gettext('Failed to save provider'),
+                    'text': escape(data.detail.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
 
-            var message = sprintf(i18n.gettext('Failed to save provider %s'),
-                                  escape(provider));
-            alert_info_text({'text': message,
-                             'type': ERROR,
-                             'is_escaped': true});
-        } else {
-            alert_box({'title': i18n.gettext('Error saving provider'),
-                       'text': escape(data.result.error.message),
-                       'type': ERROR,
-                       'is_escaped': true});
-        }
-        hide_waiting();
-    });
+                var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            } else {
+                alert_box({
+                    'title': i18n.gettext('Error saving provider'),
+                    'text': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            }
+            hide_waiting();
+        });
 }
 
-function delete_email_provider(provider){
+function delete_email_provider(provider) {
     show_waiting();
-    var params =  {
+    var params = {
         'name': provider,
         'type': 'email',
         'session': getsession()
     };
     $.post('/system/delProvider', params,
-        function(data, textStatus, XMLHttpRequest){
+        function (data, textStatus, XMLHttpRequest) {
             load_email_providers();
             if (data.result.status == true && data.result.value == true) {
                 var message = sprintf(i18n.gettext('Provider %s deleted'),
-                                      escape(provider));
-                alert_info_text({'text': message,
-                                 'is_escaped': true});
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'is_escaped': true
+                });
             } else if (data.result.value == false) {
                 var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
-                alert_box({'title': i18n.gettext('Failed to delete provider'),
-                           'text': reason_text,
-                           'type': ERROR,
-                           'is_escaped': true});
+                alert_box({
+                    'title': i18n.gettext('Failed to delete provider'),
+                    'text': reason_text,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
                 var message = sprintf(i18n.gettext('Failed to delete provider %s'),
-                                      escape(provider));
-                alert_info_text({'text': message,
-                                 'type': ERROR,
-                                 'is_escaped': true});
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
             } else {
-                alert_box({'title': i18n.gettext('Error deleting provider'),
-                           'text': escape(data.result.error.message),
-                           'type': ERROR,
-                           'is_escaped': true});
+                alert_box({
+                    'title': i18n.gettext('Error deleting provider'),
+                    'text': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
             }
             hide_waiting();
         }
@@ -6373,111 +6580,127 @@ function delete_email_provider(provider){
 *  Push provider edit
 */
 
-function push_provider_form_dialog(name){
-   if(name){
-       $("#push_provider_name").val(name);
-       $("#push_provider_class").val(pushProviders[name].Class);
-       $("#push_provider_config").val(pushProviders[name].Config);
-       $("#push_provider_timeout").val(pushProviders[name].Timeout);
-   }
-   else{
-       $("#push_provider_name").val($("#push_provider_name").attr("placeholder"));
-       // to be replaced by getProviderDef
-       $("#push_provider_class").val($("#push_provider_class").attr("placeholder"));
-       $("#push_provider_config").val($("#push_provider_config").attr("placeholder"));
-       $("#push_provider_timeout").val($("#push_provider_timeout").attr("placeholder"));
-   }
+function push_provider_form_dialog(name) {
+    if (name) {
+        $("#push_provider_name").val(name);
+        $("#push_provider_class").val(pushProviders[name].Class);
+        $("#push_provider_config").val(pushProviders[name].Config);
+        $("#push_provider_timeout").val(pushProviders[name].Timeout);
+    }
+    else {
+        $("#push_provider_name").val($("#push_provider_name").attr("placeholder"));
+        // to be replaced by getProviderDef
+        $("#push_provider_class").val($("#push_provider_class").attr("placeholder"));
+        $("#push_provider_config").val($("#push_provider_config").attr("placeholder"));
+        $("#push_provider_timeout").val($("#push_provider_timeout").attr("placeholder"));
+    }
 
-   $("#dialog_push_provider_edit").dialog("open");
+    $("#dialog_push_provider_edit").dialog("open");
 
-   $("#form_pushprovider").validate({
-       rules: {
-           push_provider_config: {
-               valid_json: true
-           },
-           push_provider_name: {
-               required: true,
-               minlength: 4,
-               number: false,
-               providername: true
-           }
-       }
-   });
+    $("#form_pushprovider").validate({
+        rules: {
+            push_provider_config: {
+                valid_json: true
+            },
+            push_provider_name: {
+                required: true,
+                minlength: 4,
+                number: false,
+                providername: true
+            }
+        }
+    });
 }
 
-function save_push_provider_config(){
-   // Load Values from still opened form
-   var provider = $('#push_provider_name').val();
-   var params = {
-       'name': provider,
-       'class': $('#push_provider_class').val(),
-       'config': $('#push_provider_config').val(),
-       'timeout': $('#push_provider_timeout').val(),
-       'type': 'push',
-       'session': getsession()
-   };
-   show_waiting();
+function save_push_provider_config() {
+    // Load Values from still opened form
+    var provider = $('#push_provider_name').val();
+    var params = {
+        'name': provider,
+        'class': $('#push_provider_class').val(),
+        'config': $('#push_provider_config').val(),
+        'timeout': $('#push_provider_timeout').val(),
+        'type': 'push',
+        'session': getsession()
+    };
+    show_waiting();
 
-   $.post('/system/setProvider', params,
-   function(data, textStatus, XMLHttpRequest){
-       if (data.result.status == true && data.result.value == true) {
-           $dialog_push_provider_edit.dialog('close');
-       } else if (data.result.value == false) {
-           alert_box({'title': i18n.gettext('Failed to save provider'),
-                      'text': escape(data.detail.message),
-                      'type': ERROR,
-                      'is_escaped': true});
+    $.post('/system/setProvider', params,
+        function (data, textStatus, XMLHttpRequest) {
+            if (data.result.status == true && data.result.value == true) {
+                $dialog_push_provider_edit.dialog('close');
+            } else if (data.result.value == false) {
+                alert_box({
+                    'title': i18n.gettext('Failed to save provider'),
+                    'text': escape(data.detail.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
 
-           var message = sprintf(i18n.gettext('Failed to save provider %s'),
-                                 escape(provider));
-           alert_info_text({'text': message,
-                            'type': ERROR,
-                            'is_escaped': true});
-       } else {
-           alert_box({'title': i18n.gettext('Error saving provider'),
-                      'text': escape(data.result.error.message),
-                      'type': ERROR,
-                      'is_escaped': true});
-       }
-       hide_waiting();
-   });
+                var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            } else {
+                alert_box({
+                    'title': i18n.gettext('Error saving provider'),
+                    'text': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            }
+            hide_waiting();
+        });
 }
 
-function delete_push_provider(provider){
-   show_waiting();
-   var params =  {'name': provider,
-                  'type': 'push',
-                  'session': getsession()};
-   $.post('/system/delProvider', params,
-     function(data, textStatus, XMLHttpRequest){
-       load_push_providers();
-       if (data.result.status == true && data.result.value == true) {
-           var message = sprintf(i18n.gettext('Provider %s deleted'),
-                                 escape(provider));
+function delete_push_provider(provider) {
+    show_waiting();
+    var params = {
+        'name': provider,
+        'type': 'push',
+        'session': getsession()
+    };
+    $.post('/system/delProvider', params,
+        function (data, textStatus, XMLHttpRequest) {
+            load_push_providers();
+            if (data.result.status == true && data.result.value == true) {
+                var message = sprintf(i18n.gettext('Provider %s deleted'),
+                    escape(provider));
 
-           alert_info_text({'text': message,
-                            'is_escaped': true});
+                alert_info_text({
+                    'text': message,
+                    'is_escaped': true
+                });
 
-       } else if (data.result.value == false) {
-           var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
-           alert_box({'title': i18n.gettext('Failed to delete provider'),
-                      'text': reason_text,
-                      'type': ERROR,
-                      'is_escaped': true});
+            } else if (data.result.value == false) {
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                alert_box({
+                    'title': i18n.gettext('Failed to delete provider'),
+                    'text': reason_text,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
 
-           var message = sprintf(i18n.gettext('Failed to delete provider %s'),
-                                 escape(provider));
-           alert_info_text({'text': message,
-                            'type': ERROR,
-                            'is_escaped': true});
-       } else {
-           alert_box({'title': i18n.gettext('Error deleting provider'),
-                      'text': escape(data.result.error.message),
-                      'type': ERROR,
-                      'is_escaped': true});
-       }
-       hide_waiting();
-   });
+                var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            } else {
+                alert_box({
+                    'title': i18n.gettext('Error deleting provider'),
+                    'text': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            }
+            hide_waiting();
+        });
 }
 
 /************************************************************************
@@ -6485,111 +6708,127 @@ function delete_push_provider(provider){
 *  Voice provider edit
 */
 
-function voice_provider_form_dialog(name){
-   if(name){
-       $("#voice_provider_name").val(name);
-       $("#voice_provider_class").val(voiceProviders[name].Class);
-       $("#voice_provider_config").val(voiceProviders[name].Config);
-       $("#voice_provider_timeout").val(voiceProviders[name].Timeout);
-   }
-   else{
-       $("#voice_provider_name").val($("#voice_provider_name").attr("placeholder"));
-       // to be replaced by getProviderDef
-       $("#voice_provider_class").val($("#voice_provider_class").attr("placeholder"));
-       $("#voice_provider_config").val($("#voice_provider_config").attr("placeholder"));
-       $("#voice_provider_timeout").val($("#voice_provider_timeout").attr("placeholder"));
-   }
+function voice_provider_form_dialog(name) {
+    if (name) {
+        $("#voice_provider_name").val(name);
+        $("#voice_provider_class").val(voiceProviders[name].Class);
+        $("#voice_provider_config").val(voiceProviders[name].Config);
+        $("#voice_provider_timeout").val(voiceProviders[name].Timeout);
+    }
+    else {
+        $("#voice_provider_name").val($("#voice_provider_name").attr("placeholder"));
+        // to be replaced by getProviderDef
+        $("#voice_provider_class").val($("#voice_provider_class").attr("placeholder"));
+        $("#voice_provider_config").val($("#voice_provider_config").attr("placeholder"));
+        $("#voice_provider_timeout").val($("#voice_provider_timeout").attr("placeholder"));
+    }
 
-   $("#dialog_voice_provider_edit").dialog("open");
+    $("#dialog_voice_provider_edit").dialog("open");
 
-   $("#form_voiceprovider").validate({
-       rules: {
-           voice_provider_config: {
-               valid_json: true
-           },
-           voice_provider_name: {
-               required: true,
-               minlength: 4,
-               number: false,
-               providername: true
-           }
-       }
-   });
+    $("#form_voiceprovider").validate({
+        rules: {
+            voice_provider_config: {
+                valid_json: true
+            },
+            voice_provider_name: {
+                required: true,
+                minlength: 4,
+                number: false,
+                providername: true
+            }
+        }
+    });
 }
 
-function save_voice_provider_config(){
-   // Load Values from still opened form
-   var provider = $('#voice_provider_name').val();
-   var params = {
-       'name': provider,
-       'class': $('#voice_provider_class').val(),
-       'config': $('#voice_provider_config').val(),
-       'timeout': $('#voice_provider_timeout').val(),
-       'type': 'voice',
-       'session': getsession()
-   };
-   show_waiting();
+function save_voice_provider_config() {
+    // Load Values from still opened form
+    var provider = $('#voice_provider_name').val();
+    var params = {
+        'name': provider,
+        'class': $('#voice_provider_class').val(),
+        'config': $('#voice_provider_config').val(),
+        'timeout': $('#voice_provider_timeout').val(),
+        'type': 'voice',
+        'session': getsession()
+    };
+    show_waiting();
 
-   $.post('/system/setProvider', params,
-   function(data, textStatus, XMLHttpRequest){
-       if (data.result.status == true && data.result.value == true) {
-           $dialog_voice_provider_edit.dialog('close');
-       } else if (data.result.value == false) {
-           alert_box({'title': i18n.gettext('Failed to save provider'),
-                      'text': escape(data.detail.message),
-                      'type': ERROR,
-                      'is_escaped': true});
+    $.post('/system/setProvider', params,
+        function (data, textStatus, XMLHttpRequest) {
+            if (data.result.status == true && data.result.value == true) {
+                $dialog_voice_provider_edit.dialog('close');
+            } else if (data.result.value == false) {
+                alert_box({
+                    'title': i18n.gettext('Failed to save provider'),
+                    'text': escape(data.detail.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
 
-           var message = sprintf(i18n.gettext('Failed to save provider %s'),
-                                 escape(provider));
-           alert_info_text({'text': message,
-                            'type': ERROR,
-                            'is_escaped': true});
-       } else {
-           alert_box({'title': i18n.gettext('Error saving provider'),
-                      'text': escape(data.result.error.message),
-                      'type': ERROR,
-                      'is_escaped': true});
-       }
-       hide_waiting();
-   });
+                var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            } else {
+                alert_box({
+                    'title': i18n.gettext('Error saving provider'),
+                    'text': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            }
+            hide_waiting();
+        });
 }
 
-function delete_voice_provider(provider){
-   show_waiting();
-   var params =  {'name': provider,
-                  'type': 'voice',
-                  'session': getsession()};
-   $.post('/system/delProvider', params,
-     function(data, textStatus, XMLHttpRequest){
-       load_voice_providers();
-       if (data.result.status == true && data.result.value == true) {
-           var message = sprintf(i18n.gettext('Provider %s deleted'),
-                                 escape(provider));
+function delete_voice_provider(provider) {
+    show_waiting();
+    var params = {
+        'name': provider,
+        'type': 'voice',
+        'session': getsession()
+    };
+    $.post('/system/delProvider', params,
+        function (data, textStatus, XMLHttpRequest) {
+            load_voice_providers();
+            if (data.result.status == true && data.result.value == true) {
+                var message = sprintf(i18n.gettext('Provider %s deleted'),
+                    escape(provider));
 
-           alert_info_text({'text': message,
-                            'is_escaped': true});
+                alert_info_text({
+                    'text': message,
+                    'is_escaped': true
+                });
 
-       } else if (data.result.value == false) {
-           var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
-           alert_box({'title': i18n.gettext('Failed to delete provider'),
-                      'text': reason_text,
-                      'type': ERROR,
-                      'is_escaped': true});
+            } else if (data.result.value == false) {
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                alert_box({
+                    'title': i18n.gettext('Failed to delete provider'),
+                    'text': reason_text,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
 
-           var message = sprintf(i18n.gettext('Failed to delete provider %s'),
-                                 escape(provider));
-           alert_info_text({'text': message,
-                            'type': ERROR,
-                            'is_escaped': true});
-       } else {
-           alert_box({'title': i18n.gettext('Error deleting provider'),
-                      'text': escape(data.result.error.message),
-                      'type': ERROR,
-                      'is_escaped': true});
-       }
-       hide_waiting();
-   });
+                var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                    escape(provider));
+                alert_info_text({
+                    'text': message,
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            } else {
+                alert_box({
+                    'title': i18n.gettext('Error deleting provider'),
+                    'text': escape(data.result.error.message),
+                    'type': ERROR,
+                    'is_escaped': true
+                });
+            }
+            hide_waiting();
+        });
 }
 
 
@@ -6603,8 +6842,8 @@ function delete_voice_provider(provider){
  * @param  {String}  name      name of resolver to edit/duplicate or empty string for a create dialog
  * @param  {Boolean} duplicate whether a duplicate should be created or not
  */
-function resolver_file(name, duplicate){
-    if($form_validator_file) {
+function resolver_file(name, duplicate) {
+    if ($form_validator_file) {
         $form_validator_file.resetForm();
     }
 
@@ -6619,15 +6858,15 @@ function resolver_file(name, duplicate){
     };
 
     g.current_resolver_name = (duplicate ? "" : name);
-     $('#file_resolvername').val(g.current_resolver_name);
+    $('#file_resolvername').val(g.current_resolver_name);
 
     if (name) {
         // load the config of the resolver "name".
-        clientUrlFetch('/system/getResolver',{'resolver' : name}, function(xhdr, textStatus) {
-                var resp = xhdr.responseText;
-                obj = jQuery.parseJSON(resp);
+        clientUrlFetch('/system/getResolver', { 'resolver': name }, function (xhdr, textStatus) {
+            var resp = xhdr.responseText;
+            obj = jQuery.parseJSON(resp);
 
-                $('#file_filename').val(obj.result.value.data.fileName);
+            $('#file_filename').val(obj.result.value.data.fileName);
         });
     } else {
         $('#file_filename').val(obj.result.value.data.fileName);
@@ -6656,9 +6895,11 @@ function resolver_file(name, duplicate){
 function realm_modify(name) {
     var resolvers = get_resolvers();
     if (resolvers.length === 0) {
-        alert_box({'title': "Cannot " + (name.length === 0 ? "create" : "edit") + " a realm",
-                    'text': "Please create a UserIdResolver first",
-                    'is_escaped': true});
+        alert_box({
+            'title': "Cannot " + (name.length === 0 ? "create" : "edit") + " a realm",
+            'text': "Please create a UserIdResolver first",
+            'is_escaped': true
+        });
     } else {
         realm_edit(name);
         realms_load();
@@ -6666,7 +6907,7 @@ function realm_modify(name) {
     }
 }
 
-function realm_edit(name){
+function realm_edit(name) {
 
     var realm = "";
     var html_intro;
@@ -6677,9 +6918,11 @@ function realm_edit(name){
             realm = name.replace(/^(\S+)\s+(\[|\()(.+)\]/, "$1");
         }
         else {
-            alert_info_text({'text': "text_realm_name_error",
-                             "type": ERROR,
-                            'is_escaped': true});
+            alert_info_text({
+                'text': "text_realm_name_error",
+                "type": ERROR,
+                'is_escaped': true
+            });
         }
         $('#realm_edit_realm_name').html(escape(realm));
         $('#realm_name').val(realm);
@@ -6690,7 +6933,7 @@ function realm_edit(name){
     }
 
     // get the realm configuration
-    var resp = clientUrlFetchSync('/system/getRealms',{});
+    var resp = clientUrlFetchSync('/system/getRealms', {});
     var realmObj = jQuery.parseJSON(resp);
 
     var uidresolvers = [];
@@ -6702,32 +6945,32 @@ function realm_edit(name){
 
     // get all resolvers
     var resolvers = '';
-    var params = {'session':getsession()};
+    var params = { 'session': getsession() };
     $.post('/system/getResolvers', params,
-     function(data, textStatus, XMLHttpRequest){
-        resolvers = '<ol id="resolvers_in_realms_select" class="select_list" class="ui-selectable">';
-        for (var key in data.result.value) {
-            var klass = 'class="ui-widget-content"';
-            for (var i_reso in uidresolvers) {
-                // check if this resolver is contained in the realm
-                var reso = uidresolvers[i_reso].split('.');
-                if (reso[reso.length - 1] == key) {
-                    klass = 'class="ui-selected" class="ui-widget-content" ';
+        function (data, textStatus, XMLHttpRequest) {
+            resolvers = '<ol id="resolvers_in_realms_select" class="select_list" class="ui-selectable">';
+            for (var key in data.result.value) {
+                var klass = 'class="ui-widget-content"';
+                for (var i_reso in uidresolvers) {
+                    // check if this resolver is contained in the realm
+                    var reso = uidresolvers[i_reso].split('.');
+                    if (reso[reso.length - 1] == key) {
+                        klass = 'class="ui-selected" class="ui-widget-content" ';
+                    }
                 }
+                var e_key = escape(key);
+                var id = "id=realm_edit_click_" + e_key;
+                var e_resolver_type = escape(data.result.value[key].type);
+                resolvers += '<li ' + id + ' ' + klass + '>' + e_key + ' [' + e_resolver_type + ']</li>';
             }
-            var e_key = escape(key);
-            var id = "id=realm_edit_click_" + e_key;
-            var e_resolver_type = escape(data.result.value[key].type);
-            resolvers += '<li '+id+' '+ klass + '>' + e_key + ' [' + e_resolver_type + ']</li>';
-        }
-        resolvers += '</ol>';
+            resolvers += '</ol>';
 
-        $('#realm_edit_resolver_list').html(resolvers);
-        $('#resolvers_in_realms_select').selectable({
-            stop: check_for_selected_resolvers
-        }); // end of selectable
-        check_for_selected_resolvers();
-    }); // end of $.post
+            $('#realm_edit_resolver_list').html(resolvers);
+            $('#resolvers_in_realms_select').selectable({
+                stop: check_for_selected_resolvers
+            }); // end of selectable
+            check_for_selected_resolvers();
+        }); // end of $.post
     $dialog_edit_realms.dialog("option", "title", "Edit Realm " + realm);
     $dialog_edit_realms.dialog('open');
 
@@ -6743,9 +6986,9 @@ function realm_edit(name){
     });
 }
 
-function check_for_selected_resolvers(){
+function check_for_selected_resolvers() {
     var resolvers_in_realm_to_edit = new Array();
-    $(".ui-selected", this).each(function(){
+    $(".ui-selected", this).each(function () {
         var index = $("#resolvers_in_realms_select li").index(this);
         var reso = escape($(this).html());
         if (reso.match(/(\S+)\s\[(\S+)\]/)) {
@@ -6753,10 +6996,12 @@ function check_for_selected_resolvers(){
             var t = reso.replace(/\S+\s+\[(\S+)\]/, "$1");
         }
         else {
-            alert_info_text({'text': "text_regexp_error",
-                             'param': escape(reso),
-                             'type': ERROR,
-                             'is_escaped': true});
+            alert_info_text({
+                'text': "text_regexp_error",
+                'param': escape(reso),
+                'type': ERROR,
+                'is_escaped': true
+            });
         }
         switch (t) {
             case 'ldapresolver':
@@ -6772,7 +7017,7 @@ function check_for_selected_resolvers(){
                 resolvers_in_realm_to_edit.push('useridresolver.PasswdIdResolver.IdResolver.' + r);
                 break;
         }
-    }).promise().done(function(){
+    }).promise().done(function () {
         g.resolvers_in_realm_to_edit = resolvers_in_realm_to_edit.join(",");
     }); // end of each
 }
@@ -6810,15 +7055,15 @@ function resolver_set_ldap(obj) {
 
     // indicate whether the resolver will be saved during test
     originalLdapFormData = $('#form_ldapconfig').serialize();
-    changeListener = $("#form_ldapconfig").on("change", function() {
+    changeListener = $("#form_ldapconfig").on("change", function () {
         $("#button_test_ldap").data("save-resolver", $(this).serialize() != originalLdapFormData)
-        if($("#button_test_ldap").data("save-resolver")){
+        if ($("#button_test_ldap").data("save-resolver")) {
             $("#button_test_ldap").button('option', 'label', i18n.gettext("Save & test resolver"));
         } else {
             $("#button_test_ldap").button('option', 'label', i18n.gettext("Test resolver"));
         }
 
-    }).trigger( "change" );
+    }).trigger("change");
 }
 
 
@@ -6827,8 +7072,8 @@ function resolver_set_ldap(obj) {
  * @param  {String}  name      name of resolver to edit/duplicate or empty string for a create dialog
  * @param  {Boolean} duplicate whether a duplicate should be created or not
  */
-function resolver_ldap(name, duplicate){
-    if($form_validator_ldap) {
+function resolver_ldap(name, duplicate) {
+    if ($form_validator_ldap) {
         $form_validator_ldap.resetForm();
     }
 
@@ -6842,13 +7087,13 @@ function resolver_ldap(name, duplicate){
                     'only_trusted_certs': 'True',
                     'LDAPBASE': 'dc=yourdomain,dc=tld',
                     'TIMEOUT': '5',
-                    'SIZELIMIT' : '500',
+                    'SIZELIMIT': '500',
                     'LOGINNAMEATTRIBUTE': 'sAMAccountName',
                     'LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
                     'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
                     'USERINFO': '{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
                     'UIDTYPE': 'objectGUID',
-                    'NOREFERRALS' : 'True',
+                    'NOREFERRALS': 'True',
                 }
             }
         }
@@ -6859,17 +7104,19 @@ function resolver_ldap(name, duplicate){
 
     if (name) {
         // load the config of the resolver "name".
-        clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
+        clientUrlFetch('/system/getResolver', { 'resolver': name }, function (xhdr, textStatus) {
             var resp = xhdr.responseText;
             obj = jQuery.parseJSON(resp);
             if (obj.result.status) {
                 resolver_set_ldap(obj);
             } else {
                 // error reading resolver
-                alert_box({'title': "",
-                           'text': "text_ldap_load_error",
-                           'param': escape(obj.result.error.message),
-                           'is_escaped': true});
+                alert_box({
+                    'title': "",
+                    'text': "text_ldap_load_error",
+                    'param': escape(obj.result.error.message),
+                    'is_escaped': true
+                });
             }
         });
     } else {
@@ -6877,18 +7124,18 @@ function resolver_ldap(name, duplicate){
     }
 
     var critical_inputs = $('#ldap_uri, #ldap_basedn, #ldap_binddn');
-    
+
     // reset critical input password requirement validation
     critical_inputs.off("change keyup");
     $("#ldap_password").removeClass("input-placeholder-warning");
-    
+
     // enable critical input password requirement validation for resolver edits 
-    if(g.current_resolver_name) {
+    if (g.current_resolver_name) {
         $('#ldap_password').attr("placeholder", password_placeholder_not_changed);
-        critical_inputs.on('change keyup', function(e) {
-            var sth_changed = $('#ldap_uri').val()    != obj.result.value.data.LDAPURI
-                           || $('#ldap_basedn').val() != obj.result.value.data.LDAPBASE
-                           || $('#ldap_binddn').val() != obj.result.value.data.BINDDN;
+        critical_inputs.on('change keyup', function (e) {
+            var sth_changed = $('#ldap_uri').val() != obj.result.value.data.LDAPURI
+                || $('#ldap_basedn').val() != obj.result.value.data.LDAPBASE
+                || $('#ldap_binddn').val() != obj.result.value.data.BINDDN;
 
             $("#ldap_password").rules("add", {
                 required: sth_changed
@@ -6896,7 +7143,7 @@ function resolver_ldap(name, duplicate){
 
             $('#ldap_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
 
-            if(!sth_changed) {
+            if (!sth_changed) {
                 $("#ldap_password").valid();
                 $("#ldap_password").removeClass("input-placeholder-warning");
             }
@@ -6968,17 +7215,19 @@ function resolver_ldap(name, duplicate){
  */
 function set_form_input(form_name, data) {
     var items = {};
-    $('#'+form_name).find(':input').each(
+    $('#' + form_name).find(':input').each(
         function (id, el) {
             if (el.name != "") {
                 name = el.name;
                 id = el.id;
-                if (data.hasOwnProperty(name) ){
+                if (data.hasOwnProperty(name)) {
                     var value = data[name];
-                    $('#'+id).val(value);
+                    $('#' + id).val(value);
                 } else {
-                    $('#'+id).val('');
-            } } }
+                    $('#' + id).val('');
+                }
+            }
+        }
     );
 
     for (var i = 0; i < items.length; i++) {
@@ -6997,11 +7246,12 @@ function set_form_input(form_name, data) {
  */
 function get_form_input(form_name) {
     var items = {};
-    $('#'+form_name).find(':input').each(
+    $('#' + form_name).find(':input').each(
         function (id, el) {
             if (el.name != "") {
                 items[el.name] = el.value;
-            }   }
+            }
+        }
     );
     return items;
 }
@@ -7011,8 +7261,8 @@ function resolver_set_http(data) {
     http_resolver_https();
 }
 
-function resolver_http(name, duplicate){
-    if($form_validator_http) {
+function resolver_http(name, duplicate) {
+    if ($form_validator_http) {
         $form_validator_http.resetForm();
     }
 
@@ -7027,7 +7277,7 @@ function resolver_http(name, duplicate){
                     'HTTPSEARCHFILTER': '{ "path"="getUser","searchstr"="userid=%(userid)s"}',
                     'HTTPFILTER': '{ "path"="admin/userlist","searchstr"="username=%(username)s"} "jsonpath"="/result/value"',
                     'USERINFO': '{ "username": "login", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
-                    'CACERTIFICATE' : '',
+                    'CACERTIFICATE': '',
                 }
             }
         }
@@ -7037,7 +7287,7 @@ function resolver_http(name, duplicate){
 
     if (name) {
         // load the config of the resolver "name".
-        clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
+        clientUrlFetch('/system/getResolver', { 'resolver': name }, function (xhdr, textStatus) {
             var resp = xhdr.responseText;
             var obj = jQuery.parseJSON(resp);
             $('#http_resolvername').val(name);
@@ -7046,10 +7296,12 @@ function resolver_http(name, duplicate){
                 resolver_set_http(data);
             } else {
                 // error reading resolver
-                alert_box({'title': "",
-                            'text': "text_http_load_error",
-                            'param': obj.result.error.message,
-                            'is_escaped': true});
+                alert_box({
+                    'title': "",
+                    'text': "text_http_load_error",
+                    'param': obj.result.error.message,
+                    'is_escaped': true
+                });
             }
         });
 
@@ -7134,15 +7386,15 @@ function resolver_set_sql(obj) {
 
     // indicate whether the resolver will be saved during test
     originalSqlFormData = $('#form_sqlconfig').serialize();
-    changeListener = $("#form_sqlconfig").on("change", function() {
+    changeListener = $("#form_sqlconfig").on("change", function () {
         $("#button_test_sql").data("save-resolver", $(this).serialize() != originalSqlFormData)
-        if($("#button_test_sql").data("save-resolver")){
+        if ($("#button_test_sql").data("save-resolver")) {
             $("#button_test_sql").button('option', 'label', i18n.gettext("Save & test resolver"));
         } else {
             $("#button_test_sql").button('option', 'label', i18n.gettext("Test resolver"));
         }
 
-    }).trigger( "change" );
+    }).trigger("change");
 }
 
 /**
@@ -7150,8 +7402,8 @@ function resolver_set_sql(obj) {
  * @param  {String}  name      name of resolver to edit/duplicate or empty string for a create dialog
  * @param  {Boolean} duplicate whether a duplicate should be created or not
  */
-function resolver_sql(name, duplicate){
-    if($form_validator_sql) {
+function resolver_sql(name, duplicate) {
+    if ($form_validator_sql) {
         $form_validator_sql.resetForm();
     }
 
@@ -7168,9 +7420,9 @@ function resolver_sql(name, duplicate){
                     'Password': 'secret',
                     'Table': 'usertable',
                     'Map': '{ "userid" : "id", "username": "user", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" ,"password" : "password" }',
-                    'Where' : '',
-                    'conParams' : '',
-                    'Encoding' : ''
+                    'Where': '',
+                    'conParams': '',
+                    'Encoding': ''
 
                 }
             }
@@ -7184,17 +7436,19 @@ function resolver_sql(name, duplicate){
 
     if (name) {
         // load the config of the resolver "name".
-        clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
+        clientUrlFetch('/system/getResolver', { 'resolver': name }, function (xhdr, textStatus) {
             var resp = xhdr.responseText;
             obj = jQuery.parseJSON(resp);
             if (obj.result.status) {
                 resolver_set_sql(obj);
             } else {
                 // error reading resolver
-                alert_box({'title': "",
-                           'text': "text_sql_load_error",
-                           'param': escape(obj.result.error.message),
-                           'is_escaped':true});
+                alert_box({
+                    'title': "",
+                    'text': "text_sql_load_error",
+                    'param': escape(obj.result.error.message),
+                    'is_escaped': true
+                });
             }
         });
     } else {
@@ -7206,17 +7460,17 @@ function resolver_sql(name, duplicate){
     // reset critical input password requirement validation
     critical_inputs.off("change keyup");
     $("#sql_password").removeClass("input-placeholder-warning");
-    
+
     // enable critical input password requirement validation for resolver edits 
-    if(g.current_resolver_name) {
+    if (g.current_resolver_name) {
         $('#sql_password').attr("placeholder", password_placeholder_not_changed);
 
-        critical_inputs.on('change keyup', function(e) {
-            var sth_changed = $('#sql_driver').val()   != obj.result.value.data.Driver
-                           || $('#sql_server').val()   != obj.result.value.data.Server
-                           || $('#sql_port').val()     != obj.result.value.data.Port
-                           || $('#sql_database').val() != obj.result.value.data.Database
-                           || $('#sql_user').val()     != obj.result.value.data.User;
+        critical_inputs.on('change keyup', function (e) {
+            var sth_changed = $('#sql_driver').val() != obj.result.value.data.Driver
+                || $('#sql_server').val() != obj.result.value.data.Server
+                || $('#sql_port').val() != obj.result.value.data.Port
+                || $('#sql_database').val() != obj.result.value.data.Database
+                || $('#sql_user').val() != obj.result.value.data.User;
 
             $("#sql_password").rules("add", {
                 required: sth_changed
@@ -7224,7 +7478,7 @@ function resolver_sql(name, duplicate){
 
             $('#sql_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
 
-            if(!sth_changed) {
+            if (!sth_changed) {
                 $("#sql_password").valid();
                 $("#sql_password").removeClass("input-placeholder-warning");
             }
@@ -7277,13 +7531,13 @@ function resolver_sql(name, duplicate){
     });
 }
 
-function confirm_cancel_dialog(dialogname){
+function confirm_cancel_dialog(dialogname) {
     var defer = $.Deferred();
     var text = '<div style="text-align: center"><br/>' +
-                sprintf(i18n.gettext("The %s dialog contains unsaved changes."), dialogname) +
-                '<br/><br/>' +
-                i18n.gettext('Do you really want to close the dialog and discard the changes?') +
-                '</div>';
+        sprintf(i18n.gettext("The %s dialog contains unsaved changes."), dialogname) +
+        '<br/><br/>' +
+        i18n.gettext('Do you really want to close the dialog and discard the changes?') +
+        '</div>';
 
     $(text).dialog({
         title: i18n.gettext("Close Dialog"),
@@ -7293,15 +7547,15 @@ function confirm_cancel_dialog(dialogname){
 
             {
                 text: i18n.gettext("Cancel"),
-                click: function() {
-                    $( this ).dialog( "close" );
+                click: function () {
+                    $(this).dialog("close");
                     defer.reject("false");
                 }
             },
             {
                 text: i18n.gettext("Discard"),
-                click: function() {
-                    $( this ).dialog( "close" );
+                click: function () {
+                    $(this).dialog("close");
                     defer.resolve("true");
                 }
             }
@@ -7310,47 +7564,47 @@ function confirm_cancel_dialog(dialogname){
     return defer.promise();
 }
 
-function split( val ) {
-        return val.split( /,\s*/ );
+function split(val) {
+    return val.split(/,\s*/);
 }
-function extractLast( term ) {
-        return split( term ).pop();
+function extractLast(term) {
+    return split(term).pop();
 }
 
 /*
  * This function needs to be called, whenever the scope is changed or loaded.
  */
-function renew_policy_actions(){
-    var scope=$('#policy_scope_combo').val();
-    var actions=get_scope_actions(scope);
-    define_policy_action_autocomplete( actions );
+function renew_policy_actions() {
+    var scope = $('#policy_scope_combo').val();
+    var actions = get_scope_actions(scope);
+    define_policy_action_autocomplete(actions);
 }
 
 /*
  * This sets the allowed actions in the policy action input
  */
 function define_policy_action_autocomplete(availableActions) {
-    $( "#policy_action" )
+    $("#policy_action")
         .autocomplete({
             minLength: 0,
-            source: function( request, response ) {
+            source: function (request, response) {
                 // delegate back to autocomplete, but extract the last term
-                response( $.ui.autocomplete.filter(
-                    availableActions, extractLast( request.term ) ) );
+                response($.ui.autocomplete.filter(
+                    availableActions, extractLast(request.term)));
             },
-            focus: function() {
+            focus: function () {
                 // prevent value inserted on focus
                 return false;
             },
-            select: function( event, ui ) {
-                var terms = split( this.value );
+            select: function (event, ui) {
+                var terms = split(this.value);
                 // remove the current input
                 terms.pop();
                 // add the selected item
-                terms.push( ui.item.value );
+                terms.push(ui.item.value);
                 // add placeholder to get the comma-and-space at the end
-                terms.push( "" );
-                this.value = terms.join( ", " );
+                terms.push("");
+                this.value = terms.join(", ");
                 return false;
             }
         });
@@ -7358,48 +7612,50 @@ function define_policy_action_autocomplete(availableActions) {
 
 function view_policy() {
     $("#policy_table").flexigrid({
-            url : '/system/policies_flexi',
-            method: 'POST',
-            dataType : 'json',
-            colModel : [
-                {display: i18n.gettext('Active'), name : 'active', width : 35, sortable : true},
-                {display: i18n.gettext('Name'), name : 'name', width : 100, sortable : true},
-                {display: i18n.gettext('User'), name : 'user', width : 80, sortable : true},
-                {display: i18n.gettext('Scope'), name : 'scope', width : 80, sortable : true},
-                {display: i18n.gettext('Action'), name : 'action', width : 200, sortable : true},
-                {display: i18n.gettext('Realm'), name : 'realm', width : 100, sortable : true},
-                {display: i18n.gettext('Client'), name : 'client', width : 200, sortable : true},
-                {display: i18n.gettext('Time'), name : 'time', width : 50, sortable : true}
-                ],
-            height: 200,
-            rpOptions: [10,15,20,50,100],
-            sortname: "name",
-            sortorder: "asc",
-            useRp: true,
-            rp: 50,
-            usepager: true,
-            singleSelect: true,
-            showTableToggleBtn: true,
-            preProcess: pre_flexi,
-            onError: error_flexi,
-            onSubmit: on_submit_flexi,
-            dblClickResize: true
+        url: '/system/policies_flexi',
+        method: 'POST',
+        dataType: 'json',
+        colModel: [
+            { display: i18n.gettext('Active'), name: 'active', width: 35, sortable: true },
+            { display: i18n.gettext('Name'), name: 'name', width: 100, sortable: true },
+            { display: i18n.gettext('User'), name: 'user', width: 80, sortable: true },
+            { display: i18n.gettext('Scope'), name: 'scope', width: 80, sortable: true },
+            { display: i18n.gettext('Action'), name: 'action', width: 200, sortable: true },
+            { display: i18n.gettext('Realm'), name: 'realm', width: 100, sortable: true },
+            { display: i18n.gettext('Client'), name: 'client', width: 200, sortable: true },
+            { display: i18n.gettext('Time'), name: 'time', width: 50, sortable: true }
+        ],
+        height: 200,
+        rpOptions: [10, 15, 20, 50, 100],
+        sortname: "name",
+        sortorder: "asc",
+        useRp: true,
+        rp: 50,
+        usepager: true,
+        singleSelect: true,
+        showTableToggleBtn: true,
+        preProcess: pre_flexi,
+        onError: error_flexi,
+        onSubmit: on_submit_flexi,
+        dblClickResize: true
     });
 
     $('#policy_export').attr("href", '/system/getPolicy?export=true&display_inactive=true&session=' + getsession());
 
-    $('#policy_import').click(function(){
+    $('#policy_import').click(function () {
         $dialog_import_policy.dialog("open");
     });
 
-    $('#button_policy_add').click(function(event){
+    $('#button_policy_add').click(function (event) {
         event.preventDefault();
         var pol_name = $('#policy_name').val();
         pol_name = $.trim(pol_name);
         if (pol_name.length == 0) {
-        alert_box({'title': 'Policy Name',
-                   'text': "text_policy_name_not_empty",
-                   'is_escaped': true});
+            alert_box({
+                'title': 'Policy Name',
+                'text': "text_policy_name_not_empty",
+                'is_escaped': true
+            });
             return;
         }
 
@@ -7409,232 +7665,241 @@ function view_policy() {
             pol_active = "False";
         }
         var params = {
-            'name' : $('#policy_name').val(),
-            'user' : $('#policy_user').val(),
-            'action' : $('#policy_action').val(),
-            'scope' : $('#policy_scope_combo').val(),
-            'realm' : $('#policy_realm').val(),
-            'time' : $('#policy_time').val(),
-            'client' : $('#policy_client').val(),
-            'active' : pol_active,
-            'session':getsession() };
+            'name': $('#policy_name').val(),
+            'user': $('#policy_user').val(),
+            'action': $('#policy_action').val(),
+            'scope': $('#policy_scope_combo').val(),
+            'realm': $('#policy_realm').val(),
+            'time': $('#policy_time').val(),
+            'client': $('#policy_client').val(),
+            'active': pol_active,
+            'session': getsession()
+        };
         $.post('/system/setPolicy', params,
-         function(data, textStatus, XMLHttpRequest){
-            if (data.result.status == true) {
-                alert_info_text({'text': "text_policy_set",
-                                 'is_escaped': true});
-                $('#policy_table').flexReload();
-            }else {
-                alert_info_text({'text': escape(data.result.error.message),
-                                 'type': ERROR,
-                                 'is_escaped': true});
-            }
-        });
+            function (data, textStatus, XMLHttpRequest) {
+                if (data.result.status == true) {
+                    alert_info_text({
+                        'text': "text_policy_set",
+                        'is_escaped': true
+                    });
+                    $('#policy_table').flexReload();
+                } else {
+                    alert_info_text({
+                        'text': escape(data.result.error.message),
+                        'type': ERROR,
+                        'is_escaped': true
+                    });
+                }
+            });
     });
 
-    $('#button_policy_delete').click(function(event){
+    $('#button_policy_delete').click(function (event) {
         event.preventDefault();
         var policy = get_selected_policy().join(',');
         if (policy) {
-            var params = {'name' : policy, 'session':getsession()};
+            var params = { 'name': policy, 'session': getsession() };
             $.post('/system/delPolicy', params,
-             function(data, textStatus, XMLHttpRequest){
-                if (data.result.status == true) {
-                    alert_info_text({'text': "text_policy_deleted",
-                                     'is_escaped': true});
-                    $('#policy_table').flexReload();
-                } else {
-                    alert_info_text({'text': escape(data.result.error.message),
-                                     "type": ERROR,
-                                     'is_escaped': true});
-                }
-            });
+                function (data, textStatus, XMLHttpRequest) {
+                    if (data.result.status == true) {
+                        alert_info_text({
+                            'text': "text_policy_deleted",
+                            'is_escaped': true
+                        });
+                        $('#policy_table').flexReload();
+                    } else {
+                        alert_info_text({
+                            'text': escape(data.result.error.message),
+                            "type": ERROR,
+                            'is_escaped': true
+                        });
+                    }
+                });
             $('#policy_form').trigger("reset");
         }
     });
 
-    $('#button_policy_clear').click(function(event){
+    $('#button_policy_clear').click(function (event) {
         event.preventDefault();
         $('#policy_form').trigger("reset");
     });
 
-    $('#policy_scope_combo').change(function(){
+    $('#policy_scope_combo').change(function () {
         renew_policy_actions();
     });
 
-    $('#policy_table').click(function(event){
+    $('#policy_table').click(function (event) {
         get_selected();
     });
 
     sortChildsOfElement("#policy_scope_combo");
 }
 
-function sortChildsOfElement(elem){
-    $(elem).each(function(){
+function sortChildsOfElement(elem) {
+    $(elem).each(function () {
         var items = $(this).children().get();
-        items.sort(function(a,b){
-          var keyA = $(a).text();
-          keyA = $.trim(keyA).toLowerCase();
+        items.sort(function (a, b) {
+            var keyA = $(a).text();
+            keyA = $.trim(keyA).toLowerCase();
 
-          var keyB = $(b).text();
-          keyB = $.trim(keyB).toLowerCase();
+            var keyB = $(b).text();
+            keyB = $.trim(keyB).toLowerCase();
 
-          if (keyA < keyB) return -1;
-          if (keyA > keyB) return 1;
-          return 0;
+            if (keyA < keyB) return -1;
+            if (keyA > keyB) return 1;
+            return 0;
         });
         var parent = $(elem);
-        $.each(items, function(i, child){
-          parent.append(child);
+        $.each(items, function (i, child) {
+            parent.append(child);
         });
     })
 }
 
 function view_token() {
-        $("#token_table").flexigrid({
-            url : '/manage/tokenview_flexi',
-            method: 'POST',
-            dataType : 'json',
-            colModel : [
-                {display: i18n.gettext('Serial Number'), name : 'TokenSerialnumber', width : 100, sortable : true, align: 'center'},
-                {display: i18n.gettext('Active'), name : 'Isactive', width : 40, sortable : true, align: 'center'},
-                {display: i18n.gettext('Username'), name : 'Username', width : 100, sortable : false, align: 'center'},
-                {display: i18n.gettext('Realm'), name : 'realm', width : 100, sortable : false, align: 'center'},
-                {display: i18n.gettext('Type'), name : 'TokenType', width : 50, sortable : true, align: 'center'},
-                {display: i18n.gettext('Login Attempts Failed'), name : 'FailCount', width : 140, sortable : true, align: 'center'},
-                {display: i18n.gettext('Description'), name : 'TokenDesc', width : 100, sortable : true, align: 'center'},
-                {display: i18n.gettext('Max Login Attempts'), name : 'maxfailcount', width : 110, sortable : false, align: 'center'},
-                {display: i18n.gettext('OTP Length'), name : 'otplen', width : 75, sortable : false, align: 'center'},
-                {display: i18n.gettext('Count Window'), name : 'countwindow', width : 90, sortable : false, align: 'center'},
-                {display: i18n.gettext('Sync Window'), name : 'syncwindow', width : 80, sortable : false, align: 'center'},
-                {display: i18n.gettext('User ID'), name : 'Userid', width : 60, sortable : true, align: 'center'},
-                {display: i18n.gettext('Resolver'), name : 'IdResolver', width : 200, sortable : true, align: 'center'}
-                ],
-            height: 400,
-            searchitems : [
-                {display: i18n.gettext('Login Name'), name: 'loginname', isdefault: true },
-                {display: i18n.gettext('All other columns'), name : 'all'},
-                {display: i18n.gettext('Realm'), name: 'realm' }
-                ],
-            rpOptions: [10,15,20,50,100],
-            sortname: "TokenSerialnumber",
-            sortorder: "asc",
-            useRp: true,
-            rp: 15,
-            usepager: true,
-            showTableToggleBtn: true,
-            preProcess: pre_flexi,
-            onError: error_flexi,
-            onSubmit: on_submit_flexi,
-            onSuccess: show_selected_status,
-            dblClickResize: true,
-            searchbutton: true
+    $("#token_table").flexigrid({
+        url: '/manage/tokenview_flexi',
+        method: 'POST',
+        dataType: 'json',
+        colModel: [
+            { display: i18n.gettext('Serial Number'), name: 'TokenSerialnumber', width: 100, sortable: true, align: 'center' },
+            { display: i18n.gettext('Active'), name: 'Isactive', width: 40, sortable: true, align: 'center' },
+            { display: i18n.gettext('Username'), name: 'Username', width: 100, sortable: false, align: 'center' },
+            { display: i18n.gettext('Realm'), name: 'realm', width: 100, sortable: false, align: 'center' },
+            { display: i18n.gettext('Type'), name: 'TokenType', width: 50, sortable: true, align: 'center' },
+            { display: i18n.gettext('Login Attempts Failed'), name: 'FailCount', width: 140, sortable: true, align: 'center' },
+            { display: i18n.gettext('Description'), name: 'TokenDesc', width: 100, sortable: true, align: 'center' },
+            { display: i18n.gettext('Max Login Attempts'), name: 'maxfailcount', width: 110, sortable: false, align: 'center' },
+            { display: i18n.gettext('OTP Length'), name: 'otplen', width: 75, sortable: false, align: 'center' },
+            { display: i18n.gettext('Count Window'), name: 'countwindow', width: 90, sortable: false, align: 'center' },
+            { display: i18n.gettext('Sync Window'), name: 'syncwindow', width: 80, sortable: false, align: 'center' },
+            { display: i18n.gettext('User ID'), name: 'Userid', width: 60, sortable: true, align: 'center' },
+            { display: i18n.gettext('Resolver'), name: 'IdResolver', width: 200, sortable: true, align: 'center' }
+        ],
+        height: 400,
+        searchitems: [
+            { display: i18n.gettext('Login Name'), name: 'loginname', isdefault: true },
+            { display: i18n.gettext('All other columns'), name: 'all' },
+            { display: i18n.gettext('Realm'), name: 'realm' }
+        ],
+        rpOptions: [10, 15, 20, 50, 100],
+        sortname: "TokenSerialnumber",
+        sortorder: "asc",
+        useRp: true,
+        rp: 15,
+        usepager: true,
+        showTableToggleBtn: true,
+        preProcess: pre_flexi,
+        onError: error_flexi,
+        onSubmit: on_submit_flexi,
+        onSuccess: show_selected_status,
+        dblClickResize: true,
+        searchbutton: true
     });
-    $('#token_table').click(function(event){
+    $('#token_table').click(function (event) {
         get_selected();
     });
 
 }
 
 function view_user() {
-        $("#user_table").flexigrid({
-            url : '/manage/userview_flexi',
-            method: 'POST',
-            dataType : 'json',
-            colModel : [
-                {display: i18n.gettext('Username'), name : 'username', width : 90, sortable : true, align:"left"},
-                {display: i18n.gettext('UserIdResolver'), name : 'useridresolver', width : 200, sortable : true, align:"left"},
-                {display: i18n.gettext('Surname'), name : 'surname', width : 100, sortable : true, align:"left"},
-                {display: i18n.gettext('Given Name'), name : 'givenname', width : 100, sortable : true, align:"left"},
-                {display: i18n.gettext('Email'), name : 'email', width : 100, sortable : false, align:"left"},
-                {display: i18n.gettext('Mobile'), name : 'mobile', width : 50, sortable : true, align:"left"},
-                {display: i18n.gettext('Phone'), name : 'phone', width : 50, sortable : false, align:"left"},
-                {display: i18n.gettext('User ID'), name : 'userid', width : 200, sortable : true, align:"left"}
-            ],
-            height: 400,
-            searchitems : [
-                {display: i18n.gettext('Username'), name : 'username', isdefault: true},
-                {display: i18n.gettext('Surname'), name : 'surname'},
-                {display: i18n.gettext('Given Name'), name : 'givenname'},
-                {display: i18n.gettext('Description'), name : 'description'},
-                {display: i18n.gettext('User ID'), name : 'userid'},
-                {display: i18n.gettext('Email'), name : 'email'},
-                {display: i18n.gettext('Mobile'), name : 'mobile'},
-                {display: i18n.gettext('Phone'), name : 'phone'}
-                ],
-            rpOptions: [15,20,50,100],
-            sortname: "username",
-            sortorder: "asc",
-            useRp: true,
-            singleSelect: true,
-            rp: 15,
-            usepager: true,
-            showTableToggleBtn: true,
-            preProcess: pre_flexi,
-            onError: error_flexi,
-            onSubmit: on_submit_flexi,
-            onSuccess: show_selected_status,
-            dblClickResize: true,
-            searchbutton: true
+    $("#user_table").flexigrid({
+        url: '/manage/userview_flexi',
+        method: 'POST',
+        dataType: 'json',
+        colModel: [
+            { display: i18n.gettext('Username'), name: 'username', width: 90, sortable: true, align: "left" },
+            { display: i18n.gettext('UserIdResolver'), name: 'useridresolver', width: 200, sortable: true, align: "left" },
+            { display: i18n.gettext('Surname'), name: 'surname', width: 100, sortable: true, align: "left" },
+            { display: i18n.gettext('Given Name'), name: 'givenname', width: 100, sortable: true, align: "left" },
+            { display: i18n.gettext('Email'), name: 'email', width: 100, sortable: false, align: "left" },
+            { display: i18n.gettext('Mobile'), name: 'mobile', width: 50, sortable: true, align: "left" },
+            { display: i18n.gettext('Phone'), name: 'phone', width: 50, sortable: false, align: "left" },
+            { display: i18n.gettext('User ID'), name: 'userid', width: 200, sortable: true, align: "left" }
+        ],
+        height: 400,
+        searchitems: [
+            { display: i18n.gettext('Username'), name: 'username', isdefault: true },
+            { display: i18n.gettext('Surname'), name: 'surname' },
+            { display: i18n.gettext('Given Name'), name: 'givenname' },
+            { display: i18n.gettext('Description'), name: 'description' },
+            { display: i18n.gettext('User ID'), name: 'userid' },
+            { display: i18n.gettext('Email'), name: 'email' },
+            { display: i18n.gettext('Mobile'), name: 'mobile' },
+            { display: i18n.gettext('Phone'), name: 'phone' }
+        ],
+        rpOptions: [15, 20, 50, 100],
+        sortname: "username",
+        sortorder: "asc",
+        useRp: true,
+        singleSelect: true,
+        rp: 15,
+        usepager: true,
+        showTableToggleBtn: true,
+        preProcess: pre_flexi,
+        onError: error_flexi,
+        onSubmit: on_submit_flexi,
+        onSuccess: show_selected_status,
+        dblClickResize: true,
+        searchbutton: true
     });
 
-    $('#user_table').click(function(event){
+    $('#user_table').click(function (event) {
         get_selected();
     });
 }
 
 function view_audit() {
-       $("#audit_table").flexigrid({
-            url : '/audit/search',
-            method: 'POST',
-            dataType : 'json',
-            colModel : [
-                {display: i18n.gettext('Number'), name : 'number', width : 50, sortable : true},
-                {display: i18n.gettext('Date'), name : 'date', width : 160, sortable : true},
-                {display: i18n.gettext('Signature'), name : 'signature', width : 60, sortable : false},
-                {display: i18n.gettext('Missing Lines'), name : 'missing_lines', width : 90, sortable : false},
-                {display: i18n.gettext('Action'), name : 'action', width : 120, sortable : true},
-                {display: i18n.gettext('Success'), name : 'success', width : 50, sortable : true},
-                {display: i18n.gettext('Serial'), name : 'serial', width : 100, sortable : true},
-                {display: i18n.gettext('Token Type'), name : 'tokentype', width : 80, sortable : true},
-                {display: i18n.gettext('User'), name : 'user', width : 100, sortable : true},
-                {display: i18n.gettext('Realm'), name : 'realm', width : 100, sortable : true},
-                {display: i18n.gettext('Administrator'), name : 'administrator', width : 100, sortable : true},
-                {display: i18n.gettext('Action Detail'), name : 'action_detail', width : 200, sortable : true},
-                {display: i18n.gettext('Info'), name : 'info', width : 200, sortable : true},
-                {display: i18n.gettext('LinOTP Server'), name : 'linotp_server', width : 100, sortable : true},
-                {display: i18n.gettext('Client'), name : 'client', width : 100, sortable : true},
-                {display: i18n.gettext('Log Level'), name : 'log_level', width : 40, sortable : true},
-                {display: i18n.gettext('Clearance Level'), name : 'clearance_level', width : 20, sortable : true}
-                ],
-            height: 400,
-            searchitems : [
-                {display: i18n.gettext('Serial'), name : 'serial', isdefault: true},
-                {display: i18n.gettext('User'), name : 'user', isdefault: false},
-                {display: i18n.gettext('Realm'), name : 'realm', isdefault: false},
-                {display: i18n.gettext('Action'), name: 'action' },
-                {display: i18n.gettext('Action Detail'), name: 'action_detail' },
-                {display: i18n.gettext('Token Type'), name: 'token_type' },
-                {display: i18n.gettext('Administrator'), name: 'administrator' },
-                {display: i18n.gettext('Successful'), name: 'success' },
-                {display: i18n.gettext('Info'), name: 'info' },
-                {display: i18n.gettext('LinOTP Server'), name: 'linotp_server' },
-                {display: i18n.gettext('Client'), name: 'client' },
-                {display: i18n.gettext('Date'), name: 'date' },
-                {display: i18n.gettext('Extended Search'), name: 'extsearch' }
-                ],
-            rpOptions: [10,15,30,50],
-            sortname: "number",
-            sortorder: "desc",
-            useRp: true,
-            singleSelect: true,
-            rp: 15,
-            usepager: true,
-            showTableToggleBtn: true,
-            preProcess: pre_flexi,
-            onError: error_flexi,
-            onSubmit: on_submit_flexi,
-            searchbutton: true
+    $("#audit_table").flexigrid({
+        url: '/audit/search',
+        method: 'POST',
+        dataType: 'json',
+        colModel: [
+            { display: i18n.gettext('Number'), name: 'number', width: 50, sortable: true },
+            { display: i18n.gettext('Date'), name: 'date', width: 160, sortable: true },
+            { display: i18n.gettext('Signature'), name: 'signature', width: 60, sortable: false },
+            { display: i18n.gettext('Missing Lines'), name: 'missing_lines', width: 90, sortable: false },
+            { display: i18n.gettext('Action'), name: 'action', width: 120, sortable: true },
+            { display: i18n.gettext('Success'), name: 'success', width: 50, sortable: true },
+            { display: i18n.gettext('Serial'), name: 'serial', width: 100, sortable: true },
+            { display: i18n.gettext('Token Type'), name: 'tokentype', width: 80, sortable: true },
+            { display: i18n.gettext('User'), name: 'user', width: 100, sortable: true },
+            { display: i18n.gettext('Realm'), name: 'realm', width: 100, sortable: true },
+            { display: i18n.gettext('Administrator'), name: 'administrator', width: 100, sortable: true },
+            { display: i18n.gettext('Action Detail'), name: 'action_detail', width: 200, sortable: true },
+            { display: i18n.gettext('Info'), name: 'info', width: 200, sortable: true },
+            { display: i18n.gettext('LinOTP Server'), name: 'linotp_server', width: 100, sortable: true },
+            { display: i18n.gettext('Client'), name: 'client', width: 100, sortable: true },
+            { display: i18n.gettext('Log Level'), name: 'log_level', width: 40, sortable: true },
+            { display: i18n.gettext('Clearance Level'), name: 'clearance_level', width: 20, sortable: true }
+        ],
+        height: 400,
+        searchitems: [
+            { display: i18n.gettext('Serial'), name: 'serial', isdefault: true },
+            { display: i18n.gettext('User'), name: 'user', isdefault: false },
+            { display: i18n.gettext('Realm'), name: 'realm', isdefault: false },
+            { display: i18n.gettext('Action'), name: 'action' },
+            { display: i18n.gettext('Action Detail'), name: 'action_detail' },
+            { display: i18n.gettext('Token Type'), name: 'token_type' },
+            { display: i18n.gettext('Administrator'), name: 'administrator' },
+            { display: i18n.gettext('Successful'), name: 'success' },
+            { display: i18n.gettext('Info'), name: 'info' },
+            { display: i18n.gettext('LinOTP Server'), name: 'linotp_server' },
+            { display: i18n.gettext('Client'), name: 'client' },
+            { display: i18n.gettext('Date'), name: 'date' },
+            { display: i18n.gettext('Extended Search'), name: 'extsearch' }
+        ],
+        rpOptions: [10, 15, 30, 50],
+        sortname: "number",
+        sortorder: "desc",
+        useRp: true,
+        singleSelect: true,
+        rp: 15,
+        usepager: true,
+        showTableToggleBtn: true,
+        preProcess: pre_flexi,
+        onError: error_flexi,
+        onSubmit: on_submit_flexi,
+        searchbutton: true
     });
 }
 
