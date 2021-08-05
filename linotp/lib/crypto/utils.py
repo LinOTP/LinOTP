@@ -31,7 +31,6 @@ import base64
 import binascii
 import ctypes
 import hmac
-import json
 import logging
 import secrets
 import struct
@@ -43,7 +42,6 @@ from pysodium import __check as __libsodium_check
 from pysodium import crypto_sign_keypair as gen_dsa_keypair
 from pysodium import sodium as c_libsodium
 
-from linotp.flap import config as env
 from linotp.lib.context import request_context as context
 from linotp.lib.error import (
     ConfigAdminError,
@@ -429,49 +427,6 @@ def decrypt(input, iv, id=0, hsm=None):
 
     hsm_obj = _get_hsm_obj_from_context(hsm)
     return hsm_obj.decrypt(input, iv, id)
-
-
-def uencode(value):
-    """
-    unicode escape the value - required to support non-unicode
-    databases
-    :param value: string to be escaped
-    :return: unicode encoded value
-    """
-    ret = value
-
-    if env.get("linotp.uencode_data", "").lower() == "true":
-        try:
-            ret = json.dumps(value)[1:-1]
-        except Exception as exx:
-            log.error(
-                "Failed to encode value %r. Exception was %r", value, exx
-            )
-
-    return ret
-
-
-def udecode(value):
-    """
-    unicode de escape the value - required to support non-unicode
-    databases
-    :param value: string to be deescaped
-    :return: unicode value
-    """
-
-    ret = value
-    if (
-        "linotp.uencode_data" in env
-        and env["linotp.uencode_data"].lower() == "true"
-    ):
-        try:
-            # add surrounding "" for correct decoding
-            ret = json.loads('"%s"' % value)
-        except Exception as exx:
-            log.error(
-                "Failed to decode value %r. Exception was %r", value, exx
-            )
-    return ret
 
 
 def get_rand_digit_str(length=16):
