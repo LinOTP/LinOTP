@@ -205,58 +205,6 @@ class AuditTable(db.Model):
 
         return leng
 
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the assci encode default
-
-        :param name: db column name or class memeber
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if isinstance(value, str):
-            field_len = self._get_field_len(name)
-            encoded_value = linotp.lib.crypto.utils.uencode(value)
-            if field_len != -1 and len(encoded_value) > field_len:
-                log.warning(
-                    "truncating audit data: [audit.%s] %s", name, value
-                )
-                if self.trunc_as_err is not False:
-                    raise Exception(
-                        "truncating audit data: [audit.%s] %s" % (name, value)
-                    )
-
-                # during the encoding the value might expand -
-                # so we take this additional length into account
-                add_len = len(encoded_value) - len(value)
-                value = value[: field_len - add_len]
-
-        if name in AUDIT_ENCODE:
-            # encode data
-            if value:
-                value = linotp.lib.crypto.utils.uencode(value)
-        super(AuditTable, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the assci decode default
-
-        :param name: db column name or class memeber
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in AUDIT_ENCODE:
-            if value:
-                value = linotp.lib.crypto.utils.udecode(value)
-            else:
-                value = ""
-
-        return value
-
 
 # orm.mapper(AuditTable, audit_table)
 
@@ -563,12 +511,9 @@ class Audit(AuditBase):
 
         line = self._attr_to_dict(audit_line)
 
-        # if we have an \uencoded data, we extract the unicode back
+        # replace None values with an empty string
         for key, value in list(line.items()):
-            if value and isinstance(value, str):
-                value = linotp.lib.crypto.utils.udecode(value)
-                line[key] = value
-            elif value is None:
+            if value is None:
                 line[key] = ""
 
         # Signature check
