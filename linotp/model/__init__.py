@@ -50,8 +50,7 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relation
+from sqlalchemy import create_engine
 
 from linotp.lib.crypto.utils import get_rand_digit_str, geturandom, hash_digest
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
@@ -78,11 +77,7 @@ COL_PREFIX = ""
 def fix_db_encoding(app) -> None:
     """Fix the python2+mysql iso8859 encoding by conversion to utf-8."""
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
-    db.init_app(app)
-
     try:
-
         migration = Migration(db.engine)
         success, response = migration.iso8859_to_utf8_conversion()
 
