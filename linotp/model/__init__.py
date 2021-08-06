@@ -167,8 +167,8 @@ def setup_db(app) -> None:
     db.init_app(app)
 
     table_names = db.engine.table_names()
-    cli_cmd = getattr(app, "cli_cmd", "")
 
+    cli_cmd = getattr(app, "cli_cmd", "")
     if cli_cmd == "init-database":
         return
 
@@ -179,9 +179,22 @@ def setup_db(app) -> None:
         )
         sys.exit(11)
 
+    if audit_database_uri != "OFF":
+        engine = db.get_engine(app=app, bind="auditdb")
+        auditdb_table_names = engine.table_names()
+
+        from linotp.lib.audit.SQLAudit import AuditTable
+
+        if AuditTable.__tablename__ not in auditdb_table_names:
+            log.critical(
+                "Audit database schema must be initialised, "
+                "run `linotp init database`."
+            )
+            sys.exit(11)
+
     if not Migration.is_db_model_current():
         log.critical(
-            "Database schema is not current, " "run `linotp init database`."
+            "Database schema is not current, run `linotp init database`."
         )
         sys.exit(11)
 

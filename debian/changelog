@@ -16,6 +16,7 @@ linotp (3.1~0dev-0) experimental; urgency=low
     load phase.
   * sqlite can be used as audit database - the response of audit/search
     now skips streaming the response data for sqlite audit databases.
+  * The server now checks whether the audit table exists or not on start.
 
   Breaking changes:
   * No longer support AUDIT_POOL_RECYCLE configuration setting.
