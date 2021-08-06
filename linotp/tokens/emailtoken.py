@@ -95,7 +95,7 @@ class EmailTokenClass(HmacTokenClass):
 
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
-        self.hashlibStr = context["Config"].get("hotp.hashlib", "sha1")
+        self.hashlibStr = getFromConfig("hotp.hashlib", "sha1")
         self.mode = ["challenge"]
 
     @property
