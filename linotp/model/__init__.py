@@ -140,6 +140,25 @@ def setup_db(app) -> None:
     if audit_database_uri == "SHARED":
         audit_database_uri = app.config["DATABASE_URI"]
 
+    # Using the same sqlite database file for audit and LinOTP is not
+    # possible due to database locking issues. If this is the case,
+    # we add a suffix to the audit database file.
+    if (
+        audit_database_uri.startswith("sqlite")
+        and audit_database_uri == app.config["DATABASE_URI"]
+    ):
+        temp_engine = create_engine(audit_database_uri)
+        if (
+            temp_engine.url.database is not None
+            and temp_engine.url.database != ":memory:"
+        ):
+            audit_database_uri = audit_database_uri + "_audit"
+            log.warning(
+                "The audit database can not share the same"
+                " sqlite database file with the LinOTP database."
+                f' Using "{audit_database_uri}" instead.'
+            )
+
     if audit_database_uri != "OFF":
         app.config["SQLALCHEMY_BINDS"] = {
             "auditdb": audit_database_uri,
@@ -968,8 +987,8 @@ class Challenge(db.Model):
         )
 
         if not result:
-            log.warn(
-                "[checkChallengeSignature] integrity error for challenge %s, token %s",
+            log.warning(
+                "[checkChallengeSignature] integrity violation for challenge %s, token %s",
                 challenge_dict["transid"],
                 challenge_dict["tokenserial"],
             )
