@@ -149,10 +149,7 @@ class AuditController(BaseController):
 
             stream_output = True
 
-            db_uri = current_app.config["AUDIT_DATABASE_URI"]
-            if db_uri == "SHARED":
-                db_uri = current_app.config["DATABASE_URI"]
-
+            db_uri = current_app.config["SQLALCHEMY_BINDS"]["auditdb"]
             if db_uri.startswith("sqlite"):
                 stream_output = False
 
