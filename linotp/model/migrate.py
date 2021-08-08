@@ -34,6 +34,8 @@ from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 
+from flask import current_app
+
 from linotp import model
 
 log = logging.getLogger(__name__)
@@ -356,6 +358,7 @@ class Migration:
         "2.10.1.0",
         "2.12.0.0",
         "3.0.0.0",
+        "3.1.0.0",
     ]
 
     def __init__(self, engine: Engine):
@@ -692,6 +695,147 @@ class Migration:
             ).delete()
 
         return True, "Config and Token data converted to utf-8."
+
+    def migrate_3_1_0_0(self):
+        """Migrate the encrpyted data to pkcs7 padding.
+
+        this requires to
+        1. decrypt data and extract & unpadd the data with the old format
+        2. padd and encrypt data with the new padding format
+
+        This has to be done for the tokens and for the encrypted config values
+        """
+
+        import binascii
+
+        from linotp.lib.security.default import (
+            TOKEN_KEY,
+            DefaultSecurityModule,
+        )
+
+        class MigrationSecurityModule(DefaultSecurityModule):
+            """Migration helper class, which contains the old padding.
+
+            during migration the unpadd method of the DefaultSecurity
+            module is replaced with the old one to decrypt the old data
+            representation.
+            """
+
+            @staticmethod
+            def old_unpadd_data(output):
+
+                eof = len(output) - 1
+
+                if eof == -1:
+                    raise Exception("invalid encoded secret!")
+
+                while output[eof] == 0x00:
+                    eof -= 1
+
+                if not (output[eof - 1] == 0x01 and output[eof] == 0x02):
+                    raise Exception("invalid encoded secret!")
+
+                return output[: eof - 1]
+
+            @staticmethod
+            def old_padd_data(input_data):
+                data = b"\x01\x02"
+                padding = (16 - len(input_data + data) % 16) % 16
+                return input_data + data + padding * b"\0"
+
+        # ----------------------------------------------------------------- --
+
+        # For re-encryption we get from the security provider the current
+        # security module which we can use to run the decrypt and encrypt
+        # methods
+
+        sec_provider = current_app.security_provider
+        sec_module = sec_provider.security_modules[sec_provider.activeOne]
+
+        if not isinstance(sec_module, DefaultSecurityModule):
+            log.info(
+                "Padding migration is only required for the default security "
+                "module"
+            )
+            return True, (
+                "Migration for non default security module not required!"
+            )
+
+        # ----------------------------------------------------------------- --
+
+        # for the decryption the unpadding method is overwritten with the old
+        # padding algorithm
+
+        sec_module.unpadd_data = MigrationSecurityModule.old_unpadd_data
+
+        # ----------------------------------------------------------------- --
+
+        # re-encrypt all encrypted config table entries
+
+        log.info("start to re-encrypt the config entries")
+
+        entry_counter = 0
+
+        for entry in model.Config.query.all():
+
+            if entry.Type not in ["encrypted_data"]:
+                continue
+
+            try:
+
+                value = sec_module.decryptPassword(entry.Value).decode("utf-8")
+
+                entry.Value = sec_module.encryptPassword(value.encode("utf-8"))
+
+                model.db.session.add(entry)
+
+                log.info("%r re encrypted" % entry.Key)
+
+                entry_counter += 1
+
+            except Exception as exx:
+                log.error("Unable to re-encrypt %r: %r" % (entry.Key, exx))
+
+        # ----------------------------------------------------------------- --
+
+        # re-encrypt all tokens
+
+        log.info("start to re-encrypt the tokens")
+
+        token_counter = 0
+
+        for token in model.Token.query.all():
+
+            iv = binascii.unhexlify(token.LinOtpKeyIV)
+            encrypted_value = binascii.unhexlify(token.LinOtpKeyEnc)
+            enc = binascii.hexlify(encrypted_value)
+
+            value = sec_module.decrypt(
+                value=encrypted_value, iv=iv, id=TOKEN_KEY
+            )
+
+            new_encrypted_value = sec_module.encrypt(
+                data=value, iv=iv, id=TOKEN_KEY
+            )
+
+            token.LinOtpKeyEnc = binascii.hexlify(new_encrypted_value).decode(
+                "utf8"
+            )
+
+            model.db.session.add(token)
+
+            token_counter += 1
+
+        # ----------------------------------------------------------------- --
+
+        # final reset the unpadding and return a status message
+
+        sec_module.unpadd_data = DefaultSecurityModule.unpadd_data
+
+        return True, (
+            "re-encryption completed! %r tokens and %r config entries "
+            "migrated" % (token_counter, entry_counter)
+        )
 
 
 # eof
