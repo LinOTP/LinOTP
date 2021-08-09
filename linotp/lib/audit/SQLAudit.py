@@ -106,15 +106,38 @@ class AuditTable(db.Model):
         "client",
         "log_level",
     )
-    def convert_str(self, _, value):
-        """Converts the validated fields to string on insert"""
-        return str(value or "")
+    def convert_str(self, key, value):
+        """
+        Converts the validated column to string on insert
+        and truncates the values if necessary
+        """
+        error_on_truncate = current_app.config["AUDIT_ERROR_ON_TRUNCATION"]
+        return self.validate_truncate(
+            key,
+            str(value or ""),
+            warn=True,
+            error=error_on_truncate,
+        )
 
     @validates("action_detail", "info")
-    def validate_truncate(self, key, value):
+    def validate_truncate(self, key, value, warn=False, error=False):
+        """
+        Silently truncates the validated column if value is exceeding column
+        length.
+        If called manually, can be used to log a warning or throw an exception
+        on truncation.
+        """
         max_len = getattr(self.__class__, key).prop.columns[0].type.length
         if value and len(value) > max_len:
-            value = value[: max_len]
+            if warn:
+                log.warning(f"truncating audit data: [audit.{key}] {value}")
+            if error:
+                raise ValueError(
+                    f"Audit data too long, not truncating [audit.{key}] {value}"
+                    " because AUDIT_ERROR_ON_TRUNCATION is active."
+                )
+
+            value = value[:max_len]
         return value
 
 
