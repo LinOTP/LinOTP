@@ -128,6 +128,7 @@ ppa-preprocess: source
 # Debian builds create binary packages in linotpd/build
 .PHONY: builddeb
 builddeb:
+	../../ci/update-debian-changelog .
 	$(MAKE) prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
 	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot $(DPKG_BUILDPACKAGE_ARGS)
 

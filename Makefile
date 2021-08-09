@@ -229,8 +229,6 @@ DEBIAN_MIRROR=deb.debian.org
 # Override to change the dependency repository used to install required packages
 ifndef DEPENDENCY_DEB_REPO
 DEPENDENCY_DEB_REPO=http://www.linotp.org/apt/debian buster linotp
-endif
-ifndef DEPENDENCY_GPG_KEYID
 DEPENDENCY_GPG_KEYID=913DFF12F86258E5
 endif
 
@@ -324,7 +322,8 @@ $(BUILDDIR)/apt/Packages:
 	docker cp . $(DOCKER_CONTAINER_NAME)-apt:/build
 	docker exec \
 		$(DOCKER_CONTAINER_NAME)-apt \
-			make deb-install DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\"
+			make deb-install DESTDIR=/build/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\" \
+				CI_COMMIT_TAG=$(CI_COMMIT_TAG)
 	docker cp \
 		$(DOCKER_CONTAINER_NAME)-apt:/build/apt $(DESTDIR)
 	docker rm -f $(DOCKER_CONTAINER_NAME)-apt
