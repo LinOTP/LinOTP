@@ -177,31 +177,28 @@ unit-test:debian-buster:
     - cat func_chunk_04
     - cat func_chunk_05
   script:
-    - bash -c "find linotp/tests/functional -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
+    - echo $CI_NODE_INDEX
+    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   artifacts:
     paths:
       - coverage/${DEBIAN_RELEASE_NAME}/
 
 .functional-special-test:
   extends: .functional-test
-  stage: test
   variables:
     COVERAGE_PREFIX: func-special
   script:
     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
-func:jessie:
+functional-test:jessie:
   extends: .functional-test
-  stage: test
   parallel: 5
-  script:
-    - echo $CI_NODE_INDEX
-    - bash -c "cat func_chunk_0$CI_NODE_INDEX | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
   variables:
     DEBIAN_RELEASE_NAME: jessie
 
 functional-test:buster:
   extends: .functional-test
+  parallel: 5
   variables:
     DEBIAN_RELEASE_NAME: buster
 
