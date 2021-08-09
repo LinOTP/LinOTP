@@ -137,7 +137,7 @@ class AuditTable(db.Model):
                     " because AUDIT_ERROR_ON_TRUNCATION is active."
                 )
 
-            value = value[:max_len]
+            value = value[: max_len - 1] + "…"
         return value
 
 
