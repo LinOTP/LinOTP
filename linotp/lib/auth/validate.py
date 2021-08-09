@@ -532,10 +532,31 @@ class ValidationHandler(object):
         if user_exists and not get_auth_forward_on_no_token(user):
             servers = get_auth_forward(user)
             if servers:
+                log.info(
+                    "forwarding auth request for user {} to {}".format(
+                        user, servers
+                    )
+                )
                 res, opt = ForwardServerPolicy.do_request(
                     servers, env, user, passw, options
                 )
+                log.info(
+                    "result of auth request for user {}: ({}, {})".format(
+                        user, res, opt
+                    )
+                )
                 return res, opt
+            else:
+                log.info(
+                    "NOT forwarding auth request for user {} (no servers)".format(
+                        user
+                    )
+                )
+        else:
+            log.info(
+                "NOT forwarding auth request for user {} "
+                "(get_auth_forward_on_no_token returned False)".format(user)
+            )
 
         # ------------------------------------------------------------------ --
 
@@ -629,10 +650,26 @@ class ValidationHandler(object):
             elif get_auth_forward_on_no_token(user):
                 servers = get_auth_forward(user)
                 if servers:
+                    log.info(
+                        "forwarding auth request for user {} to {}".format(
+                            user, servers
+                        )
+                    )
                     res, opt = ForwardServerPolicy.do_request(
                         servers, env, user, passw, options
                     )
+                    log.info(
+                        "result of auth request for user {}: ({}, {})".format(
+                            user, res, opt
+                        )
+                    )
                     return res, opt
+                else:
+                    log.info(
+                        "NOT forwarding auth request for user {} (no servers)".format(
+                            user
+                        )
+                    )
 
             return False, opt
 
