@@ -633,7 +633,7 @@ class LinOTPApp(Flask):
 
     def setup_audit(self):
         if self.database_needed():
-            self.audit_obj = getAudit(self.config)
+            self.audit_obj = getAudit()
 
 
 def init_logging(app):

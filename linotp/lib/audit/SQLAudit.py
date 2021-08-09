@@ -150,7 +150,7 @@ class Audit(AuditBase):
     backend which has a separate database connection.
     """
 
-    def __init__(self, config):
+    def __init__(self):
         """
         Initialise the audit backend
 
@@ -158,11 +158,9 @@ class Audit(AuditBase):
 
         The SQLAlchemy connection is configured via flask_sqlalchemy in
         :func:`~linotp.model.setup_db`.
-
-        @param config Dict of configuration values
         """
 
-        super(Audit, self).__init__(config)
+        super(Audit, self).__init__()
 
         # initialize signing keys
         self.readKeys()

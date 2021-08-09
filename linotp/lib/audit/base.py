@@ -38,20 +38,20 @@ from linotp.lib.token import get_used_tokens_count
 log = logging.getLogger(__name__)
 
 
-def getAudit(config):
+def getAudit():
 
-    audit_url = config["AUDIT_DATABASE_URI"]
+    audit_url = current_app.config["AUDIT_DATABASE_URI"]
 
     if audit_url == "OFF":
         log.warning(
             "Audit logging is disabled because the URL has been configured to %s",
             audit_url,
         )
-        audit = AuditBase(config)
+        audit = AuditBase()
     else:
         from . import SQLAudit
 
-        audit = SQLAudit.Audit(config)
+        audit = SQLAudit.Audit()
 
     return audit
 
@@ -76,10 +76,9 @@ class AuditBase(object):
 
     name = "AuditBase"
 
-    def __init__(self, config):
-        self.config = config
-        self.publicKeyFilename = self.config.get("AUDIT_PUBLIC_KEY_FILE")
-        self.privateKeyFilename = self.config.get("AUDIT_PRIVATE_KEY_FILE")
+    def __init__(self):
+        self.publicKeyFilename = current_app.config["AUDIT_PUBLIC_KEY_FILE"]
+        self.privateKeyFilename = current_app.config["AUDIT_PRIVATE_KEY_FILE"]
 
     def initialize(self, request, client=None):
         # defaults

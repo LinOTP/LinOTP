@@ -41,14 +41,14 @@ class TestAuditSetup(object):
         }
     )
     def test_sqlaudit_off(self, app):
-        audit = getAudit(app.config)
+        audit = getAudit()
 
         # audit object should be a dummy class without implementation
         assert isinstance(audit, AuditBase)
 
     @pytest.mark.app_config({})
     def test_sqlaudit_sqlaudit(self, app):
-        audit = getAudit(app.config)
+        audit = getAudit()
 
         # audit object should be a database audit
         assert isinstance(audit, Audit)
