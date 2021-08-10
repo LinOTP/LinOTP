@@ -32,7 +32,7 @@ ARG DEBIAN_MIRROR=deb.debian.org
 ARG DEBIAN_RELEASE_NAME
 ARG DEPENDENCY_SOURCE
 ARG DEPENDENCY_GPG_KEYID
-ARG DEPENDENCY_COMPONENT
+ARG DEPENDENCY_SOURCE_COMPONENT
 ARG DEPENDENCY_GPG_KEY_URL
 
 # The following environment variables can be set to
@@ -104,7 +104,7 @@ RUN sed "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
     < /etc/apt/sources.list > /etc/apt/sources.list.new && mv -f /etc/apt/sources.list.new /etc/apt/sources.list
 
 RUN apt-get update && apt-get install --no-install-recommends --yes curl gnupg2 dirmngr
-RUN test -z "$DEPENDENCY_SOURCE" || echo "deb $DEPENDENCY_SOURCE $DEBIAN_RELEASE_NAME $DEPENDENCY_COMPONENT" > /etc/apt/sources.list.d/kideps.list
+RUN test -z "$DEPENDENCY_SOURCE" || echo "deb $DEPENDENCY_SOURCE $DEBIAN_RELEASE_NAME $DEPENDENCY_SOURCE_COMPONENT" > /etc/apt/sources.list.d/kideps.list
 RUN test -z "$DEPENDENCY_GPG_KEYID" || apt-key adv --keyserver hkp://hkps.pool.sks-keyservers.net --recv-keys $DEPENDENCY_GPG_KEYID
 RUN test -z "$DEPENDENCY_GPG_KEY_URL" || curl $DEPENDENCY_GPG_KEY_URL | apt-key adv --import
 
@@ -137,7 +137,7 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
 	&& echo "deb [trusted=yes] file:/opt/linotp/apt ./" > /etc/apt/sources.list.d/linotp-local.list \
 	&& (echo "Package: *"; echo "Pin: origin \"\""; echo "Pin-Priority: 900") > /etc/apt/preferences.d/linotp \
 	&& apt-get update \
-	&& apt-get install linotp python-logstash \
+	&& apt-get install linotp \
 	&& rm /etc/apt/sources.list.d/linotp-local.list \
 	&& rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
 	&& rm /etc/linotp2/linotp.ini /etc/linotp2/encKey /etc/linotp2/*.pem
