@@ -545,6 +545,7 @@ class ValidationHandler(object):
                         user, res, opt
                     )
                 )
+                g.audit["action_detail"] = "Forwarded, result {}".format(res)
                 return res, opt
             else:
                 log.info(
@@ -552,6 +553,7 @@ class ValidationHandler(object):
                         user
                     )
                 )
+                g.audit["action_detail"] = "Not forwarded (no servers)"
         else:
             log.info(
                 "NOT forwarding auth request for user {} "
@@ -663,6 +665,9 @@ class ValidationHandler(object):
                             user, res, opt
                         )
                     )
+                    g.audit["action_detail"] = "Forwarded, result {}".format(
+                        res
+                    )
                     return res, opt
                 else:
                     log.info(
@@ -670,6 +675,7 @@ class ValidationHandler(object):
                             user
                         )
                     )
+                    g.audit["action_detail"] = "Not forwarded (no servers)"
 
             return False, opt
 
