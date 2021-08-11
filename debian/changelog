@@ -47,6 +47,8 @@ linotp (3.1~0dev-0) experimental; urgency=low
     time in UTC instead of the server's timezone.
   * Log username, realm, serial and token type in audit table when performing a 
     `validate/check_status` request.
+  * Fix padding of crypted data by migrating to pkcs7 padding
+    via the `linotp init database` command.
 
  -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
 
