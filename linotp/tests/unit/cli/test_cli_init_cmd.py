@@ -313,35 +313,44 @@ def test_setup_db_doesnt_create_tables(app, engine, capsys):
 
 
 @pytest.mark.parametrize("erase", (False, True))
-def test_setup_db_erase_all(app, engine, capsys, erase):
+def test_setup_db_erase_all(app, base_app, engine, capsys, erase):
+
     app.echo = Echo(verbosity=1)
 
-    # GIVEN a database with records
-    app.cli_cmd = "init-database"
-    setup_db(app)
-    init_db_tables(app, drop_data=True, add_defaults=True)
+    # we need a base_app context which contains the security provider that is
+    # needed for the re-encryption for the 3.0.2.0 migration
 
-    KEY = "linotp.foobar"
-    item = Config(Key=KEY, Value="123", Type="int", Description="test item")
-    db.session.add(item)
-    db.session.commit()
-    assert db.session.query(Config).filter_by(Key=KEY).count() == 1
-    db.session.remove()
+    with base_app.app_context():
 
-    # WHEN I invoke `setup_db`
-    setup_db(app)
-    init_db_tables(app, drop_data=erase, add_defaults=False)
+        # GIVEN a database with records
+        app.cli_cmd = "init-database"
 
-    if erase:
-        # Additional record should have disappeared
-        assert db.session.query(Config).filter_by(Key=KEY).count() == 0
-    else:
-        # Additional record should still be there
-        assert db.session.query(Config).filter_by(Key=KEY).count() == 1
+        setup_db(app)
+        init_db_tables(app, drop_data=True, add_defaults=True)
 
-        item = db.session.query(Config).filter_by(Key=KEY).first()
-        db.session.delete(item)
+        KEY = "linotp.foobar"
+        item = Config(
+            Key=KEY, Value="123", Type="int", Description="test item"
+        )
+        db.session.add(item)
         db.session.commit()
+        assert db.session.query(Config).filter_by(Key=KEY).count() == 1
+        db.session.remove()
+
+        # WHEN I invoke `setup_db`
+        setup_db(app)
+        init_db_tables(app, drop_data=erase, add_defaults=False)
+
+        if erase:
+            # Additional record should have disappeared
+            assert db.session.query(Config).filter_by(Key=KEY).count() == 0
+        else:
+            # Additional record should still be there
+            assert db.session.query(Config).filter_by(Key=KEY).count() == 1
+
+            item = db.session.query(Config).filter_by(Key=KEY).first()
+            db.session.delete(item)
+            db.session.commit()
 
 
 # ----------------------------------------------------------------------
