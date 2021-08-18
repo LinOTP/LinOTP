@@ -230,9 +230,8 @@ class DefaultSecurityModule(SecurityModule):
 
         key = self.getSecret(id)
         input_data = binascii.b2a_hex(data)
-        input_data += b"\x01\x02"
-        padding = (16 - len(input_data) % 16) % 16
-        input_data += padding * b"\0"
+        input_data = self.padd_data(input_data)
+
         aes = AES.new(key, AES.MODE_CBC, iv)
 
         res = aes.encrypt(input_data)
@@ -266,23 +265,35 @@ class DefaultSecurityModule(SecurityModule):
         aes = AES.new(key, AES.MODE_CBC, iv)
         output = aes.decrypt(value)
 
-        eof = len(output) - 1
-        if eof == -1:
-            raise Exception("invalid encoded secret!")
-
-        while output[eof] == 0x00:
-            eof -= 1
-
-        if not (output[eof - 1] == 0x01 and output[eof] == 0x02):
-            raise Exception("invalid encoded secret!")
-
-        data = output[: eof - 1]
+        data = self.unpadd_data(output)
 
         if self.crypted is False:
             zerome(key)
             del key
 
         return binascii.a2b_hex(data)
+
+    @staticmethod
+    def padd_data(input_data):
+        """
+        padd the given data to a blocksize of 16 according to pkcs7 padding
+
+        :param input_data: the data, which should be padded
+        :return: data with appended padding
+        """
+        padding_length = 16 - len(input_data) % 16
+        return input_data + padding_length * bytes([padding_length])
+
+    @staticmethod
+    def unpadd_data(input_data):
+        """
+        unpadd a given data from a blocksize of 16 according to pkcs7 padding
+
+        :param input_data: the data with appended padding
+        :return: stripped of data
+        """
+        cut = int.from_bytes(input_data[-1:], "big")
+        return input_data[:-cut]
 
     def decryptPassword(self, cryptPass: str) -> bytes:
         """

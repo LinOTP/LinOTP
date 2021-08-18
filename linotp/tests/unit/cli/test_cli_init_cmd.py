@@ -312,36 +312,142 @@ def test_setup_db_doesnt_create_tables(app, engine, capsys):
     assert "Config" not in engine.table_names()
 
 
-@pytest.mark.parametrize("erase", (False, True))
-def test_setup_db_erase_all(app, engine, capsys, erase):
+def test_padding_migration(app, base_app, engine):
+    """Check that the padding migration has changed
+
+    0. create an empty database
+    1. set the security module to the old padding, and
+    2. set the db schema version to lower than the padding migration
+        version and generate an encrypted value with the old padding
+        and store both entries
+    3. restore the original padding function
+    4. run the db_init, which now re-encryptes the values
+
+    the stored encrypted values must now be different, while the decrypted
+    values should be the same
+
+    """
+
+    from linotp.lib.security.default import DefaultSecurityModule
+
+    class MockSecurityModule(DefaultSecurityModule):
+        @staticmethod
+        def old_padd_data(input_data):
+            data = b"\x01\x02"
+            padding = (16 - len(input_data + data) % 16) % 16
+            return input_data + data + padding * b"\0"
+
     app.echo = Echo(verbosity=1)
 
-    # GIVEN a database with records
-    app.cli_cmd = "init-database"
-    setup_db(app)
-    init_db_tables(app, drop_data=True, add_defaults=True)
+    # we need a base_app context which contains the security provider that is
+    # needed for the re-encryption during the 3.1.0.0 migration
 
-    KEY = "linotp.foobar"
-    item = Config(Key=KEY, Value="123", Type="int", Description="test item")
-    db.session.add(item)
-    db.session.commit()
-    assert db.session.query(Config).filter_by(Key=KEY).count() == 1
-    db.session.remove()
+    with base_app.app_context():
 
-    # WHEN I invoke `setup_db`
-    setup_db(app)
-    init_db_tables(app, drop_data=erase, add_defaults=False)
+        # GIVEN a database with records
+        app.cli_cmd = "init-database"
 
-    if erase:
-        # Additional record should have disappeared
-        assert db.session.query(Config).filter_by(Key=KEY).count() == 0
-    else:
-        # Additional record should still be there
-        assert db.session.query(Config).filter_by(Key=KEY).count() == 1
+        # 0. drop all data and add defaults
+        setup_db(app)
+        init_db_tables(app, drop_data=True, add_defaults=False)
 
-        item = db.session.query(Config).filter_by(Key=KEY).first()
-        db.session.delete(item)
+        # 1. set the security module to the old padding
+
+        sec_provider = base_app.security_provider
+        sec_module = sec_provider.security_modules[sec_provider.activeOne]
+        sec_module.padd_data = MockSecurityModule.old_padd_data
+
+        # 2.
+        # set the db schema version to lower than the padding migration
+        # version and generate an encrypted value with the old padding
+        # and store both entries
+
+        db_schema_version = "linotp.sql_data_model_version"
+        db.session.query(Config).filter_by(Key=db_schema_version).delete()
+
+        item = Config(
+            Key=db_schema_version,
+            Value="3.0.0.0",
+            Type="",
+            Description="db schema version",
+        )
+        db.session.add(item)
+
+        value = "Test123Test123Test123Test123Test123"
+        enc_value = sec_module.encryptPassword(value.encode("utf-8"))
+
+        enc_data_key = "linotp.padding_migration_test_password"
+        enc_item = Config(
+            Key=enc_data_key,
+            Value=enc_value,
+            Type="encrypted_data",
+            Description="migration test password",
+        )
+
+        db.session.add(enc_item)
+
         db.session.commit()
+        db.session.remove()
+
+        # 3. restore the original padding function
+
+        sec_module.padd_data = DefaultSecurityModule.padd_data
+
+        # 4. run the db_init, which now re-encrypts the values
+
+        setup_db(app)
+        init_db_tables(app, drop_data=False, add_defaults=False)
+
+        # verify the expected behavior
+
+        new_enc = db.session.query(Config).filter_by(Key=enc_data_key).first()
+
+        assert new_enc.Value != enc_value
+
+        new_value = sec_module.decryptPassword(new_enc.Value).decode("utf-8")
+
+        assert new_value == value
+
+
+@pytest.mark.parametrize("erase", (False, True))
+def test_setup_db_erase_all(app, base_app, engine, capsys, erase):
+
+    app.echo = Echo(verbosity=1)
+
+    # we need a base_app context which contains the security provider that is
+    # needed for the re-encryption for the 3.0.2.0 migration
+
+    with base_app.app_context():
+
+        # GIVEN a database with records
+        app.cli_cmd = "init-database"
+
+        setup_db(app)
+        init_db_tables(app, drop_data=True, add_defaults=True)
+
+        KEY = "linotp.foobar"
+        item = Config(
+            Key=KEY, Value="123", Type="int", Description="test item"
+        )
+        db.session.add(item)
+        db.session.commit()
+        assert db.session.query(Config).filter_by(Key=KEY).count() == 1
+        db.session.remove()
+
+        # WHEN I invoke `setup_db`
+        setup_db(app)
+        init_db_tables(app, drop_data=erase, add_defaults=False)
+
+        if erase:
+            # Additional record should have disappeared
+            assert db.session.query(Config).filter_by(Key=KEY).count() == 0
+        else:
+            # Additional record should still be there
+            assert db.session.query(Config).filter_by(Key=KEY).count() == 1
+
+            item = db.session.query(Config).filter_by(Key=KEY).first()
+            db.session.delete(item)
+            db.session.commit()
 
 
 # ----------------------------------------------------------------------
