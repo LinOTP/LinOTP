@@ -50,8 +50,7 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relation
+from sqlalchemy import create_engine
 
 from linotp.lib.crypto.utils import get_rand_digit_str, geturandom, hash_digest
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
@@ -78,11 +77,7 @@ COL_PREFIX = ""
 def fix_db_encoding(app) -> None:
     """Fix the python2+mysql iso8859 encoding by conversion to utf-8."""
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
-    db.init_app(app)
-
     try:
-
         migration = Migration(db.engine)
         success, response = migration.iso8859_to_utf8_conversion()
 
@@ -139,11 +134,41 @@ def setup_db(app) -> None:
     # Initialise the SQLAlchemy engine
 
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
+
+    audit_database_uri = app.config["AUDIT_DATABASE_URI"]
+
+    if audit_database_uri == "SHARED":
+        audit_database_uri = app.config["DATABASE_URI"]
+
+    # Using the same sqlite database file for audit and LinOTP is not
+    # possible due to database locking issues. If this is the case,
+    # we add a suffix to the audit database file.
+    if (
+        audit_database_uri.startswith("sqlite")
+        and audit_database_uri == app.config["DATABASE_URI"]
+    ):
+        temp_engine = create_engine(audit_database_uri)
+        if (
+            temp_engine.url.database is not None
+            and temp_engine.url.database != ":memory:"
+        ):
+            audit_database_uri = audit_database_uri + "_audit"
+            log.warning(
+                "The audit database can not share the same"
+                " sqlite database file with the LinOTP database."
+                f' Using "{audit_database_uri}" instead.'
+            )
+
+    if audit_database_uri != "OFF":
+        app.config["SQLALCHEMY_BINDS"] = {
+            "auditdb": audit_database_uri,
+        }
+
     db.init_app(app)
 
     table_names = db.engine.table_names()
-    cli_cmd = getattr(app, "cli_cmd", "")
 
+    cli_cmd = getattr(app, "cli_cmd", "")
     if cli_cmd == "init-database":
         return
 
@@ -154,9 +179,22 @@ def setup_db(app) -> None:
         )
         sys.exit(11)
 
+    if audit_database_uri != "OFF":
+        engine = db.get_engine(app=app, bind="auditdb")
+        auditdb_table_names = engine.table_names()
+
+        from linotp.lib.audit.SQLAudit import AuditTable
+
+        if AuditTable.__tablename__ not in auditdb_table_names:
+            log.critical(
+                "Audit database schema must be initialised, "
+                "run `linotp init database`."
+            )
+            sys.exit(11)
+
     if not Migration.is_db_model_current():
         log.critical(
-            "Database schema is not current, " "run `linotp init database`."
+            "Database schema is not current, run `linotp init database`."
         )
         sys.exit(11)
 
@@ -182,6 +220,12 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
     echo(f"Setting up database...", v=1)
 
     try:
+        if app.config["AUDIT_DATABASE_URI"] != "OFF":
+            # The audit table is created in the configured audit database
+            # connection if audit is not turned off. The database model is
+            # added to SQLAlchemy if the file is imported.
+            import linotp.lib.audit.SQLAudit
+
         if drop_data:
             echo("Dropping tables to erase all data...", v=1)
             db.drop_all()
@@ -956,8 +1000,8 @@ class Challenge(db.Model):
         )
 
         if not result:
-            log.warn(
-                "[checkChallengeSignature] integrity error for challenge %s, token %s",
+            log.warning(
+                "[checkChallengeSignature] integrity violation for challenge %s, token %s",
                 challenge_dict["transid"],
                 challenge_dict["tokenserial"],
             )

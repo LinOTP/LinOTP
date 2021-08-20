@@ -9,8 +9,6 @@ linotp (3.1~0dev-0) experimental; urgency=low
   * Userservice allows enrollment of TOTP tokens with the webprovisionGOOGLEtime policy.
   * RestSMSProvider allows access to nested JSON request data structure items by path.
   * Use database config value to enable get_otp feature
-
-  Improvement:
   * Simplify the HMAC acountname and tokenissuer fallback rules for a more predictable
     behavior in the google authenticator url.
   * Token monitoring now better sanitizes the status parameter
@@ -18,6 +16,14 @@ linotp (3.1~0dev-0) experimental; urgency=low
     load phase.
   * sqlite can be used as audit database - the response of audit/search
     now skips streaming the response data for sqlite audit databases.
+  * The server now checks whether the audit table exists or not on start.
+
+  Breaking changes:
+  * No longer support AUDIT_POOL_RECYCLE configuration setting.
+  * Sqlite audit databases can no longer share the same file with LinOTP. If configured
+    to share the same file, LinOTP will add a suffix to the audit database file name.
+  * Audit database timestamp is now ISO 8601 formatted. The timestamp is saved in UTC
+    timezone instead of server local time.
 
   Fixes:
   * mOTP tokens can now be used in challenge response mode

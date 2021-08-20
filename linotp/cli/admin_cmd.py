@@ -34,7 +34,7 @@ import sys
 from flask import current_app
 from flask.cli import AppGroup, with_appcontext
 
-from linotp.model import fix_db_encoding
+from linotp.model import fix_db_encoding, setup_db
 
 admin_cmds = AppGroup(
     "admin",
@@ -62,6 +62,10 @@ def fix_db_encoding_command():
     """Fix the python2+mysql iso8859 encoding by conversion to utf-8."""
 
     try:
+        # Even though we skip initialising the database when doing
+        # `linotp init …`, at this point we do need a database engine
+        # after all.
+        setup_db(current_app)
         result, response = fix_db_encoding(current_app)
 
     except Exception as exx:

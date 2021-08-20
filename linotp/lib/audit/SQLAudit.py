@@ -36,213 +36,109 @@ uses a public/private key for signing the log entries
 """
 
 import datetime
-import logging.config
-import traceback
-from binascii import hexlify, unhexlify
+import logging
+from binascii import unhexlify
 
-from sqlalchemy import and_, asc, create_engine, desc, or_, orm, schema, types
+from sqlalchemy import Column, and_, asc, desc, or_, schema, types
+from sqlalchemy.orm import validates
 
 from flask import current_app
 
-import linotp
-from linotp.flap import config
 from linotp.lib.audit.base import AuditBase
 from linotp.lib.crypto.rsa import RSA_Signature
-from linotp.lib.text_utils import utf8_slice
-from linotp.model import db
+from linotp.model import db, implicit_returning
 
 log = logging.getLogger(__name__)
 
 
-def now():
-    u_now = "%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-    return u_now
+def now() -> str:
+    """
+    Returns an ISO datetime representation in UTC timezone with millisecond
+    precision to fit in the AuditTable.timestamp column
+    """
+    return datetime.datetime.now(datetime.timezone.utc).isoformat(
+        timespec="milliseconds"
+    )
 
 
 ######################## MODEL ################################################
-table_prefix = ""
-
-audit_table_name = "%saudit" % table_prefix
-
-audit_table = schema.Table(
-    audit_table_name,
-    db.metadata,
-    schema.Column(
-        "id",
-        types.Integer,
-        schema.Sequence("audit_seq_id", optional=True),
-        primary_key=True,
-    ),
-    schema.Column("timestamp", types.Unicode(30), default=now, index=True),
-    schema.Column("signature", types.Unicode(512), default=""),
-    schema.Column("action", types.Unicode(30), index=True),
-    schema.Column("success", types.Unicode(30), default="False"),
-    schema.Column("serial", types.Unicode(30), index=True),
-    schema.Column("tokentype", types.Unicode(40)),
-    schema.Column("user", types.Unicode(255), index=True),
-    schema.Column("realm", types.Unicode(255), index=True),
-    schema.Column("administrator", types.Unicode(255)),
-    schema.Column("action_detail", types.Unicode(512), default=""),
-    schema.Column("info", types.Unicode(512), default=""),
-    schema.Column("linotp_server", types.Unicode(80)),
-    schema.Column("client", types.Unicode(80)),
-    schema.Column("log_level", types.Unicode(20), default="INFO", index=True),
-    schema.Column("clearance_level", types.Integer, default=0),
-)
-
-
-AUDIT_ENCODE = [
-    "action",
-    "serial",
-    "success",
-    "user",
-    "realm",
-    "tokentype",
-    "administrator",
-    "action_detail",
-    "info",
-    "linotp_server",
-    "client",
-    "log_level",
-]
 
 
 class AuditTable(db.Model):
+    # query against the "auditdb" database session
+    __bind_key__ = "auditdb"
 
-    __table__ = audit_table
+    __table_args__ = {
+        "implicit_returning": implicit_returning,
+    }
 
-    def __init__(
-        self,
-        serial="",
-        action="",
-        success="False",
-        tokentype="",
-        user="",
-        realm="",
-        administrator="",
-        action_detail="",
-        info="",
-        linotp_server="",
-        client="",
-        log_level="INFO",
-        clearance_level=0,
-        config_param=None,
-    ):
+    __tablename__ = "audit"
+    id = Column(
+        types.Integer,
+        schema.Sequence("audit_seq_id", optional=True),
+        primary_key=True,
+    )
+    timestamp = Column(types.Unicode(30), default=now, index=True)
+    signature = Column(types.Unicode(512), default="")
+    action = Column(types.Unicode(30), index=True)
+    success = Column(types.Unicode(30), default="0")
+    serial = Column(types.Unicode(30), index=True)
+    tokentype = Column(types.Unicode(40))
+    user = Column(types.Unicode(255), index=True)
+    realm = Column(types.Unicode(255), index=True)
+    administrator = Column(types.Unicode(255))
+    action_detail = Column(types.Unicode(512), default="")
+    info = Column(types.Unicode(512), default="")
+    linotp_server = Column(types.Unicode(80))
+    client = Column(types.Unicode(80))
+    log_level = Column(types.Unicode(20), default="INFO", index=True)
+    clearance_level = Column(types.Integer, default=0)
+
+    @validates(
+        "serial",
+        "action",
+        "success",
+        "tokentype",
+        "user",
+        "realm",
+        "administrator",
+        "linotp_server",
+        "client",
+        "log_level",
+    )
+    def convert_str(self, key, value):
         """
-        build an audit db entry
-
-        *parmeters require to be compliant to the table defintion, which
-         implies that type unicode is recomended where appropriate
-
-        :param serial: token serial number
-        :type serial: unicode
-        :param action: the scope of the audit entry, eg. admin/show
-        :type action: unicode
-        :param success: the result of the action
-        :type success: unicode
-        :param tokentype: which token type was involved
-        :type tokentype: unicode
-        :param user: user login
-        :type user: unicode
-        :param realm: the involved realm
-        :type realm: unicode
-        :param administrator: the admin involved
-        :type administrator: unicode
-        :param action_detail: the additional action details
-        :type action_detail: unicode
-        :param info: additional info for failures
-        :type info: unicode
-        :param linotp_server: the server name
-        :type linotp_server: unicode
-        :param client: info about the requesting client
-        :type client: unicode
-        :param loglevel: the loglevel of the action
-        :type loglevel: unicode
-        :param clearance_level: *??*
-        :type clearance_level: integer
-
+        Converts the validated column to string on insert
+        and truncates the values if necessary
         """
-
-        log.debug("[__init__] creating AuditTable object, action = %s", action)
-
-        super().__init__()
-
-        if config_param:
-            self.config = config_param
-        else:
-            self.config = config
-        self.trunc_as_err = current_app.config["AUDIT_ERROR_ON_TRUNCATION"]
-        self.serial = str(serial or "")
-        self.action = str(action or "")
-        self.success = str(success or "0")
-        self.tokentype = str(tokentype or "")
-        self.user = str(user or "")
-        self.realm = str(realm or "")
-        self.administrator = str(administrator or "")
-
-        #
-        # we have to truncate the 'action_detail' and the 'info' data
-        # in utf-8 compliant way
-        #
-        self.action_detail = next(utf8_slice(str(action_detail or ""), 512))
-        self.info = next(utf8_slice(str(info or ""), 512))
-
-        self.linotp_server = str(linotp_server or "")
-        self.client = str(client or "")
-        self.log_level = str(log_level or "")
-        self.clearance_level = clearance_level
-        self.timestamp = now()
-        self.siganture = " "
-
-    def _get_field_len(self, col_name):
-        leng = -1
-        try:
-            ll = audit_table.columns[col_name]
-            ty = ll.type
-            leng = ty.length
-        except Exception as exx:
-            leng = -1
-
-        return leng
-
-
-# orm.mapper(AuditTable, audit_table)
-
-
-# replace sqlalchemy-migrate by the ability to ad a column
-def add_column(engine, table, column):
-    """
-    small helper to add a column by calling a native 'ALTER TABLE' to
-    replace the need for sqlalchemy-migrate
-
-    from:
-    http://stackoverflow.com/questions/7300948/add-column-to-sqlalchemy-table
-
-    :param engine: the running sqlalchemy
-    :param table: in which table should this column be added
-    :param column: the sqlalchemy definition of a column
-
-    :return: boolean of success or not
-    """
-
-    result = False
-
-    table_name = table.description
-    column_name = column.compile(dialect=engine.dialect)
-    column_type = column.type.compile(engine.dialect)
-
-    try:
-        engine.execute(
-            "ALTER TABLE %s ADD COLUMN %s %s"
-            % (table_name, column_name, column_type)
+        error_on_truncate = current_app.config["AUDIT_ERROR_ON_TRUNCATION"]
+        return self.validate_truncate(
+            key,
+            str(value or ""),
+            warn=True,
+            error=error_on_truncate,
         )
-        result = True
 
-    except Exception as exx:
-        # Obviously we already migrated the database.
-        result = False
+    @validates("action_detail", "info")
+    def validate_truncate(self, key, value, warn=False, error=False):
+        """
+        Silently truncates the validated column if value is exceeding column
+        length.
+        If called manually, can be used to log a warning or throw an exception
+        on truncation.
+        """
+        max_len = getattr(self.__class__, key).prop.columns[0].type.length
+        if value and len(value) > max_len:
+            if warn:
+                log.warning(f"truncating audit data: [audit.{key}] {value}")
+            if error:
+                raise ValueError(
+                    f"Audit data too long, not truncating [audit.{key}] {value}"
+                    " because AUDIT_ERROR_ON_TRUNCATION is active."
+                )
 
-    return result
+            value = value[: max_len - 1] + "…"
+        return value
 
 
 ###############################################################################
@@ -254,87 +150,22 @@ class Audit(AuditBase):
     backend which has a separate database connection.
     """
 
-    name = "SQlAudit"
-
-    engine = None
-    """Database backend engine"""
-
-    session = None
-    """Database scoped session maker"""
-
-    def __init__(self, config, engine=None):
+    def __init__(self):
         """
         Initialise the audit backend
 
-        Here the audit backend is initialised from the given configuration,
-        encryption configuration is setup and a database connection opened.
+        Here the audit backend is initialised.
 
-        By supplying an `engine` parameter to the constructor, it is possible
-        to use an existing instance as the backend, so that the audit table
-        can form a part of the main database. Note, this is not recommended
-        for large production systems because this table will be written to
-        frequently.
-
-        @param config Dict of configuration values
-        @param engine Use the given existing engine
+        The SQLAlchemy connection is configured via flask_sqlalchemy in
+        :func:`~linotp.model.setup_db`.
         """
 
-        super(Audit, self).__init__(config)
-
-        ########################## SESSION ##################################
-
-        self._init_db()
-        self._init_sessionmaker()
-        self._createdb()
+        super(Audit, self).__init__()
 
         # initialize signing keys
         self.readKeys()
 
         self.rsa = RSA_Signature(private=self.private.encode("utf-8"))
-
-    def _init_db(self):
-        """
-        Get SQL Alchemy engine and sessionmaker for the audit interface
-        """
-
-        connect_string = current_app.config["AUDIT_DATABASE_URI"]
-        pool_recycle = current_app.config["AUDIT_POOL_RECYCLE"]
-
-        # If implicit_returning is explicitly set to True, we
-        # get lots of mysql errors
-        # AttributeError: 'MySQLCompiler_mysqldb' object has no
-        # attribute 'returning_clause'
-        # So we do not mention explicit_returning at all
-        implicit_returning = self.config.get(
-            "linotpSQL.implicit_returning", True
-        )
-
-        self.engine = create_engine(
-            connect_string,
-            pool_recycle=pool_recycle,
-            implicit_returning=implicit_returning,
-        )
-
-    def _init_sessionmaker(self):
-        """
-        Set up session maker in `self.session`
-        """
-        # Set up the session
-        sm = orm.sessionmaker(
-            bind=self.engine,
-            autoflush=True,
-            autocommit=True,
-            expire_on_commit=True,
-        )
-        self.session = orm.scoped_session(sm)
-
-    def _createdb(self):
-        """
-        Create database tables
-        """
-        # metadata.bind = self.engine
-        # metadata.create_all()
-        db.create_all()
 
     def _attr_to_dict(self, audit_line):
 
@@ -406,8 +237,8 @@ class Audit(AuditBase):
                     self.log_entry(p)
 
         except Exception as exx:
-            log.error("[log] error writing log message")
-            self.session.rollback()
+            log.error("[log] error writing log message: %r", exx)
+            db.session.rollback()
             raise exx
 
         return
@@ -421,7 +252,7 @@ class Audit(AuditBase):
         at = AuditTable(
             serial=param.get("serial"),
             action=param.get("action").lstrip("/"),
-            success=1 if param.get("success") else 0,
+            success="1" if param.get("success") else "0",
             tokentype=param.get("token_type"),
             user=param.get("user"),
             realm=param.get("realm"),
@@ -432,15 +263,13 @@ class Audit(AuditBase):
             client=param.get("client"),
             log_level=param.get("log_level"),
             clearance_level=param.get("clearance_level"),
-            config_param=self.config,
         )
 
-        self.session.add(at)
-        self.session.flush()
-        # At this point "at" contains the primary key id
+        db.session.add(at)
+        db.session.flush()
+        # At this point "at" contains the primary key id and we can sign the audit entry
         at.signature = self._sign(at)
-        self.session.merge(at)
-        self.session.flush()
+        db.session.commit()
 
     def initialize_log(self, param):
         """
@@ -592,10 +421,10 @@ class Audit(AuditBase):
                 order_dir = desc(order)
 
         if condition is None:
-            audit_q = self.session.query(AuditTable).order_by(order_dir)
+            audit_q = db.session.query(AuditTable).order_by(order_dir)
         else:
             audit_q = (
-                self.session.query(AuditTable)
+                db.session.query(AuditTable)
                 .filter(condition)
                 .order_by(order_dir)
             )
@@ -623,7 +452,7 @@ class Audit(AuditBase):
 
         # we drop here the ORM due to memory consumption
         # and return a resultproxy for row iteration
-        result = self.session.execute(audit_q.statement)
+        result = db.session.execute(audit_q.statement)
         return result
 
     def getTotal(self, param, AND=True, display_error=True):
@@ -633,9 +462,9 @@ class Audit(AuditBase):
         """
         condition = self._buildCondition(param, AND)
         if type(condition).__name__ == "NoneType":
-            c = self.session.query(AuditTable).count()
+            c = db.session.query(AuditTable).count()
         else:
-            c = self.session.query(AuditTable).filter(condition).count()
+            c = db.session.query(AuditTable).filter(condition).count()
 
         return c
 
@@ -677,40 +506,3 @@ def getAsBytes(data):
     for signing
     """
     return bytes(getAsString(data), "utf-8")
-
-
-class AuditLinOTPDB(Audit):
-    """
-    SQL audit backend that uses LinOTP database
-
-    This backend is mainly to allow simple configuration scenario
-    where a separate engine is not required
-    """
-
-    name = "SQLAudit-LinOTPDB"
-
-    def __init__(self, config):
-        """
-        Iniailise the audit backend using the LinOTP
-        database backend
-        """
-        super().__init__(config, None)
-
-    def _init_db(self):
-        """
-        Initialise engine using LinOTP DB
-        """
-        self.engine = db.engine
-
-    def _init_sessionmaker(self):
-        """
-        Set up session maker in `self.session`
-        """
-        self.session = db.session
-
-    def log_entry(self, param):
-        super().log_entry(param)
-        self.session.commit()
-
-
-###eof#########################################################################
