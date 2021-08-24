@@ -373,6 +373,13 @@ def test_padding_migration(app, base_app, engine):
             Description="db schema version",
         )
         db.session.add(item)
+        item = Config(
+            Key="linotp.Config",
+            Value="2021-08-25 11:26:13.101147",
+            Type="",
+            Description="db config change time stamp",
+        )
+        db.session.add(item)
 
         value = "Test123Test123Test123Test123Test123"
         enc_value = sec_module.encryptPassword(value.encode("utf-8"))
