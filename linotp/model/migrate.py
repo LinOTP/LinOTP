@@ -26,6 +26,7 @@
 """
 database schema migration hook
 """
+import binascii
 import logging
 from typing import Optional
 
@@ -468,6 +469,19 @@ class Migration:
         if to_version is None:
             to_version = Migration.migration_steps[-1]
 
+        # ----------------------------------------------------------------- --
+
+        # no migration for new database:
+        #  if this is a new database, we don't need to run a migration
+        #  the status untouched is determined by looking for the linotp.config
+        #  time stamp database entry, which is written on every update
+
+        if self.is_db_untouched():
+            log.info("Fresh database - no migration required!")
+            return to_version
+
+        # ----------------------------------------------------------------- --
+
         active = False
 
         for next_version in self.migration_steps:
@@ -599,10 +613,6 @@ class Migration:
         Thus we can exclude all fresh created and non-mysql databases
         """
 
-        if self.is_db_untouched():
-            log.info("Fresh database - no migration required!")
-            return
-
         if not self.engine.url.drivername.startswith("mysql"):
             log.info(
                 "Non mysql databases %r - no migration required.",
@@ -705,8 +715,6 @@ class Migration:
 
         This has to be done for the tokens and for the encrypted config values
         """
-
-        import binascii
 
         from linotp.lib.security.default import (
             TOKEN_KEY,
