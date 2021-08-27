@@ -27,8 +27,12 @@
 
 """ used to do functional testing of the server forwarding"""
 
+import logging
 
+import pytest
 from mock import patch
+
+from flask import g
 
 from linotp.tests import TestController
 
@@ -59,6 +63,16 @@ class TestForwardServer(TestController):
         TestController.tearDown(self)
         global Rad_Serv
         Rad_Serv = None
+
+    # We need to resort to dirty tricks to get access to the `caplog` fixture,
+    # because `unittest`-based tests don't support getting at pytest fixtures
+    # in the usual way (by listing them as method parameters). This sucks, and
+    # the tests should really be rewritten to get rid of the `TestController`
+    # class.
+
+    @pytest.fixture(autouse=True)
+    def caplog_fixture(self, caplog):  # pylint: disable=redefined-outer-name
+        self.caplog = caplog  # pylint: disable=attribute-defined-outside-init
 
     def define_user_forward(self):
         # ------------------------------------------------------------------ --
@@ -165,9 +179,11 @@ class TestForwardServer(TestController):
     @patch(
         "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
     )
-    def test_000000_server_forwarding_with_no_token(self):
+    def test_server_forwarding_with_no_token_0(self):
         """
-        conditional forward request only if no user has no token
+        conditional forward request only if no user has no token.
+        This test shows that the request is NOT forwarded if the user DOES have
+        a token.
         """
 
         # ------------------------------------------------------------------ --
@@ -213,15 +229,78 @@ class TestForwardServer(TestController):
         global Rad_Serv
         Rad_Serv = None
 
-        params = {"user": "passthru_user1", "pass": "pintest123!"}
+        with self.caplog.at_level(
+            logging.INFO, logger="linotp.lib.auth.validate"
+        ):
+            self.caplog.clear()
+            params = {"user": "passthru_user1", "pass": "pintest123!"}
 
-        response = self.make_validate_request(action="check", params=params)
+            response = self.make_validate_request(
+                action="check", params=params
+            )
+
         assert "false" not in response, response
         assert Rad_Serv is None, Rad_Serv
 
+        nf_msgs = [
+            t for t in self.caplog.record_tuples if "NOT forwarding" in t[2]
+        ]
+        assert len(nf_msgs) == 1
+
+        # This assertion only makes sense if `action_detail` is not overwritten
+        # by later log entries.
+
+        # assert g.audit["action_detail"] == "NOT forwarded"
+
+    @patch(
+        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
+    )
+    def test_server_forwarding_with_no_token_1(self):
+        """
+        conditional forward request only if no user has no token.
+        This test establishes that the request is NOT forwarded if the user
+        DOES have a token and it is disabled.
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # define forwarding policies
+
+        params = {
+            "name": "forward_user",
+            "realm": "mydefrealm",
+            "action": (
+                "forward_server=radius://127.0.0.1:1812/"
+                "?secret=geheim1, forward_on_no_token"
+            ),
+            "client": "",
+            "user": "passthru_user1",
+            "time": "",
+            "active": True,
+            "scope": "authentication",
+        }
+
+        response = self.make_system_request("setPolicy", params=params)
+        assert "false" not in response, response
+
+        # ------------------------------------------------------------------ --
+
+        # create token for user passthru_user1
+
+        params = {
+            "type": "pw",
+            "otpkey": "test123!",
+            "user": "passthru_user1",
+            "pin": "pin",
+            "serial": "my_pw_token",
+        }
+
+        response = self.make_admin_request("init", params=params)
+        assert "false" not in response, response
+
         # ----------------------------------------------------------------- --
 
-        # remove token of passthru_user1
+        # disable token of passthru_user1
 
         params = {"serial": "my_pw_token"}
         response = self.make_admin_request("disable", params=params)
@@ -231,19 +310,60 @@ class TestForwardServer(TestController):
 
         # passthru_user1 should now be forwarded
 
-        params = {"user": "passthru_user1", "pass": "geheim1"}
+        with self.caplog.at_level(logging.INFO):
+            self.caplog.clear()
+            params = {"user": "passthru_user1", "pass": "geheim1"}
+            response = self.make_validate_request(
+                action="check", params=params
+            )
 
-        response = self.make_validate_request(action="check", params=params)
         assert "false" in response, response
         assert Rad_Serv is None, Rad_Serv
 
-        # ----------------------------------------------------------------- --
+        nf_msgs = [
+            t
+            for t in self.caplog.record_tuples
+            if t[2].startswith("NOT forwarding auth request")
+        ]
+        assert len(nf_msgs) == 1
 
-        # remove token of passthru_user1
+        # This assertion only makes sense if `action_detail` is not overwritten
+        # by later log entries.
 
-        params = {"serial": "my_pw_token"}
-        response = self.make_admin_request("remove", params=params)
+        # assert g.audit["action_detail"] == "NOT forwarded"
+
+    @patch(
+        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
+    )
+    def test_server_forwarding_with_no_token_2(self):
+        """
+        conditional forward request only if no user has no token.
+        This test shows that the request IS forwarded if the user DOESN'T have
+        a token.
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # define forwarding policies
+
+        params = {
+            "name": "forward_user",
+            "realm": "mydefrealm",
+            "action": (
+                "forward_server=radius://127.0.0.1:1812/"
+                "?secret=geheim1, forward_on_no_token"
+            ),
+            "client": "",
+            "user": "passthru_user1",
+            "time": "",
+            "active": True,
+            "scope": "authentication",
+        }
+
+        response = self.make_system_request("setPolicy", params=params)
         assert "false" not in response, response
+
+        # Note that passthru_user1 does not have a token.
 
         # ----------------------------------------------------------------- --
 
@@ -254,7 +374,17 @@ class TestForwardServer(TestController):
         _response = self.make_validate_request(action="check", params=params)
         assert "127.0.0.1" in Rad_Serv, Rad_Serv
 
-        return
+        nf_msgs = [
+            t
+            for t in self.caplog.record_tuples
+            if t[2].startswith("forwarding auth request")
+        ]
+        assert len(nf_msgs) == 1
+
+        # This assertion only makes sense if `action_detail` is not overwritten
+        # by later log entries.
+
+        # assert g.audit["action_detail"] == "Forwarded, result True"
 
 
 # eof #
