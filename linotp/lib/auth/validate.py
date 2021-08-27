@@ -926,10 +926,12 @@ class ValidationHandler(object):
         # add to all tokens the last accessed time stamp
 
         add_last_accessed_info(
-            valid_tokens
-            + pin_matching_tokens
-            + challenge_tokens
-            + invalid_tokens
+            set(
+                valid_tokens
+                + pin_matching_tokens
+                + challenge_tokens
+                + invalid_tokens
+            )
         )
 
         # add time stamp to all valid tokens
@@ -940,7 +942,7 @@ class ValidationHandler(object):
 
         # now we care for all involved tokens and their challenges
 
-        for token in (
+        for token in set(
             valid_tokens
             + pin_matching_tokens
             + challenge_tokens
