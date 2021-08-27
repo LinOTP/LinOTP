@@ -100,7 +100,7 @@ def check_pin(token, passw, user=None, options=None):
 
     otppin_mode = _get_otppin_mode(get_pin_policies(user))
 
-    if 1 == otppin_mode:
+    if otppin_mode == 1:
         # We check the Users Password as PIN
         log.debug("pin policy=1: checking the users password as pin")
         # this should not be the case
@@ -149,7 +149,7 @@ def check_pin(token, passw, user=None, options=None):
         options["pin_match"][key] = res
         # and register the success, to shorten lookups after
         # already one positive was found
-        if res is True:
+        if res:
             options["pin_match"]["found"] = True
 
         return res
@@ -210,19 +210,19 @@ def split_pin_otp(token, passw, user=None, options=None):
 
     otppin_mode = _get_otppin_mode(get_pin_policies(user))
 
-    if 0 == otppin_mode:
+    if otppin_mode == 0:
         # old stuff: We check The fixed OTP PIN
         log.debug("pin policy=0: checking the PIN")
         (pin, otp) = token.splitPinPass(passw)
         return 0, pin, otp
 
-    elif 1 == otppin_mode:
+    elif otppin_mode == 1:
         log.debug("pin policy=1: checking the users password as pin")
         # split the passw into password and otp value
         (pin, otp) = token.splitPinPass(passw)
         return 1, pin, otp
 
-    elif 2 == otppin_mode:
+    elif otppin_mode == 2:
         # NO PIN should be entered at all
         log.debug("pin policy=2: checking no pin")
         (pin, otp) = ("", passw)
@@ -231,7 +231,7 @@ def split_pin_otp(token, passw, user=None, options=None):
         }
         return 2, pin, otp
 
-    elif 3 == otppin_mode:
+    elif otppin_mode == 3:
         # no pin should be checked
         log.debug("pin policy=3: ignoring the pin")
         (pin, otp) = token.splitPinPass(passw)
@@ -519,7 +519,7 @@ class ValidationHandler(object):
                 pass_on = context.get("Config").get(
                     "linotp.PassOnUserNotFound", False
                 )
-                if pass_on and "true" == pass_on.lower():
+                if pass_on and pass_on.lower() == "true":
                     g.audit[
                         "action_detail"
                     ] = "authenticated by PassOnUserNotFound"
@@ -529,13 +529,36 @@ class ValidationHandler(object):
                     return (False, opt)
 
         # if we have an user, check if we forward the request to another server
-        if user_exists and get_auth_forward_on_no_token(user) is False:
+        if user_exists and not get_auth_forward_on_no_token(user):
             servers = get_auth_forward(user)
             if servers:
+                log.info(
+                    "forwarding auth request for user {} to {}".format(
+                        user, servers
+                    )
+                )
                 res, opt = ForwardServerPolicy.do_request(
                     servers, env, user, passw, options
                 )
+                log.info(
+                    "result of auth request for user {}: ({}, {})".format(
+                        user, res, opt
+                    )
+                )
+                g.audit["action_detail"] = "Forwarded, result {}".format(res)
                 return res, opt
+            else:
+                log.info(
+                    "NOT forwarding auth request for user {} (no servers)".format(
+                        user
+                    )
+                )
+                g.audit["action_detail"] = "Not forwarded (no servers)"
+        else:
+            log.info(
+                "NOT forwarding auth request for user {} "
+                "(get_auth_forward_on_no_token returned False)".format(user)
+            )
 
         # ------------------------------------------------------------------ --
 
@@ -549,7 +572,7 @@ class ValidationHandler(object):
             otp=passw, user=user, options=options
         )
 
-        if auto_assign_otp_return is True:
+        if auto_assign_otp_return:
             return (True, None)
 
         # ------------------------------------------------------------------ --
@@ -579,7 +602,7 @@ class ValidationHandler(object):
 
             # here we check if we should to autoassign and try to do it
             auto_assign_return = th.auto_assignToken(passw, user)
-            if auto_assign_return is True:
+            if auto_assign_return:
                 # We can not check the token, as the OTP value is already used!
                 # but we will auth the user....
                 return (True, opt)
@@ -587,7 +610,7 @@ class ValidationHandler(object):
             auto_enroll_return, opt = th.auto_enrollToken(
                 passw, user, options=options
             )
-            if auto_enroll_return is True:
+            if auto_enroll_return:
                 # we always have to return a false, as
                 # we have a challenge tiggered
                 return (False, opt)
@@ -595,7 +618,7 @@ class ValidationHandler(object):
             pass_on = context.get("Config").get(
                 "linotp.PassOnUserNoToken", False
             )
-            if pass_on and "true" == pass_on.lower():
+            if pass_on and pass_on.lower() == "true":
                 g.audit["action_detail"] = "authenticated by PassOnUserNoToken"
                 return (True, opt)
 
@@ -626,13 +649,33 @@ class ValidationHandler(object):
 
             # if we have an user, check if we forward the request to another
             # server
-            elif get_auth_forward_on_no_token(user) is True:
+            elif get_auth_forward_on_no_token(user):
                 servers = get_auth_forward(user)
                 if servers:
+                    log.info(
+                        "forwarding auth request for user {} to {}".format(
+                            user, servers
+                        )
+                    )
                     res, opt = ForwardServerPolicy.do_request(
                         servers, env, user, passw, options
                     )
+                    log.info(
+                        "result of auth request for user {}: ({}, {})".format(
+                            user, res, opt
+                        )
+                    )
+                    g.audit["action_detail"] = "Forwarded, result {}".format(
+                        res
+                    )
                     return res, opt
+                else:
+                    log.info(
+                        "NOT forwarding auth request for user {} (no servers)".format(
+                            user
+                        )
+                    )
+                    g.audit["action_detail"] = "Not forwarded (no servers)"
 
             return False, opt
 
