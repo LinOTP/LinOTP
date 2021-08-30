@@ -25,6 +25,7 @@
 #
 
 import base64
+import binascii
 import datetime
 import os
 import stat
@@ -40,7 +41,7 @@ from sqlalchemy import create_engine
 import linotp.cli.init_cmd as c
 from linotp.app import LinOTPApp
 from linotp.cli import Echo, get_backup_filename, main
-from linotp.model import Config, db, init_db_tables, setup_db
+from linotp.model import Config, Token, db, init_db_tables, setup_db
 
 
 @pytest.fixture
@@ -391,8 +392,28 @@ def test_padding_migration(app, base_app, engine):
             Type="encrypted_data",
             Description="migration test password",
         )
-
         db.session.add(enc_item)
+
+        pw_token = Token(serial="new_pw_token")
+        pw_token.LinOtpTokenType = "pw"
+        pw_token.LinOtpKeyIV = binascii.hexlify(b":1:")
+        pw_token.LinOtpKeyEnc = binascii.hexlify(
+            b"$6$XjPTQ1cdb8xFEdnF$m.XoQ//RSPABWGym7o9aPx/.RS1ZySekGBDW7wu"
+            b"TZlCDhEM7nf7aOjp03Erk1UFX2OiOhKqaXBMw0a.o4Sbev."
+        )
+        db.session.add(pw_token)
+
+        hmac_token = Token(serial="new_hmac_token")
+        hmac_token.LinOtpTokenType = "hmac"
+
+        crypted_value = sec_module.encryptPin(
+            cryptPin=b"01234567890123456789012345678901"
+        )
+        iv, _, enc_key = crypted_value.partition(":")
+        hmac_token.LinOtpKeyIV = iv.encode("utf-8")
+        hmac_token.LinOtpKeyEnc = enc_key.encode("utf-8")
+
+        db.session.add(hmac_token)
 
         db.session.commit()
         db.session.remove()
