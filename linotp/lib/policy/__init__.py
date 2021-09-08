@@ -437,6 +437,21 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
             # printed in a PIN letter
             ret["new_pin"] = new_pin
 
+    # -------------------------------------------------------------------- --
+
+    # for selfservice "enroll" we check the license limits
+    # - this hook covers both, the 'enroll' and the 'webprovision' userservice
+
+    if method == "enroll":
+
+        if linotp.lib.support.check_license_restrictions():
+            raise PolicyException(
+                _(
+                    "Due to license restrictions no more"
+                    " tokens could be enrolled!"
+                )
+            )
+
     return ret
 
 
