@@ -863,14 +863,22 @@ function check_license() {
     var resp = clientUrlFetchSync('/system/isSupportValid', {});
     var obj = jQuery.parseJSON(resp);
     if (obj.result.value === false) {
-        message = escape(obj.detail.reason);
-        intro = escape($('#text_support_lic_error').html());
-        alert_info_text({
-            'text': intro + " " + message,
-            'type': ERROR,
-            'is_escaped': true
-        });
+         var message = escape(obj.detail.reason);
+         var intro = escape($('#text_support_lic_error').html());
+         alert_info_text({
+             'text': intro + " " + message,
+             'type': ERROR,
+             'is_escaped': true
+         });
     }
+    if ("detail" in obj && "reason" in obj.detail) {
+         var message = escape(obj.detail.reason);
+         var intro = escape($('#text_support_lic_error').html());
+	     alert_info_text({
+	         'text': intro + " " + message,
+	         'is_escaped': true
+	     });
+	}
     if (obj['detail'] && obj.detail['download_licence_info']) {
         $('#dialog_support_contact').html(obj.detail['download_licence_info']);
         $dialog_support_contact.dialog('open');
@@ -885,6 +893,14 @@ function check_license() {
 function is_license_valid() {
     var resp = clientUrlFetchSync('/system/isSupportValid', {});
     var obj = jQuery.parseJSON(resp);
+    if ("detail" in obj && "reason" in obj.detail) {
+        var message = escape(obj.detail.reason);
+        var intro = escape($('#text_support_lic_error').html());
+	    alert_info_text({
+	        'text': intro + " " + message,
+	        'is_escaped': true
+	    });
+	}
     return obj.result.value === true;
 }
 

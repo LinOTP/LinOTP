@@ -1991,7 +1991,7 @@ class SystemController(BaseController):
 
             (res, msg, lic_info) = isSupportLicenseValid(licString)
 
-            if res is False:
+            if msg:
                 info["reason"] = msg
 
             if do_nagging(lic_info, nag_days=7):

@@ -107,6 +107,8 @@ issuer=LSE Leading Security Experts GmbH
 SMyYfVhZKPgS3mjcSYsfUG9awcgfwUU/ssEw0FLqSbTQiIJf2gWN9dx02iVSJREUnlf80Gy3ZQd0l4EVOucGw2GYWGGo3JRj/XrL7NnZFeP5d0SpPmcRwb4qyVYZ+yhQFtYkh4PMVnhPbjZyuILA1gBY1jUTeHqtfswg9QYwkCKlqosyyHnI1jA+usW3RcGuI74BNQK0qS7cQmoZBKG0PN/UbD3fA4wNVqJbh0FPQi2fnduZysWHFqmuMkpQ5epkVOfmkDTL6QQwl9R5We6RgepBdMkX5+E1hmCeDoIsXo8/+zAVYeejVQ9LWpdMExN443W0oQ0VIxA8/kTzuaEX9A==
 -----END LICENSE SIGNATURE-----"""
 
+GRACE_VOLUME = 2
+
 
 class LicenseInfo(dict):
     """
@@ -644,25 +646,23 @@ def verifyLicenseInfo(
     lic_dict.license_expiration = expiration
 
     if checkVolume:
-        valid, volume_info = verify_volume(lic_dict)
-        if not valid:
-            error = "volume exceeded:"
-            try:
-                error = _(error)
-            except BaseException:
-                pass
-            error = error + volume_info
-            log.error(
-                "Verification of support license failed!"
-                "Error was %s\n. Lincence info: %r",
-                error,
-                lic_dict.info(),
-            )
-            if raiseException:
-                raise InvalidLicenseException(error, type="INVALID_VOLUME")
-            return False, error
 
-        lic_dict.license_volume_info = volume_info
+        valid, volume_info = verify_volume(lic_dict)
+
+        if valid:
+            lic_dict.license_volume_info = volume_info
+            return True, volume_info
+
+        error = _("volume exceeded: ") + volume_info
+        log.error(
+            "Verification of support license failed!"
+            "Error was %s\n. Lincence info: %r",
+            error,
+            lic_dict.info(),
+        )
+        if raiseException:
+            raise InvalidLicenseException(error, type="INVALID_VOLUME")
+        return False, error
 
     return True, "license OK"
 
@@ -807,7 +807,7 @@ def verify_user_volume(lic_dict):
     check if the token users count is covered by the license
 
     :param lic_dict: dictionary with license attributes
-    :return: tuple with boolean and error detail if False
+    :return: tuple with boolean and verification detail
     """
     _ = context["translate"]
 
@@ -825,22 +825,46 @@ def verify_user_volume(lic_dict):
         )
         return False, "max %d" % user_volume
 
-    if num > user_volume + 2:
+    detail = ""
+
+    if num > user_volume + GRACE_VOLUME:
         log.error(
-            "Licensed token user volume exceeded. Currently %r users "
-            "present, but only %r allowed.",
+            "Volume of licensed token users exceeded. Currently %r users "
+            "are present, but only %r are licensed.",
             num,
             user_volume,
         )
-        used = _("token user used")
-        licnu = _("token users supported")
-        detail = " %s: %d > %s: %d" % (used, num, licnu, user_volume)
+        detail = _("%d token users used > %d token users licensed.") % (
+            num,
+            user_volume,
+        )
         return False, detail
 
-    return True, ""
+    if num >= user_volume and num <= user_volume + GRACE_VOLUME:
+        log.warning(
+            "Volume of licensed token users exceeded. Currently %d users "
+            "are present, but only %d are licensed. Grace of %d additional "
+            "users allowed.",
+            num,
+            user_volume,
+            GRACE_VOLUME,
+        )
+
+        detail = _(
+            "Grace limit reached: %d token users used >= %d token users "
+            "licensed. %d additional users allowed."
+        ) % (num, user_volume, GRACE_VOLUME)
+
+    return True, detail
 
 
 def verify_token_volume(lic_dict):
+    """
+    check if the token count is covered by the license
+
+    :param lic_dict: dictionary with license attributes
+    :return: tuple with boolean and verification detail
+    """
 
     _ = context["translate"]
 
@@ -858,19 +882,36 @@ def verify_token_volume(lic_dict):
         )
         return False, "max %d" % token_volume
 
-    if num > token_volume + 2:
+    detail = ""
+
+    if num > token_volume + GRACE_VOLUME:
         log.error(
-            "Licensed token volume exceeded. Currently %r tokens "
-            "present, but only %r allowed.",
+            "Volume of licensed tokens exceeded. Currently %r tokens are "
+            "present, but only %r are licensed.",
             num,
             token_volume,
         )
-        used = _("tokens used")
-        licnu = _("tokens supported")
-        detail = " %s: %d > %s: %d" % (used, num, licnu, token_volume)
+        detail = _("%d tokens used > %d tokens licensed.") % (
+            num,
+            token_volume,
+        )
         return False, detail
 
-    return True, ""
+    if num >= token_volume and num <= token_volume + GRACE_VOLUME:
+        log.warning(
+            "Volume of licensed tokens exceeded. Currently %r tokens are "
+            "present, but only %r are licensed. Grace of %d additional "
+            "tokens allowed.",
+            num,
+            token_volume,
+            GRACE_VOLUME,
+        )
+        detail = _(
+            "Grace limit reached: %d tokens used >= %d tokens licensed. "
+            "%d additional tokens allowed."
+        ) % (num, token_volume, GRACE_VOLUME)
+
+    return True, detail
 
 
 def get_public_keys():
