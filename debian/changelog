@@ -3,7 +3,11 @@ linotp (3.2~0dev-0) experimental; urgency=low
   Fixes:
   * license limits are now checked during userservice token enrollment
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Wed, 8 Sept 2021 16:43:51 +0200
+  Features:
+  * add grace to license volume exceeding and display accordingly a message
+    in the the web ui
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 9 Sep 2021 17:13:51 +0200
 
 linotp (3.1~rc0-1) buster-dev; urgency=low
 
