@@ -203,7 +203,7 @@ class TokenHandler(object):
         :return: tuple of auth success and challenge output
         """
 
-        # check if autoenrollt is configured
+        # check if auto enrollment is configured
         try:
             auto, token_types = linotp.lib.policy.get_auto_enrollment(user)
         except Exception as exx:
