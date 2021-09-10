@@ -238,9 +238,7 @@ class TestSupport(TestController):
             params["serial"] = "HMAC_DEMO-XXX"
             response = self.make_admin_request("init", params)
             assert '"status": false' in response, response
-            msg = (
-                "No more tokens can be enrolled" " due to license restrictions"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response, response
 
     def test_userservice_license_restrictions(self):
@@ -308,10 +306,7 @@ class TestSupport(TestController):
             )
             assert not response.json["result"]["status"]
 
-            msg = (
-                "Due to license restrictions no more "
-                "tokens could be enrolled!"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response.json["result"]["error"]["message"], response
 
             # ------------------------------------------------------------- --
@@ -323,10 +318,7 @@ class TestSupport(TestController):
             )
             assert not response.json["result"]["status"]
 
-            msg = (
-                "Due to license restrictions no more "
-                "tokens could be enrolled!"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response.json["result"]["error"]["message"], response
 
     def test_token_user_license(self):
@@ -390,10 +382,7 @@ class TestSupport(TestController):
 
             response = self.make_admin_request("init", params)
             assert '"status": false' in response
-            msg = (
-                "Due to license restrictions no more "
-                "tokens could be enrolled!"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response
 
             # ------------------------------------------------------------- --
@@ -429,10 +418,7 @@ class TestSupport(TestController):
 
             response = self.make_admin_request("enable", params)
             assert '"status": false' in response
-            msg = (
-                "Due to license restrictions no more "
-                "tokens could be enrolled!"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response
             # ------------------------------------------------------------- --
 
@@ -446,10 +432,7 @@ class TestSupport(TestController):
 
             response = self.make_admin_request("assign", params)
             assert '"status": false' in response
-            msg = (
-                "Due to license restrictions no more "
-                "tokens could be enrolled!"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response
 
     def test_tokencount_user_license(self):
