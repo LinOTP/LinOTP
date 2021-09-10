@@ -179,7 +179,7 @@ class TestSupport(TestController):
         response = self.install_license(license_filename="demo-lic.pem")
 
         assert '"status": false' in response, response
-        msg = "volume exceeded: tokens used: 9 > tokens supported: 5"
+        msg = "volume exceeded: 9 tokens used > 5 tokens licensed."
         assert msg in response, response
 
     def test_appliance_demo_licence(self):
