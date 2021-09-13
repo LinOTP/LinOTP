@@ -330,8 +330,8 @@ def _checkAdminPolicyPost(
 
             raise PolicyException(
                 _(
-                    "Due to license restrictions no more "
-                    "tokens could be enrolled!"
+                    "No more tokens can be enrolled"
+                    " due to license restrictions"
                 )
             )
 
@@ -436,6 +436,21 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
             # TODO: This random PIN could be processed and
             # printed in a PIN letter
             ret["new_pin"] = new_pin
+
+    # -------------------------------------------------------------------- --
+
+    # for selfservice "enroll" we check the license limits
+    # - this hook covers both, the 'enroll' and the 'webprovision' userservice
+
+    if method == "enroll":
+
+        if linotp.lib.support.check_license_restrictions():
+            raise PolicyException(
+                _(
+                    "No more tokens can be enrolled"
+                    " due to license restrictions"
+                )
+            )
 
     return ret
 
@@ -614,8 +629,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(
                 _(
-                    "Due to license restrictions no more"
-                    " tokens could be enabled!"
+                    "No more tokens can be enabled"
+                    " due to license restrictions"
                 )
             )
 
@@ -809,8 +824,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(
                 _(
-                    "Due to license restrictions no more"
-                    " tokens could be enrolled!"
+                    "No more tokens can be enrolled"
+                    " due to license restrictions"
                 )
             )
 
@@ -987,8 +1002,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(
                 _(
-                    "Due to license restrictions no more"
-                    " tokens could be assigned!"
+                    "No more tokens can be assigned"
+                    " due to license restrictions"
                 )
             )
 
@@ -1394,8 +1409,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if linotp.lib.support.check_license_restrictions():
             raise PolicyException(
                 _(
-                    "Due to license restrictions no more"
-                    " tokens could be loaded!"
+                    "No more tokens can be loaded"
+                    " due to license restrictions"
                 )
             )
 

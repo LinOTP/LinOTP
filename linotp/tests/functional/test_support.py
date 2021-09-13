@@ -238,11 +238,88 @@ class TestSupport(TestController):
             params["serial"] = "HMAC_DEMO-XXX"
             response = self.make_admin_request("init", params)
             assert '"status": false' in response, response
-            msg = (
-                "Due to license restrictions no more "
-                "tokens could be enrolled!"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response, response
+
+    def test_userservice_license_restrictions(self):
+        """
+        if license is installed, only a limited number of tokens could be enrolled via
+        via the userservice api
+
+         - an expired license with the expiration date 2017-12-12 is used
+        """
+
+        # ----------------------------------------------------------------- --
+
+        # 0. setup the selfservice policies to allow token enrollment
+
+        params = {
+            "name": "enrollment_limit_test",
+            "scope": "selfservice",
+            "action": "webprovisionGOOGLE, enrollHMAC",
+            "user": "*",
+            "realm": "*",
+            "active": True,
+        }
+
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        time_ago = datetime(year=2017, month=12, day=1)
+
+        with freeze_time(time_ago):
+
+            # ------------------------------------------------------------ --
+
+            # 1. install the license with
+
+            response = self.install_license(license_filename="expired-lic.pem")
+            assert response.json["result"]["status"]
+            assert response.json["result"]["value"]
+
+            # ----------------------------------------------------------------- --
+
+            # 2. enroll tokens up to the license limit, which is
+            #    6 tokens + 2 grace tokens
+
+            for i in range(1, 6 + 2):
+                response = self.make_userselfservice_request(
+                    "enroll", params={"type": "hmac"}, auth_user=auth_user
+                )
+
+                assert response.json["result"]["status"]
+                assert response.json["result"]["value"]
+
+            # ------------------------------------------------------------- --
+
+            # 3a. verify that userservice/webprovision does not work
+
+            response = self.make_userselfservice_request(
+                "webprovision",
+                params={"type": "googleauthenticator"},
+                auth_user=auth_user,
+            )
+            assert not response.json["result"]["status"]
+
+            msg = "No more tokens can be enrolled due to license restrictions"
+            assert msg in response.json["result"]["error"]["message"], response
+
+            # ------------------------------------------------------------- --
+
+            # 3b. verify that userservice/enroll does not work either
+
+            response = self.make_userselfservice_request(
+                "enroll", params={"type": "hmac"}, auth_user=auth_user
+            )
+            assert not response.json["result"]["status"]
+
+            msg = "No more tokens can be enrolled due to license restrictions"
+            assert msg in response.json["result"]["error"]["message"], response
 
     def test_token_user_license(self):
         """
@@ -305,10 +382,7 @@ class TestSupport(TestController):
 
             response = self.make_admin_request("init", params)
             assert '"status": false' in response
-            msg = (
-                "Due to license restrictions no more "
-                "tokens could be enrolled!"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response
 
             # ------------------------------------------------------------- --
@@ -344,10 +418,7 @@ class TestSupport(TestController):
 
             response = self.make_admin_request("enable", params)
             assert '"status": false' in response
-            msg = (
-                "Due to license restrictions no more "
-                "tokens could be enrolled!"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response
             # ------------------------------------------------------------- --
 
@@ -361,10 +432,7 @@ class TestSupport(TestController):
 
             response = self.make_admin_request("assign", params)
             assert '"status": false' in response
-            msg = (
-                "Due to license restrictions no more "
-                "tokens could be enrolled!"
-            )
+            msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response
 
     def test_tokencount_user_license(self):
