@@ -28,14 +28,21 @@ $ git clone https://github.com/LinOTP/LinOTP.git
 ## Set up your LinOTP development environment
 
 If you want to develop LinOTP, you first need to install some software
-packages that LinOTP depends upon. As superuser on a Debian-based
-system, run:
+packages that LinOTP depends upon.
+
+On a Debian-based system, run as a superuser:
 ```terminal
-# apt-get install build-essential python3-dev \
-                  python3-mysqldb mariadb-server libmariadbclient-dev \
-                  libldap2-dev libsasl2-dev \
-                  libssl-dev
+apt-get install build-essential python3-dev \
+                python3-mysqldb mariadb-server libmariadbclient-dev \
+                libldap2-dev libsasl2-dev \
+                libssl-dev
 ```
+
+On macOS, you need at least:
+```terminal
+brew install libsodium
+```
+
 LinOTP can use a variety of SQL databases but MySQL/MariaDB is most
 widely used. Other options include PostgreSQL and SQLite, although
 SQLite is not recommended for production setups.
@@ -54,14 +61,22 @@ follows:
 $ python3 -m venv linotp_dev       # Pick a name but be consistent
 $ source linotp_dev/bin/activate
 ```
-Then go to the source code subdirectory for the LinOTP server, and
-install its development dependencies:
+Then, install the development dependencies:
 ```terminal
 $ pip3 install -e .
 ```
 In order to run automated tests you must also install the test dependencies:
 ```terminal
 $ pip3 install -e ".[test]"
+```
+
+For a quickstart using the default configuration, run:
+```terminal
+mkdir -p linotp/cache linotp/data linotp/logs
+linotp init database
+linotp init audit-keys
+linotp init enc-key
+linotp run
 ```
 
 ## Configure LinOTP
