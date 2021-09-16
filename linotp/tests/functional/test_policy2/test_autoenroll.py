@@ -305,6 +305,19 @@ class TestAutoassignSMSController(TestController):
 
         return
 
+    def test_no_autoenrollment(self):
+        """Test for response with no auto enrollment"""
+
+        user = "passthru_user1@myDefRealm"
+        params = {
+            "user": user,
+            "pass": "1234123456",
+        }
+        response = self.make_validate_request("check", params)
+        assert response.json["result"]["status"], response
+        assert not response.json["result"]["value"], response
+        assert "detail" not in response.json
+
     @patch.object(
         linotp.provider.emailprovider.SMTPEmailProvider,
         "submitMessage",

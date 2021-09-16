@@ -815,6 +815,20 @@ class Migration:
         for token in model.Token.query.all():
 
             iv = binascii.unhexlify(token.LinOtpKeyIV)
+
+            # ------------------------------------------------------------- --
+
+            # special treatment of the new pw token
+            # the new pw Tokenwe uses the standard password lib to deal with
+            # the hashed passwords. The identifier for this is the
+            # iv == b':1:' and thus LinOtpKeyEnc contains the hashed password.
+            # So we have nothing to do here and just can continue
+
+            if iv == b":1:" and token.LinOtpTokenType == "pw":
+                continue
+
+            # ------------------------------------------------------------- --
+
             encrypted_value = binascii.unhexlify(token.LinOtpKeyEnc)
             enc = binascii.hexlify(encrypted_value)
 

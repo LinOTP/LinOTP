@@ -2472,11 +2472,12 @@ def get_auto_enrollment(user):
 
     token_types = [x.strip() for x in t_typ.lower().split()]
 
-    if not set(token_types).issubset(set(["sms", "email", "*"])):
-        log.info("unsupported token type for auto enrollment %r", t_typ)
-        return False, ""
+    if token_types and set(token_types).issubset(set(["sms", "email", "*"])):
+        log.info("token type for auto enrollment: %r", t_typ)
+        return True, token_types
 
-    return True, token_types
+    log.info("unsupported token type for auto enrollment %r", t_typ)
+    return False, ""
 
 
 def autoassignment_forward(user):
