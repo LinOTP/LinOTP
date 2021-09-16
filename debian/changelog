@@ -11,7 +11,7 @@ linotp (3.2~0dev-0) experimental; urgency=low
 
 linotp (3.1~rc0-1) buster-dev; urgency=low
 
-  * Set version 3.1~rc0
+  * Set version 3.1~rc1
 
   Features:
   * ManageUI policy editor utilizes full window width for improved layout.
@@ -67,7 +67,7 @@ linotp (3.1~rc0-1) buster-dev; urgency=low
   * Fix padding of crypted data by migrating to pkcs7 padding
     via the `linotp init database` command.
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 12 Nov 2020 17:48:51 +0200
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Tue, 31 Aug 2021 09:48:51 +0200
 
 linotp (3.0~rc4-1) buster-dev; urgency=low
 
