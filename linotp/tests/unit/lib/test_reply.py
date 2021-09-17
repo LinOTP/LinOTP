@@ -94,28 +94,26 @@ class TestReplyTestCase(object):
             httperror = _get_httperror_from_params(None)
             assert httperror is None
 
-    @pytest.mark.skip("Not yet ported to Flask")
     def test_response_iterator(self):
         """test if request context gets reinstated in sendResultIterator"""
+
+        # we need to enclose bar into double qoutes,
+        # because the json is assembled manually
+
+        request_context_copy = {"foo": '"bar"'}
 
         def request_context_test_iterator():
             # this will raise an error if it is called
             # outside of request_context_safety
-            yield request_context.get("foo")
-
-        # we need to enclose bar into double qoutes,
-        # because the json is assembled manually
-        request_context_copy = {"foo": '"bar"'}
+            res = request_context_copy.get("foo")
+            yield res
 
         try:
-            res = sendResultIterator(
-                request_context_test_iterator(),
-                request_context_copy=request_context_copy,
-            )
+            res = sendResultIterator(obj=request_context_test_iterator())
         except ProgrammingError:
             assert (
                 False,
-                "request_context was used outsideof request_context_safety",
+                "request_context was used outside of request_context_safety",
             )
 
         result = ""
