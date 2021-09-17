@@ -1758,7 +1758,7 @@ class OcraTest(TestController):
         5. check status and if fail counter has incremented
 
         """
-        self.skipTest("temporary disabled")
+
         ocrasuite = "OCRA-1:HOTP-SHA256-8:QA64"
         for test in self.tests[3:4]:
             ocrasuite = test["ocrasuite"]
@@ -2932,15 +2932,8 @@ class OcraTest(TestController):
         """
 
         sqlconnect = self.app.config.get("DATABASE_URI")
-        if sqlconnect.startswith("sqlite://") or sqlconnect.startswith(
-            "mysql://"
-        ):
-            pass
-
-        skip_reason = (
-            "SQLite and MySQL silently truncate the data. See #12324."
-        )
-        self.skipTest(skip_reason)
+        if sqlconnect.startswith("mysql"):
+            self.skipTest("MySQL silently truncates data. See #12324.")
 
         ocra = OcraOtp()
         counter = 0
@@ -2948,23 +2941,15 @@ class OcraTest(TestController):
         ocra.init_1(response1)
 
         ms = (
-            "This is a very long message text, which should be used as the "
-            "data for the challenge01234567890"
-            "This is a very long message text, which should be used as the "
-            "data for the challenge01234567890"
-            "This is a very long message text, which should be used as the "
-            "data for the challenge01234567890"
-            "This is a very long message text, which should be used as the "
-            "data for the challenge01234567890"
-            "This is a very long message text, which should be used as the "
-            "data for the challenge01234567890"
+            "This is a very long message text, "
+            "which should be used as the data "
+            "for the challenge01234567890" * 5
         )
+
         (response2, _activationkey) = self.init_1_QR_Token(
             user="root", message=ms
         )
-        # oracle: value too large
-        # postgres: value too long
-        assert "value too " in response2, response2
+        assert response2.json["result"]["value"], response2
 
         (response2, activationkey) = self.init_1_QR_Token(
             user="root", message=ms[0:100]
