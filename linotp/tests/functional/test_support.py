@@ -324,6 +324,10 @@ class TestSupport(TestController):
     def test_token_user_license(self):
         """
         verify that the token user license check is working
+
+        - the number of tokens is not limited, only the number of users
+        - the number of tokens per user can be limited by the maxtoken policy
+        - the number of tokens per realm can be limited by the tokencount policy
         """
 
         license_valid_date = datetime(year=2018, month=11, day=16)
@@ -420,6 +424,7 @@ class TestSupport(TestController):
             assert '"status": false' in response
             msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response
+
             # ------------------------------------------------------------- --
 
             # assignment check - would create one more active token user,
@@ -434,6 +439,93 @@ class TestSupport(TestController):
             assert '"status": false' in response
             msg = "No more tokens can be enrolled due to license restrictions"
             assert msg in response
+
+            # ------------------------------------------------------------- --
+
+            # maxtoken - limit the tokens per user
+
+            params = {
+                "name": "max_token_per_user",
+                "action": "maxtoken=3",
+                "active": True,
+                "scope": "enrollment",
+                "realm": "*",
+                "user": "*",
+                "client": "*",
+            }
+
+            response = self.make_system_request("setPolicy", params)
+            assert response.json["result"]["status"]
+
+            # a 3rd token is allowed
+
+            user = "user2"
+            params = {
+                "type": "pw",
+                "user": user + "@myDefRealm",
+                "otpkey": "geheim",
+                "serial": "%s.%d" % (user, 3),
+            }
+            response = self.make_admin_request("init", params)
+            assert response.json["result"]["value"], response
+
+            # but no further token is allowed
+
+            params = {
+                "type": "pw",
+                "user": user + "@myDefRealm",
+                "otpkey": "geheim",
+                "serial": "%s.%d" % (user, 4),
+            }
+            response = self.make_admin_request("init", params)
+            assert not response.json["result"]["status"], response
+            assert response.json["result"]["error"]["code"] == 411, response
+
+            # ------------------------------------------------------------- --
+
+            # tokencount - limit the tokens per realm
+
+            params = {
+                "name": "max_token_per_user",
+                "action": "tokencount=14",
+                "active": True,
+                "scope": "enrollment",
+                "realm": "mydefrealm",
+                "user": "*",
+                "client": "*",
+            }
+
+            response = self.make_system_request("setPolicy", params)
+            assert response.json["result"]["status"]
+
+            user = "user1"
+
+            params = {
+                "type": "pw",
+                "user": user + "@myDefRealm",
+                "otpkey": "geheim",
+                "serial": "%s.%d" % (user, 3),
+            }
+            response = self.make_admin_request("init", params)
+            assert response.json["result"]["value"], response
+
+            user = "horst"
+
+            params = {
+                "type": "pw",
+                "user": user + "@myDefRealm",
+                "otpkey": "geheim",
+                "serial": "%s.%d" % (user, 3),
+            }
+            response = self.make_admin_request("init", params)
+            assert not response.json["result"]["status"], response
+            assert response.json["result"]["error"]["code"] == 410, response
+            msg = (
+                "The maximum allowed number of tokens for the realm "
+                "myDefRealm was reached. You can not init any more tokens"
+            )
+
+            assert msg in response.json["result"]["error"]["message"], response
 
     def test_tokencount_user_license(self):
         """
