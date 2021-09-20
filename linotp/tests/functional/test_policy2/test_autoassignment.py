@@ -378,35 +378,28 @@ class TestAutoassignmentController(TestController):
             expected="value-false",
         )
 
-    @pytest.mark.skip(
-        reason=(
-            "Currently broken because the counter for all matching token is "
-            "increased even if autoassignment fails. See issue #13134."
-        )
-    )
     def test_duplicate_otp(self):
         """
         If the OTP value matches for several token autoassignment fails
         """
-        token_list = deepcopy(self.token_list[0:1])
+        token_list = deepcopy(self.token_list[1:2])
+        token = deepcopy(token_list[0])
+        token["serial"] = token["serial"] + "copy"
+
         # Enroll new token with duplicate first OTP
-        token = {
-            "key": "0f51c51a55a3c2736ecd0c022913d541b25734b5",
-            "type": "hmac",
-            "serial": None,
-            "otplen": 6,
-            "otps": ["755224", "657344", "672823"],
-        }
+
         params = {
             "otpkey": token["key"],
             "type": token["type"],
             "otplen": token["otplen"],
+            "serial": token["serial"],
         }
         response = self.make_admin_request("init", params=params)
         content = response.json
         assert content["result"]["status"]
         assert content["result"]["value"]
         token["serial"] = content["detail"]["serial"]
+
         self.token_for_deletion.add(token["serial"])
         token_list.append(token)
 
@@ -450,7 +443,7 @@ class TestAutoassignmentController(TestController):
         # No PIN was set
         self._validate(
             user_name,
-            token["otps"][0],
+            token["otps"][1],
         )
 
         # autoassign token_list[1] to users[1]
@@ -458,7 +451,7 @@ class TestAutoassignmentController(TestController):
         token = token_list[1]
         self._validate(
             user_name,
-            user_pwd + token["otps"][0],
+            user_pwd + token["otps"][1],
         )
 
     def test_with_ignore_autoassignment_pin(self):

@@ -28,8 +28,10 @@
 
 import json
 import logging
+from datetime import datetime
 
 import pytest
+from freezegun import freeze_time
 
 from linotp.flap import config
 from linotp.lib.support import (
@@ -365,39 +367,41 @@ class TestMonitoringController(TestController):
 
         try:
             # Load the license file...
-            licfile = config.get("monitoringTests.licfile", "")
 
-            if not licfile:
-                self.skipTest(
-                    "Path to test license file is not configured, "
-                    "check your configuration (test.ini)!"
+            time_ago = datetime(year=2017, month=12, day=1)
+
+            with freeze_time(time_ago):
+
+                response = self.install_license("expired-lic.pem")
+                lic_dict, lic_sig = self.getCurrentLicense()
+
+                assert '"status": true' in response
+                assert '"value": true' in response
+
+                self.create_token(serial="0031")
+                self.create_token(serial="0032", user="root")
+                self.create_token(serial="0033", realm="mydefrealm")
+                self.create_token(serial="0034", realm="myotherrealm")
+                self.create_token(
+                    serial="0035", realm="myotherrealm", active=False
+                )
+                self.create_token(
+                    serial="0036",
+                    realm="myotherrealm",
+                    user="max2",
+                    active=False,
                 )
 
-            lic_dict, lic_sig = readLicenseInfo(licfile)
-
-            self.installLicense(licfile)
-
-            self.create_token(serial="0031")
-            self.create_token(serial="0032", user="root")
-            self.create_token(serial="0033", realm="mydefrealm")
-            self.create_token(serial="0034", realm="myotherrealm")
-            self.create_token(
-                serial="0035", realm="myotherrealm", active=False
-            )
-            self.create_token(
-                serial="0036", realm="myotherrealm", user="max2", active=False
-            )
-
-            response = self.make_authenticated_request(
-                controller="monitoring", action="license", params={}
-            )
-            resp = json.loads(response.body)
-            value = resp.get("result").get("value")
-            assert value.get("token-num") == int(
-                lic_dict.get("token-num")
-            ), response
-            token_left = int(lic_dict.get("token-num")) - 4
-            assert value.get("token-left") == token_left, response
+                response = self.make_authenticated_request(
+                    controller="monitoring", action="license", params={}
+                )
+                resp = json.loads(response.body)
+                value = resp.get("result").get("value")
+                assert value.get("token-num") == int(
+                    lic_dict.get("token-num")
+                ), response
+                token_left = int(lic_dict.get("token-num")) - 4
+                assert value.get("token-left") == token_left, response
 
         finally:
             # restore previous license...
@@ -405,6 +409,25 @@ class TestMonitoringController(TestController):
                 self.setCurrentLicense(old_lic, old_sig)
 
         return
+
+    def install_license(self, license_filename="demo-lic.pem"):
+        """
+        install a license from the fixture path
+        """
+        import os
+
+        demo_license_file = os.path.join(self.fixture_path, license_filename)
+
+        with open(demo_license_file, "r") as f:
+            demo_license = f.read()
+
+        upload_files = [("license", "demo-lic.pem", demo_license)]
+
+        response = self.make_system_request(
+            "setSupport", upload_files=upload_files
+        )
+
+        return response
 
     def test_check_encryption(self):
         # do this test befor test_config

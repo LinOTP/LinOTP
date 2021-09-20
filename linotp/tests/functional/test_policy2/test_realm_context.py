@@ -211,10 +211,6 @@ class TestRealmContextController(TestController):
         realm and token realm in the future.
         """
 
-        self.skipTest(
-            "fails for yet unknown reasons. Ignoring this edge-case for now."
-        )
-
         self._create_or_update_otppin2_policy("realm_no_default")
 
         # Assign to user in 'realm_no_default'
