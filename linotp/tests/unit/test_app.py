@@ -47,6 +47,11 @@ def test_healthcheck(base_app, client):
         ("testmethod3", "put", 405),
     ],
 )
+@pytest.mark.app_config(
+    {
+        "CONTROLLERS": "test",
+    }
+)
 def test_dispatch(base_app, client, path, method, status):
     bound_method = getattr(client, method)
     res = bound_method("/test/" + path)
@@ -55,6 +60,11 @@ def test_dispatch(base_app, client, path, method, status):
         assert request.method == method.upper()
 
 
+@pytest.mark.app_config(
+    {
+        "CONTROLLERS": "test",
+    }
+)
 def test_dispatch_args(base_app, client):
     res = client.get("/test/testmethod_args/foo/bar")
     assert res.status_code == 200
@@ -69,6 +79,11 @@ def test_dispatch_args(base_app, client):
         ("testmethod_optional_id", 200, None),
         ("testmethod_optional_id/4711", 200, "4711"),
     ],
+)
+@pytest.mark.app_config(
+    {
+        "CONTROLLERS": "test",
+    }
 )
 def test_dispatch_optional_id(base_app, client, path, status, id_value):
     res = client.get("/test/" + path)

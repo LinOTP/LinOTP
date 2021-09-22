@@ -303,7 +303,7 @@ class TestImportUser(TestController):
             .get("rows", {})
         )
 
-        assert rows == 24
+        assert rows == 24, jresp
 
         # ------------------------------------------------------------------ --
 

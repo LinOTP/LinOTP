@@ -922,7 +922,7 @@ class TestPolicies(TestPoliciesBase):
             action="setSupport", params=parameters, auth_user="superadmin"
         )
 
-        msg = "No key 'license': Not a form request"
+        msg = "No key 'license' in the upload request"
         assert msg in response.json["result"]["error"]["message"], response
 
     @pytest.fixture
