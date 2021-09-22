@@ -502,19 +502,22 @@ class IdResolver(UserIdResolver):
 
         try:
 
-            params, _missing = IdResolver.filter_config(parameters)
+            managed = parameters.get("readonly", False)
 
-            passwd = params.get("Password").get_unencrypted()
+            params, _ = IdResolver.filter_config(parameters)
 
-            connect_str = make_connect(
-                driver=params.get("Driver"),
-                user=params.get("User"),
-                pass_=passwd,
-                server=params.get("Server"),
-                port=params.get("Port"),
-                db=params.get("Database"),
-                conParams=params.get("ConnectionParams", ""),
-            )
+            connect_str = current_app.config.get("DATABASE_URI")
+            if not managed:
+                passwd = params.get("Password").get_unencrypted()
+                connect_str = make_connect(
+                    driver=params.get("Driver"),
+                    user=params.get("User"),
+                    pass_=passwd,
+                    server=params.get("Server"),
+                    port=params.get("Port"),
+                    db=params.get("Database"),
+                    conParams=params.get("ConnectionParams", ""),
+                )
 
             log.debug(
                 "[testconnection] testing connection with connect str: %r",

@@ -613,6 +613,25 @@ class Migration:
         Thus we can exclude all fresh created and non-mysql databases
         """
 
+        if self.is_db_untouched():
+            log.info("Fresh database - no migration required!")
+            return
+
+        # ----------------------------------------------------------------- --
+
+        # with linotp3 we drop all previous audit entries to fix audit signing
+
+        from flask import current_app
+
+        from linotp.lib.audit.base import getAudit
+
+        audit_obj = getAudit(current_app.config)
+        audit_obj.delete_all_entries()
+
+        log.info("All limotp2 audit entries deleted.")
+
+        # ----------------------------------------------------------------- --
+
         if not self.engine.url.drivername.startswith("mysql"):
             log.info(
                 "Non mysql databases %r - no migration required.",
