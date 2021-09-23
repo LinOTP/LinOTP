@@ -2,6 +2,7 @@ linotp (3.2~0dev-0) experimental; urgency=low
 
   Fixes:
   * license limits are now checked during userservice token enrollment
+  * Prevent creating or importing OATH (HOTP, TOTP, Ocra2) tokens with malformatted seeds.
 
   Features:
   * add grace to license volume exceeding and display accordingly a message

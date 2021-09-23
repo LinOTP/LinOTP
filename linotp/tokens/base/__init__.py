@@ -74,6 +74,14 @@ required = False
 log = logging.getLogger(__name__)
 
 
+class InvalidSeedException(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return repr(self.msg)
+
+
 class TokenClass(TokenPropertyMixin, TokenValidityMixin):
     def __init__(self, token):
         self.type = ""
@@ -859,7 +867,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             key_size = 20
 
         ##
-        # process the otpkey:
+        # process the otpkey (aka seed):
         #   if otpkey given - take this
         #   if not given
         #       if genkey == 1 : create one
@@ -893,6 +901,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 raise ParameterError("Missing parameter: 'otpkey'")
 
         if otpKey is not None:
+            self.validate_seed(otpKey)
             self.addToInfo("otpkey", otpKey)
             self.setOtpKey(otpKey, reset_failcount=reset_failcount)
 
@@ -952,6 +961,17 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             else:
                 otpkeylen = 20
         return generate_otpkey(otpkeylen)
+
+    def validate_seed(self, seed):
+        """
+        Check if the seed string contains only valid characters.
+        Specific token classes should override this method, otherwise
+        no validation occurs.
+
+        :param seed: a string that should be checked for
+        validity as a seed (aka otpkey)
+        """
+        pass
 
     def setDescription(self, description):
         """

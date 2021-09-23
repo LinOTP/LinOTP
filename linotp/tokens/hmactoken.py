@@ -27,6 +27,7 @@
               - HmacTokenClas   (HOTP)
 """
 import logging
+import string
 import time
 from datetime import datetime
 
@@ -44,7 +45,7 @@ from linotp.lib.context import request_context as context
 from linotp.lib.HMAC import HmacOtp
 from linotp.lib.reply import create_img
 from linotp.tokens import tokenclass_registry
-from linotp.tokens.base import TokenClass
+from linotp.tokens.base import InvalidSeedException, TokenClass
 
 log = logging.getLogger(__name__)
 
@@ -219,6 +220,22 @@ class HmacTokenClass(TokenClass):
         TokenClass.update(self, param, reset_failcount)
 
         return
+
+    def validate_seed(self, seed):
+        """
+        Check if the seed string contains only hexadecimal characters.
+
+        :param seed: a string that should be checked for
+        validity as a seed (aka otpkey)
+        :raises InvalidSeedException: if the seed contains
+        invalid characters
+        """
+        is_hexadecimal = all(c in string.hexdigits for c in seed)
+        if not is_hexadecimal:
+            message = (
+                "The provided token seed contains non-hexadecimal characters"
+            )
+            raise InvalidSeedException(message)
 
     # challenge interfaces starts here
 
