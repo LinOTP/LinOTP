@@ -47,6 +47,9 @@ required = False
 
 
 class AuthController(BaseController):
+
+    jwt_exempt = True  # Don't do JWT auth in this controller
+
     def __init__(self, name, install_name="", **kwargs):
         super(AuthController, self).__init__(
             name, install_name=install_name, **kwargs

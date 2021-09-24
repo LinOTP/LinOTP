@@ -79,6 +79,8 @@ class SelfserviceController(BaseController):
 
     default_url_prefix = "/selfservice-legacy"
 
+    jwt_exempt = True  # Don't do JWT auth in this controller
+
     authUser = None
 
     # the following actions don't require a session parameter

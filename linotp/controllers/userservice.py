@@ -255,6 +255,8 @@ class UserserviceController(BaseController):
     request during which the auth_cookie and session is verified
     """
 
+    jwt_exempt = True  # Don't do JWT auth in this controller
+
     def __before__(self, **params):
         """
         __before__ is called before every action
