@@ -28,12 +28,14 @@
 import functools
 import logging
 import secrets
+from datetime import datetime, timedelta, timezone
 from inspect import getfullargspec
 from types import FunctionType
 from warnings import warn
 
 from flask_jwt_extended import (
     create_access_token,
+    get_jwt,
     get_jwt_identity,
     jwt_required,
     set_access_cookies,
@@ -134,6 +136,8 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             self.after_request(
                 self.__after__
             )  # noqa pylint: disable=no-member
+
+        self.after_request(jwt_refresh)
 
         # Add routes for all the routeable endpoints in this "controller",
         # as well as base classes.
@@ -301,6 +305,29 @@ def jwt_exempt(f):
 
     f.jwt_exempt = True
     return f
+
+
+def jwt_refresh(response):
+    """
+    Transparently refresh a JWT access token that is close to expiry.
+    This is pretty much straight from the Flask-JWT-Extended docs,
+    except we're making the refresh period configurable.
+    """
+    delta = current_app.config["JWT_ACCESS_TOKEN_REFRESH"]
+    if delta == 0:
+        return response
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(seconds=delta))
+        if target_timestamp > exp_timestamp:
+            log.debug("jwt_refresh: refreshing access token")
+            access_token = create_access_token(identity=get_jwt_identity())
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Return original response if there is no JWT
+        return response
 
 
 class JWTMixin(object):
