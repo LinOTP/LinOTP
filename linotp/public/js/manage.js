@@ -783,6 +783,21 @@ function reset_waiting() {
 // The myURL needs to end with ? if it has no parameters!
 
 
+function jwt_getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+$.ajaxSetup({
+    beforeSend: function (jqXHR, settings) {
+        jqXHR.setRequestHeader(
+            'X-CSRF-TOKEN',
+            jwt_getCookie('csrf_access_token')
+        );
+    }
+});
+
 /*
  * clientUrlFetch - to submit a asyncronous http request
  *
