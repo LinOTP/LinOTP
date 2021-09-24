@@ -321,7 +321,7 @@ class UserserviceController(BaseController):
         self.authUser = identity
 
         # we put the authenticated user in the `request_context['AuthUser']`
-        # which is normaly filled by the getUserFromRequest
+        # which is normaly filled by the getUserFromRequest for admins
         # as we require the authenticated user in the __after__ method for
         # audit and reporting
 
