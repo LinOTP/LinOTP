@@ -32,12 +32,24 @@ from inspect import getfullargspec
 from types import FunctionType
 from warnings import warn
 
-from flask import Blueprint, after_this_request, current_app
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt_identity,
+    jwt_required,
+    set_access_cookies,
+    unset_jwt_cookies,
+    verify_jwt_in_request,
+)
+from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
+from jwt import ExpiredSignatureError, InvalidSignatureError
+
+from flask import Blueprint, after_this_request, current_app, g, jsonify
 
 from linotp.flap import request
 from linotp.lib.context import request_context
 from linotp.lib.reply import sendError, sendResult
-from linotp.lib.user import NoResolverFound, getUserFromParam
+from linotp.lib.resolver import getResolverObject
+from linotp.lib.user import NoResolverFound, User, getUserFromParam, getUserId
 from linotp.lib.util import SESSION_KEY_LENGTH
 from linotp.model import db
 
@@ -104,10 +116,16 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
     2. The controller's `base_url_prefix` setting
     3. The name of the controller"""
 
+    # Whether all methods in this controller should be JWT-exempt
+    jwt_exempt = False
+
     def __init__(self, name, install_name="", **kwargs):
         super(BaseController, self).__init__(name, __name__, **kwargs)
 
+        self.jwt_exempt_methods = set()
+
         # These methods will be called before each request
+        self.before_request(self.jwt_check)
         self.before_request(self._parse_request_params)
         self.before_request(self.parse_requesting_user)
         self.before_request(self.before_handler)
@@ -135,6 +153,12 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             # can set attributes on the underlying function objects.
             if not hasattr(method.__func__, "methods"):
                 method.__func__.methods = ("GET", "POST")
+
+            if self.jwt_exempt or getattr(
+                method.__func__, "jwt_exempt", False
+            ):
+                log.debug(f"JWT exempt: {method}")
+                self.jwt_exempt_methods.add(url)
 
             # Add another route if the method has an optional second
             # parameter called `id` (and no parameters after that).
@@ -179,6 +203,31 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                     self.add_url_rule(
                         url.replace("_", "-"), method_name, view_func=method
                     )
+
+    def jwt_check(self):
+        """Check whether the current request needs to be authenticated using
+        JWT, and if so, whether it contains a valid JWT access token. The
+        login name from the access token is stored in `g.username` for the
+        benefit of `lib.user.getUserFromRequest()`.
+        """
+
+        method = request.url_rule.rule[request.url_rule.rule.rfind("/") :]
+        if method in self.jwt_exempt_methods:
+            log.debug("jwt_check: operation is exempt from JWT check")
+            return None
+
+        try:
+            verify_jwt_in_request()
+        except (
+            NoAuthorizationError,
+            ExpiredSignatureError,
+            InvalidSignatureError,
+            CSRFError,
+        ):
+            log.error("jwt_check: Failed JWT authentication")
+            response = sendError(None, "Not authenticated")
+            response.status_code = 401
+            return response
 
     def parse_requesting_user(self):
         """
@@ -245,6 +294,100 @@ def methods(mm=["GET"]):
         return func
 
     return inner
+
+
+def jwt_exempt(f):
+    """Decorator for methods that should be exempt from JWT validation."""
+
+    f.jwt_exempt = True
+    return f
+
+
+class JWTMixin(object):
+    """
+    Provides `login` and `logout` methods that generate or dispose of
+    JWT access tokens (and double-submit tokens for CSRF protection).
+
+    This is a mixin class so we can keep all the JWT stuff closely
+    together instead of spreading it out across various controllers.
+
+    """
+
+    @jwt_exempt
+    @methods(["POST"])
+    def login(self):
+        """Checks a user's credentials and issues them a JWT access
+        token if their credentials are valid. We're using cookies to
+        store the access token plus a double-submit token for CSRF
+        protection, which makes it easy to refresh access tokens
+        transparently if they are nearing expiry.
+
+        """
+
+        username = self.request_params.get("username")
+        password = self.request_params.get("password")
+
+        # Find the user (using any configured resolver) and check the
+        # given password.
+        # NOTE: At some point we will change this to consult only the
+        # resolvers in a specific “admin users” realm.
+
+        user = User.getUserObject(username)
+
+        if user.exists():
+
+            (uid, _, resolver_class) = getUserId(user)
+
+            resolver = getResolverObject(resolver_class)
+            if resolver.checkPass(uid, password):
+
+                response = sendResult(
+                    None,
+                    True,
+                    opt={"message": f"Login successful for {username}"},
+                )
+
+                access_token = create_access_token(identity=username)
+                set_access_cookies(response, access_token)
+
+                # we have to provide the authenticated user as request global user
+
+                g.username = username
+
+                return response
+
+        response = sendResult(
+            None,
+            False,
+            opt={"message": "Bad username or password"},
+        )
+        response.status_code = 401
+        return response
+
+    def logout(self):
+        """Logs a user out by obliterating their JWT access token
+        cookies.
+        NOTE: We may wish to block further use of the access token
+        in question in case the user has saved a copy somewhere.
+        See the Flask-JWT-Extended docs for ideas about how to do this.
+        """
+        response = sendResult(
+            None, True, opt={"message": f"Logout successful for {g.username}"}
+        )
+
+        unset_jwt_cookies(response)
+        return response
+
+    # We have to make our own `_url_methods` dictionary; it will not
+    # be created automatically by the `ControllerMetaClass` because
+    # `JWTMixin` is not a subclass of `BaseController`.
+    # Without it, the `BaseController` will not be able to dispatch to
+    # our methods.
+
+    _url_methods = {
+        "login": login,
+        "logout": logout,
+    }
 
 
 class SessionCookieMixin(object):

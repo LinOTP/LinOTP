@@ -181,10 +181,7 @@ class ManageController(BaseController):
         try:
             c.debug = current_app.config["DEBUG"]
             c.title = "LinOTP Management"
-            admin_user = getUserFromRequest(request)
-
-            if "login" in admin_user:
-                c.admin = admin_user["login"]
+            c.admin = g.username
 
             log.debug("[index] importers: %s", IMPORT_TEXT)
             c.importers = IMPORT_TEXT

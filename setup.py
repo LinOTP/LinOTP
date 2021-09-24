@@ -41,6 +41,7 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 install_requirements = [
     "Flask",
     "Flask-Babel",
+    "flask-jwt-extended",
     "SQLAlchemy>=0.6,<1.4",
     "flask-sqlalchemy",
     "mako",
