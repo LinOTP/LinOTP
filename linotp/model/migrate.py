@@ -625,7 +625,7 @@ class Migration:
 
         from linotp.lib.audit.base import getAudit
 
-        audit_obj = getAudit(current_app.config)
+        audit_obj = getAudit()
         audit_obj.delete_all_entries()
 
         log.info("All limotp2 audit entries deleted.")
