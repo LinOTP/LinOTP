@@ -2310,7 +2310,7 @@ function support_view() {
                 info += "<div class='subscription_info'><br>" +
                     i18n.gettext("For support and subscription please contact us at") +
                     " <a href='https://www.keyidentity.com/' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
-                    i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@keyidentity.com</div>";
+                    i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@linotp.de</div>";
                 $("#dialog_support_view").html($.parseHTML(info));
             }
         });
