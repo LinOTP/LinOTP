@@ -930,13 +930,10 @@
     <p id='about_id'>${_("LinOTP - the open source solution for two factor authentication.")}</p>
     <p id='about_copyright'>${_("Copyright (C) netgo GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
-    <p id='about_lse_id'>${_("For more information please visit:")}</p>
-    <ul>
-        <li><a href="https://www.linotp.org" rel="noreferrer" target="_blank">https://www.linotp.org</a>
-            ${_("for open source information")}</li>
-        <li><a href="https://www.linotp.de" rel="noreferrer" target="_blank">https://www.linotp.de</a>
-            ${_("for commercial support.")}<br></li>
-    </ul>
+    <p id='about_lse_id'>
+        ${_("For more information please visit:")}
+        <a href="https://www.linotp.de" rel="noreferrer" target="_blank">https://www.linotp.de</a>
+    </p>
     <p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">${_("View latest changelog")}</a></p>
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
