@@ -395,8 +395,8 @@ msgstr "Kopiere PIN"
 msgid "Copy Token PIN"
 msgstr "Kopiere Token-PIN"
 
-msgid "Copyright (C) arxes-tolina GmbH"
-msgstr "Copyright (C) arxes-tolina GmbH"
+msgid "Copyright (C) netgo GmbH"
+msgstr "Copyright (C) netgo GmbH"
 
 msgid "Could not find a token for this OTP value."
 msgstr "Zu diesem OTP-Wert konnte kein Token ermittelt werden."

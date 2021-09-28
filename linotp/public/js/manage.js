@@ -2291,8 +2291,7 @@ function support_view() {
             if ($.isEmptyObject(support_info)) {
                 var info = "";
                 info += '<h2 class="contact_info center-text">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
-                info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchase.'),
-                    '<p class="contact_info center-text"><a href="mailto:sales@keyidentity.com">arxes-tolina GmbH</a></p>');
+                    '<a href="mailto:sales@keyidentity.com">netgo GmbH</a>');
                 $("#dialog_support_view").html($.parseHTML(info));
 
             } else {
