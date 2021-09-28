@@ -106,10 +106,10 @@ msgid "8 digits"
 msgstr "8 Stellen"
 
 msgid ""
-"<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
+"<a href='https://linotp.de'>arxes-tolina</a> provides LinOTP as an "
 "enterprise MFA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>arxes-tolina</a> bietet LinOTP als MFA-"
+"<a href='https://linotp.de'>arxes-tolina</a> bietet LinOTP als MFA-"
 "Lösung für Unternehmen an."
 
 msgid "A new token will be set to this OTP length."

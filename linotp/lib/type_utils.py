@@ -348,7 +348,7 @@ def get_ip_network(network):
     except netaddr.core.AddrFormatError:
         try:
 
-            # support for cidr on named network like 'keyidentity.com/29'
+            # support for cidr on named network like 'linotp.de/29'
             cidr = None
             if "/" in network:
                 network, _sep, cidr = network.rpartition("/")
