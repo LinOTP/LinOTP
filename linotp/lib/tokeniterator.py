@@ -490,7 +490,7 @@ class TokenIterator(object):
         #   o LinOtp.TokenInfo: ""
         #   o LinOtp.TokenType: "spass"
         #   o LinOtp.TokenSerialnumber: "spass0000FBA3"
-        #   o User.description: "User Name,linotp@keyidentity.com,local,"
+        #   o User.description: "User Name,info@example.com,local,"
         #   o LinOtp.IdResClass: "useridresolver.PasswdIdResolver.IdResolver._default_Passwd_"
         #   o User.username: "user"
         #   o LinOtp.TokenDesc: "Always Authenticate"

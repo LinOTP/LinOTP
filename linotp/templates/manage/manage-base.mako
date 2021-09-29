@@ -32,7 +32,7 @@
 <head>
 <title>${_("Management - LinOTP")}</title>
 
-<meta name="copyright" content="arxes-tolina GmbH">
+<meta name="copyright" content="netgo GmbH">
 <meta name="keywords" content="LinOTP 2 manage">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
@@ -928,12 +928,12 @@
 
 <div id='dialog_about'>
     <p id='about_id'>${_("LinOTP - the open source solution for two factor authentication.")}</p>
-    <p id='about_copyright'>${_("Copyright (C) arxes-tolina GmbH")}</p>
+    <p id='about_copyright'>${_("Copyright (C) netgo GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
-    <p id='about_lse_id'>${_("For more information please visit:")}</p>
-    <p><a href="https://www.linotp.org" rel="noreferrer" target="_blank">https://www.linotp.org</a>
-    <br>${_("or")}<br>
-    <a href="https://www.keyidentity.com" rel="noreferrer" target="_blank">https://www.keyidentity.com</a></p>
+    <p id='about_lse_id'>
+        ${_("For more information please visit:")}
+        <a href="https://www.linotp.de" rel="noreferrer" target="_blank">https://www.linotp.de</a>
+    </p>
     <p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">${_("View latest changelog")}</a></p>
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,

@@ -106,10 +106,10 @@ msgid "8 digits"
 msgstr "8 Stellen"
 
 msgid ""
-"<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
+"<a href='https://linotp.de'>arxes-tolina</a> provides LinOTP as an "
 "enterprise MFA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>arxes-tolina</a> bietet LinOTP als MFA-"
+"<a href='https://linotp.de'>arxes-tolina</a> bietet LinOTP als MFA-"
 "Lösung für Unternehmen an."
 
 msgid "A new token will be set to this OTP length."
@@ -395,8 +395,8 @@ msgstr "Kopiere PIN"
 msgid "Copy Token PIN"
 msgstr "Kopiere Token-PIN"
 
-msgid "Copyright (C) arxes-tolina GmbH"
-msgstr "Copyright (C) arxes-tolina GmbH"
+msgid "Copyright (C) netgo GmbH"
+msgstr "Copyright (C) netgo GmbH"
 
 msgid "Could not find a token for this OTP value."
 msgstr "Zu diesem OTP-Wert konnte kein Token ermittelt werden."

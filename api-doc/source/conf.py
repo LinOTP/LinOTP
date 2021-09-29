@@ -20,13 +20,13 @@ sys.path.insert(0, os.path.abspath("../linotp"))
 # -- Project information -----------------------------------------------------
 
 project = "LinOTP API"
-copyright = "2020, arxes-tolina GmbH"
-author = "arxes-tolina GmbH"
+copyright = "netgo GmbH"
+author = "netgo GmbH"
 
 # The short X.Y version
-version = "3.0"
+version = "3.1"
 # The full version, including alpha/beta/rc tags
-release = "3.0"
+release = "3.1rc2"
 
 
 # -- General configuration ---------------------------------------------------

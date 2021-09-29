@@ -166,7 +166,7 @@ setup(
     long_description_content_type="text/markdown",
     author="KeyIdentity GmbH",
     license="AGPL v3, (C) KeyIdentity GmbH",
-    author_email="linotp@keyidentity.com",
+    author_email="info@linotp.de",
     url="https://www.linotp.org",
     setup_requires=setup_requirements,
     install_requires=install_requirements,
