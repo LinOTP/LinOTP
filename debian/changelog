@@ -1,4 +1,4 @@
-linotp (3.1~rc2-1) buster-dev; urgency=low
+linotp (3.1~rc3-1) buster-dev; urgency=low
 
   Features:
   * ManageUI policy editor utilizes full window width for improved layout.
@@ -56,7 +56,7 @@ linotp (3.1~rc2-1) buster-dev; urgency=low
   * Validate no longer wrongly references autoenrollment for users that do
     not own any tokens as the error message.
 
- -- LinOTP Packaging <packaging@linotp.de>  Wed, 22 Sep 2021 17:01:00 +0200
+ -- LinOTP Packaging <packaging@linotp.de>  Thu, 30 Sep 2021 13:22:00 +0200
 
 linotp (3.0-1) buster; urgency=low
 
