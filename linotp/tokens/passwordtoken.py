@@ -165,6 +165,16 @@ class PasswordTokenClass(HmacTokenClass):
             password_hash, b":1:", reset_failcount=reset_failcount
         )
 
+    def validate_seed(self, seed):
+        """
+        Accepts every seed because password token has no restrictions.
+        This overrides the hmactoken's seed validation (only hex).
+
+        :param seed: a string that should be checked for
+        validity as a seed (aka otpkey)
+        """
+        pass
+
     def checkOtp(self, anOtpVal, counter, window, options=None):
         """
         checks the static password - using the secret object password

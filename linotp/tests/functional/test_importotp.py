@@ -256,10 +256,17 @@ class TestImportOTP(TestController):
         """
 
         params = {"type": "oathcsv"}
-
         response = self.upload_tokens("oath_tokens.csv", params=params)
-
         assert "<imported>4</imported>" in response, response
+
+        response = self.upload_tokens(
+            "oath_tokens_bad_seed.csv", params=params
+        )
+        error_msg = (
+            "The provided token seed contains non-hexadecimal characters"
+        )
+        assert error_msg in response, response
+        assert "<status>False</status>" in response, response
 
         return
 
