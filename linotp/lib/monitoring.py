@@ -70,7 +70,7 @@ class MonitorHandler(object):
         cond = tuple()
 
         for realm in realms:
-            realm = realm.strip()
+            realm = realm.strip().lower()
             if "/:no realm:/" in realm or realm == "":
                 #  get all tokenrealm ids
                 token_id_tuples = db.session.query(TokenRealm.token_id).all()

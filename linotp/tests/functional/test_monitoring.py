@@ -287,7 +287,7 @@ class TestMonitoringController(TestController):
 
         self.create_token(serial="0040")
         self.create_token(serial="0041")
-        self.create_token(serial="0042", user="root", realm="mydefrealm")
+        self.create_token(serial="0042", user="root", realm="myDefRealm")
 
         # set multiple realms for this token
 
@@ -295,7 +295,7 @@ class TestMonitoringController(TestController):
             controller="admin",
             action="tokenrealm",
             params={
-                "realms": "myotherrealm,mydefrealm",
+                "realms": "myotherrealm,myDefRealm",
                 "serial": "0042",
             },
         )
@@ -303,13 +303,13 @@ class TestMonitoringController(TestController):
 
         # create some tokens but only in dedicated realms
 
-        self.create_token(serial="0043", realm="mydefrealm")
+        self.create_token(serial="0043", realm="myDefRealm")
         self.create_token(serial="0044", realm="myotherrealm")
 
         # now get the numbers by look at the monitoring
         # which should show 2 tokens in each realm but only 3 tokens in sum
 
-        parameters = {"realms": "mydefrealm,myotherrealm"}
+        parameters = {"realms": "myDefRealm,myotherrealm"}
 
         response = self.make_authenticated_request(
             controller="monitoring", action="tokens", params=parameters
