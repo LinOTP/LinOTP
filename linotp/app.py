@@ -36,7 +36,7 @@ from flask_babel import Babel, gettext
 from flask_jwt_extended import (
     JWTManager,
     get_jwt_identity,
-    verify_jwt_in_request,
+    verify_jwt_in_request_optional,
 )
 from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
 from jwt import ExpiredSignatureError
@@ -363,7 +363,7 @@ class LinOTPApp(Flask):
 
         # extract the username if request is authorized
         try:
-            verify_jwt_in_request(optional=True)
+            verify_jwt_in_request_optional()
             jwt_username = get_jwt_identity()
             if jwt_username is not None:
                 flask_g.username = jwt_username

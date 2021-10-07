@@ -35,9 +35,8 @@ from warnings import warn
 
 from flask_jwt_extended import (
     create_access_token,
-    get_jwt,
     get_jwt_identity,
-    jwt_required,
+    get_raw_jwt,
     set_access_cookies,
     unset_jwt_cookies,
     verify_jwt_in_request,
@@ -317,7 +316,7 @@ def jwt_refresh(response):
     if delta == 0:
         return response
     try:
-        exp_timestamp = get_jwt()["exp"]
+        exp_timestamp = get_raw_jwt()["exp"]
         now = datetime.now(timezone.utc)
         target_timestamp = datetime.timestamp(now + timedelta(seconds=delta))
         if target_timestamp > exp_timestamp:
