@@ -100,22 +100,6 @@ def find_by_xpath(driver, xpath):
     return _find_and_wait(driver, By.XPATH, xpath)
 
 
-def find_by_class(driver, class_name):
-    """
-    Returns the element defined by the HTML class, waiting up to 10 seconds for it
-    to appear.
-    """
-    return _find_and_wait(driver, By.CLASS_NAME, class_name)
-
-
-def find_by_xpath(driver, xpath):
-    """
-    Returns the element defined by the xpath, waiting up to 10 seconds for it
-    to appear.
-    """
-    return _find_and_wait(driver, By.XPATH, xpath)
-
-
 def fill_form_element(driver, element_id, data):
     """Clear element and fill with values"""
     e = find_by_id(driver, element_id)
