@@ -507,11 +507,10 @@ class ReportingController(BaseController):
             output_format = param.get("outform", "json")
             request_realms = param.get("realms", "").split(",")
             status = param.get("status", [])
-            border_day = param.get("date")
 
-            if border_day:
-                # this may throw ValueError if date is in wrong format
-                datetime.strptime(border_day, "%Y-%m-%d")
+            start_day = None
+            if "date" in param:
+                start_day = convert_to_datetime(param.get("date"), TIME_FMTS)
 
             realm_whitelist = []
             policies = getAdminPolicies("show", scope="reporting.access")
@@ -528,7 +527,7 @@ class ReportingController(BaseController):
             reports = ReportingIterator(
                 realms=realms,
                 status=status,
-                date=None,
+                date=start_day,
                 page=page,
                 psize=psize,
                 sort=sort,
