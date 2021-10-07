@@ -48,7 +48,7 @@ Server Configuration file
 
 To run the LinOTP Selenium Tests you need a server.cfg file.
 
-A default file for CentOS Server beggar is supplied: server_cfg.ini
+A default file is available in the repository: server_cfg.ini
 
 
 Chrome driver
@@ -62,20 +62,27 @@ or using the option --tc=selenium.driver:firefox
 
 
 To install the Chrome driver on Ubuntu (14.04 and higher) follow these steps:
+
 $ sudo apt-get install chromium-chromedriver
 $ sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
 
-On Debian jessie the the Chrome driver package is named 'chromedriver'.
+On Debian Jessie or higher, the Chrome driver package is named
+'chromedriver'. Execute the following commands for installation:
+
 $ sudo apt-get install chromedriver
 $ sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
 
-If the Chrome driver is not available in your package management system use
+If the Chrome driver is not available in your package management system, use
 these steps:
 $ cd /usr/local/bin/
+
 Check for the latest Chromium driver:
   https://sites.google.com/a/chromium.org/chromedriver/downloads
-At time of writing 2.16 is the newest.
-$ wget http://chromedriver.storage.googleapis.com/2.16/chromedriver_linux64.zip
+
+At time of writing, the newest chromedriver is version 85. Execute the
+following commands to install it on your system:
+
+ $ wget https://chromedriver.storage.googleapis.com/85.0.4183.87/chromedriver_linux64.zip
 $ unzip chromedriver_linux64.zip
 $ rm chromedriver_linux64.zip
 $ mv chromedriver chromedriver-2.16
@@ -109,27 +116,40 @@ Execution
 
 To execute all tests:
 
- $ nosetests --tc-file=server_cfg.ini
+ $ pytest --tc-file=server_cfg.ini
 
 To execute all tests in one file:
 
- $ nosetests --tc-file=server_cfg.ini test_create_useridresolvers.py
+ $ pytest --tc-file=server_cfg.ini test_create_useridresolvers.py
 
 It is possible to overwrite some specific configuration settings as follows:
 
- $ nosetests --tc-file=server_cfg.ini --tc=<SECTION>.<NAME>:<VALUE>
+ $ pytest --tc-file=server_cfg.ini --tc=<SECTION>.<NAME>:<VALUE>
 
 See the configuration file for the parameters that can be set.
 
 For example, to execute tests by connecting to a remotely running linotp instance:
 
- $ nosetests --tc-file=server_cfg.ini --tc=linotp.host:10.76.124.35
+ $ pytest --tc-file=server_cfg.ini --tc=linotp.host:10.76.124.35
+
+
+Analysing and debugging
+============================================
 
 An example to execute tests in a single file using the trace module to show the
 time at each step of the tests:
 
  $ python -m trace -g --trace --ignore-module=os,sys,re --ignore-dir=/usr/lib \
-	/usr/bin/nosetests -s --tc-file=server_local.ini -v \
+	/usr/bin/pytest -s --tc-file=server_local.ini -v \
 	--logging-filter=-requests.packages.urllib3.connectionpool \
 	--debug=selenium.webdriver.remote.remote_connection \
 	test_manage.py
+
+For interactive debugging, you can use pdb or the pudb debugger, which
+can be installed via:
+
+ $ pip install pytest-pudb
+
+Use the debugger as follows:
+
+ $ pytest --pudb --tc-file=server_cfg.ini test_create_useridresolvers.py
