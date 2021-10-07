@@ -2307,8 +2307,8 @@ function support_view() {
             if ($.isEmptyObject(support_info)) {
                 var info = "";
                 info += '<h2 class="contact_info center-text">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
-                info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchase.'),
-                    '<p class="contact_info center-text"><a href="mailto:sales@keyidentity.com">arxes-tolina GmbH</a></p>');
+                info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchases.'),
+                    '<a href="mailto:sales@linotp.de">netgo GmbH</a>');
                 $("#dialog_support_view").html($.parseHTML(info));
 
             } else {
@@ -2326,8 +2326,8 @@ function support_view() {
                 info += "</tbody></table>";
                 info += "<div class='subscription_info'><br>" +
                     i18n.gettext("For support and subscription please contact us at") +
-                    " <a href='https://www.keyidentity.com/' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
-                    i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@keyidentity.com</div>";
+                    " <a href='https://www.linotp.de/' rel='noreferrer' target='_blank'>linotp.de</a> <br>" +
+                    i18n.gettext("by phone") + " <a href='tel:0049615186086115'>+49 6151 86086-115</a> " + i18n.gettext("or email") + " <a href='mailto:support@linotp.de'>support@linotp.de</a></div>";
                 $("#dialog_support_view").html($.parseHTML(info));
             }
         });

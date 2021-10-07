@@ -468,6 +468,16 @@ class Audit(AuditBase):
 
         return c
 
+    def delete_all_entries(self):
+        """delete_all_entries: support the cleanup of all audit database entries."""
+
+        log.debug('sql audit interface "delete_all_entries" called.')
+        try:
+            db.session.query(AuditTable).delete()
+        except Exception as exx:
+            db.session.rollback()
+            raise exx
+
 
 def getAsString(data):
     """
