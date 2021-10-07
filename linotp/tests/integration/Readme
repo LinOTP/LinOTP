@@ -31,10 +31,10 @@ You need to install all test dependencies listed in setup.py
 
 I recommend creating a virtualenv and installing the dependencies there:
 
-$ mkdir /opt/selenium-venv
-$ virtualenv /opt/selenium-venv
-$ source /opt/selenium-venv/bin/activate
-$ pip install -e ".[test]"
+ $ mkdir /opt/selenium-venv
+ $ virtualenv /opt/selenium-venv
+ $ source /opt/selenium-venv/bin/activate
+ $ pip install -e ".[test]"
 
 If you are not using a remote instance, you also need an X-Server on your
 machine (or a virtual framebuffer such as xvfb) and Firefox or Chrome.
@@ -63,18 +63,18 @@ or using the option --tc=selenium.driver:firefox
 
 To install the Chrome driver on Ubuntu (14.04 and higher) follow these steps:
 
-$ sudo apt-get install chromium-chromedriver
-$ sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+ $ sudo apt-get install chromium-chromedriver
+ $ sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
 
 On Debian Jessie or higher, the Chrome driver package is named
 'chromedriver'. Execute the following commands for installation:
 
-$ sudo apt-get install chromedriver
-$ sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+ $ sudo apt-get install chromedriver
+ $ sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
 
 If the Chrome driver is not available in your package management system, use
 these steps:
-$ cd /usr/local/bin/
+ $ cd /usr/local/bin/
 
 Check for the latest Chromium driver:
   https://sites.google.com/a/chromium.org/chromedriver/downloads
@@ -83,13 +83,21 @@ At time of writing, the newest chromedriver is version 85. Execute the
 following commands to install it on your system:
 
  $ wget https://chromedriver.storage.googleapis.com/85.0.4183.87/chromedriver_linux64.zip
-$ unzip chromedriver_linux64.zip
-$ rm chromedriver_linux64.zip
-$ mv chromedriver chromedriver-2.16
-$ chmod 755 chromedriver-2.16
-$ ln -s chromedriver-2.16 chromedriver
-$ cd /usr/bin/
-$ ln -s chromium-browser google-chrome
+ $ unzip chromedriver_linux64.zip
+ $ rm chromedriver_linux64.zip
+ $ mv chromedriver chromedriver-2.16
+ $ chmod 755 chromedriver-2.16
+ $ ln -s chromedriver-2.16 chromedriver
+
+If you want to install the driver in a different location, you can use the environment
+variable `webdriver_executable_path`:
+
+ $ export webdriver_executable_path=/home/user/bin/chromedriver
+
+If not already available under chromium-browser link your google chrome browser to chromium-browser
+
+ $ cd /usr/bin/
+ $ ln -s chromium-browser google-chrome
 
 
 Remote driver

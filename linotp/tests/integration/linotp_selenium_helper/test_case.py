@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 import logging
+import os
 import re
 import time
 from contextlib import contextmanager
@@ -175,9 +176,22 @@ class TestCase(object):
 
         selenium_driver = cls.selenium_driver_name
         if not cls.remote_enable:
+
+            # Support to set the webdriver executable via an environment variable.
+            # Setting the executable is supported by firefox and chrome drivers.
+
+            pparams = {}
+            if "webdriver_executable_path" in os.environ:
+                pparams["executable_path"] = os.environ[
+                    "webdriver_executable_path"
+                ]
+
             if selenium_driver == "chrome":
                 try:
-                    driver = webdriver.Chrome(options=_get_chrome_options())
+                    driver = webdriver.Chrome(
+                        options=_get_chrome_options(),
+                        **pparams,
+                    )
                 except WebDriverException as exx:
                     logger.error(
                         "Error creating Chrome driver. Maybe you need to"
@@ -190,13 +204,10 @@ class TestCase(object):
 
             elif selenium_driver == "firefox":
                 driver = webdriver.Firefox(
-                    firefox_profile=_get_firefox_profile()
+                    firefox_profile=_get_firefox_profile(),
+                    **pparams,
                 )
-            if driver is None:
-                logger.warn("Falling back to Firefox driver.")
-                driver = webdriver.Firefox(
-                    firefox_profile=_get_firefox_profile()
-                )
+
         else:
             # Remote driver. We need to build a desired capabilities
             # request for the remote instance
