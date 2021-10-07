@@ -993,6 +993,18 @@ class TestReportingController(TestController):
 
             assert len(response.json["result"]["value"]) == 4, response.json
 
+            # 3. support for wild card '*' on realms filter
+
+            params = {
+                "status": "*",
+                "realms": "*",
+                "date": "2018-11-18",
+            }
+
+            response = self.make_reporting_request("show", params=params)
+
+            assert len(response.json["result"]["value"]) == 4, response.json
+
     def test_bug_1479_token_enrollment(self):
         """Not really to do with the reporting controller but still a
         possible reporting issue. This could not be reproduced but we're

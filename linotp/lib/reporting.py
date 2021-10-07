@@ -233,6 +233,8 @@ class ReportingIterator(object):
         self.pages = 1
         if not isinstance(realms, (list, tuple)):
             realms = realms.split(",")
+        if "*" in realms:
+            realms = []
 
         if not isinstance(status, (list, tuple)):
             status = status.split(",")
