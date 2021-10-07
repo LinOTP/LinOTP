@@ -1005,6 +1005,18 @@ class TestReportingController(TestController):
 
             assert len(response.json["result"]["value"]) == 4, response.json
 
+            # 4. support for realms filter to be case insensitiv
+
+            params = {
+                "status": "*",
+                "realms": "myDefRealm",
+                "date": "2018-11-18",
+            }
+
+            response = self.make_reporting_request("show", params=params)
+
+            assert len(response.json["result"]["value"]) == 4, response.json
+
     def test_bug_1479_token_enrollment(self):
         """Not really to do with the reporting controller but still a
         possible reporting issue. This could not be reproduced but we're

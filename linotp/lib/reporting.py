@@ -243,7 +243,9 @@ class ReportingIterator(object):
 
         realm_cond = tuple()
         for realm in realms:
-            realm_cond += (or_(Reporting.realm == realm),)
+            realm_cond += (
+                or_(func.lower(Reporting.realm) == func.lower(realm)),
+            )
 
         status_cond = tuple()
         for stat in status:
