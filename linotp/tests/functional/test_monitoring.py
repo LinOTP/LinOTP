@@ -49,18 +49,18 @@ log = logging.getLogger(__name__)
 
 class TestMonitoringController(TestController):
     def setUp(self):
-        self.delete_all_policies()
-        self.delete_all_token()
-        self.delete_all_realms()
-        self.delete_all_resolvers()
-        self.delete_license()
-
         super(TestMonitoringController, self).setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         return
 
     def tearDown(self):
+        self.delete_all_policies()
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+        self.delete_license()
+
         super(TestMonitoringController, self).tearDown()
 
     # helper functions
