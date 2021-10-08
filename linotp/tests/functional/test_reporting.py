@@ -831,19 +831,25 @@ class TestReportingController(TestController):
         verify that the token user license check is working
         """
 
-        self.create_common_resolvers()
-        self.create_common_realms()
-        self.delete_all_token()
+        # -------------------------------------------------------------- --
 
-        license_valid_date = datetime(year=2018, month=11, day=17)
+        # read user based license file
 
-        with freeze_time(license_valid_date):
+        license_data = None
+        license_file = os.path.join(
+            self.fixture_path, "linotp2.token_user.pem"
+        )
 
-            license_file = os.path.join(
-                self.fixture_path, "linotp2.token_user.pem"
-            )
-            with open(license_file, "r") as f:
-                license_data = f.read()
+        with open(license_file, "r") as f:
+            license_data = f.read()
+
+        # -------------------------------------------------------------- --
+
+        # travel back in time with the, then valid, license
+
+        long_ago = datetime(year=2018, month=11, day=17)
+
+        with freeze_time(long_ago) as frozen_time:
 
             upload_files = [
                 ("license", "linotp2.token_user.pem", license_data)
@@ -878,6 +884,7 @@ class TestReportingController(TestController):
             assert "false" not in response
 
             # set reporting access policy:
+
             params = {
                 "name": "reporting_show",
                 "scope": "reporting.access",
@@ -893,7 +900,7 @@ class TestReportingController(TestController):
 
             # -------------------------------------------------------------- --
 
-            # now add the users
+            # now add tokens for the users
 
             for user in ["hans", "rollo", "susi", "horst"]:
 
@@ -908,18 +915,107 @@ class TestReportingController(TestController):
 
             # -------------------------------------------------------------- --
 
-            #
-            try:
-                response = self.make_reporting_request("show")
-            except Exception as exx:
-                raise
+            # and look in the reporting database which now should contain
+            # the entry about 4 user based license
 
-            self.delete_license()
-            self.delete_all_token()
-            self.delete_all_realms()
-            self.delete_all_resolvers()
+            params = {
+                "status": "total users",
+                "realms": "mydefrealm",
+                "date": "2018-11-17",
+            }
 
-        return
+            response = self.make_reporting_request("show", params=params)
+
+            counters = set()
+            for entry in response.json["result"]["value"]:
+                counters.add(entry["count"])
+
+            assert max(counters) == 4
+
+            # -------------------------------------------------------------- --
+
+            # step ahead for one more day: 2018-11-18
+
+            frozen_time.tick(delta=timedelta(days=1))
+
+            # -------------------------------------------------------------- --
+
+            # add more tokens for the users
+
+            for user in ["hans", "rollo", "susi", "horst"]:
+
+                params = {
+                    "type": "pw",
+                    "user": user + "@myDefRealm",
+                    "otpkey": "geheim",
+                }
+
+                response = self.make_admin_request("init", params)
+                assert '"value": true' in response
+
+            # -------------------------------------------------------------- --
+
+            # the reporting database still reports only 4 user based entries
+
+            response = self.make_reporting_request("show")
+
+            counters = set()
+            for entry in response.json["result"]["value"]:
+                counters.add(entry["count"])
+
+            assert max(counters) == 4
+
+            # -------------------------------------------------------------- --
+
+            # some more monitoring/show parameter tests
+
+            # 1. support for start date filter
+
+            params = {
+                "status": "total users",
+                "realms": "mydefrealm",
+                "date": "2018-11-18",
+            }
+
+            response = self.make_reporting_request("show", params=params)
+
+            assert len(response.json["result"]["value"]) == 4, response.json
+
+            # 2. support for wild card '*' on status filter
+
+            params = {
+                "status": "*",
+                "realms": "mydefrealm",
+                "date": "2018-11-18",
+            }
+
+            response = self.make_reporting_request("show", params=params)
+
+            assert len(response.json["result"]["value"]) == 4, response.json
+
+            # 3. support for wild card '*' on realms filter
+
+            params = {
+                "status": "*",
+                "realms": "*",
+                "date": "2018-11-18",
+            }
+
+            response = self.make_reporting_request("show", params=params)
+
+            assert len(response.json["result"]["value"]) == 4, response.json
+
+            # 4. support for realms filter to be case insensitiv
+
+            params = {
+                "status": "*",
+                "realms": "myDefRealm",
+                "date": "2018-11-18",
+            }
+
+            response = self.make_reporting_request("show", params=params)
+
+            assert len(response.json["result"]["value"]) == 4, response.json
 
     def test_bug_1479_token_enrollment(self):
         """Not really to do with the reporting controller but still a
