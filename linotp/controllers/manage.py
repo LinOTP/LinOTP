@@ -128,7 +128,6 @@ class ManageController(BaseController):
                 "/manage/",
                 "/manage",
                 "/manage/login",
-                "/manage/logout",
                 "/manage/audittrail",
                 "/manage/policies",
                 "/manage/tokenview",
@@ -277,10 +276,6 @@ class ManageController(BaseController):
             if not http_host:
                 http_host = request.environ.get("HTTP_HOST")
             url_scheme = request.environ.get("wsgi.url_scheme")
-            c.logout_url = "%s://log-me-out:fake@%s/manage/logout" % (
-                url_scheme,
-                http_host,
-            )
 
             db.session.commit()
             ren = render("/manage/manage-base.mako")
@@ -720,16 +715,6 @@ class ManageController(BaseController):
             log.error("[tokeninfo] failed! %r", exx)
             db.session.rollback()
             return sendError(response, exx)
-
-    def logout(self):
-        """
-        redirect logout
-        """
-
-        http_host = request.environ.get("HTTP_HOST")
-        url_scheme = request.environ.get("wsgi.url_scheme", "https")
-
-        return redirect("%s://%s/manage/" % (url_scheme, http_host))
 
     def help(self, id=None):
         """

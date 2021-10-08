@@ -176,7 +176,7 @@
             % if c.admin_can_change_password:
             <a href="#" id="login-status-password">${_("Change password")}</a>
             % endif
-            <a href="#" id="login-status-logout" data-logout-url="${c.logout_url}">${_("Logout")}</a>
+            <a href="#" id="login-status-logout">${_("Logout")}</a>
         </div>
         % else:
         <div id="login-status">
