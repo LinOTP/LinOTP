@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2021-02-15 16:55+0100\n"
+"PO-Revision-Date: 2021-09-30 13:13+0200\n"
 "Last-Translator: \n"
 "Language-Team: German <>\n"
 "Language: de\n"
@@ -36,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.4.1\n"
+"X-Generator: Poedit 3.0\n"
 
 msgid " or "
 msgstr " oder "
@@ -106,11 +106,11 @@ msgid "8 digits"
 msgstr "8 Stellen"
 
 msgid ""
-"<a href='https://keyidentity.com'>arxes-tolina</a> provides LinOTP as an "
-"enterprise MFA solution."
+"<a href='https://linotp.de'>netgo provides LinOTP</a> as an enterprise MFA "
+"solution."
 msgstr ""
-"<a href='https://keyidentity.com'>arxes-tolina</a> bietet LinOTP als MFA-"
-"Lösung für Unternehmen an."
+"<a href='https://linotp.de'>netgo bietet LinOTP</a> als MFA-Lösung für "
+"Unternehmen an."
 
 msgid "A new token will be set to this OTP length."
 msgstr "Der OTP-Wert eines neuen Tokens wird mit dieser Länge interpretiert."
@@ -362,6 +362,9 @@ msgstr ""
 msgid "Config"
 msgstr "Config"
 
+msgid "Configuration error"
+msgstr "Konfigurationsfehler"
+
 msgid "Confirm"
 msgstr "Bestätigen"
 
@@ -395,8 +398,8 @@ msgstr "Kopiere PIN"
 msgid "Copy Token PIN"
 msgstr "Kopiere Token-PIN"
 
-msgid "Copyright (C) arxes-tolina GmbH"
-msgstr "Copyright (C) arxes-tolina GmbH"
+msgid "Copyright (C) netgo GmbH"
+msgstr "Copyright (C) netgo GmbH"
 
 msgid "Could not find a token for this OTP value."
 msgstr "Zu diesem OTP-Wert konnte kein Token ermittelt werden."
@@ -1072,6 +1075,9 @@ msgstr "Feld-Trennzeichen:"
 msgid "File Resolver"
 msgstr "Datei-Resolver"
 
+msgid "File resolver"
+msgstr "Datei-Resolver"
+
 msgid "Flatfile"
 msgstr "Flatfile"
 
@@ -1087,10 +1093,10 @@ msgstr "Weitere Informationen finden Sie unter:"
 #, python-format
 msgid ""
 "For professional LinOTP support and enterprise subscription, feel free to "
-"contact %s for support agreement purchase."
+"contact %s for support agreement purchases."
 msgstr ""
-"Zum Erwerb von professionellem Support und Subskription für Ihr Unternehmen "
-"kontaktieren Sie uns unter: %s."
+"Für professionellen LinOTP-Support und Subskription für Unternehmen wenden "
+"Sie sich bitte an %s."
 
 msgid "For support and subscription please contact us at"
 msgstr "Für Support- und Subskriptions Fragen erreichen Sie uns"
@@ -1364,23 +1370,13 @@ msgstr ""
 "den HelpDesk."
 
 msgid ""
-"If you are interested in the MFA platform by arxes-tolina using LinOTP at "
-"its core, and would like further information about:"
+"If you are interested in our MFA platform using LinOTP at its core and want "
+"to know more, feel free to <a href='https://linotp.de/en/contact."
+"html'>contact us</a>."
 msgstr ""
-"Falls Sie sich für die die MFA-Plattform von arxes-tolina mit LinOTP als "
-"Kern interessieren und weitere Informationen wünschen:"
-
-msgid ""
-"If you are interested in the MFA platform powered by arxes-tolina, and want "
-"to be informed about:"
-msgstr ""
-"Falls Sie sich für die die MFA-Plattform von arxes-tolina interessieren und "
-"über folgende Themen informiert werden möchten:"
-
-msgid ""
-"If you are not yet subscribed, please consider subscribing to our quarterly "
-"newsletter."
-msgstr "Abonnieren Sie unseren vierteljährlich erscheinenden Newsletter."
+"Falls Sie sich für die die MFA-Plattform mit LinOTP als Kern interessieren "
+"und weitere Informationen wünschen, können Sie uns gerne <a href=‘https://"
+"linotp.de/kontakt.html’>kontaktieren</a>."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -1473,6 +1469,9 @@ msgid "LDAP Server configuration seems to be OK! Number of users found"
 msgstr ""
 "LDAP Serverkonfiguration scheint OK!\n"
 "Anzahl der gefundenen Benutzer"
+
+msgid "LDAP resolver"
+msgstr "LDAP-Resolver"
 
 msgid "License already installed!"
 msgstr "Lizenz ist bereits installiert!"
@@ -1768,9 +1767,6 @@ msgstr ""
 
 msgid "Otp Value"
 msgstr "OTP-Wert"
-
-msgid "Our newsletter covers:"
-msgstr "Unser Newsletter beinhaltet:"
 
 msgid "Override authentication client"
 msgstr "Authentisierenden Client überschreiben"
@@ -2214,6 +2210,9 @@ msgstr "SQL-Konfiguration enthält Fehler"
 msgid "SQL config seems to be OK! Number of users found"
 msgstr "SQL-Konfiguration scheint OK! Anzahl der gefundenen Benutzer"
 
+msgid "SQL resolver"
+msgstr "SQL-Resolver"
+
 msgid "SafeNet/ Aladdin XML"
 msgstr "SafeNet-XML (Aladdin)"
 
@@ -2222,6 +2221,9 @@ msgstr "Vertriebs-Hotline: "
 
 msgid "Save"
 msgstr "Speichern"
+
+msgid "Save & test resolver"
+msgstr "Resolver speichern und testen"
 
 msgid "Save Config"
 msgstr "Konfiguration speichern"
@@ -2405,12 +2407,6 @@ msgstr "Challenge eingeben:"
 msgid "Submit response:"
 msgstr "Challenge beantworten:"
 
-msgid "Subscribe"
-msgstr "Abonnieren"
-
-msgid "Subscribe to newsletter"
-msgstr "Newsletter abonnieren"
-
 msgid "Subscription"
 msgstr "Subskription"
 
@@ -2471,23 +2467,14 @@ msgstr "Zielrealm"
 msgid "Test HTTP Server connection"
 msgstr "HTTP-Server - Verbindung testen"
 
-msgid "Test LDAP Server connection"
-msgstr "LDAP-Server - Verbindung testen"
+msgid "Test connection"
+msgstr "Verbindung testen"
 
-msgid "Test LDAP connection"
-msgstr "LDAP-Verbindung testen"
-
-msgid "Test SQL connection"
-msgstr "SQL-Verbindung testen"
-
-msgid "Testing connection ..."
-msgstr "Teste Verbindung..."
+msgid "Test resolver"
+msgstr "Resolver testen"
 
 msgid "Testing connection ... "
 msgstr "Teste Verbindung... "
-
-msgid "Testing connections..."
-msgstr "Teste LDAP-Verbindung..."
 
 msgid "Text delimiter:"
 msgstr "Text-Trennzeichen:"
@@ -3127,6 +3114,9 @@ msgstr ""
 "Der Resolver %r konnte nicht in­s­tan­zi­ie­rt werden. Bitte überprüfen Sie die "
 "Konfiguration oder die Verbindung!"
 
+msgid "Unable to load the server configuration."
+msgstr "Die Serverkonfiguration konnte nicht geladen werden."
+
 msgid "Unassign"
 msgstr "Zuweisung aufheben"
 
@@ -3248,11 +3238,11 @@ msgid "Waiting for confirmation..."
 msgstr "Warten auf Bestätigung..."
 
 msgid ""
-"We are pleased that you are using LinOTP powered by arxes-tolina as your MFA "
-"solution."
+"We are pleased that you are using <a href='https://linotp.de'>LinOTP powered "
+"by netgo</a> as your MFA solution."
 msgstr ""
-"Wir freuen uns, dass Sie LinOTP von arxes-tolina als Ihre MFA-Lösung "
-"benutzen."
+"Wir freuen uns, dass Sie <a href=‘https://linotp.de’>LinOTP von netgo</a> "
+"als Ihre MFA-Lösung benutzen."
 
 msgid "We would be happy to receive your feedback about LinOTP."
 msgstr "Wir freuen uns auf Ihre Kommentare und Ideen zu LinOTP."
@@ -3854,9 +3844,6 @@ msgstr "Status prüfen"
 msgid "confirm PIN"
 msgstr "PIN bestätigen"
 
-msgid "consider subscribing to our quarterly newsletter."
-msgstr "abonnieren Sie unseren quartalsweise erscheinenden Newsletter."
-
 msgid "create new..."
 msgstr "neu erstellen..."
 
@@ -4083,9 +4070,6 @@ msgstr "auf dem Remote-Server"
 msgid "optional"
 msgstr "Optional"
 
-msgid "or"
-msgstr "oder"
-
 msgid "or email"
 msgstr "oder E-Mail"
 
@@ -4101,17 +4085,11 @@ msgstr "Unverschlüsselte Werte"
 msgid "plaintext (will be hashed during import)"
 msgstr "Klartext (wird durch den Import gehasht)"
 
-msgid "please consider subscribing to our quarterly newsletter."
-msgstr "abonnieren Sie bitte unseren vierteljährlich erscheinenden Newsletter."
-
 msgid "please contact us"
 msgstr "können Sie sich gerne mit uns in Verbindung setzen"
 
 msgid "preshared key"
 msgstr "Mit Preshared-Key verschlüsselt"
-
-msgid "product updates by arxes-tolina,"
-msgstr "Produktaktualisierungen von arxes-tolina,"
 
 msgid "register SMS Token"
 msgstr "SMS-Token registrieren"
@@ -4273,15 +4251,6 @@ msgstr "unbegrenzt"
 #, python-format
 msgid "unsupported date format date %r"
 msgstr "nicht unterstütztes Datumsformat %r"
-
-msgid "upcoming features in LinOTP"
-msgstr "neue Funktionen von LinOTP"
-
-msgid "upcoming features in LinOTP,"
-msgstr "neue Funktionen von LinOTP,"
-
-msgid "upcoming features in LinOTP."
-msgstr "neue Funktionen von LinOTP."
 
 msgid "username"
 msgstr "Benutzername"
@@ -4477,6 +4446,11 @@ msgstr "WebUI generiert"
 #~ "verwenden."
 
 #~ msgid ""
+#~ "If you are not yet subscribed, please consider subscribing to our "
+#~ "quarterly newsletter."
+#~ msgstr "Abonnieren Sie unseren vierteljährlich erscheinenden Newsletter."
+
+#~ msgid ""
 #~ "If you are using STARTTLS or LDAPS you can enter the CA certificate in "
 #~ "PEM format here."
 #~ msgstr ""
@@ -4589,6 +4563,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "OtpAuth Softtoken Url"
 #~ msgstr "OtpAuth Softtoken Url"
+
+#~ msgid "Our newsletter covers:"
+#~ msgstr "Unser Newsletter beinhaltet:"
 
 #~ msgid "Overwrite"
 #~ msgstr "Überschreiben"
@@ -4772,6 +4749,12 @@ msgstr "WebUI generiert"
 #~ "Geben Sie die Hashlib, die benutzt werden soll, an. Dies kann SHA1 (1) "
 #~ "oder SHA2-256 (2) sein."
 
+#~ msgid "Subscribe"
+#~ msgstr "Abonnieren"
+
+#~ msgid "Subscribe to newsletter"
+#~ msgstr "Newsletter abonnieren"
+
 #~ msgid "Successful Action"
 #~ msgstr "Erfolgreiche Aktion"
 
@@ -4789,6 +4772,18 @@ msgstr "WebUI generiert"
 
 #~ msgid "TOTP time window"
 #~ msgstr "TOTP Zeitfenster"
+
+#~ msgid "Test LDAP Server connection"
+#~ msgstr "LDAP-Server - Verbindung testen"
+
+#~ msgid "Test LDAP connection"
+#~ msgstr "LDAP-Verbindung testen"
+
+#~ msgid "Testing connection ..."
+#~ msgstr "Teste Verbindung..."
+
+#~ msgid "Testing connections..."
+#~ msgstr "Teste LDAP-Verbindung..."
 
 #~ msgid ""
 #~ "The maximum allowed number of tokens for the realm %s (%s) was reached. "
@@ -4936,6 +4931,9 @@ msgstr "WebUI generiert"
 #~ msgid "client"
 #~ msgstr "IP-Client"
 
+#~ msgid "consider subscribing to our quarterly newsletter."
+#~ msgstr "abonnieren Sie unseren quartalsweise erscheinenden Newsletter."
+
 #~ msgid "count auth"
 #~ msgstr "Authentisierungszähler"
 
@@ -4984,6 +4982,9 @@ msgstr "WebUI generiert"
 #~ msgid "no"
 #~ msgstr "Nein"
 
+#~ msgid "or"
+#~ msgstr "oder"
+
 #~ msgid "or generate new one"
 #~ msgstr "oder einen neuen generieren"
 
@@ -4993,6 +4994,10 @@ msgstr "WebUI generiert"
 #~ msgstr ""
 #~ "Pfad zur Toplevel Hilfe-Datei (index.html, default: /usr/share/doc/"
 #~ "linotpdoc/html)"
+
+#~ msgid "please consider subscribing to our quarterly newsletter."
+#~ msgstr ""
+#~ "abonnieren Sie bitte unseren vierteljährlich erscheinenden Newsletter."
 
 #~ msgid "realm"
 #~ msgstr "Realm"
@@ -5035,6 +5040,15 @@ msgstr "WebUI generiert"
 
 #~ msgid "unassign"
 #~ msgstr "Zuweisung aufheben"
+
+#~ msgid "upcoming features in LinOTP"
+#~ msgstr "neue Funktionen von LinOTP"
+
+#~ msgid "upcoming features in LinOTP,"
+#~ msgstr "neue Funktionen von LinOTP,"
+
+#~ msgid "upcoming features in LinOTP."
+#~ msgstr "neue Funktionen von LinOTP."
 
 #~ msgid "upcoming hackathons,"
 #~ msgstr "geplante Hackathons,"
