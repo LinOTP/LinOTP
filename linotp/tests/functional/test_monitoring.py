@@ -28,6 +28,7 @@
 
 import json
 import logging
+import os
 from datetime import datetime
 
 import pytest
@@ -323,111 +324,144 @@ class TestMonitoringController(TestController):
 
         return
 
-    def test_nolicense(self):
-        """"""
-        old_lic = None
-        old_sig = None
-        try:
-            old_lic, old_sig = self.getCurrentLicense()
+    def test_no_license(self):
+        """Verify monitoring response if no license is installed."""
 
-        except InvalidLicenseException as exx:
-            if (
-                str(exx) != "Support not available, your product is"
-                " unlicensed"
-            ):
-                raise exx
-        try:
-            # Remove previous license...
-            self.setCurrentLicense(None, None)
+        response = self.make_authenticated_request(
+            controller="monitoring", action="license", params={}
+        )
+
+        assert not response.json["result"]["value"]["valid"], response
+        msg = "license file is empty!"
+        assert msg in response.json["result"]["value"]["message"], response
+
+    def test_user_based_license(self):
+        """user based license - monitoring test: verify license usage."""
+
+        # -------------------------------------------------------------- --
+
+        # read user based license file
+
+        license_data = None
+        license_file = os.path.join(
+            self.fixture_path, "linotp2.token_user.pem"
+        )
+
+        with open(license_file, "r") as f:
+            license_data = f.read()
+
+        # -------------------------------------------------------------- --
+
+        # travel back in time with the, then valid, license
+
+        with freeze_time(datetime(year=2018, month=11, day=17)):
+
+            upload_files = [
+                ("license", "linotp2.token_user.pem", license_data)
+            ]
+            response = self.make_system_request(
+                "setSupport", upload_files=upload_files
+            )
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"], response
+
+            response = self.make_system_request("getSupportInfo")
+            license_user_num = int(
+                response.json["result"]["value"]["user-num"]
+            )
+
+            # ------------------------------------------------------------- --
+
+            # create some tokens but only one assigned and active
+
+            self.create_token(serial="0031")
+            self.create_token(serial="0032", user="root")
+            self.create_token(serial="0033", realm="mydefrealm")
+            self.create_token(serial="0034", realm="myotherrealm")
+            self.create_token(
+                serial="0035", realm="myotherrealm", active=False
+            )
+            self.create_token(
+                serial="0036", realm="myotherrealm", user="max2", active=False
+            )
+
+            assingned_and_active = 1
+            # ------------------------------------------------------------- --
+
+            # do the monitoring request and verify the result
 
             response = self.make_authenticated_request(
                 controller="monitoring", action="license", params={}
             )
-            resp = json.loads(response.body)
-            value = resp.get("result").get("value")
-            assert value.get("valid") == False, response
 
-        finally:
-            # restore previous license...
-            if old_lic and old_sig:
-                self.setCurrentLicense(old_lic, old_sig)
-        return
+            value = response.json["result"]["value"]
+            assert value["user-num"] == license_user_num, response
+            user_left = license_user_num - assingned_and_active
+            assert value["user-left"] == user_left, response
 
-    def test_license(self):
-        old_lic = None
-        old_sig = None
-        try:
-            old_lic, old_sig = self.getCurrentLicense()
-        except InvalidLicenseException as exx:
-            if (
-                str(exx) != "Support not available, your product is "
-                "unlicensed"
-            ):
-                raise exx
+    def test_token_based_license(self):
+        """token based license - monitoring test: verify license usage."""
 
-        try:
-            # Load the license file...
+        # -------------------------------------------------------------- --
 
-            time_ago = datetime(year=2017, month=12, day=1)
+        # read user based license file
 
-            with freeze_time(time_ago):
+        license_data = None
+        license_file = os.path.join(self.fixture_path, "expired-lic.pem")
 
-                response = self.install_license("expired-lic.pem")
-                lic_dict, lic_sig = self.getCurrentLicense()
+        with open(license_file, "r") as f:
+            license_data = f.read()
 
-                assert '"status": true' in response
-                assert '"value": true' in response
+        # -------------------------------------------------------------- --
 
-                self.create_token(serial="0031")
-                self.create_token(serial="0032", user="root")
-                self.create_token(serial="0033", realm="mydefrealm")
-                self.create_token(serial="0034", realm="myotherrealm")
-                self.create_token(
-                    serial="0035", realm="myotherrealm", active=False
-                )
-                self.create_token(
-                    serial="0036",
-                    realm="myotherrealm",
-                    user="max2",
-                    active=False,
-                )
+        # travel back in time with the, then valid, license
 
-                response = self.make_authenticated_request(
-                    controller="monitoring", action="license", params={}
-                )
-                resp = json.loads(response.body)
-                value = resp.get("result").get("value")
-                assert value.get("token-num") == int(
-                    lic_dict.get("token-num")
-                ), response
-                token_left = int(lic_dict.get("token-num")) - 4
-                assert value.get("token-left") == token_left, response
+        with freeze_time(datetime(year=2017, month=12, day=1)):
 
-        finally:
-            # restore previous license...
-            if old_lic and old_sig:
-                self.setCurrentLicense(old_lic, old_sig)
+            upload_files = [("license", "expired-lic.pem", license_data)]
+            response = self.make_system_request(
+                "setSupport", upload_files=upload_files
+            )
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"], response
 
-        return
+            response = self.make_system_request("getSupportInfo")
+            license_token_num = int(
+                response.json["result"]["value"]["token-num"]
+            )
 
-    def install_license(self, license_filename="demo-lic.pem"):
-        """
-        install a license from the fixture path
-        """
-        import os
+            # ------------------------------------------------------------- --
 
-        demo_license_file = os.path.join(self.fixture_path, license_filename)
+            # create some tokens
 
-        with open(demo_license_file, "r") as f:
-            demo_license = f.read()
+            self.create_token(serial="0031")
+            self.create_token(serial="0032", user="root")
+            self.create_token(serial="0033", realm="mydefrealm")
+            self.create_token(serial="0034", realm="myotherrealm")
+            self.create_token(
+                serial="0035", realm="myotherrealm", active=False
+            )
+            self.create_token(
+                serial="0036",
+                realm="myotherrealm",
+                user="max2",
+                active=False,
+            )
 
-        upload_files = [("license", "demo-lic.pem", demo_license)]
+            assingned_and_active = 4
 
-        response = self.make_system_request(
-            "setSupport", upload_files=upload_files
-        )
+            # ------------------------------------------------------------- --
 
-        return response
+            # do the monitoring request and verify the result
+
+            response = self.make_authenticated_request(
+                controller="monitoring", action="license", params={}
+            )
+
+            value = response.json["result"]["value"]
+            assert value["token-num"] == license_token_num, response
+            token_left = license_token_num - assingned_and_active
+            assert value["token-left"] == token_left, response
 
     def test_check_encryption(self):
         # do this test befor test_config

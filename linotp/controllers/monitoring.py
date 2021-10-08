@@ -49,6 +49,7 @@ from linotp.lib.support import (
     getSupportLicenseInfo,
     verifyLicenseInfo,
 )
+from linotp.lib.token import getNumTokenUsers, getTokenNumResolver
 from linotp.lib.user import getUserFromRequest
 from linotp.lib.util import check_session, get_client
 from linotp.model import db
@@ -282,21 +283,26 @@ class MonitoringController(BaseController):
 
             # Add Extra info
             # if needed; use details = None ... for no details!)...
+
             license_ok, license_msg = verifyLicenseInfo(
                 license_info, license_sig
             )
             if not license_ok:
                 res = {"valid": license_ok, "message": license_msg}
+                return sendResult(response, res, 1)
+
+            details = {"valid": license_ok}
+
+            if "user-num" in license_info:
+                res["user-num"] = int(license_info.get("user-num", 0))
+                active_usercount = getNumTokenUsers()
+                res["user-active"] = active_usercount
+                res["user-left"] = res["user-num"] - active_usercount
+
             else:
-                details = {"valid": license_ok}
-
                 res["token-num"] = int(license_info.get("token-num", 0))
-
-                # get all active tokens from all realms (including norealm)
-                monit_handler = MonitorHandler()
-                active_tokencount = monit_handler.get_active_tokencount()
+                active_tokencount = getTokenNumResolver()
                 res["token-active"] = active_tokencount
-
                 res["token-left"] = res["token-num"] - active_tokencount
 
             return sendResult(response, res, 1)
