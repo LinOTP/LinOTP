@@ -35,10 +35,10 @@ import os
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
 
-from flask import current_app, g, redirect
+from flask import current_app, g, redirect, url_for
 
 import linotp
-from linotp.controllers.base import BaseController
+from linotp.controllers.base import BaseController, jwt_exempt
 from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import request, response
@@ -127,6 +127,7 @@ class ManageController(BaseController):
             if request.path.lower() in [
                 "/manage/",
                 "/manage",
+                "/manage/login",
                 "/manage/logout",
                 "/manage/audittrail",
                 "/manage/policies",
@@ -173,15 +174,20 @@ class ManageController(BaseController):
 
         return response
 
+    @jwt_exempt
     def index(self):
         """
         This is the main function of the management web UI
         """
+        user = getUserFromRequest(request).get("login")
+        if not user:
+            # user is not authenticated, show login view
+            return redirect(url_for(".login"))
 
         try:
             c.debug = current_app.config["DEBUG"]
             c.title = "LinOTP Management"
-            c.admin = g.username
+            c.admin = user
 
             log.debug("[index] importers: %s", IMPORT_TEXT)
             c.importers = IMPORT_TEXT
@@ -289,6 +295,20 @@ class ManageController(BaseController):
             log.error("[index] failed! %r", ex)
             db.session.rollback()
             raise
+
+    @jwt_exempt
+    def login(self):
+        """
+        Render the Manage-UI login page
+        """
+        user = getUserFromRequest(request).get("login")
+        if user:
+            # user is authenticated, no login required.
+            return redirect(url_for(".index"))
+
+        c.debug = current_app.config["DEBUG"]
+
+        return render("manage/login.mako")
 
     def tokentype(self):
         """"""
