@@ -161,3 +161,51 @@ can be installed via:
 Use the debugger as follows:
 
  $ pytest --pudb --tc-file=server_cfg.ini test_create_useridresolvers.py
+
+
+Docker based selenium testing
+=========================================
+
+To run the selenium tests in a docker-compose setup, the docker files must be
+build in the linotp root directory via:
+
+  $ make -f Makefile  docker-build-all
+
+For the build some environment variables must be set, which are defined in
+the `.gitlab-ci.yml`:
+
+  $ export DEPENDENCY_DEB_REPO="http://debs-devel.corp.linotp.de/linotp3 buster linotp"
+  $ export DEPENDENCY_GPG_KEY_URL="http://avocado.corp.lsexperts.de/deb-repo/ki-archive-keyring.gpg"
+  $ export DEPENDENCY_GPG_KEYID=""
+
+After this change to the integration test directory
+
+  $ cd linotp/tests/integration
+
+There you start the selenium docker composition
+
+  $ docker-compose up
+
+After this we have to identify the port of the selenium chrome port so we can
+connect to this via your vnc viewer
+
+  $ docker-compose port selenium 5900
+
+The result is the port to which your vnc viewer should connect - the password
+is "secret"
+
+  $ remote-viewer vnc://`docker-compose port selenium 5900`
+
+On MacOS you use an address like `0.0.0.0:58675`
+
+After this we have to identify the port of the selenium chrome port so we can
+connect to this via your vnc viewer
+
+  $ docker-compose run selenium_tester bash
+
+and within this bash the tests could be started like:
+
+  $ pytest -v -x --pudb test_realm_dialog.py
+
+whereby in this commandline the pudb will start in case of an error.
+
