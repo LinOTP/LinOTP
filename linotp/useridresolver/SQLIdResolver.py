@@ -52,6 +52,7 @@ from sqlalchemy.sql import text as sql_text
 from flask import current_app
 
 from linotp.lib.type_utils import encrypted_data, text
+from linotp.model import db
 from linotp.useridresolver.UserIdResolver import (
     ResolverLoadConfigError,
     ResolverNotAvailable,
@@ -331,26 +332,31 @@ class dbObject:
 
         return None
 
-    def connect(self, sqlConnect, timeout=5, verify=True):
+    def connect(self, sqlConnect, db=None, timeout=5, verify=True):
         """
-        create a db session with the sqlConnect string
+        create a db session with the sqlConnect string or with the flask sqlalchemy db object
 
         :param sqlConnect: sql url for the connection
+        :param db: the configured flask-sqlalchemy db object (this overrides the sqlConnect parameter)
         """
+        self.meta = MetaData()
+
+        # the sqlalchemy case
+        if db is not None:
+            self.sess = db.session
+            self.engine = db.engine
+            log.debug("[dbObject::connect] %r", self.engine)
+            return
 
         args = {"echo": False, "echo_pool": True}
-
         if "sqlite" not in sqlConnect:
             args["pool_timeout"] = 30
             args["connect_args"] = {"connect_timeout": timeout}
-
         self.engine = create_engine(sqlConnect, **args)
 
         # the repr of engine is does not show the password
 
         log.debug("[dbObject::connect] %r", self.engine)
-
-        self.meta = MetaData()
 
         Session = sessionmaker(
             bind=self.engine,
@@ -430,6 +436,14 @@ def testconnection(params):
 @resolver_registry.class_entry("useridresolver.sqlresolver")
 @resolver_registry.class_entry("sqlresolver")
 class IdResolver(UserIdResolver):
+    """
+    A resolver class for userIds
+
+    Attributes
+    ----------
+    managed: means it uses the linotp DB [session]
+    for storing and retrieving user information.
+    """
 
     db_prefix = "useridresolver.SQLIdResolver.IdResolver"
     critical_parameters = [
@@ -578,9 +592,9 @@ class IdResolver(UserIdResolver):
         self.dbObj = dbObject()
 
         if self.managed:
-            sqlConnect = current_app.config.get("DATABASE_URI")
-
-        self.dbObj.connect(sqlConnect=sqlConnect)
+            self.dbObj.connect(sqlConnect="", db=db)
+        else:
+            self.dbObj.connect(sqlConnect=sqlConnect)
 
         return self.dbObj
 
