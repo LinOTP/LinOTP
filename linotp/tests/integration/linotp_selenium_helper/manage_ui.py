@@ -76,6 +76,10 @@ class ManageUi(object):
     MENU_LINOTP_IMPORT_TOKEN_CSS = "#menu > li:nth-of-type(3)"
     "CSS of the LinOTP Import Token menu"
 
+    # Menu entry "Import Token File"
+    MENU_LINOTP_HELP_CSS = "#menu > li:nth-of-type(5)"
+    "CSS of the LinOTP Help menu"
+
     # Menu entry "LinOTP Config"
     MENU_LINOTP_CONFIG_CSS = "#menu > li"
     "CSS of the LinOTP Config menu"
@@ -465,6 +469,21 @@ class AlertBoxHandler(object):
         self.info_bar: WebElement = None
         self.info_lines: List[AlertBoxInfoLine] = []
         self.close_all: WebElement = None
+        self.ui_wait_time = manage_ui.testcase.ui_wait_time
+
+    def wait_until_alert_box_visible(self) -> WebElement:
+        """
+        Wait until element message bar is visible because at
+        least one message is shown
+
+        :return: the identified element
+        """
+
+        WebDriverWait(self.driver, self.ui_wait_time).until(
+            EC.visibility_of_element_located((By.ID, self.msgs_parent_id))
+        )
+
+        return self.driver.find_element(By.ID, self.msgs_parent_id)
 
     def parse(self) -> None:
         """
@@ -522,6 +541,11 @@ class AlertBoxHandler(object):
         Wrap check_message with message type Error.
         """
         return self.check_message(msg, MsgType.Error)
+
+    @property
+    def amount_of_lines(self) -> int:
+        self.parse()
+        return len(self.info_lines)
 
     @property
     def last_line(self) -> Optional[AlertBoxInfoLine]:
