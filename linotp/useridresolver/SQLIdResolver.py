@@ -332,16 +332,17 @@ class dbObject:
 
         return None
 
-    def connect(self, sqlConnect, db=None, timeout=5, verify=True):
+    def connect(self, sqlConnect, db=None, timeout=5):
         """
         create a db session with the sqlConnect string or with the flask sqlalchemy db object
 
         :param sqlConnect: sql url for the connection
         :param db: the configured flask-sqlalchemy db object (this overrides the sqlConnect parameter)
         """
+
         self.meta = MetaData()
 
-        # the sqlalchemy case
+        # the managed case
         if db is not None:
             self.sess = db.session
             self.engine = db.engine
@@ -354,8 +355,6 @@ class dbObject:
             args["connect_args"] = {"connect_timeout": timeout}
         self.engine = create_engine(sqlConnect, **args)
 
-        # the repr of engine is does not show the password
-
         log.debug("[dbObject::connect] %r", self.engine)
 
         Session = sessionmaker(
@@ -366,26 +365,15 @@ class dbObject:
         )
         self.sess = Session()
 
-        # if not verify:
-        #    return
-
-        # ------------------------------------------------------------------ --
-
         # verify that it's possible to connect
-
         try:
-
             self.engine.connect()
             return
 
         except Exception as exx:
-
             log.error("Connection error: %r", exx)
-
             msg = str(exx)
-
             if "timeout expired" in msg or "can't connect to" in msg:
-
                 raise ResolverNotAvailable(msg)
 
             raise
@@ -538,7 +526,7 @@ class IdResolver(UserIdResolver):
                 connect_str,
             )
 
-            dbObj.connect(connect_str, verify=False)
+            dbObj.connect(connect_str)
             table = dbObj.getTable(params.get("Table"))
             num = dbObj.count(table, params.get("Where", ""))
 
