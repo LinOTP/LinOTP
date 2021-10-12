@@ -122,13 +122,11 @@ class TestMonitoringController(TestController):
         if user:
             parameters["user"] = user
 
-        response = self.make_authenticated_request(
-            controller="admin", action="init", params=parameters
-        )
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
         if active is False:
-            response = self.make_authenticated_request(
-                controller="admin", action="disable", params={"serial": serial}
+            response = self.make_admin_request(
+                "disable", params={"serial": serial}
             )
 
             assert '"value": 1' in response, response
@@ -136,9 +134,7 @@ class TestMonitoringController(TestController):
 
     # UnitTests...
     def test_config(self):
-        response = self.make_authenticated_request(
-            controller="monitoring", action="config", params={}
-        )
+        response = self.make_monitoring_request("config", params={})
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
         assert values.get("realms") == 3, response
@@ -146,12 +142,8 @@ class TestMonitoringController(TestController):
         # self.assertEqual(values.get('sync'), True, response)
 
         # provoke unsyncronized situation:
-        self.make_authenticated_request(
-            controller="monitoring", action="storageEncryption", params={}
-        )
-        response = self.make_authenticated_request(
-            controller="monitoring", action="config", params={}
-        )
+        self.make_monitoring_request("storageEncryption", params={})
+        response = self.make_monitoring_request("config", params={})
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
         assert values.get("realms") == 3, response
@@ -167,9 +159,7 @@ class TestMonitoringController(TestController):
         self.create_token(serial="0004", realm="myotherrealm")
         # test what happens if first realm is empty:
         parameters = {"realms": ",mydefrealm,myotherrealm"}
-        response = self.make_authenticated_request(
-            controller="monitoring", action="tokens", params=parameters
-        )
+        response = self.make_monitoring_request("tokens", params=parameters)
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
         assert (
@@ -195,9 +185,7 @@ class TestMonitoringController(TestController):
         self.create_token(serial="0014", realm="myotherrealm", active=False)
 
         parameters = {"realms": ",mydefrealm,myotherrealm", "status": "active"}
-        response = self.make_authenticated_request(
-            controller="monitoring", action="tokens", params=parameters
-        )
+        response = self.make_monitoring_request("tokens", params=parameters)
 
         resp = json.loads(response.body)
         r_values = resp.get("result").get("value").get("Realms", {})
@@ -249,9 +237,7 @@ class TestMonitoringController(TestController):
             "realms": "mydefrealm,myotherrealm",
             "status": "unassigned&inactive",
         }
-        response = self.make_authenticated_request(
-            controller="monitoring", action="tokens", params=parameters
-        )
+        response = self.make_monitoring_request("tokens", params=parameters)
 
         resp = json.loads(response.body)
         values = resp.get("result").get("value").get("Realms")
@@ -292,9 +278,8 @@ class TestMonitoringController(TestController):
 
         # set multiple realms for this token
 
-        response = self.make_authenticated_request(
-            controller="admin",
-            action="tokenrealm",
+        response = self.make_admin_request(
+            "tokenrealm",
             params={
                 "realms": "myotherrealm,myDefRealm",
                 "serial": "0042",
@@ -312,9 +297,7 @@ class TestMonitoringController(TestController):
 
         parameters = {"realms": "myDefRealm,myotherrealm"}
 
-        response = self.make_authenticated_request(
-            controller="monitoring", action="tokens", params=parameters
-        )
+        response = self.make_monitoring_request("tokens", params=parameters)
 
         values = json.loads(response.body).get("result").get("value")
 
@@ -327,9 +310,7 @@ class TestMonitoringController(TestController):
     def test_no_license(self):
         """Verify monitoring response if no license is installed."""
 
-        response = self.make_authenticated_request(
-            controller="monitoring", action="license", params={}
-        )
+        response = self.make_monitoring_request("license", params={})
 
         assert not response.json["result"]["value"]["valid"], response
         msg = "license file is empty!"
@@ -390,9 +371,7 @@ class TestMonitoringController(TestController):
 
             # do the monitoring request and verify the result
 
-            response = self.make_authenticated_request(
-                controller="monitoring", action="license", params={}
-            )
+            response = self.make_monitoring_request("license", params={})
 
             value = response.json["result"]["value"]
             assert value["user-num"] == license_user_num, response
@@ -454,9 +433,7 @@ class TestMonitoringController(TestController):
 
             # do the monitoring request and verify the result
 
-            response = self.make_authenticated_request(
-                controller="monitoring", action="license", params={}
-            )
+            response = self.make_monitoring_request("license", params={})
 
             value = response.json["result"]["value"]
             assert value["token-num"] == license_token_num, response
@@ -465,9 +442,7 @@ class TestMonitoringController(TestController):
 
     def test_check_encryption(self):
         # do this test befor test_config
-        response = self.make_authenticated_request(
-            controller="monitoring", action="storageEncryption", params={}
-        )
+        response = self.make_monitoring_request("storageEncryption", params={})
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
         assert values.get("encryption"), response
@@ -477,17 +452,13 @@ class TestMonitoringController(TestController):
         ), response
 
         # and one more time:
-        response = self.make_authenticated_request(
-            controller="monitoring", action="storageEncryption", params={}
-        )
+        response = self.make_monitoring_request("storageEncryption", params={})
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
         assert values.get("encryption"), response
 
     def test_userinfo(self):
-        response = self.make_authenticated_request(
-            controller="monitoring", action="userinfo", params={}
-        )
+        response = self.make_monitoring_request("userinfo", params={})
         resp = json.loads(response.body)
         myotherrealm = (
             resp.get("result").get("value").get("Realms").get("myotherrealm")
@@ -510,9 +481,7 @@ class TestMonitoringController(TestController):
         }
         self.create_policy(policy_params)
 
-        response = self.make_authenticated_request(
-            controller="monitoring", action="userinfo", params={}
-        )
+        response = self.make_monitoring_request("userinfo", params={})
         resp = json.loads(response.body)
         myotherrealm = (
             resp.get("result").get("value").get("Realms").get("myotherrealm")
@@ -547,9 +516,7 @@ class TestMonitoringController(TestController):
         self.create_token(serial="0063", user="susi", realm="mymixrealm")
         self.create_token(serial="0064", user="max1", realm="mymixrealm")
 
-        response = self.make_authenticated_request(
-            controller="monitoring", action="activeUsers", params={}
-        )
+        response = self.make_monitoring_request("activeUsers", params={})
         resp = json.loads(response.body)
         assert resp.get("result").get("value").get("total") == 9, response
         mydefrealm = (
