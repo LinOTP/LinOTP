@@ -14,7 +14,7 @@ def test_rootdir(app):
     assert os.path.exists(rootdir)
 
 
-def test_healthcheck(base_app, client):
+def test_healthcheck(client):
     wanted = {
         "status": lambda v: v == "alive",
         "version": lambda v: v == linotp_version,
@@ -52,8 +52,8 @@ def test_healthcheck(base_app, client):
         "CONTROLLERS": "test",
     }
 )
-def test_dispatch(base_app, client, path, method, status):
-    bound_method = getattr(client, method)
+def test_dispatch(adminclient, path, method, status):
+    bound_method = getattr(adminclient, method)
     res = bound_method("/test/" + path)
     assert res.status_code == status
     if res.status_code == 200:
@@ -65,8 +65,8 @@ def test_dispatch(base_app, client, path, method, status):
         "CONTROLLERS": "test",
     }
 )
-def test_dispatch_args(base_app, client):
-    res = client.get("/test/testmethod_args/foo/bar")
+def test_dispatch_args(adminclient):
+    res = adminclient.get("/test/testmethod_args/foo/bar")
     assert res.status_code == 200
     assert request.method == "GET"
     assert request.view_args["s"] == "foo"
@@ -85,8 +85,8 @@ def test_dispatch_args(base_app, client):
         "CONTROLLERS": "test",
     }
 )
-def test_dispatch_optional_id(base_app, client, path, status, id_value):
-    res = client.get("/test/" + path)
+def test_dispatch_optional_id(adminclient, path, status, id_value):
+    res = adminclient.get("/test/" + path)
     assert res.status_code == status
     if id_value is not None:
         assert request.view_args == {"id": id_value}
