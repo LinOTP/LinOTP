@@ -161,7 +161,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                 method.__func__, "jwt_exempt", False
             ):
                 log.debug(f"JWT exempt: {method}")
-                self.jwt_exempt_methods.add(url)
+                self.jwt_exempt_methods.add(method_name)
 
             # Add another route if the method has an optional second
             # parameter called `id` (and no parameters after that).
@@ -214,7 +214,9 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
         benefit of `lib.user.getUserFromRequest()`.
         """
 
-        method = request.url_rule.rule[request.url_rule.rule.rfind("/") :]
+        method = request.url_rule.endpoint[
+            request.url_rule.endpoint.rfind(".") + 1 :
+        ]
         if method in self.jwt_exempt_methods:
             log.debug("jwt_check: operation is exempt from JWT check")
             return None
