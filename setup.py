@@ -63,8 +63,6 @@ install_requirements = [
     "bcrypt",
     "cryptography",
     "click",
-    # Pygments 2.6.0,1 breaks tests so exclude it
-    "Pygments < 2.6.0",
     "jsonschema",
 ]
 
@@ -103,8 +101,7 @@ code_quality_requirements = [
 # install with
 # > pip install -e ".[apidocs]"
 apidocs_requirements = [
-    "Sphinx>3.0",
-    "Sphinx!=3.4.2",
+    "Sphinx>4.0",
     "mock",
 ]
 

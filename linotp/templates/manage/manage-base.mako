@@ -33,7 +33,7 @@
 <title>${_("Management - LinOTP")}</title>
 
 <meta name="copyright" content="netgo GmbH">
-<meta name="keywords" content="LinOTP 2 manage">
+<meta name="keywords" content="LinOTP, Manage, Manage-UI">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
@@ -52,7 +52,7 @@
 <link type="text/css" rel="stylesheet" href="/static/css/datetimepicker/jquery.datetimepicker.css">
 <link type="text/css" rel="stylesheet" href="/static/css/linotp.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/static/manage/style.css?ref=${c.version_ref}">
-<link type="text/css" rel="stylesheet" href="/custom/manage-style.css">
+<link type="text/css" rel="stylesheet" href="/custom/manage-style.css?ref=${c.version_ref}">
 
 %if c.debug:
 	<script type="text/javascript" src="/static/js/jquery-3.4.1.js"></script>

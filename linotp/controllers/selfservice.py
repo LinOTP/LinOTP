@@ -117,7 +117,6 @@ class SelfserviceController(BaseController):
         """
 
         action = request_context["action"]
-        self.redirect = None
 
         try:
             c.version = get_version()
@@ -151,7 +150,6 @@ class SelfserviceController(BaseController):
                     return
 
                 if action in ["index"]:
-                    self.redirect = True
                     return redirect(url_for(".login"))
 
                 else:
@@ -168,7 +166,6 @@ class SelfserviceController(BaseController):
                 if auth_state != "authenticated":
                     return
 
-                self.redirect = True
                 return redirect(url_for(".index"))
 
             # -------------------------------------------------------------- --
@@ -180,7 +177,6 @@ class SelfserviceController(BaseController):
                 and auth_type == "user_selfservice"
                 and auth_state != "authenticated"
             ):
-                self.redirect = True
                 return redirect(url_for(".login"))
 
             # futher processing with the authenticated user
