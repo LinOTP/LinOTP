@@ -821,3 +821,14 @@ div#dialog_setexpiration p, div#dialog_setexpiration div {
   position: absolute;
   left: 1em;
 }
+
+#oath_csv_table{
+  display: block;
+  margin-left: 2px;
+  margin-right: 2px;
+  padding-top: 0.35em;
+  padding-bottom: 0.625em;
+  padding-left: 0.75em;
+  padding-right: 0.75em;
+  border:  solid 1px #a0a0a0;
+}

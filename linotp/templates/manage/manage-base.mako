@@ -1482,19 +1482,28 @@
     <form id="load_tokenfile_form_oathcsv" action="/admin/loadtokens" method="post"
             enctype="multipart/form-data" onsubmit="return false;">
         <p>${_("Here you can upload a CSV file for your OATH token. The file is supposed to contain one token per line")}:</p>
-        <p>${_("For HOTP and TOTP tokens:")}</p>
-        <p>${_("Serial number, Seed, Type, OTP length, Time step")}</p>
-        <p>${_("For OCRA2 tokens:")}</p>
+        <h4>${_("For HOTP and TOTP tokens:")}</h4>
+        <p>${_("Serial number, Seed, Type, [OTP length], [Time step], [hashlib]")}</p>
+            <div>${_("Possible Values:")}</div>
+            <table id="oath_csv_table">
+                <tr><td>${_("Type")}</td><td>-></td><td>${_("HOTP, TOTP")}</td></tr>
+                <tr><td>${_("OTP length")}</td><td>-></td><td>6, 8</td></tr>
+                <tr><td>${_("Time step")}</td><td>-></td><td>Recommendation 30</td></tr>
+                <tr><td>${_("Hashlib")}</td><td>-></td><td>${_("SHA1, SHA256, SHA512")}</td></tr>
+            </table>
+        <h4>${_("For OCRA2 tokens:")}</h4>
         <p>${_("Serial Number, Seed, Type, Ocra Suite")}</p>
-        <fieldset>
-            <legend>${_("Default Values:")}</legend>
-            <table>
+        <table id="oath_csv_table">
+                <tr><td>${_("Type")}</td><td>-></td><td>${_("OCRA2")}</td></tr>
+                <tr><td>${_("Ocra Suite")}</td><td>-></td><td>OCRA-1:HOTP-SHA256-8:C-QN08, <br/> OCRA-1:HOTP-SHA256-8:C-QA64</td></tr>   
+            </table>
+        <h4>${_("Default values:")}</h4>
+            <table id="oath_csv_table">
                 <tr><td>${_("Type")}</td><td>-></td><td>${_("HOTP")}</td></tr>
                 <tr><td>${_("OTP length")}</td><td>-></td><td>6</td></tr>
                 <tr><td>${_("Time step")}</td><td>-></td><td>30</td></tr>
-                <tr><td>${_("OCRA suite")}</td><td>-></td><td>${_("optional")}</td></tr>
+                <tr><td>${_("Hashlib")}</td><td>-></td><td>${_("Choosen based on hash length. Fallback: SHA1")}</td></tr>
             </table>
-        </fieldset>
         <p>${_("Please choose the token file")}:
             <input name="file" type="file" size="30" accept="text/*">
             <input name="type" type="hidden" value="oathcsv">\
