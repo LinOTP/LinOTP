@@ -71,7 +71,7 @@ def test_ticket_425(adminclient):
         def run(self):
             """start the thread"""
             response = self.client.post("/system/setConfig", json=self.params)
-            self.response = response.body
+            self.response = response.json
             return
 
         def status(self):
@@ -92,6 +92,12 @@ def test_ticket_425(adminclient):
     check_results = []
     numthreads = 20
     numkeys = 200
+
+    # We need to make a first request to initialize
+    # "linotp.SecretKey.Partition.0" before the threads are started.
+    # If we do not do this here, than there is a race condition for
+    # all threads trying to init the secretKey config row.
+    adminclient.get("/system/getConfig")
 
     params = {}
 
