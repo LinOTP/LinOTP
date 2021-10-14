@@ -29,13 +29,15 @@
 Tests for some miscellaneous fixes
 """
 
-
 import json
 import threading
+
+import pytest
 
 from linotp.tests import TestController
 
 
+@pytest.mark.exclude_sqlite
 def test_ticket_425(adminclient):
     """
     Test #2425: test if setConfig is timing save
