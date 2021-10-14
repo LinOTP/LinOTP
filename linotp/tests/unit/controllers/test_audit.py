@@ -84,7 +84,6 @@ def search(adminclient):
     return _search
 
 
-@pytest.mark.exclude_sqlite
 class TestAuditSearch(object):
     def test_audit_json_empty(self, search):
         response = search()
