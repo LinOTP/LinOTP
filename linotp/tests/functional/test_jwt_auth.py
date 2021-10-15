@@ -14,22 +14,36 @@ class TestJwtAdmin:
         "username,password,expected_message,expected_http_status,expected_status",
         [
             (
-                "passthru_user1",
-                "geheim1",
-                "Login successful for passthru_user1",
+                "admin",
+                "Test123!",
+                "Login successful for admin",
                 200,
                 True,
             ),
             (
-                "passthru_user1@def_realm",
+                "root@adomain",
+                "Test123!",
+                "Login successful for root@adomain",
+                200,
+                True,
+            ),
+            (
+                "admin",
                 "wrong_password",
                 "Bad username or password",
                 401,
                 False,
             ),
             (
-                "wrong_user",
+                "nonexisting_user",
                 "wrong_password",
+                "Bad username or password",
+                401,
+                False,
+            ),
+            (  # correct user and password of a non-admin realm
+                "passthru_user1",
+                "geheim1",
                 "Bad username or password",
                 401,
                 False,
@@ -65,8 +79,8 @@ class TestJwtAdmin:
         client.post(
             "/admin/login",
             data=dict(
-                username="passthru_user1",
-                password="geheim1",
+                username="admin",
+                password="Test123!",
             ),
         )
 

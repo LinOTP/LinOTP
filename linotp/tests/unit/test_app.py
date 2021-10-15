@@ -122,7 +122,7 @@ def test_cache_dir(app):
 @patch("linotp.lib.user.User.checkPass", lambda self, psswd: True)
 @patch(
     "linotp.lib.user.User.getUserObject",
-    lambda x: MagicMock(exists=lambda: True),
+    lambda x, realm: MagicMock(exists=lambda: True),
 )
 @patch("linotp.controllers.base.getUserId", lambda x: [None] * 3)
 @patch(
