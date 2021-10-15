@@ -360,6 +360,7 @@ class Migration:
         "2.12.0.0",
         "3.0.0.0",
         "3.1.0.0",
+        "3.2.0.0",
     ]
 
     def __init__(self, engine: Engine):
@@ -876,6 +877,19 @@ class Migration:
         return True, (
             "re-encryption completed! %r tokens and %r config entries "
             "migrated" % (token_counter, entry_counter)
+        )
+
+    def migrate_3_2_0_0(self):
+        """Migrate to 3.2 creates the internal (managed) admin resolver"""
+
+        admin_resolver_name = current_app.config["ADMIN_RESOLVER_NAME"]
+        model.create_admin_resolver(admin_resolver_name=admin_resolver_name)
+
+        admin_realm_name = current_app.config["ADMIN_REALM_NAME"]
+        model.create_admin_realm(admin_realm_name, admin_resolver_name)
+
+        return True, (
+            f"internal (managed) admin resolver {admin_resolver_name} created"
         )
 
 
