@@ -677,6 +677,15 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
+            "ADMIN_RESOLVER_NAME",
+            str,
+            default="LinOTP_local_admins",
+            help=(
+                "The name of the internal admin resolver that"
+                "is managed by the 'linotp admins' cli tool."
+            ),
+        ),
+        ConfigItem(
             "ACTIVE_SECURITY_MODULE",
             str,
             default="default",
