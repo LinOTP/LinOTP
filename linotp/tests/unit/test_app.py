@@ -1,4 +1,6 @@
 import os
+from contextlib import ExitStack
+from unittest.mock import MagicMock, patch
 
 import pytest  # noqa: F401
 
@@ -116,27 +118,49 @@ def test_cache_dir(app):
 # ----------------------------------------------------------------------
 
 
+@patch("linotp.lib.user.User.exists", lambda x: True)
+@patch("linotp.lib.user.User.checkPass", lambda self, psswd: True)
+@patch(
+    "linotp.lib.user.User.getUserObject",
+    lambda x: MagicMock(exists=lambda: True),
+)
+@patch("linotp.controllers.base.getUserId", lambda x: [None] * 3)
+@patch(
+    "linotp.controllers.base.getResolverObject",
+    lambda x: MagicMock(checkPass=lambda a, b: True),
+)
 @pytest.mark.parametrize(
-    "sess_cookie_secure",
+    "secure_cookies",
     [
         False,
         True,
     ],
 )
+@pytest.mark.parametrize(
+    "auth_type",
+    [
+        {"api": "/admin/login", "cookie_name": "access_token_cookie"},
+        {"api": "/userservice/login", "cookie_name": "user_selfservice"},
+    ],
+)
 def test_session_cookie_secure(
-    base_app, client, monkeypatch, sess_cookie_secure
+    base_app, client, monkeypatch, secure_cookies, auth_type
 ):
     monkeypatch.setitem(
-        base_app.config, "SESSION_COOKIE_SECURE", sess_cookie_secure
+        base_app.config, "SESSION_COOKIE_SECURE", secure_cookies
     )
-    # Note that we're using `client` rather than `adminclient`, because
-    # `adminclient` adds a spurious extra session cookie.
+
+    # Note that we are using `client` rather than `adminclient`, because
+    # `adminclient` already is logged in.
     client.cookie_jar.clear()
-    res = client.get("/admin/getsession")
+    res = client.post(
+        auth_type["api"],
+        data={"username": "foooooo", "password": "baaaaar"},
+    )
     assert res.status_code == 200
     for c in client.cookie_jar:
-        if c.name == "admin_session":
-            assert c.secure is sess_cookie_secure
+        if c.name == auth_type["cookie_name"]:
+            assert c.secure is secure_cookies
             break
     else:
-        assert False, "no admin_session cookie found"
+        assert False, "no jwt access token cookie found"
