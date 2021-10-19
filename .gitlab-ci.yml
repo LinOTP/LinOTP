@@ -336,6 +336,7 @@ functional-test-postgres:
   extends:
     - .test-base
     - .buster-tests
+  allow_failure: true
   variables:
     LINOTP_IMAGE: "linotp"
     LINOTP_HOST: "test-linotp"
