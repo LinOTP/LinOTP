@@ -103,13 +103,11 @@ class TestReportingController(TestController):
         if user:
             parameters["user"] = user
 
-        response = self.make_authenticated_request(
-            controller="admin", action="init", params=parameters
-        )
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
         if active is False:
-            response = self.make_authenticated_request(
-                controller="admin", action="disable", params={"serial": serial}
+            response = self.make_admin_request(
+                "disable", params={"serial": serial}
             )
 
             assert '"value": 1' in response, response
@@ -174,9 +172,7 @@ class TestReportingController(TestController):
             assert table_content == 12, table_content
 
         parameters = {"user": "hans"}
-        self.make_authenticated_request(
-            controller="admin", action="disable", params=parameters
-        )
+        self.make_admin_request("disable", params=parameters)
 
         with DBSession() as session:
             # check if new entry was created in reporting table
@@ -256,8 +252,8 @@ class TestReportingController(TestController):
         # delete reports
         yest = yesterday.strftime("%Y-%m-%d")
         parameter = {"date": yest, "realms": "*", "status": "active"}
-        response = self.make_authenticated_request(
-            controller="reporting", action="delete_before", params=parameter
+        response = self.make_reporting_request(
+            "delete_before", params=parameter
         )
         resp = json.loads(response.body)
         values = resp.get("result")
@@ -297,9 +293,8 @@ class TestReportingController(TestController):
             assert table_content == 2, table_content
 
         # delete reports
-        response = self.make_authenticated_request(
-            controller="reporting",
-            action="delete_all",
+        response = self.make_reporting_request(
+            "delete_all",
             params={"realm": "*", "status": "active"},
         )
 
@@ -324,9 +319,8 @@ class TestReportingController(TestController):
         }
         self.create_policy(policy_params)
 
-        response = self.make_authenticated_request(
-            controller="system",
-            action="setPolicy",
+        response = self.make_system_request(
+            "setPolicy",
             params={
                 "name": "self01",
                 "realm": "mydefrealm",
@@ -472,9 +466,7 @@ class TestReportingController(TestController):
                 "to": "2019-08-04",
                 "status": "total,active,inactive,assigned,unassigned",
             }
-            response = self.make_authenticated_request(
-                controller="reporting", action="period", params=params
-            )
+            response = self.make_reporting_request("period", params=params)
 
             realms = {}
             for realm in response.json["result"]["value"]["realms"]:
@@ -506,9 +498,7 @@ class TestReportingController(TestController):
                 "to": "2019-09-04",
                 "status": "total,active,inactive,assigned,unassigned",
             }
-            response = self.make_authenticated_request(
-                controller="reporting", action="period", params=params
-            )
+            response = self.make_reporting_request("period", params=params)
 
             realms = {}
             for realm in response.json["result"]["value"]["realms"]:
@@ -541,9 +531,7 @@ class TestReportingController(TestController):
                 "realms": "mydefrealm, mymixrealm",
                 "status": "total,active,inactive,assigned,unassigned",
             }
-            response = self.make_authenticated_request(
-                controller="reporting", action="period", params=params
-            )
+            response = self.make_reporting_request("period", params=params)
 
             realms = {}
             for realm in response.json["result"]["value"]["realms"]:
@@ -573,9 +561,7 @@ class TestReportingController(TestController):
                 "from": "2020-02-20",
                 "status": "total,active,inactive,assigned,unassigned",
             }
-            response = self.make_authenticated_request(
-                controller="reporting", action="period", params=params
-            )
+            response = self.make_reporting_request("period", params=params)
 
             realms = {}
             for realm in response.json["result"]["value"]["realms"]:
@@ -604,9 +590,7 @@ class TestReportingController(TestController):
                 "to": "2020-03-01",
                 "status": "total,active,inactive,assigned,unassigned",
             }
-            response = self.make_authenticated_request(
-                controller="reporting", action="period", params=params
-            )
+            response = self.make_reporting_request("period", params=params)
 
             realms = {}
             for realm in response.json["result"]["value"]["realms"]:
@@ -637,9 +621,7 @@ class TestReportingController(TestController):
                 "to": "2020-02-22",
                 "status": "total,active,inactive,assigned,unassigned",
             }
-            response = self.make_authenticated_request(
-                controller="reporting", action="period", params=params
-            )
+            response = self.make_reporting_request("period", params=params)
 
             realms = {}
             for realm in response.json["result"]["value"]["realms"]:
@@ -684,12 +666,9 @@ class TestReportingController(TestController):
         self.create_token(serial="0036", realm="myotherrealm")
 
         parameters = {"user": "hans"}
-        self.make_authenticated_request(
-            controller="admin", action="remove", params=parameters
-        )
-        response = self.make_authenticated_request(
-            controller="reporting",
-            action="maximum",
+        self.make_admin_request("remove", params=parameters)
+        response = self.make_reporting_request(
+            "maximum",
             params={"realms": "mydefrealm, mymixrealm"},
         )
 
@@ -709,9 +688,7 @@ class TestReportingController(TestController):
             "realm": "*",
         }
         self.create_policy(policy_params)
-        response = self.make_authenticated_request(
-            controller="reporting", action="maximum"
-        )
+        response = self.make_reporting_request("maximum")
         resp = json.loads(response.body)
         values = resp.get("result")
         assert values.get("status") == False, response
@@ -747,9 +724,7 @@ class TestReportingController(TestController):
         self.create_token(serial="0045", realm="mydefrealm", user="lorca")
         self.create_token(serial="0046", realm="myotherrealm")
 
-        response = self.make_authenticated_request(
-            controller="reporting", action="show"
-        )
+        response = self.make_reporting_request("show")
         resp = json.loads(response.body)
         assert resp.get("detail").get("report_rows") == 3, response
         assert resp.get("result").get("status"), response
@@ -758,8 +733,8 @@ class TestReportingController(TestController):
 
         # test csv output
 
-        response = self.make_authenticated_request(
-            controller="reporting", action="show", params={"outform": "csv"}
+        response = self.make_reporting_request(
+            "show", params={"outform": "csv"}
         )
         assert (
             '"token_init", "myotherrealm", "total", "", 1, ' in response
@@ -799,9 +774,7 @@ class TestReportingController(TestController):
         page_value = 3
         pagesize_value = 12
         parameter = {"page": page_value, "pagesize": pagesize_value}
-        response = self.make_authenticated_request(
-            controller="reporting", action="show", params=parameter
-        )
+        response = self.make_reporting_request("show", params=parameter)
         resp = json.loads(response.body)
         assert resp.get("detail").get("report_rows") == 50, response
         assert resp.get("detail").get("page") == page_value, response
@@ -815,9 +788,7 @@ class TestReportingController(TestController):
 
         # test csv output
         parameter["outform"] = "csv"
-        response = self.make_authenticated_request(
-            controller="reporting", action="show", params=parameter
-        )
+        response = self.make_reporting_request("show", params=parameter)
         line = (
             '"%s", "token_init", "mydefrealm", "total", "", 18, "", "", ""'
             % (str(timestamp),)

@@ -101,7 +101,7 @@ class HelpdeskController(BaseController, SessionCookieMixin):
 
             # Session handling
             if action not in ["getsession", "dropsession"]:
-                check_session(request, scope="helpdesk")
+                check_session(request)
 
         except Exception as exx:
             log.error("[__before__::%r] exception", action)

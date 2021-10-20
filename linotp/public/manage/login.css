@@ -1,0 +1,60 @@
+#wrap {
+  padding: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+#main {
+  display: flex;
+  flex: 1;
+  width: 100%;
+}
+
+div#content {
+  display: flex;
+  flex-grow: 1;
+}
+
+div#footer {
+  padding: 12px 0.4em;
+}
+
+div#login-box {
+  background: white;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
+  width: 550px;
+  padding: 16px 16px 16px;
+  position: relative;
+  margin: auto;
+}
+
+div#login-box table {
+  width: 100%;
+}
+
+div#login-box label {
+  text-align: right;
+}
+
+div#login-box input,
+div#login-box select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 3px;
+}
+
+div#login-box td {
+  padding: 2px;
+}
+
+div#login-box h1 {
+  font-size: 25px;
+  font-weight: 500;
+  text-align: center;
+}
+
+div#login-box td>* {
+  margin: 1px 0;
+}

@@ -255,6 +255,8 @@ class UserserviceController(BaseController):
     request during which the auth_cookie and session is verified
     """
 
+    jwt_exempt = True  # Don't do JWT auth in this controller
+
     def __before__(self, **params):
         """
         __before__ is called before every action
@@ -321,7 +323,7 @@ class UserserviceController(BaseController):
         self.authUser = identity
 
         # we put the authenticated user in the `request_context['AuthUser']`
-        # which is normaly filled by the getUserFromRequest
+        # which is normaly filled by the getUserFromRequest for admins
         # as we require the authenticated user in the __after__ method for
         # audit and reporting
 

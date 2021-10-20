@@ -1,4 +1,6 @@
 import os
+from contextlib import ExitStack
+from unittest.mock import MagicMock, patch
 
 import pytest  # noqa: F401
 
@@ -14,7 +16,7 @@ def test_rootdir(app):
     assert os.path.exists(rootdir)
 
 
-def test_healthcheck(base_app, client):
+def test_healthcheck(client):
     wanted = {
         "status": lambda v: v == "alive",
         "version": lambda v: v == linotp_version,
@@ -52,8 +54,8 @@ def test_healthcheck(base_app, client):
         "CONTROLLERS": "test",
     }
 )
-def test_dispatch(base_app, client, path, method, status):
-    bound_method = getattr(client, method)
+def test_dispatch(adminclient, path, method, status):
+    bound_method = getattr(adminclient, method)
     res = bound_method("/test/" + path)
     assert res.status_code == status
     if res.status_code == 200:
@@ -65,8 +67,8 @@ def test_dispatch(base_app, client, path, method, status):
         "CONTROLLERS": "test",
     }
 )
-def test_dispatch_args(base_app, client):
-    res = client.get("/test/testmethod_args/foo/bar")
+def test_dispatch_args(adminclient):
+    res = adminclient.get("/test/testmethod_args/foo/bar")
     assert res.status_code == 200
     assert request.method == "GET"
     assert request.view_args["s"] == "foo"
@@ -85,8 +87,8 @@ def test_dispatch_args(base_app, client):
         "CONTROLLERS": "test",
     }
 )
-def test_dispatch_optional_id(base_app, client, path, status, id_value):
-    res = client.get("/test/" + path)
+def test_dispatch_optional_id(adminclient, path, status, id_value):
+    res = adminclient.get("/test/" + path)
     assert res.status_code == status
     if id_value is not None:
         assert request.view_args == {"id": id_value}
@@ -116,27 +118,49 @@ def test_cache_dir(app):
 # ----------------------------------------------------------------------
 
 
+@patch("linotp.lib.user.User.exists", lambda x: True)
+@patch("linotp.lib.user.User.checkPass", lambda self, psswd: True)
+@patch(
+    "linotp.lib.user.User.getUserObject",
+    lambda x: MagicMock(exists=lambda: True),
+)
+@patch("linotp.controllers.base.getUserId", lambda x: [None] * 3)
+@patch(
+    "linotp.controllers.base.getResolverObject",
+    lambda x: MagicMock(checkPass=lambda a, b: True),
+)
 @pytest.mark.parametrize(
-    "sess_cookie_secure",
+    "secure_cookies",
     [
         False,
         True,
     ],
 )
+@pytest.mark.parametrize(
+    "auth_type",
+    [
+        {"api": "/admin/login", "cookie_name": "access_token_cookie"},
+        {"api": "/userservice/login", "cookie_name": "user_selfservice"},
+    ],
+)
 def test_session_cookie_secure(
-    base_app, client, monkeypatch, sess_cookie_secure
+    base_app, client, monkeypatch, secure_cookies, auth_type
 ):
     monkeypatch.setitem(
-        base_app.config, "SESSION_COOKIE_SECURE", sess_cookie_secure
+        base_app.config, "SESSION_COOKIE_SECURE", secure_cookies
     )
-    # Note that we're using `client` rather than `adminclient`, because
-    # `adminclient` adds a spurious extra session cookie.
+
+    # Note that we are using `client` rather than `adminclient`, because
+    # `adminclient` already is logged in.
     client.cookie_jar.clear()
-    res = client.get("/admin/getsession")
+    res = client.post(
+        auth_type["api"],
+        data={"username": "foooooo", "password": "baaaaar"},
+    )
     assert res.status_code == 200
     for c in client.cookie_jar:
-        if c.name == "admin_session":
-            assert c.secure is sess_cookie_secure
+        if c.name == auth_type["cookie_name"]:
+            assert c.secure is secure_cookies
             break
     else:
-        assert False, "no admin_session cookie found"
+        assert False, "no jwt access token cookie found"

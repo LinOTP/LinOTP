@@ -1171,21 +1171,3 @@ class TestAdminController(TestController):
         )
 
         assert '"status": true' in response, response
-
-
-def test_host(adminclient):
-    adminclient.cookie_jar.clear_session_cookies()
-    host = "linotp.example"
-    response = adminclient.post(
-        "/admin/getsession", environ_overrides=dict(HTTP_HOST=host)
-    )
-    assert response.json["result"]["status"]
-    admin_cookie = [
-        c for c in adminclient.cookie_jar if c.name == "admin_session"
-    ][0]
-
-    assert admin_cookie.path == "/"
-    assert admin_cookie.domain == host
-
-    # Check we got a generated cookie name
-    assert len(admin_cookie.value) >= 64

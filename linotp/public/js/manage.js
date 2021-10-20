@@ -36,20 +36,23 @@ function error_handling(message, file, line) {
     return true;
 }
 
-/* clear the admin cookie and
-   * for IE try to clean the ClearAuthenticationCache and reload same page
-   * for Firefox/Chrome redirect to a location, with new basic auth in url
-*/
-function Logout(logout_url) {
-    var done = false;
-    done = document.execCommand("ClearAuthenticationCache", false);
-    $.cookie("admin_session", "invalid", { expires: 0, path: '/' });
-
-    if (done == true) {
-        window.location.href = document.URL;
-    } else {
-        window.location.href = logout_url;
-    }
+/**
+ * Make an API request to handle the logout in the backend.
+ * 
+ * If the logout is successful, we reload the page to let
+ * the backend decide where to redirect the user to.
+ */
+function logout() {
+    $.get('/admin/logout').done(function (data, status, response) {
+        window.location.reload();
+    }).fail(function (response, status) {
+        alert_box({
+            'title': i18n.gettext('Logout failed'),
+            'text': escape(response.responseJSON.msg),
+            'type': ERROR,
+            'is_escaped': true
+        });
+    });
 }
 
 // We need this dialogs globally, so that we do not create more than one instance!
@@ -245,6 +248,12 @@ function toggle_close_all_link() {
     }
 }
 
+/**
+ * set this value to `true` if you want to prevent new alert_boxes
+ * from overriding the current alert_box
+ */
+alert_box_is_locked = false;
+
 /*
  * pop up an alert box
  * :param params: dicttionary
@@ -252,6 +261,9 @@ function toggle_close_all_link() {
  *     of this very element
  */
 function alert_box(params) {
+    if (alert_box_is_locked) {
+        return;
+    }
     var escaped = params['is_escaped'] || false;
     var title = params['title'] || '';
     var s = params['text'] || '';
@@ -782,6 +794,36 @@ function reset_waiting() {
 //  URL fetching
 // The myURL needs to end with ? if it has no parameters!
 
+
+function jwt_getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+$.ajaxSetup({
+    beforeSend: function (jqXHR, settings) {
+        jqXHR.setRequestHeader(
+            'X-CSRF-TOKEN',
+            jwt_getCookie('csrf_access_token')
+        );
+    },
+    statusCode: {
+        401: function () {
+            alert_box({
+                'title': i18n.gettext('Your session expired'),
+                'text': i18n.gettext('You are required to log in again. Redirecting…'),
+                'type': ERROR,
+                'is_escaped': true
+            });
+            alert_box_is_locked = true;
+            setTimeout(function () {
+                window.location.reload();
+            }, 1000);
+            return false;
+        }
+    }
+});
 
 /*
  * clientUrlFetch - to submit a asyncronous http request
@@ -4016,9 +4058,7 @@ function tokenbuttons() {
 $(document).ready(function () {
     // initialize the logout button first to prevent a deadlock
     // where the user can no longer logout
-    $('#login-status-logout').click(function () {
-        Logout($('#login-status-logout').attr("data-logout-url"));
-    });
+    $('#login-status-logout').click(logout);
 
     var alertBoxConfig = {
         autoOpen: false,

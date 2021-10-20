@@ -32,6 +32,7 @@ Pytest fixtures for linotp tests
 import os
 import tempfile
 from unittest import mock
+from unittest.mock import patch
 
 import pytest
 
@@ -39,7 +40,7 @@ import flask
 from flask.testing import FlaskClient
 
 from linotp import app as app_py
-from linotp.app import create_app, init_logging
+from linotp.app import LinOTPApp, create_app, init_logging
 from linotp.cli import Echo
 from linotp.cli.init_cmd import create_audit_keys, create_secret_key
 from linotp.flap import set_config
@@ -220,69 +221,39 @@ def app(base_app, monkeypatch):
 
 
 @pytest.fixture
-def adminclient(app, client):
+def adminclient(client, request):
     """
-    A client that provides authorisation headers
+    A client that provides admin authorisation.
 
-    Use this client if you need to make a request
-    that requires a session. This is the
-    equivalent of using TestClient's make_authenticated_request
+    By default, the user is set to "admin". You can override the
+    admin username with the following decorator used at the test
+    fixture consumer:
+    `@pytest.mark.parametrize("authorized_client", ["blub"], indirect=True)`
+
+    Returns the client object with mocked authentication.
     """
 
-    # if "session" not in params:
-    #     params["session"] = self.session
-    # if "admin_session" not in cookies:
-    #     cookies["admin_session"] = self.session
-    # if "Authorization" not in headers:
-    #     if auth_type == "Basic":
-    #         headers["Authorization"] = TestController.get_http_basic_header(
-    #             username=auth_user
-    #         )
-    #     else:
-    #         headers[
-    #             "Authorization"
-    #         ] = TestController.get_http_digest_header(username=auth_user)
+    # extract the pytest parameterized username or use fallback if not set.
+    admin_user = request.param if hasattr(request, "param") else "admin"
 
-    class AuthClient(FlaskClient):
-        # def __init__(self, *args, **kwargs):
-        #     super(AuthClient,self).__init__( *args, **kwargs)
-
-        def open(self, *args, **kwargs):
-            """
-            Add authorization headers & cookies
-            """
-            session = "justatest"
-            if "json" in kwargs:
-                # Add session to JSON body
-                kwargs["json"]["session"] = session
-            else:
-                # Add session to query_string parameter
-                params = kwargs.setdefault("query_string", {})
-                params["session"] = session
-
-            headers = kwargs.setdefault("headers", {})
-            headers["Authorization"] = TestController.get_http_digest_header(
-                username="admin"
-            )
-
-            self.set_cookie("local", "admin_session", session)
-
-            return super(AuthClient, self).open(*args, **kwargs)
-
-    app.test_client_class = AuthClient
-    client = app.test_client()
-
-    return client
+    with patch(
+        "linotp.controllers.base.verify_jwt_in_request",
+        lambda: None,
+    ), patch(
+        "linotp.app.get_jwt_identity",
+        lambda: admin_user,
+    ):
+        yield client
 
 
 @pytest.fixture
-def hsm_obj(app):
+def hsm_obj(app: LinOTPApp):
     """
     A fixture that initialises the HSM object
 
     The hsm object is returned
     """
-    app.preprocess_request()
+    app.setup_env()
 
     return c["hsm"]["obj"]
 

@@ -53,7 +53,9 @@ import os
 import warnings
 from datetime import datetime
 from distutils.version import LooseVersion
+from typing import Optional
 from unittest import TestCase
+from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import pkg_resources
@@ -436,11 +438,14 @@ class TestController(TestCase):
         ]
         return (", ").join(auth_content)
 
-    def make_authenticated_request(
+    @patch("linotp.controllers.base.verify_jwt_in_request", lambda: True)
+    @patch("linotp.app.get_jwt_identity")
+    def _make_authenticated_request(
         self,
-        controller,
-        action,
-        method="GET",
+        mock: Mock,
+        controller: Optional[str] = None,
+        action: Optional[str] = None,
+        method=None,
         params=None,
         headers=None,
         cookies=None,
@@ -454,6 +459,8 @@ class TestController(TestCase):
         Makes an authenticated request (setting HTTP Digest header, cookie and
         'session' parameter).
         """
+
+        mock.return_value = auth_user
         params = params or {}
         headers = headers or {}
         cookies = cookies or {}
@@ -507,9 +514,9 @@ class TestController(TestCase):
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "admin",
-            action,
+        return self._make_authenticated_request(
+            controller="admin",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -543,9 +550,9 @@ class TestController(TestCase):
                 cookies.get("helpdesk_session"),
             )
 
-        return self.make_authenticated_request(
-            "api/helpdesk",
-            action,
+        return self._make_authenticated_request(
+            controller="api/helpdesk",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -566,13 +573,13 @@ class TestController(TestCase):
         content_type=None,
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /audit/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "audit",
-            action,
+        return self._make_authenticated_request(
+            controller="audit",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -597,9 +604,9 @@ class TestController(TestCase):
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "manage",
-            action,
+        return self._make_authenticated_request(
+            controller="manage",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -621,13 +628,13 @@ class TestController(TestCase):
         content_type=None,
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /system/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "system",
-            action,
+        return self._make_authenticated_request(
+            controller="system",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -649,13 +656,41 @@ class TestController(TestCase):
         content_type=None,
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /reporting/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "reporting",
-            action,
+        return self._make_authenticated_request(
+            controller="reporting",
+            action=action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            client=client,
+            auth_type=auth_type,
+            content_type=content_type,
+        )
+
+    def make_monitoring_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+        auth_type="Digest",
+        content_type=None,
+    ):
+        """
+        Makes an authenticated request to /monitoring/'action'
+        """
+        if not params:
+            params = {}
+        return self._make_authenticated_request(
+            controller="monitoring",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -676,13 +711,13 @@ class TestController(TestCase):
         auth_type="Digest",
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /gettoken/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "gettoken",
-            action,
+        return self._make_authenticated_request(
+            controller="gettoken",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -691,9 +726,7 @@ class TestController(TestCase):
             auth_type=auth_type,
         )
 
-    # due to noestests search pattern for test, we have to mangle the name
-    # here :(
-    def make_t_esting_request(
+    def make_healthcheck_request(
         self,
         action,
         params=None,
@@ -701,22 +734,23 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
+        auth_type="Digest",
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /healthcheck/'action'
         """
         if not params:
             params = {}
-        res = self.make_authenticated_request(
-            "testing",
-            action,
+        return self._make_authenticated_request(
+            controller="healthcheck",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
+            auth_type=auth_type,
         )
-        return res
 
     def make_tools_request(
         self,
@@ -734,9 +768,9 @@ class TestController(TestCase):
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "tools",
-            action,
+        return self._make_authenticated_request(
+            controller="tools",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -847,7 +881,7 @@ class TestController(TestCase):
             "Some key is missing to create a policy %r" % diff_set
         )
 
-        response = self.make_system_request("setPolicy", lparams)
+        response = self.make_system_request("setPolicy", params=lparams)
         content = response.json
         assert content["result"]["status"]
         expected_value = {

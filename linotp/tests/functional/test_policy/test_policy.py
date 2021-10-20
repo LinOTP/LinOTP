@@ -4053,7 +4053,7 @@ class TestPolicies(TestPoliciesBase):
             "user": "detail_user",
             "realm": "myMixRealm",
         }
-        auth_user = ("superadmin",)
+        auth_user = "superadmin"
         response = self.make_admin_request(
             action="init", params=params, auth_user=auth_user
         )

@@ -37,7 +37,7 @@ class TestHealthcheck(TestController):
         Test: system/setConfig
         """
 
-        response = self.make_authenticated_request("healthcheck", "status")
+        response = self.make_healthcheck_request(action="status", method="GET")
 
         # Old style assert
         assert '"alive"' in response, response

@@ -612,6 +612,61 @@ _config_schema = ConfigSchema(
                 "doing."
             ),
         ),
+        # Some configuration items for JWT authentication (mostly from
+        # https://flask-jwt-extended.readthedocs.io/en/stable/options/).
+        # We include them here to make them accessible for configuration
+        # via the environment, and could add more as needed.
+        ConfigItem(
+            "JWT_TOKEN_LOCATION",
+            str,
+            default="cookies",
+            help=(
+                "Where the JWT authentication tokens are stored in an "
+                "HTTP request or reply. Do not change this unless you "
+                "know what you are doing."
+            ),
+        ),
+        ConfigItem(
+            "JWT_SESSION_COOKIE",
+            bool,
+            convert=to_boolean,
+            default=False,
+            help=(
+                "Whether the JWT access cookies will be created as session "
+                "cookies, which are deleted when the browser is closed. "
+                "Set this to 'true' if you want sessions to not survive "
+                "when the user re-opens the browser."
+            ),
+        ),
+        ConfigItem(
+            "JWT_ACCESS_TOKEN_EXPIRES",
+            int,
+            validate=check_int_in_range(min=0),
+            default=15 * 60,  # 15 minutes
+            help=(
+                "How long JWT access tokens will be valid, in seconds "
+                "from when they are first issued. Note that a value "
+                'of "0" means "indefinitely", and that should probably '
+                "be avoided."
+            ),
+        ),
+        # Note: This is not an official Flask-JWT-Extended configuration item.
+        ConfigItem(
+            "JWT_ACCESS_TOKEN_REFRESH",
+            int,
+            validate=check_int_in_range(min=0),
+            default=5 * 60,  # 5 minutes
+            help=(
+                "If the JWT access token of a request is less than "
+                "this number of seconds away from expiring, it is "
+                "automatically refreshed at the end of the request. "
+                "(If the user never does anything before their access "
+                "token expires, no refresh will take place.) "
+                'A value of "0" means JWT access tokens will not be '
+                "refreshed automatically, i.e., they will expire and "
+                "users will have to re-authenticate from scratch."
+            ),
+        ),
         ConfigItem(
             "ACTIVE_SECURITY_MODULE",
             str,

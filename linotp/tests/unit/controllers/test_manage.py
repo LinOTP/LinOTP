@@ -26,6 +26,8 @@
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 
+from unittest.mock import patch
+
 import pytest
 
 import flask
@@ -33,7 +35,7 @@ import flask
 
 @pytest.mark.usefixtures("app")
 @pytest.fixture
-def index(client):
+def index(adminclient):
     """
     For testing the index page.
 
@@ -41,7 +43,8 @@ def index(client):
     can be examined here by using the
     `context` fixture, or simply the usual flask objects
     """
-    response = client.get("/manage/")
+
+    response = adminclient.get("/manage/")
     assert response.status_code == 200
 
     yield response

@@ -38,7 +38,7 @@ from linotp.tests import TestController
 
 
 @pytest.mark.exclude_sqlite
-def test_ticket_425(adminclient):
+def test_ticket_425(app, adminclient):
     """
     Test #2425: test if setConfig is timing save
 
@@ -53,18 +53,18 @@ def test_ticket_425(adminclient):
     class DoRequest(threading.Thread):
         """the request thread"""
 
-        def __init__(self, client, rid=1, params=None):
+        def __init__(self, app, rid=1, params=None):
             """
             initialize all settings of the request thread
 
-            :param client: application client
+            :param app: flask app
             :param rid: the request id
             :param uri: the request url object
             :param params: additional parmeters
             """
             threading.Thread.__init__(self)
 
-            self.client = client
+            self.client = app.test_client()
             self.rid = rid
             self.params = params
 
@@ -113,7 +113,7 @@ def test_ticket_425(adminclient):
 
     for tid in range(numthreads):
         param = params.get(tid)
-        current = DoRequest(adminclient, rid=tid, params=param)
+        current = DoRequest(app, rid=tid, params=param)
         check_results.append(current)
         current.start()
 
@@ -122,8 +122,8 @@ def test_ticket_425(adminclient):
         req.join()
 
     # now check in the config if all keys are there
-    config = adminclient.get("/system/getConfig").json
-    conf = config["result"]["value"]
+    config_response = adminclient.get("/system/getConfig")
+    conf = config_response.json["result"]["value"]
 
     # check for the keys and the values in the dict
     counter = 0
