@@ -405,6 +405,26 @@ class LinOTPApp(Flask):
 
         log_request_timedelta(log)
 
+    def setup_env(self):
+        # The following functions are called here because they're
+        # stuffing bits into `flask.g`, which is a per-request global
+        # object. Much of what is stuffed into `flask.g` is actually
+        # application-wide stuff that has no business being stored in
+        # `flask.g` in the first place, but lots of code expects to be
+        # able to look at the "request context" and find stuff
+        # there. Disentangling the application-wide stuff in the
+        # request context from the request-scoped stuff is a major
+        # project that will not be undertaken just now, and we're
+        # probably doing more work here than we need to. Global
+        # variables suck.
+
+        set_config()
+
+        if request.path.startswith(self.static_url_path):
+            return
+
+        allocate_security_module()
+
     def create_context(self, request, environment):
         """
         create the request context for all controllers
@@ -927,32 +947,12 @@ def create_app(config_name=None, config_extra=None):
         reload_token_classes()
         app.check_license()
 
-    @app.before_request
-    def setup_env():
-        # The following functions are called here because they're
-        # stuffing bits into `flask.g`, which is a per-request global
-        # object. Much of what is stuffed into `flask.g` is actually
-        # application-wide stuff that has no business being stored in
-        # `flask.g` in the first place, but lots of code expects to be
-        # able to look at the "request context" and find stuff
-        # there. Disentangling the application-wide stuff in the
-        # request context from the request-scoped stuff is a major
-        # project that will not be undertaken just now, and we're
-        # probably doing more work here than we need to. Global
-        # variables suck.
-
-        set_config()
-
-        if request.path.startswith(app.static_url_path):
-            return
-
-        allocate_security_module()
-
     app.add_url_rule("/healthcheck/status", "healthcheck", healthcheck)
 
     # Add pre request handlers
     app.before_first_request(init_logging_config)
     app.before_first_request(app.init_jwt_config)
+    app.before_request(app.setup_env)
     app.before_request(app._run_setup)
     app.before_request(app.start_session)
 
