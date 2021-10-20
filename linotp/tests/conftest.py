@@ -44,11 +44,10 @@ import linotp.app
 import linotp.controllers
 from linotp import app as app_py
 from linotp.app import LinOTPApp, create_app
-from linotp.cli import Echo
 from linotp.cli.init_cmd import create_audit_keys, create_secret_key
 from linotp.flap import set_config
 from linotp.flap import tmpl_context as c
-from linotp.model import db, init_db_tables
+from linotp.model import init_db_tables
 
 from . import CompatibleTestResponse, TestController
 
