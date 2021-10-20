@@ -355,12 +355,13 @@ class JWTMixin(object):
         username = self.request_params.get("username")
         password = self.request_params.get("password")
 
-        # Find the user (using any configured resolver) and check the
+        # Search for the user in the admin realm and check the
         # given password.
-        # NOTE: At some point we will change this to consult only the
-        # resolvers in a specific “admin users” realm.
 
-        user = User.getUserObject(username)
+        user = User.getUserObject(
+            username,
+            realm=current_app.config["ADMIN_REALM_NAME"],
+        )
 
         if user.exists():
 

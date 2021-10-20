@@ -451,6 +451,11 @@ def create_common_resolvers(
             file_name=os.path.join(fixture_path, "myDom-passwd"),
             resolver_type="passwdresolver",
         ),
+        ResolverParams(
+            name="admin_resolver",
+            file_name=os.path.join(fixture_path, "admin-passwd"),
+            resolver_type="passwdresolver",
+        ),
     ]
 
     with scoped_authclient(verify_jwt=False, username="admin") as client:
@@ -485,6 +490,9 @@ def create_common_realms(scoped_authclient: Callable) -> None:
         "mixed_realm": [
             "useridresolver.PasswdIdResolver.IdResolver.def_resolver",
             "useridresolver.PasswdIdResolver.IdResolver.dom_resolver",
+        ],
+        "LinOTP_admins": [
+            "useridresolver.PasswdIdResolver.IdResolver.admin_resolver"
         ],
     }
 
