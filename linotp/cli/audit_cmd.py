@@ -309,6 +309,8 @@ class SQLJanitor:
                     AuditTable.id < delete_from
                 ).delete()
 
+                db.session.commit()
+
                 cleanup_infos["entries_deleted"] = total - min_entries
                 cleanup_infos["cleaned"] = True
 
