@@ -38,9 +38,10 @@ apt-get install build-essential python3-dev \
                 libssl-dev
 ```
 
-On macOS, you need at least:
+On macOS, install the following dependencies to run LinOTP natively
+and build LinOTP via containers:
 ```terminal
-brew install libsodium
+brew install libsodium coreutils
 ```
 
 LinOTP can use a variety of SQL databases but MySQL/MariaDB is most
