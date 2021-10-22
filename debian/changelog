@@ -18,6 +18,9 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * add extended information in HOTP/TOTP CSV import UI
   * The CLI now uses a common time format for all backup filenames. The format
     is configurable via config BACKUP_FILE_TIME_FORMAT.
+  * CLI command `linotp audit cleanup` now writes a backup file of the deleted
+    audit entries by default. Export dir defaults to the LinOTP backup dir.
+    Export can be disabled with a new flag --no-export.
 
 
  -- LinOTP Packaging <packaging@linotp.de>  Thu, 9 Sep 2021 17:13:51 +0200

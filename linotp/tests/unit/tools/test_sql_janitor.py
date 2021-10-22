@@ -62,7 +62,7 @@ def test_run_janitor(app, runner, setup_audit_table):
     """Run janitor with default values
 
     By default the max-entries value is 10000 and the min-entries value is
-    5000. Because no export directory is given, no exporting is done.
+    5000.
     """
 
     # run linotp audit-janitor

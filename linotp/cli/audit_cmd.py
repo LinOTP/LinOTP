@@ -44,8 +44,9 @@
 """
 
 import datetime
-import os
 import sys
+from pathlib import Path
+from typing import Optional
 
 import click
 from sqlalchemy import asc, desc
@@ -84,6 +85,11 @@ audit_cmds = AppGroup("audit")
     + "as default is assumed.",
 )
 @click.option(
+    "--no-export",
+    is_flag=True,
+    help="Do not write a backup file for the deleted audit lines.",
+)
+@click.option(
     "--exportdir",
     "-e",
     type=click.Path(exists=True, dir_okay=True),
@@ -92,7 +98,9 @@ audit_cmds = AppGroup("audit")
     + "SQLData.yeah.month.day-max_id.csv",
 )
 @with_appcontext
-def cleanup_command(maximum, minimum, exportdir):
+def cleanup_command(
+    maximum: int, minimum: int, no_export: bool, exportdir: Optional[str]
+):
     """This function removes old entries from the audit table.
 
     If more than max entries are in the audit table, older entries
@@ -108,7 +116,13 @@ def cleanup_command(maximum, minimum, exportdir):
             app.echo("Error: max has to be greater than min.")
             sys.exit(1)
 
-        sqljanitor = SQLJanitor(export_dir=exportdir)
+        if no_export:
+            export_path = None
+        else:
+            export_path = Path(exportdir or current_app.config["BACKUP_DIR"])
+            export_path.mkdir(parents=True, exist_ok=True)
+
+        sqljanitor = SQLJanitor(export_dir=export_path)
 
         cleanup_infos = sqljanitor.cleanup(maximum, minimum)
 
@@ -151,7 +165,7 @@ class SQLJanitor:
     script to help the house keeping of audit entries
     """
 
-    def __init__(self, export_dir=None):
+    def __init__(self, export_dir: Path = None):
 
         self.export_dir = export_dir
 
@@ -162,17 +176,20 @@ class SQLJanitor:
         export each audit row into a csv output
 
         :param max_id: all entries with lower id will be dumped
-        :return: filepath of exported data
+        :return: filepath of exported data or None if no export done
         """
 
         if not self.export_dir:
+            self.app.echo(
+                "No export directory defined, skipping backup.",
+                v=1,
+                err=False,
+            )
             return None
 
-        filename = os.path.join(
-            self.export_dir,
-            get_backup_filename(f"SQLAuditExport.%s.{max_id}.csv"),
-        )
-        with open(filename, "w") as f:
+        filename_template = f"SQLAuditExport.%s.{max_id}.csv"
+        export_file = self.export_dir / get_backup_filename(filename_template)
+        with export_file.open("w") as f:
 
             result = (
                 db.session.query(AuditTable)
@@ -208,7 +225,7 @@ class SQLJanitor:
                 f.write(prin)
                 f.write("\n")
 
-        return filename
+        return export_file
 
     def cleanup(self, max_entries, min_entries):
         """
@@ -267,8 +284,8 @@ class SQLJanitor:
             delete_from = last_id - min_entries
             if delete_from > 0:
                 # if export is enabled, we start the export now
-                export_filename = self.export_data(delete_from)
-                cleanup_infos["export_filename"] = export_filename
+                export_file = self.export_data(delete_from)
+                cleanup_infos["export_filename"] = str(export_file)
 
                 db.session.query(AuditTable).filter(
                     AuditTable.id < delete_from
