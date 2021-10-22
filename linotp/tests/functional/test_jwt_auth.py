@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 from typing import Callable, Optional
 
@@ -38,7 +39,9 @@ class TestJwtAdmin:
         """
 
         csrf_token = self.extract_cookie(client, "csrf_access_token")
-        res = client.post("/admin/show", headers={"X-CSRF-TOKEN": csrf_token})
+        res = client.post(
+            "/system/getConfig", headers={"X-CSRF-TOKEN": csrf_token}
+        )
 
         return res
 
@@ -106,78 +109,189 @@ class TestJwtAdmin:
         self,
         create_common_resolvers: Callable,
         create_common_realms: Callable,
-        client: FlaskClient,
+        scoped_authclient: Callable[..., FlaskClient],
     ) -> None:
-        client.post(
-            "/admin/login",
-            data=dict(
-                username="admin",
-                password="Test123!",
-            ),
-        )
+        with scoped_authclient(verify_jwt=True) as client:
+            client.post(
+                "/admin/login",
+                data=dict(
+                    username="admin",
+                    password="Test123!",
+                ),
+            )
 
-        csrf_token = self.extract_cookie(
-            client=client, cookie_name="csrf_access_token"
-        )
+            response = self.do_authenticated_request(client)
 
-        valid_token_req = client.post(
-            "/system/getConfig",
-            headers={"X-CSRF-TOKEN": csrf_token},
-        )
-
-        assert isinstance(valid_token_req.json["result"]["value"], dict)
-        assert len(valid_token_req.json["result"]["value"]) > 1
-        assert valid_token_req.status_code == 200
+            assert isinstance(response.json["result"]["value"], dict)
+            assert len(response.json["result"]["value"]) > 1
+            assert response.status_code == 200
 
     def test_access_with_wrong_jwt(
         self,
         create_common_resolvers: Callable,
         create_common_realms: Callable,
-        client: FlaskClient,
+        scoped_authclient: Callable[..., FlaskClient],
     ) -> None:
+        with scoped_authclient(verify_jwt=True) as client:
+            fake_token = (
+                "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MzQ3MTE3Mjgs"
+                "Im5iZiI6MTYzNDcxMTcyOCwianRpIjoiOWFkNmQ2ZTctNTU4Zi00ZDY0LThhM"
+                "GItOGQ1MmYzYjYwMDA5IiwiZXhwIjo5OTk5OTk5OTk5OTksImlkZW50aXR5Ij"
+                "p7InVzZXJuYW1lIjoianVzdF9hX2Zha2UifSwiZnJlc2giOmZhbHNlLCJ0eXB"
+                "lIjoiYWNjZXNzIiwiY3NyZiI6ImVjMWNlNWQwLTU2M2MtNDM4OS1hOTFlLTcx"
+                "ZDA0MTM5NzJjOCJ9.9n-IZ0S08kTAO390CZSwkmk3ugB8_BVyMgFUrNGe4wA"
+            )
+            client.set_cookie(
+                "localhost.local", "access_token_cookie", fake_token
+            )
 
-        fake_token = (
-            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MzQ3MTE3MjgsIm5iZ"
-            "iI6MTYzNDcxMTcyOCwianRpIjoiOWFkNmQ2ZTctNTU4Zi00ZDY0LThhMGItOGQ1MmY"
-            "zYjYwMDA5IiwiZXhwIjo5OTk5OTk5OTk5OTksImlkZW50aXR5Ijp7InVzZXJuYW1lI"
-            "joianVzdF9hX2Zha2UifSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIiwiY3N"
-            "yZiI6ImVjMWNlNWQwLTU2M2MtNDM4OS1hOTFlLTcxZDA0MTM5NzJjOCJ9.9n-IZ0S0"
-            "8kTAO390CZSwkmk3ugB8_BVyMgFUrNGe4wA"
-        )
-        client.set_cookie("localhost.local", "access_token_cookie", fake_token)
+            response = self.do_authenticated_request(client)
 
-        invalid_token_req = client.post(
-            "/system/getConfig", headers={"X-CSRF-TOKEN": "1234"}
-        )
+            result = response.json["result"]
 
-        result = invalid_token_req.json["result"]
-
-        assert result["status"] is False
-        assert result["error"]["message"] == "Not authenticated"
-        assert invalid_token_req.status_code == 401
+            assert result["status"] is False
+            assert result["error"]["message"] == "Not authenticated"
+            assert response.status_code == 401
 
     def test_access_with_wrong_csrf(
         self,
         create_common_resolvers: Callable,
         create_common_realms: Callable,
-        client: FlaskClient,
+        scoped_authclient: Callable[..., FlaskClient],
     ) -> None:
 
-        fake_identity = {"username": "any_user"}
+        with scoped_authclient(verify_jwt=True) as client:
+            client.post(
+                "/admin/login",
+                data=dict(
+                    username="admin",
+                    password="Test123!",
+                ),
+            )
 
-        jwt = create_access_token(fake_identity)
+            response = client.post(
+                "/system/getConfig",
+                headers={"X-CSRF-TOKEN": "fake_csrf_token"},
+            )
 
-        client.set_cookie("localhost.local", "access_token_cookie", jwt)
+            result = response.json["result"]
 
-        invalid_token_req = client.post(
-            "/system/getConfig", headers={"X-CSRF-TOKEN": "fake_csrf_token"}
-        )
+            assert result["status"] is False
+            assert result["error"]["message"] == "Not authenticated"
+            assert response.status_code == 401
 
-        result = invalid_token_req.json["result"]
+    def test_no_auth_render_login(
+        self,
+        create_common_resolvers: Callable,
+        create_common_realms: Callable,
+        scoped_authclient: Callable[..., FlaskClient],
+    ) -> None:
 
-        assert result["status"] is False
-        assert result["error"]["message"] == "Not authenticated"
-        assert invalid_token_req.status_code == 401
+        with scoped_authclient(verify_jwt=True) as client:
+            response = client.post("/manage/login")
+            data = response.data.decode("utf-8")
+
+            assert response.status_code == 200
+            assert "<title>Management Login - LinOTP</title>" in data
+            assert '<input type="text" id="username"' in data
+            assert '<input type="password" id="password"' in data
+
+    def test_no_auth_redirect_login(
+        self,
+        create_common_resolvers: Callable,
+        create_common_realms: Callable,
+        scoped_authclient: Callable[..., FlaskClient],
+    ) -> None:
+
+        with scoped_authclient(verify_jwt=True) as client:
+            response = client.get("/manage/")
+
+            assert re.search(".*/manage/login$", response.location)
+            assert response.status_code == 302
+
+    def test_redirect_manage(
+        self,
+        create_common_resolvers: Callable,
+        create_common_realms: Callable,
+        scoped_authclient: Callable[..., FlaskClient],
+    ) -> None:
+
+        with scoped_authclient(verify_jwt=True) as client:
+            client.post(
+                "/admin/login",
+                data=dict(
+                    username="admin",
+                    password="Test123!",
+                ),
+            )
+
+            csrf_token = self.extract_cookie(client, "csrf_access_token")
+
+            response = client.get(
+                "/manage/login",
+                headers={"X-CSRF-TOKEN": csrf_token},
+            )
+
+            assert re.search(".*/manage/$", response.location)
+            assert response.status_code == 302
+
+    def test_render_manage_when_authenticated(
+        self,
+        create_common_resolvers: Callable,
+        create_common_realms: Callable,
+        scoped_authclient: Callable[..., FlaskClient],
+    ) -> None:
+
+        with scoped_authclient(verify_jwt=True) as client:
+            client.post(
+                "/admin/login",
+                data=dict(
+                    username="admin",
+                    password="Test123!",
+                ),
+            )
+
+            csrf_token = self.extract_cookie(client, "csrf_access_token")
+
+            response = client.get(
+                "/manage/",
+                headers={"X-CSRF-TOKEN": csrf_token},
+            )
+
+            data = response.data.decode("utf-8")
+
+            assert response.status_code == 200
+            assert "<title>Management - LinOTP</title>" in data
+
+    def test_delete_cookies_on_logout(
+        self,
+        create_common_resolvers: Callable,
+        create_common_realms: Callable,
+        scoped_authclient: Callable[..., FlaskClient],
+    ) -> None:
+
+        with scoped_authclient(verify_jwt=True) as client:
+            client.post(
+                "/admin/login",
+                data=dict(
+                    username="admin",
+                    password="Test123!",
+                ),
+            )
+
+            csrf_token = self.extract_cookie(client, "csrf_access_token")
+            access_token = self.extract_cookie(client, "access_token_cookie")
+
+            assert csrf_token is not None
+            assert access_token is not None
+
+            client.get("/admin/logout")
+
+            csrf_token = self.extract_cookie(client, "csrf_access_token")
+            access_token = self.extract_cookie(client, "access_token_cookie")
+
+            assert csrf_token is None
+            assert access_token is None
 
     def test_expiration(
         self,
