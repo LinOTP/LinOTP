@@ -68,21 +68,37 @@ audit_cmds = AppGroup("audit")
 
 
 @audit_cmds.command(
-    "cleanup", help="Reduce the amount of audit log entries in the database"
+    "cleanup",
+    help=(
+        "Reduce the number of audit log entries in the database.\n\n"
+        "If more than --max entries are in the audit table, older "
+        "entries will be deleted so that only --min entries remain "
+        "in the table. Set --min and --max to the same value to "
+        "delete only those entries that exceed the maximum number "
+        "(--max) of entries allowed"
+    ),
 )
 @click.option(
     "--max",
     "maximum",
     default=10000,
-    help="The maximum entries. If not given 10.000 as default is "
-    + "assumed.",
+    help=(
+        "The maximum number of entries that may be in the database"
+        "before entries are deleted. Defaults to 10,000."
+    ),
 )
 @click.option(
     "--min",
     "minimum",
     default=5000,
-    help="The minimum old remaining entries. If not given 5.000 "
-    + "as default is assumed.",
+    help=(
+        "The number of entries that should remain in the database if "
+        "data is cleaned up. You need to set a lower number than --max "
+        "if you do not want directly reach the limit again. Set it to "
+        "the same value as --max to only delete entries that are "
+        "exceeding the maximum allowed number of entries. Defaults to "
+        "5,000."
+    ),
 )
 @click.option(
     "--no-export",
@@ -93,9 +109,13 @@ audit_cmds = AppGroup("audit")
     "--exportdir",
     "-e",
     type=click.Path(exists=True, dir_okay=True),
-    help="Defines the directory where the audit entries which "
-    + "are cleaned up are exported. A example filename would be: "
-    + "SQLData.yeah.month.day-max_id.csv",
+    help=(
+        "Defines the directory where the audit entries which "
+        "are cleaned up are exported into. The backup file named "
+        "”SQLAuditExport.{now_time}.{highest_exported_id}.csv” "
+        "will be saved there.\n\nDefaults to the BACKUP_DIR "
+        "configured for LinOTP."
+    ),
 )
 @with_appcontext
 def cleanup_command(
@@ -105,15 +125,13 @@ def cleanup_command(
 
     If more than max entries are in the audit table, older entries
     will be deleted so that only min entries remain in the table.
-    This tool can decrypt the OTP Key stored in the LinOTP database. You need
-    to pass the encrypted key, the IV and the filename of the encryption key.
     """
 
     app = current_app
     try:
 
         if not (0 <= minimum < maximum):
-            app.echo("Error: max has to be greater than min.")
+            app.echo("Error: --max must be greater than --min.")
             sys.exit(1)
 
         if no_export:
