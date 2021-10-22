@@ -57,6 +57,8 @@ from flask.cli import AppGroup, with_appcontext
 from linotp.lib.audit.SQLAudit import AuditTable
 from linotp.model import db
 
+from . import get_backup_filename
+
 # -------------------------------------------------------------------------- --
 
 # audit commands: cleanup (more commands to come ...)
@@ -106,7 +108,7 @@ def cleanup_command(maximum, minimum, exportdir):
             app.echo("Error: max has to be greater than min.")
             sys.exit(1)
 
-        sqljanitor = SQLJanitor(export=exportdir)
+        sqljanitor = SQLJanitor(export_dir=exportdir)
 
         cleanup_infos = sqljanitor.cleanup(maximum, minimum)
 
@@ -149,9 +151,9 @@ class SQLJanitor:
     script to help the house keeping of audit entries
     """
 
-    def __init__(self, export=None):
+    def __init__(self, export_dir=None):
 
-        self.export_dir = export
+        self.export_dir = export_dir
 
         self.app = current_app
 
@@ -160,22 +162,17 @@ class SQLJanitor:
         export each audit row into a csv output
 
         :param max_id: all entries with lower id will be dumped
-        :return: string (filename) if export succeeds, None if export failed
+        :return: filepath of exported data
         """
 
         if not self.export_dir:
             return None
 
-        # create the filename
-        t2 = datetime.datetime.now()
-        filename = "SQLData.%d.%d.%d-%d.csv" % (
-            t2.year,
-            t2.month,
-            t2.day,
-            max_id,
+        filename = os.path.join(
+            self.export_dir,
+            get_backup_filename(f"SQLAuditExport.%s.{max_id}.csv"),
         )
-
-        with open(os.path.join(self.export_dir, filename), "w") as f:
+        with open(filename, "w") as f:
 
             result = (
                 db.session.query(AuditTable)

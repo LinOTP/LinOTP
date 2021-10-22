@@ -44,7 +44,6 @@ instance from MySQL to PostgreSQL (for example).
 import binascii
 import os
 import sys
-from datetime import datetime
 
 import click
 from flask_sqlalchemy import SQLAlchemy
@@ -55,6 +54,8 @@ from flask.cli import AppGroup
 
 from linotp.lib.audit.SQLAudit import AuditTable
 from linotp.model import Config, Realm, Token, TokenRealm
+
+from . import get_backup_filename
 
 TIME_FORMAT = "%Y-%m-%d_%H-%M"
 
@@ -182,18 +183,10 @@ def backup_database_tables() -> int:
 
     # ---------------------------------------------------------------------- --
 
-    # determin the datetime extension
-
-    now = datetime.now()
-    now_str = now.strftime(TIME_FORMAT)
-
-    # ---------------------------------------------------------------------- --
-
     # run the db serialisation and dump / pickle the data
 
-    backup_filename = os.path.join(
-        backup_dir, backup_filename_template % now_str
-    )
+    filename = get_backup_filename(backup_filename_template)
+    backup_filename = os.path.join(backup_dir, filename)
 
     app.echo("Creating backup file: %s" % backup_filename, v=1)
 

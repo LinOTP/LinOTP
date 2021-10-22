@@ -43,7 +43,6 @@ instance from MySQL to PostgreSQL (for example).
 import os
 import subprocess
 import sys
-from datetime import datetime
 
 import click
 from sqlalchemy import create_engine
@@ -51,7 +50,7 @@ from sqlalchemy import create_engine
 from flask import current_app
 from flask.cli import AppGroup
 
-TIME_FORMAT = "%y%m%d%H%M"
+from . import get_backup_filename
 
 # -------------------------------------------------------------------------- --
 
@@ -99,10 +98,7 @@ def backup_mysql_database():
     """
     app = current_app
 
-    now = datetime.now()
-    now_str = now.strftime(TIME_FORMAT)
-
-    filename = f"linotp_backup_{now_str}.sql"
+    filename = get_backup_filename("linotp_backup_%s.sql")
     backup_filename = os.path.abspath(filename)
     # ---------------------------------------------------------------------- --
 
