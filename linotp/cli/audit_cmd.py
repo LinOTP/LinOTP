@@ -152,25 +152,27 @@ def cleanup_command(
         if cleanup_infos["entries_deleted"] > 0:
             app.echo(
                 f'{cleanup_infos["entries_in_audit"] - minimum} entries '
-                "cleaned up. {minimum} entries left in database.\n"
-                "Min: {minimum}, Max: {maximum}.",
-                v=2,
+                f"cleaned up. {minimum} entries left in database.\n"
+                f"Min: {minimum}, Max: {maximum}.",
+                v=1,
             )
 
             if cleanup_infos["export_filename"]:
                 app.echo(
-                    f'Exported into {cleanup_infos["export_filename"]}', v=2
+                    f'Exported into {cleanup_infos["export_filename"]}',
+                    v=2,
                 )
 
             app.echo(
-                f'Cleaning up took {cleanup_infos["time_taken"]} seconds', v=2
+                f'Cleaning up took {cleanup_infos["time_taken"]} seconds',
+                v=2,
             )
         else:
             app.echo(
                 f'Nothing cleaned up. {cleanup_infos["entries_in_audit"]} '
                 "entries in database.\n"
-                "Min: {minimum}, Max: {maximum}.",
-                v=2,
+                f"Min: {minimum}, Max: {maximum}.",
+                v=1,
             )
 
     except Exception as exx:
@@ -201,7 +203,6 @@ class SQLJanitor:
             self.app.echo(
                 "No export directory defined, skipping backup.",
                 v=1,
-                err=False,
             )
             return None
 
