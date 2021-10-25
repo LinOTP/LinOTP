@@ -34,6 +34,7 @@ from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
 from linotp.lib.type_utils import parse_timeout
 from linotp.provider import ProviderNotAvailable, provider_registry
+from linotp.provider.config_parsing import ConfigParsingMixin
 from linotp.provider.smsprovider import ISMSProvider
 
 log = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ log = logging.getLogger(__name__)
 @provider_registry.class_entry("linotp.provider.smsprovider.HttpSMSProvider")
 @provider_registry.class_entry("smsprovider.HttpSMSProvider.HttpSMSProvider")
 @provider_registry.class_entry("smsprovider.HttpSMSProvider")
-class HttpSMSProvider(ISMSProvider):
+class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
     def __init__(self):
         self.config = {}
 
@@ -229,9 +230,23 @@ class HttpSMSProvider(ISMSProvider):
                 if auth:
                     pparams["auth"] = auth
 
+            # --------------------------------------------------------------
+
+            # set server certificate validation policy
+
+            server_certificate = self.load_server_cert(
+                self.config, server_cert_key="SERVER_CERTIFICATE"
+            )
+
+            if server_certificate is False:
+                pparams["verify"] = False
+
+            if server_certificate:
+                pparams["verify"] = server_certificate
+
             # -------------------------------------------------------------- --
 
-            # fianly execute the request
+            # finally execute the request
 
             if method == "GET":
                 response = requests.get(url, params=parameter, **pparams)
