@@ -130,8 +130,8 @@ def cleanup_command(
     app = current_app
     try:
 
-        if not (0 <= minimum < maximum):
-            app.echo("Error: --max must be greater than --min.")
+        if not (0 <= minimum <= maximum):
+            app.echo("Error: --max must be greater than or equal to --min.")
             sys.exit(1)
 
         if no_export:
@@ -191,11 +191,11 @@ class SQLJanitor:
 
         self.app = current_app
 
-    def export_data(self, max_id):
+    def export_data(self, export_up_to) -> Optional[Path]:
         """
         export each audit row into a csv output
 
-        :param max_id: all entries with lower id will be dumped
+        :param export_up_to: all entries up to this id will be dumped
         :return: filepath of exported data or None if no export done
         """
 
@@ -206,13 +206,13 @@ class SQLJanitor:
             )
             return None
 
-        filename_template = f"SQLAuditExport.%s.{max_id}.csv"
+        filename_template = f"SQLAuditExport.%s.{export_up_to}.csv"
         export_file = self.export_dir / get_backup_filename(filename_template)
         with export_file.open("w") as f:
 
             result = (
                 db.session.query(AuditTable)
-                .filter(AuditTable.id < max_id)
+                .filter(AuditTable.id <= export_up_to)
                 .order_by(desc(AuditTable.id))
                 .all()
             )
@@ -277,12 +277,9 @@ class SQLJanitor:
 
         start_time = datetime.datetime.now()
 
-        # TODO: replace with a select between query
-
         total = int(db.session.query(count(AuditTable.id)).scalar())
-
         cleanup_infos["entries_in_audit"] = total
-        if total >= max_entries:
+        if total > max_entries:
 
             first_id = int(
                 db.session.query(AuditTable.id)
@@ -307,7 +304,7 @@ class SQLJanitor:
                 cleanup_infos["export_filename"] = str(export_file)
 
                 db.session.query(AuditTable).filter(
-                    AuditTable.id < delete_from
+                    AuditTable.id <= delete_from
                 ).delete()
 
                 db.session.commit()

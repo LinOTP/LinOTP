@@ -78,9 +78,26 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             True,
         ),
         (
+            ["--max", AUDIT_AMOUNT_ENTRIES, "--min", 5],
+            0,
+            AUDIT_AMOUNT_ENTRIES,
+            False,
+        ),
+        (
             ["--max", AUDIT_AMOUNT_ENTRIES - 1, "--min", 0],
             AUDIT_AMOUNT_ENTRIES,
             0,
+            True,
+        ),
+        (
+            [
+                "--max",
+                AUDIT_AMOUNT_ENTRIES - 1,
+                "--min",
+                AUDIT_AMOUNT_ENTRIES - 1,
+            ],
+            1,
+            AUDIT_AMOUNT_ENTRIES - 1,
             True,
         ),
         (
@@ -116,7 +133,8 @@ def test_audit_cleanup_parameters(
     export_file = Path(app.config["BACKUP_DIR"]) / filename
     if cleaned:
         num_lines = sum(1 for _ in export_file.open())
-        assert num_lines == deleted
+        # expected: Number of deleted lines + header row
+        assert num_lines == deleted + 1
         assert f"{remaining} entries left in database" in result.output
         assert f"Exported into {export_file}" in result.output
     else:
@@ -124,11 +142,13 @@ def test_audit_cleanup_parameters(
         assert f"{remaining} entries in database" in result.output
         assert "Exported" not in result.output
 
+    assert db.session.query(AuditTable).count() == remaining
+
 
 def test_run_janitor_max_min(runner: FlaskCliRunner, setup_audit_table: None):
-    """Run janitor with max not greater than min"""
+    """Run janitor with min greater than max"""
     max = 5
-    min = 5
+    min = 6
     # run linotp audit-janitor
     result = runner.invoke(
         cli_main,
@@ -142,3 +162,6 @@ def test_run_janitor_max_min(runner: FlaskCliRunner, setup_audit_table: None):
         ],
     )
     assert result.exit_code == 1
+    assert (
+        "Error: --max must be greater than or equal to --min" in result.stderr
+    )
