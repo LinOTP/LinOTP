@@ -32,7 +32,7 @@ packages that LinOTP depends upon.
 
 On a Debian-based system, run as a superuser:
 ```terminal
-apt-get install build-essential python3-dev \
+$ apt-get install build-essential python3-dev \
                 python3-mysqldb mariadb-server libmariadbclient-dev \
                 libldap2-dev libsasl2-dev \
                 libssl-dev
@@ -41,7 +41,7 @@ apt-get install build-essential python3-dev \
 On macOS, install the following dependencies to run LinOTP natively
 and build LinOTP via containers:
 ```terminal
-brew install libsodium coreutils
+$ brew install libsodium coreutils
 ```
 
 LinOTP can use a variety of SQL databases but MySQL/MariaDB is most
@@ -73,11 +73,11 @@ $ pip3 install -e ".[test]"
 
 For a quickstart using the default configuration, run:
 ```terminal
-mkdir -p linotp/cache linotp/data linotp/logs
-linotp init database
-linotp init audit-keys
-linotp init enc-key
-linotp run
+$ mkdir -p linotp/cache linotp/data linotp/logs
+$ linotp init database
+$ linotp init audit-keys
+$ linotp init enc-key
+$ linotp run
 ```
 
 ## Configure LinOTP
