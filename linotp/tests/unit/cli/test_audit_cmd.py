@@ -24,9 +24,19 @@
 #    Support: www.keyidentity.com
 #
 
-import pytest
+from datetime import datetime
+from pathlib import Path
+from typing import List
 
+import pytest
+from freezegun.api import FrozenDateTimeFactory
+
+from flask.testing import FlaskCliRunner
+
+from linotp.app import LinOTPApp
 from linotp.cli import main as cli_main
+from linotp.lib.audit.SQLAudit import AuditTable
+from linotp.model import db
 
 # -------------------------------------------------------------------------- --
 
@@ -34,7 +44,7 @@ AUDIT_AMOUNT_ENTRIES = 100
 
 
 @pytest.fixture
-def setup_audit_table(app):
+def setup_audit_table(app: LinOTPApp):
     """Add AUDIT_AMOUNT_ENTRIES entries into the fresh audit database"""
 
     entry = {
@@ -45,7 +55,7 @@ def setup_audit_table(app):
 
 
 @pytest.fixture
-def export_dir(tmp_path):
+def export_dir(tmp_path: Path) -> Path:
     """Generate temporary export directory"""
     d = tmp_path / "export"
     d.mkdir(parents=True, exist_ok=True)
@@ -53,61 +63,69 @@ def export_dir(tmp_path):
 
 
 @pytest.fixture
-def runner(app, tmp_path):
+def runner(app: LinOTPApp) -> FlaskCliRunner:
     """Creates a testing instance of the flask cli runner class"""
     return app.test_cli_runner(mix_stderr=False)
 
 
-def test_run_janitor(app, runner, setup_audit_table):
-    """Run janitor with default values
+@pytest.mark.parametrize(
+    "options,deleted,remaining,cleaned",
+    [
+        (
+            ["--max", 10, "--min", 5],
+            AUDIT_AMOUNT_ENTRIES - 5,
+            5,
+            True,
+        ),
+        (
+            ["--max", AUDIT_AMOUNT_ENTRIES - 1, "--min", 0],
+            AUDIT_AMOUNT_ENTRIES,
+            0,
+            True,
+        ),
+        (
+            [],
+            0,
+            AUDIT_AMOUNT_ENTRIES,
+            False,
+        ),
+    ],
+)
+def test_audit_cleanup_parameters(
+    app: LinOTPApp,
+    runner: FlaskCliRunner,
+    setup_audit_table: None,
+    freezer: FrozenDateTimeFactory,
+    options: List,
+    deleted: int,
+    remaining: int,
+    cleaned: bool,
+):
+    """Run audit cleanup with different max and min values"""
 
-    By default the max-entries value is 10000 and the min-entries value is
-    5000.
-    """
-
-    # run linotp audit-janitor
-    result = runner.invoke(cli_main, ["audit", "cleanup"])
-    assert result.exit_code == 0
-
-
-def test_run_janitor_with_params(app, runner, setup_audit_table, export_dir):
-    """Run janitor with different max, min and export directory
-
-    Max = 10, Min = 5. Prepared Database with AUDIT_AMOUNT_ENTRIES entries.
-    5 entries left and AUDIT_AMOUNT_ENTRIES - min exported.
-    """
-    max = 10
-    min = 5
-
-    # run linotp audit-janitor --max 10 --min 5
-    result = runner.invoke(
-        cli_main,
-        [
-            "audit",
-            "cleanup",
-            "--max",
-            max,
-            "--min",
-            min,
-            "--exportdir",
-            str(export_dir),
-        ],
+    freezer.move_to("2020-01-01 09:50:00")
+    formated_time = datetime.now().strftime(
+        app.config["BACKUP_FILE_TIME_FORMAT"]
     )
+
+    result = runner.invoke(cli_main, ["-vv", "audit", "cleanup"] + options)
+
     assert result.exit_code == 0
 
-    list_of_files = export_dir.glob("*")
-    export_file = None
-    for f in list_of_files:
-        if "SQLData" in str(f):
-            export_file = export_dir / f
-            break
+    filename = f"SQLAuditExport.{formated_time}.{deleted}.csv"
+    export_file = Path(app.config["BACKUP_DIR"]) / filename
+    if cleaned:
+        num_lines = sum(1 for _ in export_file.open())
+        assert num_lines == deleted
+        assert f"{remaining} entries left in database" in result.output
+        assert f"Exported into {export_file}" in result.output
+    else:
+        assert not export_file.is_file()
+        assert f"{remaining} entries in database" in result.output
+        assert "Exported" not in result.output
 
-    assert export_file is not None
-    num_lines = sum(1 for line in export_file.open())
-    assert num_lines == AUDIT_AMOUNT_ENTRIES - min
 
-
-def test_run_janitor_max_min(app, runner, setup_audit_table):
+def test_run_janitor_max_min(runner: FlaskCliRunner, setup_audit_table: None):
     """Run janitor with max not greater than min"""
     max = 5
     min = 5
