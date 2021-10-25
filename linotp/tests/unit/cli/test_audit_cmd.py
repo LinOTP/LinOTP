@@ -135,14 +135,92 @@ def test_audit_cleanup_parameters(
         num_lines = sum(1 for _ in export_file.open())
         # expected: Number of deleted lines + header row
         assert num_lines == deleted + 1
-        assert f"{remaining} entries left in database" in result.output
-        assert f"Exported into {export_file}" in result.output
+        assert f"{remaining} entries left in database" in result.stderr
+        assert f"Exported into {export_file}" in result.stderr
     else:
         assert not export_file.is_file()
-        assert f"{remaining} entries in database" in result.output
-        assert "Exported" not in result.output
+        assert f"{remaining} entries in database" in result.stderr
+        assert "Exported" not in result.stderr
 
     assert db.session.query(AuditTable).count() == remaining
+
+
+def test_audit_cleanup_disabled_export(
+    app: LinOTPApp,
+    runner: FlaskCliRunner,
+    freezer: FrozenDateTimeFactory,
+    export_dir: Path,
+    setup_audit_table: None,
+):
+    freezer.move_to("2020-01-01 09:50:00")
+    formated_time = datetime.now().strftime(
+        app.config["BACKUP_FILE_TIME_FORMAT"]
+    )
+
+    runner.invoke(
+        cli_main,
+        [
+            "-vv",
+            "audit",
+            "cleanup",
+            "--max",
+            "10",
+            "--min",
+            "10",
+            "--no-export",
+            "--exportdir",
+            str(export_dir),
+        ],
+    )
+
+    deleted = AUDIT_AMOUNT_ENTRIES - 10
+
+    filename = f"SQLAuditExport.{formated_time}.{deleted}.csv"
+    export_file_backup_dir = Path(app.config["BACKUP_DIR"]) / filename
+
+    assert not export_file_backup_dir.is_file()
+    assert len(list(export_dir.iterdir())) == 0
+
+
+def test_audit_cleanup_custom_export_dir(
+    app: LinOTPApp,
+    runner: FlaskCliRunner,
+    freezer: FrozenDateTimeFactory,
+    export_dir: Path,
+    setup_audit_table: None,
+):
+    freezer.move_to("2020-01-01 09:50:00")
+    formated_time = datetime.now().strftime(
+        app.config["BACKUP_FILE_TIME_FORMAT"]
+    )
+
+    runner.invoke(
+        cli_main,
+        [
+            "-vvv",
+            "audit",
+            "cleanup",
+            "--max",
+            "10",
+            "--min",
+            "10",
+            "--exportdir",
+            str(export_dir),
+        ],
+    )
+
+    deleted = AUDIT_AMOUNT_ENTRIES - 10
+
+    filename = f"SQLAuditExport.{formated_time}.{deleted}.csv"
+    export_file_backup_dir = Path(app.config["BACKUP_DIR"]) / filename
+    export_file_export_dir = export_dir / filename
+
+    assert not export_file_backup_dir.is_file()
+    assert export_file_export_dir.is_file()
+
+    num_lines = sum(1 for _ in export_file_export_dir.open())
+    # expected: Number of deleted lines + header row
+    assert num_lines == deleted + 1
 
 
 def test_run_janitor_max_min(runner: FlaskCliRunner, setup_audit_table: None):
