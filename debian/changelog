@@ -7,9 +7,9 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * user-based license reporting now filters for date and realm correctly and supports wildcards
     in realm and status
   * In a Debian environment with a MySQL database, it is not anymore required
-	to set the charset=utf8 parameter as otherwise, resolvers do not
-	correctly display imported users if they contain utf-8 characters.
-	Using flask- mysqlalchemy connection solved this problem.
+    to set the charset=utf8 parameter as otherwise, resolvers do not
+    correctly display imported users if they contain utf-8 characters.
+    Using flask- mysqlalchemy connection solved this problem.
 
 
   Features:
