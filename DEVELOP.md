@@ -80,11 +80,23 @@ $ linotp init enc-key
 $ linotp run
 ```
 
+All available CLI commands have their own documentation, and you can find them
+listed in the top level man page **linotp-config(1)**. Should you not yet have installed
+the linotp man pages, you can also reference them by path, like this:
+```terminal
+ $ man ./man/man1/linotp.1
+```
+
 ## Configure LinOTP
 
 LinOTP provides three configuration presets for development, testing and
 production, but you can customize any of the configuration entries by
 overriding environment variables or specifying additional configuration files.
+
+To inspect the configuration of your LinOTP instance, run `linotp config show`,
+or `linotp config explain` if you need more information on the configuration
+entries. Both commands accept additional parameters, which you can look up in
+**linotp-config(1)**.
 
 ### Configuration presets
 
