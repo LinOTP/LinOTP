@@ -38,6 +38,7 @@ from unittest.mock import patch
 
 import pytest
 
+from flask import g
 from flask.testing import FlaskClient
 
 import linotp.app
@@ -325,6 +326,8 @@ def scoped_authclient(
                 lambda: username,
             ):
                 yield client
+                if hasattr(g, "username"):
+                    del g.username
         else:
             with patch(
                 "linotp.controllers.base.verify_jwt_in_request",
@@ -334,6 +337,8 @@ def scoped_authclient(
                 original_get_jwt_identity,
             ):
                 yield client
+                if hasattr(g, "username"):
+                    del g.username
 
     return auth_context_manager
 
