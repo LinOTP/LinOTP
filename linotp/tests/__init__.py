@@ -63,7 +63,7 @@ import pytest
 
 from flask import Flask, Response
 from flask import _request_ctx_stack as flask_request_ctx_stack
-from flask import g, request
+from flask import current_app, g, request
 
 from linotp.app import create_app
 
@@ -793,35 +793,70 @@ class TestController(TestCase):
         )
 
     def delete_all_realms(self, auth_user="admin"):
-        """get al realms and delete them"""
+        """get all realms and delete them"""
+
+        admin_realm = current_app.config["ADMIN_REALM_NAME"].lower()
 
         response = self.make_system_request(
             "getRealms", params={}, auth_user=auth_user
         )
 
-        values = response.json.get("result", {}).get("value", {})
+        realms = response.json.get("result", {}).get("value", {})
 
-        for realmId in values:
-            realm_desc = values.get(realmId)
-            realm_name = realm_desc.get("realmname")
+        for realm_name, realm_desc in realms.items():
+
+            if realm_name == admin_realm:
+                continue
+
             params = {"realm": realm_name}
             resp = self.make_system_request(
                 "delRealm", params=params, auth_user=auth_user
             )
             assert '"result": true' in resp.body
 
+    def _get_admin_resolvers(self, auth_user="admin"):
+
+        admin_realm = current_app.config["ADMIN_REALM_NAME"].lower()
+
+        response = self.make_system_request(
+            "getRealms", params={}, auth_user=auth_user
+        )
+        assert response.json["result"]["value"]
+
+        realms = response.json["result"]["value"]
+        for entry in realms:
+
+            if entry != admin_realm:
+                continue
+
+            admin_resolvers = realms[entry]["useridresolver"]
+            break
+
+        admin_resolver_names = []
+        for admin_resolver in admin_resolvers or []:
+            admin_resolver_names.append(admin_resolver.rpartition(".")[2])
+
+        return admin_resolver_names
+
     def delete_all_resolvers(self, auth_user="admin"):
         """get all resolvers and delete them"""
+
+        admin_resolver_names = self._get_admin_resolvers(auth_user=auth_user)
 
         response = self.make_system_request(
             "getResolvers", params={}, auth_user=auth_user
         )
         values = response.json.get("result", {}).get("value", {})
 
-        for realmId in values:
-            resolv_desc = values.get(realmId)
-            resolv_name = resolv_desc.get("resolvername")
-            params = {"resolver": resolv_name}
+        for resolver_name, resolver_description in values.items():
+
+            # the admin resolvers could not be deleted as they
+            # are still in use by the admin realm, which could not be deleted
+
+            if resolver_name.lower() in admin_resolver_names:
+                continue
+
+            params = {"resolver": resolver_name}
             resp = self.make_system_request(
                 "delResolver", params=params, auth_user=auth_user
             )
@@ -1042,6 +1077,11 @@ class TestController(TestCase):
 
         resp = self.make_system_request("setRealm", params)
         return resp
+
+    def set_default_realm(self, realm):
+        params = {"realm": realm.lower()}
+        response = self.make_system_request("setDefaultRealm", params=params)
+        return response
 
     def create_common_realms(self):
         """

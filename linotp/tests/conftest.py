@@ -31,6 +31,7 @@ Pytest fixtures for linotp tests
 
 import contextlib
 import copy
+import io
 import os
 import tempfile
 from typing import Callable, ContextManager, Iterator, List
@@ -431,6 +432,60 @@ def _create_resolver(
     return res
 
 
+def _import_admin_user(
+    adminclient: FlaskClient,
+) -> CompatibleTestResponse:
+    """
+    import admin users
+
+    Args:
+        adminclient (FlaskClient):
+            the client which should be used for the request
+
+    """
+
+    # --------------------------------------------------------------------- --
+
+    # the tools/import_user parameters for importing a passwd format file
+
+    params = {
+        "resolver": "linotp_local_admins",
+        "dryrun": False,
+        "format": "password",
+        "delimiter": ",",
+        "quotechar": '"',
+    }
+
+    # --------------------------------------------------------------------- --
+
+    # add the admin-passwd content
+
+    admin_passwd_file = os.path.join(
+        TestController.fixture_path, "admin-passwd"
+    )
+
+    with io.open(admin_passwd_file, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    upload_params = {
+        "file": (io.BytesIO(content.encode("utf-8")), "user_list"),
+    }
+    params.update(upload_params)
+
+    # --------------------------------------------------------------------- --
+
+    # run the call
+
+    res = adminclient.post(
+        "tools/import_users", content_type="multipart/form-data", data=params
+    )
+    assert res.json["result"]["status"] is True
+
+    assert len(res.json["result"]["value"]["created"]) == 3
+
+    return res
+
+
 @pytest.fixture
 def create_common_resolvers(
     scoped_authclient: Callable[..., FlaskClient],
@@ -456,11 +511,6 @@ def create_common_resolvers(
             file_name=os.path.join(fixture_path, "myDom-passwd"),
             resolver_type="passwdresolver",
         ),
-        ResolverParams(
-            name="admin_resolver",
-            file_name=os.path.join(fixture_path, "admin-passwd"),
-            resolver_type="passwdresolver",
-        ),
     ]
 
     with scoped_authclient(verify_jwt=False, username="admin") as client:
@@ -468,6 +518,19 @@ def create_common_resolvers(
             _create_resolver(
                 resolver_params=resolver_param, adminclient=client
             )
+
+        # ----------------------------------------------------------------- --
+
+        # fill in the admin users via import
+        #
+        # TODO:
+        #   this will be replaced by the admin_user add
+        #   and will break when the import_user will not allow to import
+        #   into the admin_resolver anymore
+
+        _import_admin_user(client)
+
+        # ----------------------------------------------------------------- --
 
 
 @pytest.fixture
@@ -496,9 +559,6 @@ def create_common_realms(scoped_authclient: Callable) -> None:
             "useridresolver.PasswdIdResolver.IdResolver.def_resolver",
             "useridresolver.PasswdIdResolver.IdResolver.dom_resolver",
         ],
-        "LinOTP_admins": [
-            "useridresolver.PasswdIdResolver.IdResolver.admin_resolver"
-        ],
     }
 
     with scoped_authclient(verify_jwt=False, username="admin") as client:
@@ -520,12 +580,11 @@ def create_common_realms(scoped_authclient: Callable) -> None:
                 assert response.json["result"]["status"] is True
                 assert response.json["result"]["value"] is True
 
-            if realm.lower() is "def_resolver".lower():
-                params = {"realm": realm.lower()}
-                response = client.post("/system/setDefaultRealm", data=params)
+        params = {"realm": "def_realm"}
+        response = client.post("/system/setDefaultRealm", data=params)
 
-                assert response.json["result"]["status"] is True
-                assert response.json["result"]["value"] is True
+        assert response.json["result"]["status"] is True
+        assert response.json["result"]["value"] is True
 
         response = client.post("/system/getRealms", data={})
 

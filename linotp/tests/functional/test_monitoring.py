@@ -134,10 +134,11 @@ class TestMonitoringController(TestController):
 
     # UnitTests...
     def test_config(self):
+
         response = self.make_monitoring_request("config", params={})
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
-        assert values.get("realms") == 3, response
+        assert values.get("realms") == 4, response
         assert values.get("passwdresolver") == 2, response
         # self.assertEqual(values.get('sync'), True, response)
 
@@ -146,7 +147,7 @@ class TestMonitoringController(TestController):
         response = self.make_monitoring_request("config", params={})
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
-        assert values.get("realms") == 3, response
+        assert values.get("realms") == 4, response
         assert values.get("passwdresolver") == 2, response
         # self.assertEqual(values.get('sync'), False, response)
 
