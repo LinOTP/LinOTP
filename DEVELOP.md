@@ -87,6 +87,19 @@ the linotp man pages, you can also reference them by path, like this:
  $ man ./man/man1/linotp.1
 ```
 
+`init database` will create a SQLite database by default. If you want to use a
+PostgreSQL or MariaDB database instead, you can override that setting through
+the following environment variable before running `linotp init database`:
+```terminal
+ $ export LINOTP_DATABASE_URI="postgres://user:pass@host/db_name"
+```
+or
+```terminal
+ $ export LINOTP_DATABASE_URI="mysql+pymysql://user:pass@host/db_name"
+```
+Alternatively you can also set this variable in a LinOTP configuration file, as
+we explain next.
+
 ## Configure LinOTP
 
 LinOTP provides three configuration presets for development, testing and
