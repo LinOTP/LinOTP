@@ -193,6 +193,7 @@ setup(
             [
                 "config/linotpapp.wsgi",
                 "config/push-ca-bundle.crt",
+                "config/etc/linotp.cfg",
             ],
         ),
         (

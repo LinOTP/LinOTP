@@ -114,29 +114,6 @@ check_user() {
   fi
 }
 
-# create_cfg_file
-#
-# Create the file needed for configuration.
-#
-# This will be populated with the database location
-create_cfg_file() {
-  if [ -f "$LINOTP_ETC_CFG" ]; then
-    echo_log "Configuration file already exists: $LINOTP_ETC_CFG"
-  else
-    old_umask="$(umask)"
-    umask 022
-    cat <<- CFG_EOF > $LINOTP_ETC_CFG
-    # LinOTP configuration file
-    #
-    # LinOTP can be configured here, or alternatively
-    # by dropping individual configuration snippets
-    # in /etc/linotp/conf.d/<name>.cfg
-CFG_EOF
-    chown linotp $LINOTP_ETC_CFG
-    umask=$old_umask
-  fi
-}
-
 # configure_apache
 #
 # Obtains configuration information from debconf and uses that to
@@ -248,8 +225,6 @@ if [ "$1" = configure ]; then
   create_dir "etc" "$CONFIG_DIR"
   create_dir "template" "$TEMPLATEDIR"
   create_tmpfiles linotp.conf  # for DATA_DIR
-
-  create_cfg_file
 
 fi
 
