@@ -222,7 +222,7 @@ setup(
         (
             "share/linotp",
             [
-                "config/linotp.cfg",
+                "config/share/linotp.cfg",
             ],
         ),
     ],
