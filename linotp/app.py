@@ -344,7 +344,7 @@ class LinOTPApp(Flask):
         (encKey) to use as the secret key.
         """
 
-        if not getattr(self.config, "JWT_SECRET_KEY", ""):
+        if not self.config.get("JWT_SECRET_KEY", ""):
             with Path(self.config["SECRET_FILE"]).open("rb") as key_file:
                 secret_key = key_file.read(32).hex()
             self.config["JWT_SECRET_KEY"] = secret_key

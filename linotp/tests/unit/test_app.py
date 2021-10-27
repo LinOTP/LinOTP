@@ -1,5 +1,6 @@
 import os
 from contextlib import ExitStack
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest  # noqa: F401
@@ -164,3 +165,26 @@ def test_session_cookie_secure(
             break
     else:
         assert False, "no jwt access token cookie found"
+
+
+def test_jwt_secret(base_app):
+    secret_key = 3 * "abcdef0123456789" * 4
+    base_app.config["JWT_SECRET_KEY"] = secret_key
+
+    base_app.init_jwt_config()
+    assert (
+        base_app.config["JWT_SECRET_KEY"] == secret_key
+    ), "the jwt secret key should be unchanged after app init"
+
+
+def test_default_jwt_secret(base_app, key_directory):
+    base_app.config["JWT_SECRET_KEY"] = None
+    base_app.config["SECRET_FILE"] = key_directory / "encKey"
+
+    base_app.init_jwt_config()
+
+    with Path(key_directory / "encKey").open("rb") as key_file:
+        secret_key = key_file.read(32).hex()
+        assert (
+            base_app.config["JWT_SECRET_KEY"] == secret_key
+        ), "the jwt secret key should default to encKey if not defined at app init time"
