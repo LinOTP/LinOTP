@@ -16,7 +16,8 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * add grace to license volume exceeding and display accordingly a message
     in the the web ui
   * add extended information in HOTP/TOTP CSV import UI
-
+  * when the database is created or migrated an internal resolver and an
+    initial realm for linotp administrators are created.
 
  -- LinOTP Packaging <packaging@linotp.de>  Thu, 9 Sep 2021 17:13:51 +0200
 
