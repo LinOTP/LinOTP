@@ -44,8 +44,9 @@
 """
 
 import datetime
-import os
 import sys
+from pathlib import Path
+from typing import Optional
 
 import click
 from sqlalchemy import asc, desc
@@ -57,6 +58,8 @@ from flask.cli import AppGroup, with_appcontext
 from linotp.lib.audit.SQLAudit import AuditTable
 from linotp.model import db
 
+from . import get_backup_filename
+
 # -------------------------------------------------------------------------- --
 
 # audit commands: cleanup (more commands to come ...)
@@ -65,48 +68,79 @@ audit_cmds = AppGroup("audit")
 
 
 @audit_cmds.command(
-    "cleanup", help="Reduce the amount of audit log entries in the database"
+    "cleanup",
+    help=(
+        "Reduce the number of audit log entries in the database.\n\n"
+        "If more than --max entries are in the audit table, older "
+        "entries will be deleted so that only --min entries remain "
+        "in the table. Set --min and --max to the same value to "
+        "delete only those entries that exceed the maximum number "
+        "(--max) of entries allowed"
+    ),
 )
 @click.option(
     "--max",
     "maximum",
     default=10000,
-    help="The maximum entries. If not given 10.000 as default is "
-    + "assumed.",
+    help=(
+        "The maximum number of entries that may be in the database"
+        "before entries are deleted. Defaults to 10,000."
+    ),
 )
 @click.option(
     "--min",
     "minimum",
     default=5000,
-    help="The minimum old remaining entries. If not given 5.000 "
-    + "as default is assumed.",
+    help=(
+        "The number of entries that should remain in the database if "
+        "data is cleaned up. You need to set a lower number than --max "
+        "if you do not want directly reach the limit again. Set it to "
+        "the same value as --max to only delete entries that are "
+        "exceeding the maximum allowed number of entries. Defaults to "
+        "5,000."
+    ),
+)
+@click.option(
+    "--no-export",
+    is_flag=True,
+    help="Do not write a backup file for the deleted audit lines.",
 )
 @click.option(
     "--exportdir",
     "-e",
     type=click.Path(exists=True, dir_okay=True),
-    help="Defines the directory where the audit entries which "
-    + "are cleaned up are exported. A example filename would be: "
-    + "SQLData.yeah.month.day-max_id.csv",
+    help=(
+        "Defines the directory where the audit entries which "
+        "are cleaned up are exported into. The backup file named "
+        "”SQLAuditExport.{now_time}.{highest_exported_id}.csv” "
+        "will be saved there.\n\nDefaults to the BACKUP_DIR "
+        "configured for LinOTP."
+    ),
 )
 @with_appcontext
-def cleanup_command(maximum, minimum, exportdir):
+def cleanup_command(
+    maximum: int, minimum: int, no_export: bool, exportdir: Optional[str]
+):
     """This function removes old entries from the audit table.
 
     If more than max entries are in the audit table, older entries
     will be deleted so that only min entries remain in the table.
-    This tool can decrypt the OTP Key stored in the LinOTP database. You need
-    to pass the encrypted key, the IV and the filename of the encryption key.
     """
 
     app = current_app
     try:
 
-        if not (0 <= minimum < maximum):
-            app.echo("Error: max has to be greater than min.")
+        if not (0 <= minimum <= maximum):
+            app.echo("Error: --max must be greater than or equal to --min.")
             sys.exit(1)
 
-        sqljanitor = SQLJanitor(export=exportdir)
+        if no_export:
+            export_path = None
+        else:
+            export_path = Path(exportdir or current_app.config["BACKUP_DIR"])
+            export_path.mkdir(parents=True, exist_ok=True)
+
+        sqljanitor = SQLJanitor(export_dir=export_path)
 
         cleanup_infos = sqljanitor.cleanup(maximum, minimum)
 
@@ -118,25 +152,27 @@ def cleanup_command(maximum, minimum, exportdir):
         if cleanup_infos["entries_deleted"] > 0:
             app.echo(
                 f'{cleanup_infos["entries_in_audit"] - minimum} entries '
-                "cleaned up. {minimum} entries left in database.\n"
-                "Min: {minimum}, Max: {maximum}.",
-                v=2,
+                f"cleaned up. {minimum} entries left in database.\n"
+                f"Min: {minimum}, Max: {maximum}.",
+                v=1,
             )
 
             if cleanup_infos["export_filename"]:
                 app.echo(
-                    f'Exported into {cleanup_infos["export_filename"]}', v=2
+                    f'Exported into {cleanup_infos["export_filename"]}',
+                    v=2,
                 )
 
             app.echo(
-                f'Cleaning up took {cleanup_infos["time_taken"]} seconds', v=2
+                f'Cleaning up took {cleanup_infos["time_taken"]} seconds',
+                v=2,
             )
         else:
             app.echo(
                 f'Nothing cleaned up. {cleanup_infos["entries_in_audit"]} '
                 "entries in database.\n"
-                "Min: {minimum}, Max: {maximum}.",
-                v=2,
+                f"Min: {minimum}, Max: {maximum}.",
+                v=1,
             )
 
     except Exception as exx:
@@ -149,37 +185,34 @@ class SQLJanitor:
     script to help the house keeping of audit entries
     """
 
-    def __init__(self, export=None):
+    def __init__(self, export_dir: Path = None):
 
-        self.export_dir = export
+        self.export_dir = export_dir
 
         self.app = current_app
 
-    def export_data(self, max_id):
+    def export_data(self, export_up_to) -> Optional[Path]:
         """
         export each audit row into a csv output
 
-        :param max_id: all entries with lower id will be dumped
-        :return: string (filename) if export succeeds, None if export failed
+        :param export_up_to: all entries up to this id will be dumped
+        :return: filepath of exported data or None if no export done
         """
 
         if not self.export_dir:
+            self.app.echo(
+                "No export directory defined, skipping backup.",
+                v=1,
+            )
             return None
 
-        # create the filename
-        t2 = datetime.datetime.now()
-        filename = "SQLData.%d.%d.%d-%d.csv" % (
-            t2.year,
-            t2.month,
-            t2.day,
-            max_id,
-        )
-
-        with open(os.path.join(self.export_dir, filename), "w") as f:
+        filename_template = f"SQLAuditExport.%s.{export_up_to}.csv"
+        export_file = self.export_dir / get_backup_filename(filename_template)
+        with export_file.open("w") as f:
 
             result = (
                 db.session.query(AuditTable)
-                .filter(AuditTable.id < max_id)
+                .filter(AuditTable.id <= export_up_to)
                 .order_by(desc(AuditTable.id))
                 .all()
             )
@@ -211,7 +244,7 @@ class SQLJanitor:
                 f.write(prin)
                 f.write("\n")
 
-        return filename
+        return export_file
 
     def cleanup(self, max_entries, min_entries):
         """
@@ -244,12 +277,9 @@ class SQLJanitor:
 
         start_time = datetime.datetime.now()
 
-        # TODO: replace with a select between query
-
         total = int(db.session.query(count(AuditTable.id)).scalar())
-
         cleanup_infos["entries_in_audit"] = total
-        if total >= max_entries:
+        if total > max_entries:
 
             first_id = int(
                 db.session.query(AuditTable.id)
@@ -270,12 +300,14 @@ class SQLJanitor:
             delete_from = last_id - min_entries
             if delete_from > 0:
                 # if export is enabled, we start the export now
-                export_filename = self.export_data(delete_from)
-                cleanup_infos["export_filename"] = export_filename
+                export_file = self.export_data(delete_from)
+                cleanup_infos["export_filename"] = str(export_file)
 
                 db.session.query(AuditTable).filter(
-                    AuditTable.id < delete_from
+                    AuditTable.id <= delete_from
                 ).delete()
+
+                db.session.commit()
 
                 cleanup_infos["entries_deleted"] = total - min_entries
                 cleanup_infos["cleaned"] = True

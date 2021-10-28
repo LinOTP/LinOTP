@@ -58,18 +58,66 @@ def app():
 
 
 @pytest.mark.parametrize(
-    "fmt,filename,now",
+    "fmt,input_filename,expected_filename,now",
     [
-        ("%Y-%m-%d_%H-%M", "foo.2020-08-18_19-25", None),
-        ("%Y-%m-%d_%H-%M", "bar.2000-01-01_00-00", "2000-01-01T00:00:00"),
-        ("%d%m%Y", "baz.18082020", None),
-        ("%d%m%Y", "quux.01012000", "2000-01-01T00:00:00"),
+        (
+            "%Y-%m-%d_%H-%M",
+            "foo",
+            "foo.2020-08-18_19-25",
+            None,
+        ),
+        (
+            "%Y-%m-%d_%H-%M",
+            "bar",
+            "bar.2000-01-01_00-00",
+            "2000-01-01T00:00:00",
+        ),
+        (
+            "%d%m%Y",
+            "baz",
+            "baz.18082020",
+            None,
+        ),
+        (
+            "%d%m%Y",
+            "quux",
+            "quux.01012000",
+            "2000-01-01T00:00:00",
+        ),
+        (
+            "%Y-%m-%d_%H-%M",
+            "foo-%s.csv",
+            "foo-2020-08-18_19-25.csv",
+            None,
+        ),
+        (
+            "%d%m%Y",
+            "foo-%-s-%s-%s.txt",
+            "foo-%-s-01012000-01012000.txt",
+            "2000-01-01T00:00:00",
+        ),
     ],
 )
-def test_get_backup_filename(freezer, monkeypatch, app, fmt, filename, now):
+def test_get_backup_filename(
+    freezer,
+    monkeypatch,
+    app,
+    fmt,
+    input_filename,
+    expected_filename,
+    now,
+):
     freezer.move_to("2020-08-18 19:25:33")
     monkeypatch.setitem(app.config, "BACKUP_FILE_TIME_FORMAT", fmt)
-    fn = filename[: filename.rfind(".")]
-    now_dt = datetime.fromisoformat(now) if isinstance(now, str) else None
-    bfn = get_backup_filename(fn, now_dt)
-    assert bfn == filename
+
+    if now is None:
+        actual_filename = get_backup_filename(
+            input_filename,
+        )
+    else:
+        actual_filename = get_backup_filename(
+            input_filename,
+            datetime.fromisoformat(now),
+        )
+
+    assert actual_filename == expected_filename
