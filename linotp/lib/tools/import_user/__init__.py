@@ -40,6 +40,7 @@ import json
 import logging
 
 from linotp.lib.tools.import_user.ImportHandler import ImportHandler
+from linotp.model.imported_user import ImportedUser
 
 log = logging.getLogger(__name__)
 
@@ -136,9 +137,9 @@ class UserImport(object):
 
             row = format_reader.prepare_row(row)
 
-            user = self.import_handler.User()
+            user = ImportedUser()
 
-            for entry in self.import_handler.User.user_entries:
+            for entry in ImportedUser.user_entries:
 
                 value = ""
                 column_id = self.user_column_mapping.get(entry, -1)
