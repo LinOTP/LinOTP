@@ -1838,11 +1838,11 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
             lists the user in a realm
 
         arguments:
-            * <searchexpr> - will be retrieved from the UserIdResolverClass
-            * realm	 - a realm, which is a collection of resolver configurations
-            * resConf	 - a destinct resolver configuration
-            * page    - the number of page, which should be retrieved (optional)
-            * rp    - the number of users per page (optional)
+            * <searchexpr>: will be retrieved from the UserIdResolverClass
+            * realm: a realm, which is a collection of resolver configurations
+            * resConf: a destinct resolver configuration
+            * page: the number of page, which should be retrieved (optional)
+            * rp: the number of users per page (optional)
 
         returns:
             a json result with a boolean
