@@ -76,11 +76,11 @@ class TokenView(ManageTab):
         # To avoid loosing selected items, we check if the '100'
         # is selected.
 
-        select = Select(self.driver.find_element_by_name("rp"))
+        select = Select(self.driver.find_element(By.NAME, "rp"))
         if select.first_selected_option.text.strip() != "100":
             # Show 100 tokens in view
-            self.driver.find_element_by_css_selector(
-                'option[value="100"]'
+            self.driver.find_element(
+                By.CSS_SELECTOR, 'option[value="100"]'
             ).click()
 
         self.wait_for_grid_loading()
@@ -102,7 +102,7 @@ class TokenView(ManageTab):
         if text == "No items":
             return []
 
-        e = self.driver.find_elements_by_css_selector(self.token_lines_css)
+        e = self.driver.find_elements(By.CSS_SELECTOR, self.token_lines_css)
         return e
 
     def select_all_tokens(self):
@@ -246,22 +246,22 @@ class TokenView(ManageTab):
             EC.element_to_be_clickable((By.ID, assign_id))
         )
 
-        driver.find_element_by_id(assign_id).click()
+        driver.find_element(By.ID, assign_id).click()
 
         self.wait_for_waiting_finished()
         fill_form_element(driver, "pin1", pin)
         fill_form_element(driver, "pin2", pin)
-        driver.find_element_by_id("button_setpin_setpin").click()
+        driver.find_element(By.ID, "button_setpin_setpin").click()
         self.wait_for_waiting_finished()  # Wait for delete API call
 
     def enable_token(self, token_serial):
         self.select_token(token_serial)
-        self.driver.find_element_by_id("button_enable").click()
+        self.driver.find_element(By.ID, "button_enable").click()
         self.wait_for_waiting_finished()
 
     def disable_token(self, token_serial):
         self.select_token(token_serial)
-        self.driver.find_element_by_id("button_enable").click()
+        self.driver.find_element(By.ID, "button_enable").click()
         self.wait_for_waiting_finished()
 
     def get_token_line(self, token_serial: str) -> Dict:
@@ -280,30 +280,30 @@ class TokenView(ManageTab):
         """
         keys_with_subtable = ["LinOtp.TokenInfo", "LinOtp.RealmNames"]
         self.select_token(token_serial)
-        self.driver.find_element_by_id("button_tokeninfo").click()
+        self.driver.find_element(By.ID, "button_tokeninfo").click()
         token_info = {}
-        rows = self.driver.find_elements_by_css_selector(
-            "#dialog_token_info > table >tbody > tr"
+        rows = self.driver.find_elements(
+            By.CSS_SELECTOR, "#dialog_token_info > table >tbody > tr"
         )
 
         # Some rows do not contain all elements
         self.testcase.disableImplicitWait()
 
         for row in rows:
-            tds = row.find_elements_by_css_selector("td.tokeninfoOuterTable")
+            tds = row.find_elements(By.CSS_SELECTOR, "td.tokeninfoOuterTable")
             key = tds[0].text
             value_element = tds[1]
             if key in keys_with_subtable:
-                inner_rows = value_element.find_elements_by_css_selector(
-                    "table.tokeninfoInnerTable tr"
+                inner_rows = value_element.find_elements(
+                    By.CSS_SELECTOR, "table.tokeninfoInnerTable tr"
                 )
                 if key == "LinOtp.RealmNames":
                     token_info[key] = []
                 else:
                     token_info[key] = {}
                 for inner_row in inner_rows:
-                    inner_tds = inner_row.find_elements_by_css_selector(
-                        "td.tokeninfoInnerTable"
+                    inner_tds = inner_row.find_elements(
+                        By.CSS_SELECTOR, "td.tokeninfoInnerTable"
                     )
                     if key == "LinOtp.RealmNames":
                         inner_value = inner_tds[0].text
@@ -316,5 +316,5 @@ class TokenView(ManageTab):
                 token_info[key] = value_element.text
         self.testcase.enableImplicitWait()
 
-        self.driver.find_element_by_id("button_ti_close").click()
+        self.driver.find_element(By.ID, "button_ti_close").click()
         return token_info

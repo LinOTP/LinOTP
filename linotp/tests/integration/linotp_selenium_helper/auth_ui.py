@@ -26,6 +26,8 @@
 
 import logging
 
+from selenium.webdriver.common.by import By
+
 from linotp_selenium_helper.helper import fill_form_element
 
 """
@@ -77,7 +79,7 @@ class AuthUi(object):
         self.fill_form_element("user", user)
         password = pin + otp
         self.fill_form_element("pass", password)
-        self.driver.find_element_by_css_selector(self.CSS_AUTH_SUBMIT).click()
+        self.driver.find_element(By.CSS_SELECTOR, self.CSS_AUTH_SUBMIT).click()
         return self._get_result()
 
     def auth_using_index3(self, user, pin, otp):
@@ -86,7 +88,7 @@ class AuthUi(object):
         self.fill_form_element("user3", user)
         self.fill_form_element("pass3", pin)
         self.fill_form_element("otp3", otp)
-        self.driver.find_element_by_css_selector(self.CSS_AUTH_SUBMIT).click()
+        self.driver.find_element(By.CSS_SELECTOR, self.CSS_AUTH_SUBMIT).click()
         return self._get_result()
 
     def _get_result(self):

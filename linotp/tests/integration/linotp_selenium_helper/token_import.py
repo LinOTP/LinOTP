@@ -28,6 +28,7 @@
 import os
 import tempfile
 
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.file_detector import LocalFileDetector
 
 from linotp_selenium_helper.manage_ui import ManageUi, MsgType
@@ -100,8 +101,8 @@ class TokenImport(ManageDialog):
             # Use the provided xml token file.
             self.file_path = file_path
 
-        filepath_input = self.driver.find_element_by_xpath(
-            self.file_name_lineedit
+        filepath_input = self.driver.find_element(
+            By.XPATH, self.file_name_lineedit
         )
 
         # On firefox the lineedit is not cleared after dialog re-open
@@ -116,7 +117,7 @@ class TokenImport(ManageDialog):
             # Send the filename to the token file lineedit in the dialog.
             filepath_input.send_keys(self.file_path)
 
-        self.driver.find_element_by_id(self.load_button_id).click()
+        self.driver.find_element(By.ID, self.load_button_id).click()
         self.manage.wait_for_waiting_finished()
 
         # delete the temp file if necessary

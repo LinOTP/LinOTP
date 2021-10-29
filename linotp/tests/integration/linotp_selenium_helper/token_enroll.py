@@ -25,6 +25,8 @@
 #
 """Contains Token class"""
 
+from selenium.webdriver.common.by import By
+
 from .helper import fill_form_element, select
 from .manage_elements import ManageDialog
 
@@ -44,13 +46,13 @@ class EnrollTokenDialog(ManageDialog):
         overriden with a click on the enroll button
         """
         if not self.is_open():
-            self.driver.find_element_by_id("button_enroll").click()
+            self.driver.find_element(By.ID, "button_enroll").click()
 
         self.wait_for_dialog()
 
     def select_token_type(self, token_type_text: str):
         self.open()
-        select_tag = self.driver.find_element_by_id("tokentype")
+        select_tag = self.driver.find_element(By.ID, "tokentype")
 
         select(
             self.driver, select_element=select_tag, option_text=token_type_text
@@ -79,8 +81,8 @@ class EnrollTokenDialog(ManageDialog):
             )
 
         # Find the token serial number
-        token_serial = info.element.find_element_by_css_selector(
-            ".text_param1"
+        token_serial = info.element.find_element(
+            By.CSS_SELECTOR, ".text_param1"
         ).text
 
         if not token_serial or not token_serial.startswith(token_prefix):
@@ -126,19 +128,19 @@ class EnrollTokenDialog(ManageDialog):
 
         self.select_token_type("HMAC eventbased")
 
-        wel_hmac_otplen = self.driver.find_element_by_id("hmac_otplen")
-        wel_hmac_algorithm = self.driver.find_element_by_id("hmac_algorithm")
-        wel_enroll_hmac_desc = self.driver.find_element_by_id(
-            "enroll_hmac_desc"
+        wel_hmac_otplen = self.driver.find_element(By.ID, "hmac_otplen")
+        wel_hmac_algorithm = self.driver.find_element(By.ID, "hmac_algorithm")
+        wel_enroll_hmac_desc = self.driver.find_element(
+            By.ID, "enroll_hmac_desc"
         )
 
         if hmac_key:
             # select: seed input - no random seed
-            self.driver.find_element_by_id("hmac_key_rb_no").click()
+            self.driver.find_element(By.ID, "hmac_key_rb_no").click()
             fill_form_element(self.driver, "hmac_key", hmac_key)
         elif generate_key:
             # select: random seed
-            self.driver.find_element_by_id("hmac_key_rb_gen").click()
+            self.driver.find_element(By.ID, "hmac_key_rb_gen").click()
 
         select(
             self.driver,

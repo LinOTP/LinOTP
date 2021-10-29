@@ -195,14 +195,14 @@ class ManageTab(ManageElement):
 
         grid = self.find_by_css(self.flexigrid_css)
 
-        heading_rows = grid.find_elements_by_css_selector(".hDiv table th")
+        heading_rows = grid.find_elements(By.CSS_SELECTOR, ".hDiv table th")
         headings = [h.text for h in heading_rows]
 
-        rows = grid.find_elements_by_css_selector(".bDiv table tr")
+        rows = grid.find_elements(By.CSS_SELECTOR, ".bDiv table tr")
 
         for row in rows:
             values = [
-                cell.text for cell in row.find_elements_by_css_selector("td")
+                cell.text for cell in row.find_elements(By.CSS_SELECTOR, "td")
             ]
             result.append(dict(zip(headings, values)))
 

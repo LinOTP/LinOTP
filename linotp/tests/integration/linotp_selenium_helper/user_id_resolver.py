@@ -29,6 +29,8 @@ import logging
 import re
 from typing import Dict, List
 
+from selenium.webdriver.common.by import By
+
 from .helper import fill_element_from_dict, find_by_css, find_by_id
 from .manage_elements import ManageDialog
 
@@ -96,7 +98,7 @@ class UserIdResolverManager(ManageDialog):
             resolver_element = line
         else:
             # Resolvers dialog
-            name_element = line.find_element_by_css_selector(".name")
+            name_element = line.find_element(By.CSS_SELECTOR, ".name")
             resolver_element = name_element
 
         resolver_name_re = r"([\w\-]+) \[([\w\-]+)\]$"
@@ -124,8 +126,8 @@ class UserIdResolverManager(ManageDialog):
 
         # The dialog could be empty, so disable implicit wait for the list
         with self.implicit_wait_disabled():
-            lines = resolvers_list.find_elements_by_css_selector(
-                "#resolvers_list > ol > li"
+            lines = resolvers_list.find_elements(
+                By.CSS_SELECTOR, "#resolvers_list > ol > li"
             )
 
             for line in lines:
@@ -535,7 +537,7 @@ class LdapUserIdResolver(UserIdResolver):
 
         # Check that some fields have been filled in correctly
         for field in ("uri", "basedn", "binddn", "password"):
-            e = driver.find_element_by_id("ldap_" + field)
+            e = driver.find_element(By.ID, "ldap_" + field)
             assert e.get_attribute("value") == data[field]
 
 

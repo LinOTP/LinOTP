@@ -23,6 +23,8 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+from selenium.webdriver.common.by import By
+
 from linotp_selenium_helper.self_service import SelfService
 
 """LinOTP Selenium Test for Scenario 01 - General functionality tests"""
@@ -169,18 +171,18 @@ class TestScenario01(TestCase):
         motp_pin = "1234"
         selfservice.open()
         selfservice.login("mozart", "Test123!", test1_realm)
-        driver.find_element_by_id("motp_secret").clear()
-        driver.find_element_by_id("motp_secret").send_keys(motp_key)
-        driver.find_element_by_id("motp_s_pin1").clear()
-        driver.find_element_by_id("motp_s_pin1").send_keys(motp_pin)
-        driver.find_element_by_id("motp_s_pin2").clear()
-        driver.find_element_by_id("motp_s_pin2").send_keys(motp_pin)
-        driver.find_element_by_id("motp_self_desc").clear()
-        driver.find_element_by_id("motp_self_desc").send_keys(
+        driver.find_element(By.ID, "motp_secret").clear()
+        driver.find_element(By.ID, "motp_secret").send_keys(motp_key)
+        driver.find_element(By.ID, "motp_s_pin1").clear()
+        driver.find_element(By.ID, "motp_s_pin1").send_keys(motp_pin)
+        driver.find_element(By.ID, "motp_s_pin2").clear()
+        driver.find_element(By.ID, "motp_s_pin2").send_keys(motp_pin)
+        driver.find_element(By.ID, "motp_self_desc").clear()
+        driver.find_element(By.ID, "motp_self_desc").send_keys(
             "Selenium self enrolled"
         )
-        driver.find_element_by_id("button_register_motp").click()
-        alert_box_text = driver.find_element_by_id("alert_box_text").text
+        driver.find_element(By.ID, "button_register_motp").click()
+        alert_box_text = driver.find_element(By.ID, "alert_box_text").text
         m = re.match(
             r"""
                 .*?
@@ -198,8 +200,9 @@ class TestScenario01(TestCase):
             % alert_box_text
         )
         serial_token_mozart = m.group("serial")
-        self.driver.find_element_by_xpath(
-            "//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]"
+        self.driver.find_element(
+            By.XPATH,
+            "//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]",
         ).click()
         selfservice.logout()
 
