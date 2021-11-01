@@ -321,6 +321,20 @@ class TestAdminController(TestController):
 
         return
 
+    def test_db_for_default_realm_and_resolver(self):
+        """
+        Tests, after db initialiazation,
+        that default admin_realm and default resolver are existing
+        """
+
+        response = self.make_system_request("getResolvers")
+        assert response.json["result"]["status"]
+        assert "linotp_local_admins" in response.json["result"]["value"]
+
+        response = self.make_system_request("getRealms")
+        assert response.json["result"]["status"]
+        assert "linotp_admins" in response.json["result"]["value"]
+
     def test_enable(self):
         self.createToken()
         parameters = {"serial": "F722364"}

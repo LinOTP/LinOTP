@@ -757,9 +757,9 @@ class SystemController(BaseController):
                             setRealm(realm_name, ",".join(new_resolvers))
                             break
 
-                #
-                # migrate the tokens to the new resolver -
-                # we can re-use the resolver migration handler here :-)
+            #
+            # migrate the tokens to the new resolver -
+            # we can re-use the resolver migration handler here :-)
 
             if mode == "rename" or primary_key_changed:
 

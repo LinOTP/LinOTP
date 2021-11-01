@@ -1242,7 +1242,6 @@ def _set_config(key, value, typ, description=None, update=False):
 
     :return: nothing
     """
-
     count = Config.query.filter_by(Key="linotp." + key).count()
     if count == 0:
         config_entry = Config(key, value, Type=typ, Description=description)
@@ -1283,6 +1282,7 @@ def set_defaults(app):
 
     :return: - nothing -
     """
+    app.logger.info("Adding config default data...")
 
     is_upgrade = Config.query.filter_by(Key="Config").count() != 0
 
@@ -1293,7 +1293,28 @@ def set_defaults(app):
         _set_config(key="welcome_screen.last_shown", value="0", typ="text")
         _set_config(key="welcome_screen.opt_out", value="false", typ="text")
 
-    app.logger.info("Adding config default data...")
+    else:
+        # we have a fresh new database, so we add some new defaults
+
+        admin_realm_name = app.config["ADMIN_REALM_NAME"]
+        admin_resolver_name = app.config["ADMIN_RESOLVER_NAME"]
+
+        create_admin_resolver(admin_resolver_name)
+        create_admin_realm(admin_realm_name, admin_resolver_name)
+
+        _set_config(
+            key="NewPolicyEvaluation",
+            value="True",
+            typ="boolean",
+            description="use the new policy engine",
+        )
+
+        _set_config(
+            key="NewPolicyEvaluation.compare",
+            value="False",
+            typ="boolean",
+            description=("compare the new policy engine with the old one"),
+        )
 
     _set_config(
         key="DefaultMaxFailCount",
@@ -1517,20 +1538,84 @@ def set_defaults(app):
         description="expiration of resolver caching entries",
     )
 
-    if not is_upgrade:
-        _set_config(
-            key="NewPolicyEvaluation",
-            value="True",
-            typ="boolean",
-            description="use the new policy engine",
-        )
+
+def create_admin_resolver(admin_resolver_name):
+    """create the default managed admin resolver
+
+    to ease the programming, we work on an sql query result
+    """
+
+    entries = [
+        ("sqlresolver.Connect.admin_resolver", "", "text", "None"),
+        ("sqlresolver.conParams.admin_resolver", "", "text", "None"),
+        ("sqlresolver.Database.admin_resolver", "", "text", "None"),
+        ("sqlresolver.Driver.admin_resolver", "", "text", "None"),
+        ("sqlresolver.Encoding.admin_resolver", "utf-8", "text", "None"),
+        ("sqlresolver.Limit.admin_resolver", "1000", "int", "None"),
+        (
+            "sqlresolver.Map.admin_resolver",
+            '{"userid": "userid", "username": "username", "phone": "phone", "mobile": "mobile", "email": "email", "surname": "surname", "givenname": "givenname", "password": "password", "groupid": "groupid"}',
+            "text",
+            "None",
+        ),
+        (
+            "sqlresolver.Password.admin_resolver",
+            "a31b6178b78637d5e4fa5fb5f19d5493:599e786159a3f544d1bb0d810830587d",
+            "encrypted_data",
+            "None",
+        ),
+        ("sqlresolver.Port.admin_resolver", "", "text", "None"),
+        ("sqlresolver.readonly.admin_resolver", "True", "boolean", "None"),
+        ("sqlresolver.Server.admin_resolver", "", "text", "None"),
+        ("sqlresolver.Table.admin_resolver", "imported_user", "text", "None"),
+        ("sqlresolver.User.admin_resolver", "", "text", "None"),
+        (
+            "sqlresolver.Where.admin_resolver",
+            "groupid = 'admin_resolver'",
+            "text",
+            "None",
+        ),
+    ]
+
+    admin_resolver_name = admin_resolver_name.lower()
+
+    for key, value, typ, description in entries:
+        key = key.replace("admin_resolver", admin_resolver_name.lower())
+
+        # as this is a managed resolver, we can replace the data type as the
+        # encrypted value is never used
+        if typ.strip() == "encrypted_data":
+            typ = "text"
 
         _set_config(
-            key="NewPolicyEvaluation.compare",
-            value="False",
-            typ="boolean",
-            description=("compare the new policy engine with the old one"),
+            key=key,
+            value=value,
+            typ=typ,
+            description=description,
         )
+
+
+def create_admin_realm(admin_realm_name, admin_resolver_name):
+    """
+    create the default managed admin realm
+    """
+    admin_realm_name = admin_realm_name.lower()
+    admin_resolver_name = admin_resolver_name.lower()
+
+    _set_config(
+        key=f"useridresolver.group.{admin_realm_name}",
+        value=(
+            f"useridresolver.SQLIdResolver.IdResolver.{admin_resolver_name}"
+        ),
+        typ="text",
+        description="None",
+    )
+
+    if Realm.query.filter_by(name=admin_realm_name).count():
+        log.warning("Default admin realm exists, skipping adding to DB")
+    else:
+        admin_realm = Realm(admin_realm_name)
+        admin_realm.storeRealm()
 
 
 ##eof#########################################################################

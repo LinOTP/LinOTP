@@ -31,6 +31,8 @@ import logging
 import re
 from functools import partial
 
+from flask import current_app
+
 from linotp.lib.cache import get_cache
 from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
 from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
@@ -459,9 +461,16 @@ def deleteResolver(resolvername):
     :paramm resolvername: the name of the to be deleted resolver
     :type   resolvername: string
     :return: sucess or fail
-    :rtype:  boelean
+    :rtype:  boolean
 
     """
+
+    if resolvername == current_app.config["ADMIN_RESOLVER_NAME"]:
+        raise ValueError(
+            f"default admin resolver {resolvernamer} is "
+            f"not allowed to be removed!"
+        )
+
     res = False
 
     resolvertypes = get_resolver_types()

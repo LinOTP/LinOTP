@@ -55,6 +55,8 @@ def app(tmp_path, monkeypatch):
         "AUDIT_DATABASE_URI": "SHARED",
         "ADMIN_USERNAME": "",
         "ADMIN_PASSWORD": "",
+        "ADMIN_REALM_NAME": "",
+        "ADMIN_RESOLVER_NAME": "",
     }
     app.config.update(config)
     yield app
