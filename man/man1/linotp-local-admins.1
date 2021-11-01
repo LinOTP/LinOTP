@@ -1,0 +1,99 @@
+.\" Manpage for linotp local-admins.
+.\" Copyright (c) 2021 netgo GmbH
+
+.TH linotp-local-admins 1 "29 Oct 2021" "3.1" "LinOTP"
+
+.SH NAME
+linotp-local-admins \- handle LinOTP local administrator accounts
+
+.SH SYNOPSIS
+.nf
+\fIlinotp local-admins\fR add [args] <account-name>
+\fIlinotp local-admins\fR list [\-f|\--format <format>] [\-l|\--long]
+\fIlinotp local-admins\fR modify [args] <account-name>
+\fIlinotp local-admins\fR password [\-p|\-\-password <password>] <account_name>
+\fIlinotp local-admins\fR remove [\-\-yes] <account-name>
+.fi
+.sp
+.SH DESCRIPTION
+.sp
+This command is used to create, modify, list, or remove local LinOTP
+administrator accounts. Historically, local LinOTP administrators were
+managed using Apache password tools, but in the interest of security
+and flexibility this is now done internally to LinOTP.
+.sp
+.SH OPTIONS
+.PP
+add [args] <account-name>
+.RS 4
+The \fIlinotp local-admins add\fR command adds a local administrator account
+by the name of \fI<account_name>\fR. Additional data about the account can
+optionally be specified using the \fB\-\-givenname\fR, \fB\-\-surname\fR,
+\fB\-\-email\fR, \fB\-\-phone\fR, and \fB\-\-mobile\fR options. Each of these
+takes a string parameter and defaults to an empty string if it is not given.
+.sp
+A newly created account does not allow logins until a password is set
+for it by means of \fIlinotp local-admins password\fR.
+.RE
+.PP
+list [\-f|\-\-format <format>] [\-l|\--long]
+.RS 4
+The \fIlinotp local-admins list\fR command lists the names of all
+currently-defined local administrator accounts, one per line.
+.sp
+If the \fB\--format\fR option is given, its argument is interpreted as
+a Python \fBstr.format()\fR formatting template which controls how the
+data for a single account is output. The default (if \fB\--format\fR
+is not specified) is \fB"{username}"\fR (the account name).
+.sp
+The \fB\--long\fR option is equivalent to \fB--format
+"{username}:{name}:{email}:{phone}:{mobile}"\fR, where \fB{name}\fR is
+a convenient abbreviation for the account's given name and surname
+concatenated using a space (if either of the two is not known,
+\fB{name}\fR becomes the other, but without the space). If both
+\fB--format\fR and \fB--long\fR are specified, \fB--format\fR wins.
+.RE
+.PP
+modify [args] <account-name>
+.RS 4
+The \fIlinotp local-admins modify\fR command modifies the additional
+data associated with a local administrator account, using the
+\fB\-\-givenname\fR, \fB\-\-surname\fR, \fB\-\-email\fR,
+\fB\-\-phone\fR, and \fB\-\-mobile\fR options. If an option is not
+given, its value remains unchanged. To delete the value of an option,
+set it to the empty string as in \fB\-\-email=""\fR.
+.sp
+Note that it is not possible to modify the account name. The password
+must be changed using the \fIlinotp local-admins password\fR command.
+.RE
+.PP
+password [\-\-password <password>] <account-name>
+.RS 4
+The \fIlinotp local-admins password\fR command sets the password for
+the specified local administrator account. If the \fB\-\-password\fR
+option is given, the password is set to the specified
+<password>. Otherwise, the user is prompted for the password (with a
+repetition for confirmation).
+.sp
+If the option \fB\-\-password=-\fR is given, the password is read from
+standard input without confirmation and without hiding the input. This
+is useful in scripts.
+.sp
+\fISecurity caveats:\fR (1) The command does not query the existing
+password to ensure that the user is authorised to reset the
+password. (2) Passing the password on the command line is a possible
+security risk.
+.RE
+.PP
+remove [\-\-yes] <account-name>
+.RS 4
+The \fIlinotp local-admins remove\fR command removes the specified
+local administrator account. The user is asked for confirmation unless
+the \fB\-\-yes\fR option is specified.
+.RE
+
+.SH SEE ALSO
+\fBlinotp\fR(1)
+
+.SH INTERNET SOURCES
+https://www.linotp.org
