@@ -1611,9 +1611,7 @@ def create_admin_realm(admin_realm_name, admin_resolver_name):
         description="None",
     )
 
-    if Realm.query.filter_by(name=admin_realm_name).count():
-        log.warning("Default admin realm exists, skipping adding to DB")
-    else:
+    if not Realm.query.filter_by(name=admin_realm_name).count():
         admin_realm = Realm(admin_realm_name)
         admin_realm.storeRealm()
 
