@@ -43,6 +43,7 @@ from requests.exceptions import (
 
 from linotp.lib.resources import AllResourcesUnavailable, ResourceScheduler
 from linotp.provider import provider_registry
+from linotp.provider.config_parsing import ConfigParsingMixin
 from linotp.provider.pushprovider import IPushProvider
 
 #
@@ -57,7 +58,7 @@ log = logging.getLogger(__name__)
 @provider_registry.class_entry("DefaultPushProvider")
 @provider_registry.class_entry("linotp.provider.DefaultPushProvider")
 @provider_registry.class_entry("linotp.lib.pushprovider.DefaultPushProvider")
-class DefaultPushProvider(IPushProvider):
+class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
     """
     Send a push notification to the default push notification proxy (PNP).
     """
@@ -135,30 +136,13 @@ class DefaultPushProvider(IPushProvider):
                     " cert could not be found %r" % self.client_cert
                 )
 
-            #
-            # default is no server verification, but if provided
-            # it must be either a file or directory reference
-            #
-
-            server_cert = configDict.get("server_certificate")
-
             # server cert can be a string (file location, cert dir)
             # None or not present (cert gets fetched from local trust
             # store) or False (no certificate verification)
 
-            if server_cert:
-
-                if not os.path.isfile(server_cert) and not os.path.isdir(
-                    server_cert
-                ):
-
-                    raise IOError(
-                        "server certificate verification could not"
-                        " be made as certificate could not be found"
-                        " %r" % server_cert
-                    )
-
-            self.server_cert = server_cert
+            self.server_cert = self.load_server_cert(
+                configDict, server_cert_key="server_certificate"
+            )
 
             #
             # timeout could come with capital letter
@@ -311,13 +295,15 @@ class DefaultPushProvider(IPushProvider):
         if self.client_cert and os.path.isfile(self.client_cert):
             pparams["cert"] = self.client_cert
 
-        server_cert = self.server_cert
-        if server_cert is not None:
-            # Session.post() doesn't like unicode values in Session.verify
-            if isinstance(server_cert, str):
-                server_cert = server_cert.encode("utf-8")
+        # ------------------------------------------------------------------ --
 
-            pparams["verify"] = server_cert
+        # set server certificate validation policy
+
+        if self.server_cert is False:
+            pparams["verify"] = False
+
+        if self.server_cert:
+            pparams["verify"] = self.server_cert
 
         # ------------------------------------------------------------------ --
 
