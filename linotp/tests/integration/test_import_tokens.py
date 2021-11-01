@@ -31,6 +31,7 @@ Test token import via UI
 # pylint: disable=redefined-outer-name
 
 import os
+from time import sleep
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -60,6 +61,9 @@ def check_menu_is_closed(manage_ui):
     menu_element = manage_ui.driver.find_element(
         By.ID, "menu_load_aladdin_xml_tokenfile"
     )
+    if menu_element.is_displayed():
+        sleep(1)
+
     assert not menu_element.is_displayed(), menu_element
 
 

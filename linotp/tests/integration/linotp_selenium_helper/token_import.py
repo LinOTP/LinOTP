@@ -124,6 +124,8 @@ class TokenImport(ManageDialog):
         if file_content:
             os.unlink(self.file_path)
 
+        self.driver.execute_script("document.activeElement.blur()", None)
+
         # Check the alert boxes on the top of the LinOTP UI
         info = self.manage.alert_box_handler.last_line
         if info.type != "info" or not info.text.startswith(
