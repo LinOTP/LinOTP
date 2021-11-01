@@ -29,8 +29,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from linotp.app import LinOTPApp, create_app
+from linotp.lib.config import getFromConfig
 from linotp.lib.crypto.utils import crypt_password
-from linotp.model import db, setup_db
+from linotp.model import _set_config, db, setup_db
 from linotp.model.imported_user import SqlUser
 
 
@@ -52,6 +53,7 @@ class LocalAdminResolver:
         self.user_class = SqlUser
         self.session: Session = db.session()
         self.admin_resolver_name = app.config["ADMIN_RESOLVER_NAME"].lower()
+        self.admin_realm_name = app.config["ADMIN_REALM_NAME"].lower()
 
     def _get_user(self, username):
         user = self.session.query(self.user_class).get(
@@ -246,6 +248,53 @@ class LocalAdminResolver:
     def _get_keys_of_table(self) -> List[str]:
         tablename = self.user_class.__tablename__
         return self.user_class.metadata.tables[tablename].c.keys()
+
+    def add_to_admin_realm(self) -> None:
+        """Checks whether the resolver is part of the admin realm and adds it
+        if necessary. This may be needed if the user adds a different resolver
+        to the admin realm and then removes this one. (This resolver cannot
+        be deleted outright, but it can be removed from the admin realm.)
+
+        We assume that the admin realm itself exists already, or, more
+        precisely, LinOTP doesn't care if you add a resolver to a realm that
+        doesn't exist.
+
+        """
+
+        admin_resolver_name = (
+            "useridresolver.SQLIdResolver.IdResolver."
+            f"{self.admin_resolver_name}"
+        )
+
+        # Check magic config database entry for the list of resolvers
+        # in the admin realm.
+
+        admin_resolvers_key = f"useridresolver.group.{self.admin_realm_name}"
+        admin_resolvers = getFromConfig(admin_resolvers_key, "")
+        if admin_resolvers:  # Avoid splitting an empty string
+            for name in admin_resolvers.lower().split(","):
+                if name.strip() == admin_resolver_name:
+                    return  # Resolver is in realm, we're done here
+
+        # If we get here, the `admin_resolver_name` doesn't occur in
+        # the list of resolvers associated with the admin realm, so we
+        # add it and write the list back to the database. (We're
+        # deliberately sticking it in front so broken resolvers after
+        # it don't cause problems when trying to find users in this
+        # one.)
+
+        admin_resolvers_new = admin_resolver_name
+        if admin_resolvers:
+            admin_resolvers_new += "," + admin_resolvers
+
+        _set_config(
+            key=admin_resolvers_key,
+            value=admin_resolvers_new,
+            typ="text",
+            description="None",
+        )
+
+        self.session.commit()
 
 
 if __name__ == "__main__":

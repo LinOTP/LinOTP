@@ -9,6 +9,7 @@ linotp-local-admins \- handle LinOTP local administrator accounts
 .SH SYNOPSIS
 .nf
 \fIlinotp local-admins\fR add [args] <account-name>
+\fIlinotp local-admins\fR enable
 \fIlinotp local-admins\fR list [\-f|\--format <format>] [\-l|\--long]
 \fIlinotp local-admins\fR modify [args] <account-name>
 \fIlinotp local-admins\fR password [\-p|\-\-password <password>] <account_name>
@@ -34,6 +35,34 @@ takes a string parameter and defaults to an empty string if it is not given.
 .sp
 A newly created account does not allow logins until a password is set
 for it by means of \fIlinotp local-admins password\fR.
+.RE
+.PP
+enable
+.RS 4
+The \fIlinotp local-admins enable\fR command ensures that the local
+administrator account resolver is part of the LinOTP admin realm. If
+it is not already in the list of resolvers associated with this realm
+or if that list is empty, it is added to the list.
+.sp
+The local administrator account resolver cannot be deleted outright,
+but it can be removed from the LinOTP admin realm and will
+consequently no longer be used for authentication. This can lead to
+problems if any remaining resolvers in the LinOTP admin realm are
+faulty such that LinOTP administrators can no longer authenticate
+through the web UI. In that case, a system administrator with shell
+access to the LinOTP host can use the \fIlinotp local-admins enable\fR
+command to restore access to the web UI. We don't expect you to use it
+often, but it can help avoid a painful impact if you have sawed
+through the branch you were sitting on.
+.sp
+Note that the \fIlinotp local-admins enable\fR command refers to the
+LinOTP settings for the names of the local administrator account
+resolver (\fIADMIN_RESOLVER_NAME\fR) and admin realm
+(\fIADMIN_REALM_NAME\fR). Another way to shoot yourself in the foot is
+to rename the local administrator account resolver or admin realm
+without changing the configuration setting, or vice versa. This cannot
+be rectified using \fIlinotp local-admins enable\fR; you need to
+adjust the LinOTP configuration appropriately to reenable access.
 .RE
 .PP
 list [\-f|\-\-format <format>] [\-l|\--long]

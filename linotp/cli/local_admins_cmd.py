@@ -217,4 +217,7 @@ def remove_cmd(account_name):
 )
 def enable_cmd():
 
-    raise click.ClickException("Not implemented")
+    res = LocalAdminResolver(current_app)
+    current_app.echo("Adding local admin resolver to admin realm", v=1)
+    res.add_to_admin_realm()
+    current_app.echo("Done", v=1)
