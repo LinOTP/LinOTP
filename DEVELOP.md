@@ -32,7 +32,7 @@ packages that LinOTP depends upon.
 
 On a Debian-based system, run as a superuser:
 ```terminal
-apt-get install build-essential python3-dev \
+$ apt-get install build-essential python3-dev \
                 python3-mysqldb mariadb-server libmariadbclient-dev \
                 libldap2-dev libsasl2-dev \
                 libssl-dev
@@ -41,7 +41,7 @@ apt-get install build-essential python3-dev \
 On macOS, install the following dependencies to run LinOTP natively
 and build LinOTP via containers:
 ```terminal
-brew install libsodium coreutils
+$ brew install libsodium coreutils
 ```
 
 LinOTP can use a variety of SQL databases but MySQL/MariaDB is most
@@ -73,20 +73,48 @@ $ pip3 install -e ".[test]"
 
 For a quickstart using the default configuration, run:
 ```terminal
-mkdir -p linotp/cache linotp/data linotp/logs
-linotp init database
-linotp init audit-keys
-linotp init enc-key
-linotp run
+$ mkdir -p linotp/cache linotp/data linotp/logs
+$ linotp init database
+$ linotp init audit-keys
+$ linotp init enc-key
+$ linotp run
 ```
+
+All available CLI commands have their own documentation, and you can find them
+listed in the top level man page **linotp-config(1)**. Should you not yet have installed
+the linotp man pages, you can also reference them by path, like this:
+```terminal
+ $ man ./man/man1/linotp.1
+```
+
+`init database` will create a SQLite database by default. If you want to use a
+PostgreSQL or MariaDB database instead, you can override that setting through
+the following environment variable before running `linotp init database`:
+```terminal
+ $ export LINOTP_DATABASE_URI="postgres://user:pass@host/db_name"
+```
+or
+```terminal
+ $ export LINOTP_DATABASE_URI="mysql+pymysql://user:pass@host/db_name"
+```
+Alternatively you can also set this variable in a LinOTP configuration file, as
+we explain next.
 
 ## Configure LinOTP
 
-### Basics
+LinOTP provides three configuration presets for development, testing and
+production, but you can customize any of the configuration entries by
+overriding environment variables or specifying additional configuration files.
 
-Configuration settings are hard-coded in
-`linotp/settings.py`, which also defines a small set of
-"environments" that pre-cook basic configurations:
+To inspect the configuration of your LinOTP instance, run `linotp config show`,
+or `linotp config explain` if you need more information on the configuration
+entries. Both commands accept additional parameters, which you can look up in
+**linotp-config(1)**.
+
+### Configuration presets
+
+Configuration settings are hard-coded in `linotp/settings.py`, which also
+defines a small set of "environments" that pre-cook basic configurations:
 
 - _development_ is aimed at LinOTP developers running LinOTP on their
   local machine. It enables debugging (including copious log messages,
@@ -102,6 +130,8 @@ One of these environments can be selected by setting the `FLASK_ENV`
 variable to `development`, `testing`, or `production`. If unset, it
 defaults to `default`, which is identical to `development`.
 
+### Customizing the configuration
+
 Additional configuration settings can be made in configuration
 files. LinOTP looks at the configuration files listed in the
 `LINOTP_CFG` environment variable, whose value consists of a list of
@@ -110,19 +140,24 @@ one or more file names separated by colons. For example,
     LINOTP_CFG=/usr/share/linotp/linotp.cfg:/etc/linotp/linotp.cfg
 
 would read first the `/usr/share/linotp/linotp.cfg` file and then the
-`/etc/linotp/linotp.cfg` file. Later configuration settings override
-earlier ones, and settings in configuration files override hard-coded
-default settings in `settings.py`. Relative file names in `LINOTP_CFG`
-are interpreted relative to Flask's `app.root_path`, which by default
-points to the `linotp` directory of the LinOTP software distribution
-(where the `app.py` file is). If `LINOTP_CFG` is undefined and is not
-started from a packaged version, it defaults to `linotp.cfg`. The
-advantage of this approach is that it allows a clean separation between
-configuration settings provided by a distribution-specific LinOTP
-package and configuration settings made by the local system
-administrator, which would each go into separate files. If the
-package-provided file is changed or updated in a future version of the
-package, the local settings will remain untouched.
+`/etc/linotp/linotp.cfg` file. 
+
+Later configuration settings override earlier ones, and settings in
+configuration files override hard-coded default settings in `settings.py`.
+
+Relative file names in `LINOTP_CFG` are interpreted relative to Flask's
+`app.root_path`, which by default points to the `linotp` directory of the
+LinOTP software distribution (where the `app.py` file is). If `LINOTP_CFG` is
+undefined and is not started from a packaged version, it defaults to
+`linotp.cfg`.
+
+The advantage of this approach is that it allows a clean separation between
+configuration settings provided by a distribution-specific LinOTP package and
+configuration settings made by the local system administrator, which would each
+go into separate files. If the package-provided file is changed or updated in a
+future version of the package, the local settings will remain untouched.
+
+#### Format of configuration entries
 
 LinOTP's configuration files are Python code, so you can do whatever
 you can do in a Python program, although it is probably best to
