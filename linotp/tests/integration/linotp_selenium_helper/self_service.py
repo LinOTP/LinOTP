@@ -81,7 +81,7 @@ class SelfService(object):
 
     def _find_by_id(self, id_value):
         """Return the element by ID"""
-        return self.driver.find_element_by_id(id_value)
+        return self.driver.find_element(By.ID, id_value)
 
     def find_by_class(self, class_name):
         """Return the element by its class name"""
@@ -99,7 +99,7 @@ class SelfService(object):
         """
         Return a list of elements indicated by CSS selector
         """
-        return self.driver.find_elements_by_css_selector(css_value)
+        return self.driver.find_elements(By.CSS_SELECTOR, css_value)
 
     def find_by_xpath(self, xpath):
         """Return the element by its xpath"""
@@ -164,9 +164,10 @@ class SelfService(object):
         @return: The ID of the tab pane
         """
         driver = self.driver
-        tab = driver.find_element_by_xpath(
+        tab = driver.find_element(
+            By.XPATH,
             "//div[@id='tabs']/ul/li/a/span[text()='%s']/ancestor::*[@role='tab']"
-            % text
+            % text,
         )
 
         tab_pane_id = tab.get_attribute("aria-controls")
@@ -275,7 +276,7 @@ class SelfService(object):
 
         fill_form_element(driver, pin1_id, pin1)
         fill_form_element(driver, pin2_id, pin2)
-        driver.find_element_by_id(button_id).click()
+        driver.find_element(By.ID, button_id).click()
         msg = close_alert_and_get_its_text(self.driver)
         assert (
             msg == expected_msg
@@ -295,7 +296,7 @@ class SelfService(object):
         self.select_tab_and_token(self.tab_resync_token, token)
         fill_form_element(driver, "otp1", otp1)
         fill_form_element(driver, "otp2", otp2)
-        driver.find_element_by_id("button_resync").click()
+        driver.find_element(By.ID, "button_resync").click()
         msg = close_alert_and_get_its_text(self.driver)
         expected_msg = "Token resynced successfully"
         assert (
@@ -309,7 +310,7 @@ class SelfService(object):
         """
         driver = self.driver
         self.select_tab_and_token(self.tab_disable_token, token)
-        driver.find_element_by_id("button_disable").click()
+        driver.find_element(By.ID, "button_disable").click()
         msg = close_alert_and_get_its_text(self.driver)
         expected_msg = "Token disabled successfully"
         assert (

@@ -80,9 +80,10 @@ class EditRealmDialog(ManageDialog):
         # The resolvers list could be empty, so disable implicit wait for the
         # list
         with self.implicit_wait_disabled():
-            elements = self.get_body_element().find_elements_by_css_selector(
+            elements = self.get_body_element().find_elements(
+                By.CSS_SELECTOR,
                 # '#resolvers_list, #resolvers_list > ol > li')
-                "#realm_edit_resolver_list, #realm_edit_resolver_list ol > li"
+                "#realm_edit_resolver_list, #realm_edit_resolver_list ol > li",
             )
 
             for element in elements:
@@ -158,7 +159,7 @@ class RealmManager(ManageDialog):
 
         element_path = "//div[@id='realm_list'] | //ol[@id='realms_select']/*"
 
-        elements = self.driver.find_elements_by_xpath(element_path)
+        elements = self.driver.find_elements(By.XPATH, element_path)
         self.realms = [
             RealmListEntry(e.text, e) for e in elements if e.tag_name == "li"
         ]

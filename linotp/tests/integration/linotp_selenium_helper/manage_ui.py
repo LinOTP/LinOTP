@@ -177,7 +177,7 @@ class ManageUi(object):
         Return a list of elements indicated by CSS selector
         """
         self.check_url()
-        return self.driver.find_elements_by_css_selector(css_value)
+        return self.driver.find_elements(By.CSS_SELECTOR, css_value)
 
     def find_by_id(self, id_value) -> WebElement:
         """
@@ -262,8 +262,8 @@ class ManageUi(object):
             logging.debug(
                 "Closing dialog %s", dialog.get_attribute("aria-describedby")
             )
-            dialog.find_element_by_css_selector(
-                ManageDialog.CLOSEBUTTON_CSS
+            dialog.find_element(
+                By.CSS_SELECTOR, ManageDialog.CLOSEBUTTON_CSS
             ).click()
 
     def close_all_menus(self) -> None:
@@ -413,7 +413,7 @@ class AlertBoxInfoLine(object):
         """
         # The WebElement representing this line
         self.element = element
-        self.ok_button = element.find_element_by_css_selector("button")
+        self.ok_button = element.find_element(By.CSS_SELECTOR, "button")
         self.classes = element.get_attribute("class")
 
         # Determine type of message
@@ -491,8 +491,8 @@ class AlertBoxHandler(object):
         """
 
         # Get all elements in the box
-        info_box_elements = self.driver.find_elements_by_xpath(
-            '//div[@id="info_box"]/*'
+        info_box_elements = self.driver.find_elements(
+            By.XPATH, '//div[@id="info_box"]/*'
         )
 
         self.info_bar = None
