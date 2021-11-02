@@ -158,12 +158,7 @@ class ManageUi(object):
             self.driver.current_url,
             self.URL,
         )
-        if self.testcase.major_version == 2:
-            title = "LinOTP 2 Management"
-        else:
-            # LinOTP 3
-            title = "Management - LinOTP"
-        assert self.driver.title == title
+        assert self.driver.title == "Management - LinOTP"
 
     def find_by_css(self, css_value) -> WebElement:
         """
