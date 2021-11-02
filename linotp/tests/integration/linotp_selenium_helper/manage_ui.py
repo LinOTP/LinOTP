@@ -144,8 +144,12 @@ class ManageUi(object):
             "csrf_access_token"
         )
 
-    def is_url_open(self):
+    def is_manage_open(self) -> bool:
         possible_urls = (self.URL, self.URL + "/", self.URL + "/#")
+        return self.driver.current_url.endswith(possible_urls)
+
+    def is_login_open(self) -> bool:
+        possible_urls = (self.URL + "/login", self.URL + "/login#")
         return self.driver.current_url.endswith(possible_urls)
 
     @property
@@ -174,7 +178,7 @@ class ManageUi(object):
         Check we are on the right page
         """
         assert (
-            self.is_url_open()
+            self.is_manage_open()
         ), "URL %s should end with %s - page not loaded?" % (
             self.driver.current_url,
             self.URL,
@@ -211,11 +215,47 @@ class ManageUi(object):
         """
         return helper.find_by_xpath(self.driver, xpath)
 
+    def wait_for_element_visibility(self, element_id, delay=5):
+        WebDriverWait(self.driver, delay).until(
+            EC.visibility_of_element_located((By.ID, element_id))
+        )
+
     def open_manage(self) -> None:
-        if not self.is_url_open():
+        if not self.is_manage_open():
             self.driver.get(self.manage_url)
 
-            self.welcome_screen.close_if_open()
+        if self.is_login_open():
+            self.login()
+
+        self.check_url()  # assert that manage is open
+
+        self.welcome_screen.close_if_open()
+
+    def login(self) -> None:
+        self.driver.get(self.manage_url)
+
+        if self.is_manage_open():
+            # No login required, manage UI is open
+            return
+
+        assert self.is_login_open(), "Expecting login route to be open"
+
+        username = helper.get_from_tconfig(
+            ["linotp", "username"],
+            required=True,
+        )
+        password = helper.get_from_tconfig(
+            ["linotp", "password"],
+            required=True,
+        )
+
+        helper.fill_form_element(self.driver, "username", username)
+        helper.fill_form_element(self.driver, "password", password)
+
+        self.find_by_id("password").submit()
+        self.wait_for_element_visibility("tabs", 5)
+
+        assert self.is_manage_open(), "Expecting manage ui to open after login"
 
     def activate_menu_item(self, menu_css, menu_item_id) -> None:
         """
@@ -336,7 +376,7 @@ class ManageUi(object):
         """
         Check whether a given element is visible without waiting
         """
-        if not self.is_url_open():
+        if not self.is_manage_open():
             return False
 
         try:

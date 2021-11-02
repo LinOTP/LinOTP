@@ -181,7 +181,7 @@ class ManageTab(ManageElement):
         return tab_element
 
     def _activate_tab(self, tab_id, reload_page=False):
-        if reload_page or not self.manage.is_url_open():
+        if reload_page or not self.manage.is_manage_open():
             self.open_manage()
 
     def get_grid_contents(self) -> List[Dict[str, str]]:
