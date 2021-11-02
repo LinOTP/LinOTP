@@ -151,7 +151,6 @@ class SQLImportHandler(ImportHandler):
         self.groupid = groupid
         self.resolver_name = resolver_name
         self.db_context = database_context
-        self.table_created = False
 
     def _get_resolver_parameters(self):
         """
@@ -203,18 +202,6 @@ class SQLImportHandler(ImportHandler):
         """
         return "useridresolver.SQLIdResolver.IdResolver." + self.resolver_name
 
-    def _create_table(self):
-        """
-        create the table to store the users
-        - internal function, called at the import start
-        """
-
-        if not self.table_created:
-
-            Base.metadata.create_all(self.db_context.engine, checkfirst=True)
-
-            self.table_created = True
-
     def _create_resolver(self):
         """
         create the resolver with it's parameters
@@ -239,7 +226,6 @@ class SQLImportHandler(ImportHandler):
         - prepare the list of allready available users for this groupid
         - create the database session context
         """
-        self._create_table()
 
         former_user_by_id = {}
 
