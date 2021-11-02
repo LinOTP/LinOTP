@@ -1580,7 +1580,8 @@ def create_admin_resolver(admin_resolver_name):
     admin_resolver_name = admin_resolver_name.lower()
 
     for key, value, typ, description in entries:
-        key = key.replace("admin_resolver", admin_resolver_name.lower())
+        key = key.replace("admin_resolver", admin_resolver_name)
+        value = value.replace("admin_resolver", admin_resolver_name)
 
         # as this is a managed resolver, we can replace the data type as the
         # encrypted value is never used
