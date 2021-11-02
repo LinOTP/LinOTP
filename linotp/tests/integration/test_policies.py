@@ -93,6 +93,7 @@ class TestPolicies(TestCase):
             self.two_resolvers_realm_name,
             [self.ldap_resolver, self.sql_resolver],
         )
+        self.realm_manager.set_default(self.two_resolvers_realm_name)
         self.realm_manager.close()
 
         # Set seed of HMAC token

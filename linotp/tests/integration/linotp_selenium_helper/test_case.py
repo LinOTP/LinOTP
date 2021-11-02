@@ -406,6 +406,7 @@ class TestCase(object):
             if realm:
                 self.realm_manager.open()
                 self.realm_manager.create(realm, resolver["name"])
+                self.realm_manager.set_default(realm)
                 self.realm_manager.close()
         else:
             assert not realm, "Can't create a realm without a resolver"
