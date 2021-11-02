@@ -164,21 +164,18 @@ class ManageUi(object):
         """
         Return the element indicated by CSS selector
         """
-        self.check_url()
         return helper.find_by_css(self.driver, css_value)
 
     def find_all_by_css(self, css_value) -> List[WebElement]:
         """
         Return a list of elements indicated by CSS selector
         """
-        self.check_url()
         return self.driver.find_elements(By.CSS_SELECTOR, css_value)
 
     def find_by_id(self, id_value) -> WebElement:
         """
         Return the element by ID
         """
-        self.check_url()
         return helper.find_by_id(self.driver, id_value)
 
     def find_by_class(self, class_name) -> WebElement:
