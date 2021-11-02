@@ -249,7 +249,7 @@ class ManageUi(object):
 
         # Sort by depth (the z-index attribute in reverse order)
         dialogs.sort(
-            key=methodcaller("get_attribute", "z-index"), reverse=True
+            key=methodcaller("value_of_css_property", "z-index"), reverse=True
         )
 
         # Close them
