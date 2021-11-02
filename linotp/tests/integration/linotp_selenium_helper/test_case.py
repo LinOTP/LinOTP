@@ -120,15 +120,7 @@ class TestCase(object):
             ["linotp", "protocol"], default="https"
         )
         cls.http_port = get_from_tconfig(["linotp", "port"])
-        cls.base_url = (
-            cls.http_protocol
-            + "://"
-            + cls.http_username
-            + ":"
-            + cls.http_password
-            + "@"
-            + cls.http_host
-        )
+        cls.base_url = cls.http_protocol + "://" + cls.http_host
         if cls.http_port:
             cls.base_url += ":" + cls.http_port
 
