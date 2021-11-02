@@ -62,8 +62,8 @@ class PolicyManager(ManageTab):
         self.open_tab()
 
         while True:
-            policies = self.driver.find_elements_by_css_selector(
-                self.policy_entries_css_selector
+            policies = self.driver.find_elements(
+                By.CSS_SELECTOR, self.policy_entries_css_selector
             )
             if not policies:
                 break

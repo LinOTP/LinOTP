@@ -163,49 +163,52 @@ Use the debugger as follows:
  $ pytest --pudb --tc-file=server_cfg.ini test_create_useridresolvers.py
 
 
-Docker based selenium testing
-=========================================
+Container-based selenium testing
+================================
 
-To run the selenium tests in a docker-compose setup, the docker files must be
-build in the linotp root directory via:
+To run the selenium tests in a docker-compose setup, the containers must be
+built in the project root directory via:
 
-  $ make -f Makefile  docker-build-all
+  $ make -f Makefile docker-build-all
 
-For the build some environment variables must be set, which are defined in
-the `.gitlab-ci.yml`:
+You need to set some environment variables to build against our internal
+servers because some dependencies may not be up to date publicly. We also
+set them for our CI pipeline in `.gitlab-ci.yml`.
 
   $ export DEPENDENCY_DEB_REPO="http://debs-devel.corp.linotp.de/linotp3 buster linotp"
   $ export DEPENDENCY_GPG_KEY_URL="http://avocado.corp.lsexperts.de/deb-repo/ki-archive-keyring.gpg"
   $ export DEPENDENCY_GPG_KEYID=""
 
-After this change to the integration test directory
+After you have successfully built the containers, go back to the integration test dir:
 
   $ cd linotp/tests/integration
 
-There you start the selenium docker composition
+Now, you can either run all tests by just *up* the compose stack or you can prepare a
+shell to manually execute tests later when you have connected to the vnc server to view
+what the browser does during the tests:
 
-  $ docker-compose up
+  $ docker-compose up # run all tests
 
-After this we have to identify the port of the selenium chrome port so we can
-connect to this via your vnc viewer
+or
+
+  $ docker-compose run --rm selenium_tester bash # to prepare the shell for manual execution
+
+Note, that the run command will also start a LinOTP server and the selenium container because
+of the dependencies configured in `docker-compose.yml`.
+
+To be able to visually inspect the browser during the tests, we need to find out what the
+exposed port of the selenium chrome container is to be able to connect to the vnc server:
 
   $ docker-compose port selenium 5900
 
-The result is the port to which your vnc viewer should connect - the password
-is "secret"
+The result is the host+port to which your vnc client should be able to directly connect.
+The password is "secret".
 
   $ remote-viewer vnc://`docker-compose port selenium 5900`
 
-On MacOS you use an address like `0.0.0.0:58675`
-
-After this we have to identify the port of the selenium chrome port so we can
-connect to this via your vnc viewer
-
-  $ docker-compose run selenium_tester bash
-
-and within this bash the tests could be started like:
+If you opted to manually run the tests, you than can start the test from your bash shell that
+we started earlier:
 
   $ pytest -v -x --pudb test_realm_dialog.py
 
-whereby in this commandline the pudb will start in case of an error.
-
+The --pudb flag will open a debugger in case of an error or exception.

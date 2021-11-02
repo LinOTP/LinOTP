@@ -16,6 +16,13 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * add grace to license volume exceeding and display accordingly a message
     in the the web ui
   * add extended information in HOTP/TOTP CSV import UI
+  * The CLI now uses a common time format for all backup filenames. The format
+    is configurable via config BACKUP_FILE_TIME_FORMAT.
+  * CLI command `linotp audit cleanup` now writes a backup file of the deleted
+    audit entries by default. Export dir defaults to the LinOTP backup dir.
+    Export can be disabled with a new flag --no-export.
+  * add the configuration option to the HttpSmsProvider to define the server
+    certificate verification option.
   * when the database is created or migrated an internal resolver and an
     initial realm for linotp administrators are created.
 

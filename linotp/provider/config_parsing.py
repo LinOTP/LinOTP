@@ -32,7 +32,7 @@ from urllib.parse import urlparse
 import requests as http_requests
 
 
-class ProviderBase(object):
+class ConfigParsingMixin(object):
     @staticmethod
     def load_proxy(configDict):
         """
@@ -83,22 +83,36 @@ class ProviderBase(object):
         return server_url
 
     @staticmethod
-    def load_server_cert(configDict):
+    def load_server_cert(config, server_cert_key="server_certificate"):
+        """get the server certificate verification policy
+
+        server_certificate can be:
+        - string: used as path to server certificate file
+        - not provided / None: which means server cert verification
+        - 'false' or False: no server certificate verification
+
+        :param config:
+        :return: (None|False|string)
         """
-        return the server certificate from the configuration
 
-        :param configDict:
-        :return: return the validated server certificate reference
-        """
+        server_cert = config.get(server_cert_key, "")
 
-        server_cert = configDict.get("server_certificate")
+        if isinstance(server_cert, bool) and server_cert is False:
+            return False
 
-        if not server_cert:
-            return server_cert
+        if server_cert is None:
+            return None
 
-        # server cert can be a string (file location, cert dir)
-        # None or not present (cert gets fetched from local trust
-        # store) or False (no certificate verification)
+        if not isinstance(server_cert, str):
+            raise ValueError("unsupported data type %r" % server_cert)
+
+        server_cert = server_cert.strip()
+
+        if server_cert == "":
+            return None
+
+        if server_cert.lower() == "false":
+            return False
 
         if not os.path.isfile(server_cert) and not os.path.isdir(server_cert):
             raise IOError(
@@ -107,7 +121,7 @@ class ProviderBase(object):
                 " %r" % server_cert
             )
 
-        return server_cert
+        return server_cert.encode("utf8")
 
     @staticmethod
     def load_client_cert(configDict, client_cert_key="access_certificate"):

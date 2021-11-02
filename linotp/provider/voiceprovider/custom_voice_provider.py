@@ -32,7 +32,7 @@ import logging
 import requests
 
 from linotp.provider import provider_registry
-from linotp.provider.provider_base import ProviderBase
+from linotp.provider.config_parsing import ConfigParsingMixin
 from linotp.provider.voiceprovider import TwillioMixin
 
 #
@@ -50,7 +50,7 @@ log = logging.getLogger(__name__)
     "linotp.provider.voiceprovider."
     "custom_voice_provider.CustomVoiceProvider"
 )
-class CustomVoiceProvider(ProviderBase, TwillioMixin):
+class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
     """
     Send a Voice notification through the Custom Voice Provider to the
     Voice Challenge Service. The CustomVoiceProvider allows to define all
@@ -311,16 +311,11 @@ class CustomVoiceProvider(ProviderBase, TwillioMixin):
 
         # add the server cert to support the server verification if avail
 
-        server_cert = self.server_cert
+        if self.server_cert is False:
+            http_session.verify = False
 
-        if server_cert is not None:
-
-            # Session.post() doesn't like unicode values in Session.verify
-
-            if isinstance(server_cert, str):
-                server_cert = server_cert.encode("utf-8")
-
-            http_session.verify = server_cert
+        if self.server_cert:
+            http_session.verify = self.server_cert
 
         return http_session
 

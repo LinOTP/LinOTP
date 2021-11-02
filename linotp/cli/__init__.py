@@ -84,14 +84,23 @@ class Echo:
 
 
 def get_backup_filename(filename: str, now: datetime = None) -> str:
-    """Given a `filename`, return a time-stamped file name suitable for
-    use as a “backup filename”. The time used is given as `now`; if
-    `now` is `None`, the current time will be used.
     """
-    ext = (now or datetime.now()).strftime(
-        current_app.config["BACKUP_FILE_TIME_FORMAT"]
-    )
-    return filename + "." + ext
+    Creates a time-stamped filename suitable for use as a “backup
+    filename”. The given filename can contain a placeholder `%s` where
+    the timestamp should be put. If no placeholder is found, the time
+    stamp is appended, separated with `.`.
+
+    The time used is given as `now`; if `now` is `None`, the current
+    time will be used. The time stamp is formatted as configured by
+    "BACKUP_FILE_TIME_FORMAT" config value.
+    """
+    now = now or datetime.now()
+    ext = now.strftime(current_app.config["BACKUP_FILE_TIME_FORMAT"])
+
+    if "%s" in filename:
+        return filename.replace("%s", ext)
+    else:
+        return filename + "." + ext
 
 
 # Custom Click command group. We need this so we can take a peek at the

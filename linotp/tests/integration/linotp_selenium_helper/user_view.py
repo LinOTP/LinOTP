@@ -60,7 +60,7 @@ class UserView(ManageTab):
         else:
             realm_name = realm_name.lower()
 
-        realm_select = self.driver.find_element_by_id("realm")
+        realm_select = self.driver.find_element(By.ID, "realm")
 
         WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
             EC.visibility_of_element_located((By.ID, "realm"))
@@ -97,9 +97,10 @@ class UserView(ManageTab):
         )
 
         self.clear_filters(realm_name)
-        pPageStat = usertab.find_element_by_css_selector(
+        pPageStat = usertab.find_element(
+            By.CSS_SELECTOR,
             "div.flexigrid "
-            "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat"
+            "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat",
         ).text
         if pPageStat == "No items":
             return 0
@@ -116,8 +117,9 @@ class UserView(ManageTab):
         Return element containing user search box
         """
         usertab = self.open_tab()
-        search_box = usertab.find_element_by_css_selector(
-            "div.flexigrid " '> div.sDiv > div.sDiv2 > input[name="q"]'
+        search_box = usertab.find_element(
+            By.CSS_SELECTOR,
+            "div.flexigrid " '> div.sDiv > div.sDiv2 > input[name="q"]',
         )
         return search_box
 
@@ -130,9 +132,10 @@ class UserView(ManageTab):
 
     def _submit_search(self, realm_name=None):
         usertab = self._open_tab_user_view(realm_name)
-        submit_button = usertab.find_element_by_css_selector(
+        submit_button = usertab.find_element(
+            By.CSS_SELECTOR,
             "div.flexigrid > div.sDiv > div.sDiv2 > "
-            'input[name="search_button"]'
+            'input[name="search_button"]',
         )
         submit_button.click()
 
@@ -146,16 +149,18 @@ class UserView(ManageTab):
         search_box.clear()
         search_box.send_keys(username)
 
-        select_type = usertab.find_element_by_css_selector(
-            "div.flexigrid > div.sDiv > div.sDiv2 > " 'select[name="qtype"]'
+        select_type = usertab.find_element(
+            By.CSS_SELECTOR,
+            "div.flexigrid > div.sDiv > div.sDiv2 > " 'select[name="qtype"]',
         )
         select(self.driver, select_type, "Username")
 
         self._submit_search()
         self.wait_for_grid_loading()
 
-        usernames = self.driver.find_elements_by_css_selector(
-            '#%s #user_table [abbr="username"] div' % usertab_id
+        usernames = self.driver.find_elements(
+            By.CSS_SELECTOR,
+            '#%s #user_table [abbr="username"] div' % usertab_id,
         )
 
         for user in usernames:

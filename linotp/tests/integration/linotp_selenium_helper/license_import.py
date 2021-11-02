@@ -25,6 +25,10 @@
 #
 """Contains LicenseImport class"""
 
+from contextlib import contextmanager
+from tempfile import NamedTemporaryFile
+
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.file_detector import LocalFileDetector
 
 from .manage_ui import ManageDialog, ManageUi
@@ -32,10 +36,6 @@ from .manage_ui import ManageDialog, ManageUi
 
 class FileUploadException(Exception):
     pass
-
-
-from contextlib import contextmanager
-from tempfile import NamedTemporaryFile
 
 
 @contextmanager
@@ -98,10 +98,10 @@ class LicenseImport(ManageDialog):
 
         self.manage.find_by_css(self.manage.MENU_LINOTP_HELP_CSS).click()
 
-        self.driver.find_element_by_id(self.menu_item_id)
+        self.driver.find_element(By.ID, self.menu_item_id)
 
         for butten_id in self.menu_dialogs:
-            self.driver.find_element_by_id(butten_id).click()
+            self.driver.find_element(By.ID, butten_id).click()
 
     def import_file(self, file_name: str):
         """imports the a license file
@@ -121,11 +121,11 @@ class LicenseImport(ManageDialog):
         # get the file upload input and fill in the upload file name and
         # submit the data
 
-        file_name_lineedit = self.driver.find_element_by_id(self.file_input)
+        file_name_lineedit = self.driver.find_element(By.ID, self.file_input)
         file_name_lineedit.clear()
         file_name_lineedit.send_keys(file_name)
 
-        self.driver.find_element_by_id(self.file_submit).click()
+        self.driver.find_element(By.ID, self.file_submit).click()
 
         # ----------------------------------------------------------------- --
 

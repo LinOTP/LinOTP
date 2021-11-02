@@ -33,6 +33,7 @@ import requests
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
 from linotp.provider import ProviderNotAvailable, provider_registry
+from linotp.provider.config_parsing import ConfigParsingMixin
 from linotp.provider.smsprovider import ISMSProvider
 
 log = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ log = logging.getLogger(__name__)
 @provider_registry.class_entry("linotp.provider.smsprovider.RestSMSProvider")
 @provider_registry.class_entry("smsprovider.RestSMSProvider.RestSMSProvider")
 @provider_registry.class_entry("smsprovider.RestSMSProvider")
-class RestSMSProvider(ISMSProvider):
+class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
     def __init__(self):
         self.config = {}
         self.client_cert = None
@@ -114,7 +115,10 @@ class RestSMSProvider(ISMSProvider):
         self.sms_phone_key = configDict["SMS_PHONENUMBER_KEY"]
 
         self.client_cert = configDict.get("CLIENT_CERTIFICATE_FILE")
-        self.server_cert = configDict.get("SERVER_CERTIFICATE")
+
+        self.server_cert = self.load_server_cert(
+            configDict, server_cert_key="SERVER_CERTIFICATE"
+        )
 
     @staticmethod
     def _apply_phone_template(phone, sms_phone_template=None):
@@ -258,15 +262,13 @@ class RestSMSProvider(ISMSProvider):
 
         # ------------------------------------------------------------- --
 
-        # server certificate
+        # set server certificate validation policy
 
-        server_cert = self.server_cert
-        if server_cert is not None:
-            # Session.post() doesn't like unicode values in Session.verify
-            if isinstance(server_cert, str):
-                server_cert = server_cert.encode("utf-8")
+        if self.server_cert is False:
+            http_session.verify = False
 
-            http_session.verify = server_cert
+        if self.server_cert:
+            http_session.verify = self.server_cert
 
         # ------------------------------------------------------------- --
 

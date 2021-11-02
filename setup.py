@@ -194,6 +194,7 @@ setup(
             [
                 "config/linotpapp.wsgi",
                 "config/push-ca-bundle.crt",
+                "config/etc/linotp.cfg",
             ],
         ),
         (
@@ -223,7 +224,7 @@ setup(
         (
             "share/linotp",
             [
-                "config/linotp.cfg",
+                "config/share/linotp.cfg",
             ],
         ),
     ],
