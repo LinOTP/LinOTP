@@ -79,6 +79,17 @@ class TestCase(object):
     driver: Union[webdriver.Chrome, webdriver.Firefox] = None
     "Selenium driver"
 
+    http_username: str
+    http_password: str
+    http_host: str
+    http_protocol: str
+    http_port: str
+    base_url: str
+    remote_enable: str
+    remote_url: str
+    selenium_driver_name: str
+    selenium_driver_language: str
+
     implicit_wait_time = 5
     ui_wait_time = 5
     backend_wait_time = 10
