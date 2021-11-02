@@ -51,6 +51,11 @@ def test_ldap_resolver_via_api():
 class TestCreateUserIdResolvers(TestCase):
     """TestCase class that creates 4 UserIdResolvers"""
 
+    @pytest.fixture(autouse=True)
+    def tearDown(self):
+        yield
+        self.manage_ui.close_all_dialogs()
+
     def clear_realms(self):
         # Need to clear realms so that useridresolvers can be deleted
         self.manage_ui.realm_manager.clear_realms_via_api()
