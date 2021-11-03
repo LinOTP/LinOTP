@@ -449,7 +449,7 @@ def _import_admin_user(
     # the tools/import_user parameters for importing a passwd format file
 
     params = {
-        "resolver": "linotp_local_admins",
+        "resolver": "LinOTP_local_admins",
         "dryrun": False,
         "format": "password",
         "delimiter": ",",

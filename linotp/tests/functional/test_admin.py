@@ -329,7 +329,7 @@ class TestAdminController(TestController):
 
         response = self.make_system_request("getResolvers")
         assert response.json["result"]["status"]
-        assert "linotp_local_admins" in response.json["result"]["value"]
+        assert "LinOTP_local_admins" in response.json["result"]["value"]
 
         response = self.make_system_request("getRealms")
         assert response.json["result"]["status"]

@@ -853,7 +853,7 @@ class TestController(TestCase):
             # the admin resolvers could not be deleted as they
             # are still in use by the admin realm, which could not be deleted
 
-            if resolver_name.lower() in admin_resolver_names:
+            if resolver_name in admin_resolver_names:
                 continue
 
             params = {"resolver": resolver_name}

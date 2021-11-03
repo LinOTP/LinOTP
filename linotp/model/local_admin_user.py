@@ -52,7 +52,7 @@ class LocalAdminResolver:
         setup_db(app)
         self.user_class = SqlUser
         self.session: Session = db.session()
-        self.admin_resolver_name = app.config["ADMIN_RESOLVER_NAME"].lower()
+        self.admin_resolver_name = app.config["ADMIN_RESOLVER_NAME"]
         self.admin_realm_name = app.config["ADMIN_REALM_NAME"].lower()
 
     def _get_user(self, username):
