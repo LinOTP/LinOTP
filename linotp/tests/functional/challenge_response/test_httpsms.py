@@ -49,7 +49,9 @@ from mock import patch
 import linotp.provider.smsprovider.FileSMSProvider
 import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.util import str2unicode
-from linotp.tests.functional_special import TestSpecialController
+from linotp.tests.functional.challenge_response.testing_controller import (
+    TestingChallengeResponseController,
+)
 
 
 class FakeResponse:
@@ -125,7 +127,7 @@ class DefaultProvider:
                 assert response.json["result"]["value"], response
 
 
-class TestHttpSmsController(TestSpecialController):
+class TestHttpSmsController(TestingChallengeResponseController):
     """
     Here the HTTP SMS Gateway functionality is tested.
     """
@@ -145,7 +147,7 @@ class TestHttpSmsController(TestSpecialController):
             serial = "sms%02d" % num
             self.serials.append(serial)
 
-        TestSpecialController.setUp(self)
+        TestingChallengeResponseController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -157,7 +159,7 @@ class TestHttpSmsController(TestSpecialController):
         )
 
     def tearDown(self):
-        TestSpecialController.tearDown(self)
+        TestingChallengeResponseController.tearDown(self)
 
     ##########################################################################
     def removeTokens(self):

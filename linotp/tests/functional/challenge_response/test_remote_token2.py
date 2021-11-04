@@ -47,7 +47,9 @@ import urllib.parse
 import httplib2
 from mock import patch
 
-from linotp.tests.functional_special import TestSpecialController
+from linotp.tests.functional.challenge_response.testing_controller import (
+    TestingChallengeResponseController,
+)
 
 # mocking hook is startting here
 HTTP_RESPONSE_FUNC = None
@@ -84,7 +86,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     return resp, json.dumps(content)
 
 
-class TestRemoteToken2(TestSpecialController):
+class TestRemoteToken2(TestingChallengeResponseController):
     def setUp(self):
         """
         Overwrite the deleting of the realms!
@@ -92,7 +94,7 @@ class TestRemoteToken2(TestSpecialController):
         If the realms are deleted also the table TokenRealm gets deleted
         and we loose the information how many tokens are within a realm!
         """
-        TestSpecialController.setUp(self)
+        TestingChallengeResponseController.setUp(self)
         self.remote_url = "http://127.0.0.1:%s" % self.paster_port
 
         # Init the tests....
