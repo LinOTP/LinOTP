@@ -76,11 +76,11 @@ class TestImportUser(TestController):
         self.delete_all_realms()
         self.delete_all_policies(auth_user="superadmin")
         self.delete_all_resolvers()
-        self.dropTable()
+        self.deleteAllUsers()
 
         TestController.setUp(self)
 
-    def dropTable(self):
+    def deleteAllUsers(self):
         """
         for the tests, we will drop the imported user table
         """
@@ -93,7 +93,7 @@ class TestImportUser(TestController):
 
         try:
 
-            dropStr = "DROP TABLE imported_user;"
+            dropStr = "DELETE * FROM imported_users;"
             t = sql.expression.text(dropStr)
             connection.execute(t)
 
