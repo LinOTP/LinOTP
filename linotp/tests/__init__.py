@@ -58,7 +58,6 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
-import pkg_resources
 import pytest
 
 from flask import Flask, Response

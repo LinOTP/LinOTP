@@ -36,7 +36,7 @@ from selenium.common.exceptions import (
     NoSuchElementException,
     WebDriverException,
 )
-from selenium.webdriver import ActionChains, Chrome, Firefox
+from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebElement
 from selenium.webdriver.support import expected_conditions as EC
@@ -46,7 +46,7 @@ from linotp_selenium_helper.helper import BackendException
 
 from . import helper
 from .manage_elements import ManageDialog
-from .policy import Policy, PolicyManager
+from .policy import PolicyManager
 from .realm import RealmManager
 from .system_config import SystemConfig
 from .token_enroll import EnrollTokenDialog
