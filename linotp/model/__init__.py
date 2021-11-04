@@ -1577,10 +1577,9 @@ def create_admin_resolver(admin_resolver_name):
         ),
     ]
 
-    admin_resolver_name = admin_resolver_name.lower()
-
     for key, value, typ, description in entries:
-        key = key.replace("admin_resolver", admin_resolver_name.lower())
+        key = key.replace("admin_resolver", admin_resolver_name)
+        value = value.replace("admin_resolver", admin_resolver_name)
 
         # as this is a managed resolver, we can replace the data type as the
         # encrypted value is never used
@@ -1600,7 +1599,6 @@ def create_admin_realm(admin_realm_name, admin_resolver_name):
     create the default managed admin realm
     """
     admin_realm_name = admin_realm_name.lower()
-    admin_resolver_name = admin_resolver_name.lower()
 
     _set_config(
         key=f"useridresolver.group.{admin_realm_name}",
@@ -1611,9 +1609,7 @@ def create_admin_realm(admin_realm_name, admin_resolver_name):
         description="None",
     )
 
-    if Realm.query.filter_by(name=admin_realm_name).count():
-        log.warning("Default admin realm exists, skipping adding to DB")
-    else:
+    if not Realm.query.filter_by(name=admin_realm_name).count():
         admin_realm = Realm(admin_realm_name)
         admin_realm.storeRealm()
 
