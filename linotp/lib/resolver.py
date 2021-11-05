@@ -309,6 +309,10 @@ def getResolverList(filter_resolver_type=None, config=None):
                 r["entry"] = entry
                 r["type"] = typ
 
+                # return the resolver spec, which is required to define a realm
+                resolver_cls = get_resolver_class(typ)
+                r["spec"] = resolver_cls.db_prefix + "." + resolver[3]
+
                 readonly_entry = ".".join(
                     [resolver[0], resolver[1], "readonly", resolver[3]]
                 )
@@ -394,6 +398,8 @@ def getResolverInfo(resolvername, passwords=False):
 
     if resolver_cls is None:
         raise Exception("no such resolver type '%r' defined!" % resolver_type)
+
+    result["spec"] = resolver_cls.db_prefix + "." + resolvername
 
     res_conf, _missing = resolver_cls.filter_config(
         linotp_config, resolvername
