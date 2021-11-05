@@ -27,6 +27,9 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     certificate verification option.
   * when the database is created or migrated an internal resolver and an
     initial realm for linotp administrators are created.
+  * the system endpoints getRealms, getResolver and getResolver return a
+    label 'admin' if the realm or resolver is used for admin authentication.
+
 
  -- LinOTP Packaging <packaging@linotp.de>  Thu, 9 Sep 2021 17:13:51 +0200
 
