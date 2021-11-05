@@ -3188,6 +3188,7 @@ function save_realm_config() {
                     'is_escaped': true
                 });
             }
+            hide_waiting();
         });
 }
 
@@ -3561,6 +3562,7 @@ function realm_delete() {
                     'is_escaped': true
                 });
             }
+            hide_waiting();
         });
 }
 
