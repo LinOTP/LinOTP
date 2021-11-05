@@ -1121,49 +1121,19 @@ class SystemController(BaseController):
                 raise ParameterError("missing required parameter: realm")
             realm = self.request_params["realm"]
 
-            #
-            # we test if before delete there has been a default
-            # if yes - check after delete, if still one there
-            #         and set the last available to default
-            #
+            result_of_deletion = deleteRealm(realm)
 
-            defRealm = getDefaultRealm()
-            hadDefRealmBefore = False
-            if defRealm != "":
-                hadDefRealmBefore = True
+            res["delRealm"] = {"result": result_of_deletion}
 
-            # now test if realm is defined
-            if isRealmDefined(realm) is True:
-                if realm.lower() == defRealm.lower():
-                    setDefaultRealm("")
-                if realm == "_default_":
-                    realmConfig = "useridresolver"
-                else:
-                    realmConfig = "useridresolver.group." + realm
-
-                res["delRealm"] = {
-                    "result": removeFromConfig(realmConfig, iCase=True)
-                }
-
-            ret = deleteRealm(realm)
-
-            if hadDefRealmBefore is True:
-                defRealm = getDefaultRealm()
-                if defRealm == "":
-                    realms = getRealms()
-                    if len(realms) == 2:
-                        for k in realms:
-                            if k != realm:
-                                setDefaultRealm(k)
-            g.audit["success"] = ret
+            g.audit["success"] = True
             g.audit["info"] = realm
 
-            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.error("[delRealm] error deleting realm: %r", exx)
-            db.session.rollback()
+            g.audit["success"] = False
+            g.audit["info"] = realm
             return sendError(response, exx)
 
     ########################################################
