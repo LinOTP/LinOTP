@@ -499,8 +499,7 @@ def deleteResolver(resolvername):
 
     if resolvername == current_app.config["ADMIN_RESOLVER_NAME"]:
         raise ValueError(
-            f"default admin resolver {resolvernamer} is "
-            f"not allowed to be removed!"
+            f"default admin resolver {resolvername} is not allowed to be removed!"
         )
 
     res = False
