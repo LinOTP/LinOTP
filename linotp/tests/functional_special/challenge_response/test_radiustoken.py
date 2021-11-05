@@ -126,8 +126,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        self.radius_url = ("localhost:%s" % self.radius_authport,)
-        return
+        self.radius_url = "localhost:%s" % self.radius_authport
 
     def tearDown(self):
 
@@ -257,10 +256,10 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
             resp = False
             opt = None
 
-            # check if we are in a chellenge request
+            # check if we are in a challenge request
             if (
                 params.get("password") == "test123456"
-                and params.get("state") == "012345678901"
+                and params.get("state") == b"012345678901"
             ):
                 resp = True
 

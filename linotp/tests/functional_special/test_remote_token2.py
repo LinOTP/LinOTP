@@ -162,7 +162,7 @@ class TestRemoteToken2(TestSpecialController):
             "scope": "enrollment",
             "realm": "nopin,withpin",
             "user": "*",
-            "action": "autoassignment=6",
+            "action": "autoassignment",
             "active": True,
             "client": "",
         }
@@ -206,7 +206,7 @@ class TestRemoteToken2(TestSpecialController):
         :return: the serial number of the remote token
         """
 
-        serial = ("LSRE%s" % target_serial,)
+        serial = "LSRE%s" % target_serial
         params = {
             "serial": serial,
             "type": "remote",
@@ -240,7 +240,7 @@ class TestRemoteToken2(TestSpecialController):
         :return: - nothing -
         """
 
-        otpkey = ("9163508031b20d2fbb1868954e041729",)
+        otpkey = "9163508031b20d2fbb1868954e041729"
 
         self.yubi_valid_otps = [
             public_uid + "fcniufvgvjturjgvinhebbbertjnihit",
@@ -606,9 +606,7 @@ class TestRemoteToken2(TestSpecialController):
         username = data[0].get("User.username", "")
         assert username == "passthru_user1", response
 
-        return
-
-    def test_00000_check_tokens_with_autoassign_forward(self):
+    def test_check_tokens_with_autoassign_forward(self):
         """
         RT2: remote token with otppin, autoassign forward policy and yubikey
         """

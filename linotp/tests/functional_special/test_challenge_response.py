@@ -70,10 +70,7 @@ def mocked_submitMessage_request(SMS_Object, *argparams, **kwparams):
     global SMS_MESSAGE_OTP
     SMS_MESSAGE_OTP = argparams
 
-    # we call here the original sms submitter - as we are a functional test
-    res = SMS_Object._submitMessage(*argparams)
-
-    return res
+    return True
 
 
 def mocked_email_submitMessage(EMail_Object, *argparams, **kwparams):
