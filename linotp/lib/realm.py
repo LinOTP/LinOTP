@@ -150,6 +150,40 @@ def getRealmObject(name="", id=0):
     return realmObj
 
 
+def _check_for_cache_flush(realm_name, realm_definition):
+    """
+    Check if the realm_resolver cache should be flushed. This detected by
+    checking if the resolver definition in a realm has changed.
+
+    :param realm_name: the name of the realm
+    :param realm_definition: the new realm definition with its resolvers
+    :return: -nothing-
+    """
+
+    # get the resolvers list of the realm definition
+    realm_resolvers = realm_definition.get("useridresolver", [])
+
+    # and the former definition from the local cache
+    former_realm_resolvers = _lookup_realm_config(realm_name, realm_resolvers)
+
+    # we check if there has been something dropped from the
+    # former resolver definition by using set().difference
+    former_res_set = set(former_realm_resolvers)
+    new_res_set = set(realm_resolvers)
+    flush_resolvers = former_res_set.difference(new_res_set)
+
+    if flush_resolvers:
+
+        # refresh the user resolver lookup in the realm user cache
+        from linotp.lib.user import delete_realm_resolver_cache
+
+        delete_realm_resolver_cache(realm_name)
+
+        # maintain the new realm configuration in the cache
+        _delete_from_realm_config_cache(realm_name)
+        _lookup_realm_config(realm_name, realm_resolvers)
+
+
 def getRealms(aRealmName=""):
     """
     lookup for a defined realm or all realms
@@ -194,51 +228,28 @@ def getRealms(aRealmName=""):
         realms = _initalGetRealms()
         config.setRealms(realms)
 
-        # -- ------------------------------------------------------------ --
-        # for each realm definition we check if there are some
-        # resolvers dropped from the former resolver list
-        # in this case, we have to delete the realm_resolver_cache
-        # which is used for the user resolver lookup for a given realm
-        # -- ------------------------------------------------------------ --
+    # -- ------------------------------------------------------------ --
+    # for each realm definition we check if there are some
+    # resolvers dropped from the former resolver list
+    # in this case, we have to delete the realm_resolver_cache
+    # which is used for the user resolver lookup for a given realm
+    # -- ------------------------------------------------------------ --
 
-        for realm_name, realm_defintion in list(realms.items()):
+    for realm_name, realm_defintion in realms.items():
 
-            # get the resolvers list of the realm definition
-            realm_resolvers = realm_defintion.get("useridresolver", [])
-
-            # and the former definition from the local cache
-            former_realm_resolvers = _lookup_realm_config(
-                realm_name, realm_resolvers
-            )
-
-            # we check if there has been something dropped from the
-            # former resolver definition by using set().difference
-            former_res_set = set(former_realm_resolvers)
-            new_res_set = set(realm_resolvers)
-            flush_resolvers = former_res_set.difference(new_res_set)
-
-            if flush_resolvers:
-
-                # refresh the user resolver lookup in the realm user cache
-                from linotp.lib.user import delete_realm_resolver_cache
-
-                delete_realm_resolver_cache(realm_name)
-
-                # maintain the new realm configuration in the cache
-                _delete_from_realm_config_cache(realm_name)
-                _lookup_realm_config(realm_name, realm_resolvers)
+        _check_for_cache_flush(realm_name, realm_defintion)
 
     # check if any realm is searched
-    if aRealmName is None or aRealmName.strip() in ["", "*"]:
+    if not isinstance(aRealmName, str):
         return realms
 
-    # check if only one realm is searched
-    if aRealmName.lower() in realms:
-        ret = {}
-        ret[aRealmName.lower()] = realms.get(aRealmName.lower())
-        return ret
+    aRealmName = aRealmName.strip().lower()
 
-    return {}
+    # check if only one realm is searched
+    if aRealmName in realms:
+        return {aRealmName: realms[aRealmName]}
+
+    return realms
 
 
 def _lookup_realm_config(realm_name, realm_defintion=None):
