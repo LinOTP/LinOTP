@@ -590,7 +590,7 @@ class TestHttpSmsController(TestSpecialController):
 
         return
 
-    def setSMSProvider(
+    def create_sms_provider_configuration(
         self,
         name="test",
         method="GET",
@@ -649,7 +649,7 @@ class TestHttpSmsController(TestSpecialController):
                 log.error(skip_reason)
                 return
 
-        provider_config = self.setSMSProvider(method="POST")
+        provider_config = self.create_sms_provider_configuration(method="POST")
         with DefaultProvider(self, config=provider_config):
 
             params = {"serial": self.serials[6], "pass": ""}
@@ -658,7 +658,7 @@ class TestHttpSmsController(TestSpecialController):
                 "Expecting 'state' as challenge inidcator %r" % response
             )
 
-        provider_config = self.setSMSProvider(method="GET")
+        provider_config = self.create_sms_provider_configuration(method="GET")
         with DefaultProvider(self, config=provider_config):
 
             params = {"serial": self.serials[7], "pass": ""}
@@ -690,7 +690,7 @@ class TestHttpSmsController(TestSpecialController):
                 "PARAMETERS": parameters,
             }
             arguments.update(arg)
-            self.setSMSProvider(**arguments)
+            self.create_sms_provider_configuration(**arguments)
             params = {"serial": self.serials[i], "pass": ""}
             response = self.make_validate_request("check_s", params=params)
             assert '"state":' in response, "Expecting 'state' %d: %r" % (
@@ -704,7 +704,7 @@ class TestHttpSmsController(TestSpecialController):
                 "PARAMETERS": parameters,
             }
             arguments.update(arg)
-            self.setSMSProvider(**arguments)
+            self.create_sms_provider_configuration(**arguments)
             i = i + 1
             params = {"serial": self.serials[i], "pass": ""}
             response = self.make_validate_request("check_s", params=params)
