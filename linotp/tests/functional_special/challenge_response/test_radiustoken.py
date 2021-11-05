@@ -158,10 +158,10 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         cookies = {"admin_session": self.session}
 
         response = self.make_system_request("setPolicy", params=params)
-        assert '"status": true' in response, response
+        assert response.json["result"]["status"], response
 
         response = self.make_system_request("getPolicy", params=params)
-        assert '"status": true' in response, response
+        assert response.json["result"]["status"], response
 
         self.policies.append(name)
         return response
@@ -204,7 +204,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         ]
         for params in params_list:
             response = self.make_admin_request(action="init", params=params)
-            assert '"value": true' in response, response
+            assert response.json["result"]["value"], response
             serials.append(params.get("serial"))
 
         return serials
@@ -223,7 +223,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         response = self.setPinPolicy(
             name="ch_resp", realm="*", action="challenge_response=radius"
         )
-        assert '"status": true,' in response, response
+        assert response.json["result"]["status"], response
 
         # define validation function
         def check_func1(params):
@@ -245,11 +245,10 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         # 1.1 now trigger a challenge
         params = {"user": user, "pass": "test"}
         response = self.make_validate_request("check", params=params)
-        assert '"value": false' in response, response
 
-        body = json.loads(response.body)
-        state = body.get("detail", {}).get("transactionid", "")
-        assert state != "", response
+        assert not response.json["result"]["value"], response
+        assert "transactionid" in response.json["detail"], response
+        state = response.json["detail"]["transactionid"]
 
         # 1.2 check the challenge
 
@@ -274,12 +273,10 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         response = self.make_validate_request("check", params=params)
 
         # hey, if this ok, we are done for the remote pin check
-        assert '"value": true' in response, response
+        assert response.json["result"]["value"], response
 
         for serial in serials:
             self.delete_token(serial)
-
-        return
 
     @patch.object(Client, "SendPacket", mocked_radius_SendPacket)
     def test_radiustoken_local_pin(self):
@@ -297,7 +294,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         response = self.setPinPolicy(
             name="ch_resp", realm="*", action="challenge_response=radius"
         )
-        assert '"status": true,' in response, response
+        assert response.json["result"]["value"], response
 
         # 1.1 now trigger a challenge
         # define validation function
@@ -319,11 +316,9 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
 
         params = {"user": user, "pass": "local"}
         response = self.make_validate_request("check", params=params)
-        assert '"value": false' in response, response
-
-        body = json.loads(response.body)
-        state = body.get("detail", {}).get("transactionid", "")
-        assert state != "", response
+        assert not response.json["result"]["value"], response
+        assert "transactionid" in response.json["detail"], response
+        state = response.json["detail"]["transactionid"]
 
         # 1.2 check the challenge
         def check_func2(params):
@@ -341,13 +336,12 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
 
         params = {"user": user, "pass": otp, "state": state}
         response = self.make_validate_request("check", params=params)
+
         # hey, if this ok, we are done for the remote pin check
-        assert '"value": true' in response, response
+        assert response.json["result"]["value"], response
 
         for serial in serials:
             self.delete_token(serial)
-
-        return
 
 
 ##eof##########################################################################

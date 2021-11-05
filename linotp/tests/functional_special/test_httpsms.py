@@ -120,7 +120,7 @@ class DefaultProvider:
         response = self.test.make_system_request(
             "setProvider", params=self.config
         )
-        assert '"value": true' in response
+        assert response.json["result"]["value"], response
 
         response = self.test.make_system_request(
             "setDefaultProvider",
@@ -129,7 +129,7 @@ class DefaultProvider:
                 "type": self.provider_type,
             },
         )
-        assert '"value": true' in response
+        assert response.json["result"]["value"], response
         return self
 
     def __exit__(self, *args):
@@ -140,7 +140,7 @@ class DefaultProvider:
                 "setDefaultProvider",
                 params={"name": self.old_default, "type": self.provider_type},
             )
-            assert '"value": true' in response
+            assert response.json["result"]["value"], response
 
         params = {"type": self.provider_type, "name": self.config.get("name")}
 
@@ -154,7 +154,7 @@ class DefaultProvider:
                 response = self.test.make_system_request(
                     "delProvider", params={"name": provider_name}
                 )
-                assert '"value": true' in response
+                assert response.json["result"]["value"], response
 
 
 class TestHttpSmsController(TestSpecialController):
@@ -198,7 +198,7 @@ class TestHttpSmsController(TestSpecialController):
             response = self.make_admin_request(
                 "remove", params=parameters, auth_user="superadmin"
             )
-            assert '"status": true' in response, response
+            assert response.json["result"]["status"], response
 
     def initTokens(self):
         """
@@ -218,8 +218,7 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_admin_request(
             "init", params=parameters, auth_user="superadmin"
         )
-
-        assert '"status": true' in response, response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "serial": self.serials[1],
@@ -234,8 +233,7 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_admin_request(
             "init", params=parameters, auth_user="superadmin"
         )
-
-        assert '"status": true' in response, response
+        assert response.json["result"]["status"], response
 
         for serial in self.serials[2 : self.max]:
             parameters = {
@@ -252,8 +250,7 @@ class TestHttpSmsController(TestSpecialController):
             response = self.make_admin_request(
                 "init", params=parameters, auth_user="superadmin"
             )
-
-            assert '"status": true' in response, response
+            assert response.json["result"]["status"], response
 
         return self.serials
 
@@ -267,8 +264,7 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_system_request(
             "setConfig", params=parameters, auth_user="superadmin"
         )
-
-        assert '"status": true' in response, response
+        assert response.json["result"]["status"], response
 
     def last_audit(self, num=3, page=1):
         """
@@ -337,7 +333,7 @@ class TestHttpSmsController(TestSpecialController):
             # but wont contain the following message anymore
             #    'Failed to send SMS. We received a'
             #                'Failed to send SMS.'
-            assert '"value": false' in response, response
+            assert not response.json["result"]["value"], response
 
             # check last audit entry
             response = self.last_audit()
@@ -566,8 +562,7 @@ class TestHttpSmsController(TestSpecialController):
             response = self.make_validate_request(
                 "smspin", params={"user": "user1", "pass": "1234"}
             )
-
-            assert '"value": false' in response, response
+            assert not response.json["result"]["value"], response
 
             # due to security fix to prevent information leakage the response
             # of validate/check will be only true or false

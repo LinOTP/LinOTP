@@ -106,7 +106,6 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         self.delete_all_policies()
 
         self.remote_url = "http://127.0.0.1:%s" % self.paster_port
-        return
 
     def tearDown(self):
 
@@ -172,15 +171,17 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         for params in params_list:
             serials.append(params.get("serial"))
             response = self.make_admin_request(action="init", params=params)
-            assert '"value": true' in response, response
+            assert response.json["result"]["value"], response
 
         # enforce the awareness of policy changes
         params = {
             "enableReplication": "true",
             "session": self.session,
         }
-        resp = self.make_system_request(action="setConfig", params=params)
-        assert '"setConfig enableReplication:true": true' in resp
+        response = self.make_system_request(action="setConfig", params=params)
+        assert response.json["result"]["value"][
+            "setConfig enableReplication:true"
+        ], response
 
         return serials
 
@@ -207,8 +208,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         params = {"user": "remoteuser", "pass": "rpin123456"}
         response = self.make_validate_request("check", params=params)
-
-        assert '"value": true' in response, response
+        assert response.json["result"]["value"], response
 
         def check_func2(params):
             resp = 200
@@ -226,13 +226,10 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         params = {"user": "localuser", "pass": "lpin123456"}
         response = self.make_validate_request("check", params=params)
-
-        assert '"value": true' in response, response
+        assert response.json["result"]["value"], response
 
         for serial in serials:
             self.delete_token(serial)
-
-        return
 
     @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_remote_challenge(self):
@@ -255,7 +252,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         response = self.setPinPolicy(
             name="ch_resp", realm="*", action="challenge_response=hmac remote"
         )
-        assert '"status": true,' in response, response
+        assert response.json["result"]["status"], response
 
         response = self.setPinPolicy(
             name="ch_resp",
@@ -263,7 +260,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
             action="challenge_response=hmac remote",
             remoteurl=remoteurl,
         )
-        assert '"status": true,' in response, response
+        assert response.json["result"]["status"], response
 
         # 1. part - pin belongs to remote token
         # check is simple auth works
@@ -287,8 +284,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         params = {"user": user, "pass": "rpin" + otp}
         response = self.make_validate_request("check", params=params)
-
-        assert '"value": true' in response, response
+        assert response.json["result"]["value"], response
 
         # 1.1 now trigger a challenge
         otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
@@ -312,12 +308,9 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         params = {"user": user, "pass": "rpin"}
         response = self.make_validate_request("check", params=params)
-
-        assert '"value": false' in response, response
-
-        body = json.loads(response.body)
-        state = body.get("detail", {}).get("transactionid", "")
-        assert state != "", response
+        assert not response.json["result"]["value"], response
+        assert "transactionid" in response.json["detail"], response
+        state = response.json["detail"]["transactionid"]
 
         # 1.2 check the challenge
         otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
@@ -352,6 +345,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         # hey, if this ok, we are done for the remote pin check
         assert '"value": true' in response, response
+        assert response.json["result"]["value"], response
 
         for serial in serials:
             self.delete_token(serial)
@@ -381,7 +375,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         response = self.setPinPolicy(
             name="ch_resp", realm="*", action="challenge_response=hmac remote"
         )
-        assert '"status": true,' in response, response
+        assert response.json["result"]["status"], response
 
         response = self.setPinPolicy(
             name="ch_resp",
@@ -416,8 +410,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         params = {"user": user, "pass": "lpin" + otp}
         response = self.make_validate_request("check", params=params)
-
-        assert '"value": true' in response, response
+        assert response.json["result"]["value"], response
 
         # 2.1 now trigger a challenge
         counter = counter + 1
@@ -441,12 +434,9 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         params = {"user": user, "pass": "lpin"}
         response = self.make_validate_request("check", params=params)
-
-        assert '"value": false' in response, response
-
-        body = json.loads(response.body)
-        state = body.get("detail", {}).get("transactionid", "")
-        assert state != "", response
+        assert not response.json["result"]["value"], response
+        assert "transactionid" in response.json["detail"], response
+        state = response.json["detail"]["transactionid"]
 
         # 2.2 check the challenge
         counter = counter + 1
@@ -472,14 +462,12 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         response = self.make_validate_request("check", params=params)
 
         # hey, if this ok, we are done for the remote pin check
-        assert '"value": true' in response, response
+        assert response.json["result"]["value"], response
 
         for serial in serials:
             self.delete_token(serial)
 
         self.delete_policy(name="ch_resp")
-
-        return
 
 
 ##eof##########################################################################
