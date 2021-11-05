@@ -593,7 +593,6 @@ class TestHttpSmsController(TestSpecialController):
     def setSMSProvider(
         self,
         name="test",
-        preferred_httplib=None,
         method="GET",
         return_check=None,
         PARAMETERS=None,
@@ -618,8 +617,6 @@ class TestHttpSmsController(TestSpecialController):
             sms_conf["PARAMETER"] = PARAMETERS
 
         sms_conf["HTTP_Method"] = method
-        if preferred_httplib:
-            sms_conf["PREFERRED_HTTPLIB"] = preferred_httplib
 
         params = {
             "name": name,
@@ -631,71 +628,7 @@ class TestHttpSmsController(TestSpecialController):
 
         return params
 
-    def test_httpsmsprovider_httplib(self):
-        """
-        Test SMSProvider httplibs for working with GET and POST
-        """
-        provider_conf = self.setSMSProvider(
-            preferred_httplib="httplib", method="POST"
-        )
-
-        provider_conf["name"] = "test_httpsmsprovider_httplib"
-
-        with DefaultProvider(self, provider_conf):
-            # check if its possible to trigger challenge with empty pin
-            params = {"serial": self.serials[2], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-
-            assert '"state":' in response, (
-                "Expecting 'state' as challenge inidcator %r" % response
-            )
-
-        provider_conf = self.setSMSProvider(
-            preferred_httplib="httplib", method="GET"
-        )
-
-        provider_conf["name"] = "test_httpsmsprovider_httplib"
-
-        with DefaultProvider(self, provider_conf):
-
-            params = {"serial": self.serials[3], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, (
-                "Expecting 'state' as challenge inidcator %r" % response
-            )
-
-    def test_httpsmsprovider_urllib(self):
-        """
-        Test SMSProvider urllib for working with GET and POST
-        """
-
-        provider_config = self.setSMSProvider(
-            preferred_httplib="urllib", method="POST"
-        )
-
-        with DefaultProvider(self, provider_config):
-
-            params = {"serial": self.serials[4], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, (
-                "Expecting 'state' as challenge inidcator %r" % response
-            )
-
-        provider_config = self.setSMSProvider(
-            preferred_httplib="urllib", method="GET"
-        )
-
-        with DefaultProvider(self, provider_config):
-
-            params = {"serial": self.serials[5], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, (
-                "Expecting 'state' as challenge inidcator %r" % response
-            )
-
-        return
-
-    def test_httpsmsprovider_requests(self):
+    def test_httpsmsprovider(self):
         """
         Test SMSProvider 'requests' for working with GET and POST
         """
@@ -716,10 +649,7 @@ class TestHttpSmsController(TestSpecialController):
                 log.error(skip_reason)
                 return
 
-        provider_config = self.setSMSProvider(
-            preferred_httplib="requests", method="POST"
-        )
-
+        provider_config = self.setSMSProvider(method="POST")
         with DefaultProvider(self, config=provider_config):
 
             params = {"serial": self.serials[6], "pass": ""}
@@ -728,10 +658,7 @@ class TestHttpSmsController(TestSpecialController):
                 "Expecting 'state' as challenge inidcator %r" % response
             )
 
-        provider_config = self.setSMSProvider(
-            preferred_httplib="requests", method="GET"
-        )
-
+        provider_config = self.setSMSProvider(method="GET")
         with DefaultProvider(self, config=provider_config):
 
             params = {"serial": self.serials[7], "pass": ""}
@@ -742,128 +669,14 @@ class TestHttpSmsController(TestSpecialController):
 
         return
 
-    def test_twilio_httpsmsprovider_httplib(self):
+    def test_twilio_httpsmsprovider(self):
         """
         Test Twilio as HttpSMSProvider which requires patter nmatch for result
         """
-        # TODO: Fix and re-enable twilio tests
-        self.skipTest("Temporarily skip twilio tests due to known problems")
 
         args = [
-            {"preferred_httplib": "httplib", "method": "GET"},
-            {"preferred_httplib": "httplib", "method": "POST"},
-        ]
-        i = 7
-        for arg in args:
-            i = i + 1
-            parameters = {"account": "twilio", "username": "legit"}
-            arguments = {
-                "return_check": {
-                    "RETURN_SUCCESS_REGEX": "<Status>queued</Status>"
-                },
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, "Expecting 'state' %d: %r" % (
-                i,
-                response,
-            )
-
-            parameters = {"account": "twilio", "username": "fail"}
-            arguments = {
-                "return_check": {"RETURN_FAIL_REGEX": "<Status>400</Status>"},
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-            i = i + 1
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert (
-                "predefined error from the SMS Gateway" in response
-            ), "Expecting error %d: %r" % (i, response)
-
-        return
-
-    def test_twilio_httpsmsprovider_urllib(self):
-        """
-        Test Twilio as HttpSMSProvider which requires patter nmatch for result
-        """
-        # TODO: Fix and re-enable twilio tests
-        self.skipTest("Temporarily skip twilio tests due to known problems")
-
-        args = [
-            {"preferred_httplib": "urllib", "method": "GET"},
-            {"preferred_httplib": "urllib", "method": "POST"},
-        ]
-
-        i = 9
-        for arg in args:
-            i = i + 1
-            parameters = {"account": "twilio", "username": "legit"}
-            arguments = {
-                "return_check": {
-                    "RETURN_SUCCESS_REGEX": "<Status>queued</Status>"
-                },
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, "Expecting 'state' %d: %r" % (
-                i,
-                response,
-            )
-
-            parameters = {"account": "twilio", "username": "fail"}
-            arguments = {
-                "return_check": {"RETURN_FAIL_REGEX": "<Status>400</Status>"},
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-            i = i + 1
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert (
-                "predefined error from the SMS Gateway" in response
-            ), "Expecting error %d: %r" % (i, response)
-
-        return
-
-    def test_twilio_httpsmsprovider_requests(self):
-        """
-        Test Twilio as HttpSMSProvider which requires patter nmatch for result
-        """
-        # TODO: Fix and re-enable twilio tests
-        self.skipTest("Temporarily skip twilio tests due to known problems")
-
-        # now we check as well the requests lib if its available
-        skip = False
-        try:
-            import requests
-
-            requests.__version__
-        except ImportError:
-            skip = True
-
-        if skip:
-            skip_reason = "Httplib 'requests' not supported in this env!"
-            if hasattr(self, "skipTest"):
-                self.skipTest(skip_reason)
-            else:
-                log.error(skip_reason)
-                return
-
-        args = [
-            {"preferred_httplib": "requests", "method": "GET"},
-            {"preferred_httplib": "requests", "method": "POST"},
+            {"method": "GET"},
+            {"method": "POST"},
         ]
 
         i = 11
