@@ -3378,8 +3378,8 @@ function realms_load() {
 
                 realms += '<li class="ui-widget-content' + (isDefault ? ' default' : '') + '">'
                     + '<span class="name">' + escape(realmName) + '</span>'
-                    + (isDefault ? ' (Default) ' : '')
-                    + '[' + escape(resolvers) + ']'
+                    + ' [' + escape(resolvers) + ']'
+                    + (isDefault ? ' <span class="tag">' + i18n.gettext("default") + '</span>' : '')
                     + '</li>';
             }
             realms += '</ol>';
@@ -3418,7 +3418,7 @@ function resolvers_load() {
                 var managed = escape(data.result.value[key].readonly);
                 resolvers += '<li class="ui-widget-content' + (managed ? " managed" : "") + '">'
                     + '<span class="name">' + e_key + ' [' + e_reolver_type + ']</span>'
-                    + (managed ? ' <span class="managed-tag">' + i18n.gettext("managed") + '</span>' : '')
+                    + (managed ? ' <span class="tag">' + i18n.gettext("managed") + '</span>' : '')
                     + '</li>';
                 count = count + 1;
             }

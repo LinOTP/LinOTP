@@ -793,10 +793,6 @@ form .input_hint {
   width: 180px;
 }
 
-span.managed-tag {
-  color: grey;
-}
-
 #import_user_dryrun_result_details {
   padding: 0;
 }
@@ -805,8 +801,9 @@ span.managed-tag {
   border-radius: 0;
 }
 
-#resolvers_select .managed-tag {
+.select_list .tag {
   float: right;
+  color: grey;
 }
 
 .hidden {
