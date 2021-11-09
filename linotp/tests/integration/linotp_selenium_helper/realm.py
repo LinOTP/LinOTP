@@ -158,13 +158,14 @@ class RealmManager(ManageDialog):
                 self.name = name
                 self.element = element
 
-        element_path = "//div[@id='realm_list'] | //ol[@id='realms_select']/*"
+        elements = self.driver.find_elements(
+            By.CSS_SELECTOR,
+            "ol#realms_select>li",
+        )
 
-        elements = self.driver.find_elements(By.XPATH, element_path)
         self.realms = [
-            RealmListEntry(e.text.partition(" ")[0], e)
+            RealmListEntry(e.find_element(By.CSS_SELECTOR, ".name").text, e)
             for e in elements
-            if e.tag_name == "li"
         ]
 
     def _get_realm_by_name(self, name: str):
@@ -176,11 +177,8 @@ class RealmManager(ManageDialog):
          name in dialog
         """
         r = [r for r in self.realms if r.name == name.lower()]
-        assert len(r) == 1, "realm name %s not found in current realm list" % (
-            name,
-        )
-        realm = r[0]
-        return realm
+        assert len(r) == 1, f"realm name {name} not found in realm list"
+        return r[0]
 
     def select_realm(self, name):
         r = self._get_realm_by_name(name)

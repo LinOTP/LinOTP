@@ -3359,38 +3359,38 @@ function save_sql_config(callback = null) {
 // ----------------------------------------------------------------
 //   Realms
 function realms_load() {
-
-    g.realm_to_edit = "";
+    g.realm_to_edit = {};
     show_waiting();
     var params = { 'session': getsession() };
     $.post('/system/getRealms', params,
         function (data, textStatus, XMLHttpRequest) {
             var realms = '<ol id="realms_select" class="select_list" class="ui-selectable">';
-            for (var key in data.result.value) {
-                var default_realm = "";
-                var resolvers = "";
-                var resolver_list = data.result.value[key].useridresolver;
-                for (var reso in resolver_list) {
-                    var r = resolver_list[reso].split(".");
-                    resolvers += r[r.length - 1] + " ";
-                }
+            for (var realmName in data.result.value) {
+                var realm = data.result.value[realmName];
 
-                if (data.result.value[key]['default']) {
-                    default_realm = " (Default) ";
-                }
-                var e_key = escape(key);
-                var e_default_realm = escape(default_realm);
-                var e_resolvers = escape(resolvers)
-                realms += '<li class="ui-widget-content">' + e_key + e_default_realm + ' [' + e_resolvers + ']</li>';
+                var resolvers = realm.useridresolver
+                    .map(function (resolver) {
+                        return resolver.split(".").pop();
+                    })
+                    .join(" ");
+
+                var isDefault = !!realm.default
+
+                realms += '<li class="ui-widget-content' + (isDefault ? ' default' : '') + '">'
+                    + '<span class="name">' + escape(realmName) + '</span>'
+                    + (isDefault ? ' (Default) ' : '')
+                    + '[' + escape(resolvers) + ']'
+                    + '</li>';
             }
             realms += '</ol>';
             $('#realm_list').html($.parseHTML(realms));
             $('#realms_select').selectable({
                 stop: function () {
-                    $(".ui-selected", this).each(function () {
-                        var index = $("#realms_select li").index(this);
-                        g.realm_to_edit = escape($(this).html());
-                    }); // end of each
+                    var selectedRealm = $(".ui-selected", this).first();
+                    g.realm_to_edit = {
+                        isDefault: selectedRealm.hasClass("default"),
+                        name: escape($('.name', selectedRealm).text())
+                    };
                 } // end of stop function
             }); // end of selectable
             hide_waiting();
@@ -3398,12 +3398,6 @@ function realms_load() {
 }
 
 function realm_ask_delete() {
-    // replace in case of normal realms
-    var realm = g.realm_to_edit.replace(/^(\S+)\s+\[(.*)$/, "$1");
-    // replace in case of default realm
-    realm = realm.replace(/^(\S+)\s+\(Default\)\s+\[(.*)$/, "$1");
-
-    $('#realm_delete_name').html(escape(realm));
     $dialog_realm_ask_delete.dialog('open');
 }
 
@@ -3511,7 +3505,7 @@ function resolver_delete() {
 }
 
 function realm_delete() {
-    var realm = $('#realm_delete_name').html();
+    var realm = g.realm_to_edit.name;
     var params = { 'realm': realm, 'session': getsession() };
     $.post('/system/delRealm', params,
         function (data, textStatus, XMLHttpRequest) {
@@ -4814,17 +4808,13 @@ $(document).ready(function () {
             },
             'Edit': {
                 click: function () {
-                    realm_modify(g.realm_to_edit);
+                    realm_modify(g.realm_to_edit.name);
                 },
                 id: "button_realms_edit",
                 text: "Edit"
             },
             'Delete': {
-                click: function () {
-                    realm_ask_delete();
-                    realms_load();
-                    fill_realms();
-                },
+                click: realm_ask_delete,
                 id: "button_realms_delete",
                 text: "Delete"
             },
@@ -4837,21 +4827,12 @@ $(document).ready(function () {
             },
             'Set Default': {
                 click: function () {
-                    var realm = "";
-                    if (g.realm_to_edit.match(/^(\S+)\s\[(.+)\]/)) {
-                        realm = g.realm_to_edit.replace(/^(\S+)\s+\[(.+)\]/, "$1");
-                        set_default_realm(realm);
-                    }
-                    else if (g.realm_to_edit.match(/^\S+\s+\(Default\)\s+\[.+\]/)) {
-                        alert_info_text({
-                            'text': "text_already_default_realm",
-                            "type": ERROR,
-                            'is_escaped': true
-                        });
+                    if (!g.realm_to_edit.isDefault) {
+                        set_default_realm(g.realm_to_edit.name);
                     }
                     else {
                         alert_info_text({
-                            'text': "text_realm_regexp_error",
+                            'text': "text_already_default_realm",
                             "type": ERROR,
                             'is_escaped': true
                         });
@@ -6963,28 +6944,16 @@ function realm_modify(name) {
     }
 }
 
-function realm_edit(name) {
-
-    var realm = "";
-    var html_intro;
-    $('#realm_intro_edit').hide();
-    $('#realm_intro_new').hide();
-    if (name) {
-        if (name.match(/^(\S+)\s(\[|\()(.+)\]/)) {
-            realm = name.replace(/^(\S+)\s+(\[|\()(.+)\]/, "$1");
-        }
-        else {
-            alert_info_text({
-                'text': "text_realm_name_error",
-                "type": ERROR,
-                'is_escaped': true
-            });
-        }
+function realm_edit(realm) {
+    if (realm) {
         $('#realm_edit_realm_name').html(escape(realm));
         $('#realm_name').val(realm);
+
+        $('#realm_intro_new').hide();
         $('#realm_intro_edit').show();
     }
     else {
+        $('#realm_intro_edit').hide();
         $('#realm_intro_new').show();
     }
 

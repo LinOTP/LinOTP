@@ -2315,7 +2315,6 @@
 <div id="text_system_save_error">${_("Error saving system configuration. Please check your configuration and your server")}</div>
 <div id="text_system_save_error_checkbox">${_("Error saving system checkboxes configuration. Please check your configuration and your server")}</div>
 <div id="text_realm_regexp_error">${_("Regexp error in realm. You need to select ONE realm to set it as default.")}</div>
-<div id="text_realm_name_error">${_("There is an error in the realm name!")}</div>
 <div id="text_policy_set">${_("Policy set.")}</div>
 <div id="text_policy_name_not_empty">${_("Policy name is not defined!")}</div>
 <div id="text_policy_deleted">${_("Policy deleted.")}</div>
