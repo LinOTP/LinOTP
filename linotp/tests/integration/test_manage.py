@@ -24,6 +24,8 @@
 #    Support: www.keyidentity.com
 #
 
+import time
+
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -59,6 +61,10 @@ class TestManage(TestCase):
         WebDriverWait(self.driver, self.ui_wait_time).until(
             EC.element_to_be_clickable((By.ID, menu_item_id))
         )
+
+        # without this pause the the attribute is not yet ready
+        # for clossing the menus
+        time.sleep(0.1)
         self.manage.close_all_menus()
         WebDriverWait(self.driver, self.ui_wait_time).until_not(
             EC.element_to_be_clickable((By.ID, menu_item_id))
