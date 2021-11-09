@@ -32,7 +32,8 @@ Recommends: dbconfig-mysql,
             linotp-selfservice,
             python3-mysqldb,
             python3-psycopg2
-Suggests: systemd
+Suggests: python3-smpplib,
+	  systemd
 Replaces: linotp-ee (<< 2.7-1~),
           linotp-smsprovider (<< 2.10),
           linotp-useridresolver (<< 2.10)
