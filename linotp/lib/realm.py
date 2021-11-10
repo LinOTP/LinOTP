@@ -31,6 +31,8 @@ from functools import partial
 
 from sqlalchemy import func
 
+from flask import current_app
+
 from linotp.lib.cache import get_cache
 from linotp.lib.config import getFromConfig, getLinotpConfig, storeConfig
 from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
@@ -220,6 +222,8 @@ def getRealms(aRealmName=""):
 
     """
 
+    admin_realm_name = current_app.config["ADMIN_REALM_NAME"].lower()
+
     config = context["Config"]
     realms = config.getRealms()
 
@@ -238,6 +242,8 @@ def getRealms(aRealmName=""):
     for realm_name, realm_defintion in realms.items():
 
         _check_for_cache_flush(realm_name, realm_defintion)
+
+        realm_defintion["admin"] = realm_name == admin_realm_name
 
     # check if any realm is searched
     if not isinstance(aRealmName, str):
