@@ -285,13 +285,13 @@ class RadiusTokenClass(RemoteTokenClass):
 
             req = srv.CreateAuthPacket(
                 code=pyrad.packet.AccessRequest,
-                User_Name=radiusUser.encode("ascii"),
-                NAS_Identifier=nas_identifier.encode("ascii"),
+                User_Name=radiusUser.encode("utf-8"),
+                NAS_Identifier=nas_identifier.encode("utf-8"),
             )
 
             req["User-Password"] = req.PwCrypt(anOtpVal)
             if transactionid is not None:
-                req["State"] = str(transactionid)
+                req["State"] = transactionid.encode("ascii")
 
             response = srv.SendPacket(req)
 

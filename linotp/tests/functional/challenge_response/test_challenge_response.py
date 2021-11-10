@@ -52,7 +52,9 @@ from mock import patch
 import linotp.provider.emailprovider
 import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.HMAC import HmacOtp
-from linotp.tests.functional_special import TestSpecialController
+from linotp.tests.functional.challenge_response.testing_controller import (
+    TestingChallengeResponseController,
+)
 
 # from linotp.tests import url
 
@@ -70,10 +72,7 @@ def mocked_submitMessage_request(SMS_Object, *argparams, **kwparams):
     global SMS_MESSAGE_OTP
     SMS_MESSAGE_OTP = argparams
 
-    # we call here the original sms submitter - as we are a functional test
-    res = SMS_Object._submitMessage(*argparams)
-
-    return res
+    return True
 
 
 def mocked_email_submitMessage(EMail_Object, *argparams, **kwparams):
@@ -163,12 +162,12 @@ def calcOTP(key, counter=0, digits=6, typ=None):
     return otp
 
 
-class TestChallengeResponseController(TestSpecialController):
+class TestChallengeResponseController(TestingChallengeResponseController):
     def setUp(self):
         """
         This sets up all the resolvers and realms
         """
-        TestSpecialController.setUp(self)
+        TestingChallengeResponseController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -205,7 +204,7 @@ class TestChallengeResponseController(TestSpecialController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
-        TestSpecialController.tearDown(self)
+        TestingChallengeResponseController.tearDown(self)
 
     def get_audit_entries(self, num=3, page=1):
         """

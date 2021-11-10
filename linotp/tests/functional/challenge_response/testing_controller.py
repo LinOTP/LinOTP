@@ -61,7 +61,7 @@ except ImportError as exc:
 log = logging.getLogger(__name__)
 
 
-class TestSpecialController(TestController):
+class TestingChallengeResponseController(TestController):
 
     radius_authport = DEFAULT_NOSE_CONFIG["radius"]["authport"]
     radius_acctport = DEFAULT_NOSE_CONFIG["radius"]["acctport"]
@@ -158,6 +158,7 @@ class TestSpecialController(TestController):
         try:
             radius_server_file = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
+                "..",
                 "..",
                 "tools",
                 "dummy_radius_server.py",
