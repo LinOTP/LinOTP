@@ -38,6 +38,7 @@ from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
 from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
 from linotp.lib.context import request_context as context
 from linotp.lib.crypto.encrypted_data import EncryptedData
+from linotp.lib.realm import getRealms
 from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
@@ -276,6 +277,27 @@ def get_cls_identifier(config_identifier):
     return None
 
 
+def get_admin_resolvers():
+    """ """
+    admin_realm_name = current_app.config["ADMIN_REALM_NAME"].lower()
+    admin_resolver_name = current_app.config["ADMIN_RESOLVER_NAME"]
+
+    admin_realm_definition = getRealms(admin_realm_name).get(
+        admin_realm_name, {}
+    )
+
+    if not admin_realm_definition:
+        return []
+
+    admin_resolvers = set()
+    for resolver_spec in admin_realm_definition["useridresolver"]:
+        admin_resolvers.add(resolver_spec.rpartition(".")[2])
+
+    admin_resolvers.add(admin_resolver_name)
+
+    return list(admin_resolvers)
+
+
 # external system/getResolvers
 def getResolverList(filter_resolver_type=None, config=None):
     """
@@ -287,6 +309,8 @@ def getResolverList(filter_resolver_type=None, config=None):
     """
     Resolvers = {}
     resolvertypes = get_resolver_types()
+
+    admin_resolvers = get_admin_resolvers()
 
     if not config:
         conf = context.get("Config")
@@ -308,6 +332,11 @@ def getResolverList(filter_resolver_type=None, config=None):
                 r["resolvername"] = resolver[3]
                 r["entry"] = entry
                 r["type"] = typ
+
+                # return the resolver spec, which is required to define a realm
+                resolver_cls = get_resolver_class(typ)
+                r["spec"] = resolver_cls.db_prefix + "." + resolver[3]
+                r["admin"] = resolver[3] in admin_resolvers
 
                 readonly_entry = ".".join(
                     [resolver[0], resolver[1], "readonly", resolver[3]]
@@ -395,6 +424,8 @@ def getResolverInfo(resolvername, passwords=False):
     if resolver_cls is None:
         raise Exception("no such resolver type '%r' defined!" % resolver_type)
 
+    result["spec"] = resolver_cls.db_prefix + "." + resolvername
+
     res_conf, _missing = resolver_cls.filter_config(
         linotp_config, resolvername
     )
@@ -450,6 +481,7 @@ def getResolverInfo(resolvername, passwords=False):
 
     result["type"] = resolver_type
     result["data"] = res_conf
+    result["admin"] = resolvername in get_admin_resolvers()
 
     return result
 
