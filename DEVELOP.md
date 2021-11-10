@@ -87,7 +87,7 @@ management interface in your browser (`http://localhost:5000/manage/`) and
 login as `<your_username>`.
 
 All available CLI commands have their own documentation, and you can find them
-listed in the top level man page **linotp-config(1)**. Should you not yet have
+listed in the top level man page **linotp(1)**. Should you not yet have
 installed the linotp man pages, you can also reference them by path, like this:
 ```terminal
  $ man ./man/man1/linotp.1
