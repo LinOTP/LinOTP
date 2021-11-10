@@ -306,7 +306,7 @@ class TestSupport(TestController):
             )
             assert not response.json["result"]["status"]
 
-            msg = "No more tokens can be enrolled due to license restrictions"
+            msg = "Failed to enroll token, please contact your administrator"
             assert msg in response.json["result"]["error"]["message"], response
 
             # ------------------------------------------------------------- --
@@ -318,7 +318,7 @@ class TestSupport(TestController):
             )
             assert not response.json["result"]["status"]
 
-            msg = "No more tokens can be enrolled due to license restrictions"
+            msg = "Failed to enroll token, please contact your administrator"
             assert msg in response.json["result"]["error"]["message"], response
 
     def test_token_user_license(self):
