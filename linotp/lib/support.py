@@ -834,7 +834,7 @@ def verify_user_volume(lic_dict):
             num,
             user_volume,
         )
-        detail = _("%d token users used > %d token users licensed.") % (
+        detail = _("%d token users found > %d token users licensed.") % (
             num,
             user_volume,
         )
@@ -851,7 +851,7 @@ def verify_user_volume(lic_dict):
         )
 
         detail = _(
-            "Grace limit reached: %d token users used >= %d token users "
+            "Grace limit reached: %d token users found >= %d token users "
             "licensed. %d additional users allowed."
         ) % (num, user_volume, GRACE_VOLUME)
 
@@ -891,7 +891,7 @@ def verify_token_volume(lic_dict):
             num,
             token_volume,
         )
-        detail = _("%d tokens used > %d tokens licensed.") % (
+        detail = _("%d active tokens found > %d tokens licensed.") % (
             num,
             token_volume,
         )
@@ -907,7 +907,7 @@ def verify_token_volume(lic_dict):
             GRACE_VOLUME,
         )
         detail = _(
-            "Grace limit reached: %d tokens used >= %d tokens licensed. "
+            "Grace limit reached: %d active tokens found >= %d tokens licensed. "
             "%d additional tokens allowed."
         ) % (num, token_volume, GRACE_VOLUME)
 
