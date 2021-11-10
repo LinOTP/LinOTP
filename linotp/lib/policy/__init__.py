@@ -328,7 +328,7 @@ def _checkAdminPolicyPost(
             )
             linotp.lib.support.check_license_restrictions()
 
-            raise PolicyException(
+            raise linotp.lib.support.LicenseException(
                 _(
                     "No more tokens can be enrolled"
                     " due to license restrictions"
@@ -445,7 +445,7 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
     if method == "enroll":
 
         if linotp.lib.support.check_license_restrictions():
-            raise PolicyException(
+            raise linotp.lib.support.LicenseException(
                 _(
                     "No more tokens can be enrolled"
                     " due to license restrictions"
@@ -627,7 +627,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             )
 
         if linotp.lib.support.check_license_restrictions():
-            raise PolicyException(
+            raise linotp.lib.support.LicenseException(
                 _(
                     "No more tokens can be enabled"
                     " due to license restrictions"
@@ -822,7 +822,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         log.debug("[checkPolicyPre] checking init action")
 
         if linotp.lib.support.check_license_restrictions():
-            raise PolicyException(
+            raise linotp.lib.support.LicenseException(
                 _(
                     "No more tokens can be enrolled"
                     " due to license restrictions"
@@ -1000,7 +1000,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             )
 
         if linotp.lib.support.check_license_restrictions():
-            raise PolicyException(
+            raise linotp.lib.support.LicenseException(
                 _(
                     "No more tokens can be assigned"
                     " due to license restrictions"
@@ -1407,7 +1407,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 )
 
         if linotp.lib.support.check_license_restrictions():
-            raise PolicyException(
+            raise linotp.lib.support.LicenseException(
                 _(
                     "No more tokens can be loaded"
                     " due to license restrictions"

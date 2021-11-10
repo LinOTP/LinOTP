@@ -110,6 +110,10 @@ SMyYfVhZKPgS3mjcSYsfUG9awcgfwUU/ssEw0FLqSbTQiIJf2gWN9dx02iVSJREUnlf80Gy3ZQd0l4EV
 GRACE_VOLUME = 2
 
 
+class LicenseException(Exception):
+    pass
+
+
 class LicenseInfo(dict):
     """
     LicenseInfo
@@ -551,7 +555,9 @@ def set_duration(lic_dict, raiseException=False):
     try:
         days = int(days)
     except ValueError as _val:
-        raise Exception("Unable to interpret duration in license description")
+        raise LicenseException(
+            "Unable to interpret duration in license description"
+        )
 
     # we have a timely limited version, so we have to check if there is
     # already a license like this installed by comparing the signatures
@@ -570,7 +576,7 @@ def set_duration(lic_dict, raiseException=False):
         if base64.b64encode(lic_sign)[:500] == signature:
             error = _("License already installed!")
             if raiseException:
-                raise Exception(error)
+                raise LicenseException(error)
             else:
                 log.error(error)
                 return False
