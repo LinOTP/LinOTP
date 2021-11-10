@@ -10,7 +10,8 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     to set the charset=utf8 parameter as otherwise, resolvers do not
     correctly display imported users if they contain utf-8 characters.
     Using flask- mysqlalchemy connection solved this problem.
-
+  * Better license exception messages and in case of the user service, the
+    message suggests asking the system administrator.
 
   Features:
   * add grace to license volume exceeding and display accordingly a message
