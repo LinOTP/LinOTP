@@ -147,3 +147,18 @@ class TokenImportAladdin(TokenImport):
 
     def __init__(self, manage_ui):
         TokenImport.__init__(self, manage_ui)
+
+
+class TokenImportOATH(TokenImport):
+    """
+    Import an OATH token file (csv).
+        Create an instance and invoke the 'do_import' method.
+    """
+
+    menu_item_id = "menu_load_oath_csv_tokenfile"
+    body_id = "dialog_import_oath"
+    load_button_id = "button_oathcsv_load"
+    file_name_lineedit = '//*[@id="load_tokenfile_form_oathcsv"]/p[4]/input[1]'
+
+    def __init__(self, manage_ui):
+        TokenImport.__init__(self, manage_ui)
