@@ -3412,6 +3412,7 @@ function realms_load() {
 }
 
 function realm_ask_delete() {
+    $("#realm_delete_name").html(escape(g.realm_to_edit.name));
     $dialog_realm_ask_delete.dialog('open');
 }
 
