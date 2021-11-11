@@ -6977,38 +6977,47 @@ function realm_edit(realm) {
 
     // get the realm configuration
     var resp = clientUrlFetchSync('/system/getRealms', {});
-    var realmObj = jQuery.parseJSON(resp);
+    var realm = jQuery.parseJSON(resp).result.value[realm];
 
-    var uidresolvers = [];
-    var default_realm = "";
-
-    if (realm) {
-        uidresolvers = realmObj.result.value[realm].useridresolver;
-    }
+    var realmResolvers = realm ? realm.useridresolver : [];
+    realmResolvers = realmResolvers
+        .map(function (r) { return r.split(".").pop(); });
 
     // get all resolvers
-    var resolvers = '';
+    var resolverListHtml = '';
     var params = { 'session': getsession() };
     $.post('/system/getResolvers', params,
         function (data, textStatus, XMLHttpRequest) {
-            resolvers = '<ol id="resolvers_in_realms_select" class="select_list" class="ui-selectable">';
-            for (var key in data.result.value) {
-                var klass = 'class="ui-widget-content"';
-                for (var i_reso in uidresolvers) {
-                    // check if this resolver is contained in the realm
-                    var reso = uidresolvers[i_reso].split('.');
-                    if (reso[reso.length - 1] == key) {
-                        klass = 'class="ui-selected" class="ui-widget-content" ';
-                    }
-                }
-                var e_key = escape(key);
-                var id = "id=realm_edit_click_" + e_key;
-                var e_resolver_type = escape(data.result.value[key].type);
-                resolvers += '<li ' + id + ' ' + klass + '>' + e_key + ' [' + e_resolver_type + ']</li>';
-            }
-            resolvers += '</ol>';
+            var resolvers = Object
+                .keys(data.result.value)
+                .map(function (resolver_name) { return data.result.value[resolver_name]; });
 
-            $('#realm_edit_resolver_list').html(resolvers);
+            resolverListHtml = '<ol id="resolvers_in_realms_select" class="select_list ui-selectable">';
+
+            for (var resolver of resolvers) {
+
+                isContainedInRealm = realmResolvers.indexOf(resolver.resolvername) != -1;
+                isAdmin = resolver.admin;
+
+                var element_classes = "ui-widget-content";
+                if (isContainedInRealm) {
+                    element_classes += " ui-selected";
+                }
+
+                var e_key = escape(resolver.resolvername);
+                var element_id = "realm_edit_click_" + e_key;
+                var e_resolver_type = escape(resolver.type);
+
+                resolverListHtml += '<li id="' + element_id + '" class="' + element_classes + '">'
+                    + '<span class="name">' + e_key + '</span> '
+                    + '[<span class="type">' + e_resolver_type + '</span>]'
+                    + (isAdmin ? ' <span class="tag">' + i18n.gettext("admin") + '</span>' : '')
+                    + '</li>';
+            }
+
+            resolverListHtml += '</ol>';
+
+            $('#realm_edit_resolver_list').html(resolverListHtml);
             $('#resolvers_in_realms_select').selectable({
                 stop: check_for_selected_resolvers
             }); // end of selectable
@@ -7030,39 +7039,30 @@ function realm_edit(realm) {
 }
 
 function check_for_selected_resolvers() {
-    var resolvers_in_realm_to_edit = new Array();
-    $(".ui-selected", this).each(function () {
-        var index = $("#resolvers_in_realms_select li").index(this);
-        var reso = escape($(this).html());
-        if (reso.match(/(\S+)\s\[(\S+)\]/)) {
-            var r = reso.replace(/(\S+)\s+\S+/, "$1");
-            var t = reso.replace(/\S+\s+\[(\S+)\]/, "$1");
-        }
-        else {
-            alert_info_text({
-                'text': "text_regexp_error",
-                'param': escape(reso),
-                'type': ERROR,
-                'is_escaped': true
-            });
-        }
-        switch (t) {
-            case 'ldapresolver':
-                resolvers_in_realm_to_edit.push('useridresolver.LDAPIdResolver.IdResolver.' + r);
-                break;
-            case 'sqlresolver':
-                resolvers_in_realm_to_edit.push('useridresolver.SQLIdResolver.IdResolver.' + r);
-                break;
-            case 'httpresolver':
-                resolvers_in_realm_to_edit.push('useridresolver.HTTPIdResolver.IdResolver.' + r);
-                break;
-            case 'passwdresolver':
-                resolvers_in_realm_to_edit.push('useridresolver.PasswdIdResolver.IdResolver.' + r);
-                break;
-        }
-    }).promise().done(function () {
-        g.resolvers_in_realm_to_edit = resolvers_in_realm_to_edit.join(",");
-    }); // end of each
+    g.resolvers_in_realm_to_edit = $("#resolvers_in_realms_select .ui-selected")
+        .map(function () {
+            var resolverName = escape($(".name", this).text());
+            var resolverType = escape($(".type", this).text());
+            var namePrefix;
+            switch (resolverType) {
+                case 'ldapresolver':
+                    namePrefix = 'useridresolver.LDAPIdResolver.IdResolver.';
+                    break;
+                case 'sqlresolver':
+                    namePrefix = 'useridresolver.SQLIdResolver.IdResolver.';
+                    break;
+                case 'httpresolver':
+                    namePrefix = 'useridresolver.HTTPIdResolver.IdResolver.';
+                    break;
+                case 'passwdresolver':
+                    namePrefix = 'useridresolver.PasswdIdResolver.IdResolver.';
+                    break;
+            }
+
+            return namePrefix + resolverName;
+        })
+        .get()
+        .join(',');
 }
 
 var originalLdapFormData = null;
