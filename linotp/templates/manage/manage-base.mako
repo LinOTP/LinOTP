@@ -2341,7 +2341,6 @@
 <div id="text_resolver_delete_fail">${_("Failed deleting resolver")}: <span class="text_param1"> </span></div>
 <div id="text_realm_delete_success">${_("Realm deleted")}: <span class="text_param1"> </span></div>
 <div id="text_realm_delete_fail">${_("Failed deleting Realm")}: <span class="text_param1"> </span></div>
-<div id="text_regexp_error">${_("Error in regular expression for")}: <span class="text_param1"> </span></div>
 <div id="text_ldap_config_success">${_("LDAP Server configuration seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>
 <div id="text_ldap_load_error">${_("Error loading LDAP resolver")}: <span class="text_param1"> </span></div>
 <div id="text_http_config_success">${_("HTTP Server configuration seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>

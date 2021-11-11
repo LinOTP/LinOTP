@@ -89,7 +89,7 @@ var $form_validator_file;
 var g = {
     enroll_display_qrcodes: false,
     running_requests: 0,
-    resolver_to_edit: "",
+    resolver_to_edit: null,
     realm_to_edit: "",
     resolvers_in_realm_to_edit: "",
     realms_of_token: [],
@@ -3374,12 +3374,14 @@ function realms_load() {
                     })
                     .join(" ");
 
-                var isDefault = !!realm.default
+                var isDefault = realm.default && realm.default === "true";
+                var isAdmin = realm.admin;
 
-                realms += '<li class="ui-widget-content' + (isDefault ? ' default' : '') + '">'
+                realms += '<li class="ui-widget-content' + (isDefault ? ' default' : '') + (isAdmin ? ' admin' : '') + '">'
                     + '<span class="name">' + escape(realmName) + '</span>'
                     + ' [' + escape(resolvers) + ']'
                     + (isDefault ? ' <span class="tag">' + i18n.gettext("default") + '</span>' : '')
+                    + (isAdmin ? ' <span class="tag">' + i18n.gettext("admin") + '</span>' : '')
                     + '</li>';
             }
             realms += '</ol>';
@@ -3413,12 +3415,15 @@ function resolvers_load() {
             var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
             var count = 0;
             for (var key in data.result.value) {
+                resolver = data.result.value[key];
                 var e_key = escape(key);
-                var e_reolver_type = escape(data.result.value[key].type);
-                var managed = escape(data.result.value[key].readonly);
-                resolvers += '<li class="ui-widget-content' + (managed ? " managed" : "") + '">'
-                    + '<span class="name">' + e_key + ' [' + e_reolver_type + ']</span>'
+                var e_reolver_type = escape(resolver.type);
+                var managed = escape(resolver.readonly);
+                var isAdmin = resolver.admin;
+                resolvers += '<li class="ui-widget-content' + (managed ? " managed" : "") + (isAdmin ? ' admin' : '') + '">'
+                    + '<span class="name">' + e_key + '</span> [<span class="type">' + e_reolver_type + '</span>]'
                     + (managed ? ' <span class="tag">' + i18n.gettext("managed") + '</span>' : '')
+                    + (isAdmin ? ' <span class="tag">' + i18n.gettext("admin") + '</span>' : '')
                     + '</li>';
                 count = count + 1;
             }
@@ -3446,7 +3451,10 @@ function resolvers_load() {
                         }
 
                         if ($("#resolvers_select .ui-selected").length > 0) {
-                            g.resolver_to_edit = escape($("#resolvers_select .ui-selected .name").text());
+                            g.resolver_to_edit = {
+                                name: escape($("#resolvers_select .ui-selected .name").text()),
+                                type: escape($("#resolvers_select .ui-selected .type").text())
+                            };
                             $("#button_resolver_delete").button("enable");
                         }
                         else {
@@ -3462,7 +3470,7 @@ function resolvers_load() {
             }
             else {
                 $('#resolvers_list').html("");
-                g.resolver_to_edit = "";
+                g.resolver_to_edit = null;
             };
             hide_waiting();
         }); // end of $.post
@@ -3530,30 +3538,14 @@ function realm_delete() {
 }
 
 function resolver_ask_delete() {
-    if (g.resolver_to_edit.length > 0) {
-        if (g.resolver_to_edit.match(/(\S+)\s(\S+)/)) {
-            var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
-            var type = g.resolver_to_edit.replace(/\S+\s+(\S+)/, "$1");
-
-            $('#delete_resolver_type').html(escape(type));
-            $('#delete_resolver_name').html(escape(reso));
-            $dialog_resolver_ask_delete.dialog('open');
-        }
-        else {
-            alert_info_text({
-                'text': "text_regexp_error",
-                'param': escape(g.resolver_to_edit),
-                'type': ERROR,
-                'is_escaped': true
-            });
-        }
-    }
+    $('#delete_resolver_name').html(g.resolver_to_edit.name);
+    $('#delete_resolver_type').html(g.resolver_to_edit.type);
+    $dialog_resolver_ask_delete.dialog('open');
 }
 
 function resolver_edit_type() {
-    var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
-    var type = g.resolver_to_edit.replace(/\S+\s+\[(\S+)\]/, "$1");
-
+    var reso = g.resolver_to_edit.name;
+    var type = g.resolver_to_edit.type;
     switch (type) {
         case "ldapresolver":
             resolver_ldap(reso, false);
@@ -3571,8 +3563,8 @@ function resolver_edit_type() {
 }
 
 function resolver_duplicate() {
-    var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
-    var type = g.resolver_to_edit.replace(/\S+\s+\[(\S+)\]/, "$1");
+    var reso = g.resolver_to_edit.name;
+    var type = g.resolver_to_edit.type;
 
     switch (type) {
         case "ldapresolver":

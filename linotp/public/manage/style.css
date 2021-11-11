@@ -804,6 +804,7 @@ form .input_hint {
 .select_list .tag {
   float: right;
   color: grey;
+  margin-left: 0.5em;
 }
 
 .hidden {
