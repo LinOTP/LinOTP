@@ -110,6 +110,10 @@ SMyYfVhZKPgS3mjcSYsfUG9awcgfwUU/ssEw0FLqSbTQiIJf2gWN9dx02iVSJREUnlf80Gy3ZQd0l4EV
 GRACE_VOLUME = 2
 
 
+class LicenseException(Exception):
+    pass
+
+
 class LicenseInfo(dict):
     """
     LicenseInfo
@@ -551,7 +555,9 @@ def set_duration(lic_dict, raiseException=False):
     try:
         days = int(days)
     except ValueError as _val:
-        raise Exception("Unable to interpret duration in license description")
+        raise LicenseException(
+            "Unable to interpret duration in license description"
+        )
 
     # we have a timely limited version, so we have to check if there is
     # already a license like this installed by comparing the signatures
@@ -570,7 +576,7 @@ def set_duration(lic_dict, raiseException=False):
         if base64.b64encode(lic_sign)[:500] == signature:
             error = _("License already installed!")
             if raiseException:
-                raise Exception(error)
+                raise LicenseException(error)
             else:
                 log.error(error)
                 return False
@@ -834,7 +840,7 @@ def verify_user_volume(lic_dict):
             num,
             user_volume,
         )
-        detail = _("%d token users used > %d token users licensed.") % (
+        detail = _("%d token users found > %d token users licensed.") % (
             num,
             user_volume,
         )
@@ -851,7 +857,7 @@ def verify_user_volume(lic_dict):
         )
 
         detail = _(
-            "Grace limit reached: %d token users used >= %d token users "
+            "Grace limit reached: %d token users found >= %d token users "
             "licensed. %d additional users allowed."
         ) % (num, user_volume, GRACE_VOLUME)
 
@@ -891,7 +897,7 @@ def verify_token_volume(lic_dict):
             num,
             token_volume,
         )
-        detail = _("%d tokens used > %d tokens licensed.") % (
+        detail = _("%d active tokens found > %d tokens licensed.") % (
             num,
             token_volume,
         )
@@ -907,7 +913,7 @@ def verify_token_volume(lic_dict):
             GRACE_VOLUME,
         )
         detail = _(
-            "Grace limit reached: %d tokens used >= %d tokens licensed. "
+            "Grace limit reached: %d active tokens found >= %d tokens licensed. "
             "%d additional tokens allowed."
         ) % (num, token_volume, GRACE_VOLUME)
 

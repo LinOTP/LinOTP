@@ -89,6 +89,7 @@ from linotp.lib.reply import (
 from linotp.lib.reply import sendResult as sendResponse
 from linotp.lib.reporting import token_reporting
 from linotp.lib.resolver import getResolverObject
+from linotp.lib.support import LicenseException
 from linotp.lib.token import (
     TokenHandler,
     get_multi_otp,
@@ -1318,6 +1319,14 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, pe, 1)
 
+        except LicenseException as lex:
+            log.error("[enable] license exception: %r", lex)
+            db.session.rollback()
+            msg = _(
+                "Failed to enable token, please contact your administrator"
+            )
+            return sendError(response, msg, 1)
+
         except Exception as e:
             log.error("[enable] failed: %r", e)
             db.session.rollback()
@@ -2251,6 +2260,14 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, pe, 1)
 
+        except LicenseException as lex:
+            log.error("[enroll] license exception: %r", lex)
+            db.session.rollback()
+            msg = _(
+                "Failed to enroll token, please contact your administrator"
+            )
+            return sendError(response, msg, 1)
+
         except Exception as e:
             log.error("[userinit] token initialization failed! %r", e)
             db.session.rollback()
@@ -2476,6 +2493,14 @@ class UserserviceController(BaseController):
             log.error("[userwebprovision] policy failed: %r", pe)
             db.session.rollback()
             return sendError(response, pe, 1)
+
+        except LicenseException as lex:
+            log.error("[userwebprovision] license exception: %r", lex)
+            db.session.rollback()
+            msg = _(
+                "Failed to enroll token, please contact your administrator"
+            )
+            return sendError(response, msg, 1)
 
         except Exception as exx:
             log.error(

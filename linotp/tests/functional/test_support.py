@@ -179,7 +179,7 @@ class TestSupport(TestController):
         response = self.install_license(license_filename="demo-lic.pem")
 
         assert '"status": false' in response, response
-        msg = "volume exceeded: 9 tokens used > 5 tokens licensed."
+        msg = "volume exceeded: 9 active tokens found > 5 tokens licensed."
         assert msg in response, response
 
     def test_appliance_demo_licence(self):
@@ -306,7 +306,7 @@ class TestSupport(TestController):
             )
             assert not response.json["result"]["status"]
 
-            msg = "No more tokens can be enrolled due to license restrictions"
+            msg = "Failed to enroll token, please contact your administrator"
             assert msg in response.json["result"]["error"]["message"], response
 
             # ------------------------------------------------------------- --
@@ -318,7 +318,7 @@ class TestSupport(TestController):
             )
             assert not response.json["result"]["status"]
 
-            msg = "No more tokens can be enrolled due to license restrictions"
+            msg = "Failed to enroll token, please contact your administrator"
             assert msg in response.json["result"]["error"]["message"], response
 
     def test_token_user_license(self):

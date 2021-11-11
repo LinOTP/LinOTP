@@ -42,6 +42,14 @@ msgid " or "
 msgstr " oder "
 
 #, python-format
+msgid "%d active tokens found > %d tokens licensed."
+msgstr "%d aktive Token gefunden > %d lizensierte Token"
+
+#, python-format
+msgid "%d token users found > %d token users licensed."
+msgstr "%d Token-Benutzer gefunden > %d lizensierte Token-Benutzer"
+
+#, python-format
 msgid "%d tokens of %d migrated"
 msgstr "%d Tokens von %d migriert"
 
@@ -313,6 +321,9 @@ msgstr "Wählen Sie Ihre bevorzugte Methode zur Authentisierung"
 msgid "Choose your token profile "
 msgstr "Bitte wählen Sie Ihren Tokentyp "
 
+msgid "Choosen based on hash length. Fallback: SHA1"
+msgstr "Anhand der Hash-Länge ermittelt. Anderenfalls: SHA1"
+
 msgid "Class"
 msgstr "Klasse"
 
@@ -477,9 +488,6 @@ msgstr "Tagespasswort"
 msgid "Default Settings"
 msgstr "Standardeinstellungen"
 
-msgid "Default Values:"
-msgstr "Standardwerte:"
-
 msgid "Default expiration time of a challenge in seconds."
 msgstr "Standardwert der Gültigkeitsdauer von Challenges in Sekunden."
 
@@ -491,6 +499,10 @@ msgstr "Token-Standardeinstellungen"
 
 msgid "Default validity time of a challenge in seconds."
 msgstr "Standardwert der Gültigkeitsdauer einer Challenge in Sekunden."
+
+#, fuzzy
+msgid "Default values:"
+msgstr "Standardwerte:"
 
 msgid "DefaultCountWindow"
 msgstr "Standardwert des Zählerfensters"
@@ -594,26 +606,6 @@ msgstr "Dokumentation"
 
 msgid "Driver"
 msgstr "Treiber"
-
-msgid "Due to license restrictions no more tokens could be assigned!"
-msgstr ""
-"Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token zugewiesen "
-"werden!"
-
-msgid "Due to license restrictions no more tokens could be enabled!"
-msgstr ""
-"Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token aktiviert "
-"werden!"
-
-msgid "Due to license restrictions no more tokens could be enrolled!"
-msgstr ""
-"Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token ausgerollt "
-"werden!"
-
-msgid "Due to license restrictions no more tokens could be loaded!"
-msgstr ""
-"Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token geladen "
-"werden!"
 
 msgid "Duplicate"
 msgstr "Duplizieren"
@@ -997,6 +989,9 @@ msgstr "Fehler beim Löschen des Providers %s"
 msgid "Failed to delete token!\n"
 msgstr "Fehler beim Löschen des Tokens\n"
 
+msgid "Failed to enable token, please contact your administrator"
+msgstr "Fehler beim Aktivieren des Tokens. Bitte kontaktieren Sie ihren Administrator"
+
 msgid "Failed to enroll token"
 msgstr "Ausrollen des Tokens fehlgeschlagen"
 
@@ -1005,6 +1000,9 @@ msgstr "Ausrollen des Tokens fehlgeschlagen!"
 
 msgid "Failed to enroll token!\n"
 msgstr "Fehler beim Ausrollen des Tokens\n"
+
+msgid "Failed to enroll token, please contact your administrator"
+msgstr "Fehler beim Ausrollen des Tokens. Bitte kontaktieren Sie ihren Administrator"
 
 msgid "Failed to enroll token: "
 msgstr "Ausrollen des Tokens fehlgeschlagen: "
@@ -1158,6 +1156,18 @@ msgstr "Vorname"
 msgid "Google Authenticator compliant"
 msgstr "Google Authenticator konform"
 
+#, python-format
+msgid ""
+"Grace limit reached: %d active tokens found >= %d tokens licensed. %d "
+"additional tokens allowed."
+msgstr "Warn-Limit erreicht: %d aktive Token gefunden >= %d lizensierte Token. %d weitere verfügbare Token."
+
+#, python-format
+msgid ""
+"Grace limit reached: %d token users found >= %d token users licensed. %d "
+"additional users allowed."
+msgstr "Warn-Limit erreicht: %d Token-Benutzer gefunden >= %d lizensierte Token-Benutzer. %d weitere mögliche Token-Benutzer."
+
 msgid "HMAC Token Settings"
 msgstr "HMAC-Token-Einstellungen"
 
@@ -1169,6 +1179,9 @@ msgstr "HMAC zeitbasiert"
 
 msgid "HOTP"
 msgstr "HOTP"
+
+msgid "HOTP, TOTP"
+msgstr "HOTP, TOTP"
 
 msgid "HTTP Connection Test"
 msgstr "HTTP-Verbindungstest"
@@ -1644,6 +1657,18 @@ msgstr "Kein anonymes Verfolgen der Referrals"
 msgid "No existing users will be modified!"
 msgstr "Es werden keine existierenden Benutzer verändert!"
 
+msgid "No more tokens can be assigned due to license restrictions"
+msgstr "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token zugewiesen werden."
+
+msgid "No more tokens can be enabled due to license restrictions"
+msgstr "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token zugewiesen werden."
+
+msgid "No more tokens can be enrolled due to license restrictions"
+msgstr "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token ausgerollte werden"
+
+msgid "No more tokens can be loaded due to license restrictions"
+msgstr "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token importiert werden."
+
 msgid "No resolver selected"
 msgstr "Kein Resolver ausgewählt"
 
@@ -1690,6 +1715,10 @@ msgstr "OCRA-Suite"
 
 msgid "OCRA token rollout failed! Please retry"
 msgstr "Rollout des OCRA-Tokens fehlgeschlagen. Bitte versuchen Sie es erneut"
+
+#, fuzzy
+msgid "OCRA2"
+msgstr "OCRA2-Key"
 
 msgid "OCRA2 - challenge/response Token"
 msgstr "OCRA2 - Challenge/Response-Token"
@@ -1750,6 +1779,10 @@ msgstr "OTP-Werte für Token "
 
 msgid "OTPAuth Url"
 msgstr "OTPAuth URL"
+
+#, fuzzy
+msgid "Ocra Suite"
+msgstr "OCRA Suite"
 
 msgid "Ok"
 msgstr "OK"
@@ -1956,6 +1989,9 @@ msgstr "Richtlinie gespeichert."
 
 msgid "Port"
 msgstr "Port"
+
+msgid "Possible Values:"
+msgstr "Mögliche Wert:"
 
 msgid "PrependPin"
 msgstr "PIN voranstellen"
@@ -2180,6 +2216,9 @@ msgstr "Die Resynchronisierung des Tokens ist fehlgeschlagen"
 msgid "Return SAML attributes"
 msgstr "SAML-Attribute zurückgeben"
 
+msgid "SHA1, SHA256, SHA512"
+msgstr "SHA1, SHA256, SHA512"
+
 msgid "SMS OTP"
 msgstr "SMS-OTP"
 
@@ -2307,8 +2346,8 @@ msgstr "Seriennummer"
 msgid "Serial Number, Seed, Type, Ocra Suite"
 msgstr "Seriennummer, Seed, Typ, OCRA-Suite"
 
-msgid "Serial number, Seed, Type, OTP length, Time step"
-msgstr "Seriennummer, Seed, Typ, OTP-Länge, Zeitschritt"
+msgid "Serial number, Seed, Type, [OTP length], [Time step], [hashlib]"
+msgstr "Seriennummer, Seed, Typ, [OTP-Länge], [Zeitschritt], [Hashfunktion]"
 
 msgid "Serialnumber of new Token"
 msgstr "Seriennummer des neuen OTP-Tokens"
@@ -4067,9 +4106,6 @@ msgstr "auf dem RADIUS Server"
 msgid "on remote server"
 msgstr "auf dem Remote-Server"
 
-msgid "optional"
-msgstr "Optional"
-
 msgid "or email"
 msgstr "oder E-Mail"
 
@@ -4221,18 +4257,6 @@ msgstr "Zeitfenster"
 msgid "token enrollment"
 msgstr "Token ausgerollt"
 
-msgid "token user used"
-msgstr "verwendete Token-Nutzer"
-
-msgid "token users supported"
-msgstr "lizensierte Token-Nutzer"
-
-msgid "tokens supported"
-msgstr "lizensierte Token"
-
-msgid "tokens used"
-msgstr "verwendete Token"
-
 msgid "trigger"
 msgstr "erstellen"
 
@@ -4269,6 +4293,10 @@ msgstr "Gültige Werte sind 'ocra2'. Sie gaben %s an"
 
 msgid "voice Provider"
 msgstr "Voice-Provider"
+
+#, fuzzy
+msgid "volume exceeded: "
+msgstr "Volumen überschritten:"
 
 msgid "web ui generated"
 msgstr "WebUI generiert"
@@ -4365,6 +4393,26 @@ msgstr "WebUI generiert"
 
 #~ msgid "Do you want to overwrite the existing definition?"
 #~ msgstr "Wollen Sie die vorhandene Definition überschreiben?"
+
+#~ msgid "Due to license restrictions no more tokens could be assigned!"
+#~ msgstr ""
+#~ "Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token "
+#~ "zugewiesen werden!"
+
+#~ msgid "Due to license restrictions no more tokens could be enabled!"
+#~ msgstr ""
+#~ "Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token aktiviert "
+#~ "werden!"
+
+#~ msgid "Due to license restrictions no more tokens could be enrolled!"
+#~ msgstr ""
+#~ "Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token "
+#~ "ausgerollt werden!"
+
+#~ msgid "Due to license restrictions no more tokens could be loaded!"
+#~ msgstr ""
+#~ "Aufgrund von Lizenzeinschränkungen konnten keine weiteren Token geladen "
+#~ "werden!"
 
 #~ msgid "E-mail OTP Token"
 #~ msgstr "E-Mail OTP Token"
@@ -4542,9 +4590,6 @@ msgstr "WebUI generiert"
 
 #~ msgid "OCRA Login"
 #~ msgstr "OCRA-Anmeldung"
-
-#~ msgid "OCRA Suite"
-#~ msgstr "OCRA Suite"
 
 #~ msgid "OCRA Token"
 #~ msgstr "OCRA-Token"
@@ -4982,6 +5027,9 @@ msgstr "WebUI generiert"
 #~ msgid "no"
 #~ msgstr "Nein"
 
+#~ msgid "optional"
+#~ msgstr "Optional"
+
 #~ msgid "or"
 #~ msgstr "oder"
 
@@ -5031,6 +5079,18 @@ msgstr "WebUI generiert"
 #~ msgid "timeStep"
 #~ msgstr "Zeitschritt"
 
+#~ msgid "token user used"
+#~ msgstr "verwendete Token-Nutzer"
+
+#~ msgid "token users supported"
+#~ msgstr "lizensierte Token-Nutzer"
+
+#~ msgid "tokens supported"
+#~ msgstr "lizensierte Token"
+
+#~ msgid "tokens used"
+#~ msgstr "verwendete Token"
+
 #~ msgid ""
 #~ "type (default hotp), otplen (default 6), timeStep (default 30) and "
 #~ "ocrasuite are optional."
@@ -5067,9 +5127,6 @@ msgstr "WebUI generiert"
 
 #~ msgid "validity start"
 #~ msgstr "Start Gültigkeitszeitraum"
-
-#~ msgid "volume exceeded:"
-#~ msgstr "Volumen überschritten:"
 
 #~ msgid "which is available in the appropriate app stores."
 #~ msgstr "den es in den entsprechenden App Stores gibt."
