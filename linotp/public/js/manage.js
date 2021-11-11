@@ -7012,8 +7012,10 @@ function realm_edit(realm) {
                 var e_key = escape(resolver.resolvername);
                 var element_id = "realm_edit_click_" + e_key;
                 var e_resolver_type = escape(resolver.type);
+                var e_spec = escape(resolver.spec);
 
-                resolverListHtml += '<li id="' + element_id + '" class="' + element_classes + '">'
+                resolverListHtml += '<li id="' + element_id + '" class="' + element_classes + '"'
+                    + 'data-resolver-spec="' + e_spec + '">'
                     + '<span class="name">' + e_key + '</span> '
                     + '[<span class="type">' + e_resolver_type + '</span>]'
                     + (isAdmin ? ' <span class="tag">' + i18n.gettext("admin") + '</span>' : '')
@@ -7046,25 +7048,7 @@ function realm_edit(realm) {
 function check_for_selected_resolvers() {
     g.resolvers_in_realm_to_edit = $("#resolvers_in_realms_select .ui-selected")
         .map(function () {
-            var resolverName = escape($(".name", this).text());
-            var resolverType = escape($(".type", this).text());
-            var namePrefix;
-            switch (resolverType) {
-                case 'ldapresolver':
-                    namePrefix = 'useridresolver.LDAPIdResolver.IdResolver.';
-                    break;
-                case 'sqlresolver':
-                    namePrefix = 'useridresolver.SQLIdResolver.IdResolver.';
-                    break;
-                case 'httpresolver':
-                    namePrefix = 'useridresolver.HTTPIdResolver.IdResolver.';
-                    break;
-                case 'passwdresolver':
-                    namePrefix = 'useridresolver.PasswdIdResolver.IdResolver.';
-                    break;
-            }
-
-            return namePrefix + resolverName;
+            return $(this).attr("data-resolver-spec");
         })
         .get()
         .join(',');
