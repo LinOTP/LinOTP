@@ -123,6 +123,27 @@ class ManageUi(object):
         self.alert_dialog = ManageDialog(self, "alert_box")
         "Access to the alert box dialog element"
 
+        # request jwt session for api requests
+        username = helper.get_from_tconfig(
+            ["linotp", "username"],
+            required=True,
+        )
+        password = helper.get_from_tconfig(
+            ["linotp", "password"],
+            required=True,
+        )
+        login_response = requests.post(
+            self.testcase.base_url + "/admin/login",
+            params={"username": username, "password": password},
+            verify=False,
+        )
+        self._jwt_session: str = login_response.cookies.get(
+            "access_token_cookie"
+        )
+        self._jwt_csrf_token: str = login_response.cookies.get(
+            "csrf_access_token"
+        )
+
     def is_url_open(self):
         possible_urls = (self.URL, self.URL + "/", self.URL + "/#")
         return self.driver.current_url.endswith(possible_urls)
@@ -339,31 +360,12 @@ class ManageUi(object):
         :raise BackendException if the response contains an error
         """
 
-        if params is None:
-            params = {}
-
-        url = (
-            self.testcase.http_protocol
-            + "://"
-            + self.testcase.http_host
-            + ":"
-            + self.testcase.http_port
-            + "/"
-        )
-
-        params["session"] = helper.get_session(
-            url, self.testcase.http_username, self.testcase.http_password
-        )
-
-        auth = requests.auth.HTTPDigestAuth(
-            self.testcase.http_username, self.testcase.http_password
-        )
-
+        url = self.testcase.base_url + "/" + call.strip("/")
         response = requests.post(
-            url + call.strip("/"),
-            auth=auth,
-            params=params,
-            cookies={"admin_session": params["session"]},
+            url,
+            params=params or {},
+            cookies={"access_token_cookie": self._jwt_session},
+            headers={"X-CSRF-TOKEN": self._jwt_csrf_token},
             verify=False,
         )
 
