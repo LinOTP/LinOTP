@@ -6983,6 +6983,8 @@ function realm_edit(realm) {
     realmResolvers = realmResolvers
         .map(function (r) { return r.split(".").pop(); });
 
+    sortAdminResolversTop = realm && realm.admin ? 1 : -1;
+
     // get all resolvers
     var resolverListHtml = '';
     var params = { 'session': getsession() };
@@ -6990,7 +6992,10 @@ function realm_edit(realm) {
         function (data, textStatus, XMLHttpRequest) {
             var resolvers = Object
                 .keys(data.result.value)
-                .map(function (resolver_name) { return data.result.value[resolver_name]; });
+                .map(function (resolver_name) { return data.result.value[resolver_name]; })
+                .sort(function (r1, r2) {
+                    return (r1.admin < r2.admin ? 1 : -1) * sortAdminResolversTop;
+                });
 
             resolverListHtml = '<ol id="resolvers_in_realms_select" class="select_list ui-selectable">';
 
