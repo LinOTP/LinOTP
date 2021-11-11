@@ -6963,9 +6963,9 @@ function realm_modify(name) {
 }
 
 function realm_edit(realm) {
+    $('#realm_name').val(realm);
     if (realm) {
         $('#realm_edit_realm_name').html(escape(realm));
-        $('#realm_name').val(realm);
 
         $('#realm_intro_new').hide();
         $('#realm_intro_edit').show();
