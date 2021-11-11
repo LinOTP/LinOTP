@@ -280,7 +280,6 @@ def get_cls_identifier(config_identifier):
 def get_admin_resolvers():
     """ """
     admin_realm_name = current_app.config["ADMIN_REALM_NAME"].lower()
-    admin_resolver_name = current_app.config["ADMIN_RESOLVER_NAME"]
 
     admin_realm_definition = getRealms(admin_realm_name).get(
         admin_realm_name, {}
@@ -292,8 +291,6 @@ def get_admin_resolvers():
     admin_resolvers = set()
     for resolver_spec in admin_realm_definition["useridresolver"]:
         admin_resolvers.add(resolver_spec.rpartition(".")[2])
-
-    admin_resolvers.add(admin_resolver_name)
 
     return list(admin_resolvers)
 
@@ -321,8 +318,8 @@ def getResolverList(filter_resolver_type=None, config=None):
 
         for typ in resolvertypes:
             if entry.startswith("linotp." + typ):
-                # the realm might contain dots "."
-                # so take all after the 3rd dot for realm
+                # the resolver might contain dots "." so take
+                # all after the 3rd dot for the resolver name
                 r = {}
                 resolver = entry.split(".", 3)
 

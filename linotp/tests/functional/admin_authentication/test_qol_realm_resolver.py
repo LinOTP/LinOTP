@@ -76,7 +76,9 @@ class TestAdminLabel(TestController):
         """
 
         admin_realm_name = current_app.config["ADMIN_REALM_NAME"]
-        admin_resolver_name = current_app.config["ADMIN_RESOLVER_NAME"]
+        fallback_admin_resolver_name = current_app.config[
+            "ADMIN_RESOLVER_NAME"
+        ]
 
         # ----------------------------------------------------------------- --
 
@@ -90,8 +92,8 @@ class TestAdminLabel(TestController):
 
             # preserve the admin resolver spec for later
 
-            if resolver_name == admin_resolver_name:
-                admin_resolver_spec = resolver_description["spec"]
+            if resolver_name == fallback_admin_resolver_name:
+                fallback_admin_resolver_spec = resolver_description["spec"]
                 continue
 
             resolver_specs.add(resolver_description["spec"])
@@ -110,19 +112,27 @@ class TestAdminLabel(TestController):
 
         # ----------------------------------------------------------------- --
 
-        # verify that every resolver now contains the admin label
+        # verify that every resolver other than the default admin resolver
+        # now contains the admin label
 
         response = self.make_system_request("getResolvers", params={})
         resolvers = response.json["result"]["value"]
-        for _resolver_name, resolver_description in resolvers.items():
+        for resolver_name, resolver_description in resolvers.items():
+
+            # the default admin resolver is now no more an admin resolver
+            if resolver_name == fallback_admin_resolver_name:
+                continue
+
             assert resolver_description["admin"], resolver_description
 
         # ----------------------------------------------------------------- --
 
         # finally reset the admin realm
 
-        params = {"realm": admin_realm_name, "resolvers": admin_resolver_spec}
-
+        params = {
+            "realm": admin_realm_name,
+            "resolvers": fallback_admin_resolver_spec,
+        }
         response = self.make_system_request("setRealm", params=params)
         assert response.json["result"]["value"], response
 
