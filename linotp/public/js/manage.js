@@ -3380,8 +3380,12 @@ function realms_load() {
                 realms += '<li class="ui-widget-content' + (isDefault ? ' default' : '') + (isAdmin ? ' admin' : '') + '">'
                     + '<span class="name">' + escape(realmName) + '</span>'
                     + ' [' + escape(resolvers) + ']'
-                    + (isDefault ? ' <span class="tag">' + i18n.gettext("default") + '</span>' : '')
-                    + (isAdmin ? ' <span class="tag">' + i18n.gettext("admin") + '</span>' : '')
+                    + (isDefault ? ' <span class="tag" title="'
+                        + i18n.gettext("This realm is used for validation and selfservice login if no realm is specified.")
+                        + '">' + i18n.gettext("default ") + '</span>' : '')
+                    + (isAdmin ? ' <span class="tag" title="'
+                        + i18n.gettext("This realm is used to authenticate LinOTP administrators.")
+                        + '">' + i18n.gettext("admin") + '</span>' : '')
                     + '</li>';
             }
             realms += '</ol>';
@@ -3395,6 +3399,14 @@ function realms_load() {
                     };
                 } // end of stop function
             }); // end of selectable
+
+            $("#realm_list .tag").tooltip({
+                position: {
+                    my: "right top",
+                    at: "right+10 bottom+10",
+                }
+            });
+
             hide_waiting();
         }); // end of $.post
 }
@@ -3422,8 +3434,14 @@ function resolvers_load() {
                 var isAdmin = resolver.admin;
                 resolvers += '<li class="ui-widget-content' + (managed ? " managed" : "") + (isAdmin ? ' admin' : '') + '">'
                     + '<span class="name">' + e_key + '</span> [<span class="type">' + e_reolver_type + '</span>]'
-                    + (managed ? ' <span class="tag">' + i18n.gettext("managed") + '</span>' : '')
-                    + (isAdmin ? ' <span class="tag">' + i18n.gettext("admin") + '</span>' : '')
+                    + (managed ? ' <span class="tag" title="'
+                        + i18n.gettext("This resolver contains locally managed users, managed by LinOTP.") + ' '
+                        + (isAdmin ? i18n.gettext("Manage administrators via the `linotp local-admins` CLI.")
+                            : i18n.gettext("Manage users via ”Tools -> Import Users”."))
+                        + '">' + i18n.gettext("managed") + '</span>' : '')
+                    + (isAdmin ? ' <span class="tag" title="'
+                        + i18n.gettext("This resolver is used to authenticate LinOTP administrators.")
+                        + '">' + i18n.gettext("admin") + '</span>' : '')
                     + '</li>';
                 count = count + 1;
             }
@@ -3472,6 +3490,14 @@ function resolvers_load() {
                 $('#resolvers_list').html("");
                 g.resolver_to_edit = null;
             };
+
+            $("#resolvers_list .tag").tooltip({
+                position: {
+                    my: "right top",
+                    at: "right+10 bottom+10",
+                }
+            });
+
             hide_waiting();
         }); // end of $.post
 }
