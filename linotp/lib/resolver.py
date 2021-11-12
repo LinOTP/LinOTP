@@ -508,7 +508,6 @@ def deleteResolver(resolvername):
 
     resolvertypes = get_resolver_types()
     conf = context.get("Config")
-    # conf = getLinotpConfig()
 
     delEntries = []
     resolver_specs = set()
