@@ -439,9 +439,11 @@ class TestController(TestCase):
 
     @patch("linotp.controllers.base.verify_jwt_in_request", lambda: True)
     @patch("linotp.app.get_jwt_identity")
+    @patch("linotp.controllers.system.get_jwt_identity")
     def _make_authenticated_request(
         self,
-        mock: Mock,
+        app_get_jwt_identity: Mock,
+        system_get_jwt_identity: Mock,
         controller: Optional[str] = None,
         action: Optional[str] = None,
         method=None,
@@ -453,13 +455,23 @@ class TestController(TestCase):
         client=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
         'session' parameter).
         """
 
-        mock.return_value = auth_user
+        app_get_jwt_identity.return_value = {
+            "username": auth_user,
+            "resolver": auth_resolver,
+        }
+
+        system_get_jwt_identity.return_value = {
+            "username": auth_user,
+            "resolver": auth_resolver,
+        }
+
         params = params or {}
         headers = headers or {}
         cookies = cookies or {}
@@ -507,6 +519,7 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /admin/'action'
@@ -523,6 +536,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_helpdesk_request(
@@ -537,6 +551,7 @@ class TestController(TestCase):
         auth_type="Digest",
         cookies=None,
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /api/helpdesk/'action'
@@ -559,6 +574,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_audit_request(
@@ -570,6 +586,7 @@ class TestController(TestCase):
         client=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /audit/'action'
@@ -585,6 +602,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_manage_request(
@@ -597,6 +615,7 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /manage/'action'
@@ -613,6 +632,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_system_request(
@@ -625,6 +645,7 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /system/'action'
@@ -641,6 +662,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_reporting_request(
@@ -653,6 +675,7 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /reporting/'action'
@@ -669,6 +692,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_monitoring_request(
@@ -681,6 +705,7 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /monitoring/'action'
@@ -697,6 +722,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_gettoken_request(
@@ -761,6 +787,7 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /tools/'action'
@@ -777,6 +804,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_validate_request(

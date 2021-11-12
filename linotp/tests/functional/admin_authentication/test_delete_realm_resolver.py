@@ -6,7 +6,7 @@ from linotp.app import LinOTPApp
 from linotp.model.local_admin_user import LocalAdminResolver
 
 
-class TestDelitionRealResolver:
+class TestDeleteRealmAndResolver:
     def test_delete_local_admin_resolver_successful(
         self,
         create_common_resolvers: Callable,
@@ -45,10 +45,7 @@ class TestDelitionRealResolver:
         # login as user from realm myDefRes to get the cookies
         client.post(
             "/admin/login",
-            data=dict(
-                username="user1",
-                password="geheim1",
-            ),
+            data=dict(username="user1", password="geheim1"),
         )
 
         cookies = client.cookie_jar._cookies["localhost.local"]["/"]

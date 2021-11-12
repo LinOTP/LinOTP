@@ -31,7 +31,6 @@ Pytest fixtures for linotp tests
 
 import contextlib
 import copy
-import io
 import os
 import tempfile
 from typing import Callable, ContextManager, Iterator, List
@@ -40,6 +39,7 @@ from unittest.mock import patch
 import pytest
 
 from flask import g
+from flask.globals import current_app
 from flask.testing import FlaskClient
 
 import linotp.app
@@ -245,7 +245,10 @@ def adminclient(client, request):
         lambda: None,
     ), patch(
         "linotp.app.get_jwt_identity",
-        lambda: admin_user,
+        lambda: {
+            "username": admin_user,
+            "resolver": "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
+        },
     ):
         yield client
 
@@ -317,6 +320,7 @@ def scoped_authclient(
     def auth_context_manager(
         verify_jwt: bool = False,
         username: str = "admin",
+        resolver: str = "useridresolver.PasswdIdResolver.IdResolver.def_resolver",
     ) -> Iterator[FlaskClient]:
         if not verify_jwt:
             with patch(
@@ -324,8 +328,18 @@ def scoped_authclient(
                 lambda: None,
             ), patch(
                 "linotp.app.get_jwt_identity",
-                lambda: username,
+                lambda: {
+                    "username": username,
+                    "resolver": resolver,
+                },
+            ), patch(
+                "linotp.controllers.system.get_jwt_identity",
+                lambda: {
+                    "username": username,
+                    "resolver": resolver,
+                },
             ):
+
                 yield client
                 if hasattr(g, "username"):
                     del g.username
@@ -432,60 +446,6 @@ def _create_resolver(
     return res
 
 
-def _import_admin_user(
-    adminclient: FlaskClient,
-) -> CompatibleTestResponse:
-    """
-    import admin users
-
-    Args:
-        adminclient (FlaskClient):
-            the client which should be used for the request
-
-    """
-
-    # --------------------------------------------------------------------- --
-
-    # the tools/import_user parameters for importing a passwd format file
-
-    params = {
-        "resolver": "LinOTP_local_admins",
-        "dryrun": False,
-        "format": "password",
-        "delimiter": ",",
-        "quotechar": '"',
-    }
-
-    # --------------------------------------------------------------------- --
-
-    # add the admin-passwd content
-
-    admin_passwd_file = os.path.join(
-        TestController.fixture_path, "admin-passwd"
-    )
-
-    with io.open(admin_passwd_file, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    upload_params = {
-        "file": (io.BytesIO(content.encode("utf-8")), "user_list"),
-    }
-    params.update(upload_params)
-
-    # --------------------------------------------------------------------- --
-
-    # run the call
-
-    res = adminclient.post(
-        "tools/import_users", content_type="multipart/form-data", data=params
-    )
-    assert res.json["result"]["status"] is True
-
-    assert len(res.json["result"]["value"]["created"]) == 3
-
-    return res
-
-
 @pytest.fixture
 def create_common_resolvers(
     scoped_authclient: Callable[..., FlaskClient],
@@ -519,18 +479,13 @@ def create_common_resolvers(
                 resolver_params=resolver_param, adminclient=client
             )
 
-        # ----------------------------------------------------------------- --
+        from linotp.model.local_admin_user import LocalAdminResolver
 
-        # fill in the admin users via import
-        #
-        # TODO:
-        #   this will be replaced by the admin_user add
-        #   and will break when the import_user will not allow to import
-        #   into the admin_resolver anymore
+        local_admin_resoler = LocalAdminResolver(current_app)
 
-        _import_admin_user(client)
-
-        # ----------------------------------------------------------------- --
+        local_admin_resoler.add_user("nimda", "Test123!")
+        local_admin_resoler.add_user("root@adomain", "Test123!")
+        local_admin_resoler.add_user("admin", "Test123!")
 
 
 @pytest.fixture

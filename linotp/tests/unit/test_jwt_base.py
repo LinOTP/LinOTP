@@ -39,14 +39,10 @@ from linotp import __version__ as linotp_version
 @patch("linotp.lib.user.User.exists", lambda x: True)
 @patch("linotp.lib.user.User.checkPass", lambda self, psswd: True)
 @patch(
-    "linotp.lib.user.User.getUserObject",
-    lambda x, realm: MagicMock(exists=lambda: True),
-)
-@patch("linotp.controllers.base.getUserId", lambda x: [None] * 3)
-@patch(
     "linotp.controllers.base.getResolverObject",
     lambda x: MagicMock(checkPass=lambda a, b: True),
 )
+@patch("linotp.lib.user.User.get_uid_resolver", lambda self: [("aaa", "bbb")])
 @pytest.mark.parametrize(
     "secure_cookies",
     [
