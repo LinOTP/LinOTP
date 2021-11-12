@@ -69,3 +69,21 @@ class TestManage(TestCase):
         WebDriverWait(self.driver, self.ui_wait_time).until_not(
             EC.element_to_be_clickable((By.ID, menu_item_id))
         )
+
+    def test_login_logout(self):
+        self.driver.delete_all_cookies()
+
+        self.driver.get(self.manage.manage_url)
+
+        assert self.manage.is_login_open()
+        assert not self.manage.is_manage_open()
+
+        self.manage.login()
+
+        assert self.manage.is_manage_open()
+        assert not self.manage.is_login_open()
+
+        self.manage.logout()
+
+        assert self.manage.is_login_open()
+        assert not self.manage.is_manage_open()

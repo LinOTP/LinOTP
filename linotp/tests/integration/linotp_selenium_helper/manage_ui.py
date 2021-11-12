@@ -257,6 +257,14 @@ class ManageUi(object):
 
         assert self.is_manage_open(), "Expecting manage ui to open after login"
 
+    def logout(self):
+        assert self.is_manage_open()
+
+        self.find_by_id("login-status").click()
+        self.find_by_id("login-status-logout").click()
+
+        assert self.is_login_open()
+
     def activate_menu_item(self, menu_css, menu_item_id) -> None:
         """
         Open the manage UI and select the given menu item.
