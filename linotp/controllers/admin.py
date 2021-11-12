@@ -2600,9 +2600,12 @@ class AdminController(BaseController, SessionCookieMixin):
             # check the max tokens per realm
 
             checkPolicyPost("admin", "loadtokens", {"tokenrealm": tokenrealm})
-
             log.info("[loadtokens] %i tokens imported.", len(TOKENS))
-            res = {"value": True, "imported": len(TOKENS)}
+
+            res = _("%d tokens were imported from the %s file.") % (
+                len(TOKENS),
+                tokenFile.filename,
+            )
 
             g.audit["info"] = "%s, %s (imported: %i)" % (
                 fileType,
@@ -2614,7 +2617,9 @@ class AdminController(BaseController, SessionCookieMixin):
             g.audit["realm"] = tokenrealm
 
             db.session.commit()
-            return sendResultMethod(response, res)
+            return sendResultMethod(
+                response, res, opt={"imported": len(TOKENS)}
+            )
 
         except PolicyException as pex:
             log.error("[loadtokens] Failed checking policy: %r", pex)
