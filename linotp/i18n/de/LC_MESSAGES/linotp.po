@@ -54,6 +54,10 @@ msgid "%d tokens of %d migrated"
 msgstr "%d Tokens von %d migriert"
 
 #, python-format
+msgid "%d tokens were imported from the %s file."
+msgstr "Es wurden %d Token aus der Datei %s importiert."
+
+#, python-format
 msgid "%s modified users"
 msgstr "%s geänderte Benutzer"
 
@@ -990,7 +994,8 @@ msgid "Failed to delete token!\n"
 msgstr "Fehler beim Löschen des Tokens\n"
 
 msgid "Failed to enable token, please contact your administrator"
-msgstr "Fehler beim Aktivieren des Tokens. Bitte kontaktieren Sie ihren Administrator"
+msgstr ""
+"Fehler beim Aktivieren des Tokens. Bitte kontaktieren Sie ihren Administrator"
 
 msgid "Failed to enroll token"
 msgstr "Ausrollen des Tokens fehlgeschlagen"
@@ -1002,7 +1007,8 @@ msgid "Failed to enroll token!\n"
 msgstr "Fehler beim Ausrollen des Tokens\n"
 
 msgid "Failed to enroll token, please contact your administrator"
-msgstr "Fehler beim Ausrollen des Tokens. Bitte kontaktieren Sie ihren Administrator"
+msgstr ""
+"Fehler beim Ausrollen des Tokens. Bitte kontaktieren Sie ihren Administrator"
 
 msgid "Failed to enroll token: "
 msgstr "Ausrollen des Tokens fehlgeschlagen: "
@@ -1160,13 +1166,17 @@ msgstr "Google Authenticator konform"
 msgid ""
 "Grace limit reached: %d active tokens found >= %d tokens licensed. %d "
 "additional tokens allowed."
-msgstr "Warn-Limit erreicht: %d aktive Token gefunden >= %d lizensierte Token. %d weitere verfügbare Token."
+msgstr ""
+"Warn-Limit erreicht: %d aktive Token gefunden >= %d lizensierte Token. %d "
+"weitere verfügbare Token."
 
 #, python-format
 msgid ""
 "Grace limit reached: %d token users found >= %d token users licensed. %d "
 "additional users allowed."
-msgstr "Warn-Limit erreicht: %d Token-Benutzer gefunden >= %d lizensierte Token-Benutzer. %d weitere mögliche Token-Benutzer."
+msgstr ""
+"Warn-Limit erreicht: %d Token-Benutzer gefunden >= %d lizensierte Token-"
+"Benutzer. %d weitere mögliche Token-Benutzer."
 
 msgid "HMAC Token Settings"
 msgstr "HMAC-Token-Einstellungen"
@@ -1658,16 +1668,24 @@ msgid "No existing users will be modified!"
 msgstr "Es werden keine existierenden Benutzer verändert!"
 
 msgid "No more tokens can be assigned due to license restrictions"
-msgstr "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token zugewiesen werden."
+msgstr ""
+"Aufgrund von Lizenz-Beschränkungen können keine weiteren Token zugewiesen "
+"werden."
 
 msgid "No more tokens can be enabled due to license restrictions"
-msgstr "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token zugewiesen werden."
+msgstr ""
+"Aufgrund von Lizenz-Beschränkungen können keine weiteren Token zugewiesen "
+"werden."
 
 msgid "No more tokens can be enrolled due to license restrictions"
-msgstr "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token ausgerollte werden"
+msgstr ""
+"Aufgrund von Lizenz-Beschränkungen können keine weiteren Token ausgerollte "
+"werden"
 
 msgid "No more tokens can be loaded due to license restrictions"
-msgstr "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token importiert werden."
+msgstr ""
+"Aufgrund von Lizenz-Beschränkungen können keine weiteren Token importiert "
+"werden."
 
 msgid "No resolver selected"
 msgstr "Kein Resolver ausgewählt"
