@@ -189,7 +189,6 @@ class AdminController(BaseController, SessionCookieMixin):
                 "losttoken",
                 "remove",
                 "tokenrealm",
-                "loadtokens",
             ]:
                 event = "token_" + action
 
