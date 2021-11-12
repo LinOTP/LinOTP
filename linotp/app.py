@@ -364,9 +364,9 @@ class LinOTPApp(Flask):
         # extract the username if request is authorized
         try:
             verify_jwt_in_request_optional()
-            jwt_username = get_jwt_identity()
-            if jwt_username is not None:
-                flask_g.username = jwt_username
+            identity = get_jwt_identity()
+            if identity is not None:
+                flask_g.username = identity["username"]
                 log.debug(
                     f"start_session: request session identity is {flask_g.username}"
                 )
