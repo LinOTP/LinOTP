@@ -12,6 +12,7 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     Using flask- mysqlalchemy connection solved this problem.
   * Better license exception messages and in case of the user service, the
     message suggests asking the system administrator.
+  * Comprehensive message after importing tokens.
 
   Features:
   * add grace to license volume exceeding and display accordingly a message
