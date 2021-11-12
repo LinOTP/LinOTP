@@ -51,9 +51,9 @@ class TestCreateRealmDialog(TestCase):
         r.create("test_clear_realm", resolver_data["name"])
 
         realms = r.get_realms_list()
-        assert len(realms) == 1, "Realm count should be 1"
+        assert len(realms) == 2, "Expected 2 realms incl. the admin realm"
 
         r.clear_realms()
 
         realms = r.get_realms_list()
-        assert len(realms) == 0, "Realm count should be 0"
+        assert len(realms) == 1, "Realm count should be 1 (admin realm)"

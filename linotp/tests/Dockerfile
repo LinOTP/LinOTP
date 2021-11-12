@@ -63,6 +63,10 @@ RUN pip3 install --upgrade \
     pytest-selenium \
     PyMySQL
 
+# se_mypasswd file is in conflict with selenium on this machine.
+# It is only used in the base linotp image and not here.
+RUN rm /etc/se_mypasswd
+
 USER tester
 
 ENTRYPOINT []

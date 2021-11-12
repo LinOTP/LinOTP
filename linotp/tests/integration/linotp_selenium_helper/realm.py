@@ -36,7 +36,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from .helper import fill_form_element, find_by_css
+from .helper import fill_form_element, find_by_css, get_default_app_setting
 from .manage_elements import ManageDialog
 from .user_id_resolver import UserIdResolverManager
 
@@ -139,6 +139,7 @@ class RealmManager(ManageDialog):
     new_button_id = "button_realms_new"
     close_button_id = "button_realms_close"
     delete_button_id = "button_realms_delete"
+    set_default_button_id = "button_realms_setdefault"
 
     list_css = "#realm_list > ol"
 
@@ -161,7 +162,9 @@ class RealmManager(ManageDialog):
 
         elements = self.driver.find_elements(By.XPATH, element_path)
         self.realms = [
-            RealmListEntry(e.text, e) for e in elements if e.tag_name == "li"
+            RealmListEntry(e.text.partition(" ")[0], e)
+            for e in elements
+            if e.tag_name == "li"
         ]
 
     def _get_realm_by_name(self, name: str):
@@ -172,7 +175,7 @@ class RealmManager(ManageDialog):
          type
          name in dialog
         """
-        r = [r for r in self.realms if r.name == name]
+        r = [r for r in self.realms if r.name == name.lower()]
         assert len(r) == 1, "realm name %s not found in current realm list" % (
             name,
         )
@@ -259,13 +262,16 @@ class RealmManager(ManageDialog):
         The list of realms is retrieved using the API, and then
         each realm is deleted by realm name.
         """
+        admin_realm = get_default_app_setting("ADMIN_REALM_NAME")
 
         realms = self.get_realms_via_api()
         if realms:
-            for curr_realm in realms:
+            for realm in realms:
+                if realm == admin_realm:
+                    continue
                 self.manage.admin_api_call(
                     "system/delRealm",
-                    {"realm": realms[curr_realm]["realmname"]},
+                    {"realm": realms[realm]["realmname"]},
                 )
 
     def clear_realms(self):
@@ -279,6 +285,8 @@ class RealmManager(ManageDialog):
         3. Delete realm x and check alert box.
         4. Repeat 3. #realms times
         """
+        admin_realm = get_default_app_setting("ADMIN_REALM_NAME")
+
         # /manage needs to be open for clean up
         # alert box messages.
         self.manage.open_manage()
@@ -297,12 +305,10 @@ class RealmManager(ManageDialog):
         self.open()
 
         realms = self.get_realms_list()
-
-        while realms:
-            self.delete_realm(realms[0])
-            realms = self.get_realms_list()
-            if not realms:
-                break
+        for realm in realms:
+            if realm == admin_realm:
+                continue
+            self.delete_realm(realm)
 
         self.close()
 
@@ -342,6 +348,16 @@ class RealmManager(ManageDialog):
                 ".".join(new_realm_list),
             )
             assert False, "Realm was not sucessfully created"
+
+    def set_default(self, name):
+        self.open()
+        self.reparse()
+        realms = self.get_realms_list()
+
+        self.select_realm(name)
+        self.find_by_id(self.set_default_button_id).click()
+
+        self.manage.wait_for_waiting_finished()
 
     def create_via_api(
         self, name: str, resolvers: Union[List[str], str]

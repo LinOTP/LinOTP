@@ -670,7 +670,7 @@ _config_schema = ConfigSchema(
         ConfigItem(
             "ADMIN_REALM_NAME",
             str,
-            default="LinOTP_admins",
+            default="linotp_admins",
             help=(
                 "The name of the realm that contains the resolvers for "
                 "the LinOTP administrators."

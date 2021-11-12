@@ -31,7 +31,12 @@ from typing import Dict, List
 
 from selenium.webdriver.common.by import By
 
-from .helper import fill_element_from_dict, find_by_css, find_by_id
+from .helper import (
+    fill_element_from_dict,
+    find_by_css,
+    find_by_id,
+    get_default_app_setting,
+)
 from .manage_elements import ManageDialog
 
 
@@ -177,16 +182,11 @@ class UserIdResolverManager(ManageDialog):
         self.manage.wait_for_waiting_finished()
 
         formdata = dict(data)
-        if self.testcase.major_version == 2:
-            try:
-                del formdata["only_trusted_certs"]
-            except KeyError:
-                pass
-        else:
-            try:
-                del formdata["certificate"]
-            except KeyError:
-                pass
+
+        try:
+            del formdata["certificate"]
+        except KeyError:
+            pass
 
         # Fill in new resolver form
         resolver.fill_form(formdata)
@@ -369,11 +369,13 @@ class UserIdResolverManager(ManageDialog):
 
     def clear_resolvers_via_api(self):
         """Get all resolvers via API call and delete all by resolver name."""
-
+        admin_resolver = get_default_app_setting("ADMIN_RESOLVER_NAME")
         # Get the resolvers in json format
         resolvers = self.manage.admin_api_call("system/getResolvers")
         if resolvers:
             for curr_resolver in resolvers:
+                if curr_resolver == admin_resolver:
+                    continue
                 self.manage.admin_api_call(
                     "system/delResolver",
                     {"resolver": resolvers[curr_resolver]["resolvername"]},
