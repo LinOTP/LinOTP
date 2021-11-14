@@ -1451,8 +1451,7 @@ def getSearchFields(user):
         _cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if len(user.resolver_config_identifier) > 0:
-            lower_config_id = user.resolver_config_identifier.lower()
-            if config_identifier.lower() != lower_config_id:
+            if config_identifier != user.resolver_config_identifier:
                 continue
 
         # try to load the UserIdResolver Class
@@ -1495,8 +1494,7 @@ def getUserList(param, search_user):
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if len(search_user.resolver_config_identifier) > 0:
-            lower_config_id = search_user.resolver_config_identifier.lower()
-            if config_identifier.lower() != lower_config_id:
+            if config_identifier != search_user.resolver_config_identifier:
                 continue
 
         # try to load the UserIdResolver Class
@@ -1603,8 +1601,7 @@ def getUserListIterators(param, search_user):
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if len(search_user.resolver_config_identifier) > 0:
-            lower_config_id = search_user.resolver_config_identifier.lower()
-            if config_identifier.lower() != lower_config_id:
+            if config_identifier != search_user.resolver_config_identifier:
                 continue
 
         # try to load the UserIdResolver Class

@@ -277,7 +277,7 @@ class LocalAdminResolver:
         admin_resolvers_key = f"useridresolver.group.{self.admin_realm_name}"
         admin_resolvers = getFromConfig(admin_resolvers_key, "")
         if admin_resolvers:  # Avoid splitting an empty string
-            for name in admin_resolvers.lower().split(","):
+            for name in admin_resolvers.split(","):
                 if name.strip() == admin_resolver_name:
                     return  # Resolver is in realm, we're done here
 
