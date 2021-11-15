@@ -24,33 +24,35 @@
  *
  */
 function create_dat_dialog() {
-	var $dialog_load_tokens_dat = $('#dialog_import_dat').dialog({
+    var $dialog_load_tokens_dat = $('#dialog_import_dat').dialog({
         autoOpen: false,
         title: 'eToken dat file',
         width: 600,
         modal: true,
         buttons: {
-            'load token file': { click: function(){
-        	    $('#loadtokens_session_dat').val(getsession());
-                load_tokenfile('dat');
-                $(this).dialog('close');
-            	},
-				id: "button_dat_load",
-				text: "load token file"
-				},
-            Cancel: {click: function(){
-                $(this).dialog('close');
-            	},
-				id: "button_dat_cancel",
-				text: "Cancel"
-				}
+            'load token file': {
+                click: function () {
+                    $('#loadtokens_session_dat').val(getsession());
+                    load_tokenfile('dat');
+                    $(this).dialog('close');
+                },
+                id: "button_dat_load",
+                text: "load token file"
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_dat_cancel",
+                text: "Cancel"
+            }
         },
-        open: function(){
-            _fill_realms($('#dat_realm'),1);
+        open: function () {
+            _fill_realms($('#dat_realm'), 1);
 
             $(this).dialog_icons();
             translate_import_dat();
         }
     });
     return $dialog_load_tokens_dat;
- }
+}
