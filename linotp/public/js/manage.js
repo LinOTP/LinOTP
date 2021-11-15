@@ -3188,6 +3188,7 @@ function save_realm_config() {
                     'is_escaped': true
                 });
             }
+            hide_waiting();
         });
 }
 
@@ -3397,6 +3398,12 @@ function realms_load() {
                         isDefault: selectedRealm.hasClass("default"),
                         name: escape($('.name', selectedRealm).text())
                     };
+                    var realm = data.result.value[g.realm_to_edit.name];
+                    if (realm.admin){
+                        $("#button_realms_delete").button('disable')
+                    }else{
+                        $("#button_realms_delete").button('enable')
+                    }
                 } // end of stop function
             }); // end of selectable
 
@@ -3561,6 +3568,7 @@ function realm_delete() {
                     'is_escaped': true
                 });
             }
+            hide_waiting();
         });
 }
 

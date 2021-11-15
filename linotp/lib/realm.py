@@ -34,12 +34,22 @@ from sqlalchemy import func
 from flask import current_app
 
 from linotp.lib.cache import get_cache
-from linotp.lib.config import getFromConfig, getLinotpConfig, storeConfig
+from linotp.lib.config import (
+    getFromConfig,
+    getLinotpConfig,
+    removeFromConfig,
+    storeConfig,
+)
 from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
 from linotp.lib.context import request_context as context
 from linotp.model import Realm, TokenRealm, db
 
 log = logging.getLogger(__name__)
+
+
+class DeleteForbiddenError(Exception):
+    pass
+
 
 # ------------------------------------------------------------------------------
 
@@ -507,6 +517,13 @@ def deleteRealm(realmname):
     :type  realmname: string
     """
 
+    admin_realm_name = context.config["ADMIN_REALM_NAME"].lower()
+
+    if realmname == admin_realm_name:
+        raise DeleteForbiddenError(
+            f"It is not allowed to delete the admin realm {admin_realm_name}"
+        )
+
     log.debug("deleting realm object with name=%s", realmname)
     r = getRealmObject(name=realmname)
     if r is None:
@@ -514,24 +531,61 @@ def deleteRealm(realmname):
         r = getRealmObject(name=realmname.lower())
     realmId = 0
     if r is not None:
-        realmId = r.id
+        try:
+            realmId = r.id
 
-        if realmId != 0:
-            log.debug("Deleting token relations for realm with id %r", realmId)
-            TokenRealm.query.filter_by(realm_id=realmId).delete()
-        db.session.delete(r)
+            if realmId != 0:
+                log.debug(
+                    "Deleting token relations for realm with id %r", realmId
+                )
+                TokenRealm.query.filter_by(realm_id=realmId).delete()
+            _delete_realm_config(realmname=realmname)
+            db.session.delete(r)
 
-    else:
-        log.warning("Realm with name %s was not found.", realmname)
-        return False
-    # now delete all relations, i.e. remove all Tokens from this realm.
+            from linotp.lib.user import delete_realm_resolver_cache
 
-    # finally we delete the 'realmname' cache
-    from linotp.lib.user import delete_realm_resolver_cache
+            delete_realm_resolver_cache(realmname)
 
-    delete_realm_resolver_cache(realmname)
+            return True
+        except Exception as exx:
+            log.error("[delRealm] error deleting realm: %r", exx)
+            db.session.rollback()
 
-    return True
+    log.warning("Realm with name %s was not found.", realmname)
+    return False
+
+
+def _delete_realm_config(realmname):
+    #
+    # we test if before delete there has been a default
+    # if yes - check after delete, if still one there
+    #         and set the last available to default
+    #
+
+    defRealm = getDefaultRealm()
+    hadDefRealmBefore = False
+    if defRealm != "":
+        hadDefRealmBefore = True
+
+    # now test if realm is defined
+    if isRealmDefined(realmname) is True:
+        if realmname.lower() == defRealm.lower():
+            setDefaultRealm("")
+        if realmname == "_default_":
+            realmConfig = "useridresolver"
+        else:
+            realmConfig = "useridresolver.group." + realmname
+
+        return removeFromConfig(realmConfig, iCase=True)
+
+    if hadDefRealmBefore is True:
+        defRealm = getDefaultRealm()
+        if defRealm == "":
+            realms = getRealms()
+            if len(realms) == 2:
+                for k in realms:
+                    if k != realm:
+                        setDefaultRealm(k)
 
 
 def match_realms(request_realms, allowed_realms):

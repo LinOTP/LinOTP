@@ -43,6 +43,11 @@ from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
+
+class DeleteForbiddenError(Exception):
+    pass
+
+
 # -------------------------------------------------------------------------- --
 
 # on module load integrate the parser function for resolver config
@@ -495,7 +500,7 @@ def deleteResolver(resolvername):
     """
 
     if resolvername == current_app.config["ADMIN_RESOLVER_NAME"]:
-        raise ValueError(
+        raise DeleteForbiddenError(
             f"default admin resolver {resolvername} is not allowed to be removed!"
         )
 
@@ -503,7 +508,6 @@ def deleteResolver(resolvername):
 
     resolvertypes = get_resolver_types()
     conf = context.get("Config")
-    # conf = getLinotpConfig()
 
     delEntries = []
     resolver_specs = set()

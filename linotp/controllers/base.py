@@ -363,27 +363,31 @@ class JWTMixin(object):
             realm=current_app.config["ADMIN_REALM_NAME"],
         )
 
-        if user.exists():
+        for uid, resolver_specification in user.get_uid_resolver():
 
-            (uid, _, resolver_class) = getUserId(user)
+            resolver = getResolverObject(resolver_specification)
 
-            resolver = getResolverObject(resolver_class)
-            if resolver.checkPass(uid, password):
+            if not resolver.checkPass(uid, password):
+                continue
 
-                response = sendResult(
-                    None,
-                    True,
-                    opt={"message": f"Login successful for {username}"},
-                )
+            response = sendResult(
+                None,
+                True,
+                opt={"message": f"Login successful for {username}"},
+            )
 
-                access_token = create_access_token(identity=username)
-                set_access_cookies(response, access_token)
+            access_token = create_access_token(
+                identity={
+                    "username": username,
+                    "resolver": resolver_specification,
+                },
+            )
 
-                # we have to provide the authenticated user as request global user
+            set_access_cookies(response, access_token)
 
-                g.username = username
+            g.username = username
 
-                return response
+            return response
 
         response = sendResult(
             None,

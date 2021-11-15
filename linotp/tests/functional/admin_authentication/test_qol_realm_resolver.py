@@ -133,7 +133,11 @@ class TestAdminLabel(TestController):
             "realm": admin_realm_name,
             "resolvers": fallback_admin_resolver_spec,
         }
-        response = self.make_system_request("setRealm", params=params)
+        response = self.make_system_request(
+            "setRealm",
+            params=params,
+            auth_resolver=fallback_admin_resolver_spec,
+        )
         assert response.json["result"]["value"], response
 
     def test_admin_realm(self):
