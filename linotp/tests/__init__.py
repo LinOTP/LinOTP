@@ -804,7 +804,7 @@ class TestController(TestCase):
 
         for realm_name, realm_desc in realms.items():
 
-            if realm_name == admin_realm:
+            if realm_desc["admin"]:
                 continue
 
             params = {"realm": realm_name}
@@ -813,34 +813,10 @@ class TestController(TestCase):
             )
             assert '"result": true' in resp.body
 
-    def _get_admin_resolvers(self, auth_user="admin"):
-
-        admin_realm = current_app.config["ADMIN_REALM_NAME"].lower()
-
-        response = self.make_system_request(
-            "getRealms", params={}, auth_user=auth_user
-        )
-        assert response.json["result"]["value"]
-
-        realms = response.json["result"]["value"]
-        for entry in realms:
-
-            if entry != admin_realm:
-                continue
-
-            admin_resolvers = realms[entry]["useridresolver"]
-            break
-
-        admin_resolver_names = []
-        for admin_resolver in admin_resolvers or []:
-            admin_resolver_names.append(admin_resolver.rpartition(".")[2])
-
-        return admin_resolver_names
-
     def delete_all_resolvers(self, auth_user="admin"):
         """get all resolvers and delete them"""
 
-        admin_resolver_names = self._get_admin_resolvers(auth_user=auth_user)
+        default_admin_resolver_name = current_app.config["ADMIN_RESOLVER_NAME"]
 
         response = self.make_system_request(
             "getResolvers", params={}, auth_user=auth_user
@@ -849,17 +825,22 @@ class TestController(TestCase):
 
         for resolver_name, resolver_description in values.items():
 
-            # the admin resolvers could not be deleted as they
+            # the admin resolvers should not be deleted as they
             # are still in use by the admin realm, which could not be deleted
 
-            if resolver_name in admin_resolver_names:
+            if resolver_description["admin"]:
+                continue
+
+            # the default admin resolver could not be deleted
+
+            if resolver_name == default_admin_resolver_name:
                 continue
 
             params = {"resolver": resolver_name}
-            resp = self.make_system_request(
+            response = self.make_system_request(
                 "delResolver", params=params, auth_user=auth_user
             )
-            assert '"status": true' in resp.body
+            assert response.json["result"]["value"], response
 
     def delete_all_policies(self, auth_user="admin"):
         """

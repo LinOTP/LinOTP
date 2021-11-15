@@ -97,25 +97,14 @@ class UserIdResolverManager(ManageDialog):
                 self.element = element
                 self.name_in_dialog = "%s [%s]" % (name, resolverType)
 
-        id = line.get_attribute("id")
-        if id and id.startswith("realm"):
-            # Realms dialog
-            resolver_element = line
-        else:
-            # Resolvers dialog
-            name_element = line.find_element(By.CSS_SELECTOR, ".name")
-            resolver_element = name_element
-
-        resolver_name_re = r"([\w\-]+) \[([\w\-]+)\]$"
-
-        m = re.match(resolver_name_re, resolver_element.text)
-        assert m, 'Error in resolver regexp for "%s"' % (resolver_element,)
+        res_name = line.find_element(By.CSS_SELECTOR, ".name").text
+        res_type = line.find_element(By.CSS_SELECTOR, ".type").text
 
         assert "ui-selectee" in line.get_attribute("class").split(
             " "
         ), "Resolver dialog line not selectable"
 
-        return ResolverElement(m.group(1), m.group(2), line)
+        return ResolverElement(res_name, res_type, line)
 
     def parse_contents(self):
         """

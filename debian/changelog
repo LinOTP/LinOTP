@@ -29,7 +29,9 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     initial realm for linotp administrators are created.
   * the system endpoints getRealms, getResolver and getResolver return a
     label 'admin' if the realm or resolver is used for admin authentication.
-
+  * improved visuals for the Manage-UI realm list.
+  * Admin realm and resolver labels added in Manage-UI to visualize admin
+    status.
 
  -- LinOTP Packaging <packaging@linotp.de>  Thu, 9 Sep 2021 17:13:51 +0200
 

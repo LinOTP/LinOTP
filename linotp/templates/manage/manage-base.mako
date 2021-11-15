@@ -2315,7 +2315,6 @@
 <div id="text_system_save_error">${_("Error saving system configuration. Please check your configuration and your server")}</div>
 <div id="text_system_save_error_checkbox">${_("Error saving system checkboxes configuration. Please check your configuration and your server")}</div>
 <div id="text_realm_regexp_error">${_("Regexp error in realm. You need to select ONE realm to set it as default.")}</div>
-<div id="text_realm_name_error">${_("There is an error in the realm name!")}</div>
 <div id="text_policy_set">${_("Policy set.")}</div>
 <div id="text_policy_name_not_empty">${_("Policy name is not defined!")}</div>
 <div id="text_policy_deleted">${_("Policy deleted.")}</div>
@@ -2342,7 +2341,6 @@
 <div id="text_resolver_delete_fail">${_("Failed deleting resolver")}: <span class="text_param1"> </span></div>
 <div id="text_realm_delete_success">${_("Realm deleted")}: <span class="text_param1"> </span></div>
 <div id="text_realm_delete_fail">${_("Failed deleting Realm")}: <span class="text_param1"> </span></div>
-<div id="text_regexp_error">${_("Error in regular expression for")}: <span class="text_param1"> </span></div>
 <div id="text_ldap_config_success">${_("LDAP Server configuration seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>
 <div id="text_ldap_load_error">${_("Error loading LDAP resolver")}: <span class="text_param1"> </span></div>
 <div id="text_http_config_success">${_("HTTP Server configuration seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>
