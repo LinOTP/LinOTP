@@ -43,11 +43,7 @@ from flask import (
     stream_with_context,
 )
 
-from linotp.controllers.base import (
-    BaseController,
-    JWTMixin,
-    SessionCookieMixin,
-)
+from linotp.controllers.base import BaseController, JWTMixin
 from linotp.flap import HTTPUnauthorized, config, request, response
 from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.challenges import Challenges
@@ -110,7 +106,7 @@ from linotp.tokens import tokenclass_registry
 log = logging.getLogger(__name__)
 
 
-class AdminController(BaseController, JWTMixin, SessionCookieMixin):
+class AdminController(BaseController, JWTMixin):
 
     """
     The linotp.controllers are the implementation of the web-API to talk to
@@ -123,8 +119,6 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
 
     The functions are described below in more detail.
     """
-
-    session_cookie_name = "admin_session"  # for `SessionCookieMixin`
 
     def __before__(self, **params):
         """
@@ -143,7 +137,6 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
             g.audit["client"] = get_client(request)
 
             if request.path.lower() in [
-                "/admin/getsession",
                 "/admin/login",
                 "/admin/logout",
             ]:
@@ -171,10 +164,6 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
         audit = config.get("audit")
 
         try:
-            # prevent logging of getsession or other irrelevant requests
-            if action in ["getsession", "dropsession"]:
-                return response
-
             g.audit["administrator"] = getUserFromRequest(request).get("login")
 
             serial = request.params.get("serial")
