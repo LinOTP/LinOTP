@@ -1866,7 +1866,6 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
             # hint:
             # done by getting the list of realm the admin is allowed to view
             # and add this as paramter list to the getUserListIterators
-            # (s. helpdesk api)
 
             realm = param.get("realm")
 

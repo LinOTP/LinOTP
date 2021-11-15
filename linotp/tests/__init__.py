@@ -481,8 +481,6 @@ class TestController(TestCase):
         session = params["session"]
 
         cookie_name = "admin_session"
-        if controller in ["api/helpdesk"]:
-            cookie_name = "helpdesk_session"
 
         if cookie_name not in cookies:
             cookies[cookie_name] = session
@@ -528,44 +526,6 @@ class TestController(TestCase):
             params = {}
         return self._make_authenticated_request(
             controller="admin",
-            action=action,
-            method=method,
-            params=params,
-            auth_user=auth_user,
-            upload_files=upload_files,
-            client=client,
-            auth_type=auth_type,
-            content_type=content_type,
-            auth_resolver=auth_resolver,
-        )
-
-    def make_helpdesk_request(
-        self,
-        action,
-        params=None,
-        method=None,
-        headers=None,
-        auth_user="helpdesk",
-        client=None,
-        upload_files=None,
-        auth_type="Digest",
-        cookies=None,
-        content_type=None,
-        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
-    ):
-        """
-        Makes an authenticated request to /api/helpdesk/'action'
-        """
-        if cookies:
-
-            TestController.set_cookie(
-                self.client,
-                "helpdesk_session",
-                cookies.get("helpdesk_session"),
-            )
-
-        return self._make_authenticated_request(
-            controller="api/helpdesk",
             action=action,
             method=method,
             params=params,
