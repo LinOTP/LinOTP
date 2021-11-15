@@ -515,18 +515,6 @@ def sendXMLResult(_response, obj, id=1, opt=None):
     send the result as an xml format
     """
 
-    res = (
-        '<?xml version="1.0" encoding="UTF-8"?>\
-            <jsonrpc version="%s">\
-            <result>\
-                <status>True</status>\
-                <value>%s</value>\
-            </result>\
-            <version>%s</version>\
-            <id>%s</id>\
-            </jsonrpc>'
-        % (get_api_version(), obj, get_version(), id)
-    )
     xml_options = ""
     if opt:
         xml_options = "\n<options>" + json2xml(opt) + "</options>"

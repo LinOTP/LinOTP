@@ -30,16 +30,18 @@ Test token import via UI
 
 # pylint: disable=redefined-outer-name
 
+import itertools
 import os
 from time import sleep
 
 import pytest
 from selenium.webdriver.common.by import By
 
-from linotp_selenium_helper.manage_ui import ManageUi
+from linotp_selenium_helper.manage_ui import AlertBoxHandler, ManageUi
 from linotp_selenium_helper.token_import import (
     TokenImportAladdin,
     TokenImportError,
+    TokenImportOATH,
 )
 from linotp_selenium_helper.token_view import TokenView
 
@@ -50,6 +52,11 @@ pytestmark = pytest.mark.usefixtures("musicians_realm")
 @pytest.fixture
 def aladdin(manage_ui):
     return TokenImportAladdin(manage_ui)
+
+
+@pytest.fixture
+def oathcsv_importer(manage_ui):
+    return TokenImportOATH(manage_ui)
 
 
 def check_menu_is_closed(manage_ui):
@@ -71,11 +78,8 @@ def test_token_import_aladdin_xml(
     manage_ui: ManageUi, aladdin: TokenImportAladdin
 ):
     """Test import of valid aladdin tokens."""
-
     aladdin_xml_path = os.path.join(manage_ui.test_data_dir, "aladdin.xml")
     aladdin.do_import(file_path=aladdin_xml_path)
-
-    tokenview = manage_ui.token_view
 
     token_serials = (
         "00040008CFA5",
@@ -85,18 +89,11 @@ def test_token_import_aladdin_xml(
     )
 
     # Check the grid lines for the imported tokens
-    grid = tokenview.get_grid_contents()
-    for serial in token_serials:
-        # Find token in grid
-        token_row = [row for row in grid if row["Serial Number"] == serial]
-        token_row_contents = token_row[0]
-        assert token_row_contents["Serial Number"] == serial
-        assert token_row_contents["Type"] == "HMAC"
-        assert token_row_contents["Description"] == "imported"
+    assert_tokens_are_in_grid(manage_ui, token_serials, "HMAC")
 
     # Check token info contents for one of the tokens
     serial_to_check = token_serials[0]
-    token_info = tokenview.get_token_info(serial_to_check)
+    token_info = manage_ui.token_view.get_token_info(serial_to_check)
     assert token_info["LinOtp.TokenType"] == "HMAC"
     assert token_info["LinOtp.TokenSerialnumber"] == serial_to_check
 
@@ -113,3 +110,104 @@ def test_token_import_aladdin_invalid_xml(
             file_path=os.path.join(manage_ui.test_data_dir, "wrong_token.xml")
         )
     check_menu_is_closed(manage_ui)
+
+
+def test_token_import_oath_csv(
+    manage_ui: ManageUi, oathcsv_importer: TokenImportOATH
+):
+    """Test import of valid oath csv tokens."""
+
+    #   data to be tested against:
+    oath_csv_path = os.path.join(manage_ui.test_data_dir, "oath_tokens.csv")
+    token_serials = (
+        "tok1",
+        "tok2",
+        "tok3",
+        "tok4",
+    )
+    token_types = ["HMAC", "TOTP", "HMAC", "TOTP"]
+
+    oathcsv_importer.do_import(file_path=oath_csv_path)
+
+    # check the alert box
+    alert_box = AlertBoxHandler(manage_ui)
+    assert (
+        alert_box.last_line.text
+        == "Token import result: 4 tokens were imported from the oath_tokens.csv file. OK"
+    )
+
+    # check the grid lines for the imported tokens
+    assert_tokens_are_in_grid(manage_ui, token_serials, token_types)
+
+
+def test_token_import_oath_csv_invalid_seed(
+    manage_ui: ManageUi, oathcsv_importer: TokenImportOATH
+):
+    "Test import of invalid oath csv tokens"
+
+    # save the initial tokens for later comparison
+    tokens_at_first = manage_ui.token_view._get_token_list()
+
+    #   data to be tested against:
+    oath_csv_path = os.path.join(
+        manage_ui.test_data_dir, "oath_tokens_bad_seed.csv"
+    )
+    token_serials = (
+        "tok1",
+        "tok2",
+        "tok3",
+        "tok4",
+    )
+    token_types = ["HMAC", "TOTP", "HMAC", "TOTP"]
+    with pytest.raises(TokenImportError) as exc_info:
+        oathcsv_importer.do_import(file_path=oath_csv_path)
+
+    assert (
+        str(exc_info.value)
+        == "Import failure:error:Failed to import token: InvalidSeedException('The provided token seed contains non-hexadecimal characters') OK"
+    )
+
+    # check the alert box showing the correct information
+    alert_box = AlertBoxHandler(manage_ui)
+    assert (
+        alert_box.last_line.text
+        == "Failed to import token: InvalidSeedException('The provided token seed contains non-hexadecimal characters') OK"
+    )
+
+    # check that no token was imported
+    tokens_after_import_attempt = manage_ui.token_view._get_token_list()
+    tokens_at_first == tokens_after_import_attempt
+
+
+def assert_tokens_are_in_grid(
+    manage_ui,
+    token_serials,
+    token_types=[
+        "HMAC",
+    ],
+):
+    """
+    Checks all the tokens in the list and their corresponding
+    types to be present in the grid of the Token View
+
+    :param manage_ui: the current manage_ui object
+    :param token_serials: list of tokens which should be checked
+    :param token_types: list of corresponding token types or only one token type for all cases
+    """
+
+    if len(token_types) == 1 or isinstance(token_types, str):
+        token_iterator = zip(token_serials, itertools.repeat(token_types))
+    else:
+        token_iterator = zip(token_serials, token_types)
+
+    tokenview = manage_ui.token_view
+    grid = tokenview.get_grid_contents()
+
+    for serial, token_type in token_iterator:
+        # Find token in grid
+        token_row = [row for row in grid if row["Serial Number"] == serial]
+        assert len(token_row) == 1, "token not in list or repeated"
+        token_row_contents = token_row[0]
+        assert token_row_contents["Serial Number"] == serial
+        assert token_row_contents["Type"] == token_type
+        assert token_row_contents["Description"] == "imported"

@@ -1,0 +1,4 @@
+tok1, 1212
+tok2, 1j12, totp, 6
+tok3, 1212, hotp, 8
+tok4, 1212, totp, 8, 60
