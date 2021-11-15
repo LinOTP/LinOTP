@@ -194,9 +194,7 @@ setup(
             "linotp/dictionary",
         ]
     },
-    scripts=[
-        "tools/linotp-create-htdigest",
-    ],
+    scripts=[],
     data_files=[
         (
             "etc/linotp/",

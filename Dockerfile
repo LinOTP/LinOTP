@@ -184,10 +184,9 @@ WORKDIR $LINOTP_HOME
 # Get dockerfy and configuration template files from build context
 COPY *.tmpl /etc/linotp/
 COPY dockerfy /usr/local/bin/
-COPY linotp-create-htdigest /usr/local/bin/
 # Initialisation scripts directory
 COPY docker-initscripts.d /etc/linotp/docker-init.d/
-RUN chmod 755 /usr/local/bin/linotp-create-htdigest /etc/linotp/docker-init.d/*
+RUN chmod 755 /etc/linotp/docker-init.d/*
 
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
     "--run", "/bin/run-parts", "--verbose", "--exit-on-error", "/etc/linotp/docker-init.d", "--" \
