@@ -687,6 +687,7 @@ class ValidateController(BaseController):
     def check_s(self):
         """
         This function is used to validate the serial and the otp value/password.
+        If the otppin policy is set, the endpoint /validate/check_s does not work.
 
         method:
             validate/check_s
