@@ -30,11 +30,11 @@ system controller - to configure the system
 import binascii
 import json
 import logging
-import os
 from html import escape
 
 from configobj import ConfigObj
 from flask_babel import gettext as _
+from flask_jwt_extended import get_jwt_identity
 from werkzeug.datastructures import FileStorage
 
 from flask import current_app, g
@@ -116,6 +116,10 @@ from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 from .base import BaseController
 
 log = logging.getLogger(__name__)
+
+
+class RemoveForbiddenError(Exception):
+    pass
 
 
 class SystemController(BaseController):
@@ -1077,6 +1081,20 @@ class SystemController(BaseController):
                 valid_resolver_specs.append(resolver_spec)
 
             valid_resolver_specs_str = ",".join(valid_resolver_specs)
+            login_resolver_class = get_jwt_identity()["resolver"]
+            login_resolver_name = login_resolver_class.split(".")[-1]
+            admin_realm_name = current_app.config.get(
+                "ADMIN_REALM_NAME"
+            ).lower()
+
+            if realm == admin_realm_name:
+                if login_resolver_class not in valid_resolver_specs_str:
+                    raise RemoveForbiddenError(
+                        f"Resolver {login_resolver_name} must not removed from {admin_realm_name}."
+                        "It is not allowed to remove the resolver your are part of to prevent "
+                        "self disablement."
+                    )
+
             res = setRealm(realm, valid_resolver_specs_str)
             g.audit["success"] = res
             g.audit["info"] = "realm: %r, resolvers: %r" % (
@@ -1124,6 +1142,7 @@ class SystemController(BaseController):
             result_of_deletion = deleteRealm(realm)
 
             res["delRealm"] = {"result": result_of_deletion}
+            db.session.commit()
 
             g.audit["success"] = True
             g.audit["info"] = realm
@@ -1244,7 +1263,6 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.error("[setPolicy] error saving policy: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 
