@@ -48,7 +48,9 @@ from freezegun import freeze_time
 from mock import patch
 
 import linotp.provider.smsprovider.RestSMSProvider
-from linotp.tests.functional_special import TestSpecialController
+from linotp.tests.functional.challenge_response.testing_controller import (
+    TestingChallengeResponseController,
+)
 
 REQUEST_BODY = ""
 REQUEST_HEADERS = {}
@@ -82,7 +84,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
 log = logging.getLogger(__name__)
 
 
-class TestRestSmsController(TestSpecialController):
+class TestRestSmsController(TestingChallengeResponseController):
     """
     Here the HTTP SMS Gateway functionality is tested.
     """
@@ -91,7 +93,7 @@ class TestRestSmsController(TestSpecialController):
         """
         This sets up all the resolvers and realms
         """
-        TestSpecialController.setUp(self)
+        TestingChallengeResponseController.setUp(self)
 
         self.create_common_resolvers()
         self.create_common_realms()
@@ -102,7 +104,7 @@ class TestRestSmsController(TestSpecialController):
         self.delete_all_realms()
         self.delete_all_resolvers()
 
-        TestSpecialController.tearDown(self)
+        TestingChallengeResponseController.tearDown(self)
 
     ##########################################################################
 

@@ -29,24 +29,29 @@ Pytest fixtures for linotp tests
 
 # pylint: disable=redefined-outer-name
 
+import contextlib
+import copy
 import os
 import tempfile
-from unittest import mock
+from typing import Callable, ContextManager, Iterator, List
+from unittest.mock import patch
 
 import pytest
 
-import flask
+from flask import g
+from flask.globals import current_app
 from flask.testing import FlaskClient
 
+import linotp.app
+import linotp.controllers
 from linotp import app as app_py
-from linotp.app import create_app, init_logging
-from linotp.cli import Echo
+from linotp.app import LinOTPApp, create_app
 from linotp.cli.init_cmd import create_audit_keys, create_secret_key
 from linotp.flap import set_config
 from linotp.flap import tmpl_context as c
-from linotp.model import db, init_db_tables
+from linotp.model import init_db_tables
 
-from . import TestController
+from . import CompatibleTestResponse, TestController
 
 
 def pytest_configure(config):
@@ -220,69 +225,42 @@ def app(base_app, monkeypatch):
 
 
 @pytest.fixture
-def adminclient(app, client):
+def adminclient(client, request):
     """
-    A client that provides authorisation headers
+    A client that provides admin authorisation.
 
-    Use this client if you need to make a request
-    that requires a session. This is the
-    equivalent of using TestClient's make_authenticated_request
+    By default, the user is set to "admin". You can override the
+    admin username with the following decorator used at the test
+    fixture consumer:
+    `@pytest.mark.parametrize("authorized_client", ["blub"], indirect=True)`
+
+    Returns the client object with mocked authentication.
     """
 
-    # if "session" not in params:
-    #     params["session"] = self.session
-    # if "admin_session" not in cookies:
-    #     cookies["admin_session"] = self.session
-    # if "Authorization" not in headers:
-    #     if auth_type == "Basic":
-    #         headers["Authorization"] = TestController.get_http_basic_header(
-    #             username=auth_user
-    #         )
-    #     else:
-    #         headers[
-    #             "Authorization"
-    #         ] = TestController.get_http_digest_header(username=auth_user)
+    # extract the pytest parameterized username or use fallback if not set.
+    admin_user = request.param if hasattr(request, "param") else "admin"
 
-    class AuthClient(FlaskClient):
-        # def __init__(self, *args, **kwargs):
-        #     super(AuthClient,self).__init__( *args, **kwargs)
-
-        def open(self, *args, **kwargs):
-            """
-            Add authorization headers & cookies
-            """
-            session = "justatest"
-            if "json" in kwargs:
-                # Add session to JSON body
-                kwargs["json"]["session"] = session
-            else:
-                # Add session to query_string parameter
-                params = kwargs.setdefault("query_string", {})
-                params["session"] = session
-
-            headers = kwargs.setdefault("headers", {})
-            headers["Authorization"] = TestController.get_http_digest_header(
-                username="admin"
-            )
-
-            self.set_cookie("local", "admin_session", session)
-
-            return super(AuthClient, self).open(*args, **kwargs)
-
-    app.test_client_class = AuthClient
-    client = app.test_client()
-
-    return client
+    with patch(
+        "linotp.controllers.base.verify_jwt_in_request",
+        lambda: None,
+    ), patch(
+        "linotp.app.get_jwt_identity",
+        lambda: {
+            "username": admin_user,
+            "resolver": "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
+        },
+    ):
+        yield client
 
 
 @pytest.fixture
-def hsm_obj(app):
+def hsm_obj(app: LinOTPApp):
     """
     A fixture that initialises the HSM object
 
     The hsm object is returned
     """
-    app.preprocess_request()
+    app.setup_env()
 
     return c["hsm"]["obj"]
 
@@ -310,3 +288,266 @@ def set_policy(adminclient):
         )
 
     return _setPolicy
+
+
+@pytest.fixture
+def scoped_authclient(
+    client: FlaskClient,
+) -> Callable[[bool, str], ContextManager[FlaskClient]]:
+    """This fixture returns a authentication client of type FlaskClient.
+    With the parameter verify_jwt the jwt_check can be overwirtten, which will
+    disable the validation of the request. The request will be done in the
+    scope of the user which get provided by the parameter username (default: admin).
+
+    example usage:
+        with scoped_authclient(verify_jwt=False, username=user1) as client:
+            client.post(...)
+
+    Args:
+        verify_jwt (bool): define if the jwt get verified
+        username (str): set the username if the verification is disabled
+
+    Returns:
+        context manager (FlaskClient): a context manager which yields a FlaskClient
+    """
+
+    original_verify_jwt_in_request = (
+        linotp.controllers.base.verify_jwt_in_request
+    )
+    original_get_jwt_identity = linotp.app.get_jwt_identity
+
+    @contextlib.contextmanager
+    def auth_context_manager(
+        verify_jwt: bool = False,
+        username: str = "admin",
+        resolver: str = "useridresolver.PasswdIdResolver.IdResolver.def_resolver",
+    ) -> Iterator[FlaskClient]:
+        if not verify_jwt:
+            with patch(
+                "linotp.controllers.base.verify_jwt_in_request",
+                lambda: None,
+            ), patch(
+                "linotp.app.get_jwt_identity",
+                lambda: {
+                    "username": username,
+                    "resolver": resolver,
+                },
+            ), patch(
+                "linotp.controllers.system.get_jwt_identity",
+                lambda: {
+                    "username": username,
+                    "resolver": resolver,
+                },
+            ):
+
+                yield client
+                if hasattr(g, "username"):
+                    del g.username
+        else:
+            with patch(
+                "linotp.controllers.base.verify_jwt_in_request",
+                original_verify_jwt_in_request,
+            ), patch(
+                "linotp.app.get_jwt_identity",
+                original_get_jwt_identity,
+            ):
+                yield client
+                if hasattr(g, "username"):
+                    del g.username
+
+    return auth_context_manager
+
+
+class ResolverParams:
+    """
+    class which specify needed resolver parameters
+
+    Args:
+        name (str):
+            the name of the resolver
+
+        file_name (str):
+            the path to the password file which define the
+            users to create in the resolver
+
+        resolver_type (str):
+            the type of the resover e.g. passwdresolver
+    """
+
+    def __init__(
+        self,
+        name: str,
+        file_name: str,
+        resolver_type: str,
+    ) -> None:
+        self.name = name
+        self.file_name = file_name
+        self.resolver_type = resolver_type
+
+
+def _create_realm(
+    realm: str,
+    resolvers: List[str],
+    adminclient: FlaskClient,
+) -> CompatibleTestResponse:
+    """
+    create a realm for test issues.
+
+    Args:
+        realm (str):
+            name of the realm
+
+        resolvers (list):
+            list of the resovers e.g.:
+            [
+                "useridresolver.PasswdIdResolver.IdResolver.myResolverName1",
+                "useridresolver.PasswdIdResolver.IdResolver.myResolverName2"
+            ]
+
+        adminclient (FlaskClient):
+            the client which should be used for the request
+    """
+
+    params = {}
+    params["realm"] = realm
+    params["resolvers"] = ",".join(resolvers)
+
+    resp = adminclient.post("/system/setRealm", data=params)
+    return resp
+
+
+def _create_resolver(
+    resolver_params: ResolverParams,
+    adminclient: FlaskClient,
+) -> CompatibleTestResponse:
+    """
+    create a resolver.
+
+    Args:
+        resolver_parameters (ResolverParams):
+            an instance of the class ResolverParams
+
+        adminclient (FlaskClient):
+            the client which should be used for the request
+
+    """
+    resolver_params = copy.deepcopy(resolver_params)
+
+    body = {
+        "name": resolver_params.name,
+        "fileName": resolver_params.file_name,
+        "type": resolver_params.resolver_type,
+    }
+
+    res = adminclient.post("/system/setResolver", data=body)
+    assert res.json["result"]["status"] is True
+    assert res.json["result"]["value"] is True
+
+    return res
+
+
+@pytest.fixture
+def create_common_resolvers(
+    scoped_authclient: Callable[..., FlaskClient],
+    client: FlaskClient,
+) -> None:
+    """create two resolver
+    The users got import from the password files def-passwd and myDom-passwd
+
+    Args:
+        adminclient (FlaskClient):
+            the client which should be used for the request
+    """
+    fixture_path = TestController.fixture_path
+
+    resolver_params = [
+        ResolverParams(
+            name="def_resolver",
+            file_name=os.path.join(fixture_path, "def-passwd"),
+            resolver_type="passwdresolver",
+        ),
+        ResolverParams(
+            name="dom_resolver",
+            file_name=os.path.join(fixture_path, "myDom-passwd"),
+            resolver_type="passwdresolver",
+        ),
+    ]
+
+    with scoped_authclient(verify_jwt=False, username="admin") as client:
+        for resolver_param in resolver_params:
+            _create_resolver(
+                resolver_params=resolver_param, adminclient=client
+            )
+
+        from linotp.model.local_admin_user import LocalAdminResolver
+
+        local_admin_resoler = LocalAdminResolver(current_app)
+
+        local_admin_resoler.add_user("nimda", "Test123!")
+        local_admin_resoler.add_user("root@adomain", "Test123!")
+        local_admin_resoler.add_user("admin", "Test123!")
+
+
+@pytest.fixture
+def create_common_realms(scoped_authclient: Callable) -> None:
+    """
+    create a set of three realms - if they do not already exist
+
+    def_realm -> def_resolver (Default resolver)
+    dom_realm -> dom_resolver
+    mixed_realm -> def_resolver and dom_resolver
+
+    Args:
+        adminclient (FlaskClient):
+            the client which should be used for the request
+
+    """
+
+    common_realms = {
+        "def_realm": [
+            "useridresolver.PasswdIdResolver.IdResolver.def_resolver"
+        ],
+        "dom_realm": [
+            "useridresolver.PasswdIdResolver.IdResolver.dom_resolver"
+        ],
+        "mixed_realm": [
+            "useridresolver.PasswdIdResolver.IdResolver.def_resolver",
+            "useridresolver.PasswdIdResolver.IdResolver.dom_resolver",
+        ],
+    }
+
+    with scoped_authclient(verify_jwt=False, username="admin") as client:
+        response = client.post("/system/getRealms", data={})
+        existing_realms = response.json["result"]["value"]
+
+        for realm, resolver_definition in common_realms.items():
+
+            # create the realm if it does not already exist
+
+            if realm.lower() not in existing_realms:
+
+                response = _create_realm(
+                    realm=realm,
+                    resolvers=resolver_definition,
+                    adminclient=client,
+                )
+
+                assert response.json["result"]["status"] is True
+                assert response.json["result"]["value"] is True
+
+        params = {"realm": "def_realm"}
+        response = client.post("/system/setDefaultRealm", data=params)
+
+        assert response.json["result"]["status"] is True
+        assert response.json["result"]["value"] is True
+
+        response = client.post("/system/getRealms", data={})
+
+        assert response.json["result"]["status"] is True
+        realms = response.json["result"]["value"]
+
+        lookup_realm = set(["def_realm", "dom_realm", "mixed_realm"])
+        assert lookup_realm == set(realms).intersection(lookup_realm)
+        assert "def_realm" in realms
+        assert "default" in realms["def_realm"]
+        assert realms["def_realm"]["default"]

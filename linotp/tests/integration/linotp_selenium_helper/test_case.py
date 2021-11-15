@@ -79,6 +79,17 @@ class TestCase(object):
     driver: Union[webdriver.Chrome, webdriver.Firefox] = None
     "Selenium driver"
 
+    http_username: str
+    http_password: str
+    http_host: str
+    http_protocol: str
+    http_port: str
+    base_url: str
+    remote_enable: str
+    remote_url: str
+    selenium_driver_name: str
+    selenium_driver_language: str
+
     implicit_wait_time = 5
     ui_wait_time = 5
     backend_wait_time = 10
@@ -109,15 +120,7 @@ class TestCase(object):
             ["linotp", "protocol"], default="https"
         )
         cls.http_port = get_from_tconfig(["linotp", "port"])
-        cls.base_url = (
-            cls.http_protocol
-            + "://"
-            + cls.http_username
-            + ":"
-            + cls.http_password
-            + "@"
-            + cls.http_host
-        )
+        cls.base_url = cls.http_protocol + "://" + cls.http_host
         if cls.http_port:
             cls.base_url += ":" + cls.http_port
 
@@ -406,6 +409,7 @@ class TestCase(object):
             if realm:
                 self.realm_manager.open()
                 self.realm_manager.create(realm, resolver["name"])
+                self.realm_manager.set_default(realm)
                 self.realm_manager.close()
         else:
             assert not realm, "Can't create a realm without a resolver"

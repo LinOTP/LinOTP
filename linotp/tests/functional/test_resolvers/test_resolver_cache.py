@@ -202,8 +202,7 @@ class LdapResolverTest(TestController):
             response = self.make_system_request(
                 action="setResolver", params=param
             )
-
-            assert '"value": true' in response, response
+            assert response.json["result"]["value"], response
 
         resolver = (
             "useridresolver.LDAPIdResolver.IdResolver.blackdog,"
@@ -212,7 +211,12 @@ class LdapResolverTest(TestController):
         parameters = {"resolvers": resolver, "realm": "black"}
 
         response = self.make_system_request("setRealm", params=parameters)
-        assert '"value": true' in response, response
+        assert response.json["result"]["value"], response
+
+        response = self.make_system_request(
+            "setDefaultRealm", params={"realm": "black"}
+        )
+        assert response.json["result"]["value"], response
 
     def test_cache_without_exception(self):
         """

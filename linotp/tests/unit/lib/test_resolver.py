@@ -38,17 +38,25 @@ class TestGetResolverList(unittest.TestCase):
     def setUpClass(cls):
         super(TestGetResolverList, cls).setUpClass()
 
-    @patch("linotp.lib.resolver.get_resolver_types", return_value=["test"])
+    @patch("linotp.lib.resolver.get_admin_resolvers", return_value=[])
+    @patch(
+        "linotp.lib.resolver.get_resolver_types", return_value=["sqlresolver"]
+    )
     def _do_readonly_param_test(
-        self, param, is_invalid, expected_readonly, mock_get_types
+        self,
+        param,
+        is_invalid,
+        expected_readonly,
+        mock_get_types,
+        mock_admin_resolvers,
     ):
         """
         Call getresolverlist with given configuration
         """
 
         conf = {
-            "linotp.test.name.UnitTestResolver": "UnitTestResolver",
-            "linotp.test.readonly.UnitTestResolver": param,
+            "linotp.sqlresolver.name.UnitTestResolver": "UnitTestResolver",
+            "linotp.sqlresolver.readonly.UnitTestResolver": param,
         }
 
         with patch(

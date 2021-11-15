@@ -33,6 +33,14 @@ from uuid import uuid4
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 from flask_babel import Babel, gettext
+from flask_jwt_extended import (
+    JWTManager,
+    get_jwt_identity,
+    verify_jwt_in_request_optional,
+)
+from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
+from jwt import ExpiredSignatureError
+from jwt.exceptions import InvalidSignatureError
 
 from flask import Blueprint
 from flask import Config as FlaskConfig
@@ -327,6 +335,24 @@ class LinOTPApp(Flask):
                 else:
                     log.info("license successfully loaded")
 
+    def init_jwt_config(self):
+        """
+        Initialise the JWT authentication machinery.
+
+        If the configuration settings don't include a dedicated secret key for
+        JWT authentication, appropriate the first key from the `SECRET_FILE`
+        (encKey) to use as the secret key.
+        """
+
+        if not self.config.get("JWT_SECRET_KEY", ""):
+            with Path(self.config["SECRET_FILE"]).open("rb") as key_file:
+                secret_key = key_file.read(32).hex()
+            self.config["JWT_SECRET_KEY"] = secret_key
+
+        self.config["JWT_COOKIE_SECURE"] = self.config["SESSION_COOKIE_SECURE"]
+
+        JWTManager(self)
+
     def start_session(self):
 
         # we add a unique request id to the request enviroment
@@ -335,16 +361,29 @@ class LinOTPApp(Flask):
         request.environ["REQUEST_ID"] = str(uuid4())
         request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
-        self.create_context(request, request.environ)
-
+        # extract the username if request is authorized
         try:
-            user_desc = getUserFromRequest(request)
-            self.base_auth_user = user_desc.get("login", "")
-        except UnicodeDecodeError as exx:
-            # we supress Exception here as it will be handled in the
-            # controller which will return corresponding response
-            self.base_auth_user = ""
-            log.warning("Failed to identify user due to %r", exx)
+            verify_jwt_in_request_optional()
+            identity = get_jwt_identity()
+            if identity is not None:
+                flask_g.username = identity["username"]
+                log.debug(
+                    f"start_session: request session identity is {flask_g.username}"
+                )
+        except (
+            NoAuthorizationError,
+            ExpiredSignatureError,
+            InvalidSignatureError,
+            CSRFError,
+        ) as e:
+            # We do not need to do anything, authorization is checked in BaseController::jwt_check
+            log.debug(
+                "start_session: Unauthorized request, "
+                "no request session identity set %r",
+                e,
+            )
+
+        self.create_context(request, request.environ)
 
     def finalise_request(self, exc):
         drop_security_module()
@@ -365,6 +404,26 @@ class LinOTPApp(Flask):
                 del data
 
         log_request_timedelta(log)
+
+    def setup_env(self):
+        # The following functions are called here because they're
+        # stuffing bits into `flask.g`, which is a per-request global
+        # object. Much of what is stuffed into `flask.g` is actually
+        # application-wide stuff that has no business being stored in
+        # `flask.g` in the first place, but lots of code expects to be
+        # able to look at the "request context" and find stuff
+        # there. Disentangling the application-wide stuff in the
+        # request context from the request-scoped stuff is a major
+        # project that will not be undertaken just now, and we're
+        # probably doing more work here than we need to. Global
+        # variables suck.
+
+        set_config()
+
+        if request.path.startswith(self.static_url_path):
+            return
+
+        allocate_security_module()
 
     def create_context(self, request, environment):
         """
@@ -888,31 +947,12 @@ def create_app(config_name=None, config_extra=None):
         reload_token_classes()
         app.check_license()
 
-    @app.before_request
-    def setup_env():
-        # The following functions are called here because they're
-        # stuffing bits into `flask.g`, which is a per-request global
-        # object. Much of what is stuffed into `flask.g` is actually
-        # application-wide stuff that has no business being stored in
-        # `flask.g` in the first place, but lots of code expects to be
-        # able to look at the "request context" and find stuff
-        # there. Disentangling the application-wide stuff in the
-        # request context from the request-scoped stuff is a major
-        # project that will not be undertaken just now, and we're
-        # probably doing more work here than we need to. Global
-        # variables suck.
-
-        set_config()
-
-        if request.path.startswith(app.static_url_path):
-            return
-
-        allocate_security_module()
-
     app.add_url_rule("/healthcheck/status", "healthcheck", healthcheck)
 
     # Add pre request handlers
     app.before_first_request(init_logging_config)
+    app.before_first_request(app.init_jwt_config)
+    app.before_request(app.setup_env)
     app.before_request(app._run_setup)
     app.before_request(app.start_session)
 

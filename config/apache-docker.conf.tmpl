@@ -66,22 +66,6 @@ Listen 81
     </Directory>
     WSGIScriptAlias /       /etc/linotp/linotpapp.wsgi
 
-    <LocationMatch /ocra/(request|checkstatus|getActivationCode|calculateOtp)>
-        AuthType Digest
-        AuthName "LinOTP2 admin area"
-        AuthDigestProvider file
-        AuthUserFile /etc/linotp/admins
-        Require valid-user
-    </LocationMatch>
-
-    <LocationMatch /(audit|manage|system|license|admin)>
-        AuthType Digest
-        AuthName "LinOTP2 admin area"
-        AuthDigestProvider file
-        AuthUserFile /etc/linotp/admins
-        Require valid-user
-    </LocationMatch>
-
     <Location /gettoken>
         AuthType Digest
         AuthName "LinOTP gettoken"

@@ -32,6 +32,8 @@ on the 'realm context' during the request.
 
 from collections import deque
 
+from flask import current_app
+
 from linotp.tests import TestController
 
 
@@ -385,7 +387,12 @@ class TestRealmContextController(TestController):
         Setup 2 realms 'realm_default' and 'realm_no_default' with resolver
         myDefRes.
         """
-        for realm in ("realm_default", "realm_no_default"):
+        response = self.make_system_request("getRealms", {})
+        bootstraped_realms = response.json["result"]["value"]
+        n_bootstraped_realms = len(bootstraped_realms)
+
+        new_realms = ("realm_default", "realm_no_default")
+        for realm in new_realms:
             response = self.create_realm(
                 realm=realm,
                 resolvers=self.resolvers["myDefRes"],
@@ -394,14 +401,19 @@ class TestRealmContextController(TestController):
             assert content["result"]["status"]
             assert content["result"]["value"]
 
+        # we set 'realm_default' as default
+
+        response = self.set_default_realm("realm_default")
+        assert response.json["result"]["status"], response
+
         # Assert 'realm_default' is default
+
         response = self.make_system_request("getRealms", {})
-        content = response.json
-        assert content["result"]["status"]
-        realms = content["result"]["value"]
-        assert len(realms) == 2
+
+        assert response.json["result"]["status"], response
+        realms = response.json["result"]["value"]
+        assert len(realms) == n_bootstraped_realms + len(new_realms)
         assert "realm_default" in realms
-        assert "default" in realms["realm_default"]
         assert realms["realm_default"]["default"]
 
     def _delete_realms(self):

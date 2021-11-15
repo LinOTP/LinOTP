@@ -68,9 +68,12 @@ openssl req -new -x509 -newkey rsa:2048 \
     -keyout /etc/ssl/private/linotpserver.key \
     -nodes
 
-# Create Apache admin user for manage interface
-/usr/local/bin/linotp-create-htdigest "$LINOTP_ADMIN_USER" "$LINOTP_ADMIN_PASSWORD"
-
 # Initialise database tables
-/bin/su linotp -s /bin/sh -w LINOTP_CFG,FLASK_APP,FLASK_ENV \
-    -c "linotp init database"
+runuser --user linotp -w LINOTP_CFG,FLASK_APP,FLASK_ENV \
+    -- linotp init database
+
+# Create admin user for manage interface
+runuser --user linotp -w LINOTP_CFG,FLASK_APP,FLASK_ENV \
+    -- linotp local-admins add "$LINOTP_ADMIN_USER" || true # ignore error if user already exists 
+runuser --user linotp -w LINOTP_CFG,FLASK_APP,FLASK_ENV \
+    -- linotp local-admins password "$LINOTP_ADMIN_USER" --password "$LINOTP_ADMIN_PASSWORD"

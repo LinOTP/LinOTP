@@ -31,14 +31,22 @@ import logging
 import re
 from functools import partial
 
+from flask import current_app
+
 from linotp.lib.cache import get_cache
 from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
 from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
 from linotp.lib.context import request_context as context
 from linotp.lib.crypto.encrypted_data import EncryptedData
+from linotp.lib.realm import getRealms
 from linotp.lib.type_utils import boolean
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
+
+
+class DeleteForbiddenError(Exception):
+    pass
+
 
 # -------------------------------------------------------------------------- --
 
@@ -274,6 +282,24 @@ def get_cls_identifier(config_identifier):
     return None
 
 
+def get_admin_resolvers():
+    """ """
+    admin_realm_name = current_app.config["ADMIN_REALM_NAME"].lower()
+
+    admin_realm_definition = getRealms(admin_realm_name).get(
+        admin_realm_name, {}
+    )
+
+    if not admin_realm_definition:
+        return []
+
+    admin_resolvers = set()
+    for resolver_spec in admin_realm_definition["useridresolver"]:
+        admin_resolvers.add(resolver_spec.rpartition(".")[2])
+
+    return list(admin_resolvers)
+
+
 # external system/getResolvers
 def getResolverList(filter_resolver_type=None, config=None):
     """
@@ -286,6 +312,8 @@ def getResolverList(filter_resolver_type=None, config=None):
     Resolvers = {}
     resolvertypes = get_resolver_types()
 
+    admin_resolvers = get_admin_resolvers()
+
     if not config:
         conf = context.get("Config")
     else:
@@ -295,8 +323,8 @@ def getResolverList(filter_resolver_type=None, config=None):
 
         for typ in resolvertypes:
             if entry.startswith("linotp." + typ):
-                # the realm might contain dots "."
-                # so take all after the 3rd dot for realm
+                # the resolver might contain dots "." so take
+                # all after the 3rd dot for the resolver name
                 r = {}
                 resolver = entry.split(".", 3)
 
@@ -306,6 +334,11 @@ def getResolverList(filter_resolver_type=None, config=None):
                 r["resolvername"] = resolver[3]
                 r["entry"] = entry
                 r["type"] = typ
+
+                # return the resolver spec, which is required to define a realm
+                resolver_cls = get_resolver_class(typ)
+                r["spec"] = resolver_cls.db_prefix + "." + resolver[3]
+                r["admin"] = resolver[3] in admin_resolvers
 
                 readonly_entry = ".".join(
                     [resolver[0], resolver[1], "readonly", resolver[3]]
@@ -393,6 +426,8 @@ def getResolverInfo(resolvername, passwords=False):
     if resolver_cls is None:
         raise Exception("no such resolver type '%r' defined!" % resolver_type)
 
+    result["spec"] = resolver_cls.db_prefix + "." + resolvername
+
     res_conf, _missing = resolver_cls.filter_config(
         linotp_config, resolvername
     )
@@ -448,6 +483,7 @@ def getResolverInfo(resolvername, passwords=False):
 
     result["type"] = resolver_type
     result["data"] = res_conf
+    result["admin"] = resolvername in get_admin_resolvers()
 
     return result
 
@@ -459,14 +495,19 @@ def deleteResolver(resolvername):
     :paramm resolvername: the name of the to be deleted resolver
     :type   resolvername: string
     :return: sucess or fail
-    :rtype:  boelean
+    :rtype:  boolean
 
     """
+
+    if resolvername == current_app.config["ADMIN_RESOLVER_NAME"]:
+        raise DeleteForbiddenError(
+            f"default admin resolver {resolvername} is not allowed to be removed!"
+        )
+
     res = False
 
     resolvertypes = get_resolver_types()
     conf = context.get("Config")
-    # conf = getLinotpConfig()
 
     delEntries = []
     resolver_specs = set()

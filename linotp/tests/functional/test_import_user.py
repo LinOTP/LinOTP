@@ -76,11 +76,11 @@ class TestImportUser(TestController):
         self.delete_all_realms()
         self.delete_all_policies(auth_user="superadmin")
         self.delete_all_resolvers()
-        self.dropTable()
+        self.deleteAllUsers()
 
         TestController.setUp(self)
 
-    def dropTable(self):
+    def deleteAllUsers(self):
         """
         for the tests, we will drop the imported user table
         """
@@ -93,7 +93,7 @@ class TestImportUser(TestController):
 
         try:
 
-            dropStr = "DROP TABLE imported_user;"
+            dropStr = "DELETE * FROM imported_users;"
             t = sql.expression.text(dropStr)
             connection.execute(t)
 
@@ -174,6 +174,18 @@ class TestImportUser(TestController):
         check that the dryrun does not import a user
         """
 
+        # ----------------------------------------------------------------- --
+
+        # count all available resolver - the dry run should not
+        # create a new one
+
+        response = self.make_system_request("getResolvers", {})
+        n_initial_realms = len(response.json["result"]["value"])
+
+        # ----------------------------------------------------------------- --
+
+        # setup the import_users parameters by reading the file 'def-passwd'
+
         def_passwd_file = os.path.join(self.fixture_path, "def-passwd")
 
         with io.open(def_passwd_file, "r", encoding="utf-8") as f:
@@ -192,11 +204,13 @@ class TestImportUser(TestController):
             action="import_users", params=params, upload_files=upload_files
         )
 
-        assert '"updated": {}' in response, response
-
-        jresp = json.loads(response.body)
-        created = jresp.get("result", {}).get("value", {}).get("created", {})
+        assert response.json["result"]["value"]["updated"] == {}, response
+        created = response.json["result"]["value"]["created"]
         assert len(created) == 27, response
+
+        # ----------------------------------------------------------------- --
+
+        # a second dry run should as well not create a resolver
 
         upload_files = [("file", "user_list", content)]
         params = {
@@ -211,23 +225,24 @@ class TestImportUser(TestController):
             action="import_users", params=params, upload_files=upload_files
         )
 
-        assert '"updated": {}' in response, response
-
-        jresp = json.loads(response.body)
-        created = jresp.get("result", {}).get("value", {}).get("created", {})
+        assert response.json["result"]["value"]["updated"] == {}, response
+        created = response.json["result"]["value"]["created"]
         assert len(created) == 27, response
 
-        # make sure that no resolver has been created on dryrun
+        # ----------------------------------------------------------------- --
+
+        # make sure that the resolver has not been created on dryrun
 
         params = {"resolver": self.resolver_name}
         response = self.make_system_request("getResolver", params=params)
-        assert '"data": {}' in response, response
+        assert response.json["result"]["value"]["data"] == {}, response
 
-        # make sure that no realm has been created on dryrun
+        # make sure that no additional resolver was created on dryrun
 
-        params = {}
-        response = self.make_system_request("getRealms", params=params)
-        assert '"value": {}' in response, response
+        response = self.make_system_request("getResolvers", params={})
+        assert (
+            len(response.json["result"]["value"]) == n_initial_realms
+        ), response
 
     def test_list_imported_users(self):
         """

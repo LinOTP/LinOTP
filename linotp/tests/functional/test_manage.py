@@ -311,15 +311,3 @@ class TestManageController(TestController):
         assert "token1" in response, response
 
         return
-
-    def test_logout(self):
-        """
-        Manage: testing logout
-        """
-
-        response = self.make_manage_request("logout", params={})
-
-        assert "<h1>Redirecting...</h1>" in response, response
-
-
-# eof

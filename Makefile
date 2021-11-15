@@ -304,10 +304,10 @@ $(BUILDDIR)/apt/Packages:
 			make deb-install BUILDDIR=/build/build DESTDIR=/build/apt \
 				DEBUILD_OPTS=\"$(DEBUILD_OPTS)\" CI_COMMIT_TAG=$(CI_COMMIT_TAG)
 
-	rm -rf ./apt
+	rm -rf $(BUILDDIR)/apt
 
 	docker cp \
-		$(DOCKER_CONTAINER_NAME)-apt:/build/apt ./apt
+		$(DOCKER_CONTAINER_NAME)-apt:/build/apt $(BUILDDIR)/apt
 
 	docker rm -f $(DOCKER_CONTAINER_NAME)-apt
 
@@ -325,7 +325,7 @@ docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 		$(DOCKER_BUILDDIR)
 	cp $(BUILDDIR)/dockerfy $(DOCKER_BUILDDIR)
 	cp -r config/docker-initscripts.d $(DOCKER_BUILDDIR)
-	cp -r apt $(DOCKER_BUILDDIR)
+	cp -r $(BUILDDIR)/apt $(DOCKER_BUILDDIR)
 
 	# We show the files sent to Docker context here to aid in debugging
 	find $(DOCKER_BUILDDIR)

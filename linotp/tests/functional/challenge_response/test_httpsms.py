@@ -43,49 +43,19 @@ import logging
 import tempfile
 import urllib.parse
 
+import requests
+from mock import patch
+
 import linotp.provider.smsprovider.FileSMSProvider
 import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.util import str2unicode
-from linotp.tests.functional_special import TestSpecialController
-
-# mocking hook is startting here
-HTTP_RESPONSE_FUNC = None
-HTTP_RESPONSE = None
+from linotp.tests.functional.challenge_response.testing_controller import (
+    TestingChallengeResponseController,
+)
 
 
-def mocked_http_request(HttpObject, *argparams, **kwparams):
-
-    resp = 200
-    body = kwparams.get("body", "")
-    params = dict(urllib.parse.parse_qsl(body))
-
-    content = {
-        "version": "LinOTP MOCK",
-        "jsonrpc": "2.0",
-        "result": {"status": True, "value": True},
-        "id": 0,
-    }
-
-    global HTTP_RESPONSE
-    if HTTP_RESPONSE:
-        status, response = HTTP_RESPONSE
-        if response:
-            content = response
-            resp = status
-        HTTP_RESPONSE = None
-
-    global HTTP_RESPONSE_FUNC
-    if HTTP_RESPONSE_FUNC:
-        test_func = HTTP_RESPONSE_FUNC
-        resp, content = test_func(params)
-        HTTP_RESPONSE_FUNC = None
-
-    return resp, json.dumps(content)
-
-
-log = logging.getLogger(__name__)
-
-#
+class FakeResponse:
+    text = None
 
 
 class DefaultProvider:
@@ -120,7 +90,7 @@ class DefaultProvider:
         response = self.test.make_system_request(
             "setProvider", params=self.config
         )
-        assert '"value": true' in response
+        assert response.json["result"]["value"], response
 
         response = self.test.make_system_request(
             "setDefaultProvider",
@@ -129,7 +99,7 @@ class DefaultProvider:
                 "type": self.provider_type,
             },
         )
-        assert '"value": true' in response
+        assert response.json["result"]["value"], response
         return self
 
     def __exit__(self, *args):
@@ -140,7 +110,7 @@ class DefaultProvider:
                 "setDefaultProvider",
                 params={"name": self.old_default, "type": self.provider_type},
             )
-            assert '"value": true' in response
+            assert response.json["result"]["value"], response
 
         params = {"type": self.provider_type, "name": self.config.get("name")}
 
@@ -154,10 +124,10 @@ class DefaultProvider:
                 response = self.test.make_system_request(
                     "delProvider", params={"name": provider_name}
                 )
-                assert '"value": true' in response
+                assert response.json["result"]["value"], response
 
 
-class TestHttpSmsController(TestSpecialController):
+class TestHttpSmsController(TestingChallengeResponseController):
     """
     Here the HTTP SMS Gateway functionality is tested.
     """
@@ -177,7 +147,7 @@ class TestHttpSmsController(TestSpecialController):
             serial = "sms%02d" % num
             self.serials.append(serial)
 
-        TestSpecialController.setUp(self)
+        TestingChallengeResponseController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -189,7 +159,7 @@ class TestHttpSmsController(TestSpecialController):
         )
 
     def tearDown(self):
-        TestSpecialController.tearDown(self)
+        TestingChallengeResponseController.tearDown(self)
 
     ##########################################################################
     def removeTokens(self):
@@ -198,7 +168,7 @@ class TestHttpSmsController(TestSpecialController):
             response = self.make_admin_request(
                 "remove", params=parameters, auth_user="superadmin"
             )
-            assert '"status": true' in response, response
+            assert response.json["result"]["status"], response
 
     def initTokens(self):
         """
@@ -218,8 +188,7 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_admin_request(
             "init", params=parameters, auth_user="superadmin"
         )
-
-        assert '"status": true' in response, response
+        assert response.json["result"]["status"], response
 
         parameters = {
             "serial": self.serials[1],
@@ -234,8 +203,7 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_admin_request(
             "init", params=parameters, auth_user="superadmin"
         )
-
-        assert '"status": true' in response, response
+        assert response.json["result"]["status"], response
 
         for serial in self.serials[2 : self.max]:
             parameters = {
@@ -252,8 +220,7 @@ class TestHttpSmsController(TestSpecialController):
             response = self.make_admin_request(
                 "init", params=parameters, auth_user="superadmin"
             )
-
-            assert '"status": true' in response, response
+            assert response.json["result"]["status"], response
 
         return self.serials
 
@@ -267,8 +234,7 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_system_request(
             "setConfig", params=parameters, auth_user="superadmin"
         )
-
-        assert '"status": true' in response, response
+        assert response.json["result"]["status"], response
 
     def last_audit(self, num=3, page=1):
         """
@@ -283,7 +249,8 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_audit_request(action="search", params=params)
         return response
 
-    def test_missing_param(self):
+    @patch.object(requests, "get")
+    def test_missing_param(self, mocked_requests_get):
         """
         Missing parameter at the SMS Gateway config. send SMS will fail
         """
@@ -303,6 +270,10 @@ class TestHttpSmsController(TestSpecialController):
             "type": "sms",
             "class": "smsprovider.HttpSMSProvider.HttpSMSProvider",
         }
+
+        fake_http_response = FakeResponse()
+        fake_http_response.text = "MISSING PARAMETERS"
+        mocked_requests_get.return_value = fake_http_response
 
         with DefaultProvider(self, params):
 
@@ -331,13 +302,7 @@ class TestHttpSmsController(TestSpecialController):
             response = self.make_validate_request(
                 "smspin", params={"user": "user1", "pass": "1234"}
             )
-
-            # due to security fix to prevent information leakage the response
-            # of validate/check will be only true or false
-            # but wont contain the following message anymore
-            #    'Failed to send SMS. We received a'
-            #                'Failed to send SMS.'
-            assert '"value": false' in response, response
+            assert not response.json["result"]["value"], response
 
             # check last audit entry
             response = self.last_audit()
@@ -355,10 +320,13 @@ class TestHttpSmsController(TestSpecialController):
 
             assert val == "0", response
 
-        return
-
-    def test_succesfull_auth(self):
+    @patch.object(requests, "get")
+    def test_succesfull_auth(self, mocked_requests_get):
         """Successful SMS sending (via smspin) and authentication"""
+
+        fake_http_response = FakeResponse()
+        fake_http_response.text = "ID=123"
+        mocked_requests_get.return_value = fake_http_response
 
         sms_conf = {
             "URL": self.sms_url,
@@ -383,39 +351,42 @@ class TestHttpSmsController(TestSpecialController):
                 "smspin", params={"user": "user1", "pass": "1234"}
             )
 
-            assert '"state":' in response, (
+            assert "state" in response.json["id"], (
                 "Expecting 'state' as challenge inidcator %r" % response
             )
 
             # check last audit entry
-            response2 = self.last_audit()
-            # must be success == 1
-            val = "-1"
-            if '"total": null' not in response2:
-                resp = json.loads(response2.body)
-                rows = resp.get("rows", [])
-                for row in rows:
-                    cell = row.get("cell", {})
-                    if "validate/smspin" in cell:
-                        idx = cell.index("validate/smspin")
-                        val = cell[idx + 1]
-                        break
+            audit_response = self.last_audit().json
 
-            assert val == "1", response2
+            sms_pin_success = False
+
+            rows = audit_response.get("rows", [])
+            for row in rows:
+                cell = row.get("cell", {})
+                if "validate/smspin" in cell:
+                    idx = cell.index("validate/smspin")
+                    sms_pin_success = cell[idx + 1] == "1"
+                    break
+
+            assert sms_pin_success, response2
 
             # test authentication
             response = self.make_validate_request(
                 "check", params={"user": "user1", "pass": "1234973532"}
             )
 
-            assert '"value": true' in response, response
+            assert response.json["result"]["value"], response
 
-        return
-
-    def test_succesful_auth2(self):
+    @patch.object(requests, "get")
+    def test_succesful_auth2(self, mocked_requests_get):
         """
         Successful SMS sending (via validate) and authentication
         """
+
+        fake_http_response = FakeResponse()
+        fake_http_response.text = "ID=123"
+        mocked_requests_get.return_value = fake_http_response
+
         sms_conf = {
             "URL": self.sms_url,
             "PARAMETER": {"account": "clickatel", "username": "legit"},
@@ -439,25 +410,31 @@ class TestHttpSmsController(TestSpecialController):
             )
 
             # authentication fails but sms is sent
-            assert '"value": false' in response, response
-
-            # check last audit entry
-            response2 = self.last_audit()
-            # must be success == 1
-            if '"total": null' not in response2:
-                assert """challenge created""" in response2, response2
+            assert "state" in response.json["detail"]
 
             # test authentication
             response = self.make_validate_request(
                 "check", params={"user": "user1", "pass": "1234973532"}
             )
 
-            assert '"value": true' in response, response
+            assert response.json["result"]["value"], response
 
-    def test_successful_SMS(self):
+    @patch.object(requests, "get")
+    def test_successful_SMS(self, mocked_requests_get):
         """
         Successful SMS sending with RETURN_FAILED
         """
+
+        # ----------------------------------------------------------------- --
+
+        # prepare the requests response
+
+        fake_response = FakeResponse()
+        fake_response.text = "ID=12356"
+        mocked_requests_get.return_value = fake_response
+
+        # ----------------------------------------------------------------- --
+
         sms_conf = {
             "URL": self.sms_url,
             "PARAMETER": {"account": "clickatel", "username": "legit"},
@@ -466,78 +443,70 @@ class TestHttpSmsController(TestSpecialController):
             "HTTP_Method": "GET",
             "RETURN_FAILED": "FAILED",
         }
-        parameters = {
-            "SMSProvider": "smsprovider.HttpSMSProvider.HttpSMSProvider",
-            "SMSProviderConfig": json.dumps(sms_conf),
+        params = {
+            "name": "test_succesful_auth2",
+            "config": json.dumps(sms_conf),
+            "timeout": "100",
+            "type": "sms",
+            "class": "smsprovider.HttpSMSProvider.HttpSMSProvider",
         }
-        response = self.make_system_request(
-            "setConfig", params=parameters, auth_user="superadmin"
-        )
+        with DefaultProvider(self, params):
 
-        assert '"status": true' in response, response
+            response = self.make_validate_request(
+                "check", params={"user": "user1", "pass": "1234"}
+            )
 
-        response = self.make_validate_request(
-            "smspin", params={"user": "user1", "pass": "1234"}
-        )
-
-        assert '"state"' in response, response
-
-        return
+            assert "sms submitted" in response, response
 
     def test_successful_File_SMS(self):
         """
         Successful test of the File SMS Provider
         """
-        # locate the lookup file in the servers home
-        here = self.appconf.get("here", None)
 
         # create a temporary filename, to avoid conflicts
-        f = tempfile.NamedTemporaryFile(delete=False, dir=here)
-        filename = f.name
-        sms_conf = {"file": filename}
+        with tempfile.NamedTemporaryFile() as f:
+            filename = f.name
+            sms_conf = {"file": filename}
 
-        params = {
-            "name": "test_successful_File_SMS",
-            "config": json.dumps(sms_conf),
-            "timeout": "100",
-            "type": "sms",
-            "class": "smsprovider.FileSMSProvider.FileSMSProvider",
-        }
+            params = {
+                "name": "test_successful_File_SMS",
+                "config": json.dumps(sms_conf),
+                "timeout": "100",
+                "type": "sms",
+                "class": "smsprovider.FileSMSProvider.FileSMSProvider",
+            }
 
-        with DefaultProvider(self, params):
+            with DefaultProvider(self, params):
 
-            response = self.make_validate_request(
-                "check",
-                params={
-                    "user": "user1",
-                    "pass": "1234",
-                    "message": "Täst<otp>",
-                },
-            )
+                response = self.make_validate_request(
+                    "check",
+                    params={
+                        "user": "user1",
+                        "pass": "1234",
+                        "message": "Täst<otp>",
+                    },
+                )
 
-            assert '"message": "sms submitted"' in response, response
-            assert '"state"' in response, response
+                assert "state" in response.json["detail"], response
+                assert (
+                    "sms submitted" in response.json["detail"]["message"]
+                ), response
 
-            with open(filename, "r") as f:
-                line = f.read()
+                with open(filename, "r") as f:
+                    line = f.read()
 
-            line = str2unicode(line)
-            assert "Täst" in line, "'Täst' not found in line"
+                line = str2unicode(line)
+                assert "Täst" in line, "'Täst' not found in line"
 
-            _left, otp = line.split("Täst")
-            response = self.make_validate_request(
-                "check", params={"user": "user1", "pass": "1234%s" % otp}
-            )
+                _left, otp = line.split("Täst")
+                response = self.make_validate_request(
+                    "check", params={"user": "user1", "pass": "1234%s" % otp}
+                )
 
-            assert '"value": true' in response, response
+                assert response.json["result"]["value"], response
 
-            import os
-
-            os.remove(filename)
-
-        return
-
-    def test_failed_SMS(self):
+    @patch.object(requests, "get")
+    def test_failed_SMS(self, mocked_requests_get):
         """
         Failed SMS sending with RETURN_FAIL
         """
@@ -561,13 +530,16 @@ class TestHttpSmsController(TestSpecialController):
             "class": "smsprovider.HttpSMSProvider.HttpSMSProvider",
         }
 
+        fake_http_response = FakeResponse()
+        fake_http_response.text = "FAILED"
+        mocked_requests_get.return_value = fake_http_response
+
         with DefaultProvider(self, params):
 
             response = self.make_validate_request(
                 "smspin", params={"user": "user1", "pass": "1234"}
             )
-
-            assert '"value": false' in response, response
+            assert not response.json["result"]["value"], response
 
             # due to security fix to prevent information leakage the response
             # of validate/check will be only true or false
@@ -595,10 +567,9 @@ class TestHttpSmsController(TestSpecialController):
 
         return
 
-    def setSMSProvider(
+    def create_sms_provider_configuration(
         self,
         name="test",
-        preferred_httplib=None,
         method="GET",
         return_check=None,
         PARAMETERS=None,
@@ -623,8 +594,6 @@ class TestHttpSmsController(TestSpecialController):
             sms_conf["PARAMETER"] = PARAMETERS
 
         sms_conf["HTTP_Method"] = method
-        if preferred_httplib:
-            sms_conf["PREFERRED_HTTPLIB"] = preferred_httplib
 
         params = {
             "name": name,
@@ -636,275 +605,123 @@ class TestHttpSmsController(TestSpecialController):
 
         return params
 
-    def test_httpsmsprovider_httplib(self):
+    @patch.object(requests, "post")
+    @patch.object(requests, "get")
+    def test_httpsmsprovider(self, mocked_requests_get, mocked_requests_post):
         """
         Test SMSProvider httplibs for working with GET and POST
         """
-        provider_conf = self.setSMSProvider(
-            preferred_httplib="httplib", method="POST"
+
+        return_check = {"RETURN_SUCCESS": "ID"}
+
+        provider_conf = self.create_sms_provider_configuration(
+            name="test_httpsmsprovider",
+            return_check=return_check,
+            method="POST",
         )
 
-        provider_conf["name"] = "test_httpsmsprovider_httplib"
-
         with DefaultProvider(self, provider_conf):
+
+            fake_response = FakeResponse()
+            fake_response.text = "ID=POST"
+            mocked_requests_post.return_value = fake_response
+
             # check if its possible to trigger challenge with empty pin
             params = {"serial": self.serials[2], "pass": ""}
             response = self.make_validate_request("check_s", params=params)
 
-            assert '"state":' in response, (
+            assert "state" in response.json["detail"], (
                 "Expecting 'state' as challenge inidcator %r" % response
             )
 
-        provider_conf = self.setSMSProvider(
-            preferred_httplib="httplib", method="GET"
+        provider_conf = self.create_sms_provider_configuration(
+            name="test_httpsmsprovider",
+            return_check=return_check,
+            method="GET",
         )
-
-        provider_conf["name"] = "test_httpsmsprovider_httplib"
-
         with DefaultProvider(self, provider_conf):
+
+            fake_response = FakeResponse()
+            fake_response.text = "ID=GET"
+            mocked_requests_get.return_value = fake_response
 
             params = {"serial": self.serials[3], "pass": ""}
             response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, (
+
+            assert "state" in response.json["detail"], (
                 "Expecting 'state' as challenge inidcator %r" % response
             )
 
-    def test_httpsmsprovider_urllib(self):
+    @patch.object(requests, "post")
+    @patch.object(requests, "get")
+    def test_twilio_httpsmsprovider(
+        self, mocked_requests_get, mocked_requests_post
+    ):
         """
-        Test SMSProvider urllib for working with GET and POST
+        Test Twilio as HttpSMSProvider which requires patter match for result
         """
 
-        provider_config = self.setSMSProvider(
-            preferred_httplib="urllib", method="POST"
-        )
-
-        with DefaultProvider(self, provider_config):
-
-            params = {"serial": self.serials[4], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, (
-                "Expecting 'state' as challenge inidcator %r" % response
-            )
-
-        provider_config = self.setSMSProvider(
-            preferred_httplib="urllib", method="GET"
-        )
-
-        with DefaultProvider(self, provider_config):
-
-            params = {"serial": self.serials[5], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, (
-                "Expecting 'state' as challenge inidcator %r" % response
-            )
-
-        return
-
-    def test_httpsmsprovider_requests(self):
-        """
-        Test SMSProvider 'requests' for working with GET and POST
-        """
-        # now we check as well the requests lib if its available
-        skip = False
-        try:
-            import requests
-
-            requests.__version__
-        except ImportError:
-            skip = True
-
-        if skip:
-            skip_reason = "Httplib 'requests' not supported in this env!"
-            if hasattr(self, "skipTest"):
-                self.skipTest(skip_reason)
-            else:
-                log.error(skip_reason)
-                return
-
-        provider_config = self.setSMSProvider(
-            preferred_httplib="requests", method="POST"
-        )
-
-        with DefaultProvider(self, config=provider_config):
-
-            params = {"serial": self.serials[6], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, (
-                "Expecting 'state' as challenge inidcator %r" % response
-            )
-
-        provider_config = self.setSMSProvider(
-            preferred_httplib="requests", method="GET"
-        )
-
-        with DefaultProvider(self, config=provider_config):
-
-            params = {"serial": self.serials[7], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, (
-                "Expecting 'state' as challenge inidcator %r" % response
-            )
-
-        return
-
-    def test_twilio_httpsmsprovider_httplib(self):
-        """
-        Test Twilio as HttpSMSProvider which requires patter nmatch for result
-        """
-        # TODO: Fix and re-enable twilio tests
-        self.skipTest("Temporarily skip twilio tests due to known problems")
-
-        args = [
-            {"preferred_httplib": "httplib", "method": "GET"},
-            {"preferred_httplib": "httplib", "method": "POST"},
-        ]
-        i = 7
-        for arg in args:
-            i = i + 1
-            parameters = {"account": "twilio", "username": "legit"}
-            arguments = {
-                "return_check": {
-                    "RETURN_SUCCESS_REGEX": "<Status>queued</Status>"
-                },
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, "Expecting 'state' %d: %r" % (
-                i,
-                response,
-            )
-
-            parameters = {"account": "twilio", "username": "fail"}
-            arguments = {
-                "return_check": {"RETURN_FAIL_REGEX": "<Status>400</Status>"},
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-            i = i + 1
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert (
-                "predefined error from the SMS Gateway" in response
-            ), "Expecting error %d: %r" % (i, response)
-
-        return
-
-    def test_twilio_httpsmsprovider_urllib(self):
-        """
-        Test Twilio as HttpSMSProvider which requires patter nmatch for result
-        """
-        # TODO: Fix and re-enable twilio tests
-        self.skipTest("Temporarily skip twilio tests due to known problems")
-
-        args = [
-            {"preferred_httplib": "urllib", "method": "GET"},
-            {"preferred_httplib": "urllib", "method": "POST"},
-        ]
-
-        i = 9
-        for arg in args:
-            i = i + 1
-            parameters = {"account": "twilio", "username": "legit"}
-            arguments = {
-                "return_check": {
-                    "RETURN_SUCCESS_REGEX": "<Status>queued</Status>"
-                },
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, "Expecting 'state' %d: %r" % (
-                i,
-                response,
-            )
-
-            parameters = {"account": "twilio", "username": "fail"}
-            arguments = {
-                "return_check": {"RETURN_FAIL_REGEX": "<Status>400</Status>"},
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-            i = i + 1
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert (
-                "predefined error from the SMS Gateway" in response
-            ), "Expecting error %d: %r" % (i, response)
-
-        return
-
-    def test_twilio_httpsmsprovider_requests(self):
-        """
-        Test Twilio as HttpSMSProvider which requires patter nmatch for result
-        """
-        # TODO: Fix and re-enable twilio tests
-        self.skipTest("Temporarily skip twilio tests due to known problems")
-
-        # now we check as well the requests lib if its available
-        skip = False
-        try:
-            import requests
-
-            requests.__version__
-        except ImportError:
-            skip = True
-
-        if skip:
-            skip_reason = "Httplib 'requests' not supported in this env!"
-            if hasattr(self, "skipTest"):
-                self.skipTest(skip_reason)
-            else:
-                log.error(skip_reason)
-                return
-
-        args = [
-            {"preferred_httplib": "requests", "method": "GET"},
-            {"preferred_httplib": "requests", "method": "POST"},
-        ]
+        fake_http_response = FakeResponse()
 
         i = 11
-        for arg in args:
+        for method in ["POST", "GET"]:
+
+            # ------------------------------------------------------------- --
+
+            # use the next sms token for a valid twillio reply
+
             i = i + 1
-            parameters = {"account": "twilio", "username": "legit"}
-            arguments = {
-                "return_check": {
-                    "RETURN_SUCCESS_REGEX": "<Status>queued</Status>"
-                },
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert '"state":' in response, "Expecting 'state' %d: %r" % (
-                i,
-                response,
+
+            return_check = {"RETURN_SUCCESS_REGEX": "<Status>queued</Status>"}
+
+            fake_http_response.text = "<Status>queued</Status>"
+            mocked_requests_post.return_value = fake_http_response
+            mocked_requests_get.return_value = fake_http_response
+
+            provider_conf = self.create_sms_provider_configuration(
+                name="sms_provider",
+                return_check=return_check,
+                method=method,
+                PARAMETERS={"account": "twilio", "username": "legit"},
             )
 
-            parameters = {"account": "twilio", "username": "fail"}
-            arguments = {
-                "return_check": {"RETURN_FAIL_REGEX": "<Status>400</Status>"},
-                "PARAMETERS": parameters,
-            }
-            arguments.update(arg)
-            self.setSMSProvider(**arguments)
-            i = i + 1
-            params = {"serial": self.serials[i], "pass": ""}
-            response = self.make_validate_request("check_s", params=params)
-            assert (
-                "predefined error from the SMS Gateway" in response
-            ), "Expecting error %d: %r" % (i, response)
+            with DefaultProvider(self, provider_conf):
 
-        return
+                params = {"serial": self.serials[i], "pass": ""}
+                response = self.make_validate_request("check_s", params=params)
+
+                assert (
+                    "state" in response.json["detail"]
+                ), "Expecting 'state' %d: %r" % (i, response)
+
+            # ------------------------------------------------------------- --
+
+            # use the next sms token for an invalid twillio reply
+            #   where our fail regex 'RETURN_FAIL_REGEX' checks for a
+            #   predefined error from the SMS Gateway"
+
+            i = i + 1
+
+            return_check = {"RETURN_FAIL_REGEX": "<Status>400</Status>"}
+
+            fake_http_response.text = "<Status>400</Status>"
+            mocked_requests_post.return_value = fake_http_response
+            mocked_requests_get.return_value = fake_http_response
+
+            provider_conf = self.create_sms_provider_configuration(
+                name="sms_provider",
+                return_check=return_check,
+                method=method,
+                PARAMETERS={"account": "twilio", "username": "legit"},
+            )
+
+            with DefaultProvider(self, provider_conf):
+
+                params = {"serial": self.serials[i], "pass": ""}
+                response = self.make_validate_request("check_s", params=params)
+
+                assert not response.json["result"]["status"]
+                assert not response.json["result"]["value"]
 
 
 ###eof#########################################################################

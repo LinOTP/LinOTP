@@ -13,6 +13,9 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * Better license exception messages and in case of the user service, the
     message suggests asking the system administrator.
   * Comprehensive message after importing tokens.
+  * Adjusted functional_special tests to become regular tests.
+  * Porting issue for radius token with forwarding transactions.
+  * Reply to sms challenge with pin+otp.
 
   Features:
   * add grace to license volume exceeding and display accordingly a message
@@ -25,12 +28,19 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     Export can be disabled with a new flag --no-export.
   * add the configuration option to the HttpSmsProvider to define the server
     certificate verification option.
-
+  * added a jwt based admin authentication into LinOTP, so that configuring
+    apache to protect admin access to linotp is no more needed.
+    Linotp therefore uses a special realm, the admin realm, which contains the
+    resolvers that are allowed to adminstrate LinOTP. For bootstrap an
+    internal reserved manged resolver is used where users could be added via
+    the linotp command line tool (s. README.md). The manage ui and the
+    corresponding interfaces has been extended to show up if a realm or
+    resolver is used for administration.
 
   Packaging:
   * The `linotp` package now `Suggests: python3-smpplib`.
 
- -- LinOTP Packaging <packaging@linotp.de>  Thu, 9 Sep 2021 17:13:51 +0200
+ -- LinOTP Packaging <packaging@linotp.de>  Mon, 15 Nov 2021 16:51:51 +0200
 
 linotp (3.1~rc3-1) buster-dev; urgency=low
 
