@@ -27,7 +27,6 @@
 
 import datetime
 import getpass
-import http.cookies
 import json
 import logging
 import sys
@@ -35,6 +34,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from getopt import GetoptError, getopt
+from http.cookies import SimpleCookie
 
 import httplib2
 
@@ -372,31 +372,37 @@ def get_session(lino_url, user=None, pwd=None):
 
     http = httplib2.Http(disable_ssl_certificate_validation=True)
 
-    session = None
+    access_token_cookie = None
+    csrf_token = None
+
     if user is not None:
-        url = lino_url + "admin/getsession"
-        http.add_credentials(user, pwd)
-        resp, content = http.request(url, "POST")
+        url = lino_url + "admin/login"
+        body = json.dumps(dict(username=user, password=pwd))
+        resp, content = http.request(
+            url,
+            "POST",
+            body=body,
+            headers={"content-type": "application/json"},
+        )
 
         if resp["status"] != "200":
             LOG.error("Admin login failed: %r", resp)
             sys.exit(1)
 
         try:
-            session = http.cookies.SimpleCookie(resp["set-cookie"])[
-                "admin_session"
-            ].value
+            cookies = SimpleCookie()
+            cookies.load(resp["set-cookie"])
+            access_token_cookie = cookies["access_token_cookie"].value
+            csrf_token = cookies["csrf_access_token"].value
         except Exception as exception:
             LOG.error(
                 "Could not retrieve session. Exception was: %r", exception
             )
             raise exception
 
-    # add headers, as they transefer the cookies
-    headers = {}
-    if session is not None:
-        headers["Cookie"] = resp["set-cookie"]
-
+    # add headers, as they transfer the cookies
+    session = "access_token_cookie={}".format(access_token_cookie)
+    headers = {"Cookie": session, "X-CSRF-TOKEN": csrf_token}
     return (session, headers)
 
 
@@ -465,23 +471,22 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
     tokens = []
     lines = []
 
-    fil = file(filename, "r")
-    for line in fil:
-        line = line.strip()
+    with open(filename, "r") as fil:
+        for line in fil:
+            line = line.strip()
 
-        # if line is empty, we take all already defined lines and
-        # create an token out of it
-        if len(line) == 0:
-            token = create_token(lines, startdate)
-            # if we get a token, we can preserve this for
-            # later, to store them
-            if token is not None:
-                LOG.info("Token parsed: %r", token)
-                tokens.append(token)
-            del lines[:]
-        else:
-            lines.append(line)
-    fil.close()
+            # if line is empty, we take all already defined lines and
+            # create an token out of it
+            if len(line) == 0:
+                token = create_token(lines, startdate)
+                # if we get a token, we can preserve this for
+                # later, to store them
+                if token is not None:
+                    LOG.info("Token parsed: %r", token)
+                    tokens.append(token)
+                del lines[:]
+            else:
+                lines.append(line)
 
     # if finally there are lines left, try to create an additional token
     if len(lines) != 0:
