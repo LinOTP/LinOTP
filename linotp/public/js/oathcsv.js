@@ -33,7 +33,6 @@ function create_oathcsv_dialog() {
         buttons: {
             'Load Token File': {
                 click: function () {
-                    $('#loadtokens_session_oathcsv').val(getsession());
                     load_tokenfile('oathcsv');
                     $(this).dialog('close');
                 },

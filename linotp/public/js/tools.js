@@ -193,7 +193,7 @@ function exportToken(attributes) {
      * So we add temporarily this form to the body, submit the
      * form and delete it afterwards.
      */
-    $("<form action='/admin/show?outform=csv&session=" + getsession() + "&user_fields=" + attributes + "' method='post'></form>").appendTo("body").submit().remove();
+    $("<form action='/admin/show?outform=csv&user_fields=" + attributes + "' method='post'></form>").appendTo("body").submit().remove();
 }
 
 function create_tools_exporttoken_dialog() {
@@ -243,7 +243,7 @@ function exportAudit(audit_num, audit_page) {
 
     $("<form action='/audit/search?outform=csv&rp=" + audit_num +
         "&page=" + audit_page + "&headers=true" +
-        "&session=" + getsession() + "' method='post'></form>").appendTo("body").submit().remove();
+        "' method='post'></form>").appendTo("body").submit().remove();
 }
 
 function create_tools_exportaudit_dialog() {
@@ -300,8 +300,6 @@ function create_tools_importusers_dialog() {
                 click: function () {
                     if ($('#form_import_users').valid()) {
                         show_waiting();
-
-                        $('#import_users_session').val(getsession());
 
                         $('#form_import_users').ajaxSubmit({
                             success: import_users_dryrun_callback,
@@ -371,7 +369,7 @@ function create_tools_importusers_dialog() {
             }
 
             //prefill resolver select
-            $.post('/system/getResolvers', { 'session': getsession() }, function (data, status, XMLHttpRequest) {
+            $.post('/system/getResolvers', {}, function (data, status, XMLHttpRequest) {
                 var resolvers = '<option value="" disabled selected>[' + i18n.gettext("Select resolver") + ']</option>';
                 for (var res in data.result.value) {
                     if (data.result.value[res].readonly === true) {
@@ -408,7 +406,6 @@ function create_tools_importusers_dialog() {
                     show_waiting();
 
                     $('#import_users_dryrun').val("false");
-                    $('#import_users_session').val(getsession());
 
                     $('#form_import_users').ajaxSubmit({
                         success: import_users_callback,

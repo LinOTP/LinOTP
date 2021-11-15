@@ -32,7 +32,6 @@ function create_dpw_dialog() {
         buttons: {
             'load token file': {
                 click: function () {
-                    $('#loadtokens_session_dpw').val(getsession());
                     load_tokenfile('dpw');
                     $(this).dialog('close');
                 },

@@ -32,7 +32,6 @@ function create_yubikeycsv_dialog() {
         buttons: {
             'Load Token File': {
                 click: function () {
-                    $('#loadtokens_session_yubikeycsv').val(getsession());
                     load_tokenfile('yubikeycsv');
                     $(this).dialog('close');
                 },

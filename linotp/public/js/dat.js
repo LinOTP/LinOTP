@@ -32,7 +32,6 @@ function create_dat_dialog() {
         buttons: {
             'load token file': {
                 click: function () {
-                    $('#loadtokens_session_dat').val(getsession());
                     load_tokenfile('dat');
                     $(this).dialog('close');
                 },

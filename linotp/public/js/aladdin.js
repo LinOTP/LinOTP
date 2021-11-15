@@ -32,7 +32,6 @@ function create_aladdin_dialog() {
         buttons: {
             'load token file': {
                 click: function () {
-                    $('#loadtokens_session_aladdin').val(getsession());
                     load_tokenfile('aladdin-xml');
                     $(this).dialog('close');
                 },

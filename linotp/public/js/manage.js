@@ -146,21 +146,15 @@ function pre_flexi(data) {
  */
 function on_submit_flexi() {
     var active_realm = $('#realm').val();
-    var session = getsession();
 
     var params = [
         { name: 'realm', value: active_realm },
-        { name: 'session', value: session },
-    ];
-
-    var policy_params = [
-        { name: 'session', value: session },
     ];
 
     $('#user_table').flexOptions({ params: params });
     $('#audit_table').flexOptions({ params: params });
     $('#token_table').flexOptions({ params: params });
-    $('#policy_table').flexOptions({ params: policy_params });
+    $('#policy_table').flexOptions({ params: [] });
 
     return true;
 }
@@ -539,7 +533,6 @@ function get_selected() {
             var params = {
                 'name': policy,
                 'display_inactive': '1',
-                'session': getsession()
             };
             $.post('/system/getPolicy', params,
                 function (data, textStatus, XMLHttpRequest) {
@@ -756,34 +749,6 @@ function save_token_config() {
     setSystemConfig(params);
 }
 
-/**
- * returns the admin_session cookie or requests it from the server if not set
- * @return {String} admin_session
- */
-function getsession() {
-    var session = "";
-    if (document.cookie) {
-        session = getcookie("admin_session");
-    }
-
-    // Retrieve session cookie if it does not exist
-    if ("" == session) {
-        // we need to get the session ID synchronous or we will have unpredictiable
-        // behavious
-        var resp = $.ajax({
-            url: '/admin/getsession',
-            async: false,
-            type: "POST"
-        }).responseText;
-        var data = jQuery.parseJSON(resp);
-
-        if (data.result.value == true)
-            session = getcookie("admin_session");
-    }
-    return session;
-}
-
-
 function reset_waiting() {
     g.running_requests = 0;
     hide_waiting();
@@ -832,9 +797,6 @@ $.ajaxSetup({
  *          a POST request, which will allow more and secure data
  */
 function clientUrlFetch(myUrl, params, callback, parameter) {
-    if (!('session' in params)) {
-        params['session'] = getsession();
-    }
 
     show_waiting();
 
@@ -866,9 +828,6 @@ function clientUrlFetch(myUrl, params, callback, parameter) {
  *          a POST request, which will allow more and secure data
  */
 function clientUrlFetchSync(myUrl, params) {
-    var session = getsession();
-    //myUrl     = myUrl + "&session=" + session;
-    params['session'] = session;
 
     show_waiting();
 
@@ -1012,11 +971,6 @@ function token_operations_callback(responses) {
  * pass in the session. Token serial is set inside this function as well.
  */
 function token_operation(tokens, url, params) {
-    if (!('session' in params)) {
-        // To make the operation a tiny bit more efficient we fetch the session
-        // once instead of in every request (as clientUrlFetch would do).
-        params['session'] = getsession();
-    }
     var requests = Array();
     for (var i = 0; i < tokens.length; i++) {
         params['serial'] = tokens[i];
@@ -1050,11 +1004,6 @@ function token_operation(tokens, url, params) {
  * pass in the session.
  */
 function tokens_operation(tokens, url, params) {
-    if (!('session' in params)) {
-        // To make the operation a tiny bit more efficient we fetch the session
-        // once instead of in every request (as clientUrlFetch would do).
-        params['session'] = getsession();
-    }
     var requests = Array();
     params['serial'] = tokens;
     var promise = clientUrlFetch(url, params)
@@ -1340,7 +1289,6 @@ function getTokenDetails(serial) {
         data: {
             "serial": serial,
             "tokeninfo_format": "json",
-            "session": getsession()
         }
     }).then(function (response, status, promise) {
         var result = response.result.value;
@@ -1812,8 +1760,7 @@ $.fn.dialog_icons = function () {
 // realms and resolver functions
 //
 function _fill_resolvers(widget) {
-    var params = { 'session': getsession() };
-    $.post('/system/getResolvers', params,
+    $.post('/system/getResolvers', {},
         function (data, textStatus, XMLHttpRequest) {
             var resolversOptions = "";
             var value = {};
@@ -1833,8 +1780,7 @@ function _fill_resolvers(widget) {
 
 function _fill_realms(widget, also_none_realm) {
     var defaultRealm = "";
-    var params = { 'session': getsession() };
-    $.post('/system/getRealms', params,
+    $.post('/system/getRealms', {},
         function (data, textStatus, XMLHttpRequest) {
             // value._default_.realmname
             // value.XXXX.realmname
@@ -1891,7 +1837,7 @@ function get_defaulrealm() {
     var resp = $.ajax({
         url: url,
         async: false,
-        data: { 'session': getsession() },
+        data: {},
         type: "GET"
     }).responseText;
     var data = jQuery.parseJSON(resp);
@@ -1906,7 +1852,7 @@ function get_realms() {
     var resp = $.ajax({
         url: '/system/getRealms',
         async: false,
-        data: { 'session': getsession() },
+        data: {},
         type: "GET"
     }).responseText;
     var data = jQuery.parseJSON(resp);
@@ -1924,7 +1870,7 @@ function get_resolvers() {
     var resp = $.ajax({
         url: '/system/getResolvers',
         async: false,
-        data: { 'session': getsession() },
+        data: {},
         type: "POST"
     }).responseText;
     var data = jQuery.parseJSON(resp);
@@ -2228,7 +2174,7 @@ function testXMLObject(xml) {
 function import_policy() {
     show_waiting();
     $('#load_policies').ajaxSubmit({
-        data: { session: getsession() },
+        data: {},
         type: "POST",
         error: parsePolicyImport,
         success: parsePolicyImport,
@@ -2241,7 +2187,7 @@ function load_tokenfile(type) {
     show_waiting();
     if ("aladdin-xml" == type) {
         $('#load_tokenfile_form_aladdin').ajaxSubmit({
-            data: { session: getsession() },
+            data: {},
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2250,7 +2196,7 @@ function load_tokenfile(type) {
     }
     else if ("feitian" == type) {
         $('#load_tokenfile_form_feitian').ajaxSubmit({
-            data: { session: getsession() },
+            data: {},
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2259,7 +2205,7 @@ function load_tokenfile(type) {
     }
     else if ("pskc" == type) {
         $('#load_tokenfile_form_pskc').ajaxSubmit({
-            data: { session: getsession() },
+            data: {},
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2268,7 +2214,7 @@ function load_tokenfile(type) {
     }
     else if ("dpw" == type) {
         $('#load_tokenfile_form_dpw').ajaxSubmit({
-            data: { session: getsession() },
+            data: {},
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2277,7 +2223,7 @@ function load_tokenfile(type) {
     }
     else if ("dat" == type) {
         $('#load_tokenfile_form_dat').ajaxSubmit({
-            data: { session: getsession() },
+            data: {},
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2286,7 +2232,7 @@ function load_tokenfile(type) {
     }
     else if ("oathcsv" == type) {
         $('#load_tokenfile_form_oathcsv').ajaxSubmit({
-            data: { session: getsession() },
+            data: {},
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2295,7 +2241,7 @@ function load_tokenfile(type) {
     }
     else if ("yubikeycsv" == type) {
         $('#load_tokenfile_form_yubikeycsv').ajaxSubmit({
-            data: { session: getsession() },
+            data: {},
             type: "POST",
             error: parseXML,
             success: parseXML,
@@ -2319,7 +2265,7 @@ function support_set() {
     var extension = /\.pem$/;
     if (extension.exec(filename)) {
         $('#set_support_form').ajaxSubmit({
-            data: { session: getsession() },
+            data: {},
             type: "POST",
             error: parseLicense,
             success: parseLicense,
@@ -2341,8 +2287,7 @@ function support_view() {
     // clean out old data
     $("#dialog_support_view").html("");
 
-    var params = { 'session': getsession() };
-    $.post('/system/getSupportInfo', params,
+    $.post('/system/getSupportInfo', {},
         function (data, textStatus, XMLHttpRequest) {
             support_info = data.result.value;
 
@@ -2518,7 +2463,6 @@ function load_sms_providers() {
     show_waiting();
     var params = {
         'type': 'sms',
-        'session': getsession(),
     };
     $.get('/system/getProvider', params,
         function (data, textStatus, XMLHttpRequest) {
@@ -2583,7 +2527,7 @@ function load_sms_providers() {
 function load_email_providers() {
     show_waiting();
 
-    var params = { 'type': 'email', 'session': getsession() };
+    var params = { 'type': 'email' };
     $.post('/system/getProvider', params,
         function (data, textStatus, XMLHttpRequest) {
             emailProviders = data.result.value;
@@ -2651,7 +2595,7 @@ function load_email_providers() {
 function load_push_providers() {
     show_waiting();
 
-    var params = { 'type': 'push', 'session': getsession() };
+    var params = { 'type': 'push' };
     $.post('/system/getProvider', params,
         function (data, textStatus, XMLHttpRequest) {
             pushProviders = data.result.value;
@@ -2720,7 +2664,7 @@ function load_push_providers() {
 function load_voice_providers() {
     show_waiting();
 
-    var params = { 'type': 'voice', 'session': getsession() };
+    var params = { 'type': 'voice' };
     $.post('/system/getProvider', params,
         function (data, textStatus, XMLHttpRequest) {
             voiceProviders = data.result.value;
@@ -2788,8 +2732,7 @@ function load_voice_providers() {
 
 function load_system_config() {
     show_waiting();
-    var params = { 'session': getsession() };
-    $.post('/system/getConfig', params,
+    $.post('/system/getConfig', {},
         function (data, textStatus, XMLHttpRequest) {
             // checkboxes this way:
             checkBoxes = new Array();
@@ -3005,7 +2948,6 @@ function save_system_config() {
  * @param {Object.<string, *>} values - the key value pairs representing the config to save
  */
 function setSystemConfig(values) {
-    values["session"] = getsession();
     $.post('/system/setConfig', values,
         function (data, textStatus, XMLHttpRequest) {
             if (data.result.status == false) {
@@ -3029,7 +2971,6 @@ function test_ldap_config() {
     var url = '/admin/testresolver';
     var params = {};
     params['name'] = $('#ldap_resolvername').val();
-    params["session"] = getsession();
 
     clientUrlFetch(url, params, processLDAPTestResponse);
 }
@@ -3071,8 +3012,6 @@ function save_ldap_config(callback = null) {
     params["EnforceTLS"] = $("#ldap_enforce_tls").is(':checked') ? "True" : "False";
     params["only_trusted_certs"] = $("#ldap_only_trusted_certs").is(':checked') ? "True" : "False";
 
-    params["session"] = getsession();
-
     if ($('#ldap_password').val().length > 0) {
         params["BINDPW"] = $('#ldap_password').val();
     }
@@ -3112,7 +3051,6 @@ function save_http_config() {
 
     var url = '/system/setResolver';
     var params = get_form_input('form_httpconfig')
-    params["session"] = getsession();
 
     params['name'] = resolvername;
     params['previous_name'] = g.current_resolver_name;
@@ -3145,7 +3083,6 @@ function save_http_config() {
 function set_default_realm(realm) {
     var params = {
         'realm': realm,
-        'session': getsession()
     };
 
     $.post('/system/setDefaultRealm', params,
@@ -3167,7 +3104,6 @@ function save_realm_config() {
     var params = {
         'realm': realm,
         'resolvers': g.resolvers_in_realm_to_edit,
-        'session': getsession()
     };
 
     $.post('/system/setRealm', params,
@@ -3197,7 +3133,6 @@ function save_tokenrealm_config() {
     var realms = g.realms_of_token.join(",");
     var params = {
         'realms': realms,
-        'session': getsession()
     };
     for (var i = 0; i < tokens.length; ++i) {
         serial = tokens[i];
@@ -3239,7 +3174,6 @@ function save_file_config() {
 
     params['type'] = resolvertype;
     params['fileName'] = fileName;
-    params['session'] = getsession();
     show_waiting();
     $.post(url, params, function (data, textStatus, XMLHttpRequest) {
         hide_waiting();
@@ -3324,7 +3258,6 @@ function save_sql_config(callback = null) {
         var new_key = map[key];
         params[new_key] = value;
     }
-    params['session'] = getsession();
 
     if ($('#sql_password').val().length > 0) {
         params["Password"] = $('#sql_password').val();
@@ -3362,8 +3295,7 @@ function save_sql_config(callback = null) {
 function realms_load() {
     g.realm_to_edit = {};
     show_waiting();
-    var params = { 'session': getsession() };
-    $.post('/system/getRealms', params,
+    $.post('/system/getRealms', {},
         function (data, textStatus, XMLHttpRequest) {
             var realms = '<ol id="realms_select" class="select_list" class="ui-selectable">';
             for (var realmName in data.result.value) {
@@ -3399,9 +3331,9 @@ function realms_load() {
                         name: escape($('.name', selectedRealm).text())
                     };
                     var realm = data.result.value[g.realm_to_edit.name];
-                    if (realm.admin){
+                    if (realm.admin) {
                         $("#button_realms_delete").button('disable')
-                    }else{
+                    } else {
                         $("#button_realms_delete").button('enable')
                     }
                 } // end of stop function
@@ -3429,8 +3361,7 @@ function realm_ask_delete() {
 
 function resolvers_load() {
     show_waiting();
-    var params = { 'session': getsession() };
-    $.post('/system/getResolvers', params,
+    $.post('/system/getResolvers', {},
         function (data, textStatus, XMLHttpRequest) {
             var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
             var count = 0;
@@ -3513,7 +3444,7 @@ function resolvers_load() {
 
 function resolver_delete() {
     var reso = $('#delete_resolver_name').html();
-    var params = { 'resolver': reso, 'session': getsession() };
+    var params = { 'resolver': reso };
 
     show_waiting();
     $.post('/system/delResolver', params,
@@ -3548,7 +3479,7 @@ function resolver_delete() {
 
 function realm_delete() {
     var realm = g.realm_to_edit.name;
-    var params = { 'realm': realm, 'session': getsession() };
+    var params = { 'realm': realm };
     $.post('/system/delRealm', params,
         function (data, textStatus, XMLHttpRequest) {
             if (data.result.status == true) {
@@ -3996,8 +3927,7 @@ function tokenbuttons() {
                 click: function () {
                     var serial = get_selected_tokens()[0];
                     var count = $('#otp_values_count').val();
-                    var session = getsession();
-                    window.open('/gettoken/getmultiotp?serial=' + serial + '&session=' + session + '&count=' + count + '&view=1', 'getotp_window', "status=1,toolbar=1,menubar=1");
+                    window.open('/gettoken/getmultiotp?serial=' + serial + '&count=' + count + '&view=1', 'getotp_window', "status=1,toolbar=1,menubar=1");
                     $(this).dialog('close');
                 },
                 id: "button_getmulti_ok",
@@ -4030,8 +3960,7 @@ function tokenbuttons() {
 
         // get all realms the admin is allowed to view
         var realms = '';
-        var params = { 'session': getsession() }
-        $.post('/system/getRealms', params,
+        $.post('/system/getRealms', {},
             function (data, textStatus, XMLHttpRequest) {
                 realms = '<ol id="tokenrealm_select" class="select_list" class="ui-selectable">';
                 for (var key in data.result.value) {
@@ -4091,10 +4020,7 @@ $(document).ready(function () {
         }
     };
 
-    // right after document loading we need to get the session
-    getsession();
-
-    // with the session, we can now load the server config
+    // load the server config
     var server_config;
     try {
         server_config = get_server_config();
@@ -4870,8 +4796,7 @@ $(document).ready(function () {
             },
             'Clear Default': {
                 click: function () {
-                    var params = { 'session': getsession() };
-                    $.post('/system/setDefaultRealm', params,
+                    $.post('/system/setDefaultRealm', {},
                         function () {
                             realms_load();
                             fill_realms();
@@ -6162,7 +6087,6 @@ function openExpirationDialog() {
 
                     var data = {
                         "tokens": get_selected_tokens(),
-                        "session": getsession(),
                         "countAuthMax": $("#setexpiration_count_requests").val() || "unlimited",
                         "countAuthSuccessMax": $("#setexpiration_count_success").val() || "unlimited",
                         "validityPeriodStart": validityPeriodStart,
@@ -6313,7 +6237,6 @@ function changePassword() {
     var params = {
         'old_password': $('#password_old').val(),
         'new_password': $('#password_new').val(),
-        'session': getsession()
     };
 
     show_waiting();
@@ -6387,7 +6310,6 @@ function save_sms_provider_config() {
         'config': $('#sms_provider_config').val(),
         'timeout': $('#sms_provider_timeout').val(),
         'type': 'sms',
-        'session': getsession(),
     };
 
     show_waiting();
@@ -6429,7 +6351,6 @@ function delete_sms_provider(provider) {
     var params = {
         'name': provider,
         'type': 'sms',
-        'session': getsession()
     };
     $.post('/system/delProvider', params,
         function (data, textStatus, XMLHttpRequest) {
@@ -6474,7 +6395,6 @@ function set_default_provider(type, provider) {
     var params = {
         'name': provider,
         'type': type,
-        'session': getsession()
     };
     $.post('/system/setDefaultProvider', params,
         function (data, textStatus, XMLHttpRequest) {
@@ -6559,7 +6479,6 @@ function save_email_provider_config() {
         'config': $('#email_provider_config').val(),
         'timeout': $('#email_provider_timeout').val(),
         'type': 'email',
-        'session': getsession()
     };
     show_waiting();
 
@@ -6599,7 +6518,6 @@ function delete_email_provider(provider) {
     var params = {
         'name': provider,
         'type': 'email',
-        'session': getsession()
     };
     $.post('/system/delProvider', params,
         function (data, textStatus, XMLHttpRequest) {
@@ -6685,7 +6603,6 @@ function save_push_provider_config() {
         'config': $('#push_provider_config').val(),
         'timeout': $('#push_provider_timeout').val(),
         'type': 'push',
-        'session': getsession()
     };
     show_waiting();
 
@@ -6725,7 +6642,6 @@ function delete_push_provider(provider) {
     var params = {
         'name': provider,
         'type': 'push',
-        'session': getsession()
     };
     $.post('/system/delProvider', params,
         function (data, textStatus, XMLHttpRequest) {
@@ -6813,7 +6729,6 @@ function save_voice_provider_config() {
         'config': $('#voice_provider_config').val(),
         'timeout': $('#voice_provider_timeout').val(),
         'type': 'voice',
-        'session': getsession()
     };
     show_waiting();
 
@@ -6853,7 +6768,6 @@ function delete_voice_provider(provider) {
     var params = {
         'name': provider,
         'type': 'voice',
-        'session': getsession()
     };
     $.post('/system/delProvider', params,
         function (data, textStatus, XMLHttpRequest) {
@@ -6996,8 +6910,7 @@ function realm_edit(realm) {
 
     // get all resolvers
     var resolverListHtml = '';
-    var params = { 'session': getsession() };
-    $.post('/system/getResolvers', params,
+    $.post('/system/getResolvers', {},
         function (data, textStatus, XMLHttpRequest) {
             var resolvers = Object
                 .keys(data.result.value)
@@ -7681,7 +7594,7 @@ function view_policy() {
         dblClickResize: true
     });
 
-    $('#policy_export').attr("href", '/system/getPolicy?export=true&display_inactive=true&session=' + getsession());
+    $('#policy_export').attr("href", '/system/getPolicy?export=true&display_inactive=true');
 
     $('#policy_import').click(function () {
         $dialog_import_policy.dialog("open");
@@ -7714,7 +7627,6 @@ function view_policy() {
             'time': $('#policy_time').val(),
             'client': $('#policy_client').val(),
             'active': pol_active,
-            'session': getsession()
         };
         $.post('/system/setPolicy', params,
             function (data, textStatus, XMLHttpRequest) {
@@ -7738,7 +7650,7 @@ function view_policy() {
         event.preventDefault();
         var policy = get_selected_policy().join(',');
         if (policy) {
-            var params = { 'name': policy, 'session': getsession() };
+            var params = { 'name': policy };
             $.post('/system/delPolicy', params,
                 function (data, textStatus, XMLHttpRequest) {
                     if (data.result.status == true) {

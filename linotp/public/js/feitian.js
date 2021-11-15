@@ -32,7 +32,6 @@ function create_feitian_dialog() {
         buttons: {
             'load token file': {
                 click: function () {
-                    $('#loadtokens_session_feit').val(getsession());
                     load_tokenfile('feitian');
                     $(this).dialog('close');
                 },

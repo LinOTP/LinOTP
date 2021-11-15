@@ -1315,7 +1315,6 @@
             </tr>
         </table>
         <input type="hidden" id="import_users_dryrun" name="dryrun" value="true">
-        <input type="hidden" id="import_users_session" name="session" value="">
     </form>
 </div>
 
@@ -1412,7 +1411,6 @@
         </div>
         <div>
             <input name="type" type="hidden" value="aladdin-xml">
-            <input name="session" id="loadtokens_session_aladdin" type="hidden" value="">
             <div id="safenet_realms" name="targetrealm">
               <label for="safenet_realm">${_("Target realm")}:</label>
               <select id="safenet_realm" name="realm"> </select>
@@ -1459,9 +1457,6 @@
             <input id='pskc_password' name='pskc_password' type='password' size='32'>
             <input id='pskc_preshared' name='pskc_preshared' size='32'>
         </p>
-        <p>
-            <input name="session" id="loadtokens_session_pskc" type="hidden" value="">
-        </p>
         <div id="pskc_realms" name="targetrealm">
           <label for="pskc_realm">${_("Target realm")}:</label>
           <select id="pskc_realm" name="realm"> </select>
@@ -1507,7 +1502,6 @@
         <p>${_("Please choose the token file")}:
             <input name="file" type="file" size="30" accept="text/*">
             <input name="type" type="hidden" value="oathcsv">\
-            <input name="session" id="loadtokens_session_oathcsv" type="hidden" value="">\
         </p>
             <div id="oath_realms" name="targetrealm">
               <label for="oath_realm">${_("Target realm")}:</label>
@@ -1525,7 +1519,6 @@
         <p>${_("Please choose the token file")}:
              <input name="file" type="file" size="30" accept="text/*">
              <input name="type" type="hidden" value="yubikeycsv">\
-             <input name="session" id="loadtokens_session_yubikeycsv" type="hidden" value="">
         </p>
         <div id="yubi_realms" name="targetrealm">
           <label for="yubi_realm">${_("Target realm")}:</label>
@@ -1551,7 +1544,6 @@
         <p>
             <input name="file" type="file" size="30" accept="text/*">
             <input name="type" type="hidden" value="dpw">
-            <input name="session" id="loadtokens_session_dpw" type="hidden" value="">
         </p>
         <div id="dpw_realms" name="targetrealm">
           <label for="dpw_realm">${_("Target realm")}:</label>
@@ -1580,7 +1572,6 @@
             <input id='startdate' name="startdate" type="datetime" value="1.1.2000 00:00:00">
         </p>
         <input name="type" type="hidden" value="dat">
-        <input name="session" id="loadtokens_session_dat" type="hidden" value="">
         <div id="dat_realms" name="targetrealm">
           <label for="dat_realm">${_("Target realm")}:</label>
           <select id="dat_realm" name="realm"> </select>
@@ -1606,7 +1597,6 @@
                 <p>${_("Please choose the token file")}:<br>
                 <input name="file" type="file" size="30" accept="text/*">
                 <input name="type" type="hidden" value="feitian">
-                <input name="session" id="loadtokens_session_feit" type="hidden" value="">
                 <div id="feitian_realms" name="targetrealm">
                   <label for="feitian_realm">${_("Target realm")}:</label>
                   <select id="feitian_realm" name="realm"> </select>
