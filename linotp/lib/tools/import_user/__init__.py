@@ -39,6 +39,7 @@ import csv
 import json
 import logging
 
+from linotp.lib.crypto.utils import compare_password
 from linotp.lib.tools.import_user.ImportHandler import ImportHandler
 from linotp.model.imported_user import ImportedUser
 
@@ -139,7 +140,7 @@ class UserImport(object):
 
             user = ImportedUser()
 
-            for entry in ImportedUser.user_entries:
+            for entry in user.user_entries:
 
                 value = ""
                 column_id = self.user_column_mapping.get(entry, -1)
@@ -148,11 +149,11 @@ class UserImport(object):
                     continue
 
                 value = row[column_id]
-
                 user.set(entry, value)
 
-                if entry == "password" and passwords_in_plaintext:
-                    user.create_password_hash(row[column_id])
+            if passwords_in_plaintext:
+                user.plain_password = user.password
+                user.password = user.create_password_hash(user.plain_password)
 
             yield user
 
@@ -211,22 +212,19 @@ class UserImport(object):
                     processed_users[user.userid] = user.username
 
                 # search for the user
-
                 former_user = self.import_handler.lookup(user)
-
                 # if it does not exist we create a new one
-
                 if not former_user:
                     users_created[user.userid] = user.username
                     if not dryrun:
                         self.import_handler.add(user)
-
                 else:
-
+                    # if it already exists remove it from the list of annihilation
+                    # those who remain in former_user_by_id will be annihilated
                     if former_user.userid in former_user_by_id:
                         del former_user_by_id[former_user.userid]
 
-                    if former_user == user:
+                    if user == former_user:
                         users_not_modified[user.userid] = user.username
                     else:
                         users_modified[user.userid] = user.username
