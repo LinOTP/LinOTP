@@ -30,11 +30,11 @@ system controller - to configure the system
 import binascii
 import json
 import logging
-import os
 from html import escape
 
 from configobj import ConfigObj
 from flask_babel import gettext as _
+from flask_jwt_extended import get_jwt_identity
 from werkzeug.datastructures import FileStorage
 
 from flask import current_app, g
@@ -116,6 +116,10 @@ from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 from .base import BaseController
 
 log = logging.getLogger(__name__)
+
+
+class RemoveForbiddenError(Exception):
+    pass
 
 
 class SystemController(BaseController):
@@ -757,9 +761,9 @@ class SystemController(BaseController):
                             setRealm(realm_name, ",".join(new_resolvers))
                             break
 
-                #
-                # migrate the tokens to the new resolver -
-                # we can re-use the resolver migration handler here :-)
+            #
+            # migrate the tokens to the new resolver -
+            # we can re-use the resolver migration handler here :-)
 
             if mode == "rename" or primary_key_changed:
 
@@ -1077,6 +1081,20 @@ class SystemController(BaseController):
                 valid_resolver_specs.append(resolver_spec)
 
             valid_resolver_specs_str = ",".join(valid_resolver_specs)
+            login_resolver_class = get_jwt_identity()["resolver"]
+            login_resolver_name = login_resolver_class.split(".")[-1]
+            admin_realm_name = current_app.config.get(
+                "ADMIN_REALM_NAME"
+            ).lower()
+
+            if realm == admin_realm_name:
+                if login_resolver_class not in valid_resolver_specs_str:
+                    raise RemoveForbiddenError(
+                        f"Resolver {login_resolver_name} must not removed from {admin_realm_name}."
+                        "It is not allowed to remove the resolver your are part of to prevent "
+                        "self disablement."
+                    )
+
             res = setRealm(realm, valid_resolver_specs_str)
             g.audit["success"] = res
             g.audit["info"] = "realm: %r, resolvers: %r" % (
@@ -1121,49 +1139,20 @@ class SystemController(BaseController):
                 raise ParameterError("missing required parameter: realm")
             realm = self.request_params["realm"]
 
-            #
-            # we test if before delete there has been a default
-            # if yes - check after delete, if still one there
-            #         and set the last available to default
-            #
+            result_of_deletion = deleteRealm(realm)
 
-            defRealm = getDefaultRealm()
-            hadDefRealmBefore = False
-            if defRealm != "":
-                hadDefRealmBefore = True
+            res["delRealm"] = {"result": result_of_deletion}
+            db.session.commit()
 
-            # now test if realm is defined
-            if isRealmDefined(realm) is True:
-                if realm.lower() == defRealm.lower():
-                    setDefaultRealm("")
-                if realm == "_default_":
-                    realmConfig = "useridresolver"
-                else:
-                    realmConfig = "useridresolver.group." + realm
-
-                res["delRealm"] = {
-                    "result": removeFromConfig(realmConfig, iCase=True)
-                }
-
-            ret = deleteRealm(realm)
-
-            if hadDefRealmBefore is True:
-                defRealm = getDefaultRealm()
-                if defRealm == "":
-                    realms = getRealms()
-                    if len(realms) == 2:
-                        for k in realms:
-                            if k != realm:
-                                setDefaultRealm(k)
-            g.audit["success"] = ret
+            g.audit["success"] = True
             g.audit["info"] = realm
 
-            db.session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
             log.error("[delRealm] error deleting realm: %r", exx)
-            db.session.rollback()
+            g.audit["success"] = False
+            g.audit["info"] = realm
             return sendError(response, exx)
 
     ########################################################
@@ -1274,7 +1263,6 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.error("[setPolicy] error saving policy: %r", exx)
             db.session.rollback()
             return sendError(response, exx)
 

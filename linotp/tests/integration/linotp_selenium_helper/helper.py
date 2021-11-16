@@ -26,6 +26,7 @@
 """Contains helper functions"""
 
 import logging
+from typing import Any
 from urllib.parse import urlparse
 
 import requests
@@ -36,6 +37,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
+
+from linotp.settings import _config_schema
 
 LOG = logging.getLogger(__name__)
 
@@ -128,6 +131,13 @@ def select(driver, select_element, option_text):
     selections = Select(select_element)
     if selections.first_selected_option.text.strip() != option_text:
         selections.select_by_visible_text(option_text)
+
+
+def get_default_app_setting(config_name: str) -> Any:
+    """
+    Helper to give integration tests access to the default app config
+    """
+    return _config_schema.find_item(config_name).default
 
 
 def get_session(base_url, user=None, pwd=None):

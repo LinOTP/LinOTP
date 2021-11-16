@@ -39,20 +39,19 @@ from linotp.model import Config, LoggingConfig, db
 @pytest.mark.usefixtures("app")
 class TestMaintenance(object):
     @patch("linotp.model.db.session")
-    def test_check_status_ok(self, mock_session, client):
+    def test_check_status_ok(self, mock_session, adminclient):
         """
         Test that 'check_status' returns the number of config entries
         """
         entries = 1
 
         mock_session.query.return_value.count.return_value = entries
-
-        response = client.get("/maintenance/check_status")
+        response = adminclient.get("/maintenance/check_status")
 
         assert response.json["detail"]["config"]["entries"] == entries
 
     @patch("linotp.model.db.session")
-    def test_000_check_status_error(self, mock_session, client):
+    def test_000_check_status_error(self, mock_session, adminclient):
         """
         Test that 'check_status' returns an error status code
         """
@@ -60,13 +59,13 @@ class TestMaintenance(object):
 
         mock_session.query.side_effect = op_error
 
-        response = client.get("/maintenance/check_status")
+        response = adminclient.get("/maintenance/check_status")
 
         assert response.status_code == 500
 
         return
 
-    def test_set_loglevel(self, app, client):
+    def test_set_loglevel(self, app, adminclient):
         name = "linotp.lib.user"
         config_entry = LoggingConfig.query.get(name)
         assert not config_entry
@@ -75,7 +74,7 @@ class TestMaintenance(object):
             loggerName=name,
             level=10,
         )
-        client.post("/maintenance/setLogLevel", json=params)
+        adminclient.post("/maintenance/setLogLevel", json=params)
 
         config_entry = LoggingConfig.query.get(name)
         assert config_entry.level == 10

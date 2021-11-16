@@ -32,6 +32,7 @@ import os
 
 from mock import patch
 
+from linotp.model.local_admin_user import LocalAdminResolver
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)

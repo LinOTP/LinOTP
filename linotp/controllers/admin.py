@@ -43,7 +43,11 @@ from flask import (
     stream_with_context,
 )
 
-from linotp.controllers.base import BaseController, SessionCookieMixin
+from linotp.controllers.base import (
+    BaseController,
+    JWTMixin,
+    SessionCookieMixin,
+)
 from linotp.flap import HTTPUnauthorized, config, request, response
 from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.challenges import Challenges
@@ -106,7 +110,7 @@ from linotp.tokens import tokenclass_registry
 log = logging.getLogger(__name__)
 
 
-class AdminController(BaseController, SessionCookieMixin):
+class AdminController(BaseController, JWTMixin, SessionCookieMixin):
 
     """
     The linotp.controllers are the implementation of the web-API to talk to
@@ -138,9 +142,14 @@ class AdminController(BaseController, SessionCookieMixin):
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
 
-            if request.path.lower() != "/admin/getsession":
-                # Check we have a valid session
-                check_session(request)
+            if request.path.lower() in [
+                "/admin/getsession",
+                "/admin/login",
+                "/admin/logout",
+            ]:
+                return None
+
+            check_session(request)
 
             return None
 
@@ -211,31 +220,6 @@ class AdminController(BaseController, SessionCookieMixin):
             log.error("[__after__] unable to create a session cookie: %r", exx)
             db.session.rollback()
             return sendError(response, exx, context="after")
-
-    def logout(self):
-        # see
-        # http://docs.pylonsproject.org/projects/pyramid/1.0/narr/webob.html
-        g.audit["action_detail"] = "logout"
-
-        nonce = request.environ.get("nonce")
-        realm = request.environ.get("realm")
-        detail = "401 Unauthorized"
-        raise HTTPUnauthorized(
-            str(detail),
-            [
-                (
-                    "WWW-Authenticate",
-                    'Digest realm="%s", nonce="%s", qop="auth"'
-                    % (realm, nonce),
-                )
-            ],
-        )
-
-        # raise exc.HTTPUnauthorized(
-        #                           str(detail),
-        #                           [('WWW-Authenticate', 'Basic realm="%s"' % realm)]
-        #                          )
-        # abort(401, "You are not authenticated")
 
     def getTokenOwner(self):
         """
@@ -1853,11 +1837,11 @@ class AdminController(BaseController, SessionCookieMixin):
             lists the user in a realm
 
         arguments:
-            * <searchexpr> - will be retrieved from the UserIdResolverClass
-            * realm	 - a realm, which is a collection of resolver configurations
-            * resConf	 - a destinct resolver configuration
-            * page    - the number of page, which should be retrieved (optional)
-            * rp    - the number of users per page (optional)
+            * <searchexpr>: will be retrieved from the UserIdResolverClass
+            * realm: a realm, which is a collection of resolver configurations
+            * resConf: a destinct resolver configuration
+            * page: the number of page, which should be retrieved (optional)
+            * rp: the number of users per page (optional)
 
         returns:
             a json result with a boolean

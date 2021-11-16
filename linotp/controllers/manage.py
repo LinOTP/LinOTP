@@ -35,10 +35,10 @@ import os
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
 
-from flask import current_app, g, redirect
+from flask import current_app, g, redirect, url_for
 
 import linotp
-from linotp.controllers.base import BaseController
+from linotp.controllers.base import BaseController, jwt_exempt
 from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import request, response
@@ -127,7 +127,7 @@ class ManageController(BaseController):
             if request.path.lower() in [
                 "/manage/",
                 "/manage",
-                "/manage/logout",
+                "/manage/login",
                 "/manage/audittrail",
                 "/manage/policies",
                 "/manage/tokenview",
@@ -173,18 +173,20 @@ class ManageController(BaseController):
 
         return response
 
+    @jwt_exempt
     def index(self):
         """
         This is the main function of the management web UI
         """
+        user = getUserFromRequest(request).get("login")
+        if not user:
+            # user is not authenticated, show login view
+            return redirect(url_for(".login"))
 
         try:
             c.debug = current_app.config["DEBUG"]
             c.title = "LinOTP Management"
-            admin_user = getUserFromRequest(request)
-
-            if "login" in admin_user:
-                c.admin = admin_user["login"]
+            c.admin = user
 
             log.debug("[index] importers: %s", IMPORT_TEXT)
             c.importers = IMPORT_TEXT
@@ -274,10 +276,6 @@ class ManageController(BaseController):
             if not http_host:
                 http_host = request.environ.get("HTTP_HOST")
             url_scheme = request.environ.get("wsgi.url_scheme")
-            c.logout_url = "%s://log-me-out:fake@%s/manage/logout" % (
-                url_scheme,
-                http_host,
-            )
 
             db.session.commit()
             ren = render("/manage/manage-base.mako")
@@ -292,6 +290,20 @@ class ManageController(BaseController):
             log.error("[index] failed! %r", ex)
             db.session.rollback()
             raise
+
+    @jwt_exempt
+    def login(self):
+        """
+        Render the Manage-UI login page
+        """
+        user = getUserFromRequest(request).get("login")
+        if user:
+            # user is authenticated, no login required.
+            return redirect(url_for(".index"))
+
+        c.debug = current_app.config["DEBUG"]
+
+        return render("manage/login.mako")
 
     def tokentype(self):
         """"""
@@ -703,16 +715,6 @@ class ManageController(BaseController):
             log.error("[tokeninfo] failed! %r", exx)
             db.session.rollback()
             return sendError(response, exx)
-
-    def logout(self):
-        """
-        redirect logout
-        """
-
-        http_host = request.environ.get("HTTP_HOST")
-        url_scheme = request.environ.get("wsgi.url_scheme", "https")
-
-        return redirect("%s://%s/manage/" % (url_scheme, http_host))
 
     def help(self, id=None):
         """

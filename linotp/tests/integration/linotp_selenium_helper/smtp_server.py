@@ -32,6 +32,7 @@ from multiprocessing import Process, Queue
 from smtpd import SMTPServer
 
 from .set_config import SetConfig
+from .test_case import TestCase
 
 """
 This file contains functionality to set up an SMTP
@@ -95,7 +96,7 @@ class SmtpMessageServer(object):
         get_otp()
     """
 
-    def __init__(self, testcase, message_timeout):
+    def __init__(self, testcase: TestCase, message_timeout: int):
         self.testcase = testcase
 
         # We need a minimum version of 2.9.2 to set the SMTP port number, so
@@ -104,13 +105,7 @@ class SmtpMessageServer(object):
 
         self.timeout = message_timeout
 
-        self.set_config = SetConfig(
-            testcase.http_protocol,
-            testcase.http_host,
-            testcase.http_port,
-            testcase.http_username,
-            testcase.http_password,
-        )
+        self.set_config = SetConfig(testcase)
 
         # We advertise the local SMTP server hostname
         # using the IP address that connects to LinOTP

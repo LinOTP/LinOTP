@@ -52,7 +52,9 @@ from mock import patch
 import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.HMAC import HmacOtp
 from linotp.tests import url
-from linotp.tests.functional_special import TestSpecialController
+from linotp.tests.functional.challenge_response.testing_controller import (
+    TestingChallengeResponseController,
+)
 
 log = logging.getLogger(__name__)
 
@@ -171,7 +173,7 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     return resp, json.dumps(content)
 
 
-class TestChallengeResponseController(TestSpecialController):
+class TestChallengeResponseController(TestingChallengeResponseController):
 
     radius_proc = None
     HTTP_RESPONSE = {}
@@ -181,19 +183,19 @@ class TestChallengeResponseController(TestSpecialController):
         cls.radius_proc = cls.start_radius_server(
             cls.radius_authport, cls.radius_acctport
         )
-        TestSpecialController.setup_class()
+        TestingChallengeResponseController.setup_class()
 
     @classmethod
     def teardown_class(cls):
         if cls.radius_proc:
             cls.stop_radius_server(cls.radius_proc)
-        TestSpecialController.teardown_class()
+        TestingChallengeResponseController.teardown_class()
 
     def setUp(self):
         """
         This sets up all the resolvers and realms
         """
-        TestSpecialController.setUp(self)
+        TestingChallengeResponseController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -226,7 +228,7 @@ class TestChallengeResponseController(TestSpecialController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
-        TestSpecialController.tearDown(self)
+        TestingChallengeResponseController.tearDown(self)
 
     def calcOTP(self, key, counter=0, digits=6, typ="hmac"):
         otp = calcOTP(key, counter=counter, digits=digits, typ=typ)

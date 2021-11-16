@@ -41,6 +41,7 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 install_requirements = [
     "Flask",
     "Flask-Babel",
+    "flask-jwt-extended>=3,<4.0",
     "SQLAlchemy>=0.6,<1.4",
     "flask-sqlalchemy",
     "mako",
@@ -270,6 +271,7 @@ setup(
             "dbsnapshot = linotp.cli.dbsnapshot_cmd:dbsnapshot_cmds",
             "init = linotp.cli.init_cmd:init_cmds",
             "ldap-test = linotp.useridresolver.LDAPIdResolver:ldap_test",
+            "local-admins = linotp.cli.local_admins_cmd:local_admins_cmds",
         ],
     },
 )

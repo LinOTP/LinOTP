@@ -680,8 +680,11 @@ class SmsTokenClass(HmacTokenClass):
             if res is True:
                 otp_val = otp
 
-        if not challenges:
-            return -1, []
+        if otp_val and not challenges:
+            otp_count = self.checkOtp(
+                otp_val, counter, window, options=options
+            )
+            return otp_count, []
 
         otp_count = -1
         matching = []

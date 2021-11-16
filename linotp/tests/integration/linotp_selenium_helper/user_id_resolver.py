@@ -31,7 +31,12 @@ from typing import Dict, List
 
 from selenium.webdriver.common.by import By
 
-from .helper import fill_element_from_dict, find_by_css, find_by_id
+from .helper import (
+    fill_element_from_dict,
+    find_by_css,
+    find_by_id,
+    get_default_app_setting,
+)
 from .manage_elements import ManageDialog
 
 
@@ -92,25 +97,14 @@ class UserIdResolverManager(ManageDialog):
                 self.element = element
                 self.name_in_dialog = "%s [%s]" % (name, resolverType)
 
-        id = line.get_attribute("id")
-        if id and id.startswith("realm"):
-            # Realms dialog
-            resolver_element = line
-        else:
-            # Resolvers dialog
-            name_element = line.find_element(By.CSS_SELECTOR, ".name")
-            resolver_element = name_element
-
-        resolver_name_re = r"([\w\-]+) \[([\w\-]+)\]$"
-
-        m = re.match(resolver_name_re, resolver_element.text)
-        assert m, 'Error in resolver regexp for "%s"' % (resolver_element,)
+        res_name = line.find_element(By.CSS_SELECTOR, ".name").text
+        res_type = line.find_element(By.CSS_SELECTOR, ".type").text
 
         assert "ui-selectee" in line.get_attribute("class").split(
             " "
         ), "Resolver dialog line not selectable"
 
-        return ResolverElement(m.group(1), m.group(2), line)
+        return ResolverElement(res_name, res_type, line)
 
     def parse_contents(self):
         """
@@ -177,16 +171,11 @@ class UserIdResolverManager(ManageDialog):
         self.manage.wait_for_waiting_finished()
 
         formdata = dict(data)
-        if self.testcase.major_version == 2:
-            try:
-                del formdata["only_trusted_certs"]
-            except KeyError:
-                pass
-        else:
-            try:
-                del formdata["certificate"]
-            except KeyError:
-                pass
+
+        try:
+            del formdata["certificate"]
+        except KeyError:
+            pass
 
         # Fill in new resolver form
         resolver.fill_form(formdata)
@@ -369,11 +358,13 @@ class UserIdResolverManager(ManageDialog):
 
     def clear_resolvers_via_api(self):
         """Get all resolvers via API call and delete all by resolver name."""
-
+        admin_resolver = get_default_app_setting("ADMIN_RESOLVER_NAME")
         # Get the resolvers in json format
         resolvers = self.manage.admin_api_call("system/getResolvers")
         if resolvers:
             for curr_resolver in resolvers:
+                if curr_resolver == admin_resolver:
+                    continue
                 self.manage.admin_api_call(
                     "system/delResolver",
                     {"resolver": resolvers[curr_resolver]["resolvername"]},

@@ -73,13 +73,11 @@ class TestPolicyHierarchy(TestController):
         if user:
             parameters["user"] = user
 
-        response = self.make_authenticated_request(
-            controller="admin", action="init", params=parameters
-        )
+        response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
         if active is False:
-            response = self.make_authenticated_request(
-                controller="admin", action="disable", params={"serial": serial}
+            response = self.make_admin_request(
+                "disable", params={"serial": serial}
             )
 
             assert '"value": 1' in response, response
@@ -120,9 +118,7 @@ class TestPolicyHierarchy(TestController):
         validity_special = (today + timedelta(days=8)).strftime(
             "%d/%m/%y 23:59"
         )
-        losetoken = self.make_authenticated_request(
-            controller="admin", action="losttoken", params=token
-        )
+        losetoken = self.make_admin_request("losttoken", params=token)
         resp = losetoken.json
         values = resp.get("result").get("value")
         assert values.get("end_date") == validity_special, resp
@@ -162,9 +158,7 @@ class TestPolicyHierarchy(TestController):
         validity_special = (today + timedelta(days=8)).strftime(
             "%d/%m/%y 23:59"
         )
-        losetoken = self.make_authenticated_request(
-            controller="admin", action="losttoken", params=token
-        )
+        losetoken = self.make_admin_request("losttoken", params=token)
         resp = losetoken.json
         values = resp.get("result").get("value")
         assert values.get("end_date") == validity_special, resp
@@ -202,9 +196,7 @@ class TestPolicyHierarchy(TestController):
 
         today = datetime.now()
         validity_special = (today + timedelta(days=8)).strftime("%d/%m/%y")
-        losetoken = self.make_authenticated_request(
-            controller="admin", action="losttoken", params=token
-        )
+        losetoken = self.make_admin_request("losttoken", params=token)
         resp = losetoken.json
         values = resp.get("result").get("value")
         assert validity_special in values.get("end_date"), resp

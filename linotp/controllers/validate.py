@@ -78,6 +78,8 @@ class ValidateController(BaseController):
     The functions are described below in more detail.
     """
 
+    jwt_exempt = True  # Don't do JWT auth in this controller
+
     def __before__(self, **params):
         """
         __before__ is called before every action

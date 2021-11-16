@@ -53,15 +53,16 @@ import os
 import warnings
 from datetime import datetime
 from distutils.version import LooseVersion
+from typing import Optional
 from unittest import TestCase
+from unittest.mock import Mock, patch
 from uuid import uuid4
 
-import pkg_resources
 import pytest
 
 from flask import Flask, Response
 from flask import _request_ctx_stack as flask_request_ctx_stack
-from flask import g, request
+from flask import current_app, g, request
 
 from linotp.app import create_app
 
@@ -436,11 +437,16 @@ class TestController(TestCase):
         ]
         return (", ").join(auth_content)
 
-    def make_authenticated_request(
+    @patch("linotp.controllers.base.verify_jwt_in_request", lambda: True)
+    @patch("linotp.app.get_jwt_identity")
+    @patch("linotp.controllers.system.get_jwt_identity")
+    def _make_authenticated_request(
         self,
-        controller,
-        action,
-        method="GET",
+        app_get_jwt_identity: Mock,
+        system_get_jwt_identity: Mock,
+        controller: Optional[str] = None,
+        action: Optional[str] = None,
+        method=None,
         params=None,
         headers=None,
         cookies=None,
@@ -449,11 +455,23 @@ class TestController(TestCase):
         client=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
         'session' parameter).
         """
+
+        app_get_jwt_identity.return_value = {
+            "username": auth_user,
+            "resolver": auth_resolver,
+        }
+
+        system_get_jwt_identity.return_value = {
+            "username": auth_user,
+            "resolver": auth_resolver,
+        }
+
         params = params or {}
         headers = headers or {}
         cookies = cookies or {}
@@ -501,15 +519,16 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /admin/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "admin",
-            action,
+        return self._make_authenticated_request(
+            controller="admin",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -517,6 +536,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_helpdesk_request(
@@ -531,6 +551,7 @@ class TestController(TestCase):
         auth_type="Digest",
         cookies=None,
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /api/helpdesk/'action'
@@ -543,9 +564,9 @@ class TestController(TestCase):
                 cookies.get("helpdesk_session"),
             )
 
-        return self.make_authenticated_request(
-            "api/helpdesk",
-            action,
+        return self._make_authenticated_request(
+            controller="api/helpdesk",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -553,6 +574,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_audit_request(
@@ -564,21 +586,23 @@ class TestController(TestCase):
         client=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /audit/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "audit",
-            action,
+        return self._make_authenticated_request(
+            controller="audit",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_manage_request(
@@ -591,15 +615,16 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /manage/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "manage",
-            action,
+        return self._make_authenticated_request(
+            controller="manage",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -607,6 +632,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_system_request(
@@ -619,15 +645,16 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /system/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "system",
-            action,
+        return self._make_authenticated_request(
+            controller="system",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -635,6 +662,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_reporting_request(
@@ -647,15 +675,16 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /reporting/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "reporting",
-            action,
+        return self._make_authenticated_request(
+            controller="reporting",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -663,6 +692,37 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
+        )
+
+    def make_monitoring_request(
+        self,
+        action,
+        params=None,
+        method=None,
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+        auth_type="Digest",
+        content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
+    ):
+        """
+        Makes an authenticated request to /monitoring/'action'
+        """
+        if not params:
+            params = {}
+        return self._make_authenticated_request(
+            controller="monitoring",
+            action=action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            client=client,
+            auth_type=auth_type,
+            content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_gettoken_request(
@@ -676,13 +736,13 @@ class TestController(TestCase):
         auth_type="Digest",
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /gettoken/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "gettoken",
-            action,
+        return self._make_authenticated_request(
+            controller="gettoken",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -691,9 +751,7 @@ class TestController(TestCase):
             auth_type=auth_type,
         )
 
-    # due to noestests search pattern for test, we have to mangle the name
-    # here :(
-    def make_t_esting_request(
+    def make_healthcheck_request(
         self,
         action,
         params=None,
@@ -701,22 +759,23 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
+        auth_type="Digest",
     ):
         """
-        Makes an authenticated request to /admin/'action'
+        Makes an authenticated request to /healthcheck/'action'
         """
         if not params:
             params = {}
-        res = self.make_authenticated_request(
-            "testing",
-            action,
+        return self._make_authenticated_request(
+            controller="healthcheck",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
+            auth_type=auth_type,
         )
-        return res
 
     def make_tools_request(
         self,
@@ -728,15 +787,16 @@ class TestController(TestCase):
         upload_files=None,
         auth_type="Digest",
         content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
         Makes an authenticated request to /tools/'action'
         """
         if not params:
             params = {}
-        return self.make_authenticated_request(
-            "tools",
-            action,
+        return self._make_authenticated_request(
+            controller="tools",
+            action=action,
             method=method,
             params=params,
             auth_user=auth_user,
@@ -744,6 +804,7 @@ class TestController(TestCase):
             client=client,
             auth_type=auth_type,
             content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_validate_request(
@@ -759,17 +820,21 @@ class TestController(TestCase):
         )
 
     def delete_all_realms(self, auth_user="admin"):
-        """get al realms and delete them"""
+        """get all realms and delete them"""
+
+        admin_realm = current_app.config["ADMIN_REALM_NAME"].lower()
 
         response = self.make_system_request(
             "getRealms", params={}, auth_user=auth_user
         )
 
-        values = response.json.get("result", {}).get("value", {})
+        realms = response.json.get("result", {}).get("value", {})
 
-        for realmId in values:
-            realm_desc = values.get(realmId)
-            realm_name = realm_desc.get("realmname")
+        for realm_name, realm_desc in realms.items():
+
+            if realm_desc["admin"]:
+                continue
+
             params = {"realm": realm_name}
             resp = self.make_system_request(
                 "delRealm", params=params, auth_user=auth_user
@@ -779,19 +844,31 @@ class TestController(TestCase):
     def delete_all_resolvers(self, auth_user="admin"):
         """get all resolvers and delete them"""
 
+        default_admin_resolver_name = current_app.config["ADMIN_RESOLVER_NAME"]
+
         response = self.make_system_request(
             "getResolvers", params={}, auth_user=auth_user
         )
         values = response.json.get("result", {}).get("value", {})
 
-        for realmId in values:
-            resolv_desc = values.get(realmId)
-            resolv_name = resolv_desc.get("resolvername")
-            params = {"resolver": resolv_name}
-            resp = self.make_system_request(
+        for resolver_name, resolver_description in values.items():
+
+            # the admin resolvers should not be deleted as they
+            # are still in use by the admin realm, which could not be deleted
+
+            if resolver_description["admin"]:
+                continue
+
+            # the default admin resolver could not be deleted
+
+            if resolver_name == default_admin_resolver_name:
+                continue
+
+            params = {"resolver": resolver_name}
+            response = self.make_system_request(
                 "delResolver", params=params, auth_user=auth_user
             )
-            assert '"status": true' in resp.body
+            assert response.json["result"]["value"], response
 
     def delete_all_policies(self, auth_user="admin"):
         """
@@ -847,7 +924,7 @@ class TestController(TestCase):
             "Some key is missing to create a policy %r" % diff_set
         )
 
-        response = self.make_system_request("setPolicy", lparams)
+        response = self.make_system_request("setPolicy", params=lparams)
         content = response.json
         assert content["result"]["status"]
         expected_value = {
@@ -1008,6 +1085,11 @@ class TestController(TestCase):
 
         resp = self.make_system_request("setRealm", params)
         return resp
+
+    def set_default_realm(self, realm):
+        params = {"realm": realm.lower()}
+        response = self.make_system_request("setDefaultRealm", params=params)
+        return response
 
     def create_common_realms(self):
         """

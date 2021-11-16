@@ -77,12 +77,18 @@ $ mkdir -p linotp/cache linotp/data linotp/logs
 $ linotp init database
 $ linotp init audit-keys
 $ linotp init enc-key
+$ linotp local-admins add <your_username>
+$ linotp local-admins password -p <your_password> <your_username>
 $ linotp run
 ```
 
+The last command starts a development server. Now you can open the LinOTP
+management interface in your browser (`http://localhost:5000/manage/`) and
+login as `<your_username>`.
+
 All available CLI commands have their own documentation, and you can find them
-listed in the top level man page **linotp-config(1)**. Should you not yet have installed
-the linotp man pages, you can also reference them by path, like this:
+listed in the top level man page **linotp(1)**. Should you not yet have
+installed the linotp man pages, you can also reference them by path, like this:
 ```terminal
  $ man ./man/man1/linotp.1
 ```
@@ -315,6 +321,12 @@ $ linotp run
 will launch the Flask development server. (You can still use
 `FLASK_ENV` to specify the desired environment.)
 
+Make sure to create an admin user, otherwise you will not be able to log in to
+LinOTP's management interface:
+```
+$ linotp local-admins add <your_username>
+$ linotp local-admins password -p <your_password> <your_username>
+```
 
 ## Run unit, functional, and integration tests
 

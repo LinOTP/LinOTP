@@ -158,15 +158,14 @@ def generate_password(size=6, characters=None):
     return "".join(secrets.choice(characters) for _x in range(size))
 
 
-def check_session(request, scope="admin"):
+def check_session(request):
     """
-    This function checks the session cookie and compares it to
-    the session parameter
+    This function checks if the client is in the allowed
+    IP range. The session cookie is no longer checked
+    here because flask-jwt-extended does this now in
+    BaseController::jwt_check.
 
     :param request: the request object
-    :param scope: by default the admin scope, but used to as well
-                  for the scope helpdesk with the helpdesk_session
-                  cookie name
 
     :return: boolean
     """
@@ -195,24 +194,6 @@ def check_session(request, scope="admin"):
                 network,
                 ex,
             )
-
-    cookie = request.cookies.get(scope + "_session")
-    session = get_request_param(request, "session")
-    # doing any other request, we need to check the session!
-    log.debug("[check_session]: session: %s", session)
-    log.debug("[check_session]: cookie:  %s", cookie)
-    if session is None or session == "" or session != cookie:
-        log.error("The request did not pass a valid session!")
-        abort(401, "You have no valid session!")
-
-    cookie = request.cookies.get(scope + "_session")
-    session = get_request_param(request, "session")
-    # doing any other request, we need to check the session!
-    log.debug("[check_session]: session: %s", session)
-    log.debug("[check_session]: cookie:  %s", cookie)
-    if session is None or session == "" or session != cookie:
-        log.error("The request did not pass a valid session!")
-        abort(401, "You have no valid session!")
 
 
 def check_selfservice_session(cookies=None, params=None, url=None):

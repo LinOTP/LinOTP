@@ -36,20 +36,23 @@ function error_handling(message, file, line) {
     return true;
 }
 
-/* clear the admin cookie and
-   * for IE try to clean the ClearAuthenticationCache and reload same page
-   * for Firefox/Chrome redirect to a location, with new basic auth in url
-*/
-function Logout(logout_url) {
-    var done = false;
-    done = document.execCommand("ClearAuthenticationCache", false);
-    $.cookie("admin_session", "invalid", { expires: 0, path: '/' });
-
-    if (done == true) {
-        window.location.href = document.URL;
-    } else {
-        window.location.href = logout_url;
-    }
+/**
+ * Make an API request to handle the logout in the backend.
+ * 
+ * If the logout is successful, we reload the page to let
+ * the backend decide where to redirect the user to.
+ */
+function logout() {
+    $.get('/admin/logout').done(function (data, status, response) {
+        window.location.reload();
+    }).fail(function (response, status) {
+        alert_box({
+            'title': i18n.gettext('Logout failed'),
+            'text': escape(response.responseJSON.msg),
+            'type': ERROR,
+            'is_escaped': true
+        });
+    });
 }
 
 // We need this dialogs globally, so that we do not create more than one instance!
@@ -86,7 +89,7 @@ var $form_validator_file;
 var g = {
     enroll_display_qrcodes: false,
     running_requests: 0,
-    resolver_to_edit: "",
+    resolver_to_edit: null,
     realm_to_edit: "",
     resolvers_in_realm_to_edit: "",
     realms_of_token: [],
@@ -245,6 +248,12 @@ function toggle_close_all_link() {
     }
 }
 
+/**
+ * set this value to `true` if you want to prevent new alert_boxes
+ * from overriding the current alert_box
+ */
+alert_box_is_locked = false;
+
 /*
  * pop up an alert box
  * :param params: dicttionary
@@ -252,6 +261,9 @@ function toggle_close_all_link() {
  *     of this very element
  */
 function alert_box(params) {
+    if (alert_box_is_locked) {
+        return;
+    }
     var escaped = params['is_escaped'] || false;
     var title = params['title'] || '';
     var s = params['text'] || '';
@@ -782,6 +794,36 @@ function reset_waiting() {
 //  URL fetching
 // The myURL needs to end with ? if it has no parameters!
 
+
+function jwt_getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+$.ajaxSetup({
+    beforeSend: function (jqXHR, settings) {
+        jqXHR.setRequestHeader(
+            'X-CSRF-TOKEN',
+            jwt_getCookie('csrf_access_token')
+        );
+    },
+    statusCode: {
+        401: function () {
+            alert_box({
+                'title': i18n.gettext('Your session expired'),
+                'text': i18n.gettext('You are required to log in again. Redirecting…'),
+                'type': ERROR,
+                'is_escaped': true
+            });
+            alert_box_is_locked = true;
+            setTimeout(function () {
+                window.location.reload();
+            }, 1000);
+            return false;
+        }
+    }
+});
 
 /*
  * clientUrlFetch - to submit a asyncronous http request
@@ -3146,6 +3188,7 @@ function save_realm_config() {
                     'is_escaped': true
                 });
             }
+            hide_waiting();
         });
 }
 
@@ -3317,51 +3360,66 @@ function save_sql_config(callback = null) {
 // ----------------------------------------------------------------
 //   Realms
 function realms_load() {
-
-    g.realm_to_edit = "";
+    g.realm_to_edit = {};
     show_waiting();
     var params = { 'session': getsession() };
     $.post('/system/getRealms', params,
         function (data, textStatus, XMLHttpRequest) {
             var realms = '<ol id="realms_select" class="select_list" class="ui-selectable">';
-            for (var key in data.result.value) {
-                var default_realm = "";
-                var resolvers = "";
-                var resolver_list = data.result.value[key].useridresolver;
-                for (var reso in resolver_list) {
-                    var r = resolver_list[reso].split(".");
-                    resolvers += r[r.length - 1] + " ";
-                }
+            for (var realmName in data.result.value) {
+                var realm = data.result.value[realmName];
 
-                if (data.result.value[key]['default']) {
-                    default_realm = " (Default) ";
-                }
-                var e_key = escape(key);
-                var e_default_realm = escape(default_realm);
-                var e_resolvers = escape(resolvers)
-                realms += '<li class="ui-widget-content">' + e_key + e_default_realm + ' [' + e_resolvers + ']</li>';
+                var resolvers = realm.useridresolver
+                    .map(function (resolver) {
+                        return resolver.split(".").pop();
+                    })
+                    .join(" ");
+
+                var isDefault = realm.default && realm.default === "true";
+                var isAdmin = realm.admin;
+
+                realms += '<li class="ui-widget-content' + (isDefault ? ' default' : '') + (isAdmin ? ' admin' : '') + '">'
+                    + '<span class="name">' + escape(realmName) + '</span>'
+                    + ' [' + escape(resolvers) + ']'
+                    + (isDefault ? ' <span class="tag" title="'
+                        + i18n.gettext("This realm is used for validation and selfservice login if no realm is specified.")
+                        + '">' + i18n.gettext("default ") + '</span>' : '')
+                    + (isAdmin ? ' <span class="tag" title="'
+                        + i18n.gettext("This realm is used to authenticate LinOTP administrators.")
+                        + '">' + i18n.gettext("admin") + '</span>' : '')
+                    + '</li>';
             }
             realms += '</ol>';
             $('#realm_list').html($.parseHTML(realms));
             $('#realms_select').selectable({
                 stop: function () {
-                    $(".ui-selected", this).each(function () {
-                        var index = $("#realms_select li").index(this);
-                        g.realm_to_edit = escape($(this).html());
-                    }); // end of each
+                    var selectedRealm = $(".ui-selected", this).first();
+                    g.realm_to_edit = {
+                        isDefault: selectedRealm.hasClass("default"),
+                        name: escape($('.name', selectedRealm).text())
+                    };
+                    var realm = data.result.value[g.realm_to_edit.name];
+                    if (realm.admin){
+                        $("#button_realms_delete").button('disable')
+                    }else{
+                        $("#button_realms_delete").button('enable')
+                    }
                 } // end of stop function
             }); // end of selectable
+
+            $("#realm_list .tag").tooltip({
+                position: {
+                    my: "right top",
+                    at: "right+10 bottom+10",
+                }
+            });
+
             hide_waiting();
         }); // end of $.post
 }
 
 function realm_ask_delete() {
-    // replace in case of normal realms
-    var realm = g.realm_to_edit.replace(/^(\S+)\s+\[(.*)$/, "$1");
-    // replace in case of default realm
-    realm = realm.replace(/^(\S+)\s+\(Default\)\s+\[(.*)$/, "$1");
-
-    $('#realm_delete_name').html(escape(realm));
+    $("#realm_delete_name").html(escape(g.realm_to_edit.name));
     $dialog_realm_ask_delete.dialog('open');
 }
 
@@ -3377,12 +3435,21 @@ function resolvers_load() {
             var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
             var count = 0;
             for (var key in data.result.value) {
+                resolver = data.result.value[key];
                 var e_key = escape(key);
-                var e_reolver_type = escape(data.result.value[key].type);
-                var managed = escape(data.result.value[key].readonly);
-                resolvers += '<li class="ui-widget-content' + (managed ? " managed" : "") + '">'
-                    + '<span class="name">' + e_key + ' [' + e_reolver_type + ']</span>'
-                    + (managed ? ' <span class="managed-tag">' + i18n.gettext("managed") + '</span>' : '')
+                var e_reolver_type = escape(resolver.type);
+                var managed = escape(resolver.readonly);
+                var isAdmin = resolver.admin;
+                resolvers += '<li class="ui-widget-content' + (managed ? " managed" : "") + (isAdmin ? ' admin' : '') + '">'
+                    + '<span class="name">' + e_key + '</span> [<span class="type">' + e_reolver_type + '</span>]'
+                    + (managed ? ' <span class="tag" title="'
+                        + i18n.gettext("This resolver contains locally managed users, managed by LinOTP.") + ' '
+                        + (isAdmin ? i18n.gettext("Manage administrators via the `linotp local-admins` CLI.")
+                            : i18n.gettext("Manage users via ”Tools -> Import Users”."))
+                        + '">' + i18n.gettext("managed") + '</span>' : '')
+                    + (isAdmin ? ' <span class="tag" title="'
+                        + i18n.gettext("This resolver is used to authenticate LinOTP administrators.")
+                        + '">' + i18n.gettext("admin") + '</span>' : '')
                     + '</li>';
                 count = count + 1;
             }
@@ -3410,7 +3477,10 @@ function resolvers_load() {
                         }
 
                         if ($("#resolvers_select .ui-selected").length > 0) {
-                            g.resolver_to_edit = escape($("#resolvers_select .ui-selected .name").text());
+                            g.resolver_to_edit = {
+                                name: escape($("#resolvers_select .ui-selected .name").text()),
+                                type: escape($("#resolvers_select .ui-selected .type").text())
+                            };
                             $("#button_resolver_delete").button("enable");
                         }
                         else {
@@ -3426,8 +3496,16 @@ function resolvers_load() {
             }
             else {
                 $('#resolvers_list').html("");
-                g.resolver_to_edit = "";
+                g.resolver_to_edit = null;
             };
+
+            $("#resolvers_list .tag").tooltip({
+                position: {
+                    my: "right top",
+                    at: "right+10 bottom+10",
+                }
+            });
+
             hide_waiting();
         }); // end of $.post
 }
@@ -3469,7 +3547,7 @@ function resolver_delete() {
 }
 
 function realm_delete() {
-    var realm = $('#realm_delete_name').html();
+    var realm = g.realm_to_edit.name;
     var params = { 'realm': realm, 'session': getsession() };
     $.post('/system/delRealm', params,
         function (data, textStatus, XMLHttpRequest) {
@@ -3490,34 +3568,19 @@ function realm_delete() {
                     'is_escaped': true
                 });
             }
+            hide_waiting();
         });
 }
 
 function resolver_ask_delete() {
-    if (g.resolver_to_edit.length > 0) {
-        if (g.resolver_to_edit.match(/(\S+)\s(\S+)/)) {
-            var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
-            var type = g.resolver_to_edit.replace(/\S+\s+(\S+)/, "$1");
-
-            $('#delete_resolver_type').html(escape(type));
-            $('#delete_resolver_name').html(escape(reso));
-            $dialog_resolver_ask_delete.dialog('open');
-        }
-        else {
-            alert_info_text({
-                'text': "text_regexp_error",
-                'param': escape(g.resolver_to_edit),
-                'type': ERROR,
-                'is_escaped': true
-            });
-        }
-    }
+    $('#delete_resolver_name').html(g.resolver_to_edit.name);
+    $('#delete_resolver_type').html(g.resolver_to_edit.type);
+    $dialog_resolver_ask_delete.dialog('open');
 }
 
 function resolver_edit_type() {
-    var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
-    var type = g.resolver_to_edit.replace(/\S+\s+\[(\S+)\]/, "$1");
-
+    var reso = g.resolver_to_edit.name;
+    var type = g.resolver_to_edit.type;
     switch (type) {
         case "ldapresolver":
             resolver_ldap(reso, false);
@@ -3535,8 +3598,8 @@ function resolver_edit_type() {
 }
 
 function resolver_duplicate() {
-    var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
-    var type = g.resolver_to_edit.replace(/\S+\s+\[(\S+)\]/, "$1");
+    var reso = g.resolver_to_edit.name;
+    var type = g.resolver_to_edit.type;
 
     switch (type) {
         case "ldapresolver":
@@ -4016,9 +4079,7 @@ function tokenbuttons() {
 $(document).ready(function () {
     // initialize the logout button first to prevent a deadlock
     // where the user can no longer logout
-    $('#login-status-logout').click(function () {
-        Logout($('#login-status-logout').attr("data-logout-url"));
-    });
+    $('#login-status-logout').click(logout);
 
     var alertBoxConfig = {
         autoOpen: false,
@@ -4774,17 +4835,13 @@ $(document).ready(function () {
             },
             'Edit': {
                 click: function () {
-                    realm_modify(g.realm_to_edit);
+                    realm_modify(g.realm_to_edit.name);
                 },
                 id: "button_realms_edit",
                 text: "Edit"
             },
             'Delete': {
-                click: function () {
-                    realm_ask_delete();
-                    realms_load();
-                    fill_realms();
-                },
+                click: realm_ask_delete,
                 id: "button_realms_delete",
                 text: "Delete"
             },
@@ -4797,21 +4854,12 @@ $(document).ready(function () {
             },
             'Set Default': {
                 click: function () {
-                    var realm = "";
-                    if (g.realm_to_edit.match(/^(\S+)\s\[(.+)\]/)) {
-                        realm = g.realm_to_edit.replace(/^(\S+)\s+\[(.+)\]/, "$1");
-                        set_default_realm(realm);
-                    }
-                    else if (g.realm_to_edit.match(/^\S+\s+\(Default\)\s+\[.+\]/)) {
-                        alert_info_text({
-                            'text': "text_already_default_realm",
-                            "type": ERROR,
-                            'is_escaped': true
-                        });
+                    if (!g.realm_to_edit.isDefault) {
+                        set_default_realm(g.realm_to_edit.name);
                     }
                     else {
                         alert_info_text({
-                            'text': "text_realm_regexp_error",
+                            'text': "text_already_default_realm",
                             "type": ERROR,
                             'is_escaped': true
                         });
@@ -6923,65 +6971,69 @@ function realm_modify(name) {
     }
 }
 
-function realm_edit(name) {
-
-    var realm = "";
-    var html_intro;
-    $('#realm_intro_edit').hide();
-    $('#realm_intro_new').hide();
-    if (name) {
-        if (name.match(/^(\S+)\s(\[|\()(.+)\]/)) {
-            realm = name.replace(/^(\S+)\s+(\[|\()(.+)\]/, "$1");
-        }
-        else {
-            alert_info_text({
-                'text': "text_realm_name_error",
-                "type": ERROR,
-                'is_escaped': true
-            });
-        }
+function realm_edit(realm) {
+    $('#realm_name').val(realm);
+    if (realm) {
         $('#realm_edit_realm_name').html(escape(realm));
-        $('#realm_name').val(realm);
+
+        $('#realm_intro_new').hide();
         $('#realm_intro_edit').show();
     }
     else {
+        $('#realm_intro_edit').hide();
         $('#realm_intro_new').show();
     }
 
     // get the realm configuration
     var resp = clientUrlFetchSync('/system/getRealms', {});
-    var realmObj = jQuery.parseJSON(resp);
+    var realm = jQuery.parseJSON(resp).result.value[realm];
 
-    var uidresolvers = [];
-    var default_realm = "";
+    var realmResolvers = realm ? realm.useridresolver : [];
+    realmResolvers = realmResolvers
+        .map(function (r) { return r.split(".").pop(); });
 
-    if (realm) {
-        uidresolvers = realmObj.result.value[realm].useridresolver;
-    }
+    sortAdminResolversTop = realm && realm.admin ? 1 : -1;
 
     // get all resolvers
-    var resolvers = '';
+    var resolverListHtml = '';
     var params = { 'session': getsession() };
     $.post('/system/getResolvers', params,
         function (data, textStatus, XMLHttpRequest) {
-            resolvers = '<ol id="resolvers_in_realms_select" class="select_list" class="ui-selectable">';
-            for (var key in data.result.value) {
-                var klass = 'class="ui-widget-content"';
-                for (var i_reso in uidresolvers) {
-                    // check if this resolver is contained in the realm
-                    var reso = uidresolvers[i_reso].split('.');
-                    if (reso[reso.length - 1] == key) {
-                        klass = 'class="ui-selected" class="ui-widget-content" ';
-                    }
-                }
-                var e_key = escape(key);
-                var id = "id=realm_edit_click_" + e_key;
-                var e_resolver_type = escape(data.result.value[key].type);
-                resolvers += '<li ' + id + ' ' + klass + '>' + e_key + ' [' + e_resolver_type + ']</li>';
-            }
-            resolvers += '</ol>';
+            var resolvers = Object
+                .keys(data.result.value)
+                .map(function (resolver_name) { return data.result.value[resolver_name]; })
+                .sort(function (r1, r2) {
+                    return (r1.admin < r2.admin ? 1 : -1) * sortAdminResolversTop;
+                });
 
-            $('#realm_edit_resolver_list').html(resolvers);
+            resolverListHtml = '<ol id="resolvers_in_realms_select" class="select_list ui-selectable">';
+
+            for (var resolver of resolvers) {
+
+                isContainedInRealm = realmResolvers.indexOf(resolver.resolvername) != -1;
+                isAdmin = resolver.admin;
+
+                var element_classes = "ui-widget-content";
+                if (isContainedInRealm) {
+                    element_classes += " ui-selected";
+                }
+
+                var e_key = escape(resolver.resolvername);
+                var element_id = "realm_edit_click_" + e_key;
+                var e_resolver_type = escape(resolver.type);
+                var e_spec = escape(resolver.spec);
+
+                resolverListHtml += '<li id="' + element_id + '" class="' + element_classes + '"'
+                    + 'data-resolver-spec="' + e_spec + '">'
+                    + '<span class="name">' + e_key + '</span> '
+                    + '[<span class="type">' + e_resolver_type + '</span>]'
+                    + (isAdmin ? ' <span class="tag">' + i18n.gettext("admin") + '</span>' : '')
+                    + '</li>';
+            }
+
+            resolverListHtml += '</ol>';
+
+            $('#realm_edit_resolver_list').html(resolverListHtml);
             $('#resolvers_in_realms_select').selectable({
                 stop: check_for_selected_resolvers
             }); // end of selectable
@@ -7003,39 +7055,12 @@ function realm_edit(name) {
 }
 
 function check_for_selected_resolvers() {
-    var resolvers_in_realm_to_edit = new Array();
-    $(".ui-selected", this).each(function () {
-        var index = $("#resolvers_in_realms_select li").index(this);
-        var reso = escape($(this).html());
-        if (reso.match(/(\S+)\s\[(\S+)\]/)) {
-            var r = reso.replace(/(\S+)\s+\S+/, "$1");
-            var t = reso.replace(/\S+\s+\[(\S+)\]/, "$1");
-        }
-        else {
-            alert_info_text({
-                'text': "text_regexp_error",
-                'param': escape(reso),
-                'type': ERROR,
-                'is_escaped': true
-            });
-        }
-        switch (t) {
-            case 'ldapresolver':
-                resolvers_in_realm_to_edit.push('useridresolver.LDAPIdResolver.IdResolver.' + r);
-                break;
-            case 'sqlresolver':
-                resolvers_in_realm_to_edit.push('useridresolver.SQLIdResolver.IdResolver.' + r);
-                break;
-            case 'httpresolver':
-                resolvers_in_realm_to_edit.push('useridresolver.HTTPIdResolver.IdResolver.' + r);
-                break;
-            case 'passwdresolver':
-                resolvers_in_realm_to_edit.push('useridresolver.PasswdIdResolver.IdResolver.' + r);
-                break;
-        }
-    }).promise().done(function () {
-        g.resolvers_in_realm_to_edit = resolvers_in_realm_to_edit.join(",");
-    }); // end of each
+    g.resolvers_in_realm_to_edit = $("#resolvers_in_realms_select .ui-selected")
+        .map(function () {
+            return $(this).attr("data-resolver-spec");
+        })
+        .get()
+        .join(',');
 }
 
 var originalLdapFormData = null;

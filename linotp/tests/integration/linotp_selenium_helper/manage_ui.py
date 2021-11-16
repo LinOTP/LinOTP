@@ -36,7 +36,7 @@ from selenium.common.exceptions import (
     NoSuchElementException,
     WebDriverException,
 )
-from selenium.webdriver import ActionChains, Chrome, Firefox
+from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebElement
 from selenium.webdriver.support import expected_conditions as EC
@@ -46,7 +46,7 @@ from linotp_selenium_helper.helper import BackendException
 
 from . import helper
 from .manage_elements import ManageDialog
-from .policy import Policy, PolicyManager
+from .policy import PolicyManager
 from .realm import RealmManager
 from .system_config import SystemConfig
 from .token_enroll import EnrollTokenDialog
@@ -123,8 +123,33 @@ class ManageUi(object):
         self.alert_dialog = ManageDialog(self, "alert_box")
         "Access to the alert box dialog element"
 
-    def is_url_open(self):
+        # request jwt session for api requests
+        username = helper.get_from_tconfig(
+            ["linotp", "username"],
+            required=True,
+        )
+        password = helper.get_from_tconfig(
+            ["linotp", "password"],
+            required=True,
+        )
+        login_response = requests.post(
+            self.testcase.base_url + "/admin/login",
+            params={"username": username, "password": password},
+            verify=False,
+        )
+        self._jwt_session: str = login_response.cookies.get(
+            "access_token_cookie"
+        )
+        self._jwt_csrf_token: str = login_response.cookies.get(
+            "csrf_access_token"
+        )
+
+    def is_manage_open(self) -> bool:
         possible_urls = (self.URL, self.URL + "/", self.URL + "/#")
+        return self.driver.current_url.endswith(possible_urls)
+
+    def is_login_open(self) -> bool:
+        possible_urls = (self.URL + "/login", self.URL + "/login#")
         return self.driver.current_url.endswith(possible_urls)
 
     @property
@@ -153,37 +178,29 @@ class ManageUi(object):
         Check we are on the right page
         """
         assert (
-            self.is_url_open()
+            self.is_manage_open()
         ), "URL %s should end with %s - page not loaded?" % (
             self.driver.current_url,
             self.URL,
         )
-        if self.testcase.major_version == 2:
-            title = "LinOTP 2 Management"
-        else:
-            # LinOTP 3
-            title = "Management - LinOTP"
-        assert self.driver.title == title
+        assert self.driver.title == "Management - LinOTP"
 
     def find_by_css(self, css_value) -> WebElement:
         """
         Return the element indicated by CSS selector
         """
-        self.check_url()
         return helper.find_by_css(self.driver, css_value)
 
     def find_all_by_css(self, css_value) -> List[WebElement]:
         """
         Return a list of elements indicated by CSS selector
         """
-        self.check_url()
         return self.driver.find_elements(By.CSS_SELECTOR, css_value)
 
     def find_by_id(self, id_value) -> WebElement:
         """
         Return the element by ID
         """
-        self.check_url()
         return helper.find_by_id(self.driver, id_value)
 
     def find_by_class(self, class_name) -> WebElement:
@@ -198,11 +215,55 @@ class ManageUi(object):
         """
         return helper.find_by_xpath(self.driver, xpath)
 
+    def wait_for_element_visibility(self, element_id, delay=5):
+        WebDriverWait(self.driver, delay).until(
+            EC.visibility_of_element_located((By.ID, element_id))
+        )
+
     def open_manage(self) -> None:
-        if not self.is_url_open():
+        if not self.is_manage_open():
             self.driver.get(self.manage_url)
 
-            self.welcome_screen.close_if_open()
+        if self.is_login_open():
+            self.login()
+
+        self.check_url()  # assert that manage is open
+
+        self.welcome_screen.close_if_open()
+
+    def login(self) -> None:
+        self.driver.get(self.manage_url)
+
+        if self.is_manage_open():
+            # No login required, manage UI is open
+            return
+
+        assert self.is_login_open(), "Expecting login route to be open"
+
+        username = helper.get_from_tconfig(
+            ["linotp", "username"],
+            required=True,
+        )
+        password = helper.get_from_tconfig(
+            ["linotp", "password"],
+            required=True,
+        )
+
+        helper.fill_form_element(self.driver, "username", username)
+        helper.fill_form_element(self.driver, "password", password)
+
+        self.find_by_id("password").submit()
+        self.wait_for_element_visibility("tabs", 5)
+
+        assert self.is_manage_open(), "Expecting manage ui to open after login"
+
+    def logout(self):
+        assert self.is_manage_open()
+
+        self.find_by_id("login-status").click()
+        self.find_by_id("login-status-logout").click()
+
+        assert self.is_login_open()
 
     def activate_menu_item(self, menu_css, menu_item_id) -> None:
         """
@@ -254,7 +315,7 @@ class ManageUi(object):
 
         # Sort by depth (the z-index attribute in reverse order)
         dialogs.sort(
-            key=methodcaller("get_attribute", "z-index"), reverse=True
+            key=methodcaller("value_of_css_property", "z-index"), reverse=True
         )
 
         # Close them
@@ -323,7 +384,7 @@ class ManageUi(object):
         """
         Check whether a given element is visible without waiting
         """
-        if not self.is_url_open():
+        if not self.is_manage_open():
             return False
 
         try:
@@ -347,31 +408,12 @@ class ManageUi(object):
         :raise BackendException if the response contains an error
         """
 
-        if params is None:
-            params = {}
-
-        url = (
-            self.testcase.http_protocol
-            + "://"
-            + self.testcase.http_host
-            + ":"
-            + self.testcase.http_port
-            + "/"
-        )
-
-        params["session"] = helper.get_session(
-            url, self.testcase.http_username, self.testcase.http_password
-        )
-
-        auth = requests.auth.HTTPDigestAuth(
-            self.testcase.http_username, self.testcase.http_password
-        )
-
+        url = self.testcase.base_url + "/" + call.strip("/")
         response = requests.post(
-            url + call.strip("/"),
-            auth=auth,
-            params=params,
-            cookies={"admin_session": params["session"]},
+            url,
+            params=params or {},
+            cookies={"access_token_cookie": self._jwt_session},
+            headers={"X-CSRF-TOKEN": self._jwt_csrf_token},
             verify=False,
         )
 
