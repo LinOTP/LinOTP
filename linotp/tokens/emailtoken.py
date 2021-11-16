@@ -241,14 +241,6 @@ class EmailTokenClass(HmacTokenClass):
 
         _ = context["translate"]
 
-        # in the scope helpdesk we allways have a user
-        # to whom the token will be assigned
-
-        if param.get("::scope::", {}).get("helpdesk", False):
-            user = param["::scope::"]["user"]
-            u_info = getUserDetail(user)
-            param[self.EMAIL_ADDRESS_KEY] = u_info.get("email", None)
-
         # specific - e-mail
         self._email_address = param[self.EMAIL_ADDRESS_KEY]
 
