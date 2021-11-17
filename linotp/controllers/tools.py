@@ -365,7 +365,7 @@ class ToolsController(BaseController):
 
             db.session.rollback()
 
-            return sendError(response, "%r" % exx)
+            return sendError(response, exx)
 
         finally:
             log.debug("done")
