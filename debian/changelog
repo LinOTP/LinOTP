@@ -1,11 +1,11 @@
 linotp (3.2~0dev-0) buster-dev; urgency=low
 
   Fixes:
-  * license limits are now checked during userservice token enrollment
+  * license limits are now checked during userservice token enrollment.
   * Prevent creating or importing OATH (HOTP, TOTP, Ocra2) tokens with malformatted seeds.
-  * license monitoring shows license usage for user-based licenses
+  * license monitoring shows license usage for user-based licenses.
   * user-based license reporting now filters for date and realm correctly and supports wildcards
-    in realm and status
+    in realm and status.
   * In a Debian environment with a MySQL database, it is not anymore required
     to set the charset=utf8 parameter as otherwise, resolvers do not
     correctly display imported users if they contain utf-8 characters.
@@ -19,8 +19,8 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
 
   Features:
   * add grace to license volume exceeding and display accordingly a message
-    in the the web ui
-  * add extended information in HOTP/TOTP CSV import UI
+    in the the web ui.
+  * add extended information in HOTP/TOTP CSV import UI.
   * The CLI now uses a common time format for all backup filenames. The format
     is configurable via config BACKUP_FILE_TIME_FORMAT.
   * CLI command `linotp audit cleanup` now writes a backup file of the deleted
@@ -40,6 +40,7 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
 
   Breaking Changes:
   * The helpdesk controller has been removed.
+  * Apache-based admin authentication is no longer supported. 
 
   Packaging:
   * The `linotp` package now `Suggests: python3-smpplib`.
