@@ -508,7 +508,7 @@ class TestImportUser(TestController):
 
         return
 
-    def test_00000_import_user_requires_system_write(self):
+    def test_import_user_requires_system_write(self):
         """Verify that we require system:write permission to import users."""
 
         # setup the admin and superadmin system policies
