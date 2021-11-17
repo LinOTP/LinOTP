@@ -1,0 +1,23 @@
+def:yn0Zck2KDip6U:1004:1001:def User,,,,:/home/def:/bin/bash
+virtualbox:x:1005:1002:Work,In Weiterstadt,WorkPhone,TelPriv,:/home/virtualbox:/bin/bash
+b1822:yn0Zck2KDip6U:1008:1003:1822,,,,:/home/b1822:/bin/bash
+postgres:yn0Zck2KDip6U:116:123:PostgreSQL administrator,,,:/var/lib/postgresql:/bin/bash
+kölbel:x:345:345:Umlaut User,,,:/home/koelbel:/bin/bash
+7654321:x:346:346:Umlaut User,,,:/home/koelbel:/bin/bash
+user1:JT7bTACk0ud6U:347:347:Umlaut User,,,:/home/koelbel:/bin/bash
+user2:e7yT2qttrNrlk:348:348:Umlaut User,,,:/home/koelbel:/bin/bash
+passthru_user1:JT7bTACk0ud6U:1100:1100:Pascal True,Room 23,+49(0)1234-24,+49(0)5678-23,pass.true@example.com::
+pass.thru@example.com:JT7bTACk0ud6U:1234:1102:Pascal True,Room 23,+49(0)1234-24,+49(0)5678-23,pass.true@example.com::
+passthru_user2:e7yT2qttrNrlk:1101:1101:Pascal True,Room 34,+49(0)1234-24,+49(0)5678-23,pass.true@example.com::
+detail_user:e7yT2qttrNrlk:2101:2101:::
+hans:e7yT2qttrNrlk:42:0:Hans Müller,Room 22,+49(0)1234-22,+49(0)5678-22,hans@example.com:x:x
+susi:e7yT2qttrNrlk:1336:0:Susanne Bauer,Room 23,+49(0)1234-24,+49(0)5678-23,susanne@example.com:x:x
+rollo:e7yT2qttrNrlk:21:0:Rollobert Fischer,Room 24,+49(0)1234-24,+49(0)5678-24,rollo@example.com:x:x
+pass@user:JT7bTACk0ud6U:1111:1111:Pascal True,Room 23,+49(0)1234-24,+49(0)5678-23,pass.true@example.com::
+molière:$6$ilflOPv9uX4L35R0$bOniMzyz3XRU3b3MuSiclnAjlZbVIzlgbJEAK6CnZNOKHY1xzz0cVAq2pOWl6ed0a4jtxdG21IH36YxV4pygp0:8860:8860:Jean-Baptiste Poquelin,Password is molière,+49 0 123456,+49 0 55667788,moliere@example.com::
+shakespeare:$6$QempxPrcLppmUING$w33iUzQHnQM9kCg9oW7PY2OpWQvHAG4I3GRgEaYbQrWSwuMuMG3bkn1bST7h8RjKwmEa19sZzQFrMnAfBEb9c1:8861:8861:William Shakespeare,Password is shakespeare1,+49 0 123457,+49 0 55667789,shakespeare@example.com::
+lorca:$6$MlG3hFoLDBVJAMDz$ZPDGAJGY4QSaJYl4hCA11O1bWlYuciJuh2L5ta6gFsUQD25EXPUHdFXlxb1NTa8qTxA4eWdYyseOwahZdMWB4/:8862:8862:Federico García Lorca,Password is lorca1,+49 0 123458,+49 0 55667790,lorca@example.com::
+aἰσχύλος:$6$UcLcRasNJYGYCxMY$KQ93rXcEKMXS7ZBYwz..CtzYWdSqn9/zvCINXSrKZXIKhNnJfUHn3tAP39V49hL2RI3gYi.xEsGg0cTEZDiRk1:8863:8863:Αἰσχύλος,Password is Πέρσαι,+49 0 123459,+49 0 55667791,aischylos@example.com::
+beckett:$6$cSVhdG4ulVxnK/HH$nTVHIt4NnLoA4VcIfPb5EVrxeoXW8sahz3eCYe6DCHn5XK7zeV4LFdruw221MJ0pddKhY2nfUJjUuGJPTSvEjvJ.:8864:8864:Samuel Beckett,Password is beckett1,+49 0 123460,+49 0 55667792,beckett@example.com::
+email_only:JT7bTACk0ud6U:8888:8861:Emil Shakespeare,Password is shakespeare1,,,shakespeare@example.com::
+mobile_only:JT7bTACk0ud6U:8889:8862:Mobi Shakespeare,Password is shakespeare1,+49 0 123457,+49 0 55667789,::

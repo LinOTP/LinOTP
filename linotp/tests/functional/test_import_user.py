@@ -114,7 +114,7 @@ class TestImportUser(TestController):
         """
         check that import users will create. update and delete users
         """
-
+        # 1- import empty content
         content = ""
         upload_files = [("file", "user_list", content)]
         params = {
@@ -132,6 +132,7 @@ class TestImportUser(TestController):
         assert '"updated": {}' in response, response
         assert '"created": {}' in response, response
 
+        # 2- import a file with hashed passwords
         def_passwd_file = os.path.join(self.fixture_path, "def-passwd")
 
         with io.open(def_passwd_file, "r", encoding="utf-8") as f:
@@ -155,8 +156,15 @@ class TestImportUser(TestController):
         created = jresp.get("result", {}).get("value", {}).get("created", {})
         assert len(created) == 27, response
 
-        csv_data = content.split("\n")[4:]
-        content = "\n".join(csv_data)
+        # 3- import a file with 4 less users > 4 users will be deleted
+        # and 1 user's password has changed --> 1 user will be modified
+        def_passwd_changed_file = os.path.join(
+            self.fixture_path, "def-passwd-changed"
+        )
+
+        with io.open(def_passwd_changed_file, "r", encoding="utf-8") as f:
+            content = f.read()
+
         upload_files = [("file", "user_list", content)]
 
         response = self.make_tools_request(
@@ -164,12 +172,9 @@ class TestImportUser(TestController):
         )
 
         jresp = json.loads(response.body)
-        deleted = jresp.get("result", {}).get("value", {}).get("deleted", {})
-        assert len(deleted) == 4, response
-
-        updated = jresp.get("result", {}).get("value", {}).get("updated", {})
-        assert len(updated) == 23, response
-
+        assert len(jresp["result"]["value"]["modified"]) == 1, response
+        assert len(jresp["result"]["value"]["deleted"]) == 4, response
+        assert len(jresp["result"]["value"]["updated"]) == 22, response
         assert '"created": {}' in response, response
 
         return
@@ -452,7 +457,7 @@ class TestImportUser(TestController):
 
         # ------------------------------------------------------------------ --
 
-        # open the csv data and import the users
+        # 1-open the csv data and import the users
 
         def_passwd_file = os.path.join(
             self.fixture_path, "def-passwd-plain.csv"
@@ -488,25 +493,48 @@ class TestImportUser(TestController):
             action="import_users", params=params, upload_files=upload_files
         )
 
+        # check nothing is updated
         assert '"updated": {}' in response, response
 
         jresp = json.loads(response.body)
         created = jresp.get("result", {}).get("value", {}).get("created", {})
         assert len(created) == 24, response
 
-        # upload one more times to check for update and not modified
+        # 2-upload one more times to check for update and not modified
 
         response = self.make_tools_request(
             action="import_users", params=params, upload_files=upload_files
         )
-
+        # check nothing is modified
         assert '"modified": {}' in response, response
 
         jresp = json.loads(response.body)
         updated = jresp.get("result", {}).get("value", {}).get("updated", {})
         assert len(updated) == 24, response
 
-        # login to the selfservice to check the password
+        # 3- upload with changes and check if it gets modified
+        # this file is different from the def-passwd-plain in:
+        # 00- root pass is changed --> will be modified
+        # 01- localuser is renamed to localuser 2--> will be modified
+        # 10- user hors removed  3--> will be removed
+        def_passwd_changed_file = os.path.join(
+            self.fixture_path, "def-passwd-plain-changed.csv"
+        )
+
+        with io.open(def_passwd_changed_file, "r", encoding="utf-8") as f:
+            content_changed = f.read()
+        upload_files = [("file", "user_list", content_changed)]
+
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
+        jresp = json.loads(response.body)
+        assert len(jresp["result"]["value"]["modified"]) == 2, response
+        assert len(jresp["result"]["value"]["deleted"]) == 1, response
+        assert len(jresp["result"]["value"]["updated"]) == 21, response
+        assert '"created": {}' in response
+
+        # 4- login to the selfservice to check the password
         policy = {
             "name": "T1",
             "action": "enrollHMAC",
@@ -524,7 +552,7 @@ class TestImportUser(TestController):
         )
 
         # for passthru_user1 do check if policy is defined
-        auth_user = ("root", "root")
+        auth_user = ("root", "rootpass")
 
         params = {"type": "hmac", "genkey": "1", "serial": "hmac123"}
         response = self.make_userservice_request(
