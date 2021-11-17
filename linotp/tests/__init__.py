@@ -291,7 +291,6 @@ class TestController(TestCase):
         method=None,
         params=None,
         headers=None,
-        cookies=None,
         client=None,
         upload_files=None,
         content_type=None,
@@ -327,10 +326,6 @@ class TestController(TestCase):
             headers["REMOTE_ADDR"] = client
             pparams["environ_overrides"] = {"REMOTE_ADDR": client}
 
-        if cookies:
-            for key in cookies:
-                TestController.set_cookie(self.client, key, cookies[key])
-
         # ------------------------------------------------------------------ --
 
         if method == "GET":
@@ -358,85 +353,6 @@ class TestController(TestCase):
         response.body = response.data.decode("utf-8")
         return response
 
-    @staticmethod
-    def get_http_basic_header(username="admin", method="GET"):
-        """
-        Returns a string to be used as 'Authorization' in the headers
-        dictionary.
-
-        See for full example:
-            http://en.wikipedia.org/wiki/Digest_access_authentication
-        """
-        if method is None:
-            method = TestController.DEFAULT_WEB_METHOD
-
-        assert username
-
-        if isinstance(username, tuple):
-            login, pw = username
-        else:
-            login = username
-            pw = "randompwd"
-
-        # Authorization: Basic d2lraTpwZWRpYQ==
-        auth_info = login + ":" + pw
-        return "Basic %s" % str(
-            base64.b64encode(auth_info.encode("utf-8")), "utf-8"
-        )
-
-    @staticmethod
-    def get_http_digest_header(username="admin", method="GET"):
-        """
-        Returns a string to be used as 'Authorization' in the headers
-        dictionary. The values contained are basically bogus and we just aim to
-        simulate how a real header would look. In production LinOTP we rely on
-        Apache2 checking the authorization. In LinOTP only 'Digest username' is
-        relevant.
-
-        See for full example:
-            http://en.wikipedia.org/wiki/Digest_access_authentication
-        """
-        if method is None:
-            method = TestController.DEFAULT_WEB_METHOD
-        assert username
-        assert method in ["GET", "POST"]
-
-        # Assuming following 401 response from server:
-        # 'www-authenticate': 'Digest realm="LinOTP2 admin area",
-        #    nonce="hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae",
-        #    algorithm=MD5, qop="auth"'
-
-        qop = "auth"
-        digest_uri = "/random/wont/be/checked"
-        nonce = "hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae"
-        password = "randompwd"
-        realm = "LinOTP2 admin area"
-        nonceCount = "00000001"
-        clientNonce = "0a4f113b"
-        ha1 = hashlib.md5(
-            ("%s:%s:%s" % (username, realm, password)).encode("utf-8")
-        ).hexdigest()
-        ha2 = hashlib.md5(
-            ("%s:%s" % (method, digest_uri)).encode("utf-8")
-        ).hexdigest()
-        response = hashlib.md5(
-            (
-                "%s:%s:%s:%s:%s:%s"
-                % (ha1, nonce, nonceCount, clientNonce, qop, ha2)
-            ).encode("utf-8")
-        ).hexdigest()
-        auth_content = [
-            'Digest username="%s"' % username,
-            'realm="%s"' % realm,
-            'nonce="%s"' % nonce,
-            'uri="%s"' % digest_uri,
-            'qop="%s"' % qop,
-            'nc="%s"' % nonceCount,
-            'cnonce="%s"' % clientNonce,
-            'response="%s"' % response,
-        ]
-        return (", ").join(auth_content)
-
     @patch("linotp.controllers.base.verify_jwt_in_request", lambda: True)
     @patch("linotp.app.get_jwt_identity")
     @patch("linotp.controllers.system.get_jwt_identity")
@@ -449,17 +365,14 @@ class TestController(TestCase):
         method=None,
         params=None,
         headers=None,
-        cookies=None,
         auth_user="admin",
         upload_files=None,
         client=None,
-        auth_type="Digest",
         content_type=None,
         auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
         """
-        Makes an authenticated request (setting HTTP Digest header, cookie and
-        'session' parameter).
+        Makes an authenticated request
         """
 
         app_get_jwt_identity.return_value = {
@@ -474,26 +387,6 @@ class TestController(TestCase):
 
         params = params or {}
         headers = headers or {}
-        cookies = cookies or {}
-        if "session" not in params:
-            params["session"] = self.session
-
-        session = params["session"]
-
-        cookie_name = "admin_session"
-
-        if cookie_name not in cookies:
-            cookies[cookie_name] = session
-
-        if "Authorization" not in headers:
-            if auth_type == "Basic":
-                headers[
-                    "Authorization"
-                ] = TestController.get_http_basic_header(username=auth_user)
-            else:
-                headers[
-                    "Authorization"
-                ] = TestController.get_http_digest_header(username=auth_user)
 
         return self.make_request(
             controller,
@@ -501,7 +394,6 @@ class TestController(TestCase):
             method=method,
             params=params,
             headers=headers,
-            cookies=cookies,
             upload_files=upload_files,
             client=client,
             content_type=content_type,
@@ -515,7 +407,6 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
-        auth_type="Digest",
         content_type=None,
         auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
@@ -532,7 +423,6 @@ class TestController(TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type,
             content_type=content_type,
             auth_resolver=auth_resolver,
         )
@@ -544,7 +434,6 @@ class TestController(TestCase):
         method=None,
         auth_user="admin",
         client=None,
-        auth_type="Digest",
         content_type=None,
         auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
@@ -560,7 +449,6 @@ class TestController(TestCase):
             params=params,
             auth_user=auth_user,
             client=client,
-            auth_type=auth_type,
             content_type=content_type,
             auth_resolver=auth_resolver,
         )
@@ -573,7 +461,6 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
-        auth_type="Digest",
         content_type=None,
         auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
@@ -590,7 +477,6 @@ class TestController(TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type,
             content_type=content_type,
             auth_resolver=auth_resolver,
         )
@@ -603,7 +489,6 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
-        auth_type="Digest",
         content_type=None,
         auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
@@ -620,7 +505,6 @@ class TestController(TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type,
             content_type=content_type,
             auth_resolver=auth_resolver,
         )
@@ -633,7 +517,6 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
-        auth_type="Digest",
         content_type=None,
         auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
@@ -650,7 +533,6 @@ class TestController(TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type,
             content_type=content_type,
             auth_resolver=auth_resolver,
         )
@@ -663,7 +545,6 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
-        auth_type="Digest",
         content_type=None,
         auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
@@ -680,7 +561,6 @@ class TestController(TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type,
             content_type=content_type,
             auth_resolver=auth_resolver,
         )
@@ -693,7 +573,6 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
-        auth_type="Digest",
     ):
         """
         Makes an authenticated request to /gettoken/'action'
@@ -708,7 +587,6 @@ class TestController(TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type,
         )
 
     def make_healthcheck_request(
@@ -719,7 +597,6 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
-        auth_type="Digest",
     ):
         """
         Makes an authenticated request to /healthcheck/'action'
@@ -734,7 +611,6 @@ class TestController(TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type,
         )
 
     def make_tools_request(
@@ -745,7 +621,6 @@ class TestController(TestCase):
         auth_user="admin",
         client=None,
         upload_files=None,
-        auth_type="Digest",
         content_type=None,
         auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
     ):
@@ -762,7 +637,6 @@ class TestController(TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
-            auth_type=auth_type,
             content_type=content_type,
             auth_resolver=auth_resolver,
         )

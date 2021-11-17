@@ -1864,17 +1864,17 @@ class AdminController(BaseController, JWTMixin):
 
             checkPolicyPre("admin", "userlist", param)
 
-            up = 0
+            filter_fields = 0
             user = getUserFromParam(param)
 
             log.info("[userlist] displaying users with param: %s, ", param)
 
             if len(user.realm) > 0:
-                up = up + 1
+                filter_fields += 1
             if len(user.resolver_config_identifier) > 0:
-                up = up + 1
+                filter_fields += 1
 
-            if len(param) == up:
+            if len(param) < filter_fields:
                 usage = {
                     "usage": "list available users matching the "
                     "given search patterns:"
@@ -1886,9 +1886,6 @@ class AdminController(BaseController, JWTMixin):
 
             list_params = {}
             list_params.update(param)
-
-            if "session" in list_params:
-                del list_params["session"]
 
             rp = None
             if "rp" in list_params:
