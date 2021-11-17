@@ -46,7 +46,7 @@ from linotp.lib.policy import (
 )
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
-from linotp.lib.resolver import getResolverList
+from linotp.lib.resolver import DeleteForbiddenError, getResolverList
 from linotp.lib.tools.import_user import (
     DefaultFormatReader,
     PasswdFormatReader,
@@ -214,6 +214,12 @@ class ToolsController(BaseController):
                 log.error("Missing parameter: %r", exx)
                 raise ParameterError("Missing parameter: %r" % exx)
 
+            if resolver_name == current_app.config["ADMIN_RESOLVER_NAME"]:
+                raise DeleteForbiddenError(
+                    f"default admin resolver {resolver_name} is not allowed "
+                    "to be overwritten!"
+                )
+
             groupid = resolver_name
 
             # process file upload data
@@ -365,7 +371,7 @@ class ToolsController(BaseController):
 
             db.session.rollback()
 
-            return sendError(response, "%r" % exx)
+            return sendError(response, exx)
 
         finally:
             log.debug("done")

@@ -365,7 +365,9 @@ function create_tools_importusers_dialog() {
                 var resolvers = '<option value="" disabled selected>[' + i18n.gettext("Select resolver") + ']</option>';
                 for(var res in data.result.value) {
                     if(data.result.value[res].readonly === true) {
-                        resolvers += '<option value="' + res + '">' + res + '</option>';
+                        if(data.result.value[res].immutable === false) {
+                            resolvers += '<option value="' + res + '">' + res + '</option>';
+						}
                     }
                 }
                 $('#import_users_resolver').html(resolvers);

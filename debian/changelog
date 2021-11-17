@@ -36,6 +36,7 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     the linotp command line tool (s. README.md). The manage ui and the
     corresponding interfaces has been extended to show up if a realm or
     resolver is used for administration.
+  * prevent the overwrite of the local admin resolver via user import
 
   Packaging:
   * The `linotp` package now `Suggests: python3-smpplib`.
