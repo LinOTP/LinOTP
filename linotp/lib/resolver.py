@@ -312,6 +312,8 @@ def getResolverList(filter_resolver_type=None, config=None):
     Resolvers = {}
     resolvertypes = get_resolver_types()
 
+    local_admin_resolver = current_app.config["ADMIN_RESOLVER_NAME"]
+
     admin_resolvers = get_admin_resolvers()
 
     if not config:
@@ -339,6 +341,9 @@ def getResolverList(filter_resolver_type=None, config=None):
                 resolver_cls = get_resolver_class(typ)
                 r["spec"] = resolver_cls.db_prefix + "." + resolver[3]
                 r["admin"] = resolver[3] in admin_resolvers
+
+                # set the immutable flag if its the local_admin_resolver
+                r["immutable"] = local_admin_resolver == resolver[3]
 
                 readonly_entry = ".".join(
                     [resolver[0], resolver[1], "readonly", resolver[3]]
@@ -393,6 +398,8 @@ def getResolverInfo(resolvername, passwords=False):
 
     linotp_config = context.get("Config")
     resolver_types = get_resolver_types()
+
+    local_admin_resolver = current_app.config["ADMIN_RESOLVER_NAME"]
 
     # --------------------------------------------------------------------- --
 
@@ -484,6 +491,9 @@ def getResolverInfo(resolvername, passwords=False):
     result["type"] = resolver_type
     result["data"] = res_conf
     result["admin"] = resolvername in get_admin_resolvers()
+
+    # set the immutable flag if its the local_admin_resolver
+    result["immutable"] = local_admin_resolver == resolvername
 
     return result
 
