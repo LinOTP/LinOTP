@@ -104,6 +104,9 @@ class SMPPSMSProvider(ISMSProvider):
 
         try:
             client = smpplib.client.Client(self.server, self.port)
+            client.set_message_received_handler(
+                lambda pdu: log.debug("delivered f{pdu.receipted_message_id}")
+            )
             client.connect()
             log.debug("connected to %r:%r", self.server, self.port)
 
@@ -118,30 +121,32 @@ class SMPPSMSProvider(ISMSProvider):
                 self.system_type,
             )
 
-            # transform the arguments from unicode down to string / byte array
-            password = self.password.encode(self.target_encoding, "ignore")
-            system_id = self.system_id.encode(self.target_encoding, "ignore")
-            system_type = self.system_type.encode(
-                self.target_encoding, "ignore"
-            )
+            # We no longer need to convert the parameters to
+            # `bytes`. This used to be done in earlier
+            # (pre-Python-3.x) versions of this code but would now
+            # result in errors inside smpplib.
 
             client.bind_transceiver(
-                system_id=system_id, password=password, system_type=system_type
+                system_id=self.system_id,
+                password=self.password,
+                system_type=self.system_type,
             )
 
-            # transform the arguments from unicode down to string / byte array
-            source_addr = self.source_addr.encode(
-                self.target_encoding, "ignore"
-            )
-            destination_addr = phone.encode(self.target_encoding, "ignore")
+            # transform the message from unicode down to string / byte array
             short_message = message.encode(self.target_encoding, "ignore")
 
             # according to spec messages should not be longer than 160 chars
             if len(short_message) <= 160:
-                self._send(
-                    client, source_addr, destination_addr, short_message
-                )
+                self._send(client, self.source_addr, phone, short_message)
                 log.debug("message %r submitted to %r", short_message, phone)
+
+                # Read `submit_sm_resp` message from SMPP server. If
+                # we didn't do this here, the `submit_sm_resp` message
+                # would be consumed as the reply to the `unbind`
+                # request below, and that would confuse the smpplib
+                # because `submit_sm_resp` is invalid if the connection
+                # is in an unbound state.
+                client.read_once()
 
             else:
                 # messages longer than 160 chars should be
@@ -151,8 +156,9 @@ class SMPPSMSProvider(ISMSProvider):
                     msg = short_message[i : i + max_msg_len]
                     if not msg:
                         continue
-                    self._send(client, source_addr, destination_addr, msg)
+                    self._send(client, self.source_addr, phone, msg)
                     log.debug("message %r submitted to %r", msg, phone)
+                    client.read_once()
 
         except Exception as exx:
             log.error(exx)
@@ -247,6 +253,10 @@ if __name__ == "__main__":
     #                                                  "requested"))
 
     args = parser.parse_args()
+
+    logging.basicConfig(
+        filename="/dev/stderr", encoding="utf-8", level=logging.DEBUG
+    )
 
     config = {}
     attrs = [
