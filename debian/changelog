@@ -16,6 +16,7 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * Adjusted functional_special tests to become regular tests.
   * Porting issue for radius token with forwarding transactions.
   * Reply to sms challenge with pin+otp.
+  * User import now always deletes users in the correct managed resolver
 
   Features:
   * add grace to license volume exceeding and display accordingly a message

@@ -46,6 +46,10 @@ from linotp.useridresolver.SQLIdResolver import IdResolver as sql_resolver
 log = logging.getLogger(__name__)
 
 
+class DuplicateUserError(Exception):
+    pass
+
+
 class DatabaseContext(object):
     """
     with the database context ist is possible to drive the "user import"
@@ -328,12 +332,16 @@ class SQLImportHandler(ImportHandler):
 
         del_user = (
             session.query(ImportedUser)
-            .filter(
-                ImportedUser.userid == user_id
-                and ImportedUser.groupid == self.groupid
-            )
+            .filter(ImportedUser.userid == user_id)
+            .filter(ImportedUser.groupid == self.groupid)
             .all()
         )
+
+        if len(del_user) > 1:
+            raise DuplicateUserError(
+                f"There exist more than one user with userid {user_id} and "
+                f"groupid {self.groupid}. Database maybe corrupted."
+            )
 
         if del_user:
             session.delete(del_user[0])
