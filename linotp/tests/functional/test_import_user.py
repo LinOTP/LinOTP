@@ -67,8 +67,6 @@ from linotp.model import db
 from linotp.model.imported_user import ImportedUser
 from linotp.tests import TestController
 
-# for drop Table we require some sql
-
 
 log = logging.getLogger(__name__)
 
