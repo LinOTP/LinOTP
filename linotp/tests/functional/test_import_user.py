@@ -57,10 +57,9 @@ from sqlalchemy import sql
 from sqlalchemy.engine import create_engine
 from sqlalchemy.exc import ProgrammingError
 
+from flask import current_app
+
 from linotp.tests import TestController
-
-# for drop Table we require some sql
-
 
 log = logging.getLogger(__name__)
 
@@ -168,6 +167,30 @@ class TestImportUser(TestController):
         assert '"created": {}' in response, response
 
         return
+
+    def test_import_user_into_local_admin_resolver(self):
+        """Very that it's not possible to overwrite the local admin resolver."""
+
+        local_admin_resolver_name = current_app.config["ADMIN_RESOLVER_NAME"]
+        upload_files = [("file", "user_list", "")]
+        params = {
+            "resolver": local_admin_resolver_name,
+            "dryrun": False,
+            "format": "password",
+            "delimiter": ",",
+            "quotechar": '"',
+        }
+
+        response = self.make_tools_request(
+            action="import_users", params=params, upload_files=upload_files
+        )
+        msg = (
+            "default admin resolver LinOTP_local_admins is not allowed to "
+            "be overwritten!"
+        )
+
+        assert not response.json["result"]["status"]
+        assert msg in response.json["result"]["error"]["message"], response
 
     def test_import_user_dryrun(self):
         """
