@@ -39,8 +39,6 @@ communicate with LinOTP. You can use the following controllers:
 +--------------------------------------------+------------------------------------------+
 | :py:class:`linotp.controllers.gettoken`    | to retrieve OTP values                   |
 +--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.helpdesk`    | management operations on behalf of users |
-+--------------------------------------------+------------------------------------------+
 | :py:class:`linotp.controllers.maintenance` | for internal maintenance purposes        |
 +--------------------------------------------+------------------------------------------+
 | :py:class:`linotp.controllers.manage`      | the Web UI                               |
