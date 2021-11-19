@@ -103,7 +103,9 @@ class SMPPSMSProvider(ISMSProvider):
             raise Exception("missing configuration!")
 
         try:
-            client = smpplib.client.Client(self.server, self.port)
+            client = smpplib.client.Client(
+                self.server, self.port, allow_unknown_opt_params=True
+            )
             client.set_message_received_handler(
                 lambda pdu: log.debug("delivered f{pdu.receipted_message_id}")
             )
