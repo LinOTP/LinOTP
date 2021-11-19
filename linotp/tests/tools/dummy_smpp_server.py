@@ -90,6 +90,12 @@ class DummySMPPServer:
         self.sequence_generator = SimpleSequenceGenerator()
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.reset()
+
+    def reset(self):
+        """Reset the internal stores for PDUs and sent SMSes."""
+        self.pdus = []
+        self.messages = []
 
     # The following two methods are needed to make
     # `smpplib.smpp.make_pdu()` happy. They aren't actually used in
@@ -173,6 +179,7 @@ class DummySMPPServer:
                     client=self,
                     allow_unknown_opt_params=None,
                 )
+                self.pdus.append(pdu)
 
                 # Do something with the PDU.
 
@@ -230,6 +237,7 @@ class DummySMPPServer:
                         msg_id = f"{MC_ID}:{msg_count:04d}"
                         data["message_id"] = msg_id
                         out_msg = f"OK {msg_id}"
+                        self.messages.append(text)
 
                     res_pdu = smpp.make_pdu("submit_sm_resp", **data)
                     print(f"< {out_msg}")
@@ -243,6 +251,7 @@ class DummySMPPServer:
                     print("\n< OK")
                 else:
                     raise ValueError(f"Unsupported SMPP command {pdu.command}")
+                self.pdus.append(res_pdu)
                 response = res_pdu.generate()
                 self.logger.debug(f'<< {response.hex(" ", -4)}')
                 sock.send(response)
