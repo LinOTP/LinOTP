@@ -111,6 +111,14 @@ setup_requirements = [
     "Babel",
 ]
 
+# Requirements for SMPP support.
+# Use
+# > pip install -e ".[smpp]"
+# to install.
+smpp_requirements = [
+    "smpplib",
+]
+
 # all packages that are required during development of LinOTP
 # install with
 # > pip install -e ".[develop]"
@@ -118,6 +126,7 @@ development_requirements = (
     test_requirements
     + code_quality_requirements
     + apidocs_requirements
+    + smpp_requirements
     + setup_requirements
 )
 
