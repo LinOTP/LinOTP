@@ -51,15 +51,24 @@ import io
 import json
 import logging
 import os
+from typing import Callable
 
-import pytest
 from sqlalchemy import sql
 from sqlalchemy.engine import create_engine
 from sqlalchemy.exc import ProgrammingError
 
 from flask import current_app
 
+from linotp.lib.tools.import_user.SQLImportHandler import (
+    LinOTP_DatabaseContext,
+    SQLImportHandler,
+)
+from linotp.model import db
+from linotp.model.imported_user import ImportedUser
 from linotp.tests import TestController
+
+# for drop Table we require some sql
+
 
 log = logging.getLogger(__name__)
 
@@ -634,4 +643,31 @@ class TestImportUser(TestController):
             self.delete_all_policies(auth_user="superadmin")
 
 
-# eof ########################################################################
+class TestImportUserExtended:
+    def test_delete_by_id(
+        self,
+        create_common_resolvers: Callable,
+    ) -> None:
+
+        username = "nimda"
+        database_context = LinOTP_DatabaseContext(
+            SqlSession=db.session, SqlEngine=db.engine
+        )
+
+        ih = SQLImportHandler(
+            groupid="LinOTP_local_admins",
+            resolver_name="LinOTP_local_admins",
+            database_context=database_context,
+        )
+
+        session = database_context.get_session()
+        userids = [user.userid for user in session.query(ImportedUser).all()]
+
+        assert username in userids
+        ih.delete_by_id(username)
+
+        session.commit()
+
+        userids = [user.userid for user in session.query(ImportedUser).all()]
+
+        assert username not in userids
