@@ -152,7 +152,7 @@ class UserImport(object):
                 user.set(entry, value)
 
                 if entry == "password" and passwords_in_plaintext:
-                    user.creat_password_hash(row[column_id])
+                    user.create_password_hash(row[column_id])
 
             yield user
 

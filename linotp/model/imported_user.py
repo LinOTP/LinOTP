@@ -94,7 +94,7 @@ class ImportedUser(SqlUser):
         if entry in self.user_entries:
             setattr(self, entry, value)
 
-    def creat_password_hash(self, plain_password):
+    def create_password_hash(self, plain_password: str) -> None:
         """
         create a password hash entry from a given plaintext password
         """
