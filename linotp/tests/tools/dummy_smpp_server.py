@@ -166,7 +166,7 @@ class DummySMPPServer:
 
         msg_count = 0
         while True:
-            self._sock.listen(5)
+            self._sock.listen()
             sock, address = self._sock.accept()
             done = False
             while not done:
@@ -174,12 +174,15 @@ class DummySMPPServer:
                 # considerable – inconvenience of parsing (and
                 # generating) SMPP PDUs ourselves.
 
-                pdu = smpp.parse_pdu(
-                    self.read_raw_pdu(sock),
-                    client=self,
-                    allow_unknown_opt_params=None,
-                )
-                self.pdus.append(pdu)
+                try:
+                    pdu = smpp.parse_pdu(
+                        self.read_raw_pdu(sock),
+                        client=self,
+                        allow_unknown_opt_params=None,
+                    )
+                    self.pdus.append(pdu)
+                except exceptions.ConnectionError:
+                    break
 
                 # Do something with the PDU.
 
