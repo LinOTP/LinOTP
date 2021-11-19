@@ -36,13 +36,17 @@ from linotp.model.imported_user import SqlUser
 
 
 class DuplicateUserError(Exception):
-    def __init__(self, username, message="User {0} already exists"):
+    def __init__(
+        self, username: str, message: str = "User {0} already exists"
+    ):
         super().__init__(message.format(username))
         self.username = username
 
 
 class NoSuchUserError(Exception):
-    def __init__(self, username, message="User {0} does not exist"):
+    def __init__(
+        self, username: str, message: str = "User {0} does not exist"
+    ):
         super().__init__(message.format(username))
         self.username = username
 
@@ -55,7 +59,7 @@ class LocalAdminResolver:
         self.admin_resolver_name = app.config["ADMIN_RESOLVER_NAME"]
         self.admin_realm_name = app.config["ADMIN_REALM_NAME"].lower()
 
-    def _get_user(self, username):
+    def _get_user(self, username: str) -> SqlUser:
         user = self.session.query(self.user_class).get(
             (self.admin_resolver_name, username)
         )
