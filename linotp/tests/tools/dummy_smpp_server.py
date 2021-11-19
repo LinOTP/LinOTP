@@ -38,7 +38,14 @@ to start the server and have it listen on IP address 192.168.56.1, TCP
 port 9123 (this is reasonable if you're using VirtualBox to run a
 LinOTP SVA on the default host-only network; other addresses and ports
 are available). Use the LinOTP management interface to configure an
-SMS provider using the same IP address and port number.
+SMS provider using the same IP address and port number. You can
+optionally use the `--systemid` and `--password` options to set up a
+system ID (what otherwise would be called a "user name") and password,
+in which case whatever the client supplies must match the configured
+values, or else an `ESME_RBINDFAIL` error will occur upon
+`bind_transceiver`. (To be exact, the test occurs if and only if
+`password` is non-null; the system ID defaults to `smsclient` but
+isn't used at all unless a password has been explicitly set.)
 
 The server sends plausible replies to incoming PDUs and logs its
 activities to the console. Don't mistake this for a general SMPP
@@ -66,9 +73,18 @@ class DummySMPPServer:
 
     """
 
-    def __init__(self, host="127.0.0.1", port="9123", loglevel="WARNING"):
+    def __init__(
+        self,
+        host="127.0.0.1",
+        port="9123",
+        system_id="smsclient",
+        password=None,
+        loglevel="WARNING",
+    ):
         self.host = host
         self.port = int(port)
+        self.system_id = system_id
+        self.password = password
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(loglevel)
         self.sequence_generator = SimpleSequenceGenerator()
@@ -162,9 +178,17 @@ class DummySMPPServer:
 
                 print(f"> {pdu.command}", end="")
                 if pdu.command == "bind_transceiver":
+                    status = consts.SMPP_ESME_ROK
+                    if self.password is not None:
+                        if (
+                            pdu.system_id.decode() != self.system_id
+                            or pdu.password.decode() != self.password
+                        ):
+                            status = consts.SMPP_ESME_RBINDFAIL
+
                     res_pdu = smpp.make_pdu(
                         "bind_transceiver_resp",
-                        status=pdu.status,
+                        status=status,
                         sequence=pdu._sequence,
                     )
                     print("\n< OK")
@@ -231,6 +255,14 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--systemid",
+        default="smsclient",
+        help="Client system ID for authentication",
+    )
+    parser.add_argument(
+        "--password", default=None, help="Client password for authentication"
+    )
+    parser.add_argument(
         "--loglevel", default="DEBUG", help="Log level for Python logging"
     )
     parser.add_argument(
@@ -244,6 +276,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     with DummySMPPServer(
-        host=args.ipaddr, port=args.port, loglevel=args.loglevel
+        host=args.ipaddr,
+        port=args.port,
+        system_id=args.systemid,
+        password=args.password,
+        loglevel=args.loglevel,
     ) as srv:
         srv.listen()
