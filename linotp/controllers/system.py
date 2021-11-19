@@ -103,6 +103,7 @@ from linotp.lib.user import (
 )
 from linotp.lib.util import check_session, get_client, getLowerParams
 from linotp.model import db
+from linotp.model.imported_user import ImportedUser
 from linotp.provider import (
     delProvider,
     getProvider,
@@ -860,7 +861,7 @@ class SystemController(BaseController):
             if "resolver" not in param:
                 raise ParameterError("missing required parameter: resolver")
 
-            resolver = param["resolver"]
+            resolver_name = param["resolver"]
 
             # only delete a resolver, if it is not used by any realm
             found = False
@@ -872,22 +873,30 @@ class SystemController(BaseController):
 
                 for resolver_spec in resolver_specs:
                     __, config_identifier = parse_resolver_spec(resolver_spec)
-                    if resolver == config_identifier:
+                    if resolver_name == config_identifier:
                         fRealms.append(realm)
                         found = True
 
             if found is True:
                 g.audit["failed"] = res
                 err = "Resolver %r  still in use by the realms: %r" % (
-                    resolver,
+                    resolver_name,
                     fRealms,
                 )
                 g.audit["info"] = err
                 raise Exception("%r !" % err)
 
-            res = deleteResolver(resolver)
+            is_manged_resolver = getResolverInfo(resolver_name).get(
+                "readonly", False
+            )
+
+            if is_manged_resolver:
+                imported_user = ImportedUser(resolver_name)
+                imported_user.remove_all_users()
+
+            res = deleteResolver(resolver_name)
             g.audit["success"] = res
-            g.audit["info"] = resolver
+            g.audit["info"] = resolver_name
 
             db.session.commit()
             return sendResult(response, res, 1)
