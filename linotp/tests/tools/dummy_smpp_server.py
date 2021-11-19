@@ -168,7 +168,8 @@ class DummySMPPServer:
             if not pdu_bytes:
                 raise exceptions.ConnectionError()
             pdu_bytes += more_bytes
-        self.logger.debug(f'>> {pdu_bytes.hex(" ", -4)}')
+        # self.logger.debug(f'>> {pdu_bytes.hex(" ", -4)}')  # Python >=3.8
+        self.logger.debug(f">> {pdu_bytes.hex()}")
 
         return pdu_bytes
 
@@ -272,7 +273,8 @@ class DummySMPPServer:
                     raise ValueError(f"Unsupported SMPP command {pdu.command}")
                 self.pdus.append(res_pdu)
                 response = res_pdu.generate()
-                self.logger.debug(f'<< {response.hex(" ", -4)}')
+                # self.logger.debug(f'<< {response.hex(" ", -4)}')  # Python 3.8
+                self.logger.debug(f"<< {response.hex()}")
                 sock.send(response)
             sock.close()
             done = False
