@@ -67,7 +67,6 @@ from linotp.model import db
 from linotp.model.imported_user import ImportedUser
 from linotp.tests import TestController
 
-
 log = logging.getLogger(__name__)
 
 
