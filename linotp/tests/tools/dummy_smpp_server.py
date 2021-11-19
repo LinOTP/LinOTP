@@ -88,8 +88,6 @@ class DummySMPPServer:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(loglevel)
         self.sequence_generator = SimpleSequenceGenerator()
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.reset()
 
     def reset(self):
@@ -113,10 +111,28 @@ class DummySMPPServer:
     # `DummySMPPServer()` class work as a context manager.
 
     def __enter__(self):
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sock.bind((self.host, self.port))
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
+        self._sock.shutdown(socket.SHUT_RDWR)
+        self._sock.close()
+
+    def run_server(self):
+        """Start the server. This is suitable as the `target` argument to
+        `threading.Thread()` if you want to run the dummy server from
+        pytest, and it ensures that all the socket stuff happens in
+        the thread, which avoids nasty errors.
+
+        """
+
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._sock.bind((self.host, self.port))
+        self.listen()
+        self._sock.shutdown(socket.SHUT_RDWR)
         self._sock.close()
 
     def read_raw_pdu(self, sock):
