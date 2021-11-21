@@ -447,6 +447,58 @@ def _create_resolver(
 
 
 @pytest.fixture
+def create_managed_resolvers(
+    scoped_authclient: Callable[..., FlaskClient],
+) -> Callable:
+
+    import io
+    import json
+
+    def inner_fucntion(
+        file_name: str = "def-passwd-plain.csv",
+        resolver_name: str = "managed_resolver",
+        plaintext: bool = True,
+    ) -> None:
+        fixture_path = TestController.fixture_path
+
+        def_passwd_file = os.path.join(fixture_path, file_name)
+
+        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        params = {
+            "resolver": resolver_name,
+            "passwords_in_plaintext": plaintext,
+            "dryrun": False,
+            "format": "csv",
+            "delimiter": ",",
+            "quotechar": '"',
+            "column_mapping": json.dumps(
+                {
+                    "username": 0,
+                    "userid": 1,
+                    "surname": 2,
+                    "givenname": 3,
+                    "email": 4,
+                    "phone": 5,
+                    "mobile": 6,
+                    "password": 7,
+                }
+            ),
+        }
+
+        with scoped_authclient(verify_jwt=False, username="admin") as client:
+            params.update(
+                {"file": (io.BytesIO(content.encode("utf-8")), "user_list")}
+            )
+            headers = {}
+            headers["Content-Type"] = "multipart/form-data"
+            client.post("/tools/import_users", data=params, headers=headers)
+
+    return inner_fucntion
+
+
+@pytest.fixture
 def create_common_resolvers(
     scoped_authclient: Callable[..., FlaskClient],
     client: FlaskClient,

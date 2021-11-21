@@ -29,10 +29,13 @@
 """
 import logging
 import os
+from typing import Callable
 
-from mock import patch
+from mock import Mock, patch
 
-from linotp.model.local_admin_user import LocalAdminResolver
+from flask.testing import FlaskClient
+
+from linotp.model.imported_user import ImportedUser
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
@@ -695,3 +698,40 @@ scope = gettoken
         )
         assert '"status": false' in response, response
         mock.assert_not_called()
+
+
+class TestSystemControllerExtended:
+    def test_delete_resolver(
+        self,
+        create_managed_resolvers: Callable,
+        scoped_authclient: Callable[..., FlaskClient],
+    ) -> None:
+        resolver_name = "test_res"
+        create_managed_resolvers(
+            file_name="def-passwd-plain.csv",
+            resolver_name=resolver_name,
+            plaintext=False,
+        )
+
+        iu = ImportedUser(resolver_name)
+        all_users = iu.list_users()
+
+        with scoped_authclient(verify_jwt=False) as client:
+            resolver_list = client.post("/system/getResolvers")
+
+        assert len(all_users) > 0
+        assert resolver_name in resolver_list.json["result"]["value"]
+
+        # delete resolver
+
+        with scoped_authclient(verify_jwt=False) as client:
+            client.post(
+                "/system/delResolver", data={"resolver": resolver_name}
+            )
+
+        with scoped_authclient(verify_jwt=False) as client:
+            resolver_list = client.post("/system/getResolvers")
+
+        all_users = iu.list_users()
+        assert len(all_users) == 0
+        assert resolver_name not in resolver_list.json["result"]["value"]

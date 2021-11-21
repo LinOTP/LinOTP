@@ -24,10 +24,21 @@
 #    Support: www.keyidentity.com
 
 
+from typing import Any, Dict, List
+
 from sqlalchemy import schema, types
+from sqlalchemy.orm import Session
 
 from linotp.lib.crypto import utils
 from linotp.model import db
+
+
+class NoSuchUserError(Exception):
+    def __init__(
+        self, username: str, message: str = "User {0} does not exist"
+    ):
+        super().__init__(message.format(username))
+        self.username = username
 
 
 class SqlUser(db.Model):
@@ -71,10 +82,25 @@ class ImportedUser(SqlUser):
         "groupid",
     ]
 
-    def __init__(self):
+    def __init__(self, resolver_name: str = None):
         self._pw_gen = False
+        self.user_class = SqlUser
+        self.session: Session = db.session()
+        self.resolver_name = resolver_name
 
-    def update(self, user):
+    def _get_user(self, username: str) -> SqlUser:
+        user = self.session.query(self.user_class).get(
+            (self.resolver_name, username)
+        )
+        if not user:
+            raise NoSuchUserError(username)
+        return user
+
+    def _get_keys_of_table(self) -> List[str]:
+        tablename = self.user_class.__tablename__
+        return self.user_class.metadata.tables[tablename].c.keys()
+
+    def update(self, user: SqlUser) -> None:
         """
         update all attributes of the user from the other user
 
@@ -83,7 +109,7 @@ class ImportedUser(SqlUser):
         for attr in self.user_entries:
             setattr(self, attr, getattr(user, attr))
 
-    def set(self, entry, value):
+    def set(self, entry: str, value: Any) -> None:
         """
         generic setting of attributes of the user
 
@@ -94,14 +120,60 @@ class ImportedUser(SqlUser):
         if entry in self.user_entries:
             setattr(self, entry, value)
 
-    def creat_password_hash(self, plain_password):
+    def create_password_hash(self, plain_password: str) -> None:
         """
         create a password hash entry from a given plaintext password
         """
         self.password = utils.crypt_password(plain_password)
         self._pw_gen = True
 
-    def __eq__(self, user):
+    def list_users(self) -> List[Dict[str, str]]:
+        """list all users of an ImportedUser instance
+
+        Returns:
+            List[Dict[str, str]]:
+                returns a list of an ImportedUser instance
+        """
+        user_list = (
+            self.session.query(self.user_class)
+            .filter(self.user_class.groupid == self.resolver_name)
+            .all()
+        )
+
+        result = []
+        for user in user_list:
+            single_user = {}
+            for attr in self._get_keys_of_table():
+                single_user[attr] = getattr(user, attr)
+            result.append(single_user)
+
+        return result
+
+    def remove_all_users(self) -> None:
+        """removes all users from an ImportedUser instance"""
+        all_users = (
+            self.session.query(self.user_class)
+            .filter(self.user_class.groupid == self.resolver_name)
+            .all()
+        )
+
+        for user in all_users:
+            self.session.delete(user)
+
+    def remove_user(
+        self,
+        username: str,
+    ) -> None:
+        """remove one user from an ImportedUser instance
+
+        Args:
+            username (str): the name of the user wich should be deleted
+        """
+
+        user = self._get_user(username)
+        self.session.delete(user)
+
+    def __eq__(self, user: Any) -> bool:
         """
         compare two users
 
@@ -127,7 +199,7 @@ class ImportedUser(SqlUser):
 
         return True
 
-    def __ne__(self, user):
+    def __ne__(self, user: Any) -> bool:
         """
         compare two users
 
