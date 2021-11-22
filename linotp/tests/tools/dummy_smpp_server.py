@@ -153,9 +153,9 @@ class DummySMPPServer:
         try:
             length = struct.unpack(">L", pdu_bytes)[0]
         except struct.error:
-            bad_pdu_msg = "Bad PDU: {pdu_bytes!r}"
-            self.logger.warning(bad_pdu_msg)
-            raise exceptions.PDUError(bad_pdu_msg)
+            bad_pdu_msg = "Bad PDU: %r"
+            self.logger.warning(bad_pdu_msg, pdu_bytes)
+            raise exceptions.PDUError(bad_pdu_msg.format(pdu_bytes))
 
         while len(pdu_bytes) < length:
             try:
@@ -169,7 +169,7 @@ class DummySMPPServer:
                 raise exceptions.ConnectionError()
             pdu_bytes += more_bytes
         # self.logger.debug(f'>> {pdu_bytes.hex(" ", -4)}')  # Python >=3.8
-        self.logger.debug(f">> {pdu_bytes.hex()}")
+        self.logger.debug(">> %s", pdu_bytes.hex())
 
         return pdu_bytes
 
@@ -274,7 +274,7 @@ class DummySMPPServer:
                 self.pdus.append(res_pdu)
                 response = res_pdu.generate()
                 # self.logger.debug(f'<< {response.hex(" ", -4)}')  # Python 3.8
-                self.logger.debug(f"<< {response.hex()}")
+                self.logger.debug("<< %s", response.hex())
                 sock.send(response)
             sock.close()
             done = False
