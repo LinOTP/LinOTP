@@ -178,10 +178,9 @@ class UserImport(object):
         users_created = {}
         users_not_modified = {}
         users_modified = {}
-
         processed_users = {}
 
-        former_user_by_id = self.import_handler.prepare()
+        former_userids_to_be_removed = self.import_handler.prepare()
 
         try:
 
@@ -201,9 +200,9 @@ class UserImport(object):
                     continue
 
                 # prevent processing user multiple times
-                if user.userid in list(
-                    processed_users.keys()
-                ) or user.username in list(processed_users.values()):
+                if (user.userid in processed_users) or (
+                    user.username in processed_users.values()
+                ):
                     raise Exception(
                         "Violation of unique constraint - "
                         "duplicate user in data: %r" % user
@@ -220,9 +219,9 @@ class UserImport(object):
                         self.import_handler.add(user)
                 else:
                     # if it already exists remove it from the list of annihilation
-                    # those who remain in former_user_by_id will be annihilated
-                    if former_user.userid in former_user_by_id:
-                        del former_user_by_id[former_user.userid]
+                    # those who remain in former_userids_to_be_removed will be deleted
+                    if former_user.userid in former_userids_to_be_removed:
+                        del former_userids_to_be_removed[former_user.userid]
 
                     if user == former_user:
                         users_not_modified[user.userid] = user.username
@@ -234,12 +233,14 @@ class UserImport(object):
             # -------------------------------------------------------------- --
 
             # finally remove all former, not updated users
-
-            for del_userid, del_user_name in list(former_user_by_id.items()):
+            for del_userid, del_user_name in list(
+                former_userids_to_be_removed.items()
+            ):
                 users_deleted[del_userid] = del_user_name
                 if not dryrun:
                     self.import_handler.delete_by_id(del_userid)
 
+            # prepare the results to send back
             result = {
                 "created": users_created,
                 "updated": users_not_modified,
@@ -247,6 +248,7 @@ class UserImport(object):
                 "deleted": users_deleted,
             }
 
+            # wet run:
             if not dryrun:
                 self.import_handler.commit()
 
