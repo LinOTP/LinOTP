@@ -29,7 +29,6 @@ from typing import Any, Dict, List
 from sqlalchemy import orm, schema, types
 from sqlalchemy.orm import Session
 
-
 from linotp.lib.crypto import utils as cryptutils
 from linotp.model import db
 

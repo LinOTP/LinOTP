@@ -114,7 +114,11 @@ class UserImport(object):
         self.user_column_mapping = mapping
 
     def get_users_from_data(
-        self, csv_data, format_reader, passwords_in_plaintext=False
+        self,
+        csv_data,
+        format_reader,
+        passwords_in_plaintext=False,
+        hash_passwords=False,
     ):
         """
         for each row
@@ -122,6 +126,8 @@ class UserImport(object):
         - check if there is a column for this in the csv data
 
         and add the group identifier
+
+        :params hash_passwords: if true the plaintext passwords will be hashed upon reading
 
         """
 
@@ -153,7 +159,10 @@ class UserImport(object):
 
             if passwords_in_plaintext:
                 user.plain_password = user.password
-                user.password = user.create_password_hash(user.plain_password)
+                if hash_passwords:
+                    user.password = user.create_password_hash(
+                        user.plain_password
+                    )
 
             yield user
 
@@ -193,6 +202,7 @@ class UserImport(object):
                 csv_data,
                 format_reader,
                 passwords_in_plaintext=passwords_in_plaintext,
+                hash_passwords=not dryrun,
             ):
 
                 # only store valid users that have a userid and a username
