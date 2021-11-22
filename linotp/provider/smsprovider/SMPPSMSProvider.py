@@ -103,7 +103,9 @@ class SMPPSMSProvider(ISMSProvider):
             raise Exception("missing configuration!")
 
         try:
-            client = smpplib.client.Client(self.server, self.port)
+            client = smpplib.client.Client(
+                self.server, self.port, allow_unknown_opt_params=True
+            )
             client.set_message_received_handler(
                 lambda pdu: log.debug("delivered f{pdu.receipted_message_id}")
             )
@@ -112,6 +114,9 @@ class SMPPSMSProvider(ISMSProvider):
 
         except Exception as exx:
             log.error("Failed to connect to server: %r", exx)
+            # Do `client.disconnect()` even if the client isn't
+            # connected, to avoid "Client is not closed" message
+            client.disconnect()
             raise ProviderNotAvailable("Failed to connect to server %r" % exx)
 
         try:
@@ -165,7 +170,10 @@ class SMPPSMSProvider(ISMSProvider):
             result = False
 
         finally:
-            client.unbind()
+            # Unbind only if `client.bind_transceiver()` above succeeded.
+            # This avoids a `Bad PDU` exception on `unbind`.
+            if client.state != smpplib.consts.SMPP_CLIENT_STATE_OPEN:
+                client.unbind()
             client.disconnect()
 
         return result

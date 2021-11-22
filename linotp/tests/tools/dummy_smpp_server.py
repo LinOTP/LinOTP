@@ -38,7 +38,14 @@ to start the server and have it listen on IP address 192.168.56.1, TCP
 port 9123 (this is reasonable if you're using VirtualBox to run a
 LinOTP SVA on the default host-only network; other addresses and ports
 are available). Use the LinOTP management interface to configure an
-SMS provider using the same IP address and port number.
+SMS provider using the same IP address and port number. You can
+optionally use the `--systemid` and `--password` options to set up a
+system ID (what otherwise would be called a "user name") and password,
+in which case whatever the client supplies must match the configured
+values, or else an `ESME_RBINDFAIL` error will occur upon
+`bind_transceiver`. (To be exact, the test occurs if and only if
+`password` is non-null; the system ID defaults to `smsclient` but
+isn't used at all unless a password has been explicitly set.)
 
 The server sends plausible replies to incoming PDUs and logs its
 activities to the console. Don't mistake this for a general SMPP
@@ -66,14 +73,27 @@ class DummySMPPServer:
 
     """
 
-    def __init__(self, host="127.0.0.1", port="9123", loglevel="WARNING"):
+    def __init__(
+        self,
+        host="127.0.0.1",
+        port="9123",
+        system_id="smsclient",
+        password=None,
+        loglevel="WARNING",
+    ):
         self.host = host
         self.port = int(port)
+        self.system_id = system_id
+        self.password = password
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(loglevel)
         self.sequence_generator = SimpleSequenceGenerator()
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.reset()
+
+    def reset(self):
+        """Reset the internal stores for PDUs and sent SMSes."""
+        self.pdus = []
+        self.messages = []
 
     # The following two methods are needed to make
     # `smpplib.smpp.make_pdu()` happy. They aren't actually used in
@@ -91,10 +111,28 @@ class DummySMPPServer:
     # `DummySMPPServer()` class work as a context manager.
 
     def __enter__(self):
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sock.bind((self.host, self.port))
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
+        self._sock.shutdown(socket.SHUT_RDWR)
+        self._sock.close()
+
+    def run_server(self):
+        """Start the server. This is suitable as the `target` argument to
+        `threading.Thread()` if you want to run the dummy server from
+        pytest, and it ensures that all the socket stuff happens in
+        the thread, which avoids nasty errors.
+
+        """
+
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._sock.bind((self.host, self.port))
+        self.listen()
+        self._sock.shutdown(socket.SHUT_RDWR)
         self._sock.close()
 
     def read_raw_pdu(self, sock):
@@ -115,9 +153,9 @@ class DummySMPPServer:
         try:
             length = struct.unpack(">L", pdu_bytes)[0]
         except struct.error:
-            bad_pdu_msg = "Bad PDU: {pdu_bytes!r}"
-            self.logger.warning(bad_pdu_msg)
-            raise exceptions.PDUError(bad_pdu_msg)
+            bad_pdu_msg = "Bad PDU: %r"
+            self.logger.warning(bad_pdu_msg, pdu_bytes)
+            raise exceptions.PDUError(bad_pdu_msg.format(pdu_bytes))
 
         while len(pdu_bytes) < length:
             try:
@@ -130,7 +168,8 @@ class DummySMPPServer:
             if not pdu_bytes:
                 raise exceptions.ConnectionError()
             pdu_bytes += more_bytes
-        self.logger.debug(f'>> {pdu_bytes.hex(" ", -4)}')
+        # self.logger.debug(f'>> {pdu_bytes.hex(" ", -4)}')  # Python >=3.8
+        self.logger.debug(">> %s", pdu_bytes.hex())
 
         return pdu_bytes
 
@@ -144,7 +183,7 @@ class DummySMPPServer:
 
         msg_count = 0
         while True:
-            self._sock.listen(5)
+            self._sock.listen()
             sock, address = self._sock.accept()
             done = False
             while not done:
@@ -152,19 +191,31 @@ class DummySMPPServer:
                 # considerable – inconvenience of parsing (and
                 # generating) SMPP PDUs ourselves.
 
-                pdu = smpp.parse_pdu(
-                    self.read_raw_pdu(sock),
-                    client=self,
-                    allow_unknown_opt_params=None,
-                )
+                try:
+                    pdu = smpp.parse_pdu(
+                        self.read_raw_pdu(sock),
+                        client=self,
+                        allow_unknown_opt_params=None,
+                    )
+                    self.pdus.append(pdu)
+                except exceptions.ConnectionError:
+                    break
 
                 # Do something with the PDU.
 
                 print(f"> {pdu.command}", end="")
                 if pdu.command == "bind_transceiver":
+                    status = consts.SMPP_ESME_ROK
+                    if self.password is not None:
+                        if (
+                            pdu.system_id.decode() != self.system_id
+                            or pdu.password.decode() != self.password
+                        ):
+                            status = consts.SMPP_ESME_RBINDFAIL
+
                     res_pdu = smpp.make_pdu(
                         "bind_transceiver_resp",
-                        status=pdu.status,
+                        status=status,
                         sequence=pdu._sequence,
                     )
                     print("\n< OK")
@@ -206,6 +257,7 @@ class DummySMPPServer:
                         msg_id = f"{MC_ID}:{msg_count:04d}"
                         data["message_id"] = msg_id
                         out_msg = f"OK {msg_id}"
+                        self.messages.append(text)
 
                     res_pdu = smpp.make_pdu("submit_sm_resp", **data)
                     print(f"< {out_msg}")
@@ -219,8 +271,10 @@ class DummySMPPServer:
                     print("\n< OK")
                 else:
                     raise ValueError(f"Unsupported SMPP command {pdu.command}")
+                self.pdus.append(res_pdu)
                 response = res_pdu.generate()
-                self.logger.debug(f'<< {response.hex(" ", -4)}')
+                # self.logger.debug(f'<< {response.hex(" ", -4)}')  # Python 3.8
+                self.logger.debug("<< %s", response.hex())
                 sock.send(response)
             sock.close()
             done = False
@@ -230,6 +284,14 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--systemid",
+        default="smsclient",
+        help="Client system ID for authentication",
+    )
+    parser.add_argument(
+        "--password", default=None, help="Client password for authentication"
+    )
     parser.add_argument(
         "--loglevel", default="DEBUG", help="Log level for Python logging"
     )
@@ -244,6 +306,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     with DummySMPPServer(
-        host=args.ipaddr, port=args.port, loglevel=args.loglevel
+        host=args.ipaddr,
+        port=args.port,
+        system_id=args.systemid,
+        password=args.password,
+        loglevel=args.loglevel,
     ) as srv:
         srv.listen()
