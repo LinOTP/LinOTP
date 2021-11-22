@@ -214,9 +214,7 @@ class UserImport(object):
                 former_user = self.import_handler.lookup(user)
                 # if it does not exist we create a new one
                 if not former_user:
-                    users_created[user.userid] = user.username
-                    if not dryrun:
-                        self.import_handler.add(user)
+                    users_created[user.userid] = user
                 else:
                     # if it already exists remove it from the list of annihilation
                     # those who remain in former_userids_to_be_removed will be deleted
@@ -224,32 +222,45 @@ class UserImport(object):
                         del former_userids_to_be_removed[former_user.userid]
 
                     if user == former_user:
-                        users_not_modified[user.userid] = user.username
+                        users_not_modified[user.userid] = user
                     else:
-                        users_modified[user.userid] = user.username
-                        if not dryrun:
-                            self.import_handler.update(former_user, user)
-
-            # -------------------------------------------------------------- --
+                        users_modified[user.userid] = {
+                            "former_user": former_user,
+                            "new_user": user,
+                        }
 
             # finally remove all former, not updated users
             for del_userid, del_user_name in list(
                 former_userids_to_be_removed.items()
             ):
                 users_deleted[del_userid] = del_user_name
-                if not dryrun:
-                    self.import_handler.delete_by_id(del_userid)
 
             # prepare the results to send back
             result = {
-                "created": users_created,
-                "updated": users_not_modified,
-                "modified": users_modified,
+                "created": {
+                    userid: user.username
+                    for userid, user in users_created.items()
+                },
+                "updated": {
+                    userid: user.username
+                    for userid, user in users_not_modified.items()
+                },
+                "modified": {
+                    userid: u["new_user"].username
+                    for userid, u in users_modified.items()
+                },
                 "deleted": users_deleted,
             }
 
             # wet run:
             if not dryrun:
+                for user in users_created.values():
+                    self.import_handler.add(user)
+                for u in users_modified.values():
+                    self.import_handler.update(u["former_user"], u["new_user"])
+                for del_userid in users_deleted:
+                    self.import_handler.delete_by_id(del_userid)
+
                 self.import_handler.commit()
 
             return result
