@@ -39,6 +39,7 @@ import csv
 import json
 import logging
 
+from linotp.lib.crypto.utils import compare_password
 from linotp.lib.tools.import_user.ImportHandler import ImportHandler
 from linotp.model.imported_user import ImportedUser
 
@@ -113,7 +114,11 @@ class UserImport(object):
         self.user_column_mapping = mapping
 
     def get_users_from_data(
-        self, csv_data, format_reader, passwords_in_plaintext=False
+        self,
+        csv_data,
+        format_reader,
+        passwords_in_plaintext=False,
+        hash_passwords=False,
     ):
         """
         for each row
@@ -121,6 +126,8 @@ class UserImport(object):
         - check if there is a column for this in the csv data
 
         and add the group identifier
+
+        :params hash_passwords: if true the plaintext passwords will be hashed upon reading
 
         """
 
@@ -139,7 +146,7 @@ class UserImport(object):
 
             user = ImportedUser()
 
-            for entry in ImportedUser.user_entries:
+            for entry in user.user_entries:
 
                 value = ""
                 column_id = self.user_column_mapping.get(entry, -1)
@@ -148,11 +155,14 @@ class UserImport(object):
                     continue
 
                 value = row[column_id]
-
                 user.set(entry, value)
 
-                if entry == "password" and passwords_in_plaintext:
-                    user.create_password_hash(row[column_id])
+            if passwords_in_plaintext:
+                user.plain_password = user.password
+                if hash_passwords:
+                    user.password = user.create_password_hash(
+                        user.plain_password
+                    )
 
             yield user
 
@@ -177,10 +187,9 @@ class UserImport(object):
         users_created = {}
         users_not_modified = {}
         users_modified = {}
-
         processed_users = {}
 
-        former_user_by_id = self.import_handler.prepare()
+        former_userids_to_be_removed = self.import_handler.prepare()
 
         try:
 
@@ -193,6 +202,7 @@ class UserImport(object):
                 csv_data,
                 format_reader,
                 passwords_in_plaintext=passwords_in_plaintext,
+                hash_passwords=not dryrun,
             ):
 
                 # only store valid users that have a userid and a username
@@ -200,9 +210,9 @@ class UserImport(object):
                     continue
 
                 # prevent processing user multiple times
-                if user.userid in list(
-                    processed_users.keys()
-                ) or user.username in list(processed_users.values()):
+                if (user.userid in processed_users) or (
+                    user.username in processed_users.values()
+                ):
                     raise Exception(
                         "Violation of unique constraint - "
                         "duplicate user in data: %r" % user
@@ -211,45 +221,56 @@ class UserImport(object):
                     processed_users[user.userid] = user.username
 
                 # search for the user
-
                 former_user = self.import_handler.lookup(user)
-
                 # if it does not exist we create a new one
-
                 if not former_user:
-                    users_created[user.userid] = user.username
-                    if not dryrun:
-                        self.import_handler.add(user)
-
+                    users_created[user.userid] = user
                 else:
+                    # if it already exists remove it from the list of annihilation
+                    # those who remain in former_userids_to_be_removed will be deleted
+                    if former_user.userid in former_userids_to_be_removed:
+                        del former_userids_to_be_removed[former_user.userid]
 
-                    if former_user.userid in former_user_by_id:
-                        del former_user_by_id[former_user.userid]
-
-                    if former_user == user:
-                        users_not_modified[user.userid] = user.username
+                    if user == former_user:
+                        users_not_modified[user.userid] = user
                     else:
-                        users_modified[user.userid] = user.username
-                        if not dryrun:
-                            self.import_handler.update(former_user, user)
-
-            # -------------------------------------------------------------- --
+                        users_modified[user.userid] = {
+                            "former_user": former_user,
+                            "new_user": user,
+                        }
 
             # finally remove all former, not updated users
-
-            for del_userid, del_user_name in list(former_user_by_id.items()):
+            for del_userid, del_user_name in list(
+                former_userids_to_be_removed.items()
+            ):
                 users_deleted[del_userid] = del_user_name
-                if not dryrun:
-                    self.import_handler.delete_by_id(del_userid)
 
+            # prepare the results to send back
             result = {
-                "created": users_created,
-                "updated": users_not_modified,
-                "modified": users_modified,
+                "created": {
+                    userid: user.username
+                    for userid, user in users_created.items()
+                },
+                "updated": {
+                    userid: user.username
+                    for userid, user in users_not_modified.items()
+                },
+                "modified": {
+                    userid: u["new_user"].username
+                    for userid, u in users_modified.items()
+                },
                 "deleted": users_deleted,
             }
 
+            # wet run:
             if not dryrun:
+                for user in users_created.values():
+                    self.import_handler.add(user)
+                for u in users_modified.values():
+                    self.import_handler.update(u["former_user"], u["new_user"])
+                for del_userid in users_deleted:
+                    self.import_handler.delete_by_id(del_userid)
+
                 self.import_handler.commit()
 
             return result

@@ -26,10 +26,10 @@
 
 from typing import Any, Dict, List
 
-from sqlalchemy import schema, types
+from sqlalchemy import orm, schema, types
 from sqlalchemy.orm import Session
 
-from linotp.lib.crypto import utils
+from linotp.lib.crypto import utils as cryptutils
 from linotp.model import db
 
 
@@ -82,11 +82,13 @@ class ImportedUser(SqlUser):
         "groupid",
     ]
 
+    @orm.reconstructor
     def __init__(self, resolver_name: str = None):
         self._pw_gen = False
         self.user_class = SqlUser
         self.session: Session = db.session()
         self.resolver_name = resolver_name
+        self.plain_password = None
 
     def _get_user(self, username: str) -> SqlUser:
         user = self.session.query(self.user_class).get(
@@ -124,8 +126,7 @@ class ImportedUser(SqlUser):
         """
         create a password hash entry from a given plaintext password
         """
-        self.password = utils.crypt_password(plain_password)
-        self._pw_gen = True
+        return cryptutils.crypt_password(plain_password)
 
     def list_users(self) -> List[Dict[str, str]]:
         """list all users of an ImportedUser instance
@@ -188,8 +189,24 @@ class ImportedUser(SqlUser):
             if attr == "groupid":
                 continue
 
-            if attr == "password" and user._pw_gen:
-                continue
+            # special handling for because the passwords are hashed
+            if attr == "password":
+                if self.plain_password and not user.plain_password:
+                    same = cryptutils.compare_password(
+                        self.plain_password, user.password
+                    )
+                elif user.plain_password and not self.plain_password:
+                    same = cryptutils.compare_password(
+                        user.plain_password, self.password
+                    )
+                elif self.plain_password and user.plain_password:
+                    same = self.plain_password == user.plain_password
+                else:
+                    same = self.password == user.password
+                if not same:
+                    return False
+                else:
+                    continue
 
             if not (hasattr(self, attr) and hasattr(user, attr)):
                 return False

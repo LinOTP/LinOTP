@@ -1,0 +1,23 @@
+root,0,,root-def-passwd,,,,rootpass
+localuser2,10,,localuser,,,,localuser
+remoteuser,20,,remoteuser,,,,remoteuser
+def,1004,User,def,,,,def
+virtualbox,1005,,Work,WorkPhone,TelPriv,,virtualbox
+b1822,1008,,1822,,,,b1822
+postgres,116,administrator,PostgreSQL,,,,postgres
+kölbel,345,User,Umlaut,,,,kölbel
+7654321,346,User,Umlaut,,,,7654321
+user1,347,User,Umlaut,,,,user1
+user2,348,User,Umlaut,,,,user2
+passthru_user1,1100,True,Pascal,+49(0)1234-24,+49(0)5678-23,pass.true@example.com,passthru_user1
+passthru_user2,1101,True,Pascal,+49(0)1234-24,+49(0)5678-23,pass.true@example.com,passthru_user2
+detail_user,2101,,,,,,detail_user
+hans,42,Müller,Hans,+49(0)1234-22,+49(0)5678-22,hans@example.com,hans
+susi,1336,Bauer,Susanne,+49(0)1234-24,+49(0)5678-23,susanne@example.com,susi
+rollo,21,Fischer,Rollobert,+49(0)1234-24,+49(0)5678-24,rollo@example.com,rollo
+pass@user,1111,True,Pascal,+49(0)1234-24,+49(0)5678-23,pass.true@example.com,pass@user
+molière,8860,Poquelin,Jean-Baptiste,+49 0 123456,+49 0 55667788,moliere@example.com,molière
+shakespeare,8861,Shakespeare,William,+49 0 123457,+49 0 55667789,shakespeare@example.com,shakespeare
+lorca,8862,García Lorca,Federico,+49 0 123458,+49 0 55667790,lorca@example.com,lorca
+aἰσχύλος,8863,,Αἰσχύλος,+49 0 123459,+49 0 55667791,aischylos@example.com,aἰσχύλος
+beckett,8864,Beckett,Samuel,+49 0 123460,+49 0 55667792,beckett@example.com,beckett
