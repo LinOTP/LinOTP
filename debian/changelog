@@ -38,6 +38,7 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     corresponding interfaces has been extended to show up if a realm or
     resolver is used for administration.
   * prevent the overwrite of the local admin resolver via user import.
+  * new linotp admin cli command to set support license and get support info
 
   Breaking Changes:
   * The helpdesk controller has been removed.
