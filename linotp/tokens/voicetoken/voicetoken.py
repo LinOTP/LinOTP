@@ -28,6 +28,8 @@ import binascii
 import datetime
 import logging
 
+from flask_babel import gettext as _
+
 from linotp.lib.auth.validate import check_otp, check_pin, split_pin_otp
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
@@ -179,8 +181,6 @@ class VoiceTokenClass(HmacTokenClass):
             key,
             ret,
         )
-
-        _ = context["translate"]
 
         res = {
             "type": "voice",

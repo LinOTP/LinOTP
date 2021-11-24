@@ -33,6 +33,7 @@ from hashlib import sha256
 from hmac import compare_digest
 
 from Cryptodome.Cipher import AES
+from flask_babel import gettext as _
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 
@@ -133,8 +134,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     @classmethod
     def getClassInfo(cls, key=None, ret="all"):
-
-        _ = context["translate"]
 
         info = {"type": "qr", "title": _("QRToken")}
 
@@ -587,8 +586,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # because the token gets saved directly after the update method
         # in the TokenHandler
 
-        _ = context["translate"]
-
         owner = get_token_owner(self)
         if owner and owner.login and owner.realm:
             realms = [owner.realm]
@@ -655,7 +652,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def getInitDetail(self, params, user=None):
 
-        _ = context["translate"]
         response_detail = {}
 
         param_keys = set(params.keys())
@@ -875,8 +871,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                  whereby the data is a dict with
                    {'message': message, 'user_sig': user_sig}
         """
-
-        _ = context["translate"]
 
         valid_states = [
             "pairing_response_received",

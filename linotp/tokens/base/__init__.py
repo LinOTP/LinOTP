@@ -43,6 +43,7 @@ import logging
 from hashlib import sha1
 from typing import Any
 
+from flask_babel import gettext as _
 from sqlalchemy import asc, desc
 
 import linotp
@@ -1399,8 +1400,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
         """
-
-        _ = context["translate"]
 
         response_detail = {}
 

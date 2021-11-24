@@ -32,6 +32,7 @@ migration handler -
 import logging
 from datetime import datetime
 
+from flask_babel import gettext as _
 from sqlalchemy import and_
 
 from flask import g
@@ -58,8 +59,6 @@ class MigrateResolverHandler(ToolsHandler):
         - update the new_id in the token
 
         """
-
-        _ = context["translate"]
 
         ret = {}
 

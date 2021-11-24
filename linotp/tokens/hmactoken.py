@@ -32,6 +32,7 @@ import time
 from datetime import datetime
 
 from Cryptodome.Hash import SHA1, SHA256, SHA512
+from flask_babel import gettext as _
 
 from linotp.lib.apps import (
     NoOtpAuthTokenException,
@@ -94,8 +95,6 @@ class HmacTokenClass(TokenClass):
         :rtype: s.o.
 
         """
-
-        _ = context["translate"]
 
         res = {
             "type": "hmac",
@@ -709,9 +708,6 @@ class HmacTokenClass(TokenClass):
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
         """
-
-        _ = context["translate"]
-
         response_detail = {}
 
         info = self.getInfo()

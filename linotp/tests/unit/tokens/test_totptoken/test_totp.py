@@ -38,7 +38,7 @@ from mock import MagicMock, patch
 
 from linotp.tokens.totptoken import counter2time, time2counter
 
-fake_context = {"translate": lambda x: x, "Client": "127.0.0.1"}
+fake_context = {"Client": "127.0.0.1"}
 
 
 TOTP_Vectors = """

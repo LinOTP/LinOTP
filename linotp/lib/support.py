@@ -31,6 +31,8 @@ import datetime
 import logging
 import os
 
+from flask_babel import gettext as _
+
 from linotp.lib.config import (
     getFromConfig,
     refreshConfig,
@@ -171,8 +173,6 @@ def parseSupportLicense(licString: str):
                       license as string, for which the signature
                       should be checked
     """
-    _ = context["translate"]
-
     if not licString:
         error = _("Support not available, your product is unlicensed")
         log.error("Verification of support licence failed. %s", error)
@@ -543,7 +543,6 @@ def set_duration(lic_dict, raiseException=False):
     :param raiseException: switch to control if an exception should be thrown
            in case of a problem
     """
-    _ = context["translate"]
     # if there is no expiration in the license we just can go on
     if not (
         lic_dict.license_expiration and "days" in lic_dict.license_expiration
@@ -613,7 +612,6 @@ def verifyLicenseInfo(
                            an exception should be raised
     :return: tuple with validity and reason, if invalid
     """
-    _ = context["translate"]
 
     if not lic_dict:
         error = _("license file is empty!")
@@ -744,7 +742,6 @@ def verify_expiration(lic_dic):
     :param lic_dic: the dict with the license date
     :return: boolean - true if still valid
     """
-    _ = context["translate"]
 
     if "expire" not in lic_dic:
         msg = "%s %r" % (
@@ -815,7 +812,6 @@ def verify_user_volume(lic_dict):
     :param lic_dict: dictionary with license attributes
     :return: tuple with boolean and verification detail
     """
-    _ = context["translate"]
 
     # get the current number of all active token users
     num = getNumTokenUsers()
@@ -871,8 +867,6 @@ def verify_token_volume(lic_dict):
     :param lic_dict: dictionary with license attributes
     :return: tuple with boolean and verification detail
     """
-
-    _ = context["translate"]
 
     # get the current number of active tokens
     num = getTokenNumResolver()
@@ -1005,7 +999,6 @@ def check_date(expire_type, expire):
     """
     check if the license date is still valid
     """
-    _ = context["translate"]
     today = datetime.datetime.now()
 
     # -with  support for two date formats

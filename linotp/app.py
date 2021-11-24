@@ -322,8 +322,6 @@ class LinOTPApp(Flask):
             if not license_str:
                 log.error("empty license file: %s", filename)
             else:
-                request_context["translate"] = gettext
-
                 import linotp.lib.support
 
                 res, msg = linotp.lib.support.setSupportLicense(license_str)
@@ -444,8 +442,6 @@ class LinOTPApp(Flask):
         request_context["Config"] = linotp_config
         request_context["Policies"] = parse_policies(linotp_config)
         request_context["PolicyDefinitions"] = {}
-
-        request_context["translate"] = gettext
 
         request_context["CacheManager"] = self.cache
 
