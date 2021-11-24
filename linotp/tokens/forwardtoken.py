@@ -27,6 +27,8 @@
 
 import logging
 
+from flask_babel import gettext as _
+
 from linotp.lib.auth.validate import check_pin, split_pin_otp
 from linotp.lib.context import request_context as context
 from linotp.lib.policy import getPolicy
@@ -134,8 +136,6 @@ class ForwardTokenClass(TokenClass):
         :return: subsection if key exists or user defined
 
         """
-
-        _ = context["translate"]
 
         res = {
             "type": "forward",

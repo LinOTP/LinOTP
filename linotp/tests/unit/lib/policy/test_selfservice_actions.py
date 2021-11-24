@@ -42,7 +42,6 @@ from linotp.lib.user import User as LinotpUser
 
 Token = namedtuple("Token", ["type"])
 fake_context = {
-    "translate": lambda x: x,
     "Client": "128.0.0.1",
 }
 

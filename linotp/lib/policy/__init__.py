@@ -31,6 +31,8 @@ import re
 from copy import deepcopy
 from typing import Dict
 
+from flask_babel import gettext as _
+
 from flask import g
 
 import linotp
@@ -154,8 +156,6 @@ def checkAuthorisation(scope, method):
     :param method: the requested action
     :return: nothing if authorized, else raise PolicyException
     """
-    _ = context["translate"]
-
     auth = _getAuthorization(scope, method)
     if auth["active"] and not auth["auth"]:
         log.warning(
@@ -183,7 +183,6 @@ def _checkAdminPolicyPost(
 
     ret = {}
     controller = "admin"
-    _ = context["translate"]
 
     log.debug("entering controller %s", controller)
     log.debug("entering method %s", method)
@@ -342,7 +341,6 @@ def _checkSystemPolicyPost(method, param=None, user=None):
 
     ret = {}
     controller = "system"
-    _ = context["translate"]
 
     log.debug("entering controller %s", controller)
 
@@ -404,7 +402,6 @@ def _checkSystemPolicyPost(method, param=None, user=None):
 def _checkSelfservicePolicyPost(method, param=None, user=None):
 
     ret = {}
-    _ = context["translate"]
     controller = "selfservice"
 
     log.debug("entering controller %s", controller)
@@ -460,7 +457,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
     # we have to declare the imports localy to prevent cyclic imports
 
     ret = {}
-    _ = context["translate"]
 
     if not param:
         param = {}
@@ -1467,7 +1463,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
 
 def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
     ret = {}
-    _ = context["translate"]
 
     if not param:
         param = {}
@@ -1520,7 +1515,6 @@ def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
 def _checkAuditPolicyPre(method, param=None, authUser=None, user=None):
 
     ret = {}
-    _ = context["translate"]
 
     if not param:
         param = {}
@@ -1559,7 +1553,6 @@ def _checkManagePolicyPre(method, param=None, authUser=None, user=None):
 
 def _checkToolsPolicyPre(method, param=None, authUser=None, user=None):
     ret = {}
-    _ = context["translate"]
 
     if not param:
         param = {}
@@ -1588,7 +1581,6 @@ def _checkToolsPolicyPre(method, param=None, authUser=None, user=None):
 def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     ret = {}
-    _ = context["translate"]
     controller = "selfservice"
     client = _get_client()
 
@@ -1998,7 +1990,6 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
 def _checkSystemPolicyPre(method, param=None, authUser=None, user=None):
     ret = {}
-    _ = context["translate"]
 
     if not param:
         param = {}
@@ -2754,7 +2745,6 @@ def checkOTPPINPolicy(pin, user):
 
     At the moment this works for the selfservice portal
     """
-    _ = context["translate"]
 
     log.debug("[checkOTPPINPolicy]")
 
@@ -2976,7 +2966,6 @@ def checkPolicyPre(controller, method, param=None, authUser=None, user=None):
              the controller.
     """
     ret = {}
-    _ = context["translate"]
 
     if not param:
         param = {}
@@ -3051,7 +3040,6 @@ def checkPolicyPost(controller, method, param=None, user=None):
              on the controller.
     """
     ret = {}
-    _ = context["translate"]
 
     if param is None:
         param = {}
@@ -3542,8 +3530,6 @@ def check_auth_tokentype(serial, exception=False, user=None):
     :return: True/False - returns true or false or raises an exception
                           if exception=True
     """
-
-    _ = context["translate"]
 
     log.debug("[check_auth_tokentype]")
     if serial is None:

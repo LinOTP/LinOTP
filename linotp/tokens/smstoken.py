@@ -104,6 +104,8 @@ import datetime
 import logging
 import time
 
+from flask_babel import gettext as _
+
 from linotp.lib.auth.validate import check_otp, check_pin, split_pin_otp
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
@@ -275,8 +277,6 @@ class SmsTokenClass(HmacTokenClass):
 
         """
 
-        _ = context["translate"]
-
         res = {
             "type": "sms",
             "title": _("SMS Token"),
@@ -357,7 +357,6 @@ class SmsTokenClass(HmacTokenClass):
         :return: nothing
 
         """
-        _ = context["translate"]
 
         # specific - phone
         try:
@@ -468,8 +467,6 @@ class SmsTokenClass(HmacTokenClass):
 
         :return: tuple of success and message
         """
-
-        _ = context["translate"]
 
         res = 0
 

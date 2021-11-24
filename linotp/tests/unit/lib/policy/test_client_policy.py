@@ -45,7 +45,6 @@ class Token:
 
 
 fake_context = {
-    "translate": lambda x: x,
     "Client": "128.0.0.1",
 }
 

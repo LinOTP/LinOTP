@@ -48,7 +48,7 @@ LICENSE = {
 }
 
 
-fake_context = {"translate": lambda x: x}
+fake_context = {}
 
 
 @pytest.mark.usefixtures("app")

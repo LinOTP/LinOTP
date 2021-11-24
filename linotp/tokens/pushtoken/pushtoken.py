@@ -33,6 +33,7 @@ from base64 import b64decode, b64encode
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
 from Cryptodome.Util import Counter
+from flask_babel import gettext as _
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_detached
@@ -148,8 +149,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
     @classmethod
     def getClassInfo(cls, key=None, ret="all"):
-
-        _ = context["translate"]
 
         info = {"type": "push", "title": _("PushToken")}
 
@@ -360,8 +359,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             that is passed to the user, attributes being additional
             output data (unused in here)
         """
-        _ = context["translate"]
-
         valid_states = [
             "active",
             "pairing_response_received",
@@ -763,8 +760,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # because the token gets saved directly after the update method
         # in the TokenHandler
 
-        _ = context["translate"]
-
         owner = get_token_owner(self)
         if owner and owner.login and owner.realm:
             realms = [owner.realm]
@@ -819,7 +814,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             process
         """
 
-        _ = context["translate"]
         response_detail = {}
 
         self.ensure_state("initialized")

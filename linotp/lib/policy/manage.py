@@ -29,6 +29,7 @@ import logging
 import re
 
 from configobj import ConfigObj
+from flask_babel import gettext as _
 
 from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
 from linotp.lib.context import request_context as context
@@ -104,8 +105,6 @@ def setPolicy(policy):
     """
 
     ret = {}
-    _ = context["translate"]
-
     name = policy.get("name")
 
     if "active" not in policy:

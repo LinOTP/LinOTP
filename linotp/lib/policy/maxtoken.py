@@ -27,6 +27,8 @@
 
 import logging
 
+from flask_babel import gettext as _
+
 import linotp
 from linotp.lib.context import request_context as context
 from linotp.lib.policy.action import get_action_value
@@ -100,8 +102,6 @@ def check_maxtoken_for_user(user):
     :raises PolicyException: if maxtoken policy would be violated
     """
 
-    _ = context["translate"]
-
     if not user or not user.login:
         return
 
@@ -166,8 +166,6 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
     :param type_of_token: which type of token should be enrolled or assigned
     :raises PolicyException: if maxtoken policy would be violated
     """
-
-    _ = context["translate"]
 
     if not user or not user.login:
         return

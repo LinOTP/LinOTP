@@ -13,7 +13,7 @@ from linotp.lib.policy.maxtoken import (
 User = namedtuple("User", ["login"])
 Token = namedtuple("Token", ["type"])
 
-fake_context = {"translate": lambda x: x}
+fake_context = {}
 
 
 def fake_get_client_policy(client, scope, action, realm, user, userObj):

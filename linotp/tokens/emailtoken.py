@@ -30,6 +30,8 @@ This file contains the e-mail token implementation:
 import datetime
 import logging
 
+from flask_babel import gettext as _
+
 from linotp.lib.auth.validate import check_pin, split_pin_otp
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
@@ -134,8 +136,6 @@ class EmailTokenClass(HmacTokenClass):
             "key %r, ret %r " % (key, ret)
         )
 
-        _ = context["translate"]
-
         res = {
             "type": "email",
             "title": "E-mail Token",
@@ -238,8 +238,6 @@ class EmailTokenClass(HmacTokenClass):
         LOG.debug(
             "[update] begin. adjust the token class with: param %r", param
         )
-
-        _ = context["translate"]
 
         # specific - e-mail
         self._email_address = param[self.EMAIL_ADDRESS_KEY]

@@ -32,6 +32,7 @@ import logging
 import os
 import string
 
+from flask_babel import gettext as _
 from sqlalchemy import and_, func, or_
 from sqlalchemy.exc import ResourceClosedError
 
@@ -1945,7 +1946,6 @@ def get_token_owner(token):
         # for backward compatibility, we return here an empty user
         return User()
 
-    _ = context["translate"]
     serial = token.getSerial()
 
     uid, resolver, resolverClass = token.getUser()

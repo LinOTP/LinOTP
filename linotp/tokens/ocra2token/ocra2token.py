@@ -115,6 +115,8 @@ import urllib.parse
 # needed for ocra token
 import urllib.request
 
+from flask_babel import gettext as _
+
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
@@ -372,8 +374,6 @@ class Ocra2TokenClass(TokenClass):
         :rtype : s.o.
 
         """
-        _ = context["translate"]
-
         res = {
             "type": "ocra2",
             "title": _("OCRA2 Token"),
@@ -1764,8 +1764,6 @@ class Ocra2TokenClass(TokenClass):
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
         """
-
-        _ = context["translate"]
 
         response_detail = {}
 

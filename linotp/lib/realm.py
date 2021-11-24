@@ -29,6 +29,7 @@ import json
 import logging
 from functools import partial
 
+from flask_babel import gettext as _
 from sqlalchemy import func
 
 from flask import current_app
@@ -610,8 +611,6 @@ def match_realms(request_realms, allowed_realms):
             log.info("Policy allowed a realm that does not exist: %r", realm)
 
     realms = []
-
-    _ = context["translate"]
 
     if not request_realms or request_realms == [""]:
         realms = list(all_allowed_realms)

@@ -48,7 +48,7 @@ dynamic_mobile_policy = [
     }
 ]
 
-fake_context = {"translate": lambda x: x, "Client": "127.0.0.1"}
+fake_context = {"Client": "127.0.0.1"}
 
 
 class FakeUser(object):
