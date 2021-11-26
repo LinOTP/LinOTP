@@ -91,7 +91,7 @@ def get_support():
     try:
         session = db.session()
 
-        response, _ = getSupportLicenseInfo()
+        license_dict, license_signature = getSupportLicenseInfo()
 
         session.close()
 
@@ -99,9 +99,12 @@ def get_support():
         current_app.echo(f"Getting support could not be completed: {exx}")
         sys.exit(1)
 
-    if not response:
-        current_app.echo("Getting support failed!")
+    if not license_dict:
+        if isinstance(license_dict, dict):
+            current_app.echo("No support license installed")
+        else:
+            current_app.echo("Getting support failed!")
         sys.exit(1)
 
-    current_app.echo(f"Getting support response: {response}")
+    print(license_dict)
     sys.exit(0)

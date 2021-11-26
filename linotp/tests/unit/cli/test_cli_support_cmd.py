@@ -53,7 +53,7 @@ def test_expired_support_file(app, runner):
 
     result = runner.invoke(cli_main, ["support", "get"])
     assert result.exit_code == 1
-    assert "Getting support failed!" in result.stderr
+    assert "No support license installed" in result.stderr
 
 
 def test_valid_support_file(app, runner):
@@ -70,4 +70,4 @@ def test_valid_support_file(app, runner):
 
         result = runner.invoke(cli_main, ["support", "get"])
         assert result.exit_code == 0
-        assert "License for LSE LinOTP 2" in result.stderr
+        assert "License for LSE LinOTP" in result.stdout
