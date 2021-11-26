@@ -39,11 +39,12 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     resolver is used for administration.
   * prevent the overwrite of the local admin resolver via user import.
   * new linotp admin cli command to set support license and get support info
+    and verify the current support status.
   * Endpoint delRealm does not cause Error if no realm argument is passed
 
   Breaking Changes:
   * The helpdesk controller has been removed.
-  * Apache-based admin authentication is no longer supported. 
+  * Apache-based admin authentication is no longer supported.
 
   Packaging:
   * The `linotp` package now `Suggests: python3-smpplib`.
