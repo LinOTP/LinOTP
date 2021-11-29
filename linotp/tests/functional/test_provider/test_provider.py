@@ -287,6 +287,7 @@ class TestProviderController(TestController):
 
         params = {"serial": serial, "pass": "1234"}
         response = self.make_validate_request("check_s", params=params)
+        assert response.json["result"]["status"], response
 
         global SMS_MESSAGE_CONFIG
         assert "/tmp/legacy" in SMS_MESSAGE_CONFIG.get("file")
@@ -317,6 +318,7 @@ class TestProviderController(TestController):
 
         params = {"serial": serial, "pass": "1234"}
         response = self.make_validate_request("check_s", params=params)
+        assert response.json["result"]["status"], response
 
         global SMS_MESSAGE_CONFIG
         assert "/tmp/newone" in SMS_MESSAGE_CONFIG.get("file")
@@ -364,6 +366,7 @@ class TestProviderController(TestController):
 
         params = {"serial": serial, "pass": "1234"}
         response = self.make_validate_request("check_s", params=params)
+        assert response.json["result"]["status"], response
 
         global SMS_MESSAGE_CONFIG
         assert "/tmp/newone" in SMS_MESSAGE_CONFIG.get("file")
@@ -429,6 +432,7 @@ class TestProviderController(TestController):
 
         params = {"serial": serial, "pass": "1234"}
         response = self.make_validate_request("check_s", params=params)
+        assert response.json["result"]["status"], response
 
         global SMS_MESSAGE_CONFIG
         assert "/tmp/legacy" in SMS_MESSAGE_CONFIG.get("file")

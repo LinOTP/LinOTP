@@ -276,7 +276,7 @@ class ResourceScheduler(object):
 
             # -------------------------------------------------------------- --
 
-            # check if the resouce is not blocked anymore
+            # check if the resource is not blocked anymore
 
             (
                 blocked_until,

@@ -1736,14 +1736,14 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         )
 
         # as the config contains an error, the authetication should fail
-        # and audit should contain a the reason
+        # and audit should contain the reason
 
         # Remark:
-        # due to unsing the ResourceScheduler, the resouce will be blocked for
+        # due to using the ResourceScheduler, the resouce will be blocked for
         # a delay of several seconds. to prevent this, we travel through
         # the time
 
-        with freezegun.freeze_time(datetime.now() - timedelta(minutes=10)):
+        with freezegun.freeze_time(datetime.utcnow() - timedelta(minutes=10)):
 
             params = {"user": "passthru_user1", "pass": "shortpin"}
             response = self.make_validate_request(
