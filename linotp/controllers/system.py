@@ -1140,12 +1140,13 @@ class SystemController(BaseController):
 
         """
         res = {}
+        param_err_msg = "missing required parameter: realm"
 
         try:
             log.info("[delRealm] deleting realm: %r ", self.request_params)
 
             if "realm" not in self.request_params:
-                raise ParameterError("missing required parameter: realm")
+                raise ParameterError(param_err_msg)
             realm = self.request_params["realm"]
 
             result_of_deletion = deleteRealm(realm)
@@ -1161,7 +1162,11 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[delRealm] error deleting realm: %r", exx)
             g.audit["success"] = False
-            g.audit["info"] = realm
+            g.audit["info"] = (
+                "no realm specified"
+                if hasattr(exx, "message") and exx.message == param_err_msg
+                else realm
+            )
             return sendError(response, exx)
 
     ########################################################
