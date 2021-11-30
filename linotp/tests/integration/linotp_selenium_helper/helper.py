@@ -140,43 +140,6 @@ def get_default_app_setting(config_name: str) -> Any:
     return _config_schema.find_item(config_name).default
 
 
-def get_session(base_url, user=None, pwd=None):
-    """
-    return a LinOTP Session
-
-    :param base_url: the linotp base url
-    :param user: the user
-    :param pwd: the password of the user
-
-    :return: session (string)
-    """
-    session = None
-    if user is not None:
-        url = base_url + "admin/getsession"
-        r = requests.get(url, auth=HTTPDigestAuth(user, pwd), verify=False)
-
-        LOG.debug("Content:\n%s", r.text)
-        if r.status_code != 200:
-            raise Exception(f"Admin login failed: {r}")
-        session = None
-        domain = urlparse(base_url).netloc.split(":")[0]
-        exceptions = []
-        for d in (domain, domain + ".local", None):
-            # We try to find any cookie containing 'admin_session'. Sometimes
-            # the Cookie domain is not completely clear therefore we try
-            # several alternatives and as last resource try to get any cookie
-            # matching 'admin_session' no matter what the domain (=None).
-            try:
-                session = r.cookies.get("admin_session", domain=d)
-                if session:
-                    break
-            except requests.cookies.CookieConflictError as exc:
-                exceptions.append(exc)
-        if not session:
-            raise Exception("Could not get session %r" % exceptions)
-    return session
-
-
 def load_tconfig_from_file(filename):
     """
     Load configuration from filename given. This is an alternative way

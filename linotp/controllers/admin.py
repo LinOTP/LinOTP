@@ -43,11 +43,7 @@ from flask import (
     stream_with_context,
 )
 
-from linotp.controllers.base import (
-    BaseController,
-    JWTMixin,
-    SessionCookieMixin,
-)
+from linotp.controllers.base import BaseController, JWTMixin
 from linotp.flap import HTTPUnauthorized, config, request, response
 from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.challenges import Challenges
@@ -110,7 +106,7 @@ from linotp.tokens import tokenclass_registry
 log = logging.getLogger(__name__)
 
 
-class AdminController(BaseController, JWTMixin, SessionCookieMixin):
+class AdminController(BaseController, JWTMixin):
 
     """
     The linotp.controllers are the implementation of the web-API to talk to
@@ -123,8 +119,6 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
 
     The functions are described below in more detail.
     """
-
-    session_cookie_name = "admin_session"  # for `SessionCookieMixin`
 
     def __before__(self, **params):
         """
@@ -143,7 +137,6 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
             g.audit["client"] = get_client(request)
 
             if request.path.lower() in [
-                "/admin/getsession",
                 "/admin/login",
                 "/admin/logout",
             ]:
@@ -171,10 +164,6 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
         audit = config.get("audit")
 
         try:
-            # prevent logging of getsession or other irrelevant requests
-            if action in ["getsession", "dropsession"]:
-                return response
-
             g.audit["administrator"] = getUserFromRequest(request).get("login")
 
             serial = request.params.get("serial")
@@ -1875,17 +1864,17 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
 
             checkPolicyPre("admin", "userlist", param)
 
-            up = 0
+            filter_fields = 0
             user = getUserFromParam(param)
 
             log.info("[userlist] displaying users with param: %s, ", param)
 
             if len(user.realm) > 0:
-                up = up + 1
+                filter_fields += 1
             if len(user.resolver_config_identifier) > 0:
-                up = up + 1
+                filter_fields += 1
 
-            if len(param) == up:
+            if len(param) < filter_fields:
                 usage = {
                     "usage": "list available users matching the "
                     "given search patterns:"
@@ -1897,9 +1886,6 @@ class AdminController(BaseController, JWTMixin, SessionCookieMixin):
 
             list_params = {}
             list_params.update(param)
-
-            if "session" in list_params:
-                del list_params["session"]
 
             rp = None
             if "rp" in list_params:

@@ -23,7 +23,7 @@
  *    Support: www.keyidentity.com
  *
  */
-function pskc_type_changed(){
+function pskc_type_changed() {
     var $tokentype = $("#pskc_type").val();
     switch ($tokentype) {
         case "plain":
@@ -49,23 +49,24 @@ function create_pskc_dialog() {
         width: 600,
         modal: true,
         buttons: {
-            'Load Token File': { click: function(){
-                $('#loadtokens_session_pskc').val(getsession());
-                load_tokenfile('pskc');
-                $(this).dialog('close');
+            'Load Token File': {
+                click: function () {
+                    load_tokenfile('pskc');
+                    $(this).dialog('close');
                 },
                 id: "button_pskc_load",
                 text: "Load Token File"
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_pskc_cancel",
                 text: "Cancel"
-                }
+            }
         },
-        open: function(){
-            _fill_realms($('#pskc_realm'),1);
+        open: function () {
+            _fill_realms($('#pskc_realm'), 1);
 
             $(this).dialog_icons();
             translate_import_pskc();
@@ -74,7 +75,7 @@ function create_pskc_dialog() {
     return $dialog_load_tokens_pskc;
 }
 
-$(document).ready(function(){
+$(document).ready(function () {
     $('#pskc_password').hide()
     $('#pskc_preshared').hide()
 });

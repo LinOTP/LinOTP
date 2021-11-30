@@ -320,7 +320,6 @@ docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	mkdir -vp $(DOCKER_BUILDDIR)
 	cp Dockerfile \
 		config/*.tmpl \
-		tools/linotp* \
 		linotp/tests/integration/testdata/se_mypasswd \
 		$(DOCKER_BUILDDIR)
 	cp $(BUILDDIR)/dockerfy $(DOCKER_BUILDDIR)

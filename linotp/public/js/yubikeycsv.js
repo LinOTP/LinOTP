@@ -24,33 +24,34 @@
  *
  */
 function create_yubikeycsv_dialog() {
- var $dialog_load_tokens_yubikeycsv = $('#dialog_import_yubikey').dialog({
+    var $dialog_load_tokens_yubikeycsv = $('#dialog_import_yubikey').dialog({
         autoOpen: false,
         title: 'YubiKey CSV Token File',
         width: 600,
         modal: true,
         buttons: {
-            'Load Token File': {click: function(){
-                $('#loadtokens_session_yubikeycsv').val(getsession());
-                load_tokenfile('yubikeycsv');
-                $(this).dialog('close');
+            'Load Token File': {
+                click: function () {
+                    load_tokenfile('yubikeycsv');
+                    $(this).dialog('close');
                 },
                 id: "button_yubikeycsv_load",
                 text: "Load Token File"
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_yubikeycsv_cancel",
                 text: "Cancel"
-                }
+            }
         },
-        open: function() {
-            _fill_realms($('#yubi_realm'),1);
+        open: function () {
+            _fill_realms($('#yubi_realm'), 1);
 
             $(this).dialog_icons();
             translate_import_yubikey();
         }
     });
-    return $dialog_load_tokens_yubikeycsv ;
+    return $dialog_load_tokens_yubikeycsv;
 }

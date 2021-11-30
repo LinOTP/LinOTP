@@ -30,23 +30,24 @@ function create_feitian_dialog() {
         width: 600,
         modal: true,
         buttons: {
-            'load token file': {click: function(){
-            	$('#loadtokens_session_feit').val(getsession());
-                load_tokenfile('feitian');
-                $(this).dialog('close');
-            	},
-				id: "button_feitian_load",
-				text: "load token file"
-				},
-            Cancel: {click: function(){
-                $(this).dialog('close');
-            	},
-				id: "button_feitian_cancel",
-				text: "Cancel"
-				}
+            'load token file': {
+                click: function () {
+                    load_tokenfile('feitian');
+                    $(this).dialog('close');
+                },
+                id: "button_feitian_load",
+                text: "load token file"
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_feitian_cancel",
+                text: "Cancel"
+            }
         },
-        open: function(){
-            _fill_realms($('#feitian_realm'),1);
+        open: function () {
+            _fill_realms($('#feitian_realm'), 1);
 
             $(this).dialog_icons();
             translate_import_feitian();

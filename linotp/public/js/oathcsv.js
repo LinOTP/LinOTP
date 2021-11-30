@@ -25,25 +25,26 @@
  */
 
 function create_oathcsv_dialog() {
- var $dialog_load_tokens_oathcsv = $('#dialog_import_oath').dialog({
+    var $dialog_load_tokens_oathcsv = $('#dialog_import_oath').dialog({
         autoOpen: false,
         title: i18n.gettext('OATH CSV Token File'),
         width: 600,
         modal: true,
         buttons: {
-            'Load Token File': {click: function(){
-                $('#loadtokens_session_oathcsv').val(getsession());
-                load_tokenfile('oathcsv');
-                $(this).dialog('close');
+            'Load Token File': {
+                click: function () {
+                    load_tokenfile('oathcsv');
+                    $(this).dialog('close');
                 },
                 id: "button_oathcsv_load",
                 text: i18n.gettext("Load Token File"),
                 icons: {
                     primary: 'ui-icon-folder-open'
                 }
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function () {
+                    $(this).dialog('close');
                 },
                 id: "button_oathcsv_cancel",
                 text: i18n.gettext("Cancel"),
@@ -52,9 +53,9 @@ function create_oathcsv_dialog() {
                 },
             }
         },
-        open: function() {
-            _fill_realms($('#oath_realm'),1);
+        open: function () {
+            _fill_realms($('#oath_realm'), 1);
         }
     });
-    return $dialog_load_tokens_oathcsv ;
+    return $dialog_load_tokens_oathcsv;
 }

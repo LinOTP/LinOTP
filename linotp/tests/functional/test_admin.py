@@ -791,48 +791,6 @@ class TestAdminController(TestController):
         assert '"value": true' in response, response
         self.delete_token("umlauttoken")
 
-    def test_session(self):
-        """
-        Testing getting session and dropping session
-        """
-
-        self.client.cookie_jar.clear_session_cookies()
-        response = self.make_admin_request("getsession", params={})
-
-        assert '"value": true' in response, response
-
-        session = None
-
-        cookies = response.headers.getlist("Set-Cookie")
-        for cookie in cookies:
-            key_value, _, _rest = cookie.partition(";")
-            key, value = key_value.split("=")
-            if key == "admin_session":
-                session = value
-
-        assert session
-
-        # Remove the new session cookie from the client cookie jar
-        # so that we can use the test session again
-        self.client.cookie_jar.clear_session_cookies()
-
-        response = self.make_admin_request(
-            "dropsession", params={"session": session}
-        )
-
-        assert "" in response, response
-
-        session = None
-
-        cookies = response.headers.getlist("Set-Cookie")
-        for cookie in cookies:
-            key_value, _, _rest = cookie.partition(";")
-            key, value = key_value.split("=")
-            if key == "admin_session":
-                session = value
-
-        assert not session
-
     def test_check_serial(self):
         """
         Checking what happens if serial exists

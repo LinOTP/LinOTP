@@ -25,139 +25,145 @@
  */
 
 function create_tools_getserial_dialog() {
-     var $dialog = $('#dialog_get_serial').dialog({
+    var $dialog = $('#dialog_get_serial').dialog({
         autoOpen: false,
         title: 'Get Serial by OTP value',
         width: 600,
         modal: true,
         buttons: {
-            'Get Serial': { click:  function(){
-                        getSerialByOtp($('#tools_getserial_otp').val(),
-                                $('#tools_getserial_type').val(),
-                                $('#tools_getserial_assigned').val(),
-                                $('#tools_getserial_realm').val()
-                            );
-                        },
-                    id: "button_tools_getserial_ok",
-                    text: "Get Serial",
-                    icons: {
-                        primary: "ui-icon-copy"
-                    }
+            'Get Serial': {
+                click: function () {
+                    getSerialByOtp($('#tools_getserial_otp').val(),
+                        $('#tools_getserial_type').val(),
+                        $('#tools_getserial_assigned').val(),
+                        $('#tools_getserial_realm').val()
+                    );
+                },
+                id: "button_tools_getserial_ok",
+                text: "Get Serial",
+                icons: {
+                    primary: "ui-icon-copy"
+                }
             },
-            'Close': { click: function(){
-                            $(this).dialog('close');
-                        },
-                        id: "button_tools_getserial_close",
-                        text:"Close"
+            'Close': {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_tools_getserial_close",
+                text: "Close"
             }
         },
-        open: function() {
+        open: function () {
             $(this).dialog_icons();
             translate_get_serial();
         }
     });
     return $dialog;
-  }
+}
 
 
 function copyTokenPin(from_token, to_token) {
     var param = {};
     param["from"] = from_token;
-    param["to"]   = to_token;
+    param["to"] = to_token;
 
     var resp = clientUrlFetchSync('/admin/copyTokenPin', param, true);
     var obj = jQuery.parseJSON(resp);
-        if (obj.result.status==true) {
-            if (obj.result.value==true) {
-                alert("Token PIN copied successfully.");
-            }
-            else
-                alert("Could not copy token PIN.");
+    if (obj.result.status == true) {
+        if (obj.result.value == true) {
+            alert("Token PIN copied successfully.");
+        }
+        else
+            alert("Could not copy token PIN.");
     }
 }
 
 function create_tools_copytokenpin_dialog() {
-     var $dialog = $('#dialog_copy_token').dialog({
+    var $dialog = $('#dialog_copy_token').dialog({
         autoOpen: false,
         title: 'Copy Token PIN',
         width: 600,
         modal: true,
         buttons: {
-            'Copy PIN': { click:  function(){
-                        copyTokenPin($('#copy_from_token').val(),
-                                $('#copy_to_token').val()
-                            );
-                        },
-                    id: "button_tools_copytokenpin_ok",
-                    text: "Copy PIN"
+            'Copy PIN': {
+                click: function () {
+                    copyTokenPin($('#copy_from_token').val(),
+                        $('#copy_to_token').val()
+                    );
+                },
+                id: "button_tools_copytokenpin_ok",
+                text: "Copy PIN"
             },
-            'Close': { click: function(){
-                            $(this).dialog('close');
-                        },
-                        id: "button_tools_copytokenpin_close",
-                        text:"Close"
+            'Close': {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_tools_copytokenpin_close",
+                text: "Close"
             }
         },
-        open: function(){
+        open: function () {
             $(this).dialog_icons();
             translate_copy_token();
         }
     });
     return $dialog;
-  }
+}
 
 function checkPolicy(scope, realm, user, action, client) {
     if ($("#form_check_policy").valid()) {
         var param = {};
-        param["scope"]   = scope;
-        param["realm"]  = realm;
-        param["user"]   = user;
+        param["scope"] = scope;
+        param["realm"] = realm;
+        param["user"] = user;
         param["action"] = action;
         param["client"] = client;
         var resp = clientUrlFetchSync('/system/checkPolicy', param, true);
         var obj = jQuery.parseJSON(resp);
-        if (obj.result.status==true) {
+        if (obj.result.status == true) {
             if (obj.result.value.allowed) {
                 $('#cp_allowed').show();
                 $('#cp_forbidden').hide();
-                $('#cp_policy').html(  JSON.stringify(obj.result.value.policy).replace(/,/g,",\n").replace(/:\{/g,":\{\n"));
-            }else{
+                $('#cp_policy').html(JSON.stringify(obj.result.value.policy).replace(/,/g, ",\n").replace(/:\{/g, ":\{\n"));
+            } else {
                 $('#cp_allowed').hide();
                 $('#cp_forbidden').show();
-                $('#cp_policy').html("" );
+                $('#cp_policy').html("");
             }
-        }else{
+        } else {
 
         }
-   }
+    }
 }
 
 function create_tools_checkpolicy_dialog() {
-     var $dialog = $('#dialog_check_policy').dialog({
+    var $dialog = $('#dialog_check_policy').dialog({
         autoOpen: false,
         title: 'Check Policy',
         width: 600,
         modal: true,
         buttons: {
-            'Check Policy': { click:  function(){
-                        checkPolicy($('#cp_scope').val(),
-                                    $('#cp_realm').val(),
-                                    $('#cp_user').val(),
-                                    $('#cp_action').val(),
-                                    $('#cp_client').val()
-                            );
-                        },
-                    id: "button_tools_checkpolicy_ok",
-                    text: "Copy PIN"
+            'Check Policy': {
+                click: function () {
+                    checkPolicy($('#cp_scope').val(),
+                        $('#cp_realm').val(),
+                        $('#cp_user').val(),
+                        $('#cp_action').val(),
+                        $('#cp_client').val()
+                    );
+                },
+                id: "button_tools_checkpolicy_ok",
+                text: "Copy PIN"
             },
-            'Close': { click: function(){
-                            $(this).dialog('close');
-                        },
-                        id: "button_tools_checkpolicy_close",
-                        text:"Close"
+            'Close': {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_tools_checkpolicy_close",
+                text: "Close"
             }
         },
-        open: function(){
+        open: function () {
             $(this).dialog_icons();
             translate_check_policy();
         }
@@ -177,7 +183,7 @@ function create_tools_checkpolicy_dialog() {
     });
 
     return $dialog;
-  }
+}
 
 
 function exportToken(attributes) {
@@ -187,30 +193,32 @@ function exportToken(attributes) {
      * So we add temporarily this form to the body, submit the
      * form and delete it afterwards.
      */
-    $("<form action='/admin/show?outform=csv&session="+getsession()+"&user_fields="+attributes+"' method='post'></form>").appendTo("body").submit().remove();
+    $("<form action='/admin/show?outform=csv&user_fields=" + attributes + "' method='post'></form>").appendTo("body").submit().remove();
 }
 
 function create_tools_exporttoken_dialog() {
-     var $dialog = $('#dialog_export_token').dialog({
+    var $dialog = $('#dialog_export_token').dialog({
         autoOpen: false,
         title: 'Export Token Information',
         width: 600,
         modal: true,
         buttons: {
-            'Export': { click:  function(){
-                        exportToken($('#exporttoken_attributes').val());
-                        },
-                    id: "button_export_token",
-                    text: "Export Token"
+            'Export': {
+                click: function () {
+                    exportToken($('#exporttoken_attributes').val());
+                },
+                id: "button_export_token",
+                text: "Export Token"
             },
-            'Close': { click: function(){
-                            $(this).dialog('close');
-                        },
-                        id: "button_export_token_close",
-                        text:"Close"
+            'Close': {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_export_token_close",
+                text: "Close"
             }
         },
-        open: function(){
+        open: function () {
             $(this).dialog_icons();
             translate_export_token();
         }
@@ -226,41 +234,43 @@ function exportAudit(audit_num, audit_page) {
      * So we add temporarily this form to the body, submit the
      * form and delete it afterwards.
      */
-    if ( $.isNumeric(audit_num) == false ) {
+    if ($.isNumeric(audit_num) == false) {
         audit_num = 1000;
     }
-    if ( $.isNumeric(audit_page) == false) {
+    if ($.isNumeric(audit_page) == false) {
         audit_page = 1;
     }
 
-    $("<form action='/audit/search?outform=csv&rp="+audit_num+
-        "&page="+audit_page+"&headers=true"+
-        "&session="+getsession()+"' method='post'></form>").appendTo("body").submit().remove();
+    $("<form action='/audit/search?outform=csv&rp=" + audit_num +
+        "&page=" + audit_page + "&headers=true" +
+        "' method='post'></form>").appendTo("body").submit().remove();
 }
 
 function create_tools_exportaudit_dialog() {
-     var $dialog = $('#dialog_export_audit').dialog({
+    var $dialog = $('#dialog_export_audit').dialog({
         autoOpen: false,
         title: 'Export Audit Information',
         width: 600,
         modal: true,
         buttons: {
-            'Export': { click:  function(){
-                        exportAudit($('#export_audit_number').val(),
-                                    $('#export_audit_page').val());
-                        $(this).dialog('close');
-                        },
-                    id: "button_export_audit",
-                    text: "Export audit"
+            'Export': {
+                click: function () {
+                    exportAudit($('#export_audit_number').val(),
+                        $('#export_audit_page').val());
+                    $(this).dialog('close');
+                },
+                id: "button_export_audit",
+                text: "Export audit"
             },
-            'Close': { click: function(){
-                            $(this).dialog('close');
-                        },
-                        id: "button_export_audit_close",
-                        text:"Close"
+            'Close': {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_export_audit_close",
+                text: "Close"
             }
         },
-        open: function(){
+        open: function () {
             $(this).dialog_icons();
             translate_export_audit();
         }
@@ -277,7 +287,7 @@ function create_tools_importusers_dialog() {
         modal: true,
         buttons: [
             {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                 },
                 id: "button_import_users_close",
@@ -287,11 +297,9 @@ function create_tools_importusers_dialog() {
                 }
             },
             {
-                click:  function(){
-                    if($('#form_import_users').valid()) {
+                click: function () {
+                    if ($('#form_import_users').valid()) {
                         show_waiting();
-
-                        $('#import_users_session').val(getsession());
 
                         $('#form_import_users').ajaxSubmit({
                             success: import_users_dryrun_callback,
@@ -306,32 +314,32 @@ function create_tools_importusers_dialog() {
                 }
             }
         ],
-        create: function(){
-            $('#import_users_create_resolver').click(function() {
-                $("<div><form action=''><input style='width:100%; box-sizing: border-box;' name='res_name' placeholder='"+i18n.gettext("Resolver name")+"' type='text' autofocus></form></div>").dialog({
+        create: function () {
+            $('#import_users_create_resolver').click(function () {
+                $("<div><form action=''><input style='width:100%; box-sizing: border-box;' name='res_name' placeholder='" + i18n.gettext("Resolver name") + "' type='text' autofocus></form></div>").dialog({
                     modal: true,
                     title: i18n.gettext("Create a new resolver"),
                     buttons: [
                         {
                             text: i18n.gettext("Cancel"),
-                            click: function() {
-                                $( this ).dialog( "close" );
+                            click: function () {
+                                $(this).dialog("close");
                             }
                         },
                         {
                             text: i18n.gettext("Create"),
-                            click: function() {
-                                if($("form", this).valid()) {
+                            click: function () {
+                                if ($("form", this).valid()) {
                                     var name = $("input", this).val();
                                     $("#import_users_resolver").append('<option val="' + name + '">' + name + '</option>');
                                     $("#import_users_resolver").val(name);
-                                    $( this ).dialog( "close" );
+                                    $(this).dialog("close");
                                 }
                             }
                         }
                     ],
-                    create: function() {
-                        if($('#import_users_file').val()) {
+                    create: function () {
+                        if ($('#import_users_file').val()) {
                             var resolver = $('#import_users_file').val().split('\\').pop().split(".")[0];
                             $("input", this).val(resolver);
                         }
@@ -351,23 +359,23 @@ function create_tools_importusers_dialog() {
                 });
             });
         },
-        open: function() {
+        open: function () {
             show_waiting();
 
-            if(import_users_dialog.data("caller") != "confirm") {
+            if (import_users_dialog.data("caller") != "confirm") {
                 $('#import_users_dryrun').val("true");
                 $('#import_users_file').val("");
                 $('#import_users_resolver').val("");
             }
 
             //prefill resolver select
-            $.post('/system/getResolvers', {'session':getsession()}, function(data, status, XMLHttpRequest){
+            $.post('/system/getResolvers', {}, function (data, status, XMLHttpRequest) {
                 var resolvers = '<option value="" disabled selected>[' + i18n.gettext("Select resolver") + ']</option>';
-                for(var res in data.result.value) {
-                    if(data.result.value[res].readonly === true) {
-                        if(data.result.value[res].immutable === false) {
+                for (var res in data.result.value) {
+                    if (data.result.value[res].readonly === true) {
+                        if (data.result.value[res].immutable === false) {
                             resolvers += '<option value="' + res + '">' + res + '</option>';
-						}
+                        }
                     }
                 }
                 $('#import_users_resolver').html(resolvers);
@@ -386,7 +394,7 @@ function create_tools_importusers_dialog() {
         modal: true,
         buttons: [
             {
-                click: function(){
+                click: function () {
                     $(this).dialog('close');
                     import_users_dialog.data("caller", "confirm").dialog('open');
                 },
@@ -394,11 +402,10 @@ function create_tools_importusers_dialog() {
                 text: i18n.gettext("Cancel")
             },
             {
-                click:  function(){
+                click: function () {
                     show_waiting();
 
                     $('#import_users_dryrun').val("false");
-                    $('#import_users_session').val(getsession());
 
                     $('#form_import_users').ajaxSubmit({
                         success: import_users_callback,
@@ -409,13 +416,13 @@ function create_tools_importusers_dialog() {
                 text: i18n.gettext("Confirm")
             }
         ],
-        open: function() {
+        open: function () {
             $('#import_user_dryrun_results').accordion({
-                active:0,
+                active: 0,
                 heightStyle: "fill"
             });
-            $( "#import_user_dryrun_result_details .detail-tabs" ).tabs({
-              active: 0
+            $("#import_user_dryrun_result_details .detail-tabs").tabs({
+                active: 0
             });
             $(this).dialog_icons();
         }
@@ -426,38 +433,48 @@ function create_tools_importusers_dialog() {
 function import_users_callback(response, status) {
     hide_waiting();
     $('#dialog_import_users_confirm').dialog('close');
-    if(!response.result) {
-        alert_box({'title': i18n.gettext('Connection error'),
+    if (!response.result) {
+        alert_box({
+            'title': i18n.gettext('Connection error'),
             'text': i18n.gettext('Error during import users request.'),
-            'is_escaped': true});
+            'is_escaped': true
+        });
         return;
     }
 
-    if(response.result.status !== true) {
-        alert_box({'title': i18n.gettext('LinOTP error ' + response.result.error.code),
+    if (response.result.status !== true) {
+        alert_box({
+            'title': i18n.gettext('LinOTP error ' + response.result.error.code),
             'text': i18n.gettext('Error during import users request: ' + response.result.error.message),
-            'is_escaped': false});
+            'is_escaped': false
+        });
         return;
     }
 
-    alert_box({'title': i18n.gettext('Import successful'),
+    alert_box({
+        'title': i18n.gettext('Import successful'),
         'text': sprintf(i18n.gettext('The resolver %s was successfully updated.'), $('#import_users_resolver').val()),
-        'is_escaped': false});
+        'is_escaped': false
+    });
 }
 
 function import_users_dryrun_callback(response, status) {
     hide_waiting();
-    if(!response.result) {
-        alert_box({'title': i18n.gettext('Connection error'),
+    if (!response.result) {
+        alert_box({
+            'title': i18n.gettext('Connection error'),
             'text': i18n.gettext('Error during import users request.'),
-            'is_escaped': true});
+            'is_escaped': true
+        });
         return;
     }
 
-    if(response.result.status !== true) {
-        alert_box({'title': i18n.gettext('LinOTP error ' + response.result.error.code),
+    if (response.result.status !== true) {
+        alert_box({
+            'title': i18n.gettext('LinOTP error ' + response.result.error.code),
             'text': i18n.gettext('Error during import users request: ' + response.result.error.message),
-            'is_escaped': false});
+            'is_escaped': false
+        });
         return;
     }
 
@@ -490,10 +507,10 @@ function import_users_dryrun_callback(response, status) {
     );
 
     $('#import_user_dryrun_results .summary').html(
-        "<li>" + sprintf(i18n.gettext('%s new users'), "<b>"+created.length+"</b>") + "</li>"
-        + "<li>" + sprintf(i18n.gettext('%s modified users'), "<b>"+modified.length+"</b>") + "</li>"
-        + "<li>" + sprintf(i18n.gettext('%s users will be deleted'), "<b>"+deleted.length+"</b>") + "</li>"
-        + "<li>" + sprintf(i18n.gettext('%s users are identical and therefor unchanged'), "<b>"+unchanged.length+"</b>") + "</li>"
+        "<li>" + sprintf(i18n.gettext('%s new users'), "<b>" + created.length + "</b>") + "</li>"
+        + "<li>" + sprintf(i18n.gettext('%s modified users'), "<b>" + modified.length + "</b>") + "</li>"
+        + "<li>" + sprintf(i18n.gettext('%s users will be deleted'), "<b>" + deleted.length + "</b>") + "</li>"
+        + "<li>" + sprintf(i18n.gettext('%s users are identical and therefor unchanged'), "<b>" + unchanged.length + "</b>") + "</li>"
     );
 
     $('#dialog_import_users_confirm').dialog('open');
@@ -514,9 +531,9 @@ function import_users_callback_process_group(group, target_table, fallback_text)
         }
     }
 
-    if(users.length > 0) {
+    if (users.length > 0) {
         var tablecontent = "";
-        for(i in users) {
+        for (i in users) {
             tablecontent += "<tr><td>" + users[i] + "</td><td>" + group[users[i]] + "</td></tr>";
         }
         target_table.html(tablecontent);
@@ -545,24 +562,24 @@ function migrateResolver(from_resolver, to_resolver, serials) {
     var param = {};
     var res = false;
     param["from"] = from_resolver;
-    param["to"]   = to_resolver;
+    param["to"] = to_resolver;
 
     var resp = clientUrlFetchSync('/tools/migrate_resolver', param, true);
     var obj = jQuery.parseJSON(resp);
-        if (obj.result.status==true) {
-            if (obj.result.value.value==true) {
-                msg = escape(obj.result.value.message)
-                alert(msg);
-                res = true;
-            }else {
-                var msg = escape(obj.result.error.message);
-                var err = i18n.gettext("Could not migrate tokens!\n\n")
-                alert(err + msg);
-            }
+    if (obj.result.status == true) {
+        if (obj.result.value.value == true) {
+            msg = escape(obj.result.value.message)
+            alert(msg);
+            res = true;
         } else {
-            var msg = obj.result.error.message;
+            var msg = escape(obj.result.error.message);
             var err = i18n.gettext("Could not migrate tokens!\n\n")
-            alert(err + msg)
+            alert(err + msg);
+        }
+    } else {
+        var msg = obj.result.error.message;
+        var err = i18n.gettext("Could not migrate tokens!\n\n")
+        alert(err + msg)
     }
     return res;
 }
@@ -575,9 +592,9 @@ function create_tools_migrateresolver_dialog() {
         modal: true,
         buttons: {
             'Migrate Resolver': {
-                click: function(){
+                click: function () {
                     var res = migrateResolver($('#copy_from_resolver').val(),
-                                              $('#copy_to_resolver').val());
+                        $('#copy_to_resolver').val());
                     $(this).dialog('close');
                     if (res === true) {
                         $('#token_table').flexReload();
@@ -585,15 +602,16 @@ function create_tools_migrateresolver_dialog() {
                 },
                 id: "button_tools_migrateresolver_ok",
                 text: "Migrate tokens"
-             },
-            'Close': { click: function(){
-                            $(this).dialog('close');
-                        },
-                        id: "button_tools_migrateresolver_close",
-                        text:"Close"
+            },
+            'Close': {
+                click: function () {
+                    $(this).dialog('close');
+                },
+                id: "button_tools_migrateresolver_close",
+                text: "Close"
             }
         },
-        open: function(){
+        open: function () {
             $(this).dialog_icons();
             translate_migrateresolver();
         }
