@@ -36,7 +36,12 @@ import click
 from flask import current_app
 from flask.cli import AppGroup, with_appcontext
 
-from linotp.lib.support import getSupportLicenseInfo, setSupportLicense
+from linotp.lib.support import (
+    InvalidLicenseException,
+    getSupportLicenseInfo,
+    isSupportLicenseValid,
+    setSupportLicense,
+)
 from linotp.model import db
 
 support_cmds = AppGroup(
@@ -91,7 +96,7 @@ def get_support():
     try:
         session = db.session()
 
-        response, _ = getSupportLicenseInfo()
+        license_dict, license_signature = getSupportLicenseInfo()
 
         session.close()
 
@@ -99,9 +104,58 @@ def get_support():
         current_app.echo(f"Getting support could not be completed: {exx}")
         sys.exit(1)
 
-    if not response:
-        current_app.echo("Getting support failed!")
+    if not license_dict:
+        if isinstance(license_dict, dict):
+            current_app.echo("No support license installed")
+        else:
+            current_app.echo("Getting support failed!")
         sys.exit(1)
 
-    current_app.echo(f"Getting support response: {response}")
+    print(license_dict)
+    sys.exit(0)
+
+
+# ------------------------------------------------------------------------- --
+# Command `linotp support valid`
+# ------------------------------------------------------------------------- --
+
+
+@support_cmds.command("valid", help=("is linotp support valid."))
+@with_appcontext
+def is_support_valid():
+    """checks if the linotp support info is valid similar to isSupportValid"""
+
+    try:
+        session = db.session()
+
+        license_dict, license_signature = getSupportLicenseInfo()
+
+        valid = isSupportLicenseValid(
+            lic_dict=license_dict,
+            lic_sign=license_signature,
+            raiseException=True,
+        )
+
+        session.close()
+
+    except InvalidLicenseException as exx:
+        current_app.echo(f"Invalid License: {exx}")
+        sys.exit(1)
+
+    except Exception as exx:
+        current_app.echo(f"Validating support could not be completed: {exx}")
+        sys.exit(1)
+
+    if not license_dict:
+        if isinstance(license_dict, dict):
+            current_app.echo("No support license installed")
+        else:
+            current_app.echo("Validating support failed!")
+        sys.exit(1)
+
+    if not valid or not isinstance(valid, tuple):
+        current_app.echo("Validating support error: %r" % valid)
+        sys.exit(1)
+
+    print(valid[0])
     sys.exit(0)
