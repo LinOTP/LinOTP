@@ -38,6 +38,7 @@ import click
 from flask import current_app
 from flask.cli import AppGroup, with_appcontext
 
+from linotp.app import allocate_security_module, set_config
 from linotp.lib.support import (
     InvalidLicenseException,
     getSupportLicenseInfo,
@@ -52,6 +53,24 @@ support_cmds = AppGroup(
     help="Administrative commands to set and query the linotp support.",
 )
 
+
+def _setup_security_context():
+    """Arrange things such that we can read or write part of the data
+    in a demo license, which is stored encrypted.
+
+    We need to re-invoke `allocate_security_module()` here, in
+    spite of the fact that this has already been done in `create_app()`,
+    because it uses `request_context` to hold the result. Since
+    `request_context` is part of the `flask.g` application context, and
+    the application context here is different from the one used while
+    finding an HSM connection in `create_app()`, that result is gone now
+    and we need to call the function again.
+    """
+
+    set_config()  # ensure `request_context` exists
+    allocate_security_module()
+
+
 # ------------------------------------------------------------------------- --
 # Command `linotp support set --file support_file`
 # ------------------------------------------------------------------------- --
@@ -64,6 +83,8 @@ def set_support(license_file_name):
     """set a linotp support similar to system/setSupport."""
 
     try:
+
+        _setup_security_context()
 
         with open(license_file_name, "rb") as license_file:
             license_text = license_file.read()
@@ -97,6 +118,9 @@ def get_support():
     """get the linotp support info similar to system/getSupportInfo"""
 
     try:
+
+        _setup_security_context()
+
         session = db.session()
 
         license_dict, license_signature = getSupportLicenseInfo()
@@ -135,6 +159,8 @@ def is_support_valid(filename):
     """checks if the linotp support info is valid similar to isSupportValid"""
 
     try:
+
+        _setup_security_context()
 
         session = db.session()
 
