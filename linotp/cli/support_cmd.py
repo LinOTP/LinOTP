@@ -102,7 +102,7 @@ def set_support(license_file_name):
 
     if not success:
         current_app.echo(f"Failed to set license! {status}")
-        sys.exit(1)
+        sys.exit(2)
 
     current_app.echo("Successfully set license.")
     sys.exit(0)
@@ -137,7 +137,7 @@ def get_support():
             current_app.echo("No support license installed")
         else:
             current_app.echo("Getting support failed!")
-        sys.exit(1)
+        sys.exit(2)
 
     print(json.dumps(license_dict, indent=4, sort_keys=True))
     sys.exit(0)
@@ -186,7 +186,7 @@ def is_support_valid(filename):
 
     except InvalidLicenseException as exx:
         current_app.echo(f"Invalid License: {exx}")
-        sys.exit(1)
+        sys.exit(2)
 
     except Exception as exx:
         current_app.echo(f"Validating support could not be completed: {exx}")
@@ -197,11 +197,11 @@ def is_support_valid(filename):
             current_app.echo("No support license installed")
         else:
             current_app.echo("Validating support failed!")
-        sys.exit(1)
+        sys.exit(2)
 
     if not valid or not isinstance(valid, tuple):
         current_app.echo("Validating support error: %r" % valid)
-        sys.exit(1)
+        sys.exit(2)
 
     print(valid[0])
     sys.exit(0)
