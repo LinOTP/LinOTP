@@ -1,6 +1,6 @@
 # LinOTP
 
-LinOTP - the Open Source solution for multi-factor authentication
+LinOTP - the open-source solution for multi-factor authentication
 
 Copyright © 2010-2019 KeyIdentity GmbH  
 Coypright © 2019- arxes-tolina GmbH
@@ -115,12 +115,22 @@ database`, then if you want to do anything interesting with LinOTP
 config`, or that involves WSGI), LinOTP will just display an error
 message and quit.
 
+The last step before starting LinOTP is to create an administrator account,
+otherwise you will not be able to access the management interface. To create
+an admininstrator called "admin" and set a password, do::
+```terminal
+$ linotp local-admins add admin
+$ linotp local-admins password admin
+```
+
 Next, you're ready to start the webserver by issuing::
 ```terminal
 $ linotp run
 ```
-Now you could go the the web interface at http://localhost:5000/manage
-and start creating the UserIdResolver, a Realm and enroll tokens.
+Now you can log in to the the web interface at http://localhost:5000/manage
+with your administrator account and set up your LinOTP instance. We recommend
+you look up the documentation on creating a user ID resolver and realm, and how
+to enroll tokens.
 
 ## Options
 
@@ -136,15 +146,11 @@ you can create the database schema again as above:
 $ linotp init database
 ```
 
-## Apache and Authentication
+## Security considerations
 
 Please note that the Flask development server which LinOTP uses by
-default is not suitable for productive use. One issue is that there is
-no authentication when accessing the LinOTP management interface.
-Therefore you should run LinOTP with the Apache webserver.
+default is not suitable for productive use.
 
-A sample configuration file is available at `etc/apache2/sites-available/linotp.conf`.
-
-If you want to run LinOTP within the apache webserver and use TLS
-encryption and authentication, take a look at
-https://linotp.org/index.php/howtos/5/38-install-linotp-using-pypi
+We recommend that that you run LinOTP from a webserver such as Apache or
+Nginx, where you can configure security and other settings. A sample Apache
+configuration file is available at `etc/apache2/sites-available/linotp.conf`.
