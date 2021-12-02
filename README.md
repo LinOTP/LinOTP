@@ -117,11 +117,12 @@ message and quit.
 
 The last step before starting LinOTP is to create an administrator account,
 otherwise you will not be able to access the management interface. To create
-an admininstrator called "admin" and set a password, do::
+an administrator called "admin", do::
 ```terminal
 $ linotp local-admins add admin
 $ linotp local-admins password admin
 ```
+This last command will prompt you to enter a password for the admin user.
 
 Next, you're ready to start the webserver by issuing::
 ```terminal
