@@ -26,9 +26,12 @@
 
 """linotp admin command.
 
-linotp support set --file license_file
+linotp support set license_file
+linotp support get
+linotp support verify [-f license_file]
 
 """
+import json
 import sys
 
 import click
@@ -36,10 +39,12 @@ import click
 from flask import current_app
 from flask.cli import AppGroup, with_appcontext
 
+from linotp.app import allocate_security_module, set_config
 from linotp.lib.support import (
     InvalidLicenseException,
     getSupportLicenseInfo,
     isSupportLicenseValid,
+    parseSupportLicense,
     setSupportLicense,
 )
 from linotp.model import db
@@ -48,6 +53,24 @@ support_cmds = AppGroup(
     "support",
     help="Administrative commands to set and query the linotp support.",
 )
+
+
+def _setup_security_context():
+    """Arrange things such that we can read or write part of the data
+    in a demo license, which is stored encrypted.
+
+    We need to re-invoke `allocate_security_module()` here, in
+    spite of the fact that this has already been done in `create_app()`,
+    because it uses `request_context` to hold the result. Since
+    `request_context` is part of the `flask.g` application context, and
+    the application context here is different from the one used while
+    finding an HSM connection in `create_app()`, that result is gone now
+    and we need to call the function again.
+    """
+
+    set_config()  # ensure `request_context` exists
+    allocate_security_module()
+
 
 # ------------------------------------------------------------------------- --
 # Command `linotp support set --file support_file`
@@ -61,6 +84,8 @@ def set_support(license_file_name):
     """set a linotp support similar to system/setSupport."""
 
     try:
+
+        _setup_security_context()
 
         with open(license_file_name, "rb") as license_file:
             license_text = license_file.read()
@@ -77,7 +102,7 @@ def set_support(license_file_name):
 
     if not success:
         current_app.echo(f"Failed to set license! {status}")
-        sys.exit(1)
+        sys.exit(2)
 
     current_app.echo("Successfully set license.")
     sys.exit(0)
@@ -94,6 +119,9 @@ def get_support():
     """get the linotp support info similar to system/getSupportInfo"""
 
     try:
+
+        _setup_security_context()
+
         session = db.session()
 
         license_dict, license_signature = getSupportLicenseInfo()
@@ -109,9 +137,9 @@ def get_support():
             current_app.echo("No support license installed")
         else:
             current_app.echo("Getting support failed!")
-        sys.exit(1)
+        sys.exit(2)
 
-    print(license_dict)
+    print(json.dumps(license_dict, indent=4, sort_keys=True))
     sys.exit(0)
 
 
@@ -120,15 +148,33 @@ def get_support():
 # ------------------------------------------------------------------------- --
 
 
-@support_cmds.command("valid", help=("is linotp support valid."))
+@support_cmds.command("verify", help=("is linotp support valid."))
+@click.option(
+    "--filename",
+    "-f",
+    type=click.Path(exists=True),
+    help=("license file, which is validated against a current linotp"),
+)
 @with_appcontext
-def is_support_valid():
+def is_support_valid(filename):
     """checks if the linotp support info is valid similar to isSupportValid"""
 
     try:
+
+        _setup_security_context()
+
         session = db.session()
 
-        license_dict, license_signature = getSupportLicenseInfo()
+        if filename:
+
+            with open(filename, "rb") as license_file:
+                license_text = license_file.read()
+
+            license_text = license_text.decode("utf-8").replace("\n", "\n")
+            license_dict, license_signature = parseSupportLicense(license_text)
+        else:
+
+            license_dict, license_signature = getSupportLicenseInfo()
 
         valid = isSupportLicenseValid(
             lic_dict=license_dict,
@@ -140,7 +186,7 @@ def is_support_valid():
 
     except InvalidLicenseException as exx:
         current_app.echo(f"Invalid License: {exx}")
-        sys.exit(1)
+        sys.exit(2)
 
     except Exception as exx:
         current_app.echo(f"Validating support could not be completed: {exx}")
@@ -151,11 +197,11 @@ def is_support_valid():
             current_app.echo("No support license installed")
         else:
             current_app.echo("Validating support failed!")
-        sys.exit(1)
+        sys.exit(2)
 
     if not valid or not isinstance(valid, tuple):
         current_app.echo("Validating support error: %r" % valid)
-        sys.exit(1)
+        sys.exit(2)
 
     print(valid[0])
     sys.exit(0)
