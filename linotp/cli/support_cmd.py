@@ -26,7 +26,9 @@
 
 """linotp admin command.
 
-linotp support set --file license_file
+linotp support set license_file
+linotp support get
+linotp support verify [-f license_file]
 
 """
 import sys
@@ -40,6 +42,7 @@ from linotp.lib.support import (
     InvalidLicenseException,
     getSupportLicenseInfo,
     isSupportLicenseValid,
+    parseSupportLicense,
     setSupportLicense,
 )
 from linotp.model import db
@@ -120,15 +123,31 @@ def get_support():
 # ------------------------------------------------------------------------- --
 
 
-@support_cmds.command("valid", help=("is linotp support valid."))
+@support_cmds.command("verify", help=("is linotp support valid."))
+@click.option(
+    "--filename",
+    "-f",
+    type=click.Path(exists=True),
+    help=("license file, which is validated against a current linotp"),
+)
 @with_appcontext
-def is_support_valid():
+def is_support_valid(filename):
     """checks if the linotp support info is valid similar to isSupportValid"""
 
     try:
+
         session = db.session()
 
-        license_dict, license_signature = getSupportLicenseInfo()
+        if filename:
+
+            with open(filename, "rb") as license_file:
+                license_text = license_file.read()
+
+            license_text = license_text.decode("utf-8").replace("\n", "\n")
+            license_dict, license_signature = parseSupportLicense(license_text)
+        else:
+
+            license_dict, license_signature = getSupportLicenseInfo()
 
         valid = isSupportLicenseValid(
             lic_dict=license_dict,
