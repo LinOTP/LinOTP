@@ -31,6 +31,7 @@ linotp support get
 linotp support verify [-f license_file]
 
 """
+import json
 import sys
 
 import click
@@ -138,7 +139,7 @@ def get_support():
             current_app.echo("Getting support failed!")
         sys.exit(1)
 
-    print(license_dict)
+    print(json.dumps(license_dict, indent=4, sort_keys=True))
     sys.exit(0)
 
 
