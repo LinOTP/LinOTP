@@ -143,7 +143,7 @@ class TestDeleteRealmAndResolver:
         )
         assert not response.json.get("result", {}).get("status")
         assert (
-            "Resolver def_resolver must not removed from linotp_admins"
+            "Resolver def_resolver can not be removed from linotp_admins"
             in error_message
         )
 

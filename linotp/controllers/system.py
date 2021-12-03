@@ -1099,9 +1099,9 @@ class SystemController(BaseController):
             if realm == admin_realm_name:
                 if login_resolver_class not in valid_resolver_specs_str:
                     raise RemoveForbiddenError(
-                        f"Resolver {login_resolver_name} must not removed from {admin_realm_name}."
-                        "It is not allowed to remove the resolver your are part of to prevent "
-                        "self disablement."
+                        f"Resolver {login_resolver_name} can not be removed from {admin_realm_name}. "
+                        "It is not allowed to remove the resolver to which you belong to prevent "
+                        "locking yourself out."
                     )
 
             res = setRealm(realm, valid_resolver_specs_str)
