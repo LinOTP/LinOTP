@@ -709,33 +709,30 @@ class IdResolver(UserIdResolver):
             )
 
         self.managed = l_config.get("readonly", False)
-
-        #  example for connect:
+        # example for connect:
         #      postgres://otpd:linotp2d@localhost:521/otpdb
 
-        connect = l_config.get("Connect")
-        if not connect:
+        if not self.managed:
+            connect = l_config.get("Connect")
+            if not connect:
 
-            driver = l_config.get("Driver")
-            server = l_config.get("Server")
-            port = l_config.get("Port")
-            db = l_config.get("Database")
-            user = l_config.get("User")
-            conParams = l_config.get("conParams")
+                driver = l_config.get("Driver")
+                server = l_config.get("Server")
+                port = l_config.get("Port")
+                db = l_config.get("Database")
+                user = l_config.get("User")
+                conParams = l_config.get("conParams")
 
-            # ------------------------------------------------------------- --
+                # ------------------------------------------------------------- --
 
-            # retriev password from Crypted Data object
+                # retriev password from Crypted Data object
+                passwd = l_config.get("Password").get_unencrypted()
 
-            passwd = l_config.get("Password").get_unencrypted()
+                connect = make_connect(
+                    driver, user, passwd, server, port, db, conParams
+                )
 
-            connect = make_connect(
-                driver, user, passwd, server, port, db, conParams
-            )
-
-        # ------------------------------------------------------------------ --
-
-        self.sqlConnect = connect
+            self.sqlConnect = connect
 
         self.limit = l_config["Limit"]
         self.sqlTable = l_config["Table"]
