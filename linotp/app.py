@@ -987,9 +987,13 @@ def create_app(config_name=None, config_extra=None):
         in the list that matches one of the languages that we actually
         support.
         """
-        return request.accept_languages.best_match(
-            app.available_languages, "en"
-        )
+        try:
+            return request.accept_languages.best_match(
+                app.available_languages, "en"
+            )
+        except RuntimeError as exx:
+            # Working outside of request context.
+            return babel.default_locale
 
     # Enable profiling if desired. The options are debatable and could be
     # made more configurable. OTOH, we could all have a pony.
