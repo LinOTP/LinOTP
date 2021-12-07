@@ -25,6 +25,7 @@
 #
 
 import datetime
+import functools
 import json
 import logging
 
@@ -322,7 +323,74 @@ class Challenges(object):
 
         return res
 
+    def _get_challenges_cache_keygen(
+        token=None, transid=None, options=None, filter_open=False
+    ):
+        """
+        takes exactly the same parameters as get_challanges
+        and produces a key for keeping the return value of get_challanges
+        in the cache
+        In this case the only problem is the token object which we will
+        replace by the token serial
+        """
+        token_key = token.getSerial() if token else None
+        options_key = str(options)
+        return json.dumps((token_key, transid, options_key, filter_open))
+
+    def cache_in_request(
+        _func=None,
+        *,
+        key_generator=lambda *args, **kwargs: args + tuple(kwargs.items())
+    ):
+        """
+            decorator to use for caching function calls in the request context
+
+        :param key_generator: the function which takes exactly the same arguments
+        as the function being cached and returns a unique key for its output
+        when the key_generator is not passed, it will use args+tuple(kwargs.items()) as the key
+        This can obviously fail if the args are not hashable
+        """
+
+        def cache_in_request_decorator(func_to_cache):
+            @functools.wraps(func_to_cache)
+            def request_cacher(*args, **kwargs):
+
+                cache_name = func_to_cache.__name__ + "_cache"
+                if not context.get(cache_name, None):
+                    context[cache_name] = {}
+
+                cache_key = key_generator(*args, **kwargs)
+
+                log_message = (
+                    "["
+                    + func_to_cache.__name__
+                    + "]:"
+                    + " getting output values from cache"
+                )
+                if cache_key not in context[cache_name]:
+                    log_message = (
+                        "["
+                        + func_to_cache.__name__
+                        + "]:"
+                        + "output values not in cache, getting values from DB"
+                    )
+
+                    context[cache_name][cache_key] = func_to_cache(
+                        *args, **kwargs
+                    )
+
+                log.info(log_message)
+                return context[cache_name][cache_key]
+
+            return request_cacher
+
+        if _func is None:
+            return cache_in_request_decorator
+        else:
+            return cache_in_request_decorator(_func)
+
     @staticmethod
+    @cache_in_request(key_generator=_get_challenges_cache_keygen)
     def get_challenges(
         token=None, transid=None, options=None, filter_open=False
     ):
