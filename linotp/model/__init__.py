@@ -42,23 +42,17 @@ Common rules
 
 """
 
-import binascii
-import json
+
 import logging
 import sys
-from datetime import datetime
 
-import sqlalchemy as sa
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import DeclarativeMeta, SQLAlchemy
 from sqlalchemy import create_engine
-
-from linotp.lib.crypto.utils import get_rand_digit_str, geturandom, hash_digest
-from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
-from linotp.model.migrate import Migration, run_data_model_migration
 
 log = logging.getLogger(__name__)
 
-db = SQLAlchemy()
+db: DeclarativeMeta = SQLAlchemy()
+
 
 implicit_returning = True
 # TODO: Implicit returning from config
@@ -72,6 +66,15 @@ COL_PREFIX = ""
 # SQLU = config.get("sqlalchemy.url", "")
 # if SQLU.startswith("oracle:"):
 #     COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
+
+from linotp.model.challange import Challenge  # noqa
+from linotp.model.config import Config, set_config  # noqa
+from linotp.model.db_logging import LoggingConfig  # noqa
+from linotp.model.migrate import Migration, run_data_model_migration  # noqa
+from linotp.model.realm import Realm  # noqa
+from linotp.model.reporting import Reporting  # noqa
+from linotp.model.token import Token, createToken  # noqa
+from linotp.model.tokenRealm import TokenRealm  # noqa
 
 
 def fix_db_encoding(app) -> None:
@@ -217,7 +220,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
         lambda msg, v=0: log.log(logging.INFO if v else logging.ERROR, msg),
     )
 
-    echo(f"Setting up database...", v=1)
+    echo("Setting up database...", v=1)
 
     try:
         if app.config["AUDIT_DATABASE_URI"] != "OFF":
@@ -245,7 +248,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
 
         if admin_username and admin_password:
             echo("Setting up cloud admin user...", v=1)
-            from .lib.tools.set_password import (
+            from linotp.lib.tools.set_password import (
                 DataBaseContext,
                 SetPasswordHandler,
             )
@@ -266,89 +269,6 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
     db.session.commit()
 
 
-session_column = "%ssession" % COL_PREFIX
-timestamp_column = "%stimestamp" % COL_PREFIX
-
-# This table connects a token to several realms
-tokenrealm_table = db.Table(
-    "TokenRealm",
-    db.metadata,
-    db.Column(
-        "id",
-        db.Integer(),
-        db.Sequence("tokenrealm_seq_id", optional=True),
-        primary_key=True,
-        nullable=False,
-    ),
-    db.Column("token_id", db.Integer(), db.ForeignKey("Token.LinOtpTokenId")),
-    db.Column("realm_id", db.Integer(), db.ForeignKey("Realm.id")),
-    implicit_returning=implicit_returning,
-)
-
-token_table = sa.Table(
-    "Token",
-    db.metadata,
-    sa.Column(
-        "LinOtpTokenId",
-        sa.types.Integer(),
-        sa.Sequence("token_seq_id", optional=True),
-        primary_key=True,
-        nullable=False,
-    ),
-    sa.Column("LinOtpTokenDesc", sa.types.Unicode(80), default=""),
-    sa.Column(
-        "LinOtpTokenSerialnumber",
-        sa.types.Unicode(40),
-        default="",
-        unique=True,
-        nullable=False,
-        index=True,
-    ),
-    sa.Column(
-        "LinOtpTokenType", sa.types.Unicode(30), default="HMAC", index=True
-    ),
-    sa.Column("LinOtpTokenInfo", sa.types.Unicode(2000), default=""),
-    # # encrypt
-    sa.Column("LinOtpTokenPinUser", sa.types.Unicode(512), default=""),
-    # # encrypt
-    sa.Column("LinOtpTokenPinUserIV", sa.types.Unicode(32), default=""),
-    # # encrypt
-    sa.Column("LinOtpTokenPinSO", sa.types.Unicode(512), default=""),
-    # # encrypt
-    sa.Column("LinOtpTokenPinSOIV", sa.types.Unicode(32), default=""),
-    sa.Column(
-        "LinOtpIdResolver", sa.types.Unicode(120), default="", index=True
-    ),
-    sa.Column("LinOtpIdResClass", sa.types.Unicode(120), default=""),
-    sa.Column("LinOtpUserid", sa.types.Unicode(320), default="", index=True),
-    sa.Column("LinOtpSeed", sa.types.Unicode(32), default=""),
-    sa.Column("LinOtpOtpLen", sa.types.Integer(), default=6),
-    # # hashed
-    sa.Column("LinOtpPinHash", sa.types.Unicode(512), default=""),
-    # # encrypt
-    sa.Column("LinOtpKeyEnc", sa.types.Unicode(1024), default=""),
-    sa.Column("LinOtpKeyIV", sa.types.Unicode(32), default=""),
-    sa.Column("LinOtpMaxFail", sa.types.Integer(), default=10),
-    sa.Column("LinOtpIsactive", sa.types.Boolean(), default=True),
-    sa.Column("LinOtpFailCount", sa.types.Integer(), default=0),
-    sa.Column("LinOtpCount", sa.types.Integer(), default=0),
-    sa.Column("LinOtpCountWindow", sa.types.Integer(), default=10),
-    sa.Column("LinOtpSyncWindow", sa.types.Integer(), default=1000),
-    sa.Column(
-        "LinOtpCreationDate",
-        sa.types.DateTime,
-        index=True,
-        default=datetime.now().replace(microsecond=0),
-    ),
-    sa.Column(
-        "LinOtpLastAuthSuccess", sa.types.DateTime, index=True, default=None
-    ),
-    sa.Column(
-        "LinOtpLastAuthMatch", sa.types.DateTime, index=True, default=None
-    ),
-    implicit_returning=implicit_returning,
-)
-
 TOKEN_ENCODE = [
     "LinOtpTokenDesc",
     "LinOtpTokenSerialnumber",
@@ -359,450 +279,12 @@ TOKEN_ENCODE = [
 ]
 
 
-class Token(db.Model):
-
-    __table__ = token_table
-
-    realms = db.relationship(
-        "Realm",
-        secondary=tokenrealm_table,
-        lazy="subquery",
-        backref=db.backref("tokens", lazy=True),
-    )
-
-    def __init__(self, serial):
-        super().__init__()
-
-        # # self.LinOtpTokenId - will be generated DBType serial
-        self.LinOtpTokenSerialnumber = "" + serial
-
-        self.LinOtpTokenType = ""
-
-        self.LinOtpCount = 0
-        self.LinOtpFailCount = 0
-        # get maxFail should have a configurable default
-        self.LinOtpMaxFail = 10
-        self.LinOtpIsactive = True
-        self.LinOtpCountWindow = 10
-        self.LinOtpOtpLen = 6
-        self.LinOtpSeed = ""
-
-        self.LinOtpIdResolver = None
-        self.LinOtpIdResClass = None
-        self.LinOtpUserid = None
-
-        # when the token is created all time stamps are set to utc now
-
-        self.LinOtpCreationDate = datetime.utcnow().replace(microsecond=0)
-        self.LinOtpLastAuthMatch = None
-        self.LinOtpLastAuthSuccess = None
-
-    def _fix_spaces(self, data):
-        """
-        On MS SQL server empty fields ("") like the LinOtpTokenInfo
-        are returned as a string with a space (" ").
-        This functions helps fixing this.
-        Also avoids running into errors, if the data is a None Type.
-
-        :param data: a string from the database
-        :type data: usually a string
-        :return: a stripped string
-        """
-        if data:
-            data = data.strip()
-
-        return data
-
-    def getSerial(self):
-        return self.LinOtpTokenSerialnumber
-
-    def set_encrypted_seed(
-        self, encrypted_seed, iv, reset_failcount=True, reset_counter=True
-    ):
-        """
-        set_encrypted_seed - save the encrypted token seed / secret
-
-        :param encrypted_seed: the encrypted seed / secret
-        :param iv: the initialization value / salt
-        :param reset_failcount: reset the failcount on token update
-        :param reset_counter: reset the otp counter on token update
-        """
-        log.debug("set_seed()")
-
-        if reset_counter:
-            self.LinOtpCount = 0
-
-        if reset_failcount:
-            self.LinOtpFailCount = 0
-
-        self.LinOtpKeyEnc = binascii.hexlify(encrypted_seed).decode("utf-8")
-        self.LinOtpKeyIV = binascii.hexlify(iv).decode("utf-8")
-
-    def get_encrypted_seed(self):
-        key = binascii.unhexlify(self.LinOtpKeyEnc or "")
-        iv = binascii.unhexlify(self.LinOtpKeyIV or "")
-        return key, iv
-
-    def setUserPin(self, enc_userPin, iv):
-        self.LinOtpTokenPinUser = binascii.hexlify(enc_userPin).decode("utf-8")
-        self.LinOtpTokenPinUserIV = binascii.hexlify(iv).decode("utf-8")
-
-    def getUserPin(self):
-        pu = self._fix_spaces(self.LinOtpTokenPinUser or "")
-        puiv = self._fix_spaces(self.LinOtpTokenPinUserIV or "")
-        key = binascii.unhexlify(pu)
-        iv = binascii.unhexlify(puiv)
-        return key, iv
-
-    def getOtpCounter(self):
-        return self.LinOtpCount or 0
-
-    def set_hashed_pin(self, pin, iv):
-        self.LinOtpSeed = binascii.hexlify(iv).decode("utf-8")
-        self.LinOtpPinHash = binascii.hexlify(pin).decode("utf-8")
-
-    def get_hashed_pin(self):
-        iv = binascii.unhexlify(self.LinOtpSeed)
-        pin = binascii.unhexlify(self.LinOtpPinHash)
-        return iv, pin
-
-    @staticmethod
-    def copy_pin(src, target):
-        target.LinOtpSeed = src.LinOtpSeed
-        target.LinOtpPinHash = src.LinOtpPinHash
-
-    def set_encrypted_pin(self, pin, iv):
-        self.LinOtpSeed = binascii.hexlify(iv).decode("utf-8")
-        self.LinOtpPinHash = binascii.hexlify(pin).decode("utf-8")
-        self.LinOtpPinHash = "@@" + self.LinOtpPinHash
-
-    def get_encrypted_pin(self):
-        iv = binascii.unhexlify(self.LinOtpSeed)
-        pin = binascii.unhexlify(self.LinOtpPinHash[2:])
-        return iv, pin
-
-    def setHashedPin(self, pin):
-        seed = geturandom(16)
-        self.LinOtpSeed = binascii.hexlify(seed).decode("utf-8")
-        self.LinOtpPinHash = binascii.hexlify(hash_digest(pin, seed)).decode(
-            "utf-8"
-        )
-        return self.LinOtpPinHash
-
-    def getHashedPin(self, pin):
-        # TODO: we could log the PIN here.
-
-        # # calculate a hash from a pin
-        # Fix for working with MS SQL servers
-        # MS SQL servers sometimes return a '<space>' when the column is empty:
-        # ''
-        seed_str = self._fix_spaces(self.LinOtpSeed or "")
-        seed = binascii.unhexlify(seed_str)
-        hPin = hash(pin, seed)
-        log.debug(
-            "[getHashedPin] hPin: %s, pin: %s, seed: %s",
-            binascii.hexlify(hPin),
-            pin,
-            self.LinOtpSeed or "",
-        )
-        return binascii.hexlify(hPin)
-
-    def setDescription(self, desc):
-        if desc is None:
-            desc = ""
-        self.LinOtpTokenDesc = str(desc)
-        return self.LinOtpTokenDesc
-
-    def setOtpLen(self, otplen):
-        self.LinOtpOtpLen = int(otplen)
-
-    def deleteToken(self):
-        # some dbs (eg. DB2) runs in deadlock, if the TokenRealm entry
-        # is deleteted via foreign key relation
-        # so we delete it explicitly
-        token_realm_entries = TokenRealm.query.filter_by(
-            token_id=self.LinOtpTokenId
-        ).all()
-
-        for token_realm_entry in token_realm_entries:
-            db.session.delete(token_realm_entry)
-
-        db.session.delete(self)
-        return True
-
-    def isPinEncrypted(self, pin=None):
-        ret = False
-        if pin is None:
-            pin = self.LinOtpPinHash
-        if pin and pin.startswith("@@"):
-            ret = True
-        return ret
-
-    def setSoPin(self, enc_soPin, iv):
-        self.LinOtpTokenPinSO = binascii.hexlify(enc_soPin).decode("utf-8")
-        self.LinOtpTokenPinSOIV = binascii.hexlify(iv).decode("utf-8")
-
-    def __str__(self):
-        return self.LinOtpTokenDesc
-
-    def get(self, key=None, fallback=None, save=False):
-        """
-        simulate the dict behaviour to make challenge processing
-        easier, as this will have to deal as well with
-        'dict only challenges'
-
-        :param key: the attribute name - in case key is not provided, a dict
-                    of all class attributes is returned
-        :param fallback: if the attribute is not found, the fallback is returned
-        :param save: in case all attributes are returned and save==True, the timestamp is
-                     converted to a string representation
-        """
-        if key is None:
-            return self.get_vars(save=save)
-
-        if hasattr(self, key):
-            kMethod = "get" + key.capitalize()
-            if hasattr(self, kMethod):
-                return getattr(self, kMethod)()
-            else:
-                return getattr(self, key) or ""
-        else:
-            return fallback
-
-    def get_vars(self, save=False):
-
-        ret = {}
-        ret["LinOtp.TokenId"] = self.LinOtpTokenId or ""
-        ret["LinOtp.TokenDesc"] = self.LinOtpTokenDesc or ""
-        ret["LinOtp.TokenSerialnumber"] = self.LinOtpTokenSerialnumber or ""
-
-        ret["LinOtp.TokenType"] = self.LinOtpTokenType or "hmac"
-        ret["LinOtp.TokenInfo"] = self._fix_spaces(self.LinOtpTokenInfo or "")
-        # ret['LinOtpTokenPinUser']   = self.LinOtpTokenPinUser
-        # ret['LinOtpTokenPinSO']     = self.LinOtpTokenPinSO
-
-        ret["LinOtp.IdResolver"] = self.LinOtpIdResolver or ""
-        ret["LinOtp.IdResClass"] = self.LinOtpIdResClass or ""
-        ret["LinOtp.Userid"] = self.LinOtpUserid or ""
-        ret["LinOtp.OtpLen"] = self.LinOtpOtpLen or 6
-        # ret['LinOtp.PinHash']        = self.LinOtpPinHash
-
-        ret["LinOtp.MaxFail"] = self.LinOtpMaxFail
-        ret["LinOtp.Isactive"] = self.LinOtpIsactive
-        ret["LinOtp.FailCount"] = self.LinOtpFailCount
-        ret["LinOtp.Count"] = self.LinOtpCount
-        ret["LinOtp.CountWindow"] = self.LinOtpCountWindow
-        ret["LinOtp.SyncWindow"] = self.LinOtpSyncWindow
-        # ------------------------------------------------------------------ --
-
-        # handle representation of created, accessed and verified:
-
-        # - could be None, if not (newly) created  / accessed / verified
-        # - if type is datetime it must be converted to a string as the result
-        #   will be used as part of a json output
-
-        created = ""
-        if self.LinOtpCreationDate is not None:
-            created = self.LinOtpCreationDate.strftime(DEFAULT_TIMEFORMAT)
-
-        ret["LinOtp.CreationDate"] = created
-
-        verified = ""
-        if self.LinOtpLastAuthSuccess is not None:
-            verified = self.LinOtpLastAuthSuccess.strftime(DEFAULT_TIMEFORMAT)
-
-        ret["LinOtp.LastAuthSuccess"] = verified
-
-        accessed = ""
-        if self.LinOtpLastAuthMatch is not None:
-            accessed = self.LinOtpLastAuthMatch.strftime(DEFAULT_TIMEFORMAT)
-
-        ret["LinOtp.LastAuthMatch"] = accessed
-        # list of Realm names
-        ret["LinOtp.RealmNames"] = self.getRealmNames()
-
-        return ret
-
-    def __repr__(self):
-        """
-        return the token state as text
-
-        :return: token state as string representation
-        :rtype:  string
-        """
-        ldict = {}
-        for attr in self.__dict__:
-            key = "%r" % attr
-            val = "%r" % getattr(self, attr)
-            ldict[key] = val
-        res = "<%r %r>" % (self.__class__, ldict)
-        return res
-
-    def getSyncWindow(self):
-        return self.LinOtpSyncWindow
-
-    def setCountWindow(self, counter):
-        self.LinOtpCountWindow = counter
-
-    def getCountWindow(self):
-        return self.LinOtpCountWindow
-
-    def getInfo(self):
-        # Fix for working with MS SQL servers
-        # MS SQL servers sometimes return a '<space>' when the column is empty:
-        # ''
-        return self._fix_spaces(self.LinOtpTokenInfo or "")
-
-    def setInfo(self, info):
-        self.LinOtpTokenInfo = info
-
-    def storeToken(self):
-        if self.LinOtpUserid is None:
-            self.LinOtpUserid = ""
-        if self.LinOtpIdResClass is None:
-            self.LinOtpIdResClass = ""
-        if self.LinOtpIdResolver is None:
-            self.LinOtpIdResolver = ""
-
-        db.session.add(self)
-        db.session.flush()
-
-        return True
-
-    def setType(self, typ):
-        self.LinOtpTokenType = typ
-        return
-
-    def getType(self):
-        return self.LinOtpTokenType or "hmac"
-
-    def updateType(self, typ):
-        # in case the previous type is not the same type
-        # we must reset the counters.
-        # Remark: comparison must be made case insensitiv
-        if self.LinOtpTokenType.lower() != typ.lower():
-            self.LinOtpCount = 0
-            self.LinOtpFailCount = 0
-
-        self.LinOtpTokenType = typ
-        return
-
-    def getRealms(self):
-        return self.realms or ""
-
-    def getRealmNames(self):
-        r_list = []
-        for r in self.realms:
-            r_list.append(r.name)
-        return r_list
-
-    def addRealm(self, realm):
-        if realm is not None:
-            self.realms.append(realm)
-        else:
-            log.error("adding empty realm!")
-
-    def setRealms(self, realms):
-        if realms is not None:
-            self.realms = realms
-        else:
-            log.error("assigning empty realm!")
-
-
-def createToken(serial):
-    log.debug("createToken(%s)", serial)
-    serial = "" + serial
-    token = Token(serial)
-    log.debug("token object created")
-
-    return token
-
-
 ###############################################################################
-
-
-config_table = sa.Table(
-    "Config",
-    db.metadata,
-    sa.Column("Key", sa.types.Unicode(255), primary_key=True, nullable=False),
-    sa.Column("Value", sa.types.Unicode(2000), default=""),
-    sa.Column("Type", sa.types.Unicode(2000), default=""),
-    sa.Column("Description", sa.types.Unicode(2000), default=""),
-    implicit_returning=implicit_returning,
-)
 
 CONFIG_ENCODE = ["Key", "Value", "Description"]
 
 
-class Config(db.Model):
-
-    __table__ = config_table
-
-    def __init__(self, Key, Value, **kwargs):
-        if not Key.startswith("linotp.") and not Key.startswith("enclinotp."):
-            Key = "linotp." + Key
-        super().__init__(Key=Key, Value=Value, **kwargs)
-
-    def __str__(self):
-        return self.Description
-
-
-class TokenRealm(db.Model):
-
-    __table__ = tokenrealm_table  # See above, before `Token`
-
-    def __init__(self, realmid):
-        super().__init__()
-        self.realm_id = realmid
-        self.token_id = 0
-
-
-realm_table = sa.Table(
-    "Realm",
-    db.metadata,
-    sa.Column(
-        "id",
-        sa.types.Integer(),
-        sa.Sequence("realm_seq_id", optional=True),
-        primary_key=True,
-        nullable=False,
-    ),
-    sa.Column(
-        "name", sa.types.Unicode(255), default="", unique=True, nullable=False
-    ),
-    sa.Column("default", sa.types.Boolean(), default=False),
-    sa.Column("option", sa.types.Unicode(40), default=""),
-    implicit_returning=implicit_returning,
-)
-
 REALM_ENCODE = ["name", "option"]
-
-
-class Realm(db.Model):
-
-    __table__ = realm_table
-
-    def __init__(self, realm):
-        super().__init__()
-        self.name = realm
-        if realm is not None:
-            self.name = realm.lower()
-        # self.id     = 0
-
-    def storeRealm(self):
-        if self.name is None:
-            self.name = ""
-        self.name = self.name.lower()
-
-        db.session.add(self)
-        db.session.flush()
-
-        return True
-
-
-""" """ """
-challenges are stored
-""" """ """
 
 
 CHALLENGE_ENCODE = ["data", "challenge", "tokenserial"]
@@ -1144,6 +626,3 @@ def create_admin_realm(admin_realm_name, admin_resolver_name):
     if not Realm.query.filter_by(name=admin_realm_name).count():
         admin_realm = Realm(admin_realm_name)
         admin_realm.storeRealm()
-
-
-##eof#########################################################################

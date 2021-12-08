@@ -26,11 +26,12 @@
 
 from typing import Any, Dict, List
 
-from sqlalchemy import orm, schema, types
+from sqlalchemy import orm
 from sqlalchemy.orm import Session
 
 from linotp.lib.crypto import utils as cryptutils
 from linotp.model import db
+from linotp.model.schema import ImportedUserSchema
 
 
 class NoSuchUserError(Exception):
@@ -41,56 +42,19 @@ class NoSuchUserError(Exception):
         self.username = username
 
 
-class SqlUser(db.Model):
+class ImportedUser(ImportedUserSchema):
 
-    __tablename__ = "imported_user"
-    __table_args__ = {
-        "mysql_collate": "utf8_unicode_ci",
-        "mysql_charset": "utf8",
-    }
-
-    groupid = schema.Column(types.Unicode(100), primary_key=True, index=True)
-
-    userid = schema.Column(types.Unicode(100), primary_key=True, index=True)
-
-    username = schema.Column(types.Unicode(255), default="", index=True)
-
-    phone = schema.Column(types.Unicode(100), default="")
-
-    mobile = schema.Column(types.Unicode(100), default="")
-
-    email = schema.Column(types.Unicode(100), default="")
-
-    surname = schema.Column(types.Unicode(100), default="")
-
-    givenname = schema.Column(types.Unicode(100), default="")
-
-    password = schema.Column(types.Unicode(255), default="", index=True)
-
-
-class ImportedUser(SqlUser):
-
-    user_entries = [
-        "userid",
-        "username",
-        "phone",
-        "mobile",
-        "email",
-        "surname",
-        "givenname",
-        "password",
-        "groupid",
-    ]
+    user_entries = [name.name for name in ImportedUserSchema.__table__.c]
 
     @orm.reconstructor
     def __init__(self, resolver_name: str = None):
         self._pw_gen = False
-        self.user_class = SqlUser
+        self.user_class = ImportedUserSchema
         self.session: Session = db.session()
         self.resolver_name = resolver_name
         self.plain_password = None
 
-    def _get_user(self, username: str) -> SqlUser:
+    def _get_user(self, username: str) -> ImportedUserSchema:
         user = self.session.query(self.user_class).get(
             (self.resolver_name, username)
         )
@@ -102,7 +66,7 @@ class ImportedUser(SqlUser):
         tablename = self.user_class.__tablename__
         return self.user_class.metadata.tables[tablename].c.keys()
 
-    def update(self, user: SqlUser) -> None:
+    def update(self, user: ImportedUserSchema) -> None:
         """
         update all attributes of the user from the other user
 
