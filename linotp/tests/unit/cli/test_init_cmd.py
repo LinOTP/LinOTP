@@ -41,7 +41,9 @@ from sqlalchemy import create_engine
 import linotp.cli.init_cmd as c
 from linotp.app import LinOTPApp
 from linotp.cli import Echo, get_backup_filename, main
-from linotp.model import Config, Token, db, init_db_tables, setup_db
+from linotp.model import db, init_db_tables, setup_db
+from linotp.model.config import Config
+from linotp.model.token import Token
 
 
 @pytest.fixture
