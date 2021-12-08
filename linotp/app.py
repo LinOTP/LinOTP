@@ -207,11 +207,21 @@ class ExtFlaskConfig(FlaskConfig):
         `foo['bar']`. (It turns out that the built-in `get()` method
         doesn't go through `__getitem__()` – `__getitem__()`'s mission
         in life is strictly to make the brackets do something.)
+        The relative-pathname hack is just relevant for variables which contains
+        a _file or _dir entry. So just those calls got handled as warning in all
+        other cases it is handled as debug.
         """
+
+        log_func = log.debug
+
+        if "_file" in key.lower() or "_dir" in key.lower():
+            log_func = log.warning
+
         try:
             return self[key]
         except KeyError:
-            log.warning(
+
+            log_func(
                 "Relying on `.get()` to set a default for "
                 f"'{key}' violates the DRY principle. "
                 "Instead, ensure that the schema contains a suitable "
