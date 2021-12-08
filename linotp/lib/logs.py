@@ -3,7 +3,8 @@ import logging
 from datetime import datetime
 
 from linotp.flap import request
-from linotp.model import LoggingConfig, db
+from linotp.model import db
+from linotp.model.db_logging import LoggingConfig
 
 # ------------------------------------------------------------------------------
 

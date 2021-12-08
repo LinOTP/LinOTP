@@ -34,7 +34,8 @@ from linotp.flap import abort, config, request, response
 from linotp.lib.context import request_context
 from linotp.lib.logs import set_logging_level
 from linotp.lib.reply import sendError, sendResult
-from linotp.model import Config, db
+from linotp.model import db
+from linotp.model.config import Config
 
 log = logging.getLogger(__name__)
 

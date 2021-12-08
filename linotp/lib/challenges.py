@@ -34,7 +34,8 @@ from flask import g
 
 import linotp
 from linotp.lib.context import request_context as context
-from linotp.model import Challenge, db
+from linotp.model import db
+from linotp.model.challange import Challenge
 
 log = logging.getLogger(__name__)
 

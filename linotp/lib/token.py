@@ -54,7 +54,10 @@ from linotp.lib.user import (
     getUserRealms,
 )
 from linotp.lib.util import generate_password
-from linotp.model import Realm, Token, TokenRealm, createToken, db
+from linotp.model import db
+from linotp.model.realm import Realm
+from linotp.model.token import Token, createToken
+from linotp.model.tokenRealm import TokenRealm
 from linotp.provider.notification import NotificationException, notify_user
 from linotp.tokens import tokenclass_registry
 
