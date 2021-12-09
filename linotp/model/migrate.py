@@ -28,7 +28,7 @@ database schema migration hook
 """
 import binascii
 import logging
-from typing import Optional
+from typing import Any, Optional, Tuple, Union
 
 import sqlalchemy as sa
 from sqlalchemy import inspect, text
@@ -68,7 +68,7 @@ def has_column(engine: Engine, table_name: str, column: sa.Column) -> bool:
     return False
 
 
-def _compile_name(name: str, dialect=None) -> str:
+def _compile_name(name: str, dialect: Optional[str] = None) -> str:
     """Helper - to adjust the names of table / column / index to quoted or not.
 
     in postgresql the tablenames / column /index names must be quotes
@@ -109,7 +109,7 @@ def add_column(engine: Engine, table_name: str, column: sa.Column):
     )
 
 
-def add_index(engine: Engine, table_name: str, column: sa.Column):
+def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
     """Create an index based on the column index definition
 
     calling the compiled SQL statement:
@@ -138,7 +138,7 @@ def add_index(engine: Engine, table_name: str, column: sa.Column):
     )
 
 
-def drop_column(engine: Engine, table_name: str, column: sa.Column):
+def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
     """
 
     calling the compiled SQL statement
@@ -213,10 +213,10 @@ def re_encode(
 class MYSQL_Migration:
     """MYSQL schema and data migration - converting from latin1 to utf8."""
 
-    def __init__(self, engine):
+    def __init__(self, engine: Engine):
         self.engine = engine
 
-    def _execute(self, command):
+    def _execute(self, command: str) -> Any:
         """helper to execute the lowlevel sql command and return result.
 
         :param command: the raw sql command
@@ -228,7 +228,7 @@ class MYSQL_Migration:
 
     # schema conversion
 
-    def _query_schema(self, table):
+    def _query_schema(self, table: str) -> Any:
         """Query the mysql for the table creation defintion.
 
         the result contains the charset which might be latin1 or utf8
@@ -237,7 +237,7 @@ class MYSQL_Migration:
         results = self._execute(f"SHOW CREATE TABLE {table};")
         return results.next()[1]
 
-    def _update_schema(self, table):
+    def _update_schema(self, table: str) -> Any:
         """Update the table defintion to utf8 charset.
 
         :param table: the table name
@@ -246,7 +246,7 @@ class MYSQL_Migration:
             f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4;"
         )
 
-    def _get_tables(self):
+    def _get_tables(self) -> Any:
         """Query the linotp database for all tables.
 
         :yield: table name
@@ -254,7 +254,7 @@ class MYSQL_Migration:
         for result in self._execute("show tables;"):
             yield result[0]
 
-    def migrate_schema(self):
+    def migrate_schema(self) -> list:
         """Migration worker, to update the schema definition.
 
         mysql 'show create table' returns a string which contains as well the
@@ -278,7 +278,7 @@ class MYSQL_Migration:
 
     # data conversion
 
-    def _convert(self, column):
+    def _convert(self, column: str) -> str:
         """Helper to build conversion string.
 
         :param column: the string name of the column
@@ -289,7 +289,7 @@ class MYSQL_Migration:
             "USING latin1) as BINARY) USING utf8)"
         )
 
-    def _convert_Config_to_utf8(self):
+    def _convert_Config_to_utf8(self) -> Any:
         """Migrate the Config Value and Description to utf8."""
         cmd = "Update Config Set %s, %s ;" % (
             self._convert("Config.Description"),
@@ -297,7 +297,7 @@ class MYSQL_Migration:
         )
         return self._execute(cmd)
 
-    def _convert_Token_to_utf8(self):
+    def _convert_Token_to_utf8(self) -> Any:
         """Migrate the Token Description and LinOtpTokenInfo to utf8."""
         cmd = "Update Token Set %s, %s ;" % (
             self._convert("Token.LinOtpTokenDesc"),
@@ -305,7 +305,7 @@ class MYSQL_Migration:
         )
         return self._execute(cmd)
 
-    def migrate_data(self, tables):
+    def migrate_data(self, tables: list) -> None:
         """Worker for the data migration.
 
         :param tables: list of tables where the data should be converted to utf8
@@ -321,7 +321,7 @@ class MYSQL_Migration:
 # entry point for calling db migration
 
 
-def run_data_model_migration(engine: Engine):
+def run_data_model_migration(engine: Engine) -> str:
     """
     hook for database schema upgrade
      - called during database initialisation
@@ -372,7 +372,7 @@ class Migration:
         self.current_version = None
 
     @staticmethod
-    def _query_db_model_version() -> "model.Config":
+    def _query_db_model_version() -> model.Config:
         """Get the current db model version."""
         return model.Config.query.filter_by(Key=Migration.db_model_key).first()
 
@@ -424,7 +424,7 @@ class Migration:
 
         return self.current_version
 
-    def set_version(self, version: str):
+    def set_version(self, version: str) -> None:
         """Set the new db model version number.
 
         - on update: update the entry
@@ -449,7 +449,7 @@ class Migration:
         self,
         from_version: Optional[str] = None,
         to_version: Optional[str] = None,
-    ) -> str:
+    ) -> Union[str, None]:
         """Run all migration steps between the versions.
 
         run all steps, which are of ordered list migration_steps
@@ -507,7 +507,7 @@ class Migration:
                 # execute the migration step
 
                 try:
-                    _success = migration_step()
+                    migration_step()
 
                 except Exception as exx:
                     log.error("Failed to upgrade database! %r", exx)
@@ -526,7 +526,7 @@ class Migration:
 
     # migration towards 2.9.1
 
-    def migrate_2_9_1_0(self):
+    def migrate_2_9_1_0(self) -> None:
         """Run the migration for bigger sized challenge column."""
 
         challenge_table = "challenges"
@@ -548,7 +548,7 @@ class Migration:
 
     # migration towards 2.10.1
 
-    def migrate_2_10_1_0(self):
+    def migrate_2_10_1_0(self) -> None:
         """Run the migration to blob challenge and data column."""
 
         challenge_table = "challenges"
@@ -567,7 +567,7 @@ class Migration:
 
     # migration towards 2.12.
 
-    def migrate_2_12_0_0(self):
+    def migrate_2_12_0_0(self) -> None:
         """Run the migration for token to add the time stamps.
 
         time stamps are: created, accessed and verified
@@ -604,7 +604,7 @@ class Migration:
 
     # migration towards 3.0
 
-    def migrate_3_0_0_0(self):
+    def migrate_3_0_0_0(self) -> None:
         """Migrate to linotp3 - to python3+mysql.
 
         The major challenge for the linotp3 migration is the migration from
@@ -621,8 +621,6 @@ class Migration:
         # ----------------------------------------------------------------- --
 
         # with linotp3 we drop all previous audit entries to fix audit signing
-
-        from flask import current_app
 
         from linotp.lib.audit.base import getAudit
 
@@ -681,9 +679,7 @@ class Migration:
                 " linotp admin fix-db-encoding"
             )
 
-        return
-
-    def iso8859_to_utf8_conversion(self):
+    def iso8859_to_utf8_conversion(self) -> Tuple[bool, str]:
         """Migrate all Config and Token entries from latin1 to utf-8,
 
         but only if the label 'utf8_conversion':'suggested' is set
@@ -726,7 +722,7 @@ class Migration:
 
         return True, "Config and Token data converted to utf-8."
 
-    def migrate_3_1_0_0(self):
+    def migrate_3_1_0_0(self) -> Tuple[bool, str]:
         """Migrate the encrpyted data to pkcs7 padding.
 
         this requires to
@@ -750,7 +746,7 @@ class Migration:
             """
 
             @staticmethod
-            def old_unpadd_data(output):
+            def old_unpadd_data(output: bytes) -> bytes:
 
                 eof = len(output) - 1
 
@@ -766,7 +762,7 @@ class Migration:
                 return output[: eof - 1]
 
             @staticmethod
-            def old_padd_data(input_data):
+            def old_padd_data(input_data: bytes) -> bytes:
                 data = b"\x01\x02"
                 padding = (16 - len(input_data + data) % 16) % 16
                 return input_data + data + padding * b"\0"
@@ -891,6 +887,3 @@ class Migration:
         return True, (
             f"internal (managed) admin resolver {admin_resolver_name} created"
         )
-
-
-# eof

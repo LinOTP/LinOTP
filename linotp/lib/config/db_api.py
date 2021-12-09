@@ -35,7 +35,8 @@ from linotp.lib.crypto.encrypted_data import EncryptedData
 from linotp.lib.crypto.utils import decryptPassword, encryptPassword
 from linotp.lib.error import ConfigAdminError
 from linotp.lib.text_utils import UTF8_MAX_BYTES, simple_slice, utf8_slice
-from linotp.model import Config, db
+from linotp.model import db
+from linotp.model.config import Config
 
 #
 # MAX_VALUE_LEN defines the max len before we split the config entries into

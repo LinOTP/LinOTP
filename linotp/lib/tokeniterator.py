@@ -42,7 +42,10 @@ from linotp.lib.token import (
     token_owner_iterator,
 )
 from linotp.lib.user import NoResolverFound, User, getUserId, getUserInfo
-from linotp.model import Realm, Token, TokenRealm, db
+from linotp.model import db
+from linotp.model.realm import Realm
+from linotp.model.token import Token
+from linotp.model.tokenRealm import TokenRealm
 
 ENCODING = "utf-8"
 

@@ -31,8 +31,9 @@ from sqlalchemy.orm import Session
 from linotp.app import LinOTPApp, create_app
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypto.utils import crypt_password
-from linotp.model import _set_config, db, setup_db
-from linotp.model.imported_user import SqlUser
+from linotp.model import db, setup_db
+from linotp.model.config import set_config
+from linotp.model.imported_user import ImportedUserSchema
 
 
 class DuplicateUserError(Exception):
@@ -54,12 +55,12 @@ class NoSuchUserError(Exception):
 class LocalAdminResolver:
     def __init__(self, app: LinOTPApp) -> None:
         setup_db(app)
-        self.user_class = SqlUser
+        self.user_class = ImportedUserSchema
         self.session: Session = db.session()
         self.admin_resolver_name = app.config["ADMIN_RESOLVER_NAME"]
         self.admin_realm_name = app.config["ADMIN_REALM_NAME"].lower()
 
-    def _get_user(self, username: str) -> SqlUser:
+    def _get_user(self, username: str) -> ImportedUserSchema:
         user = self.session.query(self.user_class).get(
             (self.admin_resolver_name, username)
         )
@@ -291,7 +292,7 @@ class LocalAdminResolver:
         if admin_resolvers:
             admin_resolvers_new += "," + admin_resolvers
 
-        _set_config(
+        set_config(
             key=admin_resolvers_key,
             value=admin_resolvers_new,
             typ="text",

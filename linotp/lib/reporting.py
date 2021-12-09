@@ -31,7 +31,8 @@ from sqlalchemy import and_, func, or_
 from linotp.lib.context import request_context
 from linotp.lib.monitoring import MonitorHandler
 from linotp.lib.policy import check_token_reporting
-from linotp.model import Reporting, db
+from linotp.model import db
+from linotp.model.reporting import Reporting
 
 STATI = [
     "total",

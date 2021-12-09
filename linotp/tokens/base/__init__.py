@@ -61,7 +61,8 @@ from linotp.lib.token import getTokenRealms
 from linotp.lib.type_utils import boolean
 from linotp.lib.user import User, getUserResolverId
 from linotp.lib.util import generate_otpkey
-from linotp.model import Token, db
+from linotp.model import db
+from linotp.model.token import Token
 from linotp.tokens import tokenclass_registry
 
 from .tokenproperty_mixin import TokenPropertyMixin
@@ -1145,7 +1146,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         if param is None:
             param = {}
 
-        hsm = context["hsm"]
         storeHashed = True
         enc = param.get("encryptpin", None)
         if enc is not None and "true" == enc.lower():

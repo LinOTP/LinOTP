@@ -36,8 +36,11 @@ from linotp.lib.context import request_context as context
 from linotp.lib.resolver import parse_resolver_spec
 from linotp.lib.user import getUserFromParam, getUserList, getUserListIterators
 from linotp.lib.useriterator import iterate_users
-from linotp.model import Config as config_model
-from linotp.model import Realm, Token, TokenRealm, db
+from linotp.model import db
+from linotp.model.config import Config as config_model
+from linotp.model.realm import Realm
+from linotp.model.token import Token
+from linotp.model.tokenRealm import TokenRealm
 
 
 class MonitorHandler(object):

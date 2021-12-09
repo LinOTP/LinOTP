@@ -43,7 +43,9 @@ from linotp.lib.config import (
 )
 from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
 from linotp.lib.context import request_context as context
-from linotp.model import Realm, TokenRealm, db
+from linotp.model import db
+from linotp.model.realm import Realm, db
+from linotp.model.tokenRealm import TokenRealm
 
 log = logging.getLogger(__name__)
 

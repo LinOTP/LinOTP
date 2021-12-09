@@ -34,7 +34,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from linotp.flap import config
-from linotp.model import Reporting
+from linotp.model.reporting import Reporting
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)

@@ -32,7 +32,7 @@ import pytest
 
 from linotp.cli import main as cli_main
 from linotp.lib.config import getFromConfig
-from linotp.model import _set_config
+from linotp.model.config import set_config
 from linotp.model.local_admin_user import (
     DuplicateUserError,
     LocalAdminResolver,
@@ -295,7 +295,7 @@ def test_local_admins_enable_command(app, runner, resolver, res_list):
     admin_realm_name = app.config["ADMIN_REALM_NAME"].lower()
     admin_resolvers_key = f"useridresolver.group.{admin_realm_name}"
 
-    _set_config(
+    set_config(
         key=admin_resolvers_key,
         value=res_list,
         typ="text",

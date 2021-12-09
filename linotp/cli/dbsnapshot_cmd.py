@@ -53,7 +53,10 @@ from flask import current_app
 from flask.cli import AppGroup
 
 from linotp.lib.audit.SQLAudit import AuditTable
-from linotp.model import Config, Realm, Token, TokenRealm
+from linotp.model.config import Config
+from linotp.model.realm import Realm
+from linotp.model.token import Token
+from linotp.model.tokenRealm import TokenRealm
 
 from . import get_backup_filename
 

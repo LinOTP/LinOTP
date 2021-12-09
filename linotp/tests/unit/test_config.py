@@ -308,12 +308,15 @@ def test_efc_normal_get_second_arg_deprecated(caplog, default):
 
     efc = ExtFlaskConfig("/")
     caplog.clear()
-    # with pytest.raises(s.LinOTPConfigKeyError) as ex:
-    #     efc.get("FOO", default)
-    assert efc.get("FOO", default) == default
+
+    assert efc.get("FOO_FILE", default) == default
     assert len(caplog.messages) == 1
     assert "violates the DRY principle" in caplog.messages[0]
-    # assert "FOO" in str(ex.value)
+
+    caplog.clear()
+    assert efc.get("FOO_DIR", default) == default
+    assert len(caplog.messages) == 1
+    assert "violates the DRY principle" in caplog.messages[0]
 
 
 def test_efc_relative_file_hack_get():
