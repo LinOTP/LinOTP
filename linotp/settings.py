@@ -679,7 +679,7 @@ _config_schema = ConfigSchema(
                 "If this is not specified, the first key from "
                 "SECRET_FILE will be used (after having been run "
                 "through PBKDF2 for JWT_SECRET_ITERATIONS iterations "
-                "with the value JWT_SECRET_SALT as the salt)."
+                "with the value of JWT_SECRET_SALT as the salt)."
             ),
         ),
         ConfigItem(
