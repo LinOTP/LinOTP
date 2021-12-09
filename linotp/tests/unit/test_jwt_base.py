@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 
+import hashlib
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -90,14 +91,53 @@ def test_jwt_secret(base_app):
     ), "the jwt secret key should be unchanged after app init"
 
 
-def test_default_jwt_secret(base_app, key_directory):
+@pytest.mark.parametrize(
+    "salt,iterations",
+    [
+        ("deadbeef", 10),
+        ("deadbeef", 100000),
+        (b"\xde\xad\xbe\xef", 10),
+        (b"\xde\xad\xbe\xef", 100000),
+    ],
+)
+def test_default_jwt_secret(base_app, key_directory, salt, iterations):
     base_app.config["JWT_SECRET_KEY"] = None
+    base_app.config["JWT_SECRET_SALT"] = salt
+    base_app.config["JWT_SECRET_ITERATIONS"] = iterations
     base_app.config["SECRET_FILE"] = key_directory / "encKey"
 
     base_app.init_jwt_config()
 
     with Path(key_directory / "encKey").open("rb") as key_file:
-        secret_key = key_file.read(32).hex()
+        secret_key = key_file.read(32)
+        jwt_key = hashlib.pbkdf2_hmac(
+            "sha256",
+            secret_key,
+            salt=bytes.fromhex(salt) if isinstance(salt, str) else salt,
+            iterations=iterations,
+        )
         assert (
-            base_app.config["JWT_SECRET_KEY"] == secret_key
-        ), "the jwt secret key should default to encKey if not defined at app init time"
+            base_app.config["JWT_SECRET_KEY"] == jwt_key
+        ), "JWT secret derivation from encKey doesn't work"
+
+
+def test_random_jwt_secret(base_app, key_directory):
+    base_app.config["SECRET_FILE"] = key_directory / "encKey"
+
+    base_app.config["JWT_SECRET_KEY"] = ""
+    base_app.config["JWT_SECRET_SALT"] = ""
+    base_app.init_jwt_config()
+    secret_key_1 = base_app.config["JWT_SECRET_KEY"]
+
+    base_app.config["JWT_SECRET_KEY"] = ""
+    base_app.config["JWT_SECRET_SALT"] = ""
+    base_app.init_jwt_config()
+    secret_key_2 = base_app.config["JWT_SECRET_KEY"]
+
+    # In theory this test can fail if the same (128-bit)
+    # random salt is generated twice in a row, but this
+    # is very unlikely indeed. If the test does fail it
+    # is *way* more probable that there is a problem with
+    # how the key derivation works.
+
+    assert secret_key_1 != secret_key_2
