@@ -81,13 +81,19 @@ def test_session_cookie_secure(
         assert False, "no jwt access token cookie found"
 
 
-def test_jwt_secret(base_app):
-    secret_key = 3 * "abcdef0123456789" * 4
-    base_app.config["JWT_SECRET_KEY"] = secret_key
+@pytest.mark.parametrize(
+    "key,result",
+    [
+        ("deadbeef", b"\xde\xad\xbe\xef"),
+        (b"\xde\xad\xbe\xef", b"\xde\xad\xbe\xef"),
+    ],
+)
+def test_jwt_secret(base_app, key, result):
+    base_app.config["JWT_SECRET_KEY"] = key
 
     base_app.init_jwt_config()
     assert (
-        base_app.config["JWT_SECRET_KEY"] == secret_key
+        base_app.config["JWT_SECRET_KEY"] == result
     ), "the jwt secret key should be unchanged after app init"
 
 
