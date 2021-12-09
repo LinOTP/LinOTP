@@ -326,8 +326,6 @@ class RealmManager(ManageDialog):
     def create(self, name, resolvers=None):
         """Create a new realm linked to the given resolver names."""
 
-        self.open()
-        self.reparse()
         old_realms = self.get_realms_list()
 
         dialog = self.click_new_realm()
