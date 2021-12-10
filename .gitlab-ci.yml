@@ -390,6 +390,10 @@ functional-test-postgres:
       -----END CERTIFICATE-----
       "
   artifacts:
+    name: browser-screenshots
+    paths:
+      - Screenshots/
+    when: on_failure
     reports:
       junit: linotp/tests/integration/e2e-*.xml
   script:
@@ -403,6 +407,8 @@ functional-test-postgres:
         --timeout 60m
     - *pytest-args
     - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="$PYTESTARGS"
+  after_script:
+    - mv linotp/tests/integration/Screenshots .
 
 e2e-test-mariadb:
   extends:
