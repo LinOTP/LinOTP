@@ -39,7 +39,6 @@ from linotp_selenium_helper.token_import import (
     TokenImportAladdin,
     TokenImportError,
 )
-from linotp_selenium_helper.token_view import TokenView
 
 # All the tests in this file make use of the musicians realm as default
 pytestmark = pytest.mark.usefixtures("musicians_realm")
@@ -50,7 +49,7 @@ def aladdin(manage_ui):
     return TokenImportAladdin(manage_ui)
 
 
-def check_menu_is_closed(manage_ui):
+def check_menu_is_closed(manage_ui: ManageUi):
     """Check that import menu is closed.
 
     By checking that the aladdin menu entry is not visible
