@@ -54,11 +54,10 @@ def check_menu_is_closed(manage_ui: ManageUi):
 
     By checking that the aladdin menu entry is not visible
     """
-    # Find element even when hidden
-    menu_element = manage_ui.driver.find_element_by_id(
-        "menu_load_aladdin_xml_tokenfile"
-    )
-    assert not menu_element.is_displayed(), menu_element
+    # Move the mouse somewhere else to ensure the menu is closed
+    manage_ui.find_by_id("logo").click()
+
+    manage_ui.wait_for_element_disappearing("#menu_load_aladdin_xml_tokenfile")
 
 
 def test_token_import_aladdin_xml(
