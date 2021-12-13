@@ -39,7 +39,6 @@ from linotp_selenium_helper.token_import import (
     TokenImportAladdin,
     TokenImportError,
 )
-from linotp_selenium_helper.token_view import TokenView
 
 # All the tests in this file make use of the musicians realm as default
 pytestmark = pytest.mark.usefixtures("musicians_realm")
@@ -50,16 +49,15 @@ def aladdin(manage_ui):
     return TokenImportAladdin(manage_ui)
 
 
-def check_menu_is_closed(manage_ui):
+def check_menu_is_closed(manage_ui: ManageUi):
     """Check that import menu is closed.
 
     By checking that the aladdin menu entry is not visible
     """
-    # Find element even when hidden
-    menu_element = manage_ui.driver.find_element_by_id(
-        "menu_load_aladdin_xml_tokenfile"
-    )
-    assert not menu_element.is_displayed(), menu_element
+    # Move the mouse somewhere else to ensure the menu is closed
+    manage_ui.find_by_id("logo").click()
+
+    manage_ui.wait_for_element_disappearing("#menu_load_aladdin_xml_tokenfile")
 
 
 def test_token_import_aladdin_xml(

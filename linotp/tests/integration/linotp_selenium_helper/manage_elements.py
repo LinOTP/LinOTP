@@ -24,12 +24,16 @@
 #    Support: www.keyidentity.com
 #
 
+import typing
 from typing import Dict, List
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+
+if typing.TYPE_CHECKING:
+    from linotp_selenium_helper.manage_ui import ManageUi
 
 """
 This file contains classes for interacting with elements on the manage page
@@ -43,7 +47,7 @@ class ManageElement(object):
 
     """
 
-    def __init__(self, manage_ui):
+    def __init__(self, manage_ui: "ManageUi"):
         """
         The manage element can be initialised with an existing manage object, or a testcase.
         If the testcase is supplied, it will be used to determine the manage ui instance.
@@ -104,7 +108,7 @@ class ManageTab(ManageElement):
     flexigrid_css = None
     "Selector for the flexigrid widget"
 
-    def __init__(self, manage_ui):
+    def __init__(self, manage_ui: "ManageUi"):
         super(ManageTab, self).__init__(manage_ui)
         self.tabbutton_css = (
             "div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type(%s) > a > span"
