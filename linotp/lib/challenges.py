@@ -25,6 +25,7 @@
 #
 
 import datetime
+import functools
 import json
 import logging
 
@@ -33,6 +34,7 @@ from sqlalchemy import and_, desc
 from flask import g
 
 import linotp
+from linotp.lib.cache_utils import cache_in_request
 from linotp.lib.context import request_context as context
 from linotp.model import db
 from linotp.model.challange import Challenge
@@ -322,7 +324,22 @@ class Challenges(object):
 
         return res
 
+    def _get_challenges_cache_keygen(
+        token=None, transid=None, options=None, filter_open=False
+    ):
+        """
+        takes exactly the same parameters as get_challanges
+        and produces a key for keeping the return value of get_challanges
+        in the cache
+        In this case the only problem is the token object which we will
+        replace by the token serial
+        """
+        token_key = token.getSerial() if token else None
+        options_key = str(options)
+        return json.dumps((token_key, transid, options_key, filter_open))
+
     @staticmethod
+    @cache_in_request(key_generator=_get_challenges_cache_keygen)
     def get_challenges(
         token=None, transid=None, options=None, filter_open=False
     ):
