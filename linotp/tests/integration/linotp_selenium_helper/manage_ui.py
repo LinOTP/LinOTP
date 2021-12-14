@@ -376,8 +376,14 @@ class ManageUi(object):
         Some elements, e.g. the realms dialog, take some time for network communication.
         During this period, the do_waiting is displayed. Wait for this to disappear
         """
+        self.wait_for_element_disappearing("#do_waiting")
+
+    def wait_for_element_disappearing(self, css: str) -> None:
+        """
+        Wait until the element(s) with given css selector are no longer visible
+        """
         WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(
-            EC.visibility_of_element_located((By.ID, "do_waiting"))
+            EC.visibility_of_element_located((By.CSS_SELECTOR, css))
         )
 
     def is_element_visible(self, css) -> bool:
