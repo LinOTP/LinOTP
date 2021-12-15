@@ -439,6 +439,7 @@ e2e-test-softhsm:
       alias: db
     - name: selenium/standalone-chrome-debug:latest
       alias: test-chrome
+  allow_failure: true
 
 # Auto-generate API docs using Sphinx.
 apidocs:
