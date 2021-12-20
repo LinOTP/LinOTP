@@ -29,6 +29,8 @@ Pytest fixtures for linotp integration tests
 
 # pylint: disable=redefined-outer-name
 
+from datetime import datetime
+from pathlib import Path
 from typing import Dict
 
 import integration_data as data
@@ -41,7 +43,6 @@ from linotp_selenium_helper.test_case import TestCase
 @pytest.fixture(scope="module")
 def testcase():
     """Testcase, which manages the driver and test configuration."""
-
     # TestCase is a unittest based class. We simulate the unittest
     # setup and teardown here so we can use it as a fixture
     t = TestCase()
@@ -124,3 +125,27 @@ def musicians_realm(
 
     if not existing:
         realm_manager.delete_realm_via_api(realm_name)
+
+
+@pytest.fixture(autouse=True, scope="session")
+def prepare_screenshot_artifacts():
+    """Prepare directory to store current test result screenshots"""
+
+    screenshots_dir = Path("Screenshots")
+    screenshots_dir.mkdir(exist_ok=True)
+    for f in screenshots_dir.glob("*"):
+        f.unlink()
+
+
+@pytest.fixture(autouse=True)
+def create_debugging_screenshots(
+    request: pytest.FixtureRequest,
+    testcase: TestCase,
+):
+    """Create screenshots after test to improve debugging of failed tests"""
+    yield
+    testname = request.node.name
+    timestamp = int(datetime.utcnow().timestamp() * 1000)
+    filename = f"Screenshots/Screenshot_{testname}_{timestamp}.png"
+
+    testcase.driver.save_screenshot(filename)

@@ -43,7 +43,6 @@ from linotp_selenium_helper.token_import import (
     TokenImportError,
     TokenImportOATH,
 )
-from linotp_selenium_helper.token_view import TokenView
 
 # All the tests in this file make use of the musicians realm as default
 pytestmark = pytest.mark.usefixtures("musicians_realm")
@@ -59,19 +58,15 @@ def oathcsv_importer(manage_ui):
     return TokenImportOATH(manage_ui)
 
 
-def check_menu_is_closed(manage_ui):
+def check_menu_is_closed(manage_ui: ManageUi):
     """Check that import menu is closed.
 
     By checking that the aladdin menu entry is not visible
     """
-    # Find element even when hidden
-    menu_element = manage_ui.driver.find_element(
-        By.ID, "menu_load_aladdin_xml_tokenfile"
-    )
-    if menu_element.is_displayed():
-        sleep(1)
+    # Move the mouse somewhere else to ensure the menu is closed
+    manage_ui.find_by_id("logo").click()
 
-    assert not menu_element.is_displayed(), menu_element
+    manage_ui.wait_for_element_disappearing("#menu_load_aladdin_xml_tokenfile")
 
 
 def test_token_import_aladdin_xml(
