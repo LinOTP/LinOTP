@@ -79,6 +79,11 @@ def mocked_submitMessage_request(SMS_Object, *argparams, **kwparams):
 
 @pytest.mark.nightly
 class TestChallengePrompt(TestController):
+    """Tests for ChallengePrompt of different tokens
+
+    :note: The test for email_challenge_prompt is
+    being done in the test_email_token
+    """
 
     sms_url = "http://localhost:%d/testing/http2sms" % 5001
 
@@ -379,7 +384,7 @@ class TestChallengePrompt(TestController):
 
         # define a system defined challenge prompt
 
-        prompt = "How are you?"
+        prompt = "How are you sms challenge?"
         params = {"SMS_CHALLENGE_PROMPT": prompt}
         response = self.make_system_request("setConfig", params)
 
