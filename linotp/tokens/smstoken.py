@@ -612,9 +612,7 @@ class SmsTokenClass(HmacTokenClass):
         if options is None:
             options = {}
 
-        message = getFromConfig(
-            self.type.upper() + "_CHALLENGE_PROMPT", "sms submitted"
-        )
+        message = self.getChallengePrompt(default="sms submitted")
 
         attributes = {"state": transactionid}
 

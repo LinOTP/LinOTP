@@ -69,6 +69,7 @@ class TestChallengePrompt(unittest.TestCase):
 
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.smstoken.getFromConfig", mock_getFromConfig)
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.smstoken.SmsTokenClass.loadLinOtpSMSValidTime")
     @patch("linotp.tokens.smstoken.SmsTokenClass.setValidUntil")
     @patch("linotp.tokens.smstoken.SmsTokenClass.submitChallenge")
@@ -95,6 +96,7 @@ class TestChallengePrompt(unittest.TestCase):
 
         return
 
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_password_token_challenge_prompt(self):
 
@@ -125,6 +127,7 @@ class TestChallengePrompt(unittest.TestCase):
 
         return
 
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_hmac_token_challenge_prompt(self):
 
@@ -140,6 +143,7 @@ class TestChallengePrompt(unittest.TestCase):
 
         return
 
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.totptoken.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_totp_token_challenge_prompt(self):
