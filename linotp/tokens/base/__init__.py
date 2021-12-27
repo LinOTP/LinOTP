@@ -572,14 +572,25 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         ``data`` is preserved in the challenge;
         additional ``attributes``, which are displayed in the JSON response.
         """
-
-        message = getFromConfig(
-            self.type.upper() + "_CHALLENGE_PROMPT", "Otp: "
-        )
+        message = self.getChallengePrompt()
 
         data = {"serial": self.getSerial()}
         attributes = None
         return (True, message, data, attributes)
+
+    def getChallengePrompt(self, default="Otp:"):
+        """The customizable prompt for the challenge
+
+        The prompt for the challenge of every token type can be
+        declared in the config with the corresponding token type name
+        (in capitals) and concatanted by "_CHALLENGE_PROMPT".
+        e.g. SMS_CHALLENGE_PROMPT, EMAIL_CHALLENGE_PROMPT  etc
+
+        """
+        prompt = getFromConfig(
+            self.type.upper() + "_CHALLENGE_PROMPT", default
+        )
+        return prompt
 
     def check_token(self, passw, user, options=None, challenges=None):
         """
