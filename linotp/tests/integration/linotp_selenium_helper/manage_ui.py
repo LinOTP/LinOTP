@@ -321,6 +321,14 @@ class ManageUi(object):
             EC.visibility_of_element_located((By.CSS_SELECTOR, css))
         )
 
+    def wait_for_element_disappearing(self, css: str) -> None:
+        """
+        Wait until the element(s) with given css selector are no longer visible
+        """
+        WebDriverWait(self.driver, self.testcase.backend_wait_time).until_not(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, css))
+        )
+
     def is_element_visible(self, css) -> bool:
         """
         Check whether a given element is visible without waiting
