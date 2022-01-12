@@ -140,7 +140,7 @@ class TestEmailtoken(TestController):
 
         # ------------------------------------------------------------------ --
 
-        # setup the mocking smtp client from which we get the sendmal args
+        # setup the mocking smtp client from which we get the sendmail args
         # to verify the template prcessing
 
         with MockedSMTP() as mock_smtp_instance:
@@ -262,7 +262,7 @@ class TestEmailtoken(TestController):
 
         # ------------------------------------------------------------------ --
 
-        # setup the mocking smtp client from which we get the sendmal args
+        # setup the mocking smtp client from which we get the sendmail args
         # to verify the template prcessing
 
         with MockedSMTP() as mock_smtp_instance:
@@ -453,11 +453,19 @@ class TestEmailtoken(TestController):
 
             # now trigger a challenge for the user
 
+            # to test the EMAIL_CHALLENGE_PROMPT we set it in the config
+            prompt = "How are you email challenge?"
+            params = {"EMAIL_CHALLENGE_PROMPT": prompt}
+            response = self.make_system_request("setConfig", params)
+
+            assert prompt in response, response
+            assert response.json["result"]["status"], response
+
             params = {"user": user, "pass": "123"}
             response = self.make_validate_request("check", params=params)
 
             assert "false" in response
-            assert '"message": "e-mail sent successfully"' in response
+            assert response.json["detail"]["message"] == prompt
 
             jresp = json.loads(response.body)
             transaction_id = jresp["detail"]["transactionid"]
@@ -465,6 +473,14 @@ class TestEmailtoken(TestController):
             call_args = mock_smtp_instance.sendmail.call_args
             _from, _to, message = call_args[0]
             otp = message.rpartition("\n")[2].strip()
+
+            # unset the config entry
+            params = {"key": "EMAIL_CHALLENGE_PROMPT"}
+            response = self.make_system_request("delConfig", params)
+
+            assert (
+                '"delConfig EMAIL_CHALLENGE_PROMPT": true' in response
+            ), response
 
             # -------------------------------------------------------------- --
 

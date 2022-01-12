@@ -357,7 +357,10 @@ class EmailTokenClass(HmacTokenClass):
                  attributes - additional attributes, which are displayed in the
                     output
         :rtype: bool, string, dict, dict
+        :raises: Exceptions will not be catched therefore any exception will be passed
+        to the upper calling method
         """
+
         attributes = {}
         counter = self.getOtpCount() + 1
         data = {"counter_value": "%s" % counter}
@@ -366,10 +369,14 @@ class EmailTokenClass(HmacTokenClass):
             success, status_message = self._sendEmail()
             if success:
                 attributes = {"state": transactionid}
+                prompt_message = self.getChallengePrompt(
+                    default=status_message
+                )
+                return success, prompt_message, data, attributes
+            return False, status_message, data, {}
+
         finally:
             self.incOtpCounter(counter, reset=False)
-
-        return success, status_message, data, attributes
 
     def _get_email_address(self, user=None):
         """

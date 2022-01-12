@@ -28,6 +28,7 @@ import unittest
 
 from mock import patch
 
+from linotp.tokens.emailtoken import EmailTokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.tokens.passwordtoken import PasswordTokenClass
 from linotp.tokens.smstoken import SmsTokenClass
@@ -40,6 +41,8 @@ from linotp.tokens.yubikeytoken import YubikeyTokenClass
 class FakeTokenModel(object):
     def __init__(self):
         self.LinOtpOtpLen = 8
+        # emailtoken needs LinOtpCount variable to function correctly
+        self.LinOtpCount = 0
 
     def setType(self, typ):
         self.type = typ
@@ -50,6 +53,24 @@ class FakeTokenModel(object):
     def getInfo(self):
         return ""
 
+    def storeToken(self):
+        pass
+
+    def get_encrypted_seed(self):
+        return b"", b""
+
+
+def mock_send_email(self_obj):
+    status = True
+    status_message = "e-mail sent successfully"
+    return status, status_message
+
+
+def mock_send_email_fail(self_obj):
+    status = False
+    status_message = "sending e-mail failed"
+    return status, status_message
+
 
 Config_dict = {
     "TOTP_CHALLENGE_PROMPT": "Hello TOTP Prompt",
@@ -57,6 +78,7 @@ Config_dict = {
     "YUBIKEY_CHALLENGE_PROMPT": "Hello yubikey Prompt",
     "PW_CHALLENGE_PROMPT": "Hello Password Prompt",
     "SMS_CHALLENGE_PROMPT": "Hello SMS Prompt",
+    "EMAIL_CHALLENGE_PROMPT": "Hello E-Mail Prompt",
 }
 
 
@@ -69,6 +91,7 @@ class TestChallengePrompt(unittest.TestCase):
 
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.smstoken.getFromConfig", mock_getFromConfig)
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.smstoken.SmsTokenClass.loadLinOtpSMSValidTime")
     @patch("linotp.tokens.smstoken.SmsTokenClass.setValidUntil")
     @patch("linotp.tokens.smstoken.SmsTokenClass.submitChallenge")
@@ -95,6 +118,7 @@ class TestChallengePrompt(unittest.TestCase):
 
         return
 
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_password_token_challenge_prompt(self):
 
@@ -125,6 +149,7 @@ class TestChallengePrompt(unittest.TestCase):
 
         return
 
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_hmac_token_challenge_prompt(self):
 
@@ -140,6 +165,7 @@ class TestChallengePrompt(unittest.TestCase):
 
         return
 
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.totptoken.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_totp_token_challenge_prompt(self):
@@ -150,6 +176,51 @@ class TestChallengePrompt(unittest.TestCase):
 
         (_, message, _data, _) = totp_token.createChallenge(
             state="131231231313123", options=None
+        )
+
+        assert message == prompt
+
+        return
+
+    @patch(
+        "linotp.tokens.emailtoken.EmailTokenClass._sendEmail", mock_send_email
+    )
+    @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
+    @patch("linotp.tokens.emailtoken.getFromConfig", mock_getFromConfig)
+    def tests_email_token_challenge_prompt(self):
+
+        prompt = Config_dict.get("EMAIL_CHALLENGE_PROMPT")
+
+        email_token = EmailTokenClass(FakeTokenModel())
+
+        (_, message, _data, _) = email_token.createChallenge(
+            transactionid="131231231313123", options=None
+        )
+
+        assert message == prompt
+
+        return
+
+    @patch(
+        "linotp.tokens.emailtoken.EmailTokenClass._sendEmail",
+        mock_send_email_fail,
+    )
+    @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
+    @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
+    @patch("linotp.tokens.emailtoken.getFromConfig", mock_getFromConfig)
+    def tests_failed_email_token_challenge_prompt(self):
+        """To test that the prompt will be the output of
+        the email provider rather than the custom message from the config
+        """
+
+        # this is the prompt that mock_send_email will produce
+        prompt = "sending e-mail failed"
+
+        email_token = EmailTokenClass(FakeTokenModel())
+
+        (_, message, _data, _) = email_token.createChallenge(
+            transactionid="131231231313123", options=None
         )
 
         assert message == prompt
