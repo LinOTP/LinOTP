@@ -419,6 +419,24 @@ $ pre-commit run
 Use the arguments `--files …` or `--all-files` to change what files are checked.
 
 
+## api documentation / api-docs
+
+
+First install the requirements to generate the api documentation:
+```terminal
+$ pip3 install -e ".[apidocs]"
+```
+
+However, this is not necessary if you have already installed the requirements
+for the development (".[develop]") environment.
+
+To build the api documentation enter the following commands in your terminal:
+
+```terminal
+$ cd api-doc
+$make apidocs html
+```x
+
 ## Debian packages
 
 You can generate a LinOTP `.deb` package that is suitable for
