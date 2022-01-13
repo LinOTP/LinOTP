@@ -65,6 +65,7 @@ class TestHelpdeskSetPin(TestController):
 
         TestController.tearDown(self)
 
+    @pytest.mark.xfail
     def test_setPin_admin_right(self):
         """verify that helpdesk can set pin according to the admin policies"""
 

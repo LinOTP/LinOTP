@@ -57,6 +57,7 @@ def check_menu_is_closed(manage_ui: ManageUi):
     # Move the mouse somewhere else to ensure the menu is closed
     manage_ui.find_by_id("logo").click()
 
+    # Find element even when hidden
     manage_ui.wait_for_element_disappearing("#menu_load_aladdin_xml_tokenfile")
 
 

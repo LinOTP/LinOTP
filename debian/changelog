@@ -55,6 +55,9 @@ linotp (3.1-1) buster; urgency=medium
     via the `linotp init database` command.
   * Validate no longer wrongly references autoenrollment for users that do
     not own any tokens as the error message.
+  * Allow flaky helpdesk test to fail - as the helpdesk will be removed with
+    linotp 3.2
+  * backport fix for flaky integration test
 
  -- LinOTP Packaging <packaging@linotp.de>  Thu, 30 Sep 2021 14:47:35 +0200
 
