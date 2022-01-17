@@ -80,6 +80,31 @@ class SystemConfig(ManageDialog):
         split_at_checkbox = self.find_by_id(self.tab_settings_split_at)
         return split_at_checkbox.is_selected()
 
+    def get_last_access_option(self):
+        """Return checkbox value True/False for the 'Settings' Tab,
+        'Log usage timestamps in token info:'
+        """
+        return self.find_by_id("token_last_access_check").is_selected()
+
+    def set_last_access_option(self, enable=True):
+        """Set the checkbox value for token's last usuage
+        look at get_log_timestamps
+        """
+        if enable:
+            if not self.get_last_access_option():
+                self.find_by_id("token_last_access_check").click()
+        else:
+            if self.get_last_access_option():
+                self.find_by_id("token_last_access_check").click()
+
+        assert (
+            self.find_by_id("token_last_access_check").is_selected() == enable
+        ), (
+            "check box for logging usage timestamps should be"
+            + str(enable)
+            + "selected by now"
+        )
+
     def save(self):
         """
         Save the system configuration changes
