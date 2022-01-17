@@ -25,10 +25,15 @@
 #
 """Selenium Test for changing the system configuration """
 
+import time
+from datetime import datetime, timedelta
+
 import pytest
 
-from linotp_selenium_helper import TestCase
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
+from linotp_selenium_helper import TestCase, helper
 from linotp_selenium_helper.manage_ui import MsgType
+from linotp_selenium_helper.validate import Validate
 
 
 class TestSystemConfig(TestCase):
@@ -95,3 +100,74 @@ class TestSystemConfig(TestCase):
             assert (
                 not split_at_state
             ), "'False' for 'SplitAt@' checkbox not saved!"
+
+    def test_usage_timestamp(self):
+        """Test the option for storing the last Authentication info of Tokens"""
+
+        # note: how should we add the initial users before this test?
+        # open config box and set the option
+        pasw = "12345"
+        otp = "1234"
+
+        self.system_config.open()
+        self.system_config.set_last_access_option(True)
+        self.system_config.save()
+
+        self.manage_ui.token_view.clear_tokens_via_api()
+        tokenserial = self.manage_ui.token_enroll.create_static_password_token(
+            pasw
+        )
+        # assign token
+        username = "susi"
+        # helper.get_from_tconfig(
+        #     ["linotp", "username"],
+        #     required=True,
+        # )
+        self.manage_ui.user_view.select_user(username)
+        self.manage_ui.token_view.assign_token(tokenserial, otp)
+
+        validate = Validate(
+            self.http_protocol,
+            self.http_host,
+            self.http_port,
+            self.http_username,
+            self.http_password,
+        )
+
+        # 1-successful authentication
+        tvar = timedelta(seconds=2)
+        validation_result = validate.validate(username, otp + pasw)
+        assert (
+            validation_result[0] == True
+        ), "unexpected behavior: validation of user with password failed"
+        validationtime = datetime.now()
+        tokeninfo = self.manage_ui.token_view.get_token_info(tokenserial)
+        last_authentication = datetime.strptime(
+            tokeninfo["LinOtp.LastAuthSuccess"], DEFAULT_TIMEFORMAT
+        )
+        last_authentication_try = datetime.strptime(
+            tokeninfo["LinOtp.LastAuthMatch"], DEFAULT_TIMEFORMAT
+        )
+        assert last_authentication <= validationtime + tvar
+        assert last_authentication_try <= validationtime + tvar
+
+        # 2-failing authentication
+        time.sleep(tvar.seconds)
+        validation_result = validate.validate(username, "wrong pass")
+
+
+        assert (
+            validation_result[0] == False
+        ), "unexpected behavior: critical! validation of user should have failed here"
+
+        validationtime = datetime.now()
+        tokeninfo = self.manage_ui.token_view.get_token_info(tokenserial)
+        last_authentication = datetime.strptime(
+            tokeninfo["LinOtp.LastAuthSuccess"], DEFAULT_TIMEFORMAT
+        )
+        last_authentication_try = datetime.strptime(
+            tokeninfo["LinOtp.LastAuthMatch"], DEFAULT_TIMEFORMAT
+        )
+
+        assert last_authentication < validationtime
+        assert last_authentication_try <= validationtime + tvar
