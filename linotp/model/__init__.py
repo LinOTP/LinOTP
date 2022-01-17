@@ -526,14 +526,14 @@ def set_defaults(app):
 
     set_config(
         key="user_lookup_cache.enabled",
-        value="False",
+        value="True",
         typ="bool",
         description="enable user loookup caching",
     )
 
     set_config(
         key="resolver_lookup_cache.enabled",
-        value="False",
+        value="True",
         typ="bool",
         description="enable realm resolver caching",
     )
