@@ -54,6 +54,9 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * user and resolver caching is now enabled by default
   * extended sms provider logging
   * support for TIMEOUT parameter in all networking providers
+  * SMS blocking time is now configureable in the SMS token configuration dialog.
+    The blocking time is the period that needs to pass before another challenge
+    can be triggered by the same user in seconds.
 
   Breaking Changes:
   * The helpdesk controller has been removed.
