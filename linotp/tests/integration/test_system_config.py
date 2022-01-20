@@ -117,6 +117,12 @@ class TestSystemConfig(TestCase):
             self.system_config.set_last_access_option(True)
             self.system_config.save()
 
+        # check if it is saved
+        with self.system_config:
+            assert (
+                self.system_config.get_last_access_option()
+            ), "token_last_access_check option should have been selected"
+
         self.manage_ui.token_view.clear_tokens_via_api()
         tokenserial = self.manage_ui.token_enroll.create_static_password_token(
             pasw
