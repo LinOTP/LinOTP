@@ -210,11 +210,15 @@ class SmtpSMSProvider(ISMSProvider):
 
         serv = None
         try:
-            # if SSL is defined, we require a different base class
-            if not use_ssl:
-                serv = smtplib.SMTP(server, port)
-            else:
-                serv = smtplib.SMTP_SSL(server, port)
+
+            serv_class = smtplib.SMTP
+
+            if use_ssl:
+                # if SSL is defined, we require a different base class
+                serv_class = smtplib.SMTP_SSL
+
+            serv = serv_class(server, port, timeout=self.timeout)
+
             serv.set_debuglevel(1)
 
             serv.ehlo()
@@ -270,6 +274,9 @@ class SmtpSMSProvider(ISMSProvider):
 
     def loadConfig(self, configDict):
         self.config = configDict
+        self.timeout = self.config.get(
+            "TIMEOUT", SmtpSMSProvider.DEFAULT_TIMEOUT
+        )
 
 
 # eof ########################################################################

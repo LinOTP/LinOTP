@@ -54,6 +54,7 @@ class SMPPSMSProvider(ISMSProvider):
 
         # limit provider to only support iso latin 1 encoding
         self.target_encoding = "ISO8859-1"
+        self.timeout = None
 
     def getConfigDescription(self):
         """"""
@@ -105,7 +106,10 @@ class SMPPSMSProvider(ISMSProvider):
 
         try:
             client = smpplib.client.Client(
-                self.server, self.port, allow_unknown_opt_params=True
+                self.server,
+                self.port,
+                allow_unknown_opt_params=True,
+                timeout=self.timeout,
             )
             client.set_message_received_handler(
                 lambda pdu: log.debug("delivered f{pdu.receipted_message_id}")
@@ -221,6 +225,10 @@ class SMPPSMSProvider(ISMSProvider):
 
         self.target_encoding = str(
             self.config.get("target_encoding", "ISO8859-1")
+        )
+
+        self.timeout = self.config.get(
+            "TIMEOUT", SMPPSMSProvider.DEFAULT_TIMEOUT
         )
 
 
