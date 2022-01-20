@@ -925,13 +925,10 @@ def get_public_keys():
     pubKeys = {}  # we use a dict to preserve the type of the license
     pubKeys["linotp"] = PUB_KEY_LINOTP
 
-    key_files = set()
-    for key_dir in PUB_KEY_DIRS:
-        if os.path.isdir(key_dir):
-            for key_file in os.listdir(key_dir):
-                for extension in PUB_KEY_EXTS:
-                    if key_file.endswith(extension):
-                        key_files.add(os.path.join(key_dir, key_file))
+    key_files = {os.path.join(key_dir, key_file) 
+                 for key_dir in PUB_KEY_DIRS if os.path.isdir(key_dir) 
+                    for key_file in os.listdir(key_dir) 
+                        for extension in PUB_KEY_EXTS if key_file.endswith(extension)}
 
     for key_file in key_files:
         try:
