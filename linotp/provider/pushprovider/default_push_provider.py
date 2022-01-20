@@ -46,12 +46,6 @@ from linotp.provider import provider_registry
 from linotp.provider.config_parsing import ConfigParsingMixin
 from linotp.provider.pushprovider import IPushProvider
 
-#
-# set the default connection and request timeouts
-#
-
-DEFAULT_TIMEOUT = (3, 5)
-
 log = logging.getLogger(__name__)
 
 
@@ -69,7 +63,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
         self.client_cert = None
         self.server_cert = None
         self.proxy = None
-        self.timeout = DEFAULT_TIMEOUT
+        self.timeout = DefaultPushProvider.DEFAULT_TIMEOUT
 
         IPushProvider.__init__(self)
 
