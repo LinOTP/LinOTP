@@ -144,9 +144,26 @@ class ManageUi(object):
             "csrf_access_token"
         )
 
-    def is_manage_open(self) -> bool:
+    def is_url_correct(self):
+        """Checks if the url is correctly pointing to the manage"""
         possible_urls = (self.URL, self.URL + "/", self.URL + "/#")
         return self.driver.current_url.endswith(possible_urls)
+
+    def is_tabs_visible(self, wait=0):
+        """Check if the element 'tabs' is visible
+        This would serve as an extra safety to make sure the manage is open and accessible
+        """
+        try:
+            self.wait_for_element_visibility("tabs", wait)
+            return True
+        except:
+            return False
+
+    def is_manage_open(self, wait=0) -> bool:
+        """Checks if the manage is open
+        :return: boolean, whether the manage is open or not
+        """
+        return self.is_tabs_visible(wait) and self.is_url_correct()
 
     def is_login_open(self) -> bool:
         possible_urls = (self.URL + "/login", self.URL + "/login#")
@@ -173,13 +190,13 @@ class ManageUi(object):
         """
         return self.testcase.driver
 
-    def check_url(self) -> None:
+    def check_manage_is_open(self, wait=0) -> None:
         """
         Check we are on the right page
         """
-        assert (
-            self.is_manage_open()
-        ), "URL %s should end with %s - page not loaded?" % (
+        assert self.is_manage_open(
+            wait
+        ), "URL %s should end with %s - page not loaded? " % (
             self.driver.current_url,
             self.URL,
         )
@@ -221,13 +238,14 @@ class ManageUi(object):
         )
 
     def open_manage(self) -> None:
+        """Opens the manage ui page if it is not open and logs in if needed"""
         if not self.is_manage_open():
             self.driver.get(self.manage_url)
 
         if self.is_login_open():
             self.login()
 
-        self.check_url()  # assert that manage is open
+        assert self.is_manage_open(), "ManageUi is not open"
 
         self.welcome_screen.close_if_open()
 
@@ -253,9 +271,10 @@ class ManageUi(object):
         helper.fill_form_element(self.driver, "password", password)
 
         self.find_by_id("password").submit()
-        self.wait_for_element_visibility("tabs", 5)
 
-        assert self.is_manage_open(), "Expecting manage ui to open after login"
+        self.check_manage_is_open(
+            wait=3
+        )  # "Expecting manage ui to open after login"
 
     def logout(self):
         assert self.is_manage_open()
