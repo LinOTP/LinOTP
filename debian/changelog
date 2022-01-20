@@ -53,6 +53,7 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     in the config by the EMAIL_CHALLENGE_PROMPT entry.
   * user and resolver caching is now enabled by default
   * extended sms provider logging
+  * support for TIMEOUT parameter in all networking providers
 
   Breaking Changes:
   * The helpdesk controller has been removed.
@@ -105,7 +106,7 @@ linotp (3.1-1) buster; urgency=medium
     voice_dynamic_mobile_number therefore directly reflect external user data
     changes.
   * Remove references to the deactivated newsletter and former company names
-  * Legacy Selfservice now correctly recognizes type=yubikey tokens in MFA login. 
+  * Legacy Selfservice now correctly recognizes type=yubikey tokens in MFA login.
   * Manage-UI no longer gets stuck in the interface initializtaion if the logged
     in user is missing required admin permissions. Now, it is guaranteed that a
     logout is always possible.
@@ -114,7 +115,7 @@ linotp (3.1-1) buster; urgency=medium
   * getotp view is now working with python3
   * Token validity period (stored in UTC) is now compared against current
     time in UTC instead of the server's timezone.
-  * Log username, realm, serial and token type in audit table when performing a 
+  * Log username, realm, serial and token type in audit table when performing a
     `validate/check_status` request.
   * Fix padding of crypted data by migrating to pkcs7 padding
     via the `linotp init database` command.
