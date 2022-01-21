@@ -205,6 +205,7 @@ class TestHelpdeskSetPin(TestController):
 
         return
 
+    @pytest.mark.xfail
     def test_setPin_random_pin(self):
         """verify: helpdesk setPin works according to the random policies"""
 
