@@ -97,6 +97,7 @@ class SMPPSMSProvider(ISMSProvider):
         """
 
         result = True
+        client = None
 
         # setup the configuration
         if not self.config:
@@ -116,7 +117,8 @@ class SMPPSMSProvider(ISMSProvider):
             log.error("Failed to connect to server: %r", exx)
             # Do `client.disconnect()` even if the client isn't
             # connected, to avoid "Client is not closed" message
-            client.disconnect()
+            if client:
+                client.disconnect()
             raise ProviderNotAvailable("Failed to connect to server %r" % exx)
 
         try:
