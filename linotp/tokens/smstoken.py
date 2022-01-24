@@ -991,25 +991,31 @@ class SmsTokenClass(HmacTokenClass):
             sms_provider = loadProvider("sms", provider_name=provider_name)
 
             if not sms_provider:
+                log.error("Unable to load provider  %r", provider_name)
+                log.error("Please verify your provider configuration!")
                 raise Exception("unable to load provider")
 
             try:
 
                 success = sms_provider.submitMessage(phone, message)
-
                 available = True
+
+                log.info(
+                    "SMS successful submitted by provider: %r", provider_name
+                )
                 break
 
             except ProviderNotAvailable as exx:
-                log.error("Provider not available %r", provider_name)
+                log.warn("Provider not available %r", provider_name)
                 res_scheduler.block(provider_name, delay=30)
 
         if not available:
+            log.error("all providers are not available %r", providers)
             raise AllResourcesUnavailable(
                 "unable to connect to any SMSProvider %r" % providers
             )
 
-        log.debug("[sendSMS] message submitted")
+        log.info("[sendSMS] message submitted")
 
         # # after submit set validity time
         self.setValidUntil()
