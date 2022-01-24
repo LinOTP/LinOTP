@@ -47,17 +47,17 @@ class TestSystemConfig(TestCase):
         self.alert_box_handler = self.manage_ui.alert_box_handler
 
     def test_split_at(self):
-
-        self.system_config.open()
-
-        # Set the opposite value of current 'split at' - force change
-        split_at_pre_state = self.system_config.getSplitAt()
-        if split_at_pre_state:
-            self.system_config.setSplitAt(False)
-        else:
-            self.system_config.setSplitAt(True)
-
-        self.system_config.save()
+        """
+        Test that split_at option is saved and retrieved correctly
+        """
+        with self.system_config:
+            # Set the opposite value of current 'split at' - force change
+            split_at_pre_state = self.system_config.getSplitAt()
+            if split_at_pre_state:
+                self.system_config.setSplitAt(False)
+            else:
+                self.system_config.setSplitAt(True)
+            self.system_config.save()
 
         error_raised = self.alert_box_handler.check_message(
             "Error saving system configuration", MsgType.Error
@@ -68,20 +68,22 @@ class TestSystemConfig(TestCase):
         ), "Error during system configuration save procedure!"
 
         self.alert_box_handler.clear_messages()
-        self.system_config.open()
-        # After the re-open and the previous save, the checkbox should be
-        # True/False (opposite of split_at_pre_state)
-        split_at_state = self.system_config.getSplitAt()
-        if split_at_pre_state:
-            assert (
-                not split_at_state
-            ), "'False' for 'SplitAt@' checkbox not saved!"
-        else:
-            assert split_at_state, "'True' for 'SplitAt@' checkbox not saved!"
+        with self.system_config:
+            # After the re-open and the previous save, the checkbox should be
+            # True/False (opposite of split_at_pre_state)
+            split_at_state = self.system_config.getSplitAt()
+            if split_at_pre_state:
+                assert (
+                    not split_at_state
+                ), "'False' for 'SplitAt@' checkbox not saved!"
+            else:
+                assert (
+                    split_at_state
+                ), "'True' for 'SplitAt@' checkbox not saved!"
 
-        # Test the other way around (set state for checkbox, set at test start)
-        self.system_config.setSplitAt(split_at_pre_state)
-        self.system_config.save()
+            # Test the other way around (set state for checkbox, set at test start)
+            self.system_config.setSplitAt(split_at_pre_state)
+            self.system_config.save()
 
         # There shouldnt raise an error
         error_raised = self.alert_box_handler.check_message(
@@ -92,14 +94,16 @@ class TestSystemConfig(TestCase):
         ), "Error during system configuration save procedure!"
 
         # Check whether the checkbox is enabled after saving and re-open
-        self.system_config.open()
-        split_at_state = self.system_config.getSplitAt()
-        if split_at_pre_state is True:
-            assert split_at_state, "'True' for 'SplitAt@' checkbox not saved!"
-        else:
-            assert (
-                not split_at_state
-            ), "'False' for 'SplitAt@' checkbox not saved!"
+        with self.system_config:
+            split_at_state = self.system_config.getSplitAt()
+            if split_at_pre_state is True:
+                assert (
+                    split_at_state
+                ), "'True' for 'SplitAt@' checkbox not saved!"
+            else:
+                assert (
+                    not split_at_state
+                ), "'False' for 'SplitAt@' checkbox not saved!"
 
     def test_usage_timestamp(self):
         """Test the option for storing the last Authentication info of Tokens"""
@@ -109,9 +113,9 @@ class TestSystemConfig(TestCase):
         pasw = "12345"
         otp = "1234"
 
-        self.system_config.open()
-        self.system_config.set_last_access_option(True)
-        self.system_config.save()
+        with self.system_config:
+            self.system_config.set_last_access_option(True)
+            self.system_config.save()
 
         self.manage_ui.token_view.clear_tokens_via_api()
         tokenserial = self.manage_ui.token_enroll.create_static_password_token(
@@ -119,10 +123,6 @@ class TestSystemConfig(TestCase):
         )
         # assign token
         username = "susi"
-        # helper.get_from_tconfig(
-        #     ["linotp", "username"],
-        #     required=True,
-        # )
         self.manage_ui.user_view.select_user(username)
         self.manage_ui.token_view.assign_token(tokenserial, otp)
 
@@ -154,7 +154,6 @@ class TestSystemConfig(TestCase):
         # 2-failing authentication
         time.sleep(tvar.seconds)
         validation_result = validate.validate(username, "wrong pass")
-
 
         assert (
             validation_result[0] == False
