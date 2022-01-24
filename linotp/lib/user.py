@@ -1473,20 +1473,15 @@ def getUserList(param, search_user):
 
     users = []
 
-    searchDict = {}
     log.debug("[getUserList] entering function getUserList")
 
     # we have to recreate a new searchdict without the realm key
     # as delete does not work
-    for key in param:
-        lval = param[key]
-        if key == "realm":
-            continue
-        if key == "resConf":
-            continue
 
-        searchDict[key] = lval
-        log.debug("[getUserList] Parameter key:%r=%r", key, lval)
+    searchDict = {
+        k: v for k, v in param.items() if k not in ("realm", "resConf")
+    }
+    log.debug("[getUserList] searchDict=%r", searchDict)
 
     resolverrrs = getResolvers(search_user)
 
