@@ -1001,7 +1001,7 @@ class SmsTokenClass(HmacTokenClass):
                 available = True
 
                 log.info(
-                    "SMS successful submitted by provider: %r", provider_name
+                    "SMS successfully submitted by provider: %r", provider_name
                 )
                 break
 
