@@ -73,7 +73,7 @@ def set_config(
         db.session.add(config_entry)
 
     elif update:
-        config_entry = Config.filter_by(Key="linotp." + key).first()
+        config_entry = Config.query.filter_by(Key="linotp." + key).first()
 
         if not key.startswith("linotp."):
             key = "linotp." + key

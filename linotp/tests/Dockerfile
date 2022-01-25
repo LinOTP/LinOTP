@@ -57,6 +57,7 @@ RUN pip3 install --upgrade \
     "pytest>=5.0" \
     "pytest-cov>=2.10" \
     pytest-freezegun \
+    pytest-mock \
     pytest-pudb \
     pytest-testconfig \
     pytest-test-groups \

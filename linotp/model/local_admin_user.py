@@ -297,6 +297,7 @@ class LocalAdminResolver:
             value=admin_resolvers_new,
             typ="text",
             description="None",
+            update=True,
         )
 
         self.session.commit()
