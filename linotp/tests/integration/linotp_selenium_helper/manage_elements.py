@@ -271,6 +271,20 @@ class ManageDialog(ManageElement):
         self.closebutton_css = self.dialog_css + " " + self.CLOSEBUTTON_CSS
         self.title_css = self.dialog_css + " " + self.TITLE_CSS
 
+    def __enter__(self):
+        """Declares the infrastructure for using the dialogue as a context manager
+
+        E.g. one can use the dialogue as in
+        'with dialogue:
+            dialogue.set_an_option()'
+        so the closing of the dialogue and other clean up will be taken
+        care of in the __exit__() method."""
+        self.open()
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        """Clean up code when the dialogue is being called as context manager"""
+        self.close_if_open()
+
     def is_open(self):
         "Return boolean value - whether dialog is open"
         return self.manage.is_element_visible(self.dialog_css)

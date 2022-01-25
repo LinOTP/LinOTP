@@ -47,7 +47,7 @@ class TestManage(TestCase):
     def test_manage_open(self):
 
         self.manage.open_manage()
-        self.manage.check_url()
+        self.manage.check_manage_is_open()
 
     def test_close_menus(self):
         """
