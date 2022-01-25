@@ -104,6 +104,7 @@ code_quality_requirements = [
 apidocs_requirements = [
     "Sphinx>4.0",
     "mock",
+    "webhelpers2",
 ]
 
 # packages needed during package build phase
