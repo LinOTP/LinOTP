@@ -92,7 +92,7 @@ build-test-environment:debian-buster:
     - pip install freezegun
     - pip install mock
     - pip install -U cffi
-    - pip install coverage
+    - pip install "coverage<6"
     - pip install bcrypt
     - pip freeze
     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
@@ -153,7 +153,7 @@ unit-test:debian-buster:
     - pip install nose nose-testconfig
     - pip install pyrad
     - pip install -U cffi
-    - pip install coverage
+    - pip install "coverage<6"
     - pip install bcrypt
     - pip freeze
     - pip install -e .
@@ -220,7 +220,7 @@ func-special-test:buster:
   stage: coverage-report
   image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   script:
-    - pip install coverage
+    - pip install "coverage<6"
     - cd coverage/${DEBIAN_RELEASE_NAME}
     - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
     - coverage combine *
