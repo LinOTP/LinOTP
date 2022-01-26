@@ -251,10 +251,7 @@ def similar_resolver_exists(config_identifier):
         for cls_identifier in cls_identifiers:
             if config_entry.startswith("linotp." + cls_identifier):
                 __, __, entry_config_identifier = config_entry.rpartition(".")
-                if (
-                    entry_config_identifier.lower()
-                    == config_identifier.lower()
-                ):
+                if entry_config_identifier == config_identifier:
                     return True
 
     return False

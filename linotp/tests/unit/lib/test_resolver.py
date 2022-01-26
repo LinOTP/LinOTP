@@ -29,7 +29,10 @@ import unittest
 import pytest
 from mock import ANY, patch
 
+from flask import g
+
 from linotp.lib import resolver
+from linotp.lib.config import getFromConfig, getLinotpConfig
 
 
 @pytest.mark.usefixtures("app")
@@ -96,3 +99,19 @@ class TestGetResolverList(unittest.TestCase):
         self._do_readonly_param_test("", False, False)
         self._do_readonly_param_test("true", False, True)
         self._do_readonly_param_test("false", False, False)
+
+
+def test_similar_resolver_exists_case_sensitive_resolver_names(app):
+    admin_realm_name = app.config["ADMIN_REALM_NAME"]
+    admin_resolvers_key = f"useridresolver.group.{admin_realm_name}"
+    admin_resolvers = getFromConfig(admin_resolvers_key, "")
+
+    # We check whether the local admin resolver can be found even if
+    # its name is given in all caps. If that operation succeeds, then
+    # the comparison is not case-sensitive (which is an error).
+
+    g.request_context["Config"] = getLinotpConfig()  # This sucks.
+    _, _, name = admin_resolvers.rpartition(".")
+    assert not resolver.similar_resolver_exists(
+        name.upper()
+    ), "similar_resolver_exists() name comparison is not case-sensitive"

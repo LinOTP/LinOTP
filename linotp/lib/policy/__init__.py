@@ -2107,7 +2107,6 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
 
     # convert realms and resolvers to lowercase
     policies["realms"] = [x.lower() for x in policies["realms"]]
-    policies["resolvers"] = [x.lower() for x in policies["resolvers"]]
 
     # in case we got a serial
     if serial != "" and serial is not None:
@@ -2132,18 +2131,15 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
     # in case of the admin policies - no user name is verified:
     # the username could be empty (not dummy) which prevents an
     # unnecessar resolver lookup
-    if user.realm:
-        # default realm user
-        if user.realm == "" and user.resolver_config_identifier == "":
-            return _getDefaultRealm() in policies["realms"]
-        if not user.realm and not user.resolver_config_identifier:
-            return _getDefaultRealm() in policies["realms"]
-        # we got a realm:
-        if user.realm != "":
-            return user.realm.lower() in policies["realms"]
-        if user.resolver_config_identifier != "":
-            lower_config_id = user.resolver_config_identifier.lower()
-            return lower_config_id in policies["resolvers"]
+
+    # default realm user
+    if not user.realm and not user.resolver_config_identifier:
+        return _getDefaultRealm() in policies["realms"]
+    # we got a realm:
+    if user.realm != "":
+        return user.realm.lower() in policies["realms"]
+    if user.resolver_config_identifier != "":
+        return user.resolver_config_identifier in policies["resolvers"]
 
     # catch all
     return False

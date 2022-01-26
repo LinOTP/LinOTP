@@ -19,6 +19,7 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * User import now always deletes users in the correct managed resolver
   * the linotp support cmd can now install demo licenses
   * the linotp cli commands don't break anymore if localisation is involved
+  * Treat resolver names case-sensitively.
 
   Features:
   * add grace to license volume exceeding and display accordingly a message

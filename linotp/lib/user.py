@@ -1451,8 +1451,7 @@ def getSearchFields(user):
         _cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if len(user.resolver_config_identifier) > 0:
-            lower_config_id = user.resolver_config_identifier.lower()
-            if config_identifier.lower() != lower_config_id:
+            if config_identifier != user.resolver_config_identifier:
                 continue
 
         # try to load the UserIdResolver Class
@@ -1474,20 +1473,15 @@ def getUserList(param, search_user):
 
     users = []
 
-    searchDict = {}
     log.debug("[getUserList] entering function getUserList")
 
     # we have to recreate a new searchdict without the realm key
     # as delete does not work
-    for key in param:
-        lval = param[key]
-        if key == "realm":
-            continue
-        if key == "resConf":
-            continue
 
-        searchDict[key] = lval
-        log.debug("[getUserList] Parameter key:%r=%r", key, lval)
+    searchDict = {
+        k: v for k, v in param.items() if k not in ("realm", "resConf")
+    }
+    log.debug("[getUserList] searchDict=%r", searchDict)
 
     resolverrrs = getResolvers(search_user)
 
@@ -1495,8 +1489,7 @@ def getUserList(param, search_user):
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if len(search_user.resolver_config_identifier) > 0:
-            lower_config_id = search_user.resolver_config_identifier.lower()
-            if config_identifier.lower() != lower_config_id:
+            if config_identifier != search_user.resolver_config_identifier:
                 continue
 
         # try to load the UserIdResolver Class
@@ -1603,8 +1596,7 @@ def getUserListIterators(param, search_user):
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if len(search_user.resolver_config_identifier) > 0:
-            lower_config_id = search_user.resolver_config_identifier.lower()
-            if config_identifier.lower() != lower_config_id:
+            if config_identifier != search_user.resolver_config_identifier:
                 continue
 
         # try to load the UserIdResolver Class
