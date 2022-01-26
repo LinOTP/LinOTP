@@ -713,6 +713,18 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
+            "JWT_CSRF_CHECK_FORM",
+            bool,
+            convert=to_boolean,
+            default=True,
+            help=(
+                "Controls if form data should also be check for the "
+                "CSRF double submit token."
+                "This is usefull for sending requests which need a "
+                "file to be downloaded by the user as their response"
+            ),
+        ),
+        ConfigItem(
             "ADMIN_REALM_NAME",
             str,
             default="linotp_admins",
