@@ -245,7 +245,7 @@ function exportAudit(audit_num, audit_page) {
     }
     
     $("<form action='/audit/search?outform=csv&rp=" + audit_num +
-        "&page=" + audit_page + "&headers=true" + 
+        "&page=" + audit_page + "&headers=true" + "&sortorder=desc" +
         "' method='post'><input type='hidden' name='csrf_token' value='" +
       jwt_getCookie('csrf_access_token') +
       "'></form>").appendTo("body").submit().remove();
