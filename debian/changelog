@@ -58,6 +58,7 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   Breaking Changes:
   * The helpdesk controller has been removed.
   * Apache-based admin authentication is no longer supported.
+  * Audit Trail export log is now ordered descending (latest logs first)
 
   Packaging:
   * The `linotp` package now `Suggests: python3-smpplib`.
