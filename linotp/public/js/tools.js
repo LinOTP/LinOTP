@@ -193,7 +193,10 @@ function exportToken(attributes) {
      * So we add temporarily this form to the body, submit the
      * form and delete it afterwards.
      */
-    $("<form action='/admin/show?outform=csv&user_fields=" + attributes + "' method='post'></form>").appendTo("body").submit().remove();
+    $("<form action='/admin/show?outform=csv&user_fields=" + attributes +
+      "' method='post'><input type='hidden' name='csrf_token' value='" +
+      jwt_getCookie('csrf_access_token') +
+      "'></form>").appendTo("body").submit().remove();
 }
 
 function create_tools_exporttoken_dialog() {
@@ -240,10 +243,12 @@ function exportAudit(audit_num, audit_page) {
     if ($.isNumeric(audit_page) == false) {
         audit_page = 1;
     }
-
+    
     $("<form action='/audit/search?outform=csv&rp=" + audit_num +
-        "&page=" + audit_page + "&headers=true" +
-        "' method='post'></form>").appendTo("body").submit().remove();
+        "&page=" + audit_page + "&headers=true" + "&sortorder=desc" +
+        "' method='post'><input type='hidden' name='csrf_token' value='" +
+      jwt_getCookie('csrf_access_token') +
+      "'></form>").appendTo("body").submit().remove();
 }
 
 function create_tools_exportaudit_dialog() {
