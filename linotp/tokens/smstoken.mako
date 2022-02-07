@@ -46,6 +46,7 @@
 function sms_get_config_val(){
     var id_map = {};
     id_map['smsChallengeValidityTime'] = 'sms_challenge_validity_time';
+    id_map['SMSBlockingTimeout'] = 'sms_challenge_blocking_time';
     return id_map;
 
 }
@@ -60,6 +61,7 @@ function sms_get_config_val(){
 function sms_get_config_params(){
     var url_params ={};
     url_params['smsChallengeValidityTime'] = $('#sms_challenge_validity_time').val();
+    url_params['SMSBlockingTimeout'] = $('#sms_challenge_blocking_time').val();
     return url_params;
 }
 </script>
@@ -68,9 +70,16 @@ function sms_get_config_params(){
 <fieldset>
     <legend>${_("SMS token settings")}</legend>
 <table>
-    <tr><td><label for=sms_challenge_validity_time>${_("Challenge expiration time (sec)")}</label></td>
+    <tr><td><label for="sms_challenge_validity_time">${_("Challenge expiration time (sec)")}</label></td>
         <td><input type="number" id="sms_challenge_validity_time" placeholder="120"
-            title='${_("Default expiration time of a challenge in seconds.")}'></td></tr>
+            title='${_("Default expiration time of a challenge in seconds.")}'>
+        </td>
+    </tr>
+    <tr><td><label for="sms_challenge_blocking_time">${_("Challenge blocking time (sec)")}</label></td>
+        <td><input type="number" id="sms_challenge_blocking_time" placeholder="60"
+            title='${_("Time that needs to pass before another challenge can be triggered by the same user in seconds.")}'>
+        </td>
+    </tr>
 </table>
 </fieldset>
 </form>

@@ -77,12 +77,12 @@ these steps:
  $ cd /usr/local/bin/
 
 Check for the latest Chromium driver:
-  https://sites.google.com/a/chromium.org/chromedriver/downloads
+  https://sites.google.com/chromium.org/driver/downloads
 
 At time of writing, the newest chromedriver is version 85. Execute the
 following commands to install it on your system:
 
- $ wget https://chromedriver.storage.googleapis.com/85.0.4183.87/chromedriver_linux64.zip
+ $ wget https://chromedriver.storage.googleapis.com/98.0.4758.80/chromedriver_linux64.zip
  $ unzip chromedriver_linux64.zip
  $ rm chromedriver_linux64.zip
  $ mv chromedriver chromedriver-2.16
@@ -189,15 +189,15 @@ what the browser does during the tests:
 
   $ docker-compose up # run all tests
 
-or
+To execute the tests manually, you can use the following command:
 
   $ docker-compose run --rm selenium_tester bash # to prepare the shell for manual execution
 
-Note, that the run command will also start a LinOTP server and the selenium container because
-of the dependencies configured in `docker-compose.yml`.
+Note, that this command will run all docker_compose services because
+of the dependencies configured in `docker-compose.yml` except the selenium_tester service where instead a bash shell is started.
 
 To be able to visually inspect the browser during the tests, we need to find out what the
-exposed port of the selenium chrome container is to be able to connect to the vnc server:
+exposed port of the selenium chrome container is so we can use this to connect the selenium host via vnc:
 
   $ docker-compose port selenium 5900
 
@@ -206,8 +206,11 @@ The password is "secret".
 
   $ remote-viewer vnc://`docker-compose port selenium 5900`
 
+Remarks:
+- on MacOS X you can use the 'open' commant instead of the 'remote-viewer'
+
 If you opted to manually run the tests, you than can start the test from your bash shell that
-we started earlier:
+we started earlier by the following command on the selenium_tester machine:
 
   $ pytest -v -x --pudb test_realm_dialog.py
 
