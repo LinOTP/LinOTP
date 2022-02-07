@@ -32,6 +32,7 @@ from copy import deepcopy
 import requests
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
+from linotp.lib.type_utils import parse_timeout
 from linotp.provider import ProviderNotAvailable, provider_registry
 from linotp.provider.config_parsing import ConfigParsingMixin
 from linotp.provider.smsprovider import ISMSProvider
@@ -44,6 +45,9 @@ log = logging.getLogger(__name__)
 @provider_registry.class_entry("smsprovider.RestSMSProvider.RestSMSProvider")
 @provider_registry.class_entry("smsprovider.RestSMSProvider")
 class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
+
+    DEFAULT_TIMEOUT = (3, 30)
+
     def __init__(self):
         self.config = {}
         self.client_cert = None
@@ -94,15 +98,9 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
 
         #!!! we set the timeout by default so that linotp wont block
 
-        timeout = configDict.get("TIMEOUT", (3, 30))
-        if isinstance(timeout, str):
-            if "," in timeout:
-                con_timeout, read_timeout = timeout.rpartition(",")
-                self.timeout = (float(con_timeout), float(read_timeout))
-            else:
-                self.timeout = float(timeout)
-        else:
-            self.timeout = timeout
+        self.timeout = parse_timeout(
+            configDict.get("TIMEOUT", RestSMSProvider.DEFAULT_TIMEOUT)
+        )
 
         # ------------------------------------------------------------------ --
 
@@ -224,8 +222,7 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
 
         # care for connection timeout
 
-        if self.timeout:
-            pparams["timeout"] = self.timeout
+        pparams["timeout"] = self.timeout
 
         # -------------------------------------------------------------- --
 

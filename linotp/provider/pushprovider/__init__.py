@@ -41,6 +41,10 @@ class IPushProvider(object):
 
     provider_type = "push"
 
+    # set the default connection and request timeouts
+
+    DEFAULT_TIMEOUT = (3, 5)
+
     def __init__(self):
         pass
 

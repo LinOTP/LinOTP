@@ -54,6 +54,14 @@ class ISMSProvider(object):
 
     provider_type = "sms"
 
+    # SMS Provider Timeout
+    # To prevent that LinOTP will be blocked due to an unlimited timeout
+    # we set here a default timeout of 5 seconds.
+    # The default timeout is only the connection timeout. To specify the
+    # data transmission timeout e.g. of 10 seconds a tuple of (5, 10) could be
+    # defined with most of the SMS provider definitions
+    DEFAULT_TIMEOUT = 5
+
     def __init__(self):
         self.config = {}
 

@@ -199,6 +199,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
         try:
             pparams = {}
 
+            pparams["timeout"] = HttpSMSProvider.DEFAULT_TIMEOUT
             if "timeout" in self.config and self.config["timeout"]:
                 pparams["timeout"] = parse_timeout(self.config["timeout"])
 

@@ -55,6 +55,14 @@ class IEmailProvider(object):
 
     provider_type = "email"
 
+    # EMail Provider Timeout
+    # To prevent that LinOTP will be blocked due to an unlimited timeout
+    # we set here a default timeout of 5 seconds.
+    # The default timeout is only the connection timeout. To specify the
+    # data transmission timeout e.g. of 10 seconds a tuple of (5, 10) could be
+    # defined with most of the EMail provider definitions
+    DEFAULT_TIMEOUT = 5
+
     def __init__(self):
         pass
 
@@ -130,6 +138,8 @@ class SMTPEmailProvider(IEmailProvider):
         self.start_tls_params_keyfile = None
         self.start_tls_params_certfile = None
 
+        self.timeout = None
+
     def loadConfig(self, configDict):
         """
         Loads the configuration for this e-mail e-mail provider
@@ -171,6 +181,10 @@ class SMTPEmailProvider(IEmailProvider):
         )
 
         self.template = configDict.get("TEMPLATE", None)
+
+        self.timeout = configDict.get(
+            "TIMEOUT", SMTPEmailProvider.DEFAULT_TIMEOUT
+        )
 
     @staticmethod
     def get_template_root():
@@ -513,7 +527,9 @@ class SMTPEmailProvider(IEmailProvider):
         if self.use_ssl:
             smtp_connector = smtplib.SMTP_SSL
 
-        smtp_connection = smtp_connector(self.smtp_server, self.smtp_port)
+        smtp_connection = smtp_connector(
+            self.smtp_server, self.smtp_port, timeout=self.timeout
+        )
 
         # ------------------------------------------------------------------ --
 
