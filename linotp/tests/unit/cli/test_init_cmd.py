@@ -39,6 +39,7 @@ import pytest
 from sqlalchemy import create_engine
 
 import linotp.cli.init_cmd as c
+from linotp import __version__
 from linotp.app import LinOTPApp
 from linotp.cli import Echo, get_backup_filename, main
 from linotp.model import db, init_db_tables, setup_db
@@ -865,3 +866,11 @@ def test_init_audit_keys_cmd_failed_openssl(
 
     cmd_result = runner.invoke(main, ["init", "audit-keys", "--force"])
     assert cmd_result.exit_code == 1
+
+
+def test_version(app, runner):
+    "Test that --version returns the correct version format"
+
+    cmd_result = runner.invoke(main, ["--version"])
+
+    assert cmd_result.output.split() == ["LinOTP", __version__]
