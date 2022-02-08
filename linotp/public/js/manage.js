@@ -7808,7 +7808,7 @@ function view_audit() {
         dataType: 'json',
         colModel: [
             { display: i18n.gettext('Number'), name: 'number', width: 50, sortable: true },
-            { display: i18n.gettext('Date'), name: 'date', width: 160, sortable: true },
+            { display: i18n.gettext('Date (UTC)'), name: 'date', width: 200, sortable: true },
             { display: i18n.gettext('Signature'), name: 'signature', width: 60, sortable: false },
             { display: i18n.gettext('Missing Lines'), name: 'missing_lines', width: 90, sortable: false },
             { display: i18n.gettext('Action'), name: 'action', width: 120, sortable: true },
@@ -7838,7 +7838,7 @@ function view_audit() {
             { display: i18n.gettext('Info'), name: 'info' },
             { display: i18n.gettext('LinOTP Server'), name: 'linotp_server' },
             { display: i18n.gettext('Client'), name: 'client' },
-            { display: i18n.gettext('Date'), name: 'date' },
+            { display: i18n.gettext('Date (UTC)'), name: 'date' },
             { display: i18n.gettext('Extended Search'), name: 'extsearch' }
         ],
         rpOptions: [10, 15, 30, 50],
