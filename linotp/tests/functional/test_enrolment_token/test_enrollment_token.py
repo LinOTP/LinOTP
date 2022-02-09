@@ -161,12 +161,10 @@ class TestRolloutToken(TestController):
         )
 
         response = self.validate_check(user, pin, otp)
-        assert ' "value": true' in response, response
+        assert response.json["result"]["value"] == True, response
 
         response = self.user_service_login(user, password, otp)
-        assert ' "value": true' in response, response
-
-        return
+        assert response.json["result"]["value"] == True, response
 
     def test_scope_selfservice(self):
         """
@@ -180,12 +178,10 @@ class TestRolloutToken(TestController):
         self.init_rollout_token(user, otp, pin, scopes=["userservice"])
 
         response = self.validate_check(user, pin, otp)
-        assert ' "value": false' in response, response
+        assert response.json["result"]["value"] == False, response
 
         response = self.user_service_login(user, password, otp)
-        assert ' "value": true' in response, response
-
-        return
+        assert response.json["result"]["value"] == True, response
 
     def test_scope_selfservice_alias(self):
         """
@@ -199,12 +195,10 @@ class TestRolloutToken(TestController):
         self.init_rollout_token(user, otp, pin, rollout=True)
 
         response = self.validate_check(user, pin, otp)
-        assert ' "value": false' in response, response
+        assert response.json["result"]["value"] == False, response
 
         response = self.user_service_login(user, password, otp)
-        assert ' "value": true' in response, response
-
-        return
+        assert response.json["result"]["value"] == True, response
 
     def test_scope_validate(self):
         """
@@ -218,12 +212,10 @@ class TestRolloutToken(TestController):
         self.init_rollout_token(user, otp, pin, scopes=["validate"])
 
         response = self.validate_check(user, pin, otp)
-        assert ' "value": true' in response, response
+        assert response.json["result"]["value"] == True, response
 
         response = self.user_service_login(user, password, otp)
-        assert ' "value": false' in response, response
-
-        return
+        assert response.json["result"]["value"] == False, response
 
     @pytest.mark.exclude_sqlite
     def test_enrollment_janitor(self):
@@ -245,10 +237,10 @@ class TestRolloutToken(TestController):
         # ensure the rollout is only valid in scope userservice
 
         response = self.validate_check(user, pin, otp)
-        assert ' "value": false' in response, response
+        assert response.json["result"]["value"] == False, response
 
         response = self.user_service_login(user, password, otp)
-        assert ' "value": true' in response, response
+        assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show", params=params)
         assert "KIPW0815" in response, response
@@ -277,7 +269,7 @@ class TestRolloutToken(TestController):
         # the rollout token should have disappeared
 
         response = self.validate_check(user, pin="Test123!", password="second")
-        assert ' "value": true' in response, response
+        assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show", params=params)
         assert "KIPW0815" not in response, response
@@ -308,8 +300,6 @@ class TestRolloutToken(TestController):
 
         assert found_in_audit_log, entries
 
-        return
-
     def test_enrollment_janitor2(self):
         """
         test janitor - remove rollout token via selfservice login
@@ -329,10 +319,10 @@ class TestRolloutToken(TestController):
         # possible in the selfservice
 
         response = self.validate_check(user, pin, otp)
-        assert ' "value": false' in response, response
+        assert response.json["result"]["value"] == False, response
 
         response = self.user_service_login(user, password, otp)
-        assert ' "value": true' in response, response
+        assert response.json["result"]["value"] == True, response
 
         # ------------------------------------------------------------------ --
 
@@ -348,12 +338,10 @@ class TestRolloutToken(TestController):
         # the rollout token should have disappeared
 
         response = self.user_service_login(user, password, otp="second")
-        assert ' "value": true' in response, response
+        assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show", params=params)
         assert "KIPW0815" not in response, response
-
-        return
 
     def test_enrollment_janitor3(self):
         """
@@ -372,10 +360,10 @@ class TestRolloutToken(TestController):
         # possible in the selfservice
 
         response = self.validate_check(user, pin, otp)
-        assert ' "value": false' in response, response
+        assert response.json["result"]["value"] == False, response
 
         response = self.user_service_login(user, password, otp)
-        assert ' "value": true' in response, response
+        assert response.json["result"]["value"] == True, response
 
         # ------------------------------------------------------------------ --
 
@@ -391,12 +379,10 @@ class TestRolloutToken(TestController):
         # the rollout token should not disappeared as the policy is not set
 
         response = self.user_service_login(user, password, otp="second")
-        assert ' "value": true' in response, response
+        assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show", params=params)
         assert "KIPW0815" in response, response
-
-        return
 
     def do_enroll_token_purge_scope_validate(self, scope):
         """
@@ -419,16 +405,16 @@ class TestRolloutToken(TestController):
 
         response = self.validate_check(user, pin, otp)
         if "validate" in scope:
-            self.assertTrue(' "value": true' in response, response)
+            assert response.json["result"]["value"] == True, response
         else:
-            self.assertTrue(' "value": false' in response, response)
+            assert response.json["result"]["value"] == False, response
 
         # Login via selfservice
         response = self.user_service_login(user, password, otp)
         if "userservice" in scope:
-            self.assertTrue(' "value": true' in response, response)
+            assert response.json["result"]["value"] == True, response
         else:
-            self.assertTrue(' "value": false' in response, response)
+            assert response.json["result"]["value"] == False, response
 
         # ------------------------------------------------------------------ --
 
@@ -436,7 +422,7 @@ class TestRolloutToken(TestController):
         # should not have purged the rollout token
 
         response = self.make_admin_request("show")
-        token_info = response.json["result"]["value"]["data"][0]
+        token_info = response.json["result"]["value"]["data"][1]
         self.assertEquals(
             token_info["LinOtp.TokenSerialnumber"], "KIPW0815", response
         )
@@ -450,10 +436,10 @@ class TestRolloutToken(TestController):
         # rollout token should have been purged as the policy is set
 
         response = self.user_service_login(user, password, otp="second")
-        self.assertTrue(' "value": true' in response, response)
+        assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
-        self.assertTrue("KIPW0815" not in response, response)
+        assert "KIPW0815" not in response, response
 
     def test_enroll_token_purge_scope_validate(self):
         """
@@ -488,10 +474,10 @@ class TestRolloutToken(TestController):
         # do a login with both tokens
 
         response = self.validate_check(user, pin1, otpkey)
-        self.assertTrue(' "value": true' in response, response)
+        assert response.json["result"]["value"] == True, response
 
         response = self.validate_check(user, pin2, otpkey)
-        self.assertTrue(' "value": true' in response, response)
+        assert response.json["result"]["value"] == True, response
 
         # ------------------------------------------------------------------ --
 
@@ -499,8 +485,8 @@ class TestRolloutToken(TestController):
         # should not have been purged
 
         response = self.make_admin_request("show")
-        self.assertTrue("KIPW01" in response, response)
-        self.assertTrue("KIPW02" in response, response)
+        assert "KIPW01" in response, response
+        assert "KIPW02" in response, response
 
     def test_selfservice_usertokenlist(self):
         """
