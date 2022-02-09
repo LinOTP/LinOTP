@@ -29,6 +29,7 @@
 Test the onetime token for the selfservice login
 """
 import json
+from typing import List
 
 import pytest
 
@@ -90,6 +91,54 @@ class TestRolloutToken(TestController):
 
         return response
 
+    def init_rollout_token(
+        self,
+        user: str,
+        pw: str,
+        pin: str,
+        serial: str = "KIPW0815",
+        scopes: List[str] = None,
+        rollout: bool = None,
+    ):
+        params = {
+            "otpkey": pw,
+            "user": user,
+            "pin": pin,
+            "type": "pw",
+            "serial": serial,
+            "description": "Test rollout token",
+        }
+
+        assert (
+            scopes is not None or rollout is not None
+        ), "You should be setting scopes or rollout params for initializing rollout tokens"
+
+        if rollout is not None:
+            params["rollout"] = "True"
+        if scopes is not None:
+            params["scope"] = json.dumps({"path": scopes})
+
+        response = self.make_admin_request("init", params=params)
+        assert response.json["result"]["value"] == True, response
+
+    def init_token(
+        self,
+        user: str,
+        pw: str,
+        pin: str,
+        serial: str = "KIPWOTHER",
+    ):
+        params = {
+            "otpkey": pw,
+            "user": user,
+            "pin": pin,
+            "type": "pw",
+            "serial": serial,
+            "description": "Production token - not rollout",
+        }
+        response = self.make_admin_request("init", params=params)
+        assert response.json["result"]["value"] == True, response
+
     def validate_check(self, user, pin, password):
         params = {"user": user, "pass": pin + password}
         response = self.make_validate_request("check", params=params)
@@ -107,47 +156,9 @@ class TestRolloutToken(TestController):
         otp = "verry_verry_secret"
         pin = "1234567890"
 
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "description": "enrollment test token",
-            "scope": json.dumps({"path": ["validate", "userservice"]}),
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
-
-        response = self.validate_check(user, pin, otp)
-        assert ' "value": true' in response, response
-
-        response = self.user_service_login(user, password, otp)
-        assert ' "value": true' in response, response
-
-        return
-
-    def test_scope_both2(self):
-        """
-        test token with both scopes defined
-        """
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "description": "enrollment test token",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
+        self.init_rollout_token(
+            user, otp, pin, scopes=["validate", "userservice"]
+        )
 
         response = self.validate_check(user, pin, otp)
         assert ' "value": true' in response, response
@@ -166,18 +177,7 @@ class TestRolloutToken(TestController):
         otp = "verry_verry_secret"
         pin = "1234567890"
 
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "description": "enrollment test token",
-            "scope": json.dumps({"path": ["userservice"]}),
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
+        self.init_rollout_token(user, otp, pin, scopes=["userservice"])
 
         response = self.validate_check(user, pin, otp)
         assert ' "value": false' in response, response
@@ -196,18 +196,7 @@ class TestRolloutToken(TestController):
         otp = "verry_verry_secret"
         pin = "1234567890"
 
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "description": "enrollment test token",
-            "rollout": "True",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
+        self.init_rollout_token(user, otp, pin, rollout=True)
 
         response = self.validate_check(user, pin, otp)
         assert ' "value": false' in response, response
@@ -226,18 +215,7 @@ class TestRolloutToken(TestController):
         otp = "verry_verry_secret"
         pin = "1234567890"
 
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "description": "enrollment test token",
-            "scope": json.dumps({"path": ["validate"]}),
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
+        self.init_rollout_token(user, otp, pin, scopes=["validate"])
 
         response = self.validate_check(user, pin, otp)
         assert ' "value": true' in response, response
@@ -259,30 +237,8 @@ class TestRolloutToken(TestController):
         otp = "verry_verry_secret"
         pin = "1234567890"
 
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "scope": json.dumps({"path": ["userservice"]}),
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
-
-        # enroll second token - the enrollment token should disapear now
-
-        params = {
-            "otpkey": "second",
-            "user": user,
-            "pin": "Test123!",
-            "type": "pw",
-            "description": "second token",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
+        self.init_rollout_token(user, otp, pin, scopes=["userservice"])
+        self.init_token(user, "second", "Test123!")
 
         # ------------------------------------------------------------------ --
 
@@ -365,31 +321,8 @@ class TestRolloutToken(TestController):
         otp = "verry_verry_secret"
         pin = "1234567890"
 
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "description": "enrollment test token",
-            "scope": json.dumps({"path": ["userservice"]}),
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
-
-        # enroll second token
-
-        params = {
-            "otpkey": "second",
-            "user": user,
-            "pin": "Test123!",
-            "type": "pw",
-            "description": "second token",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
+        self.init_rollout_token(user, otp, pin, scopes=["userservice"])
+        self.init_token(user, "second", "Test123!")
 
         # ------------------------------------------------------------------ --
         # ensure that login with rollout token is only
@@ -431,31 +364,8 @@ class TestRolloutToken(TestController):
         otp = "verry_verry_secret"
         pin = "1234567890"
 
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "description": "enrollment test token",
-            "scope": json.dumps({"path": ["userservice"]}),
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
-
-        # enroll second token
-
-        params = {
-            "otpkey": "second",
-            "user": user,
-            "pin": "Test123!",
-            "type": "pw",
-            "description": "second token",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
+        self.init_rollout_token(user, otp, pin, scopes=["userservice"])
+        self.init_token(user, "second", "Test123!")
 
         # ------------------------------------------------------------------ --
         # ensure that login with rollout token is only
@@ -500,30 +410,8 @@ class TestRolloutToken(TestController):
         otp = "verry_verry_secret"
         pin = "1234567890"
 
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "scope": json.dumps({"path": scope}),
-        }
-
-        response = self.make_admin_request("init", params=params)
-        self.assertTrue('"value": true' in response, response)
-
-        # enroll second token
-
-        params = {
-            "otpkey": "second",
-            "user": user,
-            "pin": "Test123!",
-            "type": "pw",
-            "description": "second token",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        self.assertTrue('"value": true' in response, response)
+        self.init_rollout_token(user, otp, pin, scopes=scope)
+        self.init_token(user, "second", "Test123!")
 
         # ------------------------------------------------------------------ --
         # ensure that login with rollout token is possible
@@ -553,7 +441,7 @@ class TestRolloutToken(TestController):
             token_info["LinOtp.TokenSerialnumber"], "KIPW0815", response
         )
         self.assertEquals(
-            token_info["LinOtp.TokenDesc"], "rollout token", response
+            token_info["LinOtp.TokenDesc"], "Test rollout token", response
         )
 
         # ------------------------------------------------------------------ --
@@ -588,38 +476,13 @@ class TestRolloutToken(TestController):
 
         self._setup_purge_policy()
 
-        # enroll first token
-
         user = "passthru_user1@myDefRealm"
         otpkey = "secret"
         pin1 = "pin1"
         pin2 = "pin2"
 
-        params = {
-            "user": user,
-            "otpkey": otpkey,
-            "pin": pin1,
-            "type": "pw",
-            "serial": "KIPW01",
-            "description": "first token",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        self.assertTrue('"value": true' in response, response)
-
-        # enroll second token
-
-        params = {
-            "user": user,
-            "otpkey": otpkey,
-            "pin": pin2,
-            "type": "pw",
-            "serial": "KIPW02",
-            "description": "second token",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        self.assertTrue('"value": true' in response, response)
+        self.init_token(user, otpkey, pin1, serial="KIPW01")
+        self.init_token(user, otpkey, pin2, serial="KIPW02")
 
         # ------------------------------------------------------------------ --
         # do a login with both tokens
@@ -648,31 +511,8 @@ class TestRolloutToken(TestController):
         otp = "verry_verry_secret"
         pin = "1234567890"
 
-        params = {
-            "otpkey": otp,
-            "user": user,
-            "pin": pin,
-            "type": "pw",
-            "serial": "KIPW0815",
-            "description": "enrollment test token",
-            "rollout": "True",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
-
-        # enroll second token
-
-        params = {
-            "otpkey": "second",
-            "user": user,
-            "pin": "Test123!",
-            "type": "pw",
-            "description": "second token",
-        }
-
-        response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, response
+        self.init_rollout_token(user, otp, pin, rollout=True)
+        self.init_token(user, "second", "Test123!")
 
         # ----------------------------------------------------------------- --
 
