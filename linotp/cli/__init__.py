@@ -131,6 +131,7 @@ class LinOTPGroup(FlaskGroup):
 # to become reachable.
 
 
+@click.version_option(message="LinOTP %(version)s")
 @click.group(name="linotp", cls=LinOTPGroup, create_app=create_app)
 @click.option(
     "--verbose",
