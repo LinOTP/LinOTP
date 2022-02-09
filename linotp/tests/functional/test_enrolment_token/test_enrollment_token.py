@@ -49,8 +49,38 @@ class TestRolloutToken(TestController):
         self.create_common_resolvers()
         self.create_common_realms()
 
+        self._setup_mfa_login_policy()
+
     def tearDown(self):
         TestController.tearDown(self)
+
+    def _setup_mfa_login_policy(self):
+        params = {
+            "name": "mfa",
+            "scope": "selfservice",
+            "action": "mfa_login, mfa_3_fields",
+            "user": "*",
+            "realm": "*",
+            "active": True,
+        }
+        response = self.make_system_request("setPolicy", params)
+        assert isinstance(
+            response.json["result"]["value"]["setPolicy mfa"], dict
+        ), "expected mfa policy details to be returned from request"
+
+    def _setup_purge_policy(self):
+        params = {
+            "name": "purge",
+            "scope": "enrollment",
+            "action": "purge_rollout_token",
+            "user": "*",
+            "realm": "*",
+            "active": True,
+        }
+        response = self.make_system_request("setPolicy", params)
+        assert isinstance(
+            response.json["result"]["value"]["setPolicy purge"], dict
+        ), "expected purge policy details to be returned from request"
 
     def user_service_login(self, user, password, otp):
         """"""
@@ -72,18 +102,6 @@ class TestRolloutToken(TestController):
         """
         test token with both scopes defined
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
         otp = "verry_verry_secret"
@@ -114,18 +132,6 @@ class TestRolloutToken(TestController):
         """
         test token with both scopes defined
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
         otp = "verry_verry_secret"
@@ -155,18 +161,6 @@ class TestRolloutToken(TestController):
         """
         test token with both scopes defined
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
         otp = "verry_verry_secret"
@@ -197,18 +191,6 @@ class TestRolloutToken(TestController):
         """
         test token with both scopes defined
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
         otp = "verry_verry_secret"
@@ -239,18 +221,6 @@ class TestRolloutToken(TestController):
         """
         test token with both scopes defined
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
         otp = "verry_verry_secret"
@@ -282,29 +252,7 @@ class TestRolloutToken(TestController):
         """
         test janitor - remove rollout token via validate/check
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
-        params = {
-            "name": "purge",
-            "scope": "enrollment",
-            "action": "purge_rollout_token",
-            "user": "*",
-            "realm": "myMixedRealm",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
+        self._setup_purge_policy()
 
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
@@ -410,29 +358,7 @@ class TestRolloutToken(TestController):
         """
         test janitor - remove rollout token via selfservice login
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
-        params = {
-            "name": "purge",
-            "scope": "enrollment",
-            "action": "purge_rollout_token",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
+        self._setup_purge_policy()
 
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
@@ -500,18 +426,6 @@ class TestRolloutToken(TestController):
         """
         test janitor - do not remove rollout token via selfservice login
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
         otp = "verry_verry_secret"
@@ -579,29 +493,7 @@ class TestRolloutToken(TestController):
         test janitor - do purge rollout tokens that have scope
         userservice AND validate
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        self.assertTrue("false" not in response, response)
-
-        params = {
-            "name": "purge",
-            "scope": "enrollment",
-            "action": "purge_rollout_token",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        self.assertTrue("false" not in response, response)
+        self._setup_purge_policy()
 
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
@@ -694,17 +586,7 @@ class TestRolloutToken(TestController):
         test janitor - do not purge non-rollout tokens
         """
 
-        params = {
-            "name": "purge",
-            "scope": "enrollment",
-            "action": "purge_rollout_token",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        self.assertTrue("false" not in response, response)
+        self._setup_purge_policy()
 
         # enroll first token
 
@@ -761,18 +643,6 @@ class TestRolloutToken(TestController):
         """
         test token with both scopes defined
         """
-        params = {
-            "name": "mfa",
-            "scope": "selfservice",
-            "action": "mfa_login, mfa_3_fields",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
         otp = "verry_verry_secret"
