@@ -133,15 +133,14 @@ class TestRolloutToken(TestController):
 
     def validate_check(self, user, pin, password):
         params = {"user": user, "pass": pin + password}
-        response = self.make_validate_request("check", params=params)
-
-        return response
+        return self.make_validate_request("check", params=params)
 
     # ---------------------------------------------------------------------- --
 
     def test_scope_both(self):
         """
-        test token with both scopes defined
+        test 'rollout token' feature with rollout scopes 'selfservice'
+        and 'validate'.
         """
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
@@ -160,7 +159,7 @@ class TestRolloutToken(TestController):
 
     def test_scope_selfservice(self):
         """
-        test token with both scopes defined
+        test 'rollout token' feature with rollout scope 'selfservice'.
         """
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
@@ -177,7 +176,9 @@ class TestRolloutToken(TestController):
 
     def test_scope_selfservice_alias(self):
         """
-        test token with both scopes defined
+        test 'rollout token' feature with alias param 'rollout=True'.
+
+        LinOTP should treat this the same as `scopes=["userservice"]`.
         """
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
@@ -194,7 +195,7 @@ class TestRolloutToken(TestController):
 
     def test_scope_validate(self):
         """
-        test token with both scopes defined
+        test 'rollout token' feature with rollout scope 'validate'.
         """
         user = "passthru_user1@myDefRealm"
         password = "geheim1"
@@ -242,10 +243,7 @@ class TestRolloutToken(TestController):
         # verify that the default description of the token is 'rollout token'
 
         tokens = (
-            json.loads(response.body)
-            .get("result", {})
-            .get("value", {})
-            .get("data", [])
+            response.json.get("result", {}).get("value", {}).get("data", [])
         )
 
         assert len(tokens) > 1
@@ -414,6 +412,9 @@ class TestRolloutToken(TestController):
         # should not have purged the rollout token
 
         response = self.make_admin_request("show")
+
+        assert len(response.json["result"]["value"]["data"]) == 2
+
         token_info = response.json["result"]["value"]["data"][1]
         self.assertEquals(
             token_info["LinOtp.TokenSerialnumber"], "KIPW0815", response
@@ -431,6 +432,9 @@ class TestRolloutToken(TestController):
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
+
+        assert len(response.json["result"]["value"]["data"]) == 1
+
         assert "KIPW0815" not in response, response
 
     def test_enroll_token_purge_scope_validate(self):
@@ -494,29 +498,21 @@ class TestRolloutToken(TestController):
 
         # ----------------------------------------------------------------- --
 
-        # now login into selfservice and query the users token list
-
         auth_user = {
             "login": "passthru_user1@myDefRealm",
-            "password": "geheim1",
+            "password": password,
             "otp": otp,
         }
 
+        # verify that the rollout token is available to the user
         response = self.make_userselfservice_request(
             "usertokenlist", auth_user=auth_user
         )
-
-        # verify that the rollout token is not in the list
-
+        assert len(response.json["result"]["value"]) == 2
         assert "KIPW0815" in response, response
-        assert "LinOtp.TokenSerialnumber" in response, response
 
+        # verify that the rollout token is not shown in the selfservice UI html
         response = self.make_selfservice_request(
             "usertokenlist", None, auth_user=auth_user
         )
         assert "KIPW0815" not in response.body, response
-
-        return
-
-
-# eof
