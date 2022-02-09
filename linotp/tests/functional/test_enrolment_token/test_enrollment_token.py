@@ -83,14 +83,6 @@ class TestRolloutToken(TestController):
             response.json["result"]["value"]["setPolicy purge"], dict
         ), "expected purge policy details to be returned from request"
 
-    def user_service_login(self, user, password, otp):
-        """"""
-        response, auth_cookie = self._user_service_login(
-            auth_user=user, password=password, otp=otp
-        )
-
-        return response
-
     def init_rollout_token(
         self,
         user: str,
@@ -163,7 +155,7 @@ class TestRolloutToken(TestController):
         response = self.validate_check(user, pin, otp)
         assert response.json["result"]["value"] == True, response
 
-        response = self.user_service_login(user, password, otp)
+        response, _ = self._user_service_login(user, password, otp)
         assert response.json["result"]["value"] == True, response
 
     def test_scope_selfservice(self):
@@ -180,7 +172,7 @@ class TestRolloutToken(TestController):
         response = self.validate_check(user, pin, otp)
         assert response.json["result"]["value"] == False, response
 
-        response = self.user_service_login(user, password, otp)
+        response, _ = self._user_service_login(user, password, otp)
         assert response.json["result"]["value"] == True, response
 
     def test_scope_selfservice_alias(self):
@@ -197,7 +189,7 @@ class TestRolloutToken(TestController):
         response = self.validate_check(user, pin, otp)
         assert response.json["result"]["value"] == False, response
 
-        response = self.user_service_login(user, password, otp)
+        response, _ = self._user_service_login(user, password, otp)
         assert response.json["result"]["value"] == True, response
 
     def test_scope_validate(self):
@@ -214,7 +206,7 @@ class TestRolloutToken(TestController):
         response = self.validate_check(user, pin, otp)
         assert response.json["result"]["value"] == True, response
 
-        response = self.user_service_login(user, password, otp)
+        response, _ = self._user_service_login(user, password, otp)
         assert response.json["result"]["value"] == False, response
 
     @pytest.mark.exclude_sqlite
@@ -239,7 +231,7 @@ class TestRolloutToken(TestController):
         response = self.validate_check(user, pin, otp)
         assert response.json["result"]["value"] == False, response
 
-        response = self.user_service_login(user, password, otp)
+        response, _ = self._user_service_login(user, password, otp)
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show", params=params)
@@ -321,7 +313,7 @@ class TestRolloutToken(TestController):
         response = self.validate_check(user, pin, otp)
         assert response.json["result"]["value"] == False, response
 
-        response = self.user_service_login(user, password, otp)
+        response, _ = self._user_service_login(user, password, otp)
         assert response.json["result"]["value"] == True, response
 
         # ------------------------------------------------------------------ --
@@ -337,7 +329,7 @@ class TestRolloutToken(TestController):
         # after the valid authentication with the second token
         # the rollout token should have disappeared
 
-        response = self.user_service_login(user, password, otp="second")
+        response, _ = self._user_service_login(user, password, otp="second")
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show", params=params)
@@ -362,7 +354,7 @@ class TestRolloutToken(TestController):
         response = self.validate_check(user, pin, otp)
         assert response.json["result"]["value"] == False, response
 
-        response = self.user_service_login(user, password, otp)
+        response, _ = self._user_service_login(user, password, otp)
         assert response.json["result"]["value"] == True, response
 
         # ------------------------------------------------------------------ --
@@ -378,7 +370,7 @@ class TestRolloutToken(TestController):
         # after the valid authentication with the second token
         # the rollout token should not disappeared as the policy is not set
 
-        response = self.user_service_login(user, password, otp="second")
+        response, _ = self._user_service_login(user, password, otp="second")
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show", params=params)
@@ -410,7 +402,7 @@ class TestRolloutToken(TestController):
             assert response.json["result"]["value"] == False, response
 
         # Login via selfservice
-        response = self.user_service_login(user, password, otp)
+        response, _ = self._user_service_login(user, password, otp)
         if "userservice" in scope:
             assert response.json["result"]["value"] == True, response
         else:
@@ -435,7 +427,7 @@ class TestRolloutToken(TestController):
         # after the valid authentication with the second token the
         # rollout token should have been purged as the policy is set
 
-        response = self.user_service_login(user, password, otp="second")
+        response, _ = self._user_service_login(user, password, otp="second")
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
