@@ -210,6 +210,47 @@ class TestRolloutToken(TestController):
         response, _ = self._user_service_login(user, password, otp)
         assert response.json["result"]["value"] == False, response
 
+    def test_scope_and_rollout(self):
+        """
+        test 'rollout token' feature with scope AND rollout alias.
+
+        LinOTP should ignore the alias and only recognize the scopes list.
+        """
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
+
+        self._init_rollout_pw_token(
+            user, otp, pin, scopes=["validate"], rollout=True
+        )
+
+        response = self.validate_check(user, pin, otp)
+        assert response.json["result"]["value"] == True, response
+
+        response, _ = self._user_service_login(user, password, otp)
+        assert response.json["result"]["value"] == False, response
+
+    def test_empty_scope(self):
+        """
+        test 'rollout token' feature with empty scope.
+
+        LinOTP should ignore any rollout feature because no explicit scope
+        is defined. Please don't ask me why.
+        """
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
+
+        self._init_rollout_pw_token(user, otp, pin, scopes=[])
+
+        response = self.validate_check(user, pin, otp)
+        assert response.json["result"]["value"] == True, response
+
+        response, _ = self._user_service_login(user, password, otp)
+        assert response.json["result"]["value"] == True, response
+
     @pytest.mark.exclude_sqlite
     def test_enrollment_janitor(self):
         """
