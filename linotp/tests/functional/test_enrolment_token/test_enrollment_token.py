@@ -234,7 +234,7 @@ class TestRolloutToken(TestController):
         response, _ = self._user_service_login(user, password, otp)
         assert response.json["result"]["value"] == True, response
 
-        response = self.make_admin_request("show", params=params)
+        response = self.make_admin_request("show")
         assert "KIPW0815" in response, response
 
         # ------------------------------------------------------------------ --
@@ -263,7 +263,7 @@ class TestRolloutToken(TestController):
         response = self.validate_check(user, pin="Test123!", password="second")
         assert response.json["result"]["value"] == True, response
 
-        response = self.make_admin_request("show", params=params)
+        response = self.make_admin_request("show")
         assert "KIPW0815" not in response, response
 
         # ------------------------------------------------------------------ --
@@ -321,7 +321,7 @@ class TestRolloutToken(TestController):
         # the valid authentication with the rollout token
         # should make the rollout token not disappeared
 
-        response = self.make_admin_request("show", params=params)
+        response = self.make_admin_request("show")
         assert "KIPW0815" in response, response
 
         # ------------------------------------------------------------------ --
@@ -332,7 +332,7 @@ class TestRolloutToken(TestController):
         response, _ = self._user_service_login(user, password, otp="second")
         assert response.json["result"]["value"] == True, response
 
-        response = self.make_admin_request("show", params=params)
+        response = self.make_admin_request("show")
         assert "KIPW0815" not in response, response
 
     def test_enrollment_janitor3(self):
@@ -362,7 +362,7 @@ class TestRolloutToken(TestController):
         # the valid authentication with the rollout token
         # should make the rollout token not disappeared
 
-        response = self.make_admin_request("show", params=params)
+        response = self.make_admin_request("show")
         assert "KIPW0815" in response, response
 
         # ------------------------------------------------------------------ --
@@ -373,7 +373,7 @@ class TestRolloutToken(TestController):
         response, _ = self._user_service_login(user, password, otp="second")
         assert response.json["result"]["value"] == True, response
 
-        response = self.make_admin_request("show", params=params)
+        response = self.make_admin_request("show")
         assert "KIPW0815" in response, response
 
     def do_enroll_token_purge_scope_validate(self, scope):
