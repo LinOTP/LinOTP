@@ -48,6 +48,8 @@ class TestRolloutToken(TestController):
     pin1 = "1234567890"
     otp2 = "second"
     pin2 = "Test123!"
+    ROLLOUT_TOKEN_SERIAL = "KIPW0815"
+    ROLLOUT_TOKEN_DESC = "Test rollout token"
 
     def setUp(self):
         TestController.setUp(self)
@@ -96,7 +98,7 @@ class TestRolloutToken(TestController):
         user: str,
         pw: str,
         pin: str,
-        serial: str = "KIPW0815",
+        serial: str = ROLLOUT_TOKEN_SERIAL,
         scopes: List[str] = None,
         rollout: bool = None,
     ):
@@ -106,7 +108,7 @@ class TestRolloutToken(TestController):
             "pin": pin,
             "type": "pw",
             "serial": serial,
-            "description": "Test rollout token",
+            "description": self.ROLLOUT_TOKEN_DESC,
         }
 
         assert (
@@ -122,11 +124,7 @@ class TestRolloutToken(TestController):
         assert response.json["result"]["value"] == True, response
 
     def init_token(
-        self,
-        user: str,
-        pw: str,
-        pin: str,
-        serial: str = "KIPWOTHER",
+        self, user: str, pw: str, pin: str, serial: str = "KIPWOTHER"
     ):
         params = {
             "otpkey": pw,
@@ -229,17 +227,18 @@ class TestRolloutToken(TestController):
 
         # ------------------------------------------------------------------ --
 
-        # verify that the default description of the token is 'rollout token'
+        # Verify that the token is still there
+        # by checking for the token's description and serial
 
         response = self.make_admin_request("show")
         tokens = response.json["result"]["value"]["data"]
 
         assert len(tokens) == 2
-
-        sn_key = "LinOtp.TokenSerialnumber"
-        desc_key = "LinOtp.TokenDesc"
-        token = [token for token in tokens if token[sn_key] == "KIPW0815"][0]
-        assert token[desc_key] == "Test rollout token"
+        assert any(
+            token["LinOtp.TokenSerialnumber"] == self.ROLLOUT_TOKEN_SERIAL
+            and token["LinOtp.TokenDesc"] == self.ROLLOUT_TOKEN_DESC
+            for token in tokens
+        ), response
 
         # ------------------------------------------------------------------ --
 
@@ -250,7 +249,7 @@ class TestRolloutToken(TestController):
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
-        assert "KIPW0815" not in response, response
+        assert self.ROLLOUT_TOKEN_SERIAL not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -305,7 +304,7 @@ class TestRolloutToken(TestController):
         # should make the rollout token not disappeared
 
         response = self.make_admin_request("show")
-        assert "KIPW0815" in response, response
+        assert self.ROLLOUT_TOKEN_SERIAL in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -316,7 +315,7 @@ class TestRolloutToken(TestController):
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
-        assert "KIPW0815" not in response, response
+        assert self.ROLLOUT_TOKEN_SERIAL not in response, response
 
     def test_enrollment_janitor3(self):
         """
@@ -344,7 +343,7 @@ class TestRolloutToken(TestController):
         # should make the rollout token not disappeared
 
         response = self.make_admin_request("show")
-        assert "KIPW0815" in response, response
+        assert self.ROLLOUT_TOKEN_SERIAL in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -355,7 +354,7 @@ class TestRolloutToken(TestController):
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
-        assert "KIPW0815" in response, response
+        assert self.ROLLOUT_TOKEN_SERIAL in response, response
 
     def do_enroll_token_purge_scope_validate(self, scope):
         """
@@ -393,11 +392,11 @@ class TestRolloutToken(TestController):
         tokens = response.json["result"]["value"]["data"]
 
         assert len(tokens) == 2
-
-        sn_key = "LinOtp.TokenSerialnumber"
-        desc_key = "LinOtp.TokenDesc"
-        token = [token for token in tokens if token[sn_key] == "KIPW0815"][0]
-        assert token[desc_key] == "Test rollout token", response
+        assert any(
+            token["LinOtp.TokenSerialnumber"] == self.ROLLOUT_TOKEN_SERIAL
+            and token["LinOtp.TokenDesc"] == self.ROLLOUT_TOKEN_DESC
+            for token in tokens
+        ), response
 
         # ------------------------------------------------------------------ --
 
@@ -411,7 +410,7 @@ class TestRolloutToken(TestController):
 
         assert len(response.json["result"]["value"]["data"]) == 1
 
-        assert "KIPW0815" not in response, response
+        assert self.ROLLOUT_TOKEN_SERIAL not in response, response
 
     def test_enroll_token_purge_scope_validate(self):
         """
@@ -474,10 +473,10 @@ class TestRolloutToken(TestController):
             "usertokenlist", auth_user=auth_user
         )
         assert len(response.json["result"]["value"]) == 2
-        assert "KIPW0815" in response, response
+        assert self.ROLLOUT_TOKEN_SERIAL in response, response
 
         # verify that the rollout token is not shown in the selfservice UI html
         response = self.make_selfservice_request(
             "usertokenlist", None, auth_user=auth_user
         )
-        assert "KIPW0815" not in response.body, response
+        assert self.ROLLOUT_TOKEN_SERIAL not in response.body, response
