@@ -41,6 +41,14 @@ class TestRolloutToken(TestController):
     Test the one time login token
     """
 
+    # test fixtures
+    user = "passthru_user1@myDefRealm"
+    pw = "geheim1"
+    otp1 = "verry_verry_secret"
+    pin1 = "1234567890"
+    otp2 = "second"
+    pin2 = "Test123!"
+
     def setUp(self):
         TestController.setUp(self)
         self.delete_all_policies()
@@ -144,17 +152,14 @@ class TestRolloutToken(TestController):
         scopes: List[str] = None,
         rollout: bool = None,
     ):
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
+        self.init_rollout_token(
+            self.user, self.otp1, self.pin1, scopes=scopes, rollout=rollout
+        )
 
-        self.init_rollout_token(user, otp, pin, scopes=scopes, rollout=rollout)
-
-        response = self.validate_check(user, pin, otp)
+        response = self.validate_check(self.user, self.pin1, self.otp1)
         assert response.json["result"]["value"] == exp_validate, response
 
-        response, _ = self._user_service_login(user, password, otp)
+        response, _ = self._user_service_login(self.user, self.pw, self.otp1)
         assert response.json["result"]["value"] == exp_userservice, response
 
     def test_scope_both(self):
@@ -208,22 +213,19 @@ class TestRolloutToken(TestController):
         """
         self._setup_purge_policy()
 
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        self.init_rollout_token(user, otp, pin, scopes=["userservice"])
-        self.init_token(user, "second", "Test123!")
+        self.init_rollout_token(
+            self.user, self.otp1, self.pin1, scopes=["userservice"]
+        )
+        self.init_token(self.user, self.otp2, self.pin2)
 
         # ------------------------------------------------------------------ --
 
         # ensure the rollout is only valid in scope userservice
 
-        response = self.validate_check(user, pin, otp)
+        response = self.validate_check(self.user, self.pin1, self.otp1)
         assert response.json["result"]["value"] == False, response
 
-        response, _ = self._user_service_login(user, password, otp)
+        response, _ = self._user_service_login(self.user, self.pw, self.otp1)
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
@@ -249,7 +251,7 @@ class TestRolloutToken(TestController):
         # after the valid authentication with the second token
         # the rollout token should have disappeared
 
-        response = self.validate_check(user, pin="Test123!", password="second")
+        response = self.validate_check(self.user, self.pin2, self.otp2)
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
@@ -287,22 +289,19 @@ class TestRolloutToken(TestController):
         """
         self._setup_purge_policy()
 
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        self.init_rollout_token(user, otp, pin, scopes=["userservice"])
-        self.init_token(user, "second", "Test123!")
+        self.init_rollout_token(
+            self.user, self.otp1, self.pin1, scopes=["userservice"]
+        )
+        self.init_token(self.user, self.otp2, self.pin2)
 
         # ------------------------------------------------------------------ --
         # ensure that login with rollout token is only
         # possible in the selfservice
 
-        response = self.validate_check(user, pin, otp)
+        response = self.validate_check(self.user, self.pin1, self.otp1)
         assert response.json["result"]["value"] == False, response
 
-        response, _ = self._user_service_login(user, password, otp)
+        response, _ = self._user_service_login(self.user, self.pw, self.otp1)
         assert response.json["result"]["value"] == True, response
 
         # ------------------------------------------------------------------ --
@@ -318,7 +317,7 @@ class TestRolloutToken(TestController):
         # after the valid authentication with the second token
         # the rollout token should have disappeared
 
-        response, _ = self._user_service_login(user, password, otp="second")
+        response, _ = self._user_service_login(self.user, self.pw, self.otp2)
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
@@ -328,22 +327,20 @@ class TestRolloutToken(TestController):
         """
         test janitor - do not remove rollout token via selfservice login
         """
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
 
-        self.init_rollout_token(user, otp, pin, scopes=["userservice"])
-        self.init_token(user, "second", "Test123!")
+        self.init_rollout_token(
+            self.user, self.otp1, self.pin1, scopes=["userservice"]
+        )
+        self.init_token(self.user, self.otp2, self.pin2)
 
         # ------------------------------------------------------------------ --
         # ensure that login with rollout token is only
         # possible in the selfservice
 
-        response = self.validate_check(user, pin, otp)
+        response = self.validate_check(self.user, self.pin1, self.otp1)
         assert response.json["result"]["value"] == False, response
 
-        response, _ = self._user_service_login(user, password, otp)
+        response, _ = self._user_service_login(self.user, self.pw, self.otp1)
         assert response.json["result"]["value"] == True, response
 
         # ------------------------------------------------------------------ --
@@ -359,7 +356,7 @@ class TestRolloutToken(TestController):
         # after the valid authentication with the second token
         # the rollout token should not disappeared as the policy is not set
 
-        response, _ = self._user_service_login(user, password, otp="second")
+        response, _ = self._user_service_login(self.user, self.pw, self.otp2)
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
@@ -372,26 +369,21 @@ class TestRolloutToken(TestController):
         """
         self._setup_purge_policy()
 
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        self.init_rollout_token(user, otp, pin, scopes=scope)
-        self.init_token(user, "second", "Test123!")
+        self.init_rollout_token(self.user, self.otp1, self.pin1, scopes=scope)
+        self.init_token(self.user, self.otp2, self.pin2)
 
         # ------------------------------------------------------------------ --
         # ensure that login with rollout token is possible
         # via scopes
 
-        response = self.validate_check(user, pin, otp)
+        response = self.validate_check(self.user, self.pin1, self.otp1)
         if "validate" in scope:
             assert response.json["result"]["value"] == True, response
         else:
             assert response.json["result"]["value"] == False, response
 
         # Login via selfservice
-        response, _ = self._user_service_login(user, password, otp)
+        response, _ = self._user_service_login(self.user, self.pw, self.otp1)
         if "userservice" in scope:
             assert response.json["result"]["value"] == True, response
         else:
@@ -419,7 +411,7 @@ class TestRolloutToken(TestController):
         # after the valid authentication with the second token the
         # rollout token should have been purged as the policy is set
 
-        response, _ = self._user_service_login(user, password, otp="second")
+        response, _ = self._user_service_login(self.user, self.pw, self.otp2)
         assert response.json["result"]["value"] == True, response
 
         response = self.make_admin_request("show")
@@ -446,24 +438,18 @@ class TestRolloutToken(TestController):
         """
         test janitor - do not purge non-rollout tokens
         """
-
         self._setup_purge_policy()
 
-        user = "passthru_user1@myDefRealm"
-        otpkey = "secret"
-        pin1 = "pin1"
-        pin2 = "pin2"
-
-        self.init_token(user, otpkey, pin1, serial="KIPW01")
-        self.init_token(user, otpkey, pin2, serial="KIPW02")
+        self.init_token(self.user, self.otp1, self.pin1, serial="KIPW01")
+        self.init_token(self.user, self.otp1, self.pin2, serial="KIPW02")
 
         # ------------------------------------------------------------------ --
         # do a login with both tokens
 
-        response = self.validate_check(user, pin1, otpkey)
+        response = self.validate_check(self.user, self.pin1, self.otp1)
         assert response.json["result"]["value"] == True, response
 
-        response = self.validate_check(user, pin2, otpkey)
+        response = self.validate_check(self.user, self.pin2, self.otp1)
         assert response.json["result"]["value"] == True, response
 
         # ------------------------------------------------------------------ --
@@ -479,20 +465,15 @@ class TestRolloutToken(TestController):
         """
         test token with both scopes defined
         """
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        self.init_rollout_token(user, otp, pin, rollout=True)
-        self.init_token(user, "second", "Test123!")
+        self.init_rollout_token(self.user, self.otp1, self.pin1, rollout=True)
+        self.init_token(self.user, self.otp2, self.pin2)
 
         # ----------------------------------------------------------------- --
 
         auth_user = {
             "login": "passthru_user1@myDefRealm",
-            "password": password,
-            "otp": otp,
+            "password": self.pw,
+            "otp": self.otp1,
         }
 
         # verify that the rollout token is available to the user
