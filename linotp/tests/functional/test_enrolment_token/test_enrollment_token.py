@@ -206,7 +206,6 @@ class TestRolloutToken(TestController):
         """
         self.do_check_scopes(True, True, scopes=[])
 
-    @pytest.mark.exclude_sqlite
     def test_enrollment_janitor(self):
         """
         test janitor - remove rollout token via validate/check
@@ -228,23 +227,19 @@ class TestRolloutToken(TestController):
         response, _ = self._user_service_login(self.user, self.pw, self.otp1)
         assert response.json["result"]["value"] == True, response
 
-        response = self.make_admin_request("show")
-        assert "KIPW0815" in response, response
-
         # ------------------------------------------------------------------ --
 
         # verify that the default description of the token is 'rollout token'
 
-        tokens = (
-            response.json.get("result", {}).get("value", {}).get("data", [])
-        )
+        response = self.make_admin_request("show")
+        tokens = response.json["result"]["value"]["data"]
 
-        assert len(tokens) > 1
+        assert len(tokens) == 2
 
-        for token in tokens:
-            if token["LinOtp.TokenSerialnumber"] == "KIPW0815":
-                assert token["LinOtp.TokenDesc"] == "rollout token"
-                break
+        sn_key = "LinOtp.TokenSerialnumber"
+        desc_key = "LinOtp.TokenDesc"
+        token = [token for token in tokens if token[sn_key] == "KIPW0815"][0]
+        assert token[desc_key] == "Test rollout token"
 
         # ------------------------------------------------------------------ --
 
@@ -395,16 +390,14 @@ class TestRolloutToken(TestController):
         # should not have purged the rollout token
 
         response = self.make_admin_request("show")
+        tokens = response.json["result"]["value"]["data"]
 
-        assert len(response.json["result"]["value"]["data"]) == 2
+        assert len(tokens) == 2
 
-        token_info = response.json["result"]["value"]["data"][1]
-        self.assertEquals(
-            token_info["LinOtp.TokenSerialnumber"], "KIPW0815", response
-        )
-        self.assertEquals(
-            token_info["LinOtp.TokenDesc"], "Test rollout token", response
-        )
+        sn_key = "LinOtp.TokenSerialnumber"
+        desc_key = "LinOtp.TokenDesc"
+        token = [token for token in tokens if token[sn_key] == "KIPW0815"][0]
+        assert token[desc_key] == "Test rollout token", response
 
         # ------------------------------------------------------------------ --
 
