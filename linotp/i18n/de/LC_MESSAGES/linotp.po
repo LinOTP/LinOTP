@@ -280,6 +280,10 @@ msgstr "Zertifikate"
 msgid "Challenge Response Login"
 msgstr "Anmeldung mit Challenge/Response"
 
+#, fuzzy
+msgid "Challenge blocking time (sec)"
+msgstr "Gültigkeitszeitfenster für Challenges (Sek.)"
+
 msgid "Challenge expiration time (sec)"
 msgstr "Gültigkeitszeitfenster für Challenges (Sek.)"
 
@@ -485,6 +489,9 @@ msgstr "Datenbanktabelle"
 
 msgid "Date"
 msgstr "Datum"
+
+msgid "Date (UTC)"
+msgstr ""
 
 msgid "Day OTP Token / Tagespasswort"
 msgstr "Tagespasswort"
@@ -855,9 +862,6 @@ msgstr "Fehler bei Abfrage des OTP-Wertes"
 
 msgid "Error getting serial: "
 msgstr "Fehler beim Ermitteln der Seriennummer: "
-
-msgid "Error in regular expression for"
-msgstr "Fehler im regulären Ausdruck für"
 
 msgid "Error loading HTTP resolver"
 msgstr "Fehler beim Laden des HTTP-Resolvers"
@@ -1565,6 +1569,10 @@ msgstr "Login Name"
 msgid "Login timed out. Please try again."
 msgstr "Timeout beim Login. Bitte versuchen Sie es nochmal."
 
+#, fuzzy
+msgid "Login to LinOTP Manage-UI"
+msgstr "Anmeldung am LinOTP-Self-Service"
+
 msgid "Login to LinOTP self service"
 msgstr "Anmeldung am LinOTP-Self-Service"
 
@@ -1577,10 +1585,24 @@ msgstr "Attribut für die Loginnamen"
 msgid "Logout"
 msgstr "Abmelden"
 
+#, fuzzy
+msgid "Logout failed"
+msgstr "Abmelden"
+
 msgid "Lost Token"
 msgstr "Verlorener Token"
 
+msgid "Manage administrators via the `linotp local-admins` CLI."
+msgstr ""
+
+msgid "Manage users via ”Tools -> Import Users”."
+msgstr ""
+
 msgid "Management - LinOTP"
+msgstr "Management - LinOTP"
+
+#, fuzzy
+msgid "Management Login - LinOTP"
 msgstr "Management - LinOTP"
 
 msgid "Mapping Attributes"
@@ -2883,9 +2905,6 @@ msgstr ""
 "Die Benutzer werden nicht mehr in der Lage sein, sich mit diesen Token zu "
 "authentisieren. Sind Sie sicher?"
 
-msgid "There is an error in the realm name!"
-msgstr "Fehler im Realmnamen!"
-
 #, python-format
 msgid "There is no policy gettoken/max_count definable for the tokentype %r"
 msgstr "Es gibt keine Richtlinie 'gettoken/maxcount' für den Tokentyp %r"
@@ -2966,11 +2985,25 @@ msgid "This realm is already the default realm."
 msgstr "Dieser Realm ist bereits der Standardrealm."
 
 msgid ""
+"This realm is used for validation and selfservice login if no realm is "
+"specified."
+msgstr ""
+
+msgid "This realm is used to authenticate LinOTP administrators."
+msgstr ""
+
+msgid ""
 "This resets the mOTP PIN, which is the PIN that is entered in the motp "
 "application on your phone."
 msgstr ""
 "Dies setzt die mOTP-PIN zurück. Diese PIN geben Sie in der mOTP-App auf "
 "Ihrem Telefon ein."
+
+msgid "This resolver contains locally managed users, managed by LinOTP."
+msgstr ""
+
+msgid "This resolver is used to authenticate LinOTP administrators."
+msgstr ""
 
 msgid "This will automatically resync OTP counter of HMAC based tokens."
 msgstr ""
@@ -3008,6 +3041,11 @@ msgstr "Zeitfenster"
 
 msgid "Time step"
 msgstr "Zeitschritt"
+
+msgid ""
+"Time that needs to pass before another challenge can be triggered by the "
+"same user in seconds."
+msgstr ""
 
 msgid "Timebased eToken can use a different start date"
 msgstr "Zeitbasierter eToken kann ein anderes Startdatum benutzen"
@@ -3356,6 +3394,9 @@ msgid ""
 msgstr ""
 "Sie weisen sich gerade einen neuen Token zu. Ist dies die richtige "
 "Seriennummer: "
+
+msgid "You are required to log in again. Redirecting…"
+msgstr ""
 
 msgid "You can do this by inserting the YubiKey and simply push the button."
 msgstr ""
@@ -3822,6 +3863,10 @@ msgstr ""
 msgid "Your mobile phone number"
 msgstr "Ihre Mobiltelefonnummer"
 
+#, fuzzy
+msgid "Your session expired"
+msgstr "Ihre Sitzung ist abgelaufen!"
+
 msgid "Your session has expired!"
 msgstr "Ihre Sitzung ist abgelaufen!"
 
@@ -3876,6 +3921,9 @@ msgstr "Aktivieren Sie Ihren PushToken"
 msgid "activate your QRToken"
 msgstr "Aktivieren Sie Ihren QRToken"
 
+msgid "admin"
+msgstr ""
+
 msgid "and"
 msgstr "und"
 
@@ -3906,6 +3954,10 @@ msgstr "neu erstellen..."
 
 msgid "created token with serial"
 msgstr "Token erfolgreich erzeugt. Seriennummer"
+
+#, fuzzy
+msgid "default "
+msgstr "Als Standard setzen"
 
 msgid "define if the user should be allowed to define the email address"
 msgstr ""
@@ -4391,6 +4443,10 @@ msgstr "WebUI generiert"
 #~ msgid "Contact Name"
 #~ msgstr "Kontakt"
 
+#, fuzzy
+#~ msgid "Copyright (C) arxes-tolina GmbH"
+#~ msgstr "Copyright (C) netgo GmbH"
+
 #~ msgid "Counter Login"
 #~ msgstr "Zähler Login"
 
@@ -4402,6 +4458,10 @@ msgstr "WebUI generiert"
 
 #~ msgid "Default QR suite"
 #~ msgstr "Standard QR-Suite"
+
+#, fuzzy
+#~ msgid "Default Values:"
+#~ msgstr "Standardwerte:"
 
 #~ msgid "DefaultChallengeValidityTime"
 #~ msgstr "Standardwert des Gültigkeitszeitraums einer Challenge"
@@ -4458,6 +4518,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Enter the realm, the tokens should part of:"
 #~ msgstr "Zu welchem Realm sollen die Token zugeordnet werden:"
+
+#~ msgid "Error in regular expression for"
+#~ msgstr "Fehler im regulären Ausdruck für"
 
 #~ msgid "Expire"
 #~ msgstr "Ablaufdatum"
@@ -4792,6 +4855,10 @@ msgstr "WebUI generiert"
 #~ msgid "Selected tokens"
 #~ msgstr "ausgewählte Token"
 
+#, fuzzy
+#~ msgid "Serial number, Seed, Type, OTP length, Time step"
+#~ msgstr "Seriennummer, Seed, Typ, [OTP-Länge], [Zeitschritt], [Hashfunktion]"
+
 #~ msgid "Server config"
 #~ msgstr "Serverkonfiguration"
 
@@ -4860,6 +4927,9 @@ msgstr "WebUI generiert"
 #~ msgstr ""
 #~ "Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
 #~ "ggf. die Richtlinien."
+
+#~ msgid "There is an error in the realm name!"
+#~ msgstr "Fehler im Realmnamen!"
 
 #~ msgid ""
 #~ "This is independed of the local sizelimit and does not hinder the "
