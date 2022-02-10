@@ -137,42 +137,44 @@ class TestRolloutToken(TestController):
 
     # ---------------------------------------------------------------------- --
 
+    def do_check_scopes(
+        self,
+        exp_validate: bool,  # should a validate request work with this token?
+        exp_userservice: bool,  # should a selfservice login work with this token?
+        scopes: List[str] = None,
+        rollout: bool = None,
+    ):
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        otp = "verry_verry_secret"
+        pin = "1234567890"
+
+        self.init_rollout_token(user, otp, pin, scopes=scopes, rollout=rollout)
+
+        response = self.validate_check(user, pin, otp)
+        assert response.json["result"]["value"] == exp_validate, response
+
+        response, _ = self._user_service_login(user, password, otp)
+        assert response.json["result"]["value"] == exp_userservice, response
+
     def test_scope_both(self):
         """
         test 'rollout token' feature with rollout scopes 'selfservice'
         and 'validate'.
         """
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        self.init_rollout_token(
-            user, otp, pin, scopes=["validate", "userservice"]
-        )
-
-        response = self.validate_check(user, pin, otp)
-        assert response.json["result"]["value"] == True, response
-
-        response, _ = self._user_service_login(user, password, otp)
-        assert response.json["result"]["value"] == True, response
+        self.do_check_scopes(True, True, scopes=["validate", "userservice"])
 
     def test_scope_selfservice(self):
         """
         test 'rollout token' feature with rollout scope 'selfservice'.
         """
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
+        self.do_check_scopes(False, True, scopes=["userservice"])
 
-        self.init_rollout_token(user, otp, pin, scopes=["userservice"])
-
-        response = self.validate_check(user, pin, otp)
-        assert response.json["result"]["value"] == False, response
-
-        response, _ = self._user_service_login(user, password, otp)
-        assert response.json["result"]["value"] == True, response
+    def test_scope_validate(self):
+        """
+        test 'rollout token' feature with rollout scope 'validate'.
+        """
+        self.do_check_scopes(True, False, scopes=["validate"])
 
     def test_scope_selfservice_alias(self):
         """
@@ -180,35 +182,7 @@ class TestRolloutToken(TestController):
 
         LinOTP should treat this the same as `scopes=["userservice"]`.
         """
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        self.init_rollout_token(user, otp, pin, rollout=True)
-
-        response = self.validate_check(user, pin, otp)
-        assert response.json["result"]["value"] == False, response
-
-        response, _ = self._user_service_login(user, password, otp)
-        assert response.json["result"]["value"] == True, response
-
-    def test_scope_validate(self):
-        """
-        test 'rollout token' feature with rollout scope 'validate'.
-        """
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        self.init_rollout_token(user, otp, pin, scopes=["validate"])
-
-        response = self.validate_check(user, pin, otp)
-        assert response.json["result"]["value"] == True, response
-
-        response, _ = self._user_service_login(user, password, otp)
-        assert response.json["result"]["value"] == False, response
+        self.do_check_scopes(False, True, rollout=True)
 
     def test_scope_and_rollout(self):
         """
@@ -216,40 +190,16 @@ class TestRolloutToken(TestController):
 
         LinOTP should ignore the alias and only recognize the scopes list.
         """
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        self._init_rollout_pw_token(
-            user, otp, pin, scopes=["validate"], rollout=True
-        )
-
-        response = self.validate_check(user, pin, otp)
-        assert response.json["result"]["value"] == True, response
-
-        response, _ = self._user_service_login(user, password, otp)
-        assert response.json["result"]["value"] == False, response
+        self.do_check_scopes(True, False, scopes=["validate"], rollout=True)
 
     def test_empty_scope(self):
         """
         test 'rollout token' feature with empty scope.
 
         LinOTP should ignore any rollout feature because no explicit scope
-        is defined. Please don't ask me why.
+        is defined. Please don't ask me why ¯\_(ツ)_/¯.
         """
-        user = "passthru_user1@myDefRealm"
-        password = "geheim1"
-        otp = "verry_verry_secret"
-        pin = "1234567890"
-
-        self._init_rollout_pw_token(user, otp, pin, scopes=[])
-
-        response = self.validate_check(user, pin, otp)
-        assert response.json["result"]["value"] == True, response
-
-        response, _ = self._user_service_login(user, password, otp)
-        assert response.json["result"]["value"] == True, response
+        self.do_check_scopes(True, True, scopes=[])
 
     @pytest.mark.exclude_sqlite
     def test_enrollment_janitor(self):
