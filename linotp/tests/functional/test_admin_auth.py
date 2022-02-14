@@ -149,208 +149,178 @@ class TestAdminAuthController(TestController):
         """
         Admin Authorization:
         """
-        try:
-            parameters = {
-                "name": "admin_auth_userlist",
-                "scope": "admin",
-                "realm": "*",
-                "action": "userlist, ",
-                "user": "admin, adminResolver:, *@virtRealm",
-            }
-            response = self.make_system_request("setPolicy", params=parameters)
-            assert '"status": true' in response, response
+        parameters = {
+            "name": "admin_auth_userlist",
+            "scope": "admin",
+            "realm": "*",
+            "action": "userlist, ",
+            "user": "admin, adminResolver:, *@virtRealm",
+        }
+        response = self.make_system_request("setPolicy", params=parameters)
+        assert '"status": true' in response, response
 
-            # simple match for admin - backward compatibility
-            parameters = {"username": "*", "realm": "myDefRealm"}
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="admin"
-            )
-            assert '"status": true' in response, response
+        # simple match for admin - backward compatibility
+        parameters = {"username": "*", "realm": "myDefRealm"}
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="admin"
+        )
+        assert '"status": true' in response, response
 
-            # wildcard domain match for root@virtRealm
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="root@virtRealm"
-            )
-            assert '"status": true' in response, response
+        # wildcard domain match for root@virtRealm
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="root@virtRealm"
+        )
+        assert '"status": true' in response, response
 
-            # resolver match root@adomain in adminResolver:
-            parameters = {"username": "*", "resConf": "myOtherRes"}
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="root@adomain"
-            )
-            assert '"status": true' in response, response
+        # resolver match root@adomain in adminResolver:
+        parameters = {"username": "*", "resConf": "myOtherRes"}
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="root@adomain"
+        )
+        assert '"status": true' in response, response
 
-            # resolver mis match toor@adomain not in adminResolver:
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="toor@adomain"
-            )
-            assert '"status": false' in response, response
-
-        finally:
-            parameters = {"name": "admin_auth_userlist"}
-            response = self.make_system_request(
-                "delPolicy", params=parameters, auth_user="superadmin"
-            )
-            assert '"status": true' in response, response
-
-        return
+        # resolver mis match toor@adomain not in adminResolver:
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="toor@adomain"
+        )
+        assert '"status": false' in response, response
 
     def test_admin_username_regex_and_domain(self):
         """
         Admin Authorization:
         """
-        try:
-            parameters = {
-                "name": "admin_auth_userlist",
-                "scope": "admin",
-                "realm": "*",
-                "action": "userlist, ",
-                "user": "admin, adminResolver:,.*oo.*@virtRealm",
-            }
-            response = self.make_system_request("setPolicy", params=parameters)
-            assert '"status": true' in response, response
+        parameters = {
+            "name": "admin_auth_userlist",
+            "scope": "admin",
+            "realm": "*",
+            "action": "userlist, ",
+            "user": "admin, adminResolver:,.*oo.*@virtRealm",
+        }
+        response = self.make_system_request("setPolicy", params=parameters)
+        assert '"status": true' in response, response
 
-            # simple match for admin - backward compatibility
-            parameters = {"username": "*", "realm": "myDefRealm"}
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="admin"
-            )
-            assert '"status": true' in response, response
+        # simple match for admin - backward compatibility
+        parameters = {"username": "*", "realm": "myDefRealm"}
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="admin"
+        )
+        assert '"status": true' in response, response
 
-            # wildcard domain match for root@virtRealm
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="root@virtRealm"
-            )
-            assert '"status": true' in response, response
+        # wildcard domain match for root@virtRealm
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="root@virtRealm"
+        )
+        assert '"status": true' in response, response
 
-            # resolver match root@adomain in adminResolver:
-            parameters = {"username": "*", "resConf": "myOtherRes"}
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="rotot@virtRealm"
-            )
-            assert '"status": false' in response, response
+        # resolver match root@adomain in adminResolver:
+        parameters = {"username": "*", "resConf": "myOtherRes"}
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="rotot@virtRealm"
+        )
+        assert '"status": false' in response, response
 
-            # resolver mis match toor@adomain not in adminResolver:
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="toor@virtRealm"
-            )
-            assert '"status": true' in response, response
-
-        finally:
-            parameters = {"name": "admin_auth_userlist"}
-            response = self.make_system_request(
-                "delPolicy", params=parameters, auth_user="superadmin"
-            )
-            assert '"status": true' in response, response
-
-        return
+        # resolver mis match toor@adomain not in adminResolver:
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="toor@virtRealm"
+        )
+        assert '"status": true' in response, response
 
     def test_admin_action_wildcard(self):
         """
         Admin Authorization:
         """
-        try:
-            parameters = {
-                "name": "admin_auth_userlist",
-                "scope": "admin",
-                "realm": "*",
-                "action": "userlist, ",
-                "user": "admin, adminResolver:, *@virtRealm",
-            }
-            response = self.make_system_request("setPolicy", params=parameters)
-            assert '"status": true' in response, response
+        parameters = {
+            "name": "admin_auth_userlist",
+            "scope": "admin",
+            "realm": "*",
+            "action": "userlist, ",
+            "user": "admin, adminResolver:, *@virtRealm",
+        }
+        response = self.make_system_request("setPolicy", params=parameters)
+        assert '"status": true' in response, response
 
-            # simple match - backward compatibility
-            parameters = {
-                "page": "1",
-                "rp": "15",
-                "sortname": "username",
-                "sortorder": "asc",
-                "query": "",
-                "qtype": "username",
-                "realm": "myDefRealm",
-            }
-            response = self.make_manage_request(
-                "userview_flexi", params=parameters, auth_user="admin"
-            )
-            assert '"page": 1' in response, response
-            assert '"rows": [' in response, response
+        # simple match - backward compatibility
+        parameters = {
+            "page": "1",
+            "rp": "15",
+            "sortname": "username",
+            "sortorder": "asc",
+            "query": "",
+            "qtype": "username",
+            "realm": "myDefRealm",
+        }
+        response = self.make_manage_request(
+            "userview_flexi", params=parameters, auth_user="admin"
+        )
+        assert '"page": 1' in response, response
+        assert '"rows": [' in response, response
 
-            parameters = {
-                "name": "admin_auth_userlist",
-                "scope": "admin",
-                "realm": "myDefRealm",
-                "action": "show, *, userlist",
-                "user": "admin, adminResolver:, *@virtRealm",
-            }
-            response = self.make_system_request("setPolicy", params=parameters)
-            assert '"status": true' in response, response
+        parameters = {
+            "name": "admin_auth_userlist",
+            "scope": "admin",
+            "realm": "myDefRealm",
+            "action": "show, *, userlist",
+            "user": "admin, adminResolver:, *@virtRealm",
+        }
+        response = self.make_system_request("setPolicy", params=parameters)
+        assert '"status": true' in response, response
 
-            # simple match - backward compatibility
-            parameters = {"username": "*", "realm": "myDefRealm"}
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="admin"
-            )
-            assert '"status": true' in response, response
+        # simple match - backward compatibility
+        parameters = {"username": "*", "realm": "myDefRealm"}
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="admin"
+        )
+        assert '"status": true' in response, response
 
-            # simple match - backward compatibility
-            parameters = {
-                "page": "1",
-                "rp": "15",
-                "sortname": "username",
-                "sortorder": "asc",
-                "query": "",
-                "qtype": "username",
-                "realm": "myDefRealm",
-            }
-            response = self.make_manage_request(
-                "userview_flexi", params=parameters, auth_user="admin"
-            )
-            assert '"page": 1' in response, response
-            assert '"rows": [' in response, response
+        # simple match - backward compatibility
+        parameters = {
+            "page": "1",
+            "rp": "15",
+            "sortname": "username",
+            "sortorder": "asc",
+            "query": "",
+            "qtype": "username",
+            "realm": "myDefRealm",
+        }
+        response = self.make_manage_request(
+            "userview_flexi", params=parameters, auth_user="admin"
+        )
+        assert '"page": 1' in response, response
+        assert '"rows": [' in response, response
 
-            parameters = {
-                "name": "admin_auth_userlist",
-                "scope": "admin",
-                "realm": "myDefRealm",
-                "action": "userlist, *",
-                "user": "admin, adminResolver:, *@virtRealm",
-            }
-            response = self.make_system_request("setPolicy", params=parameters)
-            assert '"status": true' in response, response
+        parameters = {
+            "name": "admin_auth_userlist",
+            "scope": "admin",
+            "realm": "myDefRealm",
+            "action": "userlist, *",
+            "user": "admin, adminResolver:, *@virtRealm",
+        }
+        response = self.make_system_request("setPolicy", params=parameters)
+        assert '"status": true' in response, response
 
-            # simple match - backward compatibility
-            parameters = {"username": "*", "realm": "myDefRealm"}
-            response = self.make_admin_request(
-                "userlist", params=parameters, auth_user="admin"
-            )
-            assert '"status": true' in response, response
+        # simple match - backward compatibility
+        parameters = {"username": "*", "realm": "myDefRealm"}
+        response = self.make_admin_request(
+            "userlist", params=parameters, auth_user="admin"
+        )
+        assert '"status": true' in response, response
 
-            # simple match - backward compatibility
-            # simple match - backward compatibility
-            parameters = {
-                "page": "1",
-                "rp": "15",
-                "sortname": "username",
-                "sortorder": "asc",
-                "query": "",
-                "qtype": "username",
-                "realm": "myDefRealm",
-            }
-            response = self.make_manage_request(
-                "userview_flexi", params=parameters, auth_user="admin"
-            )
-            assert '"page": 1' in response, response
-            assert '"rows": [' in response, response
-
-        finally:
-            parameters = {"name": "admin_auth_userlist"}
-            response = self.make_system_request(
-                "delPolicy", params=parameters, auth_user="superadmin"
-            )
-            assert '"status": true' in response, response
-
-        return
+        # simple match - backward compatibility
+        # simple match - backward compatibility
+        parameters = {
+            "page": "1",
+            "rp": "15",
+            "sortname": "username",
+            "sortorder": "asc",
+            "query": "",
+            "qtype": "username",
+            "realm": "myDefRealm",
+        }
+        response = self.make_manage_request(
+            "userview_flexi", params=parameters, auth_user="admin"
+        )
+        assert '"page": 1' in response, response
+        assert '"rows": [' in response, response
 
     @pytest.mark.skip(
         reason="Due to unrelated changes, the test exposes problems with the"
@@ -375,61 +345,45 @@ class TestAdminAuthController(TestController):
         )
         assert '"status": true' in response, response
 
-        try:
-            parameters = {
-                "name": "sys_auth",
-                "scope": "system",
-                "realm": "*",
-                "action": "read",
-                "user": "admin",
-            }
-            response = self.make_system_request(
-                "setPolicy", params=parameters, auth_user="superadmin"
-            )
-            assert '"status": true' in response, response
+        parameters = {
+            "name": "sys_auth",
+            "scope": "system",
+            "realm": "*",
+            "action": "read",
+            "user": "admin",
+        }
+        response = self.make_system_request(
+            "setPolicy", params=parameters, auth_user="superadmin"
+        )
+        assert '"status": true' in response, response
 
-            # now do rhe test on setConfig
-            params = {"testKey": "testVal"}
-            response = self.make_system_request(
-                "setConfig", params=params, auth_user="root@virtRealm"
-            )
-            assert '"status": true' in response, response
+        # now do rhe test on setConfig
+        params = {"testKey": "testVal"}
+        response = self.make_system_request(
+            "setConfig", params=params, auth_user="root@virtRealm"
+        )
+        assert '"status": true' in response, response
 
-            # now do rhe test on setConfig
-            params = {"testKey": "testVal"}
-            response = self.make_system_request(
-                "setConfig", params=params, auth_user="root@adomain"
-            )
-            assert '"status": true' in response, response
+        # now do rhe test on setConfig
+        params = {"testKey": "testVal"}
+        response = self.make_system_request(
+            "setConfig", params=params, auth_user="root@adomain"
+        )
+        assert '"status": true' in response, response
 
-            # deny as not found in resolver or local match
-            params = {"testKey": "testVal"}
-            response = self.make_system_request(
-                "setConfig", params=params, auth_user="admin"
-            )
-            assert (
-                "Policy check failed. You are not "
-                "allowed to write system config." in response
-            ), response
+        # deny as not found in resolver or local match
+        params = {"testKey": "testVal"}
+        response = self.make_system_request(
+            "setConfig", params=params, auth_user="admin"
+        )
+        assert (
+            "Policy check failed. You are not "
+            "allowed to write system config." in response
+        ), response
 
-            # now do rhe test on setConfig
-            params = {"testKey": "testVal"}
-            response = self.make_system_request(
-                "setConfig", params=params, auth_user="superadmin"
-            )
-            assert '"status": true' in response, response
-
-        finally:
-            parameters = {"name": "sys_auth"}
-            response = self.make_system_request(
-                "delPolicy", params=parameters, auth_user="superadmin"
-            )
-            assert '"status": true' in response, response
-
-            parameters = {"name": "sysSuper"}
-            response = self.make_system_request(
-                "delPolicy", params=parameters, auth_user="superadmin"
-            )
-            assert '"status": true' in response, response
-
-        return
+        # now do rhe test on setConfig
+        params = {"testKey": "testVal"}
+        response = self.make_system_request(
+            "setConfig", params=params, auth_user="superadmin"
+        )
+        assert '"status": true' in response, response
