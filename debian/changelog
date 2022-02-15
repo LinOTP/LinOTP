@@ -1,4 +1,4 @@
-linotp (3.2~0dev-0) buster-dev; urgency=low
+linotp (3.2~rc0-1) buster-dev; urgency=low
 
   Fixes:
   * license limits are now checked during userservice token enrollment.
