@@ -29,7 +29,7 @@
 
     If the audit entries exceed the linotpAudit.sql.highwatermark
     the tool will delete old entries and only leave the
-       linotpAudit.sql.lowwatermark entries
+    linotpAudit.sql.lowwatermark entries
 
     14-09-02: added ability to dump the 'to be deleted audit data' into a
               directory. This could be defined by 2 new linotp config
