@@ -97,8 +97,10 @@ class TestAdminAuthController(TestController):
 
     def test_admin_show(self):
         """
-        Ensure that admin policy show can be limited to specific users, users of
-        specific resolvers, or matched by regular expressions
+        Ensure that admin policy show can be limited to
+        1-specific users,
+        2-users of specific resolvers,
+        3-or matched by regular expression
         """
         self.createPolicy(
             {
@@ -118,11 +120,11 @@ class TestAdminAuthController(TestController):
         response = self.make_admin_request(action, auth_user="root@virtRealm")
         assert response.json["result"]["status"] == True, response
 
-        # existance test in resolver
+        # existent user in resolver
         response = self.make_admin_request(action, auth_user="root@adomain")
         assert response.json["result"]["status"] == True, response
 
-        # non existance test in resolver
+        # non existent user in resolver
         response = self.make_admin_request(action, auth_user="toor@adomain")
         assert response.json["result"]["status"] == False, response
 
