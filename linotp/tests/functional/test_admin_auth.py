@@ -166,13 +166,15 @@ class TestAdminAuthController(TestController):
 
     def test_admin_username_regex_and_domain(self):
         """
-        TODO: add test description:
+        Tests the policy of "userlist" against the user defined by a
+        regular expression
+
         """
         self.createPolicy(
             {
                 "realm": "*",
                 "action": "userlist, ",
-                "user": "admin, adminResolver:,.*oo.*@virtRealm",
+                "user": "admin, .*oo.*@virtRealm",
             }
         )
 
@@ -182,17 +184,13 @@ class TestAdminAuthController(TestController):
         response = self.make_admin_request(action, auth_user="admin")
         assert response.json["result"]["status"] == True, response
 
-        # pattern match for domain
+        # matching pattern
         response = self.make_admin_request(action, auth_user="root@virtRealm")
         assert response.json["result"]["status"] == True, response
 
-        # existance test in resolver
+        # non-matching pattern
         response = self.make_admin_request(action, auth_user="rotot@virtRealm")
         assert response.json["result"]["status"] == False, response
-
-        # non existance test in resolver
-        response = self.make_admin_request(action, auth_user="toor@virtRealm")
-        assert response.json["result"]["status"] == True, response
 
     def test_admin_action_wildcard(self):
         """
