@@ -194,7 +194,7 @@ class TestAdminAuthController(TestController):
 
     def test_admin_action_wildcard(self):
         """
-        TODO: add test description
+        Tests wildcard in policy's realm and action setting
         """
         userview_parameters = {
             "page": "1",
@@ -205,33 +205,19 @@ class TestAdminAuthController(TestController):
             "qtype": "username",
             "realm": "myDefRealm",
         }
+
         userlist_parameters = {
             "username": "*",
             "realm": "myDefRealm",
         }
 
-        # Test 1: TODO: What is tested here?
-
+        # Test 1:
+        # Test the manage_request "userview_flexi" is
+        # reachable via setting the "userlist" policy with "*" as realm.
         self.createPolicy(
             {
                 "realm": "*",
                 "action": "userlist, ",
-                "user": "admin, adminResolver:, *@virtRealm",
-            }
-        )
-
-        response = self.make_manage_request(
-            "userview_flexi", params=userview_parameters, auth_user="admin"
-        )
-        assert response.json["result"]["value"]["page"] == 1, response
-        assert isinstance(response.json["result"]["value"]["rows"], list)
-
-        # Test 2: TODO: What is tested here?
-
-        self.createPolicy(
-            {
-                "realm": "myDefRealm",
-                "action": "show, *, userlist",
                 "user": "admin, adminResolver:, *@virtRealm",
             }
         )
@@ -244,15 +230,17 @@ class TestAdminAuthController(TestController):
         response = self.make_manage_request(
             "userview_flexi", params=userview_parameters, auth_user="admin"
         )
+
         assert response.json["result"]["value"]["page"] == 1, response
         assert isinstance(response.json["result"]["value"]["rows"], list)
 
-        # Test 3: TODO: What is tested here?
-
+        # Test 2:
+        # Checks userlist and userview_flexi are accessible when * is
+        # mentioned in action.
         self.createPolicy(
             {
                 "realm": "myDefRealm",
-                "action": "userlist, *",
+                "action": "*",
                 "user": "admin, adminResolver:, *@virtRealm",
             }
         )
@@ -327,10 +315,11 @@ class TestAdminAuthController(TestController):
             in response.json["result"]["error"]["message"]
         ), response
 
-    @pytest.mark.skip(reason="in developement")
     def test_system_auth_inheritance(self):
         """
-        System Authorization: check if admin@example.com is matched with the regex or direct match
+        System Authorization: check if admin@example.com is matched with the
+        regex or direct match
+
         """
         self.createPolicy(
             {
@@ -338,7 +327,7 @@ class TestAdminAuthController(TestController):
                 "scope": "system",
                 "realm": "*",
                 "action": "read, write",
-                "user": "superadmin, adminResolver:, *@virtRealm, *@example",
+                "user": "adminResolver:, *@example.com",
             }
         )
 
