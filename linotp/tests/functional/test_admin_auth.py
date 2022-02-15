@@ -130,7 +130,13 @@ class TestAdminAuthController(TestController):
 
     def test_admin_resolver_and_domain(self):
         """
-        TODO: add test description
+        This test sets the policy for action:userlist and verifies it against users with
+        1-exact match
+        2-domain match (pattern match)
+        3- a user from an allowed resolver can use it. (note: an allowed resolver is
+        presented in the user field of policy with semicolon after the name of the resolver)
+        4- It also checks that a user who does not exist in the resolver, can
+        not access the functionality.
         """
         self.createPolicy(
             {
@@ -150,11 +156,11 @@ class TestAdminAuthController(TestController):
         response = self.make_admin_request(action, auth_user="root@virtRealm")
         assert response.json["result"]["status"] == True, response
 
-        # existance test in resolver 'adminResolver'
+        # existent user in resolver 'adminResolver'
         response = self.make_admin_request(action, auth_user="root@adomain")
         assert response.json["result"]["status"] == True, response
 
-        # non existance test in resolver
+        # non existent user in resolver
         response = self.make_admin_request(action, auth_user="toor@adomain")
         assert response.json["result"]["status"] == False, response
 
