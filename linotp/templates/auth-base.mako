@@ -41,8 +41,8 @@
 	<link type="text/css" rel="stylesheet" href="/static/selfservice/auth.css">
 	<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css">
 
-	<script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
-	<script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery-3.6.0.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery-migrate-3.3.2.min.js"></script>
 
 	<!-- jQuery UI -->
 	<link type="text/css" href="/static/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">

@@ -91,13 +91,13 @@
   </script>
 
   %if c.debug:
-    <script type="text/javascript" src="/static/js/jquery-3.4.1.js"></script>
-    <script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-3.6.0.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-migrate-3.3.2.js"></script>
     <script type="text/javascript" src="/static/js/jquery.form.js?ref=${c.version_ref}"></script>
     <script type="text/javascript" src="/static/js/jquery-ui.js"></script>
   %else:
-    <script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
-    <script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-migrate-3.3.2.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.form.min.js?ref=${c.version_ref}"></script>
     <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
   %endif

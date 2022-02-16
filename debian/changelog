@@ -64,6 +64,9 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * Audit Audit Trail export is now ordered descending (latest logs first) when
     done from the Manage-UI
 
+  Dependencies
+  * Update jQuery and jQuery-Migrate
+
   Packaging:
   * The `linotp` package now `Suggests: python3-smpplib`.
 
