@@ -178,8 +178,8 @@
     window.CURRENT_LANGUAGE = "${lang}";
   </script>
 
-  <script type="text/javascript" src="/static/js/jquery-3.4.1.min.js?ref=${c.version_ref}"></script>
-  <script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jquery-3.6.0.min.js?ref=${c.version_ref}"></script>
+  <script type="text/javascript" src="/static/js/jquery-migrate-3.3.2.min.js?ref=${c.version_ref}"></script>
   <script type="text/javascript" src="/static/js/jquery-ui.min.js?ref=${c.version_ref}"></script>
   <script type="text/javascript" src="/static/js/jquery.form.js?ref=${c.version_ref}"></script>
   <script type="text/javascript" src="/static/js/jed.js?ref=${c.version_ref}"></script>

@@ -55,8 +55,8 @@
 <link type="text/css" rel="stylesheet" href="/custom/manage-style.css?ref=${c.version_ref}">
 
 %if c.debug:
-	<script type="text/javascript" src="/static/js/jquery-3.4.1.js"></script>
-	<script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery-3.6.0.js"></script>
+	<script type="text/javascript" src="/static/js/jquery-migrate-3.3.2.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui.js"></script>
     <script type="text/javascript" src="/static/js/jquery.validate.js"></script>
     <script type="text/javascript" src="/static/js/jquery.form.js"></script>
@@ -65,8 +65,8 @@
     <script type='text/javascript' src='/static/js/hoverIntent.js'></script>
     <script type='text/javascript' src='/static/js/superfish.js'></script>
 %else:
-	<script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
-	<script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery-3.6.0.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery-migrate-3.3.2.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.validate.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.form.min.js"></script>

@@ -45,8 +45,8 @@
 
 <link type="text/css" href="/static/css/jquery-ui/jquery-ui.min.css?ref=${c.version_ref}" rel="stylesheet">
 
-<script type="text/javascript" src="/static/js/jquery-3.4.1.min.js?ref=${c.version_ref}"></script>
-<script type="text/javascript" src="/static/js/jquery-migrate-3.1.0.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery-3.6.0.min.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/static/js/jquery-migrate-3.3.2.min.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/static/js/jquery-ui.min.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/static/js/jquery.validate.min.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/static/js/jquery.cookie.js?ref=${c.version_ref}"></script>
