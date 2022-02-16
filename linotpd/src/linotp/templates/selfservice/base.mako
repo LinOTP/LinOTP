@@ -56,8 +56,8 @@ if isinstance(lang, list):
 
 <link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
 
-<script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
-<script type="text/javascript" src="/js/jquery-migrate-3.1.0.min.js"></script>
+<script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="/js/jquery-migrate-3.3.2.min.js"></script>
 <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
 <script type="text/javascript" src="/js/jquery.cookie.js"></script>

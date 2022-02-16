@@ -1,3 +1,11 @@
+linotp (2.12.5~rc0-1) buster; urgency=medium
+
+  Dependencies
+  * Update jQuery and jQuery-Migrate
+
+ -- LinOTP Packaging <packaging@linotp.de>  Thu, 17 Feb 2022 16:15:00 +0100
+
+
 linotp (2.12.4-1) buster; urgency=medium
 
   Fix:
