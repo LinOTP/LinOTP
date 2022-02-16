@@ -2027,8 +2027,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr ""
 "LinOTP, la solución de código abierto para la autenticación de dos factores."
 
-msgid "Copyright (c) arxes-tolina GmbH"
-msgstr "Copyright (c) arxes-tolina GmbH"
+msgid "Copyright (C) arxes-tolina GmbH"
+msgstr "Copyright (C) arxes-tolina GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Bajo licencia AGPLv3"

@@ -1993,8 +1993,8 @@ msgstr "Neues Passwort bestätigen"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - die Open Source Lösung für zwei Faktor Authentisierung."
 
-msgid "Copyright (c) arxes-tolina GmbH"
-msgstr "Copyright (c) arxes-tolina GmbH"
+msgid "Copyright (C) arxes-tolina GmbH"
+msgstr "Copyright (C) arxes-tolina GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Lizensiert unter AGPLv3"

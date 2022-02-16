@@ -1882,8 +1882,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP，双因素身份验证的开源解决方案。"
 
 #, fuzzy
-msgid "Copyright (c) arxes-tolina GmbH"
-msgstr "版权所有 (c) arxes-tolina GmbH"
+msgid "Copyright (C) arxes-tolina GmbH"
+msgstr "版权所有 (C) arxes-tolina GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "AGPLv3 版权公约"
