@@ -28,7 +28,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2021-09-30 13:13+0200\n"
+"PO-Revision-Date: 2022-02-16 15:52+0100\n"
+
 "Last-Translator: \n"
 "Language-Team: German <>\n"
 "Language: de\n"
@@ -36,18 +37,18 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 2.3\n"
 
 msgid " or "
 msgstr " oder "
 
 #, python-format
 msgid "%d active tokens found > %d tokens licensed."
-msgstr "%d aktive Token gefunden > %d lizensierte Token"
+msgstr "%d aktive Token gefunden > %d lizensierte Token."
 
 #, python-format
 msgid "%d token users found > %d token users licensed."
-msgstr "%d Token-Benutzer gefunden > %d lizensierte Token-Benutzer"
+msgstr "%d Token-Benutzer gefunden > %d lizensierte Token-Benutzer."
 
 #, python-format
 msgid "%d tokens of %d migrated"
@@ -280,6 +281,10 @@ msgstr "Zertifikate"
 msgid "Challenge Response Login"
 msgstr "Anmeldung mit Challenge/Response"
 
+
+msgid "Challenge blocking time (sec)"
+msgstr "Sperrzeit für Challenges (Sek.)"
+
 msgid "Challenge expiration time (sec)"
 msgstr "Gültigkeitszeitfenster für Challenges (Sek.)"
 
@@ -486,11 +491,17 @@ msgstr "Datenbanktabelle"
 msgid "Date"
 msgstr "Datum"
 
+msgid "Date (UTC)"
+msgstr "Datum (UTC)"
+
 msgid "Day OTP Token / Tagespasswort"
 msgstr "Tagespasswort"
 
 msgid "Default Settings"
 msgstr "Standardeinstellungen"
+
+msgid "Default Values:"
+msgstr "Standardwerte:"
 
 msgid "Default expiration time of a challenge in seconds."
 msgstr "Standardwert der Gültigkeitsdauer von Challenges in Sekunden."
@@ -504,7 +515,6 @@ msgstr "Token-Standardeinstellungen"
 msgid "Default validity time of a challenge in seconds."
 msgstr "Standardwert der Gültigkeitsdauer einer Challenge in Sekunden."
 
-#, fuzzy
 msgid "Default values:"
 msgstr "Standardwerte:"
 
@@ -855,9 +865,6 @@ msgstr "Fehler bei Abfrage des OTP-Wertes"
 
 msgid "Error getting serial: "
 msgstr "Fehler beim Ermitteln der Seriennummer: "
-
-msgid "Error in regular expression for"
-msgstr "Fehler im regulären Ausdruck für"
 
 msgid "Error loading HTTP resolver"
 msgstr "Fehler beim Laden des HTTP-Resolvers"
@@ -1565,6 +1572,9 @@ msgstr "Login Name"
 msgid "Login timed out. Please try again."
 msgstr "Timeout beim Login. Bitte versuchen Sie es nochmal."
 
+msgid "Login to LinOTP Manage-UI"
+msgstr "Anmeldung am LinOTP Manage-UI"
+
 msgid "Login to LinOTP self service"
 msgstr "Anmeldung am LinOTP-Self-Service"
 
@@ -1577,11 +1587,24 @@ msgstr "Attribut für die Loginnamen"
 msgid "Logout"
 msgstr "Abmelden"
 
+msgid "Logout failed"
+msgstr "Abmeldung fehlgeschlagen"
+
 msgid "Lost Token"
 msgstr "Verlorener Token"
 
+msgid "Manage administrators via the `linotp local-admins` CLI."
+msgstr ""
+"Verwalten Sie Administratoren mithilfe von `linotp local-admins` im CLI."
+
+msgid "Manage users via ”Tools -> Import Users”."
+msgstr "Verwalten Sie Benutzer über “Werkzeuge -> Benutzer importieren”."
+
 msgid "Management - LinOTP"
 msgstr "Management - LinOTP"
+
+msgid "Management Login - LinOTP"
+msgstr "Login Management - LinOTP"
 
 msgid "Mapping Attributes"
 msgstr "Attributszuordnungen"
@@ -1670,12 +1693,12 @@ msgstr "Es werden keine existierenden Benutzer verändert!"
 msgid "No more tokens can be assigned due to license restrictions"
 msgstr ""
 "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token zugewiesen "
-"werden."
+"werden"
 
 msgid "No more tokens can be enabled due to license restrictions"
 msgstr ""
 "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token zugewiesen "
-"werden."
+"werden"
 
 msgid "No more tokens can be enrolled due to license restrictions"
 msgstr ""
@@ -1685,7 +1708,7 @@ msgstr ""
 msgid "No more tokens can be loaded due to license restrictions"
 msgstr ""
 "Aufgrund von Lizenz-Beschränkungen können keine weiteren Token importiert "
-"werden."
+"werden"
 
 msgid "No resolver selected"
 msgstr "Kein Resolver ausgewählt"
@@ -1734,9 +1757,8 @@ msgstr "OCRA-Suite"
 msgid "OCRA token rollout failed! Please retry"
 msgstr "Rollout des OCRA-Tokens fehlgeschlagen. Bitte versuchen Sie es erneut"
 
-#, fuzzy
 msgid "OCRA2"
-msgstr "OCRA2-Key"
+msgstr "OCRA2"
 
 msgid "OCRA2 - challenge/response Token"
 msgstr "OCRA2 - Challenge/Response-Token"
@@ -1798,7 +1820,6 @@ msgstr "OTP-Werte für Token "
 msgid "OTPAuth Url"
 msgstr "OTPAuth URL"
 
-#, fuzzy
 msgid "Ocra Suite"
 msgstr "OCRA Suite"
 
@@ -2883,9 +2904,6 @@ msgstr ""
 "Die Benutzer werden nicht mehr in der Lage sein, sich mit diesen Token zu "
 "authentisieren. Sind Sie sicher?"
 
-msgid "There is an error in the realm name!"
-msgstr "Fehler im Realmnamen!"
-
 #, python-format
 msgid "There is no policy gettoken/max_count definable for the tokentype %r"
 msgstr "Es gibt keine Richtlinie 'gettoken/maxcount' für den Tokentyp %r"
@@ -2966,11 +2984,31 @@ msgid "This realm is already the default realm."
 msgstr "Dieser Realm ist bereits der Standardrealm."
 
 msgid ""
+"This realm is used for validation and selfservice login if no realm is "
+"specified."
+msgstr ""
+"Dieser Realm wird für die Validierung und den Selfservice-Login verwendet, "
+"wenn kein Realm angegeben wird."
+
+msgid "This realm is used to authenticate LinOTP administrators."
+msgstr ""
+"Dieser Realm wird zur Authentifizierung von LinOTP-Administratoren verwendet."
+
+msgid ""
 "This resets the mOTP PIN, which is the PIN that is entered in the motp "
 "application on your phone."
 msgstr ""
 "Dies setzt die mOTP-PIN zurück. Diese PIN geben Sie in der mOTP-App auf "
 "Ihrem Telefon ein."
+
+msgid "This resolver contains locally managed users, managed by LinOTP."
+msgstr ""
+"Dieser Resolver enthält lokale Benutzer, die von LinOTP verwaltetet werden."
+
+msgid "This resolver is used to authenticate LinOTP administrators."
+msgstr ""
+"Dieser Resolver wird für die Authentifizierung von LinOTP-Administratoren "
+"verwendet."
 
 msgid "This will automatically resync OTP counter of HMAC based tokens."
 msgstr ""
@@ -3008,6 +3046,13 @@ msgstr "Zeitfenster"
 
 msgid "Time step"
 msgstr "Zeitschritt"
+
+msgid ""
+"Time that needs to pass before another challenge can be triggered by the "
+"same user in seconds."
+msgstr ""
+"Zeit in Sekunden, die vergehen muss, bevor eine weitere Herausforderung "
+"durch denselben Benutzer ausgelöst werden kann."
 
 msgid "Timebased eToken can use a different start date"
 msgstr "Zeitbasierter eToken kann ein anderes Startdatum benutzen"
@@ -3356,6 +3401,9 @@ msgid ""
 msgstr ""
 "Sie weisen sich gerade einen neuen Token zu. Ist dies die richtige "
 "Seriennummer: "
+
+msgid "You are required to log in again. Redirecting…"
+msgstr "Sie müssen sich erneut anmelden. Weiterleitung…"
 
 msgid "You can do this by inserting the YubiKey and simply push the button."
 msgstr ""
@@ -3822,6 +3870,9 @@ msgstr ""
 msgid "Your mobile phone number"
 msgstr "Ihre Mobiltelefonnummer"
 
+msgid "Your session expired"
+msgstr "Ihre Sitzung ist abgelaufen"
+
 msgid "Your session has expired!"
 msgstr "Ihre Sitzung ist abgelaufen!"
 
@@ -3876,6 +3927,9 @@ msgstr "Aktivieren Sie Ihren PushToken"
 msgid "activate your QRToken"
 msgstr "Aktivieren Sie Ihren QRToken"
 
+msgid "admin"
+msgstr "admin"
+
 msgid "and"
 msgstr "und"
 
@@ -3906,6 +3960,9 @@ msgstr "neu erstellen..."
 
 msgid "created token with serial"
 msgstr "Token erfolgreich erzeugt. Seriennummer"
+
+msgid "default "
+msgstr "Standard "
 
 msgid "define if the user should be allowed to define the email address"
 msgstr ""
@@ -4124,6 +4181,12 @@ msgstr "auf dem RADIUS Server"
 msgid "on remote server"
 msgstr "auf dem Remote-Server"
 
+msgid "optional"
+msgstr "Optional"
+
+msgid "or"
+msgstr "oder"
+
 msgid "or email"
 msgstr "oder E-Mail"
 
@@ -4312,9 +4375,8 @@ msgstr "Gültige Werte sind 'ocra2'. Sie gaben %s an"
 msgid "voice Provider"
 msgstr "Voice-Provider"
 
-#, fuzzy
 msgid "volume exceeded: "
-msgstr "Volumen überschritten:"
+msgstr "Volumen überschritten: "
 
 msgid "web ui generated"
 msgstr "WebUI generiert"
@@ -4391,6 +4453,9 @@ msgstr "WebUI generiert"
 #~ msgid "Contact Name"
 #~ msgstr "Kontakt"
 
+#~ msgid "Copyright (C) arxes-tolina GmbH"
+#~ msgstr "Copyright (C) arxes-tolina GmbH"
+
 #~ msgid "Counter Login"
 #~ msgstr "Zähler Login"
 
@@ -4402,6 +4467,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Default QR suite"
 #~ msgstr "Standard QR-Suite"
+
+#~ msgid "Default Values:"
+#~ msgstr "Standardwerte:"
 
 #~ msgid "DefaultChallengeValidityTime"
 #~ msgstr "Standardwert des Gültigkeitszeitraums einer Challenge"
@@ -4458,6 +4526,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Enter the realm, the tokens should part of:"
 #~ msgstr "Zu welchem Realm sollen die Token zugeordnet werden:"
+
+#~ msgid "Error in regular expression for"
+#~ msgstr "Fehler im regulären Ausdruck für"
 
 #~ msgid "Expire"
 #~ msgstr "Ablaufdatum"
@@ -4792,6 +4863,9 @@ msgstr "WebUI generiert"
 #~ msgid "Selected tokens"
 #~ msgstr "ausgewählte Token"
 
+#~ msgid "Serial number, Seed, Type, OTP length, Time step"
+#~ msgstr "Seriennummer, Seed, Typ, OTP-Länge, Zeitschritt"
+
 #~ msgid "Server config"
 #~ msgstr "Serverkonfiguration"
 
@@ -4860,6 +4934,9 @@ msgstr "WebUI generiert"
 #~ msgstr ""
 #~ "Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
 #~ "ggf. die Richtlinien."
+
+#~ msgid "There is an error in the realm name!"
+#~ msgstr "Fehler im Realmnamen!"
 
 #~ msgid ""
 #~ "This is independed of the local sizelimit and does not hinder the "
@@ -5044,12 +5121,6 @@ msgstr "WebUI generiert"
 
 #~ msgid "no"
 #~ msgstr "Nein"
-
-#~ msgid "optional"
-#~ msgstr "Optional"
-
-#~ msgid "or"
-#~ msgstr "oder"
 
 #~ msgid "or generate new one"
 #~ msgstr "oder einen neuen generieren"

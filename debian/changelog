@@ -1,4 +1,4 @@
-linotp (3.2~0dev-0) buster-dev; urgency=low
+linotp (3.2~rc0-1) buster-dev; urgency=low
 
   Fixes:
   * license limits are now checked during userservice token enrollment.
@@ -7,56 +7,55 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
   * user-based license reporting now filters for date and realm correctly and supports wildcards
     in realm and status.
   * In a Debian environment with a MySQL database, it is not anymore required
-    to set the charset=utf8 parameter as otherwise, resolvers do not
+    to set the charset=utf8 parameter as otherwise, resolvers would not
     correctly display imported users if they contain utf-8 characters.
     Using flask- mysqlalchemy connection solved this problem.
-  * Better license exception messages and in case of the user service, the
+  * License exception messages are improved and in case of the user service the
     message suggests asking the system administrator.
   * Comprehensive message after importing tokens.
   * Adjusted functional_special tests to become regular tests.
   * Porting issue for radius token with forwarding transactions.
   * Reply to sms challenge with pin+otp.
   * User import now always deletes users in the correct managed resolver
-  * the linotp support cmd can now install demo licenses
-  * the linotp cli commands don't break anymore if localisation is involved
-  * Treat resolver names case-sensitively.
+  * The linotp support cmd can now install demo licenses
+  * The linotp cli commands would not break anymore if localization is involved
+  * Resolver names are treated as case-sensitive.
 
   Features:
-  * add grace to license volume exceeding and display accordingly a message
+  * Added grace to license volume exceeding and display accordingly a message
     in the the web ui.
-  * add extended information in HOTP/TOTP CSV import UI.
+  * Added extended information in HOTP/TOTP CSV import UI.
   * The CLI now uses a common time format for all backup filenames. The format
     is configurable via config BACKUP_FILE_TIME_FORMAT.
   * CLI command `linotp audit cleanup` now writes a backup file of the deleted
     audit entries by default. Export dir defaults to the LinOTP backup dir.
-    Export can be disabled with a new flag --no-export.
-  * add the configuration option to the HttpSmsProvider to define the server
+    Exporting can be disabled with a new flag --no-export.
+  * Added the configuration option for the HttpSmsProvider to define the server
     certificate verification option.
-  * added a jwt based admin authentication into LinOTP, so that configuring
-    apache to protect admin access to linotp is no more needed.
+  * Added a jwt based admin authentication into LinOTP, so that configuring
+    apache to protect admin access to linotp is not needed any more.
     Linotp therefore uses a special realm, the admin realm, which contains the
-    resolvers that are allowed to adminstrate LinOTP. For bootstrap an
-    internal reserved manged resolver is used where users could be added via
-    the linotp command line tool (s. README.md). The manage ui and the
-    corresponding interfaces has been extended to show up if a realm or
+    resolvers that are allowed to adminstrate LinOTP. For bootstraping, an
+    internal reserved managed resolver is used for which users could be added via
+    the linotp command line tool (s. README.md). The Manage-ui and the
+    corresponding interfaces have been extended to indicate if a realm or
     resolver is used for administration.
-  * prevent the overwrite of the local admin resolver via user import.
-  * new linotp admin cli command to set support license and get support info
+  * Prevent overwriting of the local admin resolver via the user import.
+  * New linotp admin cli command to set support license, get support info
     and verify the current support status.
   * Endpoint delRealm does not cause Error if no realm argument is passed
-  * Add configuration settings JWT_SECRET_KEY, JWT_SECRET_SALT, and
+  * Added configuration settings JWT_SECRET_KEY, JWT_SECRET_SALT, and
     JWT_SECRET_ITERATIONS. The latter two control the PBKDF2 function that
     is applied to the default secret (the first key from SECRET_FILE) if
-    JWT_SECRET_KEY is not given or empty. Refer to `linotp config explain`
+    JWT_SECRET_KEY is not given or is empty. Refer to `linotp config explain`
     for details.
   * Email challenge can have a custom message for the user which can be set
     in the config by the EMAIL_CHALLENGE_PROMPT entry.
-  * user and resolver caching is now enabled by default
-  * extended sms provider logging
-  * support for TIMEOUT parameter in all networking providers
-  * SMS blocking time is now configureable in the SMS token configuration dialog.
-    The blocking time is the period that needs to pass before another challenge
-    can be triggered by the same user in seconds.
+  * Extended sms provider logging
+  * Added TIMEOUT parameter for all networking providers
+  * SMS blocking time is now configurable in the SMS token configuration dialog.
+    The blocking time (in seconds) is the period that needs to pass before another challenge
+    can be triggered by the same user.
 
   Breaking Changes:
   * The helpdesk controller has been removed.
