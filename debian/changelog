@@ -51,7 +51,6 @@ linotp (3.2~0dev-0) buster-dev; urgency=low
     for details.
   * Email challenge can have a custom message for the user which can be set
     in the config by the EMAIL_CHALLENGE_PROMPT entry.
-  * User and resolver caching is now enabled by default
   * Extended sms provider logging
   * Added TIMEOUT parameter for all networking providers
   * SMS blocking time is now configurable in the SMS token configuration dialog.
