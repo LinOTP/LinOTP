@@ -284,11 +284,13 @@ class TestJwtAdmin:
                 ),
             )
 
-            csrf_token = self.extract_cookie(client, "csrf_access_token")
-            access_token = self.extract_cookie(client, "access_token_cookie")
+            csrf_token_saved = self.extract_cookie(client, "csrf_access_token")
+            access_token_saved = self.extract_cookie(
+                client, "access_token_cookie"
+            )
 
-            assert csrf_token is not None
-            assert access_token is not None
+            assert csrf_token_saved is not None
+            assert access_token_saved is not None
 
             client.get("/admin/logout")
 
@@ -297,6 +299,20 @@ class TestJwtAdmin:
 
             assert csrf_token is None
             assert access_token is None
+
+            # After logout the jwt token should be blocklisted in order to
+            # prevet anyone from recycling it.
+            client.set_cookie(
+                "localhost.local", "access_token_cookie", access_token_saved
+            )
+            client.set_cookie(
+                "localhost.local", "csrf_access_token", csrf_token_saved
+            )
+
+            hacked_response = self.do_authenticated_request(client)
+            # this should succeed now (without implementation of blocklist)
+
+            assert hacked_response.json["result"]["status"] == True
 
     def test_expiration(
         self,
