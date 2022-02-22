@@ -19,12 +19,17 @@ class TestJwtAdmin:
         cookie_name: str,
     ) -> Optional[str]:
 
-        cookies = client.cookie_jar._cookies.get("localhost.local").get("/")
+        cookie = next(
+            (
+                cookie.value
+                for cookie in client.cookie_jar
+                if (cookie.name == cookie_name)
+                & (cookie.domain == "localhost.local")
+            ),
+            None,
+        )
 
-        if cookie_name in cookies:
-            return cookies[cookie_name].value
-        else:
-            return None
+        return cookie
 
     def do_authenticated_request(self, client: FlaskClient) -> Response:
         """Calls `/admin/show` which requires a valid session
