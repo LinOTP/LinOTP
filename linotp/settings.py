@@ -725,6 +725,18 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
+            "JWT_BLACKLIST_ENABLED",
+            bool,
+            convert=to_boolean,
+            default=True,
+            help=(
+                "This enforces a check on bl(o)ck listed jwt tokens"
+                "These or jwt tokens which are blocklisted e.g. on logout"
+                "A blocklist check function should also be decorated by"
+                "@jwt.token_in_blacklist_loader to check tokens in blocklist"
+            ),
+        ),
+        ConfigItem(
             "ADMIN_REALM_NAME",
             str,
             default="linotp_admins",
