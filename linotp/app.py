@@ -40,7 +40,11 @@ from flask_jwt_extended import (
     get_jwt_identity,
     verify_jwt_in_request_optional,
 )
-from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
+from flask_jwt_extended.exceptions import (
+    CSRFError,
+    NoAuthorizationError,
+    RevokedTokenError,
+)
 from jwt import ExpiredSignatureError
 from jwt.exceptions import InvalidSignatureError
 
@@ -413,6 +417,14 @@ class LinOTPApp(Flask):
             log.debug(
                 "start_session: Unauthorized request, "
                 "no request session identity set %r",
+                e,
+            )
+        except RevokedTokenError as e:
+            log.error(
+                "%r : \n"
+                "An already revoked jwt token was used to access a jwt protected method.\n"
+                "This can be a user who saved a token and reused it, or an attacker "
+                "using a stolen jwt token",
                 e,
             )
 
