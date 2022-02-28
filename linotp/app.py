@@ -72,6 +72,7 @@ from .lib.resolver import (
     setupResolvers,
 )
 from .lib.security.provider import SecurityProvider
+from .lib.tools.expiring_list import CustomExpiringList
 from .lib.user import getUserFromRequest
 from .lib.util import get_client
 from .model import setup_db
@@ -372,7 +373,18 @@ class LinOTPApp(Flask):
 
         self.config["JWT_COOKIE_SECURE"] = self.config["SESSION_COOKIE_SECURE"]
 
-        JWTManager(self)
+        self.jwt = JWTManager(self)
+
+        # initialize the block list holder (could be any database/memory class
+        # which implements the interface
+        # self.jwt_blocklist = RedisExpiringList()
+        self.jwt_blocklist = CustomExpiringList()
+
+        # passing the function for checking blocklist to flask_jwt_extended
+        @self.jwt.token_in_blacklist_loader
+        def check_if_token_revoked(jwt_payload):
+            jti = jwt_payload["jti"]
+            return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
 
