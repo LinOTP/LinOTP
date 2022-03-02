@@ -310,9 +310,8 @@ class TestJwtAdmin:
             )
 
             hacked_response = self.do_authenticated_request(client)
-            # this should succeed now (without implementation of blocklist)
-
-            assert hacked_response.json["result"]["status"] == True
+            # with implementation of blocklist, this should fail now
+            hacked_response.json["msg"] = "Token has been revoked"
 
     def test_expiration(
         self,
