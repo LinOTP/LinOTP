@@ -354,26 +354,24 @@ class LinOTPApp(Flask):
         """
         Initialise the JWT authentication machinery.
 
-        If the configuration settings don't include a dedicated secret key for
-        JWT authentication, appropriate the first key from the `SECRET_FILE`
-        (encKey) to use as the base for the secret key. We run this through
-        PBKDF2 first, which is basically security theatre but doesn't cost
+        The LinOTP configuration settings don't support setting a dedicated secret
+        key for JWT authentication, here we appropriate the first key from the
+        `SECRET_FILE` (encKey) to use as the base for the secret key. We run this
+        through PBKDF2 first, which is basically security theatre but doesn't cost
         us a lot.
         """
 
-        if not self.config.get("JWT_SECRET_KEY"):
-            with Path(self.config["SECRET_FILE"]).open("rb") as key_file:
-                secret_key = key_file.read(32)
-                jwt_salt = self.config.get("JWT_SECRET_SALT")
-                jwt_salt = jwt_salt or secrets.token_bytes(16)
-                jwt_iterations = self.config.get("JWT_SECRET_ITERATIONS")
-                jwt_key = hashlib.pbkdf2_hmac(
-                    "sha256",
-                    secret_key,
-                    salt=jwt_salt,
-                    iterations=jwt_iterations,
-                )
-            self.config["JWT_SECRET_KEY"] = jwt_key
+        with Path(self.config["SECRET_FILE"]).open("rb") as key_file:
+            secret_key = key_file.read(32)
+            jwt_salt = secrets.token_bytes(16)
+            jwt_iterations = self.config.get("JWT_SECRET_ITERATIONS")
+            jwt_key = hashlib.pbkdf2_hmac(
+                "sha256",
+                secret_key,
+                salt=jwt_salt,
+                iterations=jwt_iterations,
+            )
+        self.config["JWT_SECRET_KEY"] = jwt_key
 
         self.config["JWT_COOKIE_SECURE"] = self.config["SESSION_COOKIE_SECURE"]
 
