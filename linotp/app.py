@@ -381,7 +381,6 @@ class LinOTPApp(Flask):
 
         # initialize the block list holder (could be any database/memory class
         # which implements the interface
-        # self.jwt_blocklist = RedisExpiringList()
         self.jwt_blocklist = CustomExpiringList()
 
         # passing the function for checking blocklist to flask_jwt_extended

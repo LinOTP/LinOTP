@@ -26,10 +26,6 @@
 
 import time
 
-# import redis
-# from beaker.cache import CacheManager
-# from beaker.util import parse_cache_config_options
-
 
 class ExpiringList:
 
@@ -59,51 +55,31 @@ class ExpiringList:
         pass
 
 
-# class RedisExpiringList(ExpiringList):
-#     def __init__(self):
-#         self.redislist = redis.StrictRedis(
-#             host="localhost", port=6379, db=0, decode_responses=True
-#         )
-
-#     def item_in_list(self, item):
-#         found_item = self.redislist.get(item)
-#         return found_item is not None
-
-#     def add_item(self, item, expiry=None):
-#         if expiry is None:
-#             expiry = timedelta(seconds=self.DEFAULT_EXPIRY_IN)
-#         self.redislist.set(item, "", ex=expiry)
-
-
-# class BeakerExpiringList(ExpiringList):
-#     def __init__(self):
-#         cache_opts["cache_type"] = "memory"
-#         self.beakerlist = CacheManager(
-#             parse_cache_config_options(cache_opts)
-#         ).get_cache(type="memory", expiretime=expiration)
-
-#     def item_in_list(self, item):
-#         self.beakerlist.get(item)
-
-#     def add_item(self, item, ex):
-#         key = json.dumps(item)
-#         self.beakerlist.get_value(key, value=True, expiretime=ex)
-
-
 class CustomExpiringList(ExpiringList):
     """
-    A simple item container with expiry time
-    janitor runs after every new item is added
+    A simple item container with expiry time.
+    A janitor runs after every new item is added to clean
+    the expired items up.
     """
 
     def __init__(self):
         self._itemsdic = {}
-        self._last_janitor = self._now()
 
     def item_in_list(self, item):
+        """
+        :returns: True if item is in the list and not expired
+        """
         return (item in self._itemsdic) and (not self._is_expired(item))
 
-    def add_item(self, item, expiry):
+    def add_item(self, item, expiry=None):
+        """
+        Function to add an Item to the list
+
+        :param item: the item to be kept
+        :param ex: expiry in seconds
+        """
+        if expiry is None:
+            expiry = self.DEFAULT_EXPIRY_IN
         self.__janitor__()
         self._itemsdic[item] = expiry + self._now()
 
