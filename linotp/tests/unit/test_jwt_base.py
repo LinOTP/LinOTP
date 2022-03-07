@@ -81,6 +81,9 @@ def test_session_cookie_secure(
         assert False, "no jwt access token cookie found"
 
 
+@pytest.mark.skip(
+    reason="JWT_SECRET_KEY as configurable item is obsolete in LinOTP"
+)
 @pytest.mark.parametrize(
     "key,result",
     [
@@ -89,6 +92,13 @@ def test_session_cookie_secure(
     ],
 )
 def test_jwt_secret(base_app, key, result):
+    """
+    Tests if we set the jwt secret key, it will not be changed
+
+    This test was implemented by the time that JWT_SECRET_KEY
+    was a config item in settings.py. That option is now removed
+    So this test is obsolete
+    """
     base_app.config["JWT_SECRET_KEY"] = key
 
     base_app.init_jwt_config()
@@ -97,6 +107,9 @@ def test_jwt_secret(base_app, key, result):
     ), "the jwt secret key should be unchanged after app init"
 
 
+@pytest.mark.skip(
+    reason="JWT_SECRET_KEY as configurable item is obsolete in LinOTP"
+)
 @pytest.mark.parametrize(
     "salt,iterations",
     [
@@ -107,6 +120,13 @@ def test_jwt_secret(base_app, key, result):
     ],
 )
 def test_default_jwt_secret(base_app, key_directory, salt, iterations):
+    """
+    Tests whether the secret_key is produced exactly the way we expected
+    If the secret salt and iterations are set, the process should always produce the same
+    key as we caclculate here.
+
+    Note: With the removal of JWT_SECRET_KEY from settings, this test is obsolete
+    """
     base_app.config["JWT_SECRET_KEY"] = None
     base_app.config["JWT_SECRET_SALT"] = salt
     base_app.config["JWT_SECRET_ITERATIONS"] = iterations
@@ -128,15 +148,20 @@ def test_default_jwt_secret(base_app, key_directory, salt, iterations):
 
 
 def test_random_jwt_secret(base_app, key_directory):
+    """
+
+    This test was implemented by the time that JWT_SECRET_KEY
+    was a config item in settings.py. That option is now removed
+    but the test is still valid since two different runs of the
+    initialization (same as two new server instances) should produce
+    different keys
+    """
     base_app.config["SECRET_FILE"] = key_directory / "encKey"
 
-    base_app.config["JWT_SECRET_KEY"] = ""
-    base_app.config["JWT_SECRET_SALT"] = ""
     base_app.init_jwt_config()
     secret_key_1 = base_app.config["JWT_SECRET_KEY"]
 
     base_app.config["JWT_SECRET_KEY"] = ""
-    base_app.config["JWT_SECRET_SALT"] = ""
     base_app.init_jwt_config()
     secret_key_2 = base_app.config["JWT_SECRET_KEY"]
 
