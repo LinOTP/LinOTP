@@ -674,6 +674,10 @@ _config_schema = ConfigSchema(
             default=None,
             help=(
                 "Secret used to encrypt (and decrypt) JWT tokens. "
+                "This should stay as None. Only change this if you "
+                "know the concequences otherwise it can compromise "
+                "the system's security. Can affect jwt token blocklist"
+                "on server restart."
                 "Must be given as bytes or a string consisting of "
                 "hexadecimal digits. "
                 "If this is not specified, the first key from "
