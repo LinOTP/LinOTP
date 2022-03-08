@@ -40,7 +40,11 @@ from flask_jwt_extended import (
     get_jwt_identity,
     verify_jwt_in_request_optional,
 )
-from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
+from flask_jwt_extended.exceptions import (
+    CSRFError,
+    NoAuthorizationError,
+    RevokedTokenError,
+)
 from jwt import ExpiredSignatureError
 from jwt.exceptions import InvalidSignatureError
 
@@ -72,6 +76,7 @@ from .lib.resolver import (
     setupResolvers,
 )
 from .lib.security.provider import SecurityProvider
+from .lib.tools.expiring_list import CustomExpiringList
 from .lib.user import getUserFromRequest
 from .lib.util import get_client
 from .model import setup_db
@@ -349,30 +354,38 @@ class LinOTPApp(Flask):
         """
         Initialise the JWT authentication machinery.
 
-        If the configuration settings don't include a dedicated secret key for
-        JWT authentication, appropriate the first key from the `SECRET_FILE`
-        (encKey) to use as the base for the secret key. We run this through
-        PBKDF2 first, which is basically security theatre but doesn't cost
+        The LinOTP configuration settings don't support setting a dedicated secret
+        key for JWT authentication, here we appropriate the first key from the
+        `SECRET_FILE` (encKey) to use as the base for the secret key. We run this
+        through PBKDF2 first, which is basically security theatre but doesn't cost
         us a lot.
         """
 
-        if not self.config.get("JWT_SECRET_KEY"):
-            with Path(self.config["SECRET_FILE"]).open("rb") as key_file:
-                secret_key = key_file.read(32)
-                jwt_salt = self.config.get("JWT_SECRET_SALT")
-                jwt_salt = jwt_salt or secrets.token_bytes(16)
-                jwt_iterations = self.config.get("JWT_SECRET_ITERATIONS")
-                jwt_key = hashlib.pbkdf2_hmac(
-                    "sha256",
-                    secret_key,
-                    salt=jwt_salt,
-                    iterations=jwt_iterations,
-                )
-            self.config["JWT_SECRET_KEY"] = jwt_key
+        with Path(self.config["SECRET_FILE"]).open("rb") as key_file:
+            secret_key = key_file.read(32)
+            jwt_salt = secrets.token_bytes(16)
+            jwt_iterations = self.config.get("JWT_SECRET_ITERATIONS")
+            jwt_key = hashlib.pbkdf2_hmac(
+                "sha256",
+                secret_key,
+                salt=jwt_salt,
+                iterations=jwt_iterations,
+            )
+        self.config["JWT_SECRET_KEY"] = jwt_key
 
         self.config["JWT_COOKIE_SECURE"] = self.config["SESSION_COOKIE_SECURE"]
 
-        JWTManager(self)
+        self.jwt = JWTManager(self)
+
+        # initialize the block list holder (could be any database/memory class
+        # which implements the interface
+        self.jwt_blocklist = CustomExpiringList()
+
+        # passing the function for checking blocklist to flask_jwt_extended
+        @self.jwt.token_in_blacklist_loader
+        def check_if_token_revoked(jwt_payload):
+            jti = jwt_payload["jti"]
+            return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
 
@@ -401,6 +414,14 @@ class LinOTPApp(Flask):
             log.debug(
                 "start_session: Unauthorized request, "
                 "no request session identity set %r",
+                e,
+            )
+        except RevokedTokenError as e:
+            log.error(
+                "%r : \n"
+                "An already revoked jwt token was used to access a jwt protected method.\n"
+                "This can be a user who saved a token and reused it, or an attacker "
+                "using a stolen jwt token",
                 e,
             )
 

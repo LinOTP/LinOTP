@@ -19,12 +19,17 @@ class TestJwtAdmin:
         cookie_name: str,
     ) -> Optional[str]:
 
-        cookies = client.cookie_jar._cookies.get("localhost.local").get("/")
+        cookie = next(
+            (
+                cookie.value
+                for cookie in client.cookie_jar
+                if (cookie.name == cookie_name)
+                & (cookie.domain == "localhost.local")
+            ),
+            None,
+        )
 
-        if cookie_name in cookies:
-            return cookies[cookie_name].value
-        else:
-            return None
+        return cookie
 
     def do_authenticated_request(self, client: FlaskClient) -> Response:
         """Calls `/admin/show` which requires a valid session
@@ -279,11 +284,13 @@ class TestJwtAdmin:
                 ),
             )
 
-            csrf_token = self.extract_cookie(client, "csrf_access_token")
-            access_token = self.extract_cookie(client, "access_token_cookie")
+            csrf_token_saved = self.extract_cookie(client, "csrf_access_token")
+            access_token_saved = self.extract_cookie(
+                client, "access_token_cookie"
+            )
 
-            assert csrf_token is not None
-            assert access_token is not None
+            assert csrf_token_saved is not None
+            assert access_token_saved is not None
 
             client.get("/admin/logout")
 
@@ -292,6 +299,19 @@ class TestJwtAdmin:
 
             assert csrf_token is None
             assert access_token is None
+
+            # After logout the jwt token should be blocklisted in order to
+            # prevet anyone from recycling it.
+            client.set_cookie(
+                "localhost.local", "access_token_cookie", access_token_saved
+            )
+            client.set_cookie(
+                "localhost.local", "csrf_access_token", csrf_token_saved
+            )
+
+            hacked_response = self.do_authenticated_request(client)
+            # with implementation of blocklist, this should fail now
+            hacked_response.json["msg"] = "Token has been revoked"
 
     def test_expiration(
         self,

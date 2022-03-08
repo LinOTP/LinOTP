@@ -409,6 +409,14 @@ class JWTMixin(object):
         )
 
         unset_jwt_cookies(response)
+
+        # jti: jwt unique identifier
+        raw_jwt = get_raw_jwt()
+        jti = raw_jwt["jti"]
+        expires_at = get_raw_jwt()["exp"]
+        expires_in = int(expires_at - datetime.now().timestamp())
+
+        current_app.jwt_blocklist.add_item(jti, expiry=expires_in)
         return response
 
     # We have to make our own `_url_methods` dictionary; it will not
