@@ -158,6 +158,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             SECRET_FILE=key_directory / "encKey",
             LOGGING_LEVEL="DEBUG",
             LOGGING_CONSOLE_LEVEL="DEBUG",
+            DISABLE_CONTROLLERS="",
         )
 
         config = request.node.get_closest_marker("app_config")
