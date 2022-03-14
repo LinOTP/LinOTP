@@ -62,6 +62,9 @@ linotp (3.2~rc0-1) buster-dev; urgency=low
   * SMS blocking time is now configurable in the SMS token configuration dialog.
     The blocking time (in seconds) is the period that needs to pass before another challenge
     can be triggered by the same user.
+  * Reimplement additional getToken safeguard by defining the settings
+    DISABLE_CONTROLLERS and ENABLE_CONTROLLERS - by default the
+    DISABLE_CONTROLLERS contains the 'gettoken' controller.
 
   Breaking Changes:
   * The helpdesk controller has been removed.
