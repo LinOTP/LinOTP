@@ -111,9 +111,10 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
     default_url_prefix = ""
     """Suggested URL to access this controller.
 
-    The URL at which this controller will be available depends on a number of factors. These are, in
-    order of priority:
-    1. Any explicit path in the settings CONTROLLERS=ControllerName:PATH
+    The URL at which this controller will be available depends on a number of
+    factors. These are, in order of priority:
+    1. Any explicit path in the
+        settings ENABLE_CONTROLLER or DISABLE_CONTROLLER = ControllerName:PATH
     2. The controller's `base_url_prefix` setting
     3. The name of the controller"""
 

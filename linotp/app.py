@@ -90,6 +90,22 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 
 LINOTP_CFG_DEFAULT = "linotp.cfg"  # within app.root_path
 
+AVAILABLE_CONTROLLERS = {
+    "admin",
+    "audit",
+    "auth",
+    "gettoken",
+    "maintenance",
+    "manage",
+    "monitoring",
+    "reporting",
+    "selfservice",
+    "system",
+    "tools",
+    "userservice",
+    "validate",
+}
+
 
 class ConfigurationError(Exception):
     pass
@@ -660,9 +676,10 @@ class LinOTPApp(Flask):
         """
         Initialise controllers and their routing
 
-        `CONTROLLERS` is a string that contains a space-separated list
-        of controllers that should be made available. If an entry in
-        this list is `foo`, this means that the Python module
+        `DISABLE_CONTROLLERS` and  'ENABLE_CONTROLLERS' are strings that
+        contain space-separated list of controllers that should be made
+        available.
+        If an entry in this list is `foo`, this means that the Python module
         `linotp.controllers.foo` should be loaded and its
         `FooController` class be made available as a Flask blueprint at
         the `/foo` URL prefix. Our dispatch mechanism then ensures that
@@ -676,7 +693,42 @@ class LinOTPApp(Flask):
 
         This function should be called during application setup
         """
-        for ctrl_name in self.config["CONTROLLERS"].split():
+
+        # if there is any Controller defined in "ENABLE_CONTROLLERS" we take
+        # these as definition of available_controllers instead of the constant
+        # AVAILABLE_CONTROLLERS
+        enabled = self.config["ENABLE_CONTROLLERS"].strip()
+
+        available_controllers = set(
+            controller.strip() for controller in enabled.split()
+        )
+
+        if "ALL" in available_controllers:
+            available_controllers = (
+                available_controllers | AVAILABLE_CONTROLLERS
+            )
+            available_controllers.remove("ALL")
+
+        disabled = self.config["DISABLE_CONTROLLERS"].split()
+        disable_controllers = set(
+            controller.strip() for controller in disabled
+        )
+
+        controllers = available_controllers - disable_controllers
+
+        # now we have to remove duplicates in case for the mapping case
+        # like 'selfservice:/my-custom-path selfservice' as this would
+        # result in an flask error for duplicate blueprint registration.
+        # Remark:
+        # This might as well be expressed by the DISABLE_CONTROLLERS, but
+        # then the gettoken controller might be forgotten
+
+        for controller in set(controllers):
+            controller_name, _, prefix = controller.partition(":")
+            if prefix and controller_name in controllers:
+                controllers.remove(controller_name)
+
+        for ctrl_name in controllers:
             bits = ctrl_name.split(":", 2)
             while len(bits) < 3:
                 bits.append("")

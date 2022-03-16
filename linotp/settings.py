@@ -267,20 +267,31 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "CONTROLLERS",
+            "ENABLE_CONTROLLERS",
             str,
-            default=(
-                "admin audit auth gettoken maintenance manage "
-                "monitoring reporting selfservice system tools "
-                "userservice validate"
-            ),
+            default="ALL",
             help=(
-                "List of all enabled controllers. Any controller `FOO` "
-                "mentioned here will be imported from "
-                "`linotp3.controllers.FOO` and registered on `/FOO`. "
+                "List of controllers to enabled: "
                 "You can specify a different URL prefix by listing the "
                 "controller as `FOO:/bar`, which will register it "
-                "on `/bar` instead."
+                "on `/bar` instead. "
+                "The value 'ALL' will enable all controllers. "
+                "Remark: "
+                "Be aware that DISABLE_CONTROLLERS takes precedence over ENABLE_CONTROLLERS "
+                "eg.: 'DISABLE_CONTROLLERS = foo' and 'ENABLE_CONTROLLERS = foo' will "
+                "result in a disabled controller foo!"
+            ),
+        ),
+        ConfigItem(
+            "DISABLE_CONTROLLERS",
+            str,
+            default="gettoken",
+            help=(
+                "List of all disabled controllers. "
+                "Remark: "
+                "Be aware that DISABLE_CONTROLLERS takes precedence over ENABLE_CONTROLLERS "
+                "eg.: 'DISABLE_CONTROLLERS = foo' and 'ENABLE_CONTROLLERS = foo' will "
+                "result in a disabled controller foo!"
             ),
         ),
         ConfigItem(

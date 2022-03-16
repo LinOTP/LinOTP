@@ -9,7 +9,7 @@ import pytest
 
 @pytest.mark.app_config(
     {
-        "CONTROLLERS": "selfservice",
+        "ENABLE_CONTROLLERS": "selfservice",
     }
 )
 def test_redirect_legacy_selfservice(client):
@@ -22,7 +22,7 @@ def test_redirect_legacy_selfservice(client):
 
 @pytest.mark.app_config(
     {
-        "CONTROLLERS": "selfservice:/my-custom-path",
+        "ENABLE_CONTROLLERS": "selfservice:/my-custom-path",
     }
 )
 def test_redirect_custom_legacy_selfservice_url(client):
@@ -34,7 +34,7 @@ def test_redirect_custom_legacy_selfservice_url(client):
 @pytest.mark.app_config(
     {
         "SITE_ROOT_REDIRECT": "/custom-site-redirect",
-        "CONTROLLERS": "selfservice",
+        "ENABLE_CONTROLLERS": "selfservice",
     }
 )
 def test_custom_site_root_redirect_config(client):
@@ -47,7 +47,7 @@ def test_custom_site_root_redirect_config(client):
 
 @pytest.mark.app_config(
     {
-        "CONTROLLERS": "",
+        "ENABLE_CONTROLLERS": "",
     }
 )
 def test_no_redirect(client):
