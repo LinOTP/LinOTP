@@ -176,9 +176,9 @@ def _getAuthorization(scope, action):
 
     admin_user = _getAuthenticatedUser()
 
-    LOG.debug("Evaluating policies for the user: %s", admin_user["login"])
+    LOG.debug("Evaluating policies for the user: %r", admin_user)
 
-    param = {"user": admin_user["login"], "scope": scope, "action": action}
+    param = {"user": admin_user, "scope": scope, "action": action}
 
     policies = policy_elve.set_filters(param).evaluate(policy_set=p_at_all)
     LOG.debug("Found the following policies: %r", policies)
@@ -186,7 +186,7 @@ def _getAuthorization(scope, action):
     if len(list(policies.keys())) > 0:
         auth = True
 
-    return {"active": active, "auth": auth, "admin": admin_user["login"]}
+    return {"active": active, "auth": auth, "admin": admin_user}
 
 
 def get_client_policy(

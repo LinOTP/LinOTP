@@ -245,7 +245,7 @@ def _checkAdminPolicyPost(
     if method in ["assign", "init", "enable"]:
 
         if not _check_token_count(realm=user.realm, post_check=True):
-            admin = context["AuthUser"]
+            admin = _getAuthenticatedUser()
 
             log.warning(
                 "the admin >%s< is not allowed to enroll any more "
@@ -274,7 +274,7 @@ def _checkAdminPolicyPost(
         tokenrealm = param.get("tokenrealm", user.realm)
 
         if not _check_token_count(realm=tokenrealm, post_check=True):
-            admin = context["AuthUser"]
+            admin = _getAuthenticatedUser()
 
             log.warning(
                 "the maximum tokens for the realm %s is exceeded.",
@@ -1492,7 +1492,7 @@ def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
                 {
                     "scope": "gettoken",
                     "realm": realm,
-                    "user": admin_user["login"],
+                    "user": admin_user,
                     "action": pol_action,
                 }
             )
@@ -2046,7 +2046,7 @@ def getAdminPolicies(action, scope="admin"):
 
     # We may change this later to other authentication schemes
     admin_user = _getAuthenticatedUser()
-    log.info("Evaluating policies for the user: %s", admin_user["login"])
+    log.info("Evaluating policies for the user: %s", admin_user)
 
     # check if we got admin policies at all
     p_at_all = search_policy({"scope": scope})
@@ -2061,7 +2061,7 @@ def getAdminPolicies(action, scope="admin"):
         resolvers = []
 
     else:
-        pol_request = {"user": admin_user["login"], "scope": scope}
+        pol_request = {"user": admin_user, "scope": scope}
         if action:
             pol_request["action"] = action
 
@@ -2077,7 +2077,7 @@ def getAdminPolicies(action, scope="admin"):
         "active": active,
         "realms": realms,
         "resolvers": resolvers,
-        "admin": admin_user["login"],
+        "admin": admin_user,
     }
 
 
@@ -2942,7 +2942,7 @@ def createRandomPin(user, min_pin_length):
 def checkToolsAuthorisation(method, param=None):
     # TODO: fix the semantic of the realm in the policy!
 
-    auth_user = context["AuthUser"]
+    auth_user = _getAuthenticatedUser()
 
     if not param:
         param = {}
