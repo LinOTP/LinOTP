@@ -104,7 +104,7 @@ class TestPolicyTokencount(TestController):
         response = self.make_admin_request("assign", params=params)
         assert not ('"value": true' in response), response
         msg = (
-            "The maximum allowed number of tokens for the realm mydefrealm"
+            "The maximum allowed number of tokens for the realm 'mydefrealm'"
             " was reached. You can not init any more tokens. Check the "
             "policies scope=enrollment, action=tokencount."
         )
@@ -131,7 +131,7 @@ class TestPolicyTokencount(TestController):
         response = self.make_admin_request("assign", params=params)
         assert not ('"value": true' in response), response
         msg = (
-            "The maximum allowed number of tokens for the realm mydefrealm"
+            "The maximum allowed number of tokens for the realm 'mydefrealm'"
             " was reached. You can not init any more tokens. Check the "
             "policies scope=enrollment, action=tokencount."
         )
