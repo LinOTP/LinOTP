@@ -56,6 +56,7 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
   * SMS blocking time is now configurable in the SMS token configuration dialog.
     The blocking time (in seconds) is the period that needs to pass before another challenge
     can be triggered by the same user.
+  * admin policies now support resolver defintion for admin users
 
   Breaking Changes:
   * The helpdesk controller has been removed.
@@ -69,7 +70,7 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
   Packaging:
   * The `linotp` package now `Suggests: python3-smpplib`.
 
- -- LinOTP Packaging <packaging@linotp.de>  Mon, 15 Nov 2021 16:51:51 +0200
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 
 linotp (3.1-1) buster; urgency=medium
 
