@@ -59,9 +59,9 @@ class UserDomainCompare(object):
 
     def _parse(self, user_def):
         """
-        parse the domain user string and distinguis if there
-        is a user + domain or a sinple user only comparison required
-        accordin to this the comparison method is adjusted
+        parse the domain user string and distinguish if there
+        is a user + domain or a simple user only comparison required
+        according to this the comparison method is adjusted
 
         :param user_def: user definition from the policy entry 'user'
         """
