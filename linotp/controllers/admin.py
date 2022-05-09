@@ -164,7 +164,7 @@ class AdminController(BaseController, JWTMixin):
         audit = config.get("audit")
 
         try:
-            g.audit["administrator"] = getUserFromRequest(request).get("login")
+            g.audit["administrator"] = getUserFromRequest()
 
             serial = request.params.get("serial")
             if serial:
@@ -665,7 +665,7 @@ class AdminController(BaseController, JWTMixin):
         try:
             serial = param.get("serial")
             user = getUserFromParam(param)
-            auth_user = getUserFromRequest(request)
+            auth_user = getUserFromRequest()
 
             # check admin authorization
             checkPolicyPre("admin", "disable", param, user=user)
@@ -1257,7 +1257,7 @@ class AdminController(BaseController, JWTMixin):
 
             # check admin authorization
 
-            admin_user = getUserFromRequest(request)
+            admin_user = getUserFromRequest()
 
             checkPolicyPre("admin", "set", param, user=admin_user)
 
