@@ -163,7 +163,13 @@ def create_auth_cookie(user, client, state="authenticated", state_data=None):
     if state_data is not None:
         state_data = copy.deepcopy(state_data)
 
-    data = [user, client, expiration, state, state_data]
+    # we have to serialize the user object
+    # - we do this currently in a very limited way where the resolver
+    # specification is missing!
+
+    user_dict = {"login": user.login, "realm": user.realm}
+
+    data = [user_dict, client, expiration, state, state_data]
     hash_data = ("%r" % data).encode("utf-8")
 
     digest = hmac.new(key, hash_data, digestmod=hashlib.sha256).digest()
@@ -188,7 +194,7 @@ def get_cookie_authinfo(cookie):
     if not data:
         return None, None, None, None
 
-    [user, client, expiration, state, state_data] = data
+    [u_dict, client, expiration, state, state_data] = data
 
     # handle session expiration
 
@@ -198,6 +204,7 @@ def get_cookie_authinfo(cookie):
         log.info("session is expired")
         return None, None, None, None
 
+    user = User(login=u_dict.get("login", ""), realm=u_dict.get("realm", ""))
     return user, client, state, state_data
 
 
@@ -232,8 +239,12 @@ def check_auth_cookie(cookie, user, client):
     if not data:
         return False
 
-    [cookie_user, cookie_client, expiration, _state, _state_data] = data
+    [cookie_user_dict, cookie_client, expiration, _state, _state_data] = data
 
+    cookie_user = User(
+        login=cookie_user_dict.get("login"),
+        realm=cookie_user_dict.get("realm"),
+    )
     # handle session expiration
 
     now = datetime.datetime.utcnow()
