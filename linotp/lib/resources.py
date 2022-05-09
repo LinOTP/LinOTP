@@ -338,7 +338,7 @@ class ResourceScheduler(object):
                 resource, (None, 0, 0)
             )
 
-            adjusted_delay = delay + delay * 2 ** block_counter
+            adjusted_delay = delay + delay * 2**block_counter
             block_until = datetime.utcnow() + timedelta(seconds=adjusted_delay)
 
             log.info("blocking for %r seconds", adjusted_delay)

@@ -473,7 +473,7 @@ class U2FTokenClass(TokenClass):
         OVERFLOW_RANGE = 1000
         res = False
         if (
-            prevCounter >= (256 ** 4) - OVERFLOW_RANGE
+            prevCounter >= (256**4) - OVERFLOW_RANGE
             and counter <= OVERFLOW_RANGE
         ):
             # This is the range of a legal overflow
