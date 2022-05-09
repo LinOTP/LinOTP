@@ -529,7 +529,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["success"] = ret
             g.audit["user"] = user.login
 
-            if user.is_empty:
+            if not user:
                 g.audit["realm"] = getTokenRealms(serial)
             else:
                 g.audit["realm"] = user.realm
@@ -542,7 +542,7 @@ class AdminController(BaseController, JWTMixin):
             opt_result_dict = {}
             if ret == 0 and serial:
                 opt_result_dict["message"] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.is_empty:
+            elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
             checkPolicyPost("admin", "enable", param, user=user)
@@ -682,7 +682,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["success"] = ret
             g.audit["user"] = user.login
 
-            if user.is_empty:
+            if not user:
                 g.audit["realm"] = getTokenRealms(serial)
             else:
                 g.audit["realm"] = user.realm
@@ -695,7 +695,7 @@ class AdminController(BaseController, JWTMixin):
             opt_result_dict = {}
             if ret == 0 and serial:
                 opt_result_dict["message"] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.is_empty:
+            elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
             db.session.commit()
@@ -1016,7 +1016,7 @@ class AdminController(BaseController, JWTMixin):
             opt_result_dict = {}
             if ret == 0 and serial:
                 opt_result_dict["message"] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.is_empty:
+            elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
             db.session.commit()
@@ -2030,7 +2030,7 @@ class AdminController(BaseController, JWTMixin):
             opt_result_dict = {}
             if ret == 0 and serial:
                 opt_result_dict["message"] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.is_empty:
+            elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
             db.session.commit()
@@ -2836,7 +2836,7 @@ class AdminController(BaseController, JWTMixin):
             if all:
                 only_open_challenges = False
 
-            if transid is None and user.is_empty and serial is None:
+            if transid is None and not user and serial is None:
                 # # raise exception
                 log.error(
                     "[admin/checkstatus] : missing parameter: "
@@ -2860,8 +2860,8 @@ class AdminController(BaseController, JWTMixin):
                     )
                 )
 
-            # # if we have a user
-            if not user.is_empty:
+            # if we have a user
+            if user:
                 tokens = getTokens4UserOrSerial(user=user)
                 for token in tokens:
                     serial = token.getSerial()

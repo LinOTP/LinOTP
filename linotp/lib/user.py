@@ -220,13 +220,9 @@ class User(object):
             except Exception as exx:
                 log.error("Error while accessing resolver %r", exx)
 
-    @property
-    def is_empty(self):
-        return len(self.login) == 0 and len(self.realm) == 0
-
     def __str__(self):
 
-        if self.is_empty:
+        if not self.login and not self.realm:
             return "None"
 
         try:
@@ -472,7 +468,7 @@ def getUserResolverId(user, report=False):
 
     log.debug("getUserResolverId for %r", user)
 
-    if user is None or user.is_empty:
+    if not user:
         return ("", "", "")
 
     try:
