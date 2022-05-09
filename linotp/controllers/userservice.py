@@ -328,10 +328,7 @@ class UserserviceController(BaseController):
         # as we require the authenticated user in the __after__ method for
         # audit and reporting
 
-        request_context["AuthUser"] = {
-            "login": self.authUser.login,
-            "realm": self.authUser.realm,
-        }
+        request_context["AuthUser"] = self.authUser
 
         c.user = identity.login
         c.realm = identity.realm
@@ -384,8 +381,11 @@ class UserserviceController(BaseController):
                 "userservice/userinfo",
             ]:
 
-                g.audit["user"] = authUser.get("login", "")
-                g.audit["realm"] = authUser.get("realm", "")
+                g.audit["user"] = "%r" % authUser
+                realm = ""
+                if authUser and authUser.realm:
+                    realm = authUser.realm
+                g.audit["realm"] = realm
 
                 log.debug(
                     "[__after__] authenticating as %s in realm %s!",
