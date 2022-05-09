@@ -92,7 +92,9 @@ test_requirements = [
 code_quality_requirements = [
     "pylint",
     "autopep8",
-    "black",
+    # black will go back to the latest version as soon as we
+    # switch to flask 2 (this is due to a conflict with click)
+    "black<=21.6b0",
     "pre-commit",
     "mypy",
     "sqlalchemy-stubs",
