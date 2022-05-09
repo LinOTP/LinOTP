@@ -197,7 +197,7 @@ class SystemController(BaseController):
 
         try:
 
-            g.audit["administrator"] = getUserFromRequest(request).get("login")
+            g.audit["administrator"] = getUserFromRequest()
             current_app.audit_obj.log(g.audit)
             # default return for the __before__ and __after__
             return response

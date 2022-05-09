@@ -58,7 +58,7 @@ from linotp.lib.tools.import_user.SQLImportHandler import (
 )
 from linotp.lib.tools.set_password import DataBaseContext, SetPasswordHandler
 from linotp.lib.type_utils import boolean
-from linotp.lib.user import setRealm
+from linotp.lib.user import getUserFromRequest, setRealm
 from linotp.lib.util import check_session
 from linotp.model import db
 
@@ -124,7 +124,8 @@ class ToolsController(BaseController):
             old_pw = self.request_params["old_password"]
             new_pw = self.request_params["new_password"]
 
-            username = request_context["AuthUser"].get("login", "")
+            authenticated_user = getUserFromRequest()
+            username = authenticated_user.login
 
             if not username:
                 raise Exception("Missing authenticated user!")
