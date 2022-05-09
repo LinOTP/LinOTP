@@ -451,7 +451,7 @@ class OcraSuite:
         if self.C:
             try:
                 C = int(C)
-                if C < 0 or C > 2 ** 64:
+                if C < 0 or C > 2**64:
                     raise Exception()
             except BaseException:
                 raise ValueError("Invalid counter value %r" % C)

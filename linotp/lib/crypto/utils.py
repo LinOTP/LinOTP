@@ -610,7 +610,7 @@ def extract_tan(signature, digits):
     itan = struct.unpack(">I", signature[offset : offset + 4])[0] & 0x7FFFFFFF
 
     # convert the binaries of the signature to an integer based string
-    tan = "%d" % (itan % 10 ** digits)
+    tan = "%d" % (itan % 10**digits)
 
     # fill up the tan with leading zeros
     stan = "%s%s" % ("0" * (digits - len(tan)), tan)
