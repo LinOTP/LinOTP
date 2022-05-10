@@ -35,6 +35,9 @@ import os
 
 import pytest
 
+from flask import current_app
+
+from linotp.lib.user import User
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
@@ -44,7 +47,12 @@ class TestAdminAuthController(TestController):
     def setUp(self):
         TestController.setUp(self)
         # clean setup
-        self.delete_all_policies()
+        authUser = User(
+            login="admin",
+            realm=current_app.config["ADMIN_REALM_NAME"].lower(),
+            resolver_config_identifier="adminResolver",
+        )
+        self.delete_all_policies(auth_user=authUser)
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -56,7 +64,12 @@ class TestAdminAuthController(TestController):
 
     def tearDown(self):
         TestController.tearDown(self)
-        self.delete_all_policies()
+        authUser = User(
+            login="admin",
+            realm=current_app.config["ADMIN_REALM_NAME"].lower(),
+            resolver_config_identifier="adminResolver",
+        )
+        self.delete_all_policies(auth_user=authUser)
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -78,18 +91,31 @@ class TestAdminAuthController(TestController):
         response = self.create_resolver(name="adminResolver", params=params)
         assert response.json["result"]["status"] == True, response
 
-    def createPolicy(self, param=None):
+    def createPolicy(self, param=None, auth_user=None):
         policy = {
             "name": "admin01",
             "scope": "admin",
         }
+
+        pparams = {}
+        if auth_user:
+            pparams["auth_user"] = auth_user
+        else:
+            authUser = User(
+                login="admin",
+                realm=current_app.config["ADMIN_REALM_NAME"].lower(),
+                resolver_config_identifier="adminResolver",
+            )
+            pparams["auth_user"] = authUser
 
         # overwrite the default defintion
         policy.update(param)
 
         resp_dict = "setPolicy %s" % policy["name"]
 
-        response = self.make_system_request("setPolicy", params=policy)
+        response = self.make_system_request(
+            "setPolicy", params=policy, **pparams
+        )
         assert response.json["result"]["status"] == True, response
         assert isinstance(
             response.json["result"]["value"][resp_dict], dict
@@ -117,15 +143,30 @@ class TestAdminAuthController(TestController):
         assert response.json["result"]["status"] == True, response
 
         # pattern match for domain
-        response = self.make_admin_request(action, auth_user="root@virtRealm")
+        authUser = User(
+            login="root",
+            realm="virtRealm",
+            resolver_config_identifier="notExistingResolver",
+        )
+        response = self.make_admin_request(action, auth_user=authUser)
         assert response.json["result"]["status"] == True, response
 
-        # existent user in resolver
-        response = self.make_admin_request(action, auth_user="root@adomain")
+        # existent user in resolver 'adminResolver'
+        authUser = User(
+            login="admin",
+            realm="adomain",
+            resolver_config_identifier="adminResolver",
+        )
+        response = self.make_admin_request(action, auth_user=authUser)
         assert response.json["result"]["status"] == True, response
 
         # non existent user in resolver
-        response = self.make_admin_request(action, auth_user="toor@adomain")
+        authUser = User(
+            login="toor",
+            realm="adomain",
+            resolver_config_identifier="adminResolver",
+        )
+        response = self.make_admin_request(action, auth_user=authUser)
         assert response.json["result"]["status"] == False, response
 
     def test_admin_resolver_and_domain(self):
@@ -134,7 +175,7 @@ class TestAdminAuthController(TestController):
         1-exact match
         2-domain match (pattern match)
         3- a user from an allowed resolver can use it. (note: an allowed resolver is
-        presented in the user field of policy with semicolon after the name of the resolver)
+        presented in the user field of policy with colon after the name of the resolver)
         4- It also checks that a user who does not exist in the resolver, can
         not access the functionality.
         """
@@ -153,15 +194,30 @@ class TestAdminAuthController(TestController):
         assert response.json["result"]["status"] == True, response
 
         # pattern match for domain
-        response = self.make_admin_request(action, auth_user="root@virtRealm")
+        authUser = User(
+            login="root",
+            realm="virtRealm",
+            resolver_config_identifier="notExistingResolver",
+        )
+        response = self.make_admin_request(action, auth_user=authUser)
         assert response.json["result"]["status"] == True, response
 
         # existent user in resolver 'adminResolver'
-        response = self.make_admin_request(action, auth_user="root@adomain")
+        authUser = User(
+            login="admin",
+            realm="adomain",
+            resolver_config_identifier="adminResolver",
+        )
+        response = self.make_admin_request(action, auth_user=authUser)
         assert response.json["result"]["status"] == True, response
 
         # non existent user in resolver
-        response = self.make_admin_request(action, auth_user="toor@adomain")
+        authUser = User(
+            login="toor",
+            realm="adomain",
+            resolver_config_identifier="adminResolver",
+        )
+        response = self.make_admin_request(action, auth_user=authUser)
         assert response.json["result"]["status"] == False, response
 
     def test_admin_username_regex_and_domain(self):
@@ -185,11 +241,21 @@ class TestAdminAuthController(TestController):
         assert response.json["result"]["status"] == True, response
 
         # matching pattern
-        response = self.make_admin_request(action, auth_user="root@virtRealm")
+        authUser = User(
+            login="root",
+            realm="virtRealm",
+            resolver_config_identifier="notExistingResolver",
+        )
+        response = self.make_admin_request(action, auth_user=authUser)
         assert response.json["result"]["status"] == True, response
 
         # non-matching pattern
-        response = self.make_admin_request(action, auth_user="rotot@virtRealm")
+        authUser = User(
+            login="rotot",
+            realm="virtRealm",
+            resolver_config_identifier="notExistingResolver",
+        )
+        response = self.make_admin_request(action, auth_user=authUser)
         assert response.json["result"]["status"] == False, response
 
     def test_admin_action_wildcard(self):
@@ -270,6 +336,12 @@ class TestAdminAuthController(TestController):
             }
         )
 
+        authUser = User(
+            login="admin",
+            realm=current_app.config["ADMIN_REALM_NAME"].lower(),
+            resolver_config_identifier="adminResolver",
+        )
+
         self.createPolicy(
             {
                 "name": "sys_auth",
@@ -277,21 +349,32 @@ class TestAdminAuthController(TestController):
                 "realm": "*",
                 "action": "read",
                 "user": "seconduser",
-            }
+            },
+            auth_user=authUser,
         )
 
         # ALl users that are matched with policy 'sys_super'
         # should be allowed to write system config
 
+        authUser = User(
+            login="root",
+            realm="virtRealm",
+            resolver_config_identifier="adminResolver",
+        )
         params = {"testKey": "testVal"}
         response = self.make_system_request(
-            "setConfig", params=params, auth_user="root@virtRealm"
+            "setConfig", params=params, auth_user=authUser
         )
         assert response.json["result"]["status"] == True, response
 
+        authUser = User(
+            login="admin",
+            realm="adomain",
+            resolver_config_identifier="adminResolver",
+        )
         params = {"testKey": "testVal"}
         response = self.make_system_request(
-            "setConfig", params=params, auth_user="root@adomain"
+            "setConfig", params=params, auth_user=authUser
         )
         assert response.json["result"]["status"] == True, response
 
@@ -332,30 +415,40 @@ class TestAdminAuthController(TestController):
         )
 
         self.createPolicy(
-            {
+            param={
                 "name": "sys_auth",
                 "scope": "system",
                 "realm": "*",
                 "action": "read",
                 "user": "admin@example",
-            }
+            },
         )
 
         # Users of the example.com domain that are not admin@example.com
         # are allowed to write system config
 
+        authUser = User(
+            login="foo",
+            realm="example.com",
+            resolver_config_identifier="notExistingResolver",
+        )
         params = {"testKey": "testVal"}
         response = self.make_system_request(
-            "setConfig", params=params, auth_user="foo@example.com"
+            "setConfig", params=params, auth_user=authUser
         )
         assert response.json["result"]["status"] == True, response
 
         # Users that are not part of the example.com domain are not
         # allowed to write system config
 
+        authUser = User(
+            login="foo",
+            realm="whatever",
+            resolver_config_identifier="notExistingResolver",
+        )
         params = {"testKey": "testVal"}
         response = self.make_system_request(
-            "setConfig", params=params, auth_user="foo@whatever"
+            "setConfig", params=params, auth_user=authUser
         )
         assert (
             "Policy check failed. You are not "
@@ -369,8 +462,13 @@ class TestAdminAuthController(TestController):
         # action of the policy 'sys_super' that is only a 'regex user match'.
         # This is according to the policy priority evaluation in 'lib/policy/evaluate.py'.
 
+        authUser = User(
+            login="admin",
+            realm="example.com",
+            resolver_config_identifier="adminResolver",
+        )
         params = {"testKey": "testVal"}
         response = self.make_system_request(
-            "setConfig", params=params, auth_user="admin@example.com"
+            "setConfig", params=params, auth_user=authUser
         )
         assert response.json["result"]["status"] == True, response
