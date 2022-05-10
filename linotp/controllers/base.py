@@ -48,6 +48,7 @@ from flask import Blueprint, after_this_request, current_app, g, jsonify
 
 from linotp.flap import request
 from linotp.lib.context import request_context
+from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.resolver import getResolverObject
 from linotp.lib.user import NoResolverFound, User, getUserFromParam, getUserId
@@ -358,14 +359,17 @@ class JWTMixin(object):
         # Search for the user in the admin realm and check the
         # given password.
 
-        user = User.getUserObject(
-            username,
-            realm=current_app.config["ADMIN_REALM_NAME"],
-        )
+        admin_realm_name = current_app.config["ADMIN_REALM_NAME"]
+        admin_realm = getRealms(admin_realm_name)
+        admin_resolvers = admin_realm[admin_realm_name]["useridresolver"]
 
-        for uid, resolver_specification in user.get_uid_resolver():
+        for resolver_specification in admin_resolvers:
 
             resolver = getResolverObject(resolver_specification)
+
+            uid = resolver.getUserId(username)
+            if not uid:
+                continue
 
             if not resolver.checkPass(uid, password):
                 continue
