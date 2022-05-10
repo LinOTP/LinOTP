@@ -65,6 +65,7 @@ from flask import _request_ctx_stack as flask_request_ctx_stack
 from flask import current_app, g, request
 
 from linotp.app import create_app
+from linotp.lib.user import User
 
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 
@@ -375,14 +376,28 @@ class TestController(TestCase):
         Makes an authenticated request
         """
 
+        login = auth_user
+        resolver = auth_resolver
+        realm = current_app.config["ADMIN_REALM_NAME"].lower()
+
+        if isinstance(auth_user, User):
+            login = auth_user.login
+            realm = (
+                auth_user.realm
+                or current_app.config["ADMIN_REALM_NAME"].lower()
+            )
+            resolver = auth_user.resolver_config_identifier or auth_resolver
+
         app_get_jwt_identity.return_value = {
-            "username": auth_user,
-            "resolver": auth_resolver,
+            "username": login,
+            "resolver": resolver,
+            "realm": realm,
         }
 
         system_get_jwt_identity.return_value = {
-            "username": auth_user,
-            "resolver": auth_resolver,
+            "username": login,
+            "resolver": resolver,
+            "realm": realm,
         }
 
         params = params or {}

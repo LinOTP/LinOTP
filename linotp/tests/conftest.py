@@ -248,6 +248,14 @@ def adminclient(client, request):
         "linotp.app.get_jwt_identity",
         lambda: {
             "username": admin_user,
+            "realm": "admin_realm",
+            "resolver": "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
+        },
+    ), patch(
+        "linotp.lib.user.get_jwt_identity",
+        lambda: {
+            "username": admin_user,
+            "realm": "admin_realm",
             "resolver": "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
         },
     ):
