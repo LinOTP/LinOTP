@@ -31,6 +31,8 @@ import logging
 import re
 from functools import partial
 
+from flask_jwt_extended.utils import get_jwt_identity
+
 from flask import g
 
 from linotp.lib.cache import get_cache
@@ -627,24 +629,13 @@ def getUserFromParam(param):
     return usr
 
 
-def getUserFromRequest(request=None):
+def getUserFromRequest():
     """
-    This function returns the logged-in username
-    :param request: the flask request
+    This function returns the logged-in user as object
 
-    :return: the authentication dict
+    :return: the authenticated user as user object or None
     """
-
-    d_auth = {"login": ""}
-
-    if hasattr(g, "username"):
-        d_auth["login"] = g.username
-        log.debug(
-            "[getUserFromRequest] JWT Auth: found "
-            f"user identity={g.username}"
-        )
-
-    return d_auth
+    return request_context.get("AuthUser", None)
 
 
 def setRealm(realm, resolvers):
