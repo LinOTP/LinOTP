@@ -115,6 +115,30 @@ class User(object):
                 f_user.exists = False
 
         return f_user
+    def _filter_for_resolver_config_identitier(self, resolvers_list):
+        """
+        filter_for_resolver_spec filters a list of resolvers:
+        - if no resolver_config_identifier exists
+            the original list of resolvers is returned
+
+        - if no resolver_config_identifier exists
+            and if it is in the resolver list:
+                a list with this resolver is returned or
+                an empty list is returned
+
+        """
+
+        if not self.resolver_config_identifier:
+            return resolvers_list
+
+        for resolver_spec in set(resolvers_list):
+            if (
+                resolver_spec.rpartition(".")[-1]
+                == self.resolver_config_identifier.rpartition(".")[-1]
+            ):
+                return [resolver_spec]
+
+        return []
 
     def get_uid_resolver(self, resolvers=None):
         """
@@ -154,8 +178,11 @@ class User(object):
                 if fq_resolver:
                     resolvers_list.append(fq_resolver)
 
-        if not resolvers_list:
-            return
+        # if there is a resolver_config_identifier we have to care for
+
+        resolvers_list = self._filter_for_resolver_config_identitier(
+            resolvers_list
+        )
 
         for resolver_spec in resolvers_list:
 
