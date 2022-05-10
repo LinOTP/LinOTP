@@ -379,6 +379,7 @@ class JWTMixin(object):
             access_token = create_access_token(
                 identity={
                     "username": username,
+                    "realm": current_app.config["ADMIN_REALM_NAME"],
                     "resolver": resolver_specification,
                 },
             )
@@ -386,6 +387,12 @@ class JWTMixin(object):
             set_access_cookies(response, access_token)
 
             g.username = username
+
+            g.user = User(
+                login=username,
+                realm=current_app.config["ADMIN_REALM_NAME"],
+                resolver_config_identifier=resolver_specification,
+            )
 
             return response
 
