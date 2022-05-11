@@ -361,6 +361,20 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
+            "LOGFILE_CONSOLE_LINE_FORMAT",
+            str,
+            default=(
+                "%(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
+            ),
+            help=(
+                "Format for individual lines in the console log. "
+                "This is the log which is gonna be available through"
+                "journalctl "
+                "Refer to the Python documentation for the details on "
+                "log file format strings."
+            ),
+        ),
+        ConfigItem(
             "LOGFILE_MAX_LENGTH",
             int,
             validate=check_int_in_range(min=0),

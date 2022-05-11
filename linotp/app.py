@@ -798,11 +798,12 @@ def init_logging(app):
                 "console": {
                     "level": app.config["LOGGING_CONSOLE_LEVEL"],
                     "class": "logging.StreamHandler",
-                    "formatter": "linotp",
+                    "formatter": "linotp_console",
                 },
                 "file": {
                     "level": app.config["LOGGING_FILE_LEVEL"],
                     "class": "logging.handlers.RotatingFileHandler",
+                    "formatter": "linotp_file",
                     "filename": os.path.join(
                         app.config["LOGFILE_DIR"], app.config["LOGFILE_NAME"]
                     ),
@@ -811,8 +812,11 @@ def init_logging(app):
                 },
             },
             "formatters": {
-                "linotp": {
+                "linotp_file": {
                     "format": app.config["LOGFILE_FILE_LINE_FORMAT"],
+                },
+                "linotp_console": {
+                    "format": app.config["LOGFILE_CONSOLE_LINE_FORMAT"],
                 },
             },
             "loggers": {
