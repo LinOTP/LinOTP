@@ -787,6 +787,14 @@ class LinOTPApp(Flask):
             self.audit_obj = getAudit()
 
 
+def _set_debug_log_format(dict_config):
+    """Adds the arbitrary infromation to the end of the log format
+    for every formatter in the dict_config"""
+
+    for _, formatter in dict_config["formatters"].items():
+        formatter["format"] += f" python module in {sys.exec_prefix}"
+
+
 def init_logging(app):
     """Sets up logging for LinOTP."""
 
@@ -832,6 +840,9 @@ def init_logging(app):
                 },
             },
         }
+
+    if app.debug:
+        _set_debug_log_format(app.config["LOGGING"])
 
     if app.cli_cmd != "config":
         ensure_dir(app, "log", "LOGFILE_DIR", mode=0o770)
