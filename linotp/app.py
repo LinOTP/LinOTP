@@ -237,7 +237,7 @@ class ExtFlaskConfig(FlaskConfig):
             "ROOT_DIR",
             "CACHE_DIR",
             "DATA_DIR",
-            "LOGFILE_DIR",
+            "LOG_FILE_DIR",
         }
         if self.config_schema is None:
             return False
@@ -734,21 +734,25 @@ def init_logging(app):
                 "console": {
                     "level": app.config["LOGGING_CONSOLE_LEVEL"],
                     "class": "logging.StreamHandler",
-                    "formatter": "linotp",
+                    "formatter": "linotp_console",
                 },
                 "file": {
                     "level": app.config["LOGGING_FILE_LEVEL"],
                     "class": "logging.handlers.RotatingFileHandler",
+                    "formatter": "linotp_file",
                     "filename": os.path.join(
-                        app.config["LOGFILE_DIR"], app.config["LOGFILE_NAME"]
+                        app.config["LOG_FILE_DIR"], app.config["LOG_FILE_NAME"]
                     ),
-                    "maxBytes": app.config["LOGFILE_MAX_LENGTH"],
-                    "backupCount": app.config["LOGFILE_MAX_VERSIONS"],
+                    "maxBytes": app.config["LOG_FILE_MAX_LENGTH"],
+                    "backupCount": app.config["LOG_FILE_MAX_VERSIONS"],
                 },
             },
             "formatters": {
-                "linotp": {
-                    "format": app.config["LOGFILE_FILE_LINE_FORMAT"],
+                "linotp_file": {
+                    "format": app.config["LOG_FILE_LINE_FORMAT"],
+                },
+                "linotp_console": {
+                    "format": app.config["LOG_CONSOLE_LINE_FORMAT"],
                 },
             },
             "loggers": {
@@ -759,14 +763,14 @@ def init_logging(app):
                 },
                 "sqlalchemy.engine": {
                     "handlers": ["console", "file"],
-                    "level": app.config["SQLALCHEMY_LOGGING_LEVEL"],
+                    "level": app.config["LOGGING_SQLALCHEMY_LEVEL"],
                     "propagate": True,
                 },
             },
         }
 
     if app.cli_cmd != "config":
-        ensure_dir(app, "log", "LOGFILE_DIR", mode=0o770)
+        ensure_dir(app, "log", "LOG_FILE_DIR", mode=0o770)
         logging_dictConfig(app.config["LOGGING"])
 
     app.logger = logging.getLogger(app.name)

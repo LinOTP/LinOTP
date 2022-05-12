@@ -39,7 +39,7 @@ Before launching the LinOTP server, you must make sure that a number
 of important directories exist. You can inspect their default values
 using the command
 ```terminal
-$ linotp config show ROOT_DIR LOGFILE_DIR DATA_DIR CACHE_DIR
+$ linotp config show ROOT_DIR LOG_FILE_DIR DATA_DIR CACHE_DIR
 ```
 and use a configuration file to change them:
 ```terminal
@@ -55,7 +55,7 @@ DATA_DIR=/tmp/linotp-data
 ```
 Our recommendation is to use `/etc/linotp` as `ROOT_DIR`, and to place
 a `linotp.cfg` file there containing your settings. Suitable defaults
-for `LOGFILE_DIR`, `CACHE_DIR`, and `DATA_DIR` are `/var/log/linotp`,
+for `LOG_FILE_DIR`, `CACHE_DIR`, and `DATA_DIR` are `/var/log/linotp`,
 `/var/cache/linotp`, and `/run/linotp`, respectively. Note that these
 directories should belong to the user that will be running LinOTP. You
 may find it convenient to create a `linotp` system user for the
@@ -77,7 +77,7 @@ LinOTP configuration.)
 If you have adjusted the directories to your liking in the configuration
 file (or process environment), you can create them using a command like
 ```terminal
-$ for d in $(linotp config show --values ROOT_DIR LOGFILE_DIR DATA_DIR CACHE_DIR)
+$ for d in $(linotp config show --values ROOT_DIR LOG_FILE_DIR DATA_DIR CACHE_DIR)
 > do
 >    sudo mkdir -p "$d"
 >    sudo chown $USER "$d"
