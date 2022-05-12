@@ -200,16 +200,14 @@ class User(object):
         if not self.login and not self.realm:
             return "None"
 
-        try:
-            login = str(self.login)
-        except UnicodeEncodeError:
-            login = str(self.login.encode(ENCODING))
-
-        resolver_config_id = str(self.resolver_config_identifier or "")
-
-        realm = str(self.realm)
-
-        return "<%s.%s@%s>" % (login, resolver_config_id, realm)
+        if self.resolver_config_identifier:
+            return "<%s.@%s:%s>" % (
+                self.login,
+                self.realm,
+                self.resolver_config_identifier,
+            )
+        else:
+            return "<%s.@%s>" % (self.login, self.realm)
 
     def __repr__(self):
         ret = (
