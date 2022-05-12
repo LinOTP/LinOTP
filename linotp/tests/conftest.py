@@ -338,12 +338,6 @@ def scoped_authclient(
             ):
 
                 yield client
-                if hasattr(g, "username"):
-                    del g.username
-                if hasattr(g, "resolver"):
-                    del g.resolver
-                if hasattr(g, "realm"):
-                    del g.realm
 
         else:
             with patch(
@@ -354,12 +348,6 @@ def scoped_authclient(
                 original_get_jwt_identity,
             ):
                 yield client
-                if hasattr(g, "username"):
-                    del g.username
-                if hasattr(g, "resolver"):
-                    del g.resolver
-                if hasattr(g, "realm"):
-                    del g.realm
 
     return auth_context_manager
 

@@ -416,12 +416,10 @@ class LinOTPApp(Flask):
         try:
             verify_jwt_in_request_optional()
             identity = get_jwt_identity()
-            if identity is not None:
-                flask_g.username = identity["username"]
-                flask_g.resolver = identity["resolver"]
-                flask_g.realm = identity.get("realm")
+            if identity:
                 log.debug(
-                    f"start_session: request session identity is {flask_g.username}"
+                    "start_session: request session identity is %r",
+                    identity["username"],
                 )
         except (
             NoAuthorizationError,
