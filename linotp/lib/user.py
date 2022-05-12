@@ -73,22 +73,19 @@ class User(object):
             resolver_config_identifier,
         )
 
-        self.login = ""
-        self.realm = ""
+        self.login = login
+        self.realm = realm
         self.resolver_config_identifier = resolver_config_identifier
+
         self.info = {}
         self.exist = False
-
-        if login is not None:
-            self.login = login
-        if realm is not None:
-            self.realm = realm
-        log.debug("[User.__init__] user created ")
+        self._exists = None
 
         self.resolverUid = {}
         self.resolverConf = {}
         self.resolvers_list = []
-        self._exists = None
+
+        log.debug("[User.__init__] user created ")
 
     def _filter_for_resolver_config_identitier(self, resolvers_list):
         """
