@@ -356,11 +356,9 @@ class TestController(TestCase):
 
     @patch("linotp.controllers.base.verify_jwt_in_request", lambda: True)
     @patch("linotp.app.get_jwt_identity")
-    @patch("linotp.controllers.system.get_jwt_identity")
     def _make_authenticated_request(
         self,
         app_get_jwt_identity: Mock,
-        system_get_jwt_identity: Mock,
         controller: Optional[str] = None,
         action: Optional[str] = None,
         method=None,
@@ -389,12 +387,6 @@ class TestController(TestCase):
             resolver = auth_user.resolver_config_identifier or auth_resolver
 
         app_get_jwt_identity.return_value = {
-            "username": login,
-            "resolver": resolver,
-            "realm": realm,
-        }
-
-        system_get_jwt_identity.return_value = {
             "username": login,
             "resolver": resolver,
             "realm": realm,
