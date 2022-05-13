@@ -414,7 +414,7 @@ e2e-test-mariadb:
   extends:
     - .e2e-test
     - .mariadb-database
-  parallel: 2
+  parallel: 4
   services:
     - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
       alias: test-linotp
