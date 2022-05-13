@@ -570,7 +570,10 @@ class SystemController(BaseController):
             log.debug("[getRealms] with params: %r", self.request_params)
 
             g.audit["success"] = True
-            all_realms = getRealms()
+
+            realm_name = self.request_params.get("realm")
+
+            all_realms = getRealms(realm_name)
 
             #
             # If the admin is not allowed to see all realms,
