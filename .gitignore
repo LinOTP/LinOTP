@@ -1,4 +1,4 @@
-linotpd/src/linotp/i18n/linotp.pot
+linotp/i18n/linotp.pot
 *.pyc
 *.mako.py
 *~
@@ -23,34 +23,26 @@ nose
 api-doc/build/
 api-doc/source/*.rst
 
-doc/API/LinOTP-API.zip
-doc/API/linotp-api/
-doc/API/linotputils/
-doc/API/useridresolver/
-doc/LinOTPdoc*.tar.gz
-doc/linotp-doc_*
-doc/rST/_build/
-keyring/src/linotp-keyring*
-linotpd/src/LinOTP_*.orig.tar.gz
-linotpd/src/linotp/i18n/*/LC_MESSAGES/linotp.mo
-linotpd/src/linotp_*
-linotpd/src/LinOTP-*.tar.gz
-linotpd/src/linotp/public/i18n/*.json
-linotpd/src/debian/.debhelper/
-linotpd/src/debian/files
-linotpd/src/debian/linotp.*.debhelper
-linotpd/src/debian/linotp.substvars
-linotpd/src/debian/linotp/
+
+LinOTP_*.orig.tar.gz
+linotp/i18n/*/LC_MESSAGES/linotp.mo
+LinOTP-*.tar.gz
+linotp/public/i18n/*.json
+debian/.debhelper/
+debian/files
+debian/linotp.*.debhelper
+debian/linotp.substvars
+debian/linotp/
 OUTPUT
 qrcode/deb_dist/
 qrcode/qrcode-*.tar.gz
 qrcode_*_amd64.build
 RELEASE/
 
-linotpd/src/.eggs/*
+**/.eggs/
 
 # License file for test cases, never commit!
-linotpd/src/data/testdata/testlicense*.pem
+data/testdata/testlicense*.pem
 
 # rope analysis data
 .ropeproject
