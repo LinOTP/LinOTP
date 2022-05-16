@@ -66,7 +66,7 @@ class HmacOtp:
         binary |= (digest[offset + 2] & 0xFF) << 8
         binary |= digest[offset + 3] & 0xFF
 
-        return binary % (10 ** self.digits)
+        return binary % (10**self.digits)
 
     def generate(self, counter: int = None, inc_counter=True, key=None):
 

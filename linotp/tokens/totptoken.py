@@ -410,9 +410,9 @@ class TimeHmacTokenClass(HmacTokenClass):
         # for python 2.6 compatibility, we have to implement 2.7 .total_seconds()::
         # TODO: fix to float!!!!
         tCounter = (
-            (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6)
+            (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6)
             * 1.0
-        ) // 10 ** 6
+        ) // 10**6
 
         return tCounter
 
