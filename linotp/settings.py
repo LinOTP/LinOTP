@@ -933,7 +933,7 @@ configs = {
 # CLI commands
 # ----------------------------------------------------------------------
 
-config_cmds = AppGroup("config")
+config_cmds = AppGroup("config", help="Show LinOTP configuration")
 
 
 @config_cmds.command("show", help="Output current configuration settings.")

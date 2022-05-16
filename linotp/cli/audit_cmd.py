@@ -64,7 +64,7 @@ from . import get_backup_filename
 
 # audit commands: cleanup (more commands to come ...)
 
-audit_cmds = AppGroup("audit")
+audit_cmds = AppGroup("audit", help="Manage audit options")
 
 
 @audit_cmds.command(

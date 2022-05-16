@@ -127,7 +127,7 @@ def _run_command(task: str, cmd: List[str], **kwargs: Dict[str, Any]) -> bool:
     return ret
 
 
-init_cmds = AppGroup("init")
+init_cmds = AppGroup("init", help="Manage initialization of LinOTP")
 
 
 # ----------------------------------------------------------------------
