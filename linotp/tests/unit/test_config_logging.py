@@ -53,10 +53,10 @@ def test_logging_levels(
     to_console,
 ):
     log_dir = tmp_path
-    log_file = log_dir / app.config["LOGFILE_NAME"]
+    log_file = log_dir / app.config["LOG_FILE_NAME"]
     log_file.write_text("")  # Ensure file exists
 
-    app.config["LOGFILE_DIR"] = str(log_dir)
+    app.config["LOG_FILE_DIR"] = str(log_dir)
     app.config["LOGGING_LEVEL"] = ll
     app.config["LOGGING_FILE_LEVEL"] = lfl
     app.config["LOGGING_CONSOLE_LEVEL"] = lcl

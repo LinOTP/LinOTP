@@ -328,27 +328,27 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOGFILE_DIR",
+            "LOG_FILE_DIR",
             str,
             default="logs",
             help=(
                 "Directory for log files. We're using a "
                 "`RotatingFileHandler` to manage log files, and the main "
-                "log file is written to `LOGFILE_DIR/LOGFILE_NAME`."
+                "log file is written to `LOG_FILE_DIR/LOG_FILE_NAME`."
             ),
         ),
         ConfigItem(
-            "LOGFILE_NAME",
+            "LOG_FILE_NAME",
             str,
             default="linotp.log",
             help=(
                 "Name for the main log file. We're using a "
                 "`RotatingFileHandler` to manage log files, and the main "
-                "log file is written to `LOGFILE_DIR/LOGFILE_NAME`."
+                "log file is written to `LOG_FILE_DIR/LOG_FILE_NAME`."
             ),
         ),
         ConfigItem(
-            "LOGFILE_FILE_LINE_FORMAT",
+            "LOG_FILE_LINE_FORMAT",
             str,
             default=(
                 "%(asctime)s %(levelname)s: %(message)s "
@@ -361,7 +361,21 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOGFILE_MAX_LENGTH",
+            "LOG_CONSOLE_LINE_FORMAT",
+            str,
+            default=(
+                "%(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
+            ),
+            help=(
+                "Format for individual lines in the console log. "
+                "This is the log which is gonna be available through"
+                "journalctl "
+                "Refer to the Python documentation for the details on "
+                "log file format strings."
+            ),
+        ),
+        ConfigItem(
+            "LOG_FILE_MAX_LENGTH",
             int,
             validate=check_int_in_range(min=0),
             default=10 * 1024 * 1024,
@@ -371,7 +385,7 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOGFILE_MAX_VERSIONS",
+            "LOG_FILE_MAX_VERSIONS",
             int,
             validate=check_int_in_range(min=0),
             default=10,
@@ -388,7 +402,7 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "SQLALCHEMY_LOGGING_LEVEL",
+            "LOGGING_SQLALCHEMY_LEVEL",
             str,
             validate=check_membership(VALID_LOG_LEVELS),
             default="WARNING",
@@ -435,7 +449,7 @@ _config_schema = ConfigSchema(
                 "passing a configuration dictionary in `LOGGING`. Do "
                 "this only if you know what you are doing. The default "
                 "value of `None`  enables a basic setup based on the "
-                "`LOGFILE_*` and `LOGGING_*` parameters."
+                "`LOG_FILE_*` and `LOGGING_*` parameters."
             ),
         ),
         ConfigItem(
