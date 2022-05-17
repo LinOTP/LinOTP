@@ -201,13 +201,13 @@ class User(object):
             return "None"
 
         if self.resolver_config_identifier:
-            return "<%s.@%s:%s>" % (
+            return "%s@%s (%s)" % (
                 self.login,
                 self.realm,
                 self.resolver_config_identifier,
             )
         else:
-            return "<%s.@%s>" % (self.login, self.realm)
+            return "%s@%s" % (self.login, self.realm)
 
     def __repr__(self):
         ret = (
