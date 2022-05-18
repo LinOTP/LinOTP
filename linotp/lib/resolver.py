@@ -234,29 +234,6 @@ def defineResolver(params):
     return resolver
 
 
-def similar_resolver_exists(config_identifier):
-    """
-    Signifies if a resolver identified by config_identifer
-    exists in the configuration.
-
-    :remark: matches case insensitive
-
-    :returns: bool
-    """
-
-    config = context.get("Config")
-    cls_identifiers = list(resolver_registry.keys())
-
-    for config_entry in config:
-        for cls_identifier in cls_identifiers:
-            if config_entry.startswith("linotp." + cls_identifier):
-                __, __, entry_config_identifier = config_entry.rpartition(".")
-                if entry_config_identifier == config_identifier:
-                    return True
-
-    return False
-
-
 def get_cls_identifier(config_identifier):
     """
     Returns the class identifier string for a existing resolver

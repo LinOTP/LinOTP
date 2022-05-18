@@ -161,7 +161,7 @@ class HmacOtp:
         binary |= (digest[offset + 2] & 0xFF) << 8
         binary |= digest[offset + 3] & 0xFF
 
-        return binary % (10 ** self.digits)
+        return binary % (10**self.digits)
 
     def generate(self, key=None, counter=None):
         key = key or self.key
@@ -313,8 +313,8 @@ class TestTotpController(TestController):
         td = dt - datetime.datetime(1970, 1, 1)
         tCounter = (
             td.microseconds * 1.0
-            + (td.seconds + td.days * 24 * 3600) * 10 ** 6
-        ) / 10.0 ** 6
+            + (td.seconds + td.days * 24 * 3600) * 10**6
+        ) / 10.0**6
 
         return tCounter
 

@@ -48,7 +48,7 @@ class LDAPExtTest(LDAPTest):
         if values is None:
             return False
 
-        if self.value == u"*":
+        if self.value == "*":
             return len(values) > 0
 
         # we have to compare bytes and strings in the value array

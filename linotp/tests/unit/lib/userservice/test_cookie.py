@@ -32,6 +32,7 @@ import unittest
 import pytest
 from mock import patch
 
+from linotp.lib.user import User
 from linotp.lib.userservice import create_auth_cookie
 
 Secret = "012345678901234567890123456789012"
@@ -54,7 +55,7 @@ class TestCookieActivation(unittest.TestCase):
         )
         mock_get_cookie_expiry.return_value = False
 
-        ret = create_auth_cookie("hans", "127.0.0.1")
+        ret = create_auth_cookie(User("hans"), "127.0.0.1")
         _session, _expiration_dt, expiration_str = ret
 
         datetime.datetime.strptime(expiration_str, RFC6265_TIMEFORMAT)

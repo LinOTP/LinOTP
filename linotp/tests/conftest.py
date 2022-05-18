@@ -247,6 +247,7 @@ def adminclient(client, request):
         "linotp.app.get_jwt_identity",
         lambda: {
             "username": admin_user,
+            "realm": current_app.config["ADMIN_REALM_NAME"],
             "resolver": "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
         },
     ):
@@ -331,18 +332,12 @@ def scoped_authclient(
                 lambda: {
                     "username": username,
                     "resolver": resolver,
-                },
-            ), patch(
-                "linotp.controllers.system.get_jwt_identity",
-                lambda: {
-                    "username": username,
-                    "resolver": resolver,
+                    "realm": current_app.config["ADMIN_REALM_NAME"],
                 },
             ):
 
                 yield client
-                if hasattr(g, "username"):
-                    del g.username
+
         else:
             with patch(
                 "linotp.controllers.base.verify_jwt_in_request",
@@ -352,8 +347,6 @@ def scoped_authclient(
                 original_get_jwt_identity,
             ):
                 yield client
-                if hasattr(g, "username"):
-                    del g.username
 
     return auth_context_manager
 

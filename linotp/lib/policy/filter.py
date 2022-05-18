@@ -59,9 +59,9 @@ class UserDomainCompare(object):
 
     def _parse(self, user_def):
         """
-        parse the domain user string and distinguis if there
-        is a user + domain or a sinple user only comparison required
-        accordin to this the comparison method is adjusted
+        parse the domain user string and distinguish if there
+        is a user + domain or a simple user only comparison required
+        according to this the comparison method is adjusted
 
         :param user_def: user definition from the policy entry 'user'
         """
@@ -142,9 +142,10 @@ class UserDomainCompare(object):
             def_resolver = def_resolver.split(".")[-1]
 
         # check if the resolver is defined at all
-        from linotp.lib.resolver import similar_resolver_exists
+        from linotp.lib.resolver import getResolverList
 
-        if not similar_resolver_exists(def_resolver):
+        resolvers = getResolverList()
+        if def_resolver not in resolvers:
             return False
 
         # if we have no user part and came that far, we are done

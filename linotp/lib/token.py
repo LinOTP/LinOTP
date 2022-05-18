@@ -575,7 +575,7 @@ class TokenHandler(object):
 
         # handle the given user
 
-        if user is None or user.is_empty:
+        if not user:
             raise TokenAdminError("no user found %r" % user, id=1104)
 
         (userid, idResolver, idResolverClass) = getUserId(user)
@@ -1080,7 +1080,7 @@ class TokenHandler(object):
 
         :return: the number of deleted tokens
         """
-        if (user is None or user.is_empty) and (serial is None):
+        if not user and not serial:
             raise ParameterError("Parameter user or serial required!", id=1212)
 
         tokenList = getTokens4UserOrSerial(user, serial, _class=False)
@@ -1513,13 +1513,13 @@ def get_tokenserial_of_transaction(transId):
 
 def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
 
-    if (user is None or user.is_empty) and serial is None:
+    if not user and serial is None:
         return None
 
     serials = []
     tokens = []
 
-    if user is not None and not user.is_empty and user.login:
+    if user and user.login:
         resolverUid = user.resolverUid
         v = None
         k = None
@@ -1832,79 +1832,76 @@ def getTokens4UserOrSerial(
         for token in sqlQuery:
             tokenList.append(token)
 
-    if user is not None:
+    if user and user.login:
+        for user_definition in user.get_uid_resolver():
+            uid, resolverClass = user_definition
+            # in the database could be tokens of ResolverClass:
+            #    useridresolver. or useridresolveree.
+            # so we have to make sure
+            # - there is no 'useridresolveree' in the searchterm and
+            # - there is a wildcard search: second replace
+            # Remark: when the token is loaded the response to the
+            # resolver class is adjusted
 
-        if not user.is_empty and user.login:
+            uconditions = sconditions
 
-            for user_definition in user.get_uid_resolver():
-                uid, resolverClass = user_definition
-                # in the database could be tokens of ResolverClass:
-                #    useridresolver. or useridresolveree.
-                # so we have to make sure
-                # - there is no 'useridresolveree' in the searchterm and
-                # - there is a wildcard search: second replace
-                # Remark: when the token is loaded the response to the
-                # resolver class is adjusted
+            resolverClass = resolverClass.replace(
+                "useridresolveree.", "useridresolver."
+            )
+            resolverClass = resolverClass.replace(
+                "useridresolver.", "useridresolver%."
+            )
 
-                uconditions = sconditions
+            if isinstance(uid, int):
+                uconditions += ((Token.LinOtpUserid == "%d" % uid),)
+            else:
+                uconditions += ((Token.LinOtpUserid == uid),)
 
-                resolverClass = resolverClass.replace(
-                    "useridresolveree.", "useridresolver."
-                )
-                resolverClass = resolverClass.replace(
-                    "useridresolver.", "useridresolver%."
-                )
+            uconditions += ((Token.LinOtpIdResClass.like(resolverClass)),)
 
-                if isinstance(uid, int):
-                    uconditions += ((Token.LinOtpUserid == "%d" % uid),)
-                else:
-                    uconditions += ((Token.LinOtpUserid == uid),)
+            sqlQuery = Token.query.filter(*uconditions)
 
-                uconditions += ((Token.LinOtpIdResClass.like(resolverClass)),)
+            # ---------------------------------------------------------- --
 
-                sqlQuery = Token.query.filter(*uconditions)
+            # for the validation we require an read for update lock
+            # which could raise a ResourceClosedError to show that the
+            # resource is already allocated in an other request
 
-                # ---------------------------------------------------------- --
+            if read_for_update:
 
-                # for the validation we require an read for update lock
-                # which could raise a ResourceClosedError to show that the
-                # resource is already allocated in an other request
+                try:
 
-                if read_for_update:
+                    sqlQuery = sqlQuery.with_for_update("update").all()
 
-                    try:
-
-                        sqlQuery = sqlQuery.with_for_update("update").all()
-
-                    except ResourceClosedError as exx:
-                        log.warning("Token already locked for update: %r", exx)
-                        raise Exception(
-                            "Token already locked for update: (%r)" % exx
-                        )
-
-                # ---------------------------------------------------------- --
-
-                for token in sqlQuery:
-                    # we have to check that the token is in the same realm as
-                    # the user
-                    t_realms = token.getRealmNames()
-                    u_realm = user.realm
-                    if u_realm != "*":
-                        if len(t_realms) > 0 and len(u_realm) > 0:
-                            if u_realm.lower() not in t_realms:
-                                log.debug(
-                                    "user realm and token realm missmatch"
-                                    " %r::%r",
-                                    u_realm,
-                                    t_realms,
-                                )
-                                continue
-
-                    log.debug(
-                        "[getTokens4UserOrSerial] user serial (user): %r",
-                        token.LinOtpTokenSerialnumber,
+                except ResourceClosedError as exx:
+                    log.warning("Token already locked for update: %r", exx)
+                    raise Exception(
+                        "Token already locked for update: (%r)" % exx
                     )
-                    tokenList.append(token)
+
+            # ---------------------------------------------------------- --
+
+            for token in sqlQuery:
+                # we have to check that the token is in the same realm as
+                # the user
+                t_realms = token.getRealmNames()
+                u_realm = user.realm
+                if u_realm != "*":
+                    if len(t_realms) > 0 and len(u_realm) > 0:
+                        if u_realm.lower() not in t_realms:
+                            log.debug(
+                                "user realm and token realm missmatch"
+                                " %r::%r",
+                                u_realm,
+                                t_realms,
+                            )
+                            continue
+
+                log.debug(
+                    "[getTokens4UserOrSerial] user serial (user): %r",
+                    token.LinOtpTokenSerialnumber,
+                )
+                tokenList.append(token)
 
     if _class is True:
         for tok in tokenList:

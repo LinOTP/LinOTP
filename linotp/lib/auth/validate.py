@@ -466,7 +466,7 @@ class ValidationHandler(object):
             supports_offline_at_all = token.supports_offline_mode
 
             # 2. check if policy allows to use offline authentication
-            if user is not None and user.login and user.realm:
+            if user and user.login and user.realm:
                 realms = [user.realm]
             else:
                 realms = token.getRealms()
@@ -508,7 +508,7 @@ class ValidationHandler(object):
         uid = None
         user_exists = False
 
-        if user is not None and not user.is_empty:
+        if user:
             # the upper layer will catch / at least should
             try:
                 (uid, _resolver, resolverClass) = getUserId(

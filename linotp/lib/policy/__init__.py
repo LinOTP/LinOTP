@@ -245,11 +245,11 @@ def _checkAdminPolicyPost(
     if method in ["assign", "init", "enable"]:
 
         if not _check_token_count(realm=user.realm, post_check=True):
-            admin = context["AuthUser"]
+            admin = _getAuthenticatedUser()
 
             log.warning(
-                "the admin >%s< is not allowed to enroll any more "
-                "tokens for the realm %s",
+                "the admin >%r< is not allowed to enroll any more "
+                "tokens for the realm %r",
                 admin,
                 user.realm,
             )
@@ -257,7 +257,7 @@ def _checkAdminPolicyPost(
             raise PolicyException(
                 _(
                     "The maximum allowed number of tokens "
-                    "for the realm %s was reached. You can"
+                    "for the realm %r was reached. You can"
                     " not init any more tokens. Check the "
                     "policies scope=enrollment, "
                     "action=tokencount."
@@ -274,7 +274,7 @@ def _checkAdminPolicyPost(
         tokenrealm = param.get("tokenrealm", user.realm)
 
         if not _check_token_count(realm=tokenrealm, post_check=True):
-            admin = context["AuthUser"]
+            admin = _getAuthenticatedUser()
 
             log.warning(
                 "the maximum tokens for the realm %s is exceeded.",
@@ -301,7 +301,7 @@ def _checkAdminPolicyPost(
         ):
 
             log.warning(
-                "the admin >%s< is not allowed to get serial of token %s",
+                "the admin >%r< is not allowed to get serial of token %s",
                 policies["admin"],
                 serial,
             )
@@ -485,7 +485,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         policies = getAdminPolicies("")
 
         log.debug(
-            "[checkPolicyPre] The admin >%s< may manage the "
+            "[checkPolicyPre] The admin >%r< may manage the "
             "following realms: %s",
             policies["admin"],
             policies["realms"],
@@ -494,7 +494,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if policies["active"] and len(policies["realms"]) == 0:
 
             log.error(
-                "[checkPolicyPre] The admin >%s< has no rights in "
+                "[checkPolicyPre] The admin >%r< has no rights in "
                 "any realms!",
                 policies["admin"],
             )
@@ -520,10 +520,10 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         ):
 
             log.warning(
-                "the admin >%s< is not allowed to get token info for "
+                "the admin >%r< is not allowed to get token info for "
                 " realm %r",
                 policies["admin"],
-                user.realm,
+                realm,
             )
 
             raise PolicyException(
@@ -542,8 +542,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         policies = getAdminPolicies("token_method")
 
         log.debug(
-            "[checkPolicyPre] The admin >%s< may manage the "
-            "following realms: %s",
+            "[checkPolicyPre] The admin >%r< may manage the "
+            "following realms: %r",
             policies["admin"],
             policies["realms"],
         )
@@ -551,7 +551,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if policies["active"] and len(policies["realms"]) == 0:
 
             log.error(
-                "[checkPolicyPre] The admin >%s< has no rights in "
+                "[checkPolicyPre] The admin >%r< has no rights in "
                 "any realms!",
                 policies["admin"],
             )
@@ -581,8 +581,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         ):
 
             log.warning(
-                "the admin >%s< is not allowed to remove token %s for "
-                "user %s@%s",
+                "the admin >%r< is not allowed to remove token %r for "
+                "user %r@%r",
                 policies["admin"],
                 serial,
                 user.login,
@@ -592,7 +592,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(
                 _(
                     "You do not have the administrative "
-                    "right to remove token %s. Check the "
+                    "right to remove token %r. Check the "
                     "policies."
                 )
                 % serial
@@ -605,8 +605,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         ):
 
             log.warning(
-                "[enable] the admin >%s< is not allowed to enable "
-                "token %s for user %s@%s",
+                "[enable] the admin >%r< is not allowed to enable "
+                "token %r for user %r@%r",
                 policies["admin"],
                 serial,
                 user.login,
@@ -1180,19 +1180,18 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         ):
 
             log.warning(
-                "the admin >%s< is not allowed to list"
-                " users in realm %s(%s)!",
+                "the admin >%s< is not allowed to list" " users in realm %r!",
                 policies["admin"],
-                user.realm,
-                user.resolver_config_identifier,
+                realm,
             )
+            admin_user = policies["admin"]
 
             raise PolicyException(
                 _(
                     "You do not have the administrative"
-                    " right to list users in realm %s(%s)."
+                    " right to list users in realm %r."
                 )
-                % (user.realm, user.resolver_config_identifier)
+                % realm
             )
 
     elif method == "tokenowner":
@@ -1203,20 +1202,19 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         ):
 
             log.warning(
-                "the admin >%s< is not allowed to get"
-                " the token owner in realm %s(%s)!",
+                "the admin >%r< is not allowed to get"
+                " the token owner in realm %r!",
                 policies["admin"],
-                user.realm,
-                user.resolver_config_identifier,
+                realm,
             )
 
             raise PolicyException(
                 _(
                     "You do not have the administrative"
                     " right to get the token owner in realm"
-                    " %s(%s)."
+                    " %r."
                 )
-                % (user.realm, user.resolver_config_identifier)
+                % realm
             )
 
     elif method == "checkstatus":
@@ -1227,11 +1225,10 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         ):
 
             log.warning(
-                "the admin >%s< is not allowed to show status of token"
-                " challenges in realm %s(%s)!",
+                "the admin >%r< is not allowed to show status of token"
+                " challenges in realm %r!",
                 policies["admin"],
-                user.realm,
-                user.resolver_config_identifier,
+                realm,
             )
 
             raise PolicyException(
@@ -1239,9 +1236,9 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                     "You do not have the administrative "
                     "right to show status of token "
                     "challenges in realm "
-                    "%s(%s)."
+                    "%r."
                 )
-                % (user.realm, user.resolver_config_identifier)
+                % realm
             )
 
     elif method == "tokenrealm":
@@ -1269,8 +1266,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             ):
 
                 log.warning(
-                    "the admin >%s< is not allowed "
-                    "to manage tokens in realm %s",
+                    "the admin >%r< is not allowed "
+                    "to manage tokens in realm %r",
                     policies["admin"],
                     r,
                 )
@@ -1279,7 +1276,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                     _(
                         "You do not have the administrative "
                         "right to remove tokens from realm "
-                        "%s. Check the policies."
+                        "%r. Check the policies."
                     )
                     % r
                 )
@@ -1290,7 +1287,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             ):
 
                 log.warning(
-                    "the admin >%s< is not allowed "
+                    "the admin >%r< is not allowed "
                     "to manage tokens in realm %s",
                     policies["admin"],
                     r,
@@ -1308,13 +1305,13 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             if not _check_token_count(realm=r):
 
                 log.warning(
-                    "the maximum tokens for the realm %s is exceeded.", r
+                    "the maximum tokens for the realm %r is exceeded.", r
                 )
 
                 raise PolicyException(
                     _(
                         "You may not put any more tokens in "
-                        "realm %s. Check the policy "
+                        "realm %r. Check the policy "
                         "'tokencount'"
                     )
                     % r
@@ -1328,8 +1325,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         ):
 
             log.warning(
-                "the admin >%s< is not allowed to reset "
-                "token %s for user %s@%s",
+                "the admin >%r< is not allowed to reset "
+                "token %r for user %r@%r",
                 policies["admin"],
                 serial,
                 user.login,
@@ -1339,7 +1336,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(
                 _(
                     "You do not have the administrative "
-                    "right to reset token %s. Check the "
+                    "right to reset token %r. Check the "
                     "policies."
                 )
                 % serial
@@ -1354,7 +1351,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         if policies["active"] and len(policies["realms"]) == 0:
 
             log.warning(
-                "the admin >%s< is not allowed to import a token at all.",
+                "the admin >%r< is not allowed to import a token at all.",
                 policies["admin"],
             )
 
@@ -1386,8 +1383,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             ):
 
                 log.warning(
-                    "the admin >%s< is not allowed to "
-                    "import token files to realm %s: %s",
+                    "the admin >%r< is not allowed to "
+                    "import token files to realm %r: %r",
                     policies["admin"],
                     tokenrealm,
                     policies,
@@ -1396,7 +1393,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 raise PolicyException(
                     _(
                         "You do not have the administrative "
-                        "right to import token files to realm %s"
+                        "right to import token files to realm %r"
                         ". Check the policies."
                     )
                     % tokenrealm
@@ -1419,8 +1416,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
 
             raise MaxTokenRealmPolicyException(
                 _(
-                    "The maximum number of allowed tokens in realm %s is exceeded."
-                    " Check policy tokencount!"
+                    "The maximum number of allowed tokens in realm %r is"
+                    " exceeded. Check policy tokencount!"
                 )
                 % tokenrealm
             )
@@ -1433,8 +1430,8 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         ):
 
             log.warning(
-                "the admin >%s< is not allowed to unpair token %s "
-                "for user %s@%s",
+                "the admin >%r< is not allowed to unpair token %r "
+                "for user %r@%r",
                 policies["admin"],
                 serial,
                 user.login,
@@ -1444,7 +1441,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(
                 _(
                     "You do not have the administrative "
-                    "right to unpair token %s. Check the "
+                    "right to unpair token %r. Check the "
                     "policies."
                 )
                 % serial
@@ -1452,10 +1449,10 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
 
     else:
         # unknown method
-        log.error("an unknown method <<%s>> was passed.", method)
+        log.error("an unknown method <<%r>> was passed.", method)
 
         raise PolicyException(
-            _("Failed to run checkPolicyPre. Unknown method: %s") % method
+            _("Failed to run checkPolicyPre. Unknown method: %r") % method
         )
 
     return ret
@@ -1474,6 +1471,7 @@ def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
         ttype = linotp.lib.token.getTokenType(serial).lower()
         trealms = linotp.lib.token.getTokenRealms(serial)
         pol_action = MAP_TYPE_GETOTP_ACTION.get(ttype, "")
+
         admin_user = _getAuthenticatedUser()
 
         if pol_action == "":
@@ -1492,7 +1490,7 @@ def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
                 {
                     "scope": "gettoken",
                     "realm": realm,
-                    "user": admin_user["login"],
+                    "user": admin_user,
                     "action": pol_action,
                 }
             )
@@ -2046,7 +2044,7 @@ def getAdminPolicies(action, scope="admin"):
 
     # We may change this later to other authentication schemes
     admin_user = _getAuthenticatedUser()
-    log.info("Evaluating policies for the user: %s", admin_user["login"])
+    log.info("Evaluating policies for the user: %r", admin_user)
 
     # check if we got admin policies at all
     p_at_all = search_policy({"scope": scope})
@@ -2061,7 +2059,7 @@ def getAdminPolicies(action, scope="admin"):
         resolvers = []
 
     else:
-        pol_request = {"user": admin_user["login"], "scope": scope}
+        pol_request = {"user": admin_user, "scope": scope}
         if action:
             pol_request["action"] = action
 
@@ -2077,7 +2075,7 @@ def getAdminPolicies(action, scope="admin"):
         "active": active,
         "realms": realms,
         "resolvers": resolvers,
-        "admin": admin_user["login"],
+        "admin": admin_user,
     }
 
 
@@ -2942,7 +2940,7 @@ def createRandomPin(user, min_pin_length):
 def checkToolsAuthorisation(method, param=None):
     # TODO: fix the semantic of the realm in the policy!
 
-    auth_user = context["AuthUser"]
+    auth_user = _getAuthenticatedUser()
 
     if not param:
         param = {}

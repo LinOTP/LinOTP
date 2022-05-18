@@ -158,7 +158,7 @@ class TokenIterator(object):
 
         ucondition = None
 
-        if not user or user.is_empty or not user.login:
+        if not user:
             return ucondition
 
         loginUser = user.login.lower()

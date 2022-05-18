@@ -48,9 +48,16 @@ from flask import Blueprint, after_this_request, current_app, g, jsonify
 
 from linotp.flap import request
 from linotp.lib.context import request_context
+from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.resolver import getResolverObject
-from linotp.lib.user import NoResolverFound, User, getUserFromParam, getUserId
+from linotp.lib.user import (
+    NoResolverFound,
+    User,
+    getUserFromParam,
+    getUserFromRequest,
+    getUserId,
+)
 from linotp.lib.util import SESSION_KEY_LENGTH
 from linotp.model import db
 
@@ -209,9 +216,10 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
     def jwt_check(self):
         """Check whether the current request needs to be authenticated using
-        JWT, and if so, whether it contains a valid JWT access token. The
-        login name from the access token is stored in `g.username` for the
-        benefit of `lib.user.getUserFromRequest()`.
+        JWT, and if so, whether it contains a valid JWT access token.
+        The login name from the access token is stored in the
+        request_context['AuthUser'] via quering the jwt identity with
+        get_jwt_identiy for the benefit of `lib.user.getUserFromRequest()`.
         """
 
         method = request.url_rule.endpoint[
@@ -358,14 +366,17 @@ class JWTMixin(object):
         # Search for the user in the admin realm and check the
         # given password.
 
-        user = User.getUserObject(
-            username,
-            realm=current_app.config["ADMIN_REALM_NAME"],
-        )
+        admin_realm_name = current_app.config["ADMIN_REALM_NAME"]
+        admin_realm = getRealms(admin_realm_name)
+        admin_resolvers = admin_realm[admin_realm_name]["useridresolver"]
 
-        for uid, resolver_specification in user.get_uid_resolver():
+        for resolver_specification in admin_resolvers:
 
             resolver = getResolverObject(resolver_specification)
+
+            uid = resolver.getUserId(username)
+            if not uid:
+                continue
 
             if not resolver.checkPass(uid, password):
                 continue
@@ -379,13 +390,12 @@ class JWTMixin(object):
             access_token = create_access_token(
                 identity={
                     "username": username,
+                    "realm": current_app.config["ADMIN_REALM_NAME"],
                     "resolver": resolver_specification,
                 },
             )
 
             set_access_cookies(response, access_token)
-
-            g.username = username
 
             return response
 
@@ -404,8 +414,9 @@ class JWTMixin(object):
         in question in case the user has saved a copy somewhere.
         See the Flask-JWT-Extended docs for ideas about how to do this.
         """
+        auth_user = getUserFromRequest()
         response = sendResult(
-            None, True, opt={"message": f"Logout successful for {g.username}"}
+            None, True, opt={"message": f"Logout successful for {auth_user}"}
         )
 
         unset_jwt_cookies(response)

@@ -63,8 +63,7 @@ def _getAuthenticatedUser():
     """
     replace the 'getUserFromRequest
     """
-    auth_user = context["AuthUser"]
-    return auth_user
+    return context["AuthUser"]
 
 
 def _getLinotpConfig(config=None):

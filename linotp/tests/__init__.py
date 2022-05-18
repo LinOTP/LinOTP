@@ -65,6 +65,7 @@ from flask import _request_ctx_stack as flask_request_ctx_stack
 from flask import current_app, g, request
 
 from linotp.app import create_app
+from linotp.lib.user import User
 
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 
@@ -355,11 +356,9 @@ class TestController(TestCase):
 
     @patch("linotp.controllers.base.verify_jwt_in_request", lambda: True)
     @patch("linotp.app.get_jwt_identity")
-    @patch("linotp.controllers.system.get_jwt_identity")
     def _make_authenticated_request(
         self,
         app_get_jwt_identity: Mock,
-        system_get_jwt_identity: Mock,
         controller: Optional[str] = None,
         action: Optional[str] = None,
         method=None,
@@ -375,14 +374,22 @@ class TestController(TestCase):
         Makes an authenticated request
         """
 
-        app_get_jwt_identity.return_value = {
-            "username": auth_user,
-            "resolver": auth_resolver,
-        }
+        login = auth_user
+        resolver = auth_resolver
+        realm = current_app.config["ADMIN_REALM_NAME"].lower()
 
-        system_get_jwt_identity.return_value = {
-            "username": auth_user,
-            "resolver": auth_resolver,
+        if isinstance(auth_user, User):
+            login = auth_user.login
+            realm = (
+                auth_user.realm
+                or current_app.config["ADMIN_REALM_NAME"].lower()
+            )
+            resolver = auth_user.resolver_config_identifier or auth_resolver
+
+        app_get_jwt_identity.return_value = {
+            "username": login,
+            "resolver": resolver,
+            "realm": realm,
         }
 
         params = params or {}

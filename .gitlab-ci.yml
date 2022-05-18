@@ -414,7 +414,7 @@ e2e-test-mariadb:
   extends:
     - .e2e-test
     - .mariadb-database
-  parallel: 2
+  parallel: 4
   services:
     - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
       alias: test-linotp
@@ -422,6 +422,7 @@ e2e-test-mariadb:
       alias: db
     - name: selenium/standalone-chrome-debug:latest
       alias: test-chrome
+  allow_failure: true
 
 # End to end test using Soft HSM image
 e2e-test-softhsm:

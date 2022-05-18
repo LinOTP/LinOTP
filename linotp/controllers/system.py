@@ -34,7 +34,6 @@ from html import escape
 
 from configobj import ConfigObj
 from flask_babel import gettext as _
-from flask_jwt_extended import get_jwt_identity
 from werkzeug.datastructures import FileStorage
 
 from flask import current_app, g
@@ -72,7 +71,6 @@ from linotp.lib.realm import (
     deleteRealm,
     getDefaultRealm,
     getRealms,
-    isRealmDefined,
     setDefaultRealm,
 )
 from linotp.lib.reply import sendError, sendResult, sendXMLError, sendXMLResult
@@ -197,7 +195,7 @@ class SystemController(BaseController):
 
         try:
 
-            g.audit["administrator"] = getUserFromRequest(request).get("login")
+            g.audit["administrator"] = getUserFromRequest()
             current_app.audit_obj.log(g.audit)
             # default return for the __before__ and __after__
             return response
@@ -572,7 +570,10 @@ class SystemController(BaseController):
             log.debug("[getRealms] with params: %r", self.request_params)
 
             g.audit["success"] = True
-            all_realms = getRealms()
+
+            realm_name = self.request_params.get("realm")
+
+            all_realms = getRealms(realm_name)
 
             #
             # If the admin is not allowed to see all realms,
@@ -1075,6 +1076,7 @@ class SystemController(BaseController):
             resolver_specs = param["resolvers"].split(",")
 
             valid_resolver_specs = []
+            valid_resolver_names = []
             for resolver_spec in resolver_specs:
 
                 resolver_spec = resolver_spec.strip()
@@ -1088,18 +1090,20 @@ class SystemController(BaseController):
                         "class specification: %r" % resolver_spec
                     )
                 valid_resolver_specs.append(resolver_spec)
+                valid_resolver_names.append(resolver_spec.rpartition(".")[-1])
 
             valid_resolver_specs_str = ",".join(valid_resolver_specs)
-            login_resolver_class = get_jwt_identity()["resolver"]
-            login_resolver_name = login_resolver_class.split(".")[-1]
-            admin_realm_name = current_app.config.get(
-                "ADMIN_REALM_NAME"
-            ).lower()
+
+            # compare the 'to be modified realm' with the one of the
+            # authenticated user
+            auth_user = getUserFromRequest()
+            admin_realm_name = auth_user.realm
+            admin_resolver_name = auth_user.resolver_config_identifier
 
             if realm == admin_realm_name:
-                if login_resolver_class not in valid_resolver_specs_str:
+                if admin_resolver_name not in valid_resolver_names:
                     raise RemoveForbiddenError(
-                        f"Resolver {login_resolver_name} can not be removed from {admin_realm_name}. "
+                        f"Resolver {admin_resolver_name} can not be removed from {admin_realm_name}. "
                         "It is not allowed to remove the resolver to which you belong to prevent "
                         "locking yourself out."
                     )

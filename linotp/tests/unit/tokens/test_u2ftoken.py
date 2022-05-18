@@ -64,10 +64,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         Test decreased counter in overflow range
         """
-        self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 500)
+        self.u2f_token.getFromTokenInfo = Mock(return_value=(256**4) - 500)
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
-            self.u2f_token._verifyCounterValue((256 ** 4) - 1000)
+            self.u2f_token._verifyCounterValue((256**4) - 1000)
         self.u2f_token.getFromTokenInfo.assert_called_once_with(
             "counter", None
         )
@@ -77,10 +77,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         Test equal counter in overflow range
         """
-        self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 500)
+        self.u2f_token.getFromTokenInfo = Mock(return_value=(256**4) - 500)
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
-            self.u2f_token._verifyCounterValue((256 ** 4) - 500)
+            self.u2f_token._verifyCounterValue((256**4) - 500)
         self.u2f_token.getFromTokenInfo.assert_called_once_with(
             "counter", None
         )
@@ -90,15 +90,15 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         Test increased counter in the overflow range
         """
-        self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 500)
+        self.u2f_token.getFromTokenInfo = Mock(return_value=(256**4) - 500)
         self.u2f_token.addToTokenInfo = Mock()
         self.u2f_token.token.LinOtpIsactive = True
-        self.u2f_token._verifyCounterValue((256 ** 4) - 400)
+        self.u2f_token._verifyCounterValue((256**4) - 400)
         self.u2f_token.getFromTokenInfo.assert_called_once_with(
             "counter", None
         )
         self.u2f_token.addToTokenInfo.assert_called_once_with(
-            "counter", (256 ** 4) - 400
+            "counter", (256**4) - 400
         )
         assert self.u2f_token.token.LinOtpIsactive
 
@@ -106,7 +106,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         Test overflow out of the accepted range
         """
-        self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 500)
+        self.u2f_token.getFromTokenInfo = Mock(return_value=(256**4) - 500)
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(1001)
@@ -119,7 +119,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         Test overflow out of the accepted range #2
         """
-        self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 1001)
+        self.u2f_token.getFromTokenInfo = Mock(return_value=(256**4) - 1001)
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(0)
@@ -132,7 +132,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         Test legal counter overflow
         """
-        self.u2f_token.getFromTokenInfo = Mock(return_value=(256 ** 4) - 1000)
+        self.u2f_token.getFromTokenInfo = Mock(return_value=(256**4) - 1000)
         self.u2f_token.addToTokenInfo = Mock()
         self.u2f_token.token.LinOtpIsactive = True
         self.u2f_token._verifyCounterValue(1000)

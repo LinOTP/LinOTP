@@ -106,7 +106,7 @@ class GettokenController(BaseController):
         :return: return the response
         """
 
-        g.audit["administrator"] = getUserFromRequest(request).get("login")
+        g.audit["administrator"] = getUserFromRequest()
         if "serial" in request.params:
             serial = request.params["serial"]
             g.audit["serial"] = serial

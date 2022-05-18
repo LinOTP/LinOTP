@@ -61,13 +61,10 @@ if Fips.hmac_sha1(20 * b"\xaa", 50 * b"\xdd") != unhexlify(
     raise Exception("HMAC-sha1 self check number 3 failed")
 
 # test case 4
-if (
-    Fips.hmac_sha1(
-        unhexlify("0102030405060708090a0b0c0d0e0f10111213141516171819"),
-        50 * b"\xcd",
-    )
-    != unhexlify("4c9007f4026250c6bc8414f9bf50c86c2d7235da")
-):
+if Fips.hmac_sha1(
+    unhexlify("0102030405060708090a0b0c0d0e0f10111213141516171819"),
+    50 * b"\xcd",
+) != unhexlify("4c9007f4026250c6bc8414f9bf50c86c2d7235da"):
     raise Exception("HMAC-sha1 self check number 4 failed")
 
 # test case 5
@@ -83,14 +80,11 @@ if Fips.hmac_sha1(
     raise Exception("HMAC-sha1 self check number 6 failed")
 
 # test case 7
-if (
-    Fips.hmac_sha1(
-        80 * b"\xaa",
-        b"Test Using Larger Than Block-Size Key "
-        b"and Larger Than One Block-Size Data",
-    )
-    != unhexlify("e8e99d0f45237d786d6bbaa7965c7808bbff1a91")
-):
+if Fips.hmac_sha1(
+    80 * b"\xaa",
+    b"Test Using Larger Than Block-Size Key "
+    b"and Larger Than One Block-Size Data",
+) != unhexlify("e8e99d0f45237d786d6bbaa7965c7808bbff1a91"):
     raise Exception("HMAC-sha1 self check number 7 failed")
 
 
