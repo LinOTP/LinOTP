@@ -51,10 +51,10 @@ def testcase():
     t.teardown_class()
 
 
-@pytest.fixture(scope="module")
-def manage_ui(testcase) -> ManageUi:
-    """Manage interface."""
-    return ManageUi(testcase)
+# @pytest.fixture(scope="module")
+# def manage_ui(testcase) -> ManageUi:
+#     """Manage interface."""
+#     return ManageUi(testcase)
 
 
 @pytest.fixture
