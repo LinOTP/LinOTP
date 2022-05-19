@@ -28,6 +28,7 @@
 import time
 from datetime import datetime, timedelta
 
+import integration_data as data
 import pytest
 
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
@@ -36,15 +37,25 @@ from linotp_selenium_helper.manage_ui import MsgType
 from linotp_selenium_helper.validate import Validate
 
 
-class TestSystemConfig(TestCase):
+class TestSystemConfig:
 
     system_config = None
     alert_box_handler = None
 
     @pytest.fixture(autouse=True)
-    def setUp(self):
-        self.system_config = self.manage_ui.system_config
-        self.alert_box_handler = self.manage_ui.alert_box_handler
+    def setUp(self, testcase):
+        """
+        Takes the test case and sets this class up with the required objects/functions
+        """
+        self.testcase = testcase
+        self.system_config = self.testcase.manage_ui.system_config
+        self.alert_box_handler = self.testcase.manage_ui.alert_box_handler
+        self.manage_ui = self.testcase.manage_ui
+
+        self.realm_name = "se_test_auth"
+        self.testcase.reset_resolvers_and_realms(
+            data.sepasswd_resolver, self.realm_name
+        )
 
     def test_split_at(self):
         """
@@ -72,14 +83,14 @@ class TestSystemConfig(TestCase):
             # After the re-open and the previous save, the checkbox should be
             # True/False (opposite of split_at_pre_state)
             split_at_state = self.system_config.getSplitAt()
-            if split_at_pre_state:
+            if split_at_pre_state is True:
                 assert (
                     not split_at_state
-                ), "'False' for 'SplitAt@' checkbox not saved!"
+                ), "Changing 'True' to 'False' for 'SplitAt@' checkbox was not saved!"
             else:
                 assert (
                     split_at_state
-                ), "'True' for 'SplitAt@' checkbox not saved!"
+                ), "Changing 'False' to 'True' for 'SplitAt@' checkbox was not saved!"
 
             # Test the other way around (set state for checkbox, set at test start)
             self.system_config.setSplitAt(split_at_pre_state)
@@ -99,11 +110,11 @@ class TestSystemConfig(TestCase):
             if split_at_pre_state is True:
                 assert (
                     split_at_state
-                ), "'True' for 'SplitAt@' checkbox not saved!"
+                ), "Changing 'True' to 'False' for 'SplitAt@' checkbox was not saved!"
             else:
                 assert (
                     not split_at_state
-                ), "'False' for 'SplitAt@' checkbox not saved!"
+                ), "Changing 'False' to 'True' for 'SplitAt@' checkbox was not saved!"
 
     def test_usage_timestamp(self):
         """Test the option for storing the last Authentication info of Tokens"""
@@ -133,11 +144,11 @@ class TestSystemConfig(TestCase):
         self.manage_ui.token_view.assign_token(tokenserial, otp)
 
         validate = Validate(
-            self.http_protocol,
-            self.http_host,
-            self.http_port,
-            self.http_username,
-            self.http_password,
+            self.testcase.http_protocol,
+            self.testcase.http_host,
+            self.testcase.http_port,
+            self.testcase.http_username,
+            self.testcase.http_password,
         )
 
         # 1-successful authentication
