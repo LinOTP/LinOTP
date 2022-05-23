@@ -40,32 +40,35 @@ from linotp_selenium_helper.validate import Validate
 logger = logging.getLogger(__name__)
 
 
-class TestEmailToken(TestCase):
+class TestEmailToken:
     @pytest.fixture(autouse=True)
-    def setUp(self):
-        self.realm_name = "SE_emailtoken"
-        self.username = "hans"
+    def setUp(self, testcase):
 
-        self.email_recipient = "hans@example.local"
-        self.reset_resolvers_and_realms(
-            data.sepasswd_resolver, self.realm_name
+        self.testcase = testcase
+
+        self.data = {
+            "realm_name": "SE_emailtoken",
+            "username": "hans",
+            "email_recipient": "hans@example.local",
+            "email_token_pin": "1234",
+        }
+
+        self.testcase.reset_resolvers_and_realms(
+            data.sepasswd_resolver, self.data["realm_name"]
         )
 
-        self.email_token_pin = "1234"
-
-        self.token_view = self.manage_ui.token_view
-        self.token_view.delete_all_tokens()
+        self.testcase.manage_ui.token_view.delete_all_tokens()
 
     def enroll_email_token(self):
 
         # Enroll e-mail token
-        user_view = self.manage_ui.user_view
-        user_view.select_realm(self.realm_name)
-        user_view.select_user(self.username)
+        user_view = self.testcase.manage_ui.user_view
+        user_view.select_realm(self.data["realm_name"])
+        user_view.select_user(self.data["username"])
         description = "Rolled out by Selenium"
-        expected_email_address = self.email_recipient
-        email_token = self.manage_ui.token_enroll.create_email_token(
-            pin=self.email_token_pin,
+        expected_email_address = self.data["email_recipient"]
+        email_token = self.testcase.manage_ui.token_enroll.create_email_token(
+            pin=self.data["email_token_pin"],
             email_address=expected_email_address,
             description=description,
         )
@@ -80,10 +83,12 @@ class TestEmailTokenEnroll(TestEmailToken):
         After enrolling it verifies that the token info contains the
         correct e-mail.
         """
-        expected_email_address = self.email_recipient
+        expected_email_address = self.data["email_recipient"]
         email_token = self.enroll_email_token()
 
-        token_info = self.token_view.get_token_info(email_token)
+        token_info = self.testcase.manage_ui.token_view.get_token_info(
+            email_token
+        )
         description = "Rolled out by Selenium"
         expected_description = expected_email_address + " " + description
         assert (
@@ -132,16 +137,16 @@ class TestEmailTokenAuth(TestEmailToken):
 
         radius_server = get_from_tconfig(
             ["radius", "server"],
-            default=self.http_host.split(":")[0],
+            default=self.testcase.http_host.split(":")[0],
         )
         radius_secret = get_from_tconfig(["radius", "secret"], required=True)
 
-        with EmailProviderServer(self, 20) as smtpsvc:
+        with EmailProviderServer(self.testcase, 20) as smtpsvc:
             # Authenticate with RADIUS
             rad1 = radius_auth(
-                self.username,
-                self.realm_name,
-                self.email_token_pin,
+                self.data["username"],
+                self.data["realm_name"],
+                self.data["email_token_pin"],
                 radius_secret,
                 radius_server,
             )
@@ -155,41 +160,42 @@ class TestEmailTokenAuth(TestEmailToken):
             otp = smtpsvc.get_otp()
 
         rad2 = radius_auth(
-            self.username,
-            self.realm_name,
+            self.data["username"],
+            self.data["realm_name"],
             otp,
             radius_secret,
             radius_server,
             state,
         )
-        assert "Access granted to user " + self.username in rad2, (
+        assert "Access granted to user " + self.data["username"] in rad2, (
             "Access not granted to user. %r" % rad2
         )
 
     def test_web_api_auth(self):
 
-        with EmailProviderServer(self, 20) as smtpsvc:
+        with EmailProviderServer(self.testcase, 20) as smtpsvc:
 
             # Authenticate over Web API
             validate = Validate(
-                self.http_protocol,
-                self.http_host,
-                self.http_port,
-                self.http_username,
-                self.http_password,
+                self.testcase.http_protocol,
+                self.testcase.http_host,
+                self.testcase.http_port,
+                self.testcase.http_username,
+                self.testcase.http_password,
             )
             access_granted, validate_resp = validate.validate(
-                user=self.username + "@" + self.realm_name,
-                password=self.email_token_pin,
+                user=self.data["username"] + "@" + self.data["realm_name"],
+                password=self.data["email_token_pin"],
             )
             assert (
                 not access_granted
             ), "Should return false because this request only triggers the challenge."
             try:
                 message = validate_resp["detail"]["message"]
-            except KeyError:
-                self.fail(
-                    "detail.message should be present %r" % validate_resp
+            except KeyError as e:
+                raise KeyError(
+                    e.message
+                    + " | detail.message should be present %r" % validate_resp
                 )
             assert message == "e-mail sent successfully", (
                 "Wrong validate response %r" % validate_resp
@@ -197,10 +203,10 @@ class TestEmailTokenAuth(TestEmailToken):
             otp = smtpsvc.get_otp()
 
         access_granted, validate_resp = validate.validate(
-            user=self.username + "@" + self.realm_name,
-            password=self.email_token_pin + otp,
+            user=self.data["username"] + "@" + self.data["realm_name"],
+            password=self.data["email_token_pin"] + otp,
         )
         assert access_granted, "Could not authenticate user %s %r" % (
-            self.username,
+            self.data["username"],
             validate_resp,
         )
