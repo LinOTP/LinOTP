@@ -433,7 +433,7 @@ class UserIdResolverManager(ManageDialog):
 
             # Wait for alert box to be shown and then get contents
             alert_box = self.manage.alert_dialog
-            alert_box.wait_for_dialog()
+            alert_box.wait_for_dialog(timeout=20)
             alert_box_text = alert_box.get_text()
 
             m = re.search(
