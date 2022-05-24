@@ -31,18 +31,25 @@ import pytest
 from linotp_selenium_helper import TestCase
 
 
-class TestCreateRealmDialog(TestCase):
+class TestCreateRealmDialog:
     """TestCase class that checks basic realm functionality"""
 
+    @pytest.fixture(autouse=True)
+    def setUp(self, testcase):
+        """
+        Takes the test case and sets this class up with the required objects/functions
+        """
+        self.testcase = testcase
+
     def test_realm_open(self):
-        r = self.manage_ui.realm_manager
+        r = self.testcase.manage_ui.realm_manager
         r.open()
 
     def test_clear_realms(self):
-        r = self.manage_ui.realm_manager
+        r = self.testcase.manage_ui.realm_manager
         r.clear_realms_via_api()
 
-        m = self.manage_ui.useridresolver_manager
+        m = self.testcase.manage_ui.useridresolver_manager
         m.clear_resolvers_via_api()
 
         resolver_data = data.musicians_ldap_resolver
