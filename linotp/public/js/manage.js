@@ -24,6 +24,16 @@
  *
  */
 
+
+if (!jwt_getCookie("csrf_access_token")) {
+    // user was not logged in, directly navigating to login view
+    // If the jwt is invalid but the cookie is still set, the first
+    // API request will result in a 401 response and we will then do
+    // the redirect anyway.
+
+    window.location = 'login';
+}
+
 window.onerror = error_handling;
 
 var password_placeholder_required = "<" + i18n.gettext("password required") + ">";
@@ -44,7 +54,7 @@ function error_handling(message, file, line) {
  */
 function logout() {
     $.get('/admin/logout').done(function (data, status, response) {
-        window.location.reload();
+        window.location = 'login';
     }).fail(function (response, status) {
         alert_box({
             'title': i18n.gettext('Logout failed'),
@@ -783,7 +793,7 @@ $.ajaxSetup({
             });
             alert_box_is_locked = true;
             setTimeout(function () {
-                window.location.reload();
+                window.location = 'login';
             }, 1000);
             return false;
         }

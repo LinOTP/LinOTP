@@ -14,7 +14,7 @@ $(function () {
 
 function loginSuccessCallback(data, status) {
     if (status == "success" && data.result.value === true) {
-        window.location.reload();
+        window.location = '.';
     } else {
         loginErrorCallback(data, status);
     }
