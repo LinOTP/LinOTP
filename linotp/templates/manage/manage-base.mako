@@ -56,6 +56,7 @@
 
 %if c.debug:
 	<script type="text/javascript" src="/static/js/jquery-3.6.0.js"></script>
+    <script>jQuery.migrateMute = true;</script>
 	<script type="text/javascript" src="/static/js/jquery-migrate-3.3.2.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui.js"></script>
     <script type="text/javascript" src="/static/js/jquery.validate.js"></script>
