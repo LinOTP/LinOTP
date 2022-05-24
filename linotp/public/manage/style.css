@@ -830,3 +830,16 @@ div#dialog_setexpiration p, div#dialog_setexpiration div {
   padding-right: 0.75em;
   border:  solid 1px #a0a0a0;
 }
+
+/* this helps us make a better transition in case a user is not
+   logged in but requests /manage/ instead of /manage/login. */
+#wrap {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .5s ease-out;
+}
+
+#wrap.page-load {
+  opacity: 0;
+  visibility: hidden;
+}

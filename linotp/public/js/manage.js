@@ -4009,6 +4009,8 @@ function tokenbuttons() {
 // =================================================================
 
 $(document).ready(function () {
+    document.getElementById("wrap").classList.remove('page-load');
+
     // initialize the logout button first to prevent a deadlock
     // where the user can no longer logout
     $('#login-status-logout').click(logout);

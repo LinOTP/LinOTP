@@ -107,7 +107,7 @@
     <style type="text/css">#wrap{display:none;}</style>
 </noscript>
 
-<div id="wrap">
+<div id="wrap" class="page-load">
 <div id="header" class="ui-widget-header ui-corner-all">
     <ul id='menu' class='sf-menu sf-vertical'>
         <li><a href='#'>${_("LinOTP Config")}</a>
