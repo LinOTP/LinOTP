@@ -282,6 +282,8 @@ class ManageUi(object):
         self.find_by_id("login-status").click()
         self.find_by_id("login-status-logout").click()
 
+        self.wait_for_element_visibility("loginForm")
+
         assert self.is_login_open()
 
     def activate_menu_item(self, menu_css, menu_item_id) -> None:
@@ -417,6 +419,7 @@ class ManageUi(object):
             element = EC.visibility_of_element_located((By.CSS_SELECTOR, css))(
                 self.driver
             )
+
             self.testcase.enableImplicitWait()
         except NoSuchElementException:
             return False
