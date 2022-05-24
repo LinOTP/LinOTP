@@ -4003,7 +4003,7 @@ $(document).ready(function () {
     // where the user can no longer logout
     $('#login-status-logout').click(logout);
 
-    var alertBoxConfig = {
+    $("#alert_box").dialog({
         autoOpen: false,
         modal: true,
         buttons: {
@@ -4011,7 +4011,7 @@ $(document).ready(function () {
                 $(this).dialog("close");
             }
         }
-    };
+    });
 
 
     // load the logged in admin user info to show its name
@@ -4029,7 +4029,6 @@ $(document).ready(function () {
     } catch (e) {
         // the alert_box dialog needs to be prepared here to be able to show the
         // error message this early.
-        $("#alert_box").dialog(alertBoxConfig);
         alert_box({
             'title': i18n.gettext("Configuration error"),
             'text': escape(e),
@@ -5879,8 +5878,6 @@ $(document).ready(function () {
         $dialog_delete_token.dialog('open');
         return false;
     });
-
-    $("#alert_box").dialog(alertBoxConfig);
 
     $('#text_no_realm').dialog({
         autoOpen: false,
