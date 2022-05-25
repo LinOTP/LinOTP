@@ -63,10 +63,14 @@ def calculate_motp(epoch, key, pin, digits=6):
 
 
 @pytest.mark.smoketest
-class TestScenario01(TestCase):
+class TestScenario01:
     """TestCase class that tests Scenario 01 as defined here:
     https://wally/projects/linotp/wiki/TestingTest_Szenario_01
     """
+
+    @pytest.fixture(autouse=True)
+    def setUp(self, testcase):
+        self.testcase = testcase
 
     def _announce_test(self, testname):
         LOGGER.info("### %s ###", testname)
@@ -76,37 +80,41 @@ class TestScenario01(TestCase):
         Scenario01 (https://wally/projects/linotp/wiki/TestingTest_Szenario_01)
         """
 
-        driver = self.driver
+        driver = self.testcase.driver
 
-        token_view = self.manage_ui.token_view
-        user_view = self.manage_ui.user_view
-        token_enroll = self.manage_ui.token_enroll
+        token_view = self.testcase.manage_ui.token_view
+        user_view = self.testcase.manage_ui.user_view
+        token_enroll = self.testcase.manage_ui.token_enroll
 
-        selfservice = SelfService(self)
+        selfservice = SelfService(self.testcase)
 
         # reset all views
-        self.reset_resolvers_and_realms()
-        self.manage_ui.policy_view.clear_policies()
+        self.testcase.reset_resolvers_and_realms()
+        self.testcase.manage_ui.policy_view.clear_policies()
         token_view.delete_all_tokens()
 
         self._announce_test("1. UserIdResolver anlegen")
         # Create LDAP UserIdResolver
         ldap_data = data.musicians_ldap_resolver
-        ldap_resolver = self.useridresolver_manager.create_resolver(ldap_data)
+        ldap_resolver = self.testcase.useridresolver_manager.create_resolver(
+            ldap_data
+        )
 
         # Create SQL UserIdResolver
         sql_data = data.sql_resolver
 
-        sql_resolver = self.useridresolver_manager.create_resolver(sql_data)
-        self.useridresolver_manager.close()
+        sql_resolver = self.testcase.useridresolver_manager.create_resolver(
+            sql_data
+        )
+        self.testcase.useridresolver_manager.close()
 
         # Create realm for all resolvers
         realm_name1 = "SE_scenario01_realm1"
         realm_name2 = "SE_scenario01_realm2"
 
-        self.realm_manager.create(realm_name1, [ldap_resolver])
-        self.realm_manager.create(realm_name2, [sql_resolver])
-        self.realm_manager.close()
+        self.testcase.realm_manager.create(realm_name1, [ldap_resolver])
+        self.testcase.realm_manager.create(realm_name2, [sql_resolver])
+        self.testcase.realm_manager.close()
 
         self._announce_test(
             "2. In Management Webinterface, check that all users are visible"
@@ -117,10 +125,10 @@ class TestScenario01(TestCase):
 
         self._announce_test("3. eToken.xml ueber das Webinterface importieren")
 
-        token_import_aladdin = TokenImportAladdin(self.manage_ui)
+        token_import_aladdin = TokenImportAladdin(self.testcase.manage_ui)
 
         aladdin_xml_path = os.path.join(
-            self.manage_ui.test_data_dir, "aladdin.xml"
+            self.testcase.manage_ui.test_data_dir, "aladdin.xml"
         )
         token_import_aladdin.do_import(file_path=aladdin_xml_path)
 
@@ -132,7 +140,7 @@ class TestScenario01(TestCase):
         )
 
         Policy(
-            self.manage_ui,
+            self.testcase.manage_ui,
             "SE_scenario01",
             "selfservice",
             "enrollMOTP, setOTPPIN, setMOTPPIN, resync, disable ",
@@ -200,7 +208,7 @@ class TestScenario01(TestCase):
             % alert_box_text
         )
         serial_token_mozart = m.group("serial")
-        self.driver.find_element(
+        self.testcase.driver.find_element(
             By.XPATH,
             "//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]",
         ).click()
@@ -224,11 +232,11 @@ class TestScenario01(TestCase):
 
         self._announce_test("10. Authentisierung der 4 Benutzer ###")
         validate = Validate(
-            self.http_protocol,
-            self.http_host,
-            self.http_port,
-            self.http_username,
-            self.http_password,
+            self.testcase.http_protocol,
+            self.testcase.http_host,
+            self.testcase.http_port,
+            self.testcase.http_username,
+            self.testcase.http_password,
         )
 
         # seed is also set in testdata/aladdin.xml
@@ -450,7 +458,7 @@ class TestScenario01(TestCase):
         expected_users = data["expected_users"]
         users = data["users"]
 
-        found_users = self.manage_ui.user_view.get_num_users(realm)
+        found_users = self.testcase.manage_ui.user_view.get_num_users(realm)
 
         assert expected_users == found_users, (
             "Not the expected number of users in realm %s: Expecting %s but found %s"
@@ -458,7 +466,7 @@ class TestScenario01(TestCase):
         )
 
         for user in users:
-            assert self.manage_ui.user_view.user_exists(
+            assert self.testcase.manage_ui.user_view.user_exists(
                 user
             ), "User '%s' should exist in realm %s" % (user, realm)
             break
