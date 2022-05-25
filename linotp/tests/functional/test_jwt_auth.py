@@ -263,6 +263,56 @@ class TestJwtAdmin:
             assert response.status_code == 200
             assert "<title>Management - LinOTP</title>" in data
 
+    def test_get_manage_context_when_authenticated(
+        self,
+        create_common_resolvers: Callable,
+        create_common_realms: Callable,
+        scoped_authclient: Callable[..., FlaskClient],
+    ) -> None:
+        """
+        test for the new /manage/context api, which should return
+        information about the loged in user.
+        """
+        with scoped_authclient(verify_jwt=True) as client:
+            client.post(
+                "/admin/login",
+                data=dict(
+                    username="admin",
+                    password="Test123!",
+                ),
+            )
+
+            csrf_token = self.extract_cookie(client, "csrf_access_token")
+
+            response = client.get(
+                "/manage/context",
+                headers={"X-CSRF-TOKEN": csrf_token},
+            )
+
+            user = response.json["detail"]["user"]
+            assert user["username"] == "admin"
+            assert "resolver" in user
+
+    def test_get_manage_context_when_not_authenticated(
+        self,
+        create_common_resolvers: Callable,
+        create_common_realms: Callable,
+        scoped_authclient: Callable[..., FlaskClient],
+    ) -> None:
+        """
+        test for the new /manage/context api, which should return
+        information about the loged in user - but only if authenticated!
+        """
+
+        with scoped_authclient(verify_jwt=True) as client:
+
+            response = client.get(
+                "/manage/context",
+            )
+
+            assert response.status_code == 401
+            assert not response.json["result"]["status"]
+
     def test_delete_cookies_on_logout(
         self,
         create_common_resolvers: Callable,

@@ -41,17 +41,15 @@ from linotp.flap import tmpl_context as c
 from linotp.lib.challenges import Challenges
 from linotp.lib.context import request_context
 from linotp.lib.policy.action import (
-    get_action_value,
     get_selfservice_action_value,
     get_selfservice_actions,
 )
-from linotp.lib.policy.processing import get_client_policy
 from linotp.lib.realm import getDefaultRealm, getRealms
 from linotp.lib.selfservice import get_imprint
-from linotp.lib.token import get_token_owner, getTokens4UserOrSerial
+from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
 from linotp.lib.type_utils import parse_duration
-from linotp.lib.user import User, getRealmBox, getUserId, getUserInfo
+from linotp.lib.user import User, get_userinfo, getRealmBox
 from linotp.lib.util import get_copyright_info, get_request_param, get_version
 from linotp.tokens import tokenclass_registry
 
@@ -62,17 +60,6 @@ SECRET_LEN = 32
 
 Cookie_Secret = binascii.hexlify(os.urandom(SECRET_LEN))
 Cookie_Cache = {}
-
-
-def get_userinfo(user):
-
-    (uid, resolver, resolver_class) = getUserId(user)
-    uinfo = getUserInfo(uid, resolver, resolver_class)
-    if "cryptpass" in uinfo:
-        del uinfo["cryptpass"]
-    uinfo["realm"] = user.realm
-
-    return uinfo
 
 
 def getTokenForUser(user, active=None, exclude_rollout=True):
