@@ -65,8 +65,9 @@ class TestSystemConfig:
         Test that split_at option is saved and retrieved correctly
         """
 
+        ######## 1- set it
         with self.system_config:
-            # Set the opposite value of current 'split at' - forc
+            # Set the opposite value of current 'split at'
             split_at_pre_state = self.system_config.getSplitAt()
             self.system_config.setSplitAt(not split_at_pre_state)
             self.system_config.save()
@@ -78,7 +79,7 @@ class TestSystemConfig:
         assert (
             not error_raised
         ), "Error during system configuration save procedure!"
-
+        ######## 2- get it, validate it and set again
         self.alert_box_handler.clear_messages()
         with self.system_config:
             # After the re-open and the previous save, the checkbox should be
@@ -88,7 +89,7 @@ class TestSystemConfig:
                 f"Previous state was {split_at_pre_state}, current state is {split_at_state} "
                 f"but expected {not split_at_pre_state} after changing it"
             )
-
+            #
             # Test the other way around (set state for checkbox, set at test start)
             self.system_config.setSplitAt(split_at_pre_state)
             self.system_config.save()
@@ -101,6 +102,7 @@ class TestSystemConfig:
             not error_raised
         ), "Error during system configuration save procedure!"
 
+        ######## 3- get it again and evaluate it's correctness
         # Check whether the checkbox is enabled after saving and re-open
         with self.system_config:
             split_at_state = self.system_config.getSplitAt()
