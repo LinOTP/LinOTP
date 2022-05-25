@@ -32,10 +32,12 @@ from linotp_selenium_helper import TestCase
 
 class TestTokenView:
     @pytest.fixture(autouse=True)
-    def setUp(self, manage_ui):
-        self.manage_ui = manage_ui
-        self.token_view = manage_ui.token_view
-        self.token_enroll = manage_ui.token_enroll
+    def setUp(self, testcase):
+        self.testcase = testcase
+
+        self.manage_ui = self.testcase.manage_ui
+        self.token_view = self.testcase.manage_ui.token_view
+        self.token_enroll = self.testcase.manage_ui.token_enroll
 
     def test_01_open_view(self):
         self.token_view.open()
@@ -57,24 +59,26 @@ class TestTokenView:
 
 class TestTokenViewOperations:
     @pytest.fixture(autouse=True)
-    def setUp(self, manage_ui):
-        self.manage_ui = manage_ui
-        self.token_view = self.manage_ui.token_view
-        self.token_view.delete_all_tokens()
+    def setUp(self, testcase):
+        self.testcase = testcase
+
+        self.testcase.manage_ui.token_view.delete_all_tokens()
         self.token_serial = (
-            self.manage_ui.token_enroll.create_static_password_token(
+            self.testcase.manage_ui.token_enroll.create_static_password_token(
                 "testPassword"
             )
         )
 
     def test_01_select(self):
-        self.token_view.select_token(self.token_serial)
+        self.testcase.manage_ui.token_view.select_token(self.token_serial)
 
     def test_02_delete(self):
-        self.token_view.delete_token(self.token_serial)
+        self.testcase.manage_ui.token_view.delete_token(self.token_serial)
 
     def test_03_info(self):
-        info = self.token_view.get_token_info(self.token_serial)
+        info = self.testcase.manage_ui.token_view.get_token_info(
+            self.token_serial
+        )
         assert (
             info["LinOtp.TokenSerialnumber"] == self.token_serial
         ), "Displayed token serial should be same as created serial number"
