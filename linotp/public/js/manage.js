@@ -4020,6 +4020,15 @@ $(document).ready(function () {
         }
     };
 
+
+    // load the logged in admin user info to show its name
+    $.ajax({ url: '/manage/context' }).then(function (response) {
+        var user = response.detail.user;
+        $(".admin_user").text(
+            user.username + "@" + user.realm + " (" + user.resolver + ")"
+        );
+    });
+
     // load the server config
     var server_config;
     try {

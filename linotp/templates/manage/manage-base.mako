@@ -167,10 +167,9 @@
     <div id="logo"></div>
 </div> <!-- header -->
 <div class="clearfix">
-        % if c.admin:
-        <div id="login-status" class="dropdown-container">
+    <div id="login-status" class="dropdown-container">
         <div class="dropdown-label">
-            ${c.admin}<span class="dropdown-icon">&#x25BC;</span>
+            <span class="admin_user"></span> <span class="dropdown-icon">&#x25BC;</span>
         </div>
         <div class="dropdown">
             % if c.admin_can_change_password:
@@ -178,10 +177,6 @@
             % endif
             <a href="#" id="login-status-logout">${_("Logout")}</a>
         </div>
-        % else:
-        <div id="login-status">
-        &nbsp;
-        % endif
     </div>
 </div>
 <div class="clearfix">
@@ -892,7 +887,7 @@
 
 <div id='dialog_change_password'>
     <p id='about_id'>${_("If LinOTP is setup to manage its administration users, you can change your LinOTP management password now.")}</p>
-    <p>${_("User:")}&nbsp;${c.admin}
+    <p>${_("User:")}&nbsp;<span class="admin_user"></span>
     <form class="cmxform" action="">
         <table>
             <tr>

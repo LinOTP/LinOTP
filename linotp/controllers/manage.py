@@ -186,7 +186,6 @@ class ManageController(BaseController):
         try:
             c.debug = current_app.config["DEBUG"]
             c.title = "LinOTP Management"
-            c.admin = user
 
             log.debug("[index] importers: %s", IMPORT_TEXT)
             c.importers = IMPORT_TEXT
