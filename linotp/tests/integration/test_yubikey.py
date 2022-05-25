@@ -33,38 +33,37 @@ from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.validate import Validate
 
 
-class TestYubikey(TestCase):
+class TestYubikey:
     """
     TestCase class that tests the Yubikey (enrollment and use)
     """
 
     @pytest.fixture(autouse=True)
-    def setUp(self):
+    def setUp(self, testcase):
         """
         Create a AD UserIdResolver and add it to a realm. Verify that the user
         we want to test with exists.
         """
+        self.testcase = testcase
         self.realm_name = "se_yubikey_realm"
         self.user_name = "maxwell"
 
-        self.reset_resolvers_and_realms(
+        self.testcase.reset_resolvers_and_realms(
             data.physics_ldap_resolver, self.realm_name
         )
 
-        user_view = self.manage_ui.user_view
-        user_view.select_realm(self.realm_name)
-        assert user_view.user_exists(self.user_name), (
+        self.testcase.manage_ui.user_view.select_realm(self.realm_name)
+        assert self.testcase.manage_ui.user_view.user_exists(self.user_name), (
             "User '" + self.user_name + "' should exist."
         )
-        self.user_view = user_view
 
     def test_yubico_mode(self):
         """
         Enrolls a Yubikey in YUBICO mode and verifies OTPs against it
         """
-        url = self.http_host
-        if self.http_port:
-            url = "%s:%s" % (self.http_host, self.http_port)
+        url = self.testcase.http_host
+        if self.testcase.http_port:
+            url = "%s:%s" % (self.testcase.http_host, self.testcase.http_port)
         # Enroll Yubikey
         serialnum = "01382015"
         yubi_slot = 1
@@ -74,7 +73,7 @@ class TestYubikey(TestCase):
         description = "Enrolled by TestYubikey"
         public_uid = "ecebeeejedecebeg"
 
-        inittoken_response = self.manage_ui.admin_api_call(
+        inittoken_response = self.testcase.manage_ui.admin_api_call(
             "admin/init",
             {
                 "type": "yubikey",
@@ -86,16 +85,16 @@ class TestYubikey(TestCase):
         )
         assert inittoken_response, "Error enrolling Yubikey"
 
-        self.user_view.select_user(self.user_name)
+        self.testcase.manage_ui.user_view.select_user(self.user_name)
         pin = "asdf1234"
-        self.manage_ui.token_view.assign_token(serial, pin)
+        self.testcase.manage_ui.token_view.assign_token(serial, pin)
 
         validate = Validate(
-            self.http_protocol,
-            self.http_host,
-            self.http_port,
-            self.http_username,
-            self.http_password,
+            self.testcase.http_protocol,
+            self.testcase.http_host,
+            self.testcase.http_port,
+            self.testcase.http_username,
+            self.testcase.http_password,
         )
 
         valid_otps = [
@@ -130,9 +129,14 @@ class TestYubikey(TestCase):
 
         # validate/check_yubikey
         password = pin + public_uid + "eihtnehtetluntirtirrvblfkttbjuih"
-        cy_auth = HTTPDigestAuth(self.http_username, self.http_password)
+        cy_auth = HTTPDigestAuth(
+            self.testcase.http_username, self.testcase.http_password
+        )
         cy_validate_url = (
-            self.http_protocol + "://" + url + "/validate/check_yubikey?"
+            self.testcase.http_protocol
+            + "://"
+            + url
+            + "/validate/check_yubikey?"
         )
         response = requests.get(
             cy_validate_url,
@@ -189,17 +193,18 @@ class TestYubikey(TestCase):
         assert not return_json["result"]["value"], (
             "Invalid return value: %r" % return_json
         )
-        try:
-            return_json["detail"]["user"]
-            self.fail(
+
+        assert "user" not in return_json, (
+            "Response should not contain user %r" % return_json
+        )
+        assert "realm" not in return_json, (
+            "Response should not contain realm %r" % return_json
+        )
+
+        if "detail" in return_json:
+            assert "user" not in return_json["detail"], (
                 "Response should not contain detail.user %r" % return_json
             )
-        except KeyError:
-            pass
-        try:
-            return_json["detail"]["realm"]
-            self.fail(
+            assert "realm" not in return_json["detail"], (
                 "Response should not contain detail.realm %r" % return_json
             )
-        except KeyError:
-            pass
