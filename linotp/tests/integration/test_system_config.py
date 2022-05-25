@@ -61,19 +61,17 @@ class TestSystemConfig:
         """
         Test that split_at option is saved and retrieved correctly
         """
+
         with self.system_config:
-            # Set the opposite value of current 'split at' - force change
+            # Set the opposite value of current 'split at' - forc
             split_at_pre_state = self.system_config.getSplitAt()
-            if split_at_pre_state:
-                self.system_config.setSplitAt(False)
-            else:
-                self.system_config.setSplitAt(True)
+            self.system_config.setSplitAt(not split_at_pre_state)
             self.system_config.save()
 
         error_raised = self.alert_box_handler.check_message(
             "Error saving system configuration", MsgType.Error
         )
-        # There shouldnt raise an error
+        # It shouldn't raise an error
         assert (
             not error_raised
         ), "Error during system configuration save procedure!"
@@ -83,20 +81,16 @@ class TestSystemConfig:
             # After the re-open and the previous save, the checkbox should be
             # True/False (opposite of split_at_pre_state)
             split_at_state = self.system_config.getSplitAt()
-            if split_at_pre_state is True:
-                assert (
-                    not split_at_state
-                ), "Changing 'True' to 'False' for 'SplitAt@' checkbox was not saved!"
-            else:
-                assert (
-                    split_at_state
-                ), "Changing 'False' to 'True' for 'SplitAt@' checkbox was not saved!"
+            assert (not split_at_pre_state) == split_at_state, (
+                f"Previous state was {split_at_pre_state}, current state is {split_at_state} "
+                f"but expected {not split_at_pre_state} after changing it"
+            )
 
             # Test the other way around (set state for checkbox, set at test start)
             self.system_config.setSplitAt(split_at_pre_state)
             self.system_config.save()
 
-        # There shouldnt raise an error
+        # There shouldn't raise an error
         error_raised = self.alert_box_handler.check_message(
             "Error saving system configuration", MsgType.Error
         )
@@ -107,14 +101,11 @@ class TestSystemConfig:
         # Check whether the checkbox is enabled after saving and re-open
         with self.system_config:
             split_at_state = self.system_config.getSplitAt()
-            if split_at_pre_state is True:
-                assert (
-                    split_at_state
-                ), "Changing 'True' to 'False' for 'SplitAt@' checkbox was not saved!"
-            else:
-                assert (
-                    not split_at_state
-                ), "Changing 'False' to 'True' for 'SplitAt@' checkbox was not saved!"
+            assert split_at_pre_state == split_at_state, (
+                f"Original state was {split_at_pre_state}, we have changed it "
+                "to the opposite and back to the original value "
+                f"but now we are getting {split_at_state}"
+            )
 
     def test_usage_timestamp(self):
         """Test the option for storing the last Authentication info of Tokens"""
