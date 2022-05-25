@@ -422,7 +422,7 @@ e2e-test-mariadb:
       alias: db
     - name: selenium/standalone-chrome-debug:latest
       alias: test-chrome
-  allow_failure: true
+  allow_failure: false
 
 # End to end test using Soft HSM image
 e2e-test-softhsm:
