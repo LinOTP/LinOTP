@@ -278,6 +278,9 @@ class ManageUi(object):
 
     def logout(self):
         assert self.is_manage_open()
+        # close menues if they are open
+        self.welcome_screen.close_if_open()
+        self.close_all_menus()
 
         self.find_by_id("login-status").click()
         self.find_by_id("login-status-logout").click()
