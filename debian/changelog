@@ -57,6 +57,7 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
     The blocking time (in seconds) is the period that needs to pass before another challenge
     can be triggered by the same user.
   * admin policies now support resolver defintion for admin users
+  * method to provide context information for manage ui
 
   Breaking Changes:
   * The helpdesk controller has been removed.
