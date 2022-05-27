@@ -31,6 +31,23 @@ import pytest
 from linotp_selenium_helper import TestCase
 
 
+def test_ldap_resolver_via_api(testcase):
+    """Test musicians resolver creation via API call"""
+    # Get a test case without starting selenium
+
+    testcase.loadClsConfig()
+
+    # create musician resolver with ldaps URL
+    # - before creating a new resolver, we cleanup former realm and resolvers
+
+    testcase.manage_ui.realm_manager.clear_realms_via_api()
+
+    resolver_manager = testcase.manage_ui.useridresolver_manager
+
+    resolver_manager.clear_resolvers_via_api()
+    resolver_manager.create_resolver_via_api(data.musicians_ldap_resolver)
+
+
 class TestCreateUserIdResolvers:
     @pytest.fixture(autouse=True)
     def setUp(self, testcase):
