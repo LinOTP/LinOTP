@@ -279,7 +279,9 @@ lint-useridresolver:
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   artifacts:
     reports:
-      cobertura: ${CI_PROJECT_DIR}/coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: ${CI_PROJECT_DIR}/coverage.xml
 
 # Unit tests
 unit-test:
