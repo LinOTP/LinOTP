@@ -39,11 +39,10 @@ from linotp_selenium_helper.token_import import TokenImportAladdin
 from linotp_selenium_helper.validate import Validate
 
 
-class TestPolicies(TestCase):
+class TestPolicies:
     """Test Policies"""
 
     # GUI attributes
-    token_view = None
     user_view = None
 
     # Other testing data
@@ -56,12 +55,9 @@ class TestPolicies(TestCase):
     two_resolvers_realm_name = None
 
     @pytest.fixture(autouse=True)
-    def setUp(self):
+    def setUp(self, testcase):
         """Some test set up steps"""
-
-        # Initialize GUI attributes
-        self.token_view = self.manage_ui.token_view
-        self.user_view = self.manage_ui.user_view
+        self.testcase = testcase
 
         # Delete from previous tests:
         # - resolvers
@@ -69,32 +65,32 @@ class TestPolicies(TestCase):
         # - policies
         # - tokens
 
-        self.reset_resolvers_and_realms()
-        self.manage_ui.policy_view.clear_policies_via_api()
-        self.token_view.clear_tokens_via_api()
+        self.testcase.reset_resolvers_and_realms()
+        self.testcase.manage_ui.policy_view.clear_policies_via_api()
+        self.testcase.manage_ui.token_view.clear_tokens_via_api()
 
         # Create LDAP UserIdResolver
         ldap_data = data.musicians_ldap_resolver
-        self.ldap_resolver = self.useridresolver_manager.create_resolver(
-            ldap_data
+        self.ldap_resolver = (
+            self.testcase.useridresolver_manager.create_resolver(ldap_data)
         )
 
         # Create SQL UserIdResolver
         sql_data = data.sql_resolver
 
-        self.sql_resolver = self.useridresolver_manager.create_resolver(
-            sql_data
+        self.sql_resolver = (
+            self.testcase.useridresolver_manager.create_resolver(sql_data)
         )
-        self.useridresolver_manager.close()
+        self.testcase.useridresolver_manager.close()
 
         # Create realms
         self.two_resolvers_realm_name = "two_resolvers_realm"
-        self.realm_manager.create(
+        self.testcase.realm_manager.create(
             self.two_resolvers_realm_name,
             [self.ldap_resolver, self.sql_resolver],
         )
-        self.realm_manager.set_default(self.two_resolvers_realm_name)
-        self.realm_manager.close()
+        self.testcase.realm_manager.set_default(self.two_resolvers_realm_name)
+        self.testcase.realm_manager.close()
 
         # Set seed of HMAC token
         self.seed_oath137332 = "ff06df50017d3b981cfbc4ec4d374040164d8d19"
@@ -131,8 +127,8 @@ class TestPolicies(TestCase):
         user_b_token_seed_bin = binascii.unhexlify(user_b_token_key)
 
         # Create Token
-        self.user_view.select_user(user_b)
-        self.manage_ui.token_enroll.create_hotp_token(
+        self.testcase.manage_ui.user_view.select_user(user_b)
+        self.testcase.manage_ui.token_enroll.create_hotp_token(
             pin=user_b_token_pin, hmac_key=user_b_token_key
         )
 
@@ -144,20 +140,27 @@ class TestPolicies(TestCase):
 
         # Create policy
         Policy(
-            self.manage_ui, "otppin3", "authentication", "otppin=3", "*", "*"
+            self.testcase.manage_ui,
+            "otppin3",
+            "authentication",
+            "otppin=3",
+            "*",
+            "*",
         )  # user = "*"
 
         # Create event based HMAC token
         # Tokens were imported by self.import_tokens()
-        self.user_view.select_realm(user_a_realm)
-        self.user_view.select_user(user_a)
+        self.testcase.manage_ui.user_view.select_realm(user_a_realm)
+        self.testcase.manage_ui.user_view.select_user(user_a)
 
         # Unhexlify for hotp.generate method
         seed_oath137332_bin = binascii.unhexlify(self.seed_oath137332)
 
         # Assign token to user
         # Set a pin
-        self.token_view.assign_token(self.serial_oath137332, user_a_token_pin)
+        self.testcase.manage_ui.token_view.assign_token(
+            self.serial_oath137332, user_a_token_pin
+        )
 
         # authentication tests
         # - PIN+OTP -> successfully
@@ -173,7 +176,7 @@ class TestPolicies(TestCase):
             counter=0, key=seed_oath137332_bin
         )
 
-        access_granted, _ = self.validate.validate(
+        access_granted, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp
         )
         assert access_granted, (
@@ -189,7 +192,7 @@ class TestPolicies(TestCase):
         # PW+OTP -> success
         otp = user_a_pw + hotp_a.generate(counter=1, key=seed_oath137332_bin)
 
-        access_granted, _ = self.validate.validate(
+        access_granted, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp
         )
         assert access_granted, (
@@ -205,7 +208,7 @@ class TestPolicies(TestCase):
         # nonsense+OTP -> success
         otp = "nonsense" + hotp_a.generate(counter=2, key=seed_oath137332_bin)
 
-        access_granted, _ = self.validate.validate(
+        access_granted, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp
         )
         assert access_granted, (
@@ -221,7 +224,7 @@ class TestPolicies(TestCase):
         # OTP -> success
         otp = hotp_a.generate(counter=3, key=seed_oath137332_bin)
 
-        access_granted, _ = self.validate.validate(
+        access_granted, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp
         )
         assert access_granted, (
@@ -237,7 +240,7 @@ class TestPolicies(TestCase):
         # wrong OTP -> fails
         otp = "111111"
 
-        access_denied, _ = self.validate.validate(
+        access_denied, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp
         )
         assert not access_denied, (
@@ -265,7 +268,7 @@ class TestPolicies(TestCase):
 
         # Change policy
         Policy(
-            self.manage_ui,
+            self.testcase.manage_ui,
             "otppin3",
             "authentication",
             "otppin=3",
@@ -280,7 +283,7 @@ class TestPolicies(TestCase):
             counter=0, key=user_b_token_seed_bin
         )
 
-        access_granted, _ = self.validate.validate(
+        access_granted, _ = self.testcase.validate.validate(
             user=user_b + "@" + user_b_realm, password=otp
         )
         assert access_granted, (
@@ -296,7 +299,7 @@ class TestPolicies(TestCase):
         # PW+OTP -> success
         otp = user_b_pw + hotp_b.generate(counter=1, key=user_b_token_seed_bin)
 
-        access_granted, _ = self.validate.validate(
+        access_granted, _ = self.testcase.validate.validate(
             user=user_b + "@" + user_b_realm, password=otp
         )
         assert access_granted, (
@@ -312,7 +315,7 @@ class TestPolicies(TestCase):
         # OTP -> success
         otp = hotp_b.generate(counter=2, key=user_b_token_seed_bin)
 
-        access_granted, _ = self.validate.validate(
+        access_granted, _ = self.testcase.validate.validate(
             user=user_b + "@" + user_b_realm, password=otp
         )
         assert access_granted, (
@@ -328,7 +331,7 @@ class TestPolicies(TestCase):
         # wrong OTP -> fails
         otp = "111111"
 
-        access_denied, _ = self.validate.validate(
+        access_denied, _ = self.testcase.validate.validate(
             user=user_b + "@" + user_b_realm, password=otp
         )
         assert not access_denied, (
@@ -349,7 +352,7 @@ class TestPolicies(TestCase):
             counter=4, inc_counter=False, key=seed_oath137332_bin
         )
 
-        access_denied, _ = self.validate.validate(
+        access_denied, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp
         )
         assert not access_denied, (
@@ -367,7 +370,7 @@ class TestPolicies(TestCase):
             counter=4, key=seed_oath137332_bin
         )
 
-        access_granted, _ = self.validate.validate(
+        access_granted, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp
         )
         assert access_granted, (
@@ -438,5 +441,5 @@ class TestPolicies(TestCase):
     </Tokens>"""
         )
 
-        token_import_aladdin = TokenImportAladdin(self.manage_ui)
+        token_import_aladdin = TokenImportAladdin(self.testcase.manage_ui)
         token_import_aladdin.do_import(file_content)

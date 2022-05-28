@@ -379,6 +379,9 @@ class SystemController(BaseController):
                 # --------------------------------------------------------- --
 
             db.session.commit()
+            log.debug(
+                "[setConfig] saved configuration: %r", list(param.keys())
+            )
             return sendResult(response, res, 1)
 
         except ValueError as exx:

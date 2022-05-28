@@ -31,34 +31,37 @@ import pytest
 from linotp_selenium_helper import TestCase
 
 
-def test_ldap_resolver_via_api():
+def test_ldap_resolver_via_api(testcase):
     """Test musicians resolver creation via API call"""
     # Get a test case without starting selenium
-    t = TestCase()
-    t.loadClsConfig()
+
+    testcase.loadClsConfig()
 
     # create musician resolver with ldaps URL
     # - before creating a new resolver, we cleanup former realm and resolvers
 
-    t.manage_ui.realm_manager.clear_realms_via_api()
+    testcase.manage_ui.realm_manager.clear_realms_via_api()
 
-    resolver_manager = t.manage_ui.useridresolver_manager
+    resolver_manager = testcase.manage_ui.useridresolver_manager
 
     resolver_manager.clear_resolvers_via_api()
     resolver_manager.create_resolver_via_api(data.musicians_ldap_resolver)
 
 
-class TestCreateUserIdResolvers(TestCase):
-    """TestCase class that creates 4 UserIdResolvers"""
+class TestCreateUserIdResolvers:
+    @pytest.fixture(autouse=True)
+    def setUp(self, testcase):
+        """testcase is a fixture"""
+        self.testcase = testcase
 
     @pytest.fixture(autouse=True)
     def tearDown(self):
         yield
-        self.manage_ui.close_all_dialogs()
+        self.testcase.manage_ui.close_all_dialogs()
 
     def clear_realms(self):
         # Need to clear realms so that useridresolvers can be deleted
-        self.manage_ui.realm_manager.clear_realms_via_api()
+        self.testcase.manage_ui.realm_manager.clear_realms_via_api()
 
     def create_resolvers_and_realm(self, resolver_data):
         """Test the connection with the corresponding button in the UI.
@@ -66,10 +69,10 @@ class TestCreateUserIdResolvers(TestCase):
         """
         created_resolvers = []
         total_expected_users = 0
-        realm_manager = self.manage_ui.realm_manager
+        realm_manager = self.testcase.manage_ui.realm_manager
 
         self.clear_realms()
-        m = self.manage_ui.useridresolver_manager
+        m = self.testcase.manage_ui.useridresolver_manager
         m.clear_resolvers_via_api()
 
         for d in resolver_data:
@@ -85,7 +88,7 @@ class TestCreateUserIdResolvers(TestCase):
         realm_manager.create(realm_name, created_resolvers)
         realm_manager.close()
 
-        user_view = self.manage_ui.user_view
+        user_view = self.testcase.manage_ui.user_view
         assert total_expected_users == user_view.get_num_users(
             realm_name
         ), "Expected %i users, got %i" % (
@@ -94,7 +97,7 @@ class TestCreateUserIdResolvers(TestCase):
         )
 
     def create_resolver(self, testdata):
-        m = self.manage_ui.useridresolver_manager
+        m = self.testcase.manage_ui.useridresolver_manager
         name = testdata["name"]
         m.open()
         if name in m.get_defined_resolvers():
@@ -152,7 +155,7 @@ class TestCreateUserIdResolvers(TestCase):
         """
         Check that we can define a resolver with UTF8 using the API and read the results back
         """
-        m = self.manage_ui.useridresolver_manager
+        m = self.testcase.manage_ui.useridresolver_manager
         self.clear_realms()
         m.clear_resolvers_via_api()
 

@@ -56,7 +56,7 @@ class SystemConfig(ManageDialog):
         # Call the default constructor
         ManageDialog.__init__(self, manage_ui, self.body_id)
 
-    def setSplitAt(self, enable):
+    def setSplitAt(self, enable_it):
         """
         Within the 'Settings' Tab, 'Split at @ sign'
         """
@@ -64,11 +64,11 @@ class SystemConfig(ManageDialog):
         split_at_checkbox = self.find_by_id(self.tab_settings_split_at)
 
         # Checkbox is not selected/checked but you want to - so check it
-        if not split_at_checkbox.is_selected() and enable:
+        if not split_at_checkbox.is_selected() and enable_it:
             split_at_checkbox.click()
 
         # Checkbox is selected/checked but you want to uncheck - so uncheck it
-        if split_at_checkbox.is_selected() and not enable:
+        if split_at_checkbox.is_selected() and not enable_it:
             split_at_checkbox.click()
 
     def getSplitAt(self):

@@ -35,21 +35,29 @@ from linotp_selenium_helper import (
 )
 
 
-class TestSelfservice(TestCase):
+class TestSelfservice:
     """TestCase class that tests the minimal compatiblity between the two
     selfservice alternatives legacy mako-based selfservice and the new
     angular-based selfservice.
     """
 
+    @pytest.fixture(autouse=True)
+    def setUp(self, testcase):
+        self.testcase = testcase
+
     @pytest.fixture(scope="module", params=[SelfService, AngularSelfService])
-    def selfservice(self, request):
-        return request.param(self)
+    def selfservice(self, testcase, request):
+
+        # for each of the params in fixture params:
+        current_selfservice_class = request.param
+        # initiate it
+        return current_selfservice_class(testcase)
 
     def test_selfservice(self, musicians_realm, selfservice):
         """Creates User-Id-Resolvers"""
-        self.manage_ui.policy_view.clear_policies_via_api()
+        self.testcase.manage_ui.policy_view.clear_policies_via_api()
         Policy(
-            self.manage_ui,
+            self.testcase.manage_ui,
             "SE_policy_selfservice",
             "selfservice",
             "setOTPPIN, enrollPW, enrollHMAC",
