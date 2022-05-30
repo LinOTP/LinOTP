@@ -36,7 +36,7 @@ from werkzeug.datastructures import Headers
 
 from flask import Response, current_app, g, stream_with_context
 
-from linotp.controllers.base import BaseController
+from linotp.controllers.base import BaseController, methods
 from linotp.flap import request, response
 from linotp.lib.context import request_context
 from linotp.lib.policy import (
@@ -319,6 +319,7 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(response, exc)
 
+    @methods(["POST"])
     def delete_all(self):
         """
         method:
@@ -385,6 +386,7 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(response, exc)
 
+    @methods(["POST"])
     def delete_before(self):
         """
 

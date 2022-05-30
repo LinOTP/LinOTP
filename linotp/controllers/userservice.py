@@ -55,8 +55,10 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 
 from flask import current_app, g
 
-from linotp.controllers.base import BaseController
-from linotp.flap import config, request, response
+from linotp.controllers.base import BaseController, methods
+from linotp.flap import config
+from linotp.flap import render_mako as render
+from linotp.flap import request, response
 from linotp.flap import tmpl_context as c
 from linotp.lib.apps import create_google_authenticator, create_oathtoken_url
 from linotp.lib.audit.base import get_token_num_info
@@ -1301,7 +1303,7 @@ class UserserviceController(BaseController):
             return sendError(response, e)
 
     # action hooks for the js methods ########################################
-
+    @methods(["POST"])
     def enable(self):
         """
         enables a token or all tokens of a user
@@ -1366,6 +1368,7 @@ class UserserviceController(BaseController):
             return sendError(response, e, 1)
 
     ########################################################
+    @methods(["POST"])
     def disable(self):
         """
         disables a token
@@ -1421,6 +1424,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, e, 1)
 
+    @methods(["POST"])
     def delete(self):
         """
         This is the internal delete token function that is called from within
@@ -1479,6 +1483,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, e, 1)
 
+    @methods(["POST"])
     def reset(self):
         """
         This internally resets the failcounter of the given token.
@@ -1529,6 +1534,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, e, 1)
 
+    @methods(["POST"])
     def unassign(self):
         """
         This is the internal unassign function that is called from within
@@ -1588,6 +1594,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, e, 1)
 
+    @methods(["POST"])
     def setpin(self):
         """
         When the user hits the set pin button, this function is called.
@@ -1660,6 +1667,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, 1)
 
+    @methods(["POST"])
     def setmpin(self):
         """
         When the user hits the set pin button, this function is called.
@@ -1712,6 +1720,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, 1)
 
+    @methods(["POST"])
     def resync(self):
         """
         This is the internal resync function that is called from within
@@ -2042,6 +2051,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, 1)
 
+    @methods(["POST"])
     def assign(self):
         """
         This is the internal assign function that is called from within
@@ -2194,6 +2204,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, 1)
 
+    @methods(["POST"])
     def enroll(self):
         """
         Enroll a token.
@@ -2390,6 +2401,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, e, 1)
 
+    @methods(["POST"])
     def webprovision(self):
         """
         This function is called, when the create OATHtoken button is hit.
@@ -2789,6 +2801,7 @@ class UserserviceController(BaseController):
                 response, _("audit/search failed: %s") % str(exx), 0
             )
 
+    @methods(["POST"])
     def activateocratoken(self):
         """
         activateocratoken - called from the selfservice web ui to activate the  OCRA token
@@ -2887,6 +2900,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, 1)
 
+    @methods(["POST"])
     def finishocra2token(self):
         """
 
@@ -3057,6 +3071,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, 1)
 
+    @methods(["POST"])
     def setdescription(self):
         """
         sets a description for a token, provided the setDescription policy is set.

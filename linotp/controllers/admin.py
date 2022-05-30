@@ -43,7 +43,7 @@ from flask import (
     stream_with_context,
 )
 
-from linotp.controllers.base import BaseController, JWTMixin
+from linotp.controllers.base import BaseController, JWTMixin, methods
 from linotp.flap import HTTPUnauthorized, config, request, response
 from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.challenges import Challenges
@@ -389,6 +389,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def remove(self):
         """
         deletes either a certain token given by serial or all tokens of a user
@@ -477,7 +478,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx)
 
     ########################################################
-
+    @methods(["POST"])
     def enable(self):
         """
         enables a token or all tokens of a user
@@ -617,7 +618,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx, 1)
 
     ########################################################
-
+    @methods(["POST"])
     def disable(self):
         """
         disables a token given by serial or all tokens of a user
@@ -739,7 +740,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx)
 
     ########################################################
-
+    @methods(["POST"])
     def init(self):
         """
         creates a new token.
@@ -920,7 +921,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx)
 
     ########################################################
-
+    @methods(["POST"])
     def unassign(self):
         """
 
@@ -991,7 +992,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx, 1)
 
     ########################################################
-
+    @methods(["POST"])
     def assign(self):
         """
 
@@ -1063,7 +1064,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx, 0)
 
     ########################################################
-
+    @methods(["POST"])
     def setPin(self):
         """
 
@@ -1161,6 +1162,7 @@ class AdminController(BaseController, JWTMixin):
             db.session.rollback()
             return sendError(response, exx, 0)
 
+    @methods(["POST"])
     def setValidity(self):
         """
         dedicated backend for setting the token validity for
@@ -1309,7 +1311,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx, 0)
 
     ########################################################
-
+    @methods(["POST"])
     def set(self):
         """
 
@@ -1675,6 +1677,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, result)
 
     ########################################################
+    @methods(["POST"])
     def resync(self):
         """
         this function resync the token, if the counter on server side is out of sync
@@ -1852,6 +1855,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def tokenrealm(self):
         """
         set the realms a token belongs to
@@ -1908,7 +1912,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx, 1)
 
     ########################################################
-
+    @methods(["POST"])
     def reset(self):
         """
         reset the FailCounter of a Token
@@ -1968,7 +1972,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx)
 
     ########################################################
-
+    @methods(["POST"])
     def copyTokenPin(self):
         """
         copies the token pin from one token to another
@@ -2043,7 +2047,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx)
 
     ########################################################
-
+    @methods(["POST"])
     def copyTokenUser(self):
         """
         copies the token user from one token to another
@@ -2121,7 +2125,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx)
 
     ########################################################
-
+    @methods(["POST"])
     def losttoken(self):
         """
         creates a new password token and copies the PIN and the
@@ -2173,7 +2177,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx)
 
     ########################################################
-
+    @methods(["POST"])
     def loadtokens(self):
         """
         loads a whole token file to the server
@@ -2538,6 +2542,7 @@ class AdminController(BaseController, JWTMixin):
 
         return ldap_params
 
+    @methods(["POST"])
     def testresolver(self):
         """
         This method tests a useridresolvers configuration
@@ -2789,7 +2794,7 @@ class AdminController(BaseController, JWTMixin):
             return sendResult(response, exx, 0)
 
     # ------------------------------------------------------------------------ -
-
+    @methods(["POST"])
     def unpair(self):
         """resets a token to its unpaired state
 

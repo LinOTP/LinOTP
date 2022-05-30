@@ -112,7 +112,7 @@ from linotp.provider import (
 from linotp.tokens import tokenclass_registry
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
-from .base import BaseController
+from .base import BaseController, methods
 
 log = logging.getLogger(__name__)
 
@@ -206,7 +206,7 @@ class SystemController(BaseController):
             return sendError(response, exx, context="after")
 
     ########################################################
-
+    @methods(["POST"])
     def setDefault(self):
         """
         define default settings for tokens
@@ -280,6 +280,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def setConfig(self):
         """
         set a configuration key or a set of configuration entries
@@ -421,7 +422,7 @@ class SystemController(BaseController):
                 delete_realm_resolver_cache(realm)
 
     ########################################################
-
+    @methods(["POST"])
     def delConfig(self):
         """
         delete a configuration key
@@ -600,6 +601,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def setResolver(self):
         """
 
@@ -823,6 +825,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def delResolver(self):
         """
         this function deletes an existing resolver
@@ -936,6 +939,7 @@ class SystemController(BaseController):
             log.debug("[getResolver] done")
 
     ########################################################
+    @methods(["POST"])
     def setDefaultRealm(self):
         """
         set the given realm to the default realm
@@ -1004,6 +1008,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def setRealm(self):
         """
         define a realm with the given useridresolvers
@@ -1085,6 +1090,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def delRealm(self):
         """
         deletes the specified realm
@@ -1129,7 +1135,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
-
+    @methods(["POST"])
     def setPolicy(self):
         """
         Stores a policy that define ACL or behaviour of several different
@@ -1440,6 +1446,7 @@ class SystemController(BaseController):
         return pol
 
     #########################################################
+    @methods(["POST"])
     def importPolicy(self):
         """
         import policies from a file.
@@ -1744,6 +1751,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def delPolicy(self):
         """
         deletes the specified policy
@@ -1792,7 +1800,7 @@ class SystemController(BaseController):
             db.session.close()
 
     ########################################################
-
+    @methods(["POST"])
     def setupSecurityModule(self):
         """
         start the pool of security modules
@@ -1986,6 +1994,7 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @methods(["POST"])
     def setSupport(self):
         """
         hook to load a support subscription file
@@ -2044,6 +2053,7 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendErrorMethod(response, exx)
 
+    @methods(["POST"])
     def setProvider(self):
         """
         creates or updates SMS- and Email-provider
@@ -2165,6 +2175,7 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @methods(["POST"])
     def testProvider(self):
         """
         if the provider has a test interface, the provider test is run
@@ -2205,6 +2216,7 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @methods(["POST"])
     def delProvider(self):
         """
         delete the specified SMS- and Email-providers
@@ -2262,6 +2274,7 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @methods(["POST"])
     def setDefaultProvider(self):
         """
         set the specified provider (SMS- and Email) as default

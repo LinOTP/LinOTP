@@ -29,7 +29,7 @@ import os
 
 from werkzeug.exceptions import InternalServerError
 
-from linotp.controllers.base import BaseController
+from linotp.controllers.base import BaseController, methods
 from linotp.flap import abort, config, request, response
 from linotp.lib.context import request_context
 from linotp.lib.logs import set_logging_level
@@ -71,6 +71,7 @@ class MaintenanceController(BaseController):
             if client_cert is None:
                 abort(401)
 
+    @methods(["POST"])
     def setLogLevel(self):
         """
         set the log level of a certain logger which is identified by

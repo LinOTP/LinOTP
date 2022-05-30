@@ -36,7 +36,7 @@ import json
 import logging
 import os
 
-from linotp.controllers.base import BaseController
+from linotp.controllers.base import BaseController, methods
 from linotp.flap import response
 from linotp.lib.migrate import DecryptionError, MigrationHandler
 from linotp.lib.policy import PolicyException
@@ -71,6 +71,7 @@ class MigrateController(BaseController):
         """
         return response
 
+    @methods(["POST"])
     def backup(self):
         """
         create a backup of
@@ -145,6 +146,7 @@ class MigrateController(BaseController):
             log.error("[backup] failed: %r", exx)
             return sendError(response, exx)
 
+    @methods(["POST"])
     def restore(self):
         """
         restore the encrypted config and token data from a backup file

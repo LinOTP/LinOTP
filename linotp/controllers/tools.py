@@ -34,7 +34,7 @@ from werkzeug.datastructures import FileStorage
 
 from flask import current_app, g
 
-from linotp.controllers.base import BaseController
+from linotp.controllers.base import BaseController, methods
 from linotp.flap import request, response
 from linotp.flap import tmpl_context as c
 from linotp.lib.context import request_context
@@ -116,6 +116,7 @@ class ToolsController(BaseController):
             db.session.rollback()
             return sendError(response, exx, context="after")
 
+    @methods(["POST"])
     def setPassword(self):
         """
         abilty to set password in managed / admin_user resolver
@@ -173,6 +174,7 @@ class ToolsController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @methods(["POST"])
     def migrate_resolver(self):
         """
         migrate all users and their token into a new resolver
@@ -217,6 +219,7 @@ class ToolsController(BaseController):
             db.session.rollback()
             return sendError(response, e, 1)
 
+    @methods(["POST"])
     def import_users(self):
         """
         import users from a csv file into an dedicated sql resolver
