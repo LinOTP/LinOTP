@@ -77,8 +77,7 @@ from .lib.resolver import (
 )
 from .lib.security.provider import SecurityProvider
 from .lib.tools.expiring_list import CustomExpiringList
-from .lib.user import User,getUserFromRequest
-
+from .lib.user import User, getUserFromRequest
 from .lib.util import get_client
 from .model import setup_db
 from .settings import configs
