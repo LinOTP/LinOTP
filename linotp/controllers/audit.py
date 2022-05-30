@@ -88,7 +88,7 @@ class AuditController(BaseController):
         :return: return the response
         """
 
-        g.audit["administrator"] = getUserFromRequest(request).get("login")
+        g.audit["administrator"] = getUserFromRequest()
         current_app.audit_obj.log(g.audit)
 
         return response

@@ -279,7 +279,9 @@ lint-useridresolver:
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   artifacts:
     reports:
-      cobertura: ${CI_PROJECT_DIR}/coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: ${CI_PROJECT_DIR}/coverage.xml
 
 # Unit tests
 unit-test:
@@ -422,7 +424,7 @@ e2e-test-mariadb:
       alias: db
     - name: selenium/standalone-chrome-debug:latest
       alias: test-chrome
-  allow_failure: true
+  allow_failure: false
 
 # End to end test using Soft HSM image
 e2e-test-softhsm:

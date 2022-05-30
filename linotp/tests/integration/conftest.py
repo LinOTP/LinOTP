@@ -51,12 +51,6 @@ def testcase():
     t.teardown_class()
 
 
-@pytest.fixture(scope="module")
-def manage_ui(testcase) -> ManageUi:
-    """Manage interface."""
-    return ManageUi(testcase)
-
-
 @pytest.fixture
 def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
     """Create the musicians LDAP resolver and remove it after test.
@@ -99,7 +93,7 @@ def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
 
 @pytest.fixture
 def musicians_realm(
-    manage_ui: ManageUi, musicians_resolver: Dict[str, str]
+    testcase: TestCase, musicians_resolver: Dict[str, str]
 ) -> str:
     """Create the musician realm and remove it after the test.
 
@@ -110,7 +104,7 @@ def musicians_realm(
 
     """
     realm_name = "SE_realm_musicians"
-    realm_manager = manage_ui.realm_manager
+    realm_manager = testcase.manage_ui.realm_manager
 
     realms = realm_manager.get_realms_via_api()
 

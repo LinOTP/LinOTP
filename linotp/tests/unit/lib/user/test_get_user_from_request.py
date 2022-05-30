@@ -24,20 +24,36 @@
 #    Support: www.keyidentity.com
 #
 
+from mock import patch
+
 from flask import g
 
-from linotp.lib.user import getUserFromRequest
+from linotp.lib.user import User, getUserFromRequest
 
 
 def test_JWT_authentifictaion(app):
-    g.username = "JWT_AUTHENTICATED_USER"
+    authUser = User(
+        login="JWT_AUTHENTICATED_USER",
+        realm="def_realm",
+        resolver_config_identifier="def_resolver",
+    )
+    with patch("linotp.lib.user.request_context") as mocked_request_context:
+        mocked_request_context.get.return_value = authUser
 
-    user = getUserFromRequest()
+        user = getUserFromRequest()
 
-    assert user["login"] == "JWT_AUTHENTICATED_USER"
+        assert user.login == "JWT_AUTHENTICATED_USER"
 
 
 def test_empty_auth(app):
-    user = getUserFromRequest()
+    authUser = User(
+        login="",
+        realm="",
+        resolver_config_identifier="",
+    )
+    with patch("linotp.lib.user.request_context") as mocked_request_context:
+        mocked_request_context.get.return_value = authUser
 
-    assert user["login"] == ""
+        user = getUserFromRequest()
+
+        assert user.login == ""

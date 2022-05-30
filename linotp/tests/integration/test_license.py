@@ -51,10 +51,9 @@ from linotp_selenium_helper.license_import import (
     LicenseImport,
     LicenseTempFile,
 )
-from linotp_selenium_helper.manage_ui import ManageUi
 
 
-def test_expired_license(manage_ui: ManageUi):
+def test_expired_license(testcase):
     """Verify that an expired license will pop up an alert box.
 
     we are using an expired licence as string value which is loaded
@@ -63,7 +62,7 @@ def test_expired_license(manage_ui: ManageUi):
 
     with LicenseTempFile(EXPIRED_LICENSE, suffix=".pem") as temp_file:
 
-        license_import = LicenseImport(manage_ui)
+        license_import = LicenseImport(testcase.manage_ui)
 
         with pytest.raises(FileUploadException) as lic_exx:
             license_import.import_file(temp_file.name)

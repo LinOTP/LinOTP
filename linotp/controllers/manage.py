@@ -160,7 +160,7 @@ class ManageController(BaseController):
             "manage/tokenview_flexi",
             "manage/userview_flexi",
         ]:
-            g.audit["administrator"] = getUserFromRequest(request).get("login")
+            g.audit["administrator"] = getUserFromRequest()
             if "serial" in request.params:
                 serial = request.params["serial"]
                 g.audit["serial"] = serial
@@ -178,7 +178,7 @@ class ManageController(BaseController):
         """
         This is the main function of the management web UI
         """
-        user = getUserFromRequest(request).get("login")
+        user = getUserFromRequest()
         if not user:
             # user is not authenticated, show login view
             return redirect(url_for(".login"))
@@ -296,7 +296,7 @@ class ManageController(BaseController):
         """
         Render the Manage-UI login page
         """
-        user = getUserFromRequest(request).get("login")
+        user = getUserFromRequest()
         if user:
             # user is authenticated, no login required.
             return redirect(url_for(".index"))

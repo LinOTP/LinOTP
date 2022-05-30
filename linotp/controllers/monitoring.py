@@ -103,7 +103,7 @@ class MonitoringController(BaseController):
         """
 
         try:
-            g.audit["administrator"] = getUserFromRequest(request).get("login")
+            g.audit["administrator"] = getUserFromRequest()
 
             current_app.audit_obj.log(g.audit)
             db.session.commit()

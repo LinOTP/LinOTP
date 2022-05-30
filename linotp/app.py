@@ -77,7 +77,7 @@ from .lib.resolver import (
 )
 from .lib.security.provider import SecurityProvider
 from .lib.tools.expiring_list import CustomExpiringList
-from .lib.user import getUserFromRequest
+from .lib.user import User, getUserFromRequest
 from .lib.util import get_client
 from .model import setup_db
 from .settings import configs
@@ -415,10 +415,10 @@ class LinOTPApp(Flask):
         try:
             verify_jwt_in_request_optional()
             identity = get_jwt_identity()
-            if identity is not None:
-                flask_g.username = identity["username"]
+            if identity:
                 log.debug(
-                    f"start_session: request session identity is {flask_g.username}"
+                    "start_session: request session identity is %r",
+                    identity["username"],
                 )
         except (
             NoAuthorizationError,
@@ -537,11 +537,20 @@ class LinOTPApp(Flask):
 
         authUser = None
         try:
-            authUser = getUserFromRequest(request)
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r", exx)
+            c_identity = get_jwt_identity()
+            if c_identity:
+                authUser = User(
+                    login=c_identity["username"],
+                    realm=c_identity.get("realm"),
+                    resolver_config_identifier=c_identity[
+                        "resolver"
+                    ].rpartition(".")[-1],
+                )
+        except Exception as exx:
+            log.error("Failed to identify jwt user: %r", exx)
 
         request_context["AuthUser"] = authUser
+
         request_context["UserLookup"] = {}
 
         # ------------------------------------------------------------------ --

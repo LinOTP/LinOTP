@@ -183,7 +183,7 @@ class Audit(AuditBase):
         line["tokentype"] = audit_line.tokentype
         line["user"] = audit_line.user
         line["realm"] = audit_line.realm
-        line["administrator"] = audit_line.administrator
+        line["administrator"] = "%r" % audit_line.administrator
         line["action_detail"] = audit_line.action_detail
         line["info"] = audit_line.info
         line["linotp_server"] = audit_line.linotp_server

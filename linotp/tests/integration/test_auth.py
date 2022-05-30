@@ -31,18 +31,20 @@ from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.auth_ui import AuthUi
 
 
-class TestAuth(TestCase):
+class TestAuth:
     """
     TestCase class that tests the auth/index forms
     """
 
     @pytest.fixture(autouse=True)
-    def setUp(self):
+    def setUp(self, testcase):
+        self.testcase = testcase
         self.realm_name = "se_test_auth"
-        self.reset_resolvers_and_realms(
+        testcase.reset_resolvers_and_realms(
             data.sepasswd_resolver, self.realm_name
         )
-        self.manage_ui.token_view.delete_all_tokens()
+        self.testcase.manage_ui.token_view.delete_all_tokens()
+        self.manage_ui = self.testcase.manage_ui
 
     def test_auth_index(self):
         """
@@ -60,7 +62,7 @@ class TestAuth(TestCase):
 
         otp_list = ["755224", "287082", "359152", "969429", "338314", "254676"]
 
-        auth = AuthUi(self)
+        auth = AuthUi(self.testcase)
         user = username + "@" + self.realm_name
 
         for otp in otp_list:

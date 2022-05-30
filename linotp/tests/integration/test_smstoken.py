@@ -37,14 +37,15 @@ from linotp_selenium_helper.validate import Validate
 """LinOTP Selenium Test for sms token"""
 
 
-class TestSmsToken(TestCase):
+class TestSmsToken:
     @pytest.fixture(autouse=True)
-    def setUp(self):
+    def setUp(self, testcase):
+        self.testcase = testcase
         self.realm_name = "SE_smstoken"
-        self.reset_resolvers_and_realms(
+        self.testcase.reset_resolvers_and_realms(
             data.sepasswd_resolver, self.realm_name
         )
-        self.manage_ui.token_view.delete_all_tokens()
+        self.testcase.manage_ui.token_view.delete_all_tokens()
 
     def test_enroll(self):
         """
@@ -56,7 +57,7 @@ class TestSmsToken(TestCase):
 
         radius_server = get_from_tconfig(
             ["radius", "server"],
-            default=self.http_host.split(":")[0],
+            default=self.testcase.http_host.split(":")[0],
         )
         radius_secret = get_from_tconfig(["radius", "secret"], required=True)
         disable_radius = get_from_tconfig(
@@ -69,15 +70,15 @@ class TestSmsToken(TestCase):
         phone_number = "+49(0)1234-24"
         description = "Rolled out by Selenium"
 
-        user_view = self.manage_ui.user_view
+        user_view = self.testcase.manage_ui.user_view
         user_view.select_realm(realm_name)
         user_view.select_user(username)
 
-        sms_token = self.manage_ui.token_enroll.create_sms_token(
+        sms_token = self.testcase.manage_ui.token_enroll.create_sms_token(
             pin=sms_token_pin, phone=phone_number, description=description
         )
 
-        token_view = self.manage_ui.token_view
+        token_view = self.testcase.manage_ui.token_view
         token_info = token_view.get_token_info(sms_token)
         assert (
             phone_number == token_info["LinOtp.TokenInfo"]["phone"]
@@ -102,7 +103,7 @@ class TestSmsToken(TestCase):
                     radius_server,
                 ]
             )
-            with SMSProviderServer(self, 10) as smtpsvc:
+            with SMSProviderServer(self.testcase, 10) as smtpsvc:
                 rad1 = check_output(call_array)
                 m = re.search(r"State:\['(\d+)'\]", rad1)
                 assert m is not None, (
@@ -134,14 +135,14 @@ class TestSmsToken(TestCase):
 
         # Authenticate over Web API
         validate = Validate(
-            self.http_protocol,
-            self.http_host,
-            self.http_port,
-            self.http_username,
-            self.http_password,
+            self.testcase.http_protocol,
+            self.testcase.http_host,
+            self.testcase.http_port,
+            self.testcase.http_username,
+            self.testcase.http_password,
         )
 
-        with SMSProviderServer(self, 10) as smtpsvc:
+        with SMSProviderServer(self.testcase, 10) as smtpsvc:
             access_granted, validate_resp = validate.validate(
                 user=username + "@" + realm_name, password=sms_token_pin
             )
@@ -150,9 +151,10 @@ class TestSmsToken(TestCase):
             ), "Should return false because this request only triggers the challenge."
             try:
                 message = validate_resp["detail"]["message"]
-            except KeyError:
-                self.fail(
-                    "detail.message should be present %r" % validate_resp
+            except KeyError as e:
+                raise KeyError(
+                    e.message
+                    + "| detail.message should be present %r" % validate_resp
                 )
             assert message == "sms submitted", (
                 "Wrong validate response %r" % validate_resp

@@ -31,6 +31,8 @@ import logging
 import re
 from functools import partial
 
+from flask_jwt_extended.utils import get_jwt_identity
+
 from flask import g
 
 from linotp.lib.cache import get_cache
@@ -71,48 +73,44 @@ class User(object):
             resolver_config_identifier,
         )
 
-        self.login = ""
-        self.realm = ""
+        self.login = login
+        self.realm = realm
         self.resolver_config_identifier = resolver_config_identifier
+
         self.info = {}
         self.exist = False
-
-        if login is not None:
-            self.login = login
-        if realm is not None:
-            self.realm = realm
-        log.debug("[User.__init__] user created ")
+        self._exists = None
 
         self.resolverUid = {}
         self.resolverConf = {}
         self.resolvers_list = []
-        self._exists = None
 
-    @staticmethod
-    def getUserObject(login, realm=None, check_if_exist=False):
+        log.debug("[User.__init__] user created ")
 
-        f_realm = realm
-        f_login = login
+    def _filter_for_resolver_config_identitier(self, resolvers_list):
+        """
+        filter_for_resolver_spec filters a list of resolvers:
+        - if no resolver_config_identifier exists
+            the original list of resolvers is returned
 
-        if not realm:
-            if "@" in login:
-                realms = getRealms()
-                lo, rea = login.rsplit("@", 1)
-                if rea.lower() in realms:
-                    f_realm = rea.lower()
-                    f_login = lo
-                else:
-                    f_realm = getDefaultRealm()
-                    f_login = login
+        - if no resolver_config_identifier exists
+            and if it is in the resolver list:
+                a list with this resolver is returned or
+                an empty list is returned
 
-        f_user = User(f_login, realm=f_realm)
-        if check_if_exist:
-            try:
-                _uid, _resolver = next(f_user.get_uid_resolver())
-            except StopIteration:
-                f_user.exists = False
+        """
 
-        return f_user
+        if not self.resolver_config_identifier:
+            return resolvers_list
+
+        for resolver_spec in set(resolvers_list):
+            if (
+                resolver_spec.rpartition(".")[-1]
+                == self.resolver_config_identifier.rpartition(".")[-1]
+            ):
+                return [resolver_spec]
+
+        return []
 
     def get_uid_resolver(self, resolvers=None):
         """
@@ -152,8 +150,11 @@ class User(object):
                 if fq_resolver:
                     resolvers_list.append(fq_resolver)
 
-        if not resolvers_list:
-            return
+        # if there is a resolver_config_identifier we have to care for
+
+        resolvers_list = self._filter_for_resolver_config_identitier(
+            resolvers_list
+        )
 
         for resolver_spec in resolvers_list:
 
@@ -191,25 +192,19 @@ class User(object):
             except Exception as exx:
                 log.error("Error while accessing resolver %r", exx)
 
-    @property
-    def is_empty(self):
-        return len(self.login) == 0 and len(self.realm) == 0
-
     def __str__(self):
 
-        if self.is_empty:
+        if not self.login and not self.realm:
             return "None"
 
-        try:
-            login = str(self.login)
-        except UnicodeEncodeError:
-            login = str(self.login.encode(ENCODING))
-
-        resolver_config_id = str(self.resolver_config_identifier or "")
-
-        realm = str(self.realm)
-
-        return "<%s.%s@%s>" % (login, resolver_config_id, realm)
+        if self.resolver_config_identifier:
+            return "%s@%s (%s)" % (
+                self.login,
+                self.realm,
+                self.resolver_config_identifier,
+            )
+        else:
+            return "%s@%s" % (self.login, self.realm)
 
     def __repr__(self):
         ret = (
@@ -443,7 +438,7 @@ def getUserResolverId(user, report=False):
 
     log.debug("getUserResolverId for %r", user)
 
-    if user is None or user.is_empty:
+    if not user:
         return ("", "", "")
 
     try:
@@ -627,24 +622,13 @@ def getUserFromParam(param):
     return usr
 
 
-def getUserFromRequest(request=None):
+def getUserFromRequest():
     """
-    This function returns the logged-in username
-    :param request: the flask request
+    This function returns the logged-in user as object
 
-    :return: the authentication dict
+    :return: the authenticated user as user object or None
     """
-
-    d_auth = {"login": ""}
-
-    if hasattr(g, "username"):
-        d_auth["login"] = g.username
-        log.debug(
-            "[getUserFromRequest] JWT Auth: found "
-            f"user identity={g.username}"
-        )
-
-    return d_auth
+    return request_context.get("AuthUser", None)
 
 
 def setRealm(realm, resolvers):

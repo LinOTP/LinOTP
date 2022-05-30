@@ -35,14 +35,21 @@ from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.manage_ui import ManageUi
 
 
-class TestManage(TestCase):
+class TestManage:
     """
     TestCase class that tests the manage page
     """
 
     @pytest.fixture(autouse=True)
-    def setUp(self):
-        self.manage = ManageUi(self)
+    def setUp(self, testcase):
+        self.testcase = testcase
+        # self.manage = ManageUi(self)
+        # WIP:
+        # The above line should not be different from this one:
+        self.manage = self.testcase.manage_ui
+        # if this ^ proposal succeeds,
+        # 1- remove the comment
+        # 2- replace all self.manage with self.testcase.manage_ui
 
     def test_manage_open(self):
 
@@ -58,22 +65,22 @@ class TestManage(TestCase):
         menu_item_id = "menu_edit_resolvers"
 
         menu.click()
-        WebDriverWait(self.driver, self.ui_wait_time).until(
+        WebDriverWait(self.testcase.driver, self.testcase.ui_wait_time).until(
             EC.element_to_be_clickable((By.ID, menu_item_id))
         )
 
-        # without this pause the the attribute is not yet ready
+        # without this pause the attribute is not yet ready
         # for clossing the menus
         time.sleep(0.1)
         self.manage.close_all_menus()
-        WebDriverWait(self.driver, self.ui_wait_time).until_not(
-            EC.element_to_be_clickable((By.ID, menu_item_id))
-        )
+        WebDriverWait(
+            self.testcase.driver, self.testcase.ui_wait_time
+        ).until_not(EC.element_to_be_clickable((By.ID, menu_item_id)))
 
     def test_login_logout(self):
-        self.driver.delete_all_cookies()
+        self.testcase.driver.delete_all_cookies()
 
-        self.driver.get(self.manage.manage_url)
+        self.testcase.driver.get(self.manage.manage_url)
 
         assert self.manage.is_login_open()
         assert not self.manage.is_manage_open()
