@@ -40,21 +40,21 @@ def runner(app):
 @pytest.mark.parametrize(
     "name,options,value,expected",
     [
-        ("LOGFILE_MAX_VERSIONS", [], None, "LOGFILE_MAX_VERSIONS=<>\n"),
-        ("LOGFILE_MAX_VERSIONS", ["--values"], None, "<>\n"),
-        ("LOGFILE_MAX_VERSIONS", ["-V"], None, "<>\n"),
-        ("LOGFILE_MAX_VERSIONS", ["--modified"], None, ""),
-        ("LOGFILE_MAX_VERSIONS", ["-m"], None, ""),
-        ("LOGFILE_MAX_VERSIONS", [], 42, "LOGFILE_MAX_VERSIONS=42\n"),
+        ("LOG_FILE_MAX_VERSIONS", [], None, "LOG_FILE_MAX_VERSIONS=<>\n"),
+        ("LOG_FILE_MAX_VERSIONS", ["--values"], None, "<>\n"),
+        ("LOG_FILE_MAX_VERSIONS", ["-V"], None, "<>\n"),
+        ("LOG_FILE_MAX_VERSIONS", ["--modified"], None, ""),
+        ("LOG_FILE_MAX_VERSIONS", ["-m"], None, ""),
+        ("LOG_FILE_MAX_VERSIONS", [], 42, "LOG_FILE_MAX_VERSIONS=42\n"),
         (
-            "LOGFILE_MAX_VERSIONS",
+            "LOG_FILE_MAX_VERSIONS",
             ["--modified"],
             42,
-            "LOGFILE_MAX_VERSIONS=42\n",
+            "LOG_FILE_MAX_VERSIONS=42\n",
         ),
-        ("LOGFILE_MAX_VERSIONS", ["-m"], 42, "LOGFILE_MAX_VERSIONS=42\n"),
-        ("LOGFILE_MAX_VERSIONS", ["-V", "-m"], None, ""),
-        ("LOGFILE_MAX_VERSIONS", ["-V", "-m"], 42, "42\n"),
+        ("LOG_FILE_MAX_VERSIONS", ["-m"], 42, "LOG_FILE_MAX_VERSIONS=42\n"),
+        ("LOG_FILE_MAX_VERSIONS", ["-V", "-m"], None, ""),
+        ("LOG_FILE_MAX_VERSIONS", ["-V", "-m"], 42, "42\n"),
     ],
 )
 def test_config_show_single(app, runner, name, options, value, expected):
@@ -69,34 +69,34 @@ def test_config_show_single(app, runner, name, options, value, expected):
     "names,options,values,expected",
     [
         (
-            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
+            ["LOG_FILE_MAX_VERSIONS", "LOG_FILE_NAME"],
             [],
             {},
-            "LOGFILE_MAX_VERSIONS=<LOGFILE_MAX_VERSIONS>\nLOGFILE_NAME=<LOGFILE_NAME>\n",
+            "LOG_FILE_MAX_VERSIONS=<LOG_FILE_MAX_VERSIONS>\nLOG_FILE_NAME=<LOG_FILE_NAME>\n",
         ),
         (
-            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
+            ["LOG_FILE_MAX_VERSIONS", "LOG_FILE_NAME"],
             ["--values"],
             {},
-            "<LOGFILE_MAX_VERSIONS>\n<LOGFILE_NAME>\n",
+            "<LOG_FILE_MAX_VERSIONS>\n<LOG_FILE_NAME>\n",
         ),
         (
-            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
+            ["LOG_FILE_MAX_VERSIONS", "LOG_FILE_NAME"],
             [],
-            {"LOGFILE_NAME": "foo"},
-            "LOGFILE_MAX_VERSIONS=<LOGFILE_MAX_VERSIONS>\nLOGFILE_NAME=foo\n",
+            {"LOG_FILE_NAME": "foo"},
+            "LOG_FILE_MAX_VERSIONS=<LOG_FILE_MAX_VERSIONS>\nLOG_FILE_NAME=foo\n",
         ),
-        (["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"], ["--modified"], {}, ""),
+        (["LOG_FILE_MAX_VERSIONS", "LOG_FILE_NAME"], ["--modified"], {}, ""),
         (
-            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
+            ["LOG_FILE_MAX_VERSIONS", "LOG_FILE_NAME"],
             ["--modified"],
-            {"LOGFILE_NAME": "foo"},
-            "LOGFILE_NAME=foo\n",
+            {"LOG_FILE_NAME": "foo"},
+            "LOG_FILE_NAME=foo\n",
         ),
         (
-            ["LOGFILE_MAX_VERSIONS", "LOGFILE_NAME"],
+            ["LOG_FILE_MAX_VERSIONS", "LOG_FILE_NAME"],
             ["--modified", "--values"],
-            {"LOGFILE_NAME": "foo"},
+            {"LOG_FILE_NAME": "foo"},
             "foo\n",
         ),
     ],
@@ -219,11 +219,11 @@ def test_config_show_all(app, runner):
             ),
         ),
         (
-            "LOGFILE_MAX_VERSIONS",
+            "LOG_FILE_MAX_VERSIONS",
             [],
             None,
             (
-                "LOGFILE_MAX_VERSIONS:\n"
+                "LOG_FILE_MAX_VERSIONS:\n"
                 "  Type: int\n"
                 "  Constraints: value >= 0\n"
                 "  Default value: 10\n"
@@ -244,7 +244,8 @@ def test_config_explain_single(app, runner, name, options, value, expected):
 
 def test_config_explain_multiple(runner):
     result = runner.invoke(
-        cli_main, ["config", "explain", "BABEL_DOMAIN", "LOGFILE_MAX_VERSIONS"]
+        cli_main,
+        ["config", "explain", "BABEL_DOMAIN", "LOG_FILE_MAX_VERSIONS"],
     )
     assert result.exit_code == 0
     assert result.output == (
@@ -254,7 +255,7 @@ def test_config_explain_multiple(runner):
         "  Current value: linotp\n"
         "  Description: LinOTP message catalog files are called `linotp.mo`.\n"
         "    Tweak this setting at your own risk.\n"
-        "LOGFILE_MAX_VERSIONS:\n"
+        "LOG_FILE_MAX_VERSIONS:\n"
         "  Type: int\n"
         "  Constraints: value >= 0\n"
         "  Default value: 10\n"
@@ -271,7 +272,7 @@ def test_config_explain_multiple_sample(runner):
             "explain",
             "--sample-file",
             "BABEL_DOMAIN",
-            "LOGFILE_MAX_VERSIONS",
+            "LOG_FILE_MAX_VERSIONS",
         ],
     )
     assert result.exit_code == 0
@@ -294,11 +295,11 @@ def test_config_explain_multiple_sample(runner):
         "\n"
         "## BABEL_DOMAIN = 'linotp'\n"
         "\n"
-        "# LOGFILE_MAX_VERSIONS: Up to this many old log files will be kept.\n"
+        "# LOG_FILE_MAX_VERSIONS: Up to this many old log files will be kept.\n"
         "#\n"
         "# Constraints: value >= 0\n"
         "\n"
-        "## LOGFILE_MAX_VERSIONS = 10\n"
+        "## LOG_FILE_MAX_VERSIONS = 10\n"
         "\n"
     )
 

@@ -152,7 +152,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             ROOT_DIR=tmp_path,
             CACHE_DIR=tmp_path / "cache",
             DATA_DIR=tmp_path / "data",
-            LOGFILE_DIR=tmp_path / "logs",
+            LOG_FILE_DIR=tmp_path / "logs",
             AUDIT_PUBLIC_KEY_FILE=key_directory / "audit-public.pem",
             AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
             SECRET_FILE=key_directory / "encKey",
@@ -167,7 +167,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
         os.environ["LINOTP_CFG"] = ""
 
         # Pre-generate the important directories
-        for key in ("CACHE_DIR", "DATA_DIR", "LOGFILE_DIR"):
+        for key in ("CACHE_DIR", "DATA_DIR", "LOG_FILE_DIR"):
             os.makedirs(base_app_config[key], mode=0o770, exist_ok=True)
 
         # -----------------------------------------------------------------------

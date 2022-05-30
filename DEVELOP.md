@@ -176,16 +176,16 @@ In the simplest case, configuration settings look like assignments to
 Python variables whose names consist strictly of uppercase letters,
 digits, and underscores, as in
 
-	LOGFILE_DIR = "/var/log/linotp"
+	LOG_FILE_DIR = "/var/log/linotp"
 
 (Variables with lowercase letters in their names are ignored when a
 configuration file is scoured for settings, so you could use them as
 scratch variables.) We say "look like" because we actually apply data
 type conversions if necessary to accommodate non-string configuration
-settings like `LOGFILE_MAX_LENGTH` (which is internally a Python
+settings like `LOG_FILE_MAX_LENGTH` (which is internally a Python
 `int`), and we perform rudimentary plausibility checks to ensure that
 the value of configuration settings make basic sense (for example, you
-will not be allowed to set `LOGFILE_MAX_LENGTH` to a negative value).
+will not be allowed to set `LOG_FILE_MAX_LENGTH` to a negative value).
 
 As a special feature, configuration settings whose names end in `_DIR`
 or `_FILE` are supposed to contain the names of directories or files
@@ -197,10 +197,10 @@ effective one even for other earlier settings that use relative path
 names: After
 
     ROOT_DIR = "/var/foo"
-	LOGFILE_DIR = "linotp"
+	LOG_FILE_DIR = "linotp"
 	ROOT_DIR = "/var/bar"
 
-the effective value of `LOGFILE_DIR` will be `/var/bar/./linotp`. (Note
+the effective value of `LOG_FILE_DIR` will be `/var/bar/./linotp`. (Note
 that we're inserting a `/./` to mark where the implicit value of
 `ROOT_DIR` stops and the configured value of the setting starts.) The
 only exception to this is `ROOT_DIR` itself, which must always contain
@@ -223,8 +223,8 @@ be set in LinOTP configuration files).
 Some configuration settings are supposed to contain non-string data
 such as integers or lists, and LinOTP tries to convert the (string)
 values of environment variables appropriately. For example, the value
-of `LINOTP_LOGFILE_MAX_LENGTH` will be converted to an integer to set
-the `LOGFILE_MAX_LENGTH` configuration setting, and you may wish to
+of `LINOTP_LOG_FILE_MAX_LENGTH` will be converted to an integer to set
+the `LOG_FILE_MAX_LENGTH` configuration setting, and you may wish to
 amuse yourself by investigating what happens to the value of
 `LINOTP_LOGGING`.
 
@@ -270,7 +270,7 @@ LinOTP distribution package for that distribution. These include:
   installs) need to ensure that the directory is created by some other
   means.
 
-- `LOGFILE_DIR`: This is where the log file ends up if you're logging
+- `LOG_FILE_DIR`: This is where the log file ends up if you're logging
   to a file (which is something LinOTP does by default). By default
   this is `ROOT_DIR/logs` but distribution packages will probably wish
   to use something like `/var/log/linotp`.
