@@ -351,9 +351,11 @@ class SecurityProvider(object):
         :param hsm_id: the identifier of the hsm pool which is stated in the hsm config
         :param sessionId: the thread id
 
-        :return: expected to be True if it succeeds to drop
+        :return: expected to be True if it succeeds to drop, false if it fails
 
         """
+
+        result = None
         found = None
         if hsm_id is None:
             hsm_id = self.activeOne
@@ -367,13 +369,13 @@ class SecurityProvider(object):
             )
             log.error(error)
             raise HSMException(error, id=707)
-            return None
 
         # find session
         try:
             pool = self._getHsmPool_(hsm_id)
             self.rwLock.acquire_write()
             found = self._findHSM4Session(pool, sessionId)
+
             if found is None:
                 log.info(
                     "[SecurityProvider:dropSecurityModule] could not find  "
@@ -381,10 +383,10 @@ class SecurityProvider(object):
                     hsm_id,
                 )
             else:
-                self._freeHSMSession(pool, sessionId)
+                result = self._freeHSMSession(pool, sessionId)
         finally:
             self.rwLock.release()
-        return True
+        return result is not None
 
     def getSecurityModule(self, hsm_id=None, sessionId=None):
         """
