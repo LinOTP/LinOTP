@@ -213,6 +213,10 @@ class AdminController(BaseController, JWTMixin):
     def getTokenOwner(self):
         """
         provide the userinfo of the token, which is specified as serial
+
+        :param serial: the serial number of the token
+        :returns:
+            a json result with a boolean status and request result
         """
 
         ret = {}
@@ -264,42 +268,35 @@ class AdminController(BaseController, JWTMixin):
 
     def show(self):
         """
-        method:
-            admin/show
+        displays the list of the available tokens
 
-        description:
-            displays the list of the available tokens
 
-        arguments:
-            * serial  - optional: only this serial will be displayed
-            * user    - optional: only the tokens of this user will be
+        :param serial:   (optional)  only this serial will be displayed
+        :param user:     (optional)  only the tokens of this user will be
                                   displayed. If the user does not exist,
                                   linotp will search tokens of users, who
                                   contain this substring.
                         **TODO:** This can be very time consuming an will be
                                   changed in the next release to use wildcards.
-            * filter  - optional: takes a substring to search in table token
+        :param filter:   (optional)  takes a substring to search in table token
                                   columns
-            * viewrealm - optional: takes a realm, only the tokens in this
+        :param viewrealm:  (optional)  takes a realm, only the tokens in this
                                     realm will be displayed
-            * realm - - optional: alias to the viewrealm
-            * sortby  - optional: sort the output by column
-            * sortdir - optional: asc/desc
-            * page    - optional: reqeuest a certain page
-            * pagesize- optional: limit the number of returned tokens
-            * user_fields - optional: additional user fields from the userid resolver of the owner (user)
-            * outform - optional: if set to "csv", than the token list will be given in CSV
-            * tokeninfo_format - optional: if set to "json", this will be supplied in embedded JSON
+        :param realm:  (optional)  alias to the viewrealm
+        :param sortby:   (optional)  sort the output by column
+        :param sortdir:  (optional)  asc/desc
+        :param page:     (optional)  reqeuest a certain page
+        :param pagesize: (optional)  limit the number of returned tokens
+        :param user_fields:  (optional)  additional user fields from the userid resolver of the owner (user)
+        :param outform:  (optional)  if set to "csv", than the token list will be given in CSV
+        :param tokeninfo_format:  (optional)  if set to "json", this will be supplied in embedded JSON
                                  otherwise, string format is returned with dates in format
                                  DD/MM/YYYY TODO
 
-        returns:
-            a json result with:
-            { "head": [],
-            "data": [ [row1], [row2] .. ]
-            }
+        :return:
+            a json result with a boolean status and request result
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
         """
 
@@ -394,21 +391,15 @@ class AdminController(BaseController, JWTMixin):
     ########################################################
     def remove(self):
         """
-        method:
-            admin/remove
+        deletes either a certain token given by serial or all tokens of a user
 
-        description:
-            deletes either a certain token given by serial or all tokens of a user
+        :param serial:  - the serial number of the token
+        :param user:     (optional) , will delete all tokens of a user
 
-        arguments:
-            * serial  - optional
-            * user    - optional
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -489,21 +480,15 @@ class AdminController(BaseController, JWTMixin):
 
     def enable(self):
         """
-        method:
-            admin/enable
+        enables a token or all tokens of a user
 
-        description:
-            enables a token or all tokens of a user
+        :param serial: (optional), the token serial number
+        :param user: (optional), will enable all tokens of a user
 
-        arguments:
-            * serial  - optional
-            * user    - optional
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -564,24 +549,18 @@ class AdminController(BaseController, JWTMixin):
 
     def getSerialByOtp(self):
         """
-        method:
-            admin/getSerialByOtp
+        searches for the token, that generates the given OTP value.
+        The search can be restricted by several critterions
 
-        description:
-            searches for the token, that generates the given OTP value.
-            The search can be restricted by several critterions
+        :param otp:      (required). Will search for the token, that produces this OTP value
+        :param type:     (optional), will only search in tokens of type
+        :param realm:    (optional) only search in this realm
+        :param assigned: (optional) 1: only search assigned tokens, 0: only search unassigned tokens
 
-        arguments:
-            * otp      - required. Will search for the token, that produces this OTP value
-            * type     - optional, will only search in tokens of type
-            * realm    - optional, only search in this realm
-            * assigned - optional. 1: only search assigned tokens, 0: only search unassigned tokens
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with the serial
-
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -641,21 +620,15 @@ class AdminController(BaseController, JWTMixin):
 
     def disable(self):
         """
-        method:
-            admin/disable
+        disables a token given by serial or all tokens of a user
 
-        description:
-            disables a token given by serial or all tokens of a user
+        :param serial: the token serial
+        :param user: the user for whom all tokens will be disabled
 
-        arguments:
-            * serial  - optional
-            * user    - optional
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -714,21 +687,18 @@ class AdminController(BaseController, JWTMixin):
 
     def check_serial(self):
         """
-        method
-            admin/check_serial
 
-        description:
-            This function checks, if a given serial will be unique.
-            It returns True if the serial does not yet exist and
-            new_serial as a new value for a serial, that does not exist, yet
+        This function checks, if a given serial will be unique.
+        It returns True if the serial does not yet exist and
+        new_serial as a new value for a serial, that does not exist, yet
 
-        arguments:
-            serial    - required- the serial to be checked
 
-        returns:
-            a json result with a new suggestion for the serial
+        :param serial: the serial to be checked
 
-        exception:
+        :return:
+            a json result with a boolean status and a new suggestion for the serial
+
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -772,52 +742,45 @@ class AdminController(BaseController, JWTMixin):
 
     def init(self):
         """
-        method:
-            admin/init
+        creates a new token.
 
-        description:
-            creates a new token.
+        common arguments:
 
-        arguments:
-            * otpkey (required) the hmac Key of the token
-            * genkey (required) =1, if key should be generated.
-                We either need otpkey or genkey
-            * keysize (optional) either 20 or 32. Default is 20
-            * serial (required) the serial number / identifier of the token
-            * description (optional)
-            * pin (optional) the pin of the user pass
-            * user (optional) login user name
-            * realm (optional) realm of the user
-            * type (optional) the type of the token
-            * tokenrealm (optional) the realm a token should be put into
-            * otplen (optional) length of the OTP value
-            * hashlib (optional) used hashlib sha1 oder sha256
+        :param otpkey: (required) the hmac Key of the token
+        :param genkey: (required) =1, if key should be generated. We e:ither need otpkey or genkey
+        :param keysize: (optional) either 20 or 32. Default is 20
+        :param serial: (re:quired) the serial number / identifier of the token
+        :param description: (optional)
+        :param pin: (optional) the pin of the user pass
+        :param user: (optional) login user name
+        :param realm: (optional) realm of the user
+        :param type: (opt:ional) the type of the token
+        :param tokenrealm: (optional) the realm a token should be put into
+        :param otplen: (optional) length of the OTP value
+        :param hashlib: (optional) used hashlib sha1 oder sha256
 
-        ocra2 arguments:
-            for generating OCRA2 Tokens type=ocra2 you can specify the
-            following parameters:
+        ocra2 arguments: for generating OCRA2 Tokens type=ocra2 you can specify the
+        following parameters:
 
-            * ocrasuite (optional) - if you do not want to use the default
+        :param ocrasuite: (optional) - if you do not want to use the default
                 ocra suite OCRA-1:HOTP-SHA256-8:QA64
-            * sharedsecret (optional) if you are in Step0 of enrolling an
-                OCRA2 token the sharedsecret=1 specifies,
-              that you want to generate a shared secret
-            * activationcode (optional) if you are in Step1 of enrolling
-                an OCRA2 token you need to pass the
-              activation code, that was generated in the QRTAN-App
 
-        qrtoken arguments:
-            for generating QRTokens type=qr you can specify the
+        :param sharedsecret: (optional) if you are in Step0 of enrolling an
+                OCRA2 token the sharedsecret=1 specifies, that you want to generate a shared secret
+
+        :param activationcode: (optional) if you are in Step1 of enrolling
+            an OCRA2 token you need to pass the activation code, that was generated in the QRTAN-App
+
+        qrtoken arguments: for generating QRTokens type=qr you can specify the
             following parameters
 
-            * hashlib (optional) the hash algorithm used in the mac
+        :param hashlib: (optional) the hash algorithm used in the mac
                 calculation (sha512, sha256, sha1). default is sha256
 
-        returns:
-            a json result with a boolean
-              "result": true
+        :return:
+            a json result with a boolean status and request result
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -960,22 +923,18 @@ class AdminController(BaseController, JWTMixin):
 
     def unassign(self):
         """
-        method:
-            admin/unassign - remove the assigned user from the token
 
-        description:
-            unassigns a token from a user. i.e. the binding between the token
-            and the user is removed
+        unassigns a token from a user. i.e. the binding between the token
+        and the user is removed
 
-        arguments:
-            * serial    - required - the serial number / identifier of the token
-            * user      - optional
 
-        returns:
-            a json result with a boolean
-              "result": true
+        :param serial:  (required) - the serial number / identifier of the token
+        :param user:      (- )optional)
 
-        exception:
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1035,23 +994,18 @@ class AdminController(BaseController, JWTMixin):
 
     def assign(self):
         """
-        method:
-            admin/assign
 
-        description:
-            assigns a token to a user, i.e. a binding between the token and
-            the user is created.
+        assigns a token to a user, i.e. a binding between the token and
+        the user is created.
 
-        arguments:
-            * serial     - required - the serial number / identifier of the token
-            * user       - required - login user name
-            * pin        - optional - the pin of the user pass
+        :param serial:      (required)  the serial number / identifier of the token
+        :param user:        (required)  login user name
+        :param pin:         (optional)  - the pin of the user pass
 
-        returns:
-            a json result with a boolean
-              "result": true
+        :return:
+            a json result with a boolean status and request result
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1112,24 +1066,19 @@ class AdminController(BaseController, JWTMixin):
 
     def setPin(self):
         """
-        method:
-            admin/set
 
-        description:
-            This function sets the smartcard PINs of a eTokenNG OTP.
-            The userpin is used to store the mOTP PIN of mOTP tokens!
-            !!! For setting the OTP PIN, use the function /admin/set!
+        This function sets the smartcard PINs of a eTokenNG OTP.
+        The userpin is used to store the mOTP PIN of mOTP tokens!
+        !!! For setting the OTP PIN, use the function /admin/set!
 
-        arguments:
-            * serial     - required
-            * userpin    - optional: store the userpin
-            * sopin      - optional: store the sopin
+        :param serial: (required) the token serial
+        :param userpin: (optional)  store the userpin
+        :param sopin: (optional)  store the sopin
 
-        returns:
-            a json result with a boolean
-              "result": true
+        :return:
+            a json result with a boolean status and request result
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1217,34 +1166,29 @@ class AdminController(BaseController, JWTMixin):
         dedicated backend for setting the token validity for
         multiple selected tokens.
 
-        arguments:
-
-        * tokens[]: the token serials (required)
-
-        * countAuthSuccessMax:
+        :param tokens[]: the token serials (required)
+        :param countAuthSuccessMax:
             the maximum number of allowed successful authentications
-
-        * countAuthMax:
+        :param countAuthMax:
             the maximum number of allowed successful authentications
+        :param validityPeriodStart: utc - unix seconds as int
 
-        * validityPeriodStart: utc - unix seconds as int
+        :param validityPeriodEnd: utc - unix seconds as int
 
-        * validityPeriodEnd: utc - unix seconds as int
-
-        remark:
+        .. note::
 
             the parameter names are the same as with the admin/set
             while admin/set does not support multiple tokens
 
-        remark:
+        .. note::
 
             if the value is 'unlimited' the validity limit will be removed
 
-        return:
-
-        * json document with the value field containing the serials of
+        :return: json document with the value field containing the serials of
           the modified tokens
 
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         try:
 
@@ -1368,37 +1312,32 @@ class AdminController(BaseController, JWTMixin):
 
     def set(self):
         """
-        method:
-            admin/set
 
-        description:
-            this function is used to set many different values of a token.
+        this function is used to set many different values of a token.
 
-        arguments:
-            * serial     - optional
-            * user       - optional
-            * pin        - optional - set the OTP PIN
-            * MaxFailCount  - optional - set the maximum fail counter of a token
-            * SyncWindow    - optional - set the synchronization window of the token
-            * OtpLen        - optional - set the OTP Lenght of the token
-            * CounterWindow - optional - set the counter window (blank presses)
-            * hashlib       - optioanl - set the hashing algo for HMAC tokens. This can be sha1, sha256, sha512
-            * timeWindow    - optional - set the synchronize window for timebased tokens (in seconds)
-            * timeStep      - optional - set the timestep for timebased tokens (usually 30 or 60 seconds)
-            * timeShift     - optional - set the shift or timedrift of this token
-            * countAuthSuccessMax    - optional    - set the maximum allowed successful authentications
-            * countAuthSuccess       - optional    - set the counter of the successful authentications
-            * countAuth        - optional - set the counter of authentications
-            * countAuthMax     - optional - set the maximum allowed authentication tries
-            * validityPeriodStart    - optional - set the start date of the validity period. The token can not be used before this date
-            * validityPeriodEnd      - optional - set the end date of the validaity period. The token can not be used after this date
-            * phone - set the phone number for an SMS token
+        :param serial:      (optional)
+        :param user:        (optional)
+        :param pin:         (optional)  - set the OTP PIN
+        :param MaxFailCount:   (optional)  - set the maximum fail counter of a token
+        :param SyncWindow:     (optional)  - set the synchronization window of the token
+        :param OtpLen:         (optional)  - set the OTP Lenght of the token
+        :param CounterWindow:  (optional)  - set the counter window (blank presses)
+        :param hashlib:        (optional)  - set the hashing algo for HMAC tokens. This can be sha1, sha256, sha512
+        :param timeWindow:     (optional)  - set the synchronize window for timebased tokens (in seconds)
+        :param timeStep:       (optional)  - set the timestep for timebased tokens (usually 30 or 60 seconds)
+        :param timeShift:      (optional)  - set the shift or timedrift of this token
+        :param countAuthSuccessMax:     (optional)     - set the maximum allowed successful authentications
+        :param countAuthSuccess:        (optional)     - set the counter of the successful authentications
+        :param countAuth:         (optional)  - set the counter of authentications
+        :param countAuthMax:      (optional)  - set the maximum allowed authentication tries
+        :param validityPeriodStart:     (optional)  - set the start date of the validity period. The token can not be used before this date
+        :param validityPeriodEnd:       (optional)  - set the end date of the validaity period. The token can not be used after this date
+        :param phone: set the phone number for an SMS token
 
-        returns:
-            a json result with a boolean
-              "result": true
+        :return:
+            a json result with a boolean status and request result
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1738,24 +1677,18 @@ class AdminController(BaseController, JWTMixin):
     ########################################################
     def resync(self):
         """
-        method:
-            admin/resync - resync a token to a new counter
+        this function resync the token, if the counter on server side is out of sync
+        with the physical token.
 
-        description:
-            this function resync the token, if the counter on server side is out of sync
-            with the physica token.
+        :param serial:  serial or user (required)
+        :param user: s.o.
+        :param otp1: the next otp to be found
+        :param otp2: the next otp after the otp1
 
-        arguments:
-            * serial     - serial or user required
-            * user       - s.o.
-            * otp1       - the next otp to be found
-            * otp2       - the next otp after the otp1
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1818,24 +1751,18 @@ class AdminController(BaseController, JWTMixin):
     ########################################################
     def userlist(self):
         """
-        method:
-            admin/userlist - list all users
+        lists the user in a realm
 
-        description:
-            lists the user in a realm
+        :param <searchexpr>: will be retrieved from the UserIdResolverClass
+        :param realm: a realm, which is a collection of resolver configurations
+        :param resConf: a destinct resolver configuration
+        :param page: the number of page, which should be retrieved (optional)
+        :param rp: the number of users per page (optional)
 
-        arguments:
-            * <searchexpr>: will be retrieved from the UserIdResolverClass
-            * realm: a realm, which is a collection of resolver configurations
-            * resConf: a destinct resolver configuration
-            * page: the number of page, which should be retrieved (optional)
-            * rp: the number of users per page (optional)
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1927,15 +1854,16 @@ class AdminController(BaseController, JWTMixin):
     ########################################################
     def tokenrealm(self):
         """
-        method:
-            admin/tokenrealm - set the realms a token belongs to
+        set the realms a token belongs to
 
-        description:
-            sets the realms of a token
+        :param serial:     (required)   serialnumber of the token
+        :param realms:     (required)   comma seperated list of realms
 
-        arguments:
-            * serial    - required -  serialnumber of the token
-            * realms    - required -  comma seperated list of realms
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         param = self.request_params
@@ -1983,20 +1911,14 @@ class AdminController(BaseController, JWTMixin):
 
     def reset(self):
         """
-        method:
-            admin/reset
+        reset the FailCounter of a Token
 
-        description:
-            reset the FailCounter of a Token
+        :param user or serial: to identify the tokens
 
-        arguments:
-            user or serial - to identify the tokens
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -2049,21 +1971,15 @@ class AdminController(BaseController, JWTMixin):
 
     def copyTokenPin(self):
         """
-        method:
-            admin/copyTokenPin
+        copies the token pin from one token to another
 
-        description:
-            copies the token pin from one token to another
+        :param from:  (required)  serial of token from
+        :param to:    (required)  serial of token to
 
-        arguments:
-            * from - required - serial of token from
-            * to   - required - serial of token to
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -2130,22 +2046,17 @@ class AdminController(BaseController, JWTMixin):
 
     def copyTokenUser(self):
         """
-        method:
-            admin/copyTokenUser
+        copies the token user from one token to another
 
-        description:
-            copies the token user from one token to another
+        :param from:  (required)  serial of token from
+        :param to:    (required)  serial of token to
 
-        arguments:
-            * from - required - serial of token from
-            * to   - required - serial of token to
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
+
 
         """
         ret = 0
@@ -2213,24 +2124,19 @@ class AdminController(BaseController, JWTMixin):
 
     def losttoken(self):
         """
-        method:
-            admin/losttoken
+        creates a new password token and copies the PIN and the
+        user of the old token to the new token.
+        The old token is disabled.
 
-        description:
-            creates a new password token and copies the PIN and the
-            user of the old token to the new token.
-            The old token is disabled.
+        :param serial: serial of the old token
+        :param type:    (optional) , password, email or sms
+        :param email:   (optional) , email address, to overrule the owner email
+        :param mobile:  (optional) , mobile number, to overrule the owner mobile
 
-        arguments:
-            * serial - serial of the old token
-            * type   - optional, password, email or sms
-            * email  - optional, email address, to overrule the owner email
-            * mobile - optional, mobile number, to overrule the owner mobile
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with the new serial an the password
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -2270,23 +2176,18 @@ class AdminController(BaseController, JWTMixin):
 
     def loadtokens(self):
         """
-        method:
-            admin/loadtokens
+        loads a whole token file to the server
 
-        description:
-            loads a whole token file to the server
+        :param file:  the file in a post request
+        :param type:  the file type.
+        :param realm: the target real of the tokens
 
-        arguments:
-            * file -  the file in a post request
-            * type -  the file type.
-            * realm - the target real of the tokens
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
+
 
         """
         res = "Loading token file failed!"
@@ -2639,45 +2540,14 @@ class AdminController(BaseController, JWTMixin):
 
     def testresolver(self):
         """
-        method:
-            admin/testresolver
+        This method tests a useridresolvers configuration
 
-        description:
-            This method tests a useridresolvers configuration
+        :param name: the name of the resolver
 
-        arguments:
-            * type     - "LDAP": depending on the type there are other parameters:
-                       - "SQL"
+        :return:
+            a json result with a boolean status and request result
 
-            * LDAP:
-                * BINDDN
-                * BINDPW
-                * LDAPURI
-                * TIMEOUT
-                * LDAPBASE
-                * LOGINNAMEATTRIBUTE
-                * LDAPSEARCHFILTER
-                * LDAPFILTER
-                * USERINFO
-                * LDAPSEARCHFILTER
-                * SIZELIMIT
-                * NOREFERRALS
-                * CACERTIFICATE
-
-            * SQL:
-                * Driver
-                * Server
-                * Port
-                * Database
-                * User
-                * Password
-                * Table
-
-        returns:
-            a json result with a boolean
-              "result": true
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -2723,12 +2593,16 @@ class AdminController(BaseController, JWTMixin):
 
     def totp_lookup(self):
         """
-        method:
-            admin/totp_lookup - get otp iformation from a totp token
+        get otp information for a totp token
 
-        arguments:
-            * serial    - required -  serialnumber of the token
-            * otp       - optional - to return status to the token
+        :param serial:     (required)   serialnumber of the token
+        :param otp:        (optional)  - to return status to the token
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         param = self.request_params
@@ -2807,6 +2681,8 @@ class AdminController(BaseController, JWTMixin):
 
         :return: json result of token and challenges
 
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         res = {}
@@ -2915,7 +2791,17 @@ class AdminController(BaseController, JWTMixin):
     # ------------------------------------------------------------------------ -
 
     def unpair(self):
-        """admin/unpair - resets a token to its unpaired state"""
+        """resets a token to its unpaired state
+
+        :param serial: the serial number of the token
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
+        """
 
         try:
 

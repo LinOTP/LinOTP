@@ -498,7 +498,9 @@ class UserserviceController(BaseController):
                          os_passw:pin+otp in case of mfa_login
 
         :return: {result : {value: bool} }
-        :rtype: json dict with bool value
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         try:
@@ -981,14 +983,15 @@ class UserserviceController(BaseController):
         """
         user authentication for example to the remote selfservice
 
-        parameters:
+        :param login: login name of the user normaly in the user@realm format
+        :param realm: the realm of the user
+        :param password: the password for the user authentication
+        :param otp: optional the otp
 
-            login: login name of the user normaly in the user@realm format
-            realm: the realm of the user
-            password: the password for the user authentication
-            otp: optional the otp
+        :return: {result : {value: bool} }
 
-        return: {result : {value: bool} }
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         try:
@@ -1159,6 +1162,14 @@ class UserserviceController(BaseController):
     def usertokenlist(self):
         """
         This returns a tokenlist as html output
+
+        :param active: (optional) True or False - should only active or inactive tokens be returned
+                        default is to show both
+
+        :return: a tokenlist as html output
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         try:
@@ -1184,6 +1195,12 @@ class UserserviceController(BaseController):
     def userinfo(self):
         """
         hook for the auth, which requests additional user info
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         try:
@@ -1206,7 +1223,13 @@ class UserserviceController(BaseController):
 
     def logout(self):
         """
-        hook for the auth, which requests additional user info
+        hook for the auth, which deletes the cookies of the current session
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         try:
@@ -1237,6 +1260,13 @@ class UserserviceController(BaseController):
         If you want to do ANYTHING with selfservice, you need to be
         authenticated. The _before_ is executed before any other function
         in this controller.
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         try:
             pre_context = get_pre_context(self.client)
@@ -1253,6 +1283,12 @@ class UserserviceController(BaseController):
         If you want to do ANYTHING with selfservice, you need to be
         authenticated. The _before_ is executed before any other function
         in this controller.
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         try:
@@ -1390,6 +1426,14 @@ class UserserviceController(BaseController):
         This is the internal delete token function that is called from within
         the self service portal. The user is only allowed to delete token,
         that belong to him.
+
+        :param serial: the serial number of the token
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         param = self.request_params
         res = {}
@@ -1438,6 +1482,14 @@ class UserserviceController(BaseController):
     def reset(self):
         """
         This internally resets the failcounter of the given token.
+
+        :param serial: the serial number of the token
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         res = {}
         param = self.request_params
@@ -1482,6 +1534,15 @@ class UserserviceController(BaseController):
         This is the internal unassign function that is called from within
         the self service portal. The user is only allowed to unassign token,
         that belong to him.
+
+        :param serial: the serial number of the token
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         param = self.request_params
         res = {}
@@ -1530,6 +1591,15 @@ class UserserviceController(BaseController):
     def setpin(self):
         """
         When the user hits the set pin button, this function is called.
+
+        :param serial: the serial number of the token
+        :param userpin: the pin for the token
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         res = {}
         param = self.request_params
@@ -1593,6 +1663,15 @@ class UserserviceController(BaseController):
     def setmpin(self):
         """
         When the user hits the set pin button, this function is called.
+
+        :param serial: the serial number of the token
+        :param pin: the pin for the token
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         res = {}
         param = self.request_params
@@ -1637,6 +1716,17 @@ class UserserviceController(BaseController):
         """
         This is the internal resync function that is called from within
         the self service portal
+
+        :param serial: the serial number of the token
+        :param otp1: the first otp for the sequence
+        :param otp2: the second otp for the sequence
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         res = {}
@@ -1706,6 +1796,18 @@ class UserserviceController(BaseController):
                "version": "LinOTP 2.XX",
                "id": 1
         }
+
+        :param serial:
+        :param transactionid:
+        :param otp:
+        :param session:
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         try:
@@ -1944,6 +2046,17 @@ class UserserviceController(BaseController):
         """
         This is the internal assign function that is called from within
         the self service portal
+
+        :param serial: the token serial
+        :param description: an optional description
+        :param pin: the new token pin
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         param = self.request_params
         res = {}
@@ -2027,25 +2140,20 @@ class UserserviceController(BaseController):
 
     def getSerialByOtp(self):
         """
-         method:
-            selfservice/usergetSerialByOtp
 
-        description:
-            searches for the token, that generates the given OTP value.
-            The search can be restricted by several critterions
-            This method only searches tokens in the realm of the user
-            and tokens that are not assigned!
-
-        arguments:
-            otp      - required. Will search for the token, that produces
-                       this OTP value
-            type     - optional, will only search in tokens of type
-
-        returns:
-            a json result with the serial
+        searches for the token, that generates the given OTP value.
+        The search can be restricted by several critterions
+        This method only searches tokens in the realm of the user
+        and tokens that are not assigned!
 
 
-        exception:
+        :param otp: (required) Will search for the token, that produces this OTP value
+        :param type: (optional) will only search in tokens of type
+
+        :return:
+            a json result with a boolean status and serial in the result
+
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -2087,13 +2195,25 @@ class UserserviceController(BaseController):
             return sendError(response, exx, 1)
 
     def enroll(self):
-        """Enroll a token.
+        """
+        Enroll a token.
 
-        Remarks:
+        .. note::
             Depending on the token type more parameters have to be provided
             as http parameters
 
         :param type: one of (hmac, totp, pw, ...)
+        :param serial: a suggested serial number
+        :param prefix: a prefix for the serial number
+        :param description: an optional description for the token
+        :param otppin: the pin for the token
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         response_detail = {}
         param = self.request_params.copy()
@@ -2285,6 +2405,17 @@ class UserserviceController(BaseController):
             description: string containing a description for the token
 
         It returns the data and the URL containing the HMAC key
+
+        :param type: one of [oathtoken, googleauthenticator, googleauthenticator_time, ocra2]
+        :param description: a dicrption which might be set for the token
+        :param serial: (optional) a serial number could be sugggested
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         log.debug("[userwebprovision] calling function")
         param = self.request_params.copy()
@@ -2510,16 +2641,14 @@ class UserserviceController(BaseController):
         """
         Using this function the user may receive OTP values for his own tokens.
 
-        method:
-            selfservice/getmultiotp
+        :param count: number of otp values to return
 
-        arguments:
-            serial  - the serial number of the token
-            count   - number of otp values to return
-            curTime - used ONLY for internal testing: datetime.datetime object
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            JSON response
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
@@ -2589,23 +2718,29 @@ class UserserviceController(BaseController):
         This returns the list of the tokenactions of this user
         It returns the audit information for the given search pattern
 
-        method:
-            selfservice/userhistory
+        key, value pairs as search patterns.
 
-        arguments:
-            key, value pairs as search patterns.
-
-            or: Usually the key=values will be locally AND concatenated.
-                it a parameter or=true is passed, the filters will be OR
-                concatenated.
+        or: Usually the key=values will be locally AND concatenated.
+            it a parameter or=true is passed, the filters will be OR
+            concatenated.
 
             The Flexigrid provides us the following parameters:
                 ('page', u'1'), ('rp', u'100'),
                 ('sortname', u'number'),
                 ('sortorder', u'asc'),
                 ('query', u''), ('qtype', u'serial')]
-        returns:
-            JSON response
+        :param page:
+        :param rp:
+        :param sortname:
+        :param sortorder:
+        :param query:
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         param = self.request_params
@@ -2659,20 +2794,20 @@ class UserserviceController(BaseController):
         activateocratoken - called from the selfservice web ui to activate the  OCRA token
 
         :param type:    'ocra2'
-        :type type:     string
         :param serial:    serial number of the token
-        :type  serial:    string
         :param activationcode: the calculated activation code
-        :type  activationcode: string - activationcode format
 
         :return:    dict about the token
-        :rtype:     { 'activate': True, 'ocratoken' : {
+                 { 'activate': True, 'ocratoken' : {
                         'url' :     url,
                         'img' :     '<img />',
                         'label' :   "%s@%s" % (self.authUser.login,
                                                    self.authUser.realm),
                         'serial' :  serial,
                     }  }
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         param = self.request_params
         ret = {}
@@ -2759,14 +2894,12 @@ class UserserviceController(BaseController):
                         the OCRA2 token to run the final check_t for the token
 
         :param passw: the calculated verificaton otp
-        :type  passw: string
         :param transactionid: the transactionid
-        :type  transactionid: string
 
-        :return:    dict about the token
-        :rtype:     { 'result' = ok
-                      'failcount' = int(failcount)
-                    }
+        :return: dict about the token
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
 
         """
 
@@ -2935,6 +3068,9 @@ class UserserviceController(BaseController):
         :param description: string containing a new description for the token
 
         :return: a linotp json doc with result {'status': True, 'value': True}
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
 
         """
 

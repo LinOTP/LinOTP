@@ -119,6 +119,16 @@ class ToolsController(BaseController):
     def setPassword(self):
         """
         abilty to set password in managed / admin_user resolver
+
+        :param old_password: the old password
+        :param new_password: the new password
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         try:
             old_pw = self.request_params["old_password"]
@@ -164,6 +174,19 @@ class ToolsController(BaseController):
             return sendError(response, exx)
 
     def migrate_resolver(self):
+        """
+        migrate all users and their token into a new resolver
+
+        Raises:
+            Exception: _description_
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
+        """
 
         from linotp.lib.tools.migrate_resolver import MigrateResolverHandler
 
@@ -197,6 +220,22 @@ class ToolsController(BaseController):
     def import_users(self):
         """
         import users from a csv file into an dedicated sql resolver
+
+        :param file: the file containing the users
+        :param resolver: the resolver where the users should belong to
+        :param dryrun: only test a test run without real import of the users
+        :param format: the import file format 'csv' or 'password'
+        :param skip_header: in case of a csv file the first line might contain a description of the columns and could be skiped
+        :param passwords_in_plaintext: bool - should the passwords be hashed?
+        :param column_mapping: in case of the csv, define the meaning of the colums
+        :param delimiter: in case of csv define the colum delimiter
+        :param quotechar: define how text is quoted
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         try:

@@ -84,6 +84,16 @@ class MaintenanceController(BaseController):
 
         (sets the log level of the user library to DEBUG)
         if loggerName is omitted, the root logger is assumed.
+
+        :param loggerName: the name of the logger
+        :param level: the logging level
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         try:
@@ -118,7 +128,13 @@ class MaintenanceController(BaseController):
         """
         simple check if LinOTP backend services  are up and running
 
-        - support for checking that the Config database could be accessed
+        support for checking that the Config database could be accessed
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
 
         """
         try:

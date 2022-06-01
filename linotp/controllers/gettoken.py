@@ -122,16 +122,15 @@ class GettokenController(BaseController):
         or a given serial. If the user has more than one token, the list of
         the tokens is returend.
 
-        method:
-            gettoken/getmultiotp
+        :param serial: the serial number of the token
+        :param count: number of otp values to return
 
-        arguments:
-            serial  - the serial number of the token
-            count   - number of otp values to return
-            curTime - used ONLY for internal testing: datetime.datetime object
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            JSON response
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
@@ -190,17 +189,17 @@ class GettokenController(BaseController):
         user or a given serial. If the user has more than one token, the list
         of the tokens is returend.
 
-        method:
-            gettoken/getotp
+        :param user: username / loginname
+        :param realm: additional realm to match the user to a useridresolver
+        :param serial: the serial number of the token
+        :param curTime: used ONLY for internal testing: datetime.datetime object
 
-        arguments:
-            user    - username / loginname
-            realm   - additional realm to match the user to a useridresolver
-            serial  - the serial number of the token
-            curTime - used ONLY for internal testing: datetime.datetime object
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            JSON response
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         getotp_active = boolean(getFromConfig("linotpGetotp.active", False))

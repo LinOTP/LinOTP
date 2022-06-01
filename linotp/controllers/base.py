@@ -352,11 +352,20 @@ class JWTMixin(object):
     @jwt_exempt
     @methods(["POST"])
     def login(self):
-        """Checks a user's credentials and issues them a JWT access
+        """
+        manage authentication
+
+        Checks a user's credentials and issues them a JWT access
         token if their credentials are valid. We're using cookies to
         store the access token plus a double-submit token for CSRF
         protection, which makes it easy to refresh access tokens
         transparently if they are nearing expiry.
+
+        :param username: the name of the user
+        :param password: the password of the user
+
+        :return:
+            a json document and the jwt cookies are replied
 
         """
 

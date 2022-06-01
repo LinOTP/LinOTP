@@ -305,7 +305,9 @@ class ManageController(BaseController):
         return render("manage/login.mako")
 
     def tokentype(self):
-        """"""
+        """
+        render the tokentype info mako
+        """
         c.title = "TokenTypeInfo"
         ttinfo = []
         ttinfo.extend(list(tokenclass_registry.keys()))
@@ -379,6 +381,19 @@ class ManageController(BaseController):
         This function is used to fill the flexigrid.
         Unlike the complex /admin/show function, it only returns a
         simple array of the tokens.
+
+        :param page:
+        :param query:
+        :param qtype:
+        :param sortname:
+        :param sortorder:
+        :param rp:
+
+        :return:
+            json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         param = self.request_params
 
@@ -529,6 +544,21 @@ class ManageController(BaseController):
         This function is used to fill the flexigrid.
         Unlike the complex /admin/userlist function, it only returns a
         simple array of the tokens.
+
+        :param page:
+        :param query:
+        :param qtype:
+        :param sortname:
+        :param sortorder:
+        :param rp:
+        :param realm:
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         param = self.request_params
 
@@ -653,6 +683,16 @@ class ManageController(BaseController):
     def tokeninfo(self):
         """
         this returns the contents of /admin/show?serial=xyz in an html format
+
+        :param serial: the token serial
+
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         param = self.request_params
 

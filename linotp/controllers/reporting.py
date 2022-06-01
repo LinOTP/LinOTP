@@ -124,29 +124,24 @@ class ReportingController(BaseController):
 
     def maximum(self):
         """
-        method:
-            reporting/maximum
+        return the maximum of tokens in a given realm with given status
 
-        description:
-            return the maximum of tokens in a given realm with given status
-
-        arguments:
-            * realms - required: takes realms, only the reporting entries for
+        :param realms: (required) takes realms, only the reporting entries for
                 this realms will be displayed
-            * status - optional: (default is 'active')
+
+        :param status: (optional) (default is 'active')
                 takes assigned/unassigned/active/ etc.
                 and shows max of lines in database with this characteristic
 
-        returns:
+        :return:
             a json result with:
             { "head": [],
             "data": [ [row1], [row2] .. ]
             }
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
-        :return:
         """
         result = {}
         try:
@@ -199,25 +194,24 @@ class ReportingController(BaseController):
 
     def period(self):
         """
-        method:
-            reporting/period
 
-        description:
-            return the maximum of tokens in a given realm with given status
-            for a given period
+        return the maximum of tokens in a given realm with given status
+        for a given period
 
-        arguments:
-            * realms - required: takes realms, only the reporting entries for
+        :param realms: (required) takes realms, only the reporting entries for
                 this realms will be displayed
-            * status - optional: (default is 'active')
+
+        :param status: (optional) (default is 'active')
                 takes assigned/unassigned/active/ etc.
                 and shows max of lines in database with this characteristic
-            * from - optional: (default is 1970-1-1)
+
+        :param from: (optional) (default is 1970-1-1)
                     the start day for the reporting max lookup
-            * to - optional: (default is tomorow 0:0:0)
+
+        :param to: (optional) (default is tomorow 0:0:0)
                     the end day for the reporting max lookup
 
-        returns:
+        :return:
             a json result with:
             {
             "status": "true",
@@ -237,10 +231,9 @@ class ReportingController(BaseController):
                 }
             }
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
-        :return:
         """
         result = {}
         try:
@@ -334,16 +327,14 @@ class ReportingController(BaseController):
         description:
             delete entries from the reporting database table
 
-        arguments:
-        * realms - optional: takes realms, only the reporting entries
-                from this realm are dedleted
-        * status - optional: filters reporting entries by status
-                like 'assigned' or 'inactive'
+        :param realms:  takes realms, only the reporting entries from this realm are dedleted
+        :param status: (optional) filters reporting entries by status like 'assigned' or 'inactive'
 
         returns: dict in which value is the number of deleted rows
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
+
         """
 
         try:
@@ -396,26 +387,24 @@ class ReportingController(BaseController):
 
     def delete_before(self):
         """
-        method:
-            reporting/delete_before
 
-        description:
-            delete all entries from reporting database with respect to the
-            arguments
-            date must be given in format: 'yyyy-mm-dd'
+        delete all entries from reporting database with respect to the
+        arguments
 
-        arguments:
-        * date - optional: only delete entries which are older than date;
-                date must be given in format 'yyyy-mm-dd'
-                if no date is given, all entries get deleted
-        * realms - optional: takes realms, only the reporting entries
+        .. note:: date must be given in format: 'yyyy-mm-dd'
+
+        :param date: (optional) only delete entries which are older than date;
+                date must be given in format 'yyyy-mm-dd' . if no date is given, all entries get deleted
+
+        :param realms: (optional) takes realms, only the reporting entries
                 from this realm are dedleted
-        * status - optional: filters reporting entries by status
+
+        :param status: (optional) filters reporting entries by status
                 like 'assigned' or 'inactive'
 
-        returns: dict in which value is the number of deleted rows
+        :return: dict in which value is the number of deleted rows
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
         """
 
@@ -463,27 +452,26 @@ class ReportingController(BaseController):
 
     def show(self):
         """
-        method:
-            reporting/show
+        show entries from the reporting database table
 
-        description:
-            show entries from the reporting database table
 
-        arguments:
-        * date - optional: only show entries which are newer than date;
+        :param date: (optional) only show entries which are newer than date;
                 date must be given in format 'yyyy-mm-dd'
                 if no date is given, all entries are shown
-        * realms - optional: takes realms, only the reporting entries
-                from this realm are shown
-        * status - optional: filters reporting entries by status
-                like 'assigned' or 'inactive'
-        * sortby  - optional: sort the output by column
-        * sortdir - optional: asc/desc
-        * page    - optional: reqeuest a certain page
-        * pagesize - optional: limit the number of returned tokens
-        * outform - optional: if set to "csv", the output will be a .csv file
 
-        returns: a json result with:
+        :param realms: (optional) takes realms, only the reporting entries
+                from this realm are shown
+
+        :param status: (optional) filters reporting entries by status
+                like 'assigned' or 'inactive'
+
+        :param sortby:  (optional) sort the output by column
+        :param sortdir: (optional) asc/desc
+        :param page:    (optional) reqeuest a certain page
+        :param pagesize: (optional) limit the number of returned tokens
+        :param outform: (optional) if set to "csv", the output will be a .csv file
+
+        :return: a json result with:
             { "head": [],
             "data": [ [row1]
             , [row2]
@@ -493,9 +481,9 @@ class ReportingController(BaseController):
         first line: header of columns
         other lines: column values
 
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
+
         """
 
         try:

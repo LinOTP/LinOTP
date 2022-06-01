@@ -98,16 +98,10 @@ class AuditController(BaseController):
         This functions searches within the audit trail
         It returns the audit information for the given search pattern
 
-        method:
-            audit/search
 
-        arguments:
-            key, value pairs as search patterns.
+        arguments are key, value pairs as search patterns.
 
-            * outform - optional: if set to "csv", than the token list will be
-                        given in CSV
-
-
+        :param outform: (optional) if set to "csv", than the token list will be given in CSV
             or: Usually the key=values will be locally AND concatenated.
                 it a parameter or=true is passed, the filters will
                 be OR concatenated.
@@ -117,7 +111,7 @@ class AuditController(BaseController):
                 ('sortname', u'number'),
                 ('sortorder', u'asc'),
                 ('query', u''), ('qtype', u'serial')]
-        returns:
+        :return:
             JSON response or csv format
         """
 

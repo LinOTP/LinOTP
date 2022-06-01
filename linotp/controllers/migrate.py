@@ -74,12 +74,12 @@ class MigrateController(BaseController):
     def backup(self):
         """
         create a backup of
-        - the encrypted token data, which could be
+          - the encrypted token data, which could be
             seed or pin (if encrypted) or userpin (used in motp, ocra2)
-        - the config entries of type password
+          - the config entries of type password
 
         the data
-            - is encrypte with a given passphrase
+            - is encrypted with a given passphrase
             - and stored in an backup file (defined by the hash of backupid)
 
         :param pass: passphrase used for encrypting data in the backup file
