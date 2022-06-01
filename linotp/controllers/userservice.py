@@ -49,18 +49,14 @@ Remarks:
 import base64
 import json
 import logging
-import os
 
 from flask_babel import gettext as _
-from mako.exceptions import CompileException
 from werkzeug.exceptions import Forbidden, Unauthorized
 
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController
-from linotp.flap import config
-from linotp.flap import render_mako as render
-from linotp.flap import request, response
+from linotp.flap import config, request, response
 from linotp.flap import tmpl_context as c
 from linotp.lib.apps import create_google_authenticator, create_oathtoken_url
 from linotp.lib.audit.base import get_token_num_info
@@ -103,9 +99,9 @@ from linotp.lib.token import (
 from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     User,
+    get_userinfo,
     getRealmBox,
     getUserId,
-    getUserInfo,
     splitUser,
 )
 from linotp.lib.userservice import (
@@ -115,11 +111,10 @@ from linotp.lib.userservice import (
     get_cookie_authinfo,
     get_pre_context,
     get_transaction_detail,
-    get_userinfo,
     getTokenForUser,
     remove_auth_cookie,
 )
-from linotp.lib.util import generate_otpkey, get_client, remove_empty_lines
+from linotp.lib.util import generate_otpkey, get_client
 from linotp.model import db
 from linotp.tokens import tokenclass_registry
 

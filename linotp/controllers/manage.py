@@ -58,6 +58,7 @@ from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     User,
+    get_userinfo,
     getUserFromParam,
     getUserFromRequest,
     getUserList,
@@ -68,7 +69,6 @@ from linotp.lib.util import (
     get_copyright_info,
     get_version,
     remove_empty_lines,
-    unicode_compare,
 )
 from linotp.model import db
 from linotp.tokens import tokenclass_registry
@@ -186,7 +186,6 @@ class ManageController(BaseController):
         try:
             c.debug = current_app.config["DEBUG"]
             c.title = "LinOTP Management"
-            c.admin = user
 
             log.debug("[index] importers: %s", IMPORT_TEXT)
             c.importers = IMPORT_TEXT
@@ -756,6 +755,35 @@ class ManageController(BaseController):
 
         except Exception as exx:
             log.error("[help] Error loading helpfile: %r", exx)
+            db.session.rollback()
+            return sendError(response, exx)
+
+    # ------------------------------------------------------------------------ -
+
+    def context(self):
+        """
+        provide session context for the manage ui
+        - the output is structured similar to the userservice/context
+
+        NOTE: the context might be extended to further needs
+
+        :return: linotp json response with detail structure containing
+                 the context information
+        """
+
+        try:
+            user = getUserFromRequest()
+
+            response_detail = {
+                "version": get_version(),
+                "copyright": get_copyright_info(),
+                "user": get_userinfo(user),
+            }
+            return sendResult(response, True, opt=response_detail)
+
+        except Exception as exx:
+            log.error("manage/context failed: %r", exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendError(response, exx)
 
