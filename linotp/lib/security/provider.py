@@ -126,7 +126,7 @@ class SecurityProvider(object):
 
         return
 
-    def loadSecurityModule(self, id=None):
+    def loadSecurityModule(self, module_id=None):
         """
         return the specified security module
 
@@ -139,15 +139,15 @@ class SecurityProvider(object):
 
         ret = None
 
-        if id is None:
-            id = self.activeOne
+        if module_id is None:
+            module_id = self.activeOne
 
-        log.debug("[loadSecurityModule] Loading module %s", id)
+        log.debug("[loadSecurityModule] Loading module %s", module_id)
 
-        if id not in self.config:
+        if module_id not in self.config:
             return ret
 
-        config = self.config.get(id)
+        config = self.config.get(module_id)
         if "module" not in config:
             return ret
 
@@ -174,7 +174,7 @@ class SecurityProvider(object):
                 raise NameError(error)
 
         ret = klass(config, add_conf=additional_config)
-        self.security_modules[id] = ret
+        self.security_modules[module_id] = ret
 
         log.debug("[loadSecurityModule] returning %r", ret)
 
