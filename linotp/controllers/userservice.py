@@ -2831,7 +2831,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, error, 1)
 
-    def token_call(self):
+    def _token_call(self):
         """
         the generic method call for an dynamic token
         """

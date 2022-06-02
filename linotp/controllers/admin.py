@@ -242,11 +242,10 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx, 1)
 
     @staticmethod
-    def parse_tokeninfo(tok):
+    def _parse_tokeninfo(tok):
         """
         Parse TokenInfo to JSON
         and format validity periode date fields to isoformat
-
         """
 
         token_info = tok["LinOtp.TokenInfo"]
@@ -368,7 +367,7 @@ class AdminController(BaseController, JWTMixin):
             for tok in toks:
 
                 if is_tokeninfo_json:
-                    self.parse_tokeninfo(tok)
+                    self._parse_tokeninfo(tok)
 
                 lines.append(tok)
 

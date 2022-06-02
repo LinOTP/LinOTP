@@ -403,9 +403,9 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
-    def check_url(self):
+    def _check_url(self):
         """
-        This function works with pam_url.
+        TODO: implement function that works with pam_url.
         """
         ok = False
         param = self.request_params
