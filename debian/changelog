@@ -20,6 +20,11 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
   * The linotp support cmd can now install demo licenses
   * The linotp cli commands would not break anymore if localization is involved
   * Resolver names are treated as case-sensitive.
+  * to prevent 'cross site scripting request forgery' CSRF, data-modifying
+    apis are restricted to accept POST only requests. This will disable the
+    ability to use a GET request (e.g the browser and especially requests
+    from javascript) for a modifying request. The modifying request must be run
+    as a POST request combined with a CSRF token in the header.
 
   Features:
   * Added grace to license volume exceeding and display accordingly a message
