@@ -234,7 +234,7 @@ class SecurityProvider(object):
 
     def createHSMPool(self, hsm_id=None, *args, **kw):
         """
-        Setup the pool of security connections
+        Setup the pool of security module connections
 
         :param hsm_id: The id of the hsm provider which must exist in the hsm config,
         if None the one from the config will be used
@@ -387,6 +387,16 @@ class SecurityProvider(object):
         return True
 
     def getSecurityModule(self, hsm_id=None, sessionId=None):
+        """
+        Allocate a security module for the sessionId
+
+        :param hsm_id: Specifies from which pool to choose. It will use the
+        activeOne if it's not specified
+        :param sessionId: Specifies the threadId which will be used for the
+        allocation of the hsm connection
+
+        :return: The allocated hsm connection
+        """
         found = None
         if hsm_id is None:
             hsm_id = self.activeOne
