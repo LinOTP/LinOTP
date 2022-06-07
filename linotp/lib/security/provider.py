@@ -239,7 +239,7 @@ class SecurityProvider(object):
         :param hsm_id: The id of the hsm provider which must exist in the hsm config,
         if None the one from the config will be used
 
-        :return: The created pool
+        :return: The created pool (list) of hsm connections
 
         """
         pool = None
@@ -294,7 +294,7 @@ class SecurityProvider(object):
         Searches the hsm pool and finds the hsm connection allocated by the
         thread (sessionId)
 
-        :param pool: The pool to search in.
+        :param pool: The pool (list) of hsm connections to search in.
         :param sessionId: The thread id which the hsm connection should be allocated by.
         :return: the hsm connection found or None
         """
@@ -311,7 +311,7 @@ class SecurityProvider(object):
         Searches the pool for an un-allocated hsm connection and assigns it to
         the thread id (session)
 
-        :param pool: The hsm pool (list) to search in
+        :param pool: The hsm pool (list) of connections to search in
         :param sessionId: Thread id that will be allocated to the found hsm
 
         :return: The found hsm from the pool
@@ -330,6 +330,10 @@ class SecurityProvider(object):
         """
         Look in the pool and find the hsm connection which is allocated by
         the thread (sessionId) and make it free.
+
+        :param pool: The hsm pool (list) of connections
+        :param sessionId: the thread id for which the alllocated hsm connection
+        should be freed
 
         :return: the free hsm connection
         """
