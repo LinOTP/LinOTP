@@ -289,7 +289,7 @@ class SecurityProvider(object):
                 self.hsmpool[provider_id] = pool
         return pool
 
-    def _findHSM4Session(self, pool, sessionId):
+    def _find_hsm_of_session(self, pool, sessionId):
         """
         Searches the hsm pool and finds the hsm connection allocated by the
         thread (sessionId)
@@ -306,18 +306,16 @@ class SecurityProvider(object):
                 found = hsm
         return found
 
-    def _createHSM4Session(self, pool, sessionId):
+    def _allocate_hsm_for_session(self, pool, sessionId):
         """
         Searches the pool for an un-allocated hsm connection and assigns it to
         the thread id (session)
 
-        :param pool: The hsm pool to search in
-        :param sessionId: Thread id that will be allocate the found hsm
+        :param pool: The hsm pool (list) to search in
+        :param sessionId: Thread id that will be allocated to the found hsm
 
         :return: The found hsm from the pool
 
-        TODO: refactoring: The function name needs renaming perhaps since it is not
-        representing what it is actually doing
         """
         found = None
         for hsm in pool:
@@ -374,7 +372,7 @@ class SecurityProvider(object):
         try:
             pool = self._getHsmPool_(hsm_id)
             self.rwLock.acquire_write()
-            found = self._findHSM4Session(pool, sessionId)
+            found = self._find_hsm_of_session(pool, sessionId)
 
             if found is None:
                 log.info(
@@ -423,7 +421,7 @@ class SecurityProvider(object):
                 self.rwLock.acquire_write()
                 locked = True
                 # find session
-                found = self._findHSM4Session(pool, sessionId)
+                found = self._find_hsm_of_session(pool, sessionId)
                 if found is not None:
                     # if session is ok - return
                     self.rwLock.release()
@@ -442,7 +440,7 @@ class SecurityProvider(object):
                         sessionId,
                         pool,
                     )
-                    found = self._createHSM4Session(pool, sessionId)
+                    found = self._allocate_hsm_for_session(pool, sessionId)
                     self.rwLock.release()
                     locked = False
                     if found is None:
