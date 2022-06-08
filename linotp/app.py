@@ -406,8 +406,13 @@ class LinOTPApp(Flask):
 
         self.create_context(request, request.environ)
 
+    def is_request_static(self):
+        return request.path.startswith(self.static_url_path)
+
     def finalise_request(self, exc):
-        drop_security_module()
+
+        if not self.is_request_static():
+            drop_security_module()
 
         closeResolvers()
 
@@ -441,10 +446,8 @@ class LinOTPApp(Flask):
 
         set_config()
 
-        if request.path.startswith(self.static_url_path):
-            return
-
-        allocate_security_module()
+        if not self.is_request_static():
+            allocate_security_module()
 
     def create_context(self, request, environment):
         """
