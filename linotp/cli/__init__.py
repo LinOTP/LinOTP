@@ -117,7 +117,7 @@ def get_backup_filename(filename: str, now: datetime = None) -> str:
 
 class LinOTPGroup(FlaskGroup):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(add_version_option=False, **kwargs)
         for arg in sys.argv[1:]:
             if arg[0] != "-":
                 os.environ["LINOTP_CMD"] = arg
