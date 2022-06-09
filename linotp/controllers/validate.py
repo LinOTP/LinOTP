@@ -38,6 +38,7 @@ from linotp import flap
 from linotp.controllers.base import BaseController
 from linotp.flap import abort, config, request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
@@ -177,6 +178,7 @@ class ValidateController(BaseController):
         return (ok, opt)
 
     # @profile_decorator(log_file="/tmp/validate.prof")
+    @deprecated_methods(["GET"])
     def check(self):
         """
         This function is used to validate the username and the otp value/password.
@@ -259,6 +261,7 @@ class ValidateController(BaseController):
         finally:
             db.session.close()
 
+    @deprecated_methods(["GET"])
     def check_status(self):
         """
         check the status of a transaction - for polling support
@@ -351,6 +354,7 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def check_yubikey(self):
         """
         This function is used to validate the output of a yubikey
@@ -446,6 +450,7 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def samlcheck(self):
         """
         This function is used to validate the username and the otp value/password
@@ -509,6 +514,7 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def check_t(self):
         """
         check a session by transaction / state
@@ -577,7 +583,7 @@ class ValidateController(BaseController):
             return sendResult(response, False, 0)
 
     # ------------------------------------------------------------------------ -
-
+    @deprecated_methods(["GET"])
     def accept_transaction(self):
         """
         confirms a transaction.
@@ -644,7 +650,7 @@ class ValidateController(BaseController):
             return sendResult(response, False, 0)
 
     # ------------------------------------------------------------------------ -
-
+    @deprecated_methods(["GET"])
     def reject_transaction(self):
         """
         rejects a transaction.
@@ -710,6 +716,7 @@ class ValidateController(BaseController):
 
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def check_s(self):
         """
         This function is used to validate the serial and the otp value/password.
@@ -793,6 +800,7 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, id=0, status=False)
 
+    @deprecated_methods(["GET"])
     def simplecheck(self):
         """
         This function is used to validate the username and the otp value/password.
@@ -874,6 +882,7 @@ class ValidateController(BaseController):
         """
         return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def smspin(self):
         """
         This function is used in conjunction with an SMS token:
@@ -937,6 +946,7 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def pair(self):
         """
         for the enrollment of qr and push token

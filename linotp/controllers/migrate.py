@@ -38,6 +38,7 @@ import os
 
 from linotp.controllers.base import BaseController, methods
 from linotp.flap import response
+from linotp.lib import deprecated_methods
 from linotp.lib.migrate import DecryptionError, MigrationHandler
 from linotp.lib.policy import PolicyException
 from linotp.lib.reply import sendError, sendResult

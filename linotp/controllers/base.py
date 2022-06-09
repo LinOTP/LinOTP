@@ -47,6 +47,7 @@ from jwt import ExpiredSignatureError, InvalidSignatureError
 from flask import Blueprint, after_this_request, current_app, g, jsonify
 
 from linotp.flap import request
+from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult

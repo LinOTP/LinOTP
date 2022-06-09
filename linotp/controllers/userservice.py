@@ -489,7 +489,7 @@ class UserserviceController(BaseController):
 
     ##########################################################################
     # authentication hooks
-
+    @deprecated_methods(["GET"])
     def auth(self):
         """
         user authentication for example to the remote selfservice
@@ -982,6 +982,7 @@ class UserserviceController(BaseController):
 
         return sendResult(self.response, res, 0)
 
+    @deprecated_methods(["GET"])
     def login(self):
         """
         user authentication for example to the remote selfservice
@@ -1784,6 +1785,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, e, 1)
 
+    @deprecated_methods(["GET"])
     def verify(self):
         """
         verify a token, identified by a serial number
