@@ -34,6 +34,7 @@ from flask import current_app, g
 from linotp.controllers.base import BaseController
 from linotp.flap import config, request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.error import HSMException
 from linotp.lib.monitoring import MonitorHandler
@@ -117,6 +118,7 @@ class MonitoringController(BaseController):
         finally:
             db.session.close()
 
+    @deprecated_methods(["POST"])
     def tokens(self):
         """
         Displays the number of tokens (with status) per realm
@@ -191,6 +193,7 @@ class MonitoringController(BaseController):
             db.session.rollback()
             return sendError(response, exc)
 
+    @deprecated_methods(["POST"])
     def config(self):
         """
         check if Config- Database exists
@@ -233,6 +236,7 @@ class MonitoringController(BaseController):
             log.error(exception)
             return sendError(response, exception)
 
+    @deprecated_methods(["POST"])
     def storageEncryption(self):
         """
         check if hsm/enckey encrypts value before storing it to config db
@@ -266,6 +270,7 @@ class MonitoringController(BaseController):
             log.error(exception)
             return sendError(response, exception)
 
+    @deprecated_methods(["POST"])
     def license(self):
         """
         license
@@ -319,6 +324,7 @@ class MonitoringController(BaseController):
             log.error(exception)
             return sendError(response, exception)
 
+    @deprecated_methods(["POST"])
     def userinfo(self):
         """
 
@@ -375,6 +381,7 @@ class MonitoringController(BaseController):
             db.session.rollback()
             return sendError(response, exc)
 
+    @deprecated_methods(["POST"])
     def activeUsers(self):
         """
 

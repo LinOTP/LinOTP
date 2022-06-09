@@ -36,6 +36,7 @@ from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
@@ -116,6 +117,7 @@ class GettokenController(BaseController):
 
         return response
 
+    @deprecated_methods(["POST"])
     def getmultiotp(self):
         """
         This function is used to retrieve multiple otp values for a given user
@@ -183,6 +185,7 @@ class GettokenController(BaseController):
                 response, "gettoken/getmultiotp failed: %r" % exx, 0
             )
 
+    @deprecated_methods(["POST"])
     def getotp(self):
         """
         This function is used to retrieve the current otp value for a given

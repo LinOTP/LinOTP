@@ -34,6 +34,7 @@ from webhelpers2.html.builder import literal
 
 from linotp.controllers.base import BaseController
 from linotp.flap import error_document_template, request
+from linotp.lib import deprecated_methods
 from linotp.lib.util import str2unicode
 
 
@@ -41,6 +42,7 @@ class ErrorController(BaseController):
 
     jwt_exempt = True  # Don't do JWT auth in this controller
 
+    @deprecated_methods(["POST"])
     def document(self):
         """Render the error document"""
 
@@ -67,10 +69,12 @@ class ErrorController(BaseController):
         )
         return page
 
+    @deprecated_methods(["POST"])
     def img(self, id):
         """Serve Pylons' stock images"""
         return self._serve_file("/".join(["media/img", id]))
 
+    @deprecated_methods(["POST"])
     def style(self, id):
         """Serve Pylons' stock stylesheets"""
         return self._serve_file("/".join(["media/style", id]))

@@ -43,6 +43,7 @@ from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
@@ -174,6 +175,7 @@ class ManageController(BaseController):
         return response
 
     @jwt_exempt
+    @deprecated_methods(["POST"])
     def index(self):
         """
         This is the main function of the management web UI
@@ -291,6 +293,7 @@ class ManageController(BaseController):
             raise
 
     @jwt_exempt
+    @deprecated_methods(["POST"])
     def login(self):
         """
         Render the Manage-UI login page
@@ -304,6 +307,7 @@ class ManageController(BaseController):
 
         return render("manage/login.mako")
 
+    @deprecated_methods(["POST"])
     def tokentype(self):
         """
         render the tokentype info mako
@@ -322,6 +326,7 @@ class ManageController(BaseController):
 
         return render("/manage/tokentypeinfo.mako").decode("utf-8")
 
+    @deprecated_methods(["POST"])
     def policies(self):
         """
         This is the template for the policies TAB
@@ -329,6 +334,7 @@ class ManageController(BaseController):
         c.title = "LinOTP Management - Policies"
         return render("/manage/policies.mako").decode("utf-8")
 
+    @deprecated_methods(["POST"])
     def audittrail(self):
         """
         This is the template for the audit trail TAB
@@ -336,6 +342,7 @@ class ManageController(BaseController):
         c.title = "LinOTP Management - Audit Trail"
         return render("/manage/audit.mako").decode("utf-8")
 
+    @deprecated_methods(["POST"])
     def tokenview(self):
         """
         This is the template for the token TAB
@@ -345,6 +352,7 @@ class ManageController(BaseController):
         c.getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
         return render("/manage/tokenview.mako")
 
+    @deprecated_methods(["POST"])
     def userview(self):
         """
         This is the template for the token TAB
@@ -353,6 +361,7 @@ class ManageController(BaseController):
         c.tokenArray = []
         return render("/manage/userview.mako").decode("utf-8")
 
+    @deprecated_methods(["POST"])
     def custom_style(self):
         """
         If this action was called, the user hasn't created a custom css yet. To avoid hitting
@@ -376,6 +385,7 @@ class ManageController(BaseController):
             indent=3,
         )
 
+    @deprecated_methods(["POST"])
     def tokenview_flexi(self):
         """
         This function is used to fill the flexigrid.
@@ -539,6 +549,7 @@ class ManageController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def userview_flexi(self):
         """
         This function is used to fill the flexigrid.
@@ -680,6 +691,7 @@ class ManageController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def tokeninfo(self):
         """
         this returns the contents of /admin/show?serial=xyz in an html format
@@ -755,6 +767,7 @@ class ManageController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def help(self, id=None):
         """
         This downloads the Manual

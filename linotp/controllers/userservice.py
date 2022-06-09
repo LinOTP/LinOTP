@@ -60,6 +60,7 @@ from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.apps import create_google_authenticator, create_oathtoken_url
 from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.audit.base import search as audit_search
@@ -1161,6 +1162,7 @@ class UserserviceController(BaseController):
                 (ret, _reply) = vh.checkUserPass(user, otp)
         return ret
 
+    @deprecated_methods(["POST"])
     def usertokenlist(self):
         """
         This returns a tokenlist as html output
@@ -1194,6 +1196,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def userinfo(self):
         """
         hook for the auth, which requests additional user info
@@ -1256,6 +1259,7 @@ class UserserviceController(BaseController):
 
     ##########################################################################
     # context setup functions
+    @deprecated_methods(["POST"])
     def pre_context(self):
         """
         This is the authentication to self service
@@ -1279,6 +1283,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def context(self):
         """
         This is the authentication to self service
@@ -2148,6 +2153,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, 1)
 
+    @deprecated_methods(["POST"])
     def getSerialByOtp(self):
         """
 
@@ -2649,6 +2655,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, 1)
 
+    @deprecated_methods(["POST"])
     def getmultiotp(self):
         """
         Using this function the user may receive OTP values for his own tokens.
@@ -2725,6 +2732,7 @@ class UserserviceController(BaseController):
                 response, _("selfservice/usergetmultiotp failed: %r") % e, 0
             )
 
+    @deprecated_methods(["POST"])
     def history(self):
         """
         This returns the list of the tokenactions of this user

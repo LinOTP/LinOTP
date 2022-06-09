@@ -45,6 +45,7 @@ from flask import (
 
 from linotp.controllers.base import BaseController, JWTMixin, methods
 from linotp.flap import HTTPUnauthorized, config, request, response
+from linotp.lib import deprecated_methods
 from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.challenges import Challenges
 from linotp.lib.context import request_context
@@ -210,6 +211,7 @@ class AdminController(BaseController, JWTMixin):
             db.session.rollback()
             return sendError(response, exx, context="after")
 
+    @deprecated_methods(["POST"])
     def getTokenOwner(self):
         """
         provide the userinfo of the token, which is specified as serial
@@ -266,6 +268,7 @@ class AdminController(BaseController, JWTMixin):
 
         tok["LinOtp.TokenInfo"] = info
 
+    @deprecated_methods(["POST"])
     def show(self):
         """
         displays the list of the available tokens
@@ -547,7 +550,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx, 1)
 
     ########################################################
-
+    @deprecated_methods(["POST"])
     def getSerialByOtp(self):
         """
         searches for the token, that generates the given OTP value.
@@ -685,7 +688,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx, 1)
 
     #######################################################
-
+    @deprecated_methods(["POST"])
     def check_serial(self):
         """
 
@@ -1752,6 +1755,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, exx, 1)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def userlist(self):
         """
         lists the user in a realm
@@ -2596,6 +2600,7 @@ class AdminController(BaseController, JWTMixin):
             db.session.rollback()
             return sendError(response, exx, 1)
 
+    @deprecated_methods(["POST"])
     def totp_lookup(self):
         """
         get otp information for a totp token
@@ -2672,6 +2677,7 @@ class AdminController(BaseController, JWTMixin):
             db.session.rollback()
             return sendResult(response, exx, 0)
 
+    @deprecated_methods(["POST"])
     def checkstatus(self):
         """
         show the status either

@@ -32,6 +32,7 @@ import json
 
 from linotp.controllers.base import BaseController
 from linotp.flap import response
+from linotp.lib import deprecated_methods
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy.action import get_action_value
@@ -49,6 +50,7 @@ class U2FController(BaseController):
         https://server/u2f/realm/valid_facets
     """
 
+    @deprecated_methods(["POST"])
     def valid_facets(self, realm=None):
         """
         Show the JSON output for the valid facets configured by the enrollment

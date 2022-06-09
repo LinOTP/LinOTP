@@ -38,6 +38,7 @@ from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController, methods
 from linotp.flap import request, response
+from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.policy import (
     PolicyException,
@@ -122,6 +123,7 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(response, exception, context="after")
 
+    @deprecated_methods(["POST"])
     def maximum(self):
         """
         return the maximum of tokens in a given realm with given status
@@ -192,6 +194,7 @@ class ReportingController(BaseController):
         finally:
             db.session.close()
 
+    @deprecated_methods(["POST"])
     def period(self):
         """
 
@@ -452,6 +455,7 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(response, exc)
 
+    @deprecated_methods(["POST"])
     def show(self):
         """
         show entries from the reporting database table

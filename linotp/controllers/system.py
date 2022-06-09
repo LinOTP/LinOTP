@@ -42,6 +42,7 @@ from flask import send_file as flask_send_file
 from linotp import flap
 from linotp.flap import config, request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.config import (
     getFromConfig,
     getLinotpConfig,
@@ -460,7 +461,7 @@ class SystemController(BaseController):
 
     ########################################################
     ########################################################
-
+    @deprecated_methods(["POST"])
     def getConfig(self):
         """
         retrieve value of a defined configuration key, or if no key is given,
@@ -545,6 +546,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def getRealms(self):
         """
         returns all realm definitinos as a json result.
@@ -799,6 +801,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def getResolvers(self):
         """
         returns a json list of all useridresolvers
@@ -895,7 +898,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
-
+    @deprecated_methods(["POST"])
     def getResolver(self):
         """
         this function retrieves the definition of the resolver
@@ -980,6 +983,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def getDefaultRealm(self):
         """
         return the default realm
@@ -1241,6 +1245,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def policies_flexi(self):
         """
         This function is used to fill the policies tab
@@ -1363,6 +1368,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def getPolicyDef(self):
         """
 
@@ -1526,6 +1532,7 @@ class SystemController(BaseController):
             return sendErrorMethod(response, exx)
 
     ############################################################
+    @deprecated_methods(["POST"])
     def checkPolicy(self):
         """
         checks if a the given parameter will trigger a policy or not.
@@ -1630,6 +1637,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ##########################################################################
+    @deprecated_methods(["POST"])
     def getPolicy(self, id=None):
         """
         retrieve a specified policies
@@ -1873,6 +1881,7 @@ class SystemController(BaseController):
 
     ########################################################
 
+    @deprecated_methods(["POST"])
     def getSupportInfo(self):
         """
         return the support status, which is community support by default
@@ -1901,6 +1910,7 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def isSupportValid(self):
         """
         verifies the support license status
@@ -2131,6 +2141,7 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def getProvider(self):
         """
         get a dict of SMS- and Email-providers
@@ -2311,6 +2322,7 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def getProviderDef(self):
         """
         get the definition of the specified  provider

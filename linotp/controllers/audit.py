@@ -33,6 +33,7 @@ from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController
 from linotp.flap import config, request, response
+from linotp.lib import deprecated_methods
 from linotp.lib.audit.iterator import (
     AuditQuery,
     CSVAuditIterator,
@@ -93,6 +94,7 @@ class AuditController(BaseController):
 
         return response
 
+    @deprecated_methods(["POST"])
     def search(self):
         """
         This functions searches within the audit trail

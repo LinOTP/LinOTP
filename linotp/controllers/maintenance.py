@@ -31,6 +31,7 @@ from werkzeug.exceptions import InternalServerError
 
 from linotp.controllers.base import BaseController, methods
 from linotp.flap import abort, config, request, response
+from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.logs import set_logging_level
 from linotp.lib.reply import sendError, sendResult
@@ -125,6 +126,7 @@ class MaintenanceController(BaseController):
             log.error(exx)
             return sendError(response, exx, 1)
 
+    @deprecated_methods(["POST"])
     def check_status(self):
         """
         simple check if LinOTP backend services  are up and running
