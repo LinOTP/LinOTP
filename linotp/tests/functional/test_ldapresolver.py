@@ -85,6 +85,12 @@ class LDAPExtObject(LDAPObject):
     In LinOTP, we use some of the extended LDAP functions
     which are not implemented in MockLdap. This class provides
     some basic implementations of these.
+
+    Note: We planned to upstream those changes to the mockldap
+    library. The library is no longer maintained and we are not
+    familiar enough with the topic right now. If we come across
+    this topic again, we should consider digging up LINOTP-1336
+    again to think about a fork or upstreaming.
     """
 
     def _guid_object(self, object_guid):
