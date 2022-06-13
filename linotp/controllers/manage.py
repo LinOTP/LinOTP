@@ -38,7 +38,7 @@ from mako.exceptions import CompileException
 from flask import current_app, g, redirect, url_for
 
 import linotp
-from linotp.controllers.base import BaseController, jwt_exempt
+from linotp.controllers.base import BaseController, jwt_exempt, methods
 from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import request, response
@@ -799,7 +799,7 @@ class ManageController(BaseController):
             return sendError(response, exx)
 
     # ------------------------------------------------------------------------ -
-
+    @methods(["GET"])
     def context(self):
         """
         provide session context for the manage ui
