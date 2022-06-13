@@ -25,6 +25,11 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
     ability to use a GET request (e.g the browser and especially requests
     from javascript) for a modifying request. The modifying request must be run
     as a POST request combined with a CSRF token in the header.
+  * mark some api endpoints as deprecated to accessed via HTTP POST request as
+    they are only reading information and dont change the server state. Other
+    api endpoints which are modifying the server state, or provide critical
+    data are marked as deprecated using the HTTP GET method. The deprication
+    will be rendered in the linorp api documentation
 
   Features:
   * Added grace to license volume exceeding and display accordingly a message
