@@ -31,6 +31,24 @@ import warnings
 from functools import wraps
 
 
+def render_calling_path(func):
+    """
+    return the api path inc HTTP methods
+
+    - utility for sphimx rendering of api docs:
+    """
+
+    module = func.__module__
+    module_name = module.rpartition(".")[-1]
+    func_name = func.__name__
+
+    try:
+        methods = ", ".join(func.methods)
+    except:
+        methods = "GET, POST"
+    return f"**{methods}** */{module_name}/{func_name}*\n "
+
+
 def deprecated(func):
     """This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emmitted
@@ -145,7 +163,12 @@ def deprecated_methods(deprecated_methods_list):
             return func(*args, **kwargs)
 
         # update the docstring of the function
-        wrapper.__doc__ = doc_pretext() + wrapper.__doc__ + doc_posttext()
+        wrapper.__doc__ = (
+            render_calling_path(func)
+            + doc_pretext()
+            + wrapper.__doc__
+            + doc_posttext()
+        )
         # Further implementation: set a flag to log a warning in case of being called by the wrong method
         # wrapper.conditional_deprecation_warnings = (
         #     get_conditional_deprecation_warnings(func_name=wrapper.__name__)
