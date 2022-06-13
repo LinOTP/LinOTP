@@ -1697,7 +1697,7 @@ msgstr ""
 
 msgid "No more tokens can be enrolled due to license restrictions"
 msgstr ""
-"Aufgrund von Lizenz-Beschränkungen können keine weiteren Token ausgerollte "
+"Aufgrund von Lizenz-Beschränkungen können keine weiteren Token ausgerollt "
 "werden"
 
 msgid "No more tokens can be loaded due to license restrictions"
