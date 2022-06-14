@@ -34,6 +34,7 @@ from flask import current_app, g
 from linotp.controllers.base import BaseController
 from linotp.flap import config, request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.error import HSMException
 from linotp.lib.monitoring import MonitorHandler
@@ -117,33 +118,29 @@ class MonitoringController(BaseController):
         finally:
             db.session.close()
 
+    @deprecated_methods(["POST"])
     def tokens(self):
         """
-        method:
-            monitoring/tokens
+        Displays the number of tokens (with status) per realm
+        (one token might be in multiple realms).
+        The Summary gives the sum of all tokens in all given realms and
+        might be smaller than the summ of all tokens
+        as tokens which have two realms are only counted once!
 
-        description:
-
-            Displays the number of tokens (with status) per realm
-            (one token might be in multiple realms).
-            The Summary gives the sum of all tokens in all given realms and
-            might be smaller than the summ of all tokens
-            as tokens which have two realms are only counted once!
-
-        arguments:
-            * status - optional: takes assigned or unassigned, give the number
+        :param  status: (optional) takes assigned or unassigned, give the number
                 of tokens with this characteristic
 
-            * realms - optional: takes realms, only the number of tokens in
+        ;param realms: (optional) takes realms, only the number of tokens in
                 these realms will be displayed
 
-        returns:
+
+        :return:
             a json result with:
             { "head": [],
             "data": [ [row1], [row2] .. ]
             }
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
         """
         result = {}
@@ -196,19 +193,22 @@ class MonitoringController(BaseController):
             db.session.rollback()
             return sendError(response, exc)
 
+    @deprecated_methods(["POST"])
     def config(self):
         """
         check if Config- Database exists
 
         touches DB and checks if date of last read is new
+
         :return:
             a json result with:
             { "head": [],
             "value": {"sync": "True"}
             }
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
+
         """
         result = {}
         try:
@@ -236,10 +236,16 @@ class MonitoringController(BaseController):
             log.error(exception)
             return sendError(response, exception)
 
+    @deprecated_methods(["POST"])
     def storageEncryption(self):
         """
         check if hsm/enckey encrypts value before storing it to config db
-        :return: true if a new value gets encryptet before beeing stored in db
+
+        :return:
+            a json result with true if a new value gets encryptet before beeing stored in db
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         try:
             if hasattr(c, "hsm") is False or isinstance(c.hsm, dict) is False:
@@ -264,12 +270,19 @@ class MonitoringController(BaseController):
             log.error(exception)
             return sendError(response, exception)
 
+    @deprecated_methods(["POST"])
     def license(self):
         """
         license
         return the support status, which is community support by default
         or the support subscription info, which could be the old license
-        :return: json result with license info
+
+        :return:
+            json result with license info
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
         res = {}
         try:
@@ -311,20 +324,17 @@ class MonitoringController(BaseController):
             log.error(exception)
             return sendError(response, exception)
 
+    @deprecated_methods(["POST"])
     def userinfo(self):
         """
-        method:
-            monitoring/userinfo
 
-        description:
-            for each realm, display the resolvers and the number of users
-            per resolver
+        for each realm, display the resolvers and the number of users
+        per resolver
 
-        arguments:
-            * realms - optional: takes a realm, only information on this realm
+        :param realms: (optional) takes a realm, only information on this realm
                 will be displayed
 
-        returns:
+        :return:
             a json result with:
             { "head": [],
             "data": [ [row1], [row2] .. ]
@@ -371,24 +381,27 @@ class MonitoringController(BaseController):
             db.session.rollback()
             return sendError(response, exc)
 
+    @deprecated_methods(["POST"])
     def activeUsers(self):
         """
-        method:
-            monitoring/activeUsers
 
-        description:
-            for each realm, display the resolvers and
-            the number of users which have at least one assigned active token
-            per resolver
-            the 'total' gives the number of all users, which are in an allowed
-            realm and own an active token
-            users are conted per resolver (not per realm), so if resolver is in
-            multiple realms and one user ons tokens in 2 realms, the user will
-            be counted only once
+        for each realm, display the resolvers and
+        the number of users which have at least one assigned active token
+        per resolver
+        the 'total' gives the number of all users, which are in an allowed
+        realm and own an active token
+        users are conted per resolver (not per realm), so if resolver is in
+        multiple realms and one user ons tokens in 2 realms, the user will
+        be counted only once
 
-        arguments:
-            * realms - optional: takes realms, only information on these realms
+        :param realms: (optional) takes realms, only information on these realms
                 will be displayed
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         result = {}
         try:

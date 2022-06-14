@@ -282,6 +282,20 @@ class TestHTTPError(TestController):
         assert "text/html" in response.content_type.split(";")
         assert "getUserId failed: no user >doesnotexist" in response.body
 
+    def test_no_GET_for_admin_init(self):
+        """
+        it's not allowed to do modifying request as a GET request
+        """
+
+        # Test request no httperror
+        params = {
+            "type": "spass",
+            "genkey": 1,
+        }
+        response = self.make_admin_request("init", params, method="GET")
+
+        assert response.status == "405 METHOD NOT ALLOWED"
+
     def test_no_httperror_and_invalid_utf8(self):
         """
         Return error response on invalid UTF-8 in params without httperror
@@ -299,7 +313,7 @@ class TestHTTPError(TestController):
             "type": "spass",
             "genkey": 1,
         }
-        response = self.make_admin_request("init", params, method="GET")
+        response = self.make_admin_request("init", params, method="POST")
         content = response.json
 
         assert response.status == "200 OK"

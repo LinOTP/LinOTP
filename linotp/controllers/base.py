@@ -29,6 +29,7 @@ import functools
 import logging
 import secrets
 from datetime import datetime, timedelta, timezone
+from functools import wraps
 from inspect import getfullargspec
 from types import FunctionType
 from warnings import warn
@@ -47,6 +48,7 @@ from jwt import ExpiredSignatureError, InvalidSignatureError
 from flask import Blueprint, after_this_request, current_app, g, jsonify
 
 from linotp.flap import request
+from linotp.lib import deprecated_methods, render_calling_path
 from linotp.lib.context import request_context
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
@@ -302,11 +304,20 @@ def methods(mm=["GET"]):
     putting the methods list.
     """
 
-    def inner(func):
-        func.methods = mm[:]
-        return func
+    def inner_func(func):
 
-    return inner
+        func.methods = mm[:]
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        # update the calling  docstring of the function
+        wrapper.__doc__ = render_calling_path(func) + wrapper.__doc__
+
+        return wrapper
+
+    return inner_func
 
 
 def jwt_exempt(f):
@@ -352,11 +363,20 @@ class JWTMixin(object):
     @jwt_exempt
     @methods(["POST"])
     def login(self):
-        """Checks a user's credentials and issues them a JWT access
+        """
+        manage authentication
+
+        Checks a user's credentials and issues them a JWT access
         token if their credentials are valid. We're using cookies to
         store the access token plus a double-submit token for CSRF
         protection, which makes it easy to refresh access tokens
         transparently if they are nearing expiry.
+
+        :param username: the name of the user
+        :param password: the password of the user
+
+        :return:
+            a json document and the jwt cookies are replied
 
         """
 

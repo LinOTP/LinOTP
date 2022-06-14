@@ -1,5 +1,26 @@
 linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
 
+  Breaking Changes:
+  * The helpdesk controller has been removed.
+  * Apache-based admin authentication is no longer supported.
+  * Audit Trail export is now ordered descending (latest logs first) when
+    done from the Manage-UI
+  * Admin authentication: 'Cross site scripting request forgery (CSRF)' is no longer
+    handled via the session request parameter. Instead, a CSRF-protection token must be
+    sent as a request header that is available via the cookies. Non-modifying requests
+    can be requested via 'GET' and do not need to send the CSRF token, just omit the session
+    parameter. API endpoints restricted to accept only via 'POST' must use the new header.
+    See the Migration guide for further details.
+  * Some API endpoints are now restricted as to which HTTP method they can be used with.
+    Endpoints requiring an admin authentication are now restricted if they are modifying
+    data. The allowed HTTP methods are highlighted in the API documentation.
+
+  Deprecations:
+  * In the future, all API endpoints will only allow certain HTTP methods. Data-modifying
+    endpoints - that are not restricted now - will only allow POST requests in the future,
+    and read-only endpoints will only allow GET requests. The now deprecated HTTP methods
+    are also highlighted in the API documentation.
+
   Fixes:
   * license limits are now checked during userservice token enrollment.
   * Prevent creating or importing OATH (HOTP, TOTP, Ocra2) tokens with malformatted seeds.
@@ -58,12 +79,6 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
     can be triggered by the same user.
   * admin policies now support resolver defintion for admin users
   * method to provide context information for manage ui
-
-  Breaking Changes:
-  * The helpdesk controller has been removed.
-  * Apache-based admin authentication is no longer supported.
-  * Audit Audit Trail export is now ordered descending (latest logs first) when
-    done from the Manage-UI
 
   Dependencies
   * Update jQuery and jQuery-Migrate
