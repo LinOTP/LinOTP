@@ -1,5 +1,26 @@
 linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
 
+  Breaking Changes:
+  * The helpdesk controller has been removed.
+  * Apache-based admin authentication is no longer supported.
+  * Audit Trail export is now ordered descending (latest logs first) when
+    done from the Manage-UI
+  * Admin authentication: 'Cross site scripting request forgery (CSRF)' is no longer
+    handled via the session request parameter. Instead, a CSRF-protection token must be
+    sent as a request header that is available via the cookies. Non-modifying requests
+    can be requested via 'GET' and do not need to send the CSRF token, just omit the session
+    parameter. API endpoints restricted to accept only via 'POST' must use the new header.
+    See the Migration guide for further details.
+  * Some API endpoints are now restricted as to which HTTP method they can be used with.
+    Endpoints requiring an admin authentication are now restricted if they are modifying
+    data. The allowed HTTP methods are highlighted in the API documentation.
+
+  Deprecations:
+  * In the future, all API endpoints will only allow certain HTTP methods. Data-modifying
+    endpoints - that are not restricted now - will only allow POST requests in the future,
+    and read-only endpoints will only allow GET requests. The now deprecated HTTP methods
+    are also highlighted in the API documentation.
+
   Fixes:
   * license limits are now checked during userservice token enrollment.
   * Prevent creating or importing OATH (HOTP, TOTP, Ocra2) tokens with malformatted seeds.
@@ -20,16 +41,6 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
   * The linotp support cmd can now install demo licenses
   * The linotp cli commands would not break anymore if localization is involved
   * Resolver names are treated as case-sensitive.
-  * to prevent 'cross site scripting request forgery' CSRF, data-modifying
-    apis are restricted to accept POST only requests. This will disable the
-    ability to use a GET request (e.g the browser and especially requests
-    from javascript) for a modifying request. The modifying request must be run
-    as a POST request combined with a CSRF token in the header.
-  * mark some api endpoints as deprecated to accessed via HTTP POST request as
-    they are only reading information and dont change the server state. Other
-    api endpoints which are modifying the server state, or provide critical
-    data are marked as deprecated using the HTTP GET method. The deprication
-    will be rendered in the linorp api documentation
 
   Features:
   * Added grace to license volume exceeding and display accordingly a message
@@ -68,12 +79,6 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
     can be triggered by the same user.
   * admin policies now support resolver defintion for admin users
   * method to provide context information for manage ui
-
-  Breaking Changes:
-  * The helpdesk controller has been removed.
-  * Apache-based admin authentication is no longer supported.
-  * Audit Audit Trail export is now ordered descending (latest logs first) when
-    done from the Manage-UI
 
   Dependencies
   * Update jQuery and jQuery-Migrate
