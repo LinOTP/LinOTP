@@ -522,7 +522,7 @@ class TestSupport(TestController):
             assert response.json["result"]["error"]["code"] == 410, response
             msg = (
                 "The maximum allowed number of tokens for the realm "
-                "myDefRealm was reached. You can not init any more tokens"
+                "'myDefRealm' was reached. You can not init any more tokens"
             )
 
             assert msg in response.json["result"]["error"]["message"], response

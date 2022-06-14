@@ -28,8 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2022-02-16 15:52+0100\n"
-
+"PO-Revision-Date: 2022-06-13 19:43+0200\n"
 "Last-Translator: \n"
 "Language-Team: German <>\n"
 "Language: de\n"
@@ -37,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 3.1\n"
 
 msgid " or "
 msgstr " oder "
@@ -281,7 +280,6 @@ msgstr "Zertifikate"
 msgid "Challenge Response Login"
 msgstr "Anmeldung mit Challenge/Response"
 
-
 msgid "Challenge blocking time (sec)"
 msgstr "Sperrzeit für Challenges (Sek.)"
 
@@ -499,9 +497,6 @@ msgstr "Tagespasswort"
 
 msgid "Default Settings"
 msgstr "Standardeinstellungen"
-
-msgid "Default Values:"
-msgstr "Standardwerte:"
 
 msgid "Default expiration time of a challenge in seconds."
 msgstr "Standardwert der Gültigkeitsdauer von Challenges in Sekunden."
@@ -1042,8 +1037,8 @@ msgid "Failed to retrieve the OTP values of your token:"
 msgstr "Das Anfordern der OTP-Werte ist fehlgeschlagen:"
 
 #, python-format
-msgid "Failed to run checkPolicyPre. Unknown method: %s"
-msgstr "Fehler bei der Richtlinieüberprüfung - unbekannte Methode: %s"
+msgid "Failed to run checkPolicyPre. Unknown method: %r"
+msgstr "Fehler bei der Richtlinieüberprüfung - unbekannte Methode: %r"
 
 #, python-format
 msgid "Failed to run getPolicyPost. Unknown controller: %s"
@@ -1702,7 +1697,7 @@ msgstr ""
 
 msgid "No more tokens can be enrolled due to license restrictions"
 msgstr ""
-"Aufgrund von Lizenz-Beschränkungen können keine weiteren Token ausgerollte "
+"Aufgrund von Lizenz-Beschränkungen können keine weiteren Token ausgerollt "
 "werden"
 
 msgid "No more tokens can be loaded due to license restrictions"
@@ -2708,20 +2703,20 @@ msgstr ""
 
 #, python-format
 msgid ""
-"The maximum allowed number of tokens for the realm %s was reached. You can "
+"The maximum allowed number of tokens for the realm %r was reached. You can "
 "not init any more tokens. Check the policies scope=enrollment, "
 "action=tokencount."
 msgstr ""
-"Die maximale Anzahl an Token innerhalb des Realms %s wurde erreicht. Sie "
-"koennen keine weiteren Token mehr in diesem Realm ausrollen. Bitte "
-"überprüfen Sie die Richtlinie scope=enrollment, action=tokencount."
+"Die maximale Anzahl an Token innerhalb des Realms %r wurde erreicht. Sie "
+"können keine weiteren Token mehr in diesem Realm ausrollen. Bitte überprüfen "
+"Sie die Richtlinie scope=enrollment, action=tokencount."
 
 #, python-format
 msgid ""
-"The maximum number of allowed tokens in realm %s is exceeded. Check policy "
+"The maximum number of allowed tokens in realm %r is exceeded. Check policy "
 "tokencount!"
 msgstr ""
-"Die Maximalzahl von Token für den Realm %s wurde erreicht - überprüfen Sie "
+"Die Maximalzahl von Token für den Realm %r wurde erreicht - überprüfen Sie "
 "ggf. die Richtlinie 'tokencount'!"
 
 #, python-format
@@ -3526,11 +3521,10 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You do not have the administrative right to get the token owner in realm "
-"%s(%s)."
+"You do not have the administrative right to get the token owner in realm %r."
 msgstr ""
 "Sie haben nicht die administrativen Rechte zum Anzeigen der Tokenbesitzer im "
-"Realm %s(%s)."
+"Realm %r."
 
 msgid ""
 "You do not have the administrative right to get token info in this realm!"
@@ -3540,11 +3534,11 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You do not have the administrative right to import token files to realm %s. "
+"You do not have the administrative right to import token files to realm %r. "
 "Check the policies."
 msgstr ""
 "Es fehlen die administrativen Rechte zum Importieren von Token für den Realm "
-"%s - überprüfen Sie ggf. die Richtlinien."
+"%r - überprüfen Sie ggf. die Richtlinien."
 
 msgid ""
 "You do not have the administrative right to import tokens. Check the "
@@ -3568,10 +3562,10 @@ msgstr ""
 "auszurollen."
 
 #, python-format
-msgid "You do not have the administrative right to list users in realm %s(%s)."
+msgid "You do not have the administrative right to list users in realm %r."
 msgstr ""
 "Sie haben nicht die administrativen Rechte zum Anzeigen der Benutzer im "
-"Realm %s(%s)."
+"Realm %r."
 
 #, python-format
 msgid ""
@@ -3583,26 +3577,26 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You do not have the administrative right to remove token %s. Check the "
+"You do not have the administrative right to remove token %r. Check the "
 "policies."
 msgstr ""
-"Sie haben nicht die administrativen Rechte um den Token %s zu löschen - "
+"Sie haben nicht die administrativen Rechte um den Token %r zu löschen - "
 "überprüfen Sie ggf. die Richtlinien."
 
 #, python-format
 msgid ""
-"You do not have the administrative right to remove tokens from realm %s. "
+"You do not have the administrative right to remove tokens from realm %r. "
 "Check the policies."
 msgstr ""
-"Sie haben nicht die administrativen Rechte zum Löschen von Token im Realm %s "
+"Sie haben nicht die administrativen Rechte zum Löschen von Token im Realm %r "
 "- überprüfen Sie ggf. die Richtlinien."
 
 #, python-format
 msgid ""
-"You do not have the administrative right to reset token %s. Check the "
+"You do not have the administrative right to reset token %r. Check the "
 "policies."
 msgstr ""
-"Sie haben nicht die administrativen Rechte zum Zurücksetzen des Tokens %s - "
+"Sie haben nicht die administrativen Rechte zum Zurücksetzen des Tokens %r - "
 "überprüfen Sie ggf. die Richtlinien."
 
 #, python-format
@@ -3664,10 +3658,10 @@ msgstr ""
 #, python-format
 msgid ""
 "You do not have the administrative right to show status of token challenges "
-"in realm %s(%s)."
+"in realm %r."
 msgstr ""
 "Sie haben nicht die administrativen Rechte zum Anzeigen des Status der Token-"
-"Challenges im Realm %s(%s)."
+"Challenges im Realm %r."
 
 #, python-format
 msgid ""
@@ -3679,11 +3673,11 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You do not have the administrative right to unpair token %s. Check the "
+"You do not have the administrative right to unpair token %r. Check the "
 "policies."
 msgstr ""
 "Sie haben nicht die administrativen Rechte, um die Benutzerzuweisung für den "
-"Token %s aufzuheben - überprüfen Sie ggf. die Richtlinien."
+"Token %r aufzuheben - überprüfen Sie ggf. die Richtlinien."
 
 msgid ""
 "You do not have the administrative right to view the audit trail. You are "
@@ -3753,9 +3747,9 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You may not put any more tokens in realm %s. Check the policy 'tokencount'"
+"You may not put any more tokens in realm %r. Check the policy 'tokencount'"
 msgstr ""
-"Es können keine weiteren Token im Realm %s hinzugefügt werden - überprüfen "
+"Es können keine weiteren Token im Realm %r hinzugefügt werden - überprüfen "
 "Sie ggf. die Richtlinie 'tokencount'."
 
 msgid "You may only upload support subscription files ending with .pem"
@@ -4180,12 +4174,6 @@ msgstr "auf dem RADIUS Server"
 
 msgid "on remote server"
 msgstr "auf dem Remote-Server"
-
-msgid "optional"
-msgstr "Optional"
-
-msgid "or"
-msgstr "oder"
 
 msgid "or email"
 msgstr "oder E-Mail"
@@ -5121,6 +5109,12 @@ msgstr "WebUI generiert"
 
 #~ msgid "no"
 #~ msgstr "Nein"
+
+#~ msgid "optional"
+#~ msgstr "Optional"
+
+#~ msgid "or"
+#~ msgstr "oder"
 
 #~ msgid "or generate new one"
 #~ msgstr "oder einen neuen generieren"
