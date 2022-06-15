@@ -47,24 +47,24 @@ LINOTPD_PROJS := linotpd
 
 # These variables let you set the amount of stuff LinOTP is logging.
 #
-# LINOTP_LOGLEVEL controls the amount of logging in general while
-# LINOTP_CONSOLE_LOGLEVEL controls logging to the console (as opposed
-# to logstash -- logstash always gets whatever LINOTP_LOGLEVEL lets
-# through, so LINOTP_CONSOLE_LOGLEVEL can be used to have less stuff
+# LINOTP_LOGGING_LEVEL controls the amount of logging in general while
+# LINOTP_LOGGING_CONSOLE_LEVEL controls logging to the console (as opposed
+# to logstash -- logstash always gets whatever LINOTP_LOGGING_LEVEL lets
+# through, so LINOTP_LOGGING_CONSOLE_LEVEL can be used to have less stuff
 # show up on the console than in logstash).
-# SQLALCHEMY_LOGLEVEL controls the amount of logging done by SQLAlchemy
+# SQLALCHEMY_LOGGING_LEVEL controls the amount of logging done by SQLAlchemy
 # (who would have guessed); DEBUG will log SQL queries and results,
 # INFO will log just queries (no results) and WARN will log neither.
 # APACHE_LOGLEVEL limits the amount of stuff Apache writes to its error
 # output; normally anything that is written to the LinOTP console goes
 # through here, too, so there isn't a lot of sense in setting this
-# differently to LINOTP_CONSOLE_LOGLEVEL unless you're doing nonstandard
+# differently to LINOTP_LOGGING_CONSOLE_LEVEL unless you're doing nonstandard
 # trickery and/or use a different (and unsupported by us) web server
 # than Apache to run LinOTP.
 
-export LINOTP_LOGLEVEL=INFO
-export LINOTP_CONSOLE_LOGLEVEL=DEBUG
-export SQLALCHEMY_LOGLEVEL=ERROR
+export LINOTP_LOGGING_LEVEL=INFO
+export LINOTP_LOGGING_CONSOLE_LEVEL=DEBUG
+export SQLALCHEMY_LOGGING_LEVEL=ERROR
 export APACHE_LOGLEVEL=DEBUG
 
 
@@ -438,9 +438,9 @@ docker-run-linotp-sqlite: docker-build-linotp
 	# Run linotp in a standalone container
 	$(DOCKER_RUN) -it \
 		 -e HEALTHCHECK_PORT=80 \
-		 -e LINOTP_LOGLEVEL=$(LINOTP_LOGLEVEL) \
-		 -e LINOTP_CONSOLE_LOGLEVEL=$(LINOTP_CONSOLE_LOGLEVEL) \
-		 -e SQLALCHEMY_LOGLEVEL=$(SQLALCHEMY_LOGLEVEL) \
+		 -e LINOTP_LOGGING_LEVEL=$(LINOTP_LOGGING_LEVEL) \
+		 -e LINOTP_LOGGING_CONSOLE_LEVEL=$(LINOTP_LOGGING_CONSOLE_LEVEL) \
+		 -e SQLALCHEMY_LOGGING_LEVEL=$(SQLALCHEMY_LOGGING_LEVEL) \
 		 -e APACHE_LOGLEVEL=$(APACHE_LOGLEVEL) \
 		linotp
 
