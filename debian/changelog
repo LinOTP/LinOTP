@@ -22,10 +22,10 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
     are also highlighted in the API documentation.
 
   Fixes:
-  * license limits are now checked during userservice token enrollment.
+  * License limits are now enforced during userservice token enrollment.
   * Prevent creating or importing OATH (HOTP, TOTP, Ocra2) tokens with malformatted seeds.
-  * license monitoring shows license usage for user-based licenses.
-  * user-based license reporting now filters for date and realm correctly and supports wildcards
+  * License monitoring shows license usage for user-based licenses.
+  * User-based license reporting now filters for date and realm correctly and supports wildcards
     in realm and status.
   * In a Debian environment with a MySQL database, it is not anymore required
     to set the charset=utf8 parameter as otherwise, resolvers would not
@@ -40,7 +40,7 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
   * User import now always deletes users in the correct managed resolver
   * The linotp support cmd can now install demo licenses
   * The linotp cli commands would not break anymore if localization is involved
-  * Resolver names are treated as case-sensitive.
+  * Resolver names are now always treated case-sensitive.
 
   Features:
   * Added grace to license volume exceeding and display accordingly a message
@@ -75,10 +75,11 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
   * Extended sms provider logging
   * Added TIMEOUT parameter for all networking providers
   * SMS blocking time is now configurable in the SMS token configuration dialog.
-    The blocking time (in seconds) is the period that needs to pass before another challenge
-    can be triggered by the same user.
-  * admin policies now support resolver defintion for admin users
-  * method to provide context information for manage ui
+    The blocking time (in seconds) is the period that needs to pass before another
+    challenge can be triggered by the same user.
+  * Admin policies now support resolver defintion for admin users
+  * A new API endpoint /manage/context provides context information for logged in
+    Manage-UI users.
 
   Dependencies
   * Update jQuery and jQuery-Migrate
