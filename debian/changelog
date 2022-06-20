@@ -37,10 +37,11 @@ linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
   * Adjusted functional_special tests to become regular tests.
   * Porting issue for radius token with forwarding transactions.
   * Reply to sms challenge with pin+otp.
-  * User import now always deletes users in the correct managed resolver
-  * The linotp support cmd can now install demo licenses
-  * The linotp cli commands would not break anymore if localization is involved
+  * User import now always deletes users in the correct managed resolver.
+  * The linotp support cmd can now install demo licenses.
+  * The linotp cli commands would not break anymore if localization is involved.
   * Resolver names are now always treated case-sensitive.
+  * setConfig is now called from the UI only once to save all parameters in one api call.
 
   Features:
   * Added grace to license volume exceeding and display accordingly a message
