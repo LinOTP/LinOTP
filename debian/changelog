@@ -1,4 +1,4 @@
-linotp (3.2~rc1-1) buster-dev; urgency=low
+linotp (3.2~rc2~0dev-1) buster-dev; urgency=low
 
   Breaking Changes:
   * The helpdesk controller has been removed.
