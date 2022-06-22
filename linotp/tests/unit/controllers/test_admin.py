@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 import copy
+import json
 import unittest
 
 import pytest
@@ -83,7 +84,7 @@ class TestAdminController(unittest.TestCase):
     @mock.patch("linotp.controllers.admin.checkPolicyPre")
     @mock.patch("linotp.model.db.session")
     @mock.patch("linotp.controllers.admin.response")
-    @mock.patch("linotp.controllers.admin.request")
+    @mock.patch("linotp.app.request")
     @mock.patch(
         "linotp.controllers.admin.BaseController.__init__", return_value=None
     )
@@ -112,8 +113,11 @@ class TestAdminController(unittest.TestCase):
         mock_TokenIterator.return_value = [tok]
 
         flask.g.audit = {}
+
         admin = AdminController()
-        admin.request_params = request_params
+
+        mock_request.json = request_params
+
         admin.show()
 
     @mock.patch("linotp.controllers.admin.AdminController._parse_tokeninfo")

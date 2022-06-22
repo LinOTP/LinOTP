@@ -136,7 +136,6 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
         # These methods will be called before each request
         self.before_request(self.jwt_check)
-        self.before_request(self._parse_request_params)
         self.before_request(self.parse_requesting_user)
         self.before_request(self.before_handler)
 
@@ -262,17 +261,9 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
         request_context["RequestUser"] = requestUser
 
-    def _parse_request_params(self):
-        """
-        Parses the request params from the request objects body / params
-        dependent on request content_type.
-
-        The resulting request parameters from the client are saved in
-        the class instance variable `request_params`
-
-        This method is called before each request is processed.
-        """
-        self.request_params = current_app.getRequestParams()
+    @property
+    def request_params(self):
+        return current_app.getRequestParams()
 
     def before_handler(self):
         """
