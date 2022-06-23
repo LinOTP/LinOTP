@@ -1,23 +1,26 @@
-linotp (3.2~rc1~0dev-1) buster-dev; urgency=low
+linotp (3.2~rc1-1) buster-dev; urgency=low
 
   Breaking Changes:
   * The helpdesk controller has been removed.
   * Apache-based admin authentication is no longer supported.
   * Audit Trail export is now ordered descending (latest logs first) when
-    done from the Manage-UI
+    done from the Manage-UI.
   * Admin authentication: 'Cross site scripting request forgery (CSRF)' is no longer
-    handled via the session request parameter. Instead, a CSRF-protection token must be
-    sent as a request header that is available via the cookies. Non-modifying requests
-    can be requested via 'GET' and do not need to send the CSRF token, just omit the session
-    parameter. API endpoints restricted to accept only via 'POST' must use the new header.
-    See the Migration guide for further details.
-  * Some API endpoints are now restricted as to which HTTP method they can be used with.
-    Endpoints requiring an admin authentication are now restricted if they are modifying
-    data. The allowed HTTP methods are highlighted in the API documentation.
+    handled via the session request parameter. Instead, a CSRF-protection token, which is
+    available via cookies, must be sent in the request header. Non-modifying requests
+    can be requested via 'GET' and do not need to send the CSRF token. The session parameter
+    that was used before should be omitted. API endpoints restricted to accept only via 'POST'
+    must use the new header. See the Migration guide for further details.
+  * Some API endpoints are now restricted to the specific HTTP method which they can be used with.
+    Endpoints requiring an admin authentication are now restricted to the POST method if they
+    are modifying data. The allowed HTTP methods are highlighted in the API documentation.
+  * Logging has more configurations now whose config variables are starting by LOG like LOG_FOO. Different
+    formatting or log level can be set for the LOG_FILE or the LOG_CONSOLE. Some of the older config
+    variables for logging are renamed for consistency.
 
   Deprecations:
   * In the future, all API endpoints will only allow certain HTTP methods. Data-modifying
-    endpoints - that are not restricted now - will only allow POST requests in the future,
+    endpoints - that are not restricted yet- will only allow POST requests in the future,
     and read-only endpoints will only allow GET requests. The now deprecated HTTP methods
     are also highlighted in the API documentation.
 
