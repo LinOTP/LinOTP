@@ -66,11 +66,13 @@ Additionally there is a new set of controllers accessible under /api/v2, providi
 same functionality as some of the previous controllers, but with a more RESTful
 interface:
 
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.tokens`      | API to manage tokens                     |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.realms`      | API to manage realms                     |
-+--------------------------------------------+------------------------------------------+
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.tokens`      | API to manage tokens                      |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.realms`      | API to manage realms                      |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.resolvers`   | API to manage resolvers and look up users |
++--------------------------------------------+-------------------------------------------+
 
 """
 

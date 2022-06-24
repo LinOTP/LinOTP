@@ -106,6 +106,7 @@ AVAILABLE_CONTROLLERS = {
     "validate",
     "tokens:/api/v2/tokens",
     "realms:/api/v2/realms",
+    "resolvers:/api/v2/resolvers",
 }
 
 
