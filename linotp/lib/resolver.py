@@ -536,6 +536,15 @@ def deleteResolver(resolvername):
     return res
 
 
+def getResolverSpecByName(resolver_name):
+    try:
+        # the resolver list is actually a dict, go figure...
+        resolver = getResolverList()[resolver_name]
+        return resolver["spec"]
+    except Exception as exx:
+        return None
+
+
 # external in token.py user.py validate.py
 def getResolverObject(resolver_spec, config=None, load_config=True):
     """
