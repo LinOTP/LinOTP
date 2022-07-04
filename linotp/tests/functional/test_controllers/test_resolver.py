@@ -25,7 +25,6 @@
 #    Support: www.linotp.de
 #
 
-
 from linotp.tests import TestController
 
 
@@ -401,6 +400,218 @@ class TestResolver(TestController):
         )
         myDefUsers = response.json["result"]["value"]["pageRecords"]
         assert len(myDefUsers) == 27
+
+        # --------------------------------------------------------------- --
+        # we delete the policies in the correct order, otherwise this might
+        # fail
+
+        self.delete_policy(name="admin_read_write_system", auth_user="admin")
+
+    def test_resolver_user_access(self):
+        """verify that authentication is required to retrieve a user
+
+        * first we run an authenticated request via 'make_api_v2_request'
+        * then we run an unauthenticated request via the standard client
+          which will fail with status 401
+        """
+
+        # ---------------------------------------------------------------- --
+        # access the resolvers api via the authenticated testing api
+
+        response = self.make_api_v2_request("/resolvers/myDefRes/users/8861")
+
+        assert response.json["result"]["status"]
+        value = response.json["result"]["value"]
+        assert isinstance(value, dict)
+
+        # ---------------------------------------------------------------- --
+        # access the resolvers api with the unauthenticated testing client
+
+        response = self.client.get("/api/v2/resolvers/myDefRes/users/8861")
+
+        assert response.status_code == 401
+
+    def test_resolver_user_not_found(self):
+        """
+        Verify that a request for a non-existing user returns status code 404.
+        """
+
+        # ---------------------------------------------------------------- --
+        # access the resolvers api via the authenticated testing api
+
+        response = self.make_api_v2_request("/resolvers/myDefRes/users/nope")
+
+        assert not response.json["result"]["status"]
+        assert response.status_code == 404
+
+    def test_resolver_user_permissions(self):
+        """verify that admin/userlist permission is required to retrieve a user"""
+
+        # 'admin' has permissions to list users in all resolvers
+
+        admin_read_write_system = {
+            "name": "admin_read_write_system",
+            "active": True,
+            "action": "userlist",
+            "user": "admin",
+            "scope": "admin",
+            "realm": "*",
+            "time": None,
+        }
+
+        response = self.make_system_request(
+            "setPolicy",
+            params=admin_read_write_system,
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # create a restriction to the 'admin2' to only see myDefRealm users
+        admin2_read_myDefRealm = {
+            "name": "admin2_read_myDefRealm",
+            "active": True,
+            "action": "userlist",
+            "user": "admin2",
+            "scope": "admin",
+            "realm": "myDefRealm",
+            "time": None,
+        }
+        response = self.make_system_request(
+            "setPolicy",
+            params=admin2_read_myDefRealm,
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # create a restriction to the 'admin3' to only see myOtherRealm users
+        admin3_read_myOtherRealm = {
+            "name": "admin3_read_myOtherRealm",
+            "active": True,
+            "action": "userlist",
+            "user": "admin3",
+            "scope": "admin",
+            "realm": "myOtherRealm",
+            "time": None,
+        }
+        response = self.make_system_request(
+            "setPolicy",
+            params=admin3_read_myOtherRealm,
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # admin can list users from both resolvers
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users/8861", auth_user="admin"
+        )
+        user = response.json["result"]["value"]
+        assert user["username"] == "shakespeare"
+
+        response = self.make_api_v2_request(
+            "/resolvers/myOtherRes/users/0", auth_user="admin"
+        )
+        user = response.json["result"]["value"]
+        assert user["username"] == "root"
+
+        # --------------------------------------------------------------- --
+        # admin2 is only allowed to list users from myDefRes
+
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users/8861", auth_user="admin2"
+        )
+        user = response.json["result"]["value"]
+        assert user["username"] == "shakespeare"
+
+        response = self.make_api_v2_request(
+            "/resolvers/myOtherRes/users/0", auth_user="admin2"
+        )
+
+        assert not response.json["result"]["status"]
+        assert response.status_code == 403
+
+        # --------------------------------------------------------------- --
+        # admin3 is only allowed to list users from myOtherRes
+
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users/8861", auth_user="admin3"
+        )
+        assert not response.json["result"]["status"]
+        assert response.status_code == 403
+
+        response = self.make_api_v2_request(
+            "/resolvers/myOtherRes/users/0", auth_user="admin3"
+        )
+        user = response.json["result"]["value"]
+        assert user["username"] == "root"
+
+        # --------------------------------------------------------------- --
+        # we delete the policies in the correct order, otherwise this might
+        # fail
+
+        self.delete_policy(name="admin3_read_myOtherRealm", auth_user="admin")
+        self.delete_policy(name="admin2_read_myDefRealm", auth_user="admin")
+        self.delete_policy(name="admin_read_write_system", auth_user="admin")
+
+    def test_user_of_resolver_not_in_realm(self):
+        """
+        Verify that an admin can check the users within a resolver that is not
+        in a realm, as long as they have userlist permissions implicitly due to
+        no admin policy being specified, or explicit permissions to list users
+        in all realms.
+        """
+        # set only myOtherRes as the resolver of both myDefRealm and myMixRealm,
+        # so that myDefResolver is not in any realm.
+        response = self.make_system_request(
+            "setRealm",
+            params={
+                "realm": "myDefRealm",
+                "resolvers": "useridresolver.PasswdIdResolver.IdResolver.myOtherRes",
+            },
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+        response = self.make_system_request(
+            "setRealm",
+            params={
+                "realm": "myMixRealm",
+                "resolvers": "useridresolver.PasswdIdResolver.IdResolver.myOtherRes",
+            },
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # admin can list users from all resolvers implicitly, as no policy has
+        # been set in the admin scope
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users/8861", auth_user="admin"
+        )
+        user = response.json["result"]["value"]
+        assert user["username"] == "shakespeare"
+        # 'admin' has explicit permissions to list users in all resolvers
+
+        admin_read_write_system = {
+            "name": "admin_read_write_system",
+            "active": True,
+            "action": "userlist",
+            "user": "admin",
+            "scope": "admin",
+            "realm": "*",
+            "time": None,
+        }
+
+        response = self.make_system_request(
+            "setPolicy",
+            params=admin_read_write_system,
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # admin can list users from both resolvers
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users/8861", auth_user="admin"
+        )
+        user = response.json["result"]["value"]
+        assert user["username"] == "shakespeare"
 
         # --------------------------------------------------------------- --
         # we delete the policies in the correct order, otherwise this might

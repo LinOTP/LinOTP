@@ -169,5 +169,24 @@ class SQLResolverTest(SQLTestController):
 
         return
 
+    def test_user_of_SQL_resolver(self):
+        username = "hey1"
+        realm = "mySQLrealm"
+        resolver = "mySQLresolver"
+
+        self.createUserTable(schema_additions={"id": "integer"})
+        self.addUsers(usercount=2)
+        self.addSqlResolver(resolver)
+        self.addSqlRealm(realm, resolver, defaultRealm=True)
+
+        response = self.make_api_v2_request(
+            f"/resolvers/{resolver}/users/1",
+            auth_user="admin",
+        )
+
+        assert response.json["result"]["status"]
+        user = response.json["result"]["value"]
+        assert user["username"] == username
+
 
 # eof

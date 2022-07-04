@@ -9,12 +9,17 @@ from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.resolver import get_resolver, get_resolvers
-from linotp.lib.user import User, getUserFromRequest
+from linotp.lib.user import User as RealmUser
+from linotp.lib.user import getUserFromRequest
 from linotp.lib.util import check_session, get_client
 from linotp.model import db
-from linotp.model.resolver import Resolver
+from linotp.model.resolver import Resolver, ResolverType, User
 
 log = logging.getLogger(__name__)
+
+
+class UserNotFoundException(Exception):
+    pass
 
 
 class ResolversController(BaseController, JWTMixin):
@@ -65,6 +70,12 @@ class ResolversController(BaseController, JWTMixin):
             "/<string:resolver_name>/users",
             "users",
             self.get_users,
+            methods=["GET"],
+        )
+        self.add_url_rule(
+            "/<string:resolver_name>/users/<string:user_id>",
+            "user",
+            self.get_user,
             methods=["GET"],
         )
 
@@ -244,7 +255,7 @@ class ResolversController(BaseController, JWTMixin):
             checkPolicyPre(
                 "admin",
                 "userlist",
-                user=User(resolver_config_identifier=resolver.spec),
+                user=RealmUser(resolver_config_identifier=resolver.spec),
             )
         except PolicyException as exception:
             log.error(
@@ -303,6 +314,108 @@ class ResolversController(BaseController, JWTMixin):
 
         except Exception as exception:
             log.error("[get_users] failed: %r", exception)
+            db.session.rollback()
+            error = sendError(None, exception)
+            error.status_code = 500
+            return error
+
+    def get_user(self, resolver_name, user_id):
+        """
+        Method:  GET /api/v2/resolvers/<resolverName>/users/<userId>
+
+        Display the requested user, provided it is visible to the logged-in
+        administrator.
+
+        A visible user is determined as follows:
+        - If the administrator has the permission for ``scope=admin, action=userlist``,
+        for a certain realm, users of all resolvers in that realm are visible.
+        This is the case no matter how the permission is defined: either by
+        explicitly naming a realm, by setting all realms via a wildcard
+        (realm="*"), or by implicitly giving permissions for everything in the
+        admin scope by not setting any admin scope policies.
+        - If the resolver is not in any realm yet, the user is also visible if
+        the administrator has permissions for all realms as described in the
+        previous point (either via wildcard or implicitly).
+
+        :return:
+            a JSON-RPC response with ``result`` in the following format:
+
+            ..code::
+            {
+                "status": boolean,
+                "value": User
+            }
+
+        :raises PolicyException:
+            if the logged-in admin does not have the correct permissions to list
+            users in the given resolver, the exception message is serialized and
+            returned. The response has status code 403.
+
+        :raises Exception:
+            if the user is not found, the response has status code 404,
+            otherwise if any other error occurs the exception message is
+            serialized and returned with status code 500.
+        """
+
+        try:
+            resolver: Resolver = get_resolver(resolver_name)
+        except Exception as exception:
+            log.error(
+                f"[get_user] cannot find resolver {resolver_name} to retrieve its users",
+            )
+            db.session.rollback()
+            error = sendError(None, exception)
+            error.status_code = 500
+            return error
+
+        try:
+            checkPolicyPre(
+                "admin",
+                "userlist",
+                user=RealmUser(resolver_config_identifier=resolver.spec),
+            )
+        except PolicyException as exception:
+            log.error(
+                f"[get_user] user is not allowed to list users in resolver {resolver_name}"
+            )
+            exception_description = (
+                "Admin has no rights to list users in the requested resolver."
+            )
+            db.session.rollback()
+            error = sendError(None, PolicyException(exception_description))
+            error.status_code = 403
+            return error
+        except Exception as exception:
+            log.error(f"[get_user] failed: {exception}")
+            db.session.rollback()
+            error = sendError(None, exception)
+            error.status_code = 500
+            return error
+
+        try:
+            user_dict = resolver.configuration_instance.getUserInfo(user_id)
+            if not user_dict:
+                message = f"Could not find a user with ID {user_id} in resolver {resolver_name}."
+                raise UserNotFoundException(message)
+            user_dict["userid"] = user_id
+            result = User.from_dict(
+                resolver.name, resolver.type, user_dict
+            ).as_dict()
+
+            g.audit["success"] = True
+
+            db.session.commit()
+            return sendResult(response, result)
+
+        except UserNotFoundException as user_not_found_exception:
+            log.error(f"[get_user] failed: {user_not_found_exception}")
+            db.session.rollback()
+            error = sendError(None, user_not_found_exception)
+            error.status_code = 404
+            return error
+
+        except Exception as exception:
+            log.error(f"[get_user] failed: {exception}")
             db.session.rollback()
             error = sendError(None, exception)
             error.status_code = 500
