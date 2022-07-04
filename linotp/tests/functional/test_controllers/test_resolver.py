@@ -26,19 +26,22 @@
 #
 
 
-"""
-"""
-
 from linotp.tests import TestController
 
 
 class TestResolver(TestController):
     """
-    test for the api endpoing /api/v2/resolver
+    Tests for the endpoints under /api/v2/resolver
     """
 
     def setUp(self):
-        """setup the test controller"""
+        """
+        Set up the test controller.
+
+        Apart from the default admin realm and resolver it creates a resolver
+        called myDefRes contained in mydefrealm and mymixrealm, and a resolver
+        called myOtherRes contained in myotherrealm and mymixrealm.
+        """
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
@@ -53,7 +56,7 @@ class TestResolver(TestController):
         return
 
     def test_resolver_result(self):
-        """verify that the response of resolvers controller contains realms
+        """verify that the response of resolvers e contains realms
 
         get the list of resolvers and verify that they contain the pointer
         to the list of realms
@@ -76,7 +79,7 @@ class TestResolver(TestController):
         """
 
         # ---------------------------------------------------------------- --
-        # access the realms api via the authenticated testing api
+        # access the resolvers api via the authenticated testing api
 
         response = self.make_api_v2_request("/resolvers/")
 
@@ -84,7 +87,7 @@ class TestResolver(TestController):
         assert isinstance(response.json["result"]["value"], list)
 
         # ---------------------------------------------------------------- --
-        # access the tokens api with the unauthenticated testing client
+        # access the resolvers api with the unauthenticated testing client
 
         response = self.client.get("/api/v2/resolvers/")
 
@@ -185,3 +188,222 @@ class TestResolver(TestController):
         self.delete_policy(name="admin3_write_realms", auth_user="admin")
         self.delete_policy(name="admin2_read_realms", auth_user="admin")
         self.delete_policy(name="admin_read_write_realms", auth_user="admin")
+
+    def test_resolver_users_pagination(self):
+        """
+        Request the users from a resolver and ensure that the result contains a
+        paginated list of users.
+        """
+
+        response = self.make_api_v2_request("/resolvers/myDefRes/users")
+
+        assert response.json["result"]["status"]
+        value = response.json["result"]["value"]
+        assert isinstance(value, dict)
+
+        assert "page" in value
+        assert "pageSize" in value
+        assert "totalPages" in value
+        assert "pageRecords" in value
+
+        records = value["pageRecords"]
+        assert isinstance(records, list)
+
+    def test_resolver_users_access(self):
+        """verify that authentication is required for the get_users endpoint
+
+        * first we run an authenticated request via 'make_api_v2_request'
+        * then we run an unauthenticated request via the standard client
+          which will fail with status 401
+        """
+
+        # ---------------------------------------------------------------- --
+        # access the resolvers api via the authenticated testing api
+
+        response = self.make_api_v2_request("/resolvers/myDefRes/users")
+
+        assert response.json["result"]["status"]
+        assert isinstance(response.json["result"]["value"], dict)
+
+        # ---------------------------------------------------------------- --
+        # access the resolvers api with the unauthenticated testing client
+
+        response = self.client.get("/api/v2/resolvers/myDefRes/users")
+
+        assert response.status_code == 401
+
+    def test_resolver_users_permissions(self):
+        """verify that admin/userlist permission is required to read resolvers"""
+
+        # 'admin' has permissions to list users in all resolvers
+
+        admin_read_write_system = {
+            "name": "admin_read_write_system",
+            "active": True,
+            "action": "userlist",
+            "user": "admin",
+            "scope": "admin",
+            "realm": "*",
+            "time": None,
+        }
+
+        response = self.make_system_request(
+            "setPolicy",
+            params=admin_read_write_system,
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # create a restriction to the 'admin2' to only see myDefRealm users
+        admin2_read_myDefRealm = {
+            "name": "admin2_read_myDefRealm",
+            "active": True,
+            "action": "userlist",
+            "user": "admin2",
+            "scope": "admin",
+            "realm": "myDefRealm",
+            "time": None,
+        }
+        response = self.make_system_request(
+            "setPolicy",
+            params=admin2_read_myDefRealm,
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # create a restriction to the 'admin3' to only see myOtherRealm users
+        admin3_read_myOtherRealm = {
+            "name": "admin3_read_myOtherRealm",
+            "active": True,
+            "action": "userlist",
+            "user": "admin3",
+            "scope": "admin",
+            "realm": "myOtherRealm",
+            "time": None,
+        }
+        response = self.make_system_request(
+            "setPolicy",
+            params=admin3_read_myOtherRealm,
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # admin can list users from both resolvers
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users", auth_user="admin"
+        )
+        myDefUsers = response.json["result"]["value"]["pageRecords"]
+        assert len(myDefUsers) == 27
+
+        response = self.make_api_v2_request(
+            "/resolvers/myOtherRes/users", auth_user="admin"
+        )
+        myOtherUsers = response.json["result"]["value"]["pageRecords"]
+        assert len(myOtherUsers) == 8
+
+        # --------------------------------------------------------------- --
+        # admin2 is only allowed to list users from myDefRes
+
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users", auth_user="admin2"
+        )
+        myDefUsers = response.json["result"]["value"]["pageRecords"]
+        assert len(myDefUsers) == 27
+
+        response = self.make_api_v2_request(
+            "/resolvers/myOtherRes/users", auth_user="admin2"
+        )
+
+        assert not response.json["result"]["status"]
+        assert response.status_code == 403
+
+        # --------------------------------------------------------------- --
+        # admin3 is only allowed to list users from myOtherRes
+
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users", auth_user="admin3"
+        )
+        assert not response.json["result"]["status"]
+        assert response.status_code == 403
+
+        response = self.make_api_v2_request(
+            "/resolvers/myOtherRes/users", auth_user="admin3"
+        )
+        myOtherUsers = response.json["result"]["value"]["pageRecords"]
+        assert len(myOtherUsers) == 8
+
+        # --------------------------------------------------------------- --
+        # we delete the policies in the correct order, otherwise this might
+        # fail
+
+        self.delete_policy(name="admin3_read_myOtherRealm", auth_user="admin")
+        self.delete_policy(name="admin2_read_myDefRealm", auth_user="admin")
+        self.delete_policy(name="admin_read_write_system", auth_user="admin")
+
+    def test_users_of_resolver_not_in_realm(self):
+        """
+        Verify that an admin can check the users within a resolver that is not
+        in a realm, as long as they have userlist permissions implicitly due to
+        no admin policy being specified, or explicit permissions to list users
+        in all realms.
+        """
+        # set only myOtherRes as the resolver of both myDefRealm and myMixRealm,
+        # so that myDefResolver is not in any realm.
+        response = self.make_system_request(
+            "setRealm",
+            params={
+                "realm": "myDefRealm",
+                "resolvers": "useridresolver.PasswdIdResolver.IdResolver.myOtherRes",
+            },
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+        response = self.make_system_request(
+            "setRealm",
+            params={
+                "realm": "myMixRealm",
+                "resolvers": "useridresolver.PasswdIdResolver.IdResolver.myOtherRes",
+            },
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # admin can list users from all resolvers implicitly, as no policy has
+        # been set in the admin scope
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users", auth_user="admin"
+        )
+        myDefUsers = response.json["result"]["value"]["pageRecords"]
+        assert len(myDefUsers) == 27
+
+        # 'admin' has explicit permissions to list users in all resolvers
+
+        admin_read_write_system = {
+            "name": "admin_read_write_system",
+            "active": True,
+            "action": "userlist",
+            "user": "admin",
+            "scope": "admin",
+            "realm": "*",
+            "time": None,
+        }
+
+        response = self.make_system_request(
+            "setPolicy",
+            params=admin_read_write_system,
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+
+        # admin can list users from both resolvers
+        response = self.make_api_v2_request(
+            "/resolvers/myDefRes/users", auth_user="admin"
+        )
+        myDefUsers = response.json["result"]["value"]["pageRecords"]
+        assert len(myDefUsers) == 27
+
+        # --------------------------------------------------------------- --
+        # we delete the policies in the correct order, otherwise this might
+        # fail
+
+        self.delete_policy(name="admin_read_write_system", auth_user="admin")

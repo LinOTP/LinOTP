@@ -41,6 +41,7 @@ from linotp.lib.context import request_context as context
 from linotp.lib.crypto.encrypted_data import EncryptedData
 from linotp.lib.realm import getRealms
 from linotp.lib.type_utils import boolean
+from linotp.model.resolver import Resolver
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
@@ -528,6 +529,11 @@ def deleteResolver(resolvername):
             _delete_from_resolver_config_cache(resolver_spec)
 
     return res
+
+
+def getResolverObjectByName(resolver_name: str):
+    resolver_spec = getResolverSpecByName(resolver_name)
+    return getResolverObject(resolver_spec)
 
 
 def getResolverSpecByName(resolver_name):
@@ -1039,4 +1045,16 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
     return param, missing, primary_key_changed
 
 
-# eof #########################################################################
+def get_resolver(resolver_name: str):
+    resolver_dict = getResolverList()[resolver_name]
+    resolver_spec = resolver_dict["spec"]
+    resolver_object = getResolverObject(resolver_spec)
+
+    return Resolver(
+        name=resolver_name,
+        spec=resolver_spec,
+        type=ResolverType(resolver_object.getResolverClassType()),
+        read_only=resolver_dict.get("readonly"),
+        admin=resolver_dict["admin"],
+        config=resolver_object,
+    )

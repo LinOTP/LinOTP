@@ -216,7 +216,9 @@ class Resolver:
         )
 
         try:
-            user_iterator = self.config.getUserListIterator(search_dictionary)
+            user_iterator = self.configuration_instance.getUserListIterator(
+                search_dictionary
+            )
         except AttributeError as no_iterator_found:
             log.info(
                 "Getting user list using iterator not possible. "
@@ -225,18 +227,10 @@ class Resolver:
                 no_iterator_found,
             )
             users = []
-            for user_dict in self.config.getUserList(search_dictionary):
-                user = User(
-                    user_id=user_dict["userid"],
-                    resolver_name=self.name,
-                    resolver_class=self.type,
-                    username=user_dict["username"],
-                    surname=user_dict.get("surname", None),
-                    given_name=user_dict.get("givenname", None),
-                    phone=user_dict.get("phone", None),
-                    mobile=user_dict.get("mobile", None),
-                    email=user_dict.get("email", None),
-                )
+            for user_dict in self.configuration_instance.getUserList(
+                search_dictionary
+            ):
+                user = User.from_dict(self.name, self.type, user_dict)
                 users.append(user)
 
                 user_dict["useridresolver"] = self.spec
@@ -251,17 +245,7 @@ class Resolver:
         users: List[User] = []
         for iteration_results in user_iterator:
             for user_dict in iteration_results:
-                user = User(
-                    user_id=user_dict["userid"],
-                    resolver_name=self.name,
-                    resolver_class=self.type,
-                    username=user_dict["username"],
-                    surname=user_dict.get("surname", None),
-                    given_name=user_dict.get("givenname", None),
-                    phone=user_dict.get("phone", None),
-                    mobile=user_dict.get("mobile", None),
-                    email=user_dict.get("email", None),
-                )
+                user = User.from_dict(self.name, self.type, user_dict)
                 users.append(user)
 
                 user_dict["useridresolver"] = self.spec
