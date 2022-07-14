@@ -89,7 +89,8 @@ class TestSystemConfig:
                 f"Previous state was {split_at_pre_state}, current state is {split_at_state} "
                 f"but expected {not split_at_pre_state} after changing it"
             )
-            # Test the other way around (set state for checkboxto the status at test start)
+
+            # Test the other way around (set state for checkbox to the status at test start)
             self.system_config.setSplitAt(split_at_pre_state)
             self.system_config.save()
 

@@ -25,11 +25,11 @@
 #
 """ contains user - related functions """
 
-import base64
 import json
 import logging
 import re
 from functools import partial
+from typing import Dict
 
 from flask_jwt_extended.utils import get_jwt_identity
 
@@ -51,8 +51,6 @@ from linotp.lib.resolver import (
     getResolverObject,
     parse_resolver_spec,
 )
-from linotp.lib.type_utils import get_duration
-from linotp.lib.util import get_request_param
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
 ENCODING = "utf-8"
@@ -629,6 +627,37 @@ def getUserFromRequest():
     :return: the authenticated user as user object or None
     """
     return request_context.get("AuthUser", None)
+
+
+def get_userinfo(user: User, secure: bool = True) -> Dict:
+    """ "
+    gather information about a user to be returned for rendering
+
+    - to ease the rendering process, in case of an error we just return an
+      empyt structure and log the errors
+
+    :param user: User class object
+    :param secure: defines if the crypted password will be part of the
+                   returned structure
+    """
+
+    uinfo = {"realm": "", "resolver": "", "username": ""}
+
+    try:
+
+        (uid, resolver, resolver_class) = getUserId(user)
+        uinfo = getUserInfo(uid, resolver, resolver_class)
+
+        if secure and "cryptpass" in uinfo:
+            del uinfo["cryptpass"]
+
+        uinfo["realm"] = user.realm
+        uinfo["resolver"] = resolver.rpartition(".")[-1]
+
+    except Exception as exx:
+        log.error("failed to gather user information %r", exx)
+
+    return uinfo
 
 
 def setRealm(realm, resolvers):

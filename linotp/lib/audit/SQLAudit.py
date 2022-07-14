@@ -165,7 +165,16 @@ class Audit(AuditBase):
         # initialize signing keys
         self.readKeys()
 
-        self.rsa = RSA_Signature(private=self.private.encode("utf-8"))
+        try:
+            private_key = self.private.encode("utf-8")
+            self.rsa = RSA_Signature(private=private_key)
+        except Exception as exx:
+            log.error(
+                "Failed to run the RSA_Signature intitalisation %r: %r",
+                private_key,
+                exx,
+            )
+            raise exx
 
     def _attr_to_dict(self, audit_line):
 

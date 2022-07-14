@@ -46,6 +46,7 @@ from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
 from linotp.lib.policy import _get_auth_PinPolicy
@@ -308,6 +309,7 @@ class SelfserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, context="after")
 
+    @deprecated_methods(["POST"])
     def index(self):
         """
         This is the redirect to the first template
@@ -316,6 +318,7 @@ class SelfserviceController(BaseController):
         c.title = _("LinOTP Self Service")
         return render("selfservice/base.mako")
 
+    @deprecated_methods(["POST"])
     def logout(self):
         """
         handle the logout
@@ -334,6 +337,7 @@ class SelfserviceController(BaseController):
 
         return redirect_response
 
+    @deprecated_methods(["POST"])
     def login(self):
         """
         render the selfservice login page
@@ -376,6 +380,7 @@ class SelfserviceController(BaseController):
 
         return response
 
+    @deprecated_methods(["POST"])
     def load_form(self):
         """
         This shows the enrollment form for a requested token type.
@@ -445,6 +450,7 @@ class SelfserviceController(BaseController):
                 _("Failed to load form"), _("Error"), exx
             )
 
+    @deprecated_methods(["POST"])
     def custom_style(self):
         """
         In case the user hasn't defined a custom css, Pylons calls this action.
@@ -455,6 +461,7 @@ class SelfserviceController(BaseController):
         response.headers["Content-type"] = "text/css"
         return response
 
+    @deprecated_methods(["POST"])
     def assign(self):
         """
         In this form the user may assign an already existing Token to himself.
@@ -462,6 +469,7 @@ class SelfserviceController(BaseController):
         """
         return render("/selfservice/assign.mako")
 
+    @deprecated_methods(["POST"])
     def resync(self):
         """
         In this form, the user can resync an HMAC based OTP token
@@ -469,18 +477,21 @@ class SelfserviceController(BaseController):
         """
         return render("/selfservice/resync.mako")
 
+    @deprecated_methods(["POST"])
     def reset(self):
         """
         In this form the user can reset the Failcounter of the Token.
         """
         return render("/selfservice/reset.mako")
 
+    @deprecated_methods(["POST"])
     def getotp(self):
         """
         In this form, the user can retrieve OTP values
         """
         return render("/selfservice/getotp.mako")
 
+    @deprecated_methods(["POST"])
     def disable(self):
         """
         In this form the user may select a token of his own and
@@ -488,6 +499,7 @@ class SelfserviceController(BaseController):
         """
         return render("/selfservice/disable.mako")
 
+    @deprecated_methods(["POST"])
     def enable(self):
         """
         In this form the user may select a token of his own and
@@ -495,6 +507,7 @@ class SelfserviceController(BaseController):
         """
         return render("/selfservice/enable.mako")
 
+    @deprecated_methods(["POST"])
     def unassign(self):
         """
         In this form the user may select a token of his own and
@@ -502,6 +515,7 @@ class SelfserviceController(BaseController):
         """
         return render("/selfservice/unassign.mako")
 
+    @deprecated_methods(["POST"])
     def delete(self):
         """
         In this form the user may select a token of his own and
@@ -509,6 +523,7 @@ class SelfserviceController(BaseController):
         """
         return render("/selfservice/delete.mako")
 
+    @deprecated_methods(["POST"])
     def setpin(self):
         """
         In this form the user may set the OTP PIN, which is the static password
@@ -516,6 +531,7 @@ class SelfserviceController(BaseController):
         """
         return render("/selfservice/setpin.mako")
 
+    @deprecated_methods(["POST"])
     def setmpin(self):
         """
         In this form the user my set the PIN for his mOTP application soft
@@ -524,12 +540,14 @@ class SelfserviceController(BaseController):
         """
         return render("/selfservice/setmpin.mako")
 
+    @deprecated_methods(["POST"])
     def history(self):
         """
         This is the form to display the history table for the user
         """
         return render("/selfservice/history.mako")
 
+    @deprecated_methods(["POST"])
     def landing(self):
         """
         This is the landing page for selfservice
@@ -537,12 +555,14 @@ class SelfserviceController(BaseController):
         c.tokenArray = getTokenForUser(self.authUser)
         return render("/selfservice/landing.mako")
 
+    @deprecated_methods(["POST"])
     def webprovisionoathtoken(self):
         """
         This is the form for an oathtoken to do web provisioning.
         """
         return render("/selfservice/webprovisionoath.mako")
 
+    @deprecated_methods(["POST"])
     def webprovisiongoogletoken(self):
         """
         This is the form for an google token to do web provisioning.
@@ -555,6 +575,7 @@ class SelfserviceController(BaseController):
             log.error("[webprovisiongoogletoken] failed with error: %r", exx)
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def usertokenlist(self):
         """
         This returns a tokenlist as html output

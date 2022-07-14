@@ -42,6 +42,7 @@ from flask import send_file as flask_send_file
 from linotp import flap
 from linotp.flap import config, request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.config import (
     getFromConfig,
     getLinotpConfig,
@@ -112,7 +113,7 @@ from linotp.provider import (
 from linotp.tokens import tokenclass_registry
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
-from .base import BaseController
+from .base import BaseController, methods
 
 log = logging.getLogger(__name__)
 
@@ -206,35 +207,25 @@ class SystemController(BaseController):
             return sendError(response, exx, context="after")
 
     ########################################################
-
+    @methods(["POST"])
     def setDefault(self):
         """
-        method:
-            system/set
+        define default settings for tokens
 
-        description:
-            define default settings for tokens. These default settings
-            are used when new tokens are generated. The default settings will
-            not affect already enrolled tokens.
-
-        arguments:
-            DefaultMaxFailCount    - Default value for the maximum allowed
-                                     authentication failures
-            DefaultSyncWindow      - Default value for the
-                                     synchronization window
-            DefaultCountWindow     - Default value for the counter window
-            DefaultOtpLen          - Default value for the OTP value length --
-                                     usuall 6 or 8
-            DefaultResetFailCount  - Default value, if the FailCounter should
-                                     be reset on successful authentication
-                                     [True|False]
+        These default settings are used when new tokens are generated.
+        The default settings will not affect already enrolled tokens.
 
 
-        returns:
-            a json result with a boolean
-              "result": true
+        :param DefaultMaxFailCount:    - Default value for the maximum allowed authentication failures
+        :param DefaultSyncWindow:      - Default value for the synchronization window
+        :param DefaultCountWindow:     - Default value for the counter window
+        :param DefaultOtpLen:          - Default value for the OTP value length - usually 6 or 8
+        :param DefaultResetFailCount:  - Default value, if the FailCounter should be reset on successful authentication [True|False]
 
-        exception:
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -290,6 +281,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def setConfig(self):
         """
         set a configuration key or a set of configuration entries
@@ -313,6 +305,9 @@ class SystemController(BaseController):
         :param key-value pairs: pair of &keyname=value pairs
 
         :return: a json result with a boolean "result": true
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         res = {}
@@ -428,14 +423,17 @@ class SystemController(BaseController):
                 delete_realm_resolver_cache(realm)
 
     ########################################################
-
+    @methods(["POST"])
     def delConfig(self):
         """
         delete a configuration key
-        * if an error occurs an exception is serializedsetConfig and returned
+        if an error occurs an exception is serializedsetConfig and returned
 
         :param key: configuration key name
         :returns: a json result with the deleted value
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
 
         """
         log.info("[delConfig] with params: %r", self.request_params)
@@ -463,20 +461,22 @@ class SystemController(BaseController):
 
     ########################################################
     ########################################################
-
+    @deprecated_methods(["POST"])
     def getConfig(self):
         """
         retrieve value of a defined configuration key, or if no key is given,
         the complete configuration is returned
         if an error occurs an exception is serialized and returned
 
-        * remark: the assumption is, that the access to system/getConfig
+        .. note:: the assumption is, that the access to system/getConfig
                   is only allowed to privileged users
 
         :param key: generic configuration entry name (optional)
 
         :return: a json result with key value or all key + value pairs
 
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         res = {}
 
@@ -546,27 +546,25 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def getRealms(self):
         """
-        method:
-            system/getRealms
+        returns all realm definitinos as a json result.
 
-        description:
-            returns all realm definitinos as a json result.
+        .. note::
+            Either the admin is allowed by the policy scope=system, action=read
+            or he is allowed in scope=admin for some realms.
+            If he does not have the system-read-right, then he will only
+            see the realms, he is admin of.
 
-        arguments:
-
-        returns:
+        :params realm: (optional) a realm name
+        :return:
             a json result with a list of Realms
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
 
-        Either the admin has the policy scope=system, action=read
-        or he is rights in scope=admin for some realms.
-        If he does not have the system-read-right, then he will only
-        see the realms, he is admin of.
         """
 
         try:
@@ -582,7 +580,7 @@ class SystemController(BaseController):
             # If the admin is not allowed to see all realms,
             #                 (policy scope=system, action=read)
             # the realms, where he has no administrative rights need,
-            # to be stripped, which is done by the checkPolicyPost, that
+            # to be stripped, which is done by the ch                                                                       eckPolicyPost, that
             # returns the acl with the allowed realms as entry
             #
 
@@ -605,44 +603,42 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def setResolver(self):
         """
-        method:
-            system/setResolver
 
-        description:
-            creates or updates a useridresolver
+        creates or updates a useridresolver
 
-        arguments:
-            name    -    the name of the resolver
-            type    -    the type of the resolver [ldapsersolver, sqlresolver]
+        :param name: the name of the resolver
+        :param type: the type of the resolver [ldapsersolver, sqlresolver]
 
-            LDAP:
-                LDAPURI
-                LDAPBASE
-                BINDDN
-                BINDPW
-                TIMEOUT
-                SIZELIMIT
-                LOGINNAMEATTRIBUTE
-                LDAPSEARCHFILTER
-                LDAPFILTER
-                USERINFO
-                NOREFERRALS        - True|False
-            SQL:
-                Database
-                Driver
-                Server
-                Port
-                User
-                Password
-                Table
-                Map
+        for LDAP resolver:
+        :param LDAPURI:
+        :param LDAPBASE:
+        :param BINDDN:
+        :param BINDPW:
+        :param TIMEOUT:
+        :param SIZELIMIT:
+        :param LOGINNAMEATTRIBUTE:
+        :param LDAPSEARCHFILTER:
+        :param LDAPFILTER:
+        :param USERINFO:
+        :param NOREFERRALS:        - True|False
 
-        returns:
-            a json result with the found value
+        for SQL resolver:
+        :param Database:
+        :param Driver:
+        :param Server:
+        :param Port:
+        :param User:
+        :param Password:
+        :param Table:
+        :param Map:
 
-        exception:
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -805,20 +801,15 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def getResolvers(self):
         """
-        method:
-            system/getResolvers
+        returns a json list of all useridresolvers
 
-        descriptions:
-            returns a json list of all useridresolvers
-
-        arguments:
-
-        returns:
+        :return:
             a json result with a list of all available resolvers
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -837,22 +828,18 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def delResolver(self):
         """
-        method:
-            system/delResolver
+        this function deletes an existing resolver
+        All config keys of this resolver get deleted
 
-        description:
-            this function deletes an existing resolver
-            All config keys of this resolver get deleted
+        :param resolver: the name of the resolver to delete.
 
-        arguments:
-            resolver - the name of the resolver to delete.
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            success state
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -911,22 +898,16 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
-
+    @deprecated_methods(["POST"])
     def getResolver(self):
         """
-        method:
-            system/getResolver
+        this function retrieves the definition of the resolver
 
-        description:
-            this function retrieves the definition of the resolver
+        :param resolver: the name of the resolver
 
-        arguments:
-            resolver - the name of the resolver
-
-        returns:
+        :return:
             a json result with the configuration of a specified resolver
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -961,21 +942,17 @@ class SystemController(BaseController):
             log.debug("[getResolver] done")
 
     ########################################################
+    @methods(["POST"])
     def setDefaultRealm(self):
         """
-        method:
-            system/setDefaultRealm
+        set the given realm to the default realm
 
-        description:
-            this function sets the given realm to the default realm
+        :param realm: the name of the realm, that should be the default realm
 
-        arguments:
-            realm - the name of the realm, that should be the default realm
-
-        returns:
+        :return:
             a json result with a list of Realms
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1006,21 +983,15 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def getDefaultRealm(self):
         """
-        method:
-            system/getDefaultRealm
+        return the default realm
 
-        description:
-            this function returns the default realm
-
-        arguments:
-            ./.
-
-        returns:
+        :return:
             a json description of the default realm
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
         """
         res = False
@@ -1041,24 +1012,19 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def setRealm(self):
         """
-        method:
-            system/setRealm
+        define a realm with the given useridresolvers
 
-        description:
-            this function is used to define a realm with the given
-            useridresolvers
-
-        arguments:
-            * realm     - name of the realm
-            * resolvers - comma separated list of resolvers, that should be
+        :param realm: name of the realm
+        :param resolvers: comma separated list of resolvers, that should be
               in this realm
 
-        returns:
+        :return:
             a json result with a list of Realms
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1128,21 +1094,17 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def delRealm(self):
         """
-        method:
-            system/delRealm
+        deletes the specified realm
 
-        description:
-            this function deletes the given realm
+        :param realm - the name of the realm to be deleted
 
-        arguments:
-            realm - the name of the realm to be deleted
-
-        returns:
+        :return:
             a json result if deleting the realm was successful
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1177,14 +1139,10 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
-
+    @methods(["POST"])
     def setPolicy(self):
         """
-        method:
-            system/setPolicy
-
-        description:
-            Stores a policy that define ACL or behaviour of several different
+        Stores a policy that define ACL or behaviour of several different
             actions in LinOTP. The policy is stored as configuration values
             like this::
 
@@ -1192,19 +1150,18 @@ class SystemController(BaseController):
                 Policy.<NAME>.scope
                 Policy.<NAME>.realm
 
-        arguments:
-            name:       name of the policy
-            action:     which action may be executed
-            scope:      selfservice
-            realm:      This polcy holds for this realm
-            user:       (optional) This polcy binds to this user
-            time:       (optional) on which time does this policy hold
-            client:     (optional) for which requesting client this should be
 
-        returns:
-            a json result with success or error
+        :param name: name of the policy
+        :param action: which action may be executed
+        :param scope: selfservice
+        :param realm: This polcy holds for this realm
+        :param user: (optional) This polcy binds to this user
+        :param time: (optional) on which time does this policy hold
+        :param client: (optional) for which requesting client this should be:
+        :return:
+            a json result with a boolean status and request result
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1288,11 +1245,28 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def policies_flexi(self):
         """
         This function is used to fill the policies tab
+
         Unlike the complex /system/getPolcies function, it only returns a
         simple array of the tokens.
+
+        :param name:
+        :param realm:
+        :param scope:
+        :param sortname:
+        :param sortorder:
+        :param page:
+        :param psize:
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         pol = {}
@@ -1394,27 +1368,25 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @deprecated_methods(["POST"])
     def getPolicyDef(self):
         """
-        method:
-            system/getPolicyDef
 
-        description:
-            This is a helper function that returns the POSSIBLE policy
-            definitions, that can be used to define your policies.
+        This is a helper function that returns the POSSIBLE policy
+        definitions, that can be used to define your policies.
 
-        arguments:
-            scope - optional - if given, the function will only return policy
+        :param scope: (optional) if given, the function will only return policy
                                definitions for the given scope.
 
-        returns:
+        :return:
              the policy definitions of
               - allowed scopes
               - allowed actions in scopes
               - type of actions
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
+
         """
         pol = {}
 
@@ -1446,10 +1418,12 @@ class SystemController(BaseController):
         add the policy description of the dynamic token
 
         :param scope: scope of the policy definition
-        :type  scope: string
 
-        :return: policy dict
-        :rtype:  dict
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
 
         """
         pol = {}
@@ -1478,16 +1452,18 @@ class SystemController(BaseController):
         return pol
 
     #########################################################
+    @methods(["POST"])
     def importPolicy(self):
         """
-        method:
-            system/importPolicy
+        import policies from a file.
 
-        description:
-            This function is used to import policies from a file.
+        :param file: (mandatory) The policy file in the POST request
 
-        arguments:
-            file - mandatory: The policy file in the POST request
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         # setup the response methods
@@ -1556,28 +1532,26 @@ class SystemController(BaseController):
             return sendErrorMethod(response, exx)
 
     ############################################################
+    @deprecated_methods(["POST"])
     def checkPolicy(self):
         """
-        method:
-            system/checkPolicy
+        checks if a the given parameter will trigger a policy or not.
 
-        description:
-            this function checks if a the given parameter will trigger a
-            policy or not.
+        :param user:  the name of the user
+        :param realm: the realm
+        :param scope: the scope
+        :param action: the action
+        :param client: the client IP
 
-        arguments:
-            * user   - the name of the user
-            * realm  - the realm
-            * scope  - the scope
-            * action
-            * client - the client IP
-
-        returns:
+        :return:
             a json result like this:
               value : { "allowed" : "true",
                         "policy" : <Name der Policy, die das erlaubt hat> }
               value : { "allowed" : "false",
                          "info" : <sowas wie die Fehlermeldung> }
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
 
         """
         res = {}
@@ -1663,35 +1637,24 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ##########################################################################
+    @deprecated_methods(["POST"])
     def getPolicy(self, id=None):
         """
-        method:
-            system/getPolicy
+        retrieve a specified policies
 
-        params:
-            id: (optional) Unused (but left for compatibility).
+        :param id: (optional) Unused (but left for compatibility).
+        :param realm: (optional) will return all policies in the given realm
+        :param name:  (optional) will only return the policy with the given name
+        :param action:  (optional) will only return the policy with the given action
+        :param user:  (optional) will only return the policy for this user
+        :param scope: (optional) will only return the policies within the given scope
 
-        description:
-            this function is used to retrieve the policies that you
-            defined.
+        :param display_inactive: (optional) if set, then also inactive policies will be displayed
 
-        arguments:
-            * realm - (optional) will return all policies in the given realm
-            * name  - (optional) will only return the policy with the given
-                                name
-            * action  (optional) will only return the policy with the given
-                                 action
-            * user    (optional) will only return the policy for this user
-            * scope - (optional) will only return the policies within the
-                                 given scope
-
-            * display_inactive - (optional) if set, then also inactive policies
-                                            will be displayed
-
-        returns:
+        :return:
             a json result with the configuration of the specified policies
 
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1796,21 +1759,17 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
     ########################################################
+    @methods(["POST"])
     def delPolicy(self):
         """
-        method:
-            system/delPolicy
+        deletes the specified policy
 
-        description:
-            this function deletes the policy with the given name
+        :param name: the policy with the given name
 
-        arguments:
-            name  - the policy with the given name
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            a json result about the delete success
-
-        exception:
+        :raises Exception:
             if an error occurs an exception is serialized and returned
 
         """
@@ -1849,8 +1808,19 @@ class SystemController(BaseController):
             db.session.close()
 
     ########################################################
-
+    @methods(["POST"])
     def setupSecurityModule(self):
+        """
+        start the pool of security modules
+
+        :param hsm_id: the id for the hsm (mostly the slot id)
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
+        """
 
         res = {}
 
@@ -1911,10 +1881,17 @@ class SystemController(BaseController):
 
     ########################################################
 
+    @deprecated_methods(["POST"])
     def getSupportInfo(self):
         """
         return the support status, which is community support by default
         or the support subscription info, which could be the old license
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         res = {}
         try:
@@ -1933,6 +1910,7 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def isSupportValid(self):
         """
         verifies the support license status
@@ -1941,6 +1919,13 @@ class SystemController(BaseController):
             status and value in response are both true
         else
             value is false and the detail is returned as detail in the response
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         res = {}
@@ -2019,12 +2004,21 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @methods(["POST"])
     def setSupport(self):
         """
         hook to load a support subscription file
 
         receives the data with a form post file upload
         and installes it after license verification
+
+        :param format: the response format, either xml/htmll or jsom
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
         res = False
         message = None
@@ -2069,22 +2063,21 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendErrorMethod(response, exx)
 
+    @methods(["POST"])
     def setProvider(self):
         """
-        method:
-            system/setProvider
+        creates or updates SMS- and Email-provider
 
-        description:
-            creates or updates SMS- and Email-provider
+        :param name: the name of the provider in LinOTP
+        :param type: the type of the provider [email, sms]
+        :param class: the name of the provider
+        :param config: the configuration for this provider
+        :param timeout: the timeout
 
-        arguments:
-            name        - the name of the provider in LinOTP
-            type        - the type of the provider [email, sms]
-            class       - the name of the provider
-            config      - the configuration for this provider
-            timeout     - the timeout
+        :return: jsom document with value True or False with message in detail
 
-        :return: boolean - True or False with message in detail
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         res = {}
@@ -2148,20 +2141,19 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def getProvider(self):
         """
-        method:
-            system/getProviders
+        get a dict of SMS- and Email-providers
 
-        description:
-            get a dict of SMS- and Email-providers
-
-        arguments:
-            name (optional) - the name of the provider in LinOTP
-            type - the type of the provider: SMS or EMail
+        :param name: (optional) the name of the provider in LinOTP
+        :param type:  the type of the provider: SMS or EMail
 
         :return: dictionary of provider with its entries as dictionary
                  {'ProviderA' : { 'Timeout': '100', ...}
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         res = {}
@@ -2194,19 +2186,18 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @methods(["POST"])
     def testProvider(self):
         """
-        method:
-            system/testProviders
+        if the provider has a test interface, the provider test is run
 
-        description:
-            if the provider has a test interface, the provider test is run
-
-        arguments:
-            name required - the name of the provider in LinOTP
+        :param name: required - the name of the provider in LinOTP
 
         :return: dictionary of provider with its entries as dictionary
                  {'ProviderA' : { 'Timeout': '100', ...}
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         status = False
@@ -2236,20 +2227,19 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @methods(["POST"])
     def delProvider(self):
         """
-        method:
-            system/delProviders
+        delete the specified SMS- and Email-providers
 
-        description:
-            delete a SMS- and Email-providers
-
-        arguments:
-            name - the name of the SMS or EMail Provider
-            type - the provider type
+        :param name: the name of the SMS or EMail Provider
+        :param type: the provider type
 
         :return: boolean, true if number of deleted config entries is > 0
                           else False with message in detail
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         res = {}
@@ -2295,20 +2285,19 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @methods(["POST"])
     def setDefaultProvider(self):
         """
-        method:
-            system/setDefaultProvider
+        set the specified provider (SMS- and Email) as default
 
-        description:
-            set provider (SMS- and Email) as default
-
-        arguments:
-            name - the name of the SMS or EMail Provider
-            type - the provider type
+        :param name: the name of the SMS or EMail Provider
+        :param type: the provider type
 
         :return: boolean, true if number of deleted config entries is > 0
                           else False with message in detail
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         res = {}
@@ -2333,20 +2322,20 @@ class SystemController(BaseController):
             db.session.rollback()
             return sendError(response, exx)
 
+    @deprecated_methods(["POST"])
     def getProviderDef(self):
         """
-        method:
-            system/getProviderDef
+        get the definition of the specified  provider
+        - used for automatic rendering
 
-        description:
-            get definition of a provider - used for automatic rendering
-
-        arguments:
-            type (required) - the provider type
-            class (optional) - the specific class definition or the parent
+        :param type: (required) the provider type
+        :param class: (optional) the specific class definition or the parent
                                class definition if not specified
         :return:  dictionary with the class as key and the parameters with
                   their types as dictionaries
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         res = {}

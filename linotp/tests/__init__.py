@@ -1060,9 +1060,7 @@ class TestController(TestCase):
 
         params["session"] = auth_cookie
         params["user"] = user
-        response = self.client.get(
-            "/userservice/" + action, query_string=params
-        )
+        response = self.client.post("/userservice/" + action, data=params)
 
         response.body = response.data.decode("utf-8")
         return response

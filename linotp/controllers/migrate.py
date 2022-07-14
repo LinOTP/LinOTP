@@ -36,8 +36,9 @@ import json
 import logging
 import os
 
-from linotp.controllers.base import BaseController
+from linotp.controllers.base import BaseController, methods
 from linotp.flap import response
+from linotp.lib import deprecated_methods
 from linotp.lib.migrate import DecryptionError, MigrationHandler
 from linotp.lib.policy import PolicyException
 from linotp.lib.reply import sendError, sendResult
@@ -71,15 +72,16 @@ class MigrateController(BaseController):
         """
         return response
 
+    @methods(["POST"])
     def backup(self):
         """
         create a backup of
-        - the encrypted token data, which could be
+          - the encrypted token data, which could be
             seed or pin (if encrypted) or userpin (used in motp, ocra2)
-        - the config entries of type password
+          - the config entries of type password
 
         the data
-            - is encrypte with a given passphrase
+            - is encrypted with a given passphrase
             - and stored in an backup file (defined by the hash of backupid)
 
         :param pass: passphrase used for encrypting data in the backup file
@@ -145,6 +147,7 @@ class MigrateController(BaseController):
             log.error("[backup] failed: %r", exx)
             return sendError(response, exx)
 
+    @methods(["POST"])
     def restore(self):
         """
         restore the encrypted config and token data from a backup file

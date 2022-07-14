@@ -2845,21 +2845,6 @@ function token_last_access_constrain() {
 function save_system_config() {
     show_waiting();
 
-    // block of config values which are input based
-    var params = {
-        'AutoResyncTimeout': $('#sys_autoResyncTimeout').val(),
-        'mayOverwriteClient': $('#sys_mayOverwriteClient').val(),
-        'totp.timeShift': $('#totp_timeShift').val(),
-        'totp.timeStep': $('#totp_timeStep').val(),
-        'totp.timeWindow': $('#totp_timeWindow').val(),
-        'client.FORWARDED_PROXY': $('#sys_forwarded_proxy').val(),
-        'user_lookup_cache.expiration': $('#sys_user_cache_expiration').val(),
-        'resolver_lookup_cache.expiration': $('#sys_resolver_cache_expiration').val()
-    }
-
-    setSystemConfig(params);
-
-    // second block of config values which are checkbox based
     var allowsaml = "False";
     if ($("#sys_allowSamlAttributes").is(':checked')) {
         allowsaml = "True";
@@ -2937,6 +2922,14 @@ function save_system_config() {
         'resolver_lookup_cache.enabled': resolver_cache_enabled,
         'user_lookup_cache.enabled': user_cache_enabled,
         'token.last_access': token_last_access,
+	'AutoResyncTimeout': $('#sys_autoResyncTimeout').val(),
+        'mayOverwriteClient': $('#sys_mayOverwriteClient').val(),
+        'totp.timeShift': $('#totp_timeShift').val(),
+        'totp.timeStep': $('#totp_timeStep').val(),
+        'totp.timeWindow': $('#totp_timeWindow').val(),
+        'client.FORWARDED_PROXY': $('#sys_forwarded_proxy').val(),
+        'user_lookup_cache.expiration': $('#sys_user_cache_expiration').val(),
+        'resolver_lookup_cache.expiration': $('#sys_resolver_cache_expiration').val()
     };
 
     setSystemConfig(params);
@@ -4019,6 +4012,15 @@ $(document).ready(function () {
             }
         }
     };
+
+
+    // load the logged in admin user info to show its name
+    $.ajax({ url: '/manage/context' }).then(function (response) {
+        var user = response.detail.user;
+        $(".admin_user").text(
+            user.username + "@" + user.realm + " (" + user.resolver + ")"
+        );
+    });
 
     // load the server config
     var server_config;
