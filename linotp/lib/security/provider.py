@@ -126,7 +126,7 @@ class SecurityProvider(object):
 
         return
 
-    def loadSecurityModule(self, id=None):
+    def loadSecurityModule(self, module_id=None):
         """
         return the specified security module
 
@@ -139,15 +139,15 @@ class SecurityProvider(object):
 
         ret = None
 
-        if id is None:
-            id = self.activeOne
+        if module_id is None:
+            module_id = self.activeOne
 
-        log.debug("[loadSecurityModule] Loading module %s", id)
+        log.debug("[loadSecurityModule] Loading module %s", module_id)
 
-        if id not in self.config:
+        if module_id not in self.config:
             return ret
 
-        config = self.config.get(id)
+        config = self.config.get(module_id)
         if "module" not in config:
             return ret
 
@@ -174,7 +174,7 @@ class SecurityProvider(object):
                 raise NameError(error)
 
         ret = klass(config, add_conf=additional_config)
-        self.security_modules[id] = ret
+        self.security_modules[module_id] = ret
 
         log.debug("[loadSecurityModule] returning %r", ret)
 
@@ -234,7 +234,13 @@ class SecurityProvider(object):
 
     def createHSMPool(self, hsm_id=None, *args, **kw):
         """
-        setup a pool of security providers
+        Setup the pool of security module connections
+
+        :param hsm_id: The id of the hsm provider which must exist in the hsm config,
+        if None the one from the config will be used
+
+        :return: The created pool (list) of hsm connections
+
         """
         pool = None
         # amount has to be taken from the hsm-id config
@@ -283,7 +289,15 @@ class SecurityProvider(object):
                 self.hsmpool[provider_id] = pool
         return pool
 
-    def _findHSM4Session(self, pool, sessionId):
+    def _find_hsm_of_session(self, pool, sessionId):
+        """
+        Searches the hsm pool and finds the hsm connection allocated by the
+        thread (sessionId)
+
+        :param pool: The pool (list) of hsm connections to search in.
+        :param sessionId: The thread id which the hsm connection should be allocated by.
+        :return: the hsm connection found or None
+        """
         found = None
         # find session
         for hsm in pool:
@@ -292,7 +306,17 @@ class SecurityProvider(object):
                 found = hsm
         return found
 
-    def _createHSM4Session(self, pool, sessionId):
+    def _allocate_hsm_for_session(self, pool, sessionId):
+        """
+        Searches the pool for an un-allocated hsm connection and assigns it to
+        the thread id (session)
+
+        :param pool: The hsm pool (list) of connections to search in
+        :param sessionId: Thread id that will be allocated to the found hsm
+
+        :return: The found hsm from the pool
+
+        """
         found = None
         for hsm in pool:
             hsession = hsm.get("session")
@@ -303,6 +327,16 @@ class SecurityProvider(object):
         return found
 
     def _freeHSMSession(self, pool, sessionId):
+        """
+        Look in the pool and find the hsm connection which is allocated by
+        the thread (sessionId) and make it free.
+
+        :param pool: The hsm pool (list) of connections
+        :param sessionId: the thread id for which the alllocated hsm connection
+        should be freed
+
+        :return: the free hsm connection
+        """
         hsm = None
         for hsm in pool:
             hsession = hsm.get("session")
@@ -312,6 +346,18 @@ class SecurityProvider(object):
         return hsm
 
     def dropSecurityModule(self, hsm_id=None, sessionId=None):
+        """
+        Searches in the hsm pool and finds the hsm connection allocated by the
+        thread (sessionId) and makes that hsm connection free
+
+        :param hsm_id: the identifier of the hsm pool which is stated in the hsm config
+        :param sessionId: the thread id
+
+        :return: expected to be True if it succeeds to drop, false if it fails
+
+        """
+
+        result = None
         found = None
         if hsm_id is None:
             hsm_id = self.activeOne
@@ -325,26 +371,36 @@ class SecurityProvider(object):
             )
             log.error(error)
             raise HSMException(error, id=707)
-            return None
 
         # find session
         try:
             pool = self._getHsmPool_(hsm_id)
             self.rwLock.acquire_write()
-            found = self._findHSM4Session(pool, sessionId)
+            found = self._find_hsm_of_session(pool, sessionId)
+
             if found is None:
                 log.info(
-                    "[SecurityProvider:dropSecurityModule] could not bind "
-                    "hsm to session %r ",
+                    "[SecurityProvider:dropSecurityModule] could not find  "
+                    "hsm connection allocated by thread in hsm pool: %r ",
                     hsm_id,
                 )
             else:
-                self._freeHSMSession(pool, sessionId)
+                result = self._freeHSMSession(pool, sessionId)
         finally:
             self.rwLock.release()
-        return True
+        return result is not None
 
     def getSecurityModule(self, hsm_id=None, sessionId=None):
+        """
+        Allocate a security module for the sessionId
+
+        :param hsm_id: Specifies from which pool to choose. It will use the
+        activeOne if it's not specified
+        :param sessionId: Specifies the threadId which will be used for the
+        allocation of the hsm connection
+
+        :return: The allocated hsm connection
+        """
         found = None
         if hsm_id is None:
             hsm_id = self.activeOne
@@ -369,7 +425,7 @@ class SecurityProvider(object):
                 self.rwLock.acquire_write()
                 locked = True
                 # find session
-                found = self._findHSM4Session(pool, sessionId)
+                found = self._find_hsm_of_session(pool, sessionId)
                 if found is not None:
                     # if session is ok - return
                     self.rwLock.release()
@@ -388,7 +444,7 @@ class SecurityProvider(object):
                         sessionId,
                         pool,
                     )
-                    found = self._createHSM4Session(pool, sessionId)
+                    found = self._allocate_hsm_for_session(pool, sessionId)
                     self.rwLock.release()
                     locked = False
                     if found is None:
@@ -418,46 +474,3 @@ class SecurityProvider(object):
                     self.rwLock.release()
 
         return found
-
-
-def main():
-    class DummySecLock:
-        def release(self):
-            return
-
-        def acquire_write(self):
-            return
-
-    # hook for local provider test
-    sep = SecurityProvider(secLock=DummySecLock())
-    sep.load_config({})
-    sep.createHSMPool("default")
-    sep.setupModule("default", {"passwd": "test123"})
-
-    # runtime catch an hsm for session
-    hsm = sep.getSecurityModule()
-
-    passwo = "password"
-    encpass = hsm.encryptPassword(passwo)
-    passw = hsm.decryptPassword(encpass)
-
-    zerome(passw)
-
-    hsm2 = sep.getSecurityModule(sessionId="session2")
-
-    passwo = "password"
-    encpass = hsm2.encryptPassword(passwo)
-    passw = hsm2.decryptPassword(encpass)
-
-    zerome(passw)
-
-    # session shutdown
-    sep.dropSecurityModule(sessionId="session2")
-    sep.dropSecurityModule()
-
-    return True
-
-
-if __name__ == "__main__":
-
-    main()

@@ -38,6 +38,7 @@ from linotp import flap
 from linotp.controllers.base import BaseController
 from linotp.flap import abort, config, request, response
 from linotp.flap import tmpl_context as c
+from linotp.lib import deprecated_methods
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
@@ -177,25 +178,21 @@ class ValidateController(BaseController):
         return (ok, opt)
 
     # @profile_decorator(log_file="/tmp/validate.prof")
+    @deprecated_methods(["GET"])
     def check(self):
         """
         This function is used to validate the username and the otp value/password.
 
-        method:
-            validate/check
+        :param user: The username or loginname
+        :param pass: The password that consist of a possible fixed password component and the OTP value
+        :param realm: (optional) The realm to be used to match the user to a useridresolver
+        :param challenge: (optional) This param indicates, that this request is a challenge request.
+        :param data: (optional) Data to use to generate a challenge
+        :param state: (optional) A state id of an existing challenge to respond to
+        :param transactionid: (optional): A transaction id of an existing challenge to respond to
+        :param serial: (optional) Serial of a token to use instead of the matching tokens found for the given user and pass
 
-        arguments:
-
-           * user: The username or loginname
-           * pass: The password that consist of a possible fixed password component and the OTP value
-           * realm (optional): The realm to be used to match the user to a useridresolver
-           * challenge (optional): This param indicates, that this request is a challenge request.
-           * data (optional): Data to use to generate a challenge
-           * state (optional): A state id of an existing challenge to respond to
-           * transactionid (optional): A transaction id of an existing challenge to respond to
-           * serial (optional): Serial of a token to use instead of the matching tokens found for the given user and pass
-
-        returns:
+        :return:
             JSON response::
 
                 {
@@ -211,6 +208,9 @@ class ValidateController(BaseController):
             If ``status`` is ``true`` the request was handled successfully.
 
             If ``value`` is ``true`` the user was authenticated successfully.
+
+        :raises Exception:
+            if an error occurs the status in the json response is set to false
         """
 
         param = self.request_params.copy()
@@ -261,9 +261,21 @@ class ValidateController(BaseController):
         finally:
             db.session.close()
 
+    @deprecated_methods(["GET"])
     def check_status(self):
         """
         check the status of a transaction - for polling support
+
+        :param state:
+        :param transactionid:
+        :param serial:
+        :param pass:
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
         """
 
         try:
@@ -342,19 +354,14 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def check_yubikey(self):
         """
         This function is used to validate the output of a yubikey
 
-        method:
-            validate/check_yubikey
-
         :param pass: The password that consist of the static yubikey prefix and the otp
-        :type pass: string
 
-        :return: JSON Object
-
-        returns:
+        :return:
             JSON response::
 
                 {
@@ -370,6 +377,8 @@ class ValidateController(BaseController):
                     },
                     "id": 0
                 }
+        :raises Exception:
+            if an error occurs status in the response is set to false
         """
 
         try:
@@ -403,9 +412,9 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
-    def check_url(self):
+    def _check_url(self):
         """
-        This function works with pam_url.
+        TODO: implement function that works with pam_url.
         """
         ok = False
         param = self.request_params
@@ -441,6 +450,7 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def samlcheck(self):
         """
         This function is used to validate the username and the otp value/password
@@ -448,16 +458,13 @@ class ValidateController(BaseController):
         then the attributes of the authenticated users are also contained
         in the response.
 
-        method:
-            validate/samlcheck
 
-        arguments:
-            * user:    username / loginname
-            * pass:    the password that consists of a possible fixes password component and the OTP value
-            * realm:   optional realm to match the user to a useridresolver
+        :param user: username / loginname
+        :param pass: the password that consists of a possible fixes password component and the OTP value
+        :param realm: (optional) realm to match the user to a useridresolver
 
-        returns:
-            JSON response
+        :raises Exception:
+            if an error occurs status in the response is set to false
         """
 
         try:
@@ -507,7 +514,20 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def check_t(self):
+        """
+        check a session by transaction / state
+
+        :param pass:
+        :param transactionid or serial:
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs status in the response is set to false
+        """
 
         param = self.request_params.copy()
         value = {}
@@ -563,15 +583,20 @@ class ValidateController(BaseController):
             return sendResult(response, False, 0)
 
     # ------------------------------------------------------------------------ -
-
+    @deprecated_methods(["GET"])
     def accept_transaction(self):
         """
         confirms a transaction.
+        - needs the mandatory url query parameters:
 
-        needs the mandatory url query parameters:
+        :param transactionid: unique id for the transaction
+        :param signature: signature for the confirmation
 
-            * transactionid: unique id for the transaction
-            * signature: signature for the confirmation
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs status in the response is set to false
         """
 
         try:
@@ -625,15 +650,20 @@ class ValidateController(BaseController):
             return sendResult(response, False, 0)
 
     # ------------------------------------------------------------------------ -
-
+    @deprecated_methods(["GET"])
     def reject_transaction(self):
         """
         rejects a transaction.
+        - needs the mandatory url query parameters:
 
-        needs the mandatory url query parameters:
+        :param transactionid: unique id for the transaction
+        :param signature: signature for the rejection
 
-            * transactionid: unique id for the transaction
-            * signature: signature for the rejection
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs status in the response is set to false
         """
 
         try:
@@ -686,21 +716,21 @@ class ValidateController(BaseController):
 
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def check_s(self):
         """
         This function is used to validate the serial and the otp value/password.
         If the otppin policy is set, the endpoint /validate/check_s does not work.
 
-        method:
-            validate/check_s
-
-        arguments:
-            * serial:  the serial number of the token
-            * pass:    the password that consists of a possible fixes password component
+        :param serial:  the serial number of the token
+        :param pass:    the password that consists of a possible fixes password component
                         and the OTP value
 
-        returns:
-            JSON response
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs status in the response is set to false
         """
         param = self.request_params
 
@@ -770,20 +800,17 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, id=0, status=False)
 
+    @deprecated_methods(["GET"])
     def simplecheck(self):
         """
         This function is used to validate the username and the otp value/password.
 
-        method:
-            validate/simplecheck
-
-        arguments:
-            * user:    username / loginname
-            * pass:    the password that consists of a possible fixes password component
+        :param user:    username / loginname
+        :param pass:    the password that consists of a possible fixes password component
                         and the OTP value
-            * realm:   additional realm to match the user to a useridresolver
+        :param realm:   additional realm to match the user to a useridresolver
 
-        returns:
+        :return:
             Simple ascii response:
 
             :-)
@@ -832,27 +859,46 @@ class ValidateController(BaseController):
             return ":-("
 
     def ok(self):
+        """
+        return a success response
+
+        :return:
+            a json result with a status True and request result True
+
+        :raises Exception:
+            if an error occurs status in the response is set to false
+        """
         return sendResult(response, True, 0)
 
     def fail(self):
+        """
+        return a failed response
+
+        :return:
+            a json result with a status True and request result False
+
+        :raises Exception:
+            if an error occurs status in the response is set to false
+        """
         return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def smspin(self):
         """
         This function is used in conjunction with an SMS token:
         the user authenticates with user and pin (pass) and
         will receive on his mobile an OTP as message
 
-        method:
-            validate/smspin
+        :param user:  username / loginname
+        :param pass:  the password that consists of a possible fixed password
+        :param realm: additional realm to match the user to a useridresolver
 
-        arguments:
-            * user:    username / loginname
-            * pass:    the password that consists of a possible fixed password
-            * realm:   additional realm to match the user to a useridresolver
+        :return:
+            a json result with a boolean status and request result
 
-        returns:
-            JSON response
+        :raises Exception:
+            if an error occurs status in the response is set to false
+
         """
         ret = False
         param = self.request_params
@@ -900,9 +946,19 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(response, False, 0)
 
+    @deprecated_methods(["GET"])
     def pair(self):
         """
-        validate/pair: for the enrollment of qr and push token
+        for the enrollment of qr and push token
+
+        :param pairing_response: the result from the token pairing request
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs status in the response is set to false
+
         """
 
         try:

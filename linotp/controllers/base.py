@@ -29,6 +29,7 @@ import functools
 import logging
 import secrets
 from datetime import datetime, timedelta, timezone
+from functools import wraps
 from inspect import getfullargspec
 from types import FunctionType
 from warnings import warn
@@ -47,6 +48,7 @@ from jwt import ExpiredSignatureError, InvalidSignatureError
 from flask import Blueprint, after_this_request, current_app, g, jsonify
 
 from linotp.flap import request
+from linotp.lib import deprecated_methods, render_calling_path
 from linotp.lib.context import request_context
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
@@ -135,7 +137,6 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
         # These methods will be called before each request
         self.before_request(self.jwt_check)
-        self.before_request(self._parse_request_params)
         self.before_request(self.parse_requesting_user)
         self.before_request(self.before_handler)
 
@@ -261,17 +262,9 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
         request_context["RequestUser"] = requestUser
 
-    def _parse_request_params(self):
-        """
-        Parses the request params from the request objects body / params
-        dependent on request content_type.
-
-        The resulting request parameters from the client are saved in
-        the class instance variable `request_params`
-
-        This method is called before each request is processed.
-        """
-        self.request_params = current_app.getRequestParams()
+    @property
+    def request_params(self):
+        return current_app.getRequestParams()
 
     def before_handler(self):
         """
@@ -303,11 +296,20 @@ def methods(mm=["GET"]):
     putting the methods list.
     """
 
-    def inner(func):
-        func.methods = mm[:]
-        return func
+    def inner_func(func):
 
-    return inner
+        func.methods = mm[:]
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        # update the calling  docstring of the function
+        wrapper.__doc__ = render_calling_path(func) + wrapper.__doc__
+
+        return wrapper
+
+    return inner_func
 
 
 def jwt_exempt(f):
@@ -353,11 +355,20 @@ class JWTMixin(object):
     @jwt_exempt
     @methods(["POST"])
     def login(self):
-        """Checks a user's credentials and issues them a JWT access
+        """
+        manage authentication
+
+        Checks a user's credentials and issues them a JWT access
         token if their credentials are valid. We're using cookies to
         store the access token plus a double-submit token for CSRF
         protection, which makes it easy to refresh access tokens
         transparently if they are nearing expiry.
+
+        :param username: the name of the user
+        :param password: the password of the user
+
+        :return:
+            a json document and the jwt cookies are replied
 
         """
 

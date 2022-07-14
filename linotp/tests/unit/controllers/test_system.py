@@ -50,7 +50,7 @@ class TestSetResolver(unittest.TestCase):
         db.session.remove()
 
     @patch("linotp.controllers.system.getResolverList", return_value=[])
-    @patch("linotp.controllers.system.request")
+    @patch("linotp.app.request")
     @patch("linotp.controllers.system.prepare_resolver_parameter")
     @patch("linotp.controllers.system._")
     @patch("linotp.controllers.system.defineResolver")
@@ -83,7 +83,7 @@ class TestSetResolver(unittest.TestCase):
                 # sendError returns the exception
                 mock_senderror.side_effect = lambda response, exx: exx
                 mock_sendresult.side_effect = lambda response, obj, *args: obj
-                self.system.request_params = params
+                mock_request.json = params
                 ret = self.system.setResolver()
 
         return ret

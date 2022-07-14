@@ -29,8 +29,9 @@ import os
 
 from werkzeug.exceptions import InternalServerError
 
-from linotp.controllers.base import BaseController
+from linotp.controllers.base import BaseController, methods
 from linotp.flap import abort, config, request, response
+from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.logs import set_logging_level
 from linotp.lib.reply import sendError, sendResult
@@ -71,6 +72,7 @@ class MaintenanceController(BaseController):
             if client_cert is None:
                 abort(401)
 
+    @methods(["POST"])
     def setLogLevel(self):
         """
         set the log level of a certain logger which is identified by
@@ -84,6 +86,16 @@ class MaintenanceController(BaseController):
 
         (sets the log level of the user library to DEBUG)
         if loggerName is omitted, the root logger is assumed.
+
+        :param loggerName: the name of the logger
+        :param level: the logging level
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
         """
 
         try:
@@ -114,11 +126,18 @@ class MaintenanceController(BaseController):
             log.error(exx)
             return sendError(response, exx, 1)
 
+    @deprecated_methods(["POST"])
     def check_status(self):
         """
         simple check if LinOTP backend services  are up and running
 
-        - support for checking that the Config database could be accessed
+        support for checking that the Config database could be accessed
+
+        :return:
+            a json result with a boolean status and request result
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
 
         """
         try:

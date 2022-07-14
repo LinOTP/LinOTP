@@ -283,7 +283,7 @@ def _checkAdminPolicyPost(
 
             raise MaxTokenRealmPolicyException(
                 _(
-                    "The maximum number of allowed tokens in realm %s is exceeded."
+                    "The maximum number of allowed tokens in realm %r is exceeded."
                     " Check policy tokencount!"
                 )
                 % tokenrealm
@@ -936,7 +936,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(
                 _(
                     "The maximum allowed number of tokens "
-                    "for the realm %s was reached. You can "
+                    "for the realm %r was reached. You can "
                     "not init any more tokens. Check the "
                     "policies scope=enrollment, "
                     "action=tokencount."
@@ -1536,7 +1536,7 @@ def _checkAuditPolicyPre(method, param=None, authUser=None, user=None):
         log.error("an unknown method was passed in : %s", method)
 
         raise PolicyException(
-            _("Failed to run checkPolicyPre. Unknown method: %s") % method
+            _("Failed to run checkPolicyPre. Unknown method: %r") % method
         )
 
     return ret
@@ -1997,7 +1997,7 @@ def _checkSystemPolicyPre(method, param=None, authUser=None, user=None):
         log.error("an unknown method was passed in system: %s", method)
 
         raise PolicyException(
-            _("Failed to run checkPolicyPre. Unknown method: %s") % method
+            _("Failed to run checkPolicyPre. Unknown method: %r") % method
         )
 
     auth = _getAuthorization(scope="system", action=SYSTEM_ACTIONS[method])

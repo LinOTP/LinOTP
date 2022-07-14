@@ -24,6 +24,7 @@
 #    Support: www.keyidentity.com
 #
 import copy
+import json
 import unittest
 
 import pytest
@@ -66,11 +67,11 @@ class TestAdminController(unittest.TestCase):
 
     def test_parse_tokeninfo(self):
         """
-        check if admin.parse_tokeninfo works
+        check if admin._parse_tokeninfo works
         """
         tok = copy.deepcopy(self.token)
 
-        AdminController.parse_tokeninfo(tok)
+        AdminController._parse_tokeninfo(tok)
 
         assert isinstance(
             tok.get("LinOtp.TokenInfo"), dict
@@ -83,7 +84,7 @@ class TestAdminController(unittest.TestCase):
     @mock.patch("linotp.controllers.admin.checkPolicyPre")
     @mock.patch("linotp.model.db.session")
     @mock.patch("linotp.controllers.admin.response")
-    @mock.patch("linotp.controllers.admin.request")
+    @mock.patch("linotp.app.request")
     @mock.patch(
         "linotp.controllers.admin.BaseController.__init__", return_value=None
     )
@@ -99,7 +100,7 @@ class TestAdminController(unittest.TestCase):
     ):
         """
         call admin/show with/without argument tokeninfo_format
-        and return if parse_tokeninfo has been called
+        and return if _parse_tokeninfo has been called
         """
         request_params = {
             "tokeninfo_format": with_json,
@@ -112,16 +113,19 @@ class TestAdminController(unittest.TestCase):
         mock_TokenIterator.return_value = [tok]
 
         flask.g.audit = {}
+
         admin = AdminController()
-        admin.request_params = request_params
+
+        mock_request.json = request_params
+
         admin.show()
 
-    @mock.patch("linotp.controllers.admin.AdminController.parse_tokeninfo")
+    @mock.patch("linotp.controllers.admin.AdminController._parse_tokeninfo")
     def test_with_tokeninfo_format(self, mock_parse_tokeninfo):
         self.check_token(with_json="json")
         mock_parse_tokeninfo.assert_called()
 
-    @mock.patch("linotp.controllers.admin.AdminController.parse_tokeninfo")
+    @mock.patch("linotp.controllers.admin.AdminController._parse_tokeninfo")
     def test_without_tokeninfo_format(
         self,
         mock_parse_tokeninfo,
@@ -134,7 +138,7 @@ class TestAdminController(unittest.TestCase):
         verify that token info is valid even if it is initially empty
         """
         tok = copy.deepcopy(self.token2)
-        AdminController.parse_tokeninfo(tok)
+        AdminController._parse_tokeninfo(tok)
 
         assert tok["LinOtp.TokenInfo"] == {}
 
