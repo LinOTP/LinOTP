@@ -47,7 +47,7 @@ install_requirements = [
     "mako",
     "beaker",
     "docutils>=0.4",
-    "pycryptodomex>=3.4",
+    "pycryptodomex",
     "pyrad>=1.1",
     "netaddr",
     "qrcode>=2.4",
