@@ -26,7 +26,6 @@ workflow:
 stages:
   - build-test-environment
   - test
-  - coverage-report
   - build-debian-packages
   - build-linotp-docker-image
   - selenium-test
@@ -216,29 +215,6 @@ func-special-test:buster:
   variables:
     DEBIAN_RELEASE_NAME: buster
 
-.coverage-report:
-  stage: coverage-report
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
-  script:
-    - pip install "coverage<6"
-    - cd coverage/${DEBIAN_RELEASE_NAME}
-    - rm .coverage || true # remove coverage file in case it exists (e.g. re-runs)
-    - coverage combine *
-    - coverage report | tee coverage.txt
-    - coverage html
-  artifacts:
-    paths:
-      - coverage/${DEBIAN_RELEASE_NAME}
-
-coverage-report:jessie:
-  extends: .coverage-report
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
-coverage-report:buster:
-  extends: .coverage-report
-  variables:
-    DEBIAN_RELEASE_NAME: buster
 
 .build-debs:
   stage: build-debian-packages
