@@ -67,13 +67,6 @@ stages:
     - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
     - docker images
 
-build-test-environment:debian-jessie:
-  extends: .build-test-environment-debian
-  variables:
-    DEPENDENCY_SOURCE: http://debs-devel.corp.linotp.de/linotp2/
-    DEPENDENCY_SOURCE_COMPONENT: linotp
-    DEBIAN_RELEASE_NAME: jessie
-
 build-test-environment:debian-buster:
   extends: .build-test-environment-debian
   variables:
@@ -107,14 +100,6 @@ build-test-environment:debian-buster:
     paths:
       - coverage/${DEBIAN_RELEASE_NAME}
 
-unit-test:debian-jessie:
-  extends: .test-debian
-  stage: test
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-  script:
-    - nosetests -v linotp/tests/unit/
-
 unit-test:debian-buster:
   extends: .test-debian
   stage: test
@@ -138,8 +123,7 @@ unit-test:debian-buster:
     SHELL: /bin/bash
   before_script:
     - apt-get update
-    - test "${DEBIAN_RELEASE_NAME}" == "jessie" && apt-get install --yes --no-install-recommends libmysqlclient-dev mysql-client python-imaging
-    - test "${DEBIAN_RELEASE_NAME}" != "jessie" && apt-get install --yes --no-install-recommends default-libmysqlclient-dev default-mysql-client python-pil
+    - apt-get install --yes --no-install-recommends default-libmysqlclient-dev default-mysql-client python-pil
     - apt-get install --yes --no-install-recommends parallel python-mysqldb
     - cd linotpd/src
     - pip install --upgrade 'pip<21'
@@ -193,28 +177,16 @@ unit-test:debian-buster:
   script:
     - bash -c "find linotp/tests/functional_special -type f -iname 'test_*.py' | parallel -kN2 -j$(nproc) ../../ci/run_functional.sh {#} {}"
 
-func-test:jessie:
-  extends: .functional-test
-  parallel: 5
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
 func-test:buster:
   extends: .functional-test
   parallel: 5
   variables:
     DEBIAN_RELEASE_NAME: buster
 
-func-special-test:jessie:
-  extends: .functional-special-test
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
 func-special-test:buster:
   extends: .functional-special-test
   variables:
     DEBIAN_RELEASE_NAME: buster
-
 
 .build-debs:
   stage: build-debian-packages
@@ -324,40 +296,40 @@ build-linotp-docker-image:buster:
     - cd linotpd/src/linotp/tests/integration
     - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
 
-e2e-1:jessie:mysql-5.5:
+e2e-1:buster:mysql-5.5:
   retry:
     max: 1
   extends: .e2e-test
   script:
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
   variables:
-    DEBIAN_RELEASE_NAME: jessie
+    DEBIAN_RELEASE_NAME: buster
     DB: mysql:5.5
 
-e2e-2:jessie:mysql-5.5:
+e2e-2:buster:mysql-5.5:
   retry:
     max: 1
   extends: .e2e-test
   script:
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
   variables:
-    DEBIAN_RELEASE_NAME: jessie
+    DEBIAN_RELEASE_NAME: buster
     DB: mysql:5.5
 
-e2e-1:jessie:mariadb:10.1:
+e2e-1:buster:mariadb:10.1:
   extends: .e2e-test
   script:
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
   variables:
-    DEBIAN_RELEASE_NAME: jessie
+    DEBIAN_RELEASE_NAME: buster
     DB: mariadb:10.1
 
-e2e-2:jessie:mariadb-10.1:
+e2e-2:buster:mariadb-10.1:
   extends: .e2e-test
   script:
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
   variables:
-    DEBIAN_RELEASE_NAME: jessie
+    DEBIAN_RELEASE_NAME: buster
     DB: mariadb:10.1
 
 # Base rule for uploading deb packages to development repository.
