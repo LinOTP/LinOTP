@@ -313,6 +313,7 @@ build-linotp-docker-image:buster:
     - docker images -a |  grep "$DELETE_OLD_INTEGRATION_LINOTPS" | awk '{print $3}' | xargs docker rmi -f || true
     - docker images -a |  grep "$DELETE_OLD_SCRIPT_EXECUTORS" | awk '{print $3}' | xargs docker rmi -f || true
     - docker-compose -f docker-compose-gitlab.yml config
+    - docker pull docker.io/selenium/standalone-chrome-debug:latest
     - docker-compose -f docker-compose-gitlab.yml build --force-rm --no-cache
     - docker-compose -f docker-compose-gitlab.yml push --ignore-push-failures test-script-executor
     - docker-compose -f docker-compose-gitlab.yml push --ignore-push-failures test-chrome
