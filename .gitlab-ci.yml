@@ -247,8 +247,6 @@ build:buster:
 build-linotp-docker-image:jessie:
   extends: .build-linotp-docker-image
   variables:
-    DEPENDENCY_SOURCE: http://debs-devel.corp.linotp.de/linotp2/
-    DEPENDENCY_SOURCE_COMPONENT: linotp
     DEBIAN_RELEASE_NAME: jessie
 
 build-linotp-docker-image:buster:
