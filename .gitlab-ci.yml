@@ -3,12 +3,12 @@ variables:
   IMAGE_NAME: linotp-build-test-environment_buster
   BUILD_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_COMMIT_REF_NAME
   LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
-  DOCKERFY_URL: http://avocado.corp.lsexperts.de/jenkins/dockerfy/dockerfy
+  DOCKERFY_URL: https://debs-devel.corp.linotp.de/misc/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
   DEPENDENCY_DEB_REPO: http://debs-devel.corp.linotp.de/linotp3 buster linotp
   # DEPENDENCY_GPG_KEYID: 7CC736921C5A21B7
   DEPENDENCY_GPG_KEYID: ""
-  DEPENDENCY_GPG_KEY_URL: http://avocado.corp.lsexperts.de/deb-repo/ki-archive-keyring.gpg
+  DEPENDENCY_GPG_KEY_URL: http://debs-devel.corp.linotp.de/misc/gpg/linotp-dev-archive-keyring.gpg
   DOCKER_TAGS: $CI_PIPELINE_ID
   CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
   NOSE_COVER_PACKAGE: linotp
