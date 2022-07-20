@@ -21,7 +21,7 @@ RUN echo 'APT::Install-Recommends "0"; \n\
     && sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
         /etc/apt/sources.list \
     # Use eatmydata to speed up apt-get and pip operations \
-    && echo "deb [trusted=yes] http://linotp.org/apt/debian buster linotp" > /etc/apt/sources.list.d/linotp-org.list \
+    && echo "deb [trusted=yes] http://debs-devel.corp.linotp.de/linotp3 buster linotp" > /etc/apt/sources.list.d/linotp-org.list \
     && apt-get update \
     && apt-get install eatmydata \
     && for F in apt-get apache2 mariadb-server; do ln -s /usr/bin/eatmydata /usr/local/bin/$F; done
