@@ -176,7 +176,7 @@ servers because some dependencies may not be up to date publicly. We also
 set them for our CI pipeline in `.gitlab-ci.yml`.
 
   $ export DEPENDENCY_DEB_REPO="http://debs-devel.corp.linotp.de/linotp3 buster linotp"
-  $ export DEPENDENCY_GPG_KEY_URL="http://avocado.corp.lsexperts.de/deb-repo/ki-archive-keyring.gpg"
+  $ export DEPENDENCY_GPG_KEY_URL="http://debs-devel.corp.linotp.de/misc/gpg/linotp-dev-archive-keyring.gpg"
   $ export DEPENDENCY_GPG_KEYID=""
 
 After you have successfully built the containers, go back to the integration test dir:
