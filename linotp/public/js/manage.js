@@ -24,6 +24,16 @@
  *
  */
 
+
+if (!jwt_getCookie("csrf_access_token")) {
+    // user was not logged in, directly navigating to login view
+    // If the jwt is invalid but the cookie is still set, the first
+    // API request will result in a 401 response and we will then do
+    // the redirect anyway.
+
+    window.location = 'login';
+}
+
 window.onerror = error_handling;
 
 var password_placeholder_required = "<" + i18n.gettext("password required") + ">";
@@ -44,7 +54,7 @@ function error_handling(message, file, line) {
  */
 function logout() {
     $.get('/admin/logout').done(function (data, status, response) {
-        window.location.reload();
+        window.location = 'login';
     }).fail(function (response, status) {
         alert_box({
             'title': i18n.gettext('Logout failed'),
@@ -783,7 +793,7 @@ $.ajaxSetup({
             });
             alert_box_is_locked = true;
             setTimeout(function () {
-                window.location.reload();
+                window.location = 'login';
             }, 1000);
             return false;
         }
@@ -3999,11 +4009,13 @@ function tokenbuttons() {
 // =================================================================
 
 $(document).ready(function () {
+    document.getElementById("wrap").classList.remove('page-load');
+
     // initialize the logout button first to prevent a deadlock
     // where the user can no longer logout
     $('#login-status-logout').click(logout);
 
-    var alertBoxConfig = {
+    $("#alert_box").dialog({
         autoOpen: false,
         modal: true,
         buttons: {
@@ -4011,7 +4023,7 @@ $(document).ready(function () {
                 $(this).dialog("close");
             }
         }
-    };
+    });
 
 
     // load the logged in admin user info to show its name
@@ -4029,7 +4041,6 @@ $(document).ready(function () {
     } catch (e) {
         // the alert_box dialog needs to be prepared here to be able to show the
         // error message this early.
-        $("#alert_box").dialog(alertBoxConfig);
         alert_box({
             'title': i18n.gettext("Configuration error"),
             'text': escape(e),
@@ -5879,8 +5890,6 @@ $(document).ready(function () {
         $dialog_delete_token.dialog('open');
         return false;
     });
-
-    $("#alert_box").dialog(alertBoxConfig);
 
     $('#text_no_realm').dialog({
         autoOpen: false,

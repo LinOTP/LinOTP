@@ -207,12 +207,17 @@ class TestJwtAdmin:
         create_common_realms: Callable,
         scoped_authclient: Callable[..., FlaskClient],
     ) -> None:
+        """
+        Formerly this test was used to verify that an authenticated request
+        to /manage/(index) endpoint will redirect (status 302) to
+        manage/login page which is now no more triggered. Thus the status code
+        now is adjusted to be 200.
+        """
 
         with scoped_authclient(verify_jwt=True) as client:
             response = client.get("/manage/")
 
-            assert re.search(".*/manage/login$", response.location)
-            assert response.status_code == 302
+            assert response.status_code == 200
 
     def test_redirect_manage(
         self,
@@ -237,8 +242,7 @@ class TestJwtAdmin:
                 headers={"X-CSRF-TOKEN": csrf_token},
             )
 
-            assert re.search(".*/manage/$", response.location)
-            assert response.status_code == 302
+            assert response.status_code == 200
 
     def test_render_manage_when_authenticated(
         self,

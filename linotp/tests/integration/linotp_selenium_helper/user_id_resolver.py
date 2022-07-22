@@ -315,7 +315,12 @@ class UserIdResolverManager(ManageDialog):
 
         self.select_resolver(name)
         self.find_by_id("button_resolver_delete").click()
-        assert self.find_by_id("ui-id-3").text == "Deleting resolver"
+
+        # we wait now that the delete confirmation dialog will appear
+        #  remarks: find_by_id() is a utility which verifies that a web
+        #           object is displayed and visible
+
+        assert self.find_by_id("dialog_resolver_ask_delete")
 
         t = find_by_css(driver, "#dialog_resolver_ask_delete > p").text
         t == "Do you want to delete the resolver?"

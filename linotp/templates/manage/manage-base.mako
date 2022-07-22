@@ -56,6 +56,7 @@
 
 %if c.debug:
 	<script type="text/javascript" src="/static/js/jquery-3.6.0.js"></script>
+    <script>jQuery.migrateMute = true;</script>
 	<script type="text/javascript" src="/static/js/jquery-migrate-3.3.2.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui.js"></script>
     <script type="text/javascript" src="/static/js/jquery.validate.js"></script>
@@ -106,7 +107,7 @@
     <style type="text/css">#wrap{display:none;}</style>
 </noscript>
 
-<div id="wrap">
+<div id="wrap" class="page-load">
 <div id="header" class="ui-widget-header ui-corner-all">
     <ul id='menu' class='sf-menu sf-vertical'>
         <li><a href='#'>${_("LinOTP Config")}</a>

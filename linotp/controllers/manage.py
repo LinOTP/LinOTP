@@ -180,10 +180,6 @@ class ManageController(BaseController):
         """
         This is the main function of the management web UI
         """
-        user = getUserFromRequest()
-        if not user:
-            # user is not authenticated, show login view
-            return redirect(url_for(".login"))
 
         try:
             c.debug = current_app.config["DEBUG"]
@@ -298,11 +294,6 @@ class ManageController(BaseController):
         """
         Render the Manage-UI login page
         """
-        user = getUserFromRequest()
-        if user:
-            # user is authenticated, no login required.
-            return redirect(url_for(".index"))
-
         c.debug = current_app.config["DEBUG"]
 
         return render("manage/login.mako")
