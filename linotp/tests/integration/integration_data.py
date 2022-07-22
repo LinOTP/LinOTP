@@ -30,37 +30,19 @@ This file contains sample data for the integration tests
 # LDAP resolvers
 from typing import Dict, List, Union
 
+# This is the "O = LinOTP-DE, CN = LinOTP-DE Root CA" certificate
+# used by the new blackdog-ldap container.
+
 ldap_ca_cert = """-----BEGIN CERTIFICATE-----
-MIIFgzCCA2ugAwIBAgIBADANBgkqhkiG9w0BAQ0FADBPMQswCQYDVQQGEwJERTEq
-MCgGA1UECgwhTFNFIExlYWRpbmcgU2VjdXJpdHkgRXhwZXJ0cyBHbWJIMRQwEgYD
-VQQDDAtMU0UgQ0EgMjAxNTAiGA8yMDE1MDQwMTAwMDAwMFoYDzIwMjcwNDAxMDAw
-MDAwWjBPMQswCQYDVQQGEwJERTEqMCgGA1UECgwhTFNFIExlYWRpbmcgU2VjdXJp
-dHkgRXhwZXJ0cyBHbWJIMRQwEgYDVQQDDAtMU0UgQ0EgMjAxNTCCAiIwDQYJKoZI
-hvcNAQEBBQADggIPADCCAgoCggIBAOXqHuDVcqkSOsb+mwXZloq6WdGNinvZA0L2
-0JgpY/kBfRrMowu/NUCB0vgNEfJPkeLX115QeIHTK17+HZ16+G/CCgDNiVr8NcOJ
-tSHQyw+OYrV3dHoBWMfKkYDEUXdqv+Q7905IKBWnM1DgQLkrNt/BTF9ePmgRpUFl
-Gza/5fvFZErK/0koLq3esyysBCJRlnCzkWJK9JmkUcpvW3O21/+qrtMC3w3fmuL6
-dT2xpRBdlzNPBSVci+VGxBEK7F6H+ZVXCxe/fSl32cXcbJQy/Pz4E3AqIV4mphku
-u+3ZxS1AVhLDCfOnHBkT5Mx/09jRbQnOugCbhiuglqk/v0zfv164m6+2aZKm6CRo
-+7f5ipkBuowUyv1X1+GLIT0hSLTZdoIX1mfBZ5bvO20P32UfhgwNdsmi0er4HViv
-92fH8JX/0eh2PfLUfILQtPS0M86TtPVmFrCd+DHdqP4C73xqGF+qNUoUoXDIQ/rB
-o50xsk9a1mGe7y1T+hnMPfPxjj1Pm4v+0InuUzE5WEA9cjWrvzkuxE9uaP5eYnB4
-2kMne3clRZSwWcrOjWqA6tWV8/emynwhe3CGndIvOejrBrd2GR9w/0iLjwqw3JZ7
-sBalglf21k+zos0njcsbGITW9SpMCKe2AuauFqtwGGqn3CzLfF+/u5OAFVErP8W7
-r3yiqcCXAgMBAAGjZjBkMBIGA1UdEwEB/wQIMAYBAf8CAQEwHQYDVR0OBBYEFOSY
-lUpVl3nYrcQ3wBPY6yswIvX2MB8GA1UdIwQYMBaAFOSYlUpVl3nYrcQ3wBPY6ysw
-IvX2MA4GA1UdDwEB/wQEAwIBBjANBgkqhkiG9w0BAQ0FAAOCAgEAif0FsJfgGq1d
-xMy3hYT6xC5cB5hTAlmO5UT0TSOSi/Fe0IeKQFSI2bxBkaYLMv02SzHKdD3GxYfz
-F9QA2dvHxAJIF4/BQckb3lO5f8F1UBRwfXBaG/2FEnwAl0fiyl3YvoFa4duLN9PO
-YTT/esrmkEpZETonftaGB7rJq55AJun9SMAQ5dnDSvnTU5pia/wVQj0PNkU8hO/z
-P3qg4ZaiOzYkMbD8Dw0odppG26EhxfXelfonCF1mAaiHU7RavCL1hqtXtESmGqmV
-B++u2PHBKvaxyW1UkoH7zy6teYO89YmmOf7aYoXnZ+hY7GLkiQfgxlam5PLT++ra
-bHIjLGFTJgGEj948MQ8hl8oG+nMAP6DcNkjhvuOq5O+aEPNMsidTNfUj3FtC60Pa
-U67TZfaCUP4DyASNKH6K0LHY3C5qwy17pKnWA1Y6Udf9QufkeZJcIhnnmW/PiVeK
-tLOm03i8iOAitjiMU9kO2yCn28e/4BUFixoG7eE9cHIZWPJh+ncNih64xepJlzvX
-a9DD2ujwHAbgpbE4id0bHYbpPVNVNMADwA8g0vI1fcd+VzeEcU/8wK77zl3MjXM4
-iDCfI7WTMiUSMthBqBysBkLTVODcoK3C0QmJMbGAczHglK65tVInkK504+SdRREz
-D73172agRToOg0Sid2C4iipj//OA3q4=
+MIIBojCCAUmgAwIBAgIQPlwfzlZDQsPhD1rWE9Ux3TAKBggqhkjOPQQDAjAwMRIw
+EAYDVQQKEwlMaW5PVFAtREUxGjAYBgNVBAMTEUxpbk9UUC1ERSBSb290IENBMB4X
+DTIyMDIwNjEyMTUzN1oXDTMyMDIwNDEyMTUzN1owMDESMBAGA1UEChMJTGluT1RQ
+LURFMRowGAYDVQQDExFMaW5PVFAtREUgUm9vdCBDQTBZMBMGByqGSM49AgEGCCqG
+SM49AwEHA0IABGZPiX58lcLz+oX/CNZFdJI3bWE9KdxRlmypYWwbZUqkhLn1ARWc
+lblmltOU/L6/XlbYuLWdTE3Hk1VF7UA+zdejRTBDMA4GA1UdDwEB/wQEAwIBBjAS
+BgNVHRMBAf8ECDAGAQH/AgEBMB0GA1UdDgQWBBRY28kvC11GjduDBsUaQvIr87ke
+MDAKBggqhkjOPQQDAgNHADBEAiB9pumbZbFk5ChludETNKxFzSVRCx7Cbzm1zNCw
+TGfofQIgFClkyscaKq+ALGjKzDAf+oF4A1BgOzqdFxafFePRH54=
 -----END CERTIFICATE-----"""
 
 
@@ -68,9 +50,11 @@ musicians_ldap_resolver: Dict[str, Union[str, int, bool, List]] = {
     "name": "SE_musicians",
     "title": "Musicians LDAP (Blackdog)",
     "type": "ldapresolver",
-    "uri": "ldaps://blackdog.corp.lsexperts.de",
+    # "uri": "ldaps://blackdog-ldap",
+    "uri": "ldap://blackdog-ldap",
     "certificate": ldap_ca_cert,
-    "only_trusted_certs": True,
+    # "only_trusted_certs": True,
+    "only_trusted_certs": False,
     "basedn": "ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de",
     # You may also use cn="Wolfgang Amadeus Mozart"
     "binddn": 'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de',
@@ -109,7 +93,7 @@ sql_resolver = {
     "name": "SE_mySql",
     "type": "sqlresolver",
     "driver": "mysql",
-    "server": "blackdog.corp.lsexperts.de",
+    "server": "blackdog-mysql",
     "database": "userdb",
     "user": "resolver_user",
     "password": "Test123!",
