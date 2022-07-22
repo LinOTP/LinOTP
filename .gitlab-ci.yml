@@ -15,6 +15,9 @@ variables:
   DOCKER_COMPOSE_VERSION: "1.22.0"
   # Docker network per build - needed for DNS resolution between services (service linotp needs db)
   FF_NETWORK_PER_BUILD: 1
+  CI_REGISTRY: gitbox.corp.keyidentity.com:5050
+  BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/it-infra/blackdog-ldap/blackdog-ldap:latest
+  BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/it-infra/blackdog-mysql/blackdog-mysql:latest
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'schedule'              # Execute nightly pipeline
@@ -420,6 +423,10 @@ e2e-test-mariadb:
   services:
     - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
       alias: test-linotp
+    - name: $BLACKDOG_LDAP_IMAGE
+      alias: blackdog-ldap
+    - name: $BLACKDOG_MYSQL_IMAGE
+      alias: blackdog-mysql
     - name: ${DB}
       alias: db
     - name: selenium/standalone-chrome-debug:latest
@@ -438,6 +445,10 @@ e2e-test-softhsm:
   services:
     - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
       alias: test-linotp
+    - name: $BLACKDOG_LDAP_IMAGE
+      alias: blackdog-ldap
+    - name: $BLACKDOG_MYSQL_IMAGE
+      alias: blackdog-mysql
     - name: ${DB}
       alias: db
     - name: selenium/standalone-chrome-debug:latest
