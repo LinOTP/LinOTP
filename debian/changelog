@@ -1,6 +1,7 @@
 linotp (3.2.1~0dev-1) buster-dev; urgency=low
 
-  * Set version 3.2.1~0dev
+  Fixes:
+  * Audit key verification errors solved by using newer version of pycryptodomex.
 
 -- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 12:00:00 +0100
 
@@ -51,7 +52,6 @@ linotp (3.2-1) buster-dev; urgency=low
   * The linotp cli commands would not break anymore if localization is involved.
   * Resolver names are now always treated case-sensitive.
   * setConfig is now called from the UI only once to save all parameters in one api call.
-  * Audit key verification errors solved by using newer version of pycryptodomex.
 
   Features:
   * Added grace to license volume exceeding and display accordingly a message
