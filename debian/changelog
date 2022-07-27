@@ -4,6 +4,9 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * the manage ui login will no longer use refresh and reloads
   * method to provide context information for manage ui
 
+  Fix:
+  * After a logout the jwt token can not be reused
+
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 
 linotp (3.2-1) buster-dev; urgency=low
