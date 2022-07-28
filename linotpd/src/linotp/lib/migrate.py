@@ -33,7 +33,6 @@ import random  # for test id genretator using random.choice
 import os
 from hashlib import sha256
 
-
 from Cryptodome.Cipher import AES
 
 
@@ -119,6 +118,8 @@ class MigrationHandler(object):
                          filter(model_config.Type == 'password').all()
         for entry in config_entries:
 
+            log.debug('processing config entry %r' % entry.Key)
+
             key = 'enc%s' % entry.Key
             value = getFromConfig(key)
 
@@ -157,6 +158,15 @@ class MigrationHandler(object):
 
         config_entries = Session.query(model_config).\
                          filter(model_config.Key == key).all()
+
+        log.debug('processing config entry %r' % key)
+
+        if not config_entries:
+            log.error(
+                'config entry %r deleted between backup and restore event' % key
+                )
+            return
+
         entry = config_entries[0]
 
         # decrypt the real value
@@ -226,6 +236,13 @@ class MigrationHandler(object):
 
         tokens = Session.query(model_token).\
             filter(model_token.LinOtpTokenSerialnumber == serial).all()
+
+        if not tokens:
+            log.error(
+                'token %r deleted between backup and restore event' % serial
+                )
+            return
+
         token = tokens[0]
 
         if 'TokenPin' in token_data:
