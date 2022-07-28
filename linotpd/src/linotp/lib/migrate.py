@@ -156,7 +156,7 @@ class MigrationHandler(object):
                          filter(model_config.Key == key).all()
         entry = config_entries[0]
 
-        # decypt the real value
+        # decrypt the real value
         enc_value = config_entry['Value']
         value = self.crypter.decrypt(enc_value,
                                      just_mac='enc%s' % key + entry.Value)
