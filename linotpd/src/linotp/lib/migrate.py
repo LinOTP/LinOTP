@@ -31,10 +31,11 @@ import hmac
 import binascii
 import random  # for test id genretator using random.choice
 import os
+
 from hashlib import sha256
+from sqlalchemy import or_
 
 from Cryptodome.Cipher import AES
-
 
 from linotp.model import Token as model_token
 from linotp.model import Config as model_config
@@ -45,8 +46,12 @@ from linotp.lib.config.db_api import _storeConfigDB
 from linotp.lib.crypto import SecretObj
 from linotp.lib.context import request_context as context
 
+from linotp.lib.crypto.encrypted_data import EncryptedData
+
 import linotp.model
 Session = linotp.model.Session
+
+EncryptedDataType = "encrypted_data"
 
 import logging
 log = logging.getLogger(__name__)
@@ -115,13 +120,23 @@ class MigrationHandler(object):
         """
 
         config_entries = Session.query(model_config).\
-                         filter(model_config.Type == 'password').all()
+                         filter(or_(
+                             (model_config.Type == 'password'),
+                             (model_config.Type == EncryptedDataType)
+                             )
+                         ).all()
         for entry in config_entries:
 
             log.debug('processing config entry %r' % entry.Key)
 
+            # we try first if this is a legacy protected data format
             key = 'enc%s' % entry.Key
-            value = getFromConfig(key)
+            value = getFromConfig(key, decrypt=True)
+
+            # and as a fallback we use the newer CryptedData
+            if not value:
+                key = entry.Key
+                value = getFromConfig(entry.Key, decrypt=True)
 
             # calculate encryption and add mac from mac_data
             enc_value = self.crypter.encrypt(input_data=value,
@@ -130,7 +145,7 @@ class MigrationHandler(object):
             config_item = {
                 "Key": entry.Key,
                 "Value": enc_value,
-                "Type": entry.Type,
+                "Type": EncryptedDataType,
                 "Description": entry.Description
             }
 
@@ -171,10 +186,25 @@ class MigrationHandler(object):
 
         # decrypt the real value
         enc_value = config_entry['Value']
-        value = self.crypter.decrypt(enc_value,
-                                     just_mac='enc%s' % key + entry.Value)
 
-        _storeConfigDB(key, value, typ=typ, desc=desc)
+        mac_key = key
+        if typ == 'password' and not key.startswith('enclinotp.'):
+            mac_key = 'enc%s' % key
+
+        value = self.crypter.decrypt(enc_value,
+                                     just_mac=mac_key + entry.Value)
+
+        # with LinOTP 2.10 the _storeConfigDB does not care anymore about
+        # crypted data - this is done transparently by handing over the
+        # EncryptedData object where the __str__() method returns the encrypted
+        # value
+
+        _storeConfigDB(
+            key,
+            EncryptedData.from_unencrypted(value),
+            typ=typ,
+            desc=desc
+            )
 
     def get_token_data(self):
         """
