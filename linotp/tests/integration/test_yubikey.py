@@ -57,6 +57,9 @@ class TestYubikey:
             "User '" + self.user_name + "' should exist."
         )
 
+    @pytest.mark.skip(
+        "Since the old data center shutdown no new AD has been configured"
+    )
     def test_yubico_mode(self):
         """
         Enrolls a Yubikey in YUBICO mode and verifies OTPs against it
