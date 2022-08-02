@@ -49,6 +49,9 @@ from linotp.lib.context import request_context as context
 import linotp.model
 Session = linotp.model.Session
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class DecryptionError(Exception):
     pass
@@ -174,6 +177,8 @@ class MigrationHandler(object):
             serial = token.LinOtpTokenSerialnumber
             token_data['Serial'] = serial
 
+            log.debug("#### working with serial %r" % serial)
+
             if token.isPinEncrypted():
                 iv, enc_pin = token.get_encrypted_pin()
                 pin = SecretObj.decrypt_pin(enc_pin, hsm=self.hsm)
@@ -195,11 +200,20 @@ class MigrationHandler(object):
             # to identify changes
             encKey = token.LinOtpKeyEnc
 
+            if (
+                not token.LinOtpKeyEnc or
+                token.LinOtpTokenType in ['qr', 'push']
+            ):
+                token_data['TokenSeed'] = None
+                # next we look for tokens, where the pin is encrypted
+                yield token_data
+
             key, iv = token.get_encrypted_seed()
             secObj = SecretObj(key, iv, hsm=self.hsm)
             seed = secObj.getKey()
             enc_value = self.crypter.encrypt(input_data=seed,
                                              just_mac=serial + encKey)
+
             token_data['TokenSeed'] = enc_value
             # next we look for tokens, where the pin is encrypted
             yield token_data
@@ -207,6 +221,9 @@ class MigrationHandler(object):
     def set_token_data(self, token_data):
 
         serial = token_data["Serial"]
+
+        log.debug("#### working with serial %r" % serial)
+
         tokens = Session.query(model_token).\
             filter(model_token.LinOtpTokenSerialnumber == serial).all()
         token = tokens[0]
@@ -238,6 +255,13 @@ class MigrationHandler(object):
         # something changed in meantime
         encKey = token.LinOtpKeyEnc
         enc_seed = token_data['TokenSeed']
+
+        # in case of the push and qr token the seed is empty
+        # and thus we are done
+
+        if not enc_seed:
+            return
+
         token_seed = self.crypter.decrypt(enc_seed,
                                           just_mac=serial + encKey)
 
