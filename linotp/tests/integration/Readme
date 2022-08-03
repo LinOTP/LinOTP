@@ -119,6 +119,32 @@ The driver setting will be used to determine which driver is
 requested from the remote instance.
 
 
+External servers
+============================================
+
+In order to run some of the tests you will need access to external servers. (e.g. an ldap test server).
+We have provided these servers as standalone docker containers. You can pull the images from our docker
+repository (if you have access to it) or clone the corresponding repository and build the image by
+yourself.
+
+Currently there are two of these containers, an ldap server called blackdog-ldap and a mysql
+server called blackdog-mysql. If you want to go the hard way you can just clone these two repositories
+and follow the instructions to build the images and then run them with
+
+ $ docker run blackdog-ldap:latest
+ $ docker run blackdog-mysql:latest
+
+If you have access to our docker repository on gitbox, this is the procedure to follow:
+
+1. Make an access token for yourself, through gitbox -> access Tokens and create a personal
+access Token with at least "read registry" access (if you do not have the right access, as
+an administrator)
+2. Make docker login to this repository:
+ $ docker login -u USERNAME -p YOUR-ACCESS-TOKEN gitbox.corp.keyidentity.com:5050
+3. Pull the docker image:
+ $ docker pull gitbox.corp.keyidentity.com:5050/docker-images/blackdog-ldap/blackdog-ldap:latest
+
+
 Execution
 ============================================
 
