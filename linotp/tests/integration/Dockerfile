@@ -26,6 +26,9 @@ RUN apt-get update && \
 
 RUN pip3 install pytest-testconfig
 
+ADD ./certificates/* /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 # Integration tests dir gets mounted in the WORKDIR below.
 # See docker-compose.yml
 WORKDIR /opt/linotp/tests/integration
