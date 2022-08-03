@@ -16,8 +16,8 @@ variables:
   # Docker network per build - needed for DNS resolution between services (service linotp needs db)
   FF_NETWORK_PER_BUILD: 1
   CI_REGISTRY: gitbox.corp.keyidentity.com:5050
-  BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/it-infra/blackdog-ldap/blackdog-ldap:latest
-  BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/it-infra/blackdog-mysql/blackdog-mysql:latest
+  BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
+  BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'schedule'              # Execute nightly pipeline
