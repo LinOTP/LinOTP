@@ -32,7 +32,7 @@ RUN apt-get install \
         dbconfig-common \
         mariadb-server \
         postgresql \
-        python-pycryptodomex \
+        python3-pycryptodome \
         python3-flask \
         python3-flask-babel \
         python3-pip \
