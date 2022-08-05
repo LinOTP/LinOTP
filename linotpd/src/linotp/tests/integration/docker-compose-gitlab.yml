@@ -5,6 +5,8 @@ services:
     depends_on:
       - test-chrome
       - test-linotp
+      - blackdog-ldap
+      - blackdog-mysql
     build:
       context: .
       dockerfile: Dockerfile.script-executor
@@ -54,4 +56,17 @@ services:
       MYSQL_DATABASE: "linotp_db"
       MYSQL_USER: "linotpuser"
       MYSQL_PASSWORD: "linotppass"
+    restart: always
+
+  blackdog-ldap:
+    image: "${BLACKDOG_LDAP_IMAGE}"
+    ports:
+      - "389"
+      - "636"
+    restart: always
+
+  blackdog-mysql:
+    image: "${BLACKDOG_MYSQL_IMAGE}"
+    ports:
+      - "3306"
     restart: always

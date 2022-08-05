@@ -144,6 +144,10 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
 
 WORKDIR $LINOTP_HOME
 
+# Install certificates to connect to LDAP-container
+ADD ./certificates/* /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 # Get dockerfy and configuration template files from build context
 COPY *.tmpl /etc/linotp2/
 COPY dockerfy /usr/local/bin/
