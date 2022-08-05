@@ -93,6 +93,7 @@ class TestCreateUserIdResolvers(TestCase):
         self.create_resolver(data.sql_resolver)
 
     def test_04_ad_resolver_creation(self):
+        """Add the ldap resolver, (it should normally work even if the ldap server is not available)"""
         self.create_resolver(data.physics_ldap_resolver)
 
     def test_05_ldap_enforce_starttls(self):
@@ -108,7 +109,16 @@ class TestCreateUserIdResolvers(TestCase):
         return self.create_resolvers_and_realm(testdata)
 
     def test_11_multiple_resolvers(self):
-        testdata = (data.musicians_ldap_resolver, data.physics_ldap_resolver,
-                    data.sql_resolver, data.sepasswd_resolver)
+        """Creates multiple resolvers and required realms and tests the connection"""
+        testdata = (
+            data.musicians_ldap_resolver,
+            # TODO
+            # commented out after hottybotty (ldap test server used in
+            # integration_data.physics_ldap_resolver, ) went down.
+            # It should come back when we have an equivalent >>
+            # data.physics_ldap_resolver,
+            data.sql_resolver,
+            data.sepasswd_resolver,
+        )
 
         return self.create_resolvers_and_realm(testdata)
