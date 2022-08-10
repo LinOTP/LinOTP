@@ -13,6 +13,9 @@ variables:
   CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
+  CI_REGISTRY: gitbox.corp.keyidentity.com:5050
+  BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
+  BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
 
 workflow:
   rules:
@@ -32,13 +35,13 @@ stages:
   - upload-debian-packages
 
 .docker-registry: &docker-registry
-  before_script:
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
 
 .build-test-environment-debian:
   stage: build-test-environment
   image: docker:latest
-  <<: *docker-registry
+  before_script:
+    - *docker-registry
   script:
     # pull the old image to speedup the build process, the hope is
     # that the modified time will always be the same unless the file
@@ -229,7 +232,7 @@ build:buster:
     - mkdir -p ${BUILDDIR}
     - make ${BUILDDIR}/dockerfy BUILDDIR=${BUILDDIR}
     - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
-    - cp ci/Dockerfile.linotp linotpd/src/linotp/tests/integration/testdata/se_mypasswd linotpd/src/config/*.tmpl linotpd/src/tools/linotp-create-htdigest $BUILDDIR
+    - cp -r ci/Dockerfile.linotp ci/certificates linotpd/src/linotp/tests/integration/testdata/se_mypasswd linotpd/src/config/*.tmpl linotpd/src/tools/linotp-create-htdigest $BUILDDIR
     - >
       docker build
       --build-arg=DEBIAN_MIRROR=$DEBIAN_MIRROR
@@ -266,6 +269,7 @@ build-linotp-docker-image:buster:
     DELETE_OLD_LINOTPS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/linotp"
     LINOTP_IMAGE: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
   before_script:
+    - *docker-registry
     - apk add --no-cache py-pip
     - pip install "docker-compose==${DOCKER_COMPOSE_VERSION}"
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
@@ -299,6 +303,7 @@ e2e-1:buster:mysql-5.5:
     max: 1
   extends: .e2e-test
   script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -309,6 +314,7 @@ e2e-2:buster:mysql-5.5:
     max: 1
   extends: .e2e-test
   script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -317,6 +323,7 @@ e2e-2:buster:mysql-5.5:
 e2e-1:buster:mariadb:10.1:
   extends: .e2e-test
   script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch1 --rm test-script-executor
   variables:
     DEBIAN_RELEASE_NAME: buster
@@ -325,6 +332,7 @@ e2e-1:buster:mariadb:10.1:
 e2e-2:buster:mariadb-10.1:
   extends: .e2e-test
   script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker-compose -f docker-compose-gitlab.yml run -e TEST_BUNCH=integrationtests-bunch2 --rm test-script-executor
   variables:
     DEBIAN_RELEASE_NAME: buster
