@@ -1,3 +1,9 @@
+linotp (2.12.6~0dev-1) buster; urgency=medium
+
+  Set version 2.12.6.dev0
+
+ -- LinOTP Packaging <packaging@linotp.de>  Tue, 03 Aug 2022 19:45:00 +0100
+
 linotp (2.12.5-1) buster; urgency=medium
 
   Dependencies
