@@ -130,7 +130,9 @@ class TokensController(BaseController, JWTMixin):
         returned. Setting the ``page`` parameter allows retrieving other
         pages.
 
-        :param pageSize: limit the number of returned tokens, defaults to None (no limit)
+        :param pageSize: limit the number of returned tokens, defaults to 50
+        (unless another value is specified in the configuration). Setting it to
+        0 returns all tokens.
         :type pageSize: int, optional
         :param page: request a certain page, defaults to 0
         :type page: int, optional
@@ -232,6 +234,12 @@ class TokensController(BaseController, JWTMixin):
             )
 
             ### End permissions' check ###
+            if page_size is not None:
+                page_size = int(page_size)
+
+            if page_size == 0:
+                # Retrieve all available tokens
+                page = None
 
             tokens = TokenIterator(
                 logged_in_admin,
@@ -252,7 +260,7 @@ class TokensController(BaseController, JWTMixin):
             result = {}
 
             info = tokens.getResultSetInfo()
-            result["page"] = int(info["page"]) - 1
+            result["page"] = info["page"] - 1
             result["pageSize"] = info["pagesize"]
             result["totalPages"] = info["pages"]
             result["totalRecords"] = info["tokens"]
