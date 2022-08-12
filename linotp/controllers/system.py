@@ -550,13 +550,6 @@ class SystemController(BaseController):
     def getRealms(self):
         """
         returns all realm definitinos as a json result.
-
-        .. note::
-            Either the admin is allowed by the policy scope=system, action=read
-            or he is allowed in scope=admin for some realms.
-            If he does not have the system-read-right, then he will only
-            see the realms, he is admin of.
-
         :params realm: (optional) a realm name
         :return:
             a json result with a list of Realms
@@ -574,23 +567,10 @@ class SystemController(BaseController):
 
             realm_name = self.request_params.get("realm")
 
-            all_realms = getRealms(realm_name)
-
-            #
-            # If the admin is not allowed to see all realms,
-            #                 (policy scope=system, action=read)
-            # the realms, where he has no administrative rights need,
-            # to be stripped, which is done by the ch                                                                       eckPolicyPost, that
-            # returns the acl with the allowed realms as entry
-            #
-
-            polPost = checkPolicyPost(
-                "system", "getRealms", {"realms": all_realms}
-            )
-            res = polPost["realms"]
+            realms = getRealms(realm_name)
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(response, realms, 1)
 
         except PolicyException as pex:
             log.error("[getRealms] policy exception: %r", pex)
