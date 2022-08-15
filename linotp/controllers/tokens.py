@@ -141,14 +141,19 @@ class TokensController(BaseController, JWTMixin):
         (unless another value is specified in the configuration). Setting it to
         0 returns all tokens.
         :type pageSize: int, optional
+
         :param page: request a certain page, defaults to 0
         :type page: int, optional
+
         :param sortBy: sort the output by column, defaults to 'serial'
         :type sortBy: str, optional
+
         :param sortOrder: 'asc' or 'desc', defaults to 'asc'
         :type sortOrder: str, optional
+
         :param searchTerm: limit entries to those partially matching the searchTerm
         :type searchTerm: str, optional
+
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
