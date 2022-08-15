@@ -172,9 +172,12 @@ class TokensController(BaseController, JWTMixin):
 
         :raises PolicyException:
             if the logged-in admin does not have the correct permissions to list tokens,
-            the exception message is serialized and returned
+            return an HTTP 403 error response
+
         :raises Exception:
-            if any other error occurs the exception message is serialized and returned
+            if any other error occurs the exception message is serialized and returned in
+            an HTTP 500 error response
+
         """
 
         param = self.request_params
@@ -284,10 +287,12 @@ class TokensController(BaseController, JWTMixin):
                 }
 
         :raises PolicyException:
-            if the logged-in admin does not have the correct permissions to view
-            the token, the exception message is serialized and returned
+            if the logged-in admin does not have the correct permissions to view the token,
+            return an HTTP 403 error response
+
         :raises Exception:
-            if any other error occurs the exception message is serialized and returned
+            if any other error occurs the exception message is serialized and returned in
+            an HTTP 500 error response
         """
 
         param = self.request_params
