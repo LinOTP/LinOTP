@@ -165,47 +165,11 @@ class TokensController(BaseController, JWTMixin):
             if any other error occurs the exception message is serialized and returned
         """
 
-        field_map = {
-            "id": "LinOtp.TokenId",
-            "description": "LinOtp.TokenDesc",
-            "serial": "LinOtp.TokenSerialnumber",
-            "type": "LinOtp.TokenType",
-            "creationDate": "LinOtp.CreationDate",
-            "isActive": "LinOtp.Isactive",
-            "realms": "LinOtp.RealmNames",
-            "hashLib": "hashlib",
-            "timeWindow": "timeWindow",
-            "timeShift": "timeShift",
-            "timeStep": "timeStep",
-            "countWindow": "LinOtp.CountWindow",
-            "syncWindow": "LinOtp.SyncWindow",
-            "otpLength": "LinOtp.OtpLen",
-            "otpCounter": "LinOtp.Count",
-            "userId": "User.userid",
-            "username": "User.username",
-            "userDescription": "User.description",
-            "resolverName": "LinOtp.IdResolver",
-            "resolverClass": "LinOtp.IdResClass",
-            "loginAttempts": "count_auth",
-            "maxLoginAttempts": "count_auth_max",
-            "successfulLoginAttempts": "count_auth_success",
-            "maxSuccessfulLoginAttempts": "count_auth_success_max",
-            "lastSuccessfulLoginAttempt": "LinOtp.LastAuthSuccess",
-            "failedLoginAttempts": "LinOtp.FailCount",
-            "maxFailedLoginAttempts": "LinOtp.MaxFail",
-            "lastAuthenticationMatch": "LinOtp.LastAuthMatch",
-            "validityStart": "validity_period_start",
-            "validityEnd": "validity_period_end",
-        }
-
-        # use for the sort & filter names
-        reverse_map = {v: k for k, v in field_map.items()}
-
         param = self.request_params
         try:
             page = int(param.get("page", 0)) + 1
             page_size = param.get("pageSize")
-            sort_by = reverse_map.get(param.get("sortBy"), "serial")
+            sort_by = param.get("sortBy", "LinOtp.TokenSerialnumber")
             sort_order = param.get("sortOrder", "asc")
             search_term = param.get("searchTerm", None)
 
@@ -234,6 +198,7 @@ class TokensController(BaseController, JWTMixin):
             )
 
             ### End permissions' check ###
+
             if page_size is not None:
                 page_size = int(page_size)
 
@@ -268,77 +233,7 @@ class TokensController(BaseController, JWTMixin):
             # now row by row
             lines = []
             for token in tokens:
-                _parse_tokeninfo(token)
-                token_info = token["LinOtp.TokenInfo"]
-
-                formatted_token = {
-                    "id": token[field_map["id"]],
-                    "description": token[field_map["description"]],
-                    "serial": token[field_map["serial"]],
-                    "type": token[field_map["type"]].lower(),
-                    "creationDate": token[field_map["creationDate"]],
-                    "isActive": token[field_map["isActive"]],
-                    "realms": token[field_map["realms"]],
-                    "tokenConfiguration": {
-                        "hashLib": token_info.get(field_map["hashLib"], None),
-                        "timeWindow": token_info.get(
-                            field_map["timeWindow"], None
-                        ),
-                        "timeShift": token_info.get(
-                            field_map["timeShift"], None
-                        ),
-                        "timeStep": token_info.get(
-                            field_map["timeStep"], None
-                        ),
-                        "countWindow": token[field_map["countWindow"]],
-                        "syncWindow": token[field_map["syncWindow"]],
-                        "otpLength": token[field_map["otpLength"]],
-                        "otpCounter": token[field_map["otpCounter"]],
-                    },
-                    "userInfo": {
-                        "userId": token[field_map["userId"]],
-                        "username": token[field_map["username"]],
-                        "userDescription": token[field_map["userDescription"]],
-                        "idResolverInfo": {
-                            "resolverName": token[field_map["resolverName"]],
-                            "resolverClass": token[field_map["resolverClass"]],
-                        },
-                    },
-                    "usageData": {
-                        "loginAttempts": token_info.get(
-                            field_map["loginAttempts"], None
-                        ),
-                        "maxLoginAttempts": token_info.get(
-                            field_map["maxLoginAttempts"], None
-                        ),
-                        "successfulLoginAttempts": token_info.get(
-                            field_map["successfulLoginAttempts"], None
-                        ),
-                        "maxSuccessfulLoginAttempts": token_info.get(
-                            field_map["maxSuccessfulLoginAttempts"], None
-                        ),
-                        "lastSuccessfulLoginAttempt": token[
-                            field_map["lastSuccessfulLoginAttempt"]
-                        ],
-                        "failedLoginAttempts": token[
-                            field_map["failedLoginAttempts"]
-                        ],
-                        "maxFailedLoginAttempts": token[
-                            field_map["maxFailedLoginAttempts"]
-                        ],
-                        "lastAuthenticationMatch": token[
-                            field_map["lastAuthenticationMatch"]
-                        ],
-                    },
-                    "validityPeriod": {
-                        "validityStart": token_info.get(
-                            field_map["validityStart"], None
-                        ),
-                        "validityEnd": token_info.get(
-                            field_map["validityEnd"], None
-                        ),
-                    },
-                }
+                formatted_token = Token(token).to_JSON_format()
                 lines.append(formatted_token)
             result["pageRecords"] = lines
 
@@ -358,24 +253,117 @@ class TokensController(BaseController, JWTMixin):
             return sendError(None, e)
 
 
-# HELPERS - to be refactored away at a later point
+class Token:
+    def __init__(self, linotp_token) -> None:
 
+        # fill out self.token_info:
+        self._parse_tokeninfo(linotp_token)
 
-def _parse_tokeninfo(tok):
-    """
-    Parse TokenInfo to JSON and format validity period date fields to isoformat
-    """
+        # general token information
+        self.id = linotp_token["LinOtp.TokenId"]
+        self.description = linotp_token["LinOtp.TokenDesc"]
+        self.serial = linotp_token["LinOtp.TokenSerialnumber"]
+        self.type = linotp_token["LinOtp.TokenType"].lower()
+        self.creation_date = linotp_token["LinOtp.CreationDate"]
+        self.is_active = linotp_token["LinOtp.Isactive"]
+        self.realms = linotp_token["LinOtp.RealmNames"]
 
-    token_info = tok["LinOtp.TokenInfo"]
+        # token configuration
+        self.hash_lib = self.token_info.get("hashlib", None)
+        self.time_window = self.token_info.get("timeWindow", None)
+        self.time_shift = self.token_info.get("timeShift", None)
+        self.time_step = self.token_info.get("timeStep", None)
+        self.count_window = linotp_token["LinOtp.CountWindow"]
+        self.sync_window = linotp_token["LinOtp.SyncWindow"]
+        self.otp_length = linotp_token["LinOtp.OtpLen"]
+        self.otp_counter = linotp_token["LinOtp.Count"]
 
-    if token_info:
-        info = json.loads(token_info)
-    else:
-        info = {}
+        # information on the token owner
+        self.user_id = linotp_token["User.userid"]
+        self.username = linotp_token["User.username"]
+        self.user_description = linotp_token["User.description"]
+        self.resolver_name = linotp_token["LinOtp.IdResolver"]
+        self.resolver_class = linotp_token["LinOtp.IdResClass"]
 
-    for field in ["validity_period_end", "validity_period_start"]:
-        if field in info:
-            date = datetime.strptime(info[field], "%d/%m/%y %H:%M")
-            info[field] = date.isoformat()
+        # usage data
+        self.login_attempts = self.token_info.get("count_auth", None)
+        self.max_login_attempts = self.token_info.get("count_auth_max", None)
+        self.successful_login_attempts = self.token_info.get(
+            "count_auth_success", None
+        )
+        self.max_successful_login_attempts = self.token_info.get(
+            "count_auth_success_max", None
+        )
+        self.last_successful_login_attempt = linotp_token[
+            "LinOtp.LastAuthSuccess"
+        ]
+        self.failed_login_attempts = linotp_token["LinOtp.FailCount"]
+        self.max_failed_login_attempts = linotp_token["LinOtp.MaxFail"]
+        self.last_authentication_match = linotp_token["LinOtp.LastAuthMatch"]
 
-    tok["LinOtp.TokenInfo"] = info
+        # validity period
+        self.validity_start = self.token_info.get(
+            "validity_period_start", None
+        )
+        self.validity_end = self.token_info.get("validity_period_end", None)
+
+    def to_JSON_format(self):
+        return {
+            "id": self.id,
+            "description": self.description,
+            "serial": self.serial,
+            "type": self.type,
+            "creationDate": self.creation_date,
+            "isActive": self.is_active,
+            "realms": self.realms,
+            "tokenConfiguration": {
+                "hashLib": self.hash_lib,
+                "timeWindow": self.time_window,
+                "timeShift": self.time_shift,
+                "timeStep": self.time_step,
+                "countWindow": self.count_window,
+                "syncWindow": self.sync_window,
+                "otpLength": self.otp_length,
+                "otpCounter": self.otp_counter,
+            },
+            "userInfo": {
+                "userId": self.user_id,
+                "username": self.username,
+                "userDescription": self.user_description,
+                "idResolverInfo": {
+                    "resolverName": self.resolver_name,
+                    "resolverClass": self.resolver_class,
+                },
+            },
+            "usageData": {
+                "loginAttempts": self.login_attempts,
+                "maxLoginAttempts": self.max_login_attempts,
+                "successfulLoginAttempts": self.successful_login_attempts,
+                "maxSuccessfulLoginAttempts": self.max_successful_login_attempts,
+                "lastSuccessfulLoginAttempt": self.last_successful_login_attempt,
+                "failedLoginAttempts": self.failed_login_attempts,
+                "maxFailedLoginAttempts": self.max_failed_login_attempts,
+                "lastAuthenticationMatch": self.last_authentication_match,
+            },
+            "validityPeriod": {
+                "validityStart": self.validity_start,
+                "validityEnd": self.validity_end,
+            },
+        }
+
+    def _parse_tokeninfo(self, linotp_token):
+        """
+        Parse TokenInfo from JSON and format validity period date fields to isoformat
+        """
+
+        if linotp_token["LinOtp.TokenInfo"]:
+            self.token_info = json.loads(linotp_token["LinOtp.TokenInfo"])
+        else:
+            self.token_info = {}
+
+        for field in ["validity_period_end", "validity_period_start"]:
+            if field in self.token_info:
+                date = datetime.strptime(
+                    self.token_info[field], "%d/%m/%y %H:%M"
+                )
+                self.token_info[field] = date.isoformat()
