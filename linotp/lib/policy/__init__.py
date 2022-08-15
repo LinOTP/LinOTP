@@ -482,7 +482,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         log.debug("[checkPolicyPre] entering method %s", method)
 
         # get the realms for this administrator
-        policies = getAdminPolicies("")
+        policies = getAdminPolicies("show")
 
         log.debug(
             "[checkPolicyPre] The admin >%r< may manage the "
