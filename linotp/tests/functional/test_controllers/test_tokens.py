@@ -225,5 +225,51 @@ class TestTokens(TestController):
         assert response.json["result"]["value"]["totalPages"] == 4
         assert response.json["result"]["value"]["totalRecords"] == 40
 
+    def test_tokens_controller_default_pagination(self):
+        """verify /api/v2/tokens response is paginated
+
+        We create a set of 60 users which should be paginated. Then we request
+        the users without setting page and and pageSize. The system's default
+        (50) number of tokens should be returned.
+
+        Then we send a request with pageSize set to zero. All tokens should be
+        returned.
+
+        """
+
+        for i in range(0, 60):
+            serial = "PWToken-%.3d" % i
+            params = {
+                "type": "pw",
+                "otpkey": "geheim1",
+                "user": "horst",
+                "serial": serial,
+            }
+
+            response = self.make_admin_request("init", params=params)
+            assert response.json["result"]["status"]
+            assert response.json["result"]["value"]
+
+            self.serials.append(serial)
+
+        response = self.make_api_v2_request("/tokens/")
+
+        assert response.json["result"]["status"]
+        assert response.json["result"]["value"]["page"] == 0
+        assert response.json["result"]["value"]["pageSize"] == 50
+        assert response.json["result"]["value"]["totalPages"] == 2
+        assert response.json["result"]["value"]["totalRecords"] == 60
+        assert len(response.json["result"]["value"]["pageRecords"]) == 50
+
+        params = {"pageSize": "0"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+
+        assert response.json["result"]["status"]
+        assert response.json["result"]["value"]["page"] == 0
+        assert response.json["result"]["value"]["pageSize"] == 60
+        assert response.json["result"]["value"]["totalPages"] == 1
+        assert response.json["result"]["value"]["totalRecords"] == 60
+        assert len(response.json["result"]["value"]["pageRecords"]) == 60
+
 
 # eof #
