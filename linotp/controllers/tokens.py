@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+from http.client import LineTooLong
 
 from flask import current_app, g
 
@@ -73,6 +74,12 @@ class TokensController(BaseController, JWTMixin):
         )
 
         self.add_url_rule("/", "tokens", self.get_tokens, methods=["GET"])
+        self.add_url_rule(
+            "/<string:serial>",
+            "token_by_serial",
+            self.get_token_by_serial,
+            methods=["GET"],
+        )
 
     def __before__(self, **params):
         """
@@ -134,14 +141,19 @@ class TokensController(BaseController, JWTMixin):
         (unless another value is specified in the configuration). Setting it to
         0 returns all tokens.
         :type pageSize: int, optional
+
         :param page: request a certain page, defaults to 0
         :type page: int, optional
+
         :param sortBy: sort the output by column, defaults to 'serial'
         :type sortBy: str, optional
+
         :param sortOrder: 'asc' or 'desc', defaults to 'asc'
         :type sortOrder: str, optional
+
         :param searchTerm: limit entries to those partially matching the searchTerm
         :type searchTerm: str, optional
+
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
@@ -160,52 +172,19 @@ class TokensController(BaseController, JWTMixin):
 
         :raises PolicyException:
             if the logged-in admin does not have the correct permissions to list tokens,
-            the exception message is serialized and returned
+            return an HTTP 403 error response
+
         :raises Exception:
-            if any other error occurs the exception message is serialized and returned
+            if any other error occurs the exception message is serialized and returned in
+            an HTTP 500 error response
+
         """
-
-        field_map = {
-            "id": "LinOtp.TokenId",
-            "description": "LinOtp.TokenDesc",
-            "serial": "LinOtp.TokenSerialnumber",
-            "type": "LinOtp.TokenType",
-            "creationDate": "LinOtp.CreationDate",
-            "isActive": "LinOtp.Isactive",
-            "realms": "LinOtp.RealmNames",
-            "hashLib": "hashlib",
-            "timeWindow": "timeWindow",
-            "timeShift": "timeShift",
-            "timeStep": "timeStep",
-            "countWindow": "LinOtp.CountWindow",
-            "syncWindow": "LinOtp.SyncWindow",
-            "otpLength": "LinOtp.OtpLen",
-            "otpCounter": "LinOtp.Count",
-            "userId": "User.userid",
-            "username": "User.username",
-            "userDescription": "User.description",
-            "resolverName": "LinOtp.IdResolver",
-            "resolverClass": "LinOtp.IdResClass",
-            "loginAttempts": "count_auth",
-            "maxLoginAttempts": "count_auth_max",
-            "successfulLoginAttempts": "count_auth_success",
-            "maxSuccessfulLoginAttempts": "count_auth_success_max",
-            "lastSuccessfulLoginAttempt": "LinOtp.LastAuthSuccess",
-            "failedLoginAttempts": "LinOtp.FailCount",
-            "maxFailedLoginAttempts": "LinOtp.MaxFail",
-            "lastAuthenticationMatch": "LinOtp.LastAuthMatch",
-            "validityStart": "validity_period_start",
-            "validityEnd": "validity_period_end",
-        }
-
-        # use for the sort & filter names
-        reverse_map = {v: k for k, v in field_map.items()}
 
         param = self.request_params
         try:
             page = int(param.get("page", 0)) + 1
             page_size = param.get("pageSize")
-            sort_by = reverse_map.get(param.get("sortBy"), "serial")
+            sort_by = param.get("sortBy", "LinOtp.TokenSerialnumber")
             sort_order = param.get("sortOrder", "asc")
             search_term = param.get("searchTerm", None)
 
@@ -234,6 +213,7 @@ class TokensController(BaseController, JWTMixin):
             )
 
             ### End permissions' check ###
+
             if page_size is not None:
                 page_size = int(page_size)
 
@@ -268,77 +248,7 @@ class TokensController(BaseController, JWTMixin):
             # now row by row
             lines = []
             for token in tokens:
-                _parse_tokeninfo(token)
-                token_info = token["LinOtp.TokenInfo"]
-
-                formatted_token = {
-                    "id": token[field_map["id"]],
-                    "description": token[field_map["description"]],
-                    "serial": token[field_map["serial"]],
-                    "type": token[field_map["type"]].lower(),
-                    "creationDate": token[field_map["creationDate"]],
-                    "isActive": token[field_map["isActive"]],
-                    "realms": token[field_map["realms"]],
-                    "tokenConfiguration": {
-                        "hashLib": token_info.get(field_map["hashLib"], None),
-                        "timeWindow": token_info.get(
-                            field_map["timeWindow"], None
-                        ),
-                        "timeShift": token_info.get(
-                            field_map["timeShift"], None
-                        ),
-                        "timeStep": token_info.get(
-                            field_map["timeStep"], None
-                        ),
-                        "countWindow": token[field_map["countWindow"]],
-                        "syncWindow": token[field_map["syncWindow"]],
-                        "otpLength": token[field_map["otpLength"]],
-                        "otpCounter": token[field_map["otpCounter"]],
-                    },
-                    "userInfo": {
-                        "userId": token[field_map["userId"]],
-                        "username": token[field_map["username"]],
-                        "userDescription": token[field_map["userDescription"]],
-                        "idResolverInfo": {
-                            "resolverName": token[field_map["resolverName"]],
-                            "resolverClass": token[field_map["resolverClass"]],
-                        },
-                    },
-                    "usageData": {
-                        "loginAttempts": token_info.get(
-                            field_map["loginAttempts"], None
-                        ),
-                        "maxLoginAttempts": token_info.get(
-                            field_map["maxLoginAttempts"], None
-                        ),
-                        "successfulLoginAttempts": token_info.get(
-                            field_map["successfulLoginAttempts"], None
-                        ),
-                        "maxSuccessfulLoginAttempts": token_info.get(
-                            field_map["maxSuccessfulLoginAttempts"], None
-                        ),
-                        "lastSuccessfulLoginAttempt": token[
-                            field_map["lastSuccessfulLoginAttempt"]
-                        ],
-                        "failedLoginAttempts": token[
-                            field_map["failedLoginAttempts"]
-                        ],
-                        "maxFailedLoginAttempts": token[
-                            field_map["maxFailedLoginAttempts"]
-                        ],
-                        "lastAuthenticationMatch": token[
-                            field_map["lastAuthenticationMatch"]
-                        ],
-                    },
-                    "validityPeriod": {
-                        "validityStart": token_info.get(
-                            field_map["validityStart"], None
-                        ),
-                        "validityEnd": token_info.get(
-                            field_map["validityEnd"], None
-                        ),
-                    },
-                }
+                formatted_token = Token(token).to_JSON_format()
                 lines.append(formatted_token)
             result["pageRecords"] = lines
 
@@ -357,25 +267,195 @@ class TokensController(BaseController, JWTMixin):
             db.session.rollback()
             return sendError(None, e)
 
+    def get_token_by_serial(self, serial):
+        """
+        Method: GET /api/v2/tokens/<serial>
 
-# HELPERS - to be refactored away at a later point
+        Display all the information on a single token.
+
+        :param serial: the unique token serial
+        :type serial: string
+
+        :return:
+            a JSON-RPC response with ``result`` in the following format:
+
+            .. code::
+
+                {
+                    "status": boolean,
+                    "value": Token
+                }
+
+        :raises PolicyException:
+            if the logged-in admin does not have the correct permissions to view the token,
+            return an HTTP 403 error response
+
+        :raises Exception:
+            if any other error occurs the exception message is serialized and returned in
+            an HTTP 500 error response
+        """
+
+        param = self.request_params
+        try:
+            user = getUserFromParam(param)
+            check_result = checkPolicyPre("admin", "show", param, user=user)
+
+            # realms:
+            filter_realm = ["*"]
+
+            # If they are active, restrict the result to the tokens in the
+            # realms that the admin is allowed to see:
+            if check_result["active"] and check_result["realms"]:
+                filter_realm = check_result["realms"]
+
+            tokens = TokenIterator(user, serial, filterRealm=filter_realm)
+
+            # put in the result
+            result = {}
+
+            result_count = tokens.getResultSetInfo()["tokens"]
+
+            if result_count > 1:
+                raise Exception(
+                    "Multiple tokens found with serial {}".format(serial)
+                )
+
+            formatted_token = {}
+
+            if result_count == 1:
+                token = next(tokens)
+                formatted_token = Token(token).to_JSON_format()
+
+            g.audit["success"] = True
+            g.audit["info"] = "realm: {}".format(filter_realm)
+
+            db.session.commit()
+            return sendResult(response, formatted_token)
+
+        except PolicyException as pe:
+            log.exception("[get_token_by_serial] policy failed: {}".format(pe))
+            db.session.rollback()
+            error = sendError(None, pe)
+            error.status_code = 403
+            return error
+
+        except Exception as e:
+            log.exception("[get_token_by_serial] failed: {}".format(e))
+            db.session.rollback()
+            return sendError(None, e)
 
 
-def _parse_tokeninfo(tok):
-    """
-    Parse TokenInfo to JSON and format validity period date fields to isoformat
-    """
+class Token:
+    def __init__(self, linotp_token) -> None:
 
-    token_info = tok["LinOtp.TokenInfo"]
+        # fill out self.token_info:
+        self._parse_tokeninfo(linotp_token)
 
-    if token_info:
-        info = json.loads(token_info)
-    else:
-        info = {}
+        # general token information
+        self.id = linotp_token["LinOtp.TokenId"]
+        self.description = linotp_token["LinOtp.TokenDesc"]
+        self.serial = linotp_token["LinOtp.TokenSerialnumber"]
+        self.type = linotp_token["LinOtp.TokenType"].lower()
+        self.creation_date = linotp_token["LinOtp.CreationDate"]
+        self.is_active = linotp_token["LinOtp.Isactive"]
+        self.realms = linotp_token["LinOtp.RealmNames"]
 
-    for field in ["validity_period_end", "validity_period_start"]:
-        if field in info:
-            date = datetime.strptime(info[field], "%d/%m/%y %H:%M")
-            info[field] = date.isoformat()
+        # token configuration
+        self.hash_lib = self.token_info.get("hashlib", None)
+        self.time_window = self.token_info.get("timeWindow", None)
+        self.time_shift = self.token_info.get("timeShift", None)
+        self.time_step = self.token_info.get("timeStep", None)
+        self.count_window = linotp_token["LinOtp.CountWindow"]
+        self.sync_window = linotp_token["LinOtp.SyncWindow"]
+        self.otp_length = linotp_token["LinOtp.OtpLen"]
+        self.otp_counter = linotp_token["LinOtp.Count"]
 
-    tok["LinOtp.TokenInfo"] = info
+        # information on the token owner
+        self.user_id = linotp_token["User.userid"]
+        self.username = linotp_token["User.username"]
+        self.user_description = linotp_token["User.description"]
+        self.resolver_name = linotp_token["LinOtp.IdResolver"]
+        self.resolver_class = linotp_token["LinOtp.IdResClass"]
+
+        # usage data
+        self.login_attempts = self.token_info.get("count_auth", None)
+        self.max_login_attempts = self.token_info.get("count_auth_max", None)
+        self.successful_login_attempts = self.token_info.get(
+            "count_auth_success", None
+        )
+        self.max_successful_login_attempts = self.token_info.get(
+            "count_auth_success_max", None
+        )
+        self.last_successful_login_attempt = linotp_token[
+            "LinOtp.LastAuthSuccess"
+        ]
+        self.failed_login_attempts = linotp_token["LinOtp.FailCount"]
+        self.max_failed_login_attempts = linotp_token["LinOtp.MaxFail"]
+        self.last_authentication_match = linotp_token["LinOtp.LastAuthMatch"]
+
+        # validity period
+        self.validity_start = self.token_info.get(
+            "validity_period_start", None
+        )
+        self.validity_end = self.token_info.get("validity_period_end", None)
+
+    def to_JSON_format(self):
+        return {
+            "id": self.id,
+            "description": self.description,
+            "serial": self.serial,
+            "type": self.type,
+            "creationDate": self.creation_date,
+            "isActive": self.is_active,
+            "realms": self.realms,
+            "tokenConfiguration": {
+                "hashLib": self.hash_lib,
+                "timeWindow": self.time_window,
+                "timeShift": self.time_shift,
+                "timeStep": self.time_step,
+                "countWindow": self.count_window,
+                "syncWindow": self.sync_window,
+                "otpLength": self.otp_length,
+                "otpCounter": self.otp_counter,
+            },
+            "userInfo": {
+                "userId": self.user_id,
+                "username": self.username,
+                "userDescription": self.user_description,
+                "idResolverInfo": {
+                    "resolverName": self.resolver_name,
+                    "resolverClass": self.resolver_class,
+                },
+            },
+            "usageData": {
+                "loginAttempts": self.login_attempts,
+                "maxLoginAttempts": self.max_login_attempts,
+                "successfulLoginAttempts": self.successful_login_attempts,
+                "maxSuccessfulLoginAttempts": self.max_successful_login_attempts,
+                "lastSuccessfulLoginAttempt": self.last_successful_login_attempt,
+                "failedLoginAttempts": self.failed_login_attempts,
+                "maxFailedLoginAttempts": self.max_failed_login_attempts,
+                "lastAuthenticationMatch": self.last_authentication_match,
+            },
+            "validityPeriod": {
+                "validityStart": self.validity_start,
+                "validityEnd": self.validity_end,
+            },
+        }
+
+    def _parse_tokeninfo(self, linotp_token):
+        """
+        Parse TokenInfo from JSON and format validity period date fields to isoformat
+        """
+
+        if linotp_token["LinOtp.TokenInfo"]:
+            self.token_info = json.loads(linotp_token["LinOtp.TokenInfo"])
+        else:
+            self.token_info = {}
+
+        for field in ["validity_period_end", "validity_period_start"]:
+            if field in self.token_info:
+                date = datetime.strptime(
+                    self.token_info[field], "%d/%m/%y %H:%M"
+                )
+                self.token_info[field] = date.isoformat()

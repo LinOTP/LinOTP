@@ -127,7 +127,7 @@ class TestRealms(TestController):
             "name": "admin3_write_realms",
             "active": True,
             "action": "write",
-            "user": "admin2",
+            "user": "admin3",
             "scope": "system",
             "realm": "myDefRealm",
             "time": None,
@@ -161,3 +161,11 @@ class TestRealms(TestController):
         response = self.make_api_v2_request("/realms/", auth_user="admin3")
 
         assert response.status_code == 403
+
+        # --------------------------------------------------------------- --
+        # we delete the policies in the correct order, otherwise this might
+        # fail
+
+        self.delete_policy(name="admin3_write_realms", auth_user="admin")
+        self.delete_policy(name="admin2_read_realms", auth_user="admin")
+        self.delete_policy(name="admin_read_write_realms", auth_user="admin")
