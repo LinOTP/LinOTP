@@ -214,8 +214,6 @@ class TestTokens(TestController):
         assert response.json["result"]["value"]["totalPages"] == 1
         assert response.json["result"]["value"]["totalRecords"] == 40
 
-        resp_old = response
-
         params = {"page": "3", "pageSize": "10", "sortOrder": "desc"}
         response = self.make_api_v2_request("/tokens/", params=params)
 
@@ -270,6 +268,88 @@ class TestTokens(TestController):
         assert response.json["result"]["value"]["totalPages"] == 1
         assert response.json["result"]["value"]["totalRecords"] == 60
         assert len(response.json["result"]["value"]["pageRecords"]) == 60
+
+    def test_get_token_by_serial_authentication(self):
+        """access by serial to a not existing token"""
+
+        # ---------------------------------------------------------------- --
+        # access the tokens api via the authenticated testing api -
+        # accessin an non existing token
+
+        response = self.make_api_v2_request("/tokens/1234")
+
+        assert response.json["result"]["status"]
+        assert isinstance(response.json["result"]["value"], dict)
+
+        # ---------------------------------------------------------------- --
+        # access the tokens api with the unauthenticated testing client
+
+        response = self.client.get("/api/v2/tokens/")
+
+        assert response.status_code == 401
+
+    def test_get_token_by_serial_authorisation(self):
+        """verify that the user must be authorized to view the token"""
+
+        # --------------------------------------------------------------- --
+        # create some tokens belonging to different realms
+
+        users = [("horst", "mydefrealm"), ("other_user", "myotherrealm")]
+        for user, realm in users:
+            serial = "PWToken@" + realm
+            params = {
+                "type": "pw",
+                "otpkey": "geheim1",
+                "user": user + "@" + realm,
+                "serial": serial,
+            }
+
+            response = self.make_admin_request("init", params=params)
+            assert response.json["result"]["status"]
+            assert response.json["result"]["value"]
+
+        # --------------------------------------------------------------- --
+        # create a restriction to the 'admin' to only see myDefRealm tokens
+
+        admin_policy = {
+            "name": "amin_read_tokens",
+            "active": True,
+            "action": "show",
+            "user": "admin",
+            "scope": "admin",
+            "realm": "myDefRealm",
+            "time": None,
+        }
+
+        response = self.make_system_request(
+            "setPolicy",
+            params=admin_policy,
+            auth_user="admin",
+        )
+
+        assert response.json["result"]["status"]
+
+        # --------------------------------------------------------------- --
+        # verify that the access to tokens is restricet to
+        # the policy defined realm
+
+        serial = "PWToken@" + "mydefrealm"
+
+        response = self.make_api_v2_request(
+            "/tokens/%s" % serial, auth_user="admin"
+        )
+
+        assert response.json["result"]["status"]
+        assert response.json["result"]["value"]["serial"] == serial
+
+        serial = "PWToken@" + "myotherrealm"
+
+        response = self.make_api_v2_request(
+            "/tokens/%s" % serial, auth_user="admin"
+        )
+
+        assert response.json["result"]["status"]
+        assert "serial" not in response.json["result"]["value"]
 
 
 # eof #
