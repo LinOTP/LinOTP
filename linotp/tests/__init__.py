@@ -91,9 +91,9 @@ def url(controller, action):
     """
     if controller.endswith("/"):
         warnings.warn("Controller name should not have a trailing slash")
-        controller = controller.strip("/")
+        controller = controller.rpartition("/")[0]
 
-    return "/".join([controller, action or ""])
+    return "/".join([controller, action or ""]).replace("//", "/")
 
 
 class CompatibleTestResponse(Response):
@@ -404,6 +404,34 @@ class TestController(TestCase):
             upload_files=upload_files,
             client=client,
             content_type=content_type,
+        )
+
+    def make_api_v2_request(
+        self,
+        action,
+        params=None,
+        method="GET",
+        auth_user="admin",
+        client=None,
+        upload_files=None,
+        content_type=None,
+        auth_resolver="useridresolver.PasswdIdResolver.IdResolver.myDefRes",
+    ):
+        """
+        Makes an authenticated request to /api/v2/
+        """
+        if not params:
+            params = {}
+        return self._make_authenticated_request(
+            controller="/api/v2",
+            action=action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            client=client,
+            content_type=content_type,
+            auth_resolver=auth_resolver,
         )
 
     def make_admin_request(
