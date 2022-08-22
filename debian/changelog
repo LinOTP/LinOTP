@@ -3,6 +3,11 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   Features:
   * the manage ui login will no longer use refresh and reloads
   * method to provide context information for manage ui
+  * new API endpoints to retrieve tokens:
+    * /api/v2/tokens
+    * /api/v2/tokens/<serial>
+  * new API endpoint to retrieve realms:
+    * /api/v2/realms
 
   Fix:
   * After a logout the jwt token can not be reused
