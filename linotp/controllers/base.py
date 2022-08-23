@@ -37,10 +37,8 @@ from warnings import warn
 from flask_jwt_extended import (
     create_access_token,
     get_jwt_identity,
-    get_raw_jwt,
     set_access_cookies,
     unset_jwt_cookies,
-    verify_jwt_in_request,
 )
 from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
 from jwt import ExpiredSignatureError, InvalidSignatureError
@@ -53,6 +51,10 @@ from linotp.lib.context import request_context
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.resolver import getResolverObject
+from linotp.lib.tools.flask_jwt_extended_migration import (
+    get_jwt,
+    verify_jwt_in_request,
+)
 from linotp.lib.user import (
     NoResolverFound,
     User,
@@ -329,7 +331,7 @@ def jwt_refresh(response):
     if delta == 0:
         return response
     try:
-        exp_timestamp = get_raw_jwt()["exp"]
+        exp_timestamp = get_jwt()["exp"]
         now = datetime.now(timezone.utc)
         target_timestamp = datetime.timestamp(now + timedelta(seconds=delta))
         if target_timestamp > exp_timestamp:
@@ -434,9 +436,9 @@ class JWTMixin(object):
         unset_jwt_cookies(response)
 
         # jti: jwt unique identifier
-        raw_jwt = get_raw_jwt()
+        raw_jwt = get_jwt()
         jti = raw_jwt["jti"]
-        expires_at = get_raw_jwt()["exp"]
+        expires_at = get_jwt()["exp"]
         expires_in = int(expires_at - datetime.now().timestamp())
 
         current_app.jwt_blocklist.add_item(jti, expiry=expires_in)
