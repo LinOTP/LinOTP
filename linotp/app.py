@@ -35,11 +35,6 @@ from uuid import uuid4
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 from flask_babel import Babel, gettext
-from flask_jwt_extended import (
-    JWTManager,
-    get_jwt_identity,
-    verify_jwt_in_request_optional,
-)
 from flask_jwt_extended.exceptions import (
     CSRFError,
     NoAuthorizationError,
@@ -77,6 +72,11 @@ from .lib.resolver import (
 )
 from .lib.security.provider import SecurityProvider
 from .lib.tools.expiring_list import CustomExpiringList
+from .lib.tools.flask_jwt_extended_migration import (
+    JWTManager,
+    get_jwt_identity,
+    verify_jwt_in_request,
+)
 from .lib.user import User, getUserFromRequest
 from .lib.util import get_client
 from .model import setup_db
@@ -400,9 +400,12 @@ class LinOTPApp(Flask):
         self.jwt_blocklist = CustomExpiringList()
 
         # passing the function for checking blocklist to flask_jwt_extended
-        @self.jwt.token_in_blacklist_loader
-        def check_if_token_revoked(jwt_payload):
-            jti = jwt_payload["jti"]
+        @self.jwt.token_in_blocklist_loader
+        def check_if_token_revoked(*args):
+            # This is called as `…(payload)` or `…(header, payload)` but we're only interested in `payload`
+            jti = args[-1].get("jti")
+            if jti is None:
+                raise KeyError("jti")
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
@@ -415,7 +418,7 @@ class LinOTPApp(Flask):
 
         # extract the username if request is authorized
         try:
-            verify_jwt_in_request_optional()
+            verify_jwt_in_request(optional=True)
             identity = get_jwt_identity()
             if identity:
                 log.debug(

@@ -59,12 +59,15 @@ from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import pytest
+from packaging import version
 
 from flask import Flask, Response
+from flask import __version__ as FLASK_VERSION
 from flask import _request_ctx_stack as flask_request_ctx_stack
 from flask import current_app, g, request
 
 from linotp.app import create_app
+from linotp.lib.tools.flask_migration import TestResponse
 from linotp.lib.user import User
 
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
@@ -96,7 +99,7 @@ def url(controller, action):
     return "/".join([controller, action or ""]).replace("//", "/")
 
 
-class CompatibleTestResponse(Response):
+class CompatibleTestResponse(TestResponse):
     """
     A response class that supports the use of the
     'in' operator for searching the body
@@ -191,12 +194,13 @@ class TestController(TestCase):
         # Older versions of Flask (-> debian buster) do not include the needed code
         # to pop the context if a response was streamed
         # https://github.com/pytest-dev/pytest-flask/issues/42#issuecomment-483864698
-        while True:
-            top = flask_request_ctx_stack.top
-            if top is not None and top.preserved:
-                top.pop()
-            else:
-                break
+        if version.parse(FLASK_VERSION) < version.parse("2.0.0"):
+            while True:
+                top = flask_request_ctx_stack.top
+                if top is not None and top.preserved:
+                    top.pop()
+                else:
+                    break
 
     @classmethod
     def setup_class(cls):

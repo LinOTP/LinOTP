@@ -80,9 +80,7 @@ class TestHTTPError(TestController):
             "genkey": 1,
             "httperror": 444,
         }
-        response = self._make_admin_request_custom_status(
-            "init", params, "444"
-        )
+        response = self._make_admin_request_custom_status("init", params, 444)
 
         assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
@@ -97,9 +95,7 @@ class TestHTTPError(TestController):
             "genkey": 1,
             "httperror": "",
         }
-        response = self._make_admin_request_custom_status(
-            "init", params, "500"
-        )
+        response = self._make_admin_request_custom_status("init", params, 500)
 
         assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
@@ -121,9 +117,7 @@ class TestHTTPError(TestController):
             "genkey": 1,
             "httperror": 444,
         }
-        response = self._make_admin_request_custom_status(
-            "init", params, "444"
-        )
+        response = self._make_admin_request_custom_status("init", params, 444)
 
         assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
@@ -135,9 +129,7 @@ class TestHTTPError(TestController):
             "genkey": 1,
             "httperror": "",
         }
-        response = self._make_admin_request_custom_status(
-            "init", params, "500"
-        )
+        response = self._make_admin_request_custom_status("init", params, 500)
 
         assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
@@ -237,9 +229,7 @@ class TestHTTPError(TestController):
             "genkey": 1,
             "httperror": 444,
         }
-        response = self._make_admin_request_custom_status(
-            "init", params, "444"
-        )
+        response = self._make_admin_request_custom_status("init", params, 444)
 
         assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
@@ -251,9 +241,7 @@ class TestHTTPError(TestController):
             "genkey": 1,
             "httperror": "",
         }
-        response = self._make_admin_request_custom_status(
-            "init", params, "500"
-        )
+        response = self._make_admin_request_custom_status("init", params, 500)
 
         assert "text/html" in response.content_type.split(";")
         assert "ERR1112: getUserResolverId failed" in response
@@ -275,9 +263,7 @@ class TestHTTPError(TestController):
             "genkey": 1,
             "httperror": 444,
         }
-        response = self._make_admin_request_custom_status(
-            "init", params, "444"
-        )
+        response = self._make_admin_request_custom_status("init", params, 444)
 
         assert "text/html" in response.content_type.split(";")
         assert "getUserId failed: no user >doesnotexist" in response.body
@@ -334,7 +320,7 @@ class TestHTTPError(TestController):
         something other and 2xx or 3xx is returned.
         """
         response = self.make_admin_request(action, params)
-        assert response.status == status
+        assert response.status_code == status
 
         return response
 

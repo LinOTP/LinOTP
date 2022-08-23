@@ -132,7 +132,7 @@ build:debian-buster:
     expire_in: 2 weeks
 
 
-.lint:
+lint:
   stage: lint
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   needs: ["build:debian-buster"]
@@ -149,36 +149,9 @@ build:debian-buster:
     - "test $(( $EXIT_ON_FATAL && $STATUS & 1 )) -eq 0 || (echo 'Fail: Fatal errors'; false)"
     - "test $(( $EXIT_ON_ERROR && $STATUS & 2 )) -eq 0 || (echo 'Fail: Errors'; false)"
     - "test $(( $EXIT_ON_WARNING && $STATUS & 4 )) -eq 0 || (echo 'Fail: Warnings'; false)"
-
-lint-controllers:
-  extends: .lint
-  variables:
-    LINTED_MODULE: controllers
-
-lint-lib:
-  extends: .lint
-  variables:
-    LINTED_MODULE: lib
-
-lint-model:
-  extends: .lint
-  variables:
-    LINTED_MODULE: model
-
-lint-provider:
-  extends: .lint
-  variables:
-    LINTED_MODULE: provider
-
-lint-tokens:
-  extends: .lint
-  variables:
-    LINTED_MODULE: tokens
-
-lint-useridresolver:
-  extends: .lint
-  variables:
-    LINTED_MODULE: useridresolver
+  parallel:
+    matrix:
+      - LINTED_MODULE: [controllers, lib, model, provider, tokens, useridresolver]
 
 # Provide pytest arguments based on base rules
 # The tests need a number of arguments based on the type
@@ -276,10 +249,31 @@ lint-useridresolver:
       alias: db
 
 ## Test stages
+.parallel:
+  variables:
+    CI_NODE_TOTAL: 4
+  matrix:
+    - CI_FLASK_VERSION: [Flask-1, Flask-2]
+      CI_NODE_INDEX: [1, 2, 3, 4]
+  matrix-no-ci-node:
+    - CI_FLASK_VERSION: [Flask-1, Flask-2]
+  script-install-flask2:
+    if [ "$CI_FLASK_VERSION" == "Flask-2" ];
+      then
+        pip3 install --upgrade pip wheel;
+        pip3 install --upgrade "Flask==2.1.3" Flask-JWT-Extended Flask-Babel Flask-SQLAlchemy pytest-flask;
+        if ! pip3 freeze | grep Flask==2; then echo "FLASK_VERSION is != 2" && exit 1; fi
+    ; fi
 
 .test-base:
   stage: test
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  variables:
+    CI_NODE_TOTAL: !reference [.parallel, variables, CI_NODE_TOTAL]
+  parallel:
+    matrix: !reference [.parallel, matrix]
+  before_script:
+    !reference [.parallel, script-install-flask2]
   artifacts:
     reports:
       coverage_report:
@@ -291,7 +285,6 @@ unit-test:
   extends:
     - .test-base
     - .buster-tests
-  parallel: 4
   artifacts:
     reports:
       junit: linotp/tests/unit/unit-*.xml
@@ -311,31 +304,31 @@ unit-test:
     - *pytest-args
     - make functionaltests PYTESTARGS="$PYTESTARGS"
 
-functional-test:
+.functional-test-base-dbs:
   extends: .functional-test-base
-  parallel: 6
-
-functional-test-mysql:
-  extends:
-    - .functional-test-base
-    - .mysql-database
   variables:
     # Only run non-sqlite tests in regular pipeline
     NON_NIGHTLY_ARGS: "-m exclude_sqlite"
+  parallel:
+    matrix: !reference [.parallel, matrix-no-ci-node]
+
+functional-test:
+  extends: .functional-test-base
+
+functional-test-mysql:
+  extends:
+    - .functional-test-base-dbs
+    - .mysql-database
 
 functional-test-mariadb:
   extends:
-    - .functional-test-base
+    - .functional-test-base-dbs
     - .mariadb-database
-  variables:
-    NON_NIGHTLY_ARGS: "-m exclude_sqlite"
 
 functional-test-postgres:
   extends:
-    - .functional-test-base
+    - .functional-test-base-dbs
     - .postgres-database
-  variables:
-    NON_NIGHTLY_ARGS: "-m exclude_sqlite"
 
 .e2e-test:
   extends:
@@ -396,7 +389,6 @@ e2e-test-mariadb:
   extends:
     - .e2e-test
     - .mariadb-database
-  parallel: 4
   services:
     - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
       alias: test-linotp
@@ -413,23 +405,11 @@ e2e-test-mariadb:
 # End to end test using Soft HSM image
 e2e-test-softhsm:
   extends:
-    - .e2e-test
-    - .mariadb-database
+    - e2e-test-mariadb
     - .only-nightly
   variables:
     ALL_JOB_ARGS: "-m smoketest -v"
     LINOTP_IMAGE: "linotp-softhsm"
-  services:
-    - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
-      alias: test-linotp
-    - name: $BLACKDOG_LDAP_IMAGE
-      alias: blackdog-ldap
-    - name: $BLACKDOG_MYSQL_IMAGE
-      alias: blackdog-mysql
-    - name: ${DB}
-      alias: db
-    - name: selenium/standalone-chrome-debug:latest
-      alias: test-chrome
   allow_failure: true
 
 # Auto-generate API docs using Sphinx.
