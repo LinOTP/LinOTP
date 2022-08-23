@@ -651,7 +651,8 @@ class TestUserserviceAuthController(TestController):
         }
 
         response = self.client.get(
-            url(controller="userservice", action="login"), data=auth_user
+            url(controller="userservice", action="login"),
+            query_string=auth_user,
         )
         response.body = response.data.decode("utf-8")
 
@@ -673,7 +674,7 @@ class TestUserserviceAuthController(TestController):
         params = {}
         params["session"] = auth_cookie
         response = self.client.get(
-            url(controller="userservice", action="login"), data=params
+            url(controller="userservice", action="login"), query_string=params
         )
         response.body = response.data.decode("utf-8")
 
@@ -698,7 +699,7 @@ class TestUserserviceAuthController(TestController):
 
         params = {"session": auth_cookie}
         response = self.client.get(
-            url(controller="userservice", action="login"), data=params
+            url(controller="userservice", action="login"), query_string=params
         )
         response.body = response.data.decode("utf-8")
 
@@ -713,7 +714,7 @@ class TestUserserviceAuthController(TestController):
             "transactionid": transactionid,
         }
         response = self.client.get(
-            url(controller="validate", action="check_t"), data=params
+            url(controller="validate", action="check_t"), query_string=params
         )
         response.body = response.data.decode("utf-8")
 
@@ -729,7 +730,7 @@ class TestUserserviceAuthController(TestController):
         params["session"] = auth_cookie
 
         response = self.client.get(
-            url(controller="userservice", action="login"), data=params
+            url(controller="userservice", action="login"), query_string=params
         )
         response.body = response.data.decode("utf-8")
 
@@ -746,7 +747,8 @@ class TestUserserviceAuthController(TestController):
         params = {}
         params["session"] = auth_cookie
         response = self.client.get(
-            url(controller="userservice", action="history"), data=params
+            url(controller="userservice", action="history"),
+            query_string=params,
         )
         response.body = response.data.decode("utf-8")
 
