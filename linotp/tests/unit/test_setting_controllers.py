@@ -8,7 +8,13 @@
 # (s.conftest.py). Thus we explicit test the settings.py defaults here
 
 
+from urllib.parse import urlparse
+
 import pytest
+
+
+def path_equal(loc, path):
+    return urlparse(loc).path == path
 
 
 @pytest.mark.app_config(
@@ -30,8 +36,9 @@ def test_all_controllers__are_accessible(client):
 def test_all_controllers_and_no_duplicate_selfservice(client):
     """test: all controllers and no selfservice duplicate error"""
     response = client.get("/")
-    assert response.headers["Location"] == "http://localhost/my-custom-path/"
+
     assert response.status_code == 302
+    assert path_equal(response.headers["Location"], "/my-custom-path/")
 
     response = client.get("/userservice/login")
     assert response.status_code == 200
