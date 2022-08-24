@@ -16,7 +16,6 @@ CACHEDIR=/var/cache/linotp
 OLDCACHEDIR=$CONFIG_DIR/data
 TEMPLATEDIR=$CONFIG_DIR/custom-templates
 LIBDIR=/var/lib/linotp
-FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
 LSB_RELEASE=`which lsb_release || true`
 
 LINOTP_USER=linotp
@@ -127,16 +126,7 @@ configure_apache() {
     a2dissite linotp || echo_warn "Could not disable Apache linotp host"
     return
   fi
-
-  db_get linotp/apache/admin_password
-  if [ "$RET" != "$FAKE_PASSWORD" ]; then
-    # Only update the password if it is not the fake password
-    PWDIGEST=$(echo -n "admin:$REALM:$RET" | md5sum | cut -f1 -d ' ')
-    echo "admin:$REALM:$PWDIGEST" >"$DIGESTFILE"
-  fi
-  # delete password from database
-  db_set linotp/apache/admin_password "$FAKE_PASSWORD"
-
+  
   db_get linotp/apache/ssl_create
   APACHE_SSL_CREATE=$RET
   db_set linotp/apache/ssl_create false
