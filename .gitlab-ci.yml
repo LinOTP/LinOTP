@@ -411,6 +411,8 @@ e2e-test-softhsm:
     ALL_JOB_ARGS: "-m smoketest -v"
     LINOTP_IMAGE: "linotp-softhsm"
   allow_failure: true
+  parallel:
+    matrix: !reference [.parallel, matrix-no-ci-node]
 
 # Auto-generate API docs using Sphinx.
 apidocs:
