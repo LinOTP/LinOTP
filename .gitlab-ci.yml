@@ -1,3 +1,8 @@
+include:
+  - template: Code-Quality.gitlab-ci.yml
+  - project: 'dev/ext-project-packaging/ci-includes'
+    file: 'gitbox-deb-ci.yml'
+
 variables:
   LANG: C.UTF-8
   IMAGE_NAME: linotp-build-test-environment_buster
@@ -18,6 +23,10 @@ variables:
   CI_REGISTRY: gitbox.corp.keyidentity.com:5050
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
+  # Variables for upload-debs
+  REPOSITORY: linotp3
+  COMPONENT: linotp
+
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'schedule'              # Execute nightly pipeline
@@ -39,9 +48,6 @@ stages:
 .docker-registry: &docker-registry
   before_script:
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
-
-include:
-  - template: Code-Quality.gitlab-ci.yml
 
 pre-commit-check:
   stage: pre-check
@@ -443,54 +449,14 @@ apidocs:
       - api-doc
     expire_in: 2 weeks
 
-.before_upload: &before_upload
-  before_script:
-    # Ensure required variables have been set
-    - test -n "${DEV_REPO_HOST}"
-    - test -n "${DEV_REPO_KNOWN_HOSTS}"
-    - test -n "${DEV_REPO_SSH_SUBMIT_KEY}"
-    # Install dependencies
-    - apt-get update && apt-get install -y --no-install-recommends devscripts openssh-client
-    # Configure ssh
-    - eval $(ssh-agent -s)
-    - echo "$DEV_REPO_SSH_SUBMIT_KEY" | tr -d '\r' | ssh-add - >/dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo "CheckHostIP no" >>~/.ssh/config
-    - echo "$DEV_REPO_KNOWN_HOSTS" >~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-    - export BUILD_JOB_ID=$(cat apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt)
+# Upload deb packages
+.debian-releases:
+  parallel:
+    matrix:
+      - DEBIAN_RELEASE_NAME:
+        - buster
 
-# Upload deb packages to development repository.
-upload-debs:buster:
+
+upload-debs:
   stage: upload-debian-packages
-  image: debian:latest
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'                # Nightly jobs do not upload
-      when: never
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^release/' # Auto upload if tagged
-      when: never
-    - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/'      # Auto upload if merged to stable or master
-      when: always
-    - when: manual                                         # Otherwise allow manual upload from branch
-      allow_failure: true
-  <<: *before_upload
-  script:
-    - find apt/* -ls
-    - ssh debs@$DEV_REPO_HOST repo-tool gpull linotp3 "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-
-
-# Upload packages to `buster-golden` if we are on a `release` tag.
-upload-golden-debs:buster:
-  stage: upload-debian-packages
-  image: debian:latest
-  rules:
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^release/'
-      when: always
-  <<: *before_upload
-  script:
-    - ssh debs@$DEV_REPO_HOST repo-tool gpull linotp3-golden "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
-  variables:
-    DEBIAN_RELEASE_NAME: buster
+  extends: .upload-debs
