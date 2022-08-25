@@ -258,6 +258,14 @@ lint:
     - CI_FLASK_VERSION: [Flask-1, Flask-2]
       CI_NODE_INDEX: [1]
       CI_NODE_TOTAL: [1]
+  matrix-flask1-only:
+    - CI_FLASK_VERSION: [Flask-1]
+      CI_NODE_INDEX: [1, 2, 3, 4]
+      CI_NODE_TOTAL: [4]
+  matrix-no-test-splitting-flask1-only:
+    - CI_FLASK_VERSION: [Flask-1]
+      CI_NODE_INDEX: [1]
+      CI_NODE_TOTAL: [1]
   script-install-flask2:
     if [ "$CI_FLASK_VERSION" == "Flask-2" ];
       then
@@ -271,8 +279,6 @@ lint:
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   parallel:
     matrix: !reference [.parallel, matrix]
-  before_script:
-    !reference [.parallel, script-install-flask2]
   artifacts:
     reports:
       coverage_report:
@@ -287,6 +293,8 @@ unit-test:
   artifacts:
     reports:
       junit: linotp/tests/unit/unit-*.xml
+  before_script:
+    !reference [.parallel, script-install-flask2]
   script:
     - *pytest-args
     - make unittests PYTESTARGS="$PYTESTARGS"
@@ -299,6 +307,8 @@ unit-test:
   artifacts:
     reports:
       junit: linotp/tests/functional/functional-*.xml
+  before_script:
+    !reference [.parallel, script-install-flask2]
   script:
     - *pytest-args
     - make functionaltests PYTESTARGS="$PYTESTARGS"
@@ -333,6 +343,8 @@ functional-test-postgres:
   extends:
     - .test-base
     - .buster-tests
+  parallel:
+    matrix: !reference [.parallel, matrix-flask1-only]
   variables:
     LINOTP_IMAGE: "linotp"
     LINOTP_HOST: "test-linotp"
@@ -411,7 +423,7 @@ e2e-test-softhsm:
     LINOTP_IMAGE: "linotp-softhsm"
   allow_failure: true
   parallel:
-    matrix: !reference [.parallel, matrix-no-test-splitting]
+    matrix: !reference [.parallel, matrix-no-test-splitting-flask1-only]
 
 # Auto-generate API docs using Sphinx.
 apidocs:
