@@ -250,13 +250,22 @@ lint:
 
 ## Test stages
 .parallel:
-  variables:
-    CI_NODE_TOTAL: 4
   matrix:
     - CI_FLASK_VERSION: [Flask-1, Flask-2]
       CI_NODE_INDEX: [1, 2, 3, 4]
-  matrix-no-ci-node:
+      CI_NODE_TOTAL: [4]
+  matrix-no-test-splitting:
     - CI_FLASK_VERSION: [Flask-1, Flask-2]
+      CI_NODE_INDEX: [1]
+      CI_NODE_TOTAL: [1]
+  matrix-flask1-only:
+    - CI_FLASK_VERSION: [Flask-1]
+      CI_NODE_INDEX: [1, 2, 3, 4]
+      CI_NODE_TOTAL: [4]
+  matrix-no-test-splitting-flask1-only:
+    - CI_FLASK_VERSION: [Flask-1]
+      CI_NODE_INDEX: [1]
+      CI_NODE_TOTAL: [1]
   script-install-flask2:
     if [ "$CI_FLASK_VERSION" == "Flask-2" ];
       then
@@ -268,12 +277,8 @@ lint:
 .test-base:
   stage: test
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
-  variables:
-    CI_NODE_TOTAL: !reference [.parallel, variables, CI_NODE_TOTAL]
   parallel:
     matrix: !reference [.parallel, matrix]
-  before_script:
-    !reference [.parallel, script-install-flask2]
   artifacts:
     reports:
       coverage_report:
@@ -288,6 +293,8 @@ unit-test:
   artifacts:
     reports:
       junit: linotp/tests/unit/unit-*.xml
+  before_script:
+    !reference [.parallel, script-install-flask2]
   script:
     - *pytest-args
     - make unittests PYTESTARGS="$PYTESTARGS"
@@ -300,6 +307,8 @@ unit-test:
   artifacts:
     reports:
       junit: linotp/tests/functional/functional-*.xml
+  before_script:
+    !reference [.parallel, script-install-flask2]
   script:
     - *pytest-args
     - make functionaltests PYTESTARGS="$PYTESTARGS"
@@ -310,7 +319,7 @@ unit-test:
     # Only run non-sqlite tests in regular pipeline
     NON_NIGHTLY_ARGS: "-m exclude_sqlite"
   parallel:
-    matrix: !reference [.parallel, matrix-no-ci-node]
+    matrix: !reference [.parallel, matrix-no-test-splitting]
 
 functional-test:
   extends: .functional-test-base
@@ -334,6 +343,8 @@ functional-test-postgres:
   extends:
     - .test-base
     - .buster-tests
+  parallel:
+    matrix: !reference [.parallel, matrix-flask1-only]
   variables:
     LINOTP_IMAGE: "linotp"
     LINOTP_HOST: "test-linotp"
@@ -411,6 +422,8 @@ e2e-test-softhsm:
     ALL_JOB_ARGS: "-m smoketest -v"
     LINOTP_IMAGE: "linotp-softhsm"
   allow_failure: true
+  parallel:
+    matrix: !reference [.parallel, matrix-no-test-splitting-flask1-only]
 
 # Auto-generate API docs using Sphinx.
 apidocs:
