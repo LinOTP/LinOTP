@@ -238,7 +238,6 @@ class MigrationHandler(object):
 
             # then we retrieve as well the original value,
             # to identify changes
-            encKey = token.LinOtpKeyEnc
 
             if (
                 not token.LinOtpKeyEnc or
@@ -247,12 +246,20 @@ class MigrationHandler(object):
                 token_data['TokenSeed'] = None
                 # next we look for tokens, where the pin is encrypted
                 yield token_data
+                continue
 
             key, iv = token.get_encrypted_seed()
-            secObj = SecretObj(key, iv, hsm=self.hsm)
-            seed = secObj.getKey()
-            enc_value = self.crypter.encrypt(input_data=seed,
-                                             just_mac=serial + encKey)
+
+            if token.LinOtpTokenType in ["pw"]:
+                seed = iv + '/' + key
+            else:
+                secObj = SecretObj(key, iv, hsm=self.hsm)
+                seed = secObj.getKey()
+
+            enc_value = self.crypter.encrypt(
+                input_data=seed,
+                just_mac=serial + token.LinOtpKeyEnc
+                )
 
             token_data['TokenSeed'] = enc_value
             # next we look for tokens, where the pin is encrypted
@@ -298,9 +305,6 @@ class MigrationHandler(object):
             iv, enc_user_pin = SecretObj.encrypt(user_pin, hsm=self.hsm)
             token.setUserPin(enc_user_pin, iv)
 
-        # we put the current crypted seed in the mac to check if
-        # something changed in meantime
-        encKey = token.LinOtpKeyEnc
         enc_seed = token_data['TokenSeed']
 
         # in case of the push and qr token the seed is empty
@@ -309,15 +313,26 @@ class MigrationHandler(object):
         if not enc_seed:
             return
 
-        token_seed = self.crypter.decrypt(enc_seed,
-                                          just_mac=serial + encKey)
+        # we put the current crypted seed in the mac to check if
+        # something changed in meantime
+
+        token_seed = self.crypter.decrypt(
+            enc_seed,
+            just_mac=serial + token.LinOtpKeyEnc
+            )
 
         # the encryption of the token seed is not part of the model anymore
-        iv, enc_token_seed = SecretObj.encrypt(token_seed)
+        if token.LinOtpTokenType in ["pw"]:
+            iv, _sep_, enc_token_seed = token_seed.partition('/')
+        else:
+            iv, enc_token_seed = SecretObj.encrypt(token_seed)
 
-        token.set_encrypted_seed(enc_token_seed, iv,
-                                 reset_failcount=False,
-                                 reset_counter=False)
+        token.set_encrypted_seed(
+            enc_token_seed,
+            iv,
+            reset_failcount=False,
+            reset_counter=False
+            )
 
 
 class Crypter(object):
