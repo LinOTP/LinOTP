@@ -357,7 +357,7 @@ class Audit(AuditBase):
         key = EVP.load_key_string(self.private)
         key.reset_context(md='sha256')
         key.sign_init()
-        key.sign_update(s_audit)
+        key.sign_update(s_audit.encode('utf-8'))
         signature = key.sign_final()
         return u'' + hexlify(signature)
 

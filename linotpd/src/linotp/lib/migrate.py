@@ -31,11 +31,11 @@ import hmac
 import binascii
 import random  # for test id genretator using random.choice
 import os
-from hashlib import sha256
 
+from hashlib import sha256
+from sqlalchemy import or_
 
 from Cryptodome.Cipher import AES
-
 
 from linotp.model import Token as model_token
 from linotp.model import Config as model_config
@@ -46,8 +46,15 @@ from linotp.lib.config.db_api import _storeConfigDB
 from linotp.lib.crypto import SecretObj
 from linotp.lib.context import request_context as context
 
+from linotp.lib.crypto.encrypted_data import EncryptedData
+
 import linotp.model
 Session = linotp.model.Session
+
+EncryptedDataType = "encrypted_data"
+
+import logging
+log = logging.getLogger(__name__)
 
 
 class DecryptionError(Exception):
@@ -113,11 +120,23 @@ class MigrationHandler(object):
         """
 
         config_entries = Session.query(model_config).\
-                         filter(model_config.Type == 'password').all()
+                         filter(or_(
+                             (model_config.Type == 'password'),
+                             (model_config.Type == EncryptedDataType)
+                             )
+                         ).all()
         for entry in config_entries:
 
+            log.debug('processing config entry %r' % entry.Key)
+
+            # we try first if this is a legacy protected data format
             key = 'enc%s' % entry.Key
-            value = getFromConfig(key)
+            value = getFromConfig(key, decrypt=True)
+
+            # and as a fallback we use the newer CryptedData
+            if not value:
+                key = entry.Key
+                value = getFromConfig(entry.Key, decrypt=True)
 
             # calculate encryption and add mac from mac_data
             enc_value = self.crypter.encrypt(input_data=value,
@@ -126,7 +145,7 @@ class MigrationHandler(object):
             config_item = {
                 "Key": entry.Key,
                 "Value": enc_value,
-                "Type": entry.Type,
+                "Type": EncryptedDataType,
                 "Description": entry.Description
             }
 
@@ -154,14 +173,38 @@ class MigrationHandler(object):
 
         config_entries = Session.query(model_config).\
                          filter(model_config.Key == key).all()
+
+        log.debug('processing config entry %r' % key)
+
+        if not config_entries:
+            log.error(
+                'config entry %r deleted between backup and restore event' % key
+                )
+            return
+
         entry = config_entries[0]
 
-        # decypt the real value
+        # decrypt the real value
         enc_value = config_entry['Value']
-        value = self.crypter.decrypt(enc_value,
-                                     just_mac='enc%s' % key + entry.Value)
 
-        _storeConfigDB(key, value, typ=typ, desc=desc)
+        mac_key = key
+        if typ == 'password' and not key.startswith('enclinotp.'):
+            mac_key = 'enc%s' % key
+
+        value = self.crypter.decrypt(enc_value,
+                                     just_mac=mac_key + entry.Value)
+
+        # with LinOTP 2.10 the _storeConfigDB does not care anymore about
+        # crypted data - this is done transparently by handing over the
+        # EncryptedData object where the __str__() method returns the encrypted
+        # value
+
+        _storeConfigDB(
+            key,
+            EncryptedData.from_unencrypted(value),
+            typ=typ,
+            desc=desc
+            )
 
     def get_token_data(self):
         """
@@ -173,6 +216,8 @@ class MigrationHandler(object):
             token_data = {}
             serial = token.LinOtpTokenSerialnumber
             token_data['Serial'] = serial
+
+            log.debug("#### working with serial %r" % serial)
 
             if token.isPinEncrypted():
                 iv, enc_pin = token.get_encrypted_pin()
@@ -193,13 +238,29 @@ class MigrationHandler(object):
 
             # then we retrieve as well the original value,
             # to identify changes
-            encKey = token.LinOtpKeyEnc
+
+            if (
+                not token.LinOtpKeyEnc or
+                token.LinOtpTokenType in ['qr', 'push']
+            ):
+                token_data['TokenSeed'] = None
+                # next we look for tokens, where the pin is encrypted
+                yield token_data
+                continue
 
             key, iv = token.get_encrypted_seed()
-            secObj = SecretObj(key, iv, hsm=self.hsm)
-            seed = secObj.getKey()
-            enc_value = self.crypter.encrypt(input_data=seed,
-                                             just_mac=serial + encKey)
+
+            if token.LinOtpTokenType in ["pw"]:
+                seed = iv + '/' + key
+            else:
+                secObj = SecretObj(key, iv, hsm=self.hsm)
+                seed = secObj.getKey()
+
+            enc_value = self.crypter.encrypt(
+                input_data=seed,
+                just_mac=serial + token.LinOtpKeyEnc
+                )
+
             token_data['TokenSeed'] = enc_value
             # next we look for tokens, where the pin is encrypted
             yield token_data
@@ -207,8 +268,18 @@ class MigrationHandler(object):
     def set_token_data(self, token_data):
 
         serial = token_data["Serial"]
+
+        log.debug("#### working with serial %r" % serial)
+
         tokens = Session.query(model_token).\
             filter(model_token.LinOtpTokenSerialnumber == serial).all()
+
+        if not tokens:
+            log.error(
+                'token %r deleted between backup and restore event' % serial
+                )
+            return
+
         token = tokens[0]
 
         if 'TokenPin' in token_data:
@@ -234,19 +305,34 @@ class MigrationHandler(object):
             iv, enc_user_pin = SecretObj.encrypt(user_pin, hsm=self.hsm)
             token.setUserPin(enc_user_pin, iv)
 
+        enc_seed = token_data['TokenSeed']
+
+        # in case of the push and qr token the seed is empty
+        # and thus we are done
+
+        if not enc_seed:
+            return
+
         # we put the current crypted seed in the mac to check if
         # something changed in meantime
-        encKey = token.LinOtpKeyEnc
-        enc_seed = token_data['TokenSeed']
-        token_seed = self.crypter.decrypt(enc_seed,
-                                          just_mac=serial + encKey)
+
+        token_seed = self.crypter.decrypt(
+            enc_seed,
+            just_mac=serial + token.LinOtpKeyEnc
+            )
 
         # the encryption of the token seed is not part of the model anymore
-        iv, enc_token_seed = SecretObj.encrypt(token_seed)
+        if token.LinOtpTokenType in ["pw"]:
+            iv, _sep_, enc_token_seed = token_seed.partition('/')
+        else:
+            iv, enc_token_seed = SecretObj.encrypt(token_seed)
 
-        token.set_encrypted_seed(enc_token_seed, iv,
-                                 reset_failcount=False,
-                                 reset_counter=False)
+        token.set_encrypted_seed(
+            enc_token_seed,
+            iv,
+            reset_failcount=False,
+            reset_counter=False
+            )
 
 
 class Crypter(object):

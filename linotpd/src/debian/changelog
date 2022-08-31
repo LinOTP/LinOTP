@@ -1,6 +1,8 @@
 linotp (2.12.6~0dev-1) buster; urgency=medium
 
-  Set version 2.12.6.dev0
+  Fix:
+  * adjust the secret migration handling to support restore of backups
+    of LinOTP 2.9.3
 
  -- LinOTP Packaging <packaging@linotp.de>  Tue, 03 Aug 2022 19:45:00 +0100
 
