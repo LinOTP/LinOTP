@@ -208,12 +208,6 @@ func-special-test:buster:
       - apt/
     expire_in: 2 weeks
 
-
-build:jessie:
-  extends: .build-debs
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
-
 build:buster:
   extends: .build-debs
   variables:
@@ -245,12 +239,6 @@ build:buster:
       --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
       --tag="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
     - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-
-
-build-linotp-docker-image:jessie:
-  extends: .build-linotp-docker-image
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
@@ -377,7 +365,7 @@ e2e-2:buster:mariadb-10.1:
       variables:
         TARGET_REPOSITORY: linotp2
 
-# Use the "repo-tool gpull" method for jessie & buster
+# Use the "repo-tool gpull" method for buster
 upload-debs:
   extends: .upload-debs
   rules: !reference [.upload-rules, rules]
@@ -387,4 +375,5 @@ upload-debs:
     - ssh debs@$DEV_REPO_HOST repo-tool gpull "${TARGET_REPOSITORY}" "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
   parallel:
     matrix:
-     - DEBIAN_RELEASE_NAME: [jessie, buster]
+     - DEBIAN_RELEASE_NAME:
+        - buster
