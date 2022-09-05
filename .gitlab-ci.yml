@@ -1,3 +1,7 @@
+include:
+  - project: 'dev/ext-project-packaging/ci-includes'
+    file: 'gitbox-deb-ci.yml'
+
 variables:
   LANG: C.UTF-8
   IMAGE_NAME: linotp-build-test-environment_buster
@@ -16,6 +20,15 @@ variables:
   CI_REGISTRY: gitbox.corp.keyidentity.com:5050
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
+  # Variables for upload-debs
+  REPOSITORY: linotp2
+  COMPONENT: linotp
+
+.debian-releases:
+  parallel:
+    matrix:
+      - DEBIAN_RELEASE_NAME:
+        - buster
 
 workflow:
   rules:
@@ -201,18 +214,12 @@ func-special-test:buster:
     - ci/update-debian-changelog adminclient/LinOTPAdminClientCLI/src
     - ci/update-debian-changelog linotpd/src
     - (cd linotpd/src && mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends")
-    - make deb-install DESTDIR=pkg/apt/${DEBIAN_RELEASE_NAME}
-    - echo "$CI_JOB_ID" > pkg/apt/"$DEBIAN_RELEASE_NAME"/build_job_id.txt
+    - make deb-install DESTDIR=apt/${DEBIAN_RELEASE_NAME}
+    - echo "$CI_JOB_ID" > apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt
   artifacts:
     paths:
-      - pkg/apt/${DEBIAN_RELEASE_NAME}
+      - apt/
     expire_in: 2 weeks
-
-
-build:jessie:
-  extends: .build-debs
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
 
 build:buster:
   extends: .build-debs
@@ -231,7 +238,7 @@ build:buster:
     - export BUILDDIR=build
     - mkdir -p ${BUILDDIR}
     - make ${BUILDDIR}/dockerfy BUILDDIR=${BUILDDIR}
-    - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
+    - cp -r apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
     - cp -r ci/Dockerfile.linotp ci/certificates linotpd/src/linotp/tests/integration/testdata/se_mypasswd linotpd/src/config/*.tmpl linotpd/src/tools/linotp-create-htdigest $BUILDDIR
     - >
       docker build
@@ -245,12 +252,6 @@ build:buster:
       --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
       --tag="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
     - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-
-
-build-linotp-docker-image:jessie:
-  extends: .build-linotp-docker-image
-  variables:
-    DEBIAN_RELEASE_NAME: jessie
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
@@ -273,7 +274,7 @@ build-linotp-docker-image:buster:
     - apk add --no-cache py-pip
     - pip install "docker-compose==${DOCKER_COMPOSE_VERSION}"
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
-    - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} linotpd/src/linotp/tests/integration/apt
+    - cp -r apt/${DEBIAN_RELEASE_NAME} linotpd/src/linotp/tests/integration/apt
     - cd linotpd/src/linotp/tests/integration
     - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
     - echo $INTEGRATION_TEST_LINOTP
@@ -338,53 +339,7 @@ e2e-2:buster:mariadb-10.1:
     DEBIAN_RELEASE_NAME: buster
     DB: mariadb:10.1
 
-# Base rule for uploading deb packages to development repository.
-.upload-debs:
-  stage: upload-debian-packages
-  image: debian:latest
-  before_script:
-    # Ensure required variables have been set
-    - test -n "${DEV_REPO_HOST}"
-    - test -n "${DEV_REPO_KNOWN_HOSTS}"
-    - test -n "${DEV_REPO_SSH_SUBMIT_KEY}"
-    # Install dependencies
-    - apt-get update && apt-get install -y --no-install-recommends devscripts openssh-client
-    # Configure ssh
-    - eval $(ssh-agent -s)
-    - echo "$DEV_REPO_SSH_SUBMIT_KEY" | tr -d '\r' | ssh-add - >/dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo "CheckHostIP no" >>~/.ssh/config
-    - echo "$DEV_REPO_KNOWN_HOSTS" >~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-    - export BUILD_JOB_ID=$(cat pkg/apt/"$DEBIAN_RELEASE_NAME"/build_job_id.txt)
-
-
-.upload-rules:
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'                # Nightly jobs do not upload
-      when: never
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^release/' # Auto upload if tagged
-      when: always
-      variables:
-        TARGET_REPOSITORY: linotp2-golden
-    - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/'      # Auto upload if merged to stable or master
-      when: always
-      variables:
-        TARGET_REPOSITORY: linotp2
-    - when: manual                                         # Otherwise allow manual upload from branch
-      allow_failure: true
-      variables:
-        TARGET_REPOSITORY: linotp2
-
-# Use the "repo-tool gpull" method for jessie & buster
+# Upload to repository based on ci-include
 upload-debs:
+  stage: upload-debian-packages
   extends: .upload-debs
-  rules: !reference [.upload-rules, rules]
-  script:
-    - test -n "${TARGET_REPOSITORY}"
-    - find pkg/apt/"${DEBIAN_RELEASE_NAME}" -ls
-    - ssh debs@$DEV_REPO_HOST repo-tool gpull "${TARGET_REPOSITORY}" "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
-  parallel:
-    matrix:
-     - DEBIAN_RELEASE_NAME: [jessie, buster]
