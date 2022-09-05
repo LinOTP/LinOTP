@@ -201,11 +201,11 @@ func-special-test:buster:
     - ci/update-debian-changelog adminclient/LinOTPAdminClientCLI/src
     - ci/update-debian-changelog linotpd/src
     - (cd linotpd/src && mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends")
-    - make deb-install DESTDIR=pkg/apt/${DEBIAN_RELEASE_NAME}
-    - echo "$CI_JOB_ID" > pkg/apt/"$DEBIAN_RELEASE_NAME"/build_job_id.txt
+    - make deb-install DESTDIR=apt/${DEBIAN_RELEASE_NAME}
+    - echo "$CI_JOB_ID" > apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt
   artifacts:
     paths:
-      - pkg/apt/${DEBIAN_RELEASE_NAME}
+      - apt/
     expire_in: 2 weeks
 
 
@@ -231,7 +231,7 @@ build:buster:
     - export BUILDDIR=build
     - mkdir -p ${BUILDDIR}
     - make ${BUILDDIR}/dockerfy BUILDDIR=${BUILDDIR}
-    - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
+    - cp -r apt/${DEBIAN_RELEASE_NAME} ${BUILDDIR}/apt
     - cp -r ci/Dockerfile.linotp ci/certificates linotpd/src/linotp/tests/integration/testdata/se_mypasswd linotpd/src/config/*.tmpl linotpd/src/tools/linotp-create-htdigest $BUILDDIR
     - >
       docker build
@@ -273,7 +273,7 @@ build-linotp-docker-image:buster:
     - apk add --no-cache py-pip
     - pip install "docker-compose==${DOCKER_COMPOSE_VERSION}"
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
-    - cp -r pkg/apt/${DEBIAN_RELEASE_NAME} linotpd/src/linotp/tests/integration/apt
+    - cp -r apt/${DEBIAN_RELEASE_NAME} linotpd/src/linotp/tests/integration/apt
     - cd linotpd/src/linotp/tests/integration
     - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
     - echo $INTEGRATION_TEST_LINOTP
@@ -357,7 +357,7 @@ e2e-2:buster:mariadb-10.1:
     - echo "CheckHostIP no" >>~/.ssh/config
     - echo "$DEV_REPO_KNOWN_HOSTS" >~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
-    - export BUILD_JOB_ID=$(cat pkg/apt/"$DEBIAN_RELEASE_NAME"/build_job_id.txt)
+    - export BUILD_JOB_ID=$(cat apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt)
 
 
 .upload-rules:
@@ -383,7 +383,7 @@ upload-debs:
   rules: !reference [.upload-rules, rules]
   script:
     - test -n "${TARGET_REPOSITORY}"
-    - find pkg/apt/"${DEBIAN_RELEASE_NAME}" -ls
+    - find apt/"${DEBIAN_RELEASE_NAME}" -ls
     - ssh debs@$DEV_REPO_HOST repo-tool gpull "${TARGET_REPOSITORY}" "$CI_PROJECT_PATH" --jobid "$BUILD_JOB_ID"
   parallel:
     matrix:
