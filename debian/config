@@ -120,9 +120,6 @@ APACHE=$RET
 
 dbc_dbtypes="mysql, pgsql"
 if [ "$APACHE" = "true" ]; then
-	db_input high linotp/apache/admin_password || true
-	db_go
-
 	db_input high linotp/apache/ssl_create || true
 	db_go
 else
@@ -165,3 +162,6 @@ if [ -f /usr/share/dbconfig-common/dpkg/config ]; then
 		rm "$temp_conffile"
 	fi
 fi
+
+db_input high linotp/create_admin_note || true
+db_go
