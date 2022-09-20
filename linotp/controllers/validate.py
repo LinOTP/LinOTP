@@ -501,8 +501,12 @@ class ValidateController(BaseController):
                         "givenname",
                         "email",
                     ]:
+
                         if key in res:
                             attributes[key] = res[key]
+                    admin_realm = current_app.config.get("ADMIN_REALM_NAME")
+                    attributes["admin"] = user.realm == admin_realm
+                    log.debug(f"[samlcheck] {attributes}")
 
             db.session.commit()
             return sendResult(
