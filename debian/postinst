@@ -8,15 +8,11 @@ set -e
 NEW_VERSION='@@@DEB_VERSION@@@'
 
 CONFIG_DIR=/etc/linotp
-LINOTP_ETC_CFG=$CONFIG_DIR/linotp.cfg
-REALM="LinOTP2 admin area"
-DIGESTFILE=$CONFIG_DIR/admins
 LOGDIR=/var/log/linotp
 CACHEDIR=/var/cache/linotp
 OLDCACHEDIR=$CONFIG_DIR/data
 TEMPLATEDIR=$CONFIG_DIR/custom-templates
 LIBDIR=/var/lib/linotp
-LSB_RELEASE=`which lsb_release || true`
 
 LINOTP_USER=linotp
 
