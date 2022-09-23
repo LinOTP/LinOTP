@@ -17,6 +17,17 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 
+linotp (3.2.1~0dev-1) buster-dev; urgency=low
+
+  Fixes:
+  * Audit key verification errors solved by using newer version of pycryptodomex.
+
+  Removed:
+  * Debian postinst no longer manages admin users. Use the linotp cli instead.
+  * Removed deprecated variables from postint.
+
+ -- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 12:00:00 +0100
+
 linotp (3.2-1) buster-dev; urgency=low
 
   Breaking Changes:
