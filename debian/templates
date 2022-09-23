@@ -12,13 +12,14 @@ _Description: Do you want to run LinOTP via Apache?
  Note that if you choose to enable this option, you will not be able to configure
  LinOTP with a SQLite database.
 
-Template: linotp/apache/admin_password
-Type: password
-_Description: Password for LinOTP 'admin' account:
- LinOTP runs within the apache webserver. For authentication there is a user 'admin'.
- Here you may specify his password.
- If you want to do more detailed authentication or maybe do authentication
- with client certificates, you need to edit the apache configuration manually.
+Template: linotp/create_admin_note
+Type: note
+_Description: Create a LinOTP admin account.
+ For authentication please create an admin user via LinOTP CLI as follows.
+ .
+ linotp local-admins add <your_username>
+ .
+ linotp local-admins password --password <your_password> <your_username>
 
 Template: linotp/apache/ssl_create
 Type: boolean
