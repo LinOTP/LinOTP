@@ -51,6 +51,7 @@ stages:
 pre-commit-check:
   stage: check-and-build
   image: python:3.7-buster
+  interruptible: true
   cache:
     paths:
       - $CI_PROJECT_DIR/.pre-commit-cache
@@ -70,6 +71,7 @@ pre-commit-check:
 .build-debs-and-images:
   stage: check-and-build
   image: docker:latest
+  interruptible: true
   retry:
     max: 2
   needs: []
@@ -142,6 +144,7 @@ lint:
   when: manual
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   needs: ["build:debian-buster"]
+  interruptible: true
   variables:
     LINTED_MODULE: ""
     DEBIAN_RELEASE_NAME: buster
@@ -292,6 +295,7 @@ lint:
 .test-base:
   stage: test
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  interruptible: true
   parallel:
     matrix: !reference [.parallel, matrix]
   artifacts:
@@ -444,6 +448,7 @@ e2e-test-softhsm:
 apidocs:
   stage: apidocs
   image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
+  interruptible: true
   needs: ["build:debian-buster"]
   script:
     - python3 --version
