@@ -50,7 +50,7 @@ stages:
 
 pre-commit-check:
   stage: check-and-build
-  image: python:3.7
+  image: python:3.7-buster
   cache:
     paths:
       - $CI_PROJECT_DIR/.pre-commit-cache
