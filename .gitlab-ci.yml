@@ -140,6 +140,7 @@ build:debian-buster:
 
 lint:
   stage: lint
+  when: manual
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   needs: ["build:debian-buster"]
   variables:
