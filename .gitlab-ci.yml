@@ -37,8 +37,7 @@ workflow:
     - if: $NIGHTLY_PIPELINE                              # Execute pipeline if run with this variable set
 
 stages:
-  - pre-check
-  - build
+  - check-and-build
   - lint
   - test
   - coverage-report
@@ -50,8 +49,9 @@ stages:
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
 
 pre-commit-check:
-  stage: pre-check
-  image: python:3.7
+  stage: check-and-build
+  image: python:3.7-buster
+  interruptible: true
   cache:
     paths:
       - $CI_PROJECT_DIR/.pre-commit-cache
@@ -69,8 +69,9 @@ pre-commit-check:
 # to make the build of all the images as fast as possible. We use
 # Docker caching to speed things up.
 .build-debs-and-images:
-  stage: build
+  stage: check-and-build
   image: docker:latest
+  interruptible: true
   retry:
     max: 2
   needs: []
@@ -140,8 +141,10 @@ build:debian-buster:
 
 lint:
   stage: lint
+  when: manual
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   needs: ["build:debian-buster"]
+  interruptible: true
   variables:
     LINTED_MODULE: ""
     DEBIAN_RELEASE_NAME: buster
@@ -167,7 +170,7 @@ lint:
 # we can make use of the shell to put all the pieces together in once place.
 #
 # Pytest arguments can be specified in these variables:
-#  NIGHTLY_ARGS     - Only used if this is a nightly (extended) pipeline
+#  NIGHTLY_ARGS     - Only used if this is a nightly (extended) pipeline or merge-train
 #  NON_NIGHTLY_ARGS - Only used for normal pipelines (MRs, merges, tags)
 #  ALL_JOB_ARGS     - Both nightly and non-nightly jobs
 #
@@ -198,9 +201,14 @@ lint:
 
 # Nightly tests are scheduled to run once a day and contain
 # more tests than the regular set
-.only-nightly:
+# Merge_trains too run against more to prevent a broken master
+.only-nightly-and-merge:
   rules:
-    - if: $NIGHTLY_PIPELINE                            # Nightly job is longer
+    - if: $NIGHTLY_PIPELINE
+      when: always
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train'
+      variables:
+        NIGHTLY_PIPELINE: 1
       when: always
 
 # Tests should run on Debian buster
@@ -221,15 +229,6 @@ lint:
   LINOTP_DATABASE_URI: "mysql+mysqldb://linotp:linotppass@db/linotp_db?charset=utf8"
   LINOTP_PYTEST_DATABASE_URI: "mysql+mysqldb://linotp:linotppass@db/linotp_db?charset=utf8"
 
-.mysql-database:
-  variables:
-    <<: *mysql-vars
-    DB: mysql:5.5
-  services:
-    - name: ${DB}
-      alias: db
-      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
-
 .mariadb-database:
   variables:
     <<: *mysql-vars
@@ -238,7 +237,20 @@ lint:
     - name: ${DB}
       alias: db
 
+.mysql-database:
+  extends:
+    - .only-nightly-and-merge
+  variables:
+    <<: *mysql-vars
+    DB: mysql:5.5
+  services:
+    - name: ${DB}
+      alias: db
+      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+
 .postgres-database:
+  extends:
+    - .only-nightly-and-merge
   variables:
     DB: postgres:12
     POSTGRES_DB: linotp_db
@@ -283,6 +295,7 @@ lint:
 .test-base:
   stage: test
   image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  interruptible: true
   parallel:
     matrix: !reference [.parallel, matrix]
   artifacts:
@@ -330,11 +343,6 @@ unit-test:
 functional-test:
   extends: .functional-test-base
 
-functional-test-mysql:
-  extends:
-    - .functional-test-base-dbs
-    - .mysql-database
-
 functional-test-mariadb:
   extends:
     - .functional-test-base-dbs
@@ -344,6 +352,11 @@ functional-test-postgres:
   extends:
     - .functional-test-base-dbs
     - .postgres-database
+
+functional-test-mysql:
+  extends:
+    - .functional-test-base-dbs
+    - .mysql-database
 
 .e2e-test:
   extends:
@@ -423,7 +436,7 @@ e2e-test-mariadb:
 e2e-test-softhsm:
   extends:
     - e2e-test-mariadb
-    - .only-nightly
+    - .only-nightly-and-merge
   variables:
     ALL_JOB_ARGS: "-m smoketest -v"
     LINOTP_IMAGE: "linotp-softhsm"
@@ -435,6 +448,7 @@ e2e-test-softhsm:
 apidocs:
   stage: apidocs
   image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
+  interruptible: true
   needs: ["build:debian-buster"]
   script:
     - python3 --version
