@@ -290,6 +290,27 @@ evaluate_answers() {
     esac
 }
 
+# set file permissions in CONFIG_DIR
+set_file_permissions() {
+  # Add groupd 'linotp'
+  # and add users 'linotp' and 'www-data' to it
+  # where www-data is the apache-user
+  groupadd linotp || true
+  usermod -a -G linotp linotp || true
+  usermod -a -G linotp www-data || true
+
+  # remove permissions for others on sensitive files
+  SENSITIVE_FILES="admins linotp.ini"
+  for name in $SENSITIVE_FILES; do
+    FILE=/etc/linotp2/$name
+    if [ -f "$FILE" ]; then
+      echo_log "Removing read/write-permissions for others on $FILE"
+      chgrp "linotp" "$FILE"
+      chmod o-rw "$FILE"
+    fi
+  done
+} 
+
 # Here's where the actual execution of the postinst file starts.
 
 case "$1" in
@@ -533,5 +554,7 @@ case "$1" in
 	exit 1
 	;;
 esac
+
+set_file_permissions
 
 #DEBHELPER#
