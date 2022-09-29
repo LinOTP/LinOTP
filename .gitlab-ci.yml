@@ -38,8 +38,8 @@ workflow:
 
 stages:
   - check-and-build
-  - lint
   - test
+  - lint
   - coverage-report
   - apidocs
   - upload-debian-packages
