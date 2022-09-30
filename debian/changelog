@@ -2,6 +2,7 @@ linotp (3.2.1~0dev-1) buster-dev; urgency=low
 
   Fixes:
   * Audit key verification errors solved by using newer version of pycryptodomex.
+  * Remove weak file permissions in config dir.
 
   Removed:
   * Debian postinst no longer manages admin users. Use the linotp cli instead.
