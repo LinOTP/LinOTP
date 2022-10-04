@@ -199,6 +199,21 @@ create_tmpfiles() {
   done </usr/lib/tmpfiles.d/$1
 }
 
+# set file permissions in CONFIG_DIR
+set_file_permissions() {
+  SENSITIVE_FILES="audit-private.pem conf.d/01-debian-database.cfg encKey"
+  # remove permissions for others on sensitive files
+  for name in $SENSITIVE_FILES; do
+    FILE="$CONFIG_DIR"/$name
+    if [ -f "$FILE" ]; then
+      echo_log "Removing read/write-permissions for others on $FILE"
+
+      chgrp -R "root" "$FILE"
+      chmod o-rw "$FILE"
+    fi
+  done
+} 
+
 # Here's where the actual execution of the postinst file starts.
 
 if [ "$1" = configure ]; then
@@ -259,4 +274,5 @@ case "$1" in
   ;;
 esac
 
+set_file_permissions
 #DEBHELPER#
