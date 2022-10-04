@@ -38,8 +38,8 @@ workflow:
 
 stages:
   - check-and-build
-  - lint
   - test
+  - lint
   - coverage-report
   - apidocs
   - upload-debian-packages
@@ -230,6 +230,13 @@ lint:
   LINOTP_PYTEST_DATABASE_URI: "mysql+mysqldb://linotp:linotppass@db/linotp_db?charset=utf8"
 
 .mariadb-database:
+  rules:
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train'
+      variables:
+        NIGHTLY_PIPELINE: 1
+      when: always
+    - when: always
+
   variables:
     <<: *mysql-vars
     DB: mariadb:10.1
