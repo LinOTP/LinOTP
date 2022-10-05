@@ -6,16 +6,17 @@ set -e
 
 NEW_VERSION='@@@DEB_VERSION@@@'
 
-APACHE_CONFIG=/etc/linotp2/apache-servername.conf
-LINOTP_INI=/etc/linotp2/linotp.ini
-ENCKEYFILE=/etc/linotp2/encKey
+CONFIG_DIR=/etc/linotp2
+APACHE_CONFIG=$CONFIG_DIR/apache-servername.conf
+LINOTP_INI=$CONFIG_DIR/linotp.ini
+ENCKEYFILE=$CONFIG_DIR/encKey
 REALM="LinOTP2 admin area"
-DIGESTFILE=/etc/linotp2/admins
+DIGESTFILE=$CONFIG_DIR/admins
 LOGDIR=/var/log/linotp
-CACHEDIR=/etc/linotp2/data
-TEMPLATEDIR=/etc/linotp2/custom-templates
+CACHEDIR=$CONFIG_DIR/data
+TEMPLATEDIR=$CONFIG_DIR/custom-templates
 DBFILE='\/%(here)s\/token.db'
-DBFILE_FS=/etc/linotp2/token.db
+DBFILE_FS=$CONFIG_DIR/token.db
 RAND_DEVICE=/dev/urandom
 FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
 LSB_RELEASE=`which lsb_release || true`
@@ -119,7 +120,7 @@ check_user() {
 # Returns 0 if we're doing an upgrade, 1 if not.
 
 check_upgrade() {
-    if [ -f /etc/linotp2/we_are_doing_an_upgrade ]; then
+    if [ -f $CONFIG_DIR/we_are_doing_an_upgrade ]; then
 	return 0
     fi
     return 1
@@ -144,8 +145,8 @@ check_sva3() {
 # great deal of sense.)
 
 check_apache_disabled() {
-    if [ -f /etc/linotp2/apache_site_disabled ]; then
-	rm -f /etc/linotp2/apache_site_disabled
+    if [ -f $CONFIG_DIR/apache_site_disabled ]; then
+	rm -f $CONFIG_DIR/apache_site_disabled
 	return 0
     fi
     return 1
@@ -250,7 +251,7 @@ evaluate_answers() {
     case "$TOKENDB" in
 	SQLite)
 	    DBFILE='\/%(here)s/token.db'
-	    DBFILE_FS=/etc/linotp2/token.db
+	    DBFILE_FS=$CONFIG_DIR/token.db
 	    db_get linotp/sqlite/ask_createdb || true
 	    CREATEDB_SQLITE=$RET
 	    ;;
@@ -290,6 +291,27 @@ evaluate_answers() {
     esac
 }
 
+# set file permissions in CONFIG_DIR
+set_file_permissions() {
+  # Add groupd 'linotp'
+  # and add users 'linotp' and 'www-data' to it
+  # where www-data is the apache-user
+  groupadd linotp || true
+  usermod -a -G linotp linotp || true
+  usermod -a -G linotp www-data || true
+
+  # remove permissions for others on sensitive files
+  SENSITIVE_FILES="admins linotp.ini"
+  for name in $SENSITIVE_FILES; do
+    FILE=$CONFIG_DIR/$name
+    if [ -f "$FILE" ]; then
+      echo_log "Removing read/write-permissions for others on $FILE"
+      chgrp "linotp" "$FILE"
+      chmod o-rw "$FILE"
+    fi
+  done
+} 
+
 # Here's where the actual execution of the postinst file starts.
 
 case "$1" in
@@ -297,7 +319,7 @@ case "$1" in
 
 	# Initialize linotp.ini
 	if ! [ -f "$LINOTP_INI" ]; then
-	    cp /etc/linotp2/linotp.ini.example "$LINOTP_INI"
+	    cp $CONFIG_DIR/linotp.ini.example "$LINOTP_INI"
 	fi
 
 	# Make sure the LinOTP user exists
@@ -337,9 +359,9 @@ case "$1" in
 		    exit 1
 		fi
 		if dpkg --compare-versions "${APACHE2_VERSION}" ge 2.4; then
-		    config=/etc/linotp2/apache2.4-example/linotp2.conf
+		    config=$CONFIG_DIR/apache2.4-example/linotp2.conf
 		else
-		    config=/etc/linotp2/apache2.2-example/linotp2.conf
+		    config=$CONFIG_DIR/apache2.2-example/linotp2.conf
 		fi
 		echo_log "Setting up for Apache $APACHE2_VERSION"
 		if [ ! -f /etc/apache2/sites-available/linotp2.conf ]; then
@@ -407,8 +429,8 @@ case "$1" in
 			# The package is not installed, so we will create the database
 			# after next reboot
 			echo_info "Will setup the database after next reboot"
-			echo "$GRANT_STRING1" > /etc/linotp2/linotpcreatedb.sql
-			echo "$GRANT_STRING2" >> /etc/linotp2/linotpcreatedb.sql
+			echo "$GRANT_STRING1" > $CONFIG_DIR/linotpcreatedb.sql
+			echo "$GRANT_STRING2" >> $CONFIG_DIR/linotpcreatedb.sql
 			touch /etc/rc.local
 			cp /etc/rc.local /etc/rc.local.linotp-dpkg
 			echo "#!/bin/sh -e" > /etc/rc.local
@@ -429,8 +451,8 @@ case "$1" in
 			fi
 
 			echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" --execute=\"create database $DBNAME default character set 'utf8' default collate 'utf8_general_ci';\" || true" >> /etc/rc.local
-			echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" < /etc/linotp2/linotpcreatedb.sql || true" >> /etc/rc.local
-			echo "rm /etc/linotp2/linotpcreatedb.sql" >> /etc/rc.local
+			echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" < $CONFIG_DIR/linotpcreatedb.sql || true" >> /etc/rc.local
+			echo "rm $CONFIG_DIR/linotpcreatedb.sql" >> /etc/rc.local
 			# create tables
 			echo "paster setup-app $LINOTP_INI" >> /etc/rc.local
 			echo "chown -R \"$LINOTP_USER\" $LOGDIR/*" >> /etc/rc.local
@@ -483,8 +505,8 @@ case "$1" in
 		    create_tables
 		fi
 		create_dir "SQLite" /var/run/linotp
-		chown "$LINOTP_USER" /etc/linotp2
-		chown "$LINOTP_USER" /etc/linotp2/token.db
+		chown "$LINOTP_USER" $CONFIG_DIR
+		chown "$LINOTP_USER" $CONFIG_DIR/token.db
 	esac #TOKENDB
 
 	# TODO: probably not needed
@@ -497,8 +519,8 @@ case "$1" in
 	#
 	# create sql Audit trail as default
 	#
-	PRIVKEY=/etc/linotp2/private.pem
-	PUBKEY=/etc/linotp2/public.pem
+	PRIVKEY=$CONFIG_DIR/private.pem
+	PUBKEY=$CONFIG_DIR/public.pem
 
 	if [ ! -f "$PRIVKEY" ];  then
 	    echo_log "Creating private/public key pair"
@@ -522,7 +544,7 @@ case "$1" in
 	    echo_log "SQLAudit has not been activated."
 	fi
 
-	rm -f /etc/linotp2/we_are_doing_an_upgrade
+	rm -f $CONFIG_DIR/we_are_doing_an_upgrade
 	;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
@@ -533,5 +555,7 @@ case "$1" in
 	exit 1
 	;;
 esac
+
+set_file_permissions
 
 #DEBHELPER#
