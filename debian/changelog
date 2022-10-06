@@ -12,8 +12,6 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
 
   Fix:
   * After a logout the jwt token can not be reused
-  * admin/show policies take only 'show' actions into account preventing
-    granting too many permissions
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 

@@ -481,8 +481,12 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
     if method == "show":
         log.debug("[checkPolicyPre] entering method %s", method)
 
-        # get the realms for this administrator
-        policies = getAdminPolicies("show")
+        # the 'allowed to list the tokens' / 'admin/show' permission:
+        #  the admin/show permission is an implicit permission by the means
+        #  that an admin is allowed to list the tokens for any realm he is
+        #  allowed to access via policies where any action is defined.
+
+        policies = getAdminPolicies("")
 
         log.debug(
             "[checkPolicyPre] The admin >%r< may manage the "

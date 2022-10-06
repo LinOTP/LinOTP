@@ -63,9 +63,15 @@ class TestRealmPolicies(TestPoliciesBase):
 
     def test_realms_allowed_by_admin_show(self):
         """
-        If a user has admin/show permissions for only a realm, but other
-        permissions in other realms, admin/show should only list the tokens
-        in that realm.
+        If an admin has has any permissions granted via a policy, he is
+        allowed to list the tokens of that realm. Thus admin/show is a
+        base permission which is granted in addition to all defined actions
+        for that realm.
+
+        The test enrolls tokens in different realms. For one realm the
+        adminR1 is explicitly only allowed to enroll token for that realm
+        'myOtherRealm'. But as the 'admin/show' permission is granted implicit
+        he is allowed to list the tokens in that realm as well.
         """
 
         policies = [
@@ -151,5 +157,5 @@ class TestRealmPolicies(TestPoliciesBase):
             "oathMix" in serials
         ), "oathMix is in realm myMixRealm and should be listed"
         assert (
-            "oathOther" not in serials
-        ), "oathOther is not in realm myDefRealm and should not be listed"
+            "oathOther" in serials
+        ), "oathOther is in realm myDefRealm and should be listed"
