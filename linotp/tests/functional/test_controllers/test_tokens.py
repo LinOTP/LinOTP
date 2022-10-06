@@ -173,7 +173,7 @@ class TestTokens(TestController):
         # verify that the access to tokens is restriced by the admin/show
         # policy - if not allowed we get an 403 - forbidden
 
-        response = self.make_api_v2_request("/tokens/")
+        response = self.make_api_v2_request("/tokens/", auth_user="nimda")
         assert response.status_code == 403
 
     def test_tokens_controller_pagination(self):
