@@ -15,6 +15,8 @@ TEMPLATEDIR=$CONFIG_DIR/custom-templates
 LIBDIR=/var/lib/linotp
 
 LINOTP_USER=linotp
+APACHE_USER=www-data
+LINOTP_GROUP=linotp
 
 msg="LinOTP: "
 
@@ -83,16 +85,15 @@ create_dir() {
   dirname="$2"
   if [ ! -d "$dirname" ]; then
     mkdir -p "$dirname"
-    chown -R "$LINOTP_USER" "$dirname"
     echo_log "Created $dirmsg directory: $dirname"
   else
     echo_log "Using existing $dirmsg directory: $dirname"
-    chown "$LINOTP_USER" "$dirname"
     if [ "$3" == "clear" ]; then
       echo_log "Clearing $dirname"
       rm -rf "$dirname"/*
     fi
   fi
+  chown -R "$LINOTP_USER" "$dirname"
 }
 
 # check_user USERNAME GECOS
@@ -122,7 +123,7 @@ configure_apache() {
     a2dissite linotp || echo_warn "Could not disable Apache linotp host"
     return
   fi
-  
+
   db_get linotp/apache/ssl_create
   APACHE_SSL_CREATE=$RET
   db_set linotp/apache/ssl_create false
@@ -148,19 +149,6 @@ configure_apache() {
   done
 
   echo_log "Basic Apache configuration done"
-
-  # Ensure the Apache wsgi process can read the linotp configuration
-  WSGI_USER=www-data
-  SENSITIVE_FILES="audit-private.pem conf.d/01-debian-database.cfg encKey"
-
-  echo_log "Setting permissions on $SENSITIVE_FILES"
-  for name in $SENSITIVE_FILES; do
-    FILE="$CONFIG_DIR"/$name
-    if [ -f "$FILE" ]; then
-      chgrp "$WSGI_USER" "$FILE"
-      chmod g+r "$FILE"
-    fi
-  done
 
   if [ "$APACHE_SSL_CREATE" = "true" ]; then
     echo_log "Making self-signed certificate"
@@ -199,26 +187,43 @@ create_tmpfiles() {
   done </usr/lib/tmpfiles.d/$1
 }
 
-# set file permissions in CONFIG_DIR
+
+# set_file_permissions
+#
+# - adjust read permission for sensitive files
+#
+# We have to ensure that no other user than the $LINOTP_USER or the
+# $APACHE_USER is able to read the sesitive files. This is achived by
+# defining a $LINOTP_GROUP, where both, the $APACHE_USER and the $LINOTP_USER
+# is member of.
+
 set_file_permissions() {
+
   SENSITIVE_FILES="audit-private.pem conf.d/01-debian-database.cfg encKey"
-  # remove permissions for others on sensitive files
+
   for name in $SENSITIVE_FILES; do
     FILE="$CONFIG_DIR"/$name
+
     if [ -f "$FILE" ]; then
       echo_log "Removing read/write-permissions for others on $FILE"
 
-      chgrp -R "root" "$FILE"
+      chgrp -R $LINOTP_GROUP "$FILE"
+      chmod g+r "$FILE"
       chmod o-rw "$FILE"
+
     fi
   done
-} 
+}
 
 # Here's where the actual execution of the postinst file starts.
 
 if [ "$1" = configure ]; then
   # Make sure the LinOTP user exists
   check_user "$LINOTP_USER" "LinOTP Server"
+
+  groupadd $LINOTP_GROUP || true
+  usermod -a -G $LINOTP_GROUP $LINOTP_USER || true
+  usermod -a -G $LINOTP_GROUP $APACHE_USER || true
 
   create_dir "log" "$LOGDIR"
   create_dir "lib" "$LIBDIR"
@@ -262,6 +267,8 @@ case "$1" in
 
     configure_apache
 
+    set_file_permissions
+
     rm -f $CONFIG_DIR/we_are_doing_an_upgrade
   ;;
 
@@ -274,5 +281,4 @@ case "$1" in
   ;;
 esac
 
-set_file_permissions
 #DEBHELPER#
