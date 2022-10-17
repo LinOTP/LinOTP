@@ -217,6 +217,10 @@ lint:
   else
     PYTESTARGS="$PYTESTARGS ${NON_NIGHTLY_ARGS}"
   fi
+  #
+  if [ -n "${PYPI_ARGS}" ]; then
+    PYTESTARGS="$PYTESTARGS ${PYPI_ARGS}"
+  fi
   # Coverage report
   PYTESTARGS="$PYTESTARGS --cov=linotp --cov-report=xml:${CI_PROJECT_DIR}/coverage.xml"
 

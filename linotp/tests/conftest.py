@@ -60,6 +60,7 @@ def pytest_configure(config):
         "nightly: mark test to run only nightly",
         "exclude_sqlite: mark test to always skip with sqlite database",
         "smoketest: mark test to run on softhsm (we do not want to run the full test collection)",
+        "fails_in_pypi_tests: mark tests that fail in pypi pipeline",
     ]
     for mark in add_marks:
         config.addinivalue_line("markers", mark)
