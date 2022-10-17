@@ -199,20 +199,32 @@ create_tmpfiles() {
 
 set_file_permissions() {
 
-  SENSITIVE_FILES="audit-private.pem conf.d/01-debian-database.cfg encKey"
+  CRITICAL_FILES="audit-private.pem conf.d/01-debian-database.cfg encKey"
+  SENSITIVE_FILES="audit-public.pem"
 
-  for name in $SENSITIVE_FILES; do
+  # 1. adjust ownership for sensitive files: has to belong the linotp group
+
+  for name in "$CRITICAL_FILES $SENSITIVE_FILES" ; do
+    FILE="$CONFIG_DIR"/$name
+
+    if [ -f "$FILE" ]; then
+      echo_log "Adjust ownership for $FILE"
+      chgrp -R $LINOTP_GROUP "$FILE"
+      chmod g+r "$FILE"
+    fi
+  done
+
+  # 2. adjust access for critical files: should not be world readable
+
+  for name in $CRITICAL_FILES; do
     FILE="$CONFIG_DIR"/$name
 
     if [ -f "$FILE" ]; then
       echo_log "Removing read/write-permissions for others on $FILE"
-
-      chgrp -R $LINOTP_GROUP "$FILE"
-      chmod g+r "$FILE"
       chmod o-rw "$FILE"
-
     fi
   done
+
 }
 
 # Here's where the actual execution of the postinst file starts.
