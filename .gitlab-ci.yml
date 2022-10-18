@@ -404,11 +404,6 @@ unit-test:
 
 .functional-test-base-dbs:
   extends: .functional-test-base
-  variables:
-    # Only run non-sqlite tests in regular pipeline
-    NON_NIGHTLY_ARGS: "-m exclude_sqlite"
-  parallel:
-    matrix: !reference [.parallel, matrix-no-test-splitting]
 
 functional-test:
   extends: .functional-test-base
