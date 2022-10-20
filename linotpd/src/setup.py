@@ -75,6 +75,7 @@ setup(
     url='https://www.linotp.org',
     install_requires=[
         "Pylons>=0.9.7",
+        "PasteDeploy<3.0",
         "PasteScript<=1.7.5",
         "WebOb",
         "SQLAlchemy<1.4",
