@@ -23,6 +23,7 @@ variables:
   CI_REGISTRY: gitbox.corp.keyidentity.com:5050
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
+  PYPI_IMAGE: $CI_IMAGE_PREFIX/linotp-pypi-testenv
   # Variables for upload-debs
   REPOSITORY: linotp3
   COMPONENT: linotp
@@ -37,6 +38,8 @@ workflow:
     - if: $NIGHTLY_PIPELINE                              # Execute pipeline if run with this variable set
 
 stages:
+  - pypi-image
+  - pypi-tests
   - check-and-build
   - test
   - lint
@@ -48,8 +51,26 @@ stages:
   before_script:
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
 
+build-and-upload-pypi-image-testenv:
+  stage: pypi-image
+  image: docker:latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+      variables:
+        PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+  variables:
+    PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_REF_NAME
+  <<: *docker-registry
+  script:
+    - docker build -t "$PYPI_IMAGE_TAG" -f Dockerfile.pypi-testenv .
+    - docker push "$PYPI_IMAGE_TAG"
+
 pre-commit-check:
   stage: check-and-build
+  needs: []
   image: python:3.7-buster
   interruptible: true
   cache:
@@ -196,6 +217,10 @@ lint:
   else
     PYTESTARGS="$PYTESTARGS ${NON_NIGHTLY_ARGS}"
   fi
+  #
+  if [ -n "${PYPI_ARGS}" ]; then
+    PYTESTARGS="$PYTESTARGS ${PYPI_ARGS}"
+  fi
   # Coverage report
   PYTESTARGS="$PYTESTARGS --cov=linotp --cov-report=xml:${CI_PROJECT_DIR}/coverage.xml"
 
@@ -291,7 +316,7 @@ lint:
     - CI_FLASK_VERSION: [Flask-1]
       CI_NODE_INDEX: [1]
       CI_NODE_TOTAL: [1]
-  script-install-flask2:
+  script-install-flask2: &script-install-flask2
     if [ "$CI_FLASK_VERSION" == "Flask-2" ];
       then
         pip3 install --upgrade pip wheel;
@@ -300,8 +325,6 @@ lint:
     ; fi
 
 .test-base:
-  stage: test
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   interruptible: true
   parallel:
     matrix: !reference [.parallel, matrix]
@@ -311,10 +334,50 @@ lint:
         coverage_format: cobertura
         path: ${CI_PROJECT_DIR}/coverage.xml
 
+.test-base-pypi:
+  extends: .test-base
+  stage: pypi-tests
+  image: $PYPI_IMAGE_TAG
+  rules:
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merged_result'
+  variables:
+    PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    PYPI_ARGS: "-m \"not fails_in_pypi_tests\" -n auto"
+  before_script:
+    # install env
+    - pip3 install --upgrade --upgrade-strategy eager -e ".[test]" smpplib pytest-test-groups pytest-xdist
+    - *script-install-flask2
+    - *pytest-args
+  
+.test-base-debs:
+  extends:
+    - .test-base
+    - .only-nightly-and-merge
+  stage: test
+  needs: build:debian-buster
+  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+
+unit-test-pypi:
+  extends: .test-base-pypi
+  script:
+      - make unittests PYTESTARGS="$PYTESTARGS"
+
+.functional-test-base-pypi:
+  extends:
+    - .test-base-pypi
+  artifacts:
+    reports:
+      junit: linotp/tests/functional/functional-pypi*.xml
+  script:
+    - make functionaltests PYTESTARGS="$PYTESTARGS"
+
+functional-test-pypi:
+  extends: .functional-test-base-pypi
+
 # Unit tests
 unit-test:
   extends:
-    - .test-base
+    - .test-base-debs
     - .buster-tests
   artifacts:
     reports:
@@ -328,7 +391,7 @@ unit-test:
 # Functional tests
 .functional-test-base:
   extends:
-    - .test-base
+    - .test-base-debs
     - .buster-tests
   artifacts:
     reports:
@@ -341,11 +404,6 @@ unit-test:
 
 .functional-test-base-dbs:
   extends: .functional-test-base
-  variables:
-    # Only run non-sqlite tests in regular pipeline
-    NON_NIGHTLY_ARGS: "-m exclude_sqlite"
-  parallel:
-    matrix: !reference [.parallel, matrix-no-test-splitting]
 
 functional-test:
   extends: .functional-test-base
@@ -354,6 +412,7 @@ functional-test-mariadb:
   extends:
     - .functional-test-base-dbs
     - .mariadb-database
+    - .only-nightly-and-merge
 
 functional-test-postgres:
   extends:
@@ -367,7 +426,7 @@ functional-test-mysql:
 
 .e2e-test:
   extends:
-    - .test-base
+    - .test-base-debs
     - .buster-tests
   parallel:
     matrix: !reference [.parallel, matrix-flask1-only]
