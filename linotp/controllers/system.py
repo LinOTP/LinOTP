@@ -55,10 +55,8 @@ from linotp.lib.crypto import utils
 from linotp.lib.error import ParameterError
 from linotp.lib.policy import (
     PolicyException,
-    checkPolicyPost,
     checkPolicyPre,
     get_client_policy,
-    getPolicy,
     search_policy,
 )
 from linotp.lib.policy.definitions import get_policy_definitions
