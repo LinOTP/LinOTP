@@ -845,6 +845,15 @@ class Migration:
 
             # ------------------------------------------------------------- --
 
+            # special treatment for the qr and push tokens.
+            # Since these tokens do not have an EncKey we don't re-encrypt them.
+            # Otherwise migration would fail, because token.LinOtpKeyEnc is None
+
+            if token.LinOtpTokenType in ["qr", "push"]:
+                continue
+
+            # ------------------------------------------------------------- --
+
             encrypted_value = binascii.unhexlify(token.LinOtpKeyEnc)
             enc = binascii.hexlify(encrypted_value)
 
