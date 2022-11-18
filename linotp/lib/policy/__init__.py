@@ -1559,8 +1559,9 @@ def _checkToolsPolicyPre(method, param=None, authUser=None, user=None):
     if auth["active"] and not auth["auth"]:
 
         log.warning(
-            "the admin >%r< is not allowed to view the audit trail",
+            "the admin >%r< is not allowed to use action %s in the tools scope",
             auth["admin"],
+            method,
         )
 
         ret = (
