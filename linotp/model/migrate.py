@@ -305,6 +305,16 @@ class MYSQL_Migration:
         )
         return self._execute(cmd)
 
+    def _convert_ImportedUser_to_utf8(self) -> Any:
+        """Migrate Username, Surname, Givenname and Email of imported_user to utf8."""
+        cmd = "Update imported_user Set %s, %s, %s, %s ;" % (
+            self._convert("imported_user.username"),
+            self._convert("imported_user.surname"),
+            self._convert("imported_user.givenname"),
+            self._convert("imported_user.email"),
+        )
+        return self._execute(cmd)
+
     def migrate_data(self, tables: list) -> None:
         """Worker for the data migration.
 
@@ -314,6 +324,8 @@ class MYSQL_Migration:
             self._convert_Config_to_utf8()
         if "Token" in tables:
             self._convert_Token_to_utf8()
+        if "imported_user" in tables:
+            self._convert_ImportedUser_to_utf8()
 
 
 # ------------------------------------------------------------------------- --
@@ -680,7 +692,9 @@ class Migration:
             )
 
     def iso8859_to_utf8_conversion(self) -> Tuple[bool, str]:
-        """Migrate all Config and Token entries from latin1 to utf-8,
+        """
+        Migrate all User (only Username, Surname, Givenname and Email),
+        Config and Token entries from latin1 to utf-8,
 
         but only if the label 'utf8_conversion':'suggested' is set
 
@@ -705,7 +719,7 @@ class Migration:
         try:
 
             mysql_mig = MYSQL_Migration(self.engine)
-            mysql_mig.migrate_data(["Config", "Token"])
+            mysql_mig.migrate_data(["Config", "Token", "imported_user"])
 
         except OperationalError as exx:
 
@@ -720,7 +734,7 @@ class Migration:
                 model.Config.Key == "linotp.utf8_conversion"
             ).delete()
 
-        return True, "Config and Token data converted to utf-8."
+        return True, "User, Config and Token data converted to utf-8."
 
     def migrate_3_1_0_0(self) -> Tuple[bool, str]:
         """Migrate the encrpyted data to pkcs7 padding.
