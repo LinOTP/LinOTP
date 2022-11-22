@@ -1,4 +1,4 @@
-linotp (3.2.1~0dev-1) buster-dev; urgency=low
+linotp (3.2.1~rc0-1) buster-dev; urgency=low
 
   Fixes:
   * Audit key verification errors solved by using newer version of pycryptodomex.
