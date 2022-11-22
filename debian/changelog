@@ -4,10 +4,11 @@ linotp (3.2.1~0dev-1) buster-dev; urgency=low
   * Audit key verification errors solved by using newer version of pycryptodomex.
   * Remove weak file permissions in config dir.
   * Solved migration of QR-tokens which broke backup-restore from SVA-2.12.5 to SVA-3.0
+  * Database re-encoding during database migration now also migrates
+    managed users that were previously not correctly migrated.
 
   Removed:
   * Debian postinst no longer manages admin users. Use the linotp cli instead.
-  * Removed deprecated variables from postint.
 
 -- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 12:00:00 +0100
 
