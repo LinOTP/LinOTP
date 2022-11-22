@@ -157,7 +157,12 @@ def is_authorized(admin_user: User, scope: str, action: str) -> bool:
 
     LOG.debug("Evaluating policies for the user: %r", admin_user)
 
-    scope_policies = policy_eval.has_policy({"scope": scope})
+    scope_policies = policy_eval.has_policy(
+        {
+            "scope": scope,
+            "active": True,
+        }
+    )
 
     # if no policy was defined at all -> the access is not restricted
     if len(scope_policies) == 0:
