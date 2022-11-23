@@ -48,8 +48,7 @@ stages:
   - upload-debian-packages
 
 .docker-registry: &docker-registry
-  before_script:
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+  docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
 
 build-and-upload-pypi-image-testenv:
   stage: pypi-image
@@ -63,7 +62,8 @@ build-and-upload-pypi-image-testenv:
         PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
   variables:
     PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_REF_NAME
-  <<: *docker-registry
+  before_script:
+    - *docker-registry
   script:
     - docker build -t "$PYPI_IMAGE_TAG" -f Dockerfile.pypi-testenv .
     - docker push "$PYPI_IMAGE_TAG"
@@ -84,6 +84,13 @@ pre-commit-check:
   script:
     - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache pre-commit run --all-files
 
+.docker-build-args: &docker-build-args |
+  DOCKER_BUILD_ARGS="--build-arg BUILDKIT_INLINE_CACHE=1"
+  # Use cached docker images in non-nightly pipelines
+  if [ -z "${NIGHTLY_PIPELINE}" ]; then
+    DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --cache-from=$BUILDER_CACHE_IMAGE --cache-from=$LINOTP_CACHE_IMAGE"       
+  fi
+
 # Build docker images and debs
 # This builds the .debs and docker images (builder, linotp, testenv).
 # Everything else depends on these, so we build everything in one go
@@ -96,7 +103,8 @@ pre-commit-check:
   retry:
     max: 2
   needs: []
-  <<: *docker-registry
+  before_script:
+    - *docker-registry
   script:
     - apk add --no-cache make
     - REGISTRY_IMAGE=$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp
@@ -112,6 +120,7 @@ pre-commit-check:
     - docker pull $BUILDER_CACHE_IMAGE || true
     - docker pull $LINOTP_CACHE_IMAGE || true
     # Build the images
+    - *docker-build-args
     - >
         make
         docker-build-linotp-builder
@@ -119,11 +128,7 @@ pre-commit-check:
         docker-build-linotp-test-image
         docker-build-linotp-softhsm
         BUILDDIR="${CI_PROJECT_DIR}"
-        DOCKER_BUILD_ARGS="
-        --build-arg BUILDKIT_INLINE_CACHE=1
-        --cache-from=$BUILDER_CACHE_IMAGE
-        --cache-from=$LINOTP_CACHE_IMAGE
-        "
+        DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS}"
     # Tag and push images to repository in the form:
     #  registry/ci/release/linotp-IMAGENAME:pipelineID
     #  registry/ci/release/linotp-IMAGENAME:sha256
