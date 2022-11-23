@@ -1,4 +1,4 @@
-linotp (3.2.1~0dev-1) buster-dev; urgency=low
+linotp (3.2.1~rc0-1) buster-dev; urgency=low
 
   Fixes:
   * Audit key verification errors solved by using newer version of pycryptodomex.
@@ -6,9 +6,10 @@ linotp (3.2.1~0dev-1) buster-dev; urgency=low
   * Solved migration of QR-tokens which broke backup-restore from SVA-2.12.5 to SVA-3.0
   * Database re-encoding during database migration now also migrates
     managed users that were previously not correctly migrated.
-
-  Removed:
-  * Debian postinst no longer manages admin users. Use the linotp cli instead.
+  * Debian postinst trying to add admin users via htdigest. This is no longer supported
+    and therefore removed. Use the linotp CLI manually instead.
+  * unprivileded access to administrative actions for logged in users is now fixed
+    by correctly evaluating only active policies
 
 -- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 12:00:00 +0100
 
