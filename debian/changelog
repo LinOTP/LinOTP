@@ -8,8 +8,9 @@ linotp (3.2.1~rc0-1) buster-dev; urgency=low
     managed users that were previously not correctly migrated.
   * Debian postinst trying to add admin users via htdigest. This is no longer supported
     and therefore removed. Use the linotp CLI manually instead.
-  * unprivileded access to administrative actions for logged in users is now fixed
-    by correctly evaluating only active policies
+  * Ensure that inactive policies are not evaluated. Previously, inactive policies were
+    being evaluated in certain situations, leading to wrongly attributed permissions to
+    logged-in administrators.
 
 -- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 12:00:00 +0100
 
