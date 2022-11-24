@@ -52,18 +52,13 @@ class TestPolicyEngine(TestController):
         TestController.tearDown(self)
 
     def test_token_enrollment(self):
-        """
-        switch the new engine on and compare the result of the old one
-
-        the difference between the old an the new one is the ability to
-        evaluate the policy time based
-        """
+        """test the time based access to admin 'enable' and 'disable'"""
 
         # the test first creates a new token
 
-        serial = "NewEngineTestToken"
+        serial = "TestToken"
 
-        params = {"type": "spass", "serial": "NewEngineTestToken"}
+        params = {"type": "pw", "otpkey": "pw", "serial": serial}
         response = self.make_admin_request("init", params)
         assert serial in response, response
 
@@ -95,69 +90,37 @@ class TestPolicyEngine(TestController):
         response = self.make_system_request("setPolicy", params=able_policy)
         assert '"setPolicy adm_2"' in response, response
 
-        # ----------------------------------------------------------------- --
+        # ------------------------------------------------------------- --
 
-        params = {"key": "NewPolicyEvaluation"}
-        response = self.make_system_request("getConfig", params=params)
-        new_eng = (
-            json.loads(response.body)
-            .get("result", {})
-            .get("value", {})
-            .get("getConfig NewPolicyEvaluation")
-        )
+        # first the access is disable for enable/disable but show must work
 
-        params = {"NewPolicyEvaluation": True}
-        response = self.make_system_request("setConfig", params=params)
-        assert 'NewPolicyEvaluation:True": true' in response, response
-        try:
+        params = {}
+        response = self.make_admin_request("show", params)
+        assert serial in response, response
 
-            # ------------------------------------------------------------- --
+        params = {"serial": serial}
+        response = self.make_admin_request("disable", params)
+        msg = "You do not have the administrative right to disable "
+        assert msg in response, response
 
-            # first the access is disable for enable/disable but show must work
+        # ------------------------------------------------------------- --
 
-            params = {}
-            response = self.make_admin_request("show", params)
-            assert serial in response, response
+        # now enable the access time for enable/disable
 
-            params = {"serial": serial}
-            response = self.make_admin_request("disable", params)
-            msg = "You do not have the administrative right to disable "
-            assert msg in response, response
+        able_policy["time"] = "*  0-24  * * * *;"
+        response = self.make_system_request("setPolicy", params=able_policy)
+        assert '"setPolicy adm_2"' in response, response
 
-            # ------------------------------------------------------------- --
+        # and check if this works
 
-            # now enable the acces time for enable/disable
+        params = {}
+        response = self.make_admin_request("show", params)
+        assert serial in response, response
 
-            able_policy["time"] = "*  0-24  * * * *;"
-            response = self.make_system_request(
-                "setPolicy", params=able_policy
-            )
-            assert '"setPolicy adm_2"' in response, response
-
-            # and check if this works
-
-            params = {}
-            response = self.make_admin_request("show", params)
-            assert serial in response, response
-
-            params = {"serial": serial}
-            response = self.make_admin_request("disable", params)
-            assert msg not in response, response
-            assert '"value": 1' in response, response
-
-            # ------------------------------------------------------------- --
-
-        finally:
-            if new_eng is None:
-                params = {"key": "NewPolicyEvaluation"}
-                response = self.make_system_request("delConfig", params=params)
-                assert 'NewPolicyEvaluation:True": true' in response, response
-            else:
-                params = {"NewPolicyEvaluation": new_eng}
-                response = self.make_system_request("setConfig", params=params)
-                assert "NewPolicyEvaluation" in response, response
-
-        return
+        params = {"serial": serial}
+        response = self.make_admin_request("disable", params)
+        assert msg not in response, response
+        assert '"value": 1' in response, response
 
 
 # eof ##

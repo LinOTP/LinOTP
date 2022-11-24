@@ -316,20 +316,6 @@ def set_defaults(app):
         create_admin_resolver(admin_resolver_name)
         create_admin_realm(admin_realm_name, admin_resolver_name)
 
-        set_config(
-            key="NewPolicyEvaluation",
-            value="True",
-            typ="boolean",
-            description="use the new policy engine",
-        )
-
-        set_config(
-            key="NewPolicyEvaluation.compare",
-            value="False",
-            typ="boolean",
-            description=("compare the new policy engine with the old one"),
-        )
-
     set_config(
         key="DefaultMaxFailCount",
         value="10",
