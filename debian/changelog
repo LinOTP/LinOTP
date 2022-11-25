@@ -1,4 +1,4 @@
-linotp (3.2.1~rc0-1) buster-dev; urgency=low
+linotp (3.2.1-1) buster-dev; urgency=low
 
   Fixes:
   * Audit key verification errors solved by using newer version of pycryptodomex.
@@ -12,7 +12,7 @@ linotp (3.2.1~rc0-1) buster-dev; urgency=low
     being evaluated in certain situations, leading to wrongly attributed permissions to
     logged-in administrators.
 
--- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 12:00:00 +0100
+-- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 18:30:00 +0100
 
 linotp (3.2-1) buster-dev; urgency=low
 
