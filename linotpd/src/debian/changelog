@@ -1,4 +1,4 @@
-linotp (2.12.6~0dev-1) buster; urgency=medium
+linotp (2.12.6~rc0-1) buster; urgency=medium
 
   Fix:
   * adjust the secret migration handling to support restore of backups
@@ -8,7 +8,7 @@ linotp (2.12.6~0dev-1) buster; urgency=medium
     being evaluated in certain situations, leading to wrongly attributed permissions to
     logged-in administrators.
 
- -- LinOTP Packaging <packaging@linotp.de>  Tue, 03 Aug 2022 19:45:00 +0100
+ -- LinOTP Packaging <packaging@linotp.de>  Fri, 25 Nov 2022 12:45:00 +0100
 
 linotp (2.12.5-1) buster; urgency=medium
 
