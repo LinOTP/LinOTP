@@ -1,3 +1,9 @@
+linotp (3.2.2~0dev-1) buster-dev; urgency=low
+  
+  * Set version to 3.2.2-dev
+
+-- LinOTP Packaging <packaging@linotp.de>  Mon, 05 Dec 2022 12:00:00 +0100
+
 linotp (3.2.1-1) buster-dev; urgency=low
 
   Fixes:
