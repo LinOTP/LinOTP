@@ -52,8 +52,9 @@ admin_cmds = AppGroup(
         """Fix encoding of database entries of python2+mysql database
 by converting data from iso latin encoding to utf8 encoding.
 Affected data might be Config values (Config.Value) and description
-(Config.Description) entries as well as Token info (Token.LinOtpTokenInfo)
-and description (Token.LinOtpTokenDesc) entries.
+(Config.Description), Token info (Token.LinOtpTokenInfo) and description
+(Token.LinOtpTokenDesc) entries as well as User data (imported_user.username),
+(imported_user.surname), (imported_user.givenname), and (imported_user.email) entries.
 """
     ),
 )

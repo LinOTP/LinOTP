@@ -46,10 +46,10 @@ from linotp.lib.policy.action import get_action_value
 from linotp.lib.policy.definitions import SYSTEM_ACTIONS
 from linotp.lib.policy.maxtoken import check_maxtoken
 from linotp.lib.policy.processing import (
-    _getAuthorization,
     get_client_policy,
     getPolicy,
     has_client_policy,
+    is_authorized,
     search_policy,
 )
 from linotp.lib.policy.util import (
@@ -156,11 +156,11 @@ def checkAuthorisation(scope, method):
     :param method: the requested action
     :return: nothing if authorized, else raise PolicyException
     """
-    auth = _getAuthorization(scope, method)
-    if auth["active"] and not auth["auth"]:
-        log.warning(
-            "the user >%r< is not allowed to do %s", auth["admin"], scope
-        )
+
+    admin_user = _getAuthenticatedUser()
+
+    if not is_authorized(admin_user, scope, method):
+        log.warning("the user >%r< is not allowed to do %s", admin_user, scope)
 
         ret = _(
             "You do not have the administrative right to do this. You are "
@@ -341,17 +341,14 @@ def _checkSystemPolicyPost(method, param=None, user=None):
 
     ret = {}
     controller = "system"
+    admin_user = _getAuthenticatedUser()
 
     log.debug("entering controller %s", controller)
 
     if method == "getRealms":
-        systemReadRights = False
         res = param["realms"]
-        auth = _getAuthorization("system", "read")
-        if auth["auth"]:
-            systemReadRights = True
 
-        if not systemReadRights:
+        if not is_authorized(admin_user, "system", "read"):
             # If the admin is not allowed to see all realms,
             # (policy scope=system, action=read)
             # the realms, where he has no administrative rights need,
@@ -384,7 +381,7 @@ def _checkSystemPolicyPost(method, param=None, user=None):
                     "system: : getRealms: The admin >%s< is not "
                     "allowed to read system config and has not "
                     "realm administrative rights!",
-                    auth["admin"],
+                    admin_user,
                 )
 
                 raise PolicyException(
@@ -1521,13 +1518,14 @@ def _checkAuditPolicyPre(method, param=None, authUser=None, user=None):
     if not param:
         param = {}
 
+    admin_user = _getAuthenticatedUser()
+
     if method == "view":
-        auth = _getAuthorization("audit", "view")
-        if auth["active"] and not auth["auth"]:
+        if not is_authorized(admin_user, "audit", "view"):
 
             log.warning(
                 "the admin >%r< is not allowed to view the audit trail",
-                auth["admin"],
+                admin_user,
             )
 
             ret = _(
@@ -1559,12 +1557,14 @@ def _checkToolsPolicyPre(method, param=None, authUser=None, user=None):
     if not param:
         param = {}
 
-    auth = _getAuthorization("tools", method)
-    if auth["active"] and not auth["auth"]:
+    admin_user = _getAuthenticatedUser()
+
+    if not is_authorized(admin_user, "tools", method):
 
         log.warning(
-            "the admin >%r< is not allowed to view the audit trail",
-            auth["admin"],
+            "the admin >%r< is not allowed to use action %s in the tools scope",
+            admin_user,
+            method,
         )
 
         ret = (
@@ -1996,6 +1996,8 @@ def _checkSystemPolicyPre(method, param=None, authUser=None, user=None):
     if not param:
         param = {}
 
+    admin_user = _getAuthenticatedUser()
+
     if method not in SYSTEM_ACTIONS:
 
         log.error("an unknown method was passed in system: %s", method)
@@ -2004,16 +2006,16 @@ def _checkSystemPolicyPre(method, param=None, authUser=None, user=None):
             _("Failed to run checkPolicyPre. Unknown method: %r") % method
         )
 
-    auth = _getAuthorization(scope="system", action=SYSTEM_ACTIONS[method])
+    action = SYSTEM_ACTIONS[method]
 
-    if auth["active"] and not auth["auth"]:
+    if not is_authorized(admin_user, "system", action):
 
         log.warning(
             "admin >%s< is not authorited to %s. Missing policy "
             "scope=system, action=%s",
-            auth["admin"],
+            admin_user,
             method,
-            SYSTEM_ACTIONS[method],
+            action,
         )
 
         raise PolicyException(
@@ -2021,7 +2023,7 @@ def _checkSystemPolicyPre(method, param=None, authUser=None, user=None):
                 "Policy check failed. You are not allowed "
                 "to %s system config."
             )
-            % SYSTEM_ACTIONS[method]
+            % action
         )
 
     return ret
