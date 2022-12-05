@@ -38,9 +38,11 @@
 """
 
 import logging
+from typing import Any, Tuple
 
 from linotp.lib.policy.evaluate import PolicyEvaluator
-from linotp.lib.policy.util import _getAuthenticatedUser, get_policies
+from linotp.lib.policy.util import get_policies
+from linotp.lib.user import User
 
 LOG = logging.getLogger(__name__)
 
@@ -134,59 +136,57 @@ def getPolicy(param, only_active=True):
     return new_pols
 
 
-def _getAuthorization(scope, action):
+def is_authorized(admin_user: User, scope: str, action: str) -> bool:
     """
-    This internal function returns the Authrorizaition within some
-    the scope=system(or audit, monitoring, tools). for the currently
-    authenticated administrativ user.
+    This internally used function checks whether the currently authenticated
+    administrative user is authorized to perform an action in the given scope.
 
-    This does not take into account the REALMS!
+    This method can only be used for administrative users and therefore does
+    not take REALMS into account!
 
-    arguments:
-        action  - this is the action
-                    scope = system/audit/monitoring/tools
-                        read
-                        write
+    :param admin_user: the admin user to check
+    :param scope: policy scope to use (system, audit, monitoring, reporting, tools)
+    :param action: action to check in the scope (e.g. read or write)
 
     returns:
-        a dictionary with the following keys:
-        active     (if policies are used)
-        admin      (the name of the authenticated admin user)
-        auth       (True if admin is authorized for this action)
+        authenticated : `boolean`
+            boolean value whether user is authorized
     """
-    active = True
-    auth = False
 
-    policy_elve = PolicyEvaluator(get_policies())
-
-    p_at_all = policy_elve.has_policy({"scope": scope})
-
-    if len(p_at_all) == 0:
-        LOG.info(
-            "No policies in scope %s found. Checking "
-            "of scope %s be disabled.",
-            scope,
-            scope,
-        )
-        active = False
-        auth = True
-
-    # TODO: We may change this later to other authentication schemes
-    LOG.debug("[getAuthorization] now getting the admin user name")
-
-    admin_user = _getAuthenticatedUser()
+    policy_eval = PolicyEvaluator(get_policies())
 
     LOG.debug("Evaluating policies for the user: %r", admin_user)
 
-    param = {"user": admin_user, "scope": scope, "action": action}
+    scope_policies = policy_eval.has_policy(
+        {
+            "scope": scope,
+            "active": True,
+        }
+    )
 
-    policies = policy_elve.set_filters(param).evaluate(policy_set=p_at_all)
+    # if no policy was defined at all -> the access is not restricted
+    if len(scope_policies) == 0:
+
+        LOG.info(
+            "No active policies in scope %s found - access to this scope is"
+            " not restricted!",
+            scope,
+        )
+        return True
+
+    # if any policy is defined, check if the admin_user is allowed to execute
+    # the given action by an active policy
+
+    filters = {
+        "user": admin_user,
+        "scope": scope,
+        "action": action,
+    }
+    policies = policy_eval.set_filters(filters).evaluate(scope_policies)
+
     LOG.debug("Found the following policies: %r", policies)
 
-    if len(list(policies.keys())) > 0:
-        auth = True
-
-    return {"active": active, "auth": auth, "admin": admin_user}
+    return len(policies) > 0
 
 
 def get_client_policy(
