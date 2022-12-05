@@ -11,6 +11,7 @@ linotp (3.2.1-1) buster-dev; urgency=low
   * Ensure that inactive policies are not evaluated. Previously, inactive policies were
     being evaluated in certain situations, leading to wrongly attributed permissions to
     logged-in administrators.
+  * support encypted data with legacy proprietary padding (LinOTP 2.9)
 
 -- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 18:30:00 +0100
 
