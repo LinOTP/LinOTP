@@ -1,6 +1,7 @@
 linotp (3.2.2~0dev-1) buster-dev; urgency=low
   
-  * Set version to 3.2.2-dev
+  Fixes:
+  * Support encypted data with legacy proprietary padding (LinOTP 2.9)
 
 -- LinOTP Packaging <packaging@linotp.de>  Mon, 05 Dec 2022 12:00:00 +0100
 
