@@ -1,4 +1,4 @@
-linotp (3.2.2~0dev-1) buster-dev; urgency=low
+linotp (3.2.2~rc0-1) buster-dev; urgency=low
   
   Fixes:
   * Support encypted data with legacy proprietary padding (LinOTP 2.9)
