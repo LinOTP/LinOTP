@@ -364,7 +364,7 @@ def new_getAuthorization(scope, action):
 
     policy_elve = PolicyEvaluator(get_policies())
 
-    p_at_all = policy_elve.has_policy({'scope': scope})
+    p_at_all = policy_elve.has_policy({'scope': scope, 'active': True})
 
     if len(p_at_all) == 0:
         LOG.info("No policies in scope %s found. Checking "
