@@ -282,6 +282,7 @@ DOCKER_BUILDDIR=$(BUILDDIR)/linotpd.build
 
 .PHONY: docker-build-debs
 docker-build-debs: docker-build-linotp-builder
+	mkdir -p $(BUILDDIR)
 	# Force rebuild of debs
 	rm -f $(BUILDDIR)/apt/Packages
 	$(MAKE) $(BUILDDIR)/apt/Packages
