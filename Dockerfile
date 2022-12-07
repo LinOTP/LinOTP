@@ -130,7 +130,7 @@ RUN test -z "$DEPENDENCY_DEB_REPO" \
     || (echo "deb $DEPENDENCY_DEB_REPO" > /etc/apt/sources.list.d/linotp-deps.list \
     && cat /etc/apt/sources.list.d/linotp-deps.list)
 
-# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys $DEPENDENCY_GPG_KEYID
+RUN apt install ca-certificates
 RUN test -z "$DEPENDENCY_GPG_KEYID" \
     || apt-key adv --keyserver keyserver.ubuntu.com --recv-keys $DEPENDENCY_GPG_KEYID
 RUN test -z "$DEPENDENCY_GPG_KEY_URL" \
