@@ -47,10 +47,6 @@ DEFAULT_KEY = 2
 log = logging.getLogger(__name__)
 
 
-class PaddingException(Exception):
-    pass
-
-
 class DefaultSecurityModule(SecurityModule):
     """
     the default security provider
@@ -270,10 +266,7 @@ class DefaultSecurityModule(SecurityModule):
         aes = AES.new(key, AES.MODE_CBC, iv)
         output = aes.decrypt(value)
 
-        try:
-            data = self.unpadd_data(output)
-        except PaddingException as exx:
-            raise Exception("invalid encoded secret! %r" % exx)
+        data = self.unpadd_data(output)
 
         if self.crypted is False:
             zerome(key)
@@ -292,55 +285,14 @@ class DefaultSecurityModule(SecurityModule):
         return pad(data_to_pad=input_data, block_size=AES.block_size)
 
     @staticmethod
-    def unpadd_data(input_data: bytes) -> bytes:
+    def unpadd_data(input_data):
         """
         unpadd a given data from a blocksize of 16 according to pkcs7 padding
 
         :param input_data: the data with appended padding
         :return: stripped of data
         """
-        try:
-            return unpad(padded_data=input_data, block_size=AES.block_size)
-        except ValueError as exx:
-            log.info("Legacy padding is used!")
-            return DefaultSecurityModule._legacy_unpadd_data(input_data)
-
-    @staticmethod
-    def _legacy_unpadd_data(input_data: bytes) -> bytes:
-        """
-        unpad the legacy proprietary padded data
-
-        the following code is to support the legacy proprietary padding:
-        the input data was appended by the marker b"\x01\x02" and the
-        remaining block was filled with b"\x00"'s.
-
-        :param input_data: the data with old appended padding
-        :return: stripped off data
-        """
-
-        # ensure that input data is legacy padded - no other padding has
-        # a trailing b"\x00"
-        if input_data[-1:] != b"\x00":
-            raise PaddingException("invalid padded data!")
-
-        # ensure that the blocksize matches to a multiple of
-        # the AES.block_size
-        if len(input_data) % AES.block_size != 0:
-            raise PaddingException("blocksize does not match!")
-
-        # ensure the data has our padding marker b"\x01\x02"
-        idx = input_data.rfind(b"\x01\x02")
-        if idx == -1:
-            raise PaddingException("marker not found!")
-
-        # ensure that after the marker b"\x01\x02" only b"\x00" occur:
-        #  we create the expected remaining and compare it to the input data
-        #  from the position where the marker was found
-        remain = b"\x01\x02" + b"\x00" * (len(input_data) - idx - 2)
-        if remain != input_data[idx:]:
-            raise PaddingException("remaining contains non zero bytes!")
-
-        return input_data[:idx]
+        return unpad(padded_data=input_data, block_size=AES.block_size)
 
     def decryptPassword(self, cryptPass: str) -> bytes:
         """
