@@ -825,6 +825,10 @@ class Migration:
 
                 entry.Value = sec_module.encryptPassword(value.encode("utf-8"))
 
+                # Change the type to `encrypted_data` since type `password` is used equivalently
+                # and thus can be unified
+                entry.Type = "encrypted_data"
+
                 model.db.session.add(entry)
 
                 log.info("%r re encrypted" % entry.Key)
