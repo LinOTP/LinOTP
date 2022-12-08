@@ -131,8 +131,8 @@ RUN test -z "$DEPENDENCY_DEB_REPO" \
     && cat /etc/apt/sources.list.d/linotp-deps.list)
 
 RUN apt install ca-certificates
-RUN test -z "$DEPENDENCY_GPG_KEYID" \
-    || apt-key adv --keyserver keyserver.ubuntu.com --recv-keys $DEPENDENCY_GPG_KEYID
+RUN curl https://dist.linotp.org/debian/gpg-keys/linotp-archive-current.asc | tee /etc/apt/trusted.gpg.d/linotp-archive-current.asc
+
 RUN test -z "$DEPENDENCY_GPG_KEY_URL" \
     || curl $DEPENDENCY_GPG_KEY_URL | apt-key adv --import
 
