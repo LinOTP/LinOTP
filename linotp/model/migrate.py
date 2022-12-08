@@ -816,7 +816,7 @@ class Migration:
 
         for entry in model.Config.query.all():
 
-            if entry.Type not in ["encrypted_data"]:
+            if entry.Type not in ["encrypted_data", "password"]:
                 continue
 
             try:
@@ -824,6 +824,10 @@ class Migration:
                 value = sec_module.decryptPassword(entry.Value).decode("utf-8")
 
                 entry.Value = sec_module.encryptPassword(value.encode("utf-8"))
+
+                # Change the type to `encrypted_data` since type `password` is used equivalently
+                # and thus can be unified
+                entry.Type = "encrypted_data"
 
                 model.db.session.add(entry)
 

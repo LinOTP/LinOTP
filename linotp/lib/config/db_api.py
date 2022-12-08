@@ -405,18 +405,17 @@ def _retrieveAllConfigDB():
 
     # ---------------------------------------------------------------------- --
 
-    # special treatment of encrypted_data / password:
+    # special treatment of encrypted_data:
     # instead of decrypting the data during the loading of the config, the
     # encrypted data is provided EncryptedData object, which allows to only
     # decrypt the data when needed.
     # This allows to drop the delayed loading handling
-    #
 
     for key, value in list(config.items()):
 
         myTyp = type_dict.get(key)
 
-        if myTyp and myTyp in ["password", "encrypted_data"]:
+        if myTyp and myTyp == "encrypted_data":
             config[key] = EncryptedData(value)
 
     return config, False
