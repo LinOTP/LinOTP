@@ -816,7 +816,7 @@ class Migration:
 
         for entry in model.Config.query.all():
 
-            if entry.Type not in ["encrypted_data"]:
+            if entry.Type not in ["encrypted_data", "password"]:
                 continue
 
             try:
