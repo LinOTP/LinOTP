@@ -204,7 +204,7 @@ set_file_permissions() {
 
   # 1. adjust ownership for sensitive files: has to belong the linotp group
 
-  for name in "$CRITICAL_FILES $SENSITIVE_FILES" ; do
+  for name in $CRITICAL_FILES $SENSITIVE_FILES ; do
     FILE="$CONFIG_DIR"/$name
 
     if [ -f "$FILE" ]; then
