@@ -1,6 +1,8 @@
 linotp (3.2.2~rc2-1) buster-dev; urgency=low
 
   Fixes:
+  * Challenge database is reset once to ensure that Backups pre LinOTP 3
+    correctly restore existing challenge-response tokens.
   * Migrate encypted data 'password' with legacy proprietary padding (LinOTP 2.9)
 
 -- LinOTP Packaging <packaging@linotp.de>  Mon, 05 Dec 2022 12:00:00 +0100
