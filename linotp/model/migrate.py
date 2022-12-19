@@ -373,6 +373,7 @@ class Migration:
         "3.0.0.0",
         "3.1.0.0",
         "3.2.0.0",
+        "3.2.2.0",
     ]
 
     def __init__(self, engine: Engine):
@@ -913,4 +914,13 @@ class Migration:
 
         return True, (
             f"internal (managed) admin resolver {admin_resolver_name} created"
+        )
+
+    def migrate_3_2_2_0(self):
+        """Migration to 3.2.2 drops all challenges"""
+
+        model.Challenge.query.delete()
+
+        return True, (
+            "Migration to 3.2.2 - all challenge entries are deleted."
         )
