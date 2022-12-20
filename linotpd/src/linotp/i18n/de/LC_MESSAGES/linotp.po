@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -791,7 +792,7 @@ msgstr ""
 "Lösung für Unternehmen an."
 
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity, and want to be "
+"If you are interested in the 2FA platform of netgo software, and want to be "
 "informed about:"
 msgstr ""
 "Falls Sie sich für KeyIdentitys 2FA Plattform interessieren und informiert "
@@ -856,7 +857,7 @@ msgstr ""
 "Wir freuen uns, dass Sie KeyIdentity LinOTP als Ihre 2FA Lösung benutzen."
 
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity using LinOTP at its "
+"If you are interested in the 2FA platform of netgo software using LinOTP at its "
 "core, and would like further information about:"
 msgstr ""
 "Falls Sie sich für KeyIdentitys 2FA Plattform mit LinOTP als Kern "
@@ -1993,8 +1994,8 @@ msgstr "Neues Passwort bestätigen"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - die Open Source Lösung für zwei Faktor Authentisierung."
 
-msgid "Copyright (C) arxes-tolina GmbH"
-msgstr "Copyright (C) arxes-tolina GmbH"
+msgid "Copyright (C) netgo software GmbH"
+msgstr "Copyright (C) netgo software GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Lizensiert unter AGPLv3"

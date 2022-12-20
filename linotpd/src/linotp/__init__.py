@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -62,7 +63,7 @@ the simple webui which come with linotp
 # indirectly) import any module that might not yet be installed when installing
 # LinOTP.
 
-__copyright__ = "Copyright (C) arxes-tolina GmbH"
+__copyright__ = "Copyright (C) netgo software GmbH"
 __product__ = "LinOTP"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
