@@ -1,7 +1,6 @@
 import json
 import logging
-from datetime import datetime
-from http.client import LineTooLong
+from datetime import datetime, timezone
 
 from flask import current_app, g
 
@@ -414,7 +413,7 @@ class TokenAdapter:
                 date = datetime.strptime(
                     self._token_info[field], "%d/%m/%y %H:%M"
                 )
-                self._token_info[field] = date
+                self._token_info[field] = date.replace(tzinfo=timezone.utc)
 
         self.validity_start = self._token_info.get(
             "validity_period_start", None
