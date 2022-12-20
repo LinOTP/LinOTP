@@ -19,9 +19,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@keyidentity.com
+#    E-mail: info@linotp.de
 #    Contact: www.linotp.org
-#    Support: www.keyidentity.com
+#    Support: www.linotp.de
 #
 
 
@@ -67,7 +67,7 @@ __copyright__ = "Copyright (C) netgo GmbH"
 __product__ = "LinOTP"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
-__email__ = "linotp@keyidentity.com"
+__email__ = "info@linotp.de"
 # The versioning should follow "Milestones - LinOTP" which satisfies pep-0440
 # i.e.  [N!]N(.N)*[{a|b|rc}N][.postN][.devN] read the documentation before changing
 __version__ = "3.3.dev0"
