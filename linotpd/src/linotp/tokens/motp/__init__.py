@@ -19,9 +19,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@keyidentity.com
+#    E-mail: info@linotp.de
 #    Contact: www.linotp.org
-#    Support: www.keyidentity.com
+#    Support: www.linotp.de
 #
 '''lib to handle mobileOTP - Implementation inspired by:
       https://github.com/neush/otpn900/blob/master/src/test_motp.c

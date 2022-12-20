@@ -19,9 +19,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@keyidentity.com
+#    E-mail: info@linotp.de
 #    Contact: www.linotp.org
-#    Support: www.keyidentity.com
+#    Support: www.linotp.de
 #
 """
 This is the cmd client admin to manage the tokens on the LinOTP 2 server

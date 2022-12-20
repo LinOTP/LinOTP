@@ -18,9 +18,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@keyidentity.com
+#    E-mail: info@linotp.de
 #    Contact: www.linotp.org
-#    Support: www.keyidentity.com
+#    Support: www.linotp.de
 #
 package LinotpLDAPProxy;
 ## This module is to be used with the KeyIdentity LinOTP authentication 

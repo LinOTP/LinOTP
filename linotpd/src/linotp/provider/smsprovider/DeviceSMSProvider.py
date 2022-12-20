@@ -20,9 +20,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@keyidentity.com
+#    E-mail: info@linotp.de
 #    Contact: www.linotp.org
-#    Support: www.keyidentity.com
+#    Support: www.linotp.de
 #
 """
 This is a SMS Provide class that can send OTP values via SMS using a phone
