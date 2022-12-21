@@ -310,9 +310,6 @@ class TokensController(BaseController, JWTMixin):
 
             tokens = TokenIterator(user, serial, filterRealm=filter_realm)
 
-            # put in the result
-            result = {}
-
             result_count = tokens.getResultSetInfo()["tokens"]
 
             if result_count > 1:
