@@ -361,7 +361,10 @@ class TokenAdapter:
         """
 
         # fill out self.token_info:
-        self._parse_tokeninfo(linotp_token)
+        if linotp_token["LinOtp.TokenInfo"]:
+            self._token_info = json.loads(linotp_token["LinOtp.TokenInfo"])
+        else:
+            self._token_info = {}
 
         # general token information
         self.id = linotp_token["LinOtp.TokenId"]
@@ -406,6 +409,13 @@ class TokenAdapter:
         self.last_authentication_match = linotp_token["LinOtp.LastAuthMatch"]
 
         # validity period
+        for field in ["validity_period_end", "validity_period_start"]:
+            if field in self._token_info:
+                date = datetime.strptime(
+                    self._token_info[field], "%d/%m/%y %H:%M"
+                )
+                self._token_info[field] = date.isoformat()
+
         self.validity_start = self._token_info.get(
             "validity_period_start", None
         )
@@ -460,20 +470,3 @@ class TokenAdapter:
                 "validityEnd": self.validity_end,
             },
         }
-
-    def _parse_tokeninfo(self, linotp_token):
-        """
-        Parse TokenInfo from JSON and format validity period date fields to isoformat
-        """
-
-        if linotp_token["LinOtp.TokenInfo"]:
-            self._token_info = json.loads(linotp_token["LinOtp.TokenInfo"])
-        else:
-            self._token_info = {}
-
-        for field in ["validity_period_end", "validity_period_start"]:
-            if field in self._token_info:
-                date = datetime.strptime(
-                    self._token_info[field], "%d/%m/%y %H:%M"
-                )
-                self._token_info[field] = date.isoformat()
