@@ -414,7 +414,7 @@ class TokenAdapter:
                 date = datetime.strptime(
                     self._token_info[field], "%d/%m/%y %H:%M"
                 )
-                self._token_info[field] = date.isoformat()
+                self._token_info[field] = date
 
         self.validity_start = self._token_info.get(
             "validity_period_start", None
@@ -466,7 +466,11 @@ class TokenAdapter:
                 "lastAuthenticationMatch": self.last_authentication_match,
             },
             "validityPeriod": {
-                "validityStart": self.validity_start,
-                "validityEnd": self.validity_end,
+                "validityStart": self.validity_start.isoformat()
+                if self.validity_start
+                else None,
+                "validityEnd": self.validity_end.isoformat()
+                if self.validity_end
+                else None,
             },
         }
