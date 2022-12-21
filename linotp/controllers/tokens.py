@@ -248,7 +248,7 @@ class TokensController(BaseController, JWTMixin):
             # now row by row
             lines = []
             for token in tokens:
-                formatted_token = Token(token).to_JSON_format()
+                formatted_token = TokenAdapter(token).to_JSON_format()
                 lines.append(formatted_token)
             result["pageRecords"] = lines
 
@@ -321,7 +321,7 @@ class TokensController(BaseController, JWTMixin):
 
             if result_count == 1:
                 token = next(tokens)
-                formatted_token = Token(token).to_JSON_format()
+                formatted_token = TokenAdapter(token).to_JSON_format()
 
             g.audit["success"] = True
             g.audit["info"] = "realm: {}".format(filter_realm)
@@ -342,8 +342,23 @@ class TokensController(BaseController, JWTMixin):
             return sendError(None, e)
 
 
-class Token:
+class TokenAdapter:
+    """
+    Data class to hold a token representation based on the one returned by the
+    TokenIterator, but transforming some of the fields.
+
+    The goal is not to have to repeat ourselves across all endpoint functions
+    and keep the returned data structures in a consistent format.
+    """
+
     def __init__(self, linotp_token) -> None:
+        """
+        Create a Token object from a linotp_token dictionary provided by
+        LinOTP's token iterator.
+
+        It reformats the date strings to ISO 8601, transforms the token type to
+        a lowercase string, and defaults unset keys to None.
+        """
 
         # fill out self.token_info:
         self._parse_tokeninfo(linotp_token)
@@ -397,6 +412,12 @@ class Token:
         self.validity_end = self.token_info.get("validity_period_end", None)
 
     def to_JSON_format(self):
+        """
+        Return a JSON-compatible dictionary representation of the Token.
+
+        Some attributes are related to each other and grouped by "topic",
+        namely: tokenConfiguration, userInfo, usageData, and validityPeriod.
+        """
         return {
             "id": self.id,
             "description": self.description,
