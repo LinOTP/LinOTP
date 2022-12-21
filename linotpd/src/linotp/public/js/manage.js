@@ -2141,7 +2141,7 @@ function support_view(){
             var info = "";
             info += '<h2 class="contact_info center-text">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
             info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchase.'),
-                        '<p class="contact_info center-text"><a href="mailto:sales@keyidentity.com">KeyIdentity GmbH</a></p>');
+                        '<p class="contact_info center-text"><a href="mailto:vertrieb@linotp.de">KeyIdentity GmbH</a></p>');
             $("#dialog_support_view").html($.parseHTML(info));
 
         } else {
@@ -2159,8 +2159,8 @@ function support_view(){
             info += "</tbody></table>";
             info += "<div class='subscription_info'><br>" +
                 i18n.gettext("For support and subscription please contact us at") +
-                " <a href='https://www.keyidentity.com/' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
-                i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@keyidentity.com</div>";
+                " <a href='https://www.linotp.de/' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
+                i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " info@linotp.de</div>";
             $("#dialog_support_view").html($.parseHTML(info));
         }
     });
@@ -2192,7 +2192,7 @@ function check_for_welcome_screen() {
         var title = i18n.gettext("Welcome to LinOTP");
         var text = '<p>' + i18n.gettext("Welcome to your fresh LinOTP installation.") + '</p>'
             + '<p>' + i18n.gettext("If you have questions about the setup or installation of LinOTP, please <a href='https://linotp.org/doc' target='_blank'>refer to our documentation</a>.") + '</p>'
-            + '<p>' + i18n.gettext("<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an enterprise 2FA solution.") + '</p>'
+            + '<p>' + i18n.gettext("<a href='https://linotp.de'>netgo</a> provides LinOTP as an enterprise 2FA solution.") + '</p>'
             + '<p>' + i18n.gettext("If you are interested in the 2FA platform of netgo software, and want to be informed about:") 
             + '<ul>'
             + '<li>' + i18n.gettext("updates of our products,") + '</li>'
@@ -2204,7 +2204,7 @@ function check_for_welcome_screen() {
             + '</p>'
             + '<br/>'
             + '<div id="welcome-buttons">'
-            + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe to newsletter") + '</a>'
+            + '<a class="light-text-color newsletter-button" href="https://www.linotp.de/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe to newsletter") + '</a>'
             + '</div>'
         var button = i18n.gettext("OK");
 
@@ -2239,8 +2239,8 @@ function check_for_welcome_screen() {
                 + '<p>' + i18n.gettext("We would be happy to receive your feedback about LinOTP.") + '</p>'
                 + '<br/>'
                 + '<div id="welcome-buttons">'
-                + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
-                + '<a class="light-text-color feedback-button" href="https://www.keyidentity.com/contact-us/" target="_blank">' + i18n.gettext("Feedback") + '</a>'
+                + '<a class="light-text-color newsletter-button" href="https://www.linotp.de/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
+                + '<a class="light-text-color feedback-button" href="https://www.linotp.de/contact-us/" target="_blank">' + i18n.gettext("Feedback") + '</a>'
                 + '</div>'
             var button = i18n.gettext("Close");
 
@@ -2267,8 +2267,8 @@ function check_for_welcome_screen() {
                 + '<p>' + i18n.gettext("We would be happy to receive your feedback about LinOTP.") + '</p>'
                 + '<br/>'
                 + '<div id="welcome-buttons">'
-                + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
-                + '<a class="light-text-color feedback-button" href="https://www.keyidentity.com/contact-us/" target="_blank">' + i18n.gettext("Feedback") + '</a>'
+                + '<a class="light-text-color newsletter-button" href="https://www.linotp.de/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
+                + '<a class="light-text-color feedback-button" href="https://www.linotp.de/contact-us/" target="_blank">' + i18n.gettext("Feedback") + '</a>'
                 + '</div>'
             var button = i18n.gettext("OK");
 

@@ -684,10 +684,10 @@ msgstr ""
 "target='_blank'>参考我们的文档</a>。"
 
 msgid ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
+"<a href='https://linotp.de'>netgo</a> provides LinOTP as an "
 "enterprise 2FA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a>提供LinOTP作为企业2FA解决方"
+"<a href='https://linotp.de'>netgo</a>提供LinOTP作为企业2FA解决方"
 "案。"
 
 msgid ""

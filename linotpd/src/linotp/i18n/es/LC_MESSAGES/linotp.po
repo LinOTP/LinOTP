@@ -798,10 +798,10 @@ msgstr ""
 "documentación</a>."
 
 msgid ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
+"<a href='https://linotp.de'>netgo</a> provides LinOTP as an "
 "enterprise 2FA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> proporciona LinOTP como "
+"<a href='https://linotp.de'>netgo</a> proporciona LinOTP como "
 "una solución de autenticación de dos pasos empresarial."
 
 msgid ""

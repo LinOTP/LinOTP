@@ -780,10 +780,10 @@ msgstr ""
 "linotp.org/doc' target='_blank'>riferito alla nostra documentazione</a>."
 
 msgid ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
+"<a href='https://linotp.de'>netgo</a> provides LinOTP as an "
 "enterprise 2FA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> fornisce LinOTP come "
+"<a href='https://linotp.de'>netgo</a> fornisce LinOTP come "
 "soluzione 2FA per le imprese."
 
 msgid ""
