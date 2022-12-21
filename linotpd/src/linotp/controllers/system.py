@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -19,9 +20,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@keyidentity.com
+#    E-mail: info@linotp.de
 #    Contact: www.linotp.org
-#    Support: www.keyidentity.com
+#    Support: www.linotp.de
 #
 """
 system controller - to configure the system
@@ -1935,14 +1936,14 @@ class SystemController(BaseController):
                      "demo license is about to expire in a few days. "
                      "For licenses for productive use or an extended "
                      "evaluation period, "),
-            "<a href='mailto:sales@keyidentity.com'>", _("please contact us"), "</a>.</p>",
+            "<a href='mailto:vertrieb@linotp.de'>", _("please contact us"), "</a>.</p>",
             "",
             "<p>", _("If you have questions about our products or your "
                      "evaluation we are happy to answer your inquiry. "
                      "We would also like to learn about your feedback "
                      "concerning our products and your evaluation."), "</p>",
             "",
-            "<p class='center'><a href='mailto:sales@keyidentity.com'>sales@keyidentity.com</a></p>",
+            "<p class='center'><a href='mailto:vertrieb@linotp.de'>vertrieb@linotp.de</a></p>",
             "",
             "<p class='center'>", _("Sales hotline: "), "<a href='tel:+49615186086277'>", _("+49 6151 86086 277"), "</a></p>"
         ]

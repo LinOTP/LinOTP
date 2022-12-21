@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -19,9 +20,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@keyidentity.com
+#    E-mail: info@linotp.de
 #    Contact: www.linotp.org
-#    Support: www.keyidentity.com
+#    Support: www.linotp.de
 # linotp@keyidentity.com <>, 2015, 2019.
 # Fabian Vallon <fabian.vallon@keyidentity.com>, 2019.
 #
@@ -784,14 +785,14 @@ msgstr ""
 "target='_blank'>in unsere Dokumentation</a>."
 
 msgid ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
+"<a href='https://linotp.de'>netgo</a> provides LinOTP as an "
 "enterprise 2FA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> bietet LinOTP als eine 2FA "
+"<a href='https://linotp.de'>netgo</a> bietet LinOTP als eine 2FA "
 "Lösung für Unternehmen an."
 
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity, and want to be "
+"If you are interested in the 2FA platform of netgo software, and want to be "
 "informed about:"
 msgstr ""
 "Falls Sie sich für KeyIdentitys 2FA Plattform interessieren und informiert "
@@ -853,10 +854,10 @@ msgstr "Vielen Dank, dass Sie LinOTP benutzen"
 msgid ""
 "We are pleased that you are using LinOTP by KeyIdentity as your 2FA solution."
 msgstr ""
-"Wir freuen uns, dass Sie KeyIdentity LinOTP als Ihre 2FA Lösung benutzen."
+"Wir freuen uns, dass Sie LinOTP als Ihre 2FA Lösung benutzen."
 
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity using LinOTP at its "
+"If you are interested in the 2FA platform of netgo software using LinOTP at its "
 "core, and would like further information about:"
 msgstr ""
 "Falls Sie sich für KeyIdentitys 2FA Plattform mit LinOTP als Kern "
@@ -1962,8 +1963,8 @@ msgstr "Supportkontakt"
 msgid "Ok"
 msgstr "OK"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
-msgstr "KeyIdentity LinOTP Support und Subskription"
+msgid "LinOTP Support and Subscription"
+msgstr "LinOTP Support und Subskription"
 
 msgid "Set Support and Subscription"
 msgstr "Support und Subskription registrieren"
@@ -1993,8 +1994,8 @@ msgstr "Neues Passwort bestätigen"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - die Open Source Lösung für zwei Faktor Authentisierung."
 
-msgid "Copyright (C) arxes-tolina GmbH"
-msgstr "Copyright (C) arxes-tolina GmbH"
+msgid "Copyright (C) netgo software GmbH"
+msgstr "Copyright (C) netgo software GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Lizensiert unter AGPLv3"
@@ -2011,8 +2012,8 @@ msgstr "Aktuellen Changelog anzeigen"
 msgid "Authors:"
 msgstr "Autoren:"
 
-msgid "About KeyIdentity LinOTP"
-msgstr "Über KeyIdentity LinOTP"
+msgid "About LinOTP"
+msgstr "Über LinOTP"
 
 msgid "Selected Tokens"
 msgstr "Ausgewählte Token"

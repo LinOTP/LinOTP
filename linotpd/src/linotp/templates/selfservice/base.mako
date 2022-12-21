@@ -4,6 +4,7 @@
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2019 KeyIdentity GmbH
+ *   Copyright (C) 2019 -      netgo software GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -21,9 +22,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- *    E-mail: linotp@keyidentity.com
+ *    E-mail: info@linotp.de
  *    Contact: www.linotp.org
- *    Support: www.keyidentity.com
+ *    Support: www.linotp.de
  *
 </%doc>
 
@@ -41,7 +42,7 @@ if isinstance(lang, list):
 <html>
 <head>
 <title>${_("Token Self Service - LinOTP")}</title>
-<meta name="copyright" content="arxes-tolina GmbH">
+<meta name="copyright" content="netgo software GmbH">
 <meta name="keywords" content="LinOTP 2, self service">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">

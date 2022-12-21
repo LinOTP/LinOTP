@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -19,9 +20,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@keyidentity.com
+#    E-mail: info@linotp.de
 #    Contact: www.linotp.org
-#    Support: www.keyidentity.com
+#    Support: www.linotp.de
 #
 msgid ""
 msgstr ""
@@ -804,14 +805,14 @@ msgstr ""
 "a>."
 
 msgid ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
+"<a href='https://linotp.de'>netgo</a> provides LinOTP as an "
 "enterprise 2FA solution."
 msgstr ""
-"<a href='https://keyidentity.com'>KeyIdentity</a> fournit LinOTP comme "
+"<a href='https://linotp.de'>netgo</a> fournit LinOTP comme "
 "solution d'entreprise 2FA."
 
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity, and want to be "
+"If you are interested in the 2FA platform of netgo software, and want to be "
 "informed about:"
 msgstr ""
 "Si vous êtes intéressé par la plate-forme 2FA de KeyIdentity, et que vous "
@@ -878,7 +879,7 @@ msgstr ""
 "2FA."
 
 msgid ""
-"If you are interested in the 2FA platform of KeyIdentity using LinOTP at its "
+"If you are interested in the 2FA platform of netgo software using LinOTP at its "
 "core, and would like further information about:"
 msgstr ""
 "Si vous êtes intéressé par la plate-forme de KeyIdentity basée sur LinOTP, "
@@ -2006,8 +2007,8 @@ msgstr "Contact support"
 msgid "Ok"
 msgstr "OK"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
-msgstr "Assistance et abonnement KeyIdentity LinOTP"
+msgid "LinOTP Support and Subscription"
+msgstr "Assistance et abonnement LinOTP"
 
 msgid "Set Support and Subscription"
 msgstr "Enregistrer le support et l'abonnement"
@@ -2040,8 +2041,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr ""
 "LinOTP - la solution Open Source pour l'authentification à deux facteurs."
 
-msgid "Copyright (C) arxes-tolina GmbH"
-msgstr "Copyright (C) arxes-tolina GmbH"
+msgid "Copyright (C) netgo software GmbH"
+msgstr "Copyright (C) netgo software GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Distribué sous licence AGPLv3"
@@ -2058,8 +2059,8 @@ msgstr "Afficher le dernier journal de modifications"
 msgid "Authors:"
 msgstr "Auteurs :"
 
-msgid "About KeyIdentity LinOTP"
-msgstr "À propos de KeyIdentity LinOTP"
+msgid "About LinOTP"
+msgstr "À propos de LinOTP"
 
 #, fuzzy
 msgid "Selected Tokens"

@@ -4,6 +4,7 @@
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2019 KeyIdentity GmbH
+ *   Copyright (C) 2019 -      netgo software GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -21,9 +22,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- *    E-mail: linotp@keyidentity.com
+ *    E-mail: info@linotp.de
  *    Contact: www.linotp.org
- *    Support: www.keyidentity.com
+ *    Support: www.linotp.de
  *
 </%doc>
 <%!
@@ -42,7 +43,7 @@ if isinstance(lang, list):
 <head>
 <title>${_("Management - LinOTP")}</title>
 
-<meta name="copyright" content="arxes-tolina GmbH">
+<meta name="copyright" content="netgo software GmbH">
 <meta name="keywords" content="LinOTP 2 manage">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
@@ -959,7 +960,7 @@ if isinstance(lang, list):
 
 <script type="text/javascript">
     function translate_support_view() {
-        $("#dialog_support_view" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
+        $("#dialog_support_view" ).dialog( "option", "title", '${_("LinOTP Support and Subscription")}' );
         $('#button_support_setup').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_close').button("option", "label", '${_("Close")}');
     }
@@ -979,7 +980,7 @@ if isinstance(lang, list):
 
 <script type="text/javascript">
     function translate_support_set() {
-        $("#dialog_set_support" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
+        $("#dialog_set_support" ).dialog( "option", "title", '${_("LinOTP Support and Subscription")}' );
         $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_cancel').button("option", "label", '${_("Cancel")}');
     }
@@ -1025,7 +1026,7 @@ if isinstance(lang, list):
 
 <div id='dialog_about'>
     <p id='about_id'>${_("LinOTP - the open source solution for two factor authentication.")}</p>
-    <p id='about_copyright'>${_("Copyright (C) arxes-tolina GmbH")}</p>
+    <p id='about_copyright'>${_("Copyright (C) netgo software GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
     <p><a href="https://www.linotp.org" rel="noreferrer" target="_blank">https://www.linotp.org</a>
@@ -1043,7 +1044,7 @@ if isinstance(lang, list):
 </div>
 <script type="text/javascript">
     function translate_about() {
-        $("#dialog_about").dialog( "option", "title", '${_("About KeyIdentity LinOTP")}' );
+        $("#dialog_about").dialog( "option", "title", '${_("About LinOTP")}' );
         $('#button_about_close').button("option", "label", '${_("Close")}');
     }
 </script>

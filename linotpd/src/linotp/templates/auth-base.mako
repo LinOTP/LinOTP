@@ -2,6 +2,7 @@
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2019 KeyIdentity GmbH
+ *   Copyright (C) 2019 -      netgo software GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -19,16 +20,16 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- *    E-mail: linotp@keyidentity.com
+ *    E-mail: info@linotp.de
  *    Contact: www.linotp.org
- *    Support: www.keyidentity.com
+ *    Support: www.linotp.de
  *
 </%doc>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<meta name="copyright" content="arxes-tolina GmbH">
+	<meta name="copyright" content="netgo software GmbH">
 	<meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
