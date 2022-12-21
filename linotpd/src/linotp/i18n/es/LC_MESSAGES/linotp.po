@@ -1994,7 +1994,7 @@ msgstr "Contacto para soporte"
 msgid "Ok"
 msgstr "Ok"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
+msgid "LinOTP Support and Subscription"
 msgstr "Asistencia y subscripción LinOTP de KeyIdentity"
 
 msgid "Set Support and Subscription"
@@ -2046,7 +2046,7 @@ msgstr "Ver el último registro de cambios"
 msgid "Authors:"
 msgstr "Autores:"
 
-msgid "About KeyIdentity LinOTP"
+msgid "About LinOTP"
 msgstr "Sobre LinOTP de KeyIdentity"
 
 #, fuzzy

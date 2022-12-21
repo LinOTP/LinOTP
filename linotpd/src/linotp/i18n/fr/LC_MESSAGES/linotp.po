@@ -2007,8 +2007,8 @@ msgstr "Contact support"
 msgid "Ok"
 msgstr "OK"
 
-msgid "KeyIdentity LinOTP Support and Subscription"
-msgstr "Assistance et abonnement KeyIdentity LinOTP"
+msgid "LinOTP Support and Subscription"
+msgstr "Assistance et abonnement LinOTP"
 
 msgid "Set Support and Subscription"
 msgstr "Enregistrer le support et l'abonnement"
@@ -2059,8 +2059,8 @@ msgstr "Afficher le dernier journal de modifications"
 msgid "Authors:"
 msgstr "Auteurs :"
 
-msgid "About KeyIdentity LinOTP"
-msgstr "À propos de KeyIdentity LinOTP"
+msgid "About LinOTP"
+msgstr "À propos de LinOTP"
 
 #, fuzzy
 msgid "Selected Tokens"

@@ -1849,7 +1849,7 @@ msgid "Ok"
 msgstr "确定"
 
 #, fuzzy
-msgid "KeyIdentity LinOTP Support and Subscription"
+msgid "LinOTP Support and Subscription"
 msgstr "您的 LinOTP 支持和订阅 "
 
 msgid "Set Support and Subscription"
@@ -1902,7 +1902,7 @@ msgid "Authors:"
 msgstr "作者："
 
 #, fuzzy
-msgid "About KeyIdentity LinOTP"
+msgid "About LinOTP"
 msgstr "关于 LinOTP"
 
 #, fuzzy

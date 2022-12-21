@@ -960,7 +960,7 @@ if isinstance(lang, list):
 
 <script type="text/javascript">
     function translate_support_view() {
-        $("#dialog_support_view" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
+        $("#dialog_support_view" ).dialog( "option", "title", '${_("LinOTP Support and Subscription")}' );
         $('#button_support_setup').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_close').button("option", "label", '${_("Close")}');
     }
@@ -980,7 +980,7 @@ if isinstance(lang, list):
 
 <script type="text/javascript">
     function translate_support_set() {
-        $("#dialog_set_support" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
+        $("#dialog_set_support" ).dialog( "option", "title", '${_("LinOTP Support and Subscription")}' );
         $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_cancel').button("option", "label", '${_("Cancel")}');
     }
@@ -1044,7 +1044,7 @@ if isinstance(lang, list):
 </div>
 <script type="text/javascript">
     function translate_about() {
-        $("#dialog_about").dialog( "option", "title", '${_("About KeyIdentity LinOTP")}' );
+        $("#dialog_about").dialog( "option", "title", '${_("About LinOTP")}' );
         $('#button_about_close').button("option", "label", '${_("Close")}');
     }
 </script>
