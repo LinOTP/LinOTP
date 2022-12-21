@@ -47,7 +47,7 @@ log = logging.getLogger(__name__)
 __copyright__ = "Copyright (C) netgo software GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
-__email__ = "linotp@keyidentity.com"
+__email__ = "info@linotp.de"
 __version__ = '2.12.6'
 
 # ------------------------------------------------------------------------------
