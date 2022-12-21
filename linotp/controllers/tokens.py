@@ -373,10 +373,10 @@ class TokenAdapter:
         self.realms = linotp_token["LinOtp.RealmNames"]
 
         # token configuration
-        self.hash_lib = self.token_info.get("hashlib", None)
-        self.time_window = self.token_info.get("timeWindow", None)
-        self.time_shift = self.token_info.get("timeShift", None)
-        self.time_step = self.token_info.get("timeStep", None)
+        self.hash_lib = self._token_info.get("hashlib", None)
+        self.time_window = self._token_info.get("timeWindow", None)
+        self.time_shift = self._token_info.get("timeShift", None)
+        self.time_step = self._token_info.get("timeStep", None)
         self.count_window = linotp_token["LinOtp.CountWindow"]
         self.sync_window = linotp_token["LinOtp.SyncWindow"]
         self.otp_length = linotp_token["LinOtp.OtpLen"]
@@ -390,12 +390,12 @@ class TokenAdapter:
         self.resolver_class = linotp_token["LinOtp.IdResClass"]
 
         # usage data
-        self.login_attempts = self.token_info.get("count_auth", None)
-        self.max_login_attempts = self.token_info.get("count_auth_max", None)
-        self.successful_login_attempts = self.token_info.get(
+        self.login_attempts = self._token_info.get("count_auth", None)
+        self.max_login_attempts = self._token_info.get("count_auth_max", None)
+        self.successful_login_attempts = self._token_info.get(
             "count_auth_success", None
         )
-        self.max_successful_login_attempts = self.token_info.get(
+        self.max_successful_login_attempts = self._token_info.get(
             "count_auth_success_max", None
         )
         self.last_successful_login_attempt = linotp_token[
@@ -406,10 +406,10 @@ class TokenAdapter:
         self.last_authentication_match = linotp_token["LinOtp.LastAuthMatch"]
 
         # validity period
-        self.validity_start = self.token_info.get(
+        self.validity_start = self._token_info.get(
             "validity_period_start", None
         )
-        self.validity_end = self.token_info.get("validity_period_end", None)
+        self.validity_end = self._token_info.get("validity_period_end", None)
 
     def to_JSON_format(self):
         """
@@ -467,13 +467,13 @@ class TokenAdapter:
         """
 
         if linotp_token["LinOtp.TokenInfo"]:
-            self.token_info = json.loads(linotp_token["LinOtp.TokenInfo"])
+            self._token_info = json.loads(linotp_token["LinOtp.TokenInfo"])
         else:
-            self.token_info = {}
+            self._token_info = {}
 
         for field in ["validity_period_end", "validity_period_start"]:
-            if field in self.token_info:
+            if field in self._token_info:
                 date = datetime.strptime(
-                    self.token_info[field], "%d/%m/%y %H:%M"
+                    self._token_info[field], "%d/%m/%y %H:%M"
                 )
-                self.token_info[field] = date.isoformat()
+                self._token_info[field] = date.isoformat()
