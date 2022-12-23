@@ -2,8 +2,8 @@
 
 LinOTP - the open-source solution for multi-factor authentication
 
-Copyright © 2010-2019 KeyIdentity GmbH  
-Coypright © 2019- arxes-tolina GmbH
+Copyright (C) 2010-2019 KeyIdentity GmbH
+Copyright (C) 2019-     netgo software GmbH
 
 ## About LinOTP
 

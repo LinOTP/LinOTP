@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2010-2019 KeyIdentity GmbH
+#    Copyright (C) 2019-     netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -189,7 +190,7 @@ class TestConfigController(TestController):
         """
         test long config entries with base64 data with many split entries
 
-        config entry max length is 2000 -
+        config entry max length is 2000-
         entry should be split up into 40 parts
         """
         for i in range(1, 10):
@@ -225,7 +226,7 @@ class TestConfigController(TestController):
         """
         test long config entries with hexlified data with many split entries
 
-        config entry max length is 2000 -
+        config entry max length is 2000-
         entry should be split up into 40 parts
         """
         for i in range(1, 10):
@@ -261,7 +262,7 @@ class TestConfigController(TestController):
         """
         test long config entries with unicode chars that will be converted to utf-8
 
-        config entry max length is 2000 -
+        config entry max length is 2000-
         entry should be split up into 40 parts
         """
 
@@ -321,7 +322,7 @@ class TestConfigController(TestController):
         """
         test long config entries with all unicode chars
 
-        config entry max length is 2000 -
+        config entry max length is 2000-
         so we check the correct wrapping from 1980 to 2020
         """
 
@@ -387,7 +388,7 @@ class TestConfigController(TestController):
         """
         test long config entries with utf8 chars on split boundary
 
-        config entry max length is 2000 -
+        config entry max length is 2000-
         so we check the correct wrapping from 1980 to 2020
         """
 
@@ -452,7 +453,7 @@ class TestConfigController(TestController):
         """
         test long crypted config entries with utf8 chars on split boundary
 
-        config entry max length is 2000 -
+        config entry max length is 2000-
         so we check the correct wrapping from 1980 to 2020
         """
 
@@ -503,7 +504,7 @@ class TestConfigController(TestController):
         """
         test long config entries with hexlified chars on split boundary
 
-        config entry max length is 2000 -
+        config entry max length is 2000-
         so we check the correct wrapping from 1980 to 2020
         """
 
@@ -561,7 +562,7 @@ class TestConfigController(TestController):
         """
         test long config entries with base64 chars on split boundary
 
-        config entry max length is 2000 -
+        config entry max length is 2000-
         so we check the correct wrapping from 1980 to 2020
         """
 

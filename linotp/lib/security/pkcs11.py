@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2010-2019 KeyIdentity GmbH
+#    Copyright (C) 2019-     netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -1048,11 +1049,11 @@ def main():
 
     example:
         create a key:
-            pkcs11 -s 1335299873 -p 1234 -n dummy
+            pkcs11 -s 1335299873-p 1234-n dummy
         find aes key:
-            pkcs11 -s 1335299873 -p 1234 -f dummy
+            pkcs11 -s 1335299873-p 1234-f dummy
         encryption:
-            pkcs11 -s 1335299873 -p 1234 -l dummy -e 'this is a test'
+            pkcs11 -s 1335299873-p 1234-l dummy -e 'this is a test'
 
     """
 
