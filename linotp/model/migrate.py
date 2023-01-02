@@ -871,6 +871,8 @@ class Migration:
             if token.LinOtpTokenType in ["qr", "push"]:
                 continue
 
+            if not token.LinOtpKeyEnc:
+                continue
             # ------------------------------------------------------------- --
 
             encrypted_value = binascii.unhexlify(token.LinOtpKeyEnc)
