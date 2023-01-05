@@ -1,7 +1,12 @@
-Files: *
-Copyright:
-    2009-2019 KeyIdentity GmbH
-    2019-     netgo software GmbH
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://github.com/LinOTP/LinOTP
+Upstream-Name: LinOTP
+Upstream-Contact: LinOTP Project <info@linotp.de>
+
+Files:
+ *
+Copyright: 2009-2019 KeyIdentity GmbH
+           2019-    netgo software GmbH
 License: AGPLv3
 
                     GNU AFFERO GENERAL PUBLIC LICENSE

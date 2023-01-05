@@ -1,7 +1,7 @@
 Source: linotp
 Section: net
 Priority: optional
-Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
+Maintainer: LinOTP Packaging <packaging@linotp.de>
 Build-Depends: debhelper (>=9),
                dh-python,
                lsb-release,
