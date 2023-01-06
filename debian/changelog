@@ -10,6 +10,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
     * /api/v2/realms
   * new API endpoint to retrieve resolvers:
     * /api/v2/resolvers
+  * the new API endpoints all return dates in ISO 8601-compliant format
   * support for Flask 2 installation
 
   Fix:

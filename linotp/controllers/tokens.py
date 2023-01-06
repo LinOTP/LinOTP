@@ -1,7 +1,6 @@
 import json
 import logging
-from datetime import datetime
-from http.client import LineTooLong
+from datetime import datetime, timezone
 
 from flask import current_app, g
 
@@ -11,6 +10,7 @@ from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.tokeniterator import TokenIterator
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 from linotp.lib.user import getUserFromParam, getUserFromRequest
 from linotp.lib.util import check_session, get_client
 from linotp.model import db
@@ -248,7 +248,7 @@ class TokensController(BaseController, JWTMixin):
             # now row by row
             lines = []
             for token in tokens:
-                formatted_token = Token(token).to_JSON_format()
+                formatted_token = TokenAdapter(token).to_JSON_format()
                 lines.append(formatted_token)
             result["pageRecords"] = lines
 
@@ -310,9 +310,6 @@ class TokensController(BaseController, JWTMixin):
 
             tokens = TokenIterator(user, serial, filterRealm=filter_realm)
 
-            # put in the result
-            result = {}
-
             result_count = tokens.getResultSetInfo()["tokens"]
 
             if result_count > 1:
@@ -324,7 +321,7 @@ class TokensController(BaseController, JWTMixin):
 
             if result_count == 1:
                 token = next(tokens)
-                formatted_token = Token(token).to_JSON_format()
+                formatted_token = TokenAdapter(token).to_JSON_format()
 
             g.audit["success"] = True
             g.audit["info"] = "realm: {}".format(filter_realm)
@@ -345,26 +342,48 @@ class TokensController(BaseController, JWTMixin):
             return sendError(None, e)
 
 
-class Token:
+class TokenAdapter:
+    """
+    Data class to hold a token representation based on the one returned by the
+    TokenIterator, but transforming some of the fields.
+
+    The goal is not to have to repeat ourselves across all endpoint functions
+    and keep the returned data structures in a consistent format.
+    """
+
     def __init__(self, linotp_token) -> None:
+        """
+        Create a Token object from a linotp_token dictionary provided by
+        LinOTP's token iterator.
+
+        It reformats the date strings to ISO 8601, transforms the token type to
+        a lowercase string, and defaults unset keys to None.
+        """
 
         # fill out self.token_info:
-        self._parse_tokeninfo(linotp_token)
+        if linotp_token["LinOtp.TokenInfo"]:
+            self._token_info = json.loads(linotp_token["LinOtp.TokenInfo"])
+        else:
+            self._token_info = {}
 
         # general token information
         self.id = linotp_token["LinOtp.TokenId"]
         self.description = linotp_token["LinOtp.TokenDesc"]
         self.serial = linotp_token["LinOtp.TokenSerialnumber"]
         self.type = linotp_token["LinOtp.TokenType"].lower()
-        self.creation_date = linotp_token["LinOtp.CreationDate"]
+
+        self.creation_date = _parse_date_string(
+            linotp_token["LinOtp.CreationDate"]
+        )
+
         self.is_active = linotp_token["LinOtp.Isactive"]
         self.realms = linotp_token["LinOtp.RealmNames"]
 
         # token configuration
-        self.hash_lib = self.token_info.get("hashlib", None)
-        self.time_window = self.token_info.get("timeWindow", None)
-        self.time_shift = self.token_info.get("timeShift", None)
-        self.time_step = self.token_info.get("timeStep", None)
+        self.hash_lib = self._token_info.get("hashlib", None)
+        self.time_window = self._token_info.get("timeWindow", None)
+        self.time_shift = self._token_info.get("timeShift", None)
+        self.time_step = self._token_info.get("timeStep", None)
         self.count_window = linotp_token["LinOtp.CountWindow"]
         self.sync_window = linotp_token["LinOtp.SyncWindow"]
         self.otp_length = linotp_token["LinOtp.OtpLen"]
@@ -378,34 +397,51 @@ class Token:
         self.resolver_class = linotp_token["LinOtp.IdResClass"]
 
         # usage data
-        self.login_attempts = self.token_info.get("count_auth", None)
-        self.max_login_attempts = self.token_info.get("count_auth_max", None)
-        self.successful_login_attempts = self.token_info.get(
+        self.login_attempts = self._token_info.get("count_auth", None)
+        self.max_login_attempts = self._token_info.get("count_auth_max", None)
+        self.successful_login_attempts = self._token_info.get(
             "count_auth_success", None
         )
-        self.max_successful_login_attempts = self.token_info.get(
+        self.max_successful_login_attempts = self._token_info.get(
             "count_auth_success_max", None
         )
-        self.last_successful_login_attempt = linotp_token[
-            "LinOtp.LastAuthSuccess"
-        ]
+        self.last_successful_login_attempt = _parse_date_string(
+            linotp_token["LinOtp.LastAuthSuccess"]
+        )
         self.failed_login_attempts = linotp_token["LinOtp.FailCount"]
         self.max_failed_login_attempts = linotp_token["LinOtp.MaxFail"]
-        self.last_authentication_match = linotp_token["LinOtp.LastAuthMatch"]
+        self.last_authentication_match = _parse_date_string(
+            linotp_token["LinOtp.LastAuthMatch"]
+        )
 
         # validity period
-        self.validity_start = self.token_info.get(
+        # the following two dates are not stored in DEFAULT_TIMEFORMAT and must
+        # be parsed differently than the remaining date strings.
+        for field in ["validity_period_end", "validity_period_start"]:
+            if field in self._token_info:
+                date = datetime.strptime(
+                    self._token_info[field], "%d/%m/%y %H:%M"
+                )
+                self._token_info[field] = date.replace(tzinfo=timezone.utc)
+
+        self.validity_start = self._token_info.get(
             "validity_period_start", None
         )
-        self.validity_end = self.token_info.get("validity_period_end", None)
+        self.validity_end = self._token_info.get("validity_period_end", None)
 
     def to_JSON_format(self):
+        """
+        Return a JSON-compatible dictionary representation of the Token.
+
+        Some attributes are related to each other and grouped by "topic",
+        namely: tokenConfiguration, userInfo, usageData, and validityPeriod.
+        """
         return {
             "id": self.id,
             "description": self.description,
             "serial": self.serial,
             "type": self.type,
-            "creationDate": self.creation_date,
+            "creationDate": _stringify_date(self.creation_date),
             "isActive": self.is_active,
             "realms": self.realms,
             "tokenConfiguration": {
@@ -432,30 +468,44 @@ class Token:
                 "maxLoginAttempts": self.max_login_attempts,
                 "successfulLoginAttempts": self.successful_login_attempts,
                 "maxSuccessfulLoginAttempts": self.max_successful_login_attempts,
-                "lastSuccessfulLoginAttempt": self.last_successful_login_attempt,
+                "lastSuccessfulLoginAttempt": _stringify_date(
+                    self.last_successful_login_attempt
+                ),
                 "failedLoginAttempts": self.failed_login_attempts,
                 "maxFailedLoginAttempts": self.max_failed_login_attempts,
-                "lastAuthenticationMatch": self.last_authentication_match,
+                "lastAuthenticationMatch": _stringify_date(
+                    self.last_authentication_match
+                ),
             },
             "validityPeriod": {
-                "validityStart": self.validity_start,
-                "validityEnd": self.validity_end,
+                "validityStart": _stringify_date(self.validity_start),
+                "validityEnd": _stringify_date(self.validity_end),
             },
         }
 
-    def _parse_tokeninfo(self, linotp_token):
-        """
-        Parse TokenInfo from JSON and format validity period date fields to isoformat
-        """
 
-        if linotp_token["LinOtp.TokenInfo"]:
-            self.token_info = json.loads(linotp_token["LinOtp.TokenInfo"])
-        else:
-            self.token_info = {}
+### Utils ###
 
-        for field in ["validity_period_end", "validity_period_start"]:
-            if field in self.token_info:
-                date = datetime.strptime(
-                    self.token_info[field], "%d/%m/%y %H:%M"
-                )
-                self.token_info[field] = date.isoformat()
+
+def _parse_date_string(date_string):
+    """
+    Takes the datetime strings generated by get_vars() in linotp/model/token.py
+    and parses them according to the same format used there, so that we can
+    obtain a datetime object, which is then returned in the UTC timezone.
+    If the passed string is empty, return None.
+    """
+    return (
+        datetime.strptime(date_string, DEFAULT_TIMEFORMAT).replace(
+            tzinfo=timezone.utc
+        )
+        if date_string
+        else None
+    )
+
+
+def _stringify_date(date):
+    """
+    Takes the datetime object and returns it in isoformat. If it is None, return
+    None instead.
+    """
+    return date.isoformat() if date else None
