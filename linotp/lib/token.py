@@ -32,6 +32,7 @@ import json
 import logging
 import os
 import string
+from typing import List
 
 from flask_babel import gettext as _
 from sqlalchemy import and_, func, or_
@@ -115,7 +116,7 @@ class TokenHandler(object):
         log.debug("Initializing token %r for user %r ", serial, user.login)
 
         #  create a list of the found db tokens - no token class objects
-        toks = getTokens4UserOrSerial(None, serial, _class=False)
+        toks = getClasslessTokens4UserOrSerial(None, serial)
         tokenNum = len(toks)
 
         if tokenNum == 0:  # create new a one token
@@ -1084,7 +1085,7 @@ class TokenHandler(object):
         if not user and not serial:
             raise ParameterError("Parameter user or serial required!", id=1212)
 
-        tokenList = getTokens4UserOrSerial(user, serial, _class=False)
+        tokenList = getClasslessTokens4UserOrSerial(user, serial)
 
         serials = set()
         tokens = set()
@@ -1573,7 +1574,7 @@ def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
 
 def setRealms(serial, realmList):
     # set the tokenlist of DB tokens
-    tokenList = getTokens4UserOrSerial(None, serial, _class=False)
+    tokenList = getClasslessTokens4UserOrSerial(None, serial)
 
     if len(tokenList) == 0:
         raise TokenAdminError(
@@ -1592,7 +1593,7 @@ def getTokenRealms(serial):
     """
     This function returns a list of the realms of a token
     """
-    tokenList = getTokens4UserOrSerial(None, serial, _class=False)
+    tokenList = getClasslessTokens4UserOrSerial(None, serial)
 
     if len(tokenList) == 0:
         raise TokenAdminError(
@@ -1778,13 +1779,24 @@ def getTokens4UserOrSerial(
     user=None,
     serial=None,
     token_type=None,
-    _class=True,
     read_for_update=False,
     active=None,
 ):
+    tokens = getClasslessTokens4UserOrSerial(
+        user, serial, token_type, read_for_update, active
+    )
+
+    return [createTokenClassObject(token) for token in tokens]
+
+
+def getClasslessTokens4UserOrSerial(
+    user=None,
+    serial=None,
+    token_type=None,
+    read_for_update=False,
+    active=None,
+) -> List[Token]:
     tokenList = []
-    tokenCList = []
-    tok = None
 
     if serial is None and user is None:
         log.warning("[getTokens4UserOrSerial] missing user or serial")
@@ -1904,13 +1916,8 @@ def getTokens4UserOrSerial(
                 )
                 tokenList.append(token)
 
-    if _class is True:
-        for tok in tokenList:
-            tokenCList.append(createTokenClassObject(tok))
-        return tokenCList
-    else:
-        log.debug("Retrieved token list %r", tokenList)
-        return tokenList
+    log.debug("Retrieved token list %r", tokenList)
+    return tokenList
 
 
 def setDefaults(token):
@@ -2006,7 +2013,7 @@ def getTokenType(serial):
 
     :param serial: the serial number of the to be searched token
     """
-    toks = getTokens4UserOrSerial(None, serial, _class=False)
+    toks = getClasslessTokens4UserOrSerial(None, serial)
 
     typ = ""
     for tok in toks:

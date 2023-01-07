@@ -74,9 +74,7 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
         "[getTokenForUser] ...user %s in realm %s.", user.login, user.realm
     )
 
-    tokens = getTokens4UserOrSerial(
-        user=user, serial=None, _class=True, active=active
-    )
+    tokens = getTokens4UserOrSerial(user=user, serial=None, active=active)
 
     for token in tokens:
 

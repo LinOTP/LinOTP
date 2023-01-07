@@ -91,6 +91,7 @@ from linotp.lib.support import LicenseException
 from linotp.lib.token import (
     TokenHandler,
     get_multi_otp,
+    getClasslessTokens4UserOrSerial,
     getTokenRealms,
     getTokens4UserOrSerial,
     getTokenType,
@@ -3035,7 +3036,7 @@ class UserserviceController(BaseController):
                 token_cls = tokenclass_registry.get(typ)
                 tclt = None
                 if serial is not None:
-                    toks = getTokens4UserOrSerial(None, serial, _class=False)
+                    toks = getClasslessTokens4UserOrSerial(None, serial)
                     tokenNum = len(toks)
                     if tokenNum == 1:
                         token = toks[0]
