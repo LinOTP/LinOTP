@@ -327,16 +327,6 @@ class Token(TokenSchema):
     def getType(self) -> str:
         return self.LinOtpTokenType or "hmac"
 
-    def updateType(self, typ: str) -> None:
-        # in case the previous type is not the same type
-        # we must reset the counters.
-        # Remark: comparison must be made case insensitiv
-        if self.LinOtpTokenType.lower() != typ.lower():
-            self.LinOtpCount = 0
-            self.LinOtpFailCount = 0
-
-        self.LinOtpTokenType = typ
-
     def getRealms(self) -> str:
         return self.realms or ""
 
@@ -345,12 +335,6 @@ class Token(TokenSchema):
         for r in self.realms:
             r_list.append(r.name)
         return r_list
-
-    def addRealm(self, realm: str) -> None:
-        if realm is not None:
-            self.realms.append(realm)
-        else:
-            log.error("adding empty realm!")
 
     def setRealms(self, realms: list) -> None:
         if realms is not None:
