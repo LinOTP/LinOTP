@@ -46,7 +46,7 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ParameterError, TokenAdminError
 from linotp.lib.realm import createDBRealm, getRealmObject, realm2Objects
-from linotp.lib.type_utils import DEFAULT_TIMEFORMAT, boolean, parse_duration
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT, parse_duration
 from linotp.lib.user import (
     User,
     get_authenticated_user,

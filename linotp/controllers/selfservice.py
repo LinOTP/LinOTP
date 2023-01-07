@@ -55,7 +55,7 @@ from linotp.lib.policy.action import get_selfservice_actions
 from linotp.lib.realm import getDefaultRealm, getRealms
 from linotp.lib.reply import sendError
 from linotp.lib.selfservice import get_imprint
-from linotp.lib.token import getTokens4UserOrSerial, getTokenType
+from linotp.lib.token import getTokenType
 from linotp.lib.user import getRealmBox
 from linotp.lib.userservice import (
     add_dynamic_selfservice_enrollment,

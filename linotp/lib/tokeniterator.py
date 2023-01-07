@@ -27,13 +27,11 @@
 """ contains the tokeniterator """
 
 import fnmatch
-import json
 import logging
 import re
 
 from sqlalchemy import and_, not_, or_
 
-import linotp
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import UserError
 from linotp.lib.realm import getRealms
