@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2010-2019 KeyIdentity GmbH
+#    Copyright (C) 2019-     netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -19,9 +20,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@keyidentity.com
+#    E-mail: info@linotp.de
 #    Contact: www.linotp.org
-#    Support: www.keyidentity.com
+#    Support: www.linotp.de
 #
 """
     functional test for the CustomVoiceProvider:

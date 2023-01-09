@@ -6906,7 +6906,7 @@ var widgetsAccordion = $.widget( "ui.accordion", {
 		this.element.attr( "aria-disabled", value );
 
 		// Support: IE8 Only
-		// #5332 / #6059 - opacity doesn't cascade to positioned elements in IE
+		// #5332 / #6059-opacity doesn't cascade to positioned elements in IE
 		// so we need to add the disabled class to the headers and panels
 		this._toggleClass( null, "ui-state-disabled", !!value );
 		this._toggleClass( this.headers.add( this.headers.next() ), null, "ui-state-disabled",
@@ -8097,7 +8097,7 @@ $.widget( "ui.autocomplete", {
 					// when menu is open and has focus
 					if ( this.menu.active ) {
 
-						// #6055 - Opera still allows the keypress to occur
+						// #6055-Opera still allows the keypress to occur
 						// which causes forms to submit
 						suppressKeyPress = true;
 						event.preventDefault();
@@ -8261,7 +8261,7 @@ $.widget( "ui.autocomplete", {
 					this.element.trigger( "focus" );
 					this.previous = previous;
 
-					// #6109 - IE triggers two focus events and the second
+					// #6109-IE triggers two focus events and the second
 					// is asynchronous, so we need to reset the previous
 					// term synchronously and asynchronously :-(
 					this._delay( function() {
@@ -9885,7 +9885,7 @@ $.extend( Datepicker.prototype, {
 		}
 
 		// Set display:block in place of inst.dpDiv.show() which won't work on disconnected elements
-		// http://bugs.jqueryui.com/ticket/7552 - A Datepicker created on a detached div has zero height
+		// http://bugs.jqueryui.com/ticket/7552-A Datepicker created on a detached div has zero height
 		inst.dpDiv.css( "display", "block" );
 	},
 
@@ -10426,7 +10426,7 @@ $.extend( Datepicker.prototype, {
 		}
 	},
 
-	// #6694 - don't focus the input if it's already focused
+	// #6694-don't focus the input if it's already focused
 	// this breaks the change event in IE
 	// Support: IE and jQuery <1.9
 	_shouldFocusInput: function( inst ) {
@@ -10876,7 +10876,7 @@ $.extend( Datepicker.prototype, {
 	TIMESTAMP: "@",
 	W3C: "yy-mm-dd", // ISO 8601
 
-	_ticksTo1970: ( ( ( 1970 - 1 ) * 365 + Math.floor( 1970 / 4 ) - Math.floor( 1970 / 100 ) +
+	_ticksTo1970: ( ( ( 1970-1 ) * 365 + Math.floor( 1970 / 4 ) - Math.floor( 1970 / 100 ) +
 		Math.floor( 1970 / 400 ) ) * 24 * 60 * 60 * 10000000 ),
 
 	/* Format a date object into a string value.
@@ -14487,7 +14487,7 @@ $.widget( "ui.spinner", {
 		if ( incremental ) {
 			return $.isFunction( incremental ) ?
 				incremental( i ) :
-				Math.floor( i * i * i / 50000 - i * i / 500 + 17 * i / 200 + 1 );
+				Math.floor( i * i * i / 50000-i * i / 500 + 17 * i / 200 + 1 );
 		}
 
 		return 1;
@@ -16166,7 +16166,7 @@ $.effects = {
  * Released under the MIT license.
  * http://jquery.org/license
  *
- * Date: Wed Jan 16 08:47:09 2013 -0600
+ * Date: Wed Jan 16 08:47:09 2013-0600
  */
 ( function( jQuery, undefined ) {
 
@@ -17132,7 +17132,7 @@ if ( $.uiBackCompat !== false ) {
 
 			element.wrap( wrapper );
 
-			// Fixes #7595 - Elements lose focus when wrapped.
+			// Fixes #7595-Elements lose focus when wrapped.
 			if ( element[ 0 ] === active || $.contains( element[ 0 ], active ) ) {
 				$( active ).trigger( "focus" );
 			}
@@ -17175,7 +17175,7 @@ if ( $.uiBackCompat !== false ) {
 			if ( element.parent().is( ".ui-effects-wrapper" ) ) {
 				element.parent().replaceWith( element );
 
-				// Fixes #7595 - Elements lose focus when wrapped.
+				// Fixes #7595-Elements lose focus when wrapped.
 				if ( element[ 0 ] === active || $.contains( element[ 0 ], active ) ) {
 					$( active ).trigger( "focus" );
 				}
