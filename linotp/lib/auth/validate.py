@@ -57,7 +57,7 @@ from linotp.lib.token import (
     add_last_accessed_info,
     add_last_verified_info,
     get_token_owner,
-    getTokens4UserOrSerial,
+    get_tokens,
 )
 from linotp.lib.user import User, getUserId, getUserInfo
 from linotp.lib.util import modhex_decode
@@ -276,7 +276,7 @@ class ValidationHandler(object):
 
         for serial in serials:
 
-            tokens = getTokens4UserOrSerial(
+            tokens = get_tokens(
                 serial=serial, token_type=token_type, read_for_update=True
             )
 
@@ -316,7 +316,7 @@ class ValidationHandler(object):
 
         token_type = options.get("token_type", None)
 
-        tokenList = getTokens4UserOrSerial(
+        tokenList = get_tokens(
             None, serial, token_type=token_type, read_for_update=True
         )
 
@@ -406,7 +406,7 @@ class ValidationHandler(object):
             if serial and challenge_serial != serial:
                 continue
 
-            tokens = getTokens4UserOrSerial(serial=challenge_serial)
+            tokens = get_tokens(serial=challenge_serial)
             if not tokens:
                 continue
 
@@ -594,7 +594,7 @@ class ValidationHandler(object):
 
         # ------------------------------------------------------------------ --
 
-        tokenList = getTokens4UserOrSerial(
+        tokenList = get_tokens(
             query_user, serial, token_type=token_type, read_for_update=True
         )
 
@@ -993,9 +993,7 @@ class ValidationHandler(object):
             serials.append("%s_%s" % (serialnum, i))
 
         for serial in serials:
-            tokens = getTokens4UserOrSerial(
-                serial=serial, read_for_update=True
-            )
+            tokens = get_tokens(serial=serial, read_for_update=True)
             tokenList.extend(tokens)
 
         if len(tokenList) == 0:

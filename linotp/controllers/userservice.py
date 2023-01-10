@@ -91,9 +91,9 @@ from linotp.lib.support import LicenseException
 from linotp.lib.token import (
     TokenHandler,
     get_multi_otp,
+    get_tokens,
     getClasslessTokens4UserOrSerial,
     getTokenRealms,
-    getTokens4UserOrSerial,
     getTokenType,
     resetToken,
     setPin,
@@ -1882,10 +1882,10 @@ class UserserviceController(BaseController):
 
                 tokens = []
                 for serial in serials:
-                    tokens.extend(getTokens4UserOrSerial(serial=serial))
+                    tokens.extend(get_tokens(serial=serial))
 
             elif serial:
-                tokens = getTokens4UserOrSerial(serial=serial)
+                tokens = get_tokens(serial=serial)
 
             # -------------------------------------------------------------- --
 

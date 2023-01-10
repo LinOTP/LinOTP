@@ -37,7 +37,7 @@ class FakeToken:
     pass
 
 
-def mocked_getTokens4UserOrSerial(
+def mocked_get_tokens(
     query_user=None, serial=None, token_type=None, read_for_update=True
 ):
     if serial and not query_user:
@@ -56,8 +56,8 @@ class TestCheckWithSerial(unittest.TestCase):
     @patch("linotp.lib.auth.validate.context", mocked_context)
     @patch("linotp.lib.auth.validate.TokenHandler", mocked_TokenHandler)
     @patch(
-        "linotp.lib.auth.validate.getTokens4UserOrSerial",
-        mocked_getTokens4UserOrSerial,
+        "linotp.lib.auth.validate.get_tokens",
+        mocked_get_tokens,
     )
     @patch("linotp.lib.auth.validate.get_auth_forward_on_no_token")
     @patch("linotp.lib.auth.validate.ValidationHandler.checkTokenList")

@@ -114,10 +114,10 @@ class PolicyActionTest(unittest.TestCase):
     @patch("linotp.lib.policy.processing.get_policies")
     @patch("linotp.lib.policy.maxtoken._getUserRealms")
     @patch("linotp.lib.policy.maxtoken._get_client")
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     def test_maxtoken_evaluation(
         self,
-        mocked_getTokens4UserOrSerial,
+        mocked_get_tokens,
         mocked__get_client,
         mocked__getUserRealms,
         mocked__get_policies,
@@ -127,7 +127,7 @@ class PolicyActionTest(unittest.TestCase):
 
         fake_user = LinotpUser(login="fake_user", realm="defaultrealm")
 
-        mocked_getTokens4UserOrSerial.return_value = [Token("hmac")]
+        mocked_get_tokens.return_value = [Token("hmac")]
         mocked__get_client.return_value = "127.0.0.1"
         mocked__getUserRealms.return_value = ["defaultrealm", "otherrealm"]
 
@@ -173,10 +173,10 @@ class PolicyActionTest(unittest.TestCase):
     @patch("linotp.lib.policy.processing.get_policies")
     @patch("linotp.lib.policy.maxtoken._getUserRealms")
     @patch("linotp.lib.policy.maxtoken._get_client")
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     def test_maxtoken_type_evaluation2(
         self,
-        mocked_getTokens4UserOrSerial,
+        mocked_get_tokens,
         mocked__get_client,
         mocked__getUserRealms,
         mocked__get_policies,
@@ -186,7 +186,7 @@ class PolicyActionTest(unittest.TestCase):
 
         fake_user = LinotpUser(login="fake_user", realm="defaultrealm")
 
-        mocked_getTokens4UserOrSerial.return_value = [Token("hmac")]
+        mocked_get_tokens.return_value = [Token("hmac")]
         mocked__get_client.return_value = "127.0.0.1"
         mocked__getUserRealms.return_value = ["defaultrealm", "otherrealm"]
         mocked_get_policy_definitions.return_value = {

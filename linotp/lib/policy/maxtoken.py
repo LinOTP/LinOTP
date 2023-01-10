@@ -84,9 +84,7 @@ def check_maxtoken(method, user, param):
 
         log.debug("checking maxtokens of user by serial number")
 
-        tokens = linotp.lib.token.getTokens4UserOrSerial(
-            serial=param["serial"]
-        )
+        tokens = linotp.lib.token.get_tokens(serial=param["serial"])
         for token in tokens:
             type_of_token = token.type.lower()
             check_maxtoken_for_user_by_type(user, type_of_token=type_of_token)
@@ -121,7 +119,7 @@ def check_maxtoken_for_user(user):
     # check the maxtoken policy
 
     action = "maxtoken"
-    tokens = linotp.lib.token.getTokens4UserOrSerial(user, "")
+    tokens = linotp.lib.token.get_tokens(user, "")
 
     for user_realm in user_realms:
 
@@ -185,9 +183,7 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
 
     # check the maxtokenTOKENTYPE policy
 
-    typed_tokens = linotp.lib.token.getTokens4UserOrSerial(
-        user, token_type=type_of_token
-    )
+    typed_tokens = linotp.lib.token.get_tokens(user, token_type=type_of_token)
 
     action = "maxtoken%s" % type_of_token.upper()
 

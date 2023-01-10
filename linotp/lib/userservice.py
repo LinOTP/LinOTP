@@ -47,7 +47,7 @@ from linotp.lib.policy.action import (
 )
 from linotp.lib.realm import getDefaultRealm, getRealms
 from linotp.lib.selfservice import get_imprint
-from linotp.lib.token import getTokens4UserOrSerial
+from linotp.lib.token import get_tokens
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
 from linotp.lib.type_utils import parse_duration
 from linotp.lib.user import User, get_userinfo, getRealmBox
@@ -74,7 +74,7 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
         "[getTokenForUser] ...user %s in realm %s.", user.login, user.realm
     )
 
-    tokens = getTokens4UserOrSerial(user=user, serial=None, active=active)
+    tokens = get_tokens(user=user, serial=None, active=active)
 
     for token in tokens:
 

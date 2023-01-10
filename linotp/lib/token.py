@@ -593,7 +593,7 @@ class TokenHandler(object):
 
         # handle the token owner
 
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = get_tokens(None, serial)
 
         if len(toks) > 1:
             raise TokenAdminError("multiple tokens found!", id=1101)
@@ -621,7 +621,7 @@ class TokenHandler(object):
         :return: boolean - True if it has an owner
         """
 
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = get_tokens(None, serial)
 
         if len(toks) > 1:
             raise TokenAdminError("multiple tokens found!", id=1101)
@@ -647,7 +647,7 @@ class TokenHandler(object):
         """
         token = None
 
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = get_tokens(None, serial)
         if len(toks) > 0:
             token = toks[0]
 
@@ -672,7 +672,7 @@ class TokenHandler(object):
         new_serial = serial
 
         i = 0
-        while len(getTokens4UserOrSerial(None, new_serial)) > 0:
+        while len(get_tokens(None, new_serial)) > 0:
             # as long as we find a token, modify the serial:
             i = i + 1
             result = False
@@ -695,7 +695,7 @@ class TokenHandler(object):
 
         # only auto assign if no token exists
 
-        tokens = getTokens4UserOrSerial(user)
+        tokens = get_tokens(user)
         if len(tokens) > 0:
             log.debug(
                 "No auto_assigment for user %r@%r. User already has"
@@ -775,7 +775,7 @@ class TokenHandler(object):
 
         # check if user has a token
         # TODO: this may dependend on a policy definition
-        tokens = getTokens4UserOrSerial(user, "")
+        tokens = get_tokens(user, "")
         if len(tokens) > 0:
             log.debug(
                 "[auto_assignToken] no auto_assigment for user %r@%r. "
@@ -859,7 +859,7 @@ class TokenHandler(object):
         if param is None:
             param = {}
 
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = get_tokens(None, serial)
         # toks  = Session.query(Token).filter(
         #  Token.LinOtpTokenSerialnumber == serial)
 
@@ -908,7 +908,7 @@ class TokenHandler(object):
         """
         unassignToken - used to assign and to unassign token
         """
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = get_tokens(None, serial)
         # toks  = Session.query(Token).filter(
         #               Token.LinOtpTokenSerialnumber == serial)
 
@@ -1133,7 +1133,7 @@ class TokenHandler(object):
         log.debug(
             "[setCounterWindow] setting count window for serial %r", serial
         )
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = get_tokens(user, serial)
 
         for token in tokenList:
             token.setCounterWindow(countWindow)
@@ -1147,7 +1147,7 @@ class TokenHandler(object):
             raise ParameterError("Parameter user or serial required!", id=1212)
 
         log.debug("[setDescription] setting description for serial %r", serial)
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = get_tokens(user, serial)
 
         for token in tokenList:
             token.setDescription(description)
@@ -1162,7 +1162,7 @@ class TokenHandler(object):
         if user is None and serial is None:
             raise ParameterError("Parameter user or serial required!", id=1212)
 
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = get_tokens(user, serial)
 
         for token in tokenList:
             token.setHashLib(hashlib)
@@ -1176,7 +1176,7 @@ class TokenHandler(object):
             raise ParameterError("Parameter user or serial required!", id=1212)
 
         log.debug("[setMaxFailCount] for serial: %r, user: %r", serial, user)
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = get_tokens(user, serial)
 
         for token in tokenList:
             token.setMaxFail(maxFail)
@@ -1190,7 +1190,7 @@ class TokenHandler(object):
             raise ParameterError("Parameter user or serial required!", id=1212)
 
         log.debug("[setSyncWindow] setting syncwindow for serial %r", serial)
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = get_tokens(user, serial)
 
         for token in tokenList:
             token.setSyncWindow(syncWindow)
@@ -1203,7 +1203,7 @@ class TokenHandler(object):
         if (user is None) and (serial is None):
             raise ParameterError("Parameter user or serial required!", id=1212)
 
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = get_tokens(user, serial)
 
         for token in tokenList:
             token.setOtpLen(otplen)
@@ -1226,7 +1226,7 @@ class TokenHandler(object):
         log.debug(
             "[enableToken] enable=%r, user=%r, serial=%r", enable, user, serial
         )
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = get_tokens(user, serial)
 
         for token in tokenList:
             token.enable(enable)
@@ -1251,8 +1251,8 @@ class TokenHandler(object):
             serial_from,
             serial_to,
         )
-        tokens_from = getTokens4UserOrSerial(None, serial_from)
-        tokens_to = getTokens4UserOrSerial(None, serial_to)
+        tokens_from = get_tokens(None, serial_from)
+        tokens_to = get_tokens(None, serial_to)
         if len(tokens_from) != 1:
             log.error("[copyTokenPin] not a unique token to copy from found")
             return -1
@@ -1279,8 +1279,8 @@ class TokenHandler(object):
             serial_from,
             serial_to,
         )
-        tokens_from = getTokens4UserOrSerial(None, serial_from)
-        tokens_to = getTokens4UserOrSerial(None, serial_to)
+        tokens_from = get_tokens(None, serial_from)
+        tokens_to = get_tokens(None, serial_to)
         if len(tokens_from) != 1:
             log.error("[copyTokenUser] not a unique token to copy from found")
             return -1
@@ -1305,7 +1305,7 @@ class TokenHandler(object):
         if user is None and serial is None:
             raise ParameterError("Parameter user or serial required!", id=1212)
 
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = get_tokens(user, serial)
 
         for token in tokenList:
             token.addToTokenInfo(info, value)
@@ -1328,7 +1328,7 @@ class TokenHandler(object):
             raise ParameterError("Parameter user or serial required!", id=1212)
 
         log.debug("[resyncToken] resync token with serial %r", serial)
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = get_tokens(user, serial)
 
         for token in tokenList:
             res = token.resync(otp1, otp2, options)
@@ -1775,7 +1775,7 @@ def token_owner_iterator():
         yield serial, userInfo["username"]
 
 
-def getTokens4UserOrSerial(
+def get_tokens(
     user=None,
     serial=None,
     token_type=None,
@@ -1799,7 +1799,7 @@ def getClasslessTokens4UserOrSerial(
     tokenList = []
 
     if serial is None and user is None:
-        log.warning("[getTokens4UserOrSerial] missing user or serial")
+        log.warning("[get_tokens] missing user or serial")
         return tokenList
 
     sconditions = ()
@@ -1814,7 +1814,7 @@ def getClasslessTokens4UserOrSerial(
 
     if serial:
         log.debug(
-            "[getTokens4UserOrSerial] getting token object with serial: %r",
+            "[get_tokens] getting token object with serial: %r",
             serial,
         )
 
@@ -1911,7 +1911,7 @@ def getClasslessTokens4UserOrSerial(
                             continue
 
                 log.debug(
-                    "[getTokens4UserOrSerial] user serial (user): %r",
+                    "[get_tokens] user serial (user): %r",
                     token.LinOtpTokenSerialnumber,
                 )
                 tokenList.append(token)
@@ -1935,7 +1935,7 @@ def tokenExist(serial):
     returns true if the token exists
     """
     if serial:
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = get_tokens(None, serial)
         return len(toks) > 0
     else:
         # If we have no serial we return false anyway!
@@ -2115,7 +2115,7 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
         dictionary of otp values
     """
     ret = {"result": False}
-    toks = getTokens4UserOrSerial(None, serial)
+    toks = get_tokens(None, serial)
 
     if len(toks) > 1:
         raise TokenAdminError(
@@ -2172,7 +2172,7 @@ def getOtp(serial, curTime=None):
 
     """
     log.debug("[getOtp] retrieving OTP value for token %r", serial)
-    toks = getTokens4UserOrSerial(None, serial)
+    toks = get_tokens(None, serial)
 
     if len(toks) > 1:
         raise TokenAdminError(
@@ -2205,7 +2205,7 @@ def setPin(pin, user, serial, param=None):
     if serial is not None:
         log.info("[setPin] setting Pin for token with serial %r", serial)
 
-    tokenList = getTokens4UserOrSerial(user, serial)
+    tokenList = get_tokens(user, serial)
 
     for token in tokenList:
         token.setPin(pin, param)
@@ -2227,7 +2227,7 @@ def setPinUser(userPin, serial):
         raise ParameterError("Parameter 'serial' is required!", id=1212)
 
     log.debug("[setPinUser] setting Pin for serial %r", serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
+    tokenList = get_tokens(user, serial)
 
     for token in tokenList:
         token.setUserPin(userPin)
@@ -2248,7 +2248,7 @@ def setPinSo(soPin, serial):
         raise ParameterError("Parameter 'serial' is required!", id=1212)
 
     log.debug("[setPinSo] setting Pin for serial %r", serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
+    tokenList = get_tokens(user, serial)
 
     for token in tokenList:
         token.setSoPin(soPin)
@@ -2264,7 +2264,7 @@ def resetToken(user=None, serial=None):
         raise ParameterError("Parameter user or serial required!", id=1212)
 
     log.debug("[resetToken] reset token with serial %r", serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
+    tokenList = get_tokens(user, serial)
 
     for token in tokenList:
         token.reset()

@@ -39,11 +39,9 @@ class MockedToken:
 
 
 class TestUserCompare(unittest.TestCase):
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     @patch("linotp.lib.token.getUserId")
-    def test_compare_user(
-        self, mocked_getUserId, mocked_getTokens4UserOrSerial
-    ):
+    def test_compare_user(self, mocked_getUserId, mocked_get_tokens):
         """
         test for isTokenOwner
 
@@ -66,7 +64,7 @@ class TestUserCompare(unittest.TestCase):
             "migrated resolver info",
             "passwdResolver.conf1",
         )
-        mocked_getTokens4UserOrSerial.return_value = [MockedToken()]
+        mocked_get_tokens.return_value = [MockedToken()]
 
         result = th.isTokenOwner("TokenSerial", user)
 
@@ -82,7 +80,7 @@ class TestUserCompare(unittest.TestCase):
             "resolver info",
             "passwdResolver.conf2",
         )
-        mocked_getTokens4UserOrSerial.return_value = [MockedToken()]
+        mocked_get_tokens.return_value = [MockedToken()]
 
         result = th.isTokenOwner("TokenSerial", user)
 

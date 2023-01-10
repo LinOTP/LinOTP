@@ -36,11 +36,7 @@ from linotp.lib.policy import (
     purge_enrollment_token,
     supports_offline,
 )
-from linotp.lib.token import (
-    get_token_owner,
-    getTokens4UserOrSerial,
-    remove_token,
-)
+from linotp.lib.token import get_token_owner, get_tokens, remove_token
 
 log = logging.getLogger(__name__)
 
@@ -467,7 +463,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
         if not purge_enrollment_token(user=owner):
             continue
 
-        user_tokens = getTokens4UserOrSerial(user=owner)
+        user_tokens = get_tokens(user=owner)
 
         # if there is only one token either
         # - the user has still the rollout: do not delete

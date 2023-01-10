@@ -42,12 +42,7 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
-from linotp.lib.token import (
-    get_multi_otp,
-    getOtp,
-    getTokens4UserOrSerial,
-    getTokenType,
-)
+from linotp.lib.token import get_multi_otp, get_tokens, getOtp, getTokenType
 from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     getDefaultRealm,
@@ -238,7 +233,7 @@ class GettokenController(BaseController):
                     user.realm,
                 )
 
-                toks = getTokens4UserOrSerial(user, serial)
+                toks = get_tokens(user, serial)
                 tokennum = len(toks)
 
                 if tokennum > 1:

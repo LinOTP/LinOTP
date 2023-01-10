@@ -388,7 +388,7 @@ class Challenges(object):
 
             # lookup the validty time of the challenge which is per token
             serial = challenge.tokenserial
-            tokens = linotp.lib.token.getTokens4UserOrSerial(serial=serial)
+            tokens = linotp.lib.token.get_tokens(serial=serial)
             validity = tokens[0].get_challenge_validity()
 
             c_start_time = challenge.get("timestamp")
@@ -414,7 +414,7 @@ class Challenges(object):
         :param matching_challenges: all challenges that have
                                     been correctly answered
         """
-        from linotp.lib.token import getTokens4UserOrSerial
+        from linotp.lib.token import get_tokens
 
         to_be_closed_challenges = []
 
@@ -423,7 +423,7 @@ class Challenges(object):
             # gather all challenges which are now obsolete
             # from the token point of view
             serial = matching_challenge.tokenserial
-            token = getTokens4UserOrSerial(serial=serial)[0]
+            token = get_tokens(serial=serial)[0]
             token_challenges = Challenges.lookup_challenges(serial=serial)
             to_be_closed = token.challenge_janitor(
                 [matching_challenge], token_challenges

@@ -78,8 +78,8 @@ from linotp.lib.resolver import (
 )
 from linotp.lib.token import (
     TokenHandler,
+    get_tokens,
     getTokenRealms,
-    getTokens4UserOrSerial,
     getTokenType,
     resetToken,
     setPin,
@@ -425,7 +425,7 @@ class AdminController(BaseController, JWTMixin):
                 raise ParameterError("missing parameter user or serial!")
 
             if user:
-                tokens = getTokens4UserOrSerial(user)
+                tokens = get_tokens(user)
                 for token in tokens:
                     serials.append(token.getSerial())
 
@@ -524,7 +524,7 @@ class AdminController(BaseController, JWTMixin):
                 g.audit["realm"] = user.realm
                 if g.audit["realm"] == "":
                     realms = set()
-                    for tokenserial in getTokens4UserOrSerial(user, serial):
+                    for tokenserial in get_tokens(user, serial):
                         realms.union(tokenserial.getRealms())
                     g.audit["realm"] = realms
 
@@ -665,7 +665,7 @@ class AdminController(BaseController, JWTMixin):
                 g.audit["realm"] = user.realm
                 if g.audit["realm"] == "":
                     realms = set()
-                    for tokenserial in getTokens4UserOrSerial(user, serial):
+                    for tokenserial in get_tokens(user, serial):
                         realms.union(tokenserial.getRealms())
                     g.audit["realm"] = realms
 
@@ -1241,7 +1241,7 @@ class AdminController(BaseController, JWTMixin):
 
             tokens = []
             for serial in serials:
-                tokens.extend(getTokens4UserOrSerial(serial=serial))
+                tokens.extend(get_tokens(serial=serial))
 
             # -------------------------------------------------------------- --
 
@@ -1499,7 +1499,7 @@ class AdminController(BaseController, JWTMixin):
                     timeStep,
                     serial,
                 )
-                tokens = getTokens4UserOrSerial(serial=serial)
+                tokens = get_tokens(serial=serial)
                 for token in tokens:
                     token.timeStep = timeStep
 
@@ -1528,7 +1528,7 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = getTokens4UserOrSerial(user, serial)
+                tokens = get_tokens(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.count_auth = ca
@@ -1545,7 +1545,7 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = getTokens4UserOrSerial(user, serial)
+                tokens = get_tokens(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.count_auth_max = ca
@@ -1563,7 +1563,7 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = getTokens4UserOrSerial(user, serial)
+                tokens = get_tokens(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.count_auth_success = ca
@@ -1581,7 +1581,7 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = getTokens4UserOrSerial(user, serial)
+                tokens = get_tokens(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.count_auth_success_max = ca
@@ -1599,7 +1599,7 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = getTokens4UserOrSerial(user, serial)
+                tokens = get_tokens(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.validity_period_start = ca
@@ -1619,7 +1619,7 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = getTokens4UserOrSerial(user, serial)
+                tokens = get_tokens(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.validity_period_end = ca
@@ -1636,7 +1636,7 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = getTokens4UserOrSerial(user, serial)
+                tokens = get_tokens(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.addToTokenInfo("phone", ca)
@@ -2641,7 +2641,7 @@ class AdminController(BaseController, JWTMixin):
 
             # lookup of serial and type totp
 
-            tokens = getTokens4UserOrSerial(serial=serial, token_type="totp")
+            tokens = get_tokens(serial=serial, token_type="totp")
 
             if not tokens:
                 g.audit["success"] = False
@@ -2749,7 +2749,7 @@ class AdminController(BaseController, JWTMixin):
 
             # if we have a user
             if user:
-                tokens = getTokens4UserOrSerial(user=user)
+                tokens = get_tokens(user=user)
                 for token in tokens:
                     serial = token.getSerial()
                     challenges.update(
@@ -2777,7 +2777,7 @@ class AdminController(BaseController, JWTMixin):
                 stat["challenges"] = chall_dict
 
                 # # add the token info to the stat dict
-                tokens = getTokens4UserOrSerial(serial=serial)
+                tokens = get_tokens(serial=serial)
                 token = tokens[0]
                 stat["tokeninfo"] = token.get_vars(save=True)
 
@@ -2830,7 +2830,7 @@ class AdminController(BaseController, JWTMixin):
 
             # ---------------------------------------------------------------- -
 
-            tokens = getTokens4UserOrSerial(user, serial)
+            tokens = get_tokens(user, serial)
 
             if not tokens:
                 raise Exception("No token found. Unpairing not possible")

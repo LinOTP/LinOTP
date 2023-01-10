@@ -280,9 +280,9 @@ class ForwardTokenClass(TokenClass):
         if self.targetToken:
             return self.targetToken
 
-        from linotp.lib.token import getTokens4UserOrSerial
+        from linotp.lib.token import get_tokens
 
-        tokens = getTokens4UserOrSerial(serial=forwardSerial)
+        tokens = get_tokens(serial=forwardSerial)
 
         if not tokens:
             raise Exception(

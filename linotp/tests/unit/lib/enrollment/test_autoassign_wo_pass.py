@@ -46,14 +46,14 @@ class TestAutoEnroll(unittest.TestCase):
     @patch("linotp.lib.token.context")
     @patch("linotp.lib.token.TokenHandler.assignToken")
     @patch("linotp.lib.token.TokenHandler.getTokensOfType")
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     @patch("linotp.lib.policy.get_autoassignment_without_pass")
     @patch("linotp.lib.policy.get_autoassignment_from_realm")
     def test_autenroll_wo_pass(
         self,
         mocked_policy_src_realm,
         mocked_policy_autosignment_wo,
-        mockedgetTokens4UserOrSerial,
+        mockedget_tokens,
         mocked_getTokensOfType,
         mocked_assignToken,
         mocked_context,
@@ -89,7 +89,7 @@ class TestAutoEnroll(unittest.TestCase):
 
         mocked_policy_src_realm.return_value = None
         mocked_policy_autosignment_wo.return_value = True
-        mockedgetTokens4UserOrSerial.return_value = []
+        mockedget_tokens.return_value = []
         mocked_getTokensOfType.return_value = [pwtoken]
         mocked_assignToken.return_value = True
 
