@@ -1384,34 +1384,36 @@ class TokenHandler(object):
 # local
 
 
-def createTokenClassObject(token, typ=None):
+def createTokenClassObject(token: Token, token_type: string = None):
     """
     createTokenClassObject - create a token class object from a given type
 
-    :param token:  the database refeneced token
-    :type  token:  database token
-    :param typ:    type of to be created token
-    :type  typ:    string
+    :param token:       a raw token as retrieved from the database
+    :type  token:       Token
+    :param token_type:  type of the token object to be created
+    :type  token_type:  string
 
-    :return: instance of the token class object
-    :rtype:  token class object
+    :return: a token instance with type-specific behavior
+    :rtype:  subclass of TokenClass
     """
 
     # if type is not given, we take it out of the token database object
-    if typ is None:
-        typ = token.LinOtpTokenType
+    if token_type is None:
+        token_type = token.LinOtpTokenType
 
-    if typ == "":
-        typ = "hmac"
+    if token_type == "":
+        token_type = "hmac"
 
-    typ = typ.lower()
-    tok = None
+    token_type = token_type.lower()
+
+    token_class = None
+    from linotp.tokens.base import TokenClass
 
     # search which tokenclass should be created and create it!
-    if typ.lower() in tokenclass_registry:
+    if token_type.lower() in tokenclass_registry:
         try:
-            token_cls = tokenclass_registry.get(typ)
-            tok = token_cls(token)
+            constructor = tokenclass_registry.get(token_type)
+            token_class: TokenClass = constructor(token)
 
         except Exception as exx:
             raise TokenAdminError(
@@ -1427,15 +1429,13 @@ def createTokenClassObject(token, typ=None):
         log.error(
             "Token type %r not found. Available types are: %r."
             "Using default token class as fallback ",
-            typ,
+            token_type,
             list(tokenclass_registry.keys()),
         )
 
-        from linotp.tokens.base import TokenClass
+        token_class = TokenClass(token)
 
-        tok = TokenClass(token)
-
-    return tok
+    return token_class
 
 
 def get_token_type_list():
