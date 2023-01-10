@@ -116,7 +116,7 @@ class TokenHandler(object):
         log.debug("Initializing token %r for user %r ", serial, user.login)
 
         #  create a list of the found db tokens - no token class objects
-        toks = getClasslessTokens4UserOrSerial(None, serial)
+        toks = get_raw_tokens(None, serial)
         tokenNum = len(toks)
 
         if tokenNum == 0:  # create new a one token
@@ -1085,7 +1085,7 @@ class TokenHandler(object):
         if not user and not serial:
             raise ParameterError("Parameter user or serial required!", id=1212)
 
-        tokenList = getClasslessTokens4UserOrSerial(user, serial)
+        tokenList = get_raw_tokens(user, serial)
 
         serials = set()
         tokens = set()
@@ -1574,7 +1574,7 @@ def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
 
 def setRealms(serial, realmList):
     # set the tokenlist of DB tokens
-    tokenList = getClasslessTokens4UserOrSerial(None, serial)
+    tokenList = get_raw_tokens(None, serial)
 
     if len(tokenList) == 0:
         raise TokenAdminError(
@@ -1593,7 +1593,7 @@ def getTokenRealms(serial):
     """
     This function returns a list of the realms of a token
     """
-    tokenList = getClasslessTokens4UserOrSerial(None, serial)
+    tokenList = get_raw_tokens(None, serial)
 
     if len(tokenList) == 0:
         raise TokenAdminError(
@@ -1782,14 +1782,12 @@ def get_tokens(
     read_for_update=False,
     active=None,
 ):
-    tokens = getClasslessTokens4UserOrSerial(
-        user, serial, token_type, read_for_update, active
-    )
+    tokens = get_raw_tokens(user, serial, token_type, read_for_update, active)
 
     return [createTokenClassObject(token) for token in tokens]
 
 
-def getClasslessTokens4UserOrSerial(
+def get_raw_tokens(
     user=None,
     serial=None,
     token_type=None,
@@ -2013,7 +2011,7 @@ def getTokenType(serial):
 
     :param serial: the serial number of the to be searched token
     """
-    toks = getClasslessTokens4UserOrSerial(None, serial)
+    toks = get_raw_tokens(None, serial)
 
     typ = ""
     for tok in toks:

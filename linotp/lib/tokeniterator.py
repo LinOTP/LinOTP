@@ -37,7 +37,7 @@ from linotp.lib.error import UserError
 from linotp.lib.realm import getRealms
 from linotp.lib.resolver import getResolverSpecByName
 from linotp.lib.token import (
-    getClasslessTokens4UserOrSerial,
+    get_raw_tokens,
     getTokenRealms,
     token_owner_iterator,
 )
@@ -235,7 +235,7 @@ class TokenIterator(object):
 
             for usr in userlist:
                 try:
-                    tokens = getClasslessTokens4UserOrSerial(user=usr)
+                    tokens = get_raw_tokens(user=usr)
                     for tok in tokens:
                         serials.append(tok.LinOtpTokenSerialnumber)
                 except UserError as ex:
