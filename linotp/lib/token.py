@@ -1776,24 +1776,43 @@ def token_owner_iterator():
 
 
 def get_tokens(
-    user=None,
-    serial=None,
-    token_type=None,
-    read_for_update=False,
-    active=None,
+    user: User = None,
+    serial: string = None,
+    token_type: string = None,
+    read_for_update: bool = False,
+    active: bool = None,
 ):
+    """
+    Get a list of tokens of type TokenClass or any of its subclasses.
+
+    The result can be filtered by owner, serial, type and activation status.
+
+    Additionally, the flag read_for_update specifies whether a lock on the database is required. This is necessary when
+    obtaining a list of tokens for validation purposes.
+    """
     tokens = get_raw_tokens(user, serial, token_type, read_for_update, active)
 
     return [createTokenClassObject(token) for token in tokens]
 
 
 def get_raw_tokens(
-    user=None,
-    serial=None,
-    token_type=None,
-    read_for_update=False,
-    active=None,
+    user: User = None,
+    serial: string = None,
+    token_type: string = None,
+    read_for_update: bool = False,
+    active: bool = None,
 ) -> List[Token]:
+    """
+    Get a list of tokens of type Token, an object containing the database fields for the token and little more.
+
+    It does not provide tokens with type-specific functionality. If that is what you are looking for, please use
+    get_tokens() instead.
+
+    The result can be filtered by owner, serial, type and activation status.
+
+    Additionally, the flag read_for_update specifies whether a lock on the database is required. This is necessary when
+    obtaining a list of tokens for validation purposes.
+    """
     tokenList = []
 
     if serial is None and user is None:
