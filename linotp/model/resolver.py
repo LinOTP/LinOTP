@@ -25,8 +25,9 @@
 #    Support: www.linotp.de
 from enum import Enum
 from logging import getLogger
-from typing import Dict, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union
 
+import linotp
 from linotp.lib.realm import getRealms
 from linotp.useridresolver import UserIdResolver
 
@@ -200,3 +201,74 @@ class Resolver:
             if self.name in resolver_names:
                 result.add(realm_name)
         return result
+
+    def get_users(self, search_dictionary: dict = {}) -> List[User]:
+        """
+        List users of a resolver. Some resolvers might limit this result, so it
+        is not always guaranteed that the list is complete.
+
+        The list of users can be restricted by supplying a search dictionary,
+        where the key maps to a user's attribute.
+        """
+        log.debug(
+            "[get_users_of_resolver] with this search dictionary: %r",
+            search_dictionary,
+        )
+
+        try:
+            user_iterator = self.config.getUserListIterator(search_dictionary)
+        except AttributeError as no_iterator_found:
+            log.info(
+                "Getting user list using iterator not possible. "
+                "Falling back to fetching userlist without iterator. "
+                "Reason: %r",
+                no_iterator_found,
+            )
+            users = []
+            for user_dict in self.config.getUserList(search_dictionary):
+                user = User(
+                    user_id=user_dict["userid"],
+                    resolver_name=self.name,
+                    resolver_class=self.type,
+                    username=user_dict["username"],
+                    surname=user_dict.get("surname", None),
+                    given_name=user_dict.get("givenname", None),
+                    phone=user_dict.get("phone", None),
+                    mobile=user_dict.get("mobile", None),
+                    email=user_dict.get("email", None),
+                )
+                users.append(user)
+
+                user_dict["useridresolver"] = self.spec
+                linotp.lib.user._refresh_user_lookup_cache(user_dict)
+
+            log.debug(
+                "[get_users_of_resolver] Found this user list: %r",
+                users,
+            )
+            return users
+
+        users: List[User] = []
+        for iteration_results in user_iterator:
+            for user_dict in iteration_results:
+                user = User(
+                    user_id=user_dict["userid"],
+                    resolver_name=self.name,
+                    resolver_class=self.type,
+                    username=user_dict["username"],
+                    surname=user_dict.get("surname", None),
+                    given_name=user_dict.get("givenname", None),
+                    phone=user_dict.get("phone", None),
+                    mobile=user_dict.get("mobile", None),
+                    email=user_dict.get("email", None),
+                )
+                users.append(user)
+
+                user_dict["useridresolver"] = self.spec
+                linotp.lib.user._refresh_user_lookup_cache(user_dict)
+
+            log.debug(
+                "[get_users_of_resolver] Found this user list: %r",
+                iteration_results,
+            )
+        return users
