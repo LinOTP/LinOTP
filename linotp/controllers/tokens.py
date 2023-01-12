@@ -154,6 +154,12 @@ class TokensController(BaseController, JWTMixin):
         :param searchTerm: limit entries to those partially matching the searchTerm
         :type searchTerm: str, optional
 
+        :param userId: limit the results to the tokens owned by the users with this user ID
+        :type userId: str, optional
+
+        :param resolverName: limit the results to the tokens owned by users in this resolver
+        :type resolverName: str, optional
+
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
@@ -187,6 +193,8 @@ class TokensController(BaseController, JWTMixin):
             sort_by = param.get("sortBy", "LinOtp.TokenSerialnumber")
             sort_order = param.get("sortOrder", "asc")
             search_term = param.get("searchTerm", None)
+            user_id = param.get("userId", None)
+            resolver_name = param.get("resolverName", None)
 
             ### Check permissions ###
 
@@ -221,6 +229,11 @@ class TokensController(BaseController, JWTMixin):
                 # Retrieve all available tokens
                 page = None
 
+            token_iterator_params = {
+                "user_id": user_id,
+                "resolver_name": resolver_name,
+            }
+
             tokens = TokenIterator(
                 logged_in_admin,
                 None,
@@ -231,6 +244,7 @@ class TokensController(BaseController, JWTMixin):
                 sort_order,
                 filterRealm,
                 [],
+                token_iterator_params,
             )
 
             g.audit["success"] = True

@@ -37,6 +37,7 @@ import linotp
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import UserError
 from linotp.lib.realm import getRealms
+from linotp.lib.resolver import getResolverSpecByName
 from linotp.lib.token import (
     getTokenRealms,
     getTokens4UserOrSerial,
@@ -360,6 +361,19 @@ class TokenIterator(object):
 
         return rcondition
 
+    def _get_params_condition(self, params):
+        condTuple = ()
+
+        if params.get("user_id"):
+            user_id = params.get("user_id")
+            condTuple += (and_(Token.LinOtpUserid == user_id),)
+
+        if params.get("resolver_name"):
+            spec = getResolverSpecByName(params.get("resolver_name"))
+            condTuple += (and_(Token.LinOtpIdResClass == spec),)
+
+        return and_(*condTuple)
+
     def _get_tokens_in_realm(self, valid_realms):
         # get all matching realms
         realm_id_tuples = (
@@ -434,7 +448,7 @@ class TokenIterator(object):
         :type  filterRealm:  string or list
         :param user_fields:  list of additional fields from the user owner
         :type  user_fields: array
-        :param params:  list of additional request parameters - currently not used
+        :param params:  dict of additional request parameters - currently: user_id, resolver_name
         :type  params: dict
 
         :return: - nothing / None
@@ -479,10 +493,17 @@ class TokenIterator(object):
         ucondition = self._get_user_condition(user, valid_realms)
         fcondition = self._get_filter_confition(filter)
         rcondition = self._get_realm_condition(valid_realms, filterRealm)
+        pcondition = self._get_params_condition(params)
 
         #  create the final condition as AND of all conditions
         condTuple = ()
-        for conn in (fcondition, ucondition, scondition, rcondition):
+        for conn in (
+            fcondition,
+            ucondition,
+            scondition,
+            rcondition,
+            pcondition,
+        ):
             if type(conn).__name__ != "NoneType":
                 condTuple += (conn,)
 
