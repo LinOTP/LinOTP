@@ -96,7 +96,9 @@ class Challenges(object):
             if len(transid) == transid_len:
                 conditions += (and_(Challenge.transid == transid),)
             else:
-                conditions += (and_(Challenge.transid.startswith(transid)),)
+                conditions += (
+                    and_(Challenge.transid.startswith(transid + ".")),
+                )
 
         if serial:
             conditions += (and_(Challenge.tokenserial == serial),)
