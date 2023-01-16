@@ -43,7 +43,7 @@ class TestChallengesTransactionidLength(unittest.TestCase):
 
         with patch("linotp.lib.challenges.context") as mock_context:
             mock_context.get.return_value = {}
-            transid_length = Challenges.get_tranactionid_length()
+            transid_length = Challenges.get_transactionid_length()
             assert (
                 round(
                     abs(
@@ -64,6 +64,6 @@ class TestChallengesTransactionidLength(unittest.TestCase):
                 "TransactionIdLength": too_short_length
             }
             with pytest.raises(Exception) as wrong_range:
-                Challenges.get_tranactionid_length()
+                Challenges.get_transactionid_length()
 
             assert str(wrong_range.value) == wrong_range_message
