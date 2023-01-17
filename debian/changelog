@@ -10,6 +10,7 @@ linotp (3.2.2-1) buster-dev; urgency=low
   * Challenge database is reset once to ensure that Backups pre LinOTP 3
     correctly restore existing challenge-response tokens.
   * Migrate encypted data 'password' with legacy proprietary padding (LinOTP 2.9)
+  * Fix migration of yubico token to LinOTP 3.2
 
 -- LinOTP Packaging <packaging@linotp.de>  Wen, 21 Dec 2022 17:40:00 +0100
 
