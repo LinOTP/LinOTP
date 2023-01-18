@@ -1,6 +1,6 @@
-linotp (3.2.3~0dev-1) buster-dev; urgency=low
+linotp (3.2.3~rc0-1) buster-dev; urgency=low
 
-  * Set version 3.2.3~0dev
+  * ensure all types of token will be migrated
 
 -- LinOTP Packaging <packaging@linotp.de>  Wen, 04 Jan 2023 09:00:00 +0100
 
