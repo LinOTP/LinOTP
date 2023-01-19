@@ -131,6 +131,27 @@ class Resolver:
         self._configuration_instance = config
         self._realms = None
 
+    @staticmethod
+    def from_dict(resolver_dict: dict):
+        spec = resolver_dict["spec"]
+        resolver_object = linotp.lib.resolver.getResolverObject(spec)
+        if not resolver_object:
+            resolver_object = linotp.lib.resolver.getResolverObject(
+                spec,
+                load_config=False,
+            )
+        if not resolver_object:
+            message = f"Could not find a resolver with this spec: {spec}"
+            raise linotp.lib.user.NoResolverFound(message)
+        return Resolver(
+            name=resolver_dict["resolvername"],
+            spec=spec,
+            type=ResolverType(resolver_object.getResolverClassType()),
+            read_only=resolver_dict.get("readonly"),
+            admin=resolver_dict["admin"],
+            config=resolver_object,
+        )
+
     @property
     def name(self) -> str:
         """
@@ -256,3 +277,19 @@ class Resolver:
                 iteration_results,
             )
         return users
+
+    def as_dict(self):
+        """
+        Return a JSON-serializable dictionary with the attributes of the
+        resolver.
+        This requires returning the set of realms as a list,  and the type's
+        value.
+        """
+        return {
+            "name": self.name,
+            "type": self.type.value,
+            "spec": self.spec,
+            "readonly": self.is_read_only,
+            "admin": self.is_admin,
+            "realms": list(self.realms),
+        }

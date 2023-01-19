@@ -7,9 +7,8 @@ from linotp.controllers.base import BaseController, JWTMixin
 from linotp.flap import request, response
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
-from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
-from linotp.lib.resolver import get_resolver, getResolverList
+from linotp.lib.resolver import get_resolver, get_resolvers
 from linotp.lib.user import User, getUserFromRequest
 from linotp.lib.util import check_session, get_client
 from linotp.model import db
@@ -158,28 +157,13 @@ class ResolversController(BaseController, JWTMixin):
             return error
 
         try:
-            resolvers = getResolverList()
-
-            # in the returned list of resolvers, we rename the name of the
-            # resolver from "resolvername" to "name", and set "realms" to an
-            # empty list if it is not set.
-            for resolver_entry, description in resolvers.items():
-                resolvers[resolver_entry]["name"] = description["resolvername"]
-                del resolvers[resolver_entry]["resolvername"]
-                resolvers[resolver_entry].setdefault("realms", [])
-
-            # generate a list of all realms containing the resolver and add
-            # it to the resolvers dictionary
-            for realm_name, values in getRealms().items():
-                for resolver in values["useridresolver"]:
-                    resolver_name = resolver.split(".")[3]
-                    resolvers[resolver_name]["realms"].append(realm_name)
+            resolvers = [resolver.as_dict() for resolver in get_resolvers()]
 
             g.audit["success"] = True
             db.session.commit()
 
             # return a list of the resolvers
-            return sendResult(response, list(resolvers.values()), 1)
+            return sendResult(response, resolvers)
 
         except Exception as ex:
             log.error("[getResolvers] error getting resolvers: %r", ex)
