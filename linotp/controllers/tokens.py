@@ -407,8 +407,8 @@ class TokenAdapter:
         self.user_id = linotp_token["User.userid"]
         self.username = linotp_token["User.username"]
         self.user_description = linotp_token["User.description"]
-        self.resolver_name = linotp_token["LinOtp.IdResolver"]
-        self.resolver_class = linotp_token["LinOtp.IdResClass"]
+        self.resolver_name = linotp_token["LinOtp.IdResolver"].split(".")[-1]
+        self.resolver_class = linotp_token["LinOtp.IdResolver"].split(".")[0]
 
         # usage data
         self.login_attempts = self._token_info.get("count_auth", None)
