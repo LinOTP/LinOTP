@@ -317,9 +317,6 @@ def getResolverList(filter_resolver_type=None, config=None):
                 r["spec"] = resolver_cls.db_prefix + "." + resolver[3]
                 r["admin"] = resolver[3] in admin_resolvers
 
-                # set the immutable flag if its the local_admin_resolver
-                r["immutable"] = local_admin_resolver == resolver[3]
-
                 readonly_entry = ".".join(
                     [resolver[0], resolver[1], "readonly", resolver[3]]
                 )
@@ -466,9 +463,6 @@ def getResolverInfo(resolvername, passwords=False):
     result["type"] = resolver_type
     result["data"] = res_conf
     result["admin"] = resolvername in get_admin_resolvers()
-
-    # set the immutable flag if its the local_admin_resolver
-    result["immutable"] = local_admin_resolver == resolvername
 
     return result
 
