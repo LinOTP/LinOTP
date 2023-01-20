@@ -34,6 +34,7 @@ from functools import partial
 
 from flask import current_app
 
+import linotp
 from linotp.lib.cache import get_cache
 from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
 from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
@@ -41,6 +42,7 @@ from linotp.lib.context import request_context as context
 from linotp.lib.crypto.encrypted_data import EncryptedData
 from linotp.lib.realm import getRealms
 from linotp.lib.type_utils import boolean
+from linotp.model.resolver import Resolver
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
 
@@ -317,9 +319,6 @@ def getResolverList(filter_resolver_type=None, config=None):
                 r["spec"] = resolver_cls.db_prefix + "." + resolver[3]
                 r["admin"] = resolver[3] in admin_resolvers
 
-                # set the immutable flag if its the local_admin_resolver
-                r["immutable"] = local_admin_resolver == resolver[3]
-
                 readonly_entry = ".".join(
                     [resolver[0], resolver[1], "readonly", resolver[3]]
                 )
@@ -467,9 +466,6 @@ def getResolverInfo(resolvername, passwords=False):
     result["data"] = res_conf
     result["admin"] = resolvername in get_admin_resolvers()
 
-    # set the immutable flag if its the local_admin_resolver
-    result["immutable"] = local_admin_resolver == resolvername
-
     return result
 
 
@@ -536,13 +532,23 @@ def deleteResolver(resolvername):
     return res
 
 
+def getResolverObjectByName(resolver_name: str):
+    resolver_spec = getResolverSpecByName(resolver_name)
+    return getResolverObject(resolver_spec)
+
+
 def getResolverSpecByName(resolver_name):
+    resolver_dict = getResolverDictByName(resolver_name)
+    return resolver_dict["spec"]
+
+
+def getResolverDictByName(resolver_name):
+    resolvers_dict = getResolverList()
     try:
-        # the resolver list is actually a dict, go figure...
-        resolver = getResolverList()[resolver_name]
-        return resolver["spec"]
-    except Exception as exx:
-        return None
+        return resolvers_dict[resolver_name]
+    except KeyError:
+        message = f"Could not find a resolver with this name: {resolver_name}"
+        raise linotp.lib.user.NoResolverFound(message)
 
 
 # external in token.py user.py validate.py
@@ -1045,4 +1051,13 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
     return param, missing, primary_key_changed
 
 
-# eof #########################################################################
+def get_resolver(resolver_name: str):
+    resolver_dict = getResolverDictByName(resolver_name)
+    return Resolver.from_dict(resolver_dict)
+
+
+def get_resolvers():
+    return [
+        Resolver.from_dict(resolver_dict)
+        for resolver_dict in getResolverList().values()
+    ]

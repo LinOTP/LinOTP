@@ -1526,15 +1526,7 @@ def getUserList(param, search_user):
                     )
                     for u in ulist:
                         u["useridresolver"] = resolver_spec
-                        login = u.get("username")
-                        uid = u.get("userid")
-                        # fill userlookup result into the cache
-                        lookup_user_in_resolver(
-                            login, None, resolver_spec, user_info=u
-                        )
-                        lookup_user_in_resolver(
-                            None, uid, resolver_spec, user_info=u
-                        )
+                        _refresh_user_lookup_cache(u)
                     log.debug("[getUserList] Found this userlist: %r", ulist)
                     users.extend(ulist)
 
@@ -1553,16 +1545,8 @@ def getUserList(param, search_user):
                 ulist = y.getUserList(searchDict)
                 for u in ulist:
                     u["useridresolver"] = resolver_spec
-                    login = u.get("username")
-                    uid = u.get("userid")
 
-                    # fill userlookup result into the cache
-                    lookup_user_in_resolver(
-                        login, None, resolver_spec, user_info=u
-                    )
-                    lookup_user_in_resolver(
-                        None, uid, resolver_spec, user_info=u
-                    )
+                    _refresh_user_lookup_cache(u)
 
                 log.debug("[getUserList] Found this userlist: %r", ulist)
                 users.extend(ulist)
@@ -1834,6 +1818,28 @@ def get_authenticated_user(
         log.error("Error while trying to verify the username: %s", username)
 
     return auth_user
+
+
+def _refresh_user_lookup_cache(user_dict):
+    """
+    Call this when you look up a user, e.g. when iterating over a list of
+    users, in order to refresh the cache. The user_dict is the dictionary
+    representation returned via UserList or UserListIterator, but make sure to
+    set its "useridresolver" entry first to the resolver where the user was
+    retrieved from.
+    """
+    lookup_user_in_resolver(
+        user_dict.get("username"),
+        None,
+        user_dict["useridresolver"],
+        user_info=user_dict,
+    )
+    lookup_user_in_resolver(
+        None,
+        user_dict.get("userid"),
+        user_dict["useridresolver"],
+        user_info=user_dict,
+    )
 
 
 # eof ---------------------------------------------------------------------- --
