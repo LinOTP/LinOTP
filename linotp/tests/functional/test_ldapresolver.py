@@ -1744,3 +1744,23 @@ class TestLDAPResolver(TestController):
         assert "false" not in response
 
         return
+
+    @pytest.mark.usefixtures("ldap_realm_test")
+    def test_user_of_LDAP_resolver_with_DN_type_uid(self):
+        response = self.make_api_v2_request(
+            "/resolvers/test/users/cn=karla%20anderson,ou=people,dc=hotad,dc=example,dc=net",
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+        user = response.json["result"]["value"]
+        assert user["username"] == "karla.anderson"
+
+    @pytest.mark.usefixtures("ldap_realm_corp")
+    def test_user_of_LDAP_resolver_with_GUID_type_uid(self):
+        response = self.make_api_v2_request(
+            "/resolvers/corp/users/9a1359b67546d44eba0f20c9fdd97b00",
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+        user = response.json["result"]["value"]
+        assert user["username"] == "maxwell"
