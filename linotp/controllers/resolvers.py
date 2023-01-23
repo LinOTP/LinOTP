@@ -353,10 +353,13 @@ class ResolversController(BaseController, JWTMixin):
             users in the given resolver, the exception message is serialized and
             returned. The response has status code 403.
 
+        :raises UserNotFoundException:
+            if the user is not found, the exception message is serialized and
+            returned with status code 404.
+
         :raises Exception:
-            if the user is not found, the response has status code 404,
-            otherwise if any other error occurs the exception message is
-            serialized and returned with status code 500.
+            if any other error occurs the exception message is serialized and
+            returned with status code 500.
         """
 
         try:
