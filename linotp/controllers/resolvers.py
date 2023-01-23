@@ -45,6 +45,7 @@ class ResolversController(BaseController, JWTMixin):
     And the following is the type definition of a **User**:
 
     .. code::
+
         {
             "userId": string;
             "givenName": string;
@@ -215,7 +216,7 @@ class ResolversController(BaseController, JWTMixin):
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
-            ..code::
+            .. code::
 
                 {
                     "status": boolean,
@@ -340,11 +341,12 @@ class ResolversController(BaseController, JWTMixin):
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
-            ..code::
-            {
-                "status": boolean,
-                "value": User
-            }
+            .. code::
+
+                {
+                    "status": boolean,
+                    "value": User
+                }
 
         :raises PolicyException:
             if the logged-in admin does not have the correct permissions to list
