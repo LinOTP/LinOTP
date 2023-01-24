@@ -132,10 +132,11 @@ class ResolversController(BaseController, JWTMixin):
         Return the list of all resolvers visible to the logged-in administrator.
 
         Visible resolvers are determined as follows:
-        - If the admin has the permission for ``scope=system, action=read``, all
-        resolvers are visible.
-        - If the admin has the permission `scope=admin` for a realm , the
-        resolvers in that realm will be visible.
+
+        * If the admin has the permission for ``scope=system, action=read``, all
+          resolvers are visible.
+        * If the admin has the permission ``scope=admin`` for a realm , the
+          resolvers in that realm will be visible.
 
         :return:
             a JSON-RPC response with ``result`` in the following format:
@@ -190,15 +191,16 @@ class ResolversController(BaseController, JWTMixin):
         the resolver are visible to the logged-in administrator.
 
         Visible users are determined as follows:
-        - If the administrator has the permission for ``scope=admin, action=userlist``,
-        for a certain realm, users of all resolvers in that realm are visible.
-        This is the case no matter how the permission is defined: either by
-        explicitly naming a realm, by setting all realms via a wildcard
-        (realm="*"), or by implicitly giving permissions for everything in the
-        admin scope by not setting any admin scope policies.
-        - If the resolver is not in any realm yet, the users are also visible if
-        the administrator has permissions for all realms as described in the
-        previous point (either via wildcard or implicitly).
+
+        * If the administrator has the permission for ``scope=admin, action=userlist``,
+          for a certain realm, users of all resolvers in that realm are visible.
+          This is the case no matter how the permission is defined: either by
+          explicitly naming a realm, by setting all realms via a wildcard
+          (realm="*"), or by implicitly giving permissions for everything in the
+          admin scope by not setting any admin scope policies.
+        * If the resolver is not in any realm yet, the users are also visible if
+          the administrator has permissions for all realms as described in the
+          previous point (either via wildcard or implicitly).
 
         Should the ``pageSize`` parameter be defined, the list of users
         is truncated to the given length. By default, the first page is
@@ -206,8 +208,8 @@ class ResolversController(BaseController, JWTMixin):
         pages.
 
         :param pageSize: limit the number of returned users, defaults to 50
-        (unless another value is specified in the configuration). Setting it to
-        0 returns all users.
+          (unless another value is specified in the configuration). Setting it to
+          0 returns all users.
         :type pageSize: int, optional
 
         :param page: request a certain page, defaults to 0
@@ -328,15 +330,16 @@ class ResolversController(BaseController, JWTMixin):
         administrator.
 
         A visible user is determined as follows:
-        - If the administrator has the permission for ``scope=admin, action=userlist``,
-        for a certain realm, users of all resolvers in that realm are visible.
-        This is the case no matter how the permission is defined: either by
-        explicitly naming a realm, by setting all realms via a wildcard
-        (realm="*"), or by implicitly giving permissions for everything in the
-        admin scope by not setting any admin scope policies.
-        - If the resolver is not in any realm yet, the user is also visible if
-        the administrator has permissions for all realms as described in the
-        previous point (either via wildcard or implicitly).
+
+        * If the administrator has the permission for ``scope=admin, action=userlist``,
+          for a certain realm, users of all resolvers in that realm are visible.
+          This is the case no matter how the permission is defined: either by
+          explicitly naming a realm, by setting all realms via a wildcard
+          (realm="*"), or by implicitly giving permissions for everything in the
+          admin scope by not setting any admin scope policies.
+        * If the resolver is not in any realm yet, the user is also visible if
+          the administrator has permissions for all realms as described in the
+          previous point (either via wildcard or implicitly).
 
         :return:
             a JSON-RPC response with ``result`` in the following format:

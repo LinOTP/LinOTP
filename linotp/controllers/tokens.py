@@ -138,8 +138,8 @@ class TokensController(BaseController, JWTMixin):
         pages.
 
         :param pageSize: limit the number of returned tokens, defaults to 50
-        (unless another value is specified in the configuration). Setting it to
-        0 returns all tokens.
+          (unless another value is specified in the configuration). Setting it to
+          0 returns all tokens.
         :type pageSize: int, optional
 
         :param page: request a certain page, defaults to 0

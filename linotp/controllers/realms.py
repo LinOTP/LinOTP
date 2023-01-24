@@ -98,10 +98,11 @@ class RealmsController(BaseController, JWTMixin):
         Return the list of all realms visible to the logged-in administrator.
 
         Visible realms are determined as follows:
-        - If the admin has the permission for ``scope=system, action=read``, all
-        realms are visible.
-        - If the admin has the permission `scope=admin` for a realm , that realm
-        will be visible.
+
+        * If the admin has the permission for ``scope=system, action=read``, all
+          realms are visible.
+        * If the admin has the permission ``scope=admin`` for a realm , that realm
+          will be visible.
 
         :return:
             a JSON-RPC response with ``result`` in the following format:
