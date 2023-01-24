@@ -207,6 +207,9 @@ class ResolversController(BaseController, JWTMixin):
         returned. Setting the ``page`` parameter allows retrieving other
         pages.
 
+        :param resolverName: name of the resolver
+        :type resolverName: str
+
         :param pageSize: limit the number of returned users, defaults to 50
           (unless another value is specified in the configuration). Setting it to
           0 returns all users.
@@ -340,6 +343,12 @@ class ResolversController(BaseController, JWTMixin):
         * If the resolver is not in any realm yet, the user is also visible if
           the administrator has permissions for all realms as described in the
           previous point (either via wildcard or implicitly).
+
+        :param resolverName: name of the resolver
+        :type resolverName: str
+
+        :param userId: ID of the user within the resolver
+        :type userId: str
 
         :return:
             a JSON-RPC response with ``result`` in the following format:
