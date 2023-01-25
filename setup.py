@@ -104,11 +104,7 @@ code_quality_requirements = [
 # packages needed to build the api documentation
 # install with
 # > pip install -e ".[apidocs]"
-apidocs_requirements = [
-    "Sphinx>4.0",
-    "mock",
-    "webhelpers2",
-]
+apidocs_requirements = ["Sphinx>4.0", "mock", "webhelpers2", "jinja2<=3.0.3"]
 
 # packages needed during package build phase
 setup_requirements = [
