@@ -443,11 +443,12 @@ apidocs:
     - cd ${CI_PROJECT_DIR}/api-doc
     - make apidocs
     - make html
-    - cp -a build/html/. ${CI_PROJECT_DIR}/api-doc
+    - mkdir ${CI_PROJECT_DIR}/api-docs
+    - cp -a build/html/. ${CI_PROJECT_DIR}/api-docs
   artifacts:
     name: "linotp-apidocs"
     paths:
-      - api-doc
+      - api-docs
     expire_in: 2 weeks
 
 .before_upload: &before_upload
