@@ -45,6 +45,7 @@ class ResolversController(BaseController, JWTMixin):
     And the following is the type definition of a **User**:
 
     .. code::
+
         {
             "userId": string;
             "givenName": string;
@@ -131,10 +132,11 @@ class ResolversController(BaseController, JWTMixin):
         Return the list of all resolvers visible to the logged-in administrator.
 
         Visible resolvers are determined as follows:
-        - If the admin has the permission for ``scope=system, action=read``, all
-        resolvers are visible.
-        - If the admin has the permission `scope=admin` for a realm , the
-        resolvers in that realm will be visible.
+
+        * If the admin has the permission for ``scope=system, action=read``, all
+          resolvers are visible.
+        * If the admin has the permission ``scope=admin`` for a realm , the
+          resolvers in that realm will be visible.
 
         :return:
             a JSON-RPC response with ``result`` in the following format:
@@ -189,24 +191,28 @@ class ResolversController(BaseController, JWTMixin):
         the resolver are visible to the logged-in administrator.
 
         Visible users are determined as follows:
-        - If the administrator has the permission for ``scope=admin, action=userlist``,
-        for a certain realm, users of all resolvers in that realm are visible.
-        This is the case no matter how the permission is defined: either by
-        explicitly naming a realm, by setting all realms via a wildcard
-        (realm="*"), or by implicitly giving permissions for everything in the
-        admin scope by not setting any admin scope policies.
-        - If the resolver is not in any realm yet, the users are also visible if
-        the administrator has permissions for all realms as described in the
-        previous point (either via wildcard or implicitly).
+
+        * If the administrator has the permission for ``scope=admin, action=userlist``,
+          for a certain realm, users of all resolvers in that realm are visible.
+          This is the case no matter how the permission is defined: either by
+          explicitly naming a realm, by setting all realms via a wildcard
+          (realm="*"), or by implicitly giving permissions for everything in the
+          admin scope by not setting any admin scope policies.
+        * If the resolver is not in any realm yet, the users are also visible if
+          the administrator has permissions for all realms as described in the
+          previous point (either via wildcard or implicitly).
 
         Should the ``pageSize`` parameter be defined, the list of users
         is truncated to the given length. By default, the first page is
         returned. Setting the ``page`` parameter allows retrieving other
         pages.
 
+        :param resolverName: name of the resolver
+        :type resolverName: str
+
         :param pageSize: limit the number of returned users, defaults to 50
-        (unless another value is specified in the configuration). Setting it to
-        0 returns all users.
+          (unless another value is specified in the configuration). Setting it to
+          0 returns all users.
         :type pageSize: int, optional
 
         :param page: request a certain page, defaults to 0
@@ -215,7 +221,7 @@ class ResolversController(BaseController, JWTMixin):
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
-            ..code::
+            .. code::
 
                 {
                     "status": boolean,
@@ -327,34 +333,45 @@ class ResolversController(BaseController, JWTMixin):
         administrator.
 
         A visible user is determined as follows:
-        - If the administrator has the permission for ``scope=admin, action=userlist``,
-        for a certain realm, users of all resolvers in that realm are visible.
-        This is the case no matter how the permission is defined: either by
-        explicitly naming a realm, by setting all realms via a wildcard
-        (realm="*"), or by implicitly giving permissions for everything in the
-        admin scope by not setting any admin scope policies.
-        - If the resolver is not in any realm yet, the user is also visible if
-        the administrator has permissions for all realms as described in the
-        previous point (either via wildcard or implicitly).
+
+        * If the administrator has the permission for ``scope=admin, action=userlist``,
+          for a certain realm, users of all resolvers in that realm are visible.
+          This is the case no matter how the permission is defined: either by
+          explicitly naming a realm, by setting all realms via a wildcard
+          (realm="*"), or by implicitly giving permissions for everything in the
+          admin scope by not setting any admin scope policies.
+        * If the resolver is not in any realm yet, the user is also visible if
+          the administrator has permissions for all realms as described in the
+          previous point (either via wildcard or implicitly).
+
+        :param resolverName: name of the resolver
+        :type resolverName: str
+
+        :param userId: ID of the user within the resolver
+        :type userId: str
 
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
-            ..code::
-            {
-                "status": boolean,
-                "value": User
-            }
+            .. code::
+
+                {
+                    "status": boolean,
+                    "value": User
+                }
 
         :raises PolicyException:
             if the logged-in admin does not have the correct permissions to list
             users in the given resolver, the exception message is serialized and
             returned. The response has status code 403.
 
+        :raises UserNotFoundException:
+            if the user is not found, the exception message is serialized and
+            returned with status code 404.
+
         :raises Exception:
-            if the user is not found, the response has status code 404,
-            otherwise if any other error occurs the exception message is
-            serialized and returned with status code 500.
+            if any other error occurs the exception message is serialized and
+            returned with status code 500.
         """
 
         try:
