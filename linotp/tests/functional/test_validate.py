@@ -1731,8 +1731,24 @@ class TestValidateController(TestController):
 
         parameters = {"user": "root", "pass": "test"}
         response = self.make_validate_request("samlcheck", params=parameters)
-        assert '"auth": true' in response, response
-        assert '"username": "root"' in response, response
+
+        expected_result = {
+            "status": True,
+            "value": {
+                "auth": True,
+                "attributes": {
+                    "username": "root",
+                    "surname": "",
+                    "mobile": "",
+                    "phone": "",
+                    "givenname": "root-def-passwd",
+                    "email": "",
+                    "realm": "mydefrealm",
+                    "admin": False,
+                },
+            },
+        }
+        assert json.loads(response.body)["result"] == expected_result
 
         self.delete_token("saml0001")
 

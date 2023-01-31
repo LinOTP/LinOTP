@@ -493,7 +493,6 @@ class ValidateController(BaseController):
                         user.realm,
                     )
 
-                    res = userInfo
                     for key in [
                         "username",
                         "surname",
@@ -503,10 +502,13 @@ class ValidateController(BaseController):
                         "email",
                     ]:
 
-                        if key in res:
-                            attributes[key] = res[key]
+                        attributes[key] = userInfo.get(key)
+
+                    realm = user.realm.lower()
                     admin_realm = current_app.config.get("ADMIN_REALM_NAME")
-                    attributes["admin"] = user.realm == admin_realm
+
+                    attributes["realm"] = realm
+                    attributes["admin"] = realm == admin_realm.lower()
                     log.debug(f"[samlcheck] {attributes}")
 
             db.session.commit()
