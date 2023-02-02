@@ -59,6 +59,7 @@ class TestAdminLabel(TestController):
 
         resolvers = response.json["result"]["value"]
         assert resolvers[admin_resolver_name]["admin"], resolvers
+        assert resolvers[admin_resolver_name]["immutable"], resolvers
 
     def test_get_multiple_admin_resolvers(self):
         """verify that all resolvers of the admin realm are labeled as admin
@@ -95,9 +96,11 @@ class TestAdminLabel(TestController):
 
             if resolver_name == fallback_admin_resolver_name:
                 fallback_admin_resolver_spec = resolver_description["spec"]
+                assert resolver_description["immutable"], resolvers
                 continue
 
             resolver_specs.add(resolver_description["spec"])
+            assert not resolver_description["immutable"], resolvers
         # ----------------------------------------------------------------- --
 
         # create the admin realm with the identified resolver
@@ -162,3 +165,4 @@ class TestAdminLabel(TestController):
             response = self.make_system_request("getResolver", params=params)
             resolver = response.json["result"]["value"]
             assert resolver["admin"], response
+            assert resolver["immutable"], response
