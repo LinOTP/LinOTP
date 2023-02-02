@@ -37,6 +37,7 @@ class ResolversController(BaseController, JWTMixin):
             "entry": string,
             "type": string,
             "spec": string,
+            "immutable": boolean,
             "readonly": boolean,
             "admin": boolean,
             "realms": [string]
