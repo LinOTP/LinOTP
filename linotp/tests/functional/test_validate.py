@@ -1743,8 +1743,6 @@ class TestValidateController(TestController):
                     "phone": "",
                     "givenname": "root-def-passwd",
                     "email": "",
-                    "realm": "mydefrealm",
-                    "admin": False,
                 },
             },
         }

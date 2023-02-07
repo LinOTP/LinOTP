@@ -504,11 +504,6 @@ class ValidateController(BaseController):
 
                         attributes[key] = userInfo.get(key)
 
-                    realm = user.realm.lower()
-                    admin_realm = current_app.config.get("ADMIN_REALM_NAME")
-
-                    attributes["realm"] = realm
-                    attributes["admin"] = realm == admin_realm.lower()
                     log.debug(f"[samlcheck] {attributes}")
 
             db.session.commit()
