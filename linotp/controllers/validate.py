@@ -55,7 +55,12 @@ from linotp.lib.policy import (
     set_realm,
 )
 from linotp.lib.realm import getDefaultRealm
-from linotp.lib.reply import sendError, sendQRImageResult, sendResult
+from linotp.lib.reply import (
+    apply_detail_policies,
+    sendError,
+    sendQRImageResult,
+    sendResult,
+)
 from linotp.lib.token import get_token_owner, getTokens4UserOrSerial
 from linotp.lib.user import User, getUserFromParam, getUserId, getUserInfo
 from linotp.lib.util import get_client
@@ -109,7 +114,7 @@ class ValidateController(BaseController):
         :param response: the previously created response - for modification
         :return: return the response
         """
-
+        apply_detail_policies(response)
         current_app.audit_obj.log(g.audit)
         return response
 
@@ -163,18 +168,6 @@ class ValidateController(BaseController):
             # AUTHORIZATION post check
             check_auth_tokentype(g.audit["serial"], exception=True, user=user)
             check_auth_serial(g.audit["serial"], exception=True, user=user)
-
-        # add additional details
-        if is_auth_return(ok, user=user):
-            if opt is None:
-                opt = {}
-            if ok:
-                opt["realm"] = g.audit.get("realm")
-                opt["user"] = g.audit.get("user")
-                opt["tokentype"] = g.audit.get("token_type")
-                opt["serial"] = g.audit.get("serial")
-            else:
-                opt["error"] = g.audit.get("action_detail")
 
         return (ok, opt)
 
@@ -342,6 +335,8 @@ class ValidateController(BaseController):
 
             g.audit["serial"] = " ".join(serials)
             g.audit["token_type"] = " ".join(types)
+            request_context["TokenSerial"] = " ".join(serials)
+            request_context["TokenType"] = " ".join(types)
 
             g.audit["success"] = ok
             g.audit["info"] = str(opt)

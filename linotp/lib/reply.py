@@ -36,14 +36,15 @@ import urllib.request
 
 import qrcode
 
-from flask import Response, current_app, jsonify
+from flask import Response, current_app, g, jsonify
 from flask import request as flask_request
 
 from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib.context import request_context, request_context_safety
 from linotp.lib.error import LinotpError
-from linotp.lib.util import get_api_version, get_version
+from linotp.lib.policy import is_auth_return
+from linotp.lib.util import deep_update, get_api_version, get_version
 
 optional = True
 required = False
@@ -755,6 +756,96 @@ def sendCSVIterator(obj, headers=True):
     except Exception as exx:
         log.debug("error when iterating result for csv output")
         raise exx
+
+
+def validate_transactions(response: Response) -> bool:
+    """
+    Returns `False` if there are transactions and none
+    of them is validated.
+    Otherwise returns `True`.
+    """
+    resp_json = response.json
+    transactions = resp_json.get("detail", {}).get("transactions", {})
+    if transactions:
+        valid_transactions = {
+            k: v
+            for k, v in transactions.items()
+            if v.get("status", "") == "closed" and v.get("valid_tan", False)
+        }
+        if not valid_transactions:
+            return False
+
+    return True
+
+
+def was_login_successful(response: Response) -> bool:
+    resp_json = response.json
+    login_successful = resp_json.get("result", {}).get("value", False)
+    # since result["value"] can also be a dict,
+    # e.g. {"value": false, "failcount": 0},
+    # we need to make this comparison:
+    if isinstance(login_successful, dict):
+        login_successful = login_successful.get("value")
+
+    if not validate_transactions(response):
+        # With no valid transaction,
+        # the login was not successful.
+        # This is needed because of how check_status works
+        login_successful = False
+
+    return login_successful
+
+
+def get_details_for_response(response: Response) -> dict:
+    """Returns details-dict when policy
+        detail_on_success/detail_on_fail is set
+
+    Args:
+        login_successful (bool): flag wether login was successful
+        user (User): User to check policy on. E.g. check if logged in admin has access to given User
+
+    Returns:
+        dict: dict with keys [realm, user, is_linotp_admin, tokentype, serial] or [error]
+    """
+    res = {}
+    user = request_context.get("RequestUser")
+    login_successful = was_login_successful(response)
+
+    if is_auth_return(success=login_successful, user=user):
+        if login_successful:
+            realm = user.realm if user else None
+            admin_realm = current_app.config.get("ADMIN_REALM_NAME")
+
+            res["user"] = user.login if user else None
+            res["realm"] = realm
+            res["is_linotp_admin"] = (
+                realm.lower() == admin_realm.lower() if realm else None
+            )
+            res["tokentype"] = request_context.get("TokenType")
+            res["serial"] = request_context.get("TokenSerial")
+        else:
+            res["error"] = g.audit.get("action_detail")
+
+    return res
+
+
+def apply_detail_policies(response: Response):
+    """
+    If policies detail_on_success/detail_on_fail is set,
+    we extend the response with the corresponding details
+    """
+    resp_json = response.json
+    if not resp_json:
+        return
+
+    additional_details = get_details_for_response(response)
+    if not additional_details:
+        return
+
+    # Update existing `detail` with additional_details
+    resp_json = deep_update(resp_json, {"detail": additional_details})
+    # And overwrite them in the original response
+    response.set_data(json.dumps(resp_json, indent=3).encode())
 
 
 # eof#######################################################
