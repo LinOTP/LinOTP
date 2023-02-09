@@ -1,8 +1,12 @@
-linotp (3.2.3~rc0-1) buster-dev; urgency=low
+linotp (3.2.3~rc1-1) buster-dev; urgency=low
 
+  Fixes:
   * ensure all types of token will be migrated
+  * ensure that dbcommon config triggers the linotp database migration
+  * Customisation of /manage and /selfservice-legacy broken due to url
+    path changes with LinOTP 3
 
--- LinOTP Packaging <packaging@linotp.de>  Wen, 04 Jan 2023 09:00:00 +0100
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 08 Feb 2023 19:00:00 +0100
 
 linotp (3.2.2-1) buster-dev; urgency=low
 
@@ -12,7 +16,7 @@ linotp (3.2.2-1) buster-dev; urgency=low
   * Migrate encypted data 'password' with legacy proprietary padding (LinOTP 2.9)
   * Fix migration of yubico token to LinOTP 3.2
 
--- LinOTP Packaging <packaging@linotp.de>  Wen, 21 Dec 2022 17:40:00 +0100
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 21 Dec 2022 17:40:00 +0100
 
 linotp (3.2.1-1) buster-dev; urgency=low
 
@@ -28,7 +32,7 @@ linotp (3.2.1-1) buster-dev; urgency=low
     being evaluated in certain situations, leading to wrongly attributed permissions to
     logged-in administrators.
 
--- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 18:30:00 +0100
+ -- LinOTP Packaging <packaging@linotp.de>  Fri, 15 Jul 2022 18:30:00 +0100
 
 linotp (3.2-1) buster-dev; urgency=low
 
