@@ -32,6 +32,9 @@ methodes to iterate through users
 import json
 import logging
 
+from linotp.lib.resolver import get_resolver
+from linotp.model.resolver import User as ResolverUser
+
 log = logging.getLogger(__name__)
 
 
@@ -50,7 +53,7 @@ def iterate_users(user_iterators):
         try:
             while True:
                 user_data = next(user_iterator)
-                if type(user_data) in [list]:
+                if isinstance(user_data, list):
                     for data in user_data:
                         data["resolver"] = reso
                         resp = "%s" % json.dumps(data)
@@ -58,6 +61,46 @@ def iterate_users(user_iterators):
                 else:
                     user_data["resolver"] = reso
                     resp = "%s" % json.dumps(user_data)
+                    yield resp
+        except StopIteration as exx:
+            # pass on to next iterator
+            pass
+        except Exception as exx:
+            log.error(
+                "Problem during iteration of userlist iterators: %r", exx
+            )
+
+    return
+
+
+def iterate_resolverusers(user_iterators):
+    """
+    build a userlist iterator / generator that returns the ResolverUser on demand
+
+    :param user_iterators: list of tuple (userlist iterators, resolver descr)
+    :return: generator of ResolverUsers (yield)
+    """
+
+    for itera in user_iterators:
+        user_iterator = itera[0]
+        resolver_spec = itera[1]
+        resolver_name = resolver_spec.split(".")[-1]
+        resolver = get_resolver(resolver_name)
+        try:
+            while True:
+                user_data = next(user_iterator)
+                if isinstance(user_data, list):
+                    for data in user_data:
+                        user = ResolverUser.from_dict(
+                            resolver.name, resolver.type, data
+                        ).as_dict()
+                        resp = "%s" % json.dumps(user)
+                        yield resp
+                else:
+                    user = ResolverUser.from_dict(
+                        resolver.name, resolver.type, user_data
+                    ).as_dict()
+                    resp = "%s" % json.dumps(user)
                     yield resp
         except StopIteration as exx:
             # pass on to next iterator
