@@ -364,7 +364,7 @@ def sendResultIterator(
 
     start_at = 0
     stop_at = 0
-    if page:
+    if page is not None:
         if not rp:
             rp = 16
         try:
@@ -409,9 +409,8 @@ def sendResultIterator(
     counter = 0
     for next_one in obj:
         # next_one = json.dumps(next_entry)
-        counter = counter + 1
         # are we running in paging mode?
-        if page:
+        if page is not None:
             if counter >= start_at and counter < stop_at:
                 res = "%s%s\n" % (sep, next_one)
                 sep = ","
@@ -419,11 +418,13 @@ def sendResultIterator(
             if counter >= stop_at:
                 # stop iterating if we reached the last one of the page
                 break
+            counter = counter + 1
         else:
             # no paging - no limit
             res = "%s%s\n" % (sep, next_one)
             sep = ","
             yield res
+            counter = counter + 1
 
     # we add the amount of queried objects
     total = '"queried" : %d' % counter

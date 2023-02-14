@@ -301,13 +301,13 @@ class TestAdminController(TestController):
         queried = resp.get("result", {}).get("queried", 0)
         assert queried == num, resp
 
-        # test for optional pagesize, which falls back to the pagesize of 15
+        # test for optional pagesize, which falls back to the pagesize of 16
         parameters = {"username": "*", "page": 0}
         response = self.make_admin_request("userlist", params=parameters)
         assert '"status": true,' in response, response
         resp = json.loads(response.body)
         values = resp.get("result", {}).get("value", [])
-        assert len(values) == 15, resp
+        assert len(values) == 16, resp
 
         # test for ValueError Exception if page or rp is not of int
         # though the returned data is a json response
