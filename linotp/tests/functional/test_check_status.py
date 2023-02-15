@@ -104,147 +104,198 @@ class TestCheckStatus(TestController):
         """
         setup hmac token to support multiple challenges
         """
-        policy = {
-            "name": "hmac_challenge_response",
-            "scope": "authentication",
-            "action": "challenge_response=hmac",
-            "realm": "*",
-            "user": "*",
-        }
+        # somehow pytest.mark.parametrize does not work
+        # so we mimic it here:
+        for use_detail_policy in [True, False]:
 
-        # define challenge response for hmac token
-        response = self.make_system_request("setPolicy", params=policy)
-        assert '"status": true' in response, response
+            policies = [
+                {
+                    "name": "hmac_challenge_response",
+                    "scope": "authentication",
+                    "action": "challenge_response=hmac",
+                    "realm": "*",
+                    "user": "*",
+                },
+                {
+                    "name": "detail_1",
+                    "scope": "authorization",
+                    "active": use_detail_policy,
+                    "realm": "*",
+                    "action": "detail_on_success",
+                    "user": "*",
+                    "client": "",
+                },
+                {
+                    "name": "detail_2",
+                    "scope": "authorization",
+                    "active": use_detail_policy,
+                    "realm": "*",
+                    "action": "detail_on_fail",
+                    "user": "*",
+                    "client": "",
+                },
+            ]
 
-        param = {"DefaultChallengeValidityTime": "120"}
-        response = self.make_system_request("setConfig", params=param)
-        assert '"status": true' in response, response
-
-        serial, otps = self.create_hmac_token(
-            user="passthru_user1", pin="123!"
-        )
-
-        # trigger challenge
-        params = {"user": "passthru_user1", "pass": "123!"}
-        response = self.make_validate_request("check", params)
-        assert '"value": false' in response, response
-
-        # and extract the transaction id
-        jresp = json.loads(response.body)
-        transid = jresp.get("detail", {}).get("transactionid", None)
-        assert transid is not None, response
-
-        # now check for the status
-        params = {
-            "user": "passthru_user1",
-            "pass": "123!",
-            "transactionid": transid,
-        }
-        response = self.make_validate_request("check_status", params)
-        assert '"received_tan": false' in response, response
-        assert '"valid_tan": false' in response, response
-        assert '"received_count": 0' in response, response
-        assert (
-            g.audit["user"] == "passthru_user1"
-        ), "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
-            g.audit["user"]
-        )
-        assert (
-            g.audit["realm"] == "mydefrealm"
-        ), "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
-            g.audit["realm"]
-        )
-        assert (
-            g.audit["token_type"] == "HMAC"
-        ), "token type 'HMAC' should have been written to audit log instead of '{}'".format(
-            g.audit["token_type"]
-        )
-        assert (
-            g.audit["serial"] == serial
-        ), "serial {} should have been written to audit log instead of '{}'".format(
-            serial, g.audit["serial"]
-        )
-
-        # invalidate request
-        params = {
-            "user": "passthru_user1",
-            "pass": "112233",
-            "transactionid": transid,
-        }
-        response = self.make_validate_request("check", params)
-        assert '"value": false' in response, response
-
-        # now check for the status
-        params = {
-            "user": "passthru_user1",
-            "pass": "123!",
-            "transactionid": transid,
-        }
-
-        response = self.make_validate_request("check_status", params)
-        assert '"received_tan": true' in response, response
-        assert '"valid_tan": false' in response, response
-        assert '"received_count": 1' in response, response
-
-        # validate request
-        params = {
-            "user": "passthru_user1",
-            "pass": otps[0],
-            "transactionid": transid,
-        }
-        response = self.make_validate_request("check", params)
-        assert '"value": true' in response, response
-
-        # now check for the status
-        params = {
-            "user": "passthru_user1",
-            "pass": "123!",
-            "transactionid": transid,
-        }
-
-        response = self.make_validate_request("check_status", params)
-
-        assert '"received_tan": true' in response, response
-        assert '"valid_tan": true' in response, response
-        assert '"received_count": 2' in response, response
-
-        # verify that the challenge expires
-        param = {"DefaultChallengeValidityTime": "1"}
-        response = self.make_system_request("setConfig", params=param)
-        assert '"status": true' in response, response
-
-        start = datetime.datetime.now()
-        try:
-            while True:
-
-                # now check for the status
-                params = {
-                    "user": "passthru_user1",
-                    "pass": "123!",
-                    "transactionid": transid,
-                }
-
-                response_stat = self.make_validate_request(
-                    "check_status", params
-                )
-                if '"value": false' in response_stat:
-                    break
-
-                now = datetime.datetime.now()
-                assert now < start + datetime.timedelta(seconds=3), (
-                    "challenge did not expire: %r" % response
+            # set policy for authorization
+            for pol in policies:
+                auth_user = "superadmin"
+                response = self.make_system_request(
+                    action="setPolicy", params=pol, auth_user=auth_user
                 )
 
-        finally:
-            # reset to default expiration time
+                assert response.json["result"]["status"], response
+                assert response.json["result"]["value"][
+                    "setPolicy %s" % pol["name"]
+                ], response
+
             param = {"DefaultChallengeValidityTime": "120"}
             response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
-        self.delete_token(serial)
-        self.delete_policy("hmac_challenge_response")
+            serial, otps = self.create_hmac_token(
+                user="passthru_user1", pin="123!"
+            )
 
-        return
+            # trigger challenge
+            params = {"user": "passthru_user1", "pass": "123!"}
+            response = self.make_validate_request("check", params)
+            assert '"value": false' in response, response
+            if use_detail_policy:
+                assert '"error":' in response, response
+
+            # and extract the transaction id
+            jresp = json.loads(response.body)
+            transid = jresp.get("detail", {}).get("transactionid", None)
+            assert transid is not None, response
+
+            # now check for the status
+            params = {
+                "user": "passthru_user1",
+                "pass": "123!",
+                "transactionid": transid,
+            }
+            response = self.make_validate_request("check_status", params)
+            assert '"received_tan": false' in response, response
+            assert '"valid_tan": false' in response, response
+            assert '"received_count": 0' in response, response
+            assert ('"error":' in response) == use_detail_policy, response
+            assert (
+                g.audit["user"] == "passthru_user1"
+            ), "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
+                g.audit["user"]
+            )
+            assert (
+                g.audit["realm"] == "mydefrealm"
+            ), "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
+                g.audit["realm"]
+            )
+            assert (
+                g.audit["token_type"] == "HMAC"
+            ), "token type 'HMAC' should have been written to audit log instead of '{}'".format(
+                g.audit["token_type"]
+            )
+            assert (
+                g.audit["serial"] == serial
+            ), "serial {} should have been written to audit log instead of '{}'".format(
+                serial, g.audit["serial"]
+            )
+
+            # invalidate request
+            params = {
+                "user": "passthru_user1",
+                "pass": "112233",
+                "transactionid": transid,
+            }
+            response = self.make_validate_request("check", params)
+            assert '"value": false' in response, response
+
+            # now check for the status
+            params = {
+                "user": "passthru_user1",
+                "pass": "123!",
+                "transactionid": transid,
+            }
+
+            response = self.make_validate_request("check_status", params)
+            assert '"received_tan": true' in response, response
+            assert '"valid_tan": false' in response, response
+            assert '"received_count": 1' in response, response
+            assert ('"error":' in response) == use_detail_policy, response
+
+            # validate request
+            params = {
+                "user": "passthru_user1",
+                "pass": otps[0],
+                "transactionid": transid,
+            }
+            response = self.make_validate_request("check", params)
+            assert '"value": true' in response, response
+
+            # now check for the status
+            params = {
+                "user": "passthru_user1",
+                "pass": "123!",
+                "transactionid": transid,
+            }
+
+            response = self.make_validate_request("check_status", params)
+
+            assert '"received_tan": true' in response, response
+            assert '"valid_tan": true' in response, response
+            assert '"received_count": 2' in response, response
+            assert (
+                response.json.get("detail", {}).get("serial") == "F722362"
+            ) == use_detail_policy, response
+            assert (
+                response.json.get("detail", {}).get("realm") == "mydefrealm"
+            ) == use_detail_policy, response
+            assert (
+                response.json.get("detail", {}).get("user") == "passthru_user1"
+            ) == use_detail_policy, response
+            assert (
+                response.json.get("detail", {}).get("is_linotp_admin") == False
+            ) == use_detail_policy, response
+            assert (
+                response.json.get("detail", {}).get("tokentype") == "HMAC"
+            ) == use_detail_policy, response
+
+            # verify that the challenge expires
+            param = {"DefaultChallengeValidityTime": "1"}
+            response = self.make_system_request("setConfig", params=param)
+            assert '"status": true' in response, response
+
+            start = datetime.datetime.now()
+            try:
+                while True:
+
+                    # now check for the status
+                    params = {
+                        "user": "passthru_user1",
+                        "pass": "123!",
+                        "transactionid": transid,
+                    }
+
+                    response_stat = self.make_validate_request(
+                        "check_status", params
+                    )
+                    if '"value": false' in response_stat:
+                        assert (
+                            '"error":' in response_stat
+                        ) == use_detail_policy, response_stat
+                        break
+
+                    now = datetime.datetime.now()
+                    assert now < start + datetime.timedelta(seconds=3), (
+                        "challenge did not expire: %r" % response
+                    )
+
+            finally:
+                # reset to default expiration time
+                param = {"DefaultChallengeValidityTime": "120"}
+                response = self.make_system_request("setConfig", params=param)
+                assert '"status": true' in response, response
+
+            self.delete_token(serial)
 
     def test_multiple_token(self):
         """

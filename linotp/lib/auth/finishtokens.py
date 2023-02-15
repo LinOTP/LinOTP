@@ -29,6 +29,7 @@ import logging
 from flask import g
 
 from linotp.lib.challenges import Challenges
+from linotp.lib.context import request_context
 from linotp.lib.error import UserError
 from linotp.lib.policy import (
     get_pin_policies,
@@ -170,6 +171,17 @@ class FinishTokens(object):
                     user.login,
                     user.realm,
                 )
+                g.audit["user"] = user.login
+                g.audit["realm"] = user.realm
+                request_context["TokenType"] = token.type
+                request_context["TokenSerial"] = token.getSerial()
+                try:
+                    # We try to set a sanitized `RequestUser`
+                    # because `user` is build from user-input
+                    owner = get_token_owner(token)
+                    request_context["RequestUser"] = owner
+                except Exception:
+                    request_context["RequestUser"] = user
             else:
                 action_detail = (
                     "serial %r successfully authenticated." % token.getSerial()

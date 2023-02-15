@@ -957,6 +957,44 @@ class TestQRToken(TestController):
 
         return encode_base64_urlsafe(header + R + ciphertext + tag)
 
+    def set_detail_policies(self, active=True):
+        policies = [
+            {
+                "name": "detail_on_success",
+                "scope": "authorization",
+                "realm": "*",
+                "action": "detail_on_success",
+                "user": "*",
+                "client": "",
+                "active": active,
+            },
+            {
+                "name": "detail_on_fail",
+                "scope": "authorization",
+                "realm": "*",
+                "action": "detail_on_fail",
+                "user": "*",
+                "client": "",
+                "active": active,
+            },
+        ]
+
+        # set policy for authorization
+        for pol in policies:
+            auth_user = "superadmin"
+            response = self.make_system_request(
+                action="setPolicy", params=pol, auth_user=auth_user
+            )
+
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"][
+                "setPolicy %s" % pol["name"]
+            ], response
+
+    def remove_detail_policies(self):
+        for policy_name in ["detail_on_success", "detail_on_fail"]:
+            self.delete_policy(policy_name, auth_user="admin")
+
     # --------------------------------------------------------------------------- --
     def test_re_activate(self):
         """
@@ -1879,36 +1917,74 @@ class TestQRToken(TestController):
 
         # ------------------------------------------------------------------- --
 
-        response_dict = self.create_multiple_challenges("root", "1234")
-        challenges = response_dict["detail"]["challenges"]
+        for use_detail_policy in [True, False]:
+            self.set_detail_policies(active=use_detail_policy)
 
-        serial = list(challenges.keys())[0]
-        challenge_url = challenges[serial]["message"]
+            response_dict = self.create_multiple_challenges("root", "1234")
+            challenges = response_dict["detail"]["challenges"]
 
-        challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
+            serial = list(challenges.keys())[0]
+            challenge_url = challenges[serial]["message"]
 
-        transaction_id = response_dict["detail"]["transactionid"]
-        params = {"transactionid": transaction_id, "pass": sig}
+            challenge, sig, tan = self.decrypt_and_verify_challenge(
+                challenge_url
+            )
 
-        # ------------------------------------------------------------------- --
+            transaction_id = response_dict["detail"]["transactionid"]
+            params = {"transactionid": transaction_id, "pass": sig}
 
-        response = self.make_validate_request("check_t", params)
-        response_dict = json.loads(response.body)
-        assert "status" in response_dict.get("result", {})
+            # ------------------------------------------------------------------- --
 
-        status = response_dict.get("result", {}).get("status")
-        assert status
+            response = self.make_validate_request("check_t", params)
+            response_dict = json.loads(response.body)
+            assert "status" in response_dict.get("result", {})
 
-        # ------------------------------------------------------------------- --
+            status = response_dict.get("result", {}).get("status")
+            assert status
 
-        value = response_dict.get("result", {}).get("value")
+            # ------------------------------------------------------------------- --
 
-        assert "value" in value
-        assert "failcount" in value
+            value = response_dict.get("result", {}).get("value")
 
-        value_value = value.get("value")
+            assert "value" in value
+            assert "failcount" in value
 
-        assert value_value
+            value_value = value.get("value")
+
+            assert value_value
+
+            # ------------------------------------------------------------------- --
+            # check detail_on_success
+            assert (
+                response.json.get("detail", {}).get("realm") == "mydefrealm"
+            ) == use_detail_policy, response
+            assert (
+                response.json.get("detail", {}).get("user") == "root"
+            ) == use_detail_policy, response
+            assert (
+                response.json.get("detail", {}).get("is_linotp_admin") == False
+            ) == use_detail_policy, response
+            assert (
+                response.json.get("detail", {}).get("tokentype") == "qr"
+            ) == use_detail_policy, response
+            # serial will always be included
+            assert (
+                response.json.get("detail", {}).get("serial") == serial
+            ), response
+
+            # check detail_on_fail
+            failing_params = {
+                "transactionid": transaction_id,
+                "pass": "failing_pass",
+            }
+            failing_response = self.make_validate_request(
+                "check_t", failing_params
+            )
+            assert (
+                '"error":' in failing_response
+            ) == use_detail_policy, failing_response
+
+            self.set_detail_policies(active=False)
 
         # ------------------------------------------------------------------- --
 
