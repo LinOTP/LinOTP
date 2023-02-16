@@ -170,3 +170,29 @@ class TestRealms(TestController):
         self.delete_policy(name="admin3_write_realms", auth_user="admin")
         self.delete_policy(name="admin2_read_realms", auth_user="admin")
         self.delete_policy(name="admin_read_write_realms", auth_user="admin")
+
+    def test_get_users(self):
+        realm_name = "myDefRealm"
+        response = self.make_api_v2_request(
+            f"/realms/{realm_name}/users", auth_user="admin"
+        )
+        result = response.json
+        # myDefRealm has 27 users
+        assert 27 == len(result["result"]["value"])
+
+        response = self.make_api_v2_request(
+            f"/realms/{realm_name}/users",
+            params={"username": "*passt*"},
+            auth_user="admin",
+        )
+        result = response.json
+        # 2 passthru_user in myDefRealm
+        assert 2 == len(result["result"]["value"])
+
+        response = self.make_api_v2_request(
+            f"/realms/{realm_name}/users",
+            params={"rp": "3", "page": 0},
+            auth_user="admin",
+        )
+        result = response.json
+        assert 3 == len(result["result"]["value"])

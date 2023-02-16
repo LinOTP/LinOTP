@@ -101,16 +101,20 @@ class TestReplyTestCase(object):
         # we need to enclose bar into double qoutes,
         # because the json is assembled manually
 
-        request_context_copy = {"foo": '"bar"'}
+        request_context_copy = {"one": '"one"', "two": '"two"'}
 
         def request_context_test_iterator():
             # this will raise an error if it is called
             # outside of request_context_safety
-            res = request_context_copy.get("foo")
+            res = request_context_copy.get("one")
+            yield res
+            res = request_context_copy.get("two")
             yield res
 
         try:
-            res = sendResultIterator(obj=request_context_test_iterator())
+            res = sendResultIterator(
+                obj=request_context_test_iterator(), rp=None, page=None
+            )
         except ProgrammingError:
             assert (
                 False,
@@ -124,4 +128,23 @@ class TestReplyTestCase(object):
         result_dict = json.loads(result)
         value = result_dict.get("result", {}).get("value")
 
-        assert "bar" in value
+        assert ["one", "two"] == value
+
+        try:
+            res = sendResultIterator(
+                obj=request_context_test_iterator(), rp=1, page=0
+            )
+        except ProgrammingError:
+            assert (
+                False,
+                "request_context was used outside of request_context_safety",
+            )
+
+        result = ""
+        for chunk in res:
+            result += chunk
+
+        result_dict = json.loads(result)
+        value = result_dict.get("result", {}).get("value")
+
+        assert ["one"] == value
