@@ -34,6 +34,7 @@ import os
 from hashlib import sha256
 
 from Cryptodome.Cipher import AES
+from Cryptodome.Util.Padding import pad, unpad
 
 from linotp.lib.crypto.utils import zerome
 from linotp.lib.security import SecurityModule
@@ -282,8 +283,7 @@ class DefaultSecurityModule(SecurityModule):
         :param input_data: the data, which should be padded
         :return: data with appended padding
         """
-        padding_length = 16 - len(input_data) % 16
-        return input_data + padding_length * bytes([padding_length])
+        return pad(data_to_pad=input_data, block_size=AES.block_size)
 
     @staticmethod
     def unpadd_data(input_data):
@@ -293,8 +293,7 @@ class DefaultSecurityModule(SecurityModule):
         :param input_data: the data with appended padding
         :return: stripped of data
         """
-        cut = int.from_bytes(input_data[-1:], "big")
-        return input_data[:-cut]
+        return unpad(padded_data=input_data, block_size=AES.block_size)
 
     def decryptPassword(self, cryptPass: str) -> bytes:
         """

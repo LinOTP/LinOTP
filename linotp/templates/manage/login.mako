@@ -53,7 +53,7 @@
   <link type="text/css" rel="stylesheet" href="/static/css/linotp.css?ref=${c.version_ref}">
   <link type="text/css" rel="stylesheet" href="/static/manage/style.css?ref=${c.version_ref}">
   <link type="text/css" rel="stylesheet" href="/static/manage/login.css?ref=${c.version_ref}">
-  <link type="text/css" rel="stylesheet" href="/custom/manage-style.css?ref=${c.version_ref}">
+  <link type="text/css" rel="stylesheet" href="/static/custom/manage-style.css?ref=${c.version_ref}">
 
 </head>
 
