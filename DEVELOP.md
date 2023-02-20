@@ -78,7 +78,7 @@ $ linotp init database
 $ linotp init audit-keys
 $ linotp init enc-key
 $ linotp local-admins add <your_username>
-$ linotp local-admins password -p <your_password> <your_username>
+$ linotp local-admins password --password <your_password> <your_username>
 $ linotp run
 ```
 
