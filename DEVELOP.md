@@ -33,7 +33,7 @@ packages that LinOTP depends upon.
 On a Debian-based system, run as a superuser:
 ```terminal
 $ apt-get install build-essential python3-dev \
-                python3-mysqldb mariadb-server libmariadbclient-dev \
+                python3-mysqldb mariadb-server libmariadb-dev-compat libmariadb-dev \
                 libldap2-dev libsasl2-dev \
                 libssl-dev
 ```
