@@ -483,7 +483,8 @@ class Audit(AuditBase):
 
         log.debug('sql audit interface "delete_all_entries" called.')
         try:
-            db.session.query(AuditTable).delete()
+            command = f"TRUNCATE TABLE {AuditTable.__tablename__};"
+            db.session.execute(command)
         except Exception as exx:
             db.session.rollback()
             raise exx

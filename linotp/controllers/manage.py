@@ -123,9 +123,6 @@ class ManageController(BaseController):
             # -------------------------------------------------------------- --
 
             # Session handling for the functions, that show data:
-            # Also exclude custom-style.css, since the CSRF check
-            # will always fail and return a HTTP 401 anyway.
-            # A HTTP 404 makes more sense.
             if request.path.lower() in [
                 "/manage/",
                 "/manage",
@@ -135,7 +132,6 @@ class ManageController(BaseController):
                 "/manage/tokenview",
                 "/manage/userview",
                 "/manage/help",
-                "/manage/custom-style.css",
             ]:
                 pass
             else:

@@ -365,7 +365,7 @@ class Migration:
     db_model_key = "linotp.sql_data_model_version"
 
     # define the chain of migration steps starting with the not existing one
-
+    #
     migration_steps = [
         None,
         "2.9.1.0",
@@ -374,7 +374,23 @@ class Migration:
         "3.0.0.0",
         "3.1.0.0",
         "3.2.0.0",
+        "3.2.2.0",
+        "3.2.3.0",
     ]
+    #!! the migration number should be the same as the linotp release number /
+    # debian release number !!
+    #
+    # Background:
+    #  the migration steps names are evaluated and used in the debian
+    #  dbcommon-config to trigger database migration: dbcommon-config expects
+    #  for every migration step an update script with a name same as its
+    #  belonging release. These names are compared the current installed
+    #  version and the upcomming debian package version and every update script
+    # (with this version number) will be executed upfront to the installation.
+    #
+    # With linotp we need only one file with the current release name as all
+    # migration up to the current version are done within the
+    # 'linotp init database' command.
 
     def __init__(self, engine: Engine):
         """Class init.
@@ -817,7 +833,7 @@ class Migration:
 
         for entry in model.Config.query.all():
 
-            if entry.Type not in ["encrypted_data"]:
+            if entry.Type not in ["encrypted_data", "password"]:
                 continue
 
             try:
@@ -825,6 +841,10 @@ class Migration:
                 value = sec_module.decryptPassword(entry.Value).decode("utf-8")
 
                 entry.Value = sec_module.encryptPassword(value.encode("utf-8"))
+
+                # Change the type to `encrypted_data` since type `password` is used equivalently
+                # and thus can be unified
+                entry.Type = "encrypted_data"
 
                 model.db.session.add(entry)
 
@@ -867,6 +887,8 @@ class Migration:
             if token.LinOtpTokenType in ["qr", "push"]:
                 continue
 
+            if not token.LinOtpKeyEnc:
+                continue
             # ------------------------------------------------------------- --
 
             encrypted_value = binascii.unhexlify(token.LinOtpKeyEnc)
@@ -910,4 +932,24 @@ class Migration:
 
         return True, (
             f"internal (managed) admin resolver {admin_resolver_name} created"
+        )
+
+    def migrate_3_2_2_0(self):
+        """Migration to 3.2.2 drops all challenges"""
+
+        model.Challenge.query.delete()
+
+        return True, (
+            "Migration to 3.2.2 - all challenge entries are deleted."
+        )
+
+    def migrate_3_2_3_0(self):
+        """
+        Migration to 3.2.3 - dummy migration step
+
+        which is required to trigger debian dbconfig upgrade
+        """
+
+        return True, (
+            "Migration to 3.2.3 - to trigger debian dbconfig upgrade"
         )

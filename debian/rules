@@ -6,6 +6,7 @@ export PYBUILD_NAME=linotp
 export PYBUILD_DISABLE=test
 
 export DEB_VERSION = $(shell sed -ne '1{s/^.* (//;s/).*$$//;p}' debian/changelog)
+export LATEST_MIGRATION = $(shell grep 'def migrate_[[:digit:]].*' linotp/model/migrate.py | sort -n | tail -n 1 | cut -d '_' -f 2,3,4 | sed -e 's/_/./g')
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
@@ -24,7 +25,7 @@ override_dh_install:
 		# Upgrades from 2 -> 3 require the new configuration settings \
 		upgradedir=${DBSCRIPTS_DEST}/upgrade/$${DB} ;\
 		mkdir -p -m755 $$upgradedir ;\
-		for VERSION in 3.0rc0; do \
+		for VERSION in ${LATEST_MIGRATION}; do \
 			install -m755 debian/dbconfig-common/db-install $$upgradedir/$${VERSION} ;\
 		done ;\
 	done

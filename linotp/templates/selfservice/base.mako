@@ -41,7 +41,7 @@
 
 <link type="text/css" rel="stylesheet" href="/static/css/linotp.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css?ref=${c.version_ref}">
-<link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/static/custom/selfservice-style.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/static/css/flexigrid/flexigrid.css?ref=${c.version_ref}">
 
 <link type="text/css" href="/static/css/jquery-ui/jquery-ui.min.css?ref=${c.version_ref}" rel="stylesheet">

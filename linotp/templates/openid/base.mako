@@ -38,8 +38,8 @@
 
 <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
-<link type="text/css" rel="stylesheet" href="/openid/style.css">
-<link type="text/css" rel="stylesheet" href="/custom/openid-style.css">
+<link type="text/css" rel="stylesheet" href="/static/openid/style.css">
+<link type="text/css" rel="stylesheet" href="/static/custom/openid-style.css">
 
 </head>
 
