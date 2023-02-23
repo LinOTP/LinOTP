@@ -33,7 +33,7 @@ packages that LinOTP depends upon.
 On a Debian-based system, run as a superuser:
 ```terminal
 $ apt-get install build-essential python3-dev \
-                python3-mysqldb mariadb-server libmariadbclient-dev \
+                python3-mysqldb mariadb-server libmariadb-dev-compat libmariadb-dev \
                 libldap2-dev libsasl2-dev \
                 libssl-dev
 ```
@@ -78,7 +78,7 @@ $ linotp init database
 $ linotp init audit-keys
 $ linotp init enc-key
 $ linotp local-admins add <your_username>
-$ linotp local-admins password -p <your_password> <your_username>
+$ linotp local-admins password --password <your_password> <your_username>
 $ linotp run
 ```
 
