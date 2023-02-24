@@ -1044,7 +1044,7 @@ class TokenHandler(object):
             # filter if assigned or not
             if "0" == str(assigned):
                 sqlQuery = sqlQuery.filter(
-                    or_(Token.LinOtpUserid is None, Token.LinOtpUserid == "")
+                    or_(Token.LinOtpUserid == None, Token.LinOtpUserid == "")
                 )
             elif "1" == str(assigned):
                 sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
