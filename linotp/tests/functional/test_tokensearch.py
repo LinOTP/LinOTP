@@ -180,5 +180,31 @@ class TestTokensearch(TestController):
             response = self.make_api_v2_request("/tokens/", params=params)
             assert search_dict["serial_in_response"] == (serial in response)
 
+    def test_search_token_with_searchTerm(self):
+        self.set_splitAtSign(False)
+        # create token
+        params = {"type": "spass", "user": "pass.thru@example.com"}
+        serial = self.create_token(params)
+
+        search_dicts = [
+            {
+                "params": {"searchTerm": "/:active:/"},
+                "serial_in_response": True,
+            },
+            {"params": {"searchTerm": serial}, "serial_in_response": True},
+            {
+                "params": {"searchTerm": "/:inactive:/"},
+                "serial_in_response": False,
+            },
+            {
+                "params": {"searchTerm": "SomeOtherSearchTerm"},
+                "serial_in_response": False,
+            },
+        ]
+        for search_dict in search_dicts:
+            params = search_dict["params"]
+            response = self.make_api_v2_request("/tokens/", params=params)
+            assert search_dict["serial_in_response"] == (serial in response)
+
 
 # eof #
