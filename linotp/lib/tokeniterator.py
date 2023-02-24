@@ -183,7 +183,10 @@ class TokenIterator(object):
 
         if searchType == "blank":
             ucondition = and_(
-                or_(Token.LinOtpUserid == "", Token.LinOtpUserid is None)
+                or_(
+                    Token.LinOtpUserid == "",
+                    Token.LinOtpUserid == None,
+                )
             )
 
         if searchType == "exact":
@@ -268,7 +271,7 @@ class TokenIterator(object):
                 ucondition = and_(Token.LinOtpTokenSerialnumber == "")
         return ucondition
 
-    def _get_filter_confition(self, filter):
+    def _get_filter_condition(self, filter):
         conditon = None
 
         if filter is None:
@@ -279,14 +282,14 @@ class TokenIterator(object):
             "/:token is active:/",
             "/:token is enabled:/",
         ]:
-            condition = and_(Token.LinOtpIsactive is True)
+            condition = and_(Token.LinOtpIsactive == True)
         elif filter in [
             "/:inactive:/",
             "/:disabled:/",
             "/:token is inactive:/",
             "/:token is disabled:/",
         ]:
-            condition = and_(Token.LinOtpIsactive is False)
+            condition = and_(Token.LinOtpIsactive == False)
         else:
             # search in other colums
             condition = or_(
@@ -491,7 +494,7 @@ class TokenIterator(object):
 
         scondition = self._get_serial_condition(serial, filterRealm)
         ucondition = self._get_user_condition(user, valid_realms)
-        fcondition = self._get_filter_confition(filter)
+        fcondition = self._get_filter_condition(filter)
         rcondition = self._get_realm_condition(valid_realms, filterRealm)
         pcondition = self._get_params_condition(params)
 
