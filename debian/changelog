@@ -20,6 +20,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * After a logout the jwt token can not be reused
   * Correct pagination of sendResultIterator for page 0 and first object in list
   * Filtering for active/inactive token works correctly
+  * no more support for truncated transaction ids
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 

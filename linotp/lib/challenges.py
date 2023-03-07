@@ -48,9 +48,9 @@ class Challenges(object):
     DefaultTransactionIdLength = 17
 
     @staticmethod
-    def get_tranactionid_length():
+    def get_transactionid_length():
         """
-        get transaction_id length from config and check if it is in range
+        get transaction id length from config and check if it is in range
         :return: length of transaction id
         """
         transid_len = int(
@@ -91,12 +91,14 @@ class Challenges(object):
         conditions = ()
 
         if transid:
-            transid_len = Challenges.get_tranactionid_length()
+            transid_len = Challenges.get_transactionid_length()
 
             if len(transid) == transid_len:
                 conditions += (and_(Challenge.transid == transid),)
             else:
-                conditions += (and_(Challenge.transid.startswith(transid)),)
+                conditions += (
+                    and_(Challenge.transid.startswith(transid + ".")),
+                )
 
         if serial:
             conditions += (and_(Challenge.tokenserial == serial),)
@@ -139,7 +141,7 @@ class Challenges(object):
 
         hsm = context["hsm"].get("obj")
 
-        transid_len = Challenges.get_tranactionid_length()
+        transid_len = Challenges.get_transactionid_length()
 
         id_length = transid_len - len(id_postfix)
 
