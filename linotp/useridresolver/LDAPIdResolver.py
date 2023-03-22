@@ -249,7 +249,6 @@ class IdResolver(UserIdResolver):
         l_obj = init_ldap(uri, trace_level)
 
         if uri.startswith("ldaps://") or caller.enforce_tls:
-
             # If we establish an ldaps connection, we currently accept
             # untrusted server certificates - default has to be switched.
             # With the option 'only_trusted_certs' the server certificate
@@ -393,11 +392,9 @@ class IdResolver(UserIdResolver):
             failed = None
 
             for s_uri in uri.split(","):
-
                 log.info("testing connection with uri %r", s_uri)
 
                 try:
-
                     l_obj = IdResolver.connect(
                         s_uri, caller, trace_level=trace_level
                     )
@@ -727,19 +724,16 @@ class IdResolver(UserIdResolver):
         s_filter = "(%s=%s)" % (self.uidType, userid)
 
         if self.uidType.lower() == "dn":
-
             s_base = userid
             s_scope = ldap.SCOPE_BASE
             s_filter = None
 
         elif self.uidType.lower() == "objectguid":
-
             s_base = "<guid=%s>" % (userid)
             s_scope = ldap.SCOPE_BASE
             s_filter = None
 
             if self.proxy:
-
                 s_base = self.base
                 s_scope = ldap.SCOPE_SUBTREE
                 s_filter = "(objectGuid=%s)" % escape_hex_for_search(userid)
@@ -751,7 +745,6 @@ class IdResolver(UserIdResolver):
         l_obj = None
 
         try:
-
             l_obj = self.bind()
 
             if not l_obj:
@@ -796,10 +789,8 @@ class IdResolver(UserIdResolver):
 
         # add the the other key, [values] from the second result entry
         for key, uval in result[1].items():
-
             entries = []
             for udata in uval:
-
                 if key == "objectGUID":
                     udata = udata.hex()
 
@@ -855,10 +846,8 @@ class IdResolver(UserIdResolver):
         # we will add all userinfo fields!
 
         for f in self.userinfo:
-
             val = ""
             if self.userinfo[f] in user:
-
                 val = user[self.userinfo[f]][0]
 
                 if isinstance(val, bytes):
@@ -962,7 +951,6 @@ class IdResolver(UserIdResolver):
         # parse the config entries, extract and type convert the entries
 
         try:
-
             l_config, missing = self.filter_config(config, conf)
 
         except Exception as exx:
@@ -1232,7 +1220,6 @@ class IdResolver(UserIdResolver):
 
         resultList = []
         try:
-
             # ---------------------------------------------------------- --
 
             # prepare the list of attributes that we wish to recieve
@@ -1259,7 +1246,6 @@ class IdResolver(UserIdResolver):
             log.debug("[getUserList] uidType: %r", self.uidType)
 
             while True:
-
                 userdata = {}
 
                 result_type, result_data = l_obj.result(
@@ -1433,10 +1419,8 @@ class IdResolver(UserIdResolver):
         done = False
         results_size = 0
         try:
-
             log.debug("uidType: %r", self.uidType)
             while not done:
-
                 if limit_size and results_size >= self.sizelimit:
                     break
 
@@ -1465,7 +1449,6 @@ class IdResolver(UserIdResolver):
                 # process the result into array of dict
                 user_list = []
                 for result_entry in result_data:
-
                     user_info = self._process_result(result_entry)
 
                     if user_info:
@@ -1560,7 +1543,6 @@ class IdResolver(UserIdResolver):
 
         # finally add all existing userinfos (wrt the mapping)
         for user_key, ldap_key in self.userinfo.items():
-
             if ldap_key in account_info:
                 # An attribute can hold more than 1 value
                 # So we only take the first one at the moment
