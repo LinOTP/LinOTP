@@ -1191,24 +1191,9 @@ class IdResolver(UserIdResolver):
         log.debug("[getUserList] searchfilter: %r", searchFilter)
 
         # add searchfilter attributes of searchDict
-        try:
-            for skey, sval in searchDict.items():
-                log.debug("[getUserList] searchekys: %r / %r", skey, sval)
-                if skey in self.userinfo:
-                    key = self.userinfo[skey]
-                    value = searchDict[skey]
-                    # value and searchFilter are Unicode!
-                    searchFilter += "(%s=%s)" % (key, value)
-                else:
-                    log.warning("[getUserList] Unknown searchkey: %r", skey)
-
-            # finaly embedd the filter in the ldap query string
-            searchFilter = "(& %s )" % searchFilter
-            log.debug("[getUserList] searchfilter: %r", searchFilter)
-
-        except Exception as exep:
-            log.error("[getUserList] Error creating searchFilter: %r", exep)
-            raise exep
+        searchFilter = self._create_search_filter(
+            searchFilter=searchFilter, searchDict=searchDict
+        )
 
         l_obj = self.bind()
 
@@ -1303,19 +1288,39 @@ class IdResolver(UserIdResolver):
         log.debug("[getUserList] searchfilter: %r", searchFilter)
 
         # add searchfilter attributes of searchDict
+        searchFilter = self._create_search_filter(
+            searchFilter=searchFilter, searchDict=searchDict
+        )
+        return searchFilter
+
+    def _create_search_filter(self, searchFilter, searchDict):
+        # add searchfilter attributes of searchDict
         try:
-            for skey, sval in searchDict.items():
-                log.debug("[getUserList] searchekys: %r / %r", skey, sval)
-                if skey in self.userinfo:
-                    key = self.userinfo[skey]
-                    value = searchDict[skey]
+            # OR filter
+            searchFilterOr = ""
+            searchTermValue = searchDict.pop("searchTerm", None)
+            if searchTermValue:
+                for tmp, ldapKey in self.userinfo.items():
+                    searchFilterOr += "(%s=%s)" % (ldapKey, searchTermValue)
+            # AND filter
+            for searchKey, searchValue in searchDict.items():
+                log.debug(
+                    "[getUserList] searchkeys: %r / %r", searchKey, searchValue
+                )
+                if searchKey in self.userinfo:
+                    ldapKey = self.userinfo[searchKey]
                     # value and searchFilter are Unicode!
-                    searchFilter += "(%s=%s)" % (key, value)
+                    searchFilter += "(%s=%s)" % (ldapKey, searchValue)
                 else:
-                    log.warning("[getUserList] Unknown searchkey: %r", skey)
+                    log.warning(
+                        "[getUserList] Unknown searchkey: %r", searchKey
+                    )
 
             # finaly embedd the filter in the ldap query string
-            searchFilter = "(&%s)" % searchFilter
+            if searchFilterOr:
+                searchFilter = "(&(|%s)%s)" % (searchFilterOr, searchFilter)
+            else:
+                searchFilter = "(&%s)" % (searchFilter)
             log.debug("[getUserList] searchfilter: %r", searchFilter)
         except Exception as exep:
             log.error("[getUserList] Error creating searchFilter: %r", exep)

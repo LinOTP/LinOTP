@@ -56,7 +56,6 @@ class LDAPExtTest(LDAPTest):
 
         matches = False
         for value in values:
-
             compare_value = value
 
             if isinstance(self.value, str) and isinstance(value, bytes):
@@ -129,7 +128,6 @@ class LDAPExtObject(LDAPObject):
         timeout=0,
         sizelimit=500,
     ):
-
         if not filterstr:
             filterstr = "(objectClass=*)"
 
@@ -137,7 +135,6 @@ class LDAPExtObject(LDAPObject):
         # we have to rewrite the search
 
         if base.startswith("<guid="):
-
             (n_base, n_filterstr) = self._guid_object(base[6:-1])
 
             if n_base and n_filterstr:
@@ -156,7 +153,6 @@ class LDAPExtObject(LDAPObject):
         attrlist=None,
         attrsonly=0,
     ):
-
         return self.search(
             base, scope, filterstr=filterstr, attrlist=attrlist, attrsonly=0
         )
@@ -1093,6 +1089,56 @@ def ad_entries():
             ],
             "lastLogonTimestamp": [b"132201429950364000"],
         },
+        "CN=Karla Anderson2,OU=people,DC=hotad,DC=example,DC=net": {
+            "objectClass": [
+                b"top",
+                b"person",
+                b"organizationalPerson",
+                b"user",
+            ],
+            "cn": [b"Karla Anderson2"],
+            "sn": [b"Anderson"],
+            "givenName": [b"Karla"],
+            "distinguishedName": [
+                b"CN=Karla Anderson2,OU=people,DC=hotad,DC=example,DC=net"
+            ],
+            "instanceType": [b"4"],
+            "whenCreated": [b"20170719134100.0Z"],
+            "whenChanged": [b"20191206215635.0Z"],
+            "displayName": [b"Karla Anderson2"],
+            "uSNCreated": [b"488993"],
+            "memberOf": [b"CN=anames,OU=groups,DC=hotad,DC=example,DC=net"],
+            "uSNChanged": [b"782791"],
+            "name": [b"Karla Anderson"],
+            "objectGUID": [
+                b"&\x03\x94\xc5\x8d\r8D\xac\x15\xd8{0\xc6\x84\x84/"
+            ],
+            "userAccountControl": [b"66048"],
+            "badPwdCount": [b"0"],
+            "codePage": [b"0"],
+            "countryCode": [b"0"],
+            "badPasswordTime": [b"0"],
+            "lastLogoff": [b"0"],
+            "lastLogon": [b"0"],
+            "pwdLastSet": [b"131449452605164000"],
+            "primaryGroupID": [b"513"],
+            "objectSid": [
+                b"\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00Tw)\xc9xdQ\xfeA\xde\xb1eq\x04\x00\x00\x00"
+            ],
+            "accountExpires": [b"9223372036854775807"],
+            "logonCount": [b"0"],
+            "sAMAccountName": [b"karla.anderson2"],
+            "sAMAccountType": [b"805306368"],
+            "userPrincipalName": [b"karla.anderson2@hotad.example.net"],
+            "objectCategory": [
+                b"CN=Person,CN=Schema,CN=Configuration,DC=hotad,DC=example,DC=net"
+            ],
+            "dSCorePropagationData": [
+                b"20170719134100.0Z",
+                b"16010101000000.0Z",
+            ],
+            "lastLogonTimestamp": [b"132201429950364000"],
+        },
         "CN=Ilse Aichinger,OU=people,DC=hotad,DC=example,DC=net": {
             "objectClass": [
                 b"top",
@@ -1673,7 +1719,7 @@ class TestLDAPResolver(TestController):
         usernames = [u["username"] for u in response.json["result"]["value"]]
 
         assert user in usernames
-        assert len(usernames) == 13
+        assert len(usernames) == 14
 
         params = {
             "user": user,
@@ -1764,3 +1810,17 @@ class TestLDAPResolver(TestController):
         assert response.json["result"]["status"]
         user = response.json["result"]["value"]
         assert user["username"] == "maxwell"
+
+    @pytest.mark.usefixtures("ldap_realm_test")
+    def test_user_of_LDAP_resolver_with_searchTerm(self):
+        response = self.make_api_v2_request(
+            "/resolvers/test/users",
+            params={"searchTerm": "karla"},
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+        username_list = [
+            user["username"]
+            for user in response.json["result"]["value"]["pageRecords"]
+        ]
+        assert ["karla.anderson", "karla.anderson2"] == username_list
