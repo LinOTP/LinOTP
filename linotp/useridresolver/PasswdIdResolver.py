@@ -389,29 +389,51 @@ class IdResolver(UserIdResolver):
         :param searchDict: dict of search expressions
         """
 
-        def userMatchesGivenSearchDict(userDict):
+        def _userMatchesSearchDict(userDict):
+            """
+            `searchDict` refers to the one given to `getUserList`
+            """
             user_key, user_value = userDict
-            for search_key, pattern in filteredSearchDict.items():
-                if search_key == "username":
-                    return self.checkUserName(user_value, pattern)
-                elif search_key == "userid":
-                    return self.checkUserId(user_value, pattern)
-                elif search_key == "description":
-                    return self.checkDescription(user_value, pattern)
-                elif search_key == "email":
-                    return self.checkEmail(user_value, pattern)
-            return False
 
-        # first check if the searches are in the searchDict or `searchTerm`
-        filteredSearchDict = {
-            search_key: search_value
-            for search_key, search_value in searchDict.items()
-            if (search_key in self.searchFields)
-            or (search_key == "searchTerm")
-        }
+            searchKeyToCheckFunctionMapping = {
+                "username": self.checkUserName,
+                "userid": self.checkUserId,
+                "description": self.checkDescription,
+                "email": self.checkEmail,
+            }
+
+            # OR filter
+            # is true if no `searchTerm` in given `searchDict` or
+            # value of `searchTerm` matches at least one searchable field
+            searchTermValue = searchDict.get("searchTerm", None)
+            orFilter = False if searchTermValue else True
+            if searchTermValue:
+                for checkingFunc in searchKeyToCheckFunctionMapping.values():
+                    try:
+                        if checkingFunc(user_value, searchTermValue):
+                            orFilter = True
+                            break
+                    except:
+                        pass
+            # AND filter
+            # is true if all `search_keys` match their `search_value`.
+            # Note: a `search_keys` is only evaluated if it's a searchable field
+            andFilter = True
+            filteredSearchDict = {
+                search_key: search_value
+                for search_key, search_value in searchDict.items()
+                if (search_key in self.searchFields)
+            }
+            for search_key, pattern in filteredSearchDict.items():
+                checkingFunc = searchKeyToCheckFunctionMapping[search_key]
+                if not checkingFunc(user_value, pattern):
+                    andFilter = False
+                    break
+
+            return orFilter and andFilter
 
         matchingUserDicts = dict(
-            filter(userMatchesGivenSearchDict, self.descDict.items())
+            filter(_userMatchesSearchDict, self.descDict.items())
         )
 
         userInfoList = [

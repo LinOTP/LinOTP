@@ -150,3 +150,16 @@ class TestPasswdController(TestController):
             for user in response.json["result"]["value"]["pageRecords"]
         ]
         assert username_list == ["passthru_user1", "passthru_user2"]
+
+    def test_user_of_passwdiId_resolver_with_searchTerm(self):
+        response = self.make_api_v2_request(
+            f"/resolvers/myDefRes/users",
+            params={"searchTerm": "passt*"},
+            auth_user="admin",
+        )
+        assert response.json["result"]["status"]
+        username_list = [
+            user["username"]
+            for user in response.json["result"]["value"]["pageRecords"]
+        ]
+        assert username_list == ["passthru_user1", "passthru_user2"]
