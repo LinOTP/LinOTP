@@ -44,7 +44,7 @@ from typing import Any, Callable, Dict, Tuple, Union
 
 from passlib.context import CryptContext
 from passlib.exc import MissingBackendError
-from sqlalchemy import MetaData, Table, create_engine, types
+from sqlalchemy import MetaData, Table, and_, create_engine, or_, types
 from sqlalchemy.exc import NoSuchColumnError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import expression
@@ -1040,7 +1040,7 @@ class IdResolver(UserIdResolver):
             if filtr is None:
                 filtr = clause
             else:
-                filtr = clause & filtr
+                filtr = and_(clause, filtr)
             log.debug("[__add_where_clause_filter] searchString: %r", filtr)
         return filtr
 
@@ -1089,81 +1089,109 @@ class IdResolver(UserIdResolver):
             table.c[column_name] == loginId
         )
 
-    def __creatSearchString(self, dbObj, table, searchDict):
-        """
-        Create search string
-        """
-        exp = None
-        for key in searchDict:
-            log.debug("[__createSearchString] proccessing key %s", key)
-
+    def __creatSearchString(self, dbObj, table, searchDict: dict):
+        def get_column(column_name: str):
             # more tolerant mapping of column names for some sql dialects
             # as you can define columnnames in mixed case but table mapping
             # might be only available in upper or lower case (s. postgresql)
             try:
-                column = table.c[self.sqlUserInfo[key]]
+                column = table.c[column_name]
             except KeyError as _err:
                 try:
-                    column = table.c[self.sqlUserInfo[key].lower()]
+                    column = table.c[column_name.lower()]
                 except KeyError as _err:
-                    column = table.c[self.sqlUserInfo[key].upper()]
+                    column = table.c[column_name.upper()]
+            return column
 
+        def get_sql_expression(column, value):
             # for searching for names with german umlaute, they are replaced
             # by wildcards, which is filtered in the upper level by
             # postprocessing
-            val = self.__replaceChars(searchDict.get(key))
+            value = self.__replaceChars(value)
 
-            log.debug("[__createSearchString] key: %s, value: %s ", key, val)
+            log.debug(
+                "[__createSearchString] column: %s, value: %s ", column, value
+            )
 
             # First: replace wildcards. Our wildcards are * and . (shell-like),
             # and SQL wildcards are % and _.
-            if "%" in val:
-                val = val.replace("%", r"\%")
+            if "%" in value:
+                value = value.replace("%", r"\%")
 
-            if "_" in val:
-                val = val.replace("_", r"\_")
+            if "_" in value:
+                value = value.replace("_", r"\_")
 
-            if "*" in val:
-                val = val.replace("*", "%")
+            if "*" in value:
+                value = value.replace("*", "%")
 
-            if "." in val:
+            if "." in value:
                 if not self.sqlConnect.startswith("mysql"):
-                    val = val.replace(".", "_")
+                    value = value.replace(".", "_")
                 else:
                     # mysql replaces unicode chars with 2 placeholders,
                     # so we rely more on postprocessing :-(
-                    val = val.replace(".", "%")
+                    value = value.replace(".", "%")
 
             # don't match for whitespace at the beginning or the end.
-            val = val.strip()
+            value = value.strip()
 
             # Now: predicates. <, <=, >=, > get translated,
             # everything else is `LIKE`.
             # No wildcards are supported for <, <=, >=, >.
-            if val.startswith("<="):
-                val = val[2:].strip()
-                exp = column <= val
+            if value.startswith("<="):
+                value = value[2:].strip()
+                exp = column <= value
 
-            elif val.startswith(">="):
-                val = val[2:].strip()
-                exp = column >= val
+            elif value.startswith(">="):
+                value = value[2:].strip()
+                exp = column >= value
 
-            elif val.startswith(">"):
-                val = val[1:].strip()
-                exp = column > val
+            elif value.startswith(">"):
+                value = value[1:].strip()
+                exp = column > value
 
-            elif val.startswith("<"):
-                val = val[1:].strip()
-                exp = column < val
+            elif value.startswith("<"):
+                value = value[1:].strip()
+                exp = column < value
 
             else:
                 # for postgres no escape is required!!
                 if self.sqlConnect.startswith("postg"):
-                    exp = column.like(val)
+                    exp = column.like(value)
                 else:
-                    exp = column.like(val, escape="\\")
+                    exp = column.like(value, escape="\\")
 
             log.debug("[__createSearchString] searchStr : %s", exp)
+            return exp
+
+        """
+        Create search string
+        """
+        exp = None
+
+        # OR filter
+        searchTermValue = searchDict.pop("searchTerm", None)
+        if searchTermValue:
+            for column_name in self.sqlUserInfo.keys():
+                column = get_column(column_name)
+                if exp is None:
+                    exp = get_sql_expression(column, searchTermValue)
+                else:
+                    exp = or_(exp, get_sql_expression(column, searchTermValue))
+
+        # AND filter
+        for key, value in searchDict.items():
+            log.debug("[__createSearchString] proccessing key %s", key)
+
+            try:
+                column = get_column(self.sqlUserInfo[key])
+            except KeyError:
+                log.warning("[__createSearchString] no column named %s", key)
+                continue
+            if exp is None:
+                exp = get_sql_expression(column, value)
+            else:
+                exp = and_(exp, get_sql_expression(column, value))
 
         # use the Where clause to only see certain users.
         return self.__add_where_clause_to_filter(exp)
