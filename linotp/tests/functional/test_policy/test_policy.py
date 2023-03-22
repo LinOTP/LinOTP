@@ -2547,13 +2547,14 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json["result"]["status"], response
 
-        parameters = {"realm": "MyDefRealm"}
+        parameters = {"realm": "MyDefRealm", "sortname": "username", "rp": 30}
         auth_user = "501_admin_def"
         response = self.make_manage_request(
             action="userview_flexi", params=parameters, auth_user=auth_user
         )
 
         assert '"rows":' in response, response
+        assert 27 == len(response.json["result"]["value"]["rows"])
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "userlist_admins"
@@ -2659,7 +2660,6 @@ class TestPolicies(TestPoliciesBase):
 
         # set the policies
         for pol in policies:
-
             auth_user = "superadmin"
             response = self.make_system_request(
                 action="setPolicy", params=pol, auth_user=auth_user
