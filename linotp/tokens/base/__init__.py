@@ -38,22 +38,16 @@ directive 'TOKEN_MODULES' in a linotp.cfg file.
 """
 
 import binascii
-import datetime
 import json
 import logging
-from hashlib import sha1
-from typing import Any
 
 from flask_babel import gettext as _
-from sqlalchemy import asc, desc
 
-import linotp
 from linotp.lib.auth.validate import check_otp, check_pin, split_pin_otp
-from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
 from linotp.lib.crypto import SecretObj
-from linotp.lib.crypto.utils import compare, get_hashalgo_from_description
+from linotp.lib.crypto.utils import get_hashalgo_from_description
 from linotp.lib.error import ParameterError, TokenAdminError
 from linotp.lib.policy import get_pin_policies
 from linotp.lib.realm import getDefaultRealm
@@ -64,7 +58,6 @@ from linotp.lib.user import User, getUserResolverId
 from linotp.lib.util import generate_otpkey
 from linotp.model import db
 from linotp.model.token import Token
-from linotp.tokens import tokenclass_registry
 
 from .tokenproperty_mixin import TokenPropertyMixin
 from .validity_mixin import TokenValidityMixin

@@ -3570,7 +3570,7 @@ def check_auth_tokentype(serial, exception=False, user=None):
 
     log.debug("found these tokentypes: <%s>", tokentypes)
 
-    toks = linotp.lib.token.getTokens4UserOrSerial(None, serial)
+    toks = linotp.lib.token.get_tokens(None, serial)
     if len(toks) > 1:
 
         log.error(

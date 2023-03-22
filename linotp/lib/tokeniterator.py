@@ -27,20 +27,18 @@
 """ contains the tokeniterator """
 
 import fnmatch
-import json
 import logging
 import re
 
 from sqlalchemy import and_, not_, or_
 
-import linotp
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import UserError
 from linotp.lib.realm import getRealms
 from linotp.lib.resolver import getResolverSpecByName
 from linotp.lib.token import (
+    get_raw_tokens,
     getTokenRealms,
-    getTokens4UserOrSerial,
     token_owner_iterator,
 )
 from linotp.lib.user import NoResolverFound, User, getUserId, getUserInfo
@@ -237,7 +235,7 @@ class TokenIterator(object):
 
             for usr in userlist:
                 try:
-                    tokens = getTokens4UserOrSerial(user=usr, _class=False)
+                    tokens = get_raw_tokens(user=usr)
                     for tok in tokens:
                         serials.append(tok.LinOtpTokenSerialnumber)
                 except UserError as ex:

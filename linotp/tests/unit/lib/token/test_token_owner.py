@@ -74,17 +74,15 @@ class TestTokenOwner(unittest.TestCase):
 
         return
 
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     @patch("linotp.lib.token.getUserId")
-    def test_isTokenOwner_no_token(
-        self, mocked_getUserId, mocked_getTokens4UserOrSerial
-    ):
+    def test_isTokenOwner_no_token(self, mocked_getUserId, mocked_get_tokens):
         """
         test if no token is found
         """
 
         mocked_getUserId.return_value = ("123", "res", "resC")
-        mocked_getTokens4UserOrSerial.return_value = []
+        mocked_get_tokens.return_value = []
 
         serial = "fake_123_token"
         user = User(login="hans")
@@ -98,10 +96,10 @@ class TestTokenOwner(unittest.TestCase):
 
         return
 
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     @patch("linotp.lib.token.getUserId")
     def test_isTokenOwner_token_and_user(
-        self, mocked_getUserId, mocked_getTokens4UserOrSerial
+        self, mocked_getUserId, mocked_get_tokens
     ):
         """
         test if token owner is found
@@ -111,9 +109,7 @@ class TestTokenOwner(unittest.TestCase):
         user = User(login="hans")
 
         mocked_getUserId.return_value = ("123", "res", "resC")
-        mocked_getTokens4UserOrSerial.return_value = [
-            FakeToken("123", "res", "resC")
-        ]
+        mocked_get_tokens.return_value = [FakeToken("123", "res", "resC")]
 
         th = TokenHandler()
 
@@ -123,10 +119,10 @@ class TestTokenOwner(unittest.TestCase):
 
         return
 
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     @patch("linotp.lib.token.getUserId")
     def test_isTokenOwner_token_and_int_userid(
-        self, mocked_getUserId, mocked_getTokens4UserOrSerial
+        self, mocked_getUserId, mocked_get_tokens
     ):
         """
         test if token owner is found
@@ -136,9 +132,7 @@ class TestTokenOwner(unittest.TestCase):
         user = User(login="hans")
 
         mocked_getUserId.return_value = (123, "res", "resC")
-        mocked_getTokens4UserOrSerial.return_value = [
-            FakeToken("123", "res", "resC")
-        ]
+        mocked_get_tokens.return_value = [FakeToken("123", "res", "resC")]
 
         th = TokenHandler()
 
@@ -148,10 +142,10 @@ class TestTokenOwner(unittest.TestCase):
 
         return
 
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     @patch("linotp.lib.token.getUserId")
     def test_hasOwner_token_and_user(
-        self, mocked_getUserId, mocked_getTokens4UserOrSerial
+        self, mocked_getUserId, mocked_get_tokens
     ):
         """
         test if token hasOwner
@@ -161,9 +155,7 @@ class TestTokenOwner(unittest.TestCase):
         user = User(login="hans")
 
         mocked_getUserId.return_value = ("123", "res", "resC")
-        mocked_getTokens4UserOrSerial.return_value = [
-            FakeToken("123", "res", "resC")
-        ]
+        mocked_get_tokens.return_value = [FakeToken("123", "res", "resC")]
 
         th = TokenHandler()
 
@@ -173,17 +165,15 @@ class TestTokenOwner(unittest.TestCase):
 
         return
 
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
-    def test_hasOwner_token_and_root_user(self, mocked_getTokens4UserOrSerial):
+    @patch("linotp.lib.token.get_tokens")
+    def test_hasOwner_token_and_root_user(self, mocked_get_tokens):
         """
         test if token hasOwner
         """
 
         serial = "fake_123_token"
 
-        mocked_getTokens4UserOrSerial.return_value = [
-            FakeToken("0", "res", "resC")
-        ]
+        mocked_get_tokens.return_value = [FakeToken("0", "res", "resC")]
 
         th = TokenHandler()
 
@@ -193,17 +183,15 @@ class TestTokenOwner(unittest.TestCase):
 
         return
 
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
-    def test_hasOwner_token_and_no_user(self, mocked_getTokens4UserOrSerial):
+    @patch("linotp.lib.token.get_tokens")
+    def test_hasOwner_token_and_no_user(self, mocked_get_tokens):
         """
         test if token hasOwner with user is 0,0,0
         """
 
         serial = "fake_123_token"
 
-        mocked_getTokens4UserOrSerial.return_value = [
-            FakeToken(None, "res", "resC")
-        ]
+        mocked_get_tokens.return_value = [FakeToken(None, "res", "resC")]
 
         th = TokenHandler()
 

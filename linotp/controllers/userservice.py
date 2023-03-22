@@ -57,9 +57,7 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import config
-from linotp.flap import render_mako as render
-from linotp.flap import request, response
+from linotp.flap import config, request, response
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.apps import create_google_authenticator, create_oathtoken_url
@@ -93,8 +91,9 @@ from linotp.lib.support import LicenseException
 from linotp.lib.token import (
     TokenHandler,
     get_multi_otp,
+    get_raw_tokens,
+    get_tokens,
     getTokenRealms,
-    getTokens4UserOrSerial,
     getTokenType,
     resetToken,
     setPin,
@@ -1883,10 +1882,10 @@ class UserserviceController(BaseController):
 
                 tokens = []
                 for serial in serials:
-                    tokens.extend(getTokens4UserOrSerial(serial=serial))
+                    tokens.extend(get_tokens(serial=serial))
 
             elif serial:
-                tokens = getTokens4UserOrSerial(serial=serial)
+                tokens = get_tokens(serial=serial)
 
             # -------------------------------------------------------------- --
 
@@ -3037,7 +3036,7 @@ class UserserviceController(BaseController):
                 token_cls = tokenclass_registry.get(typ)
                 tclt = None
                 if serial is not None:
-                    toks = getTokens4UserOrSerial(None, serial, _class=False)
+                    toks = get_raw_tokens(None, serial)
                     tokenNum = len(toks)
                     if tokenNum == 1:
                         token = toks[0]

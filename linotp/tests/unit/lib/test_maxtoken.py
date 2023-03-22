@@ -80,10 +80,10 @@ class MaxTokenPolicyTest(unittest.TestCase):
     @patch("linotp.lib.policy.maxtoken.get_action_value")
     @patch("linotp.lib.policy.maxtoken._getUserRealms")
     @patch("linotp.lib.policy.maxtoken._get_client")
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     def test_no_tokens(
         self,
-        mocked_getTokens4UserOrSerial,
+        mocked_get_tokens,
         mocked__get_client,
         mocked__getUserRealms,
         mocked_get_action_value,
@@ -93,7 +93,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
         """
 
         fake_user = User("fake_user")
-        mocked_getTokens4UserOrSerial.return_value = []
+        mocked_get_tokens.return_value = []
         mocked__get_client.return_value = "127.0.0.1"
         mocked__getUserRealms.return_value = ["defaultrealm", "otherrealm"]
         mocked_get_action_value.return_value = 2
@@ -115,10 +115,10 @@ class MaxTokenPolicyTest(unittest.TestCase):
     @patch("linotp.lib.policy.maxtoken.get_action_value")
     @patch("linotp.lib.policy.maxtoken._getUserRealms")
     @patch("linotp.lib.policy.maxtoken._get_client")
-    @patch("linotp.lib.token.getTokens4UserOrSerial")
+    @patch("linotp.lib.token.get_tokens")
     def test_maxtoken_all(
         self,
-        mocked_getTokens4UserOrSerial,
+        mocked_get_tokens,
         mocked__get_client,
         mocked__getUserRealms,
         mocked_get_action_value,
@@ -134,7 +134,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
         token2 = Token("push")
 
         # want to enroll a second push
-        mocked_getTokens4UserOrSerial.return_value = [token1]
+        mocked_get_tokens.return_value = [token1]
         mocked__get_client.return_value = "127.0.0.1"
         mocked__getUserRealms.return_value = ["defaultrealm", "otherrealm"]
 
@@ -148,7 +148,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
 
         # third token exceeds maxtoken in fake_get_client_policy
 
-        mocked_getTokens4UserOrSerial.return_value = [token1, token2]
+        mocked_get_tokens.return_value = [token1, token2]
 
         exception_raised = False
         try:
@@ -164,7 +164,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
 
         # second push token exceeds maxtokenPUSH in fake_get_client_policy
 
-        mocked_getTokens4UserOrSerial.return_value = [token2]
+        mocked_get_tokens.return_value = [token2]
         mocked_get_action_value.return_value = 1
 
         exception_raised = False

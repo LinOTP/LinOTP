@@ -61,7 +61,7 @@ from linotp.lib.reply import (
     sendQRImageResult,
     sendResult,
 )
-from linotp.lib.token import get_token_owner, getTokens4UserOrSerial
+from linotp.lib.token import get_token_owner, get_tokens
 from linotp.lib.user import User, getUserFromParam, getUserId, getUserInfo
 from linotp.lib.util import get_client
 from linotp.model import db
@@ -318,7 +318,7 @@ class ValidateController(BaseController):
             challenges = Challenges.lookup_challenges(transid=transid)
 
             for ch in challenges:
-                tokens = getTokens4UserOrSerial(serial=ch.getTokenSerial())
+                tokens = get_tokens(serial=ch.getTokenSerial())
                 if not tokens:
                     continue
 
@@ -744,7 +744,7 @@ class ValidateController(BaseController):
                 user = param.get("user")
                 if user is not None:
                     user = getUserFromParam(param)
-                    toks = getTokens4UserOrSerial(user=user)
+                    toks = get_tokens(user=user)
                     if len(toks) == 0:
                         raise Exception("No token found!")
                     elif len(toks) > 1:
@@ -986,7 +986,7 @@ class ValidateController(BaseController):
             # --------------------------------------------------------------- -
 
             # TODO: pairing policy
-            tokens = getTokens4UserOrSerial(None, pairing_data.serial)
+            tokens = get_tokens(None, pairing_data.serial)
 
             if not tokens:
                 raise Exception("Invalid serial in pairing response")
