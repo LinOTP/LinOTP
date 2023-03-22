@@ -105,7 +105,6 @@ def tokenise(r):
 @resolver_registry.class_entry("useridresolver.passwdresolver")
 @resolver_registry.class_entry("passwdresolver")
 class IdResolver(UserIdResolver):
-
     db_prefix = "useridresolver.PasswdIdResolver.IdResolver"
 
     fields = {
@@ -383,47 +382,43 @@ class IdResolver(UserIdResolver):
 
         return self.searchFields
 
-    def getUserList(self, searchDict):
+    def getUserList(self, searchDict: dict):
         """
         get a list of all users matching the search criteria of the searchdict
 
         :param searchDict: dict of search expressions
         """
-        ret = []
 
-        # first check if the searches are in the searchDict
-        for l in self.descDict:
-            line = self.descDict[l]
-            ok = True
+        def userMatchesGivenSearchDict(userDict):
+            user_key, user_value = userDict
+            for search_key, pattern in filteredSearchDict.items():
+                if search_key == "username":
+                    return self.checkUserName(user_value, pattern)
+                elif search_key == "userid":
+                    return self.checkUserId(user_value, pattern)
+                elif search_key == "description":
+                    return self.checkDescription(user_value, pattern)
+                elif search_key == "email":
+                    return self.checkEmail(user_value, pattern)
+            return False
 
-            for search in searchDict:
+        # first check if the searches are in the searchDict or `searchTerm`
+        filteredSearchDict = {
+            search_key: search_value
+            for search_key, search_value in searchDict.items()
+            if (search_key in self.searchFields)
+            or (search_key == "searchTerm")
+        }
 
-                if search not in self.searchFields:
-                    ok = False
-                    break
+        matchingUserDicts = dict(
+            filter(userMatchesGivenSearchDict, self.descDict.items())
+        )
 
-                pattern = searchDict[search]
-
-                log.debug("[getUserList] searching for %s:%s", search, pattern)
-
-                if search == "username":
-                    ok = self.checkUserName(line, pattern)
-                elif search == "userid":
-                    ok = self.checkUserId(line, pattern)
-                elif search == "description":
-                    ok = self.checkDescription(line, pattern)
-                elif search == "email":
-                    ok = self.checkEmail(line, pattern)
-
-                if not ok:
-                    break
-
-            if ok:
-                uid = line[self.sF["userid"]]
-                info = self.getUserInfo(uid, no_passwd=True)
-                ret.append(info)
-
-        return ret
+        userInfoList = [
+            self.getUserInfo(user_value[self.sF["userid"]], no_passwd=True)
+            for user_value in matchingUserDicts.values()
+        ]
+        return userInfoList
 
     def checkUserName(self, line, pattern):
         """
@@ -601,7 +596,6 @@ class IdResolver(UserIdResolver):
 
 
 if __name__ == "__main__":
-
     print(" PasswdIdResolver - IdResolver class test ")
 
     y = getResolverClass("PasswdIdResolver", "IdResolver")()
