@@ -942,10 +942,6 @@ class IdResolver(UserIdResolver):
             searchDict = {"username": "*"}
         log.debug("[getUserList] %r", searchDict)
 
-        # we use a dict, where the return users are inserted to where key
-        # is userid to return only a distinct list of users
-        users = {}
-
         dbObj = self.connect()
         self.checkMapping()
 
@@ -960,12 +956,10 @@ class IdResolver(UserIdResolver):
 
             rows = dbObj.query(select)
 
-            for row in rows:
-                log.debug("[getUserList]  row     : %s", row)
-                ui = self.__getUserInfo(dbObj, row)
-                userid = ui["userid"]
-                users[userid] = ui
-                log.debug("[getUserList] user info: %s", ui)
+            user_info_list = [self.__getUserInfo(dbObj, row) for row in rows]
+            users = {
+                user_info["userid"]: user_info for user_info in user_info_list
+            }
 
         except KeyError as exx:
             log.error("[getUserList] Invalid Mapping Error: %r", exx)
