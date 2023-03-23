@@ -68,7 +68,6 @@ class RealmsController(BaseController, JWTMixin):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
 
@@ -243,15 +242,10 @@ class RealmsController(BaseController, JWTMixin):
 
         param = self.request_params.copy()
 
-        list_params = {}
-        list_params.update(param)
-
-        for invalid_iterator_param in ["rp", "page"]:
-            try:
-                del list_params[invalid_iterator_param]
-            except KeyError:
-                pass
-        users_iters = getUserListIterators(list_params, realm_user)
+        searchDict = {
+            k: v for k, v in param.items() if k not in ["rp", "page"]
+        }
+        users_iters = getUserListIterators(searchDict, realm_user)
 
         g.audit["success"] = True
         g.audit["info"] = "realm: %s" % realm_name
