@@ -1067,17 +1067,28 @@ class IdResolver(UserIdResolver):
 
     def __creatSearchString(self, dbObj, table, searchDict: dict):
         def get_column(column_name: str):
+            # case-insensitive fetching of all possible column_names
+            possible_column_name_list = [
+                possible_column_name
+                for column_mapping_key, possible_column_name in self.sqlUserInfo.items()
+                if column_name.lower() == column_mapping_key.lower()
+            ]
+            if not possible_column_name_list:
+                raise KeyError(
+                    "[__creatSearchString] no column found for %s", column_name
+                )
+
             # more tolerant mapping of column names for some sql dialects
             # as you can define columnnames in mixed case but table mapping
             # might be only available in upper or lower case (s. postgresql)
-            try:
-                column = table.c[column_name]
-            except KeyError as _err:
+            for column_name in possible_column_name_list:
                 try:
-                    column = table.c[column_name.lower()]
+                    return table.c[column_name]
                 except KeyError as _err:
-                    column = table.c[column_name.upper()]
-            return column
+                    try:
+                        return table.c[column_name.lower()]
+                    except KeyError as _err:
+                        return table.c[column_name.upper()]
 
         def get_sql_expression(column, value):
             log.debug(
@@ -1155,7 +1166,7 @@ class IdResolver(UserIdResolver):
             log.debug("[__createSearchString] proccessing key %s", key)
 
             try:
-                column = get_column(self.sqlUserInfo[key])
+                column = get_column(key)
             except KeyError:
                 log.warning("[__createSearchString] no column named %s", key)
                 continue
