@@ -162,7 +162,6 @@ def check_password(password, crypted_password, salt=None):
     """
 
     for pw_hash in [LdapCrypt, MCFCrypt, OtherCrypt, DBCrypt, ArchaicCrypt]:
-
         if not pw_hash.identify(crypted_password):
             continue
 
@@ -208,7 +207,6 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
 
     connect = ""
     if "?odbc_connect=" in driver:
-
         # we have the need to support the odbc_connect mode
         # where the parameters of the drivers will be concated
         # The template for the odbc_connect string is submitted
@@ -298,7 +296,6 @@ def build_simple_connect(
         else:
             connect.append("@%s" % server)
     else:
-
         # in case of no server and a user, we have to append the empty @ sign
         # as otherwise the parser will interpret the :password as port which
         # will fail as it is not of type int
@@ -504,7 +501,6 @@ class IdResolver(UserIdResolver):
         dbObj = dbObject()
 
         try:
-
             managed = parameters.get("readonly", False)
 
             params, _ = IdResolver.filter_config(parameters)
@@ -716,7 +712,6 @@ class IdResolver(UserIdResolver):
         if not self.managed:
             connect = l_config.get("Connect")
             if not connect:
-
                 driver = l_config.get("Driver")
                 server = l_config.get("Server")
                 port = l_config.get("Port")
@@ -744,7 +739,6 @@ class IdResolver(UserIdResolver):
 
         userInfo = l_config["Map"].strip("'").strip('"')
         try:
-
             self.sqlUserInfo = json.loads(userInfo)
 
         except ValueError as exx:
@@ -771,7 +765,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
 
             invalid_columns = []
@@ -779,7 +772,6 @@ class IdResolver(UserIdResolver):
                 column = table.c.get(sqlCol)
 
                 if column is None:
-
                     log.error(
                         "Invalid mapping: %r => %r, column not found",
                         key,
@@ -861,7 +853,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
             select = table.select(self.__getUserNameFilter(table, userId))
 
@@ -891,7 +882,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
             select = table.select(self.__getUserNameFilter(table, userId))
 
@@ -919,7 +909,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
 
             for key in self.sqlUserInfo:
@@ -960,23 +949,9 @@ class IdResolver(UserIdResolver):
         dbObj = self.connect()
         self.checkMapping()
 
-        regex_dict = {}
-
         try:
             table = dbObj.getTable(self.sqlTable)
             log.debug("[getUserList] getting SQL users from table %r", table)
-
-            # as most of the SQL dialects dont support unicode, unicode chars
-            # are replaced in the __createSearchString as wildcards.
-            # To make the search more precise, we do postprocessing by
-            # a backward compare with the original search dict values,
-            # either regexp or exact compare.
-            # We build up here the regex dict in case of a wildcard,
-            # For all others we do the exact compare
-
-            for key, value in list(searchDict.items()):
-                if "*" in value or "." in value:
-                    regex_dict[key] = re.compile(value.replace("*", ".*"))
 
             sStr = self.__creatSearchString(dbObj, table, searchDict)
             log.debug("[getUserList] creating searchstring <<%r>>", sStr)
@@ -989,24 +964,8 @@ class IdResolver(UserIdResolver):
                 log.debug("[getUserList]  row     : %s", row)
                 ui = self.__getUserInfo(dbObj, row)
                 userid = ui["userid"]
+                users[userid] = ui
                 log.debug("[getUserList] user info: %s", ui)
-                for s in searchDict:
-                    if s in regex_dict:
-                        if regex_dict[s].match(ui[s]):
-                            users[userid] = ui
-
-                    # handle the comparisons
-                    elif (
-                        ">" in searchDict[s]
-                        or "<" in searchDict[s]
-                        or "=" in searchDict[s]
-                    ):
-
-                        users[userid] = ui
-
-                    else:  # excat search
-                        if ui[s] == searchDict[s]:
-                            users[userid] = ui
 
         except KeyError as exx:
             log.error("[getUserList] Invalid Mapping Error: %r", exx)
@@ -1211,7 +1170,6 @@ class IdResolver(UserIdResolver):
 
 
 if __name__ == "__main__":
-
     print("SQLIdResolver - IdResolver class test ")
 
     # sqlR = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()
