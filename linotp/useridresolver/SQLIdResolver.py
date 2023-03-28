@@ -980,24 +980,6 @@ class IdResolver(UserIdResolver):
     #######################
     #   Helper functions
     #######################
-    def __replaceChars(self, string, repl="*"):
-        """
-        Replaces unwanted chars with ord()>127
-
-        :param string: string to be replaced
-        :param repl: replacement pattern
-
-        :return: string with replaced patterns
-        """
-        retString = ""
-        for i in string:
-            if ord(i) > 127:
-                retString = "%s%s" % (retString, repl)
-            else:
-                retString = "%s%s" % (retString, i)
-
-        return retString
-
     def __getUserInfo(self, dbObj, row, suppress_password=True):
         """
         internal helper to build up the user info dict
@@ -1104,11 +1086,6 @@ class IdResolver(UserIdResolver):
             return column
 
         def get_sql_expression(column, value):
-            # for searching for names with german umlaute, they are replaced
-            # by wildcards, which is filtered in the upper level by
-            # postprocessing
-            value = self.__replaceChars(value)
-
             log.debug(
                 "[__createSearchString] column: %s, value: %s ", column, value
             )
