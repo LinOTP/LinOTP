@@ -210,6 +210,14 @@ class ResolversController(BaseController, JWTMixin):
         :param resolverName: name of the resolver
         :type resolverName: str
 
+        :param <searchexpr>: limit results to those matching the searchexpr.
+          Will be retrieved from the UserIdResolverClass. Example: `username=Alice`.
+        :type <searchexpr>: str, optional
+
+        :param searchTerm: limit results to those matching the searchTerm
+          in at least one searchable field. Supports `*` as a wildcard operator.
+        :type searchTerm: str, optional
+
         :param pageSize: limit the number of returned users, defaults to 50
           (unless another value is specified in the configuration). Setting it to
           0 returns all users.

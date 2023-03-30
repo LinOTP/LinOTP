@@ -186,8 +186,13 @@ class RealmsController(BaseController, JWTMixin):
           (realm="*"), or by implicitly giving permissions for everything in the
           admin scope by not setting any admin scope policies.
 
-        :param <searchexpr>: will be retrieved from the UserIdResolverClass
+        :param <searchexpr>: limit results to those matching the searchexpr.
+          Will be retrieved from the UserIdResolverClass. Example: `username=Alice`.
         :type <searchexpr>: str, optional
+
+        :param searchTerm: limit results to those matching the searchTerm
+          in at least one searchable field. Supports `*` as a wildcard operator.
+        :type searchTerm: str, optional
 
         :param rp: limit the number of returned users, defaults to 16 if `page` is given.
         :type rp: int, optional
