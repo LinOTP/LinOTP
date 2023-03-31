@@ -967,6 +967,7 @@ class IdResolver(UserIdResolver):
 
         except Exception as exx:
             log.error("[getUserList] Exception: %r", exx)
+            users = {}
 
         log.debug("[getUserList] returning userlist %r", list(users.values()))
         return list(users.values())
