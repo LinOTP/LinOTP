@@ -44,7 +44,7 @@ from typing import Any, Callable, Dict, Tuple, Union
 
 from passlib.context import CryptContext
 from passlib.exc import MissingBackendError
-from sqlalchemy import MetaData, Table, and_, create_engine, or_, types
+from sqlalchemy import MetaData, Table, and_, cast, create_engine, or_, types
 from sqlalchemy.exc import NoSuchColumnError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import expression
@@ -1139,8 +1139,11 @@ class IdResolver(UserIdResolver):
 
             else:
                 # for postgres no escape is required!!
+                # but we have to cast its type to string
+                # as it does not support dynamic typing like sqlite
                 if self.sqlConnect.startswith("postg"):
-                    exp = column.like(value)
+                    column_cast_to_string = cast(column, types.String)
+                    exp = column_cast_to_string.like(value)
                 else:
                     exp = column.like(value, escape="\\")
 
