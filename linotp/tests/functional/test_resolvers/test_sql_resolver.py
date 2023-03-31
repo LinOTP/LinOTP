@@ -211,5 +211,52 @@ class SQLResolverTest(SQLTestController):
         ]
         assert username_list == [username]
 
+    def test_user_of_SQL_resolver_with_searchTerm_and_umlaut(self):
+        usernamePrefix = "hallöchen"
+        username = f"{usernamePrefix}1"
+        realm = "mySQLrealm"
+        resolver = "mySQLresolver"
+
+        self.createUserTable(schema_additions={"id": "integer"})
+        self.addUsers(usercount=2, usernamePrefix=usernamePrefix)
+        self.addSqlResolver(resolver)
+        self.addSqlRealm(realm, resolver, defaultRealm=True)
+
+        response = self.make_api_v2_request(
+            f"/resolvers/{resolver}/users",
+            params={"searchTerm": username},
+            auth_user="admin",
+        )
+
+        assert response.json["result"]["status"]
+        username_list = [
+            user["username"]
+            for user in response.json["result"]["value"]["pageRecords"]
+        ]
+        assert username_list == [username]
+
+    def test_user_of_SQL_resolver_with_searchTerm_and_wildcard(self):
+        username = "hey1"
+        realm = "mySQLrealm"
+        resolver = "mySQLresolver"
+
+        self.createUserTable(schema_additions={"id": "integer"})
+        self.addUsers(usercount=2)
+        self.addSqlResolver(resolver)
+        self.addSqlRealm(realm, resolver, defaultRealm=True)
+
+        response = self.make_api_v2_request(
+            f"/resolvers/{resolver}/users",
+            params={"searchTerm": "hey*"},
+            auth_user="admin",
+        )
+
+        assert response.json["result"]["status"]
+        username_list = [
+            user["username"]
+            for user in response.json["result"]["value"]["pageRecords"]
+        ]
+        assert username_list == ["hey1", "hey2"]
+
 
 # eof
