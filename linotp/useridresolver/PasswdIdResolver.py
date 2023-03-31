@@ -105,7 +105,6 @@ def tokenise(r):
 @resolver_registry.class_entry("useridresolver.passwdresolver")
 @resolver_registry.class_entry("passwdresolver")
 class IdResolver(UserIdResolver):
-
     db_prefix = "useridresolver.PasswdIdResolver.IdResolver"
 
     fields = {
@@ -383,47 +382,65 @@ class IdResolver(UserIdResolver):
 
         return self.searchFields
 
-    def getUserList(self, searchDict):
+    def getUserList(self, searchDict: dict):
         """
         get a list of all users matching the search criteria of the searchdict
 
         :param searchDict: dict of search expressions
         """
-        ret = []
 
-        # first check if the searches are in the searchDict
-        for l in self.descDict:
-            line = self.descDict[l]
-            ok = True
+        def _userMatchesSearchDict(userDict):
+            """
+            `searchDict` refers to the one given to `getUserList`
+            """
+            user_key, user_value = userDict
 
-            for search in searchDict:
+            searchKeyToCheckFunctionMapping = {
+                "username": self.checkUserName,
+                "userid": self.checkUserId,
+                "description": self.checkDescription,
+                "email": self.checkEmail,
+            }
 
-                if search not in self.searchFields:
-                    ok = False
+            # OR filter
+            # is true if no `searchTerm` in given `searchDict` or
+            # value of `searchTerm` matches at least one searchable field
+            searchTermValue = searchDict.get("searchTerm", None)
+            orFilter = False if searchTermValue else True
+            if searchTermValue:
+                for checkingFunc in searchKeyToCheckFunctionMapping.values():
+                    try:
+                        if checkingFunc(user_value, searchTermValue):
+                            orFilter = True
+                            break
+                    except:
+                        pass
+            # AND filter
+            # is true if all `search_keys` match their `search_value`.
+            # Note: a `search_keys` is only evaluated if it's a searchable field
+            andFilter = True
+            filteredSearchDict = {
+                search_key: search_value
+                for search_key, search_value in searchDict.items()
+                if (search_key in self.searchFields)
+            }
+            for search_key, pattern in filteredSearchDict.items():
+                checkingFunc = searchKeyToCheckFunctionMapping[search_key]
+                if not checkingFunc(user_value, pattern):
+                    andFilter = False
                     break
 
-                pattern = searchDict[search]
+            return orFilter and andFilter
 
-                log.debug("[getUserList] searching for %s:%s", search, pattern)
+        matchingUserDicts = dict(
+            filter(_userMatchesSearchDict, self.descDict.items())
+        )
 
-                if search == "username":
-                    ok = self.checkUserName(line, pattern)
-                elif search == "userid":
-                    ok = self.checkUserId(line, pattern)
-                elif search == "description":
-                    ok = self.checkDescription(line, pattern)
-                elif search == "email":
-                    ok = self.checkEmail(line, pattern)
-
-                if not ok:
-                    break
-
-            if ok:
-                uid = line[self.sF["userid"]]
-                info = self.getUserInfo(uid, no_passwd=True)
-                ret.append(info)
-
-        return ret
+        userInfoList = [
+            self.getUserInfo(user_value[self.sF["userid"]], no_passwd=True)
+            for user_value in matchingUserDicts.values()
+        ]
+        return userInfoList
 
     def checkUserName(self, line, pattern):
         """
@@ -601,7 +618,6 @@ class IdResolver(UserIdResolver):
 
 
 if __name__ == "__main__":
-
     print(" PasswdIdResolver - IdResolver class test ")
 
     y = getResolverClass("PasswdIdResolver", "IdResolver")()

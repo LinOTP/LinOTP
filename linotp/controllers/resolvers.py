@@ -93,7 +93,6 @@ class ResolversController(BaseController, JWTMixin):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
 
@@ -211,6 +210,14 @@ class ResolversController(BaseController, JWTMixin):
         :param resolverName: name of the resolver
         :type resolverName: str
 
+        :param <searchexpr>: limit results to those matching the searchexpr.
+          Will be retrieved from the UserIdResolverClass. Example: `username=Alice`.
+        :type <searchexpr>: str, optional
+
+        :param searchTerm: limit results to those matching the searchTerm
+          in at least one searchable field. Supports `*` as a wildcard operator.
+        :type searchTerm: str, optional
+
         :param pageSize: limit the number of returned users, defaults to 50
           (unless another value is specified in the configuration). Setting it to
           0 returns all users.
@@ -287,7 +294,13 @@ class ResolversController(BaseController, JWTMixin):
             page = int(self.request_params.get("page", 0))
             page_size = self.request_params.get("pageSize", None)
 
-            search_dictionary = {"username": "*"}  # search not yet implemented
+            search_dictionary = {"username": "*"}
+            search_dictionary.update(self.request_params)
+            search_dictionary = {
+                k: v
+                for k, v in search_dictionary.items()
+                if k not in ["page", "pageSize", "sortOrder", "sortBy"]
+            }
             users = resolver.get_users(search_dictionary)
 
             log.debug("[get_users] page: %s, page_size: %s", page, page_size)

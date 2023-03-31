@@ -44,7 +44,7 @@ from typing import Any, Callable, Dict, Tuple, Union
 
 from passlib.context import CryptContext
 from passlib.exc import MissingBackendError
-from sqlalchemy import MetaData, Table, create_engine, types
+from sqlalchemy import MetaData, Table, and_, cast, create_engine, or_, types
 from sqlalchemy.exc import NoSuchColumnError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import expression
@@ -162,7 +162,6 @@ def check_password(password, crypted_password, salt=None):
     """
 
     for pw_hash in [LdapCrypt, MCFCrypt, OtherCrypt, DBCrypt, ArchaicCrypt]:
-
         if not pw_hash.identify(crypted_password):
             continue
 
@@ -208,7 +207,6 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
 
     connect = ""
     if "?odbc_connect=" in driver:
-
         # we have the need to support the odbc_connect mode
         # where the parameters of the drivers will be concated
         # The template for the odbc_connect string is submitted
@@ -298,7 +296,6 @@ def build_simple_connect(
         else:
             connect.append("@%s" % server)
     else:
-
         # in case of no server and a user, we have to append the empty @ sign
         # as otherwise the parser will interpret the :password as port which
         # will fail as it is not of type int
@@ -504,7 +501,6 @@ class IdResolver(UserIdResolver):
         dbObj = dbObject()
 
         try:
-
             managed = parameters.get("readonly", False)
 
             params, _ = IdResolver.filter_config(parameters)
@@ -716,7 +712,6 @@ class IdResolver(UserIdResolver):
         if not self.managed:
             connect = l_config.get("Connect")
             if not connect:
-
                 driver = l_config.get("Driver")
                 server = l_config.get("Server")
                 port = l_config.get("Port")
@@ -744,7 +739,6 @@ class IdResolver(UserIdResolver):
 
         userInfo = l_config["Map"].strip("'").strip('"')
         try:
-
             self.sqlUserInfo = json.loads(userInfo)
 
         except ValueError as exx:
@@ -771,7 +765,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
 
             invalid_columns = []
@@ -779,7 +772,6 @@ class IdResolver(UserIdResolver):
                 column = table.c.get(sqlCol)
 
                 if column is None:
-
                     log.error(
                         "Invalid mapping: %r => %r, column not found",
                         key,
@@ -861,7 +853,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
             select = table.select(self.__getUserNameFilter(table, userId))
 
@@ -891,7 +882,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
             select = table.select(self.__getUserNameFilter(table, userId))
 
@@ -919,7 +909,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
 
             for key in self.sqlUserInfo:
@@ -953,30 +942,12 @@ class IdResolver(UserIdResolver):
             searchDict = {"username": "*"}
         log.debug("[getUserList] %r", searchDict)
 
-        # we use a dict, where the return users are inserted to where key
-        # is userid to return only a distinct list of users
-        users = {}
-
         dbObj = self.connect()
         self.checkMapping()
-
-        regex_dict = {}
 
         try:
             table = dbObj.getTable(self.sqlTable)
             log.debug("[getUserList] getting SQL users from table %r", table)
-
-            # as most of the SQL dialects dont support unicode, unicode chars
-            # are replaced in the __createSearchString as wildcards.
-            # To make the search more precise, we do postprocessing by
-            # a backward compare with the original search dict values,
-            # either regexp or exact compare.
-            # We build up here the regex dict in case of a wildcard,
-            # For all others we do the exact compare
-
-            for key, value in list(searchDict.items()):
-                if "*" in value or "." in value:
-                    regex_dict[key] = re.compile(value.replace("*", ".*"))
 
             sStr = self.__creatSearchString(dbObj, table, searchDict)
             log.debug("[getUserList] creating searchstring <<%r>>", sStr)
@@ -985,28 +956,10 @@ class IdResolver(UserIdResolver):
 
             rows = dbObj.query(select)
 
-            for row in rows:
-                log.debug("[getUserList]  row     : %s", row)
-                ui = self.__getUserInfo(dbObj, row)
-                userid = ui["userid"]
-                log.debug("[getUserList] user info: %s", ui)
-                for s in searchDict:
-                    if s in regex_dict:
-                        if regex_dict[s].match(ui[s]):
-                            users[userid] = ui
-
-                    # handle the comparisons
-                    elif (
-                        ">" in searchDict[s]
-                        or "<" in searchDict[s]
-                        or "=" in searchDict[s]
-                    ):
-
-                        users[userid] = ui
-
-                    else:  # excat search
-                        if ui[s] == searchDict[s]:
-                            users[userid] = ui
+            user_info_list = [self.__getUserInfo(dbObj, row) for row in rows]
+            users = {
+                user_info["userid"]: user_info for user_info in user_info_list
+            }
 
         except KeyError as exx:
             log.error("[getUserList] Invalid Mapping Error: %r", exx)
@@ -1014,6 +967,7 @@ class IdResolver(UserIdResolver):
 
         except Exception as exx:
             log.error("[getUserList] Exception: %r", exx)
+            users = {}
 
         log.debug("[getUserList] returning userlist %r", list(users.values()))
         return list(users.values())
@@ -1021,24 +975,6 @@ class IdResolver(UserIdResolver):
     #######################
     #   Helper functions
     #######################
-    def __replaceChars(self, string, repl="*"):
-        """
-        Replaces unwanted chars with ord()>127
-
-        :param string: string to be replaced
-        :param repl: replacement pattern
-
-        :return: string with replaced patterns
-        """
-        retString = ""
-        for i in string:
-            if ord(i) > 127:
-                retString = "%s%s" % (retString, repl)
-            else:
-                retString = "%s%s" % (retString, i)
-
-        return retString
-
     def __getUserInfo(self, dbObj, row, suppress_password=True):
         """
         internal helper to build up the user info dict
@@ -1081,7 +1017,7 @@ class IdResolver(UserIdResolver):
             if filtr is None:
                 filtr = clause
             else:
-                filtr = clause & filtr
+                filtr = and_(clause, filtr)
             log.debug("[__add_where_clause_filter] searchString: %r", filtr)
         return filtr
 
@@ -1130,88 +1066,124 @@ class IdResolver(UserIdResolver):
             table.c[column_name] == loginId
         )
 
-    def __creatSearchString(self, dbObj, table, searchDict):
-        """
-        Create search string
-        """
-        exp = None
-        for key in searchDict:
-            log.debug("[__createSearchString] proccessing key %s", key)
+    def __creatSearchString(self, dbObj, table, searchDict: dict):
+        def get_column(column_name: str):
+            # case-insensitive fetching of all possible column_names
+            possible_column_name_list = [
+                possible_column_name
+                for column_mapping_key, possible_column_name in self.sqlUserInfo.items()
+                if column_name.lower() == column_mapping_key.lower()
+            ]
+            if not possible_column_name_list:
+                raise KeyError(
+                    "[__creatSearchString] no column found for %s", column_name
+                )
 
             # more tolerant mapping of column names for some sql dialects
             # as you can define columnnames in mixed case but table mapping
             # might be only available in upper or lower case (s. postgresql)
-            try:
-                column = table.c[self.sqlUserInfo[key]]
-            except KeyError as _err:
+            for column_name in possible_column_name_list:
                 try:
-                    column = table.c[self.sqlUserInfo[key].lower()]
+                    return table.c[column_name]
                 except KeyError as _err:
-                    column = table.c[self.sqlUserInfo[key].upper()]
+                    try:
+                        return table.c[column_name.lower()]
+                    except KeyError as _err:
+                        return table.c[column_name.upper()]
 
-            # for searching for names with german umlaute, they are replaced
-            # by wildcards, which is filtered in the upper level by
-            # postprocessing
-            val = self.__replaceChars(searchDict.get(key))
-
-            log.debug("[__createSearchString] key: %s, value: %s ", key, val)
+        def get_sql_expression(column, value):
+            log.debug(
+                "[__createSearchString] column: %s, value: %s ", column, value
+            )
 
             # First: replace wildcards. Our wildcards are * and . (shell-like),
             # and SQL wildcards are % and _.
-            if "%" in val:
-                val = val.replace("%", r"\%")
+            if "%" in value:
+                value = value.replace("%", r"\%")
 
-            if "_" in val:
-                val = val.replace("_", r"\_")
+            if "_" in value:
+                value = value.replace("_", r"\_")
 
-            if "*" in val:
-                val = val.replace("*", "%")
+            if "*" in value:
+                value = value.replace("*", "%")
 
-            if "." in val:
+            if "." in value:
                 if not self.sqlConnect.startswith("mysql"):
-                    val = val.replace(".", "_")
+                    value = value.replace(".", "_")
                 else:
                     # mysql replaces unicode chars with 2 placeholders,
                     # so we rely more on postprocessing :-(
-                    val = val.replace(".", "%")
+                    value = value.replace(".", "%")
 
             # don't match for whitespace at the beginning or the end.
-            val = val.strip()
+            value = value.strip()
 
             # Now: predicates. <, <=, >=, > get translated,
             # everything else is `LIKE`.
             # No wildcards are supported for <, <=, >=, >.
-            if val.startswith("<="):
-                val = val[2:].strip()
-                exp = column <= val
+            if value.startswith("<="):
+                value = value[2:].strip()
+                exp = column <= value
 
-            elif val.startswith(">="):
-                val = val[2:].strip()
-                exp = column >= val
+            elif value.startswith(">="):
+                value = value[2:].strip()
+                exp = column >= value
 
-            elif val.startswith(">"):
-                val = val[1:].strip()
-                exp = column > val
+            elif value.startswith(">"):
+                value = value[1:].strip()
+                exp = column > value
 
-            elif val.startswith("<"):
-                val = val[1:].strip()
-                exp = column < val
+            elif value.startswith("<"):
+                value = value[1:].strip()
+                exp = column < value
 
             else:
                 # for postgres no escape is required!!
+                # but we have to cast its type to string
+                # as it does not support dynamic typing like sqlite
                 if self.sqlConnect.startswith("postg"):
-                    exp = column.like(val)
+                    column_cast_to_string = cast(column, types.String)
+                    exp = column_cast_to_string.like(value)
                 else:
-                    exp = column.like(val, escape="\\")
+                    exp = column.like(value, escape="\\")
 
             log.debug("[__createSearchString] searchStr : %s", exp)
+            return exp
+
+        """
+        Create search string
+        """
+        exp = None
+
+        # OR filter
+        searchTermValue = searchDict.pop("searchTerm", None)
+        if searchTermValue:
+            for column_name in self.sqlUserInfo.keys():
+                column = get_column(column_name)
+                if exp is None:
+                    exp = get_sql_expression(column, searchTermValue)
+                else:
+                    exp = or_(exp, get_sql_expression(column, searchTermValue))
+
+        # AND filter
+        for key, value in searchDict.items():
+            log.debug("[__createSearchString] proccessing key %s", key)
+
+            try:
+                column = get_column(key)
+            except KeyError:
+                log.warning("[__createSearchString] no column named %s", key)
+                continue
+            if exp is None:
+                exp = get_sql_expression(column, value)
+            else:
+                exp = and_(exp, get_sql_expression(column, value))
 
         # use the Where clause to only see certain users.
         return self.__add_where_clause_to_filter(exp)
 
 
 if __name__ == "__main__":
-
     print("SQLIdResolver - IdResolver class test ")
 
     # sqlR = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()

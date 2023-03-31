@@ -104,7 +104,7 @@ class SQLTestController(TestController):
 
         return resolverDefinition
 
-    def addUsers(self, usercount=10):
+    def addUsers(self, usercount=10, usernamePrefix="hey"):
         """
         generator to create users in the user db
         """
@@ -113,7 +113,7 @@ class SQLTestController(TestController):
 
         for i in range(1, usercount + 1):
             user = {
-                "user": "hey%d" % i,
+                "user": "%s%d" % (usernamePrefix, i),
                 "telephonenumber": "012345-678-%d" % i,
                 "mobile": "00123-456-%d" % i,
                 "sn": "yak%d" % i,

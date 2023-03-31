@@ -68,7 +68,6 @@ class RealmsController(BaseController, JWTMixin):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
 
@@ -187,8 +186,13 @@ class RealmsController(BaseController, JWTMixin):
           (realm="*"), or by implicitly giving permissions for everything in the
           admin scope by not setting any admin scope policies.
 
-        :param <searchexpr>: will be retrieved from the UserIdResolverClass
+        :param <searchexpr>: limit results to those matching the searchexpr.
+          Will be retrieved from the UserIdResolverClass. Example: `username=Alice`.
         :type <searchexpr>: str, optional
+
+        :param searchTerm: limit results to those matching the searchTerm
+          in at least one searchable field. Supports `*` as a wildcard operator.
+        :type searchTerm: str, optional
 
         :param rp: limit the number of returned users, defaults to 16 if `page` is given.
         :type rp: int, optional
@@ -243,15 +247,10 @@ class RealmsController(BaseController, JWTMixin):
 
         param = self.request_params.copy()
 
-        list_params = {}
-        list_params.update(param)
-
-        for invalid_iterator_param in ["rp", "page"]:
-            try:
-                del list_params[invalid_iterator_param]
-            except KeyError:
-                pass
-        users_iters = getUserListIterators(list_params, realm_user)
+        searchDict = {
+            k: v for k, v in param.items() if k not in ["rp", "page"]
+        }
+        users_iters = getUserListIterators(searchDict, realm_user)
 
         g.audit["success"] = True
         g.audit["info"] = "realm: %s" % realm_name

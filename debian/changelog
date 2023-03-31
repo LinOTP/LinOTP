@@ -11,8 +11,16 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
     `resolverName` to filter Tokens by
   * new API endpoint to retrieve realms:
     * /api/v2/realms
+  * new API endpoint to retrieve users of a realm:
+    * /api/v2/realms/<realm_name>/users
+      * accepts any field of a user as query parameter to filter by
+      * accepts query parameter `searchTerm` to filter users where one field matches the given value
   * new API endpoint to retrieve resolvers:
     * /api/v2/resolvers
+  * new API endpoint to retrieve users of a resolver:
+    * /api/v2/resolvers/<resolver_name>/users
+      * accepts any field of a user as query parameter to filter by
+      * accepts query parameter `searchTerm` to filter users where one field matches the given value
   * the new API endpoints all return dates in ISO 8601-compliant format
   * support for Flask 2 installation
 
