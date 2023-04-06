@@ -519,7 +519,7 @@ class UserserviceController(BaseController):
             uid = "%s@%s" % (user.login, user.realm)
 
             self.authUser = user
-            request_context["authUser"] = user
+            request_context["AuthUser"] = user
 
             # -------------------------------------------------------------- --
 
@@ -1025,7 +1025,7 @@ class UserserviceController(BaseController):
                 raise UserNotFound("user %r not found!" % param.get("login"))
 
             self.authUser = user
-            request_context["authUser"] = user
+            request_context["AuthUser"] = user
 
             # -------------------------------------------------------------- --
 
