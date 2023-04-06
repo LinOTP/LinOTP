@@ -373,7 +373,7 @@ class UserserviceController(BaseController):
                 "userservice/pre_context",
                 "userservice/userinfo",
             ]:
-                g.audit["user"] = "%r" % authUser
+                g.audit["user"] = authUser.login if authUser else ""
                 realm = ""
                 if authUser and authUser.realm:
                     realm = authUser.realm
