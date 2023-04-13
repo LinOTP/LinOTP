@@ -126,49 +126,49 @@ class AuditlogController(BaseController, JWTMixin):
         :param page: ascending (`asc`) or descending (`desc`) order of entries, defaults to `desc`
         :type page: string, optional
 
-        :param id: filter for a specific id. Leading or closing `%` can be used as a wildcard operator
+        :param id: filter for a specific id. Leading or closing `*` can be used as a wildcard operator
         :type id: int, optional
 
-        :param timestamp: filter for a specific timestamp. Leading or closing `%` can be used as a wildcard operator
+        :param timestamp: filter for a specific timestamp. Leading or closing `*` can be used as a wildcard operator
         :type timestamp: str, optional
 
-        :param action: filter for a specific action. Leading or closing `%` can be used as a wildcard operator
+        :param action: filter for a specific action. Leading or closing `*` can be used as a wildcard operator
         :type action: str, optional
 
-        :param actionDetail: filter for a specific actionDetail. Leading or closing `%` can be used as a wildcard operator
+        :param actionDetail: filter for a specific actionDetail. Leading or closing `*` can be used as a wildcard operator
         :type actionDetail: str, optional
 
         :param success: filter for a specific success.
         :type success: boolean, optional
 
-        :param serial: filter for a specific serial. Leading or closing `%` can be used as a wildcard operator
+        :param serial: filter for a specific serial. Leading or closing `*` can be used as a wildcard operator
         :type serial: str, optional
 
-        :param tokenType: filter for a specific tokenType. Leading or closing `%` can be used as a wildcard operator
+        :param tokenType: filter for a specific tokenType. Leading or closing `*` can be used as a wildcard operator
         :type tokenType: str, optional
 
-        :param user: filter for a specific username. Leading or closing `%` can be used as a wildcard operator
+        :param user: filter for a specific username. Leading or closing `*` can be used as a wildcard operator
         :type user: str, optional
 
-        :param realm: filter for a specific realm. Leading or closing `%` can be used as a wildcard operator
+        :param realm: filter for a specific realm. Leading or closing `*` can be used as a wildcard operator
         :type realm: str, optional
 
-        :param administrator: filter for a specific administrator username. Leading or closing `%` can be used as a wildcard operator
+        :param administrator: filter for a specific administrator username. Leading or closing `*` can be used as a wildcard operator
         :type administrator: str, optional
 
-        :param info: filter for a specific info. Leading or closing `%` can be used as a wildcard operator
+        :param info: filter for a specific info. Leading or closing `*` can be used as a wildcard operator
         :type info: str, optional
 
-        :param linotpServer: filter for a specific linotpServer. Leading or closing `%` can be used as a wildcard operator
+        :param linotpServer: filter for a specific linotpServer. Leading or closing `*` can be used as a wildcard operator
         :type linotpServer: str, optional
 
-        :param client: filter for a specific client. Leading or closing `%` can be used as a wildcard operator
+        :param client: filter for a specific client. Leading or closing `*` can be used as a wildcard operator
         :type client: str, optional
 
-        :param logLevel: filter for a specific logLevel. Leading or closing `%` can be used as a wildcard operator
+        :param logLevel: filter for a specific logLevel. Leading or closing `*` can be used as a wildcard operator
         :type logLevel: str, optional
 
-        :param clearanceLevel: filter for a specific clearanceLevel. Leading or closing `%` can be used as a wildcard operator
+        :param clearanceLevel: filter for a specific clearanceLevel. Leading or closing `*` can be used as a wildcard operator
         :type clearanceLevel: str, optional
 
         :return:
@@ -283,5 +283,11 @@ class AuditlogController(BaseController, JWTMixin):
             # return all results by not passing page nor rp
             del search_params["page"]
             del search_params["rp"]
+
+        # replace wildcard operator `*` by `%`
+        for k, v in search_params.items():
+            if not isinstance(v, str):
+                continue
+            search_params[k] = v.replace("*", "%")
 
         return search_params

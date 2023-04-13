@@ -119,7 +119,7 @@ class TestAuditSearch(object):
             == response.json["result"]["value"]["pageRecords"][0]["action"]
         ), response.json
 
-        # and the auditlog can be filtered
+        # test auditlog can be filtered
         filters = [
             "id",
             "timestamp",
@@ -144,6 +144,14 @@ class TestAuditSearch(object):
             )
             returned_entries = response.json["result"]["value"]["pageRecords"]
             assert 0 == len(returned_entries), (filter, response.json)
+
+        # test wildcard operator `*`
+        response = adminclient.get(
+            "/api/v2/auditlog/",
+            query_string={"action": "*ystem/getConfi*"},
+        )
+        returned_entries = response.json["result"]["value"]["pageRecords"]
+        assert 1 == len(returned_entries), (filter, response.json)
 
 
 # class TestAuditRecord(object):
