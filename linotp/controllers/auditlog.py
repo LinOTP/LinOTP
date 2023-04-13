@@ -115,6 +115,14 @@ class AuditlogController(BaseController, JWTMixin):
         * Otherwise, only the admins with the policy ``scope=audit, action=view`` can view
           audit log entries.
 
+        :param pageSize: limit the number of returned entries, defaults to 15
+          (unless another value is specified in the configuration). Setting it to
+          0 returns all entries.
+        :type pageSize: int, optional
+
+        :param page: request a certain page, defaults to 0
+        :type page: int, optional
+
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
@@ -153,6 +161,13 @@ class AuditlogController(BaseController, JWTMixin):
         try:
             search_params = self.request_params
 
+            search_params["page"] = int(search_params.get("page", 0)) + 1
+            search_params["rp"] = int(search_params.get("pageSize", 15))
+            if search_params["rp"] == 0:
+                # return all results by not passing page nor rp
+                del search_params["page"]
+                del search_params["rp"]
+
             audit_obj = current_app.audit_obj
             audit_query = AuditQuery(search_params, audit_obj)
 
@@ -162,7 +177,7 @@ class AuditlogController(BaseController, JWTMixin):
             ]
 
             result = {
-                "page": audit_query.page,
+                "page": audit_query.page - 1,
                 "pageSize": len(entries),
                 "totalPages": audit_query.get_total_pages(),
                 "totalRecords": audit_query.get_total(),
