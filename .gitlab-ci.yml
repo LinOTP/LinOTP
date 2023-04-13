@@ -44,7 +44,6 @@ stages:
   - coverage-report
   - apidocs
   - upload-debian-packages
-  - iso
 
 .docker-registry: &docker-registry
   docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
@@ -127,20 +126,18 @@ pre-commit-check:
     - docker images
     # Save build job id to artifacts for later uploads
     - echo "$CI_JOB_ID" > apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt
-    - echo "DEB_ARTIFACTS_URL=https://gitbox.corp.keyidentity.com/api/v4/projects/${CI_PROJECT_ID}/jobs/${CI_JOB_ID}/artifacts" >> build.env
 
 build:debian-buster:
   extends: .build-debs-and-images
   variables:
     DEBIAN_RELEASE_NAME: buster
   artifacts:
-    # expose_as: apt-buster
+    expose_as: apt-buster
     paths:
       - apt/
     name: "linotp-debs${CI_COMMIT_REF_SLUG}"
     expire_in: 2 weeks
-    reports:
-      dotenv: build.env
+
 
 lint:
   stage: lint
@@ -448,34 +445,3 @@ apidocs:
 upload-debs:
   stage: upload-debian-packages
   extends: .upload-debs
-
-# Build and upload are being handled by dev/linotp/sva2/build-isos
-.build-and-upload-iso:
-  stage: iso
-  trigger:
-    project: dev/linotp/sva2/build-isos
-    strategy: depend
-
-build-and-upload-iso:
-  extends: .build-and-upload-iso
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^dev\//'                  # Release candidate for QA
-      variables:
-        BUILD: golden
-        UPLOAD: "yes"
-    - if: '$CI_COMMIT_TAG =~ /^release/'                # Release version
-      variables:
-        BUILD: release
-        UPLOAD: "yes"
-
-build-iso:
-  extends: .build-and-upload-iso
-  when: manual
-  allow_failure: true
-  variables:
-    DEB_ARTIFACTS_URL: $DEB_ARTIFACTS_URL
-    BUILD: commit
-    UPLOAD: "no"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'            # Nightly/Scheduled pipeline
-    - if: $CI_MERGE_REQUEST_REF_PATH                    # Commit on branch
