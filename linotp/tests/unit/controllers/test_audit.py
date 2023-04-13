@@ -117,7 +117,33 @@ class TestAuditSearch(object):
         assert (
             "system/getConfig"
             == response.json["result"]["value"]["pageRecords"][0]["action"]
-        ), response
+        ), response.json
+
+        # and the auditlog can be filtered
+        filters = [
+            "id",
+            "timestamp",
+            "serial",
+            "action",
+            "actionDetail",
+            "success",
+            "tokenType",
+            "user",
+            "realm",
+            "administrator",
+            "info",
+            "linotpServer",
+            "client",
+            "logLevel",
+            "clearanceLevel",
+        ]
+        for filter in filters:
+            response = adminclient.get(
+                "/api/v2/auditlog/",
+                query_string={filter: "Empty response -> filtering works"},
+            )
+            returned_entries = response.json["result"]["value"]["pageRecords"]
+            assert 0 == len(returned_entries), (filter, response.json)
 
 
 # class TestAuditRecord(object):

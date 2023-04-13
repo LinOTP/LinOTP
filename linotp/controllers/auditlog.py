@@ -126,6 +126,51 @@ class AuditlogController(BaseController, JWTMixin):
         :param page: ascending (`asc`) or descending (`desc`) order of entries, defaults to `desc`
         :type page: string, optional
 
+        :param id: filter for a specific id. Leading or closing `%` can be used as a wildcard operator
+        :type id: int, optional
+
+        :param timestamp: filter for a specific timestamp. Leading or closing `%` can be used as a wildcard operator
+        :type timestamp: str, optional
+
+        :param action: filter for a specific action. Leading or closing `%` can be used as a wildcard operator
+        :type action: str, optional
+
+        :param actionDetail: filter for a specific actionDetail. Leading or closing `%` can be used as a wildcard operator
+        :type actionDetail: str, optional
+
+        :param success: filter for a specific success.
+        :type success: boolean, optional
+
+        :param serial: filter for a specific serial. Leading or closing `%` can be used as a wildcard operator
+        :type serial: str, optional
+
+        :param tokenType: filter for a specific tokenType. Leading or closing `%` can be used as a wildcard operator
+        :type tokenType: str, optional
+
+        :param user: filter for a specific username. Leading or closing `%` can be used as a wildcard operator
+        :type user: str, optional
+
+        :param realm: filter for a specific realm. Leading or closing `%` can be used as a wildcard operator
+        :type realm: str, optional
+
+        :param administrator: filter for a specific administrator username. Leading or closing `%` can be used as a wildcard operator
+        :type administrator: str, optional
+
+        :param info: filter for a specific info. Leading or closing `%` can be used as a wildcard operator
+        :type info: str, optional
+
+        :param linotpServer: filter for a specific linotpServer. Leading or closing `%` can be used as a wildcard operator
+        :type linotpServer: str, optional
+
+        :param client: filter for a specific client. Leading or closing `%` can be used as a wildcard operator
+        :type client: str, optional
+
+        :param logLevel: filter for a specific logLevel. Leading or closing `%` can be used as a wildcard operator
+        :type logLevel: str, optional
+
+        :param clearanceLevel: filter for a specific clearanceLevel. Leading or closing `%` can be used as a wildcard operator
+        :type clearanceLevel: str, optional
+
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
@@ -162,20 +207,10 @@ class AuditlogController(BaseController, JWTMixin):
             return error
 
         try:
-            search_params = self.request_params
-
-            search_params["sortorder"] = (
-                search_params.get("sortOrder") or "desc"
-            )
-            search_params["page"] = int(search_params.get("page", 0)) + 1
-            search_params["rp"] = int(search_params.get("pageSize", 15))
-            if search_params["rp"] == 0:
-                # return all results by not passing page nor rp
-                del search_params["page"]
-                del search_params["rp"]
+            search_dict = self._get_search_dict_from_request_params()
 
             audit_obj = current_app.audit_obj
-            audit_query = AuditQuery(search_params, audit_obj)
+            audit_query = AuditQuery(search_dict, audit_obj)
 
             entries = [
                 audit_query.audit_obj.row2dictApiV2(rowproxy)
@@ -200,3 +235,53 @@ class AuditlogController(BaseController, JWTMixin):
             log.error("[getAuditEntries] error getting audit entries: %r", ex)
             db.session.rollback()
             return sendError(response, ex)
+
+    def _get_search_dict_from_request_params(self):
+        request_param_to_audit_query_param_mapping = {
+            "id": "number",
+            "timestamp": "date",
+            "action": "action",
+            "actionDetail": "action_detail",
+            "success": "success",
+            "serial": "serial",
+            "tokenType": "tokentype",
+            "user": "user",
+            "realm": "realm",
+            "administrator": "administrator",
+            "info": "info",
+            "linotpServer": "linotp_server",
+            "client": "client",
+            "logLevel": "log_level",
+            "clearanceLevel": "clearance_level",
+        }
+        search_params = {
+            request_param_to_audit_query_param_mapping[k]: v
+            for k, v in self.request_params.items()
+            if k in request_param_to_audit_query_param_mapping
+        }
+
+        # convert given `success` boolean to corresponding string `0` or `1`
+        # because it's the type of AuditTable.success
+        if "success" in search_params:
+            success = search_params["success"].lower()
+            if success == "true":
+                search_params["success"] = "1"
+            elif success == "false":
+                search_params["success"] = "0"
+
+        # we defer from request_params.get("sortOrder", "desc")
+        # because when `sortOrder` is an empty parameter in the request,
+        # it's an empty string `""` in request_params
+        sort_order = self.request_params.get("sortOrder")
+        search_params["sortorder"] = (
+            sort_order if sort_order in ["asc", "desc"] else "desc"
+        )
+
+        search_params["page"] = int(self.request_params.get("page", 0)) + 1
+        search_params["rp"] = int(self.request_params.get("pageSize", 15))
+        if search_params["rp"] == 0:
+            # return all results by not passing page nor rp
+            del search_params["page"]
+            del search_params["rp"]
+
+        return search_params
