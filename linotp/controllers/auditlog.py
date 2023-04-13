@@ -123,6 +123,9 @@ class AuditlogController(BaseController, JWTMixin):
         :param page: request a certain page, defaults to 0
         :type page: int, optional
 
+        :param page: ascending (`asc`) or descending (`desc`) order of entries, defaults to `desc`
+        :type page: string, optional
+
         :return:
             a JSON-RPC response with ``result`` in the following format:
 
@@ -161,6 +164,9 @@ class AuditlogController(BaseController, JWTMixin):
         try:
             search_params = self.request_params
 
+            search_params["sortorder"] = (
+                search_params.get("sortOrder") or "desc"
+            )
             search_params["page"] = int(search_params.get("page", 0)) + 1
             search_params["rp"] = int(search_params.get("pageSize", 15))
             if search_params["rp"] == 0:
