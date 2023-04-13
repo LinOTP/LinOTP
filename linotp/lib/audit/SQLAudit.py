@@ -332,6 +332,10 @@ class Audit(AuditBase):
                     conditions.append(AuditTable.linotp_server.like(v))
                 elif "client" == k:
                     conditions.append(AuditTable.client.like(v))
+                elif "log_level" == k:
+                    conditions.append(AuditTable.log_level.like(v))
+                elif "clearance_level" == k:
+                    conditions.append(AuditTable.clearance_level.like(v))
 
         all_conditions = None
         if conditions:
