@@ -108,6 +108,17 @@ class TestAuditSearch(object):
         response = search()
         assert response.json["rows"][-1]["cell"][4] == "system/getConfig"
 
+    def test_audit_with_v2(self, adminclient, search):
+        # WHEN I create an audit record by retrieving the system config
+        adminclient.get("/system/getConfig")
+
+        # THEN the operation is logged and can be read by audit/search
+        response = adminclient.get("/api/v2/auditlog/")
+        assert (
+            "system/getConfig"
+            == response.json["result"]["value"]["pageRecords"][0]["action"]
+        ), response
+
 
 # class TestAuditRecord(object):
 #     """

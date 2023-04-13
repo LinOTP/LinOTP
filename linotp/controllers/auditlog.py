@@ -1,0 +1,181 @@
+import logging
+
+from flask import current_app, g
+
+from linotp.controllers.base import BaseController, JWTMixin
+from linotp.flap import request, response
+from linotp.lib.audit.iterator import AuditQuery
+from linotp.lib.context import request_context
+from linotp.lib.policy import PolicyException, checkPolicyPre
+from linotp.lib.reply import sendError, sendResult
+from linotp.lib.user import getUserFromRequest
+from linotp.lib.util import check_session, get_client
+from linotp.model import db
+
+log = logging.getLogger(__name__)
+
+
+class UserNotFoundException(Exception):
+    pass
+
+
+class AuditlogController(BaseController, JWTMixin):
+    """
+    The linotp.controllers are the implementation of the web-API to talk to
+    the LinOTP server.
+    The AuditLogController is used for querying audit log entries.
+
+    The following is the type definition of an **AuditEntry**:
+
+    .. code::
+
+        {
+            "id": number
+            "timestamp": date,
+            "serial": string,
+            "action": string,
+            "actionDetail": string,
+            "success": boolean,
+            "tokenType": string,
+            "user": string,
+            "realm": string,
+            "administrator": string,
+            "info": string,
+            "linotpServer": string,
+            "client": string,
+            "logLevel": string,
+            "clearanceLevel": number,
+            "signatureCheck": boolean
+        }
+
+    """
+
+    def __init__(self, name, install_name="", **kwargs):
+        super(AuditlogController, self).__init__(
+            name, install_name=install_name, **kwargs
+        )
+
+        self.add_url_rule(
+            "/", "auditlog", self.get_audit_entries, methods=["GET"]
+        )
+
+    def __before__(self, **params):
+        """
+        __before__ is called before every action
+
+        :param params: list of named arguments
+        :return: -nothing- or in case of an error a Response
+                created by sendError with the context info 'before'
+        """
+
+        action = request_context["action"]
+
+        try:
+            g.audit["success"] = False
+            g.audit["client"] = get_client(request)
+
+            check_session(request)
+
+            return None
+
+        except Exception as exx:
+            log.error("[__before__::%r] exception %r", action, exx)
+            db.session.rollback()
+            return sendError(response, exx, context="before")
+
+    @staticmethod
+    def __after__(response):
+        """
+        __after__ is called after every action
+
+        :param response: the previously created response - for modification
+        :return: return the response
+        """
+        try:
+            g.audit["administrator"] = getUserFromRequest()
+
+            current_app.audit_obj.log(g.audit)
+            db.session.commit()
+            return response
+
+        except Exception as exx:
+            log.error("[__after__] unable to create a session cookie: %r", exx)
+            db.session.rollback()
+            return sendError(response, exx, context="after")
+
+    def get_audit_entries(self):
+        """
+        Method: GET /api/v2/auditLog
+
+        Return a paginated list of the audit log entries.
+
+        The audit log visibility is determined as follows:
+
+        * If no audit policy is defined, all audit log entries are visible to every admin.
+        * Otherwise, only the admins with the policy ``scope=audit, action=view`` can view
+          audit log entries.
+
+        :return:
+            a JSON-RPC response with ``result`` in the following format:
+
+            .. code::
+
+                {
+                    "status": boolean,
+                    "value": {
+                        "page": number,
+                        "pageSize": number,
+                        "totalPages": number,
+                        "totalRecords": number,
+                        "pageRecords": [ AuditEntry ]
+                    }
+                }
+
+        :raises PolicyException:
+            if the logged-in admin does not have the correct permissions to list
+            audit log entries, the exception message is serialized and returned. The
+            response has status code 403.
+
+        :raises Exception:
+            if any other error occurs the exception message is serialized and
+            returned. The response has status code 500.
+        """
+
+        try:
+            checkPolicyPre("audit", "view")
+        except PolicyException as pe:
+            log.error("[getAuditEntries] policy failed: %r", pe)
+            db.session.rollback()
+            error = sendError(None, pe)
+            error.status_code = 403
+            return error
+
+        try:
+            search_params = self.request_params
+
+            audit_obj = current_app.audit_obj
+            audit_query = AuditQuery(search_params, audit_obj)
+
+            entries = [
+                audit_query.audit_obj.row2dictApiV2(rowproxy)
+                for rowproxy in audit_query.get_query_result()
+            ]
+
+            result = {
+                "page": audit_query.page,
+                "pageSize": len(entries),
+                "totalPages": audit_query.get_total_pages(),
+                "totalRecords": audit_query.get_total(),
+                "pageRecords": entries,
+            }
+
+            g.audit["success"] = True
+            db.session.commit()
+
+            # return a list of the audit log entries
+            return sendResult(response, result)
+
+        except Exception as ex:
+            log.error("[getAuditEntries] error getting audit entries: %r", ex)
+            db.session.rollback()
+            return sendError(response, ex)

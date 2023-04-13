@@ -107,6 +107,7 @@ AVAILABLE_CONTROLLERS = {
     "tokens:/api/v2/tokens",
     "realms:/api/v2/realms",
     "resolvers:/api/v2/resolvers",
+    "auditlog:/api/v2/auditlog",
 }
 
 
@@ -246,7 +247,6 @@ class ExtFlaskConfig(FlaskConfig):
         try:
             return self[key]
         except KeyError:
-
             log_func(
                 "Relying on `.get()` to set a default for "
                 f"'{key}' violates the DRY principle. "
@@ -410,7 +410,6 @@ class LinOTPApp(Flask):
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
-
         # we add a unique request id to the request enviroment
         # so we can trace individual requests in the logging
 
@@ -453,7 +452,6 @@ class LinOTPApp(Flask):
         return request.path.startswith(self.static_url_path)
 
     def finalise_request(self, exc):
-
         if not self.is_request_static():
             drop_security_module()
 
@@ -899,7 +897,6 @@ def init_security_provider():
     out of the pool with in the request context (flask.g).
     """
     try:
-
         security_provider = SecurityProvider()
         security_provider.load_config(current_app.config)
 
