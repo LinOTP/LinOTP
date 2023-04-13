@@ -21,6 +21,9 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
     * /api/v2/resolvers/<resolver_name>/users
       * accepts any field of a user as query parameter to filter by
       * accepts query parameter `searchTerm` to filter users where one field matches the given value
+  * new API endpoint to retrieve AuditLog:
+    * /api/v2/auditlog
+      * accepts most fields of a AuditEntry as query parameter to filter by
   * the new API endpoints all return dates in ISO 8601-compliant format
   * support for Flask 2 installation
 
