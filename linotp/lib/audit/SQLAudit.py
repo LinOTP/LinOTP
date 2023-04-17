@@ -178,7 +178,6 @@ class Audit(AuditBase):
             raise exx
 
     def _attr_to_dict(self, audit_line):
-
         line = {}
         line["number"] = audit_line.id
         line["id"] = audit_line.id
@@ -333,6 +332,10 @@ class Audit(AuditBase):
                     conditions.append(AuditTable.linotp_server.like(v))
                 elif "client" == k:
                     conditions.append(AuditTable.client.like(v))
+                elif "log_level" == k:
+                    conditions.append(AuditTable.log_level.like(v))
+                elif "clearance_level" == k:
+                    conditions.append(AuditTable.clearance_level.like(v))
 
         all_conditions = None
         if conditions:
@@ -365,6 +368,43 @@ class Audit(AuditBase):
             line["sig_check"] = "FAIL"
 
         return line
+
+    def row2dictApiV2(self, audit_line):
+        """
+        convert an SQL audit db to a audit dict for /api/v2/auditlog
+
+        :param audit_line: audit db row
+        :return: audit entry dict
+        """
+
+        line = self._attr_to_dict(audit_line)
+
+        audit_dict = {
+            "id": line["id"],
+            "timestamp": line.get("timestamp"),
+            "serial": line.get("serial"),
+            "action": line.get("action"),
+            "actionDetail": line.get("action_detail"),
+            "success": line.get("success", "0") == "1",
+            "tokenType": line.get("tokentype"),
+            "user": line.get("user"),
+            "realm": line.get("realm"),
+            "administrator": line.get("administrator"),
+            "info": line.get("info"),
+            "linotpServer": line.get("linotp_server"),
+            "client": line.get("client"),
+            "logLevel": line.get("log_level"),
+            "clearanceLevel": line.get("clearance_level"),
+            "signatureCheck": self._verify(line, audit_line.signature),
+        }
+
+        # Map empty string to None
+        audit_dict = {
+            k: v if v != "" and v != "''" else None
+            for k, v in audit_dict.items()
+        }
+
+        return audit_dict
 
     def searchQuery(self, param, AND=True, display_error=True, rp_dict=None):
         """

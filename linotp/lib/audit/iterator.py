@@ -29,8 +29,7 @@
 import json
 import logging
 import sys
-
-import linotp.lib.crypto
+from math import ceil
 
 log = logging.getLogger(__name__)
 
@@ -135,7 +134,6 @@ class AuditQuery(object):
         return self._columns
 
     def get_query_result(self):
-
         self.audit_search = self.audit_obj.searchQuery(
             self._search_dict, rp_dict=self._rp_dict
         )
@@ -168,6 +166,15 @@ class AuditQuery(object):
 
     def get_total(self):
         return self.audit_obj.getTotal(self._search_dict)
+
+    def get_total_pages(self):
+        records_per_page = self._rp_dict.get("rp")
+        if not records_per_page:
+            return 1
+        else:
+            if int(records_per_page) < 1:
+                return self.get_total()
+            return ceil(self.get_total() / int(records_per_page))
 
 
 class JSONAuditIterator(object):
@@ -243,7 +250,6 @@ class CSVAuditIterator(object):
         """
         res = ""
         try:
-
             headers = ""
             if self.i == 0 and self.audit_query.with_headers():
                 headers = (

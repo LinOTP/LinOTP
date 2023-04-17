@@ -108,6 +108,51 @@ class TestAuditSearch(object):
         response = search()
         assert response.json["rows"][-1]["cell"][4] == "system/getConfig"
 
+    def test_audit_with_v2(self, adminclient, search):
+        # WHEN I create an audit record by retrieving the system config
+        adminclient.get("/system/getConfig")
+
+        # THEN the operation is logged and can be read by audit/search
+        response = adminclient.get("/api/v2/auditlog/")
+        assert (
+            "system/getConfig"
+            == response.json["result"]["value"]["pageRecords"][0]["action"]
+        ), response.json
+
+        # test auditlog can be filtered
+        filters = [
+            "id",
+            "timestamp",
+            "serial",
+            "action",
+            "actionDetail",
+            "success",
+            "tokenType",
+            "user",
+            "realm",
+            "administrator",
+            "info",
+            "linotpServer",
+            "client",
+            "logLevel",
+            "clearanceLevel",
+        ]
+        for filter in filters:
+            response = adminclient.get(
+                "/api/v2/auditlog/",
+                query_string={filter: "Empty response -> filtering works"},
+            )
+            returned_entries = response.json["result"]["value"]["pageRecords"]
+            assert 0 == len(returned_entries), (filter, response.json)
+
+        # test wildcard operator `*`
+        response = adminclient.get(
+            "/api/v2/auditlog/",
+            query_string={"action": "*ystem/getConfi*"},
+        )
+        returned_entries = response.json["result"]["value"]["pageRecords"]
+        assert 1 == len(returned_entries), (filter, response.json)
+
 
 # class TestAuditRecord(object):
 #     """
