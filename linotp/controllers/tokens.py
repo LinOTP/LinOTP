@@ -189,29 +189,6 @@ class TokensController(BaseController, JWTMixin):
 
         param = self.request_params
         try:
-            page = int(param.get("page", 0)) + 1
-            page_size = param.get("pageSize")
-            sortParameterNameMapping = {
-                "serial": "TokenSerialnumber",
-                "isActive": "Isactive",
-                "type": "TokenType",
-                "failedLogins": "FailCount",
-                "description": "TokenDesc",
-                "userId": "Userid",
-                "resolver": "IdResolver",
-            }
-            try:
-                sort_key = param.get("sortBy") or "serial"
-                sort_by = sortParameterNameMapping[sort_key]
-            except KeyError:
-                raise KeyError(
-                    f"Tokens can't be sorted by parameter {sort_key}"
-                )
-            sort_order = param.get("sortOrder", "asc")
-            search_term = param.get("searchTerm", None)
-            user_id = param.get("userId", None)
-            resolver_name = param.get("resolverName", None)
-
             ### Check permissions ###
 
             logged_in_admin = getUserFromParam(param)
@@ -237,6 +214,29 @@ class TokensController(BaseController, JWTMixin):
             )
 
             ### End permissions' check ###
+
+            page = int(param.get("page", 0)) + 1
+            page_size = param.get("pageSize")
+            sortParameterNameMapping = {
+                "serial": "TokenSerialnumber",
+                "isActive": "Isactive",
+                "type": "TokenType",
+                "failedLogins": "FailCount",
+                "description": "TokenDesc",
+                "userId": "Userid",
+                "resolver": "IdResolver",
+            }
+            try:
+                sort_key = param.get("sortBy") or "serial"
+                sort_by = sortParameterNameMapping[sort_key]
+            except KeyError:
+                raise KeyError(
+                    f"Tokens can't be sorted by parameter {sort_key}"
+                )
+            sort_order = param.get("sortOrder", "asc")
+            search_term = param.get("searchTerm", None)
+            user_id = param.get("userId", None)
+            resolver_name = param.get("resolverName", None)
 
             if page_size is not None:
                 page_size = int(page_size)
