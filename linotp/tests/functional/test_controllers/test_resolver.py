@@ -208,6 +208,32 @@ class TestResolver(TestController):
         records = value["pageRecords"]
         assert isinstance(records, list)
 
+    def test_resolver_users_sorting(self):
+        """
+        Request the users from a resolver sorted by `search_param`
+        and ensure that the first user in `asc` direction will be the last in `desc`
+        """
+        for search_param in ["userId", "username"]:
+            params_asc = {
+                "pageSize": 500,
+                "sortBy": search_param,
+                "sortOrder": "asc",
+            }
+            records_asc = self.make_api_v2_request(
+                "/resolvers/myDefRes/users", params=params_asc
+            ).json["result"]["value"]["pageRecords"]
+
+            params_desc = {
+                "pageSize": 500,
+                "sortBy": search_param,
+                "sortOrder": "desc",
+            }
+            records_desc = self.make_api_v2_request(
+                "/resolvers/myDefRes/users", params=params_desc
+            ).json["result"]["value"]["pageRecords"]
+
+            assert records_asc[0] == records_desc[-1]
+
     def test_resolver_users_access(self):
         """verify that authentication is required for the get_users endpoint
 
