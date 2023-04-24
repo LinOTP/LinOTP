@@ -95,7 +95,6 @@ class TokensController(BaseController, JWTMixin):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
 
@@ -192,7 +191,22 @@ class TokensController(BaseController, JWTMixin):
         try:
             page = int(param.get("page", 0)) + 1
             page_size = param.get("pageSize")
-            sort_by = param.get("sortBy", "LinOtp.TokenSerialnumber")
+            sortParameterNameMapping = {
+                "serial": "TokenSerialnumber",
+                "isActive": "Isactive",
+                "type": "TokenType",
+                "failedLogins": "FailCount",
+                "description": "TokenDesc",
+                "userId": "Userid",
+                "resolver": "IdResolver",
+            }
+            try:
+                sort_key = param.get("sortBy") or "serial"
+                sort_by = sortParameterNameMapping[sort_key]
+            except KeyError:
+                raise KeyError(
+                    f"Tokens can't be sorted by parameter {sort_key}"
+                )
             sort_order = param.get("sortOrder", "asc")
             search_term = param.get("searchTerm", None)
             user_id = param.get("userId", None)
