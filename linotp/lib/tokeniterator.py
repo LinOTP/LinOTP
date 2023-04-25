@@ -595,6 +595,9 @@ class TokenIterator(object):
             "FailCount": Token.LinOtpFailCount,
             "Count": Token.LinOtpCount,
             "Isactive": Token.LinOtpIsactive,
+            "CreationDate": Token.LinOtpCreationDate,
+            "LastAuthMatch": Token.LinOtpLastAuthMatch,
+            "LastAuthSuccess": Token.LinOtpLastAuthSuccess,
         }
         return mapping.get(sort_param, Token.LinOtpTokenDesc)
 
