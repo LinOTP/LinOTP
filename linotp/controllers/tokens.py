@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime, timezone
+from difflib import get_close_matches
 
 from flask import current_app, g
 
@@ -230,9 +231,15 @@ class TokensController(BaseController, JWTMixin):
                 sort_key = param.get("sortBy") or "serial"
                 sort_by = sortParameterNameMapping[sort_key]
             except KeyError:
-                raise KeyError(
-                    f"Tokens can't be sorted by parameter {sort_key}"
+                error_msg = f"Tokens can't be sorted by {sort_key}."
+                potential_sort_params = get_close_matches(
+                    sort_key, sortParameterNameMapping.keys()
                 )
+                if potential_sort_params:
+                    error_msg += (
+                        f" Did you mean any of {potential_sort_params}?"
+                    )
+                raise KeyError(error_msg)
             sort_order = param.get("sortOrder", "asc")
             search_term = param.get("searchTerm", None)
             user_id = param.get("userId", None)
