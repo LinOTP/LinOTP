@@ -218,34 +218,9 @@ class TokensController(BaseController, JWTMixin):
 
             page = int(param.get("page", 0)) + 1
             page_size = param.get("pageSize")
-            sortParameterNameMapping = {
-                "id": "TokenId",
-                "serial": "TokenSerialnumber",
-                "isActive": "Isactive",
-                "type": "TokenType",
-                "failedLogins": "FailCount",
-                "description": "TokenDesc",
-                "userId": "Userid",
-                "resolver": "IdResolver",
-                "resolverClass": "IdResClass",
-                "otpCounter": "Count",
-                "creationDate": "CreationDate",
-                "lastAuthenticationMatch": "LastAuthMatch",
-                "lastSuccessfulLoginAttempt": "LastAuthSuccess",
-            }
-            try:
-                sort_key = param.get("sortBy") or "serial"
-                sort_by = sortParameterNameMapping[sort_key]
-            except KeyError:
-                error_msg = f"Tokens can't be sorted by {sort_key}."
-                potential_sort_params = get_close_matches(
-                    sort_key, sortParameterNameMapping.keys()
-                )
-                if potential_sort_params:
-                    error_msg += (
-                        f" Did you mean any of {potential_sort_params}?"
-                    )
-                raise KeyError(error_msg)
+            sort_by = self._map_sort_param_to_token_param(
+                param.get("sortBy") or "serial"
+            )
             sort_order = param.get("sortOrder", "asc")
             search_term = param.get("searchTerm", None)
             user_id = param.get("userId", None)
@@ -309,6 +284,33 @@ class TokensController(BaseController, JWTMixin):
             log.exception("[get_tokens] failed: {}".format(e))
             db.session.rollback()
             return sendError(None, e)
+
+    def _map_sort_param_to_token_param(self, sort_param: str):
+        sortParameterNameMapping = {
+            "id": "TokenId",
+            "serial": "TokenSerialnumber",
+            "isActive": "Isactive",
+            "type": "TokenType",
+            "failedLogins": "FailCount",
+            "description": "TokenDesc",
+            "userId": "Userid",
+            "resolver": "IdResolver",
+            "resolverClass": "IdResClass",
+            "otpCounter": "Count",
+            "creationDate": "CreationDate",
+            "lastAuthenticationMatch": "LastAuthMatch",
+            "lastSuccessfulLoginAttempt": "LastAuthSuccess",
+        }
+        try:
+            return sortParameterNameMapping[sort_param]
+        except KeyError:
+            error_msg = f"Tokens can't be sorted by {sort_param}."
+            potential_sort_params = get_close_matches(
+                sort_param, sortParameterNameMapping.keys()
+            )
+            if potential_sort_params:
+                error_msg += f" Did you mean any of {potential_sort_params}?"
+            raise KeyError(error_msg)
 
     def get_token_by_serial(self, serial):
         """
