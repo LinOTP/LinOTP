@@ -29,6 +29,7 @@
 import fnmatch
 import logging
 import re
+from difflib import get_close_matches
 
 from sqlalchemy import and_, not_, or_
 
@@ -599,7 +600,16 @@ class TokenIterator(object):
             "LastAuthMatch": Token.LinOtpLastAuthMatch,
             "LastAuthSuccess": Token.LinOtpLastAuthSuccess,
         }
-        return mapping.get(sort_param, Token.LinOtpTokenDesc)
+        try:
+            return mapping[sort_param]
+        except KeyError:
+            error_msg = f"Tokens can't be sorted by {sort_param}."
+            potential_sort_params = get_close_matches(
+                sort_param, mapping.keys()
+            )
+            if potential_sort_params:
+                error_msg += f" Did you mean any of {potential_sort_params}?"
+            raise KeyError(error_msg)
 
     def getResultSetInfo(self):
         resSet = {
