@@ -515,18 +515,6 @@ class TokenIterator(object):
             else Token.LinOtpTokenDesc
         )
 
-        #   o LinOtp.TokenId: 17943
-        #   o LinOtp.TokenInfo: ""
-        #   o LinOtp.TokenType: "spass"
-        #   o LinOtp.TokenSerialnumber: "spass0000FBA3"
-        #   o User.description: "User Name,info@example.com,local,"
-        #   o LinOtp.IdResClass: "useridresolver.PasswdIdResolver.IdResolver._default_Passwd_"
-        #   o User.username: "user"
-        #   o LinOtp.TokenDesc: "Always Authenticate"
-        #   o User.userid: "1000"
-        #   o LinOtp.IdResolver: "/etc/passwd"
-        #   o LinOtp.Isactive: true
-
         #  care for the result sort order
         if sortdir is not None and sortdir == "desc":
             order = order.desc()
