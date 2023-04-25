@@ -64,11 +64,11 @@ class TestTokensearch(TestController):
         """
         for serial in self.serials:
             param = {"serial": serial}
-            response = self.make_admin_request("remove", params=param)
-            assert "value" in response
-            self.serials.remove(serial)
+            self.make_admin_request("remove", params=param)
 
-        return
+        response = self.make_api_v2_request("/tokens/")
+        token_list = response.json["result"]["value"]["pageRecords"]
+        assert [] == token_list
 
     def _cache_splitAtSign(self):
         response = self.make_system_request(
@@ -111,12 +111,8 @@ class TestTokensearch(TestController):
             params = {"type": "spass", "user": "pass.thru@example.com"}
 
         response = self.make_admin_request("init", params=params)
-        assert "serial" in response
-
-        jresp = json.loads(response.body)
-        serial = jresp.get("detail", {}).get("serial", "")
-        if serial:
-            self.serials.append(serial)
+        serial = response.json["detail"]["serial"]
+        self.serials.append(serial)
 
         return serial
 
