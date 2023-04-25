@@ -204,5 +204,45 @@ class TestTokensearch(TestController):
             response = self.make_api_v2_request("/tokens/", params=params)
             assert search_dict["serial_in_response"] == (serial in response)
 
+    def test_search_token_with_sorting(self):
+        self.set_splitAtSign(False)
+        # create n tokens
+        n = 5
+        for i in range(n):
+            token_creation_params = {
+                "type": "spass",
+                "user": "pass.thru@example.com",
+                "description": n - i,
+            }
+            self.create_token(token_creation_params)
+
+        for sort_key, expected_ids in [
+            ("id", [1, 2, 3, 4, 5]),
+            ("description", [5, 4, 3, 2, 1]),
+        ]:
+            # test asc (by default)
+            params = {"sortBy": sort_key}
+            response = self.make_api_v2_request("/tokens/", params=params)
+            records = response.json["result"]["value"]["pageRecords"]
+            ids = [token["id"] for token in records]
+            assert expected_ids == ids
+
+            # test desc
+            params["sortOrder"] = "desc"
+            response = self.make_api_v2_request("/tokens/", params=params)
+            records = response.json["result"]["value"]["pageRecords"]
+            ids = [token["id"] for token in records]
+            assert expected_ids[::-1] == ids
+
+    def test_search_token_with_unsupported_sorting_parameter(self):
+        self.set_splitAtSign(False)
+        self.create_token()
+
+        params = {"sortBy": "CreationDate"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["status"] == False
+        assert result["error"]
+
 
 # eof #
