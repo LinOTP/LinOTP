@@ -106,8 +106,9 @@ class TestTokensearch(TestController):
 
         assert msg in response
 
-    def create_token(self, params):
-        params = {"type": "spass", "user": "pass.thru@example.com"}
+    def create_token(self, params=None):
+        if not params:
+            params = {"type": "spass", "user": "pass.thru@example.com"}
 
         response = self.make_admin_request("init", params=params)
         assert "serial" in response
@@ -125,8 +126,7 @@ class TestTokensearch(TestController):
         self.set_splitAtSign(False)
 
         # create token
-        params = {"type": "spass", "user": "pass.thru@example.com"}
-        serial = self.create_token(params)
+        serial = self.create_token()
 
         # search for token which belong to a certain user
         params = {"user": "pass.thru@example.com"}
@@ -144,8 +144,7 @@ class TestTokensearch(TestController):
         self.set_splitAtSign(False)
 
         # create token
-        params = {"type": "spass", "user": "pass.thru@example.com"}
-        serial = self.create_token(params)
+        serial = self.create_token()
 
         search_dicts = [
             {"params": {"userId": "1234"}, "serial_in_response": True},
@@ -183,8 +182,7 @@ class TestTokensearch(TestController):
     def test_search_token_with_searchTerm(self):
         self.set_splitAtSign(False)
         # create token
-        params = {"type": "spass", "user": "pass.thru@example.com"}
-        serial = self.create_token(params)
+        serial = self.create_token()
 
         search_dicts = [
             {
