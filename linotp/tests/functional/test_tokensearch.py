@@ -120,7 +120,7 @@ class TestTokensearch(TestController):
 
         return serial
 
-    def test_singel_character_wildcard_search(self):
+    def test_single_character_wildcard_search(self):
         """single char wildcard test for user lookup in token view"""
 
         self.set_splitAtSign(False)
