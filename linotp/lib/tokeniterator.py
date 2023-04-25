@@ -155,7 +155,6 @@ class TokenIterator(object):
         return scondition
 
     def _get_user_condition(self, user, valid_realms):
-
         ucondition = None
 
         if not user:
@@ -253,7 +252,6 @@ class TokenIterator(object):
 
         # handle case, when nothing found in former cases
         if searchType == "wildcard":
-
             serials = _user_expression_match(loginUser, token_owner_iterator())
 
             # to prevent warning, we check is serials are found
@@ -510,7 +508,11 @@ class TokenIterator(object):
 
         condition = and_(*condTuple)
 
-        order = Token.LinOtpTokenDesc
+        order = (
+            self._map_sort_param_to_token_param(sort)
+            if sort
+            else Token.LinOtpTokenDesc
+        )
 
         #   o LinOtp.TokenId: 17943
         #   o LinOtp.TokenInfo: ""
@@ -523,29 +525,6 @@ class TokenIterator(object):
         #   o User.userid: "1000"
         #   o LinOtp.IdResolver: "/etc/passwd"
         #   o LinOtp.Isactive: true
-
-        if sort == "TokenDesc":
-            order = Token.LinOtpTokenDesc
-        elif sort == "TokenId":
-            order = Token.LinOtpTokenId
-        elif sort == "TokenType":
-            order = Token.LinOtpTokenType
-        elif sort == "TokenSerialnumber":
-            order = Token.LinOtpTokenSerialnumber
-        elif sort == "TokenType":
-            order = Token.LinOtpTokenType
-        elif sort == "IdResClass":
-            order = Token.LinOtpIdResClass
-        elif sort == "IdResolver":
-            order = Token.LinOtpIdResolver
-        elif sort == "Userid":
-            order = Token.LinOtpUserid
-        elif sort == "FailCount":
-            order = Token.LinOtpFailCount
-        elif sort == "Userid":
-            order = Token.LinOtpUserid
-        elif sort == "Isactive":
-            order = Token.LinOtpIsactive
 
         #  care for the result sort order
         if sortdir is not None and sortdir == "desc":
@@ -604,6 +583,21 @@ class TokenIterator(object):
 
         return
 
+    def _map_sort_param_to_token_param(self, sort_param: str):
+        mapping = {
+            "TokenDesc": Token.LinOtpTokenDesc,
+            "TokenId": Token.LinOtpTokenId,
+            "TokenType": Token.LinOtpTokenType,
+            "TokenSerialnumber": Token.LinOtpTokenSerialnumber,
+            "IdResolver": Token.LinOtpIdResolver,
+            "IdResClass": Token.LinOtpIdResClass,
+            "Userid": Token.LinOtpUserid,
+            "FailCount": Token.LinOtpFailCount,
+            "Count": Token.LinOtpCount,
+            "Isactive": Token.LinOtpIsactive,
+        }
+        return mapping.get(sort_param, Token.LinOtpTokenDesc)
+
     def getResultSetInfo(self):
         resSet = {
             "pages": self.pages,
@@ -631,7 +625,6 @@ class TokenIterator(object):
             uInfo = None
 
             try:
-
                 uInfo = getUserInfo(
                     tok.LinOtpUserid,
                     tok.LinOtpIdResolver,
@@ -661,7 +654,6 @@ class TokenIterator(object):
         return (userInfo, uInfo)
 
     def __next__(self):
-
         tok = next(self.it)
         desc = tok.get_vars(save=True)
         """ add userinfo to token description """
