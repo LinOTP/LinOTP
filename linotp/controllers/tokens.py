@@ -219,6 +219,7 @@ class TokensController(BaseController, JWTMixin):
             page = int(param.get("page", 0)) + 1
             page_size = param.get("pageSize")
             sortParameterNameMapping = {
+                "id": "TokenId",
                 "serial": "TokenSerialnumber",
                 "isActive": "Isactive",
                 "type": "TokenType",
@@ -226,6 +227,11 @@ class TokensController(BaseController, JWTMixin):
                 "description": "TokenDesc",
                 "userId": "Userid",
                 "resolver": "IdResolver",
+                "resolverClass": "IdResClass",
+                "otpCounter": "Count",
+                "creationDate": "CreationDate",
+                "lastAuthenticationMatch": "LastAuthMatch",
+                "lastSuccessfulLoginAttempt": "LastAuthSuccess",
             }
             try:
                 sort_key = param.get("sortBy") or "serial"
