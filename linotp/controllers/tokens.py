@@ -12,6 +12,7 @@ from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
+from linotp.lib.user import User as RealmUser
 from linotp.lib.user import getUserFromParam, getUserFromRequest
 from linotp.lib.util import check_session, get_client
 from linotp.model import db
@@ -192,12 +193,8 @@ class TokensController(BaseController, JWTMixin):
         try:
             ### Check permissions ###
 
-            logged_in_admin = getUserFromParam(param)
-
             # Check policies for listing (showing) tokens
-            check_result = checkPolicyPre(
-                "admin", "show", param, user=logged_in_admin
-            )
+            check_result = checkPolicyPre("admin", "show")
 
             # If they aren't active, we are allowed to show tokens from all
             # realms:
@@ -239,7 +236,7 @@ class TokensController(BaseController, JWTMixin):
             }
 
             tokens = TokenIterator(
-                logged_in_admin,
+                RealmUser(),
                 None,
                 page,
                 page_size,
