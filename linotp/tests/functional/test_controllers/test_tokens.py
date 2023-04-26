@@ -149,6 +149,19 @@ class TestTokens(TestController):
         token = response.json["result"]["value"]["pageRecords"][0]
         assert token["serial"] == "PWToken-horst-mydefrealm-0"
 
+        # test realm filtering
+        params = {"realm": "mymixrealm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        assert len(response.json["result"]["value"]["pageRecords"]) == 0
+
+        params = {"realm": "NON_EXISTING_REALM"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        assert len(response.json["result"]["value"]["pageRecords"]) == 0
+
+        params = {"realm": "mydefrealm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        assert len(response.json["result"]["value"]["pageRecords"]) == 1
+
     def test_tokens_controller_no_permissions(self):
         """'admin' is not allowed to view any token
 
@@ -318,6 +331,73 @@ class TestTokens(TestController):
 
         assert response.json["result"]["status"]
         assert "serial" not in response.json["result"]["value"]
+
+    def test_tokens_controller_filter_realm(self):
+        """verify /api/v2/tokens can be filtered by user"""
+
+        users = [("horst", "mydefrealm"), ("beckett", "mymixrealm")]
+        for user, realm in users:
+            self._create_pw_tokens(username=user, realm=realm)
+
+        # exact search
+        params = {"realm": "mydefrealm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 1
+
+        # wildcard search
+        params = {"realm": "mymix*"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 1
+
+        params = {"realm": "my*realm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 2
+
+        params = {"realm": "NON_EXISTING_REALM"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 0
+
+    def test_tokens_controller_filter_user(self):
+        """verify /api/v2/tokens can be filtered by user"""
+
+        users_and_amount = [("horst", 5), ("beckett", 7)]
+        for user, amount in users_and_amount:
+            self._create_pw_tokens(username=user, amount_of_users=amount)
+
+        # exact search
+        params = {"username": "horst"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == users_and_amount[0][1]
+
+        # wildcard search
+        params = {"username": "beck*"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == users_and_amount[1][1]
+
+        params = {"username": "*t"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert (
+            result["value"]["totalRecords"]
+            == users_and_amount[0][1] + users_and_amount[1][1]
+        )
+
+        # filter user with realm
+        params = {"username": "horst", "realm": "mydefrealm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == users_and_amount[0][1]
+
+        params = {"username": "horst", "realm": "NON_EXISTING_REALM"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 0
 
 
 # eof #

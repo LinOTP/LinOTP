@@ -160,6 +160,14 @@ class TokensController(BaseController, JWTMixin):
         :param userId: limit the results to the tokens owned by the users with this user ID
         :type userId: str, optional
 
+        :param username: limit the results to the tokens owned by the users with this username.
+          Supports `*` as wildcard operator.
+        :type username: str, optional
+
+        :param realm: limit the results to the tokens owned by the users in this realm.
+          Supports `*` as wildcard operator.
+        :type realm: str, optional
+
         :param resolverName: limit the results to the tokens owned by users in this resolver
         :type resolverName: str, optional
 
@@ -221,6 +229,17 @@ class TokensController(BaseController, JWTMixin):
             search_term = param.get("searchTerm")
             user_id = param.get("userId")
             resolver_name = param.get("resolverName")
+            user = RealmUser(login=param.get("username", ""))
+            realm = param.get("realm", "*").lower()
+            if "*" in allowed_realms:
+                realm_to_filter = [realm]
+            elif "*" == realm:
+                realm_to_filter = allowed_realms
+            elif realm in [realm.lower() for realm in allowed_realms]:
+                realm_to_filter = [realm]
+            else:
+                # use empty string as realm to prevent search
+                realm_to_filter = [""]
 
             if page_size is not None:
                 page_size = int(page_size)
@@ -235,14 +254,14 @@ class TokensController(BaseController, JWTMixin):
             }
 
             tokens = TokenIterator(
-                RealmUser(),
+                user,
                 None,
                 page,
                 page_size,
                 search_term,
                 sort_by,
                 sort_order,
-                allowed_realms,
+                realm_to_filter,
                 [],
                 token_iterator_params,
             )
