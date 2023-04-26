@@ -196,18 +196,17 @@ class TokensController(BaseController, JWTMixin):
             # Check policies for listing (showing) tokens
             check_result = checkPolicyPre("admin", "show")
 
-            # If they aren't active, we are allowed to show tokens from all
-            # realms:
-            filterRealm = ["*"]
-
-            # If they are active, restrict the result to the tokens in the
+            # If policies are active, restrict the result to the tokens in the
             # realms that the admin is allowed to see:
             if check_result["active"] and check_result["realms"]:
-                filterRealm = check_result["realms"]
+                allowed_realms = check_result["realms"]
+            else:
+                # Else, we are allowed to show tokens from all realms
+                allowed_realms = ["*"]
 
             log.info(
                 "[get_tokens] admin {} may view tokens the following realms: {}".format(
-                    check_result["admin"], filterRealm
+                    check_result["admin"], allowed_realms
                 )
             )
 
@@ -243,13 +242,13 @@ class TokensController(BaseController, JWTMixin):
                 search_term,
                 sort_by,
                 sort_order,
-                filterRealm,
+                allowed_realms,
                 [],
                 token_iterator_params,
             )
 
             g.audit["success"] = True
-            g.audit["info"] = "realm: {}".format(filterRealm)
+            g.audit["info"] = "realm: {}".format(allowed_realms)
 
             # put in the result
             result = {}
