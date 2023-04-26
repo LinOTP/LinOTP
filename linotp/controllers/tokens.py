@@ -222,9 +222,9 @@ class TokensController(BaseController, JWTMixin):
                 param.get("sortBy") or "serial"
             )
             sort_order = param.get("sortOrder", "asc")
-            search_term = param.get("searchTerm", None)
-            user_id = param.get("userId", None)
-            resolver_name = param.get("resolverName", None)
+            search_term = param.get("searchTerm")
+            user_id = param.get("userId")
+            resolver_name = param.get("resolverName")
 
             if page_size is not None:
                 page_size = int(page_size)
