@@ -31,6 +31,7 @@ import logging
 import re
 from difflib import get_close_matches
 
+from flask_sqlalchemy import Pagination
 from sqlalchemy import and_, not_, or_
 
 from linotp.lib.config import getFromConfig
@@ -118,6 +119,160 @@ class TokenIterator(object):
     """
     TokenIterator class - support a smooth iterating through the tokens
     """
+
+    def __init__(
+        self,
+        user,
+        serial,
+        page=None,
+        psize=None,
+        filter=None,
+        sort=None,
+        sortdir=None,
+        filterRealm=None,
+        user_fields=None,
+        params=None,
+    ):
+        """
+        constructor of Tokeniterator, which gathers all conditions to build
+        a sqalchemy query - iterator
+
+        :param user:     User object - user provides as well the searchfield entry
+        :type  user:     User class
+        :param serial:   serial number of a token
+        :type  serial:   string
+        :param page:     page number
+        :type  page:     int
+        :param psize:    how many entries per page
+        :type  psize:    int
+        :param filter:   additional condition
+        :type  filter:   string
+        :param sort:     sort field definition
+        :type  sort:     string
+        :param sortdir:  sort direction: ascending or descending
+        :type  sortdir:  string
+        :param filterRealm:  restrict the set of token to those in the filterRealm
+        :type  filterRealm:  string or list
+        :param user_fields:  list of additional fields from the user owner
+        :type  user_fields: array
+        :param params:  dict of additional request parameters - currently: user_id, resolver_name
+        :type  params: dict
+
+        :return: - nothing / None
+
+        """
+
+        if params is None:
+            params = {}
+
+        self.page = 1
+        self.pages = 1
+        self.total_token_count = 0
+
+        self.user_fields = user_fields or []
+
+        if isinstance(filterRealm, str):
+            filterRealm = filterRealm.split(",")
+
+        if type(filterRealm) in [list]:
+            s_realms = []
+            for f in filterRealm:
+                #  support for multiple realm filtering in the ui
+                #  as a coma separated string
+                for s_realm in f.split(","):
+                    s_realms.append(s_realm.strip())
+            filterRealm = s_realms
+
+        #  create a list of all realms, which are allowed to be searched
+        #  based on the list of the existing ones
+        valid_realms = (
+            ["*"]
+            if "*" in filterRealm
+            else [realm for realm in filterRealm if realm in getRealms()]
+        )
+
+        scondition = self._get_serial_condition(serial, filterRealm)
+        ucondition = self._get_user_condition(user, valid_realms)
+        fcondition = self._get_filter_condition(filter)
+        rcondition = self._get_realm_condition(valid_realms, filterRealm)
+        pcondition = self._get_params_condition(params)
+
+        #  create the final condition as AND of all conditions
+        condTuple = ()
+        for conn in (
+            fcondition,
+            ucondition,
+            scondition,
+            rcondition,
+            pcondition,
+        ):
+            if type(conn).__name__ != "NoneType":
+                condTuple += (conn,)
+
+        condition = and_(*condTuple)
+
+        order = (
+            self._map_sort_param_to_token_param(sort)
+            if sort
+            else Token.LinOtpTokenDesc
+        )
+
+        #  care for the result sort order
+        if sortdir is not None and sortdir == "desc":
+            order = order.desc()
+        else:
+            order = order.asc()
+
+        #  care for the result pageing
+        if page is None:
+            self.tokens = (
+                Token.query.filter(condition).order_by(order).distinct()
+            )
+            self.total_token_count = self.tokens.count()
+
+            log.debug(
+                "[TokenIterator] DB-Query returned # of objects: %r",
+                self.total_token_count,
+            )
+            self.pagesize = self.total_token_count
+            self.it = iter(self.tokens)
+            return
+
+        try:
+            if psize is None:
+                pagesize = int(getFromConfig("pagesize", 50))
+            else:
+                pagesize = int(psize)
+        except BaseException:
+            pagesize = 20
+
+        try:
+            requested_page = int(page)
+        except BaseException:
+            requested_page = 1
+        if requested_page < 1:
+            requested_page = 1
+
+        paginated_tokens: Pagination = (
+            Token.query.filter(condition)
+            .order_by(order)
+            .distinct()
+            .paginate(page=requested_page, per_page=pagesize)
+        )
+
+        self.tokens = paginated_tokens.items
+        self.total_token_count = paginated_tokens.total
+        log.debug(
+            "[TokenIterator::init] DB-Query returned # of objects: %r",
+            self.tokens,
+        )
+        self.page = paginated_tokens.page
+        self.pages = paginated_tokens.pages
+        self.pagesize = pagesize
+
+        self.it = iter(self.tokens)
+
+        return
 
     def _get_serial_condition(self, serial, allowed_realm):
         """
@@ -332,15 +487,7 @@ class TokenIterator(object):
                 " in no realm"
             )
 
-            # get all tokenrealm ids
-            token_id_tuples = db.session.query(TokenRealm.token_id).all()
-            token_ids = set()
-            for token_tuple in token_id_tuples:
-                token_ids.add(token_tuple[0])
-
-            # define the token id not condition
-            rcondition = and_(not_(Token.LinOtpTokenId.in_(token_ids)))
-            return rcondition
+            return and_(Token.realms == None)
 
         if filterRealm:
             # get all matching realms
@@ -375,6 +522,9 @@ class TokenIterator(object):
         return and_(*condTuple)
 
     def _get_tokens_in_realm(self, valid_realms):
+        if not valid_realms:
+            return set()
+
         # get all matching realms
         realm_id_tuples = (
             db.session.query(Realm.id)
@@ -413,165 +563,6 @@ class TokenIterator(object):
 
         return list(resolvers)
 
-    def __init__(
-        self,
-        user,
-        serial,
-        page=None,
-        psize=None,
-        filter=None,
-        sort=None,
-        sortdir=None,
-        filterRealm=None,
-        user_fields=None,
-        params=None,
-    ):
-        """
-        constructor of Tokeniterator, which gathers all conditions to build
-        a sqalchemy query - iterator
-
-        :param user:     User object - user provides as well the searchfield entry
-        :type  user:     User class
-        :param serial:   serial number of a token
-        :type  serial:   string
-        :param page:     page number
-        :type  page:     int
-        :param psize:    how many entries per page
-        :type  psize:    int
-        :param filter:   additional condition
-        :type  filter:   string
-        :param sort:     sort field definition
-        :type  sort:     string
-        :param sortdir:  sort direction: ascending or descending
-        :type  sortdir:  string
-        :param filterRealm:  restrict the set of token to those in the filterRealm
-        :type  filterRealm:  string or list
-        :param user_fields:  list of additional fields from the user owner
-        :type  user_fields: array
-        :param params:  dict of additional request parameters - currently: user_id, resolver_name
-        :type  params: dict
-
-        :return: - nothing / None
-
-        """
-
-        if params is None:
-            params = {}
-
-        self.page = 1
-        self.pages = 1
-        self.tokens = 0
-
-        self.user_fields = user_fields
-        if self.user_fields is None:
-            self.user_fields = []
-
-        if isinstance(filterRealm, str):
-            filterRealm = filterRealm.split(",")
-
-        if type(filterRealm) in [list]:
-            s_realms = []
-            for f in filterRealm:
-                #  support for multiple realm filtering in the ui
-                #  as a coma separated string
-                for s_realm in f.split(","):
-                    s_realms.append(s_realm.strip())
-            filterRealm = s_realms
-
-        #  create a list of all realms, which are allowed to be searched
-        #  based on the list of the existing ones
-        valid_realms = []
-        realms = list(getRealms().keys())
-        if "*" in filterRealm:
-            valid_realms.append("*")
-        else:
-            for realm in realms:
-                if realm in filterRealm:
-                    valid_realms.append(realm)
-
-        scondition = self._get_serial_condition(serial, filterRealm)
-        ucondition = self._get_user_condition(user, valid_realms)
-        fcondition = self._get_filter_condition(filter)
-        rcondition = self._get_realm_condition(valid_realms, filterRealm)
-        pcondition = self._get_params_condition(params)
-
-        #  create the final condition as AND of all conditions
-        condTuple = ()
-        for conn in (
-            fcondition,
-            ucondition,
-            scondition,
-            rcondition,
-            pcondition,
-        ):
-            if type(conn).__name__ != "NoneType":
-                condTuple += (conn,)
-
-        condition = and_(*condTuple)
-
-        order = (
-            self._map_sort_param_to_token_param(sort)
-            if sort
-            else Token.LinOtpTokenDesc
-        )
-
-        #  care for the result sort order
-        if sortdir is not None and sortdir == "desc":
-            order = order.desc()
-        else:
-            order = order.asc()
-
-        #  care for the result pageing
-        if page is None:
-            self.toks = (
-                Token.query.filter(condition).order_by(order).distinct()
-            )
-            self.tokens = self.toks.count()
-
-            log.debug(
-                "[TokenIterator] DB-Query returned # of objects: %r",
-                self.tokens,
-            )
-            self.pagesize = self.tokens
-            self.it = iter(self.toks)
-            return
-
-        try:
-            if psize is None:
-                pagesize = int(getFromConfig("pagesize", 50))
-            else:
-                pagesize = int(psize)
-        except BaseException:
-            pagesize = 20
-
-        try:
-            thePage = int(page) - 1
-        except BaseException:
-            thePage = 0
-        if thePage < 0:
-            thePage = 0
-
-        start = thePage * pagesize
-        stop = (thePage + 1) * pagesize
-
-        self.toks = Token.query.filter(condition).order_by(order).distinct()
-        self.tokens = self.toks.count()
-        log.debug(
-            "[TokenIterator::init] DB-Query returned # of objects: %r",
-            self.tokens,
-        )
-        self.page = thePage + 1
-        fpages = float(self.tokens) / float(pagesize)
-        self.pages = int(fpages)
-        if fpages - int(fpages) > 0:
-            self.pages = self.pages + 1
-        self.pagesize = pagesize
-        self.toks = self.toks.slice(start, stop)
-
-        self.it = iter(self.toks)
-
-        return
-
     def _map_sort_param_to_token_param(self, sort_param: str):
         mapping = {
             "TokenDesc": Token.LinOtpTokenDesc,
@@ -603,7 +594,7 @@ class TokenIterator(object):
         resSet = {
             "pages": self.pages,
             "pagesize": self.pagesize,
-            "tokens": self.tokens,
+            "tokens": self.total_token_count,
             "page": self.page,
         }
         return resSet

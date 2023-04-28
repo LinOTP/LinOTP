@@ -240,5 +240,23 @@ class TestTokensearch(TestController):
         assert result["status"] == False
         assert result["error"]
 
+    def test_search_token_with_no_realm(self):
+        self.set_splitAtSign(False)
+        serial1 = self.create_token()
+        serial2 = self.create_token()
+
+        # remove realm for serial1
+        params = {"serial": serial1, "realms": ""}
+        response = self.make_admin_request("tokenrealm", params=params)
+
+        params = {"realm": "''"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+
+        assert result["value"]["totalRecords"] == 1
+        assert serial2 not in response
+        serials = [token["serial"] for token in result["value"]["pageRecords"]]
+        assert serials == [serial1]
+
 
 # eof #
