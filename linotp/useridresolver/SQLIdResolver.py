@@ -813,7 +813,7 @@ class IdResolver(UserIdResolver):
         dbObj = self.connect(self.sqlConnect)
         try:
             table = dbObj.getTable(self.sqlTable)
-            filtr = self.__getUserIdFilter(table, loginName)
+            filtr = self._getUserIdFilter(table, loginName)
             log.debug("[getUserId] filtr: %r", filtr)
             log.debug("[getUserId] filtr type: %s", type(filtr))
             select = table.select(filtr)
@@ -854,7 +854,7 @@ class IdResolver(UserIdResolver):
         dbObj = self.connect(self.sqlConnect)
         try:
             table = dbObj.getTable(self.sqlTable)
-            select = table.select(self.__getUserNameFilter(table, userId))
+            select = table.select(self._getUserNameFilter(table, userId))
 
             for row in dbObj.query(select):
                 colName = self.sqlUserInfo.get("username")
@@ -883,10 +883,10 @@ class IdResolver(UserIdResolver):
         dbObj = self.connect(self.sqlConnect)
         try:
             table = dbObj.getTable(self.sqlTable)
-            select = table.select(self.__getUserNameFilter(table, userId))
+            select = table.select(self._getUserNameFilter(table, userId))
 
             for row in dbObj.query(select):
-                userInfo = self.__getUserInfo(
+                userInfo = self._getUserInfo(
                     dbObj, row, suppress_password=suppress_password
                 )
 
@@ -949,14 +949,14 @@ class IdResolver(UserIdResolver):
             table = dbObj.getTable(self.sqlTable)
             log.debug("[getUserList] getting SQL users from table %r", table)
 
-            sStr = self.__creatSearchString(dbObj, table, searchDict)
+            sStr = self._creatSearchString(dbObj, table, searchDict)
             log.debug("[getUserList] creating searchstring <<%r>>", sStr)
             log.debug("[getUserList] type of searchString: %s", type(sStr))
             select = table.select(sStr, limit=self.limit)
 
             rows = dbObj.query(select)
 
-            user_info_list = [self.__getUserInfo(dbObj, row) for row in rows]
+            user_info_list = [self._getUserInfo(dbObj, row) for row in rows]
             users = {
                 user_info["userid"]: user_info for user_info in user_info_list
             }
@@ -975,7 +975,7 @@ class IdResolver(UserIdResolver):
     #######################
     #   Helper functions
     #######################
-    def __getUserInfo(self, dbObj, row, suppress_password=True):
+    def _getUserInfo(self, dbObj, row, suppress_password=True):
         """
         internal helper to build up the user info dict
 
@@ -993,17 +993,17 @@ class IdResolver(UserIdResolver):
 
             try:
                 value = row[colName]
-                log.debug("[__getUserInfo] %r:%r", value, type(value))
+                log.debug("[_getUserInfo] %r:%r", value, type(value))
 
             except NoSuchColumnError as e:
-                log.error("[__getUserInfo]")
+                log.error("[_getUserInfo]")
                 value = "-ERR: column mapping-"
 
             userInfo[key] = value
 
         return userInfo
 
-    def __add_where_clause_to_filter(self, filtr):
+    def _add_where_clause_to_filter(self, filtr):
         """
         add to an existing filter the WHERE filter if it exist.
         This can be used for the getUserList or getUserId
@@ -1021,7 +1021,7 @@ class IdResolver(UserIdResolver):
             log.debug("[__add_where_clause_filter] searchString: %r", filtr)
         return filtr
 
-    def __getUserIdFilter(self, table, loginName):
+    def _getUserIdFilter(self, table, loginName):
         """
         helper method to access userdata by username by creating an filter
 
@@ -1033,21 +1033,21 @@ class IdResolver(UserIdResolver):
         column_name = self.sqlUserInfo.get("username")
         if column_name is None:
             log.error(
-                "[__getUserIdFilter] username column definition required!"
+                "[_getUserIdFilter] username column definition required!"
             )
             raise Exception("username column definition required!")
-        log.debug("[__getUserIdFilter] type loginName: %s", type(loginName))
-        log.debug("[__getUserIdFilter] type filtr: %s", type(column_name))
+        log.debug("[_getUserIdFilter] type loginName: %s", type(loginName))
+        log.debug("[_getUserIdFilter] type filtr: %s", type(column_name))
 
         # DB2 will need the double quotes if the columns are not upper case.
         # But as usually a DB2 admin uses upper case, we do not "
         # need the double quotes.
 
-        return self.__add_where_clause_to_filter(
+        return self._add_where_clause_to_filter(
             table.c[column_name] == loginName
         )
 
-    def __getUserNameFilter(self, table, loginId):
+    def _getUserNameFilter(self, table, loginId):
         """
         helper method to access userdata by userid by creating an filter
 
@@ -1058,15 +1058,15 @@ class IdResolver(UserIdResolver):
 
         column_name = self.sqlUserInfo.get("userid")
         if column_name is None:
-            err = "[__getUserNameFilter] userid column definition required!"
+            err = "[_getUserNameFilter] userid column definition required!"
             log.error(err)
             raise Exception(err)
 
-        return self.__add_where_clause_to_filter(
+        return self._add_where_clause_to_filter(
             table.c[column_name] == loginId
         )
 
-    def __creatSearchString(self, dbObj, table, searchDict: dict):
+    def _creatSearchString(self, dbObj, table, searchDict: dict):
         def get_column(column_name: str):
             # case-insensitive fetching of all possible column_names
             possible_column_name_list = [
@@ -1076,7 +1076,7 @@ class IdResolver(UserIdResolver):
             ]
             if not possible_column_name_list:
                 raise KeyError(
-                    "[__creatSearchString] no column found for %s", column_name
+                    "[_creatSearchString] no column found for %s", column_name
                 )
 
             # more tolerant mapping of column names for some sql dialects
@@ -1180,7 +1180,7 @@ class IdResolver(UserIdResolver):
                 exp = and_(exp, get_sql_expression(column, value))
 
         # use the Where clause to only see certain users.
-        return self.__add_where_clause_to_filter(exp)
+        return self._add_where_clause_to_filter(exp)
 
 
 if __name__ == "__main__":
