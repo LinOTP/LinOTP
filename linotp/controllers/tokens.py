@@ -238,8 +238,9 @@ class TokensController(BaseController, JWTMixin):
             elif realm in [realm.lower() for realm in allowed_realms]:
                 realm_to_filter = [realm]
             else:
-                # use empty string as realm to prevent search
-                realm_to_filter = [""]
+                raise PolicyException(
+                    "You dont have permissions on any of your requested realms."
+                )
 
             if page_size is not None:
                 page_size = int(page_size)

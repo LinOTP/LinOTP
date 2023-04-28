@@ -152,11 +152,11 @@ class TestTokens(TestController):
         # test realm filtering
         params = {"realm": "mymixrealm"}
         response = self.make_api_v2_request("/tokens/", params=params)
-        assert len(response.json["result"]["value"]["pageRecords"]) == 0
+        assert response.status_code == 403
 
         params = {"realm": "NON_EXISTING_REALM"}
         response = self.make_api_v2_request("/tokens/", params=params)
-        assert len(response.json["result"]["value"]["pageRecords"]) == 0
+        assert response.status_code == 403
 
         params = {"realm": "mydefrealm"}
         response = self.make_api_v2_request("/tokens/", params=params)
