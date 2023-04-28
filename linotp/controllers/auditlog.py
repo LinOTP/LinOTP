@@ -123,7 +123,7 @@ class AuditlogController(BaseController, JWTMixin):
         :param page: request a certain page, defaults to 0
         :type page: int, optional
 
-        :param page: ascending (`asc`) or descending (`desc`) order of entries, defaults to `desc`
+        :param sortOrder: ascending (`asc`) or descending (`desc`) order of entries, defaults to `desc`
         :type page: string, optional
 
         :param id: filter for a specific id. Leading or closing `*` can be used as a wildcard operator
