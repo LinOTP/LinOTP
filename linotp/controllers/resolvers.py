@@ -218,6 +218,12 @@ class ResolversController(BaseController, JWTMixin):
           in at least one searchable field. Supports `*` as a wildcard operator.
         :type searchTerm: str, optional
 
+        :param sortBy: sort the output by column, defaults to 'username'
+        :type sortBy: str, optional
+
+        :param sortOrder: 'asc' or 'desc', defaults to 'asc'
+        :type sortOrder: str, optional
+
         :param pageSize: limit the number of returned users, defaults to 50
           (unless another value is specified in the configuration). Setting it to
           0 returns all users.
@@ -301,10 +307,26 @@ class ResolversController(BaseController, JWTMixin):
                 for k, v in search_dictionary.items()
                 if k not in ["page", "pageSize", "sortOrder", "sortBy"]
             }
-            users = resolver.get_users(search_dictionary)
 
+            users = resolver.get_users(search_dictionary)
             log.debug("[get_users] page: %s, page_size: %s", page, page_size)
 
+            # convert to dict
+            user_dicts = [user.as_dict() for user in users]
+
+            # sort users
+            reverse = self.request_params.get("sortOrder", "asc") == "desc"
+            sort_key = self.request_params.get("sortBy", "username")
+            try:
+                user_dicts = sorted(
+                    user_dicts,
+                    key=lambda user_dict: user_dict[sort_key] or "",
+                    reverse=reverse,
+                )
+            except KeyError:
+                raise KeyError(
+                    f"users can't be sorted by parameter {sort_key}"
+                )
             total_pages = 1
             total_records = len(users)
 
@@ -313,10 +335,10 @@ class ResolversController(BaseController, JWTMixin):
                 page_size = int(page_size)
                 start = page_size * page
                 end = start + page_size
-                records = [user.as_dict() for user in users[start:end]]
+                records = user_dicts[start:end]
                 total_pages = ceil(total_records / page_size)
             else:
-                records = [user.as_dict() for user in users]
+                records = user_dicts
                 page_size = total_records
 
             res = {
