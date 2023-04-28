@@ -460,7 +460,7 @@ class TokenIterator(object):
 
         self.page = 1
         self.pages = 1
-        self.tokens = 0
+        self.total_token_count = 0
 
         self.user_fields = user_fields
         if self.user_fields is None:
@@ -526,13 +526,13 @@ class TokenIterator(object):
             self.toks = (
                 Token.query.filter(condition).order_by(order).distinct()
             )
-            self.tokens = self.toks.count()
+            self.total_token_count = self.toks.count()
 
             log.debug(
                 "[TokenIterator] DB-Query returned # of objects: %r",
-                self.tokens,
+                self.total_token_count,
             )
-            self.pagesize = self.tokens
+            self.pagesize = self.total_token_count
             self.it = iter(self.toks)
             return
 
@@ -555,13 +555,13 @@ class TokenIterator(object):
         stop = (thePage + 1) * pagesize
 
         self.toks = Token.query.filter(condition).order_by(order).distinct()
-        self.tokens = self.toks.count()
+        self.total_token_count = self.toks.count()
         log.debug(
             "[TokenIterator::init] DB-Query returned # of objects: %r",
-            self.tokens,
+            self.total_token_count,
         )
         self.page = thePage + 1
-        fpages = float(self.tokens) / float(pagesize)
+        fpages = float(self.total_token_count) / float(pagesize)
         self.pages = int(fpages)
         if fpages - int(fpages) > 0:
             self.pages = self.pages + 1
@@ -603,7 +603,7 @@ class TokenIterator(object):
         resSet = {
             "pages": self.pages,
             "pagesize": self.pagesize,
-            "tokens": self.tokens,
+            "tokens": self.total_token_count,
             "page": self.page,
         }
         return resSet
