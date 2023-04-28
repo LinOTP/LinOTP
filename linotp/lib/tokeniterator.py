@@ -545,14 +545,14 @@ class TokenIterator(object):
             pagesize = 20
 
         try:
-            thePage = int(page) - 1
+            requested_page = int(page) - 1
         except BaseException:
-            thePage = 0
-        if thePage < 0:
-            thePage = 0
+            requested_page = 0
+        if requested_page < 0:
+            requested_page = 0
 
-        start = thePage * pagesize
-        stop = (thePage + 1) * pagesize
+        start = requested_page * pagesize
+        stop = (requested_page + 1) * pagesize
 
         self.tokens = Token.query.filter(condition).order_by(order).distinct()
         self.total_token_count = self.tokens.count()
@@ -560,7 +560,7 @@ class TokenIterator(object):
             "[TokenIterator::init] DB-Query returned # of objects: %r",
             self.total_token_count,
         )
-        self.page = thePage + 1
+        self.page = requested_page + 1
         fpages = float(self.total_token_count) / float(pagesize)
         self.pages = int(fpages)
         if fpages - int(fpages) > 0:
