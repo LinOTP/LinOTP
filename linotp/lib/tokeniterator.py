@@ -376,6 +376,9 @@ class TokenIterator(object):
         return and_(*condTuple)
 
     def _get_tokens_in_realm(self, valid_realms):
+        if not valid_realms:
+            return set()
+
         # get all matching realms
         realm_id_tuples = (
             db.session.query(Realm.id)
