@@ -487,15 +487,7 @@ class TokenIterator(object):
                 " in no realm"
             )
 
-            # get all tokenrealm ids
-            token_id_tuples = db.session.query(TokenRealm.token_id).all()
-            token_ids = set()
-            for token_tuple in token_id_tuples:
-                token_ids.add(token_tuple[0])
-
-            # define the token id not condition
-            rcondition = and_(not_(Token.LinOtpTokenId.in_(token_ids)))
-            return rcondition
+            return and_(Token.realms == None)
 
         if filterRealm:
             # get all matching realms
