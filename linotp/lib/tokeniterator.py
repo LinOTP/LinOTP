@@ -169,9 +169,7 @@ class TokenIterator(object):
         self.pages = 1
         self.total_token_count = 0
 
-        self.user_fields = user_fields
-        if self.user_fields is None:
-            self.user_fields = []
+        self.user_fields = user_fields or []
 
         if isinstance(filterRealm, str):
             filterRealm = filterRealm.split(",")
