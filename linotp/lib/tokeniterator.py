@@ -523,17 +523,17 @@ class TokenIterator(object):
 
         #  care for the result pageing
         if page is None:
-            self.toks = (
+            self.tokens = (
                 Token.query.filter(condition).order_by(order).distinct()
             )
-            self.total_token_count = self.toks.count()
+            self.total_token_count = self.tokens.count()
 
             log.debug(
                 "[TokenIterator] DB-Query returned # of objects: %r",
                 self.total_token_count,
             )
             self.pagesize = self.total_token_count
-            self.it = iter(self.toks)
+            self.it = iter(self.tokens)
             return
 
         try:
@@ -554,8 +554,8 @@ class TokenIterator(object):
         start = thePage * pagesize
         stop = (thePage + 1) * pagesize
 
-        self.toks = Token.query.filter(condition).order_by(order).distinct()
-        self.total_token_count = self.toks.count()
+        self.tokens = Token.query.filter(condition).order_by(order).distinct()
+        self.total_token_count = self.tokens.count()
         log.debug(
             "[TokenIterator::init] DB-Query returned # of objects: %r",
             self.total_token_count,
@@ -566,9 +566,9 @@ class TokenIterator(object):
         if fpages - int(fpages) > 0:
             self.pages = self.pages + 1
         self.pagesize = pagesize
-        self.toks = self.toks.slice(start, stop)
+        self.tokens = self.tokens.slice(start, stop)
 
-        self.it = iter(self.toks)
+        self.it = iter(self.tokens)
 
         return
 
