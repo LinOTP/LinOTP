@@ -185,14 +185,11 @@ class TokenIterator(object):
 
         #  create a list of all realms, which are allowed to be searched
         #  based on the list of the existing ones
-        valid_realms = []
-        realms = list(getRealms().keys())
-        if "*" in filterRealm:
-            valid_realms.append("*")
-        else:
-            for realm in realms:
-                if realm in filterRealm:
-                    valid_realms.append(realm)
+        valid_realms = (
+            ["*"]
+            if "*" in filterRealm
+            else [realm for realm in filterRealm if realm in getRealms()]
+        )
 
         scondition = self._get_serial_condition(serial, filterRealm)
         ucondition = self._get_user_condition(user, valid_realms)
