@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime, timezone
+from difflib import get_close_matches
 
 from flask import current_app, g
 
@@ -11,6 +12,7 @@ from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
+from linotp.lib.user import User as RealmUser
 from linotp.lib.user import getUserFromParam, getUserFromRequest
 from linotp.lib.util import check_session, get_client
 from linotp.model import db
@@ -95,7 +97,6 @@ class TokensController(BaseController, JWTMixin):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
 
@@ -159,6 +160,14 @@ class TokensController(BaseController, JWTMixin):
         :param userId: limit the results to the tokens owned by the users with this user ID
         :type userId: str, optional
 
+        :param username: limit the results to the tokens owned by the users with this username.
+          Supports `*` as wildcard operator.
+        :type username: str, optional
+
+        :param realm: limit the results to the tokens owned by the users in this realm.
+          Supports `*` as wildcard operator.
+        :type realm: str, optional
+
         :param resolverName: limit the results to the tokens owned by users in this resolver
         :type resolverName: str, optional
 
@@ -190,39 +199,47 @@ class TokensController(BaseController, JWTMixin):
 
         param = self.request_params
         try:
-            page = int(param.get("page", 0)) + 1
-            page_size = param.get("pageSize")
-            sort_by = param.get("sortBy", "LinOtp.TokenSerialnumber")
-            sort_order = param.get("sortOrder", "asc")
-            search_term = param.get("searchTerm", None)
-            user_id = param.get("userId", None)
-            resolver_name = param.get("resolverName", None)
-
             ### Check permissions ###
 
-            logged_in_admin = getUserFromParam(param)
-
             # Check policies for listing (showing) tokens
-            check_result = checkPolicyPre(
-                "admin", "show", param, user=logged_in_admin
-            )
+            check_result = checkPolicyPre("admin", "show")
 
-            # If they aren't active, we are allowed to show tokens from all
-            # realms:
-            filterRealm = ["*"]
-
-            # If they are active, restrict the result to the tokens in the
+            # If policies are active, restrict the result to the tokens in the
             # realms that the admin is allowed to see:
             if check_result["active"] and check_result["realms"]:
-                filterRealm = check_result["realms"]
+                allowed_realms = check_result["realms"]
+            else:
+                # Else, we are allowed to show tokens from all realms
+                allowed_realms = ["*"]
 
             log.info(
                 "[get_tokens] admin {} may view tokens the following realms: {}".format(
-                    check_result["admin"], filterRealm
+                    check_result["admin"], allowed_realms
                 )
             )
 
             ### End permissions' check ###
+
+            page = int(param.get("page", 0)) + 1
+            page_size = param.get("pageSize")
+            sort_by = self._map_sort_param_to_token_param(
+                param.get("sortBy") or "serial"
+            )
+            sort_order = param.get("sortOrder", "asc")
+            search_term = param.get("searchTerm")
+            user_id = param.get("userId")
+            resolver_name = param.get("resolverName")
+            user = RealmUser(login=param.get("username", ""))
+            realm = param.get("realm", "*").lower()
+            if "*" in allowed_realms:
+                realm_to_filter = [realm]
+            elif "*" == realm:
+                realm_to_filter = allowed_realms
+            elif realm in [realm.lower() for realm in allowed_realms]:
+                realm_to_filter = [realm]
+            else:
+                # use empty string as realm to prevent search
+                realm_to_filter = [""]
 
             if page_size is not None:
                 page_size = int(page_size)
@@ -237,20 +254,20 @@ class TokensController(BaseController, JWTMixin):
             }
 
             tokens = TokenIterator(
-                logged_in_admin,
+                user,
                 None,
                 page,
                 page_size,
                 search_term,
                 sort_by,
                 sort_order,
-                filterRealm,
+                realm_to_filter,
                 [],
                 token_iterator_params,
             )
 
             g.audit["success"] = True
-            g.audit["info"] = "realm: {}".format(filterRealm)
+            g.audit["info"] = "realm: {}".format(allowed_realms)
 
             # put in the result
             result = {}
@@ -282,6 +299,33 @@ class TokensController(BaseController, JWTMixin):
             log.exception("[get_tokens] failed: {}".format(e))
             db.session.rollback()
             return sendError(None, e)
+
+    def _map_sort_param_to_token_param(self, sort_param: str):
+        sortParameterNameMapping = {
+            "id": "TokenId",
+            "serial": "TokenSerialnumber",
+            "isActive": "Isactive",
+            "type": "TokenType",
+            "failedLogins": "FailCount",
+            "description": "TokenDesc",
+            "userId": "Userid",
+            "resolver": "IdResolver",
+            "resolverClass": "IdResClass",
+            "otpCounter": "Count",
+            "creationDate": "CreationDate",
+            "lastAuthenticationMatch": "LastAuthMatch",
+            "lastSuccessfulLoginAttempt": "LastAuthSuccess",
+        }
+        try:
+            return sortParameterNameMapping[sort_param]
+        except KeyError:
+            error_msg = f"Tokens can't be sorted by {sort_param}."
+            potential_sort_params = get_close_matches(
+                sort_param, sortParameterNameMapping.keys()
+            )
+            if potential_sort_params:
+                error_msg += f" Did you mean any of {potential_sort_params}?"
+            raise KeyError(error_msg)
 
     def get_token_by_serial(self, serial):
         """

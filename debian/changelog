@@ -6,9 +6,9 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * method to provide context information for manage ui
   * new API endpoints to retrieve tokens:
     * /api/v2/tokens
+      * accepts query parameters `userId` and`resolverName` to filter Tokens by
+      * accepts query parameter `searchTerm` to filter all other columns
     * /api/v2/tokens/<serial>
-  * /api/v2/tokens accepts query parameters `userId` and
-    `resolverName` to filter Tokens by
   * new API endpoint to retrieve realms:
     * /api/v2/realms
   * new API endpoint to retrieve users of a realm:

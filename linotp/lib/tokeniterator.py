@@ -29,6 +29,7 @@
 import fnmatch
 import logging
 import re
+from difflib import get_close_matches
 
 from sqlalchemy import and_, not_, or_
 
@@ -155,7 +156,6 @@ class TokenIterator(object):
         return scondition
 
     def _get_user_condition(self, user, valid_realms):
-
         ucondition = None
 
         if not user:
@@ -253,7 +253,6 @@ class TokenIterator(object):
 
         # handle case, when nothing found in former cases
         if searchType == "wildcard":
-
             serials = _user_expression_match(loginUser, token_owner_iterator())
 
             # to prevent warning, we check is serials are found
@@ -510,42 +509,11 @@ class TokenIterator(object):
 
         condition = and_(*condTuple)
 
-        order = Token.LinOtpTokenDesc
-
-        #   o LinOtp.TokenId: 17943
-        #   o LinOtp.TokenInfo: ""
-        #   o LinOtp.TokenType: "spass"
-        #   o LinOtp.TokenSerialnumber: "spass0000FBA3"
-        #   o User.description: "User Name,info@example.com,local,"
-        #   o LinOtp.IdResClass: "useridresolver.PasswdIdResolver.IdResolver._default_Passwd_"
-        #   o User.username: "user"
-        #   o LinOtp.TokenDesc: "Always Authenticate"
-        #   o User.userid: "1000"
-        #   o LinOtp.IdResolver: "/etc/passwd"
-        #   o LinOtp.Isactive: true
-
-        if sort == "TokenDesc":
-            order = Token.LinOtpTokenDesc
-        elif sort == "TokenId":
-            order = Token.LinOtpTokenId
-        elif sort == "TokenType":
-            order = Token.LinOtpTokenType
-        elif sort == "TokenSerialnumber":
-            order = Token.LinOtpTokenSerialnumber
-        elif sort == "TokenType":
-            order = Token.LinOtpTokenType
-        elif sort == "IdResClass":
-            order = Token.LinOtpIdResClass
-        elif sort == "IdResolver":
-            order = Token.LinOtpIdResolver
-        elif sort == "Userid":
-            order = Token.LinOtpUserid
-        elif sort == "FailCount":
-            order = Token.LinOtpFailCount
-        elif sort == "Userid":
-            order = Token.LinOtpUserid
-        elif sort == "Isactive":
-            order = Token.LinOtpIsactive
+        order = (
+            self._map_sort_param_to_token_param(sort)
+            if sort
+            else Token.LinOtpTokenDesc
+        )
 
         #  care for the result sort order
         if sortdir is not None and sortdir == "desc":
@@ -604,6 +572,33 @@ class TokenIterator(object):
 
         return
 
+    def _map_sort_param_to_token_param(self, sort_param: str):
+        mapping = {
+            "TokenDesc": Token.LinOtpTokenDesc,
+            "TokenId": Token.LinOtpTokenId,
+            "TokenType": Token.LinOtpTokenType,
+            "TokenSerialnumber": Token.LinOtpTokenSerialnumber,
+            "IdResolver": Token.LinOtpIdResolver,
+            "IdResClass": Token.LinOtpIdResClass,
+            "Userid": Token.LinOtpUserid,
+            "FailCount": Token.LinOtpFailCount,
+            "Count": Token.LinOtpCount,
+            "Isactive": Token.LinOtpIsactive,
+            "CreationDate": Token.LinOtpCreationDate,
+            "LastAuthMatch": Token.LinOtpLastAuthMatch,
+            "LastAuthSuccess": Token.LinOtpLastAuthSuccess,
+        }
+        try:
+            return mapping[sort_param]
+        except KeyError:
+            error_msg = f"Tokens can't be sorted by {sort_param}."
+            potential_sort_params = get_close_matches(
+                sort_param, mapping.keys()
+            )
+            if potential_sort_params:
+                error_msg += f" Did you mean any of {potential_sort_params}?"
+            raise KeyError(error_msg)
+
     def getResultSetInfo(self):
         resSet = {
             "pages": self.pages,
@@ -631,7 +626,6 @@ class TokenIterator(object):
             uInfo = None
 
             try:
-
                 uInfo = getUserInfo(
                     tok.LinOtpUserid,
                     tok.LinOtpIdResolver,
@@ -661,7 +655,6 @@ class TokenIterator(object):
         return (userInfo, uInfo)
 
     def __next__(self):
-
         tok = next(self.it)
         desc = tok.get_vars(save=True)
         """ add userinfo to token description """

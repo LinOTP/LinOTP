@@ -64,11 +64,11 @@ class TestTokensearch(TestController):
         """
         for serial in self.serials:
             param = {"serial": serial}
-            response = self.make_admin_request("remove", params=param)
-            assert "value" in response
-            self.serials.remove(serial)
+            self.make_admin_request("remove", params=param)
 
-        return
+        response = self.make_api_v2_request("/tokens/")
+        token_list = response.json["result"]["value"]["pageRecords"]
+        assert [] == token_list
 
     def _cache_splitAtSign(self):
         response = self.make_system_request(
@@ -106,27 +106,23 @@ class TestTokensearch(TestController):
 
         assert msg in response
 
-    def create_token(self, params):
-        params = {"type": "spass", "user": "pass.thru@example.com"}
+    def create_token(self, params=None):
+        if not params:
+            params = {"type": "spass", "user": "pass.thru@example.com"}
 
         response = self.make_admin_request("init", params=params)
-        assert "serial" in response
-
-        jresp = json.loads(response.body)
-        serial = jresp.get("detail", {}).get("serial", "")
-        if serial:
-            self.serials.append(serial)
+        serial = response.json["detail"]["serial"]
+        self.serials.append(serial)
 
         return serial
 
-    def test_singel_character_wildcard_search(self):
+    def test_single_character_wildcard_search(self):
         """single char wildcard test for user lookup in token view"""
 
         self.set_splitAtSign(False)
 
         # create token
-        params = {"type": "spass", "user": "pass.thru@example.com"}
-        serial = self.create_token(params)
+        serial = self.create_token()
 
         # search for token which belong to a certain user
         params = {"user": "pass.thru@example.com"}
@@ -144,8 +140,7 @@ class TestTokensearch(TestController):
         self.set_splitAtSign(False)
 
         # create token
-        params = {"type": "spass", "user": "pass.thru@example.com"}
-        serial = self.create_token(params)
+        serial = self.create_token()
 
         search_dicts = [
             {"params": {"userId": "1234"}, "serial_in_response": True},
@@ -183,8 +178,7 @@ class TestTokensearch(TestController):
     def test_search_token_with_searchTerm(self):
         self.set_splitAtSign(False)
         # create token
-        params = {"type": "spass", "user": "pass.thru@example.com"}
-        serial = self.create_token(params)
+        serial = self.create_token()
 
         search_dicts = [
             {
@@ -205,6 +199,46 @@ class TestTokensearch(TestController):
             params = search_dict["params"]
             response = self.make_api_v2_request("/tokens/", params=params)
             assert search_dict["serial_in_response"] == (serial in response)
+
+    def test_search_token_with_sorting(self):
+        self.set_splitAtSign(False)
+        # create n tokens
+        n = 5
+        for i in range(n):
+            token_creation_params = {
+                "type": "spass",
+                "user": "pass.thru@example.com",
+                "description": n - i,
+            }
+            self.create_token(token_creation_params)
+
+        for sort_key, expected_ids in [
+            ("id", [1, 2, 3, 4, 5]),
+            ("description", [5, 4, 3, 2, 1]),
+        ]:
+            # test asc (by default)
+            params = {"sortBy": sort_key}
+            response = self.make_api_v2_request("/tokens/", params=params)
+            records = response.json["result"]["value"]["pageRecords"]
+            ids = [token["id"] for token in records]
+            assert expected_ids == ids
+
+            # test desc
+            params["sortOrder"] = "desc"
+            response = self.make_api_v2_request("/tokens/", params=params)
+            records = response.json["result"]["value"]["pageRecords"]
+            ids = [token["id"] for token in records]
+            assert expected_ids[::-1] == ids
+
+    def test_search_token_with_unsupported_sorting_parameter(self):
+        self.set_splitAtSign(False)
+        self.create_token()
+
+        params = {"sortBy": "CreationDate"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["status"] == False
+        assert result["error"]
 
 
 # eof #

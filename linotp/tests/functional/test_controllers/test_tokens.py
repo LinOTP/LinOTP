@@ -57,6 +57,25 @@ class TestTokens(TestController):
         TestController.tearDown(self)
         return
 
+    def _create_pw_tokens(
+        self, username="horst", realm="mydefrealm", amount_of_users=1
+    ):
+        for i in range(amount_of_users):
+            serial = f"PWToken-{username}-{realm}-{i}"
+            params = {
+                "type": "pw",
+                "otpkey": "geheim1",
+                "user": username,
+                "realm": realm,
+                "serial": serial,
+            }
+            response = self.make_admin_request("init", params=params)
+            result = response.json["result"]
+            assert result["status"]
+            assert result["value"]
+
+            self.serials.append(serial)
+
     def test_tokens_controller_access(self):
         """verify that authentication is required for the tokens controller
 
@@ -97,17 +116,7 @@ class TestTokens(TestController):
 
         users = [("horst", "mydefrealm"), ("other_user", "myotherrealm")]
         for user, realm in users:
-            serial = "PWToken@" + realm
-            params = {
-                "type": "pw",
-                "otpkey": "geheim1",
-                "user": user + "@" + realm,
-                "serial": serial,
-            }
-
-            response = self.make_admin_request("init", params=params)
-            assert response.json["result"]["status"]
-            assert response.json["result"]["value"]
+            self._create_pw_tokens(username=f"{user}", realm=realm)
 
         # --------------------------------------------------------------- --
         # create a restriction to the 'admin' to only see myDefRealm tokens
@@ -138,7 +147,20 @@ class TestTokens(TestController):
 
         assert len(response.json["result"]["value"]["pageRecords"]) == 1
         token = response.json["result"]["value"]["pageRecords"][0]
-        assert token["serial"] == "PWToken@mydefrealm"
+        assert token["serial"] == "PWToken-horst-mydefrealm-0"
+
+        # test realm filtering
+        params = {"realm": "mymixrealm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        assert len(response.json["result"]["value"]["pageRecords"]) == 0
+
+        params = {"realm": "NON_EXISTING_REALM"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        assert len(response.json["result"]["value"]["pageRecords"]) == 0
+
+        params = {"realm": "mydefrealm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        assert len(response.json["result"]["value"]["pageRecords"]) == 1
 
     def test_tokens_controller_no_permissions(self):
         """'admin' is not allowed to view any token
@@ -188,21 +210,7 @@ class TestTokens(TestController):
         sortOrder does not work by now - might be a problem
         of the old code in the TokenIterator
         """
-
-        for i in range(0, 40):
-            serial = "PWToken-%.3d" % i
-            params = {
-                "type": "pw",
-                "otpkey": "geheim1",
-                "user": "horst",
-                "serial": serial,
-            }
-
-            response = self.make_admin_request("init", params=params)
-            assert response.json["result"]["status"]
-            assert response.json["result"]["value"]
-
-            self.serials.append(serial)
+        self._create_pw_tokens(amount_of_users=40)
 
         response = self.make_api_v2_request("/tokens/")
 
@@ -235,21 +243,7 @@ class TestTokens(TestController):
         returned.
 
         """
-
-        for i in range(0, 60):
-            serial = "PWToken-%.3d" % i
-            params = {
-                "type": "pw",
-                "otpkey": "geheim1",
-                "user": "horst",
-                "serial": serial,
-            }
-
-            response = self.make_admin_request("init", params=params)
-            assert response.json["result"]["status"]
-            assert response.json["result"]["value"]
-
-            self.serials.append(serial)
+        self._create_pw_tokens(amount_of_users=60)
 
         response = self.make_api_v2_request("/tokens/")
 
@@ -297,17 +291,7 @@ class TestTokens(TestController):
 
         users = [("horst", "mydefrealm"), ("other_user", "myotherrealm")]
         for user, realm in users:
-            serial = "PWToken@" + realm
-            params = {
-                "type": "pw",
-                "otpkey": "geheim1",
-                "user": user + "@" + realm,
-                "serial": serial,
-            }
-
-            response = self.make_admin_request("init", params=params)
-            assert response.json["result"]["status"]
-            assert response.json["result"]["value"]
+            self._create_pw_tokens(username=user, realm=realm)
 
         # --------------------------------------------------------------- --
         # create a restriction to the 'admin' to only see myDefRealm tokens
@@ -334,23 +318,86 @@ class TestTokens(TestController):
         # verify that the access to tokens is restricet to
         # the policy defined realm
 
-        serial = "PWToken@" + "mydefrealm"
+        serial = f"PWToken-{users[0][0]}-{users[0][1]}-0"
 
-        response = self.make_api_v2_request(
-            "/tokens/%s" % serial, auth_user="admin"
-        )
+        response = self.make_api_v2_request(f"/tokens/{serial}")
 
         assert response.json["result"]["status"]
         assert response.json["result"]["value"]["serial"] == serial
 
-        serial = "PWToken@" + "myotherrealm"
+        serial = f"PWToken-{users[1][0]}-{users[1][1]}-0"
 
-        response = self.make_api_v2_request(
-            "/tokens/%s" % serial, auth_user="admin"
-        )
+        response = self.make_api_v2_request(f"/tokens/{serial}")
 
         assert response.json["result"]["status"]
         assert "serial" not in response.json["result"]["value"]
+
+    def test_tokens_controller_filter_realm(self):
+        """verify /api/v2/tokens can be filtered by user"""
+
+        users = [("horst", "mydefrealm"), ("beckett", "mymixrealm")]
+        for user, realm in users:
+            self._create_pw_tokens(username=user, realm=realm)
+
+        # exact search
+        params = {"realm": "mydefrealm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 1
+
+        # wildcard search
+        params = {"realm": "mymix*"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 1
+
+        params = {"realm": "my*realm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 2
+
+        params = {"realm": "NON_EXISTING_REALM"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 0
+
+    def test_tokens_controller_filter_user(self):
+        """verify /api/v2/tokens can be filtered by user"""
+
+        users_and_amount = [("horst", 5), ("beckett", 7)]
+        for user, amount in users_and_amount:
+            self._create_pw_tokens(username=user, amount_of_users=amount)
+
+        # exact search
+        params = {"username": "horst"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == users_and_amount[0][1]
+
+        # wildcard search
+        params = {"username": "beck*"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == users_and_amount[1][1]
+
+        params = {"username": "*t"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert (
+            result["value"]["totalRecords"]
+            == users_and_amount[0][1] + users_and_amount[1][1]
+        )
+
+        # filter user with realm
+        params = {"username": "horst", "realm": "mydefrealm"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == users_and_amount[0][1]
+
+        params = {"username": "horst", "realm": "NON_EXISTING_REALM"}
+        response = self.make_api_v2_request("/tokens/", params=params)
+        result = response.json["result"]
+        assert result["value"]["totalRecords"] == 0
 
 
 # eof #
