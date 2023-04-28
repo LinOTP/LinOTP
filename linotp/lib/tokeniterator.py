@@ -31,6 +31,7 @@ import logging
 import re
 from difflib import get_close_matches
 
+from flask_sqlalchemy import Pagination
 from sqlalchemy import and_, not_, or_
 
 from linotp.lib.config import getFromConfig
@@ -545,28 +546,28 @@ class TokenIterator(object):
             pagesize = 20
 
         try:
-            requested_page = int(page) - 1
+            requested_page = int(page)
         except BaseException:
-            requested_page = 0
-        if requested_page < 0:
-            requested_page = 0
+            requested_page = 1
+        if requested_page < 1:
+            requested_page = 1
 
-        start = requested_page * pagesize
-        stop = (requested_page + 1) * pagesize
+        paginated_tokens: Pagination = (
+            Token.query.filter(condition)
+            .order_by(order)
+            .distinct()
+            .paginate(page=requested_page, per_page=pagesize)
+        )
 
-        self.tokens = Token.query.filter(condition).order_by(order).distinct()
-        self.total_token_count = self.tokens.count()
+        self.tokens = paginated_tokens.items
+        self.total_token_count = paginated_tokens.total
         log.debug(
             "[TokenIterator::init] DB-Query returned # of objects: %r",
-            self.total_token_count,
+            self.tokens,
         )
-        self.page = requested_page + 1
-        fpages = float(self.total_token_count) / float(pagesize)
-        self.pages = int(fpages)
-        if fpages - int(fpages) > 0:
-            self.pages = self.pages + 1
+        self.page = paginated_tokens.page
+        self.pages = paginated_tokens.pages
         self.pagesize = pagesize
-        self.tokens = self.tokens.slice(start, stop)
 
         self.it = iter(self.tokens)
 
