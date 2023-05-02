@@ -42,7 +42,6 @@ EMAIL_MESSAGE_OTP = ("", "")
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
-
     global REQUEST_BODY
     REQUEST_BODY = kwparams["json"]
 
@@ -98,7 +97,6 @@ class TestAutoassignSMSController(TestController):
         REQUEST_BODY = ""
 
     def define_email_provider(self):
-
         email_conf = {
             "SMTP_SERVER": "mail.example.com",
             "SMTP_USER": "secret_user",

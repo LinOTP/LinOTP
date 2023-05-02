@@ -223,7 +223,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         # run the bin test
         with freeze_time("2012-01-14 12:00:00"):
-
             with pytest.raises(ResolverNotAvailable):
                 myldap.bind()
 
@@ -275,7 +274,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
             assert "ldap://fail_bind1.psw.de" not in called
 
         with freeze_time("2012-01-14 12:01:00"):
-
             # -------------------------------------------------------------- --
 
             # one minute later re-run the bind

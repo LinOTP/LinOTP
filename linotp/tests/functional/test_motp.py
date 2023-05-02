@@ -62,7 +62,6 @@ def calc_motp(key, pin, digits=6, now=None):
 
 
 class TestMOTPTokenController(TestController):
-
     otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
     user = "passthru_user1"
 
@@ -74,7 +73,6 @@ class TestMOTPTokenController(TestController):
         self.create_common_realms()
 
     def tearDown(self):
-
         self.delete_all_policies()
         self.delete_all_token()
 
@@ -113,7 +111,6 @@ class TestMOTPTokenController(TestController):
 
         old_day = datetime(year=2018, month=12, day=12, hour=12, minute=12)
         with freezegun.freeze_time(old_day):
-
             # 1. wrong motp verification
 
             motp = "7215e7"

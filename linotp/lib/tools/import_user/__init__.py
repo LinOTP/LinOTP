@@ -56,7 +56,6 @@ class FormatReader(object):
 
 
 class DefaultFormatReader(FormatReader):
-
     delimiter = ","
     quotechar = '"'
 
@@ -66,13 +65,11 @@ class DefaultFormatReader(FormatReader):
 
 
 class PasswdFormatReader(FormatReader):
-
     delimiter = ":"
     quotechar = '"'
 
     @classmethod
     def prepare_row(cls, row):
-
         if len(row) < 5:
             return row
 
@@ -106,7 +103,6 @@ class PasswdFormatReader(FormatReader):
 
 class UserImport(object):
     def __init__(self, ImportHandler):
-
         self.user_column_mapping = {}
         self.import_handler = ImportHandler
         self.encoding = "UTF-8"
@@ -139,7 +135,6 @@ class UserImport(object):
         )
 
         for row in reader:
-
             if not row:
                 continue
 
@@ -148,7 +143,6 @@ class UserImport(object):
             user = ImportedUser()
 
             for entry in user.user_entries:
-
                 value = ""
                 column_id = self.user_column_mapping.get(entry, -1)
 
@@ -193,7 +187,6 @@ class UserImport(object):
         former_userids_to_be_removed = self.import_handler.prepare()
 
         try:
-
             # -------------------------------------------------------------- --
 
             # finally remove all former, not updated users
@@ -205,7 +198,6 @@ class UserImport(object):
                 passwords_in_plaintext=passwords_in_plaintext,
                 hash_passwords=not dryrun,
             ):
-
                 # only store valid users that have a userid and a username
                 if not user.userid or not user.username:
                     continue
@@ -277,7 +269,6 @@ class UserImport(object):
             return result
 
         except Exception as exx:
-
             self.import_handler.rollback()
             log.error(exx)
             raise exx
@@ -290,7 +281,6 @@ class UserImport(object):
 
 
 def main():
-
     from linotp.lib.tools.import_user.SQLImportHandler import (
         Shell_DatabaseContext,
         SQLImportHandler,
@@ -336,5 +326,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()

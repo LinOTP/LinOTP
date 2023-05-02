@@ -194,9 +194,7 @@ def backup_database_tables() -> int:
     app.echo("Creating backup file: %s" % backup_filename, v=1)
 
     with open(backup_filename, "w") as backup_file:
-
         for name, model_class in backup_classes.items():
-
             app.echo("Saving %s" % name, v=1)
 
             backup_file.write("--- BEGIN %s\n" % name)
@@ -248,13 +246,11 @@ def list_database_backups() -> list:
     # lookup for all files in the directory that match the template
 
     for backup_file in os.listdir(backup_dir):
-
         # backup files match the "template" + "%s.sqldb" format
 
         if backup_file.startswith(filename_template) and backup_file.endswith(
             ".sqldb"
         ):
-
             backup_date, _, _ext = backup_file[
                 len(filename_template) :
             ].rpartition(".")
@@ -287,7 +283,6 @@ def _get_restore_filename(
         backup_filename = os.path.join(backup_dir, template % date)
 
     elif filename:
-
         # check if file is absolute or relative to the backup directory
 
         if os.path.isfile(filename):
@@ -310,7 +305,6 @@ def _get_restore_filename(
     # verify that the file to restore from exists
 
     if not os.path.isfile(backup_filename):
-
         app.echo(
             "Failed to restore %s - not found or not accessible"
             % backup_filename
@@ -349,7 +343,6 @@ def restore_database_tables(
     #  TokenRealm as well, as the have an n:m relationship
 
     if table:
-
         if table.lower() == "config":
             restore_names = ["Config"]
 
@@ -387,7 +380,6 @@ def restore_database_tables(
     # restore the sqlalchemy dump from file
 
     with open(backup_filename, "r") as backup_file:
-
         for line in backup_file:
             line = line.strip()
 
@@ -398,7 +390,6 @@ def restore_database_tables(
                 name = line[len("--- BEGIN ") :]
 
             elif line and name in restore_names:
-
                 # unhexlify the serialized data first
 
                 data = binascii.unhexlify(line.encode("utf-8"))

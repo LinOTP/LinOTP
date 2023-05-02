@@ -568,7 +568,6 @@ class U2FTokenClass(TokenClass):
         )
 
         try:
-
             ecc_pub.verify(signature, message, ec.ECDSA(hashes.SHA256()))
             return True
 
@@ -1054,7 +1053,6 @@ class U2FTokenClass(TokenClass):
         return response_detail
 
     def getOfflineInfo(self):
-
         public_key = self.getFromTokenInfo("publicKey")
         key_handle = self.getFromTokenInfo("keyHandle")
         counter = self.getFromTokenInfo("counter")

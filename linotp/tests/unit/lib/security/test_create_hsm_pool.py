@@ -43,7 +43,6 @@ from linotp.lib.security.provider import SecurityProvider
 def test_create_hsm_pool(
     mock_init, mock_get_hsm_pool, mock_load_security_module
 ):
-
     poolsize = 20
     mock_init.return_value = None
     mock_get_hsm_pool.return_value = None
@@ -126,10 +125,9 @@ def test_hsm_for_static_requests(app, request_path, should_have_hsm):
     This is the exact value of app.static_url_path
     """
 
-    with (patch("linotp.app.request.path", request_path)) as _, (
-        patch("linotp.app.c")
+    with patch("linotp.app.request.path", request_path) as _, patch(
+        "linotp.app.c"
     ) as context_mock:
-
         context_mock.hsm = {}
         app.setup_env()
 

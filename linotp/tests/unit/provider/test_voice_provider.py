@@ -92,7 +92,6 @@ class TestVoiceProvider(unittest.TestCase):
             "linotp.provider.voiceprovider."
             "custom_voice_provider.log.warning"
         ) as mocked_log_warning:
-
             custom_provider.submitVoiceMessage(
                 "+49 123546891", "your otp", "123456", "en"
             )
@@ -102,7 +101,6 @@ class TestVoiceProvider(unittest.TestCase):
             "linotp.provider.voiceprovider."
             "custom_voice_provider.log.warning"
         ) as mocked_log_warning:
-
             custom_provider.submitVoiceMessage(
                 "+49 123546891", "your {otp}", "123456", "en"
             )

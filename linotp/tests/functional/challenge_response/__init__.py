@@ -149,7 +149,6 @@ HTTP_RESPONSE_FUNC = None
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
-
     resp = 200
 
     content = {
@@ -175,7 +174,6 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
 
 
 class TestChallengeResponseController(TestingChallengeResponseController):
-
     radius_proc = None
     HTTP_RESPONSE = {}
 
@@ -220,7 +218,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         return
 
     def tearDown(self):
-
         if self.patch_smtp is not None:
             self.patch_smtp.stop()
         if self.patch_sms is not None:
@@ -247,7 +244,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         email_address=None,
         realm=None,
     ):
-
         params = {
             "serial": serial,
             "otpkey": otpkey,

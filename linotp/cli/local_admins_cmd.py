@@ -143,7 +143,6 @@ def add_cmd(phone, mobile, email, surname, givenname, account_name):
 )
 @click.argument("account_name")
 def modify_cmd(phone, mobile, email, surname, givenname, account_name):
-
     res = LocalAdminResolver(current_app)
     try:
         user_info = res.get_user_info(account_name)
@@ -174,7 +173,6 @@ def modify_cmd(phone, mobile, email, surname, givenname, account_name):
 @click.password_option()
 @click.argument("account_name")
 def password_cmd(password, account_name):
-
     if password == "-":  # read password from stdin, for scripts
         password = input()
 
@@ -200,7 +198,6 @@ def password_cmd(password, account_name):
 )
 @click.argument("account_name")
 def remove_cmd(account_name):
-
     res = LocalAdminResolver(current_app)
     try:
         res.remove_user(account_name)
@@ -217,7 +214,6 @@ def remove_cmd(account_name):
     "enable", help="(Re-)Add local admin resolver to admin realm"
 )
 def enable_cmd():
-
     res = LocalAdminResolver(current_app)
     current_app.echo("Adding local admin resolver to admin realm", v=1)
     res.add_to_admin_realm()

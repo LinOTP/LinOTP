@@ -82,7 +82,6 @@ class TestMaintenance(object):
 
 
 class TestMaintCertificateHandling(object):
-
     maint = None
 
     @pytest.fixture(autouse=True)

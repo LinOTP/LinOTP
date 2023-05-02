@@ -454,7 +454,6 @@ def sendCSVResult(
 
     output = ""
     if not flat_lines:
-
         headers_printed = False
         data = obj.get("data", [])
 
@@ -542,7 +541,6 @@ def sendXMLResult(_response, obj, id=1, opt=None):
 
 
 def sendXMLError(_response, exception, id=1):
-
     if not hasattr(exception, "getId"):
         errId = -311
         errDesc = str(exception)

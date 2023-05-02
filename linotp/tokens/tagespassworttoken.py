@@ -194,7 +194,6 @@ class TagespasswortTokenClass(TokenClass):
         return ret
 
     def update(self, param):
-
         # check for the required parameters
         if self.hKeyRequired is True:
             if "otpkey" not in param:
@@ -221,7 +220,6 @@ class TagespasswortTokenClass(TokenClass):
         return res
 
     def getOtp(self, curTime=None):
-
         res = (-1, 0, 0, 0)
 
         try:
@@ -298,7 +296,6 @@ class TagespasswortTokenClass(TokenClass):
 
             secObj = self._get_secret_object()
             with dpwOtp(secObj, otplen) as dpw:
-
                 for i in range(count):
                     delta = timedelta(days=i)
                     date_string = (now + delta).strftime("%d%m%y")

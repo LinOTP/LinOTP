@@ -56,7 +56,6 @@ class FakeLogger(object):
 
 
 def func(arg1, arg2):
-
     return {"list": [arg1, arg2], "rev_list": [arg2, arg1]}
 
 

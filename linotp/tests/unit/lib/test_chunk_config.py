@@ -154,7 +154,6 @@ TestConfigEntries = {}
 
 
 def storeConfigEntryDB(key, val, typ=None, desc=None):
-
     TestConfigEntries[key] = {"type": typ, "value": val, "desc": desc}
 
 

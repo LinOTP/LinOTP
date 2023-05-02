@@ -30,7 +30,6 @@ from linotp.model import db, implicit_returning
 
 
 class TokenRealmSchema(db.Model):
-
     __tablename__ = "TokenRealm"
     __table_args__ = {"implicit_returning": implicit_returning}
 

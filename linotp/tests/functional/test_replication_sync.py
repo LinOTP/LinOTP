@@ -123,7 +123,6 @@ class SQLData(object):
 
 class TestReplication(TestController):
     def setUp(self):
-
         TestController.setUp(self)
 
         self.sqlconnect = self.app.config.get("DATABASE_URI")
@@ -141,7 +140,6 @@ class TestReplication(TestController):
         return
 
     def addData(self, key, value, description):
-
         sqlData = SQLData(connect=self.sqlconnect)
         typ = type(value).__name__
         sqlData.addData(key, value, typ, description)
@@ -154,7 +152,6 @@ class TestReplication(TestController):
         return
 
     def delData(self, key):
-
         sqlData = SQLData(connect=self.sqlconnect)
         sqlData.delData(key)
         sec = random.randrange(1, 9)
@@ -166,7 +163,6 @@ class TestReplication(TestController):
         return
 
     def addToken(self, user):
-
         params = {
             "user": user,
             "pin": user,
@@ -179,13 +175,11 @@ class TestReplication(TestController):
         return
 
     def authToken(self, user):
-
         param = {"user": user, "pass": user}
         response = self.make_validate_request("check", params=param)
         return response
 
     def showTokens(self):
-
         response = self.make_admin_request("show", {})
         assert '"status": true,' in response
         return response
@@ -199,21 +193,18 @@ class TestReplication(TestController):
             enable_str = "True"
 
         for cache in caches:
-
             params = {cache: enable_str}
             response = self.make_system_request("setConfig", params)
             msg = '"setConfig %s:%s": true' % (cache, enable_str)
             assert msg in response, response
 
     def set_cache_expiry(self, expiration):
-
         caches = [
             "user_lookup_cache.expiration",
             "resolver_lookup_cache.expiration",
         ]
 
         for cache in caches:
-
             params = {cache: expiration}
             response = self.make_system_request("setConfig", params)
             msg = '"setConfig %s:%s": true' % (cache, expiration)

@@ -99,7 +99,6 @@ class MonitorHandler(object):
         r_condition = or_(*cond)
 
         if "total" in status:
-
             # count all tokens in the given realms
             result["total"] = (
                 db.session.query(Token.LinOtpTokenId)
@@ -109,7 +108,6 @@ class MonitorHandler(object):
             )
 
         if "total users" in status:
-
             # according to the token users license spec, we count only the
             # distinct users of all assigned and active tokens in the given
             # realms
@@ -124,7 +122,6 @@ class MonitorHandler(object):
             )
 
         for stat in status:
-
             if stat in ["total users", "total"]:
                 continue
 

@@ -67,7 +67,6 @@ class DurationTestCase(unittest.TestCase):
             "PT1M": 60.0,
         }
         for duration, seconds in list(test_vector.items()):
-
             timedelta = parse_duration(duration, time_delta_compliant=False)
             assert seconds == timedelta.total_seconds()
 
@@ -92,7 +91,6 @@ class DurationTestCase(unittest.TestCase):
         }
 
         for duration, _seconds in list(test_vector.items()):
-
             with pytest.raises(DurationParsingException):
                 parse_duration(duration)
 

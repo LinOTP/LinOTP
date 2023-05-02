@@ -32,7 +32,6 @@ class TestSqlImportHandler:
         self,
         mock_fake_session: Mock,
     ) -> None:
-
         fake_session = FakeSession(["user_1"])
 
         db_context_mock = Mock()
@@ -50,7 +49,6 @@ class TestSqlImportHandler:
         mock_fake_session.assert_called_with("user_1")
 
     def test_delete_by_id_exception(self) -> None:
-
         fake_session = FakeSession(["user_1", "user_2"])
 
         db_context_mock = Mock()

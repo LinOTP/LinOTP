@@ -91,7 +91,6 @@ class TestAdminLabel(TestController):
 
         resolver_specs = set()
         for resolver_name, resolver_description in resolvers.items():
-
             # preserve the admin resolver spec for later
 
             if resolver_name == fallback_admin_resolver_name:
@@ -121,7 +120,6 @@ class TestAdminLabel(TestController):
         response = self.make_system_request("getResolvers", params={})
         resolvers = response.json["result"]["value"]
         for resolver_name, resolver_description in resolvers.items():
-
             # the default admin resolver is now no more an admin resolver
             if resolver_name == fallback_admin_resolver_name:
                 continue

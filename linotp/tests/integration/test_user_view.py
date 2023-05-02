@@ -48,7 +48,6 @@ class TestAuth:
         )
 
     def test_user_filter(self):
-
         m = self.testcase.manage_ui
         m.open_manage()
         user_view = UserView(m, self.realm_name)

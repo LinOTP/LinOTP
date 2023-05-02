@@ -54,7 +54,6 @@ def init_crypter(passphrase, salt=None):
 
 class TestMigrate(unittest.TestCase):
     def test_decrypt_encrypt(self):
-
         config = {
             "SMSProviderTimeout": "300",
             "totp.timeShift": "0",
@@ -99,7 +98,6 @@ class TestMigrate(unittest.TestCase):
         crypter = init_crypter(passphrase)
 
         for key, value in list(config.items()):
-
             # calculate encryption and add mac from mac_data
             enc_value = crypter.encrypt(input_data=value, just_mac=key + value)
 

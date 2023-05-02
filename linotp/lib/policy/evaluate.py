@@ -108,7 +108,6 @@ class PolicyEvaluator(object):
         """
 
         try:
-
             # preserve the old filters
             sec_filters = self.filters
 
@@ -160,7 +159,6 @@ class PolicyEvaluator(object):
         matches = {}
 
         for p_name, p_dict in all_policies.items():
-
             matching = False
 
             #
@@ -177,7 +175,7 @@ class PolicyEvaluator(object):
 
             match_type = {}
 
-            for (f_key, f_value, f_compare) in self.filters:
+            for f_key, f_value, f_compare in self.filters:
                 policy_condition = p_dict.get(f_key)
 
                 # here we honor the user matching, which in difference to the
@@ -281,7 +279,6 @@ class PolicyEvaluator(object):
         :param policy: the name of the policy
         """
         for key, match_type in matches_dict.items():
-
             if key not in matches:
                 matches[key] = {}
 
@@ -304,7 +301,6 @@ class PolicyEvaluator(object):
         """
 
         for match_set in args:
-
             if all_matches & match_set:
                 return all_matches & match_set
 
@@ -495,7 +491,6 @@ def value_list_compare(policy_conditions, action_name):
 
     # extract action name from action_name=value
     for condition in conditions:
-
         cond_name, _sep, _cond_value = condition.partition("=")
         if cond_name.strip() == action_name:
             return EXACT_MATCH, True
@@ -537,7 +532,6 @@ def wildcard_icase_list_compare(policy_conditions, value, ignore_case=True):
     match_type = NOT_MATCH
 
     for condition in conditions:
-
         if not condition:
             continue
 
@@ -673,7 +667,6 @@ def user_list_compare(policy_conditions, login):
     attr_comp = AttributeCompare()
 
     for condition in conditions:
-
         if not condition:
             continue
 
@@ -688,9 +681,7 @@ def user_list_compare(policy_conditions, login):
             its_a_not_condition = True
 
         if "#" in condition:
-
             if isinstance(login, str) and "@" in login:
-
                 usr, _sep, realm = login.rpartition("@")
 
                 if realm in getRealms():
@@ -704,7 +695,6 @@ def user_list_compare(policy_conditions, login):
             identified = attr_comp.compare(c_user, condition)
 
         elif "@" in condition:  # domain condition requires a domain compare
-
             #
             # we support fake users, where login is of type string
             # and who have an '@' in it - we rely on that real users
@@ -718,14 +708,12 @@ def user_list_compare(policy_conditions, login):
             identified = domain_comp.compare(c_user, condition)
 
         elif ":" in condition:  # resolver condition - by user exists check
-
             #
             # special treatment of literal user definition with an @ in login:
             # we can split last part and check if it is an existing realm. If
             # not we treat the user login as literal only
 
             if isinstance(login, str) and "@" in login:
-
                 usr, _sep, realm = login.rpartition("@")
 
                 if realm in getRealms():
@@ -906,7 +894,6 @@ def time_list_compare(policy_conditions, now):
         now = datetime.now()
 
     for condition in conditions:
-
         #
         # skip for empty conditions
 

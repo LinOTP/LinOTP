@@ -37,7 +37,6 @@ class UserserviceOcra2TokenTest(TestController):
     """
 
     def setUp(self):
-
         # clean setup
         self.delete_all_policies()
         self.delete_all_token()

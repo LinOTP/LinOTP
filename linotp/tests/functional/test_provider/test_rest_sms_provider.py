@@ -58,7 +58,6 @@ REQUEST_HEADERS = {}
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
-
     global REQUEST_BODY
     REQUEST_BODY = kwparams["json"]
 
@@ -378,7 +377,6 @@ class TestRestSmsController(TestingChallengeResponseController):
         REQUEST_BODY = {}
 
         with freeze_time(datetime.now() + timedelta(seconds=120)):
-
             response = self.make_validate_request("check", params=params)
 
             assert "no data" in REQUEST_BODY.get("text", ""), REQUEST_BODY

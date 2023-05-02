@@ -56,7 +56,6 @@ HTTP_RESPONSE = None
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
-
     resp = 200
     body = kwparams.get("body", "")
     params = dict(urllib.parse.parse_qsl(body))
@@ -105,7 +104,6 @@ class TestRemoteToken(TestingChallengeResponseController):
         return
 
     def create_local_tokens(self, serial):
-
         serial = "LSP%s" % serial
 
         # local token

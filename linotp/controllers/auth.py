@@ -48,7 +48,6 @@ required = False
 
 
 class AuthController(BaseController):
-
     jwt_exempt = True  # Don't do JWT auth in this controller
 
     def __init__(self, name, install_name="", **kwargs):
@@ -71,7 +70,6 @@ class AuthController(BaseController):
         action = request_context["action"]
 
         try:
-
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
 

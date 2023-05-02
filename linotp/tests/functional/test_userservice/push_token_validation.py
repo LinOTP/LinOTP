@@ -39,7 +39,6 @@ CONTENT_TYPE_LOGIN = 2
 
 
 class Push_Token_Validation:
-
     uri_schema = "lseqr"
     tan_length = 8
 
@@ -253,17 +252,14 @@ class Push_Token_Validation:
         # retrieve plaintext data depending on content_type
 
         if content_type == CONTENT_TYPE_PAIRING:
-
             serial, callback_url, __ = plaintext[offset:].split(b"\x00")
             challenge["serial"] = serial.decode()
 
         elif content_type == CONTENT_TYPE_SIGNREQ:
-
             message, callback_url, __ = plaintext[offset:].split(b"\x00")
             challenge["message"] = message.decode()
 
         elif content_type == CONTENT_TYPE_LOGIN:
-
             login, host, callback_url, __ = plaintext[offset:].split(b"\x00")
             challenge["login"] = login.decode()
             challenge["host"] = host.decode()

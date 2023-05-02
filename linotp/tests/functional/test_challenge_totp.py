@@ -59,7 +59,6 @@ def calc_totp_OTP(key, digits=6, timestep=30):
 
 
 class TestChallengeResponseController(TestController):
-
     otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
     user = "passthru_user1"
 
@@ -73,7 +72,6 @@ class TestChallengeResponseController(TestController):
         self.create_common_realms()
 
     def tearDown(self):
-
         self.delete_all_policies()
         self.delete_all_token()
 
@@ -85,7 +83,6 @@ class TestChallengeResponseController(TestController):
     def create_totp_token(
         self, serial="KITO_2714", pin="pin", description="TestToken1"
     ):
-
         params = {
             "serial": serial,
             "otpkey": self.otpkey,
@@ -107,7 +104,6 @@ class TestChallengeResponseController(TestController):
         scope="authentication",
         active=True,
     ):
-
         params = {
             "name": name,
             "user": "*",
@@ -146,7 +142,6 @@ class TestChallengeResponseController(TestController):
 
         # Freeze time to the current system time
         with freeze_time(datetime.datetime.now()) as frozen_datetime:
-
             # jump to next timestep
             frozen_datetime.tick(delta=datetime.timedelta(seconds=timestep))
 

@@ -124,7 +124,6 @@ class EnrollTokenDialog(ManageDialog):
         hash_algorithm="sha1",
         description="Selenium enrolled",
     ) -> str:
-
         assert bool(hmac_key) ^ bool(generate_key)  # xor
 
         self.select_token_type("HMAC eventbased")

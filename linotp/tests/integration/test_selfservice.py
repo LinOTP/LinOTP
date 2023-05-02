@@ -48,7 +48,6 @@ class TestSelfservice:
 
     @pytest.fixture(scope="module", params=[SelfService, AngularSelfService])
     def selfservice(self, testcase, request):
-
         # for each of the params in fixture params:
         current_selfservice_class = request.param
         # initiate it

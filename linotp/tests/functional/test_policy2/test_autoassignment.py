@@ -657,7 +657,6 @@ class TestAutoassignmentController(TestController):
         # verify the correct assignment of the token to the user
 
         for i in range(5):
-
             user_name = users[i]
             token = token_list[i]
             params = {"serial": token["serial"]}
@@ -674,7 +673,6 @@ class TestAutoassignmentController(TestController):
             # the remaining OTP values
 
             for j in range(1, 3):
-
                 params = {
                     "user": user_name.encode("UTF-8"),
                     "pass": token["otps"][j],

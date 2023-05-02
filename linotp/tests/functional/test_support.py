@@ -47,7 +47,6 @@ log = logging.getLogger(__name__)
 
 class TestSupport(TestController):
     def setUp(self):
-
         self.delete_license()
         self.delete_all_token()
 
@@ -57,7 +56,6 @@ class TestSupport(TestController):
         return TestController.setUp(self)
 
     def tearDown(self):
-
         self.delete_license()
         self.delete_all_token()
 
@@ -133,7 +131,6 @@ class TestSupport(TestController):
         two_weeks_ago = datetime.now() - timedelta(days=15)
 
         with freeze_time(two_weeks_ago):
-
             response = self.install_license(license_filename="demo-lic.pem")
             assert '"status": true' in response
             assert '"value": true' in response
@@ -207,7 +204,6 @@ class TestSupport(TestController):
         with patch(
             "linotp.controllers.system.running_on_appliance"
         ) as mocked_running_on_appliance:
-
             mocked_running_on_appliance.return_value = True
             return self.check_appliance_demo_licence()
 
@@ -221,7 +217,6 @@ class TestSupport(TestController):
         time_ago = datetime(year=2017, month=12, day=1)
 
         with freeze_time(time_ago):
-
             response = self.install_license(license_filename="expired-lic.pem")
             assert '"status": true' in response
             assert '"value": true' in response
@@ -274,7 +269,6 @@ class TestSupport(TestController):
         time_ago = datetime(year=2017, month=12, day=1)
 
         with freeze_time(time_ago):
-
             # ------------------------------------------------------------ --
 
             # 1. install the license with
@@ -334,7 +328,6 @@ class TestSupport(TestController):
         license_valid_date = datetime(year=2018, month=11, day=16)
 
         with freeze_time(license_valid_date):
-
             license_file = os.path.join(
                 self.fixture_path, "linotp2.token_user.pem"
             )
@@ -361,7 +354,6 @@ class TestSupport(TestController):
             # - tokens per user are not limited
 
             for user in ["hans", "rollo", "susi", "horst", "user1", "user2"]:
-
                 for i in range(0, 2):
                     params = {
                         "type": "pw",
@@ -548,7 +540,6 @@ class TestSupport(TestController):
         license_valid_date = datetime(year=2018, month=11, day=16)
 
         with freeze_time(license_valid_date):
-
             license_file = os.path.join(
                 self.fixture_path, "linotp2.token_user.pem"
             )
@@ -569,7 +560,6 @@ class TestSupport(TestController):
             assert user_num == "4"
 
             for user in ["hans", "rollo", "susi", "horst", "user1", "user2"]:
-
                 params = {
                     "type": "pw",
                     "user": user + "@myDefRealm",

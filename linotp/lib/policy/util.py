@@ -68,7 +68,6 @@ def _getAuthenticatedUser():
 
 
 def _getLinotpConfig(config=None):
-
     lConfig = config
     return lConfig
 
@@ -168,7 +167,6 @@ def _tokenise_action(action_value, separators=None, escapes=None):
             continue
 
         if character in separators:
-
             yield action_value[start:i]
             yield character
 
@@ -197,7 +195,6 @@ def _parse_action(action_value):
     action = []
 
     for entry in _tokenise_action("%s," % action_value):
-
         if entry != ",":  # in case of an ',' the key=value is completed
             action.append(entry)
             continue
@@ -211,7 +208,6 @@ def _parse_action(action_value):
                 value = False
 
         elif len(action) > 2:  # key=value pair
-
             key = action[0].strip()
             value = "".join(action[2:]).strip()
 
@@ -240,14 +236,12 @@ def _strip_quotes(value):
     """
     # make sure that if it starts with a quote and
     for quote in ["'", '"']:
-
         if (
             value.startswith(quote)
             and not value.endswith(quote)
             or not value.startswith(quote)
             and value.endswith(quote)
         ):
-
             if quote not in value[1:-1]:
                 raise Exception("non terminated string value entry %r" % value)
 
@@ -268,7 +262,6 @@ def parse_action_value(action_value):
     params = {}
 
     for key, value in _parse_action(action_value):
-
         if key in params:
             raise Exception("duplicate key defintion %r" % key)
 
@@ -386,7 +379,6 @@ def parse_policies(lConfig):
     # by replacing these empty values by '*'
 
     for name, policy in sorted(list(Policies.items())):
-
         # time has not been used before, so we can define the empty as wildcard
 
         if "time" in policy and policy["time"] == "":
@@ -405,7 +397,6 @@ def parse_policies(lConfig):
             "authorization",
             "authentication",
         ]:
-
             if "user" in policy and policy["user"] == "":
                 policy["user"] = "*"
             if "client" in policy and policy["client"] == "":

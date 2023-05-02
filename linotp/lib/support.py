@@ -423,7 +423,6 @@ def getSupportLicenseInfo():
         licString = getFromConfig("license", "")
 
         if licString:
-
             lic_text = binascii.unhexlify(licString.encode("utf-8")).decode()
             lic_dict, lic_sign = parseSupportLicense(lic_text)
             lic_dict["expire"] = get_expiration_date(lic_dict)
@@ -443,7 +442,6 @@ def get_expiration_date(lic_dict):
 
     expiration = lic_dict.get("expire", "")
     if expiration and "days" in expiration:
-
         date_format = "%d%m%y"
 
         # fetch config and split the signature and the expiration date
@@ -651,7 +649,6 @@ def verifyLicenseInfo(
     lic_dict.license_expiration = expiration
 
     if checkVolume:
-
         valid, volume_info = verify_volume(lic_dict)
 
         if valid:
@@ -724,11 +721,9 @@ def _verify_signature(pub_keys, lic_str, lic_sign):
 
     # verify signature with crypto.rsa
     for pub_key_name, pub_key in list(pub_keys.items()):
-
         if verify_rsa_signature(
             pub_key.strip().encode("utf-8"), lic_str.encode("utf-8"), lic_sign
         ):
-
             ret = pub_key_name
             break
 

@@ -35,7 +35,6 @@ from linotp.tests import TestController
 
 
 class TestYubikeyController(TestController):
-
     serials = set()
 
     def setUp(self):
@@ -117,7 +116,6 @@ class TestYubikeyController(TestController):
         """
         public_uids = ["ecebeeejedecebeg", ""]
         for public_uid in public_uids:
-
             serial = self.init_token(public_uid=public_uid)
 
             for otp in self.valid_otps:
@@ -209,7 +207,6 @@ class TestYubikeyController(TestController):
         public_uids = ["ecebeeejedecebeg", ""]
 
         for public_uid in public_uids:
-
             # preserve the serial number for later check
             serial = self.init_token(public_uid=public_uid, use_public_id=True)
 
@@ -279,7 +276,6 @@ class TestYubikeyController(TestController):
         }
 
         for otppin_mode, pin in list(pp.items()):
-
             # -------------------------------------------------------------- --
 
             # setup the otppin policy

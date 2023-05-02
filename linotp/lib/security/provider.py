@@ -189,7 +189,6 @@ class SecurityProvider(object):
         merged_config = {}
 
         for provider, provider_config in list(self.config.items()):
-
             module = provider_config.get("module")
             provider_class = module.split(".")[-1]
             if provider_class in config_name:

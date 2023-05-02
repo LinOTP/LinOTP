@@ -57,7 +57,6 @@ mocked_context = {
 class TestCacheActivation(unittest.TestCase):
     @patch("flask.g.request_context", new=mocked_context)
     def test_user_cache_activation(self):
-
         global mocked_context
 
         resolver_spec = "linotp.sqlresolver.mysql"

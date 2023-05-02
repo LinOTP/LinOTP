@@ -24,7 +24,6 @@ class RequestContextFilter(logging.Filter):
     """
 
     def filter(self, record):
-
         try:
             env = request.environ
         except TypeError:
@@ -57,7 +56,6 @@ BG_COLOR_STOP = "\033[0m"
 
 
 class ColorFormatter(logging.Formatter):
-
     ORANGE = BG_COLOR_START % 166
     YELLOW = BG_COLOR_START % 178
     BLUE = BG_COLOR_START % 69
@@ -147,7 +145,6 @@ def log_enter_exit(logger):
     def _inner(func):
         @functools.wraps(func)
         def log_and_call(*args, **kwargs):
-
             # --------------------------------------------------------------
 
             extra = {
@@ -198,7 +195,6 @@ def log_timedelta(logger):
     def _inner(func):
         @functools.wraps(func)
         def _log_time(*args, **kwargs):
-
             # --------------------------------------------------------------
 
             start = datetime.now()

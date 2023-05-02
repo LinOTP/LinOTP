@@ -40,7 +40,6 @@ from linotp.lib.util import str2unicode
 
 
 class ErrorController(BaseController):
-
     jwt_exempt = True  # Don't do JWT auth in this controller
 
     @deprecated_methods(["POST"])

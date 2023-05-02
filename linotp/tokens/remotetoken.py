@@ -387,7 +387,6 @@ class RemoteTokenClass(TokenClass):
             status = result["result"]["status"]
 
             if status is True:
-
                 if result.get("result", {}).get("value", False) is True:
                     res = True
                     otp_count = 0

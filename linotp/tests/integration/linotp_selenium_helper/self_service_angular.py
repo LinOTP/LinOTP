@@ -39,7 +39,6 @@ if TYPE_CHECKING:
 
 
 class AngularSelfService(object):
-
     URL = "/selfservice"
 
     def __init__(self, testcase: "TestCase"):

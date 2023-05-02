@@ -34,7 +34,6 @@ from .script_testing_lib import ScriptTester
 
 
 class TestLinotpTokensUsed(ScriptTester):
-
     script_name = "linotp-tokens-used"
 
     def run_main(self, *args):
@@ -42,7 +41,6 @@ class TestLinotpTokensUsed(ScriptTester):
         main_args.extend(args)
 
         with patch("sys.argv", main_args):
-
             output = []
 
             def append_output(print_args):

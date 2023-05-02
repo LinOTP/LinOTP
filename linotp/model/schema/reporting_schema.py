@@ -32,7 +32,6 @@ from linotp.model import db, implicit_returning
 
 
 class ReportingSchema(db.Model):
-
     __tablename__ = "REPORTING"
     __table_args__ = {"implicit_returning": implicit_returning}
 

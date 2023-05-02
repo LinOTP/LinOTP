@@ -53,7 +53,6 @@ class TestUserserviceAuthController(TestController):
     """
 
     def setUp(self):
-
         response = self.make_system_request(
             "setConfig", params={"splitAtSign": "true"}
         )
@@ -308,7 +307,6 @@ class TestUserserviceAuthController(TestController):
 
         entries = self.get_audit_entries(num=5, page=1)
         for entry in entries:
-
             if unbound_msg in entry:
                 unbound_not_found = False
 

@@ -528,7 +528,6 @@ def main():
     startdate = datetime.datetime(2000, 1, 1)
 
     for opt, arg in opts:
-
         if opt in ("-h", "--help"):
             usage()
             sys.exit(0)

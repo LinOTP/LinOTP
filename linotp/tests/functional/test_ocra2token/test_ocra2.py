@@ -355,7 +355,6 @@ class OcraTest(TestController):
         assert '"status": true' in response, response
 
     def setupPolicies(self, check_url="http://127.0.0.1/validate/check_t"):
-
         self.delete_all_policies()
 
         params = {
@@ -388,7 +387,6 @@ class OcraTest(TestController):
         return response
 
     def gen_challenge_data(self):
-
         testchall = [
             {
                 "ocrasuite": "OCRA-1:HOTP-SHA256-6:C-QA64",
@@ -2001,7 +1999,6 @@ class OcraTest(TestController):
         """
         ocrasuite = "OCRA-1:HOTP-SHA256-8:QA64"
         for test in self.tests[2:3]:
-
             ocrasuite = test["ocrasuite"]
             key = test["keyh"]
             bkey = test["key"]
@@ -2024,7 +2021,6 @@ class OcraTest(TestController):
             assert '"value": true' in response, response
 
             for count in range(0, CHALLLENGE_RUNS):
-
                 # -2a- fetch the challenge
                 p = {
                     "serial": serial,
@@ -2139,7 +2135,6 @@ class OcraTest(TestController):
         count=0,
         ttime=None,
     ):
-
         p = {
             "serial": serial,
             "challenge": (
@@ -3814,7 +3809,6 @@ class OcraTest(TestController):
 
         # standard ocra test
         for i in range(1, 3):
-
             (response, challenge, transid) = self.get_challenge(
                 ocra.serial, challenge_data="challenge %d" % (i)
             )
@@ -3874,7 +3868,6 @@ class OcraTest(TestController):
         return
 
     def setupPolicies2(self):
-
         self.delete_all_policies()
 
         params = {

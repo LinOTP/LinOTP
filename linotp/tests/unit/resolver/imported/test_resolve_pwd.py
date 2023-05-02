@@ -82,7 +82,6 @@ def test_resolver_fail():
     )
 
     with pytest.raises(ResolverLoadConfigError, match=msg):
-
         y = PasswdResolver()
         y.loadConfig(pw_config, "my")
 

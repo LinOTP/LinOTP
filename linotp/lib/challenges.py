@@ -44,7 +44,6 @@ log = logging.getLogger(__name__)
 
 
 class Challenges(object):
-
     DefaultTransactionIdLength = 17
 
     @staticmethod
@@ -185,7 +184,6 @@ class Challenges(object):
 
         # carefully create a new challenge
         try:
-
             # we got a challenge object allocated and initialize the challenge
             (
                 res,
@@ -346,7 +344,6 @@ class Challenges(object):
     def get_challenges(
         token=None, transid=None, options=None, filter_open=False
     ):
-
         state = options and options.get(
             "state", options.get("transactionid", None)
         )
@@ -367,7 +364,6 @@ class Challenges(object):
         valid_chalenges = []
 
         for challenge in challenges:
-
             if filter_open and not challenge.is_open():
                 log.info("Skipping non-open challenge: %r", challenge)
                 continue
@@ -419,7 +415,6 @@ class Challenges(object):
         to_be_closed_challenges = []
 
         for matching_challenge in matching_challenges:
-
             # gather all challenges which are now obsolete
             # from the token point of view
             serial = matching_challenge.tokenserial
@@ -481,7 +476,6 @@ class Challenges(object):
 
         # we query for all challenges of the token and mark them as closed
         for challenge in all_challenges:
-
             # first preserve the new status
             if success:
                 challenge.close()

@@ -54,7 +54,6 @@ def calcOTP(key, counter=0, digits=6, typ=None):
     """
     htoken = HmacOtp(digits=digits)
     if typ == "totp":
-
         timestep = 30
         time.sleep(timestep + 1)
         counter = int((time.time() / timestep) + 0.5)
@@ -66,7 +65,6 @@ def calcOTP(key, counter=0, digits=6, typ=None):
 
 # patch our submit Message
 def mocked_submitMessage_request(SMS_Object, *argparams, **kwparams):
-
     # this hook is defined to grep the otp and make it globaly available
     global SMS_MESSAGE_OTP
     SMS_MESSAGE_OTP = argparams
@@ -120,7 +118,6 @@ class TestChallengePrompt(TestController):
         use_public_id=False,
         user=None,
     ):
-
         serial = "UBAM%s_%s" % (serialnum, yubi_slot)
 
         params = {

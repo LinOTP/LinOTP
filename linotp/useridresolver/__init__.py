@@ -73,7 +73,6 @@ class ClassRegistry(dict):
         this registry"""
 
         def _inner(cls_):
-
             # _registry_key assignment is a workaround
             # for the missing nonlocal statement in python2.x
 

@@ -76,7 +76,6 @@ class TestTokenValidityMixin(unittest.TestCase):
         fake_token.count_auth_max = 3
 
         for _i in range(1, 10):
-
             fake_token.count_auth = fake_token.count_auth + 1
 
             if fake_token.count_auth >= fake_token.count_auth_max:
@@ -118,7 +117,6 @@ class TestTokenValidityMixin(unittest.TestCase):
         fake_token.count_auth_max = 3
 
         for _i in range(1, 10):
-
             fake_token.inc_count_auth()
 
             if fake_token.count_auth > fake_token.count_auth_max:
@@ -140,7 +138,6 @@ class TestTokenValidityMixin(unittest.TestCase):
         fake_token.count_auth_success_max = 3
 
         for _i in range(1, 10):
-
             fake_token.count_auth_success = fake_token.count_auth_success + 1
 
             if (
@@ -261,7 +258,6 @@ class TestTokenValidityMixin(unittest.TestCase):
         )
 
         with freeze_time(current_time, tz_offset=5) as frozen_time:
-
             assert (
                 not fake_token.is_expired()
             ), "the token should not be expired as current time before expiration"
@@ -289,7 +285,6 @@ class TestTokenValidityMixin(unittest.TestCase):
         )
 
         with freeze_time(current_time, tz_offset=5) as frozen_time:
-
             assert (
                 fake_token.is_not_yet_valid()
             ), "the token should not be valid as current time before validity start time"

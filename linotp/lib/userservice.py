@@ -77,7 +77,6 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
     tokens = get_tokens(user=user, serial=None, active=active)
 
     for token in tokens:
-
         tok = token.token.get_vars()
         if tok.get("LinOtp.TokenInfo", None):
             token_info = json.loads(tok.get("LinOtp.TokenInfo"))
@@ -290,7 +289,6 @@ def check_session(request, user, client):
     session = get_request_param(request, "session", "no_session")
 
     for cookie_ref in ["user_selfservice", "userauthcookie"]:
-
         cookie = request.cookies.get(cookie_ref, "no_auth_cookie")
 
         if session == cookie:
@@ -401,7 +399,6 @@ def add_dynamic_selfservice_enrollment(config, actions):
     for tclass_object in set(tokenclass_registry.values()):
         tok = tclass_object.getClassType()
         if hasattr(tclass_object, "getClassInfo"):
-
             try:
                 selfservice = tclass_object.getClassInfo(
                     "selfservice", ret=None
@@ -507,7 +504,6 @@ def add_dynamic_selfservice_policies(config, actions):
 
 
 def add_local_policies():
-
     return
 
 

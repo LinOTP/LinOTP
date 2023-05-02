@@ -38,7 +38,6 @@ FLAG_QR_SRVSIG = 8
 
 
 class QR_Token_Validation:
-
     uri = "lseqr"
     tan_length = 8
 
@@ -248,7 +247,6 @@ class QR_Token_Validation:
         # retrieve plaintext data depending on flags
 
         if flags & FLAG_QR_SRVSIG:
-
             # plaintext has a server signature as a header
             # extract it and check if it is correct
 
@@ -267,7 +265,6 @@ class QR_Token_Validation:
             assert server_signature == signed
 
         else:
-
             # no server signature found - just remove
             # the plaintext header
 

@@ -37,7 +37,6 @@ log = logging.getLogger(__name__)
 
 
 class TestForwardToken(TestController):
-
     serials = []
 
     def setUp(self):

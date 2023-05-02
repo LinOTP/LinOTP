@@ -56,7 +56,6 @@ HTTP_RESPONSE = None
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
-
     resp = 200
 
     content = {
@@ -109,7 +108,6 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         self.remote_url = "http://127.0.0.1:%s" % self.paster_port
 
     def tearDown(self):
-
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()

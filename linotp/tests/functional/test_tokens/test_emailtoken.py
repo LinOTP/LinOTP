@@ -145,7 +145,6 @@ class TestEmailtoken(TestController):
         # to verify the template prcessing
 
         with MockedSMTP() as mock_smtp_instance:
-
             mock_smtp_instance.sendmail.return_value = []
 
             # now trigger a challenge for the user
@@ -267,7 +266,6 @@ class TestEmailtoken(TestController):
         # to verify the template prcessing
 
         with MockedSMTP() as mock_smtp_instance:
-
             mock_smtp_instance.sendmail.return_value = []
 
             # now trigger a challenge for the user
@@ -370,7 +368,6 @@ class TestEmailtoken(TestController):
         # to verify the template prcessing
 
         with MockedSMTP() as mock_smtp_instance:
-
             mock_smtp_instance.sendmail.return_value = []
 
             # now trigger a challenge for the user
@@ -447,7 +444,6 @@ class TestEmailtoken(TestController):
         # to verify the template processing
 
         with MockedSMTP() as mock_smtp_instance:
-
             mock_smtp_instance.sendmail.return_value = []
 
             # -------------------------------------------------------------- --

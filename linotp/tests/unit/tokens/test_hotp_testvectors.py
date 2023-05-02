@@ -103,7 +103,6 @@ class HotpTest:
         self.type = oath_type
 
     def get_otp(self, counter=None):
-
         hmac = HmacOtp(digits=self.otplen, hashfunc=self.hashlib)
         return hmac.generate(
             counter=counter, key=binascii.unhexlify(self.otpkey)
@@ -117,7 +116,6 @@ def test_hmac_oath_otps():
     """
 
     for test_vector in TEST_VECTORS:
-
         params = test_vector["params"]
         hotp_test = HotpTest(**params)
 

@@ -43,7 +43,6 @@ log = logging.getLogger(__name__)
 
 
 class TestSystemController(TestController):
-
     # ########################################################################
     def setUp(self):
         TestController.setUp(self)
@@ -439,7 +438,6 @@ class TestSystemController(TestController):
         return
 
     def test_bad_policy_name_import(self):
-
         policy_content = """[ded-ee]
 realm = *
 active = True
@@ -501,7 +499,6 @@ scope = authentication
         return
 
     def test_import_policy(self):
-
         policy_content = """[resovler_ss1]
 realm = realm2
 client = None

@@ -291,7 +291,6 @@ def test_local_admins_remove_missing_user(app, runner, resolver):
 
 @pytest.mark.parametrize("res_list", ["", "foo,bar,baz"])
 def test_local_admins_enable_command(app, runner, resolver, res_list):
-
     # Forcibly remove the resolver from the admin realm.
     admin_realm_name = app.config["ADMIN_REALM_NAME"].lower()
     admin_resolvers_key = f"useridresolver.group.{admin_realm_name}"

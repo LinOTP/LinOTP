@@ -106,7 +106,6 @@ def parse_license(License):
     signature = ""
 
     for line in License.strip().split("\n"):
-
         if line == "-----BEGIN LICENSE-----":
             license_mode = True
             continue

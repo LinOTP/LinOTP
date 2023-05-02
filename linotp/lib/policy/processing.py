@@ -167,7 +167,6 @@ def is_authorized(admin_user: User, scope: str, action: str) -> bool:
 
     # if no policy was defined at all -> the access is not restricted
     if len(scope_policies) == 0:
-
         LOG.info(
             "No active policies in scope %s found - access to this scope is"
             " not restricted!",

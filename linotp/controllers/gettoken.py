@@ -213,7 +213,6 @@ class GettokenController(BaseController):
         serials = []
 
         try:
-
             serial = getParam(param, "serial", optional)
             user = getUserFromParam(param)
             curTime = getParam(param, "curTime", optional)

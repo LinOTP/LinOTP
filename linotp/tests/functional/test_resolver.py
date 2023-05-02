@@ -331,7 +331,6 @@ class TestResolver(TestController):
         assert "SqlZ" in response, response
 
     def test_rename_resolver_in_realms(self):
-
         resolver_param = {
             "fileName": (os.path.join(self.fixture_path, "def-passwd")),
             "type": "passwdresolver",
@@ -382,7 +381,6 @@ class TestResolver(TestController):
         # define the mocked lobj is used during the userlist iteration
 
         class Mock_lObj:
-
             pw = None
             dn = None
 
@@ -429,7 +427,6 @@ class TestResolver(TestController):
         with patch(
             "linotp.useridresolver.LDAPIdResolver.IdResolver"
         ) as mock_resolver:
-
             mock_lobj = Mock_lObj()
             mock_resolver.connect.return_value = mock_lobj
 

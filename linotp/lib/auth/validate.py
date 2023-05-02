@@ -275,7 +275,6 @@ class ValidationHandler(object):
         token_type = options.get("token_type", None)
 
         for serial in serials:
-
             tokens = get_tokens(
                 serial=serial, token_type=token_type, read_for_update=True
             )
@@ -359,7 +358,6 @@ class ValidationHandler(object):
         return (res, opt)
 
     def do_request(self):
-
         return
 
     def check_status(
@@ -400,7 +398,6 @@ class ValidationHandler(object):
 
         transactions = {}
         for ch in challenges:
-
             # is the requester authorized
             challenge_serial = ch.getTokenSerial()
             if serial and challenge_serial != serial:
@@ -450,7 +447,6 @@ class ValidationHandler(object):
             challenge_session = ch.getSession()
 
             if challenge_session:
-
                 challenge_session_dict = json.loads(challenge_session)
 
                 if "accept" in challenge_session_dict:
@@ -755,7 +751,6 @@ class ValidationHandler(object):
         validation_results = {}
 
         for token in tokenList:
-
             audit_entry["serial"] = token.getSerial()
             audit_entry["token_type"] = token.getType()
 
@@ -768,7 +763,6 @@ class ValidationHandler(object):
                     and len(u_realm) > 0
                     and u_realm.lower() not in t_realms
                 ):
-
                     audit_entry[
                         "action_detail"
                     ] = "Realm mismatch for token and user"

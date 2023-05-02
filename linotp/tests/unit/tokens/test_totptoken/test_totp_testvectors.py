@@ -126,14 +126,12 @@ class TotpTestCase(unittest.TestCase):
         """assure that the HamcOTP class is compilant"""
 
         for test_vector in TestVectors:
-
             key = test_vector["key"]
             hash_func = test_vector["hash"]
             step = test_vector["timeStep"]
             otps = test_vector["otps"]
 
             for test_set in otps:
-
                 # ---------------------------------------------------------- --
 
                 # tupple (59, '94287082', '1970-01-01 00:00:59')

@@ -56,7 +56,6 @@ class PBKDF2(TestCase):
 
 
 class TestPSKC(TestCase):
-
     XML1 = """<?xml version="1.0" encoding="UTF-8"?>
        <KeyContainer Version="1.0"
            Id="exampleID1"
@@ -337,7 +336,6 @@ class TestPSKC(TestCase):
 
 
 class TestDPWImport(TestCase):
-
     DPW = """dpw123456	12121212121212
 dpw23456789		3434343434343434"""
 

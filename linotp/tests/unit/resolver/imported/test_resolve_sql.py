@@ -36,7 +36,6 @@ from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
 @skip("Broken 'no hsm defined in execution context'")
 class TestSQLResolver(TestCase):
-
     y = None
     z = None
     proc = None

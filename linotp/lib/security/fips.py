@@ -65,7 +65,6 @@ class FipsSecurityModule(DefaultSecurityModule):
             raise FatalHSMException("Missing config entry: 'cryptolib'")
 
         try:
-
             # load the fips module and overwrite the parent digest
             self.fips = FipsModule(config["cryptolib"])
 

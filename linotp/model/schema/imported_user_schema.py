@@ -30,7 +30,6 @@ from linotp.model import db
 
 
 class ImportedUserSchema(db.Model):
-
     __tablename__ = "imported_user"
     __table_args__ = {
         "mysql_collate": "utf8_unicode_ci",

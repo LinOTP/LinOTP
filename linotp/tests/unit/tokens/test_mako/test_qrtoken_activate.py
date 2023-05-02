@@ -58,7 +58,6 @@ class TestActivationMako(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
     def test_qrtoken_activate(self):
-
         qrtemplate = Template(
             filename=self.lib_token_dir + "/qrtoken/qrtoken.mako"
         )
@@ -72,7 +71,6 @@ class TestActivationMako(unittest.TestCase):
         return
 
     def test_pushtoken_activate(self):
-
         qrtemplate = Template(
             filename=self.lib_token_dir + "/pushtoken/pushtoken.mako"
         )

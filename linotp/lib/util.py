@@ -285,10 +285,8 @@ def _get_client_from_request(request=None):
 
         for x_forwarded_proxy in x_forwarded_proxies:
             if _is_addr_in_network(remote_addr, x_forwarded_proxy):
-
                 ref_clients = request.environ.get("HTTP_X_FORWARDED_FOR", "")
                 for ref_client in ref_clients.split(","):
-
                     # the first ip in the list is the originator
                     client = ref_client.strip()
                     break
@@ -318,7 +316,6 @@ def _get_client_from_request(request=None):
 
         for forwarded_proxy in forwarded_proxies:
             if _is_addr_in_network(remote_addr, forwarded_proxy):
-
                 # example is:
                 # "Forwarded: for=192.0.2.43, for=198.51.100.17"
 

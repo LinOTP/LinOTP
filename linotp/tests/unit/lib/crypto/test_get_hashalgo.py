@@ -67,7 +67,6 @@ class TestGetHashAlgoFromDescription(unittest.TestCase):
         """
 
         for description, hash_function in list(Hashlib_map.items()):
-
             hash_algo = get_hashalgo_from_description(description)
             assert hash_algo == hash_function
 

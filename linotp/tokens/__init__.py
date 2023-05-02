@@ -72,7 +72,6 @@ def reload_classes():
     # remove the filesystem base
 
     for root, _subdirs, sfiles in walk(base_dir):
-
         # remove the filesystem base
 
         rel = root.replace(base_dir, "").replace(path.sep, ".").strip(".")
@@ -81,9 +80,7 @@ def reload_classes():
             rel = rel + "."
 
         for sfile in sfiles:
-
             if sfile.endswith(".py") and not sfile.startswith("__"):
-
                 token_module = import_base + rel + sfile[:-3]
 
                 load_module(token_module)
@@ -101,7 +98,6 @@ def load_module(mod_rel):
     """
 
     try:
-
         __import__(mod_rel, globals=globals(), level=0)
         return True
 

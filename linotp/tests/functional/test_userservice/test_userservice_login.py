@@ -48,7 +48,6 @@ SMS_MESSAGE_CONFIG = None
 
 
 def mocked_submitMessage(FileSMS_Object, *argparams, **kwparams):
-
     # this hook is defined to grep the otp and make it globally available
     global SMS_MESSAGE_OTP
     SMS_MESSAGE_OTP = argparams
@@ -66,7 +65,6 @@ class TestUserserviceLogin(TestUserserviceController):
     """
 
     def setUp(self):
-
         # clean setup
         self.delete_all_policies()
         self.delete_all_token()
@@ -85,7 +83,6 @@ class TestUserserviceLogin(TestUserserviceController):
         self.create_common_realms()
 
     def tearDown(self):
-
         TestUserserviceController.tearDown(self)
 
     def test_pre_context(self):
@@ -924,7 +921,6 @@ class TestUserserviceLogin(TestUserserviceController):
             "push_notification",
             autospec=True,
         ) as mock_push_notification:
-
             mock_push_notification.return_value = (True, None)
             response = self.make_validate_request("check_s", params)
             challenge_url = mock_push_notification.call_args[0][1]
@@ -944,7 +940,6 @@ class TestUserserviceLogin(TestUserserviceController):
         # we use a contextmanaged temp file for this
 
         with NamedTemporaryFile() as cert_file:
-
             # ----------------------------------------------------------------- --
 
             self.setup_push(cert_file)
@@ -1018,7 +1013,6 @@ class TestUserserviceLogin(TestUserserviceController):
         assert len(tokenlist) == 2
 
         for token in tokenlist:
-
             assert token["LinOtp.TokenSerialnumber"] in [
                 "myQrToken",
                 "myPushToken",

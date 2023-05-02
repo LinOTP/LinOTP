@@ -33,7 +33,6 @@ from linotp.model.tokenRealm import TokenRealmSchema
 
 
 class TokenSchema(db.Model):
-
     __tablename__ = "Token"
     __table_args__ = {"implicit_returning": implicit_returning}
 

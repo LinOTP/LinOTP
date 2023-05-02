@@ -78,7 +78,6 @@ class RadiusResponse(object):
 
 
 def mocked_radius_SendPacket(Client, *argparams, **kwparams):
-
     auth = True
     reply = None
 
@@ -130,7 +129,6 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         self.radius_url = "localhost:%s" % self.radius_authport
 
     def tearDown(self):
-
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -167,7 +165,6 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         return response
 
     def setup_radius_token(self):
-
         serials = []
 
         # The token with the remote PIN

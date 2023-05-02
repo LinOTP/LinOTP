@@ -91,7 +91,6 @@ class TestPolicyMaxtoken(TestController):
             assert "#TCOUNT%d" % i in response
 
         for i in range(1, 3):
-
             params = {"serial": "#TCOUNT%d" % i, "user": "def"}
             response = self.make_admin_request("assign", params=params)
             assert '"value": true' in response, response

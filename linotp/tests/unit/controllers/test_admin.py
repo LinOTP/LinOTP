@@ -38,7 +38,6 @@ from linotp.controllers.admin import AdminController
 
 @pytest.mark.usefixtures("app")
 class TestAdminController(unittest.TestCase):
-
     token = {
         "LinOtp.TokenId": 201,
         "LinOtp.TokenInfo": '{\n"hashlib": "sha1", \n"timeShift": -10.0, \n"timeWindow": 180, \n"validity_period_end": "23/12/23 23:23", \n"validity_period_start": "01/01/01 01:01", \n"timeStep": "30"\n}',

@@ -33,7 +33,6 @@ from linotp.model.local_admin_user import LocalAdminResolver
 
 
 def test_lar_case_sensitive_resolver_names(app):
-
     admin_realm_name = app.config["ADMIN_REALM_NAME"]
     admin_resolvers_key = f"useridresolver.group.{admin_realm_name}"
     admin_resolvers = getFromConfig(admin_resolvers_key, "")

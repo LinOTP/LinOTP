@@ -95,7 +95,6 @@ class SpassTokenClass(TokenClass):
         return ret
 
     def update(self, param):
-
         if "otpkey" not in param:
             param["genkey"] = 1
 

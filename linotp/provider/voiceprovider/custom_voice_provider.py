@@ -266,7 +266,6 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
             pparams["timeout"] = self.timeout
 
         try:  # submit the POST request
-
             http_session = self._create_http_session_()
 
             response = http_session.post(

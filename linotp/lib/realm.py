@@ -124,7 +124,6 @@ def realm2Objects(realmList):
     realm_set = set()
     realmObjList = []
     if realmList is not None:
-
         # make the requested realms uniq
         for r in realmList:
             realm_set.add(r)
@@ -189,7 +188,6 @@ def _check_for_cache_flush(realm_name, realm_definition):
     flush_resolvers = former_res_set.difference(new_res_set)
 
     if flush_resolvers:
-
         # refresh the user resolver lookup in the realm user cache
         from linotp.lib.user import delete_realm_resolver_cache
 
@@ -254,7 +252,6 @@ def getRealms(aRealmName=""):
     # -- ------------------------------------------------------------ --
 
     for realm_name, realm_defintion in realms.items():
-
         _check_for_cache_flush(realm_name, realm_defintion)
 
         realm_defintion["admin"] = realm_name == admin_realm_name
@@ -373,9 +370,7 @@ def _initalGetRealms():
 
     dc = getLinotpConfig()
     for entry in dc:
-
         if entry.startswith(realmConf):
-
             # the realm might contain dots "."
             # so take all after the 3rd dot for realm
             r = {}
@@ -647,11 +642,8 @@ def match_realms(request_realms, allowed_realms):
 
 
 def get_realms_from_params(param, acls=None):
-
     if "realm" not in param or param["realm"] == "*":
-
         if acls and acls["active"]:
-
             if "*" in acls["realms"]:
                 return getRealms().keys()
 

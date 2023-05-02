@@ -125,7 +125,6 @@ class SetPasswordHandler(ToolsHandler):
         """
 
         try:
-
             admin_users = SetPasswordHandler.AdminUser.query.filter_by(
                 username=username
             ).all()
@@ -144,7 +143,6 @@ class SetPasswordHandler(ToolsHandler):
             db.session.commit()
 
         except Exception as exx:
-
             log.error(exx)
             db.session.rollback()
 

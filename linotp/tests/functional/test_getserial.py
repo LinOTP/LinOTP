@@ -85,7 +85,6 @@ class TestGetSerialController(TestController):
                 "373839303132"
             )
         else:
-
             otpkey = "3132333435363738393031323334353637383930"
 
         parameters = {

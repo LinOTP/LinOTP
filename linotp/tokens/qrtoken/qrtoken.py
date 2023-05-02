@@ -92,7 +92,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def isActive(self):
-
         # overwritten, because QrTokenClass can receive validate
         # requests in 2 different states: pairing_finished (active
         # flag is 1) and pairing_challenge_sent (active flag is 0)
@@ -135,7 +134,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     @classmethod
     def getClassInfo(cls, key=None, ret="all"):
-
         info = {"type": "qr", "title": _("QRToken")}
 
         info["description"] = "Challenge-Response-Token - Curve 25519 based"
@@ -152,7 +150,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             "qrtoken_challenge_callback_url",
             "qrtoken_challenge_callback_sms",
         ]:
-
             auth_policies[policy_name] = {"type": "str"}
 
         info["policy"]["authentication"] = auth_policies
@@ -256,7 +253,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def splitPinPass(self, passw):
-
         # we split differently here, because we support pins, but no otp
         # so an incoming request with passw but without transaction_id
         # is a request with a pin
@@ -453,7 +449,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         if callback_url is not None:
-
             utf8_callback_url = callback_url.encode("utf8")
 
             # enforce max url length as specified in protocol
@@ -469,7 +464,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         if callback_sms_number is not None:
-
             utf8_callback_sms_number = callback_sms_number.encode("utf8")
 
             if len(utf8_callback_sms_number) > 31:
@@ -497,7 +491,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         sec_obj = self._get_secret_object()
 
         if flags & CHALLENGE_HAS_SIGNATURE:
-
             hmac_message = nonce + pt_header + maybe_compressed_data_package
 
             sig = sec_obj.hmac_digest(
@@ -542,7 +535,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def update(self, params):
-
         param_keys = set(params.keys())
         init_rollout_state_keys = set(
             [
@@ -567,7 +559,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         if not param_keys.issubset(init_rollout_state_keys):
-
             # make sure the call aborts, if request
             # type wasn't recognized
 
@@ -652,7 +643,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def getInitDetail(self, params, user=None):
-
         response_detail = {}
 
         param_keys = set(params.keys())
@@ -679,7 +669,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         if param_keys.issubset(init_rollout_state_keys):
-
             # collect data used for generating the pairing url
 
             serial = self.getSerial()
@@ -750,7 +739,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------ --
 
         else:
-
             # make sure the call aborts, if request
             # type wasn't recognized
 
@@ -765,7 +753,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def checkOtp(self, passwd, counter, window, options=None):
-
         valid_states = ["pairing_challenge_sent", "pairing_complete"]
 
         self.ensure_state_is_in(valid_states)
@@ -786,7 +773,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # is no challenge response in the request?
 
         if "transactionid" in options:
-
             # --------------------------------------------------------------- --
 
             # fetch all challenges that match the transaction id or serial
@@ -800,7 +786,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # filter into filtered_challenges
 
             for challenge in challenges:
-
                 (received_tan, tan_is_valid) = challenge.getTanStatus()
                 fail_counter = challenge.getTanCount()
 
@@ -821,7 +806,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             return -1
 
         for challenge in filtered_challenges:
-
             data = challenge.getData()
             correct_passwd = data["user_sig"]
 
@@ -829,11 +813,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # time comparison
 
             if compare_digest(correct_passwd, passwd):
-
                 return 1
 
             else:
-
                 # maybe we got a tan instead of a signature
 
                 correct_passwd_as_bytes = decode_base64_urlsafe(correct_passwd)
@@ -849,7 +831,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def statusValidationSuccess(self):
-
         if self.current_state == "pairing_challenge_sent":
             self.change_state("pairing_complete")
             self.enable(True)
@@ -886,12 +867,10 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             "pairing_challenge_sent",
             "pairing_response_received",
         ]:
-
             content_type = CONTENT_TYPE_PAIRING
             reset_url = True
 
         elif self.current_state == "pairing_complete":
-
             content_type_as_str = options.get("content_type")
             reset_url = False
 
@@ -961,7 +940,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # ----------------------------------------------------------------------- --
 
     def getQRImageData(self, response_detail):
-
         url = None
         hparam = {}
 
@@ -975,7 +953,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     # ----------------------------------------------------------------------- --
 
     def getOfflineInfo(self):
-
         public_key = self.getFromTokenInfo("user_public_key")
         user_token_id = self.getFromTokenInfo("user_token_id")
 

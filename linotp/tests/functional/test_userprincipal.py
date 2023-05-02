@@ -39,7 +39,6 @@ class TestUserPrincipalController(TestController):
     """verify the handling of users in UserPrincipal style"""
 
     def setUp(self):
-
         self.tokens = {}
 
         params = {"splitAtSign": True}
@@ -51,7 +50,6 @@ class TestUserPrincipalController(TestController):
         self.create_common_realms()
 
     def tearDown(self):
-
         params = {"splitAtSign": True}
         response = self.make_system_request("setConfig", params=params)
         assert "false" not in response.body

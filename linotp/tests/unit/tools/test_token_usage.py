@@ -34,7 +34,6 @@ from .script_testing_lib import ScriptTester
 
 
 class TestLinotpTokenUsage(ScriptTester):
-
     script_name = "linotp-token-usage"
 
     @pytest.mark.xfail(reason="old-style INI-based configuration")

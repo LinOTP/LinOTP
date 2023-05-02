@@ -356,7 +356,6 @@ class VoiceTokenClass(HmacTokenClass):
 
         # reuse challenge
         for challenge in challenges:
-
             if not challenge.is_open():
                 continue
 
@@ -466,13 +465,11 @@ class VoiceTokenClass(HmacTokenClass):
             otp_val = passw
 
         for challenge in challenges:
-
             otp_input_data = int(challenge.get("data").get("counter"))
 
             challenge_otp = self._calc_otp(otp_input_data)
 
             if challenge_otp == otp_val:
-
                 return 1, [challenge]
 
         return -1, []

@@ -44,7 +44,6 @@ class NoSuchUserError(Exception):
 
 
 class ImportedUser(ImportedUserSchema):
-
     user_entries = [name.name for name in ImportedUserSchema.__table__.c]
 
     @orm.reconstructor
@@ -148,7 +147,6 @@ class ImportedUser(ImportedUserSchema):
         """
 
         for attr in self.user_entries:
-
             # special handling for goupe_id, which might not be set at
             # comparing time
             if attr == "groupid":
