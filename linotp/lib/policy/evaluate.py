@@ -156,51 +156,7 @@ class PolicyEvaluator(object):
         if not matching_policies:
             return {}
 
-        # ----------------------------------------------------------------- --
-
-        # to get the best machtes, we intersect the matching policies
-        # for example:
-        #
-        # matchin all: p1, p2, p3, p4, p5
-        # user exact: p1, p2, p3
-        # user wild: p4, p5
-        # => 1 selection: (p1, p2, p3, p4,) & (p1, p2, p3) = (p1, p2, p3)
-        #
-        # intersect result with realm:
-        # realm match exact: p1, p2, p4
-        # => 2. selection: (p1, p2, p3) & (p1, p2, p4) = (p1, p2)
-        #
-        # intersect result with client:
-        # client match exact: p3
-        # client match wildcard: p1
-        # => 3. selecttion: (p1, p2) & (p1) = p1
-
-        selection = set(matching_policies.keys())
-
-        user_matches = matches.get("user", {})
-        if user_matches:
-            selection = self.select(
-                selection,
-                user_matches.get(EXACT_MATCH, set()),
-                user_matches.get(REGEX_MATCH, set()),
-                user_matches.get(WILDCARD_MATCH, set()),
-            )
-
-        realm_matches = matches.get("realm", {})
-        if realm_matches:
-            selection = self.select(
-                selection,
-                realm_matches.get(EXACT_MATCH, set()),
-                realm_matches.get(WILDCARD_MATCH, set()),
-            )
-
-        client_matches = matches.get("client", {})
-        if client_matches:
-            selection = self.select(
-                selection,
-                client_matches.get(EXACT_MATCH, set()),
-                client_matches.get(WILDCARD_MATCH, set()),
-            )
+        selection = self._intersect_matches_strict(matching_policies, matches)
 
         result = {}
         for entry in selection:
@@ -267,6 +223,53 @@ class PolicyEvaluator(object):
             self.add_match_type(matches, match_type, p_name)
 
         return matching_policies, matches
+
+    def _intersect_matches_strict(self, matching_policies, matches):
+        # to get the best machtes, we intersect the matching policies
+        # for example:
+        #
+        # matchin all: p1, p2, p3, p4, p5
+        # user exact: p1, p2, p3
+        # user wild: p4, p5
+        # => 1 selection: (p1, p2, p3, p4,) & (p1, p2, p3) = (p1, p2, p3)
+        #
+        # intersect result with realm:
+        # realm match exact: p1, p2, p4
+        # => 2. selection: (p1, p2, p3) & (p1, p2, p4) = (p1, p2)
+        #
+        # intersect result with client:
+        # client match exact: p3
+        # client match wildcard: p1
+        # => 3. selecttion: (p1, p2) & (p1) = p1
+
+        selection = set(matching_policies.keys())
+
+        user_matches = matches.get("user", {})
+        if user_matches:
+            selection = self.select(
+                selection,
+                user_matches.get(EXACT_MATCH, set()),
+                user_matches.get(REGEX_MATCH, set()),
+                user_matches.get(WILDCARD_MATCH, set()),
+            )
+
+        realm_matches = matches.get("realm", {})
+        if realm_matches:
+            selection = self.select(
+                selection,
+                realm_matches.get(EXACT_MATCH, set()),
+                realm_matches.get(WILDCARD_MATCH, set()),
+            )
+
+        client_matches = matches.get("client", {})
+        if client_matches:
+            selection = self.select(
+                selection,
+                client_matches.get(EXACT_MATCH, set()),
+                client_matches.get(WILDCARD_MATCH, set()),
+            )
+
+        return selection
 
     def add_match_type(self, matches: Dict, matches_dict: Dict, policy: str):
         """helper to add the matches into a common dict.
