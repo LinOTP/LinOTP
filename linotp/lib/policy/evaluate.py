@@ -145,64 +145,14 @@ class PolicyEvaluator(object):
         :return: the set of matching policies
         """
 
-        matching_policies = {}
-
         all_policies = self.all_policies
 
         if policy_set:
             all_policies = policy_set
 
-        if not self.filters:
-            return all_policies
-
-        # preserve a dict with which policy matched best wrt the user
-        matches = {}
-
-        for p_name, p_dict in all_policies.items():
-            matching = False
-
-            #
-            # special case: for filtering of policies by name:
-            # we add the name of the policy to the policy description
-            # so we can use the same machine for the name compare
-
-            if "name" not in p_dict:
-                p_dict["name"] = p_name
-
-            #
-            # evaluate each filter against the policy. if one filter fails
-            # we can skip the evaluation the given policy
-
-            match_type = {}
-
-            for f_key, f_value, f_compare in self.filters:
-                policy_condition = p_dict.get(f_key)
-
-                # here we honor the user matching, which in difference to the
-                # other matching functions returns more than a boolean -
-                # it returns the matching precission, which is either:
-                # exact:match, regex:match or wildcard:match
-                # - the evaluation of the set of policy conditions can
-                # only be evaluated within the user_list_compare
-                # function
-
-                match_type[f_key], matching = f_compare(
-                    policy_condition, f_value
-                )
-
-                if not matching:
-                    break
-
-            # --------------------------------------------------------------- --
-
-            # all conditions are evaluated: preserve results in case of a match
-
-            if not matching:
-                continue
-
-            matching_policies[p_name] = p_dict
-            self.add_match_type(matches, match_type, p_name)
-
+        matching_policies, matches = self._get_matching_policies_and_matches(
+            policy_set
+        )
         if not matching_policies:
             return {}
 
@@ -257,6 +207,66 @@ class PolicyEvaluator(object):
             result[entry] = all_policies[entry]
 
         return result
+
+    def _get_matching_policies_and_matches(self, policy_set=None):
+        matching_policies = {}
+        # preserve a dict with which policy matched best wrt the user
+        matches = {}
+
+        all_policies = self.all_policies
+
+        if policy_set:
+            all_policies = policy_set
+
+        if not self.filters:
+            return all_policies, matches
+
+        for p_name, p_dict in all_policies.items():
+            matching = False
+
+            #
+            # special case: for filtering of policies by name:
+            # we add the name of the policy to the policy description
+            # so we can use the same machine for the name compare
+
+            if "name" not in p_dict:
+                p_dict["name"] = p_name
+
+            #
+            # evaluate each filter against the policy. if one filter fails
+            # we can skip the evaluation the given policy
+
+            match_type = {}
+
+            for f_key, f_value, f_compare in self.filters:
+                policy_condition = p_dict.get(f_key)
+
+                # here we honor the user matching, which in difference to the
+                # other matching functions returns more than a boolean -
+                # it returns the matching precission, which is either:
+                # exact:match, regex:match or wildcard:match
+                # - the evaluation of the set of policy conditions can
+                # only be evaluated within the user_list_compare
+                # function
+
+                match_type[f_key], matching = f_compare(
+                    policy_condition, f_value
+                )
+
+                if not matching:
+                    break
+
+            # --------------------------------------------------------------- --
+
+            # all conditions are evaluated: preserve results in case of a match
+
+            if not matching:
+                continue
+
+            matching_policies[p_name] = p_dict
+            self.add_match_type(matches, match_type, p_name)
+
+        return matching_policies, matches
 
     def add_match_type(self, matches: Dict, matches_dict: Dict, policy: str):
         """helper to add the matches into a common dict.
