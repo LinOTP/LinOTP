@@ -387,6 +387,11 @@ class User(object):
 
         return res
 
+    def getPermissions(self):
+        from linotp.lib.policy.permissions import UserPermissions
+
+        return UserPermissions(self)
+
     def __ne__(self, other):
         """
         operator to support user comparison: user1 != user2
