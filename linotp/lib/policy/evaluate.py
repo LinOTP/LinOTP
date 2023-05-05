@@ -235,6 +235,11 @@ class PolicyEvaluator(object):
         # client match wildcard: p1
         # => 3. selecttion: (p1, p2) & (p1) = p1
 
+        return self._intersect_matches_(
+            matching_policies, matches, strict=True
+        )
+
+    def _intersect_matches_(self, matching_policies, matches, strict=True):
         selection = set(matching_policies.keys())
 
         user_matches = matches.get("user", {})
@@ -244,6 +249,7 @@ class PolicyEvaluator(object):
                 user_matches.get(EXACT_MATCH, set()),
                 user_matches.get(REGEX_MATCH, set()),
                 user_matches.get(WILDCARD_MATCH, set()),
+                strict=strict,
             )
 
         realm_matches = matches.get("realm", {})
@@ -252,6 +258,7 @@ class PolicyEvaluator(object):
                 selection,
                 realm_matches.get(EXACT_MATCH, set()),
                 realm_matches.get(WILDCARD_MATCH, set()),
+                strict=strict,
             )
 
         client_matches = matches.get("client", {})
@@ -260,6 +267,7 @@ class PolicyEvaluator(object):
                 selection,
                 client_matches.get(EXACT_MATCH, set()),
                 client_matches.get(WILDCARD_MATCH, set()),
+                strict=strict,
             )
 
         return selection
@@ -293,7 +301,7 @@ class PolicyEvaluator(object):
 
             matches[key][match_type].add(policy)
 
-    def select(self, all_matches, *args):
+    def select(self, all_matches, *args, **kwargs):
         """helper to intersect the identified sets of matches.
 
         if no match could be made with one set, try the next one.
@@ -306,9 +314,10 @@ class PolicyEvaluator(object):
         :return: set of matches
         """
 
-        for match_set in args:
-            if all_matches & match_set:
-                return all_matches & match_set
+        if kwargs.get("strict", True):
+            for match_set in args:
+                if all_matches & match_set:
+                    return all_matches & match_set
 
         return all_matches
 
