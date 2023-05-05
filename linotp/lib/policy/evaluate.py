@@ -145,10 +145,8 @@ class PolicyEvaluator(object):
         :return: the set of matching policies
         """
 
-        all_policies = self.all_policies
-
-        if policy_set:
-            all_policies = policy_set
+        if not policy_set:
+            policy_set = self.all_policies
 
         matching_policies, matches = self._get_matching_policies_and_matches(
             policy_set
@@ -160,24 +158,19 @@ class PolicyEvaluator(object):
 
         result = {}
         for entry in selection:
-            result[entry] = all_policies[entry]
+            result[entry] = policy_set[entry]
 
         return result
 
-    def _get_matching_policies_and_matches(self, policy_set=None):
+    def _get_matching_policies_and_matches(self, policy_set):
         matching_policies = {}
         # preserve a dict with which policy matched best wrt the user
         matches = {}
 
-        all_policies = self.all_policies
-
-        if policy_set:
-            all_policies = policy_set
-
         if not self.filters:
-            return all_policies, matches
+            return policy_set, matches
 
-        for p_name, p_dict in all_policies.items():
+        for p_name, p_dict in policy_set.items():
             matching = False
 
             #
