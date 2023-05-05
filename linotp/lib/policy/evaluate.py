@@ -99,7 +99,7 @@ class PolicyEvaluator(object):
         self.all_policies = all_policies
         self.filters = []
 
-    def has_policy(self, param):
+    def has_policy(self, param, strict_matches=True):
         """
         check if a policy for example 'scope:admin' exists
 
@@ -112,7 +112,7 @@ class PolicyEvaluator(object):
             sec_filters = [old_filter for old_filter in self.filters]
 
             self.set_filters(param)
-            policies = self.evaluate()
+            policies = self.evaluate(strict_matches=strict_matches)
 
         finally:
             # and restore the preserved ones
@@ -120,7 +120,7 @@ class PolicyEvaluator(object):
 
         return policies
 
-    def evaluate(self, policy_set=None):
+    def evaluate(self, policy_set=None, strict_matches=True):
         """
         evaluate - compare all policies against the access request
 
@@ -133,12 +133,13 @@ class PolicyEvaluator(object):
         - during the filter definition the comparison function is defined, thus
           all filter evaluation steps could be treated equal by just calling
           the comparison function with the actual value.
-        - There is a special treatment of the user matching in policies, which
+        - If strict_matches=True, there is a special treatment of the user matching in policies, which
           classifies the policies in those with a pure wildcard match, a regex
           match and an exact matching. If there are exact matching, this set of
           policies is prefered over those with a regex match, which is prefered
           over the set of pure wildcard '*' match. Thus in case of a wildcard
-          match, all policies are returned
+          match, all policies are returned.
+          If strict_matches=False, the policies get intersected over all matching policies.
 
         :param policy_set: optional, base policies against which all filter
                            are evaluated
@@ -154,7 +155,14 @@ class PolicyEvaluator(object):
         if not matching_policies:
             return {}
 
-        selection = self._intersect_matches_strict(matching_policies, matches)
+        if strict_matches:
+            selection = self._intersect_matches_strict(
+                matching_policies, matches
+            )
+        else:
+            selection = self._intersect_matches_lazy(
+                matching_policies, matches
+            )
 
         result = {}
         for entry in selection:
@@ -236,10 +244,34 @@ class PolicyEvaluator(object):
         # => 3. selecttion: (p1, p2) & (p1) = p1
 
         return self._intersect_matches_(
-            matching_policies, matches, strict=True
+            matching_policies, matches, strict_matches=True
         )
 
-    def _intersect_matches_(self, matching_policies, matches, strict=True):
+    def _intersect_matches_lazy(self, matching_policies, matches):
+        # to get the most, we intersect the union of matching policies
+        # for example:
+        #
+        # matchin all: p1, p2, p3, p4, p5
+        # user exact: p1, p2, p3
+        # user wild: p5
+        # => 1 selection: (p1, p2, p3, p4, p5) & ((p1, p2, p3) | (p5)) = (p1, p2, p3, p5)
+        #
+        # intersect result with realm:
+        # realm match exact: p1, p2, p5
+        # => 2. selection: (p1, p2, p3, p5) & (p1, p2, p5) = (p1, p2, p5)
+        #
+        # intersect result with client:
+        # client match exact: p5
+        # client match wildcard: p1
+        # => 3. selecttion: (p1, p2, p5) & ((p5) | (p1)) = (p1, p5)
+
+        return self._intersect_matches_(
+            matching_policies, matches, strict_matches=False
+        )
+
+    def _intersect_matches_(
+        self, matching_policies, matches, strict_matches=True
+    ):
         selection = set(matching_policies.keys())
 
         user_matches = matches.get("user", {})
@@ -249,7 +281,7 @@ class PolicyEvaluator(object):
                 user_matches.get(EXACT_MATCH, set()),
                 user_matches.get(REGEX_MATCH, set()),
                 user_matches.get(WILDCARD_MATCH, set()),
-                strict=strict,
+                strict_matches=strict_matches,
             )
 
         realm_matches = matches.get("realm", {})
@@ -258,7 +290,7 @@ class PolicyEvaluator(object):
                 selection,
                 realm_matches.get(EXACT_MATCH, set()),
                 realm_matches.get(WILDCARD_MATCH, set()),
-                strict=strict,
+                strict_matches=strict_matches,
             )
 
         client_matches = matches.get("client", {})
@@ -267,7 +299,7 @@ class PolicyEvaluator(object):
                 selection,
                 client_matches.get(EXACT_MATCH, set()),
                 client_matches.get(WILDCARD_MATCH, set()),
-                strict=strict,
+                strict_matches=strict_matches,
             )
 
         return selection
@@ -314,10 +346,14 @@ class PolicyEvaluator(object):
         :return: set of matches
         """
 
-        if kwargs.get("strict", True):
+        if kwargs.get("strict_matches", True):
             for match_set in args:
                 if all_matches & match_set:
                     return all_matches & match_set
+        else:
+            match_set = set().union(*args)
+            if all_matches & match_set:
+                return all_matches & match_set
 
         return all_matches
 
