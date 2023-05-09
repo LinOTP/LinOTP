@@ -99,9 +99,16 @@ class UserPermissions(dict):
             return
 
         if scope in REALMED_POLICY_SCOPES:
+            if scope == "admin":
+                # the 'allowed to list the tokens' / 'admin/show' permission:
+                # the admin/show permission is an implicit permission by the means
+                # that an admin is allowed to list the tokens for any realm he is
+                # allowed to access via policies where any action is defined.
+                actions.append("show")
+
             if "*" in realms_to_extend:
                 updated_permissions = self["anyRealm"].get(scope, []) + actions
-                self["anyRealm"][scope] = updated_permissions
+                self["anyRealm"][scope] = list(set(updated_permissions))
                 # extend permission of all realms
                 realms_to_extend = self._all_realms
 
@@ -109,7 +116,7 @@ class UserPermissions(dict):
                 updated_permissions = (
                     self["inRealm"][realm].get(scope, []) + actions
                 )
-                self["inRealm"][realm][scope] = updated_permissions
+                self["inRealm"][realm][scope] = list(set(updated_permissions))
         elif scope in GLOBAL_POLICY_SCOPES:
             # user has gobal permission if at least one policy allows it
             updated_permissions = self["global"].get(scope, []) + actions
