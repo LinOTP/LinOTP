@@ -86,7 +86,6 @@ def u64_to_transaction_id(u64_int):
 
 class TestPushToken(TestController):
     def setUp(self):
-
         self.delete_all_policies()
         self.delete_all_token()
         self.delete_all_realms()
@@ -151,7 +150,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def tearDown(self):
-
         self.delete_all_policies()
         self.delete_all_realms()
         self.delete_all_resolvers()
@@ -277,7 +275,6 @@ class TestPushToken(TestController):
         """
 
         for i in range(0, retry_activation):
-
             # ------------------------------------------------------------- --
 
             # request activation challenge
@@ -351,7 +348,6 @@ class TestPushToken(TestController):
         # pair the token
 
         for i in range(0, retry_pairing):
-
             user_token_id = self.pair_token(pairing_url, pin)
 
         # ------------------------------------------------------------------ --
@@ -600,17 +596,14 @@ class TestPushToken(TestController):
         # retrieve plaintext data depending on content_type
 
         if content_type == CONTENT_TYPE_PAIRING:
-
             serial, callback_url, __ = plaintext[offset:].split(b"\x00")
             challenge["serial"] = serial.decode()
 
         elif content_type == CONTENT_TYPE_SIGNREQ:
-
             message, callback_url, __ = plaintext[offset:].split(b"\x00")
             challenge["message"] = message.decode()
 
         elif content_type == CONTENT_TYPE_LOGIN:
-
             login, host, callback_url, __ = plaintext[offset:].split(b"\x00")
             challenge["login"] = login.decode()
             challenge["host"] = host.decode()
@@ -779,7 +772,6 @@ class TestPushToken(TestController):
     # -------------------------------------------------------------------------- --
 
     def trigger_challenge(self, user_token_id, content_type=None, data=None):
-
         serial = self.tokens[user_token_id]["serial"]
         pin = self.tokens[user_token_id]["pin"]
 
@@ -802,7 +794,6 @@ class TestPushToken(TestController):
             "push_notification",
             autospec=True,
         ) as mock_push_notification:
-
             mock_push_notification.return_value = (True, None)
             response = self.make_validate_request("check_s", params)
             challenge_url = mock_push_notification.call_args[0][1]
@@ -908,7 +899,6 @@ class TestPushToken(TestController):
 
         created_challenges = []
         for i in range(0, 10):
-
             challenge_url = self.trigger_challenge(
                 user_token_id,
                 data=(
@@ -1019,7 +1009,6 @@ class TestPushToken(TestController):
         accept_challenges = 0
 
         for challenge in list(challenges.values()):
-
             status = challenge["session"]["status"]
             accept = challenge["session"].get("accept")
 

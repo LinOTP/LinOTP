@@ -40,7 +40,6 @@ from linotp.lib.challenges import Challenges
 @pytest.mark.usefixtures("app")
 class TestChallengesTransactionidLength(unittest.TestCase):
     def test_transactionid_length(self):
-
         with patch("linotp.lib.challenges.context") as mock_context:
             mock_context.get.return_value = {}
             transid_length = Challenges.get_transactionid_length()

@@ -70,7 +70,6 @@ def admin_res(app):
 
 
 def test_getsearchfields_case_sensitive_resolver_names(fthsm, app):
-
     g.request_context["Config"] = getLinotpConfig()  # This sucks.
     g.request_context["CacheManager"] = app.cache  # This sucks even worse.
 
@@ -97,7 +96,6 @@ def test_getsearchfields_case_sensitive_resolver_names(fthsm, app):
 
 
 def test_getuserlist_case_sensitive_resolver_names(fthsm, app, admin_res):
-
     g.request_context["Config"] = getLinotpConfig()  # This sucks.
     g.request_context["CacheManager"] = app.cache  # This sucks even worse.
     g.request_context["UserLookup"] = {}  # Don't get me started.

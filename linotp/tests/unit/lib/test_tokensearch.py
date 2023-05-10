@@ -46,7 +46,6 @@ class TestTokenSearch(unittest.TestCase):
         mocked_token_owner_iterator,
         mocked_get_raw_tokens,
     ):
-
         valid_realms = ["*"]
 
         mocked_tokenIterator_init.return_value = None

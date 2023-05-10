@@ -62,7 +62,6 @@ def test_expired_license(testcase):
     """
 
     with LicenseTempFile(EXPIRED_LICENSE, suffix=".pem") as temp_file:
-
         license_import = LicenseImport(testcase.manage_ui)
 
         with pytest.raises(FileUploadException) as lic_exx:

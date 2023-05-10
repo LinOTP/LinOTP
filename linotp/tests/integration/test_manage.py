@@ -53,7 +53,6 @@ class TestManage:
         # 2- replace all self.manage with self.testcase.manage_ui
 
     def test_manage_open(self):
-
         self.manage.open_manage()
         self.manage.check_manage_is_open()
 

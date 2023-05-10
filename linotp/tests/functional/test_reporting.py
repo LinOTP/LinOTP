@@ -55,7 +55,6 @@ class DBSession(object):
         return self.session
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-
         if self.session:
             self.session.close()
 
@@ -183,7 +182,6 @@ class TestReportingController(TestController):
             assert table_content.count() == 7, table_content
 
     def test_multi_actions_in_reporting_policy(self):
-
         self.delete_all_token()
 
         # set policy:
@@ -239,7 +237,6 @@ class TestReportingController(TestController):
             session.commit()
 
         with DBSession() as session:
-
             session.add(report_0)
             session.add(report_1)
             session.add(report_2)
@@ -262,7 +259,6 @@ class TestReportingController(TestController):
         assert values.get("value") == 1, response
 
     def test_delete_all_reports(self):
-
         with DBSession() as session:
             # check if table is empty
             table_content = session.query(Reporting).count()
@@ -456,7 +452,6 @@ class TestReportingController(TestController):
         # run reportings
 
         with freeze_time(fix_date + timedelta(days=10)):
-
             # 0.a: checking the reporting borders
             # - up to the first entry 2019-08-04, thus there should be only
             #   null's in the response
@@ -822,7 +817,6 @@ class TestReportingController(TestController):
         long_ago = datetime(year=2018, month=11, day=17)
 
         with freeze_time(long_ago) as frozen_time:
-
             upload_files = [
                 ("license", "linotp2.token_user.pem", license_data)
             ]
@@ -875,7 +869,6 @@ class TestReportingController(TestController):
             # now add tokens for the users
 
             for user in ["hans", "rollo", "susi", "horst"]:
-
                 params = {
                     "type": "pw",
                     "user": user + "@myDefRealm",
@@ -915,7 +908,6 @@ class TestReportingController(TestController):
             # add more tokens for the users
 
             for user in ["hans", "rollo", "susi", "horst"]:
-
                 params = {
                     "type": "pw",
                     "user": user + "@myDefRealm",

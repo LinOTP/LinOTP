@@ -49,7 +49,6 @@ class TestProviderBase(unittest.TestCase):
         ]
 
         for config in configurations:
-
             res = ConfigParsingMixin.load_server_cert(
                 config, server_cert_key="server_certificate"
             )
@@ -66,9 +65,7 @@ class TestProviderBase(unittest.TestCase):
         ]
 
         for config in configurations:
-
             with pytest.raises(ValueError):
-
                 res = ConfigParsingMixin.load_server_cert(
                     config, server_cert_key="server_certificate"
                 )
@@ -83,7 +80,6 @@ class TestProviderBase(unittest.TestCase):
         ]
 
         for config in configurations:
-
             res = ConfigParsingMixin.load_server_cert(
                 config, server_cert_key="server_certificate"
             )

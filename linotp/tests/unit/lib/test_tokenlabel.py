@@ -41,7 +41,6 @@ class TestTokenLabel(unittest.TestCase):
     def test_get_tokenlabel_wo_policy(
         self, mock__get_client, mock_has_client_policy
     ):
-
         mock__get_client.return_value = "localhost"
         mock_has_client_policy.return_value = {}
 
@@ -65,7 +64,6 @@ class TestTokenLabel(unittest.TestCase):
     def test_get_tokenlabel_w_policy(
         self, mock__get_client, mock_has_client_policy, mock_get_action_value
     ):
-
         mock__get_client.return_value = "localhost"
         mock_has_client_policy.return_value = {}
         mock_get_action_value.return_value = "<d>.<r>.<u>.<s>"
@@ -89,7 +87,6 @@ class TestTokenLabel(unittest.TestCase):
     def test_get_tokenissuer_wo_policy(
         self, mock__get_client, mock_has_client_policy
     ):
-
         mock__get_client.return_value = "localhost"
         mock_has_client_policy.return_value = {}
 
@@ -113,7 +110,6 @@ class TestTokenLabel(unittest.TestCase):
     def test_get_tokenissuer_w_policy(
         self, mock__get_client, mock_has_client_policy, mock_get_action_value
     ):
-
         mock__get_client.return_value = "localhost"
         mock_has_client_policy.return_value = {}
         mock_get_action_value.return_value = "<d>.<r>.<u>.<s>"

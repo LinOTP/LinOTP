@@ -35,7 +35,6 @@ import unittest
 #
 
 try:
-
     from linotp.useridresolver.LDAPIdResolver import (
         IdResolver as ldap_resolver,
     )
@@ -44,7 +43,6 @@ try:
     NO_LDAP_AVAILABLE = ""
 
 except ImportError as exx:
-
     NO_LDAP_AVAILABLE = "%r" % exx
 
 

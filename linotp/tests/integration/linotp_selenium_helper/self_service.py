@@ -46,7 +46,6 @@ if TYPE_CHECKING:
 
 
 class SelfService(object):
-
     URL = "/selfservice-legacy"
 
     tab_register_motp = "Register mOTP"

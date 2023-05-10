@@ -107,7 +107,6 @@ class MigrationHandler(object):
 
         config_entries = model_config.query.filter_by(Type="password").all()
         for entry in config_entries:
-
             key = "enc%s" % entry.Key
             value = getFromConfig(key)
 
@@ -201,7 +200,6 @@ class MigrationHandler(object):
             yield token_data
 
     def set_token_data(self, token_data):
-
         serial = token_data["Serial"]
         tokens = model_token.query.filter_by(
             LinOtpTokenSerialnumber=serial
@@ -209,7 +207,6 @@ class MigrationHandler(object):
         token = tokens[0]
 
         if "TokenPin" in token_data:
-
             enc_pin = token_data["TokenPin"]
 
             token_pin = self.crypter.decrypt(

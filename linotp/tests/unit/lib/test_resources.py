@@ -74,7 +74,6 @@ class TestResourceScheduler(unittest.TestCase):
         # check that all uris are blocked
 
         with freeze_time("2012-01-14 12:00:00"):
-
             # -------------------------------------------------------------- --
 
             # block all uris
@@ -94,7 +93,6 @@ class TestResourceScheduler(unittest.TestCase):
 
         # one minute later
         with freeze_time("2012-01-14 12:01:00"):
-
             # -------------------------------------------------------------- --
 
             # verify that all uris are un blocked after the delay
@@ -181,7 +179,6 @@ class TestResourceScheduler(unittest.TestCase):
         the_blocked_one = res_sched.uri_list[1]
 
         with freeze_time("2012-01-14 12:00:00"):
-
             # -------------------------------------------------------------- --
 
             # block the second entry
@@ -222,7 +219,6 @@ class TestResourceScheduler(unittest.TestCase):
         # one minute later
 
         with freeze_time("2012-01-14 12:01:00"):
-
             uris = []
             for uri in next(res_sched):
                 uris.append(uri)
@@ -288,10 +284,8 @@ class TestResourceScheduler(unittest.TestCase):
             with freeze_time(
                 datetime.datetime.utcnow() + datetime.timedelta(minutes=i)
             ):
-
                 try:
                     for uri in next(res_sched):
-
                         if uri == the_blocked_one:
                             raise DummyException()
 

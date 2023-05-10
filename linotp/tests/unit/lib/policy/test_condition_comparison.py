@@ -214,7 +214,6 @@ class TestCompare(unittest.TestCase):
         return
 
     def test_action_compare(self):
-
         match_type, res = action_compare(
             'voice_message = "Sir, your otp={otp}" ,'
             " voice_language = ' Sir, your otp is {otp}' , ",

@@ -103,7 +103,6 @@ def counter2time(counter, timeStepping):
 @tokenclass_registry.class_entry("totp")
 @tokenclass_registry.class_entry("linotp.tokens.totptoken.TimeHmacTokenClass")
 class TimeHmacTokenClass(HmacTokenClass):
-
     resyncDiffLimit = 3
 
     def __init__(self, aToken):
@@ -147,7 +146,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         info = self.getTokenInfo()
 
         if info:
-
             self.hashlibStr = info.get("hashlib", self.hashlibStr) or "sha1"
 
             self.timeStepping = int(info.get("timeStep", self._timeStep) or 30)
@@ -576,7 +574,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         # check if we have the first otp for the auto resync
 
         if "otp1c" not in info:
-
             info["otp1c"] = otp_counter
             self.setTokenInfo(info)
 

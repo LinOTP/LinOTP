@@ -40,10 +40,8 @@ class Bindresult(object):
         attrlist=None,
         timeout=None,
     ):
-
         if attrlist:
             for attr in attrlist:
-
                 # invalid utf-8 will raise an exception
                 attr.encode("utf-8")
 

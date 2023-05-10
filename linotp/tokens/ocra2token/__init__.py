@@ -271,7 +271,6 @@ class OcraSuite:
     """
 
     def __init__(self, ocrasuite, secretObject=None):
-
         self.secretObj = secretObject
         self.C = None
         self.Q = None
@@ -571,7 +570,6 @@ class OcraSuite:
         return str(challenge)
 
     def data2rawChallenge(self, data):
-
         c_type = self.Q[0]
         c_len = self.Q[1]
 
@@ -756,7 +754,6 @@ class OcraSuite:
 
 
 def test():
-
     import struct
 
     # ocrasuite   = 'OcraSuite-1:HOTP-SHA256-8:C-QN08-S128-PSHA1'
@@ -785,7 +782,6 @@ def test():
 
 
 if __name__ == "__main__":
-
     """
     devel hook
     """

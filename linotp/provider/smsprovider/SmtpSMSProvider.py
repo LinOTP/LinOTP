@@ -58,7 +58,6 @@ class SmtpSMSProvider(ISMSProvider):
 
     @classmethod
     def getClassInfo(cls, key=None, ret="all"):
-
         defintion = {}
         parameters = {}
         parameters["mailserver"] = {
@@ -211,7 +210,6 @@ class SmtpSMSProvider(ISMSProvider):
 
         serv = None
         try:
-
             serv_class = smtplib.SMTP
 
             if use_ssl:

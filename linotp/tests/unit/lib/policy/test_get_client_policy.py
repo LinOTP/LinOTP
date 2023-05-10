@@ -97,7 +97,6 @@ class TestGetClientPolicy(unittest.TestCase):
         with patch.object(
             linotp.lib.policy, "_get_client", autospec=True
         ) as mock_get_client:
-
             # ------------------------------------------------------------------ --
 
             # call the get_policies function which must be mocked
@@ -105,7 +104,6 @@ class TestGetClientPolicy(unittest.TestCase):
             with patch.object(
                 linotp.lib.policy.processing, "get_policies", autospec=True
             ) as mock_get_policies:
-
                 # ---------------------------------------------------------- --
 
                 # setup the to be called  mocked functions

@@ -34,7 +34,6 @@ from linotp.tests import TestController
 
 class TestVoiceToken(TestController):
     def setUp(self):
-
         self.delete_all_policies()
         self.delete_all_token()
         self.delete_all_realms()
@@ -46,7 +45,6 @@ class TestVoiceToken(TestController):
         self.create_policies()
 
     def tearDown(self):
-
         self.delete_all_policies()
         self.delete_all_realms()
         self.delete_all_resolvers()

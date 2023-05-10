@@ -41,7 +41,6 @@ class FileUploadException(Exception):
 
 @contextmanager
 def LicenseTempFile(content, suffix=".pem"):
-
     with NamedTemporaryFile(mode="w", suffix=suffix) as temp_file:
         temp_file.write(content)
         temp_file.flush()

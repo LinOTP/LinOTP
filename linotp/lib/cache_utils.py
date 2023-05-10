@@ -76,7 +76,6 @@ def cache_in_request(
     def cache_in_request_decorator(func_to_cache):
         @functools.wraps(func_to_cache)
         def request_cacher(*args, **kwargs):
-
             cache_name = func_to_cache.__name__ + "_cache"
             if not request_context.get(cache_name, None):
                 request_context[cache_name] = {}

@@ -54,7 +54,6 @@ class PairingUnitTestCase(unittest.TestCase):
         mocked_get_public_key.return_value = b"X" * 32
 
         with patch.dict(config):
-
             # if configuration entry is not present,
             # protocol id should be lseqr
 
@@ -73,7 +72,6 @@ class PairingUnitTestCase(unittest.TestCase):
         # -------------------------------------------------------------------- -
 
         with patch.dict(config, {"mobile_app_protocol_id": "yolo"}):
-
             url = generate_pairing_url(
                 token_type="qr",
                 partition=1,

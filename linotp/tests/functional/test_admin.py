@@ -190,7 +190,6 @@ class TestAdminController(TestController):
         counter = 0
         serial_column = 0
         for line in response.body.split("\n"):
-
             if not line:
                 continue
 
@@ -198,7 +197,6 @@ class TestAdminController(TestController):
 
             # cvs has a header line
             if counter == 0:
-
                 assert "'LinOtp.TokenSerialnumber'" in line
 
                 for entry in entries:
@@ -361,7 +359,6 @@ class TestAdminController(TestController):
         self.removeTokenByUser("root")
 
     def test_resync(self):
-
         self.createToken()
 
         # test resync of token 2
@@ -463,7 +460,6 @@ class TestAdminController(TestController):
         assert response.json["result"]["error"]["code"] == 1119
 
     def test_assign(self):
-
         serial = self.createToken2(serial="F722362")
 
         respRealms = self.make_system_request("getRealms", params=None)
@@ -780,7 +776,6 @@ class TestAdminController(TestController):
         return
 
     def test_enroll_umlaut(self):
-
         parameters = {
             "serial": "umlauttoken",
             "otpkey": "47F6EE05C06FA1CDB8B9AADF520FCF86221DB0A107731452AE140EED0EB518B0",

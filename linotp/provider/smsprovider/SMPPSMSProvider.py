@@ -234,7 +234,6 @@ class SMPPSMSProvider(ISMSProvider):
 
 
 def main(phone, message, config):
-
     print("SMPPSMSProvider - class load test ")
 
     sms_pro = SMPPSMSProvider()

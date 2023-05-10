@@ -41,7 +41,6 @@ class TestPoliciesBase(TestController):
         file_name = self._get_file_name(data_file)
 
         with open(file_name, "r") as data_file:
-
             data = data_file.read()
 
             return data

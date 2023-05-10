@@ -86,7 +86,6 @@ class ReportingController(BaseController):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
 
             g.audit["client"] = get_client(request)
@@ -286,7 +285,6 @@ class ReportingController(BaseController):
                 result_realm = {"name": realm}
                 max_token_counts = {}
                 for stat in status:
-
                     # search for the max token in the period [start : end]
 
                     max_token_stat = get_max_token_count_in_period(

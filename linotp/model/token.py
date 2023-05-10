@@ -222,7 +222,6 @@ class Token(TokenSchema):
             return fallback
 
     def get_vars(self, save: bool = False) -> dict:
-
         ret: dict = {}
         ret["LinOtp.TokenId"] = self.LinOtpTokenId or ""
         ret["LinOtp.TokenDesc"] = self.LinOtpTokenDesc or ""

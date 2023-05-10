@@ -457,7 +457,6 @@ class HmacTokenClass(TokenClass):
         res = hmac2Otp.checkOtp(otp, window)
 
         if res >= 0:
-
             # As usually the counter is increased in auth.validate.checkUserPass, we
             # need to do this manually here:
             self.incOtpCounter(res)
@@ -749,7 +748,6 @@ class HmacTokenClass(TokenClass):
             if oath_support:
                 if user is not None:
                     try:
-
                         oath_url = create_oathtoken_url(
                             user.login,
                             user.realm,

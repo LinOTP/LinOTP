@@ -53,7 +53,6 @@ class Response(object):
 
 
 def mocked_radius_SendPacket(Client, *argparams, **kwparams):
-
     response = Response()
     # response.code = pyrad.packet.AccessAccept
 
@@ -61,7 +60,6 @@ def mocked_radius_SendPacket(Client, *argparams, **kwparams):
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
-
     resp = 200
 
     content = {
@@ -94,7 +92,6 @@ class HmacOtp(LinHmac):
         )
 
     def _getHashlib(self, hLibStr):
-
         if hLibStr is None:
             return hashlib.sha1
 
@@ -234,7 +231,6 @@ class TestValidateController(TestController):
         return serial
 
     def create_hmac_token(self, user="root", pin="pin"):
-
         serial = self.createToken1(user=user, pin=pin)
         otps = [
             "870581",
@@ -276,7 +272,6 @@ class TestValidateController(TestController):
         assert '"value": true' in response, response
 
     def createHMACToken(self, serial="F722362", user="root", pin="pin"):
-
         parameters = {
             "serial": serial,
             "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
@@ -399,7 +394,6 @@ class TestValidateController(TestController):
     def createPWToken(
         self, serial="TPW", user="root", pin="pin", otpkey="123456"
     ):
-
         parameters = {
             "serial": serial,
             "type": "pw",
@@ -563,7 +557,6 @@ class TestValidateController(TestController):
     #
 
     def checkFalse(self, realm):
-
         parameters = {"user": "root", "pass": "pin870581"}
         parameters.update(realm)
 
@@ -597,7 +590,6 @@ class TestValidateController(TestController):
         assert '"value": false' in response, response
 
     def checkFalse2(self, realm):
-
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
@@ -637,7 +629,6 @@ class TestValidateController(TestController):
         assert '"value": false' in response, response
 
     def checkFalse3(self, realm):
-
         parameters = {"user": "postgres"}
         parameters.update(realm)
 
@@ -677,7 +668,6 @@ class TestValidateController(TestController):
         assert '"value": false' in response, response
 
     def checkTrue(self, realm):
-
         parameters = {"user": "postgres", "pass": "pin"}
         parameters.update(realm)
         response = self.make_validate_request("check", params=parameters)
@@ -1431,7 +1421,6 @@ class TestValidateController(TestController):
                 assert otp == val, "otp verification failed %r " % tupp
 
     def test_checkTOtp(self):
-
         self.createTOtpToken("SHA1")
 
         parameters = {"serial": "TOTP"}
@@ -1453,7 +1442,6 @@ class TestValidateController(TestController):
 
         old_day = datetime(year=1970, month=1, day=1)
         with freezegun.freeze_time(old_day):
-
             parameters = {"user": "root", "pass": "pin94287082"}
             response = self.make_validate_request("check", params=parameters)
 
@@ -1467,7 +1455,6 @@ class TestValidateController(TestController):
             year=2005, month=3, day=18, hour=1, minute=58, second=29
         )
         with freezegun.freeze_time(old_day):
-
             parameters = {
                 "user": "root",
                 "pass": "pin07081804",
@@ -1484,7 +1471,6 @@ class TestValidateController(TestController):
             year=2009, month=2, day=13, hour=23, minute=31, second=30
         )
         with freezegun.freeze_time(old_day):
-
             parameters = {"user": "root", "pass": "pin89005924"}
             response = self.make_validate_request("check", params=parameters)
 
@@ -1521,7 +1507,6 @@ class TestValidateController(TestController):
 
         old_day = datetime(year=1970, month=1, day=1)
         with freezegun.freeze_time(old_day):
-
             parameters = {"user": "root", "pass": "pin90693936", "init": "59"}
             response = self.make_validate_request("check", params=parameters)
             assert '"value": true' in response, response
@@ -1529,7 +1514,6 @@ class TestValidateController(TestController):
         self.delete_token("TOTP")
 
     def test_totp_resync(self):
-
         # delete the 'TOTP' token if it exists
 
         try:

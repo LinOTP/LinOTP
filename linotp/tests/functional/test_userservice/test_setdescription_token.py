@@ -34,7 +34,6 @@ class TestUserserviceDescriptionTest(TestController):
     """
 
     def setUp(self):
-
         TestController.setUp(self)
         # clean setup
         self.delete_all_policies()
@@ -269,7 +268,6 @@ class TestUserserviceDescriptionTest(TestController):
         ]
 
         for token_type in token_types:
-
             # 1. enroll oathtoken token
 
             description = "my %s" % token_type

@@ -36,7 +36,6 @@ from linotp.useridresolver.SQLIdResolver import build_simple_connect
 
 
 class TestSqlConnectStr(unittest.TestCase):
-
     test_sets = [
         {
             "description": "Test Set 1 - db2",
@@ -128,7 +127,6 @@ class TestSqlConnectStr(unittest.TestCase):
         """
 
         for test_set in self.test_sets:
-
             params = test_set["parameters"]
             result = test_set["result"]
             description = test_set["description"]

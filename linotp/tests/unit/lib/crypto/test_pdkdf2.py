@@ -202,7 +202,6 @@ class TestComparePDKDF(unittest.TestCase):
         hashfunc = sha1
 
         for testvector in testvectors:
-
             password = testvector["P"]
             salt = testvector["S"]
             iterations = testvector["c"]

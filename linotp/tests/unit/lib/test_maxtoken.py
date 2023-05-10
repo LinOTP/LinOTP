@@ -17,12 +17,10 @@ fake_context = {}
 
 
 def fake_get_client_policy(client, scope, action, realm, user, userObj):
-
     if realm == "defaultrealm":
         return {}
 
     if realm == "otherrealm":
-
         fake_policies = {
             "bla": {
                 "realm": "*",

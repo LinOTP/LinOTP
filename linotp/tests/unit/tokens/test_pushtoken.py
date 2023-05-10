@@ -78,7 +78,6 @@ class FakeTokenModel(object):
 
 
 class PushTokenClassUnitTestCase(object):
-
     # ---------------------------------------------------------------------- --
 
     @patch("linotp.tokens.pushtoken.pushtoken.get_secret_key")
@@ -98,7 +97,6 @@ class PushTokenClassUnitTestCase(object):
         token.addToTokenInfo("user_dsa_public_key", user_public_key)
 
         with base_app.test_request_context():
-
             if "mobile_app_protocol_id" in config:
                 del config["mobile_app_protocol_id"]
 

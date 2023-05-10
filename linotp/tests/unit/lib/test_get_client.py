@@ -58,7 +58,6 @@ addr_dict = {
 
 
 def mock_IPNet(address):
-
     if address in [
         "my.other.test.domain/29",
         "www.my.test.domain",
@@ -70,7 +69,6 @@ def mock_IPNet(address):
 
 
 def mock_IPAddr(address):
-
     if address in ["www.my.test.domain"]:
         raise netaddr.core.AddrFormatError("invalid IPNetwork %r" % address)
 
@@ -232,7 +230,6 @@ class TestGetClientCase(unittest.TestCase):
         }
 
         for forward_test_string in forward_test_strings:
-
             environ["Forwarded"] = forward_test_string[0]
 
             request = Request(environ)

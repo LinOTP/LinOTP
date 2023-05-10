@@ -143,7 +143,6 @@ class PasswordTokenClass(HmacTokenClass):
         """
 
         if "otpkey" not in param:
-
             raise ParameterError("Missing Parameter 'otpkey'!")
 
         TokenClass.update(self, param)
@@ -192,7 +191,6 @@ class PasswordTokenClass(HmacTokenClass):
         secObj = self._get_secret_object()
 
         if secObj.compare_password(anOtpVal):
-
             return 0
 
         return -1

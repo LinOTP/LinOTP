@@ -63,7 +63,6 @@ class LinOtpConfig(dict):
     """
 
     def __init__(self):
-
         self.delay = False
         self.realms = None
         self.glo = current_app.linotp_app_config
@@ -82,7 +81,6 @@ class LinOtpConfig(dict):
         if "linotp.enableReplication" in conf:
             val = conf.get("linotp.enableReplication")
             if val.lower() == "true":
-
                 # look for the timestamp when config was created
                 e_conf_date = conf.get("linotp.Config")
 
@@ -98,7 +96,6 @@ class LinOtpConfig(dict):
         return
 
     def refreshConfig(self, do_reload=False):
-
         conf = self.glo.getConfig()
 
         if do_reload is True:
@@ -197,7 +194,6 @@ class LinOtpConfig(dict):
         """
 
         if key in Config_Types:
-
             #
             # get the tuple of type as literal and type checking function
             #

@@ -175,7 +175,6 @@ class EmailProviderServer(SmtpMessageServer):
     """
 
     def get_config_parameters(self):
-
         # SMTP e-mail configuration
         config = """{
             "SMTP_SERVER": "%s",
@@ -196,7 +195,6 @@ class SMSProviderServer(SmtpMessageServer):
     """
 
     def get_config_parameters(self):
-
         sms_provider_config = """{
             "mailserver" : "%s",
             "mailserver_port": %s,

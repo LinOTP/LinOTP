@@ -89,7 +89,6 @@ class TestLDAPResolverAttributes(unittest.TestCase):
         userLdapInfo = resolver.getUserLDAPInfo("Üßalad")
 
         for key, val_list in list(userLdapInfo.items()):
-
             # check if attribute is a python unicode str
             if not isinstance(key, str) and not isinstance(key, str):
                 raise Exception("Non Unicode character recieved")
@@ -117,9 +116,7 @@ class TestLDAPResolverAttributes(unittest.TestCase):
         userInfo = resolver.getUserInfo("Üßalad")
 
         for key, val in list(userInfo.items()):
-
             if not isinstance(key, str):
-
                 # check if attribute is a python unicode str
                 if not isinstance(key, str):
                     raise Exception("Non Unicode character recieved")

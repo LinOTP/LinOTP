@@ -38,7 +38,6 @@ class TestDuplicateFailcounterIncrement(TestController):
     """"""
 
     def setUp(self):
-
         resp = TestController.setUp(self)
 
         self.create_common_resolvers()

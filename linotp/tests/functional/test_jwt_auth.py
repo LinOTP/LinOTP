@@ -18,7 +18,6 @@ class TestJwtAdmin:
         client: FlaskClient,
         cookie_name: str,
     ) -> Optional[str]:
-
         cookie = next(
             (
                 cookie.value
@@ -101,7 +100,6 @@ class TestJwtAdmin:
         expected_http_status: int,
         expected_status: bool,
     ) -> None:
-
         res = client.post(
             "/admin/login", data=dict(username=username, password=password)
         )
@@ -164,7 +162,6 @@ class TestJwtAdmin:
         create_common_realms: Callable,
         scoped_authclient: Callable[..., FlaskClient],
     ) -> None:
-
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
@@ -191,7 +188,6 @@ class TestJwtAdmin:
         create_common_realms: Callable,
         scoped_authclient: Callable[..., FlaskClient],
     ) -> None:
-
         with scoped_authclient(verify_jwt=True) as client:
             response = client.post("/manage/login")
             data = response.data.decode("utf-8")
@@ -225,7 +221,6 @@ class TestJwtAdmin:
         create_common_realms: Callable,
         scoped_authclient: Callable[..., FlaskClient],
     ) -> None:
-
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
@@ -250,7 +245,6 @@ class TestJwtAdmin:
         create_common_realms: Callable,
         scoped_authclient: Callable[..., FlaskClient],
     ) -> None:
-
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
@@ -314,7 +308,6 @@ class TestJwtAdmin:
         """
 
         with scoped_authclient(verify_jwt=True) as client:
-
             response = client.get(
                 "/manage/context",
             )
@@ -328,7 +321,6 @@ class TestJwtAdmin:
         create_common_realms: Callable,
         scoped_authclient: Callable[..., FlaskClient],
     ) -> None:
-
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
@@ -374,7 +366,6 @@ class TestJwtAdmin:
         create_common_realms: Callable,
         scoped_authclient,
     ) -> None:
-
         username = "admin"
         password = "Test123!"
         with scoped_authclient(verify_jwt=True) as client:
@@ -382,7 +373,6 @@ class TestJwtAdmin:
                 year=2021, month=10, day=19, hour=17, minute=39
             )
             with freeze_time(initial_time) as frozen_time:
-
                 client.post(
                     "/admin/login",
                     data=dict(username=username, password=password),
@@ -407,7 +397,6 @@ class TestJwtAdmin:
         create_common_realms: Callable,
         scoped_authclient,
     ) -> None:
-
         username = "admin"
         password = "Test123!"
         initial_time = datetime(year=2021, month=10, day=18, hour=12)
@@ -416,9 +405,7 @@ class TestJwtAdmin:
         t_epsilon = 5
 
         with scoped_authclient(verify_jwt=True) as client:
-
             with freeze_time(initial_time) as frozen_time:
-
                 client.post(
                     "/admin/login",
                     data=dict(username=username, password=password),
@@ -452,7 +439,6 @@ class TestJwtAdmin:
         create_common_realms: Callable,
         scoped_authclient,
     ) -> None:
-
         username = "admin"
         password = "Test123!"
         initial_time = datetime(
@@ -464,7 +450,6 @@ class TestJwtAdmin:
 
         with scoped_authclient(verify_jwt=True) as client:
             with freeze_time(initial_time) as frozen_time:
-
                 client.post(
                     "/admin/login",
                     data=dict(username=username, password=password),

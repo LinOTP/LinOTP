@@ -70,7 +70,6 @@ class HmacOtp:
         return binary % (10**self.digits)
 
     def generate(self, counter: int = None, inc_counter=True, key=None):
-
         counter = counter or self.counter
 
         otp = str(self.truncate(self.hmac(counter=counter, key=key)))

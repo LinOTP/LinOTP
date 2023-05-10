@@ -146,7 +146,6 @@ class SystemController(BaseController):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
 
@@ -194,7 +193,6 @@ class SystemController(BaseController):
         """
 
         try:
-
             g.audit["administrator"] = getUserFromRequest()
             current_app.audit_obj.log(g.audit)
             # default return for the __before__ and __after__
@@ -344,7 +342,6 @@ class SystemController(BaseController):
                 # we gather all key value pairs in the conf dict
                 conf = {}
                 for key in param:
-
                     if key == "session":
                         continue
 
@@ -367,7 +364,6 @@ class SystemController(BaseController):
                 # after successfully storing run the direct config callback
 
                 for key, val in list(conf.items()):
-
                     self._config_callback(key, val)
 
                 # --------------------------------------------------------- --
@@ -405,7 +401,6 @@ class SystemController(BaseController):
         "helper to flush the user lookup cache"
 
         if boolean(state) is False:
-
             resolvers = request_context["Resolvers"]
 
             for resolver in resolvers:
@@ -415,7 +410,6 @@ class SystemController(BaseController):
         """helper to flush the resolver lookup cache"""
 
         if boolean(state) is False:
-
             realms = request_context["Realms"]
 
             for realm in realms:
@@ -491,7 +485,6 @@ class SystemController(BaseController):
                 conf = getLinotpConfig()
                 keys = sorted(conf.keys())
                 for key in keys:
-
                     parts = key.split(".")
 
                     if parts[0] == "enclinotp":
@@ -636,7 +629,6 @@ class SystemController(BaseController):
             previous_name = param.get("previous_name", "")
 
             if "readonly" in param:
-
                 # the default for the readonly attribute is - to not exist :)
                 # if it does, the conversion will fail and we raise an
                 # exception
@@ -674,7 +666,6 @@ class SystemController(BaseController):
                 mode in ["create", "rename"]
                 and new_resolver_name in getResolverList()
             ):
-
                 raise Exception(
                     "Cound not %s resolver, resolver %r already"
                     " exists!" % (mode, new_resolver_name)
@@ -716,13 +707,11 @@ class SystemController(BaseController):
             # 2. migrate the resolver to the new userid resolver
 
             if mode == "rename":
-
                 # lookup in which realm definition the resolvers is used
 
                 change_realms = {}
 
                 for realm_name, realm_description in list(getRealms().items()):
-
                     resolvers = realm_description.get("useridresolver")
 
                     for current_resolver in resolvers:
@@ -746,7 +735,6 @@ class SystemController(BaseController):
             # we can re-use the resolver migration handler here :-)
 
             if mode == "rename" or primary_key_changed:
-
                 resolvers = getResolverList()
                 src_resolver = resolvers.get(previous_name, None)
                 target_resolver = resolvers.get(new_resolver_name, None)
@@ -1026,7 +1014,6 @@ class SystemController(BaseController):
             valid_resolver_specs = []
             valid_resolver_names = []
             for resolver_spec in resolver_specs:
-
                 resolver_spec = resolver_spec.strip()
                 resolver_spec = resolver_spec.replace('"', "")
 
@@ -1281,7 +1268,6 @@ class SystemController(BaseController):
 
             lines = []
             for pol in pols:
-
                 active = 0
                 if pols[pol].get("active", "True") == "True":
                     active = 1
@@ -1408,11 +1394,9 @@ class SystemController(BaseController):
         pol = {}
 
         for tclass_object in set(tokenclass_registry.values()):
-
             tok = tclass_object.getClassType()
 
             if hasattr(tclass_object, "getClassInfo"):
-
                 # check if we have a policy in the definition
                 try:
                     policy = tclass_object.getClassInfo("policy", ret=None)
@@ -1451,7 +1435,6 @@ class SystemController(BaseController):
 
         res = True
         try:
-
             log.debug("[importPolicy] getting POST request: %r", request.files)
 
             policy_file = request.files.get("file")
@@ -1682,7 +1665,6 @@ class SystemController(BaseController):
 
                     pol.update(poli)
             else:
-
                 search_param = {"name": name, "realm": realm, "scope": scope}
                 if action:
                     search_param["action"] = action
@@ -1874,7 +1856,6 @@ class SystemController(BaseController):
         """
         res = {}
         try:
-
             (lic_info, _sig) = getSupportLicenseInfo()
             res = {}
             res.update(lic_info)
@@ -1946,7 +1927,6 @@ class SystemController(BaseController):
         contact_hint = " ".join(contact_info)
 
         try:
-
             license_txt = getFromConfig("license", "")
             try:
                 licString = binascii.unhexlify(license_txt).decode()
@@ -2078,7 +2058,6 @@ class SystemController(BaseController):
             provider_def = getProvider(p_type, name)
 
             if not provider_def and "managed" in params:
-
                 # hash the provided password
 
                 password = params["managed"]
@@ -2086,7 +2065,6 @@ class SystemController(BaseController):
                 params["managed"] = utils.crypt_password(password)
 
             if provider_def and "Managed" in provider_def[name]:
-
                 if "managed" not in params:
                     raise Exception(
                         "Not allowed to overwrite the "
@@ -2097,7 +2075,6 @@ class SystemController(BaseController):
                 crypt_password = provider_def[name]["Managed"]
 
                 if not utils.compare_password(password, crypt_password):
-
                     raise Exception(
                         "Not allowed to overwrite the "
                         "configuration of a managed provider"
@@ -2237,7 +2214,6 @@ class SystemController(BaseController):
                 and provider_name in provider_def
                 and "Managed" in provider_def[provider_name]
             ):
-
                 if "managed" not in self.request_params:
                     raise Exception(
                         "Not allowed to delete the managed provider"

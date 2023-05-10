@@ -124,7 +124,6 @@ class SqlUserDB(object):
         return self.resolverDef
 
     def createTable(self, params=None):
-
         if isinstance(params, dict):
             self.sql_params.update(params)
 
@@ -187,7 +186,6 @@ class SqlUserDB(object):
         return res
 
     def delUsers(self, uid=None, username=None):
-
         if username is not None:
             delStr = "DELETE FROM %s  WHERE user=:user" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)

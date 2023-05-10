@@ -317,7 +317,6 @@ class TestPushProviderController(TestController):
 
 
 def cond_failing_http_response(*args, **kwargs):
-
     url = args[0]
 
     assert isinstance(url, str)

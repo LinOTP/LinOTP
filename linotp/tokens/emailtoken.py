@@ -322,7 +322,6 @@ class EmailTokenClass(HmacTokenClass):
         )
 
         for challenge in challenges:
-
             # only care about open challenges
             if not challenge.is_open():
                 continue
@@ -517,7 +516,6 @@ class EmailTokenClass(HmacTokenClass):
         # ------------------------------------------------------------------ --
 
         try:
-
             email_provider = loadProviderFromPolicy(
                 provider_type="email", user=owner
             )

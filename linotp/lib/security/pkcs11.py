@@ -296,7 +296,6 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         for key in [CONFIG_KEY, TOKEN_KEY, VALUE_KEY, DEFAULT_KEY]:
             label = self.labels.get(key)
             if label:
-
                 output(
                     "debug",
                     "[populate_handles] get handle for label %s" % label,
@@ -631,7 +630,6 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         ulKeyCount = c_ulong(1)
 
         while ulKeyCount.value > 0:
-
             rv = self.pkcs11.C_FindObjects(
                 self.hSession, byref(hKey), wanted, byref(ulKeyCount)
             )
@@ -1127,12 +1125,10 @@ def main():
     P11 = Pkcs11SecurityModule(config)
 
     if listing:
-
         keys = P11.find_aes_keys(label=label.encode("utf-8"), wanted=100)
         print("Found these AES keys: %r" % keys)
 
     elif encrypt:
-
         print(
             "Encrypting data %r with label %r from slot %r."
             % (encrypt, l_handle, slot)
@@ -1155,7 +1151,6 @@ def main():
         print("Decrypted Text >>%s<< " % plaintext.decode("utf-8"))
 
     else:
-
         handle = P11.find_aes_keys(label=name.encode("utf-8"))
 
         if not handle:

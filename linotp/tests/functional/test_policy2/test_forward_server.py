@@ -43,7 +43,6 @@ Rad_Serv = None
 class MockForwardServerPolicy(object):
     @staticmethod
     def do_request(servers, env, user, passw, options):
-
         global Rad_Serv
         Rad_Serv = servers
 
@@ -97,7 +96,6 @@ class TestForwardServer(TestController):
         assert "setPolicy " + name in response, response
 
     def define_all_forward(self):
-
         params = {
             "name": "forward",
             "realm": "mydefrealm",

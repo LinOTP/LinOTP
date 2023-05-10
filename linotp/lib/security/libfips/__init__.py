@@ -49,7 +49,6 @@ class SSLError(Exception):
 
 class FipsModule(object):
     def __init__(self, library):
-
         # this will raise an OSError exception, in case of an error.
         _libcrypto = CDLL(library)
 

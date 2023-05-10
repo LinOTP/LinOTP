@@ -76,7 +76,6 @@ def range_tvector():
     """
 
     for line in TOTP_Vectors.split("\n"):
-
         # skip the comments
         if not line or line.strip().startswith("+"):
             continue
@@ -108,10 +107,8 @@ class TotpTestCase(unittest.TestCase):
     """
 
     def test_counter2time(self):
-
         for t_step in (60, 30):
             for counter in range(0, 10):
-
                 l_seconds = timedelta(
                     seconds=(counter - 1) * t_step
                 ).total_seconds()
@@ -129,10 +126,8 @@ class TotpTestCase(unittest.TestCase):
         return
 
     def test_time2counter(self):
-
         for t_step in (60, 30):
             for seconds in range(0, 600, t_step):
-
                 # calculate the counter from the seconds
                 counter = time2counter(seconds, timeStepping=t_step)
 
@@ -145,9 +140,7 @@ class TotpTestCase(unittest.TestCase):
         return
 
     def test_counter_time(self):
-
         for vector in range_tvector():
-
             (seconds, token_time, counter, totp, hash_algo) = vector
 
             t_seconds = counter2time(counter, timeStepping=30)

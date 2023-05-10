@@ -39,7 +39,6 @@ from linotp_selenium_helper.validate import Validate
 
 
 class TestSystemConfig:
-
     system_config = None
     alert_box_handler = None
 

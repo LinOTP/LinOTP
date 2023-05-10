@@ -38,13 +38,11 @@ log = logging.getLogger(__name__)
 
 
 class ForwardServerPolicy(object):
-
     Path_index = 2
     Query_index = 4
 
     @staticmethod
     def prepare_forward(actions):
-
         if "forward_server=" not in actions:
             return actions
 

@@ -76,7 +76,6 @@ class MonitoringController(BaseController):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
 
             g.audit["client"] = get_client(request)
@@ -213,7 +212,6 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-
             monit_handler = MonitorHandler()
             result = monit_handler.get_sync_status()
 

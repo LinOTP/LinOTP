@@ -40,7 +40,6 @@ REQUEST_HEADERS = {}
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
-
     global REQUEST_BODY
     REQUEST_BODY = kwparams["json"]
 

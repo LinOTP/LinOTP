@@ -67,7 +67,6 @@ class BaseClass:
         def do_send(
             self, config, expected_gnokii_status=0, phone=None, message=None
         ):
-
             if phone:
                 self.phone = phone
             if message:
@@ -104,7 +103,6 @@ class BaseClass:
         def check_result(
             self, expected_result=True, expected_gnokii_call=True
         ):
-
             assert (
                 expected_result == self.return_code
             ), "Unexpected result from sms.submitMessage"

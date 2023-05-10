@@ -51,7 +51,6 @@ def time2counter(t_time, t_step=60):
 
 
 def get_otp(key, counter=None, digits=8, hashfunc=sha1):
-
     hmac = HmacOtp(digits=digits, hashfunc=hashfunc)
     return hmac.generate(counter=counter, key=binascii.unhexlify(key))
 
@@ -129,7 +128,6 @@ class TestHmacTokenController(TestController):
 
         t_time = t_now - timedelta(minutes=2)
         with freeze_time(t_time):
-
             counter = time2counter(t_time, t_step=30)
             otp = get_otp(key=seed, counter=counter, digits=6, hashfunc=sha1)
 
@@ -151,7 +149,6 @@ class TestHmacTokenController(TestController):
 
         t_time = t_now
         with freeze_time(t_time):
-
             counter = time2counter(t_time, t_step=30)
             otp = get_otp(key=seed, counter=counter, digits=8, hashfunc=sha1)
 
@@ -192,7 +189,6 @@ class TestHmacTokenController(TestController):
         t_now = datetime.utcnow()
         t_time = t_now - timedelta(minutes=2)
         with freeze_time(t_time):
-
             counter = time2counter(t_time, t_step=int(timeStep))
             otp = get_otp(key=seed, counter=counter, digits=6, hashfunc=sha1)
 
@@ -217,7 +213,6 @@ class TestHmacTokenController(TestController):
 
         t_time = t_now
         with freeze_time(t_time):
-
             counter = time2counter(t_time, t_step=int(timeStep))
             otp = get_otp(key=seed, counter=counter, digits=6, hashfunc=sha1)
 

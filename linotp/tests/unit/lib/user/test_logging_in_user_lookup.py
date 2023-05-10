@@ -36,7 +36,6 @@ user_info = {"password": "myseecret", "username": "hugo", "userid": "123456"}
 
 
 class UserLookupCache:
-
     cache_return_value = None
 
     def get_value(self, *args, **kwargs):
@@ -55,7 +54,6 @@ mocked_resolver = MockedResolverClass()
 
 
 def mocked_getResolverObject(resolver_spec):
-
     return mocked_resolver
 
 

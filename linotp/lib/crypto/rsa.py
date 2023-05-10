@@ -81,13 +81,11 @@ class RSA_Signature:
         self.verifier = None
 
         if private:
-
             private_key = RSA.import_key(private)
             self.signer = PKCS115_SigScheme(private_key)
             self.verifier = self.signer
 
         if not self.verifier and public:
-
             public_key = RSA.import_key(public)
             self.verifier = PKCS115_SigScheme(public_key)
 

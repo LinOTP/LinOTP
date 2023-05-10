@@ -214,7 +214,6 @@ class Challenge(ChallengeSchema):
         self.challenge = challenge.encode("utf8")
 
     def getChallenge(self) -> str:
-
         if not isinstance(self.challenge, str):
             return self.challenge.decode()
 

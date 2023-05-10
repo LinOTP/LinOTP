@@ -182,7 +182,6 @@ class PolicyActionTyping:
             return action_value
 
         elif typing == "bool":
-
             if action_value in [True, False]:
                 return action_value
 
@@ -199,7 +198,6 @@ class PolicyActionTyping:
                 return action_value > 0
 
             if isinstance(action_value, str):
-
                 if action_value.lower() == "true":
                     return True
 

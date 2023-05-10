@@ -8,7 +8,6 @@ from linotp.tests import TestController
 
 
 class TestAdminUserPrivilege(TestController):
-
     ADMIN_REALM = None
     ADMIN_RESOLVER = None
 

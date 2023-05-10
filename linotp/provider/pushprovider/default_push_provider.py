@@ -59,7 +59,6 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
     """
 
     def __init__(self):
-
         self.push_server_urls = None
         self.client_cert = None
         self.server_cert = None
@@ -100,7 +99,6 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
         }
         """
         try:
-
             #
             # define the request calling endpoint(s)
             # we support lists and single values (for compatibility)
@@ -179,7 +177,6 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             #
 
             if "proxy" in configDict:
-
                 # verify the url scheme
                 parsed_url = urlparse(configDict["proxy"])
                 if parsed_url.scheme not in ["http", "https"]:
@@ -228,7 +225,6 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
 
     @staticmethod
     def get_proxy_definition(proxy_url=None):
-
         # requests is using a dict for the proxy defintion
         proxy = None
         if proxy_url:
@@ -320,9 +316,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
         # iterate through all resources
 
         for uri in next(res_scheduler):
-
             try:
-
                 response = requests.post(
                     uri, json=json_challenge, headers=headers, **pparams
                 )
@@ -341,7 +335,6 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
                 ConnectionError,
                 TooManyRedirects,
             ) as exx:
-
                 log.error("resource %r not available!", uri)
 
                 # mark the url as blocked
@@ -442,7 +435,6 @@ def main():
 
 
 if __name__ == "__main__":
-
     #
     # in main() we parse the arguments from the command line to support
     # command line connection testing

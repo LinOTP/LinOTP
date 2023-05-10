@@ -49,7 +49,6 @@ class TestProviderFromPolicy(unittest.TestCase):
             with patch(
                 "linotp.provider._get_default_provider_name"
             ) as mock_default:
-
                 mock_policy.return_value = {}
                 mock_default.return_value = "default"
 
@@ -67,7 +66,6 @@ class TestProviderFromPolicy(unittest.TestCase):
         """
 
         with patch("linotp.lib.policy.get_client_policy") as mocked_policy:
-
             mocked_policy.return_value = {
                 "one": {
                     "name": "one",

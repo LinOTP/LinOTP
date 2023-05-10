@@ -30,7 +30,6 @@ from linotp.model import db, implicit_returning
 
 
 class ConfigSchema(db.Model):
-
     __tablename__ = "Config"
     __table_args__ = {"implicit_returning": implicit_returning}
 

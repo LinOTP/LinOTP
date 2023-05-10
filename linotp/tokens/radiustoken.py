@@ -127,7 +127,6 @@ class RadiusTokenClass(RemoteTokenClass):
         return ret
 
     def update(self, param):
-
         try:
             self.radiusServer = param["radius.server"]
         except KeyError:

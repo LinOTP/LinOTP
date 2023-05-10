@@ -122,7 +122,6 @@ class TestQRToken(TestController):
         action="support_offline=qr",
         active=True,
     ):
-
         params = {
             "name": name,
             "user": "*",
@@ -141,7 +140,6 @@ class TestQRToken(TestController):
     # --------------------------------------------------------------------------- --
 
     def setUnassignPolicy(self):
-
         # just a dummy policy that is set to active, because if
         # no active policy is present in admin scope, everything
         # is possible. used in unpairing tests
@@ -164,7 +162,6 @@ class TestQRToken(TestController):
     # --------------------------------------------------------------------------- --
 
     def setUnpairPolicy(self, active=True):
-
         params = {
             "name": "dummy_unpairing",
             "user": "*",
@@ -302,7 +299,6 @@ class TestQRToken(TestController):
         return pairing_url, pin
 
     def get_challenge(self, params=None):
-
         if not params:
             params = {}
 
@@ -487,7 +483,6 @@ class TestQRToken(TestController):
     # --------------------------------------------------------------------------- --
 
     def send_pairing_response(self, pairing_response):
-
         params = {"pairing_response": pairing_response}
 
         # we use the standard calback url in here
@@ -613,7 +608,6 @@ class TestQRToken(TestController):
     # ----------------------------------------------------------------------- --
 
     def verify_pairing(self, challenge_url, use_tan=False):
-
         # parse, descrypt and verify the challenge url
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
@@ -837,7 +831,6 @@ class TestQRToken(TestController):
         # retrieve plaintext data depending on flags
 
         if flags & FLAG_QR_SRVSIG:
-
             # plaintext has a server signature as a header
             # extract it and check if it is correct
 
@@ -856,7 +849,6 @@ class TestQRToken(TestController):
             assert server_signature == signed
 
         else:
-
             # no server signature found - just remove
             # the plaintext header
 
@@ -1707,7 +1699,6 @@ class TestQRToken(TestController):
     # --------------------------------------------------------------------------- --
 
     def trigger_challenge_by_serial(self, content_type):
-
         user_token_id = self.execute_correct_pairing()
 
         # ------------------------------------------------------------------- --
@@ -2147,7 +2138,6 @@ class TestQRToken(TestController):
     # --------------------------------------------------------------------------- --
 
     def execute_correct_serial_challenge(self, content_type, use_tan=False):
-
         challenge_url = self.trigger_challenge_by_serial(content_type)
 
         # ------------------------------------------------------------------- --
@@ -2343,7 +2333,6 @@ class TestQRToken(TestController):
 
         leading_zero_test = False
         while not leading_zero_test:
-
             # -------------------------------------------------------------- --
 
             params = {

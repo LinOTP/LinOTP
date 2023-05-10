@@ -30,7 +30,6 @@ from linotp.tokens.ocra2token import OcraSuite
 
 
 class OcraTest(unittest.TestCase):
-
     pin = "1234"
     pin_sha1 = bytes.fromhex("7110eda4d09e062aa5e4a390b0a572ac0d2c0220")
 

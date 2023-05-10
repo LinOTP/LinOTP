@@ -33,7 +33,6 @@ class mocked_TokenHandler:
 
 
 class FakeToken:
-
     pass
 
 

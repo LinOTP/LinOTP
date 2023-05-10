@@ -135,7 +135,6 @@ class TestMonitoringController(TestController):
 
     # UnitTests...
     def test_config(self):
-
         response = self.make_monitoring_request("config", params={})
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
@@ -171,7 +170,6 @@ class TestMonitoringController(TestController):
         return
 
     def test_token_active(self):
-
         policy_params = {
             "name": "test_token_active",
             "scope": "monitoring",
@@ -338,7 +336,6 @@ class TestMonitoringController(TestController):
         # travel back in time with the, then valid, license
 
         with freeze_time(datetime(year=2018, month=11, day=17)):
-
             upload_files = [
                 ("license", "linotp2.token_user.pem", license_data)
             ]
@@ -398,7 +395,6 @@ class TestMonitoringController(TestController):
         # travel back in time with the, then valid, license
 
         with freeze_time(datetime(year=2017, month=12, day=1)):
-
             upload_files = [("license", "expired-lic.pem", license_data)]
             response = self.make_system_request(
                 "setSupport", upload_files=upload_files

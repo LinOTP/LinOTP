@@ -51,7 +51,6 @@ class TestUserserviceController(TestController):
         return response
 
     def define_email_provider(self, provider_params=None):
-
         email_conf = {
             "SMTP_SERVER": "mail.example.com",
             "SMTP_USER": "secret_user",

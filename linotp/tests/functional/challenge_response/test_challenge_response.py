@@ -68,7 +68,6 @@ EMAIL_MESSAGE_OTP = ("", "")
 
 
 def mocked_submitMessage_request(SMS_Object, *argparams, **kwparams):
-
     # this hook is defined to grep the otp and make it globaly available
     global SMS_MESSAGE_OTP
     SMS_MESSAGE_OTP = argparams
@@ -196,7 +195,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         return
 
     def tearDown(self):
-
         if self.patch_smtp is not None:
             self.patch_smtp.stop()
         if self.patch_sms is not None:
@@ -243,7 +241,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         email_address=None,
         realm=None,
     ):
-
         params = {
             "serial": serial,
             "otpkey": otpkey,
@@ -569,7 +566,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         # submit a pin only request - to trigger a challenge
         for _i in range(1, 3):
-
             params = {"user": "passthru_user1", "pass": "h1"}
             response = self.make_validate_request(
                 action="check", params=params
@@ -1745,7 +1741,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         # the time
 
         with freezegun.freeze_time(datetime.utcnow() - timedelta(minutes=10)):
-
             params = {"user": "passthru_user1", "pass": "shortpin"}
             response = self.make_validate_request(
                 action="check", params=params
@@ -1883,7 +1878,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         transactions = []
 
         for _i in range(1, 5):
-
             # submit a pin only request - to trigger a challenge
             params = {"user": "passthru_user1", "pass": "pin"}
             response = self.make_validate_request(
@@ -1908,8 +1902,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         # check if the admin checkstatus api supports finding of challenges
         # by top transactionid
-        for (t, s1, s2, _o1, _o2) in transactions:
-
+        for t, s1, s2, _o1, _o2 in transactions:
             params = {"transactionid": t, "session": self.session}
             response = self.make_admin_request(
                 action="checkstatus", params=params
@@ -1979,7 +1972,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         return
 
     def test_challenge_response_auto_resync(self):
-
         self.setPinPolicy(
             name="ch_resp",
             realm="myDefRealm",

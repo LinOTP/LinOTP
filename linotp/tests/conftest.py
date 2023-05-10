@@ -123,7 +123,6 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
     db_fd, db_path = None, None
 
     try:
-
         # ------------------------------------------------------------------ --
 
         # if sqlalchemy_uri is the fallback, establish a temp file
@@ -137,7 +136,6 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
         # Skip test if incompatible with sqlite
 
         if sqlalchemy_uri.startswith("sqlite:"):
-
             if request.node.get_closest_marker("exclude_sqlite"):
                 pytest.skip("non sqlite database required for test")
 
@@ -201,7 +199,6 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
         yield app
 
     finally:
-
         # ------------------------------------------------------------------ --
 
         # in case of sqlite tempfile fallback, we have to wipe the dishes here
@@ -275,6 +272,7 @@ def set_policy(adminclient):
     Factory fixture that provides a function that can be used
     to set a policy
     """
+
     # We provide this as a fixture so that we can get access
     # to the client fixture within the function
     def _setPolicy(params: dict) -> None:
@@ -338,7 +336,6 @@ def scoped_authclient(
                     "realm": current_app.config["ADMIN_REALM_NAME"],
                 },
             ):
-
                 yield client
 
         else:
@@ -446,7 +443,6 @@ def _create_resolver(
 def create_managed_resolvers(
     scoped_authclient: Callable[..., FlaskClient],
 ) -> Callable:
-
     import io
     import json
 
@@ -569,11 +565,9 @@ def create_common_realms(scoped_authclient: Callable) -> None:
         existing_realms = response.json["result"]["value"]
 
         for realm, resolver_definition in common_realms.items():
-
             # create the realm if it does not already exist
 
             if realm.lower() not in existing_realms:
-
                 response = _create_realm(
                     realm=realm,
                     resolvers=resolver_definition,

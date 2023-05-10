@@ -53,7 +53,6 @@ SMS_MESSAGE_CONFIG = {}
 
 
 def mocked_submitMessage(FileSMS_Object, *argparams, **kwparams):
-
     # this hook is defined to grep the otp and make it globaly available
     global SMS_MESSAGE_OTP
     SMS_MESSAGE_OTP = argparams
@@ -71,7 +70,6 @@ def mocked_connectiontest(CustomVoiceProvider_Object, *argparams, **kwparams):
 
 class TestProviderController(TestController):
     def setUp(self):
-
         self.removeProviderConfig()
 
         super(TestProviderController, self).setUp()
@@ -79,7 +77,6 @@ class TestProviderController(TestController):
         self.create_common_realms()
 
     def tearDown(self):
-
         self.removeProviderConfig()
 
         self.delete_all_token()
@@ -90,7 +87,6 @@ class TestProviderController(TestController):
         super(TestProviderController, self).tearDown()
 
     def create_sms_token(self, serial=None, token_params=None):
-
         params = {
             "otpkey": (
                 "1234567890123456789012345678901234567890"
@@ -113,7 +109,6 @@ class TestProviderController(TestController):
         return response
 
     def setPolicy(self, policy_params=None):
-
         params = {
             "name": "smsprovider_newone",
             "scope": "authentication",
@@ -147,7 +142,6 @@ class TestProviderController(TestController):
         return response
 
     def removeProviderConfig(self):
-
         entries = [
             "Provider.Default.",
             "SMSProvider",

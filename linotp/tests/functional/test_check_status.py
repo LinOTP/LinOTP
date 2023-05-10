@@ -107,7 +107,6 @@ class TestCheckStatus(TestController):
         # somehow pytest.mark.parametrize does not work
         # so we mimic it here:
         for use_detail_policy in [True, False]:
-
             policies = [
                 {
                     "name": "hmac_challenge_response",
@@ -267,7 +266,6 @@ class TestCheckStatus(TestController):
             start = datetime.datetime.now()
             try:
                 while True:
-
                     # now check for the status
                     params = {
                         "user": "passthru_user1",
@@ -440,7 +438,6 @@ class TestCheckStatus(TestController):
         start = datetime.datetime.now()
         try:
             while True:
-
                 # now check for the status
                 params = {
                     "user": "passthru_user1",

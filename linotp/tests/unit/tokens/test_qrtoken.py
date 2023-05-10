@@ -108,7 +108,6 @@ class QRTokenClassUnitTestCase(object):
         token.addToTokenInfo("user_public_key", user_public_key)
 
         with base_app.test_request_context():
-
             if "mobile_app_protocol_id" in config:
                 del config["mobile_app_protocol_id"]
 

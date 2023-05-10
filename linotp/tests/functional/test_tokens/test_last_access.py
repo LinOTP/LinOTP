@@ -170,7 +170,6 @@ class TestLastAccess(TestController):
         frozen2 = frozen1 + timedelta(seconds=3)
 
         with freezegun.freeze_time(frozen2):
-
             params = {"serial": serial, "pass": "123!geheim"}
             response = self.make_validate_request("check_s", params=params)
             assert '"status": true' in response, response.body

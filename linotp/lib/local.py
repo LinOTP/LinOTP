@@ -89,7 +89,6 @@ class LocalContainer(object):
         ident_func=get_thread_ident,
         access_check=lambda: True,
     ):
-
         self.__storage__ = {}
         self.__ident_func__ = ident_func
         self.__source_func__ = source_func

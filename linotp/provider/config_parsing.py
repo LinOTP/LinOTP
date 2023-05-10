@@ -161,7 +161,6 @@ class ConfigParsingMixin(object):
             timeout = configDict.get("timeout", configDict.get("Timeout"))
 
             if "," in timeout:
-
                 conection_timeout, request_timeout = timeout.split(",")
                 return (float(conection_timeout), float(request_timeout))
 
@@ -169,7 +168,6 @@ class ConfigParsingMixin(object):
                 return float(timeout)
 
         else:
-
             return timeout_default
 
 

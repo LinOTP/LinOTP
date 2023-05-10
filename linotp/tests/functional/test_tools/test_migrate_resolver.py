@@ -43,13 +43,11 @@ log = logging.getLogger(__name__)
 
 
 class TestImportUser(TestController):
-
     resolver_name = "myresolv"
     target_realm = "myrealm"
     resolver_spec = "useridresolver.SQLIdResolver.IdResolver." + resolver_name
 
     def setUp(self):
-
         self.create_common_resolvers()
         self.create_common_realms()
         self.delete_all_realms()

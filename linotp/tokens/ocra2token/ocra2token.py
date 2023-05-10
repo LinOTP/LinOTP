@@ -310,7 +310,6 @@ class Ocra2TokenClass(TokenClass):
 
     @classmethod
     def get_helper_params_post(cls, param, user=None):
-
         helper_param = {}
 
         tok_type = "ocra2"
@@ -474,7 +473,6 @@ class Ocra2TokenClass(TokenClass):
         self.ocraSuite = self.getFromTokenInfo("ocrasuite")
 
         if not self.ocraSuite:
-
             if "ocrasuite" in params:
                 self.ocraSuite = params.get("ocrasuite")
             else:
@@ -675,7 +673,6 @@ class Ocra2TokenClass(TokenClass):
 
         activationcode = params.get("activationcode", None)
         if activationcode is not None:
-
             # genkey might have created a new key, so we have to rely on
             encSharedSecret = self.getFromTokenInfo("sharedSecret", None)
             if encSharedSecret is None:
@@ -1033,7 +1030,6 @@ class Ocra2TokenClass(TokenClass):
 
         # create a non exisiting challenge
         try:
-
             (res, opt) = Challenges.create_challenge(
                 self, options={"messgae": data}
             )
@@ -1522,7 +1518,6 @@ class Ocra2TokenClass(TokenClass):
         if self.transId == 0:
             return
         try:
-
             challenges = Challenges.lookup_challenges(
                 self.getSerial(), transid=self.transId
             )
@@ -1626,7 +1621,6 @@ class Ocra2TokenClass(TokenClass):
         challenge2 = {}
 
         if options is None:
-
             # the newer one
             ch1 = challenges[0]
             challenge1["challenge"] = ch1.get("data").get("challenge")
@@ -1674,7 +1668,6 @@ class Ocra2TokenClass(TokenClass):
             timeShift = int(self.getFromTokenInfo("timeShift", 0))
 
         try:
-
             count_1 = ocraSuite.checkOtp(
                 otp1,
                 counter,

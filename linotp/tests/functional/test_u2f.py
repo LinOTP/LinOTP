@@ -76,7 +76,6 @@ def ECDSA_sign(private_key, message):
 
 @pytest.mark.fails_in_pypi_tests
 class TestU2FController(TestController):
-
     ATTESTATION_PRIVATE_KEY_PEM = (
         "-----BEGIN EC PRIVATE KEY-----\n"
         "MHQCAQEEIBMsy03r5KbBIxkWY91FDJ7BvtTQhgPgndi282K4YrIOoAcGBSuBBAAK\n"
@@ -666,7 +665,6 @@ class TestU2FController(TestController):
     def _authentication_response(
         self, challenge, correct=True, additional_params=None
     ):
-
         if additional_params is None:
             additional_params = {}
 
@@ -877,7 +875,6 @@ class TestU2FController(TestController):
         action="support_offline=u2f",
         active=True,
     ):
-
         params = {
             "name": name,
             "user": "*",

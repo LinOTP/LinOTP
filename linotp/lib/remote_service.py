@@ -82,7 +82,6 @@ class RemoteService(object):
         recovery_timeout=30,
         expected_exception=Exception,
     ):
-
         self.func = func
         self.failure_count = 0
         self.failure_threshold = failure_threshold
@@ -110,11 +109,9 @@ class RemoteService(object):
         """
 
         if self.state == State.UNAVAILABLE:
-
             if now() > self.last_unavailable + timedelta(
                 seconds=self.recovery_timeout
             ):
-
                 # recovery time is over. try once(!) if function
                 # is available again
 
@@ -127,7 +124,6 @@ class RemoteService(object):
                     raise ServiceUnavailable(repr(e))
 
             else:
-
                 # recovery time is not over.
                 # simply raise exception
 
@@ -154,13 +150,11 @@ class RemoteServiceList(list):
         recovery_timeout=30,
         expected_exception=Exception,
     ):
-
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.expected_exception = expected_exception
 
     def append(self, func, **kwargs):
-
         service_kwargs = {
             "failure_threshold": self.failure_threshold,
             "recovery_timeout": self.recovery_timeout,
@@ -182,7 +176,6 @@ class RemoteServiceList(list):
         """
 
         for service in self:
-
             try:
                 result = service(*args, **kwargs)
                 return result
@@ -190,6 +183,5 @@ class RemoteServiceList(list):
                 continue
 
         else:
-
             # no service in list succeeded
             raise AllServicesUnavailable()

@@ -40,7 +40,6 @@ from linotp.tests import TestController
 
 
 class TestEmailtokenController(TestController):
-
     pin = "1234"
     default_email_address = "paul@example.com"
     patch_smtp = None

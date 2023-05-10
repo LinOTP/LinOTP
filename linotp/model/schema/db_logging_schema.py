@@ -30,7 +30,6 @@ from linotp.model import db, implicit_returning
 
 
 class LoggingSchema(db.Model):
-
     __tablename__ = "logging_config"
     __table_args__ = {"implicit_returning": implicit_returning}
 

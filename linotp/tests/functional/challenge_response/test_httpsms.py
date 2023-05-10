@@ -277,7 +277,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
         mocked_requests_get.return_value = fake_http_response
 
         with DefaultProvider(self, params):
-
             # check the saved configuration:
             # getConfig will return only the crypted string
 
@@ -347,7 +346,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
         }
 
         with DefaultProvider(self, params):
-
             response = self.make_validate_request(
                 "smspin", params={"user": "user1", "pass": "1234"}
             )
@@ -405,7 +403,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
             "class": "smsprovider.HttpSMSProvider.HttpSMSProvider",
         }
         with DefaultProvider(self, params):
-
             response = self.make_validate_request(
                 "check", params={"user": "user1", "pass": "1234"}
             )
@@ -452,7 +449,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
             "class": "smsprovider.HttpSMSProvider.HttpSMSProvider",
         }
         with DefaultProvider(self, params):
-
             response = self.make_validate_request(
                 "check", params={"user": "user1", "pass": "1234"}
             )
@@ -478,7 +474,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
             }
 
             with DefaultProvider(self, params):
-
                 response = self.make_validate_request(
                     "check",
                     params={
@@ -536,7 +531,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
         mocked_requests_get.return_value = fake_http_response
 
         with DefaultProvider(self, params):
-
             response = self.make_validate_request(
                 "smspin", params={"user": "user1", "pass": "1234"}
             )
@@ -622,7 +616,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
         )
 
         with DefaultProvider(self, provider_conf):
-
             fake_response = FakeResponse()
             fake_response.text = "ID=POST"
             mocked_requests_post.return_value = fake_response
@@ -641,7 +634,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
             method="GET",
         )
         with DefaultProvider(self, provider_conf):
-
             fake_response = FakeResponse()
             fake_response.text = "ID=GET"
             mocked_requests_get.return_value = fake_response
@@ -666,7 +658,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
 
         i = 11
         for method in ["POST", "GET"]:
-
             # ------------------------------------------------------------- --
 
             # use the next sms token for a valid twillio reply
@@ -687,7 +678,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
             )
 
             with DefaultProvider(self, provider_conf):
-
                 params = {"serial": self.serials[i], "pass": ""}
                 response = self.make_validate_request("check_s", params=params)
 
@@ -717,7 +707,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
             )
 
             with DefaultProvider(self, provider_conf):
-
                 params = {"serial": self.serials[i], "pass": ""}
                 response = self.make_validate_request("check_s", params=params)
 

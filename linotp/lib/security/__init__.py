@@ -87,6 +87,5 @@ class SecurityModule(object):
         raise NotImplementedError("Should have been implemented %s" % fname)
 
     def verfiyMessageSignature(self, message, hex_mac, method=None, slot_id=3):
-
         fname = "verfiyMessageSignature"
         raise NotImplementedError("Should have been implemented %s" % fname)

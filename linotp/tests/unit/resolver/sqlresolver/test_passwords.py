@@ -38,7 +38,6 @@ from linotp.useridresolver.SQLIdResolver import check_password
 
 class TestSQLResolver_Password(object):
     def test_pbkdf2_password(self):
-
         brahms_hashed_pw = (
             "{PKCS5S2}TGF1K1olIoY5a4HHy89R+LcT8E/V5P+"
             "u92L0ClePbhzqWikJUGmS0lyHSibsj4th=="

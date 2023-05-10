@@ -56,7 +56,6 @@ class TestUserSearchExpression(unittest.TestCase):
             "*o@hotad.example.net",
             "*oxwell@hot*",
         ]:
-
             serials = _user_expression_match(
                 user_search, list(token_user_dict.items())
             )
@@ -79,7 +78,6 @@ class TestUserSearchExpression(unittest.TestCase):
             "*@hotad.example.net",
             "*xwell@hot*",
         ]:
-
             serials = _user_expression_match(
                 user_search, list(token_user_dict.items())
             )
