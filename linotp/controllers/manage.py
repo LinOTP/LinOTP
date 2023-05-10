@@ -811,11 +811,13 @@ class ManageController(BaseController):
 
         try:
             user = getUserFromRequest()
+            logged_in_admin: User = request_context["AuthUser"]
 
             response_detail = {
                 "version": get_version(),
                 "copyright": get_copyright_info(),
                 "user": get_userinfo(user),
+                "permissions": logged_in_admin.getPermissions().parse_for_context_api(),
             }
             return sendResult(response, True, opt=response_detail)
 

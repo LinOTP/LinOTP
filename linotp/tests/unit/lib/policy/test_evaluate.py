@@ -216,5 +216,96 @@ class TestGetClientPolicy(unittest.TestCase):
         assert "p1" not in res
         assert "p2" in res
 
+    def test_lazy_matching_user(self):
+        policies = {
+            "p1": {
+                "name": "qrtoken_local",
+                "user": "hugo, *",
+                "realm": "myrealm",
+                "client": "*",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+            "p2": {
+                "name": "qrtoken_local",
+                "user": "eva, *",
+                "realm": "myrealm",
+                "client": "127.0.0.1",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+        }
+
+        policy_eval = PolicyEvaluator(policies)
+        policies_for_user = policy_eval.has_policy(
+            {"user": "eva"}, strict_matches=False
+        )
+        assert policies == policies_for_user
+
+        # remove eva from p1 (implicit through *)
+        policies["p1"]["user"] = "hugo"
+        policy_eval = PolicyEvaluator(policies)
+        policies_for_user = policy_eval.has_policy(
+            {"user": "eva"}, strict_matches=False
+        )
+        assert not policies_for_user.get("p1")
+        assert policies_for_user.get("p2")
+
+    def test_lazy_matching_realm(self):
+        policies = {
+            "p1": {
+                "name": "qrtoken_local",
+                "user": "hugo, *",
+                "realm": "*",
+                "client": "*",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+            "p2": {
+                "name": "qrtoken_local",
+                "user": "eva, *",
+                "realm": "myrealm",
+                "client": "127.0.0.1",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+            "p3": {
+                "name": "qrtoken_local",
+                "user": "eva, *",
+                "realm": "mydefrealm",
+                "client": "127.0.0.1",
+                "time": "*",
+                "action": "select",
+                "scope": "authentication",
+                "active": "True",
+            },
+        }
+
+        policy_eval = PolicyEvaluator(policies)
+        policies_for_realm = policy_eval.has_policy(
+            {"realm": "myrealm"}, strict_matches=False
+        )
+        assert policies_for_realm.get("p1")
+        assert policies_for_realm.get("p2")
+        assert not policies_for_realm.get("p3")
+
+        # remove myrealm from p1 (implicit through *)
+        policies["p1"]["realm"] = "mydefrealm"
+        policy_eval = PolicyEvaluator(policies)
+        policies_for_realm = policy_eval.has_policy(
+            {"realm": "myrealm"}, strict_matches=False
+        )
+        assert not policies_for_realm.get("p1")
+        assert policies_for_realm.get("p2")
+        assert not policies_for_realm.get("p3")
+
 
 # eof #
