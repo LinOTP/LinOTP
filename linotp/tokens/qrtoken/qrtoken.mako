@@ -247,6 +247,11 @@ ${_("Enroll your QRToken")}
         maxlength: "${_('maximum length must be lower than {0}')}",
     });
 
+    % if isinstance(c.pin_policy, int):
+    var pinPolicy = ${c.pin_policy};
+    % else:
+    var pinPolicy = "${c.pin_policy}";
+    % endif
 
 function self_qrtoken_get_param() {
 	var urlparam = {};
@@ -254,7 +259,7 @@ function self_qrtoken_get_param() {
 	urlparam['type'] = 'qr';
     urlparam['description'] = $('#qrtoken_desc').val();
 
-    if (${c.pin_policy} == -1 || ${c.pin_policy} == 0) {
+    if ([-1, 0].includes(pinPolicy)) {
         urlparam['pin'] = $('#qrtoken_pin1').val();
     }
 
@@ -284,7 +289,7 @@ $( document ).ready(function() {
             self_qrtoken_submit();
         }
     });
-    if (${c.pin_policy} == -1 || ${c.pin_policy} == 0) {
+    if ([-1, 0].includes(pinPolicy)) {
         $("#form_enroll_qrtoken").validate({
             rules: {
                 qrtoken_pin1: {
@@ -309,7 +314,7 @@ $( document ).ready(function() {
                 <td><label id='qrtoken_desc_label2' for='qrtoken_desc'>${_("Token description")}</label></td>
                 <td><input id='qrtoken_desc' name='qrtoken_desc' class="ui-widget-content ui-corner-all" value='self enrolled'></td>
             </tr>
-      %if c.pin_policy == -1 or c.pin_policy == 0:
+      %if c.pin_policy in [-1, 0]:
             <tr>
                 <td colspan="2">
                     <b>${_("Token PIN:")}</b>

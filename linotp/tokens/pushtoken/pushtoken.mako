@@ -223,6 +223,11 @@ ${_("Enroll Push Token")}
         maxlength: "${_('maximum length must be lower than {0}')}",
     });
 
+    % if isinstance(c.pin_policy, int):
+    var pinPolicy = ${c.pin_policy};
+    % else:
+    var pinPolicy = "${c.pin_policy}";
+    % endif
 
 function self_pushtoken_get_param() {
 	var urlparam = {};
@@ -230,7 +235,7 @@ function self_pushtoken_get_param() {
 	urlparam['type'] = 'push';
 	urlparam['description'] = $('#pushtoken_desc').val();
 
-    if (${c.pin_policy} == -1 || ${c.pin_policy} == 0) {
+    if ([-1, 0].includes(pinPolicy)) {
        urlparam['pin'] = $('#pushtoken_pin1').val();
     }
 
@@ -260,7 +265,7 @@ $( document ).ready(function() {
         }
     });
 
-    if (${c.pin_policy} == -1 || ${c.pin_policy} == 0) {
+    if ([-1, 0].includes(pinPolicy)) {
         $("#form_enroll_pushtoken").validate({
             rules: {
                 pushtoken_pin1: {
@@ -286,7 +291,7 @@ $( document ).ready(function() {
                 <td><label id='pushtoken_desc_label2' for='pushtoken_desc'>${_("Token description")}</label></td>
                 <td><input id='pushtoken_desc' name='pushtoken_desc' class="ui-widget-content ui-corner-all" value='self enrolled'></td>
             </tr>
-        %if c.pin_policy == -1 or c.pin_policy == 0:
+        %if c.pin_policy in [-1, 0]:
             <tr>
                 <td colspan="2">
                     <b>${_("Token PIN:")}</b>
