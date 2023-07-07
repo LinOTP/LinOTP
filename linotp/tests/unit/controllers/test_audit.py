@@ -153,6 +153,38 @@ class TestAuditSearch(object):
         returned_entries = response.json["result"]["value"]["pageRecords"]
         assert 1 == len(returned_entries), (filter, response.json)
 
+    def test_audit_with_v2_sorting(self, adminclient, search):
+        # create an audit record by retrieving the system config
+        adminclient.get("/system/getConfig")
+        # create an audit record by retrieving the audit
+        adminclient.get("/api/v2/auditlog/")
+
+        # test sort by action asc
+        response_asc = adminclient.get(
+            "/api/v2/auditlog/",
+            query_string={"sortBy": "action", "sortOrder": "asc"},
+        )
+        returned_entries_asc = response_asc.json["result"]["value"][
+            "pageRecords"
+        ]
+        assert 2 == len(returned_entries_asc), response_asc.json
+        assert (
+            "api/v2/auditlog/" == returned_entries_asc[0]["action"]
+        ), returned_entries_asc
+
+        # test sort by action desc
+        response_desc = adminclient.get(
+            "/api/v2/auditlog/",
+            query_string={"sortBy": "action", "sortOrder": "desc"},
+        )
+        returned_entries_desc = response_desc.json["result"]["value"][
+            "pageRecords"
+        ]
+        assert 3 == len(returned_entries_desc), response_desc.json
+        assert (
+            "system/getConfig" == returned_entries_desc[0]["action"]
+        ), returned_entries_desc
+
 
 # class TestAuditRecord(object):
 #     """
