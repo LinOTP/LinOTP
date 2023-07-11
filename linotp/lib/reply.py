@@ -44,7 +44,12 @@ from linotp.flap import tmpl_context as c
 from linotp.lib.context import request_context, request_context_safety
 from linotp.lib.error import LinotpError
 from linotp.lib.policy import is_auth_return
-from linotp.lib.util import deep_update, get_api_version, get_version
+from linotp.lib.util import (
+    deep_update,
+    get_api_version,
+    get_version,
+    get_version_number,
+)
 
 optional = True
 required = False
@@ -272,6 +277,7 @@ def sendError(_response, exception, id=1, context=None):
                 },
             },
             "version": get_version(),
+            "versionNumber": get_version_number(),
             "id": id,
         }
         data = json.dumps(res, indent=3)
@@ -310,6 +316,7 @@ def sendResult(response, obj, id=1, opt=None, status=True):
             "value": obj,
         },
         "version": get_version(),
+        "versionNumber": get_version_number(),
         "id": id,
     }
 
