@@ -2,6 +2,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
 
   Features:
   * policies detail_on_success and detail_on_fail apply to all /validate enpoints
+  * /validate entpoints return user information (e.g. given name, phone) when detail_on_success is set
   * the manage ui login will no longer use refresh and reloads
   * method to provide context information for manage ui
   * new API endpoints to retrieve tokens:
