@@ -1950,7 +1950,8 @@ class TestQRToken(TestController):
                 response.json.get("detail", {}).get("realm") == "mydefrealm"
             ) == use_detail_policy, response
             assert (
-                response.json.get("detail", {}).get("user") == "root"
+                response.json.get("detail", {}).get("user", {}).get("username")
+                == "root"
             ) == use_detail_policy, response
             assert (
                 response.json.get("detail", {}).get("is_linotp_admin") == False

@@ -816,7 +816,21 @@ def get_details_for_response(response: Response) -> dict:
             admin_realm = current_app.config.get("ADMIN_REALM_NAME")
 
             # user info
-            res["user"] = user.login if user else None
+            if not user:
+                res["user"] = None
+            else:
+                try:
+                    user_info = {
+                        k: v if v else None
+                        for k, v in user.info.items()
+                        if k != "cryptpass"
+                    }
+                except:
+                    log.warning(
+                        "No attributes found to return for user %s", user.login
+                    )
+                    user_info = {"username": user.login}
+                res["user"] = user_info
             # realm info
             res["realm"] = realm
             res["is_linotp_admin"] = (
