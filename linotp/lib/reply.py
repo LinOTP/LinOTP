@@ -815,11 +815,14 @@ def get_details_for_response(response: Response) -> dict:
             realm = user.realm if user else None
             admin_realm = current_app.config.get("ADMIN_REALM_NAME")
 
+            # user info
             res["user"] = user.login if user else None
+            # realm info
             res["realm"] = realm
             res["is_linotp_admin"] = (
                 realm.lower() == admin_realm.lower() if realm else None
             )
+            # token info
             res["tokentype"] = request_context.get("TokenType")
             res["serial"] = request_context.get("TokenSerial")
         else:
