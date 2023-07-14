@@ -271,11 +271,15 @@ class Challenges(object):
             challenge.update(attributes)
 
         #
-        # add token specific info like tokentype and serial
+        # add token specific info like tokentype, serial and description
         #
 
         challenge["linotp_tokenserial"] = token.getSerial()
         challenge["linotp_tokentype"] = token.type
+        try:
+            challenge["linotp_tokendescription"] = token.token.LinOtpTokenDesc
+        except:
+            challenge["linotp_tokendescription"] = None
 
         return (res, challenge)
 
