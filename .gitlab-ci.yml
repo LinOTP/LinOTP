@@ -5,19 +5,18 @@ include:
 variables:
   LANG: C.UTF-8
   IMAGE_NAME: linotp-build-test-environment_buster
-  BUILD_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_COMMIT_REF_NAME
-  LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
-  DOCKERFY_URL: http://debs-devel.corp.linotp.de/misc/dockerfy/dockerfy
+  BUILD_CODE_IMAGE: $CI_REGISTRY/$IMAGE_NAME:$CI_COMMIT_REF_NAME
+  LATEST_CODE_IMAGE: $CI_REGISTRY/$IMAGE_NAME:$CI_PIPELINE_ID
+  DOCKERFY_URL: https://debs-devel.corp.linotp.de/misc/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
   DEPENDENCY_SOURCE: http://debs-devel.corp.linotp.de/linotp2
   DEPENDENCY_SOURCE_COMPONENT: linotp
   DEPENDENCY_GPG_KEYID: ""
   DEPENDENCY_GPG_KEY_URL: "http://debs-devel.corp.linotp.de/misc/gpg/linotp-dev-archive-keyring.gpg"
   DOCKER_TAGS: $CI_PIPELINE_ID
-  IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
+  IMAGE_PREFIX: $CI_REGISTRY/$CI_PROJECT_PATH/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
-  CI_REGISTRY: $GITLAB_DOMAIN_NAME:5050
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
   # Variables for upload-debs
@@ -48,7 +47,7 @@ stages:
   - upload-debian-packages
 
 .docker-registry: &docker-registry
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+  docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 .build-test-environment-debian:
   stage: build-test-environment
