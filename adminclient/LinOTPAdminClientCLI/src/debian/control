@@ -1,7 +1,7 @@
 Source: linotp-adminclient-cli
 Section: net
 Priority: optional
-Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
+Maintainer: netgo software GmbH <info@linotp.de>
 Build-Depends: debhelper (>=9), python-all, python-setuptools, dh-python
 Standards-Version: 3.9.8
 X-Python-Version: >= 2.7
