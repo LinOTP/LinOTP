@@ -40,7 +40,7 @@ sms submitt.
 # indirectly) import any module that might not yet be installed when installing
 # SMSProvider.
 
-__copyright__ = "Copyright (C) netgo GmbH"
+__copyright__ = "Copyright (C) netgo software GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "info@linotp.de"

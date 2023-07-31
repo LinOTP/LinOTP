@@ -63,7 +63,7 @@ the simple webui which come with linotp
 # LinOTP.
 
 
-__copyright__ = "Copyright (C) netgo GmbH"
+__copyright__ = "Copyright (C) netgo software GmbH"
 __product__ = "LinOTP"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
