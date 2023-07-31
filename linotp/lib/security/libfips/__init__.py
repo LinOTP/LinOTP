@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -48,7 +49,6 @@ class SSLError(Exception):
 
 class FipsModule(object):
     def __init__(self, library):
-
         # this will raise an OSError exception, in case of an error.
         _libcrypto = CDLL(library)
 

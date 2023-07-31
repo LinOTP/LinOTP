@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -42,7 +43,6 @@ Rad_Serv = None
 class MockForwardServerPolicy(object):
     @staticmethod
     def do_request(servers, env, user, passw, options):
-
         global Rad_Serv
         Rad_Serv = servers
 
@@ -96,7 +96,6 @@ class TestForwardServer(TestController):
         assert "setPolicy " + name in response, response
 
     def define_all_forward(self):
-
         params = {
             "name": "forward",
             "realm": "mydefrealm",

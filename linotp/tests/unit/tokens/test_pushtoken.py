@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -77,7 +78,6 @@ class FakeTokenModel(object):
 
 
 class PushTokenClassUnitTestCase(object):
-
     # ---------------------------------------------------------------------- --
 
     @patch("linotp.tokens.pushtoken.pushtoken.get_secret_key")
@@ -97,7 +97,6 @@ class PushTokenClassUnitTestCase(object):
         token.addToTokenInfo("user_dsa_public_key", user_public_key)
 
         with base_app.test_request_context():
-
             if "mobile_app_protocol_id" in config:
                 del config["mobile_app_protocol_id"]
 

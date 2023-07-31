@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -48,7 +49,6 @@ class TokenInfoMixin(object):
         return info
 
     def setTokenInfo(self, info):
-
         if info is not None:
             tokeninfo = "" + json.dumps(info, indent=0)
             self.token.setInfo(tokeninfo)

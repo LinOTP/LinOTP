@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -56,7 +57,6 @@ mocked_context = {
 class TestCacheActivation(unittest.TestCase):
     @patch("flask.g.request_context", new=mocked_context)
     def test_user_cache_activation(self):
-
         global mocked_context
 
         resolver_spec = "linotp.sqlresolver.mysql"

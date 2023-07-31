@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -508,7 +509,6 @@ class SmsTokenClass(HmacTokenClass):
             # overrule the given smstext
 
             if "data" in options or "message" in options:
-
                 # if there is an enforce policy
                 # we do not allow the owerwrite
 
@@ -987,7 +987,6 @@ class SmsTokenClass(HmacTokenClass):
 
         res_scheduler = ResourceScheduler(tries=1, uri_list=providers)
         for provider_name in next(res_scheduler):
-
             sms_provider = loadProvider("sms", provider_name=provider_name)
 
             if not sms_provider:
@@ -996,7 +995,6 @@ class SmsTokenClass(HmacTokenClass):
                 raise Exception("unable to load provider")
 
             try:
-
                 success = sms_provider.submitMessage(phone, message)
                 available = True
 

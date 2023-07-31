@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -75,7 +76,6 @@ class MonitoringController(BaseController):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
 
             g.audit["client"] = get_client(request)
@@ -212,7 +212,6 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-
             monit_handler = MonitorHandler()
             result = monit_handler.get_sync_status()
 

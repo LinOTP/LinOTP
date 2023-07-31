@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -48,7 +49,6 @@ class TestProviderFromPolicy(unittest.TestCase):
             with patch(
                 "linotp.provider._get_default_provider_name"
             ) as mock_default:
-
                 mock_policy.return_value = {}
                 mock_default.return_value = "default"
 
@@ -66,7 +66,6 @@ class TestProviderFromPolicy(unittest.TestCase):
         """
 
         with patch("linotp.lib.policy.get_client_policy") as mocked_policy:
-
             mocked_policy.return_value = {
                 "one": {
                     "name": "one",

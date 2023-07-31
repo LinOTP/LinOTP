@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -110,7 +111,6 @@ class TestPolicyEngine(TestController):
         response = self.make_system_request("setConfig", params=params)
         assert 'NewPolicyEvaluation:True": true' in response, response
         try:
-
             # ------------------------------------------------------------- --
 
             # first the access is disable for enable/disable but show must work

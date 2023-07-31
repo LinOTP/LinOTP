@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -298,7 +299,6 @@ class UserserviceController(BaseController):
         # the following actions dont require an authenticated session
 
         if action in ["auth", "pre_context", "login", "logout"]:
-
             return
 
         # ------------------------------------------------------------------ --
@@ -312,7 +312,6 @@ class UserserviceController(BaseController):
             "userservice",
             "user_selfservice",
         ]:
-
             raise unauthorized(self.response, _("No valid session"))
 
         # ------------------------------------------------------------------ --
@@ -336,7 +335,6 @@ class UserserviceController(BaseController):
         # finally check the validty of the session
 
         if not check_session(request, self.authUser, self.client):
-
             raise unauthorized(self.response, _("No valid session"))
 
         # ------------------------------------------------------------------ --
@@ -344,7 +342,6 @@ class UserserviceController(BaseController):
         # the usertokenlist could be catched in any identified state
 
         if action in ["usertokenlist", "userinfo"]:
-
             return
 
         # ------------------------------------------------------------------ --
@@ -352,7 +349,6 @@ class UserserviceController(BaseController):
         # any other action requires a full ' state
 
         if auth_state != "authenticated":
-
             raise unauthorized(self.response, _("No valid session"))
 
         # ------------------------------------------------------------------ --
@@ -378,7 +374,6 @@ class UserserviceController(BaseController):
                 "userservice/pre_context",
                 "userservice/userinfo",
             ]:
-
                 g.audit["user"] = "%r" % authUser
                 realm = ""
                 if authUser and authUser.realm:
@@ -507,7 +502,6 @@ class UserserviceController(BaseController):
         """
 
         try:
-
             param = self.request_params
 
             # -------------------------------------------------------------- --
@@ -535,7 +529,6 @@ class UserserviceController(BaseController):
             try:
                 password = param["password"]
             except KeyError as exx:
-
                 log.info("Missing password for user %r", uid)
                 g.audit["action_detail"] = "Missing password for user %r" % uid
                 g.audit["success"] = False
@@ -550,15 +543,12 @@ class UserserviceController(BaseController):
             # check the authentication
 
             if self.mfa_login:
-
                 res = self._mfa_login_check(user, passw, otp)
 
             else:
-
                 res = self._default_auth_check(user, passw, otp)
 
             if not res:
-
                 log.info("User %r failed to authenticate!", uid)
                 g.audit["action_detail"] = (
                     "User %r failed to authenticate!" % uid
@@ -588,7 +578,6 @@ class UserserviceController(BaseController):
             return sendResult(self.response, True, 0)
 
         except Exception as exx:
-
             g.audit["info"] = ("%r" % exx)[:80]
             g.audit["success"] = False
 
@@ -680,7 +669,6 @@ class UserserviceController(BaseController):
         # and we set the state 'challenge_triggered'
 
         if not res and reply:
-
             if "message" in reply and "://chal/" in reply["message"]:
                 reply["img_src"] = create_img_src(reply["message"])
 
@@ -756,7 +744,6 @@ class UserserviceController(BaseController):
         # if no reply and res is False, the authentication failed
 
         if not res and not reply:
-
             db.session.commit()
             return sendResult(self.response, False, 0)
 
@@ -876,7 +863,6 @@ class UserserviceController(BaseController):
         """
 
         if not user.checkPass(passw):
-
             log.info("User %r failed to authenticate!", user)
             g.audit["action_detail"] = "User %r failed to authenticate!" % user
             g.audit["success"] = False
@@ -890,7 +876,6 @@ class UserserviceController(BaseController):
 
         otp = param.get("otp", "")
         if otp:
-
             vh = ValidationHandler()
             res, reply = vh.checkUserPass(user, passw + otp)
 
@@ -1024,14 +1009,12 @@ class UserserviceController(BaseController):
             if auth_info[0] and check_session(
                 request, auth_info[0], auth_info[1]
             ):
-
                 return self._login_with_cookie(user_selfservice_cookie, param)
 
             # if there is a cookie but could not be found in cache
             # we remove the out dated client cookie
 
             if user_selfservice_cookie and not auth_info[0]:
-
                 self.response.delete_cookie("user_selfservice")
 
             # -------------------------------------------------------------- --
@@ -1050,7 +1033,6 @@ class UserserviceController(BaseController):
             password = param["password"]
 
             if self.mfa_login:
-
                 # allow the mfa login for users that have no token till now
                 # if the policy 'mfa_passOnNoToken' is defined with password
                 # only
@@ -1066,19 +1048,16 @@ class UserserviceController(BaseController):
                 )
 
                 if policy and not tokenArray:
-
                     return self._login_with_password_only(user, password)
 
                 return self._login_with_otp(user, password, param)
 
             else:
-
                 return self._login_with_password_only(user, password)
 
             # -------------------------------------------------------------- --
 
         except (Unauthorized, Forbidden) as exx:
-
             log.error("userservice login failed: %r", exx)
 
             g.audit["info"] = ("%r" % exx)[:80]
@@ -1087,7 +1066,6 @@ class UserserviceController(BaseController):
             raise exx
 
         except Exception as exx:
-
             log.error("userservice login failed: %r", exx)
 
             g.audit["info"] = ("%r" % exx)[:80]
@@ -1210,7 +1188,6 @@ class UserserviceController(BaseController):
         """
 
         try:
-
             uinfo = get_userinfo(self.authUser)
 
             g.audit["success"] = True
@@ -1239,7 +1216,6 @@ class UserserviceController(BaseController):
         """
 
         try:
-
             cookie = request.cookies.get("user_selfservice")
             remove_auth_cookie(cookie)
             self.response.delete_cookie(key="user_selfservice")
@@ -1393,7 +1369,6 @@ class UserserviceController(BaseController):
         log.debug("remoteservice disable a token")
 
         try:
-
             try:
                 serial = param["serial"]
             except KeyError as exx:
@@ -1941,7 +1916,6 @@ class UserserviceController(BaseController):
             # -------------------------------------------------------------- --
 
             elif action == "query transaction":
-
                 detail = get_transaction_detail(transaction_id)
 
                 db.session.commit()
@@ -1952,7 +1926,6 @@ class UserserviceController(BaseController):
             # -------------------------------------------------------------- --
 
             elif action == "verify otp":
-
                 vh = ValidationHandler()
                 (res, _opt) = vh.checkUserPass(
                     self.authUser, passw=params["otp"], options=params
@@ -1966,7 +1939,6 @@ class UserserviceController(BaseController):
             # challenge request:
 
             elif action == "trigger challenge":
-
                 transaction_data = None
                 transaction_id = None
 
@@ -2079,7 +2051,6 @@ class UserserviceController(BaseController):
         res = {}
 
         try:
-
             description = param.get("description", None)
             upin = param.get("pin", None)
 
@@ -2129,7 +2100,6 @@ class UserserviceController(BaseController):
             # if we have a description, we set it to the token
 
             if ret_assign and description:
-
                 log.info("set description of token %s", serial)
                 th.setDescription(description, serial=serial)
 
@@ -2238,7 +2208,6 @@ class UserserviceController(BaseController):
         param = self.request_params.copy()
 
         try:
-
             try:
                 tok_type = param["type"]
             except KeyError as exx:
@@ -2259,7 +2228,6 @@ class UserserviceController(BaseController):
                     param["genkey"] = param.get("genkey", "1")
 
             if tok_type == "hmac":
-
                 # --------------------------------------------------------- --
 
                 # query for hmac_otplen
@@ -2283,7 +2251,6 @@ class UserserviceController(BaseController):
                 )
 
             elif tok_type == "totp":
-
                 # --------------------------------------------------------- --
 
                 # query for timestep
@@ -2550,7 +2517,6 @@ class UserserviceController(BaseController):
                 "googleauthenticator",
                 "googleauthenticator_time",
             ]:
-
                 if description is None:
                     description = "Google Authenticator web prov"
 
@@ -2938,7 +2904,6 @@ class UserserviceController(BaseController):
         opt = None
 
         try:
-
             typ = param.get("type", None)
             if not typ:
                 raise ParameterError("Missing parameter: type")
@@ -3102,11 +3067,9 @@ class UserserviceController(BaseController):
         log.debug("set token description")
 
         try:
-
             param = self.request_params
 
             try:
-
                 serial = param["serial"]
                 description = param["description"]
 

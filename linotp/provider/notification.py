@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -72,7 +73,6 @@ def notify_user(user, action, info, required=False):
     # TODO: use the ResouceSchduler to handle failover
 
     for provider_spec in provider_specs:
-
         provider_type, _sep, provider_name = provider_spec.partition("::")
 
         if provider_type == "email":
@@ -126,7 +126,6 @@ def notify_user_by_email(provider_name, user, action, info):
     from . import loadProvider
 
     try:
-
         provider = loadProvider("email", provider_name=provider_name)
 
         provider.submitMessage(

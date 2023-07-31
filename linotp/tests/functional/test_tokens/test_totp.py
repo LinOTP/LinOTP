@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -101,7 +102,6 @@ def time2counter(t_time, t_step=60):
 
 
 def get_otp(key, counter=None, digits=8):
-
     hmac = HmacOtp(digits=digits, hashfunc=sha1)
     return hmac.generate(counter=counter, key=binascii.unhexlify(key))
 
@@ -110,7 +110,6 @@ class TestTotpController(TestController):
     """"""
 
     def test_get_otp_is_correct(self):
-
         t_counter = time2counter(
             t_time=unix_start_time + timedelta(seconds=59), t_step=30
         )
@@ -138,7 +137,6 @@ class TestTotpController(TestController):
         return
 
     def test_time_shift(self):
-
         param = {
             "pin": "pin",
             "serial": "TOTP",
@@ -155,7 +153,6 @@ class TestTotpController(TestController):
         t_time = datetime.strptime(utc_time, "%Y-%m-%d  %H:%M:%S")
 
         with freeze_time(t_time):
-
             # -------------------------------------------------------------
 
             # first verify that an otp corresponding to the freeze time
@@ -226,7 +223,6 @@ class TestTotpController(TestController):
 
         t_time = t_time + timedelta(seconds=300)
         with freeze_time(t_time):
-
             t_count = time2counter(t_time + timedelta(seconds=12), t_step=30)
             otp = get_otp(key=seed, counter=t_count)
 

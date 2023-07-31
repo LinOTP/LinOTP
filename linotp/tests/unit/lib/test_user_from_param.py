@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -33,7 +34,6 @@ from linotp.lib.user import getUserFromParam
 
 
 class TestGetFromParam(unittest.TestCase):
-
     test_sets = [
         {  # 1. test set with split @ off, user in no realm and no resolver
             "config": {
@@ -179,7 +179,6 @@ class TestGetFromParam(unittest.TestCase):
             # ------------------------------------------------------------- --
             run_id = 0
             for run in test_set["runs"]:
-
                 run_id += 1
                 param = run["params"]
                 result = run["result"]
@@ -192,7 +191,6 @@ class TestGetFromParam(unittest.TestCase):
                 )
 
                 try:
-
                     assert user.login == result["login"], msg
                     assert user.realm == result["realm"], msg
 
@@ -260,7 +258,6 @@ class TestGetFromParam(unittest.TestCase):
             # ------------------------------------------------------------- --
             run_id = 0
             for run in test_set["runs"]:
-
                 run_id += 1
                 param = run["params"]
 

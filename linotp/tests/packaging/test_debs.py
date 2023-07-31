@@ -2,7 +2,7 @@
 #
 # LinOTP - the Open Source solution for multi-factor authentication
 #
-# Coypright © 2020- arxes-tolina GmbH
+# Copyright (C) 2019 -      netgo software GmbH
 #
 # Pytest interface to test-upgrade tool
 

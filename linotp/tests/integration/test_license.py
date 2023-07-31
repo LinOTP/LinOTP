@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -61,7 +62,6 @@ def test_expired_license(testcase):
     """
 
     with LicenseTempFile(EXPIRED_LICENSE, suffix=".pem") as temp_file:
-
         license_import = LicenseImport(testcase.manage_ui)
 
         with pytest.raises(FileUploadException) as lic_exx:

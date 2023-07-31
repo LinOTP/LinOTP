@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -103,8 +104,7 @@ def parse_duration(duration_str, time_delta_compliant=False):
 
     time_params = {}
 
-    for (name, param) in parts.items():
-
+    for name, param in parts.items():
         if not param:
             continue
 
@@ -127,9 +127,7 @@ def parse_duration(duration_str, time_delta_compliant=False):
 
 
 def is_duration(value):
-
     try:
-
         get_duration(value)
 
     except ValueError:
@@ -143,11 +141,9 @@ def get_duration(value):
     return duration in seconds
     """
     try:
-
         return int(value)
 
     except ValueError:
-
         res = parse_duration(value)
         if res:
             return int(res.total_seconds())
@@ -196,13 +192,11 @@ def encrypted_data(value):
     # anything other than string will raise an error
 
     if not isinstance(value, str) and not isinstance(value, str):
-
         raise Exception("Unable to encode non textual data")
 
     # if value is already encrypted we can just return
 
     if isinstance(value, EncryptedData):
-
         return value
 
     return EncryptedData.from_unencrypted(value)
@@ -347,7 +341,6 @@ def get_ip_network(network):
 
     except netaddr.core.AddrFormatError:
         try:
-
             # support for cidr on named network like 'linotp.de/29'
             cidr = None
             if "/" in network:
@@ -386,7 +379,6 @@ def get_ip_address(address):
 
     except (netaddr.core.AddrFormatError, ValueError):
         try:
-
             ip_addr_str = socket.gethostbyname(address)
             ip_address = netaddr.IPNetwork(ip_addr_str)
 

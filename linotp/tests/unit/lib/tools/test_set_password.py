@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -48,7 +49,6 @@ def check_for_exception(
 
 
 def test_set_password(app, db_context):
-
     # first create the user table
     SetPasswordHandler.create_table(db_context)
 
@@ -117,7 +117,6 @@ def test_set_password(app, db_context):
 def test_set_password_various(
     app, db_context, user, oldpw, newpw, exception, message
 ):
-
     SetPasswordHandler.create_table(db_context)
     pw_handler = SetPasswordHandler(db_context)
     admin_user = "admin"
@@ -154,7 +153,6 @@ def test_set_password_with_no_table(app, db_context):
 
 
 def test_set_inital_admin_twice(app, db_context):
-
     # first create the user table
     SetPasswordHandler.create_table(db_context)
 

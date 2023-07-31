@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -386,7 +387,6 @@ class RemoteTokenClass(TokenClass):
             status = result["result"]["status"]
 
             if status is True:
-
                 if result.get("result", {}).get("value", False) is True:
                     res = True
                     otp_count = 0

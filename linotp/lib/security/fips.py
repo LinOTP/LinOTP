@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -64,7 +65,6 @@ class FipsSecurityModule(DefaultSecurityModule):
             raise FatalHSMException("Missing config entry: 'cryptolib'")
 
         try:
-
             # load the fips module and overwrite the parent digest
             self.fips = FipsModule(config["cryptolib"])
 

@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -55,7 +56,6 @@ class LDAPExtTest(LDAPTest):
 
         matches = False
         for value in values:
-
             compare_value = value
 
             if isinstance(self.value, str) and isinstance(value, bytes):
@@ -122,7 +122,6 @@ class LDAPExtObject(LDAPObject):
         timeout=0,
         sizelimit=500,
     ):
-
         if not filterstr:
             filterstr = "(objectClass=*)"
 
@@ -130,7 +129,6 @@ class LDAPExtObject(LDAPObject):
         # we have to rewrite the search
 
         if base.startswith("<guid="):
-
             (n_base, n_filterstr) = self._guid_object(base[6:-1])
 
             if n_base and n_filterstr:
@@ -149,7 +147,6 @@ class LDAPExtObject(LDAPObject):
         attrlist=None,
         attrsonly=0,
     ):
-
         return self.search(
             base, scope, filterstr=filterstr, attrlist=attrlist, attrsonly=0
         )

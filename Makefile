@@ -3,7 +3,8 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2016 - 2019 KeyIdentity GmbH
-#
+#    Copyright (C) 2019 -      netgo software GmbH
+#	
 #    This file is part of LinOTP server.
 #
 #    This program is free software: you can redistribute it and/or

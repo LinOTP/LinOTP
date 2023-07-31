@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -62,13 +63,11 @@ def utf8_slice(text, chunk_size):
     start = 0
 
     for pos in range(0, len(text)):
-
         ll = len(text[pos].encode("utf-8"))
         t_len = t_len + ll
 
         # we require a space of a least 6 bytes which is the max utf8 bytes
         if t_len + UTF8_MAX_BYTES > chunk_size:
-
             yield text[start:pos]
 
             # adjust for next round

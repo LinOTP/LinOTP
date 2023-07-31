@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -64,13 +65,11 @@ def check_maxtoken(method, user, param):
     assign_methods = ["userassign", "assign"]
 
     if method in enroll_methods + assign_methods:
-
         log.debug("checking maxtokens for user")
 
         check_maxtoken_for_user(user)
 
     if method in enroll_methods:
-
         log.debug("checking maxtokens of user by token type")
 
         type_of_token = param.get("type", "hmac")
@@ -80,7 +79,6 @@ def check_maxtoken(method, user, param):
         check_maxtoken_for_user_by_type(user, type_of_token=type_of_token)
 
     elif method in assign_methods:
-
         log.debug("checking maxtokens of user by serial number")
 
         tokens = linotp.lib.token.getTokens4UserOrSerial(
@@ -123,7 +121,6 @@ def check_maxtoken_for_user(user):
     tokens = linotp.lib.token.getTokens4UserOrSerial(user, "")
 
     for user_realm in user_realms:
-
         policies = get_client_policy(
             client,
             scope="enrollment",
@@ -144,7 +141,6 @@ def check_maxtoken_for_user(user):
             continue
 
         if len(tokens) + 1 > total_maxtoken:
-
             error_msg = _(
                 "The maximum number of allowed tokens "
                 "per user is exceeded. Check the "
@@ -191,7 +187,6 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
     action = "maxtoken%s" % type_of_token.upper()
 
     for user_realm in user_realms:
-
         policies = get_client_policy(
             client,
             scope="enrollment",
@@ -214,7 +209,6 @@ def check_maxtoken_for_user_by_type(user, type_of_token):
             continue
 
         if len(typed_tokens) + 1 > total_maxtoken:
-
             error_msg = _(
                 "The maximum number of allowed tokens of type %s "
                 "per user is exceeded. Check the policies "

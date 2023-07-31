@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -40,7 +41,6 @@ def expand_here(value):
     """
 
     if isinstance(value, str) and "%(here)s" in value:
-
         linotp_root = current_app.config["ROOT_DIR"]
 
         return value.replace("%(here)s", linotp_root)

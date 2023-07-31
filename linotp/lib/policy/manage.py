@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -63,7 +64,6 @@ def import_policies(policies):
     """
 
     for policy_name in policies:
-
         policy_definition = policies.get(policy_name)
 
         policy = {
@@ -250,7 +250,6 @@ def _check_policy_impact(
     policies[name] = pol
 
     for policy in list(policies.values()):
-
         # do we have a system policy that is active?
         p_scope = policy["scope"].lower()
         p_active = policy["active"].lower()

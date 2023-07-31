@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -175,18 +176,15 @@ def parse_provider(provider_type, composite_key, value):
     parts = composite_key.split(".")
 
     if len(parts) == 3:
-
         object_id = parts[2]
         attr_updates["class"] = value
 
     elif len(parts) == 4:
-
         object_id = parts[2]
         attr_name = parts[3]
         attr_updates[attr_name] = value
 
     else:
-
         raise ConfigNotRecognized(composite_key)
 
     # ------------------------------------------------------------------------ -
@@ -277,7 +275,6 @@ def parse_default_provider(provider_type, composite_key, value):
 # integrate the provider config parser into the config tree class
 
 for provider_type in Provider_types:
-
     parser_target = "%s_providers" % provider_type
 
     func = partial(parse_provider, provider_type)
@@ -350,14 +347,12 @@ def get_all_new_providers(provider_type, show_managed_config=False):
                 provider_names[key] = value
 
     for provider, provider_class in list(provider_names.items()):
-
         defintion = {}
         defintion["Class"] = provider_class
         prefix = provider + "."
 
         for key, value in list(config.items()):
             if key[: len(prefix)] == prefix:
-
                 if "enc" + key in config:
                     value = config.get("enc" + key)
 
@@ -368,7 +363,6 @@ def get_all_new_providers(provider_type, show_managed_config=False):
 
         # in case of a managed provider, the configuration is not displayed
         if prefix + "Managed" in config:
-
             defintion["Managed"] = config.get(prefix + "Managed")
 
             if not show_managed_config:
@@ -625,7 +619,6 @@ def save_new_provider(provider_type, provider_name, params):
     config_mapping["managed"] = ("Managed", None)
 
     for config_entry in list(config_mapping.keys()):
-
         if config_entry not in params:
             continue
 
@@ -748,7 +741,6 @@ def get_provider_from_policy(
     )
 
     if not policies:
-
         default_provider = _get_default_provider_name(provider_type)
 
         if default_provider:
@@ -794,7 +786,6 @@ def _lookup_provider_policies(provider_type):
     )
 
     for policy in policies:
-
         provider_name = get_action_value(
             policy,
             scope="authentication",
@@ -819,7 +810,6 @@ def load_provider_ini(ini_file):
     parser.read(ini_file)
 
     for section_name in parser.sections():
-
         provider_type, provider_name = section_name.split(":")
         provider_config = {}
         for name, value in parser.items(section_name):
@@ -965,7 +955,6 @@ def _load_provider_class(provider_slass_spec):
     provider_class_obj = provider_registry.get(provider_class)
 
     if provider_class_obj is None:
-
         if "." not in provider_class:
             raise Exception(
                 "Unknown provider class: Identifier was %s" % provider_class
@@ -975,7 +964,6 @@ def _load_provider_class(provider_slass_spec):
         # the old style of loading a module definition
 
         try:
-
             packageName, _, className = str(provider_class).rpartition(".")
             mod = __import__(packageName, globals(), locals(), [className], 1)
             provider_class_obj = getattr(mod, className)

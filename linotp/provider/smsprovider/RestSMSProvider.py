@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -45,7 +46,6 @@ log = logging.getLogger(__name__)
 @provider_registry.class_entry("smsprovider.RestSMSProvider.RestSMSProvider")
 @provider_registry.class_entry("smsprovider.RestSMSProvider")
 class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
-
     DEFAULT_TIMEOUT = (3, 30)
 
     def __init__(self):
@@ -54,7 +54,6 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
         self.server_cert = None
 
     def loadConfig(self, configDict):
-
         if not configDict:
             raise Exception("missing configuration")
 
@@ -140,7 +139,6 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
         # while others are preserved
 
         if isinstance(sms_phone_template, list):
-
             sms_phone = []
             for phone_tmpl in sms_phone_template:
                 if isinstance(phone_tmpl, str) and "<phone>" in phone_tmpl:

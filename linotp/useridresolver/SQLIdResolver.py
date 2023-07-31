@@ -3,6 +3,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -161,7 +162,6 @@ def check_password(password, crypted_password, salt=None):
     """
 
     for pw_hash in [LdapCrypt, MCFCrypt, OtherCrypt, DBCrypt, ArchaicCrypt]:
-
         if not pw_hash.identify(crypted_password):
             continue
 
@@ -207,7 +207,6 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
 
     connect = ""
     if "?odbc_connect=" in driver:
-
         # we have the need to support the odbc_connect mode
         # where the parameters of the drivers will be concated
         # The template for the odbc_connect string is submitted
@@ -297,7 +296,6 @@ def build_simple_connect(
         else:
             connect.append("@%s" % server)
     else:
-
         # in case of no server and a user, we have to append the empty @ sign
         # as otherwise the parser will interpret the :password as port which
         # will fail as it is not of type int
@@ -503,7 +501,6 @@ class IdResolver(UserIdResolver):
         dbObj = dbObject()
 
         try:
-
             managed = parameters.get("readonly", False)
 
             params, _ = IdResolver.filter_config(parameters)
@@ -715,7 +712,6 @@ class IdResolver(UserIdResolver):
         if not self.managed:
             connect = l_config.get("Connect")
             if not connect:
-
                 driver = l_config.get("Driver")
                 server = l_config.get("Server")
                 port = l_config.get("Port")
@@ -743,7 +739,6 @@ class IdResolver(UserIdResolver):
 
         userInfo = l_config["Map"].strip("'").strip('"')
         try:
-
             self.sqlUserInfo = json.loads(userInfo)
 
         except ValueError as exx:
@@ -770,7 +765,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
 
             invalid_columns = []
@@ -778,7 +772,6 @@ class IdResolver(UserIdResolver):
                 column = table.c.get(sqlCol)
 
                 if column is None:
-
                     log.error(
                         "Invalid mapping: %r => %r, column not found",
                         key,
@@ -860,7 +853,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
             select = table.select(self.__getUserNameFilter(table, userId))
 
@@ -890,7 +882,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
             select = table.select(self.__getUserNameFilter(table, userId))
 
@@ -918,7 +909,6 @@ class IdResolver(UserIdResolver):
 
         dbObj = self.connect(self.sqlConnect)
         try:
-
             table = dbObj.getTable(self.sqlTable)
 
             for key in self.sqlUserInfo:
@@ -1000,7 +990,6 @@ class IdResolver(UserIdResolver):
                         or "<" in searchDict[s]
                         or "=" in searchDict[s]
                     ):
-
                         users[userid] = ui
 
                     else:  # excat search
@@ -1210,7 +1199,6 @@ class IdResolver(UserIdResolver):
 
 
 if __name__ == "__main__":
-
     print("SQLIdResolver - IdResolver class test ")
 
     # sqlR = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()

@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -75,7 +76,6 @@ def cache_in_request(
     def cache_in_request_decorator(func_to_cache):
         @functools.wraps(func_to_cache)
         def request_cacher(*args, **kwargs):
-
             cache_name = func_to_cache.__name__ + "_cache"
             if not request_context.get(cache_name, None):
                 request_context[cache_name] = {}

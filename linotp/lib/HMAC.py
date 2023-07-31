@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -69,7 +70,6 @@ class HmacOtp:
         return binary % (10**self.digits)
 
     def generate(self, counter: int = None, inc_counter=True, key=None):
-
         counter = counter or self.counter
 
         otp = str(self.truncate(self.hmac(counter=counter, key=key)))

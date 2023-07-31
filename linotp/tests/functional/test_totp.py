@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -182,7 +183,6 @@ class TotpToken(object):
         jitter=0,
         timestep=60,
     ):
-
         # no key given - create one
 
         if key is None:
@@ -330,7 +330,6 @@ class TestTotpController(TestController):
         hashlib="sha1",
         otplen=8,
     ):
-
         if serial is None:
             serial = "s" + user
 
@@ -550,7 +549,6 @@ class TestTotpController(TestController):
         start_time = datetime.datetime.utcnow()
 
         with freeze_time(start_time) as _frozen_time:
-
             # -------------------------------------------------------------- --
 
             # enroll the token with seed and local
@@ -930,7 +928,6 @@ class TestTotpController(TestController):
 
                 current_time = datetime.datetime.strptime(curTime, time_format)
                 with freeze_time(current_time):
-
                     parameters = {
                         "serial": tserial,
                         "count": "20",

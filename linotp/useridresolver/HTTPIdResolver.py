@@ -3,6 +3,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -88,7 +89,6 @@ def urllib_request(
     :return: the response of the request
     """
     try:
-
         handlers = []
         if config and "PROXY" in config and config["PROXY"]:
             # for simplicity we set both protocols
@@ -145,7 +145,6 @@ def urllib_request(
 @resolver_registry.class_entry("useridresolver.httpresolver")
 @resolver_registry.class_entry("httpresolver")
 class IdResolver(UserIdResolver):
-
     db_prefix = "useridresolver.HTTPIdResolver.IdResolver"
 
     @classmethod
@@ -264,7 +263,6 @@ class IdResolver(UserIdResolver):
         result_path,
         result_mapping,
     ):
-
         query_params = json.loads(request_mapping)
         for key, value in list(query_params.items()):
             for repl, repl_val in list(request_params.items()):
@@ -655,7 +653,6 @@ class IdResolver(UserIdResolver):
 
 
 if __name__ == "__main__":
-
     print("HTTPIdResolver - loading test")
     httpR = IdResolver()
 

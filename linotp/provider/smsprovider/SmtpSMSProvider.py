@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -57,7 +58,6 @@ class SmtpSMSProvider(ISMSProvider):
 
     @classmethod
     def getClassInfo(cls, key=None, ret="all"):
-
         defintion = {}
         parameters = {}
         parameters["mailserver"] = {
@@ -210,7 +210,6 @@ class SmtpSMSProvider(ISMSProvider):
 
         serv = None
         try:
-
             serv_class = smtplib.SMTP
 
             if use_ssl:

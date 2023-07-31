@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -416,7 +417,6 @@ class ManageController(BaseController):
             user = User()
 
             if c.qtype == "loginname":
-
                 # we take by default the given expression as a loginname,
                 # especially if it contains a "*" wildcard.
                 # it only might be more, a user and a realm, if there
@@ -426,7 +426,6 @@ class ManageController(BaseController):
                 user = User(login=c.filter)
 
                 if "*" not in c.filter and "@" in c.filter:
-
                     login, _, realm = c.filter.rpartition("@")
 
                     if realm.lower() in getRealms():
@@ -570,7 +569,6 @@ class ManageController(BaseController):
         param = self.request_params
 
         try:
-
             c.page = param.get("page")
             c.filter = param.get("query")
             qtype = param.get("qtype")
@@ -876,7 +874,6 @@ def _getTokenTypeConfig(section="config"):
         tok = tclass_object.getClassType()
 
         if hasattr(tclass_object, "getClassInfo"):
-
             conf = tclass_object.getClassInfo(section, ret={})
 
             # set globale render scope, so that the mako

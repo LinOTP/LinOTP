@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -217,7 +218,6 @@ class GettokenController(BaseController):
         serials = []
 
         try:
-
             serial = getParam(param, "serial", optional)
             user = getUserFromParam(param)
             curTime = getParam(param, "curTime", optional)

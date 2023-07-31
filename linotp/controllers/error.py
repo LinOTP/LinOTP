@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -39,7 +40,6 @@ from linotp.lib.util import str2unicode
 
 
 class ErrorController(BaseController):
-
     jwt_exempt = True  # Don't do JWT auth in this controller
 
     @deprecated_methods(["POST"])

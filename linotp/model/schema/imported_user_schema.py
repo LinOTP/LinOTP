@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -29,7 +30,6 @@ from linotp.model import db
 
 
 class ImportedUserSchema(db.Model):
-
     __tablename__ = "imported_user"
     __table_args__ = {
         "mysql_collate": "utf8_unicode_ci",

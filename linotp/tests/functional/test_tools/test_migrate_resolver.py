@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -42,13 +43,11 @@ log = logging.getLogger(__name__)
 
 
 class TestImportUser(TestController):
-
     resolver_name = "myresolv"
     target_realm = "myrealm"
     resolver_spec = "useridresolver.SQLIdResolver.IdResolver." + resolver_name
 
     def setUp(self):
-
         self.create_common_resolvers()
         self.create_common_realms()
         self.delete_all_realms()

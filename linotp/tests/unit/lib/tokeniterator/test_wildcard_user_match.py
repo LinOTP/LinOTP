@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -55,7 +56,6 @@ class TestUserSearchExpression(unittest.TestCase):
             "*o@hotad.example.net",
             "*oxwell@hot*",
         ]:
-
             serials = _user_expression_match(
                 user_search, list(token_user_dict.items())
             )
@@ -78,7 +78,6 @@ class TestUserSearchExpression(unittest.TestCase):
             "*@hotad.example.net",
             "*xwell@hot*",
         ]:
-
             serials = _user_expression_match(
                 user_search, list(token_user_dict.items())
             )

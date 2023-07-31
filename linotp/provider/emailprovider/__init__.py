@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -346,7 +347,6 @@ class SMTPEmailProvider(IEmailProvider):
         # ------------------------------------------------------------------ --
 
         if template_message.startswith("file://"):
-
             filename = template_message[len("file://") :]
 
             provider_template_root = SMTPEmailProvider.get_template_root()
@@ -453,7 +453,6 @@ class SMTPEmailProvider(IEmailProvider):
         email_from = self.email_from
 
         if self.template:
-
             # in case of the templating, the subject from the provider config
             # overrules the policy subject
 
@@ -587,7 +586,6 @@ class SMTPEmailProvider(IEmailProvider):
             smtplib.SMTPSenderRefused,
             smtplib.SMTPDataError,
         ) as smtplib_exception:
-
             LOG.error(
                 "error(s) sending e-mail. Caught exception: %r",
                 smtplib_exception,

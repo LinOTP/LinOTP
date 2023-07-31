@@ -2,7 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
-#    Copyright (C) 2020 arxes-tolina GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -53,7 +53,6 @@ EMAIL_MESSAGE_CONFIG = {}
 def mocked_submitEmailMessage(
     SMTPEmailProvider_Object, *argparams, **kwparams
 ):
-
     # this hook is defined to grep the otp and make it globally available
     global EMAIL_MESSAGE_OTP
     EMAIL_MESSAGE_OTP = kwparams["replacements"]["otp"]
@@ -66,7 +65,6 @@ def mocked_submitEmailMessage(
 
 
 def mocked_submitMessage(FileSMS_Object, *argparams, **kwparams):
-
     # this hook is defined to grep the otp and make it globally available
     global SMS_MESSAGE_OTP
     SMS_MESSAGE_OTP = argparams
@@ -89,7 +87,6 @@ def time2counter(t_time, t_step=60):
 
 
 def get_otp(key, counter=None, digits=8):
-
     hmac = HmacOtp(digits=digits, hashfunc=sha1)
     return hmac.generate(counter=counter, key=binascii.unhexlify(key))
 
@@ -120,7 +117,6 @@ class TestUserserviceTokenTest(TestUserserviceController):
         TestUserserviceController.tearDown(self)
 
     def test_totp_token_defaults(self):
-
         policy = {
             "name": "E1_totp",
             "action": "enrollTOTP, totp_otplen=8, totp_hashlib=3",
@@ -163,7 +159,6 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert token_info["hashlib"] == "sha512"
 
     def test_hotp_token_defaults(self):
-
         policy = {
             "name": "E1_hotp",
             "action": "enrollHMAC, hmac_otplen=8, hmac_hashlib=3",
@@ -206,7 +201,6 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert token_info["hashlib"] == "sha512"
 
     def test_verify_hmac_token(self):
-
         policy = {
             "name": "T1",
             "action": "enrollHMAC, delete, history, verify,",
@@ -244,7 +238,6 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert "false" not in response
 
     def test_verify_totp_token(self):
-
         policy = {
             "name": "T1",
             "action": "enrollTOTP, delete, history, verify,",
@@ -409,7 +402,6 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert "not allow" in response
 
     def test_verify_cr_hmac_token(self):
-
         policy = {
             "name": "T1",
             "action": "enrollHMAC, delete, history, verify,",
@@ -456,7 +448,6 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert "false" not in response
 
     def test_verify_cr_motp_token(self):
-
         policy = {
             "name": "T1",
             "action": "enrollMOTP, delete, history, verify,",

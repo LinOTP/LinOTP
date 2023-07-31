@@ -4,6 +4,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -35,7 +36,6 @@ from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
 @skip("Broken 'no hsm defined in execution context'")
 class TestSQLResolver(TestCase):
-
     y = None
     z = None
     proc = None

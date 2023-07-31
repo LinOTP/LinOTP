@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -123,7 +124,6 @@ class EnrollTokenDialog(ManageDialog):
         hash_algorithm="sha1",
         description="Selenium enrolled",
     ) -> str:
-
         assert bool(hmac_key) ^ bool(generate_key)  # xor
 
         self.select_token_type("HMAC eventbased")

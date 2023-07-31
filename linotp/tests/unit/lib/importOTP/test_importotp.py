@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -60,7 +61,6 @@ class TestCacheActivation(unittest.TestCase):
         file_name = self._get_file_name(data_file)
 
         with open(file_name, "r") as data_file:
-
             data = data_file.read()
 
             return data

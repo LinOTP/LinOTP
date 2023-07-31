@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -91,7 +92,6 @@ class TestVoiceProvider(unittest.TestCase):
             "linotp.provider.voiceprovider."
             "custom_voice_provider.log.warning"
         ) as mocked_log_warning:
-
             custom_provider.submitVoiceMessage(
                 "+49 123546891", "your otp", "123456", "en"
             )
@@ -101,7 +101,6 @@ class TestVoiceProvider(unittest.TestCase):
             "linotp.provider.voiceprovider."
             "custom_voice_provider.log.warning"
         ) as mocked_log_warning:
-
             custom_provider.submitVoiceMessage(
                 "+49 123546891", "your {otp}", "123456", "en"
             )

@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -118,7 +119,6 @@ class SQLUser(object):
         return self.resolverDef
 
     def creatTable(self):
-
         createStr = """
             CREATE TABLE %s
             (
@@ -194,7 +194,6 @@ class SQLUser(object):
         return res
 
     def delUsers(self, uid=None, username=None):
-
         if username is not None:
             delStr = "DELETE FROM %s  WHERE user=:user;" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
@@ -219,14 +218,12 @@ class SQLUser(object):
 
 class OrphandTestHelpers(object):
     def setUpSQL(self):
-
         self.sqlconnect = self.app.config.get("DATABASE_URI")
         sqlUser = SQLUser(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
         return
 
     def addUsers(self, usercount=10):
-
         userAdd = SQLUser(connect=self.sqlconnect)
 
         try:
@@ -305,13 +302,11 @@ class OrphandTestHelpers(object):
         return resolverDefinition
 
     def delUsers(self, uid=None, username=None):
-
         userAdd = SQLUser(connect=self.sqlconnect)
         userAdd.delUsers(uid=uid, username=username)
         userAdd.close()
 
     def addSqlResolver(self, name):
-
         parameters = copy.deepcopy(self.sqlResolverDef)
 
         parameters["name"] = name
@@ -334,7 +329,6 @@ class OrphandTestHelpers(object):
         return
 
     def delSqlResolver(self, name):
-
         parameters = {
             "resolver": name,
         }
@@ -368,7 +362,6 @@ class OrphandTestHelpers(object):
         return resp
 
     def getUserList(self, resolver):
-
         param = {"username": "*", "resConf": resolver}
         response = self.make_admin_request(action="userlist", params=param)
         if ("error") in response:
@@ -386,7 +379,6 @@ class OrphandTestHelpers(object):
         return userList
 
     def addToken(self, user):
-
         param = {
             "user": user,
             "pin": user,
@@ -400,13 +392,11 @@ class OrphandTestHelpers(object):
         return
 
     def authToken(self, user):
-
         param = {"user": user, "pass": user}
         response = self.make_validate_request(action="check", params=param)
         return response
 
     def showTokens(self):
-
         param = None
         response = self.make_admin_request(action="show", params=param)
         assert '"status": true,' in response, response

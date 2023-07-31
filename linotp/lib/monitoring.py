@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -98,7 +99,6 @@ class MonitorHandler(object):
         r_condition = or_(*cond)
 
         if "total" in status:
-
             # count all tokens in the given realms
             result["total"] = (
                 db.session.query(Token.LinOtpTokenId)
@@ -108,7 +108,6 @@ class MonitorHandler(object):
             )
 
         if "total users" in status:
-
             # according to the token users license spec, we count only the
             # distinct users of all assigned and active tokens in the given
             # realms
@@ -123,7 +122,6 @@ class MonitorHandler(object):
             )
 
         for stat in status:
-
             if stat in ["total users", "total"]:
                 continue
 

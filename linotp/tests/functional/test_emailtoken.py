@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -39,7 +40,6 @@ from linotp.tests import TestController
 
 
 class TestEmailtokenController(TestController):
-
     pin = "1234"
     default_email_address = "paul@example.com"
     patch_smtp = None

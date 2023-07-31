@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -180,7 +181,6 @@ class YubicoTokenClass(TokenClass):
         return ret
 
     def update(self, param):
-
         try:
             tokenid = param["yubico.tokenid"]
         except KeyError:
@@ -220,7 +220,6 @@ class YubicoTokenClass(TokenClass):
         yubico_url = getFromConfig("yubico.url", FALLBACK_YUBICO_URL)
 
         if yubico_url == DEPRECATED_YUBICO_URL:
-
             log.warning(
                 "Usage of YUBICO_URL %r is deprecated!! ",
                 DEPRECATED_YUBICO_URL,
@@ -272,7 +271,6 @@ class YubicoTokenClass(TokenClass):
         res_scheduler = ResourceScheduler(tries=2, uri_list=yubico_urls)
 
         for uri in next(res_scheduler):
-
             try:
                 URL = "%s?%s" % (uri, p)
 
@@ -294,7 +292,6 @@ class YubicoTokenClass(TokenClass):
                 ConnectionError,
                 TooManyRedirects,
             ) as exx:
-
                 log.error("resource %r not available!", uri)
 
                 # mark the url as blocked
@@ -308,7 +305,6 @@ class YubicoTokenClass(TokenClass):
                 )
 
             except Exception as exx:
-
                 log.error("unknown exception for uri %r!", uri)
 
                 raise exx

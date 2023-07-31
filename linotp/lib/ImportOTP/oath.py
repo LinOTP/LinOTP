@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -75,7 +76,6 @@ def parseOATHcsv(csv):
     log.debug("[parseOATHcsv] the file contains %i lines.", len(csv_array))
 
     for csv_line in csv_array:
-
         token = {}
 
         # we extend the line to contain always 8 columns
@@ -133,7 +133,6 @@ def parseOATHcsv(csv):
         # 4 column: otplen or ocrasuite
 
         if ttype in ["ocra2"]:
-
             ocrasuite = line[3]
 
             if not ocrasuite:
@@ -147,7 +146,6 @@ def parseOATHcsv(csv):
             token["ocrasuite"] = ocrasuite
 
         else:
-
             otplen = line[3]
             if otplen:
                 otplen = int(otplen)

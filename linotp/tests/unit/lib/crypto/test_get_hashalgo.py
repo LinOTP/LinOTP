@@ -1,6 +1,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -66,7 +67,6 @@ class TestGetHashAlgoFromDescription(unittest.TestCase):
         """
 
         for description, hash_function in list(Hashlib_map.items()):
-
             hash_algo = get_hashalgo_from_description(description)
             assert hash_algo == hash_function
 

@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -213,7 +214,6 @@ class Challenge(ChallengeSchema):
         self.challenge = challenge.encode("utf8")
 
     def getChallenge(self) -> str:
-
         if not isinstance(self.challenge, str):
             return self.challenge.decode()
 

@@ -4,6 +4,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -40,7 +41,6 @@ from linotp.useridresolver.UserIdResolver import getResolverClass
 @unittest.skip("Broken 'no hsm defined in execution context'")
 class LDAPResolverTest(unittest.TestCase):
     def setUp(self):
-
         self.ldap_y = LDAPResolver()
 
         ldap_config = {
@@ -180,7 +180,6 @@ class LDAPInProcessTests(LDAPResolverTest):
         retried without STARTTLS
         """
         for effect in [ldap.CONNECT_ERROR, ldap.UNAVAILABLE]:
-
             with mock.patch(
                 "linotp.useridresolver.LDAPIdResolver.ldap.initialize",
                 autospec=True,

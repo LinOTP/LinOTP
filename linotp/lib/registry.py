@@ -4,6 +4,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -46,7 +47,6 @@ class ClassRegistry(dict):
         this registry"""
 
         def _inner(cls_):
-
             # _registry_key assignment is a workaround
             # for the missing nonlocal statement in python2.x
 

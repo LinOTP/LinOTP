@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -37,13 +38,11 @@ log = logging.getLogger(__name__)
 
 
 class ForwardServerPolicy(object):
-
     Path_index = 2
     Query_index = 4
 
     @staticmethod
     def prepare_forward(actions):
-
         if "forward_server=" not in actions:
             return actions
 

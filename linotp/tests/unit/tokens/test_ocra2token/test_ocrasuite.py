@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -29,7 +30,6 @@ from linotp.tokens.ocra2token import OcraSuite
 
 
 class OcraTest(unittest.TestCase):
-
     pin = "1234"
     pin_sha1 = bytes.fromhex("7110eda4d09e062aa5e4a390b0a572ac0d2c0220")
 

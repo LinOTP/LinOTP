@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -274,7 +275,6 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
         params = self.request_params
 
         if hasattr(self, "__before__"):
-
             response = self.__before__(**params)  # pylint: disable=no-member
             if response == request:
                 # Pylons style before handler
@@ -296,7 +296,6 @@ def methods(mm=["GET"]):
     """
 
     def inner_func(func):
-
         func.methods = mm[:]
 
         @wraps(func)
@@ -382,7 +381,6 @@ class JWTMixin(object):
         admin_resolvers = admin_realm[admin_realm_name]["useridresolver"]
 
         for resolver_specification in admin_resolvers:
-
             resolver = getResolverObject(resolver_specification)
 
             uid = resolver.getUserId(username)

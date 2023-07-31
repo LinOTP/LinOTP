@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -127,7 +128,6 @@ class User(object):
                 realms = getRealms()
 
                 if self.realm.lower() in realms:
-
                     resolvers_list = get_resolvers_of_user(
                         self.login, self.realm.lower()
                     )
@@ -153,9 +153,7 @@ class User(object):
         )
 
         for resolver_spec in resolvers_list:
-
             try:
-
                 # we can use the user in resolver lookup cache
                 # instead of asking the resolver
 
@@ -189,7 +187,6 @@ class User(object):
                 log.error("Error while accessing resolver %r", exx)
 
     def __str__(self):
-
         if not self.login and not self.realm:
             return "None"
 
@@ -242,7 +239,6 @@ class User(object):
             return {}
 
         try:
-
             y = getResolverObject(resolver_spec)
             log.debug(
                 "[getUserInfo] Getting user info for userid "
@@ -404,7 +400,6 @@ class User(object):
                 return True
 
         else:
-
             self_info = self.getUserInfo()
             other_info = other.getUserInfo()
 
@@ -438,11 +433,9 @@ def getUserResolverId(user, report=False):
         return ("", "", "")
 
     try:
-
         return getUserId(user)
 
     except Exception as exx:
-
         log.error(
             "[getUserResolverId] for %r@%r failed: %r",
             user.login,
@@ -516,7 +509,6 @@ def get_user_from_options(
     user = fallback_user or User()
 
     if "user" in options and options["user"]:
-
         if isinstance(options["user"], str):
             user = getUserFromParam(options)
 
@@ -556,7 +548,6 @@ def getUserFromParam(param):
     # ---------------------------------------------------------------------- --
 
     if realm:
-
         usr = User(
             login=login,
             realm=realm,
@@ -588,7 +579,6 @@ def getUserFromParam(param):
     # if no resolver determined, we try to extend the user info
 
     if "resConf" not in param:
-
         res = getResolversOfUser(usr)
 
         #
@@ -596,7 +586,6 @@ def getUserFromParam(param):
         # user definition like u@r
 
         if not res and "realm" not in param and "@" in usr.login:
-
             ulogin, _, urealm = usr.login.rpartition("@")
 
             if urealm.lower() in getRealms():
@@ -642,7 +631,6 @@ def get_userinfo(user: User, secure: bool = True) -> Dict:
     uinfo = {"realm": "", "resolver": "", "username": ""}
 
     try:
-
         (uid, resolver, resolver_class) = getUserId(user)
         uinfo = getUserInfo(uid, resolver, resolver_class)
 
@@ -659,7 +647,6 @@ def get_userinfo(user: User, secure: bool = True) -> Dict:
 
 
 def setRealm(realm, resolvers):
-
     realm = realm.lower().strip()
     realm = realm.replace(" ", "-")
 
@@ -838,9 +825,7 @@ def getResolvers(user):
     user_login = user.login.strip()
 
     for lookup_realm in lookup_realms:
-
         if user_login and "*" not in user_login:
-
             user_resolvers = get_resolvers_of_user(user.login, lookup_realm)
             if not user_resolvers:
                 log.info(
@@ -895,7 +880,6 @@ def getResolversOfUser(user):
     resolver_match = []
 
     for resolver_spec in resolvers:
-
         # this is redundant but cached
         r_login, r_uid, r_user_info = lookup_user_in_resolver(
             login, None, resolver_spec
@@ -933,7 +917,6 @@ def get_resolvers_of_user(login, realm):
     log.info("getting resolvers for user %r in realm %r", login, realm)
 
     def _get_resolvers_of_user(login=login, realm=realm):
-
         if not login:
             return []
 
@@ -950,7 +933,6 @@ def get_resolvers_of_user(login, realm):
         # Search for user in each resolver in the realm
 
         for resolver_spec in resolvers_of_realm:
-
             log.debug("checking in %r", resolver_spec)
 
             r_login, r_uid, r_user_info = lookup_user_in_resolver(
@@ -999,13 +981,10 @@ def get_resolvers_of_user(login, realm):
     # otherwise we have to provide the partial function to the beaker cache
 
     try:
-
         if not resolvers_lookup_cache:
-
             Resolvers = _get_resolvers_of_user(login=login, realm=realm)
 
         else:
-
             p_get_resolvers_of_user = partial(
                 _get_resolvers_of_user, login=login, realm=realm
             )
@@ -1158,7 +1137,6 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             return r_login, user_id, r_user_info
 
         else:
-
             log.error("neither user_id nor login id provided!")
             raise NoResolverFound("neither user_id nor login id provided!")
 
@@ -1185,9 +1163,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     user_lookup_cache = _get_user_lookup_cache(resolver_spec)
 
     try:
-
         if not user_lookup_cache:
-
             log.info("lookup user without user lookup cache")
 
             result = _lookup_user_in_resolver(
@@ -1195,7 +1171,6 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             )
 
         else:
-
             log.info("lookup user using the user lookup cache")
 
             p_lookup_user_in_resolver = partial(
@@ -1216,7 +1191,6 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
             # if resolver + uid but different name, we delete the old entries
 
             if user_id is not None and resolver_spec:
-
                 key2 = {
                     "login": None,
                     "user_id": user_id,
@@ -1241,7 +1215,6 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
                 user_name = result[0]
 
                 if old_user_name != user_name:
-
                     delete_from_user_cache(
                         old_user_name, user_id, resolver_spec
                     )
@@ -1249,7 +1222,6 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
                     log.info("outdated entry deleted")
 
     except ResolverNotAvailable:
-
         log.error("unable to access the resolver")
 
         if not g.audit["action_detail"]:
@@ -1321,7 +1293,6 @@ def delete_from_resolver_user_cache(login, user_id, resolver_spec):
     user_lookup_cache = _get_user_lookup_cache(resolver_spec)
 
     if user_lookup_cache:
-
         key = {
             "login": login,
             "user_id": user_id,
@@ -1364,7 +1335,6 @@ def getUserId(user, check_existance=False):
     resolvers = getResolversOfUser(user)
 
     for resolver_spec in resolvers:
-
         _login, uid, _user_info = lookup_user_in_resolver(
             user.login, None, resolver_spec
         )
@@ -1382,9 +1352,7 @@ def getUserId(user, check_existance=False):
         # for the user info
 
         if check_existance:
-
             try:
-
                 user_info = y.getUserInfo(uid)
 
             except ResolverNotAvailable:
@@ -1423,7 +1391,6 @@ def getUserId(user, check_existance=False):
         user.resolverUid[resolver_spec] = uid
 
     if not uids:
-
         log.warning(
             "No uid found for the user >%r< in realm %r",
             user.login,
@@ -1435,7 +1402,6 @@ def getUserId(user, check_existance=False):
         )
 
     if len(uids) > 1:
-
         log.warning(
             "multiple uid s found for the user >%r< in realm %r",
             user.login,
@@ -1452,7 +1418,6 @@ def getUserId(user, check_existance=False):
 
 
 def getSearchFields(user):
-
     searchFields = {}
 
     log.debug("[getSearchFields] entering function getSearchFields")
@@ -1481,7 +1446,6 @@ def getSearchFields(user):
 
 
 def getUserList(param, search_user):
-
     users = []
 
     log.debug("[getUserList] entering function getUserList")
@@ -1505,7 +1469,6 @@ def getUserList(param, search_user):
 
         # try to load the UserIdResolver Class
         try:
-
             log.debug("[getUserList] Check for resolver: %r", resolver_spec)
             y = getResolverObject(resolver_spec)
             log.debug(
@@ -1779,12 +1742,10 @@ def get_authenticated_user(
     found_uid = None
 
     for user in users:
-
         username = user.login
         realm = user.realm
 
         for resolver_spec in getResolversOfUser(user):
-
             login, uid, _user_info = lookup_user_in_resolver(
                 user.login, None, resolver_spec
             )

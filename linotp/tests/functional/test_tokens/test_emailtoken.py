@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -144,7 +145,6 @@ class TestEmailtoken(TestController):
         # to verify the template prcessing
 
         with MockedSMTP() as mock_smtp_instance:
-
             mock_smtp_instance.sendmail.return_value = []
 
             # now trigger a challenge for the user
@@ -266,7 +266,6 @@ class TestEmailtoken(TestController):
         # to verify the template prcessing
 
         with MockedSMTP() as mock_smtp_instance:
-
             mock_smtp_instance.sendmail.return_value = []
 
             # now trigger a challenge for the user
@@ -369,7 +368,6 @@ class TestEmailtoken(TestController):
         # to verify the template prcessing
 
         with MockedSMTP() as mock_smtp_instance:
-
             mock_smtp_instance.sendmail.return_value = []
 
             # now trigger a challenge for the user
@@ -446,7 +444,6 @@ class TestEmailtoken(TestController):
         # to verify the template processing
 
         with MockedSMTP() as mock_smtp_instance:
-
             mock_smtp_instance.sendmail.return_value = []
 
             # -------------------------------------------------------------- --

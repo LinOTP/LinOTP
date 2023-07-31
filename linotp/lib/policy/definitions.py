@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -552,7 +553,6 @@ def _get_policy_definitions():
     token_type_list = linotp.lib.token.get_token_type_list()
 
     for ttype in token_type_list:
-
         pol["enrollment"]["maxtoken%s" % ttype.upper()] = {"type": "int"}
 
         pol["admin"]["init%s" % ttype.upper()] = {"type": "bool"}
@@ -585,7 +585,6 @@ def _get_policy_definitions():
         pol_keys = list(pol.keys())
 
         for pol_section in list(policy.keys()):
-
             # if we have a dyn token definition of this section type
             # add this to this section - and make sure, that it is
             # then token type prefixed

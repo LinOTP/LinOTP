@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -66,7 +67,6 @@ class MaintenanceController(BaseController):
         env_var = config.get("MAINTENANCE_VERIFY_CLIENT_ENV_VAR", False)
 
         if env_var:
-
             client_cert = request.environ.get(env_var)
 
             if client_cert is None:
@@ -99,7 +99,6 @@ class MaintenanceController(BaseController):
         """
 
         try:
-
             # if no logger name is supplied we default to '' (which translates
             # to the root logger in the python stdlib logging api)
 

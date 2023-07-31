@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -427,7 +428,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
             typ = self.getType()
             for token_typ in [typ.capitalize(), typ.upper(), typ.lower()]:
-
                 lookup_for = token_typ + "ChallengeValidityTime"
                 validity = int(getFromConfig(lookup_for, validity))
 
@@ -627,12 +627,10 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         # only challenge response token authentication
         if not self.is_challenge_and_auth_token(user):
-
             # first check are there outstanding challenges
             if self.is_challenge_response(
                 passw, user, options=options, challenges=challenges
             ):
-
                 (res, reply) = self.check_challenge_response(
                     challenges, user, passw, options=options
                 )
@@ -652,7 +650,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         if self.is_challenge_response(
             passw, user, options=options, challenges=challenges
         ):
-
             (res, reply) = self.check_challenge_response(
                 challenges, user, passw, options=options
             )
@@ -712,7 +709,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return (otpcount, reply)
 
     def get_token_realm_user(self):
-
         user = None
         realms = getTokenRealms(self.getSerial())
 
@@ -872,7 +868,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return
 
     def update(self, param, reset_failcount=True):
-
         # key_size as parameter overrules a prevoiusly set
         # value e.g. in hashlib in the upper classes
         key_size = param.get("keysize")
@@ -1206,7 +1201,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.addToTokenInfo("hashlib", hashlib)
 
     def incOtpFailCounter(self):
-
         self.token.LinOtpFailCount = self.token.LinOtpFailCount + 1
 
         try:
@@ -1234,7 +1228,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
     # http://www.doughellmann.com/PyMOTW/hashlib/index.html#module-hashlib
 
     def getHashlib(self, hLibStr):
-
         return get_hashalgo_from_description(
             description=hLibStr, fallback="sha1"
         )
@@ -1328,7 +1321,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         """
 
         if self.token.isPinEncrypted():
-
             # for comparison we encrypt the pin and do the comparison
             # iv is binary, while encrypted_token_pin is hexlified
             iv, encrypted_token_pin = self.token.get_encrypted_pin()
@@ -1400,7 +1392,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return {"status": "completed"}
 
     def getAuthDetail(self):
-
         return self.auth_info
 
     def getOfflineInfo(self):

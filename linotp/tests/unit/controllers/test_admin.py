@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -37,7 +38,6 @@ from linotp.controllers.admin import AdminController
 
 @pytest.mark.usefixtures("app")
 class TestAdminController(unittest.TestCase):
-
     token = {
         "LinOtp.TokenId": 201,
         "LinOtp.TokenInfo": '{\n"hashlib": "sha1", \n"timeShift": -10.0, \n"timeWindow": 180, \n"validity_period_end": "23/12/23 23:23", \n"validity_period_start": "01/01/01 01:01", \n"timeStep": "30"\n}',

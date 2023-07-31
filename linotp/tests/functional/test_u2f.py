@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -73,7 +74,6 @@ def ECDSA_sign(private_key, message):
 
 
 class TestU2FController(TestController):
-
     ATTESTATION_PRIVATE_KEY_PEM = (
         "-----BEGIN EC PRIVATE KEY-----\n"
         "MHQCAQEEIBMsy03r5KbBIxkWY91FDJ7BvtTQhgPgndi282K4YrIOoAcGBSuBBAAK\n"
@@ -663,7 +663,6 @@ class TestU2FController(TestController):
     def _authentication_response(
         self, challenge, correct=True, additional_params=None
     ):
-
         if additional_params is None:
             additional_params = {}
 
@@ -874,7 +873,6 @@ class TestU2FController(TestController):
         action="support_offline=u2f",
         active=True,
     ):
-
         params = {
             "name": name,
             "user": "*",

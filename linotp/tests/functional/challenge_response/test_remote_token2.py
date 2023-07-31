@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -57,7 +58,6 @@ HTTP_RESPONSE = None
 
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
-
     resp = 200
     body = kwparams.get("body", "")
     params = dict(urllib.parse.parse_qsl(body))
@@ -113,7 +113,6 @@ class TestRemoteToken2(TestingChallengeResponseController):
         return
 
     def create_pin_policies(self):
-
         # set the otppin=2 (no pin) for the 'nopin' realm
         p_name = "nopin"
 
@@ -340,7 +339,6 @@ class TestRemoteToken2(TestingChallengeResponseController):
         return (y_serial, r_serial)
 
     def create_local_tokens(self, serial):
-
         serial = "LSP%s" % serial
 
         # local token

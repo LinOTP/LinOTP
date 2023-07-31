@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -199,7 +200,6 @@ class MigrateController(BaseController):
             counter_check_done = False
             with open(backup_file, "r") as f:
                 for data in f.readlines():
-
                     if not data.strip():  # skip empty lines
                         continue
 
@@ -225,7 +225,6 @@ class MigrateController(BaseController):
 
                     # Counters is the last entry - compare the counters
                     elif "Counter" in restore_data and mig:
-
                         # check inzegryty for 'number of entries'
                         backup_data = restore_data["Counter"]
 
@@ -277,7 +276,6 @@ class MigrateController(BaseController):
             return sendError(response, err)
 
         finally:
-
             if remove_backup_file and os.path.isfile(backup_file):
                 if not missing_param and not decryption_error:
                     os.remove(backup_file)

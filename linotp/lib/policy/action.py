@@ -2,7 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
-#    Copyright (C) 2020 arxes-tolina GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -182,7 +182,6 @@ class PolicyActionTyping:
             return action_value
 
         elif typing == "bool":
-
             if action_value in [True, False]:
                 return action_value
 
@@ -199,7 +198,6 @@ class PolicyActionTyping:
                 return action_value > 0
 
             if isinstance(action_value, str):
-
                 if action_value.lower() == "true":
                     return True
 

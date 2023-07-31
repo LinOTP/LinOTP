@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -221,7 +222,6 @@ class Token(TokenSchema):
             return fallback
 
     def get_vars(self, save: bool = False) -> dict:
-
         ret: dict = {}
         ret["LinOtp.TokenId"] = self.LinOtpTokenId or ""
         ret["LinOtp.TokenDesc"] = self.LinOtpTokenDesc or ""

@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -64,7 +65,6 @@ class TestImportOTP(TestController):
         file_name = self._get_file_name(data_file)
 
         with open(file_name, "r") as data_file:
-
             data = data_file.read()
 
             return data
@@ -470,7 +470,6 @@ class TestImportOTP(TestController):
 
         otp_lens = set()
         for token in tokens:
-
             otp_lens.add(token["LinOtp.OtpLen"])
 
             token_info = json.loads(token["LinOtp.TokenInfo"])
@@ -578,7 +577,6 @@ class TestImportOTP(TestController):
         data = jresp["result"]["value"]["data"]
 
         for entry in data:
-
             serial = entry["LinOtp.TokenSerialnumber"]
 
             serials.add(serial)
@@ -600,7 +598,6 @@ class TestImportOTP(TestController):
         response = self.make_validate_request("check", params=params)
 
         for serial in serials:
-
             assert serial in response, response
 
         # ------------------------------------------------------------------ --
@@ -622,7 +619,6 @@ class TestImportOTP(TestController):
         response = self.make_validate_request("check", params=params)
 
         for serial in serials:
-
             assert not (serial in response), response
 
         return

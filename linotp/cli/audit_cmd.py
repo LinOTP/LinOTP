@@ -3,6 +3,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -129,7 +130,6 @@ def cleanup_command(
 
     app = current_app
     try:
-
         if not (0 <= minimum <= maximum):
             app.echo("Error: --max must be greater than or equal to --min.")
             sys.exit(1)
@@ -186,7 +186,6 @@ class SQLJanitor:
     """
 
     def __init__(self, export_dir: Path = None):
-
         self.export_dir = export_dir
 
         self.app = current_app
@@ -209,7 +208,6 @@ class SQLJanitor:
         filename_template = f"SQLAuditExport.%s.{export_up_to}.csv"
         export_file = self.export_dir / get_backup_filename(filename_template)
         with export_file.open("w") as f:
-
             result = (
                 db.session.query(AuditTable)
                 .filter(AuditTable.id <= export_up_to)
@@ -280,7 +278,6 @@ class SQLJanitor:
         total = int(db.session.query(count(AuditTable.id)).scalar())
         cleanup_infos["entries_in_audit"] = total
         if total > max_entries:
-
             first_id = int(
                 db.session.query(AuditTable.id)
                 .order_by(asc(AuditTable.id))

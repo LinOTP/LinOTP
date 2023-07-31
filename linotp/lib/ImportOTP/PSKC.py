@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -174,7 +175,6 @@ def parsePSKCdata(
     elem_encKey = elem_keycontainer.find(namespace + "EncryptionKey")
 
     if elem_encKey:
-
         # Check for AES-128-CBC, preshared key (chapter 6.1)
         enckeyTag = getTagName(list(elem_encKey)[0])
         # This will hold the name of the preshared key
@@ -190,7 +190,6 @@ def parsePSKCdata(
             elem_keyderivation = list(list(elem_encKey)[0])
             for e in elem_keyderivation:
                 if "KeyDerivationMethod" == getTagName(e):
-
                     deriv_algo = e.get("Algorithm")
                     m = re.search(r"#(.*)$", deriv_algo)
                     PBE_DERIVE_ALGO = m.group(1)
@@ -297,7 +296,6 @@ def parsePSKCdata(
 
     # Now parsing all the keys
     for elem_package in elem_KeyPackageList:
-
         # Do the keys
 
         elem_key = elem_package.find(namespace + "Key")
@@ -443,7 +441,6 @@ def parsePSKCdata(
                     #   Verifiy the MAC Value
                     #
                     if "hmac-sha1" == MAC_Method:
-
                         MAC_digest_bin = hmac.new(
                             MACKEY_bin, base64.b64decode(KD_cipher_b64), sha
                         ).digest()

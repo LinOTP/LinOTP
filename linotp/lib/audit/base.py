@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -39,7 +40,6 @@ log = logging.getLogger(__name__)
 
 
 def getAudit():
-
     audit_url = current_app.config["AUDIT_DATABASE_URI"]
 
     if audit_url == "OFF":
@@ -73,7 +73,6 @@ def get_token_num_info():
 
 
 class AuditBase(object):
-
     name = "AuditBase"
 
     def __init__(self):
@@ -206,7 +205,6 @@ class AuditBase(object):
 
 
 def search(param, user=None, columns=None):
-
     audit_obj = current_app.audit_obj
     search_dict = {}
 

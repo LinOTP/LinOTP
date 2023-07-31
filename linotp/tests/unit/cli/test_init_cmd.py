@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -350,7 +351,6 @@ def test_padding_migration(app, base_app, engine):
     # needed for the re-encryption during the 3.1.0.0 migration
 
     with base_app.app_context():
-
         # GIVEN a database with records
         app.cli_cmd = "init-database"
 
@@ -445,14 +445,12 @@ def test_padding_migration(app, base_app, engine):
 
 @pytest.mark.parametrize("erase", (False, True))
 def test_setup_db_erase_all(app, base_app, engine, capsys, erase):
-
     app.echo = Echo(verbosity=1)
 
     # we need a base_app context which contains the security provider that is
     # needed for the re-encryption for the 3.0.2.0 migration
 
     with base_app.app_context():
-
         # GIVEN a database with records
         app.cli_cmd = "init-database"
 

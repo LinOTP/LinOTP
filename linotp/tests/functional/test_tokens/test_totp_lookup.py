@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -93,7 +94,6 @@ class TestTotpLookupController(TestController):
     """
 
     def setUp(self):
-
         ret = TestController.setUp(self)
 
         self.create_common_resolvers()
@@ -144,10 +144,8 @@ class TestTotpLookupController(TestController):
         ]
 
         for otp_time in otp_times:
-
             # we look back in time for 23 hours
             with freeze_time(otp_time + timedelta(hours=23)):
-
                 # get a valid otp
 
                 seconds = time2seconds(otp_time)
@@ -254,7 +252,6 @@ class TestTotpLookupController(TestController):
         }
 
         for serial, realms in list(tokens_realms.items()):
-
             params = {
                 "serial": serial,
                 "type": "totp",
@@ -370,7 +367,6 @@ class TestTotpLookupController(TestController):
 
         test_time = datetime.utcnow()
         with freeze_time(test_time + timedelta(hours=23)):
-
             # get a valid otp
 
             seconds = time2seconds(test_time)
@@ -425,7 +421,6 @@ class TestTotpLookupController(TestController):
 
         otp_time = datetime.utcnow()
         with freeze_time(otp_time - timedelta(hours=2)):
-
             # get a valid otp
 
             seconds = time2seconds(otp_time)

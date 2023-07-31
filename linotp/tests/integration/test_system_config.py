@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -38,7 +39,6 @@ from linotp_selenium_helper.validate import Validate
 
 
 class TestSystemConfig:
-
     system_config = None
     alert_box_handler = None
 

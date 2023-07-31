@@ -1,6 +1,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -57,7 +58,6 @@ class TestActivationMako(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
     def test_qrtoken_activate(self):
-
         qrtemplate = Template(
             filename=self.lib_token_dir + "/qrtoken/qrtoken.mako"
         )
@@ -71,7 +71,6 @@ class TestActivationMako(unittest.TestCase):
         return
 
     def test_pushtoken_activate(self):
-
         qrtemplate = Template(
             filename=self.lib_token_dir + "/pushtoken/pushtoken.mako"
         )

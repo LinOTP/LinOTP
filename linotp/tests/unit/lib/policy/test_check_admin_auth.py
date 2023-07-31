@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -34,7 +35,6 @@ from linotp.lib.user import User
 
 
 def test_check_admin_auth_case_sensitive_resolver_names(app):
-
     user = User(
         login="user1", realm="realm", resolver_config_identifier="resolver"
     )

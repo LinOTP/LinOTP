@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -105,7 +106,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
     # --------------------------------------------------------------------------- --
 
     def isActive(self):
-
         # overwritten, because PushTokenClass can receive validate
         # requests in 3 different states: active (active flag is 1)
         # pairing_response_received and pairing_challenge_sent
@@ -149,7 +149,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
     @classmethod
     def getClassInfo(cls, key=None, ret="all"):
-
         info = {"type": "push", "title": _("PushToken")}
 
         info["description"] = (
@@ -167,7 +166,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             "pushtoken_pairing_callback_url",
             "pushtoken_challenge_callback_url",
         ]:
-
             auth_policies[policy_name] = {"type": "str"}
 
         info["policy"]["authentication"] = auth_policies
@@ -285,7 +283,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # we allow rescan of the pairing qr code but only from the same device
 
         if self.current_state != "active":
-
             current_gda = self.getFromTokenInfo("gda")
 
             if current_gda and gda != current_gda:
@@ -297,7 +294,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             "pairing_challenge_sent",
             "pairing_response_received",
         ]:
-
             log.info(
                 "pairing the 'not completed' token %s in state %s again.",
                 self.token.getSerial(),
@@ -309,7 +305,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             "pairing_challenge_sent",
             "pairing_response_received",
         ]:
-
             self.addToTokenInfo("user_token_id", user_token_id)
             b64_user_dsa_public_key = b64encode(user_dsa_public_key)
             self.addToTokenInfo(
@@ -323,7 +318,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         if self.current_state == "active":
-
             # repairing case: we receive a spontaneous pairing response
             # which is used to change the generic device address
 
@@ -415,7 +409,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             "pairing_response_received",
             "pairing_challenge_sent",
         ]:
-
             content_type = CONTENT_TYPE_PAIRING
 
             message = ""
@@ -424,20 +417,17 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             )
 
         elif self.current_state in ["active"]:
-
             content_type_as_str = options.get(
                 "content_type", CONTENT_TYPE_SIGNREQ
             )
 
             try:
-
                 # pylons silently converts all ints in json
                 # to unicode :(
 
                 content_type = int(content_type_as_str)
 
             except BaseException:
-
                 raise ValueError(
                     "Unrecognized content type: %s" % content_type_as_str
                 )
@@ -445,7 +435,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # --------------------------------------------------------------- --
 
             if content_type == CONTENT_TYPE_SIGNREQ:
-
                 message = options.get("data")
                 challenge_url, sig_base = self.create_challenge_url(
                     transaction_id, content_type, callback_url, message=message
@@ -454,7 +443,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # --------------------------------------------------------------- --
 
             elif content_type == CONTENT_TYPE_LOGIN:
-
                 message = options.get("data")
                 login, __, host = message.partition("@")
 
@@ -467,7 +455,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 )
 
             else:
-
                 raise ValueError(
                     "Unrecognized content type: %s" % content_type
                 )
@@ -538,19 +525,16 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # the old 'passwd' argument is not supported anymore
 
         try:
-
             signature_accept = passwd.get("accept", None)
             signature_reject = passwd.get("reject", None)
 
         except AttributeError:  # will be raised with a get() on a str object
-
             raise Exception(
                 'Pushtoken version %r requires "accept" or'
                 ' "reject" as parameter' % CHALLENGE_URL_VERSION
             )
 
         if signature_accept is not None and signature_reject is not None:
-
             raise Exception(
                 'Pushtoken version %r requires "accept" or'
                 ' "reject" as parameter' % CHALLENGE_URL_VERSION
@@ -569,7 +553,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------ --
 
         if "transactionid" in options:
-
             # -------------------------------------------------------------- --
 
             # fetch all challenges that match the transaction id or serial
@@ -585,7 +568,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # filter into filtered_challenges
 
             for challenge in challenges:
-
                 (received_tan, tan_is_valid) = challenge.getTanStatus()
                 fail_counter = challenge.getTanCount()
 
@@ -632,7 +614,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # handle the accept case
 
         if signature_accept is not None:
-
             accept_signature_as_bytes = decode_base64_urlsafe(signature_accept)
 
             accept_data_to_verify_as_bytes = (
@@ -653,7 +634,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 return 1
 
             except ValueError:
-
                 challenge.add_session_info({"accept": False})
                 log.error("accept signature mismatch!")
 
@@ -664,7 +644,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # handle the reject case
 
         elif signature_reject is not None:
-
             reject_signature_as_bytes = decode_base64_urlsafe(signature_reject)
 
             reject_data_to_verify_as_bytes = (
@@ -685,7 +664,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 return 1
 
             except ValueError:
-
                 challenge.add_session_info({"reject": False})
                 log.error("reject signature mismatch!")
 
@@ -696,7 +674,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
     # -------------------------------------------------------------------------- --
 
     def statusValidationSuccess(self):
-
         if self.current_state == "pairing_challenge_sent":
             self.change_state("active")
             self.enable(True)
@@ -740,7 +717,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         if not param_keys.issubset(init_rollout_state_keys):
-
             # make sure the call aborts, if request
             # type wasn't recognized
 
@@ -1009,7 +985,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         if content_type == CONTENT_TYPE_PAIRING:
-
             #            -----------------------------------------
             #  fields   | header | serial | NUL | callback | NUL |
             #            -----------------------------------------
@@ -1029,7 +1004,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         if content_type == CONTENT_TYPE_SIGNREQ:
-
             if message is None:
                 raise InvalidFunctionParameter(
                     "message",
@@ -1057,7 +1031,6 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         if content_type == CONTENT_TYPE_LOGIN:
-
             if login is None:
                 raise InvalidFunctionParameter(
                     "login",

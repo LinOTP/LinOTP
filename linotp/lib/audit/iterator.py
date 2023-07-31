@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -134,7 +135,6 @@ class AuditQuery(object):
         return self._columns
 
     def get_query_result(self):
-
         self.audit_search = self.audit_obj.searchQuery(
             self._search_dict, rp_dict=self._rp_dict
         )
@@ -242,7 +242,6 @@ class CSVAuditIterator(object):
         """
         res = ""
         try:
-
             headers = ""
             if self.i == 0 and self.audit_query.with_headers():
                 headers = (
