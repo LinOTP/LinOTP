@@ -77,7 +77,7 @@ pre-commit-check:
     - *docker-registry
   script:
     - apk add --no-cache make
-    - REGISTRY_IMAGE=$IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp
+    - REGISTRY_IMAGE=$IMAGE_PREFIX/linotp-${DEBIAN_RELEASE_NAME}
     - BUILDER_CACHE_KEY=$(sha256sum Dockerfile.builder | cut -d ' ' -f1)
     - BUILDER_CACHE_IMAGE=$REGISTRY_IMAGE-builder:${BUILDER_CACHE_KEY}
     - LINOTP_CACHE_KEY=$(sha256sum Dockerfile | cut -d ' ' -f1)
@@ -141,7 +141,7 @@ build:debian-buster:
 lint:
   stage: lint
   when: manual
-  image: ${IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  image: ${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}-testenv:${CI_PIPELINE_ID}
   needs: ["build:debian-buster"]
   interruptible: true
   variables:
@@ -260,7 +260,7 @@ lint:
 
 .test-base:
   stage: test
-  image: ${IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  image: ${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}-testenv:${CI_PIPELINE_ID}
   artifacts:
     reports:
       coverage_report:
@@ -379,7 +379,7 @@ e2e-test-mariadb:
     - .mariadb-database
   parallel: 4
   services:
-    - name: "${IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
+    - name: "${IMAGE_PREFIX}/${LINOTP_IMAGE}-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
       alias: test-linotp
     - name: $BLACKDOG_LDAP_IMAGE
       alias: blackdog-ldap
@@ -416,7 +416,7 @@ e2e-test-softhsm:
 # Auto-generate API docs using Sphinx.
 apidocs:
   stage: apidocs
-  image: $IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
+  image: $IMAGE_PREFIX/linotp-buster:${CI_PIPELINE_ID}
   interruptible: true
   needs: ["build:debian-buster"]
   script:
