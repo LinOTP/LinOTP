@@ -158,7 +158,7 @@ pre-commit-check:
     - docker images
     # Save build job id to artifacts for later uploads
     - echo "$CI_JOB_ID" > apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt
-    - echo "DEB_ARTIFACTS_URL=https://gitbox.corp.keyidentity.com/api/v4/projects/${CI_PROJECT_ID}/jobs/${CI_JOB_ID}/artifacts" >> build.env
+    - echo "DEB_ARTIFACTS_URL=https://gitbox.corp.linotp.de/api/v4/projects/${CI_PROJECT_ID}/jobs/${CI_JOB_ID}/artifacts" >> build.env
 
 build:debian-buster:
   extends: .build-debs-and-images
