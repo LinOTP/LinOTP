@@ -6,8 +6,8 @@ include:
 variables:
   LANG: C.UTF-8
   IMAGE_NAME: linotp-build-test-environment_buster
-  BUILD_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_COMMIT_REF_NAME
-  LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
+  BUILD_CODE_IMAGE: $CI_REGISTRY/$IMAGE_NAME:$CI_COMMIT_REF_NAME
+  LATEST_CODE_IMAGE: $CI_REGISTRY/$IMAGE_NAME:$CI_PIPELINE_ID
   DOCKERFY_URL: https://debs-devel.corp.linotp.de/misc/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
   DEPENDENCY_DEB_REPO: http://debs-devel.corp.linotp.de/linotp3 buster linotp
@@ -15,15 +15,14 @@ variables:
   DEPENDENCY_GPG_KEYID: ""
   DEPENDENCY_GPG_KEY_URL: http://debs-devel.corp.linotp.de/misc/gpg/linotp-dev-archive-keyring.gpg
   DOCKER_TAGS: $CI_PIPELINE_ID
-  CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
+  IMAGE_PREFIX: $CI_REGISTRY/$CI_PROJECT_PATH/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
   # Docker network per build - needed for DNS resolution between services (service linotp needs db)
   FF_NETWORK_PER_BUILD: 1
-  CI_REGISTRY: gitbox.corp.keyidentity.com:5050
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
-  PYPI_IMAGE: $CI_IMAGE_PREFIX/linotp-pypi-testenv
+  PYPI_IMAGE: $IMAGE_PREFIX/linotp-pypi-testenv
   # Variables for upload-debs
   REPOSITORY: linotp3
   COMPONENT: linotp
@@ -49,7 +48,7 @@ stages:
   - iso
 
 .docker-registry: &docker-registry
-  docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+  docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 build-and-upload-pypi-image-testenv:
   stage: pypi-image
@@ -114,7 +113,7 @@ pre-commit-check:
     - *docker-registry
   script:
     - apk add --no-cache make
-    - REGISTRY_IMAGE=$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp
+    - REGISTRY_IMAGE=$IMAGE_PREFIX/linotp-${DEBIAN_RELEASE_NAME}
     - BUILDER_CACHE_KEY=$(sha256sum Dockerfile.builder | cut -d ' ' -f1)
     - BUILDER_CACHE_IMAGE=$REGISTRY_IMAGE-builder:${BUILDER_CACHE_KEY}
     - LINOTP_CACHE_KEY=$(sha256sum Dockerfile | cut -d ' ' -f1)
@@ -159,7 +158,7 @@ pre-commit-check:
     - docker images
     # Save build job id to artifacts for later uploads
     - echo "$CI_JOB_ID" > apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt
-    - echo "DEB_ARTIFACTS_URL=https://gitbox.corp.keyidentity.com/api/v4/projects/${CI_PROJECT_ID}/jobs/${CI_JOB_ID}/artifacts" >> build.env
+    - echo "DEB_ARTIFACTS_URL=https://${GITLAB_DOMAIN_NAME}/api/v4/projects/${CI_PROJECT_ID}/jobs/${CI_JOB_ID}/artifacts" >> build.env
 
 build:debian-buster:
   extends: .build-debs-and-images
@@ -178,7 +177,7 @@ build:debian-buster:
 lint:
   stage: lint
   when: manual
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  image: ${IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
   needs: ["build:debian-buster"]
   interruptible: true
   variables:
@@ -372,7 +371,7 @@ lint:
     - .only-nightly-and-merge
   stage: test
   needs: build:debian-buster
-  image: ${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  image: ${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}-testenv:${CI_PIPELINE_ID}
 
 unit-test-pypi:
   extends: .test-base-pypi
@@ -503,7 +502,7 @@ e2e-test-mariadb:
     - .e2e-test
     - .mariadb-database
   services:
-    - name: "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/${LINOTP_IMAGE}:${CI_PIPELINE_ID}"
+    - name: "${IMAGE_PREFIX}/${LINOTP_IMAGE}-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
       alias: test-linotp
     - name: $BLACKDOG_LDAP_IMAGE
       alias: blackdog-ldap
@@ -530,7 +529,7 @@ e2e-test-softhsm:
 # Auto-generate API docs using Sphinx.
 apidocs:
   stage: apidocs
-  image: $CI_IMAGE_PREFIX/buster/linotp:${CI_PIPELINE_ID}
+  image: $IMAGE_PREFIX/linotp-buster:${CI_PIPELINE_ID}
   interruptible: true
   needs: ["build:debian-buster"]
   script:

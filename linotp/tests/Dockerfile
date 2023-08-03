@@ -61,7 +61,7 @@ RUN pip3 install --upgrade \
     pytest-pudb \
     pytest-testconfig \
     pytest-test-groups \
-    pytest-selenium \
+    "selenium<4.10.0" \
     PyMySQL
 
 # se_mypasswd file is in conflict with selenium on this machine.
