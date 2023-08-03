@@ -78,7 +78,7 @@ test_requirements = [
     "pytest-freezegun",
     "pytest-flask",
     "pytest-mock",
-    "pytest-selenium",
+    "selenium<4.10.0",
     "pytest-testconfig",
     "mock",
     "mockldap",
