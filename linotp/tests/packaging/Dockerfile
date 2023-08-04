@@ -57,7 +57,7 @@ RUN pip3 install --upgrade \
     pytest-pudb \
     pytest-testconfig \
     pytest-test-groups \
-    pytest-selenium \
+    "selenium<4.10.0" \
     PyMySQL
 
 COPY run.sh /usr/local/bin
