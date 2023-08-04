@@ -277,6 +277,11 @@ class AuditlogController(BaseController, JWTMixin):
             sort_order if sort_order in ["asc", "desc"] else "desc"
         )
 
+        sort_by = request_param_to_audit_query_param_mapping.get(
+            self.request_params.get("sortBy"), "number"
+        )
+        search_params["sortname"] = sort_by
+
         search_params["page"] = int(self.request_params.get("page", 0)) + 1
         search_params["rp"] = int(self.request_params.get("pageSize", 15))
         if search_params["rp"] == 0:
