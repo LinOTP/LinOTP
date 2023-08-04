@@ -329,6 +329,7 @@ class ValidateController(BaseController):
                         owner = get_token_owner(token)
 
             if owner:
+                request_context["RequestUser"] = owner
                 g.audit["user"] = g.audit["user"] or owner.login
                 g.audit["realm"] = g.audit["realm"] or owner.realm
 

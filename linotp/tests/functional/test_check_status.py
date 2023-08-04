@@ -249,7 +249,8 @@ class TestCheckStatus(TestController):
                 response.json.get("detail", {}).get("realm") == "mydefrealm"
             ) == use_detail_policy, response
             assert (
-                response.json.get("detail", {}).get("user") == "passthru_user1"
+                response.json.get("detail", {}).get("user", {}).get("username")
+                == "passthru_user1"
             ) == use_detail_policy, response
             assert (
                 response.json.get("detail", {}).get("is_linotp_admin") == False
