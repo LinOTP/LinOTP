@@ -635,19 +635,19 @@ class TestReplication(TestController):
             self.set_cache_expiry(expiration="3600 xx")
 
         error_message = str(ass_err.value)
-        assert "must be of type 'duration'" in error_message
+        assert "3600xx" in error_message
 
         with pytest.raises(AssertionError) as ass_err:
             self.set_cache_expiry(expiration="3w10")
 
         error_message = str(ass_err.value)
-        assert "must be of type 'duration'" in error_message
+        assert "3w10" in error_message
 
         with pytest.raises(AssertionError) as ass_err:
             self.set_cache_expiry(expiration="3600 years")
 
         error_message = str(ass_err.value)
-        assert "must be of type 'duration'" in error_message
+        assert "3600years" in error_message
 
         self.set_cache_expiry(expiration="3600 seconds")
         self.set_cache_expiry(expiration=3600)
