@@ -4100,9 +4100,19 @@ class TestPolicies(TestPoliciesBase):
         assert response.json["result"]["value"], response
         assert response.json["detail"]["serial"] == "detail01", response
         assert response.json["detail"]["realm"] == "mymixrealm", response
-        assert response.json["detail"]["user"] == "detail_user", response
         assert response.json["detail"]["is_linotp_admin"] == False, response
         assert response.json["detail"]["tokentype"] == "spass", response
+        expected_user = {
+            "username": "detail_user",
+            "userid": "2101",
+            "description": None,
+            "email": None,
+            "givenname": None,
+            "surname": None,
+            "phone": None,
+            "mobile": None,
+        }
+        assert response.json["detail"]["user"] == expected_user, response
 
         # check failed validation
         params = {"user": "detail_user@myMixRealm", "pass": "wrong"}
