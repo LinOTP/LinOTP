@@ -14,7 +14,7 @@ variables:
   DEPENDENCY_GPG_KEYID: ""
   DEPENDENCY_GPG_KEY_URL: "http://debs-devel.corp.linotp.de/misc/gpg/linotp-dev-archive-keyring.gpg"
   DOCKER_TAGS: $CI_PIPELINE_ID
-  CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
+  IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
   CI_REGISTRY: $GITLAB_DOMAIN_NAME:5050
@@ -60,7 +60,7 @@ stages:
     # that the modified time will always be the same unless the file
     # has actually been changed
     - DOCKERFILE_CACHE_KEY=$(sha256sum ci/Dockerfile.debian-base | cut -d ' ' -f1)
-    - docker pull "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" || true
+    - docker pull "$IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" || true
     # update the base image, if there was no change this is a noop. If there was a change we will start
     # rebuilding the image. Worst case we downloaded an older image
     # that was based on an outdated image and rebuild it from
@@ -69,18 +69,18 @@ stages:
     - mkdir -p /var/lib/empty
     - >
       docker build
-      --cache-from="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+      --cache-from="$IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
       --build-arg=BASE_IMAGE="debian:${DEBIAN_RELEASE_NAME}"
       --build-arg="DEBIAN_RELEASE_NAME=${DEBIAN_RELEASE_NAME}"
       --build-arg="DEPENDENCY_SOURCE=${DEPENDENCY_SOURCE}"
       --build-arg="DEPENDENCY_SOURCE_COMPONENT=${DEPENDENCY_SOURCE_COMPONENT}"
       --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
       --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
-      --tag="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-      --tag="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+      --tag="$IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+      --tag="$IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
       -f ci/Dockerfile.debian-base /var/lib/empty
-    - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-    - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+    - docker push "$IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+    - docker push "$IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
     - docker images
 
 build-test-environment:debian-buster:
@@ -89,7 +89,7 @@ build-test-environment:debian-buster:
     DEBIAN_RELEASE_NAME: buster
 
 .test-debian:
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+  image: $IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   before_script:
     - cd linotpd/src
     - python --version
@@ -126,7 +126,7 @@ unit-test:debian-buster:
 
 .functional-test:
   stage: test
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+  image: $IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
   services:
     - name: mysql:5.5
       alias: db
@@ -250,8 +250,8 @@ build:buster:
       --build-arg="DEPENDENCY_SOURCE_COMPONENT=${DEPENDENCY_SOURCE_COMPONENT}"
       --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
       --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
-      --tag="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
-    - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+      --tag="${IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
+    - docker push "${IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
