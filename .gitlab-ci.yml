@@ -232,7 +232,7 @@ build:buster:
     max: 2
   before_script:
     - apk add --no-cache make
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+    - *docker-registry
   script:
     - export BUILDDIR=build
     - mkdir -p ${BUILDDIR}
@@ -269,10 +269,9 @@ build-linotp-docker-image:buster:
     DELETE_OLD_LINOTPS: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}"
     LINOTP_IMAGE: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
   before_script:
-    - *docker-registry
     - apk add --no-cache py-pip
     - pip install "docker-compose==${DOCKER_COMPOSE_VERSION}"
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+    - *docker-registry
     - cp -r apt/${DEBIAN_RELEASE_NAME} linotpd/src/linotp/tests/integration/apt
     - cd linotpd/src/linotp/tests/integration
     - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
