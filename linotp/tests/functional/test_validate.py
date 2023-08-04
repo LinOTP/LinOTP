@@ -401,6 +401,7 @@ class TestValidateController(TestController):
             "otppin": pin,
             "user": user,
             "pin": pin,
+            "description": "token_description",
         }
 
         response = self.make_admin_request("init", params=parameters)
@@ -820,7 +821,11 @@ class TestValidateController(TestController):
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
+        msg = '"linotp_tokendescription": "TestToken1"'
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
+        assert msg in response, response
+        msg = '"linotp_tokendescription": "token_description"'
         assert msg in response, response
 
         jresp = json.loads(response.body)
@@ -916,7 +921,11 @@ class TestValidateController(TestController):
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
+        msg = '"linotp_tokendescription": "TestToken1"'
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
+        assert msg in response, response
+        msg = '"linotp_tokendescription": "token_description"'
         assert msg in response, response
 
         # ------------------------------------------------------------------ --
@@ -929,7 +938,11 @@ class TestValidateController(TestController):
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
+        msg = '"linotp_tokendescription": "TestToken1"'
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
+        assert not (msg in response), response
+        msg = '"linotp_tokendescription": "token_description"'
         assert not (msg in response), response
 
         # ------------------------------------------------------------------ --
@@ -942,7 +955,11 @@ class TestValidateController(TestController):
 
         msg = '"linotp_tokentype": "HMAC"'
         assert not (msg in response), response
+        msg = '"linotp_tokendescription": "TestToken1"'
+        assert not (msg in response), response
         msg = '"linotp_tokentype": "pw"'
+        assert msg in response, response
+        msg = '"linotp_tokendescription": "token_description"'
         assert msg in response, response
 
         # ------------------------------------------------------------------ --
@@ -990,7 +1007,11 @@ class TestValidateController(TestController):
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
+        msg = '"linotp_tokendescription": "TestToken1"'
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
+        assert not (msg in response), response
+        msg = '"linotp_tokendescription": "token_description"'
         assert not (msg in response), response
 
         # ------------------------------------------------------------------ --
@@ -1003,7 +1024,11 @@ class TestValidateController(TestController):
 
         msg = '"linotp_tokentype": "HMAC"'
         assert not (msg in response), response
+        msg = '"linotp_tokendescription": "TestToken1"'
+        assert not (msg in response), response
         msg = '"linotp_tokentype": "pw"'
+        assert msg in response, response
+        msg = '"linotp_tokendescription": "token_description"'
         assert msg in response, response
 
         # ------------------------------------------------------------------ --
@@ -1016,7 +1041,11 @@ class TestValidateController(TestController):
 
         msg = '"linotp_tokentype": "HMAC"'
         assert msg in response, response
+        msg = '"linotp_tokendescription": "TestToken1"'
+        assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
+        assert msg in response, response
+        msg = '"linotp_tokendescription": "token_description"'
         assert msg in response, response
 
         # ------------------------------------------------------------------ --
