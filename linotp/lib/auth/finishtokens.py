@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -100,7 +101,6 @@ class FinishTokens(object):
 
         # next handle the challenges
         if self.challenge_tokens:
-
             (ret, reply, detail) = self.finish_challenge_token()
 
             # do we have to increment the counter to prevent a replay???
@@ -133,7 +133,6 @@ class FinishTokens(object):
             )
 
         if self.pin_matching_tokens:
-
             (ret, reply, detail) = self.finish_pin_matching_tokens()
             self.increment_failcounters(self.pin_matching_tokens)
 
@@ -144,7 +143,6 @@ class FinishTokens(object):
             return ret, reply
 
         if self.invalid_tokens:
-
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
 
@@ -213,7 +211,6 @@ class FinishTokens(object):
             use_offline = use_offline_param.lower() == "true"
 
             if supports_offline_at_all and offline_is_allowed and use_offline:
-
                 offline_info = token.getOfflineInfo()
                 if detail is None:
                     detail = {}
@@ -232,7 +229,6 @@ class FinishTokens(object):
             # single token
 
             for token in valid_tokens:
-
                 (res, _reply) = validation_results[token.getSerial()]
 
                 token.setOtpCount(res)
@@ -343,7 +339,6 @@ class FinishTokens(object):
         user = self.user
 
         for tok in invalid_tokens:
-
             # count all token accesses
             if tok.count_auth_max > 0:
                 tok.inc_count_auth()
@@ -424,7 +419,6 @@ def janitor_to_remove_enrollment_token(valid_tokens):
     all_owners = []
 
     for token in valid_tokens:
-
         # if the authenticated token is a rollout token, we dont count him
 
         path = token.getFromTokenInfo("scope", {}).get("path", [])
@@ -448,7 +442,6 @@ def janitor_to_remove_enrollment_token(valid_tokens):
     to_be_removed_tokens = []
 
     for owner in all_owners:
-
         # should be purge the tokens of the user? <- defined by policy
 
         if not purge_enrollment_token(user=owner):

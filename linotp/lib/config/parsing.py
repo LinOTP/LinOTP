@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -45,7 +46,6 @@ class ConfigNotRecognized(Exception):
     """
 
     def __init__(self, key, message=None):
-
         if message is None:
             message = "Unrecognized config key: %s" % key
         Exception.__init__(self, message)
@@ -114,7 +114,6 @@ class ConfigTree(dict):
     ]
 
     def __init__(self):
-
         # initialize config tree subspaces according to
         # parser definitions
 
@@ -189,9 +188,7 @@ class ConfigTree(dict):
         """
 
         for target, parser_func in self._parsers:
-
             try:
-
                 object_id, attr_updates = parser_func(composite_key, value)
                 self[target][object_id].update(attr_updates)
                 break
@@ -200,7 +197,6 @@ class ConfigTree(dict):
                 continue
 
         else:
-
             raise ConfigNotRecognized(composite_key)
 
     def pretty(self):

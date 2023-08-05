@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -43,7 +44,6 @@ class NoSuchUserError(Exception):
 
 
 class ImportedUser(ImportedUserSchema):
-
     user_entries = [name.name for name in ImportedUserSchema.__table__.c]
 
     @orm.reconstructor
@@ -147,7 +147,6 @@ class ImportedUser(ImportedUserSchema):
         """
 
         for attr in self.user_entries:
-
             # special handling for goupe_id, which might not be set at
             # comparing time
             if attr == "groupid":

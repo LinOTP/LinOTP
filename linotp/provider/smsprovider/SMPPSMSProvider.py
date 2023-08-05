@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -233,7 +234,6 @@ class SMPPSMSProvider(ISMSProvider):
 
 
 def main(phone, message, config):
-
     print("SMPPSMSProvider - class load test ")
 
     sms_pro = SMPPSMSProvider()

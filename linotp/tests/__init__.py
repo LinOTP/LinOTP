@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -672,7 +673,6 @@ class TestController(TestCase):
         realms = response.json.get("result", {}).get("value", {})
 
         for realm_name, realm_desc in realms.items():
-
             if realm_desc["admin"]:
                 continue
 
@@ -693,7 +693,6 @@ class TestController(TestCase):
         values = response.json.get("result", {}).get("value", {})
 
         for resolver_name, resolver_description in values.items():
-
             # the admin resolvers should not be deleted as they
             # are still in use by the admin realm, which could not be deleted
 
@@ -805,7 +804,6 @@ class TestController(TestCase):
         entries = json.loads(response.body)["result"]["value"]
 
         for entry in entries:
-
             if not entry.startswith(prefix):
                 continue
 
@@ -896,7 +894,6 @@ class TestController(TestCase):
         }
 
         for resolver_name in ["myDefRes", "myOtherRes"]:
-
             # skip definition if resolver is already defined
             response = self.make_system_request("getResolvers")
             if resolver_name in response.body:
@@ -915,7 +912,6 @@ class TestController(TestCase):
         return resp
 
     def create_realm(self, realm, resolvers):
-
         params = {}
         params["realm"] = realm
 
@@ -957,11 +953,9 @@ class TestController(TestCase):
         existing_realms = response.json["result"]["value"]
 
         for realm, resolver_definition in common_realms.items():
-
             # create the realm if it does not already exist
 
             if realm.lower() not in existing_realms:
-
                 response = self.create_realm(
                     realm=realm, resolvers=resolver_definition
                 )
@@ -996,7 +990,6 @@ class TestController(TestCase):
     def _user_service_init(
         self, auth_user: str, password: str, otp: str = None
     ):
-
         auth_user = auth_user.encode("utf-8")
         password = password.encode("utf-8")
 
@@ -1029,7 +1022,6 @@ class TestController(TestCase):
     def make_userservice_request(
         self, action, params=None, auth_user=None, new_auth_cookie=False
     ):
-
         if not params:
             params = {}
 
@@ -1070,7 +1062,6 @@ class TestController(TestCase):
     # new selfservice authentication
 
     def _user_service_login(self, auth_user=None, password=None, otp=None):
-
         params = {}
 
         if auth_user is not None:
@@ -1095,7 +1086,6 @@ class TestController(TestCase):
     def make_userselfservice_request(
         self, action, params=None, auth_user=None, new_auth_cookie=False
     ):
-
         if not params:
             params = {}
 
@@ -1147,7 +1137,6 @@ class TestController(TestCase):
     def make_selfservice_request(
         self, action, params=None, auth_user=None, new_auth_cookie=False
     ):
-
         if not params:
             params = {}
 

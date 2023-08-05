@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -178,7 +179,6 @@ def updateConfig(confi):
     update_entries = {}
 
     for entry in list(confi.keys()):
-
         if entry.endswith(".type") or entry.endswith(".desc"):
             key = entry[: -len(".type")]
         else:
@@ -202,13 +202,11 @@ def updateConfig(confi):
             )
 
     for key, data_tuple in list(entries.items()):
-
         val, typ, desc = data_tuple
 
         storeConfig(key, val, typ, desc)
 
     if update_entries:
-
         conf = getLinotpConfig()
 
         conf.update(update_entries)

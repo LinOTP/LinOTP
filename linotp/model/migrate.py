@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -514,9 +515,7 @@ class Migration:
         active = False
 
         for next_version in self.migration_steps:
-
             if next_version and active:
-
                 # --------------------------------------------------------- --
 
                 # get the function pointer to the set version
@@ -695,7 +694,6 @@ class Migration:
         mysql_mig.migrate_data(migrated_tables)
 
         if not migrated_tables:
-
             config_entry = model.Config(
                 Key="utf8_conversion", Value="suggested"
             )
@@ -727,23 +725,19 @@ class Migration:
             ).first()
             is None
         ):
-
             return True, "No latin1 to utf8 conversion suggested!"
 
         log.info("Starting data convertion")
 
         try:
-
             mysql_mig = MYSQL_Migration(self.engine)
             mysql_mig.migrate_data(["Config", "Token", "imported_user"])
 
         except OperationalError as exx:
-
             log.info("Failed to run convertion: %r", exx)
             return False, "Failed to run convertion: %r" % exx
 
         finally:
-
             # in any case, we remove the conversion suggestion label
 
             model.Config.query.filter(
@@ -777,7 +771,6 @@ class Migration:
 
             @staticmethod
             def old_unpadd_data(output: bytes) -> bytes:
-
                 eof = len(output) - 1
 
                 if eof == -1:
@@ -831,12 +824,10 @@ class Migration:
         entry_counter = 0
 
         for entry in model.Config.query.all():
-
             if entry.Type not in ["encrypted_data", "password"]:
                 continue
 
             try:
-
                 value = sec_module.decryptPassword(entry.Value).decode("utf-8")
 
                 entry.Value = sec_module.encryptPassword(value.encode("utf-8"))
@@ -863,7 +854,6 @@ class Migration:
         token_counter = 0
 
         for token in model.Token.query.all():
-
             iv = binascii.unhexlify(token.LinOtpKeyIV)
 
             # ------------------------------------------------------------- --

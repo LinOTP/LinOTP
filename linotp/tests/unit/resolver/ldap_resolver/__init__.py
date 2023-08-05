@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -39,10 +40,8 @@ class Bindresult(object):
         attrlist=None,
         timeout=None,
     ):
-
         if attrlist:
             for attr in attrlist:
-
                 # invalid utf-8 will raise an exception
                 attr.encode("utf-8")
 

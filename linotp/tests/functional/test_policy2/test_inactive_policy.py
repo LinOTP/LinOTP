@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -75,9 +76,7 @@ class TestInactivePolicy(TestController):
         # run the usage of 'active policy only' verification for both machines
 
         try:
-
             for policy_engine_version in ["new", "old"]:
-
                 if policy_engine_version == "new":
                     params = {"NewPolicyEvaluation": "True"}
                     response = self.make_system_request(
@@ -101,7 +100,6 @@ class TestInactivePolicy(TestController):
         # ----------------------------------------------------------------- --
 
         finally:
-
             # restore the inital policy engine behaviour
 
             if not restore_new_policy_engine:

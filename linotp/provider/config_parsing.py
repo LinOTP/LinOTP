@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -160,7 +161,6 @@ class ConfigParsingMixin(object):
             timeout = configDict.get("timeout", configDict.get("Timeout"))
 
             if "," in timeout:
-
                 conection_timeout, request_timeout = timeout.split(",")
                 return (float(conection_timeout), float(request_timeout))
 
@@ -168,7 +168,6 @@ class ConfigParsingMixin(object):
                 return float(timeout)
 
         else:
-
             return timeout_default
 
 

@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -101,7 +102,6 @@ class TestChallengePrompt(unittest.TestCase):
         mock_setValidUntil,
         mock_loadLinOtpSMSValidTime,
     ):
-
         mock_submitChallenge.return_value = True, "sms submitted"
         mock_setValidUntil.return_value = None
         mock_loadLinOtpSMSValidTime.return_value = 30
@@ -121,7 +121,6 @@ class TestChallengePrompt(unittest.TestCase):
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_password_token_challenge_prompt(self):
-
         prompt = Config_dict.get("PW_CHALLENGE_PROMPT")
 
         pass_token = PasswordTokenClass(FakeTokenModel())
@@ -136,7 +135,6 @@ class TestChallengePrompt(unittest.TestCase):
 
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     def tests_yubikey_token_challenge_prompt(self):
-
         prompt = Config_dict.get("YUBIKEY_CHALLENGE_PROMPT")
 
         yubi_token = YubikeyTokenClass(FakeTokenModel())
@@ -152,7 +150,6 @@ class TestChallengePrompt(unittest.TestCase):
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_hmac_token_challenge_prompt(self):
-
         prompt = Config_dict.get("HMAC_CHALLENGE_PROMPT")
 
         hmac_token = HmacTokenClass(FakeTokenModel())
@@ -169,7 +166,6 @@ class TestChallengePrompt(unittest.TestCase):
     @patch("linotp.tokens.totptoken.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_totp_token_challenge_prompt(self):
-
         prompt = Config_dict.get("TOTP_CHALLENGE_PROMPT")
 
         totp_token = TimeHmacTokenClass(FakeTokenModel())
@@ -189,7 +185,6 @@ class TestChallengePrompt(unittest.TestCase):
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.emailtoken.getFromConfig", mock_getFromConfig)
     def tests_email_token_challenge_prompt(self):
-
         prompt = Config_dict.get("EMAIL_CHALLENGE_PROMPT")
 
         email_token = EmailTokenClass(FakeTokenModel())

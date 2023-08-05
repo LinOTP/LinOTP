@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -186,7 +187,6 @@ def _store_continous_entry_db(chunks, key, val, typ, desc):
     number_of_chunks = len(chunks)
 
     for i, cont_value in enumerate(chunks):
-
         cont_typ = "C"
         cont_desc = "%d:%d" % (i, number_of_chunks - 1)
         cont_key = "%s__[%d:%d]" % (key, i, number_of_chunks - 1)
@@ -284,7 +284,6 @@ def _removeConfigDB(key):
 
 
 def _retrieveConfigDB(Key):
-
     # prepend "linotp." if required
     key = Key
     if not key.startswith("linotp."):
@@ -370,11 +369,9 @@ def _retrieveAllConfigDB():
     # cleanup the config from continuous entries
 
     for key, number in list(cont_dict.items()):
-
         value = conf_dict[key]
 
         for i in range(number + 1):
-
             search_key = "%s__[%d:%d]" % (key, i, number)
 
             if search_key in conf_dict:
@@ -393,7 +390,6 @@ def _retrieveAllConfigDB():
     # normal processing as before continous here
 
     for key, value in list(conf_dict.items()):
-
         if key.startswith("linotp.") is False:
             key = "linotp." + key
 
@@ -412,7 +408,6 @@ def _retrieveAllConfigDB():
     # This allows to drop the delayed loading handling
 
     for key, value in list(config.items()):
-
         myTyp = type_dict.get(key)
 
         if myTyp and myTyp == "encrypted_data":

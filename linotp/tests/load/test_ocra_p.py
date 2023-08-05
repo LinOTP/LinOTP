@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -116,7 +117,6 @@ class OcraOtp(object):
         return (self.challenge, self.transid)
 
     def _setup_(self):
-
         if self.ocra is not None and self.bkey is not None:
             return
 
@@ -136,7 +136,6 @@ class OcraOtp(object):
         return
 
     def callcOtp(self, challenge=None, ocrapin=None, counter=-1):
-
         if self.ocra is None:
             self._setup_()
 
@@ -173,7 +172,6 @@ class OcraOtp(object):
 
 class doRequest(threading.Thread):
     def __init__(self, utest, rid=1, test=None):
-
         threading.Thread.__init__(self)
 
         # unit test obj
@@ -202,7 +200,6 @@ def genUrl(controller="admin", action="init"):
 
 
 class OcraTest(TestController):
-
     fkey = bytes.fromhex("a74f89f9251eda9a5d54a9955be4569f9720abe8")
     key20h = "3132333435363738393031323334353637383930"
     key20 = bytes.fromhex(key20h)
@@ -488,7 +485,6 @@ class OcraTest(TestController):
         return
 
     def setupPolicies(self, check_url="http://127.0.0.1/ocra/check_t"):
-
         params = {
             "name": "CheckURLPolicy",
             "scope": "authentication",
@@ -510,7 +506,6 @@ class OcraTest(TestController):
         return response
 
     def gen_challenge_data(self):
-
         testchall = [
             {
                 "ocrasuite": "OCRA-1:HOTP-SHA256-6:C-QA64",
@@ -797,7 +792,6 @@ class OcraTest(TestController):
         count=0,
         ttime=None,
     ):
-
         otp1 = None
 
         p = {
@@ -877,7 +871,6 @@ class OcraTest(TestController):
         return serial
 
     def test_ocra_paralell(self):
-
         if "sqlite" in self.sqlconnect:
             error = "This test will fail for sqlite db, as it does not support enough concurrency"
             assert "sqlite" not in self.sqlconnect, error
@@ -1049,7 +1042,6 @@ class OcraTest(TestController):
             # verify that the failcounter increments (max is 10)
             fcount = 0
             for count in range(1, 3):
-
                 # create more than one challenge
                 chals = random.randint(2, 5)
                 for cc in range(1, chals):

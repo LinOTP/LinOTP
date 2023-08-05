@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -48,7 +49,6 @@ class TestProviderBase(unittest.TestCase):
         ]
 
         for config in configurations:
-
             res = ConfigParsingMixin.load_server_cert(
                 config, server_cert_key="server_certificate"
             )
@@ -65,9 +65,7 @@ class TestProviderBase(unittest.TestCase):
         ]
 
         for config in configurations:
-
             with pytest.raises(ValueError):
-
                 res = ConfigParsingMixin.load_server_cert(
                     config, server_cert_key="server_certificate"
                 )
@@ -82,7 +80,6 @@ class TestProviderBase(unittest.TestCase):
         ]
 
         for config in configurations:
-
             res = ConfigParsingMixin.load_server_cert(
                 config, server_cert_key="server_certificate"
             )

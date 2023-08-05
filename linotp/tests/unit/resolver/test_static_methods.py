@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -34,7 +35,6 @@ import unittest
 #
 
 try:
-
     from linotp.useridresolver.LDAPIdResolver import (
         IdResolver as ldap_resolver,
     )
@@ -43,7 +43,6 @@ try:
     NO_LDAP_AVAILABLE = ""
 
 except ImportError as exx:
-
     NO_LDAP_AVAILABLE = "%r" % exx
 
 

@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -322,7 +323,6 @@ class TokenHandler(object):
         # containing the pin message
 
         try:
-
             new_pin = linotp.lib.policy.createRandomPin(user, min_pin_length=6)
 
             message = (
@@ -453,7 +453,6 @@ class TokenHandler(object):
                     )
 
         if init_params["type"] == "pw":
-
             pol = linotp.lib.policy.get_client_policy(
                 client,
                 scope="enrollment",
@@ -718,7 +717,6 @@ class TokenHandler(object):
             typ=token_type, realm=token_src_realm, assigned="0"
         )
         for token in tokens:
-
             token_exists = token.check_otp_exist(
                 otp=otp, window=token.getOtpCountWindow()
             )
@@ -790,7 +788,6 @@ class TokenHandler(object):
 
         tokens = self.getTokensOfType(typ=None, realm=user.realm, assigned="0")
         for token in tokens:
-
             token_exists = -1
             from linotp.lib import policy
 
@@ -1089,7 +1086,6 @@ class TokenHandler(object):
         tokens = set()
         token_ids = set()
         try:
-
             for token in tokenList:
                 ser = token.getSerial()
                 serials.add(ser)
@@ -1124,7 +1120,6 @@ class TokenHandler(object):
         return len(serials)
 
     def setCounterWindow(self, countWindow, user, serial):
-
         if user is None and serial is None:
             raise ParameterError("Parameter user or serial required!", id=1212)
 
@@ -1140,7 +1135,6 @@ class TokenHandler(object):
         return len(tokenList)
 
     def setDescription(self, description, user=None, serial=None):
-
         if user is None and serial is None:
             raise ParameterError("Parameter user or serial required!", id=1212)
 
@@ -1169,7 +1163,6 @@ class TokenHandler(object):
         return len(tokenList)
 
     def setMaxFailCount(self, maxFail, user, serial):
-
         if (user is None) and (serial is None):
             raise ParameterError("Parameter user or serial required!", id=1212)
 
@@ -1183,7 +1176,6 @@ class TokenHandler(object):
         return len(tokenList)
 
     def setSyncWindow(self, syncWindow, user, serial):
-
         if user is None and serial is None:
             raise ParameterError("Parameter user or serial required!", id=1212)
 
@@ -1197,7 +1189,6 @@ class TokenHandler(object):
         return len(tokenList)
 
     def setOtpLen(self, otplen, user, serial):
-
         if (user is None) and (serial is None):
             raise ParameterError("Parameter user or serial required!", id=1212)
 
@@ -1417,7 +1408,6 @@ def createTokenClassObject(token, typ=None):
             )
 
     else:
-
         # we try to use the parent class, which is able to handle most
         # of the administrative tasks. This will allow to unassigen and
         # disable or delete this 'abandoned token'
@@ -1512,7 +1502,6 @@ def get_tokenserial_of_transaction(transId):
 
 
 def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
-
     if not user and serial is None:
         return None
 
@@ -1699,14 +1688,12 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
         session = db.session.query(TokenRealm, Realm, Token)
 
     elif resolver:
-
         resolver = resolver.resplace("useridresolveree.", "useridresolver.")
         resolver = resolver.resplace("useridresolver.", "useridresolver%.")
 
         conditions += (and_(Token.LinOtpIdResClass.like(resolver)),)
 
     if active:
-
         conditions += (and_(Token.LinOtpIsactive),)
 
     condition = and_(*conditions)
@@ -1734,14 +1721,12 @@ def getTokenNumResolver(resolver=None, active=True):
     conditions = ()
 
     if resolver:
-
         resolver = resolver.resplace("useridresolveree.", "useridresolver.")
         resolver = resolver.resplace("useridresolver.", "useridresolver%.")
 
         conditions += (and_(Token.LinOtpIdResClass.like(resolver)),)
 
     if active:
-
         conditions += (and_(Token.LinOtpIsactive),)
 
     condition = and_(*conditions)
@@ -1822,7 +1807,6 @@ def getTokens4UserOrSerial(
 
         if read_for_update:
             try:
-
                 sqlQuery = sqlQuery.with_for_update("update").all()
 
             except ResourceClosedError as exx:
@@ -1868,9 +1852,7 @@ def getTokens4UserOrSerial(
             # resource is already allocated in an other request
 
             if read_for_update:
-
                 try:
-
                     sqlQuery = sqlQuery.with_for_update("update").all()
 
                 except ResourceClosedError as exx:
@@ -2058,12 +2040,10 @@ def add_time_info(list_of_tokens, mode="accessed"):
     now = datetime.datetime.utcnow().replace(microsecond=0)
 
     try:
-
         dt_str = now.strftime(token_access_fmt)
         now_stripped = datetime.datetime.strptime(dt_str, token_access_fmt)
 
     except ValueError as err:
-
         # in case of a time string format error we do not filter the time
         # and only log an error as it's not acceptable to stop a validation
         # caused by a formatting error
@@ -2208,11 +2188,11 @@ def setPin(pin, user, serial, param=None):
 
 # local
 
+
 ###############################################################################
 #  LinOtpTokenPinUser
 ###############################################################################
 def setPinUser(userPin, serial):
-
     user = None
 
     if serial is None:
@@ -2250,7 +2230,6 @@ def setPinSo(soPin, serial):
 
 
 def resetToken(user=None, serial=None):
-
     if (user is None) and (serial is None):
         log.warning("[resetToken] Parameter serial or user required!")
         raise ParameterError("Parameter user or serial required!", id=1212)
@@ -2358,7 +2337,6 @@ def _calculate_validity_end(validity):
         validity = 10
 
     try:
-
         int(validity)
 
         # in case of only <int> days are given, for compatibility
@@ -2372,7 +2350,6 @@ def _calculate_validity_end(validity):
         end_date = "%s 23:59" % end_date
 
     except ValueError:
-
         end_date = (
             datetime.datetime.now() + parse_duration(validity)
         ).strftime("%d/%m/%y %H:%M")

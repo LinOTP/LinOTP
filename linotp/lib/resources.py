@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -65,7 +66,6 @@ def string_to_list(string_list, sep=","):
     entries = []
 
     for entry in string_list.split(sep):
-
         if entry and entry.strip():
             entries.append(entry.strip())
 
@@ -271,7 +271,6 @@ class ResourceScheduler(object):
         """
 
         for uri in self.uri_list:
-
             log.debug("iterate through resource %r", uri)
 
             # -------------------------------------------------------------- --
@@ -285,7 +284,6 @@ class ResourceScheduler(object):
             ) = self.resource_registry.store_or_retrieve(uri, (None, 0, 0))
 
             if not self._is_blocked(blocked_until):
-
                 # ---------------------------------------------------------- --
 
                 # we calculate the new blocking counter from the blocking
@@ -328,7 +326,6 @@ class ResourceScheduler(object):
         """
 
         if self._retry_complete or immediately:
-
             # get the former values of the resource
             (
                 _blocked_until,
@@ -365,7 +362,6 @@ class ResourceScheduler(object):
         self._retry_complete = False
 
         for i in range(0, self.tries):
-
             # the last of the list  is the last try, after which a blocking is
             # possible
 
@@ -391,7 +387,6 @@ class ResourceScheduler(object):
         """
 
         if blocked_until is not None and blocked_until > datetime.utcnow():
-
             log.debug("still blocked till %r", blocked_until)
             return True
 

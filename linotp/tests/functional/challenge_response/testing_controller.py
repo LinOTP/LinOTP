@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -62,7 +63,6 @@ log = logging.getLogger(__name__)
 
 
 class TestingChallengeResponseController(TestController):
-
     radius_authport = DEFAULT_NOSE_CONFIG["radius"]["authport"]
     radius_acctport = DEFAULT_NOSE_CONFIG["radius"]["acctport"]
     paster_port = DEFAULT_NOSE_CONFIG["paster"]["port"]
@@ -86,7 +86,6 @@ class TestingChallengeResponseController(TestController):
     def do_http_request(
         remoteServer, params=None, headers=None, cookies=None, method="POST"
     ):
-
         request_url = "%s" % (remoteServer)
 
         if not params:

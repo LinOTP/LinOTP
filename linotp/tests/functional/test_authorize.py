@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -571,7 +572,6 @@ class TestAuthorizeController(TestController):
         assert '"value": false' in response, response
 
     def test_99_setrealm(self):
-
         self.delete_all_policies()
         self.delete_all_token()
         self.delete_all_realms()

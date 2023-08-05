@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -90,7 +91,6 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
         # make the http request
 
         try:
-
             return self.request(url, parameter, username, password, method)
 
         except Exception as exx:
@@ -100,7 +100,6 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
         return False
 
     def getParameters(self, message, phone):
-
         urldata = {}
 
         # transfer the phone key
@@ -195,7 +194,6 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
     def request(
         self, url, parameter, username=None, password=None, method="GET"
     ):
-
         try:
             pparams = {}
 
@@ -204,7 +202,6 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
                 pparams["timeout"] = parse_timeout(self.config["timeout"])
 
             if "PROXY" in self.config and self.config["PROXY"]:
-
                 if isinstance(self.config["PROXY"], str):
                     proxy_defintion = {
                         "http": self.config["PROXY"],
@@ -266,7 +263,6 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             requests.exceptions.ReadTimeout,
             requests.exceptions.TooManyRedirects,
         ) as exc:
-
             log.error("HttpSMSProvider timed out")
             raise ProviderNotAvailable(
                 "Failed to send SMS - timed out %r" % exc
@@ -279,7 +275,6 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
         return ret
 
     def loadConfig(self, configDict):
-
         if not configDict:
             raise Exception("missing configuration")
 

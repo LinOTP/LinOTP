@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -57,7 +58,6 @@ class TestAutoEnroll(unittest.TestCase):
         mocked_assignToken,
         mocked_context,
     ):
-
         thdle = TokenHandler()
 
         options = {}
@@ -65,7 +65,6 @@ class TestAutoEnroll(unittest.TestCase):
         otp = "123467"
 
         class Token(object):
-
             LinOtpCountWindow = 10
             typ = ""
 
@@ -110,7 +109,6 @@ class TestAutoEnroll(unittest.TestCase):
         mocked_get_client,
         mocked_get_policy_definitions,
     ):
-
         user = User("Hugo", realm="Home_realm")
 
         mocked_get_client_policy.return_value = {
@@ -187,7 +185,6 @@ class TestAutoEnroll(unittest.TestCase):
         mocked_get_client,
         mocked_get_policy_definitions,
     ):
-
         user = User("Hugo", realm="Home_realm")
         mocked_get_client.return_value = "127.0.0.1"
         src_realm = "token-realm "

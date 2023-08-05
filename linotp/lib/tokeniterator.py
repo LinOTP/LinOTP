@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -155,7 +156,6 @@ class TokenIterator(object):
         return scondition
 
     def _get_user_condition(self, user, valid_realms):
-
         ucondition = None
 
         if not user:
@@ -250,7 +250,6 @@ class TokenIterator(object):
 
         # handle case, when nothing found in former cases
         if searchType == "wildcard":
-
             serials = _user_expression_match(loginUser, token_owner_iterator())
 
             # to prevent warning, we check is serials are found
@@ -608,7 +607,6 @@ class TokenIterator(object):
             uInfo = None
 
             try:
-
                 uInfo = getUserInfo(
                     tok.LinOtpUserid,
                     tok.LinOtpIdResolver,
@@ -638,7 +636,6 @@ class TokenIterator(object):
         return (userInfo, uInfo)
 
     def __next__(self):
-
         tok = next(self.it)
         desc = tok.get_vars(save=True)
         """ add userinfo to token description """

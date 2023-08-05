@@ -30,7 +30,7 @@
 <html>
 <head>
 <title>${_("Token Self Service - LinOTP")}</title>
-<meta name="copyright" content="netgo GmbH">
+<meta name="copyright" content="netgo software GmbH">
 <meta name="keywords" content="LinOTP, self service">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">

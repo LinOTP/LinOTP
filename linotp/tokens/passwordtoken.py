@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -142,7 +143,6 @@ class PasswordTokenClass(HmacTokenClass):
         """
 
         if "otpkey" not in param:
-
             raise ParameterError("Missing Parameter 'otpkey'!")
 
         TokenClass.update(self, param)
@@ -191,7 +191,6 @@ class PasswordTokenClass(HmacTokenClass):
         secObj = self._get_secret_object()
 
         if secObj.compare_password(anOtpVal):
-
             return 0
 
         return -1

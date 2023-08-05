@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -68,7 +69,6 @@ def mock_getUserInfo_func(*args, **_kwargs):
 
 
 def mock_getUserId_func(*args, **_kwargs):
-
     global getUserId_call_count
     getUserId_call_count += 1
 
@@ -118,7 +118,6 @@ class LdapResolverTest(TestController):
         return res
 
     def tearDown(self):
-
         self.delete_all_realms()
         self.delete_all_resolvers()
 
@@ -133,7 +132,6 @@ class LdapResolverTest(TestController):
         return TestController.tearDown(self)
 
     def setup_ldap_resolver(self):
-
         params = [
             {
                 "BINDDN": (
@@ -198,7 +196,6 @@ class LdapResolverTest(TestController):
         ]
 
         for param in params:
-
             response = self.make_system_request(
                 action="setResolver", params=param
             )
@@ -234,7 +231,6 @@ class LdapResolverTest(TestController):
             with patch.object(
                 ldap_resolver, "getUserId", autospec=True
             ) as mocked_getUserId:
-
                 mocked_getUserId.side_effect = mock_getUserId_func
                 mocked_getUserInfo.side_effect = mock_getUserInfo_func
 
@@ -278,7 +274,6 @@ class LdapResolverTest(TestController):
         with patch.object(
             ldap_resolver, "getUserId", autospec=True
         ) as mocked_getUserId:
-
             mocked_getUserId.side_effect = mock_getUserId_exc_func
 
             getUserId_call_count = 0
@@ -317,7 +312,6 @@ class LdapResolverTest(TestController):
             with patch.object(
                 ldap_resolver, "getUserInfo"
             ) as mocked_getUserInfo:
-
                 mocked_getUserInfo.side_effect = mock_getUserInfo_func
                 mocked_getUserId.side_effect = mock_getUserId_func
 
@@ -367,7 +361,6 @@ class LdapResolverTest(TestController):
             with patch.object(
                 ldap_resolver, "getUserInfo"
             ) as mocked_getUserInfo:
-
                 mocked_getUserInfo.side_effect = mock_getUserInfo_func
                 mocked_getUserId.side_effect = mock_getUserId_func
 

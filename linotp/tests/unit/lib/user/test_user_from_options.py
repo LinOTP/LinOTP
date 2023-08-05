@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -73,7 +74,6 @@ class TestGetUserFromOptions(unittest.TestCase):
         ]  # eof test sets
 
         for run in test_sets:
-
             options_dict = run["options_dict"]
             mock_getUserFromParam.return_value = run["user_from_param"]
 
@@ -134,7 +134,6 @@ class TestGetUserFromOptions(unittest.TestCase):
         ]  # eof test sets
 
         for run in test_sets:
-
             options_dict = run["options_dict"]
             mock_getUserFromParam.return_value = run["user_from_param"]
 

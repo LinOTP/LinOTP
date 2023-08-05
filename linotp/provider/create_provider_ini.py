@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -37,7 +38,6 @@ def create_provider_config():
 
     provider_config = {}
     for provider_type in list(Provider_types.keys()):
-
         providers = get_all_new_providers(
             provider_type, show_managed_config=True
         )

@@ -2,7 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
-#    Copyright (C) 2020 arxes-tolina GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -84,7 +84,6 @@ def set_support(license_file_name):
     """set a linotp support similar to system/setSupport."""
 
     try:
-
         _setup_security_context()
 
         with open(license_file_name, "rb") as license_file:
@@ -119,7 +118,6 @@ def get_support():
     """get the linotp support info similar to system/getSupportInfo"""
 
     try:
-
         _setup_security_context()
 
         session = db.session()
@@ -160,20 +158,17 @@ def is_support_valid(filename):
     """checks if the linotp support info is valid similar to isSupportValid"""
 
     try:
-
         _setup_security_context()
 
         session = db.session()
 
         if filename:
-
             with open(filename, "rb") as license_file:
                 license_text = license_file.read()
 
             license_text = license_text.decode("utf-8").replace("\n", "\n")
             license_dict, license_signature = parseSupportLicense(license_text)
         else:
-
             license_dict, license_signature = getSupportLicenseInfo()
 
         valid = isSupportLicenseValid(

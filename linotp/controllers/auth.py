@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -47,7 +48,6 @@ required = False
 
 
 class AuthController(BaseController):
-
     jwt_exempt = True  # Don't do JWT auth in this controller
 
     def __init__(self, name, install_name="", **kwargs):
@@ -70,7 +70,6 @@ class AuthController(BaseController):
         action = request_context["action"]
 
         try:
-
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
 

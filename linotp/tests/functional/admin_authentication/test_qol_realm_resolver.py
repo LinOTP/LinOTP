@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -90,7 +91,6 @@ class TestAdminLabel(TestController):
 
         resolver_specs = set()
         for resolver_name, resolver_description in resolvers.items():
-
             # preserve the admin resolver spec for later
 
             if resolver_name == fallback_admin_resolver_name:
@@ -120,7 +120,6 @@ class TestAdminLabel(TestController):
         response = self.make_system_request("getResolvers", params={})
         resolvers = response.json["result"]["value"]
         for resolver_name, resolver_description in resolvers.items():
-
             # the default admin resolver is now no more an admin resolver
             if resolver_name == fallback_admin_resolver_name:
                 continue

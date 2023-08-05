@@ -1,6 +1,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -201,7 +202,6 @@ class TestComparePDKDF(unittest.TestCase):
         hashfunc = sha1
 
         for testvector in testvectors:
-
             password = testvector["P"]
             salt = testvector["S"]
             iterations = testvector["c"]

@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -133,7 +134,6 @@ class AdminController(BaseController, JWTMixin):
         action = request_context["action"]
 
         try:
-
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
 
@@ -365,7 +365,6 @@ class AdminController(BaseController, JWTMixin):
             # now row by row
             lines = []
             for tok in toks:
-
                 if is_tokeninfo_json:
                     self._parse_tokeninfo(tok)
 
@@ -446,7 +445,6 @@ class AdminController(BaseController, JWTMixin):
 
             th = TokenHandler()
             for serial in set(serials):
-
                 # check admin authorization
                 check_params["serial"] = serial
                 checkPolicyPre("admin", "remove", check_params)
@@ -793,7 +791,6 @@ class AdminController(BaseController, JWTMixin):
         response_detail = {}
 
         try:
-
             params = self.request_params.copy()
             params.setdefault("key_size", 20)
 
@@ -1017,7 +1014,6 @@ class AdminController(BaseController, JWTMixin):
         param = self.request_params
 
         try:
-
             upin = param.get("pin")
 
             user = getUserFromParam(param)
@@ -1034,7 +1030,6 @@ class AdminController(BaseController, JWTMixin):
             res = True
             th = TokenHandler()
             for serial in set(serials):
-
                 # check admin authorization
 
                 call_params["serial"] = serial
@@ -1196,7 +1191,6 @@ class AdminController(BaseController, JWTMixin):
             if an error occurs an exception is serialized and returned
         """
         try:
-
             g.audit["info"] = "set token validity"
 
             param = getLowerParams(self.request_params)
@@ -1247,7 +1241,6 @@ class AdminController(BaseController, JWTMixin):
             # push the validity values into the tokens
 
             for token in tokens:
-
                 # ---------------------------------------------------------- --
 
                 if countAuthMax == unlimited:
@@ -1270,7 +1263,6 @@ class AdminController(BaseController, JWTMixin):
                     token.del_validity_period_start()
 
                 elif validityPeriodStart is not None:
-
                     validity_period_start = (
                         datetime.utcfromtimestamp(int(validityPeriodStart))
                         .strftime("%d/%m/%y %H:%M")
@@ -1284,7 +1276,6 @@ class AdminController(BaseController, JWTMixin):
                     token.del_validity_period_end()
 
                 elif validityPeriodEnd is not None:
-
                     validity_period_end = (
                         datetime.utcfromtimestamp(int(validityPeriodEnd))
                         .strftime("%d/%m/%y %H:%M")
@@ -1306,7 +1297,6 @@ class AdminController(BaseController, JWTMixin):
             return sendError(response, pex, 1)
 
         except Exception as exx:
-
             g.audit["success"] = False
 
             log.error("%r", exx)
@@ -1779,7 +1769,6 @@ class AdminController(BaseController, JWTMixin):
         # check admin authorization
         # check if we got a realm or resolver, that is ok!
         try:
-
             # TODO:
             # check if admin is allowed to see the useridresolvers
             # as users_iters is (user_iterator, resolvername)
@@ -1937,7 +1926,6 @@ class AdminController(BaseController, JWTMixin):
         user = getUserFromParam(param)
 
         try:
-
             # check admin authorization
             checkPolicyPre("admin", "reset", param, user=user)
 
@@ -1996,7 +1984,6 @@ class AdminController(BaseController, JWTMixin):
         param = self.request_params
 
         try:
-
             try:
                 serial_from = param["from"]
             except KeyError:
@@ -2072,7 +2059,6 @@ class AdminController(BaseController, JWTMixin):
         param = self.request_params
 
         try:
-
             try:
                 serial_from = param["from"]
             except KeyError:
@@ -2386,11 +2372,9 @@ class AdminController(BaseController, JWTMixin):
             available_realms = getRealms()
 
             if "*" in access_realms:
-
                 admin_realms = available_realms
 
             else:
-
                 # remove non existing realms from the admin realms
 
                 admin_realms = list(set(available_realms) & set(access_realms))
@@ -2405,7 +2389,6 @@ class AdminController(BaseController, JWTMixin):
             # determin the target tokenrealm
 
             if targetRealm:
-
                 if targetRealm not in admin_realms:
                     raise Exception("target realm could not be assigned")
 
@@ -2617,7 +2600,6 @@ class AdminController(BaseController, JWTMixin):
 
         param = self.request_params
         try:
-
             serial = param.get("serial")
             if not serial:
                 raise ParameterError("Missing parameter: 'serial'")
@@ -2815,7 +2797,6 @@ class AdminController(BaseController, JWTMixin):
         """
 
         try:
-
             params = self.request_params.copy()
 
             serial = params.get("serial")

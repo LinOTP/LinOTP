@@ -3,6 +3,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -58,7 +59,6 @@ class ResolverNotAvailable(Exception):
 
 
 class UserIdResolver(object):
-
     fields = {
         "username": 1,
         "userid": 1,
@@ -125,7 +125,6 @@ class UserIdResolver(object):
 
     @classmethod
     def merge_crypted_parameters(cls, new_params, previous_params):
-
         params = {}
 
         for crypt in cls.crypted_parameters:
@@ -148,7 +147,6 @@ class UserIdResolver(object):
         missing = []
 
         for crypt in cls.crypted_parameters:
-
             if new_params.get(crypt) is None:
                 missing.append(crypt)
 
@@ -276,7 +274,6 @@ class UserIdResolver(object):
         # filtering in the provided config for the resolver required parameters
 
         for key, attr in list(cls.resolver_parameters.items()):
-
             required, default, typ = attr
 
             search_keys = [key]

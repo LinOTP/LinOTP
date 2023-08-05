@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -129,7 +130,6 @@ def save_resolver_config(resolver, config, prefix, name):
     res = True
 
     for key, value in list(config.items()):
-
         # if the config contains something starting with 'linotp.'
         # it does not belong to the resolver rather then to linotp
 
@@ -245,7 +245,6 @@ def get_cls_identifier(config_identifier):
     cls_identifiers = list(resolver_registry.keys())
 
     for config_entry in config:
-
         if not config_entry.endswith(config_identifier):
             continue
 
@@ -296,7 +295,6 @@ def getResolverList(filter_resolver_type=None, config=None):
         conf = config
 
     for entry in conf:
-
         for typ in resolvertypes:
             if entry.startswith("linotp." + typ):
                 # the resolver might contain dots "." so take
@@ -380,9 +378,7 @@ def getResolverInfo(resolvername, passwords=False):
     # lookup, which resolver type is associated with this resolver name
 
     for config_entry in linotp_config:
-
         if config_entry.endswith("." + resolvername):
-
             # check if this is a resolver definition, starting with linotp.
             # and continuing with a resolver type
 
@@ -393,7 +389,6 @@ def getResolverInfo(resolvername, passwords=False):
                 and part[0] == "linotp"
                 and part[1] in resolver_types
             ):
-
                 resolver_type = part[1]
                 break
 
@@ -422,7 +417,6 @@ def getResolverInfo(resolvername, passwords=False):
     # - all values as text
 
     for key in list(res_conf.keys()):
-
         # suppress global config entries
 
         if key.startswith("linotp."):
@@ -431,7 +425,6 @@ def getResolverInfo(resolvername, passwords=False):
 
         # should passwords be displayed?
         if key in resolver_cls.crypted_parameters:
-
             # we have to be sure that we only have encrypted data objects for
             # secret data
             if not isinstance(res_conf[key], EncryptedData):
@@ -572,7 +565,6 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
 
     # no resolver - so instantiate one
     else:
-
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if not cls_identifier or not config_identifier:
@@ -593,9 +585,7 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
         resolver = resolver_cls()
 
         if load_config:
-
             try:
-
                 resolver.loadConfig(config, config_identifier)
 
             except ResolverNotAvailable:
@@ -978,7 +968,6 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
 
     # for rename and update, we support the merge with previous parameters
     if previous_name:
-
         # get the parameters of the previous resolver
         previous_resolver = getResolverInfo(previous_name, passwords=True)
 
@@ -996,7 +985,6 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
         # the encrypted parameters from previous resolver
 
         if not is_critical:
-
             merged_params = resolver_cls.merge_crypted_parameters(
                 new_params=param, previous_params=previous_param
             )
@@ -1008,7 +996,6 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
 
         if previous_readonly:
             for key, p_value in list(previous_param.items()):
-
                 # we inherit the readonly parameter if it is
                 # not provided by the ui
 

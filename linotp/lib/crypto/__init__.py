@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -130,7 +131,6 @@ class SecretObj(object):
         """
 
         if self.iv == b":1:":
-
             return utils.compare_password(password, self.val.decode("utf-8"))
 
         # the legacy comparison: compare the ecrypted password
@@ -142,7 +142,6 @@ class SecretObj(object):
         )
 
     def hmac_digest(self, data_input, hash_algo=None, bkey=None):
-
         b_key = bkey
 
         if not bkey:
@@ -264,7 +263,6 @@ class SecretObj(object):
         return res
 
     def _setupKey_(self):
-
         if not hasattr(self, "bkey"):
             self.bkey = None
 
@@ -277,7 +275,6 @@ class SecretObj(object):
 
     def _clearKey_(self, preserve=False):
         if preserve is False:
-
             if not hasattr(self, "bkey"):
                 self.bkey = None
 

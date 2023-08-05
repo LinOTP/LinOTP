@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -69,11 +70,9 @@ def mocked_SendPacket_error(rad_client, *argparams, **kwparams):
 
 
 class TestRadiusToken(TestController):
-
     p = None
 
     def setUp(self):
-
         self.radius_authport = DEFAULT_NOSE_CONFIG["radius"]["authport"]
         self.radius_acctport = DEFAULT_NOSE_CONFIG["radius"]["acctport"]
 

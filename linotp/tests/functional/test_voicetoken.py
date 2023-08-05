@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -33,7 +34,6 @@ from linotp.tests import TestController
 
 class TestVoiceToken(TestController):
     def setUp(self):
-
         self.delete_all_policies()
         self.delete_all_token()
         self.delete_all_realms()
@@ -45,7 +45,6 @@ class TestVoiceToken(TestController):
         self.create_policies()
 
     def tearDown(self):
-
         self.delete_all_policies()
         self.delete_all_realms()
         self.delete_all_resolvers()

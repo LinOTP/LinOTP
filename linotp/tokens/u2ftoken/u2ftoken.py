@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -567,7 +568,6 @@ class U2FTokenClass(TokenClass):
         )
 
         try:
-
             ecc_pub.verify(signature, message, ec.ECDSA(hashes.SHA256()))
             return True
 
@@ -1053,7 +1053,6 @@ class U2FTokenClass(TokenClass):
         return response_detail
 
     def getOfflineInfo(self):
-
         public_key = self.getFromTokenInfo("publicKey")
         key_handle = self.getFromTokenInfo("keyHandle")
         counter = self.getFromTokenInfo("counter")

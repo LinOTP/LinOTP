@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -279,7 +280,6 @@ class ValidateController(BaseController):
         """
 
         try:
-
             param = self.request_params
 
             #
@@ -382,7 +382,6 @@ class ValidateController(BaseController):
         """
 
         try:
-
             try:
                 passw = self.request_params["pass"]
             except KeyError:
@@ -600,7 +599,6 @@ class ValidateController(BaseController):
         """
 
         try:
-
             param = self.request_params.copy()
 
             # -------------------------------------------------------------- --
@@ -667,7 +665,6 @@ class ValidateController(BaseController):
         """
 
         try:
-
             param = self.request_params.copy()
 
             # -------------------------------------------------------------- --
@@ -842,7 +839,6 @@ class ValidateController(BaseController):
             res.append(ret)
 
             if opt is not None:
-
                 if "state" in opt or "transactionid" in opt:
                     stat = opt.get("transactionid") or opt.get("state")
                     res.append(stat)
@@ -962,7 +958,6 @@ class ValidateController(BaseController):
         """
 
         try:
-
             # -------------------------------------------------------------- --
 
             enc_response = self.request_params.get("pairing_response")
@@ -980,7 +975,6 @@ class ValidateController(BaseController):
                 not hasattr(pairing_data, "serial")
                 or pairing_data.serial is None
             ):
-
                 raise ValidateError(
                     "Pairing responses with no serial attached"
                     " are currently not implemented."

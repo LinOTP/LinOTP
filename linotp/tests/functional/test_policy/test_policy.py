@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -2658,7 +2659,6 @@ class TestPolicies(TestPoliciesBase):
 
         # set the policies
         for pol in policies:
-
             auth_user = "superadmin"
             response = self.make_system_request(
                 action="setPolicy", params=pol, auth_user=auth_user

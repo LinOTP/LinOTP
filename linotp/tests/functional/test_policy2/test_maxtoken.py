@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -90,7 +91,6 @@ class TestPolicyMaxtoken(TestController):
             assert "#TCOUNT%d" % i in response
 
         for i in range(1, 3):
-
             params = {"serial": "#TCOUNT%d" % i, "user": "def"}
             response = self.make_admin_request("assign", params=params)
             assert '"value": true' in response, response

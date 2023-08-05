@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -45,7 +46,6 @@ from linotp.tests import TestController, url
 
 
 def create_unicode_alphabet():
-
     # Update this to include code point ranges to be sampled
     include_ranges = [
         (0x0021, 0x0021),
@@ -193,7 +193,6 @@ class TestConfigController(TestController):
         entry should be split up into 40 parts
         """
         for i in range(1, 10):
-
             length = 1000 * i + random.randint(0, 1000)
 
             config_data = base64.b64encode(create_long_entries(length))
@@ -229,7 +228,6 @@ class TestConfigController(TestController):
         entry should be split up into 40 parts
         """
         for i in range(1, 10):
-
             length = 1000 * i + random.randint(0, 1000)
 
             config_data = binascii.hexlify(create_long_entries(length))
@@ -268,7 +266,6 @@ class TestConfigController(TestController):
         alphabet = create_unicode_alphabet()
 
         for i in range(1, 10):
-
             length = 1000 * i + random.randint(0, 1000)
 
             config_entry = "longUnicodeConfigEntry%d" % i
@@ -394,7 +391,6 @@ class TestConfigController(TestController):
         alphabet = create_unicode_alphabet()
 
         for i in range(1, 40):
-
             length = 1980 + i
 
             config_entry = "longUtf8ConfigEntry%d" % i
@@ -459,7 +455,6 @@ class TestConfigController(TestController):
         alphabet = create_unicode_alphabet()
 
         for i in range(1, 40):
-
             length = 1980 + i
 
             config_entry = "longUtf8ConfigEntry%d" % i
@@ -508,7 +503,6 @@ class TestConfigController(TestController):
         """
 
         for i in range(1, 40):
-
             length = 1980 + i
 
             config_entry = "longHexlifyConfigEntry%d" % i
@@ -566,7 +560,6 @@ class TestConfigController(TestController):
         """
 
         for i in range(1, 40):
-
             length = 1980 + i
 
             config_entry = "longB64ConfigEntry%d" % i
@@ -691,7 +684,6 @@ class TestConfigController(TestController):
                     log.info("Failed to set Config %r", check_result.response)
 
         finally:
-
             self.delete_config(prefix="X.")
 
         return

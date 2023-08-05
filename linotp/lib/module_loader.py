@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -47,13 +48,10 @@ def import_submodules(package_name):
     p_list = {}
 
     for _loader, name, _is_pkg in pkgutil.walk_packages(package.__path__):
-
         try:
-
             p_list[name] = importlib.import_module(package_name + "." + name)
 
         except Exception as exx:
-
             log.error("Failed to load %r - %r", name, exx)
 
     return p_list

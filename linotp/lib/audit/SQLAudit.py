@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -177,7 +178,6 @@ class Audit(AuditBase):
             raise exx
 
     def _attr_to_dict(self, audit_line):
-
         line = {}
         line["number"] = audit_line.id
         line["id"] = audit_line.id

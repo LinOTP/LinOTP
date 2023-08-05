@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -224,7 +225,6 @@ def generate_pairing_url(
     #            ------------------------------ --
 
     if flags & FLAG_PAIR_PK:
-
         server_public_key = get_public_key(partition)
 
         if len(server_public_key) != 32:
@@ -291,7 +291,6 @@ def generate_pairing_url(
     # * tstep (u32le)
 
     if not (flags & FLAG_PAIR_PK):
-
         secret_key = get_secret_key(partition)
         server_sig = crypto_sign_detached(data, secret_key)
         data += server_sig

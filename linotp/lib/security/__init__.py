@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -86,6 +87,5 @@ class SecurityModule(object):
         raise NotImplementedError("Should have been implemented %s" % fname)
 
     def verfiyMessageSignature(self, message, hex_mac, method=None, slot_id=3):
-
         fname = "verfiyMessageSignature"
         raise NotImplementedError("Should have been implemented %s" % fname)

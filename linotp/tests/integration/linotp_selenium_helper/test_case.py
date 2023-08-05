@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -65,7 +66,6 @@ def is_flaky_exception(err, *args):
         or issubclass(err[0], WebDriverException)
         or issubclass(err[0], StaleElementReferenceException)
     ):
-
         time.sleep(30)
         return True
 
@@ -178,7 +178,6 @@ class TestCase(object):
 
         selenium_driver = cls.selenium_driver_name
         if not cls.remote_enable:
-
             # Support to set the webdriver executable via an environment variable.
             # Setting the executable is supported by firefox and chrome drivers.
 

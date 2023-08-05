@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -215,7 +216,6 @@ class TestCheckStatus(TestController):
         start = datetime.datetime.now()
         try:
             while True:
-
                 # now check for the status
                 params = {
                     "user": "passthru_user1",
@@ -388,7 +388,6 @@ class TestCheckStatus(TestController):
         start = datetime.datetime.now()
         try:
             while True:
-
                 # now check for the status
                 params = {
                     "user": "passthru_user1",

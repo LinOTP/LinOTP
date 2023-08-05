@@ -1,6 +1,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -45,7 +46,6 @@ class TestTokenSearch(unittest.TestCase):
         mocked_token_owner_iterator,
         mocked_getTokens4UserOrSerial,
     ):
-
         valid_realms = ["*"]
 
         mocked_tokenIterator_init.return_value = None

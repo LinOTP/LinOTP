@@ -4,6 +4,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -81,7 +82,6 @@ def test_resolver_fail():
     )
 
     with pytest.raises(ResolverLoadConfigError, match=msg):
-
         y = PasswdResolver()
         y.loadConfig(pw_config, "my")
 

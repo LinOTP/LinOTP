@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -38,7 +39,6 @@ if TYPE_CHECKING:
 
 
 class AngularSelfService(object):
-
     URL = "/selfservice"
 
     def __init__(self, testcase: "TestCase"):

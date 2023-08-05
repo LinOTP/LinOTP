@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -40,7 +41,6 @@ class FileUploadException(Exception):
 
 @contextmanager
 def LicenseTempFile(content, suffix=".pem"):
-
     with NamedTemporaryFile(mode="w", suffix=suffix) as temp_file:
         temp_file.write(content)
         temp_file.flush()

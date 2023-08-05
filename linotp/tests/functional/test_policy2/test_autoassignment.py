@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -656,7 +657,6 @@ class TestAutoassignmentController(TestController):
         # verify the correct assignment of the token to the user
 
         for i in range(5):
-
             user_name = users[i]
             token = token_list[i]
             params = {"serial": token["serial"]}
@@ -673,7 +673,6 @@ class TestAutoassignmentController(TestController):
             # the remaining OTP values
 
             for j in range(1, 3):
-
                 params = {
                     "user": user_name.encode("UTF-8"),
                     "pass": token["otps"][j],

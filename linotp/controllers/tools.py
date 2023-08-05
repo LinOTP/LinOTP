@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -81,7 +82,6 @@ class ToolsController(BaseController):
         action = request_context["action"]
 
         try:
-
             # Session handling
             check_session(request)
 
@@ -168,7 +168,6 @@ class ToolsController(BaseController):
             )
 
         except Exception as exx:
-
             g.audit["success"] = False
 
             log.error(exx)
@@ -243,18 +242,15 @@ class ToolsController(BaseController):
         """
 
         try:
-
             params = self.request_params
 
             # -------------------------------------------------------------- --
             # processing required arguments
             try:
-
                 data_file = request.files["file"]
                 resolver_name = params["resolver"]
 
             except KeyError as exx:
-
                 log.error("Missing parameter: %r", exx)
                 raise ParameterError("Missing parameter: %r" % exx)
 
@@ -294,7 +290,6 @@ class ToolsController(BaseController):
             file_format = params.get("format", "csv")
 
             if file_format in ("password", "passwd"):
-
                 column_mapping = {
                     "userid": 2,
                     "username": 0,
@@ -309,7 +304,6 @@ class ToolsController(BaseController):
                 format_reader = PasswdFormatReader()
 
             elif file_format in ("csv"):
-
                 skip_header = boolean(params.get("skip_header", False))
                 if skip_header:
                     data = "\n".join(data.split("\n")[1:])
@@ -335,7 +329,6 @@ class ToolsController(BaseController):
                 column_mapping = params.get("column_mapping", column_mapping)
 
             else:
-
                 raise Exception("unspecified file foramt")
 
             # we have to convert the column_mapping back into an dict
@@ -388,7 +381,6 @@ class ToolsController(BaseController):
             )
 
             if dryrun:
-
                 return sendResult(response, result)
 
             # -------------------------------------------------------------- --
@@ -402,7 +394,6 @@ class ToolsController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as pexx:
-
             log.error("Error during user import: %r", pexx)
 
             db.session.rollback()
@@ -410,7 +401,6 @@ class ToolsController(BaseController):
             return sendError(response, "%r" % pexx, 1)
 
         except Exception as exx:
-
             log.error("Error during user import: %r", exx)
 
             db.session.rollback()

@@ -2295,7 +2295,7 @@ function support_view() {
                 var info = "";
                 info += '<h2 class="contact_info center-text">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
                 info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchases.'),
-                    '<a href="mailto:sales@linotp.de">netgo GmbH</a>');
+                    '<a href="mailto:sales@linotp.de">netgo software GmbH</a>');
                 $("#dialog_support_view").html($.parseHTML(info));
 
             } else {

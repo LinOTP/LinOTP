@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -88,7 +89,6 @@ class LocalContainer(object):
         ident_func=get_thread_ident,
         access_check=lambda: True,
     ):
-
         self.__storage__ = {}
         self.__ident_func__ = ident_func
         self.__source_func__ = source_func

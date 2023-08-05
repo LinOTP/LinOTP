@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -82,7 +83,6 @@ class OcraOtp:
         return (self.ocrasuite, self.sharedsecret, self.serial)
 
     def check_signature(self, lseqr_url):
-
         # parse the url
 
         o = urlsplit(lseqr_url)
@@ -112,7 +112,6 @@ class OcraOtp:
         return False
 
     def init_2(self, response, activationKey):
-
         self.activationkey = activationKey
 
         jresp = json.loads(response.body)
@@ -145,7 +144,6 @@ class OcraOtp:
         return (self.challenge, self.transid)
 
     def _setup_(self):
-
         if self.ocra is not None and self.bkey is not None:
             return
 
@@ -165,7 +163,6 @@ class OcraOtp:
         return
 
     def callcOtp(self, challenge=None, ocrapin=None, counter=-1):
-
         if self.ocra is None:
             self._setup_()
 

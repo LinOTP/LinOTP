@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -157,7 +158,6 @@ class HotpTest:
         oath_type: str,
         serial: str,
     ):
-
         self.otpkey = otpkey
         self.otplen = otplen
         self.hashlib = HASH_LOOKUP[hashlib]
@@ -285,7 +285,6 @@ class TestHotpController(TestController):
         # unit-test-verified hotp.get_otp() method
 
         for test_vector in TEST_VECTORS:
-
             test_params = test_vector["params"]
             hotp_test = HotpTest(**test_params)
 

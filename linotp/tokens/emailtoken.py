@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -321,7 +322,6 @@ class EmailTokenClass(HmacTokenClass):
         )
 
         for challenge in challenges:
-
             # only care about open challenges
             if not challenge.is_open():
                 continue
@@ -516,7 +516,6 @@ class EmailTokenClass(HmacTokenClass):
         # ------------------------------------------------------------------ --
 
         try:
-
             email_provider = loadProviderFromPolicy(
                 provider_type="email", user=owner
             )

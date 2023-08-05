@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -316,7 +317,6 @@ class TestPushProviderController(TestController):
 
 
 def cond_failing_http_response(*args, **kwargs):
-
     url = args[0]
 
     assert isinstance(url, str)

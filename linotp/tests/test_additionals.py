@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -55,7 +56,6 @@ class PBKDF2(TestCase):
 
 
 class TestPSKC(TestCase):
-
     XML1 = """<?xml version="1.0" encoding="UTF-8"?>
        <KeyContainer Version="1.0"
            Id="exampleID1"
@@ -336,7 +336,6 @@ class TestPSKC(TestCase):
 
 
 class TestDPWImport(TestCase):
-
     DPW = """dpw123456	12121212121212
 dpw23456789		3434343434343434"""
 

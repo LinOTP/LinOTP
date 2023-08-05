@@ -2,7 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
-#    Copyright (C) 2020 arxes-tolina GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -51,7 +51,6 @@ class TestUserserviceController(TestController):
         return response
 
     def define_email_provider(self, provider_params=None):
-
         email_conf = {
             "SMTP_SERVER": "mail.example.com",
             "SMTP_USER": "secret_user",

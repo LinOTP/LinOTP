@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -312,7 +313,6 @@ def hash_digest(val: bytes, seed: bytes, algo=None, hsm=None):
 
 
 def hmac_digest(bkey, data_input, hsm=None, hash_algo=None):
-
     hsm_obj = _get_hsm_obj_from_context(hsm)
 
     if hash_algo is None:
@@ -552,7 +552,6 @@ def get_public_key(partition):
 
 
 def dsa_to_dh_secret(dsa_secret_key):
-
     out = ctypes.create_string_buffer(c_libsodium.crypto_scalarmult_bytes())
     __libsodium_check(
         c_libsodium.crypto_sign_ed25519_sk_to_curve25519(out, dsa_secret_key)
@@ -561,7 +560,6 @@ def dsa_to_dh_secret(dsa_secret_key):
 
 
 def dsa_to_dh_public(dsa_public_key):
-
     out = ctypes.create_string_buffer(c_libsodium.crypto_scalarmult_bytes())
     __libsodium_check(
         c_libsodium.crypto_sign_ed25519_pk_to_curve25519(out, dsa_public_key)

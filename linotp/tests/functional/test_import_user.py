@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -71,13 +72,11 @@ log = logging.getLogger(__name__)
 
 
 class TestImportUser(TestController):
-
     resolver_name = "myresolv"
     target_realm = "myrealm"
     resolver_spec = "useridresolver.SQLIdResolver.IdResolver." + resolver_name
 
     def setUp(self):
-
         self.delete_all_realms()
         self.delete_all_policies(auth_user="superadmin")
         self.delete_all_resolvers()
@@ -97,17 +96,14 @@ class TestImportUser(TestController):
         # we try to delete the table if it exists
 
         try:
-
             dropStr = "DELETE * FROM imported_users;"
             t = sql.expression.text(dropStr)
             connection.execute(t)
 
         except ProgrammingError as exx:
-
             log.info("Drop Table failed %r", exx)
 
         except Exception as exx:
-
             log.info("Drop Table failed %r", exx)
 
     def test_import_user(self):
@@ -614,7 +610,6 @@ class TestImportUser(TestController):
         # verify that admin cannot import users
 
         try:
-
             def_passwd_file = os.path.join(self.fixture_path, "def-passwd")
 
             with open(def_passwd_file, "r") as f:
@@ -654,7 +649,6 @@ class TestImportUser(TestController):
             assert "error" not in jresp["result"]
 
         finally:
-
             # cleanup the sysadmin policies, which will fail
             # by delete_all_policies
 
@@ -673,7 +667,6 @@ class TestImportUserExtended:
         self,
         create_common_resolvers: Callable,
     ) -> None:
-
         username = "nimda"
         database_context = LinOTP_DatabaseContext(
             SqlSession=db.session, SqlEngine=db.engine

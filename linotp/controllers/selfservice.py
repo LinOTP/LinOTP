@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -77,7 +78,6 @@ log = logging.getLogger(__name__)
 
 
 class SelfserviceController(BaseController):
-
     default_url_prefix = "/selfservice-legacy"
 
     jwt_exempt = True  # Don't do JWT auth in this controller
@@ -148,7 +148,6 @@ class SelfserviceController(BaseController):
             # handle not authenticated requests
 
             if not auth_user or auth_type not in ["user_selfservice"]:
-
                 if action in ["login"]:
                     return
 
@@ -196,10 +195,8 @@ class SelfserviceController(BaseController):
             # authenticated session verification
 
             if auth_type == "user_selfservice":
-
                 # checking the session only for not_form_access actions
                 if action not in self.form_access_methods:
-
                     valid_session = check_session(
                         request, auth_user, self.client
                     )

@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -174,7 +175,6 @@ class EmailProviderServer(SmtpMessageServer):
     """
 
     def get_config_parameters(self):
-
         # SMTP e-mail configuration
         config = """{
             "SMTP_SERVER": "%s",
@@ -195,7 +195,6 @@ class SMSProviderServer(SmtpMessageServer):
     """
 
     def get_config_parameters(self):
-
         sms_provider_config = """{
             "mailserver" : "%s",
             "mailserver_port": %s,

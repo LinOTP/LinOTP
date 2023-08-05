@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -39,7 +40,6 @@ from linotp.lib.challenges import Challenges
 @pytest.mark.usefixtures("app")
 class TestChallengesTransactionidLength(unittest.TestCase):
     def test_transactionid_length(self):
-
         with patch("linotp.lib.challenges.context") as mock_context:
             mock_context.get.return_value = {}
             transid_length = Challenges.get_tranactionid_length()

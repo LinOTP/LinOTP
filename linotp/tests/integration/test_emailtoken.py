@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -43,7 +44,6 @@ logger = logging.getLogger(__name__)
 class TestEmailToken:
     @pytest.fixture(autouse=True)
     def setUp(self, testcase):
-
         self.testcase = testcase
 
         self.data = {
@@ -60,7 +60,6 @@ class TestEmailToken:
         self.testcase.manage_ui.token_view.delete_all_tokens()
 
     def enroll_email_token(self):
-
         # Enroll e-mail token
         user_view = self.testcase.manage_ui.user_view
         user_view.select_realm(self.data["realm_name"])
@@ -172,9 +171,7 @@ class TestEmailTokenAuth(TestEmailToken):
         )
 
     def test_web_api_auth(self):
-
         with EmailProviderServer(self.testcase, 20) as smtpsvc:
-
             # Authenticate over Web API
             validate = Validate(
                 self.testcase.http_protocol,

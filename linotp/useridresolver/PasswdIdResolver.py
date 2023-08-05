@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -104,7 +105,6 @@ def tokenise(r):
 @resolver_registry.class_entry("useridresolver.passwdresolver")
 @resolver_registry.class_entry("passwdresolver")
 class IdResolver(UserIdResolver):
-
     db_prefix = "useridresolver.PasswdIdResolver.IdResolver"
 
     fields = {
@@ -396,7 +396,6 @@ class IdResolver(UserIdResolver):
             ok = True
 
             for search in searchDict:
-
                 if search not in self.searchFields:
                     ok = False
                     break
@@ -600,7 +599,6 @@ class IdResolver(UserIdResolver):
 
 
 if __name__ == "__main__":
-
     print(" PasswdIdResolver - IdResolver class test ")
 
     y = getResolverClass("PasswdIdResolver", "IdResolver")()

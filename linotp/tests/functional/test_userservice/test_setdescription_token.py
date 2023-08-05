@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -33,7 +34,6 @@ class TestUserserviceDescriptionTest(TestController):
     """
 
     def setUp(self):
-
         TestController.setUp(self)
         # clean setup
         self.delete_all_policies()
@@ -268,7 +268,6 @@ class TestUserserviceDescriptionTest(TestController):
         ]
 
         for token_type in token_types:
-
             # 1. enroll oathtoken token
 
             description = "my %s" % token_type

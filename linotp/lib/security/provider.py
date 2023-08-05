@@ -2,6 +2,7 @@
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2019 KeyIdentity GmbH
+#    Copyright (C) 2019 -      netgo software GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -188,7 +189,6 @@ class SecurityProvider(object):
         merged_config = {}
 
         for provider, provider_config in list(self.config.items()):
-
             module = provider_config.get("module")
             provider_class = module.split(".")[-1]
             if provider_class in config_name:
