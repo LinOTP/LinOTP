@@ -70,8 +70,8 @@ setup(
     name='LinOTP',
     version=__version__,
     description='LinOTP Service',
-    author='KeyIdentity GmbH',
-    license='AGPL v3, (C) KeyIdentity GmbH',
+    author='netgo software GmbH',
+    license='AGPL v3, (C) netgo software GmbH',
     author_email='linotp@keyidentity.com',
     url='https://www.linotp.org',
     install_requires=[
