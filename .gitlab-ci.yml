@@ -5,19 +5,18 @@ include:
 variables:
   LANG: C.UTF-8
   IMAGE_NAME: linotp-build-test-environment_buster
-  BUILD_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_COMMIT_REF_NAME
-  LATEST_CODE_IMAGE: $REGISTRY_URL/$IMAGE_NAME:$CI_PIPELINE_ID
-  DOCKERFY_URL: http://debs-devel.corp.linotp.de/misc/dockerfy/dockerfy
+  BUILD_CODE_IMAGE: $CI_REGISTRY/$IMAGE_NAME:$CI_COMMIT_REF_NAME
+  LATEST_CODE_IMAGE: $CI_REGISTRY/$IMAGE_NAME:$CI_PIPELINE_ID
+  DOCKERFY_URL: https://debs-devel.corp.linotp.de/misc/dockerfy/dockerfy
   DEBIAN_MIRROR: ftp.de.debian.org
   DEPENDENCY_SOURCE: http://debs-devel.corp.linotp.de/linotp2
   DEPENDENCY_SOURCE_COMPONENT: linotp
   DEPENDENCY_GPG_KEYID: ""
   DEPENDENCY_GPG_KEY_URL: "http://debs-devel.corp.linotp.de/misc/gpg/linotp-dev-archive-keyring.gpg"
   DOCKER_TAGS: $CI_PIPELINE_ID
-  CI_IMAGE_PREFIX: $REGISTRY_URL/$CI_PROJECT_NAME/ci
+  IMAGE_PREFIX: $CI_REGISTRY/$CI_PROJECT_PATH/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
-  CI_REGISTRY: $GITLAB_DOMAIN_NAME:5050
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
   # Variables for upload-debs
@@ -48,7 +47,7 @@ stages:
   - upload-debian-packages
 
 .docker-registry: &docker-registry
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+  docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 .build-test-environment-debian:
   stage: build-test-environment
@@ -60,7 +59,7 @@ stages:
     # that the modified time will always be the same unless the file
     # has actually been changed
     - DOCKERFILE_CACHE_KEY=$(sha256sum ci/Dockerfile.debian-base | cut -d ' ' -f1)
-    - docker pull "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}" || true
+    - docker pull "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${DOCKERFILE_CACHE_KEY}" || true
     # update the base image, if there was no change this is a noop. If there was a change we will start
     # rebuilding the image. Worst case we downloaded an older image
     # that was based on an outdated image and rebuild it from
@@ -69,18 +68,18 @@ stages:
     - mkdir -p /var/lib/empty
     - >
       docker build
-      --cache-from="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+      --cache-from="${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${DOCKERFILE_CACHE_KEY}"
       --build-arg=BASE_IMAGE="debian:${DEBIAN_RELEASE_NAME}"
       --build-arg="DEBIAN_RELEASE_NAME=${DEBIAN_RELEASE_NAME}"
       --build-arg="DEPENDENCY_SOURCE=${DEPENDENCY_SOURCE}"
       --build-arg="DEPENDENCY_SOURCE_COMPONENT=${DEPENDENCY_SOURCE_COMPONENT}"
       --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
       --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
-      --tag="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-      --tag="$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+      --tag="${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
+      --tag="${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${DOCKERFILE_CACHE_KEY}"
       -f ci/Dockerfile.debian-base /var/lib/empty
-    - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
-    - docker push "$CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${DOCKERFILE_CACHE_KEY}"
+    - docker push "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
+    - docker push "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${DOCKERFILE_CACHE_KEY}"
     - docker images
 
 build-test-environment:debian-buster:
@@ -89,7 +88,7 @@ build-test-environment:debian-buster:
     DEBIAN_RELEASE_NAME: buster
 
 .test-debian:
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+  image: ${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}
   before_script:
     - cd linotpd/src
     - python --version
@@ -126,7 +125,7 @@ unit-test:debian-buster:
 
 .functional-test:
   stage: test
-  image: $CI_IMAGE_PREFIX/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}
+  image: ${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}
   services:
     - name: mysql:5.5
       alias: db
@@ -233,7 +232,7 @@ build:buster:
     max: 2
   before_script:
     - apk add --no-cache make
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+    - *docker-registry
   script:
     - export BUILDDIR=build
     - mkdir -p ${BUILDDIR}
@@ -250,8 +249,8 @@ build:buster:
       --build-arg="DEPENDENCY_SOURCE_COMPONENT=${DEPENDENCY_SOURCE_COMPONENT}"
       --build-arg="DEPENDENCY_GPG_KEYID=${DEPENDENCY_GPG_KEYID}"
       --build-arg="DEPENDENCY_GPG_KEY_URL=${DEPENDENCY_GPG_KEY_URL}"
-      --tag="${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
-    - docker push "${CI_IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+      --tag="${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}" -f $BUILDDIR/Dockerfile.linotp $BUILDDIR
+    - docker push "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
 
 build-linotp-docker-image:buster:
   extends: .build-linotp-docker-image
@@ -262,18 +261,17 @@ build-linotp-docker-image:buster:
   stage: selenium-test
   image: docker:latest
   variables:
-    INTEGRATION_TEST_CHROME: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/chrome:${CI_PIPELINE_ID}"
-    DELETE_OLD_SCRIPT_EXECUTORS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/script-executor"
-    INTEGRATION_TEST_SCRIPT_EXECUTOR: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/script-executor:${CI_PIPELINE_ID}"
-    DELETE_OLD_INTEGRATION_LINOTPS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/linotp"
-    INTEGRATION_TEST_LINOTP: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/tests/integration/linotp:${CI_PIPELINE_ID}"
-    DELETE_OLD_LINOTPS: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/linotp"
-    LINOTP_IMAGE: "${REGISTRY_URL}/${CI_PROJECT_NAME}/ci/${DEBIAN_RELEASE_NAME}/linotp:${CI_PIPELINE_ID}"
+    INTEGRATION_TEST_CHROME: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}/tests/integration/chrome:${CI_PIPELINE_ID}"
+    DELETE_OLD_SCRIPT_EXECUTORS: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}/tests/integration/script-executor"
+    INTEGRATION_TEST_SCRIPT_EXECUTOR: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}/tests/integration/script-executor:${CI_PIPELINE_ID}"
+    DELETE_OLD_INTEGRATION_LINOTPS: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}/tests/integration/linotp"
+    INTEGRATION_TEST_LINOTP: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}/tests/integration/linotp:${CI_PIPELINE_ID}"
+    DELETE_OLD_LINOTPS: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}"
+    LINOTP_IMAGE: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
   before_script:
-    - *docker-registry
     - apk add --no-cache py-pip
     - pip install "docker-compose==${DOCKER_COMPOSE_VERSION}"
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+    - *docker-registry
     - cp -r apt/${DEBIAN_RELEASE_NAME} linotpd/src/linotp/tests/integration/apt
     - cd linotpd/src/linotp/tests/integration
     - docker-compose -f docker-compose-gitlab.yml down --rmi all --remove-orphans
