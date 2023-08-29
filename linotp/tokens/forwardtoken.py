@@ -243,6 +243,16 @@ class ForwardTokenClass(TokenClass):
 
         return request_is_valid
 
+    def createChallenge(self, transactionid, options=None):
+        """
+        create a challenge if the target token does support this
+        """
+        forwardSerial = self.getFromTokenInfo("forward.serial")
+        targetToken = self._getTargetToken(forwardSerial)
+        if "challenge" in targetToken.mode:
+            return targetToken.createChallenge(transactionid, options)
+        return (False, "", "", None)
+
     def do_request(self, passw, transactionid=None, user=None):
         """
         run the http request against the forward host
