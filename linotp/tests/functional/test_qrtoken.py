@@ -1821,6 +1821,13 @@ class TestQRToken(TestController):
         response_dict = json.loads(response.body)
 
         # ------------------------------------------------------------------- --
+        # ensure that the extended attributes are in place
+
+        prefix = "linotp_forward_"
+        assert response_dict["detail"][prefix + "tokentype"] == "qr"
+        assert response_dict["detail"][prefix + "tokenserial"] == serial
+
+        # ------------------------------------------------------------------- --
         # extract challenge and verify transaction
 
         transaction_id = response_dict["detail"]["transactionid"]
