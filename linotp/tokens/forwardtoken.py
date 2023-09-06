@@ -249,8 +249,30 @@ class ForwardTokenClass(TokenClass):
         """
         forwardSerial = self.getFromTokenInfo("forward.serial")
         targetToken = self._getTargetToken(forwardSerial)
+
         if "challenge" in targetToken.mode:
-            return targetToken.createChallenge(transactionid, options)
+
+            # create the challenge for the target token
+
+            (success, message, data, attributes) = targetToken.createChallenge(
+                transactionid, options
+            )
+
+            if attributes is None:
+                attributes = {}
+
+            # and extend the challenge response (via the attributes) to contain
+            # information about the forwarded token
+
+            prefix = "linotp_forward_"
+            attributes[prefix + "tokenserial"] = forwardSerial
+            attributes[
+                prefix + "tokendescription"
+            ] = targetToken.getDescription()
+            attributes[prefix + "tokentype"] = targetToken.getType()
+
+            return success, message, data, attributes
+
         return (False, "", "", None)
 
     def check_challenge_response(self, challenges, user, passw, options=None):
