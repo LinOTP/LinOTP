@@ -1,3 +1,15 @@
+
+linotp (3.2.4~0dev-1) buster-dev; urgency=low
+
+  Features:
+  * when using the forward token and a challenge is triggered, the response detail
+    contains information about the target token
+
+  Fix:
+  * forward token supports forwarding to a qr and push token
+
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Sep 2023 10:47:51 +0100
+
 linotp (3.2.3-1) buster; urgency=low
 
   Fixes:
