@@ -779,7 +779,17 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
             transaction_id = options.get("transaction_id")
 
-            challenges = Challenges.lookup_challenges(serial, transaction_id)
+            # in case of a forward token request, the challenge for the
+            # transaction id is related to the forward token serial.
+            # In this case we will find the forwarder serial in the
+            # options under the key 'forwarded'
+
+            lookup_serial = serial
+            if "forwarded" in options:
+                lookup_serial = options["forwarded"]
+            challenges = Challenges.lookup_challenges(
+                lookup_serial, transaction_id, filter_open=True
+            )
 
             # --------------------------------------------------------------- --
 
