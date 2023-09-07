@@ -29,6 +29,8 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
       * accepts most fields of a AuditEntry as query parameter to filter by
   * the new API endpoints all return dates in ISO 8601-compliant format
   * support for Flask 2 installation
+  * when using the forward token and a challenge is triggered, the response detail
+    contains information about the target token
 
   Fix:
   * After a logout the jwt token can not be reused
@@ -36,6 +38,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * Filtering for active/inactive token works correctly
   * no more support for truncated transaction ids
   * legacy selfservice qr and push token enrollment breaks with strings in otppin policy
+  * forward token supports forwarding to a qr and push token
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 
