@@ -243,6 +243,70 @@ class ForwardTokenClass(TokenClass):
 
         return request_is_valid
 
+    def createChallenge(self, transactionid, options=None):
+        """
+        create a challenge if the target token does support this
+        """
+        forwardSerial = self.getFromTokenInfo("forward.serial")
+        targetToken = self._getTargetToken(forwardSerial)
+
+        if "challenge" in targetToken.mode:
+
+            # create the challenge for the target token
+
+            (success, message, data, attributes) = targetToken.createChallenge(
+                transactionid, options
+            )
+
+            if attributes is None:
+                attributes = {}
+
+            # and extend the challenge response (via the attributes) to contain
+            # information about the forwarded token
+
+            prefix = "linotp_forward_"
+            attributes[prefix + "tokenserial"] = forwardSerial
+            attributes[
+                prefix + "tokendescription"
+            ] = targetToken.getDescription()
+            attributes[prefix + "tokentype"] = targetToken.getType()
+
+            return success, message, data, attributes
+
+        return (False, "", "", None)
+
+    def check_challenge_response(self, challenges, user, passw, options=None):
+        """
+        reply the challenges of the target token
+
+        we are a proxy for the challenge handling:
+        - we have to inform the target token that it has to deal with the
+          challenges of the forward token and
+        - on the reply, we have to replace the target token lists with
+          ourself
+        only the matching challenges are derived from the target token but
+        with the option above should be our ones :)
+
+        """
+        forwardSerial = self.getFromTokenInfo("forward.serial")
+        targetToken = self._getTargetToken(forwardSerial)
+        options["forwarded"] = self.getSerial()
+
+        result = targetToken.check_challenge_response(
+            challenges, user, passw, options
+        )
+        if len(targetToken.valid_token) > 0:
+            self.valid_token.append(self)
+        if len(targetToken.challenge_token) > 0:
+            self.challenge_token.append(self)
+        if len(targetToken.pin_matching_token) > 0:
+            self.pin_matching_token.append(self)
+        if len(targetToken.invalid_token) > 0:
+            self.invalid_token.append(self)
+
+        self.matching_challenges = targetToken.matching_challenges
+        return result
+
     def do_request(self, passw, transactionid=None, user=None):
         """
         run the http request against the forward host

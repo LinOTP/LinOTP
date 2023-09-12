@@ -982,6 +982,13 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.token.setDescription("" + description)
         return
 
+    def getDescription(self):
+        """
+        set the token description
+        :param description: set the token description
+        """
+        return self.token.getDescription()
+
     def setDefaults(self):
         # set the defaults
 

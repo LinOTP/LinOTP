@@ -1803,6 +1803,87 @@ class TestQRToken(TestController):
 
     # --------------------------------------------------------------------------- --
 
+    # --------------------------------------------------------------------------- --
+
+    def test_forward_token(self):
+        """QRTOKEN: Validating user using a forward token"""
+
+        # activate challenge response handling for the forward token
+
+        params = {
+            "scope": "authentication",
+            "action": "challenge_response=* ",
+            "realm": "*",
+            "user": "*",
+            "name": "challenge_response",
+        }
+        self.create_policy(params)
+
+        # activate the pin policy to check the token pin
+        self.setPinPolicy(action="otppin=0, ")
+
+        # create the qr token
+
+        user_token_id = self.execute_correct_pairing()
+        token = self.tokens[user_token_id]
+        serial = token["serial"]
+
+        # create the forward token
+
+        forward_pin = "forward pin"
+        params = {
+            "forward.serial": serial,
+            "description": "forward:undefined",
+            "pin": forward_pin,
+            "type": "forward",
+        }
+        response = self.make_admin_request("init", params=params)
+        assert response.json["result"]["status"]
+        assert response.json["result"]["value"]
+        forward_serial = response.json["detail"]["serial"]
+
+        # ------------------------------------------------------------------- --
+        # assign forward token to a user
+
+        self.assign_token_to_user(serial=forward_serial, user_login="molière")
+
+        # ------------------------------------------------------------------- --
+        # trigger challenge for user on forward token
+
+        params = {
+            "user": "molière",
+            "pass": forward_pin,
+            "data": "2000 dollars to that nigerian prince",
+        }
+        response = self.make_validate_request("check", params)
+        response_dict = json.loads(response.body)
+
+        # ------------------------------------------------------------------- --
+        # ensure that the extended attributes are in place
+
+        prefix = "linotp_forward_"
+        assert response_dict["detail"][prefix + "tokentype"] == "qr"
+        assert response_dict["detail"][prefix + "tokenserial"] == serial
+
+        # ------------------------------------------------------------------- --
+        # extract challenge and verify transaction
+
+        transaction_id = response_dict["detail"]["transactionid"]
+        challenge_url = response_dict["detail"]["message"]
+
+        challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
+
+        params = {"transactionid": transaction_id, "pass": sig}
+
+        response = self.make_validate_request("check_t", params)
+        response_dict = json.loads(response.body)
+        assert "status" in response_dict.get("result", {})
+
+        status = response_dict.get("result", {}).get("status")
+        assert status
+
+    # ----------------------------------------------------------------------- --
+
     def set_pin(self, serial, pin):
         """
         sets the pin for a token
