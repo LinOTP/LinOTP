@@ -88,6 +88,7 @@ from linotp.lib.token import (
     setRealms,
 )
 from linotp.lib.tokeniterator import TokenIterator
+from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     User,
     getSearchFields,
@@ -2449,6 +2450,8 @@ class AdminController(BaseController, JWTMixin):
 
                 if hashlib and hashlib != "auto":
                     init_param["hashlib"] = hashlib
+
+                init_param["enable"] = boolean(params.get("enable", True))
 
                 (ret, _tokenObj) = th.initToken(
                     init_param, User("", "", ""), tokenrealm=tokenrealm

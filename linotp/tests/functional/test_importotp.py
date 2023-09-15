@@ -480,6 +480,24 @@ class TestImportOTP(TestController):
 
         return
 
+    def test_import_Yubikey_hmac_disabled(self):
+        """
+        Test to import Yubikey CSV with hmac token with `enable=False`
+        """
+
+        params = {"type": "yubikeycsv", "enable": False}
+        response = self.upload_tokens("yubi_hmac.csv", params=params)
+
+        assert "<imported>2</imported>" in response, response
+
+        # now verify that all imported tokens are disabled
+        response = self.make_admin_request("show")
+        jresp = json.loads(response.body)
+        tokens = jresp["result"]["value"]["data"]
+
+        for token in tokens:
+            assert token["LinOtp.Isactive"] is False
+
     def test_upload_token_into_targetrealm(self):
         """
         Test the upload of the tokens into a target realm
