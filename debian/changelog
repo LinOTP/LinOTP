@@ -1,6 +1,7 @@
 linotp (3.3~0dev-1) buster-dev; urgency=low
 
   Features:
+  * tokens can be imported as disabled tokens
   * when triggering a challenge, a tokens description is returned
   * policies detail_on_success and detail_on_fail apply to all /validate enpoints
   * /validate entpoints return user information (e.g. given name, phone) when detail_on_success is set
