@@ -939,6 +939,11 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         # ----------------------------------------------------------------- --
 
+        # enable/disable token
+        enable = param.get("enable")
+        if enable is not None:
+            self.enable(enable=enable)
+
         self.resetTokenInfo()
 
         return
