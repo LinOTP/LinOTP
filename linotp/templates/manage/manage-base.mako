@@ -1392,6 +1392,16 @@
 
 
 <!-- ############# import Safenet ######################### -->
+<%def name="enable_tokens()">
+    <div id="enable_tokens" name="enabletokens">
+        <label for="enable_tokens">${_("Enable all tokens")}:</label>
+        <select id="enable_tokens" name="enable">
+            <option value=true>${_("Yes")}</option>
+            <option value=false>${_("No")}</option>
+        </select>
+    </div>
+</%def>
+
 <div id='dialog_import_safenet'>
     <form id="load_tokenfile_form_aladdin" action="/admin/loadtokens" method="post"
                 enctype="multipart/form-data" onsubmit="return false;">
@@ -1412,6 +1422,7 @@
               <label for="safenet_realm">${_("Target realm")}:</label>
               <select id="safenet_realm" name="realm"> </select>
             </div>
+            ${enable_tokens()}
         </div>
     </form>
 </div>
@@ -1458,6 +1469,7 @@
           <label for="pskc_realm">${_("Target realm")}:</label>
           <select id="pskc_realm" name="realm"> </select>
         </div>
+        ${enable_tokens()}
     </form>
 </div>
 
@@ -1504,7 +1516,7 @@
               <label for="oath_realm">${_("Target realm")}:</label>
               <select id="oath_realm" name="realm"> </select>
             </div>
-
+            ${enable_tokens()}
     </form>
 </div>
 
@@ -1521,6 +1533,7 @@
           <label for="yubi_realm">${_("Target realm")}:</label>
           <select id="yubi_realm" name="realm"> </select>
         </div>
+        ${enable_tokens()}
     </form>
 </div>
 
@@ -1546,6 +1559,7 @@
           <label for="dpw_realm">${_("Target realm")}:</label>
           <select id="dpw_realm" name="realm"> </select>
         </div>
+        ${enable_tokens()}
     </form>
 </div>
 
@@ -1573,7 +1587,7 @@
           <label for="dat_realm">${_("Target realm")}:</label>
           <select id="dat_realm" name="realm"> </select>
         </div>
-
+        ${enable_tokens()}
     </form>
 </div>
 
@@ -1586,7 +1600,6 @@
 </script>
 
 <!-- ######################## import Feitian ############################# -->
-
 <div id='dialog_import_feitian'>
     <form id="load_tokenfile_form_feitian" action="/admin/loadtokens" method="post"\
                 enctype="multipart/form-data" onsubmit="return false;">
@@ -1598,6 +1611,7 @@
                   <label for="feitian_realm">${_("Target realm")}:</label>
                   <select id="feitian_realm" name="realm"> </select>
                 </div>
+                ${enable_tokens()}
                 </p></form>
 </div>
 <script type="text/javascript">

@@ -24,20 +24,21 @@
 #    Support: www.linotp.de
 #
 # German translations for LinOTP
+# michael <michael.weber@netgo.de>, 2023.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2022-06-13 19:43+0200\n"
-"Last-Translator: \n"
-"Language-Team: German <>\n"
-"Language: de\n"
+"PO-Revision-Date: 2023-09-15 12:28+0200\n"
+"Last-Translator: michael <michael.weber@netgo.de>\n"
+"Language-Team: German - Germany <support@linotp.de>\n"
+"Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Generator: Gtranslator 3.38.0\n"
 
 msgid " or "
 msgstr " oder "
@@ -667,6 +668,9 @@ msgstr "OTP-Token aktivieren"
 
 msgid "Enable Token"
 msgstr "Token aktivieren"
+
+msgid "Enable all tokens"
+msgstr "Alle Tokens aktivieren"
 
 msgid "Enable caching of the realm to user id resolver lookup"
 msgstr "Caching der Zuordnung zwischen Realms und UserIdResolvern aktivieren"
@@ -1673,6 +1677,9 @@ msgstr "Neuer temporärer Token"
 
 msgid "New password"
 msgstr "Neues Passwort"
+
+msgid "No"
+msgstr "Nein"
 
 msgid "No Token with this OTP value found!"
 msgstr "Kein Token mit diesem OTP-Wert gefunden!"
@@ -3389,6 +3396,9 @@ msgstr ""
 "Im Self-Service-Portal können Sie bspw. die PIN Ihrer Token zurücksetzen, "
 "neue Token ausrollen oder synchronisieren."
 
+msgid "Yes"
+msgstr "Ja"
+
 msgid "You are creating a new realm."
 msgstr "Sie legen hier einen neuen Realm an."
 
@@ -4441,9 +4451,6 @@ msgstr "WebUI generiert"
 
 #~ msgid "Contact Name"
 #~ msgstr "Kontakt"
-
-#~ msgid "Copyright (C) netgo software GmbH"
-#~ msgstr "Copyright (C) netgo software GmbH"
 
 #~ msgid "Counter Login"
 #~ msgstr "Zähler Login"
