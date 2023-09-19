@@ -84,7 +84,7 @@ setup(
         "simplejson>=2.0",
         "pycryptodomex>=3.4",
         "pyrad>=1.1",
-        "netaddr",
+        "netaddr<0.9,>=0.8",
         "qrcode>=2.4",
         "configobj>=4.6.0",
         "httplib2",
