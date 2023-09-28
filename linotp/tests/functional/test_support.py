@@ -586,5 +586,143 @@ class TestSupport(TestController):
             response = self.make_system_request("isSupportValid")
             assert '"value": true' in response, response
 
+    def test_forwardtoken_count_user_license(self):
+        """
+        verify that the forward token is not counted into the user license
+
+        Note:
+        exceeding calculation:
+
+        license: 4 + grace limit: 2 = 6 allowed users
+        the license exceeds with the 7th user
+
+        """
+
+        license_valid_date = datetime(year=2018, month=11, day=16)
+
+        with freeze_time(license_valid_date):
+            license_file = os.path.join(
+                self.fixture_path, "linotp2.token_user.pem"
+            )
+            with open(license_file, "r") as f:
+                license = f.read()
+
+            upload_files = [("license", "linotp2.token_user.pem", license)]
+            response = self.make_system_request(
+                "setSupport", upload_files=upload_files
+            )
+            assert '"status": true' in response
+            assert '"value": true' in response
+
+            response = self.make_system_request("getSupportInfo")
+            jresp = json.loads(response.body)
+            user_num = jresp.get("result", {}).get("value", {}).get("user-num")
+
+            assert user_num == "4"
+
+            # we currently have a grace Limit of 2 + a license of 4 = 6
+            # so we enroll the maximum number of users
+            for user in ["hans", "rollo", "susi", "horst", "user1", "user2"]:
+                params = {
+                    "type": "pw",
+                    "user": user + "@myDefRealm",
+                    "otpkey": "geheim",
+                    "serial": "pw" + user,
+                }
+
+                response = self.make_admin_request("init", params)
+                assert '"value": true' in response
+
+            response = self.make_system_request("isSupportValid")
+            assert '"value": true' in response
+
+            # now we verify that no new user can have a token
+            params = {
+                "type": "pw",
+                "user": "root@myDefRealm",
+                "otpkey": "geheim",
+            }
+
+            response = self.make_admin_request("init", params)
+
+            msg = "No more tokens can be enrolled due to license restrictions"
+            assert msg in response, response
+
+            # but a forward token is allowed
+            params = {
+                "type": "forward",
+                "user": "root@myDefRealm",
+                "otpkey": "geheim",
+                "forward.serial": "pwhans",
+            }
+
+            response = self.make_admin_request("init", params)
+            assert '"value": true' in response, response
+
+            response = self.make_system_request("isSupportValid")
+            assert '"value": true' in response, response
+
+    def test_forwardtoken_count_token_license(self):
+        """
+        verify that the forward token is not counted into the user license
+
+        Note:
+        exceeding calculation:
+
+        license: 4 + grace limit: 2 = 6 allowed users
+        the license exceeds with the 7th user
+
+        """
+
+        licensed_tokens = 5
+        grace_limit = 2
+
+        time_ago = datetime(year=2017, month=12, day=1)
+
+        with freeze_time(time_ago):
+            response = self.install_license(license_filename="expired-lic.pem")
+            assert '"status": true' in response
+            assert '"value": true' in response
+
+            for i in range(0, licensed_tokens + grace_limit):
+                params = {
+                    "type": "hmac",
+                    "genkey": 1,
+                    "serial": "HMAC_DEMO%d" % i,
+                }
+                response = self.make_admin_request("init", params)
+                assert '"status": true' in response
+                assert '"value": true' in response
+
+            response = self.make_system_request("getSupportInfo")
+            jresp = json.loads(response.body)
+            token_num = (
+                jresp.get("result", {}).get("value", {}).get("token-num")
+            )
+
+            assert token_num == "5"
+
+            # now we verify that no new token can be enrolled
+            params = {
+                "type": "hmac",
+                "genkey": 1,
+                "serial": "HMAC_DEMO%d" % 100,
+            }
+
+            response = self.make_admin_request("init", params)
+
+            msg = "No more tokens can be enrolled due to license restrictions"
+            assert msg in response, response
+
+            # but to enroll a forward token is allowed
+            params = {
+                "type": "forward",
+                "otpkey": "geheim",
+                "forward.serial": "HMAC_DEMO%d" % 1,
+            }
+
+            response = self.make_admin_request("init", params)
+            assert '"value": true' in response, response
+
 
 # eof ########################################################################
