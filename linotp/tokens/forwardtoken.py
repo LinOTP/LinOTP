@@ -177,6 +177,21 @@ class ForwardTokenClass(TokenClass):
 
         return ret
 
+    # setter and getter to dynamically query the offline support of the
+    # target token
+
+    @property
+    def supports_offline_mode(self):
+        """getter - to check if the target token supports offline support"""
+        forwardSerial = self.getFromTokenInfo("forward.serial") or ""
+        targetToken = self._getTargetToken(forwardSerial)
+        return targetToken.supports_offline_mode
+
+    @supports_offline_mode.setter
+    def supports_offline_mode(self, value):
+        """setter - if there is a getter, a setter must be implemented"""
+        return
+
     def update(self, param):
         """
         second phase of the init process - updates token specific parameters
@@ -258,22 +273,27 @@ class ForwardTokenClass(TokenClass):
                 transactionid, options
             )
 
+            # extend the challenge response (via the attributes) to contain
+            # information about the forwarded token
             if attributes is None:
                 attributes = {}
-
-            # and extend the challenge response (via the attributes) to contain
-            # information about the forwarded token
-
-            prefix = "linotp_forward_"
-            attributes[prefix + "tokenserial"] = forwardSerial
-            attributes[
-                prefix + "tokendescription"
-            ] = targetToken.getDescription()
-            attributes[prefix + "tokentype"] = targetToken.getType()
+            attributes.update(self._get_target_info())
 
             return success, message, data, attributes
 
         return (False, "", "", None)
+
+    def _get_target_info(self):
+        """small helper to build response detail of the target token"""
+        forwardSerial = self.getFromTokenInfo("forward.serial")
+        targetToken = self._getTargetToken(forwardSerial)
+
+        prefix = "linotp_forward_"
+        return {
+            prefix + "tokenserial": forwardSerial,
+            prefix + "tokendescription": targetToken.getDescription(),
+            prefix + "tokentype": targetToken.getType(),
+        }
 
     def check_challenge_response(self, challenges, user, passw, options=None):
         """
@@ -395,6 +415,16 @@ class ForwardTokenClass(TokenClass):
                 otp_counter = _otp_counter
 
         return otp_counter, matching_challenges
+
+    def getOfflineInfo(self):
+        """interface the offline capability of the target token"""
+
+        forwardSerial = self.getFromTokenInfo("forward.serial") or ""
+        targetToken = self._getTargetToken(forwardSerial)
+
+        offline_info = targetToken.getOfflineInfo() or {}
+        offline_info.update(self._get_target_info())
+        return offline_info
 
     def statusValidationSuccess(self):
         """
