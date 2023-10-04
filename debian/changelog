@@ -32,6 +32,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * support for Flask 2 installation
   * when using the forward token and a challenge is triggered, the response detail
     contains information about the target token
+  * forward tokens do not count for license
 
   Fix:
   * After a logout the jwt token can not be reused
