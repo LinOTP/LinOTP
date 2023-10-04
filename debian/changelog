@@ -4,6 +4,7 @@ linotp (3.2.4~0dev-1) buster-dev; urgency=low
   Features:
   * when using the forward token and a challenge is triggered, the response detail
     contains information about the target token
+  * forward tokens do not count for license
 
   Fix:
   * forward token supports forwarding to a qr and push token
