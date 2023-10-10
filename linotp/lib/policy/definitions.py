@@ -27,9 +27,14 @@
 """ static policy definitions """
 
 
+import logging
 from typing import Dict
 
 from linotp.lib.context import request_context
+from linotp.lib.policy.util import parse_action
+from linotp.lib.type_utils import boolean, parse_duration
+
+log = logging.getLogger(__name__)
 
 SYSTEM_ACTIONS = {
     "setDefault": "write",
@@ -235,8 +240,7 @@ POLICY_DEFINTIONS = {
             "described by the characters C, c, n, s.",
         },
         "lostTokenValid": {
-            "type": "set",
-            "value": ["int", "duration"],
+            "type": ["int", "duration"],
             "desc": "The length of the validity for the temporary "
             'token as days or duration with "d"-days, "h"-hours,'
             ' "m"-minutes, "s"-seconds.',
@@ -366,6 +370,10 @@ POLICY_DEFINTIONS = {
         },
         "challenge_response": {
             "type": "str",
+            # TODO: we can't define a list here as this is a capability which
+            # is defined within a token - this should be joined within the
+            # _add_dynamic_tokens() call, which queries every token policy
+            # definition
             "desc": "A list of tokentypes for which challenge response "
             "should be used.",
         },
@@ -396,7 +404,7 @@ POLICY_DEFINTIONS = {
         },
         "support_offline": {
             "type": "set",
-            "value": ["qr", "u2f"],  # TODO: currently hardcoded
+            "range": ["qr", "u2f", "forward"],  # TODO: currently hardcoded
             "desc": "The token types that should support offline "
             "authentication",
         },
@@ -603,3 +611,175 @@ def _get_policy_definitions():
                     pol[pol_section][set_def] = pol_entry.get(pol_def)
 
     return pol
+
+
+def validate_policy_definition(policy):
+    """
+    verify that the to be stored policy values is compliant to
+    the policy definitions, describing the action value and type.
+    """
+
+    scope = policy["scope"]
+
+    # for legacy ocra and ocra2 scope there is no validation as there
+    # is no clear action definition
+    if scope in ["ocra", "ocra2"]:
+        return
+
+    actions = policy.get("action", {})
+
+    # there are currently some known legacy definitions which are
+    # not defined - so we exclude these from raising an exception
+    # and skip them
+
+    actions_to_skip = {
+        "admin": [
+            "*",
+            "initETNG",
+            "initSPASS",
+        ],
+        "selfservice": [
+            "webprovisionOATH",
+            "webprovisionGOOGLEtime",
+            "webprovisionGOOGLE",
+        ],
+        "system": ["*"],
+        "tools": ["*"],
+        "audit": ["*"],
+        "monitoring": ["*"],
+        "getToken": ["*"],
+        "reporting.access": ["*"],
+    }
+
+    policy_definitions = get_policy_definitions(scope=scope)
+
+    for action, value in parse_action(actions):
+
+        # in the action value validation we only verify actions but not
+        # the sub parts as these are used for naming items
+        if "." in action:
+            action = action.partition(".")[0]
+
+        # if the scope/action is found in the actions_to_skip we skip the
+        # validation for this
+        if action in actions_to_skip.get(scope, {}):
+            log.info(
+                "action validation skipped for policy: %r action: %r"
+                % (policy["name"], action)
+            )
+            continue
+
+        # now lookup in the policy definitions of the scope, if the action is
+        # defined. All exceptions from the lookup are handled before and we can
+        # focus on: 1. lookup, 2. type conversion, 3. value / range comparison
+        definition = policy_definitions.get(action)
+
+        # .1. definition lookup
+        if not definition:
+            log.error(
+                "policy: %r uses action %r which is not defined in the policy"
+                " definitions!" % (policy["name"], action)
+            )
+
+            raise ValueError(
+                "unsupported policy action %r in policy %r "
+                % (action, policy["name"])
+            )
+
+        # .2. type conversion
+        # if there is a policy definition and there is a type declaration
+        # we try to convert the value to that type
+        if "type" in definition:
+            try:
+                value = convert_policy_value(value, definition["type"])
+            except ValueError as exx:
+                raise Exception(
+                    "Action value %r for %s.%s not of the expected type %r"
+                    % (value, scope, action, definition["type"])
+                )
+
+        # .3. a "value" comparison:
+        # if there is a "value" definition, we have to assur that the value is
+        # in the value range or in the set
+        if "value" in definition:
+            if value not in definition["value"]:
+                raise Exception(
+                    "Action value %r for %s.%s not in supported values %r"
+                    % (value, scope, action, definition["value"])
+                )
+
+        # .3. b "range" comparison
+        # if there is a "range" definition all provided entries of the action
+        # value must be in the range e.g. for "support_offline":
+        # the range is ["qr", "u2f", "forward"]. Thus the policy action value
+        # might contain ["qr", "forward"]
+        elif "range" in definition:
+            # normalize the value so that we always deal with the set()
+            if not isinstance(value, set):
+                value = set([value])
+
+            if len(value - set(definition["range"])) != 0:
+                raise Exception(
+                    "Action value %r for %s.%s not in supported range %r"
+                    % (value, scope, action, definition["range"])
+                )
+
+    return
+
+
+def convert_policy_value(value, value_type):
+    """
+    convert the value to the type definition of the policy
+
+    :return: converted value
+    """
+
+    def simple_type_conversion(value, value_type):
+        """inner function to convert simple types"""
+        if value_type == "bool":
+            return boolean(value)
+
+        elif value_type in ["str", "string"]:
+            if not isinstance(value, str):
+                raise ValueError("value %r is not of type string!")
+            return value
+
+        elif value_type == "int":
+            return int(value)
+
+        elif value_type == "duration":
+            parse_duration(value)
+
+    if isinstance(value_type, list):
+        # the value must be of one of these types
+        for val_type in value_type:
+            try:
+                return simple_type_conversion(value, val_type)
+            except ValueError:
+                pass
+        # if we end up here, none of the proposed types could be applied
+        log.error("unable to convert value %r to %r" % (value, val_type))
+        raise ValueError("unable to convert %r to %r" % (value, val_type))
+
+    elif value_type == "set":
+        # there is no easy way to deal with a set currently as a set defines
+        # one of these value in the 'value' definition and could be of
+        # different types
+        value_set = set()
+
+        values = value.split(" ")
+        for val in values:
+            if val.isdecimal():
+                # we try to do here an implicit conversion that we need for the
+                # otp pin policy which allows ints and strings
+                val = int(val)
+            value_set.add(val)
+
+        if len(value_set) == 1:
+            return list(value_set)[0]
+
+        return value_set
+
+    else:
+        # remaining are the simple types like bool string and int ++
+        return simple_type_conversion(value, value_type)

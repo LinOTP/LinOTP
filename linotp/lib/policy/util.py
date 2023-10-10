@@ -177,16 +177,16 @@ def _tokenise_action(action_value, separators=None, escapes=None):
         yield last_part
 
 
-def _parse_action(action_value):
+def parse_action(action_value):
     """
-    _parse_action: yield tuples of key value pairs
+    parse_action: yield tuples of key value pairs
 
     the tokenizer delivers a stream of tokens which could be either
     empty, ',' or '=' or a string. The parser_action iterates through the
     tokens, searching for key value pairs, which are either separated by "="
     or are unary keys, which are of value True
 
-    '"' or "'" sourounded strings are striped
+    '"' or "'" surrounded strings are striped
 
     :param action_value: the value of the action
     :yield: tuple of key and value
@@ -214,6 +214,9 @@ def _parse_action(action_value):
             # if case of an escaped string, remove the sourounding " or '
             if "'" in value or '"' in value:
                 value = _strip_quotes(value)
+
+        if isinstance(value, str) and value.lower() == "false":
+            value = False
 
         if key:
             yield key, value
@@ -261,9 +264,9 @@ def parse_action_value(action_value):
     """
     params = {}
 
-    for key, value in _parse_action(action_value):
-        if key in params:
-            raise Exception("duplicate key defintion %r" % key)
+    for key, value in parse_action(action_value):
+        if key in params and params[key] != value:
+            raise Exception("duplicate key definition %r" % key)
 
         params[key] = value
 

@@ -35,6 +35,7 @@ from flask_babel import gettext as _
 from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ServerError
+from linotp.lib.policy.definitions import validate_policy_definition
 from linotp.lib.policy.forward import ForwardServerPolicy
 
 from .processing import get_client_policy
@@ -82,7 +83,7 @@ def import_policies(policies):
 
         ret = setPolicy(policy)
 
-        log.debug("[importPolicy] import policy %s: %s", policy_name, ret)
+        log.debug("[importPolicy] import policy %s: %r", policy_name, ret)
 
     return len(policies)
 
@@ -132,6 +133,9 @@ def setPolicy(policy):
     # if there is a problem, we will raise an exception with a warning
 
     _check_policy_impact(**policy)
+
+    # raise an exception if the action value is not compliant
+    validate_policy_definition(policy)
 
     # transpose the forwardServer policy action as it might
     # contain sensitive data

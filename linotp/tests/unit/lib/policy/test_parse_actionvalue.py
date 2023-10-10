@@ -156,12 +156,12 @@ class TestParseActionValue(unittest.TestCase):
         with pytest.raises(Exception) as exx:
             parse_action_value(", delete, delete ,")
 
-        exx.match("duplicate key defintion")
+        exx.match("duplicate key definition")
 
         with pytest.raises(Exception) as exx:
             parse_action_value(", del=1, del = 4 ,")
 
-        exx.match("duplicate key defintion")
+        exx.match("duplicate key definition")
 
     def test_action_values(self):
         """
