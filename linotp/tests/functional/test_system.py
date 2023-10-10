@@ -437,6 +437,46 @@ class TestSystemController(TestController):
 
         return
 
+    def test_policy_wrong_action_value(self):
+        """
+        testing to set a policy with a wrong action value
+        """
+        params = {
+            "name": "wrong_pin_policy",
+            "action": "otppin=no_password_at_all",
+            "scope": "authentication",
+            "realm": "*",
+            "user": "*",
+        }
+
+        response = self.make_system_request(action="setPolicy", params=params)
+
+        msg = (
+            "Action value 'no_password_at_all' for authentication.otppin not"
+            " in supported values [0, 1, 2, 3, 'token_pin', 'password', "
+            "'only_otp', 'ignore_pin']"
+        )
+        assert msg in response, response
+
+        params = {
+            "name": "wrong_pin_policy",
+            "action": "otppin= 10 ",
+            "scope": "authentication",
+            "realm": "*",
+            "user": "*",
+        }
+
+        response = self.make_system_request(action="setPolicy", params=params)
+
+        msg = (
+            "Action value 10 for authentication.otppin not in supported values"
+            " [0, 1, 2, 3, 'token_pin', 'password', 'only_otp', 'ignore_pin']"
+        )
+
+        assert msg in response, response
+
+        self.delete_all_policies()
+
     def test_bad_policy_name_import(self):
         policy_content = """[ded-ee]
 realm = *
