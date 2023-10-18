@@ -542,6 +542,13 @@ def set_defaults(app):
         description="expiration of resolver caching entries",
     )
 
+    set_config(
+        key="policy_action_validation",
+        value="True",
+        typ="bool",
+        description="validate policy action values",
+    )
+
 
 def create_admin_resolver(admin_resolver_name):
     """create the default managed admin resolver

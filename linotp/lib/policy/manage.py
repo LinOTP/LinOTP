@@ -32,11 +32,17 @@ import re
 from configobj import ConfigObj
 from flask_babel import gettext as _
 
-from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
+from linotp.lib.config import (
+    getFromConfig,
+    getLinotpConfig,
+    removeFromConfig,
+    storeConfig,
+)
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ServerError
 from linotp.lib.policy.definitions import validate_policy_definition
 from linotp.lib.policy.forward import ForwardServerPolicy
+from linotp.lib.type_utils import boolean
 
 from .processing import get_client_policy
 from .util import (
@@ -134,8 +140,12 @@ def setPolicy(policy):
 
     _check_policy_impact(**policy)
 
-    # raise an exception if the action value is not compliant
-    validate_policy_definition(policy)
+    policy_action_validation = boolean(
+        getFromConfig("policy_action_validation", "False")
+    )
+    if policy_action_validation:
+        # raise an exception if the action value is not compliant
+        validate_policy_definition(policy)
 
     # transpose the forwardServer policy action as it might
     # contain sensitive data
