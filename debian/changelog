@@ -34,6 +34,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
     contains information about the target token
   * forward tokens do not count for license
   * the forward token now supports the offline capability of the qr token
+  * added validator for policy actions
 
   Fix:
   * After a logout the jwt token can not be reused
