@@ -307,7 +307,7 @@ class ValidateController(BaseController):
             if passw is None:
                 raise ParameterError(_('Missing required parameter "pass"!'))
 
-            use_offline = param.get("use_offline", False)
+            use_offline = "use_offline" in param
 
             va = ValidationHandler()
             ok, opt = va.check_status(
