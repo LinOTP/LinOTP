@@ -103,13 +103,10 @@ class ManageController(BaseController):
             # -------------------------------------------------------------- --
 
             # check for support of setting admin password
-
-            c.admin_can_change_password = False
-            if (
+            c.admin_can_change_password = (
                 "linotpadmin.user" in config
                 and "linotpadmin.password" in config
-            ):
-                c.admin_can_change_password = True
+            )
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
