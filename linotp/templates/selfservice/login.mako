@@ -42,7 +42,7 @@
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
   <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css?ref=${c.version_ref}">
-  <link type="text/css" rel="stylesheet" href="/custom/selfservice-style.css?ref=${c.version_ref}">
+  <link type="text/css" rel="stylesheet" href="/static/custom/selfservice-style.css?ref=${c.version_ref}">
   <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.min.css?ref=${c.version_ref}">
 </head>
 
