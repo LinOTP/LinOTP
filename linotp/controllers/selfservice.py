@@ -268,41 +268,7 @@ class SelfserviceController(BaseController):
             # FIXME: does this really do a redirect???
             return response
 
-        param = request.params
-        action = request_context["action"]
-
-        try:
-            if g.audit["action"] in ["selfservice/index"]:
-                log.debug(
-                    "[__after__] authenticating as %s in realm %s!",
-                    c.user,
-                    c.realm,
-                )
-
-                g.audit["user"] = c.user
-                g.audit["realm"] = c.realm
-                g.audit["success"] = True
-
-                if "serial" in param:
-                    g.audit["serial"] = param["serial"]
-                    g.audit["token_type"] = getTokenType(param["serial"])
-
-                current_app.audit_obj.log(g.audit)
-
-            return response
-
-        except flap.HTTPUnauthorized as acc:
-            # the exception, when an abort() is called if forwarded
-            log.error("[__after__::%r] webob.exception %r", action, acc)
-            db.session.rollback()
-            # FIXME: replace authorization exception handling with flasks preferred
-            # error handling
-            raise acc
-
-        except Exception as exx:
-            log.error("[__after__] failed with error: %r", exx)
-            db.session.rollback()
-            return sendError(response, exx, context="after")
+        return response
 
     @deprecated_methods(["POST"])
     def index(self):
