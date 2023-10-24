@@ -14,7 +14,7 @@ from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 from linotp.lib.user import User as RealmUser
 from linotp.lib.user import getUserFromParam, getUserFromRequest
-from linotp.lib.util import check_session, get_client
+from linotp.lib.util import get_client
 from linotp.model import db
 
 log = logging.getLogger(__name__)
@@ -99,8 +99,6 @@ class TokensController(BaseController, JWTMixin):
         try:
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
-
-            check_session(request)
 
             return None
 

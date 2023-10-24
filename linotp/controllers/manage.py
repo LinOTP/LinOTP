@@ -66,7 +66,6 @@ from linotp.lib.user import (
     getUserList,
 )
 from linotp.lib.util import (
-    check_session,
     get_client,
     get_copyright_info,
     get_version,
@@ -119,23 +118,6 @@ class ManageController(BaseController):
                 and "linotpadmin.password" in config
             ):
                 c.admin_can_change_password = True
-
-            # -------------------------------------------------------------- --
-
-            # Session handling for the functions, that show data:
-            if request.path.lower() in [
-                "/manage/",
-                "/manage",
-                "/manage/login",
-                "/manage/audittrail",
-                "/manage/policies",
-                "/manage/tokenview",
-                "/manage/userview",
-                "/manage/help",
-            ]:
-                pass
-            else:
-                check_session(request)
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)

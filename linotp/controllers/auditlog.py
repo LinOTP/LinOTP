@@ -9,7 +9,7 @@ from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.user import getUserFromRequest
-from linotp.lib.util import check_session, get_client
+from linotp.lib.util import get_client
 from linotp.model import db
 
 log = logging.getLogger(__name__)
@@ -73,8 +73,6 @@ class AuditlogController(BaseController, JWTMixin):
         try:
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
-
-            check_session(request)
 
             return None
 

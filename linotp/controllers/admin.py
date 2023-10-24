@@ -97,12 +97,7 @@ from linotp.lib.user import (
     getUserListIterators,
 )
 from linotp.lib.useriterator import iterate_users
-from linotp.lib.util import (
-    SESSION_KEY_LENGTH,
-    check_session,
-    get_client,
-    getLowerParams,
-)
+from linotp.lib.util import SESSION_KEY_LENGTH, get_client, getLowerParams
 from linotp.model import db
 from linotp.tokens import tokenclass_registry
 
@@ -137,16 +132,6 @@ class AdminController(BaseController, JWTMixin):
         try:
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
-
-            if request.path.lower() in [
-                "/admin/login",
-                "/admin/logout",
-            ]:
-                return None
-
-            check_session(request)
-
-            return None
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)

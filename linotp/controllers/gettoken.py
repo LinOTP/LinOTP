@@ -49,7 +49,7 @@ from linotp.lib.user import (
     getUserFromParam,
     getUserFromRequest,
 )
-from linotp.lib.util import check_session, get_client, getParam
+from linotp.lib.util import get_client, getParam
 from linotp.model import db
 
 optional = True
@@ -87,7 +87,6 @@ class GettokenController(BaseController):
 
         try:
             g.audit["client"] = get_client(request)
-            check_session(request)
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)

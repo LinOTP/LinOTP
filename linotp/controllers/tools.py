@@ -61,7 +61,6 @@ from linotp.lib.tools.import_user.SQLImportHandler import (
 from linotp.lib.tools.set_password import DataBaseContext, SetPasswordHandler
 from linotp.lib.type_utils import boolean
 from linotp.lib.user import getUserFromRequest, setRealm
-from linotp.lib.util import check_session
 from linotp.model import db
 
 log = logging.getLogger(__name__)
@@ -82,9 +81,6 @@ class ToolsController(BaseController):
         action = request_context["action"]
 
         try:
-            # Session handling
-            check_session(request)
-
             checkToolsAuthorisation(action, params)
 
         except PolicyException as exx:

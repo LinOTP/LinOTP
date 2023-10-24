@@ -99,7 +99,7 @@ from linotp.lib.user import (
     getUserFromRequest,
     setRealm,
 )
-from linotp.lib.util import check_session, get_client, getLowerParams
+from linotp.lib.util import get_client, getLowerParams
 from linotp.model import db
 from linotp.model.imported_user import ImportedUser
 from linotp.provider import (
@@ -148,9 +148,6 @@ class SystemController(BaseController):
         try:
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
-
-            # check session might raise an abort()
-            check_session(request)
 
             audit = config.get("audit")
             request_context["Audit"] = audit

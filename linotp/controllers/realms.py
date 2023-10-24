@@ -16,7 +16,7 @@ from linotp.lib.user import (
     getUserListIterators,
 )
 from linotp.lib.useriterator import iterate_resolverusers
-from linotp.lib.util import check_session, get_client
+from linotp.lib.util import get_client
 from linotp.model import db
 
 log = logging.getLogger(__name__)
@@ -70,8 +70,6 @@ class RealmsController(BaseController, JWTMixin):
         try:
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
-
-            check_session(request)
 
             audit = config.get("audit")
             request_context["Audit"] = audit

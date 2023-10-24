@@ -11,7 +11,7 @@ from linotp.lib.reply import sendError, sendResult
 from linotp.lib.resolver import get_resolver, get_resolvers
 from linotp.lib.user import User as RealmUser
 from linotp.lib.user import getUserFromRequest
-from linotp.lib.util import check_session, get_client
+from linotp.lib.util import get_client
 from linotp.model import db
 from linotp.model.resolver import Resolver, ResolverType, User
 
@@ -95,8 +95,6 @@ class ResolversController(BaseController, JWTMixin):
         try:
             g.audit["success"] = False
             g.audit["client"] = get_client(request)
-
-            check_session(request)
 
             return None
 

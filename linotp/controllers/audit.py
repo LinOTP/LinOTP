@@ -44,7 +44,7 @@ from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError
 from linotp.lib.user import getUserFromRequest
-from linotp.lib.util import check_session, get_client
+from linotp.lib.util import get_client
 from linotp.model import db
 
 optional = True
@@ -75,7 +75,6 @@ class AuditController(BaseController):
 
         try:
             g.audit["client"] = get_client(request)
-            check_session(request)
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()

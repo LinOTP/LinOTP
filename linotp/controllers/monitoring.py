@@ -53,7 +53,7 @@ from linotp.lib.support import (
 )
 from linotp.lib.token import getNumTokenUsers, getTokenNumResolver
 from linotp.lib.user import getUserFromRequest
-from linotp.lib.util import check_session, get_client
+from linotp.lib.util import get_client
 from linotp.model import db
 
 log = logging.getLogger(__name__)
@@ -79,9 +79,6 @@ class MonitoringController(BaseController):
             g.audit["success"] = False
 
             g.audit["client"] = get_client(request)
-
-            # Session handling
-            check_session(request)
 
             audit = config.get("audit")
             request_context["Audit"] = audit
