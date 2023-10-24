@@ -288,13 +288,6 @@ class UserserviceController(BaseController):
 
         # ------------------------------------------------------------------ --
 
-        # setup the audit for general availibility
-
-        g.audit["success"] = False
-        g.audit["client"] = self.client
-
-        # ------------------------------------------------------------------ --
-
         # the following actions dont require an authenticated session
 
         if action in ["auth", "pre_context", "login", "logout"]:

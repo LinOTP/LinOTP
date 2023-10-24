@@ -11,7 +11,6 @@ from linotp.lib.reply import sendError, sendResult
 from linotp.lib.resolver import get_resolver, get_resolvers
 from linotp.lib.user import User as RealmUser
 from linotp.lib.user import getUserFromRequest
-from linotp.lib.util import get_client
 from linotp.model import db
 from linotp.model.resolver import Resolver, ResolverType, User
 
@@ -80,28 +79,6 @@ class ResolversController(BaseController, JWTMixin):
             self.get_user,
             methods=["GET"],
         )
-
-    def __before__(self, **params):
-        """
-        __before__ is called before every action
-
-        :param params: list of named arguments
-        :return: -nothing- or in case of an error a Response
-                created by sendError with the context info 'before'
-        """
-
-        action = request_context["action"]
-
-        try:
-            g.audit["success"] = False
-            g.audit["client"] = get_client(request)
-
-            return None
-
-        except Exception as exx:
-            log.error("[__before__::%r] exception %r", action, exx)
-            db.session.rollback()
-            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):

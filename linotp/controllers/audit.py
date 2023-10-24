@@ -44,7 +44,6 @@ from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError
 from linotp.lib.user import getUserFromRequest
-from linotp.lib.util import get_client
 from linotp.model import db
 
 optional = True
@@ -61,24 +60,6 @@ class AuditController(BaseController):
         https://server/audit/<functionname>
 
     """
-
-    def __before__(self, **params):
-        """
-        __before__ is called before every action
-
-        :param params: list of named arguments
-        :return: -nothing- or in case of an error a Response
-                created by sendError with the context info 'before'
-        """
-
-        action = request_context["action"]
-
-        try:
-            g.audit["client"] = get_client(request)
-        except Exception as exx:
-            log.error("[__before__::%r] exception %r", action, exx)
-            db.session.rollback()
-            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):

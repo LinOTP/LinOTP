@@ -65,12 +65,7 @@ from linotp.lib.user import (
     getUserFromRequest,
     getUserList,
 )
-from linotp.lib.util import (
-    get_client,
-    get_copyright_info,
-    get_version,
-    remove_empty_lines,
-)
+from linotp.lib.util import get_copyright_info, get_version, remove_empty_lines
 from linotp.model import db
 from linotp.tokens import tokenclass_registry
 
@@ -95,9 +90,6 @@ class ManageController(BaseController):
         action = request_context["action"]
 
         try:
-            g.audit["success"] = False
-            g.audit["client"] = get_client(request)
-
             c.version = get_version()
             c.version_ref = base64.encodebytes(c.version.encode())[:6]
 

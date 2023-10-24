@@ -53,7 +53,6 @@ from linotp.lib.support import (
 )
 from linotp.lib.token import getNumTokenUsers, getTokenNumResolver
 from linotp.lib.user import getUserFromRequest
-from linotp.lib.util import get_client
 from linotp.model import db
 
 log = logging.getLogger(__name__)
@@ -76,16 +75,7 @@ class MonitoringController(BaseController):
         action = request_context["action"]
 
         try:
-            g.audit["success"] = False
-
-            g.audit["client"] = get_client(request)
-
-            audit = config.get("audit")
-            request_context["Audit"] = audit
             checkAuthorisation(scope="monitoring", method=action)
-
-            return
-
         except Exception as exception:
             log.error(exception)
             db.session.rollback()

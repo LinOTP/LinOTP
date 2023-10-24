@@ -61,7 +61,6 @@ from linotp.lib.reporting import (
 )
 from linotp.lib.type_utils import convert_to_datetime
 from linotp.lib.user import getUserFromRequest
-from linotp.lib.util import get_client
 from linotp.model import db
 
 log = logging.getLogger(__name__)
@@ -86,14 +85,7 @@ class ReportingController(BaseController):
         action = request_context["action"]
 
         try:
-            g.audit["success"] = False
-
-            g.audit["client"] = get_client(request)
-
             checkAuthorisation(scope="reporting.access", method=action)
-
-            return
-
         except Exception as exception:
             log.error(exception)
             db.session.rollback()

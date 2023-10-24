@@ -126,9 +126,7 @@ class SelfserviceController(BaseController):
             c.licenseinfo = get_copyright_info()
             c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
-            g.audit["success"] = False
             self.client = get_client(request)
-            g.audit["client"] = self.client
 
             # -------------------------------------------------------------- --
 
