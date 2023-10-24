@@ -889,7 +889,10 @@ def cron_compare(condition, now):
             condition_parts.append(part)
 
     if len(condition_parts) != 6:
-        raise Exception("Error in Time Condition format")
+        raise Exception(
+            "Error in Time Condition format: Expected 6 but "
+            f"got {len(condition_parts)} parts in cron notation"
+        )
 
     #
     # extract the members of the cron condition
