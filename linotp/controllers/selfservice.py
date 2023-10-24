@@ -255,21 +255,6 @@ class SelfserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, context="before")
 
-    @staticmethod
-    def __after__(response):
-        """
-        __after__ is called after every action
-
-        :param response: the previously created response - for modification
-        :return: return the response
-        """
-
-        if request_context.get("reponse_redirect", False):
-            # FIXME: does this really do a redirect???
-            return response
-
-        return response
-
     @deprecated_methods(["POST"])
     def index(self):
         """
@@ -287,8 +272,6 @@ class SelfserviceController(BaseController):
         we delete the cookies from the server and the client and
         redirect to the login page
         """
-
-        request_context["reponse_redirect"] = True
 
         redirect_response = redirect(url_for(".login"))
 
