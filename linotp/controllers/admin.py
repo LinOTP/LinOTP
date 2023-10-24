@@ -97,7 +97,7 @@ from linotp.lib.user import (
     getUserListIterators,
 )
 from linotp.lib.useriterator import iterate_users
-from linotp.lib.util import SESSION_KEY_LENGTH, getLowerParams
+from linotp.lib.util import getLowerParams
 from linotp.model import db
 from linotp.tokens import tokenclass_registry
 

@@ -45,7 +45,6 @@ from linotp.lib.crypto.utils import geturandom
 from linotp.lib.error import InvalidFunctionParameter, ParameterError
 from linotp.lib.type_utils import boolean, get_ip_address, get_ip_network
 
-SESSION_KEY_LENGTH = 32
 hostname_regex = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 
 log = logging.getLogger(__name__)
