@@ -351,8 +351,12 @@ class ForwardTokenClass(TokenClass):
 
         counter = targetToken.getOtpCount()
         window = targetToken.getOtpCountWindow()
-        self.target_otp_count = targetToken.checkOtp(passw, counter, window)
 
+        # the push token expects passw to be a dict with accept or reject
+        if targetToken.type == "push" and not isinstance(passw, dict):
+            return (False, self.target_otp_count, None)
+
+        self.target_otp_count = targetToken.checkOtp(passw, counter, window)
         res = self.target_otp_count >= 0
 
         return (res, self.target_otp_count, None)
