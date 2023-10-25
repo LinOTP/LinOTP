@@ -126,9 +126,7 @@ class SelfserviceController(BaseController):
             c.licenseinfo = get_copyright_info()
             c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
-            g.audit["success"] = False
             self.client = get_client(request)
-            g.audit["client"] = self.client
 
             # -------------------------------------------------------------- --
 
@@ -257,55 +255,6 @@ class SelfserviceController(BaseController):
             db.session.rollback()
             return sendError(response, exx, context="before")
 
-    @staticmethod
-    def __after__(response):
-        """
-        __after__ is called after every action
-
-        :param response: the previously created response - for modification
-        :return: return the response
-        """
-
-        if request_context.get("reponse_redirect", False):
-            # FIXME: does this really do a redirect???
-            return response
-
-        param = request.params
-        action = request_context["action"]
-
-        try:
-            if g.audit["action"] in ["selfservice/index"]:
-                log.debug(
-                    "[__after__] authenticating as %s in realm %s!",
-                    c.user,
-                    c.realm,
-                )
-
-                g.audit["user"] = c.user
-                g.audit["realm"] = c.realm
-                g.audit["success"] = True
-
-                if "serial" in param:
-                    g.audit["serial"] = param["serial"]
-                    g.audit["token_type"] = getTokenType(param["serial"])
-
-                current_app.audit_obj.log(g.audit)
-
-            return response
-
-        except flap.HTTPUnauthorized as acc:
-            # the exception, when an abort() is called if forwarded
-            log.error("[__after__::%r] webob.exception %r", action, acc)
-            db.session.rollback()
-            # FIXME: replace authorization exception handling with flasks preferred
-            # error handling
-            raise acc
-
-        except Exception as exx:
-            log.error("[__after__] failed with error: %r", exx)
-            db.session.rollback()
-            return sendError(response, exx, context="after")
-
     @deprecated_methods(["POST"])
     def index(self):
         """
@@ -323,8 +272,6 @@ class SelfserviceController(BaseController):
         we delete the cookies from the server and the client and
         redirect to the login page
         """
-
-        request_context["reponse_redirect"] = True
 
         redirect_response = redirect(url_for(".login"))
 

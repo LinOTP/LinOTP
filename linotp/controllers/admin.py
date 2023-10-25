@@ -97,12 +97,7 @@ from linotp.lib.user import (
     getUserListIterators,
 )
 from linotp.lib.useriterator import iterate_users
-from linotp.lib.util import (
-    SESSION_KEY_LENGTH,
-    check_session,
-    get_client,
-    getLowerParams,
-)
+from linotp.lib.util import getLowerParams
 from linotp.model import db
 from linotp.tokens import tokenclass_registry
 
@@ -122,36 +117,6 @@ class AdminController(BaseController, JWTMixin):
 
     The functions are described below in more detail.
     """
-
-    def __before__(self, **params):
-        """
-        __before__ is called before every action
-
-        :param params: list of named arguments
-        :return: -nothing- or in case of an error a Response
-                created by sendError with the context info 'before'
-        """
-
-        action = request_context["action"]
-
-        try:
-            g.audit["success"] = False
-            g.audit["client"] = get_client(request)
-
-            if request.path.lower() in [
-                "/admin/login",
-                "/admin/logout",
-            ]:
-                return None
-
-            check_session(request)
-
-            return None
-
-        except Exception as exx:
-            log.error("[__before__::%r] exception %r", action, exx)
-            db.session.rollback()
-            return sendError(response, exx, context="before")
 
     @staticmethod
     def __after__(response):

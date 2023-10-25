@@ -63,7 +63,6 @@ from linotp.lib.user import (
     getUserFromRequest,
     getUserId,
 )
-from linotp.lib.util import SESSION_KEY_LENGTH
 from linotp.model import db
 
 log = logging.getLogger(__name__)

@@ -45,7 +45,6 @@ from linotp.lib.crypto.utils import geturandom
 from linotp.lib.error import InvalidFunctionParameter, ParameterError
 from linotp.lib.type_utils import boolean, get_ip_address, get_ip_network
 
-SESSION_KEY_LENGTH = 32
 hostname_regex = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 
 log = logging.getLogger(__name__)
@@ -158,44 +157,6 @@ def generate_password(size=6, characters=None):
         )
 
     return "".join(secrets.choice(characters) for _x in range(size))
-
-
-def check_session(request):
-    """
-    This function checks if the client is in the allowed
-    IP range. The session cookie is no longer checked
-    here because flask-jwt-extended does this now in
-    BaseController::jwt_check.
-
-    :param request: the request object
-
-    :return: boolean
-    """
-
-    # check if the client is in the allowed IP range
-    no_session_clients = []
-    for no_session_client in config.get("linotpNoSessionCheck", "").split(","):
-        no_session_clients.append(no_session_client.strip())
-
-    client = request.environ.get("REMOTE_ADDR", None)
-    log.debug("[check_session] checking %s in %s", client, no_session_clients)
-    for network in no_session_clients:
-        if not network:
-            continue
-        try:
-            if netaddr.IPAddress(client) in netaddr.IPNetwork(network):
-                log.debug(
-                    "skipping session check since client %s in allowed: %s",
-                    client,
-                    no_session_clients,
-                )
-                return
-        except Exception as ex:
-            log.warning(
-                "misconfiguration in linotpNoSessionCheck: %r - %r",
-                network,
-                ex,
-            )
 
 
 def check_selfservice_session(cookies=None, params=None, url=None):

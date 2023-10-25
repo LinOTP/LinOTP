@@ -99,7 +99,7 @@ from linotp.lib.user import (
     getUserFromRequest,
     setRealm,
 )
-from linotp.lib.util import check_session, get_client, getLowerParams
+from linotp.lib.util import getLowerParams
 from linotp.model import db
 from linotp.model.imported_user import ImportedUser
 from linotp.provider import (
@@ -146,15 +146,6 @@ class SystemController(BaseController):
         action = request_context["action"]
 
         try:
-            g.audit["success"] = False
-            g.audit["client"] = get_client(request)
-
-            # check session might raise an abort()
-            check_session(request)
-
-            audit = config.get("audit")
-            request_context["Audit"] = audit
-
             # check authorization
             if action not in [
                 "_add_dynamic_tokens",
@@ -163,10 +154,6 @@ class SystemController(BaseController):
                 "isSupportValid",
             ]:
                 checkPolicyPre("system", action)
-
-            # default return for the __before__ is nothing
-            return
-
         except PolicyException as pex:
             log.error("[__before__::%r] policy exception %r", action, pex)
             db.session.rollback()
