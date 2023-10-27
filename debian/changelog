@@ -33,6 +33,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * when using the forward token and a challenge is triggered, the response detail
     contains information about the target token
   * forward tokens do not count for license
+  * the forward token now supports the offline capability of the qr token
 
   Fix:
   * After a logout the jwt token can not be reused

@@ -474,10 +474,15 @@ class ValidationHandler(object):
                 not ch.is_open()
                 and ch.valid_tan
                 and supports_offline_at_all
-                and offline_is_allowed
                 and use_offline
             ):
-                token_dict["offline_info"] = token.getOfflineInfo()
+                if offline_is_allowed:
+                    token_dict["offline_info"] = token.getOfflineInfo()
+                else:
+                    log.info(
+                        f"Token {token.getSerial()} (type={token.type}) is not "
+                        "allowed by support_offline policy in current realm"
+                    )
 
             trans_dict["token"] = token_dict
             transactions[ch.transid] = trans_dict

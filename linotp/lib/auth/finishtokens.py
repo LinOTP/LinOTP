@@ -219,14 +219,18 @@ class FinishTokens(object):
             use_offline = use_offline_param.lower() == "true"
 
             if supports_offline_at_all and offline_is_allowed and use_offline:
-                offline_info = token.getOfflineInfo()
                 if detail is None:
                     detail = {}
 
-                offline = {"serial": token.getSerial(), "type": token.type}
-                offline["offline_info"] = offline_info
-
-                detail.update({"offline": offline})
+                detail.update(
+                    {
+                        "offline": {
+                            "serial": token.getSerial(),
+                            "type": token.type,
+                            "offline_info": token.getOfflineInfo(),
+                        }
+                    }
+                )
 
             janitor_to_remove_enrollment_token(valid_tokens=[token])
 
