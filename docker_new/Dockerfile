@@ -1,0 +1,134 @@
+ARG BASE_IMAGE=python:3.11-slim-bookworm
+########
+# BASE #
+########
+
+# 'base' holds dependencies and ENV shared by stages
+
+FROM $BASE_IMAGE as base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    LINOTP_HOME=/linotp \
+    VENV_ROOT=/opt/venv \
+    TRANSLATIONS_DIR=/translations
+
+ENV PATH=$VENV_ROOT/bin:$PATH \
+    I18N_DIR=$LINOTP_HOME/linotp/i18n
+
+# Install dependencies and clean up
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    # required for python-ldap
+    libldap2-dev libsasl2-dev \
+    # required for pysodium
+    libsodium-dev \
+    # to check if given DB is available
+    netcat-openbsd \
+    # entrypoint and signal handling
+    tini \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+
+###########
+# BUILDER #
+###########
+
+FROM base AS builder
+
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # required for building python-ldap
+    gcc
+
+# Install python dependencies into VENV_ROOT
+RUN python -m venv $VENV_ROOT
+COPY docker_new/requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+WORKDIR $LINOTP_HOME
+
+# Install linotp
+COPY config config
+COPY examples examples
+COPY man man
+COPY MANIFEST.in README.md setup.cfg setup.py ./
+COPY linotp linotp
+RUN pip install .
+
+################
+# TRANSLATIONS #
+################
+
+FROM base as translations
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gettext
+
+WORKDIR $LINOTP_HOME
+
+COPY linotp/i18n $I18N_DIR
+COPY docker_new/translations.sh .
+RUN ./translations.sh
+
+
+#########
+# FINAL #
+#########
+
+FROM base
+
+ENV LINOTP_ROOT_DIR=/linotp_data
+ENV LINOTP_USER=linotp \
+    LINOTP_ADMIN_USER=admin \
+    LINOTP_ADMIN_PASSWORD=admin \
+    LINOTP_CFG= \
+    LINOTP_DATABASE_URI=sqlite:////$LINOTP_ROOT_DIR/linotp.db \
+    LINOTP_AUDIT_DATABASE_URI=sqlite:////$LINOTP_ROOT_DIR/linotp_audit.db \
+    LINOTP_DB_HOST= \
+    LINOTP_DB_PORT=3306 \
+    LINOTP_DB_WAITTIME=30s \
+    LINOTP_SESSION_COOKIE_SECURE=true \
+    # root level dirs
+    LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;/$TRANSLATIONS_DIR \
+    LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
+    CUSTOM_ASSETS_DIR=/custom-assets \
+    CONFIG_DIR=/config \
+    # misc
+    SQLALCHEMY_LOGGING_LEVEL=ERROR \
+    DEBIAN_FRONTEND=noninteractive \
+    FLASK_APP=linotp.app \
+    FLASK_ENV=production
+
+WORKDIR $LINOTP_HOME
+
+# Copy the virtualenv we created in the builder stage
+COPY --from=builder $VENV_ROOT $VENV_ROOT
+# Copy the translations we created in the translations stage
+COPY --from=translations $TRANSLATIONS_DIR $TRANSLATIONS_DIR
+# Copy relevant files to start linotp and create symlink
+COPY linotpapp.py docker_new/entrypoint.sh docker_new/symlink_custom_assets.py ./
+
+# Create directories
+RUN mkdir -p \
+    $LINOTP_ROOT_DIR/cache \
+    $LINOTP_ROOT_DIR/data \
+    $LINOTP_ROOT_DIR/logs \
+    $LINOTP_CUSTOM_TEMPLATES_DIR \
+    $CONFIG_DIR \
+    $TRANSLATIONS_DIR \
+    && \
+    # Create symlink for assets customization
+    python symlink_custom_assets.py && rm symlink_custom_assets.py
+
+# Create volumes for root level dirs
+VOLUME $LINOTP_ROOT_DIR $LINOTP_CUSTOM_TEMPLATES_DIR $CONFIG_DIR $TRANSLATIONS_DIR
+
+# Create and set the user to run the container and chown directories
+RUN useradd -r $LINOTP_USER && \
+    chown -R $LINOTP_USER:$LINOTP_USER \
+    $LINOTP_ROOT_DIR 
+USER $LINOTP_USER
+
+ENTRYPOINT [ "tini", "--", "./entrypoint.sh" ] 
