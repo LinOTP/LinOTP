@@ -154,7 +154,7 @@ class TestParseActionValue(unittest.TestCase):
         exx.match("non terminated action")
 
         with pytest.raises(Exception) as exx:
-            parse_action_value(", delete, delete ,")
+            parse_action_value(", delete=True, delete=false ,")
 
         exx.match("duplicate key definition")
 
