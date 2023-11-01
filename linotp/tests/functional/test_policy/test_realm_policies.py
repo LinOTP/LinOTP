@@ -88,7 +88,7 @@ class TestRealmPolicies(TestPoliciesBase):
                 "name": "admin_init",
                 "scope": "admin",
                 "realm": "myOtherRealm",
-                "action": "init",
+                "action": "initHMAC",
                 "user": "adminR1",
                 "client": "",
             },

@@ -2638,14 +2638,14 @@ class TestPolicies(TestPoliciesBase):
                 "name": "cp_self_1",
                 "scope": "selfservice",
                 "user": "user1",
-                "action": "initHMAC, setOTPPIN",
+                "action": "enrollHMAC, setOTPPIN",
                 "realm": "myDefRealm",
             },
             {
                 "name": "cp_self_2",
                 "scope": "selfservice",
                 "user": "user1",
-                "action": "initHMAC, setOTPPIN, webprovisionGOOGLE",
+                "action": "enrollHMAC, setOTPPIN, webprovisionGOOGLE",
                 "realm": "myDefRealm",
                 "client": "172.16.200.10",
             },
@@ -2653,7 +2653,7 @@ class TestPolicies(TestPoliciesBase):
                 "name": "cp_self_3",
                 "scope": "selfservice",
                 "user": "",
-                "action": "initHMAC",
+                "action": "enrollHMAC",
                 "realm": "myDefRealm",
             },
         ]
@@ -2811,7 +2811,7 @@ class TestPolicies(TestPoliciesBase):
         params = {
             "user": "user1",
             "realm": "myDefRealm",
-            "action": "initHMAC",
+            "action": "enrollHMAC",
             "scope": "selfservice",
             "client": "192.168.20.1",
         }
@@ -2821,7 +2821,7 @@ class TestPolicies(TestPoliciesBase):
         )
 
         assert '"allowed": true' in response, response
-        assert '"action": "initHMAC, setOTPPIN",' in response, response
+        assert '"action": "enrollHMAC, setOTPPIN",' in response, response
 
         # webprovisioning from 172.16.200.X is allowrd
         params = {
@@ -2838,7 +2838,8 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"cp_self_2": {' in response, response
         assert (
-            '"action": "initHMAC, setOTPPIN, webprovisionGOOGLE",' in response
+            '"action": "enrollHMAC, setOTPPIN, webprovisionGOOGLE",'
+            in response
         ), response
 
         # delete the policies

@@ -66,7 +66,7 @@ class TestUpoloadPolicies(TestPoliciesBase):
             "scope": "admin",
             "realm": "mydefrealm",
             "user": "realmadmin",
-            "action": "import, importcsv",
+            "action": "import,",
         }
         auth_user = "superadmin"
         response = self.make_system_request(

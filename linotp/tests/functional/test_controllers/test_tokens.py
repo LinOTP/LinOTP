@@ -177,7 +177,7 @@ class TestTokens(TestController):
         admin_policy = {
             "name": "amin_not_allowed_to_read_tokens",
             "active": True,
-            "action": "init",
+            "action": "initHMAC",
             "user": "admin",
             "scope": "admin",
             "realm": "myDefRealm",
