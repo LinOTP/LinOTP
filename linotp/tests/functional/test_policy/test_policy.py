@@ -3564,7 +3564,7 @@ class TestPolicies(TestPoliciesBase):
             "scope": "enrollment",
             "realm": "myOtherRealm",
             "user": "max1",
-            "action": "autoassignment=6",
+            "action": "autoassignment",
             "client": "",
         }
         auth_user = "superadmin"
