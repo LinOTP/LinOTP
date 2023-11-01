@@ -1,5 +1,5 @@
 
-linotp (3.2.4~0dev-1) buster-dev; urgency=low
+linotp (3.2.4~rc0-1) buster-dev; urgency=low
 
   Features:
   * when using the forward token and a challenge is triggered, the response detail
@@ -10,7 +10,7 @@ linotp (3.2.4~0dev-1) buster-dev; urgency=low
   Fix:
   * forward token supports forwarding to a qr and push token
 
- -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Sep 2023 10:47:51 +0100
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 01 Nov 2023 17:14:00 +0200
 
 linotp (3.2.3-1) buster; urgency=low
 
