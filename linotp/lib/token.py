@@ -1662,12 +1662,15 @@ def get_used_tokens_count(resolver=None, active=True, realm=None):
     return getTokenNumResolver(resolver=resolver, active=active)
 
 
-def getNumTokenUsers(resolver=None, active=True, realm=None):
+def getNumTokenUsers(
+    resolver=None, active=True, realm=None, count_forward_tokens=False
+):
     """
     get the number of distinct the token users
 
     :param resolver: count only the token users per resolver
     :param active: boolean - count base only on active tokens
+    :param count_forward_tokens: boolean - count the forward tokens
     :return: the number of token users
     """
 
@@ -1696,12 +1699,17 @@ def getNumTokenUsers(resolver=None, active=True, realm=None):
     if active:
         conditions += (and_(Token.LinOtpIsactive),)
 
+    if count_forward_tokens is False:
+        conditions += (and_(Token.LinOtpTokenType != "forward"),)
+
     condition = and_(*conditions)
 
     return session.filter(condition).distinct().count()
 
 
-def getTokenNumResolver(resolver=None, active=True):
+def getTokenNumResolver(
+    resolver=None, active=True, count_forward_tokens=False
+):
     """
     get the number of used tokens
 
@@ -1715,6 +1723,7 @@ def getTokenNumResolver(resolver=None, active=True):
 
     :param resolver: count only the token users per resolver
     :param active: boolean - count base only on active tokens
+    :param count_forward_tokens: boolean - count the forward tokens
     :return: the number of token
     """
 
@@ -1728,6 +1737,9 @@ def getTokenNumResolver(resolver=None, active=True):
 
     if active:
         conditions += (and_(Token.LinOtpIsactive),)
+
+    if count_forward_tokens is False:
+        conditions += (and_(Token.LinOtpTokenType != "forward"),)
 
     condition = and_(*conditions)
 

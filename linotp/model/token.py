@@ -159,6 +159,9 @@ class Token(TokenSchema):
         self.LinOtpTokenDesc = str(desc)
         return self.LinOtpTokenDesc
 
+    def getDescription(self) -> str:
+        return self.LinOtpTokenDesc
+
     def setOtpLen(self, otplen: Union[str, int]) -> None:
         self.LinOtpOtpLen = int(otplen)
 

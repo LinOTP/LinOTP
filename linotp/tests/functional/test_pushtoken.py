@@ -188,6 +188,37 @@ class TestPushToken(TestController):
 
         response = self.make_system_request("getPolicy", params)
 
+    # --------------------------------------------------------------------------- --
+
+    def assign_token_to_user(self, serial, user_login, pin=None):
+        """
+        assign a token to a user
+
+        :serial the serial number of the pin
+        :user_login the login name of the user
+        :pin (optional) a pin that will be set. if parameter is left
+            out our is set to None, no pin will be set
+
+        """
+
+        params = {"serial": serial, "user": user_login}
+
+        if pin is not None:
+            params["pin"] = pin
+
+        response = self.make_admin_request("assign", params)
+        response_dict = json.loads(response.body)
+
+        # ------------------------------------------------------------------- --
+
+        assert "result" in response_dict
+        result = response_dict.get("result")
+
+        assert "value" in result
+        value = result.get("value")
+
+        assert value
+
     # -------------------------------------------------------------------------- --
 
     def create_dummy_cb_policies(self):
@@ -771,9 +802,20 @@ class TestPushToken(TestController):
 
     # -------------------------------------------------------------------------- --
 
-    def trigger_challenge(self, user_token_id, content_type=None, data=None):
-        serial = self.tokens[user_token_id]["serial"]
-        pin = self.tokens[user_token_id]["pin"]
+    def trigger_challenge(
+        self,
+        user_token_id,
+        content_type=None,
+        data=None,
+        pin=None,
+        serial=None,
+    ):
+
+        if not serial:
+            serial = self.tokens[user_token_id]["serial"]
+
+        if pin is None:
+            pin = self.tokens[user_token_id]["pin"]
 
         params = {"serial": serial, "pass": pin}
 
@@ -1316,7 +1358,175 @@ class TestPushToken(TestController):
         value = response_dict.get("result", {}).get("value")
         assert value, response
 
-    # -------------------------------------------------------------------------- --
+    # ---------------------------------------------------------------------- --
+
+    def test_login_with_forward_token(self):
+        """PushToken: Check if signing logins via forward token works correctly"""
+
+        # activate challenge response handling for the forward token
+
+        params = {
+            "scope": "authentication",
+            "action": "challenge_response=* ",
+            "realm": "*",
+            "user": "*",
+            "name": "challenge_response",
+        }
+        self.create_policy(params)
+
+        # --------- create paired push token ------------
+
+        user_token_id = self.execute_correct_pairing()
+
+        # --------- create forward token ------------
+
+        token = self.tokens[user_token_id]
+        serial = token["serial"]
+
+        # create the forward token
+
+        forward_pin = "forward pin"
+        params = {
+            "forward.serial": serial,
+            "description": "forward:undefined",
+            "pin": forward_pin,
+            "type": "forward",
+        }
+
+        response = self.make_admin_request("init", params=params)
+        assert response.json["result"]["status"]
+        assert response.json["result"]["value"]
+        forward_serial = response.json["detail"]["serial"]
+
+        # ------------------------------------------------------------------- --
+        # assign forward token to a user
+
+        self.assign_token_to_user(serial=forward_serial, user_login="molière")
+
+        # --------- trigger challenge via the forward token ----------------- --
+
+        challenge_url = self.trigger_challenge(
+            user_token_id,
+            data="root@foo",
+            content_type=CONTENT_TYPE_LOGIN,
+            serial=forward_serial,
+            pin=forward_pin,
+        )
+
+        challenge, sig = self.decrypt_and_verify_challenge(
+            challenge_url, action="ACCEPT"
+        )
+
+        # ------------------------------------------------------------------ --
+
+        # check if the content type is right
+
+        content_type = challenge["content_type"]
+        assert content_type == CONTENT_TYPE_LOGIN
+
+        # ------------------------------------------------------------------ --
+
+        # prepare params for validate
+
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "signature": sig,
+        }
+
+        # again, we ignore the callback definitions
+
+        response = self.make_validate_request("accept_transaction", params)
+        response_dict = json.loads(response.body)
+
+        status = response_dict.get("result", {}).get("status")
+        assert status
+
+        value = response_dict.get("result", {}).get("value")
+        assert value, response
+
+    def test_login_with_forward_token_no_pin(self):
+        """PushToken: Check if signing logins via forward token works correctly"""
+
+        # activate challenge response handling for the forward token
+
+        params = {
+            "scope": "authentication",
+            "action": "challenge_response=* ",
+            "realm": "*",
+            "user": "*",
+            "name": "challenge_response",
+        }
+        self.create_policy(params)
+
+        # --------- create paired push token ------------
+
+        user_token_id = self.execute_correct_pairing()
+
+        # --------- create forward token ------------
+
+        token = self.tokens[user_token_id]
+        serial = token["serial"]
+
+        # create the forward token
+
+        forward_pin = ""
+        params = {
+            "forward.serial": serial,
+            "description": "forward:undefined",
+            "pin": forward_pin,
+            "type": "forward",
+        }
+
+        response = self.make_admin_request("init", params=params)
+        assert response.json["result"]["status"]
+        assert response.json["result"]["value"]
+        forward_serial = response.json["detail"]["serial"]
+
+        # ------------------------------------------------------------------- --
+        # assign forward token to a user
+
+        self.assign_token_to_user(serial=forward_serial, user_login="molière")
+
+        # --------- trigger challenge via the forward token ----------------- --
+
+        challenge_url = self.trigger_challenge(
+            user_token_id,
+            data="root@foo",
+            content_type=CONTENT_TYPE_LOGIN,
+            serial=forward_serial,
+            pin=forward_pin,
+        )
+
+        challenge, sig = self.decrypt_and_verify_challenge(
+            challenge_url, action="ACCEPT"
+        )
+
+        # ------------------------------------------------------------------ --
+
+        # check if the content type is right
+
+        content_type = challenge["content_type"]
+        assert content_type == CONTENT_TYPE_LOGIN
+
+        # ------------------------------------------------------------------ --
+
+        # prepare params for validate
+
+        params = {
+            "transactionid": challenge["transaction_id"],
+            "signature": sig,
+        }
+
+        # again, we ignore the callback definitions
+
+        response = self.make_validate_request("accept_transaction", params)
+        response_dict = json.loads(response.body)
+
+        status = response_dict.get("result", {}).get("status")
+        assert status
+
+        value = response_dict.get("result", {}).get("value")
+        assert value, response
 
     def test_unsupported_content_type(self):
         """PushToken: Check for unsupported content types"""
