@@ -36,10 +36,10 @@ if [ "$@" = "bootstrap" ]; then
         echo >&2 "Already bootstrapped - skipping"
     else
         linotp -v init database
-        linotp -v init audit-keys || true
-        linotp -v init enc-key || true
-        linotp -v local-admins add $LINOTP_ADMIN_USER || true
-        linotp -v local-admins password --password $LINOTP_ADMIN_PASSWORD $LINOTP_ADMIN_USER || true
+        linotp -v init audit-keys
+        linotp -v init enc-key
+        linotp -v local-admins add $LINOTP_ADMIN_USER
+        linotp -v local-admins password --password $LINOTP_ADMIN_PASSWORD $LINOTP_ADMIN_USER
         touch "$LINOTP_ROOT_DIR"/bootstrapped
     fi
 fi
