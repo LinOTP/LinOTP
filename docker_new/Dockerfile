@@ -82,7 +82,7 @@ FROM base
 ENV LINOTP_ROOT_DIR=/linotp_data
 ENV LINOTP_USER=linotp \
     LINOTP_ADMIN_USER=admin \
-    LINOTP_ADMIN_PASSWORD=admin \
+    LINOTP_ADMIN_PASSWORD= \
     LINOTP_CFG= \
     LINOTP_DATABASE_URI=sqlite:///$LINOTP_ROOT_DIR/linotp.db \
     LINOTP_DB_HOST= \

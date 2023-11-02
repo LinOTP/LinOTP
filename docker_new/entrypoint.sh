@@ -4,6 +4,17 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+set_admin_password_env() {
+    mkpwd() { dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 ; }
+    pwd=$(mkpwd)
+    while grep -q "[0OIl1]" <<<$pwd; do
+        pwd=$(mkpwd)
+    done
+    export LINOTP_ADMIN_PASSWORD=$pwd
+    echo >&2 "Password for '$LINOTP_ADMIN_USER' account set to '$LINOTP_ADMIN_PASSWORD'"
+    echo >&2 "Please change it at your earliest convenience!"
+}
+
 if [ -n "$LINOTP_DB_HOST" ]; then
     echo "Waiting for PostgreSQL..."
 
@@ -40,6 +51,9 @@ if [ "$@" = "--with-bootstrap" ]; then
         linotp -v init audit-keys
         linotp -v init enc-key
         linotp -v local-admins add $LINOTP_ADMIN_USER
+        if [ -z "$LINOTP_ADMIN_PASSWORD" ]; then
+            set_admin_password_env
+        fi
         linotp -v local-admins password --password $LINOTP_ADMIN_PASSWORD $LINOTP_ADMIN_USER
         touch "$LINOTP_ROOT_DIR"/bootstrapped
     fi
