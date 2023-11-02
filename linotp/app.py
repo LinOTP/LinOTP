@@ -79,7 +79,7 @@ from .lib.tools.flask_jwt_extended_migration import (
 )
 from .lib.user import User, getUserFromRequest
 from .lib.util import get_client
-from .model import setup_db
+from .model import SYS_EXIT_CODE, setup_db
 from .settings import configs
 from .tokens import reload_classes as reload_token_classes
 
@@ -285,7 +285,7 @@ class ExtFlaskConfig(FlaskConfig):
                 err += 1
         if err:
             print("This is a fatal condition, aborting.", file=sys.stderr)
-            sys.exit(1)
+            sys.exit(SYS_EXIT_CODE)
 
 
 class LinOTPApp(Flask):
@@ -801,6 +801,29 @@ class LinOTPApp(Flask):
     def setup_audit(self):
         if self.database_needed():
             self.audit_obj = getAudit()
+
+    def check(self):
+        self._check_secret_file()
+        self._check_audit_keys()
+
+    def _check_secret_file(self):
+        secret_file = self.config["SECRET_FILE"]
+        if not os.path.isfile(secret_file):
+            print(
+                f"CRITICAL: SECRET_FILE does not exist in {secret_file}. Run `linotp init enc-key` to create it.",
+                file=sys.stderr,
+            )
+            sys.exit(SYS_EXIT_CODE)
+
+    def _check_audit_keys(self):
+        public_key = self.config["AUDIT_PUBLIC_KEY_FILE"]
+        private_key = self.config["AUDIT_PRIVATE_KEY_FILE"]
+        if not os.path.isfile(public_key) or not os.path.isfile(private_key):
+            print(
+                f"CRITICAL: Audit log keypair does not exist; use `linotp init audit-keys` to generate one.",
+                file=sys.stderr,
+            )
+            sys.exit(SYS_EXIT_CODE)
 
 
 def init_logging(app):
