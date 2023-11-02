@@ -35,6 +35,7 @@ from flask import current_app
 
 from linotp.lib.support import get_license_type
 from linotp.lib.token import get_used_tokens_count
+from linotp.model import SYS_EXIT_CODE
 
 log = logging.getLogger(__name__)
 
@@ -114,7 +115,7 @@ class AuditBase(object):
                 "use `linotp init audit-keys` to generate one."
             )
             # raise RuntimeError("Audit log keypair is missing")
-            sys.exit(11)
+            sys.exit(SYS_EXIT_CODE)
 
     def readKeys(self):
         self.createKeys()

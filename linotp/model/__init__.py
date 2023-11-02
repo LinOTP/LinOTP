@@ -63,6 +63,9 @@ implicit_returning = True
 # # due to reserved keywords 'session' and 'timestamp'
 COL_PREFIX = ""
 
+# exit code 4 prevents gunicorn from restarting workers
+SYS_EXIT_CODE = 4
+
 # TODO: Get from app config
 # SQLU = config.get("sqlalchemy.url", "")
 # if SQLU.startswith("oracle:"):
@@ -181,7 +184,7 @@ def setup_db(app) -> None:
             "Database schema must be initialised, "
             "run `linotp init database`."
         )
-        sys.exit(11)
+        sys.exit(SYS_EXIT_CODE)
 
     if audit_database_uri != "OFF":
         engine = db.get_engine(app=app, bind="auditdb")
@@ -194,13 +197,13 @@ def setup_db(app) -> None:
                 "Audit database schema must be initialised, "
                 "run `linotp init database`."
             )
-            sys.exit(11)
+            sys.exit(SYS_EXIT_CODE)
 
     if not Migration.is_db_model_current():
         log.critical(
             "Database schema is not current, run `linotp init database`."
         )
-        sys.exit(11)
+        sys.exit(SYS_EXIT_CODE)
 
 
 def init_db_tables(app, drop_data=False, add_defaults=True):

@@ -1160,6 +1160,11 @@ def create_app(config_name=None, config_extra=None):
             )
             log.info("PROFILE is enabled (do not use this in production!)")
 
+    if app.cli_cmd in ["run", ""]:
+        # we also do this when `app.cli_cmd=""`
+        # because this is how gunicorn starts the app
+        app.check()
+
     return app
 
 
