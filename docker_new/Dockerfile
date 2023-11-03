@@ -9,7 +9,7 @@ FROM $BASE_IMAGE as base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    LINOTP_HOME=/linotp \
+    LINOTP_HOME=/app \
     VENV_ROOT=/opt/venv \
     TRANSLATIONS_DIR=/translations
 
