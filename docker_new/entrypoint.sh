@@ -85,12 +85,24 @@ else
     echo >&2 "LINOTP_CFG is $file"
 fi
 
-if [ "$@" = "--with-bootstrap" ]; then
-    bootstrap_linotp
-fi
-
-
 export MODE="${MODE:-production}"
 export SERVICE="${SERVICE:-0.0.0.0:5000}"
 
-start_linotp
+if [ -z "${1-}" ]; then
+    start_linotp
+else
+    case "$1" in
+        --with-bootstrap)
+            # run in production mode with bootstrap
+            bootstrap_linotp
+            start_linotp
+            ;;
+        *)
+            # Execute LinOTP CLI command
+            if ! linotp "$@"; then
+                echo >&2 "Error invoking LinOTP (exit code $?)"
+            fi
+            ;;
+    esac
+fi
+
