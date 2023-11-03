@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -o errexit
 set -o pipefail
 set -o nounset
 
@@ -40,11 +39,22 @@ start_linotp() {
         # due to its jwt and cookie handling.
         # Once supported, set `--workers="${WORKER_PROCESSES:-1}"`
         echo >&2 "Starting gunicorn on $SERVICE ..."
-        exec gunicorn \
+        gunicorn \
             --bind "${SERVICE}" --worker-tmp-dir=/dev/shm \
             --workers=1 --threads="${WORKER_THREADS:-4}" \
             --worker-class=gthread --log-file=- \
             "linotpapp:create_app()"
+        exit_status=$?
+        if [ $exit_status == 4 ]; then
+			# NOTE: `<<-` needs tabs as indents to work properly
+			cat <<-EOF
+			Gunicorn and LinOTP shut down.
+			If this happened during your container startup, it's likely you're missing files to start LinOTP.
+			Please refer to the logs.
+			Or try starting the container by adding \`--with-bootstrap\` at the end e.g.
+			\`docker run linotp --with-bootstrap\` to bootstrap all needed files.
+			EOF
+        fi
     elif [ "$MODE" = "development" ]; then
         if [ -n "${I_KNOW_THIS_IS_BAD_AND_IF_TERRIBLE_THINGS_HAPPEN_IT_WILL_BE_MY_OWN_FAULT:-}" ]; then
             echo >&2 "Starting development server on..."
