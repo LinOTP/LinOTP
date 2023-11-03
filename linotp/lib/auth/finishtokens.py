@@ -388,8 +388,6 @@ class FinishTokens(object):
         g.audit["action_detail"] = action_detail
 
         if not tokens:
-            g.audit["serial"] = ""
-            g.audit["token_type"] = ""
             return
 
         if len(tokens) == 1:
