@@ -32,7 +32,8 @@ fi
 
 if [ "$@" = "--with-bootstrap" ]; then
     echo >&2 "--- Bootstrapping LinOTP ---"
-    if [ -f "$LINOTP_ROOT_DIR"/bootstrapped ]; then
+    bootstrapped_file="$LINOTP_ROOT_DIR"/bootstrapped
+    if [ -f "$bootstrapped_file" ]; then
         echo >&2 "Already bootstrapped - skipping"
     else
         linotp -v init database
