@@ -79,7 +79,10 @@ RUN ./translations.sh
 
 FROM base
 
-ENV LINOTP_ROOT_DIR=/linotp_data
+ENV LINOTP_ROOT_DIR=/data \
+    LINOTP_CACHE_DIR=/cache \
+    LINOTP_DATA_DIR=/cache \
+    LINOTP_LOG_FILE_DIR=/logs
 ENV LINOTP_USER=linotp \
     LINOTP_ADMIN_USER=admin \
     LINOTP_ADMIN_PASSWORD= \
@@ -111,9 +114,10 @@ COPY linotpapp.py docker_new/entrypoint.sh docker_new/symlink_custom_assets.py .
 
 # Create directories
 RUN mkdir -p \
-    $LINOTP_ROOT_DIR/cache \
-    $LINOTP_ROOT_DIR/data \
-    $LINOTP_ROOT_DIR/logs \
+    $LINOTP_ROOT_DIR \
+    $LINOTP_CACHE_DIR \
+    $LINOTP_DATA_DIR \
+    $LINOTP_LOG_FILE_DIR \
     $LINOTP_CUSTOM_TEMPLATES_DIR \
     $CONFIG_DIR \
     $TRANSLATIONS_DIR \
@@ -122,12 +126,22 @@ RUN mkdir -p \
     python symlink_custom_assets.py && rm symlink_custom_assets.py
 
 # Create volumes for root level dirs
-VOLUME $LINOTP_ROOT_DIR $LINOTP_CUSTOM_TEMPLATES_DIR $CONFIG_DIR $TRANSLATIONS_DIR
+VOLUME $LINOTP_ROOT_DIR \
+    $LINOTP_CACHE_DIR \
+    $LINOTP_DATA_DIR \
+    $LINOTP_LOG_FILE_DIR \
+    $LINOTP_CUSTOM_TEMPLATES_DIR \
+    $TRANSLATIONS_DIR \
+    $CONFIG_DIR
 
 # Create and set the user to run the container and chown directories
 RUN useradd -r $LINOTP_USER && \
     chown -R $LINOTP_USER:$LINOTP_USER \
-    $LINOTP_ROOT_DIR 
+    $LINOTP_ROOT_DIR \
+    $LINOTP_LOG_FILE_DIR \
+    $LINOTP_CACHE_DIR \
+    $LINOTP_DATA_DIR \
+    $CONFIG_DIR
 USER $LINOTP_USER
 
 ENTRYPOINT [ "tini", "--", "./entrypoint.sh" ] 
