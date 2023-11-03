@@ -30,7 +30,7 @@ else
 fi
 
 
-if [ "$@" = "bootstrap" ]; then
+if [ "$@" = "--with-bootstrap" ]; then
     echo >&2 "--- Bootstrapping LinOTP ---"
     if [ -f "$LINOTP_ROOT_DIR"/bootstrapped ]; then
         echo >&2 "Already bootstrapped - skipping"
