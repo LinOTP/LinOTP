@@ -61,11 +61,13 @@ build-and-upload-pypi-image-testenv:
   image: docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
+      variables:
+        PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_SHA
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: true
       variables:
-        PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+        PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_SHA
   variables:
     PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_REF_NAME
   before_script:
@@ -357,7 +359,7 @@ lint:
   rules:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merged_result'
   variables:
-    PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_SHA
     PYPI_ARGS: "-m \"not fails_in_pypi_tests\" -n auto"
   before_script:
     # install env

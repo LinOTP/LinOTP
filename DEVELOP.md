@@ -503,3 +503,15 @@ All of these can be conveniently built and run using targets in the
 
 Refer to the `Makefile` for details of how these targets interact, and
 for additional configuration parameters.
+
+## Gitlab-CI Pipelines
+
+### Failing *-test-pypi Jobs
+
+If *-test-pypi jobs fail with
+```terminal
+WARNING: Failed to pull image with policy "if-not-present": [...] not found: manifest unknown: manifest unknown
+```
+please run the job `build-and-upload-pypi-image-testenv` and retry failed tests after the docker image was pushed.
+
+This will be the case when your merge request targets a non-protected branch; e.g. a merge request to another merge request branch.
