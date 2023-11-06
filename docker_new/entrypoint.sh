@@ -20,9 +20,7 @@ bootstrap_linotp() {
     if [ -f "$bootstrapped_file" ]; then
         echo >&2 "Already bootstrapped - skipping"
     else
-        linotp -v init database
-        linotp -v init audit-keys
-        linotp -v init enc-key
+        linotp -v init all
         linotp -v local-admins add $LINOTP_ADMIN_USER
         if [ -z "$LINOTP_ADMIN_PASSWORD" ]; then
             set_admin_password_env
