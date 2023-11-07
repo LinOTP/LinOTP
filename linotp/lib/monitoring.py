@@ -128,28 +128,17 @@ class MonitorHandler(object):
             conditions = (and_(r_condition),)
             # handle combinations like:
             # status=unassigned & active, unassigned & inactive
-
-            if "&" in stat:
-                stati = stat.split("&")
-                if "assigned" in stati:
+            for stati in stat.split("&"):
+                if stati == "assigned":
                     conditions += (and_(Token.LinOtpUserid != ""),)
-                else:
+                elif stati == "unassigned":
                     conditions += (and_(Token.LinOtpUserid == ""),)
-                if "active" in stati:
+                elif stati == "active":
                     conditions += (and_(Token.LinOtpIsactive),)
+                elif stati == "inactive":
+                    conditions += (and_(Token.LinOtpIsactive == False),)
                 else:
-                    conditions += (and_(Token.LinOtpIsactive == False),)
-            else:
-                # handle single expressions like
-                # status=unassigned,active
-                if "assigned" == stat:
-                    conditions += (and_(Token.LinOtpUserid != ""),)
-                elif "unassigned" == stat:
-                    conditions += (and_(Token.LinOtpUserid == ""),)
-                elif "active" == stat:
-                    conditions += (and_(Token.LinOtpIsactive),)
-                elif "inactive" == stat:
-                    conditions += (and_(Token.LinOtpIsactive == False),)
+                    raise ValueError("Unknown token_status %r" % stati)
 
             #  create the final condition as AND of all conditions
             condition = and_(*conditions)

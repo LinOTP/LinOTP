@@ -264,7 +264,62 @@ class TestMonitoringController(TestController):
         assert s_values.get("total", -1) == 5, response
         assert s_values.get("unassigned&inactive", -1) == 1, response
 
-        return
+    def test_token_status_silly_combi(self):
+        requested_status = "assigned&unassigned"
+
+        self.create_token(serial="0021")
+        self.create_token(serial="0022", user="root")
+        self.create_token(serial="0023", realm="mydefrealm")
+        self.create_token(serial="0024", realm="myotherrealm")
+        self.create_token(serial="0025", realm="myotherrealm", active=False)
+        self.create_token(
+            serial="0026", realm="myotherrealm", user="max2", active=False
+        )
+        parameters = {
+            "realms": "mydefrealm,myotherrealm",
+            "status": requested_status,
+        }
+        response = self.make_monitoring_request("tokens", params=parameters)
+
+        resp = json.loads(response.body)
+        values = resp.get("result").get("value").get("Realms")
+
+        # we expect those keys to be the exact list of keys in each section
+        exp_keys = [
+            "total",
+            "total users",
+            requested_status,
+        ]
+
+        mydefrealm = values.get("mydefrealm", {})
+        assert list(mydefrealm.keys()) == exp_keys, response
+        assert mydefrealm.get("total", -1) == 2, response
+        assert mydefrealm.get(requested_status, -1) == 0, response
+
+        myotherrealm = values.get("myotherrealm", {})
+        assert list(myotherrealm.keys()) == exp_keys, response
+        assert myotherrealm.get("total", -1) == 3, response
+        assert myotherrealm.get(requested_status, -1) == 0, response
+
+        s_values = resp.get("result").get("value").get("Summary")
+        assert list(s_values.keys()) == exp_keys, response
+        assert s_values.get("total", -1) == 5, response
+        assert s_values.get(requested_status, -1) == 0, response
+
+    def test_token_status_invalid_status(self):
+        requested_status = "assigned&invalid_status"
+
+        parameters = {
+            "realms": "mydefrealm,myotherrealm",
+            "status": requested_status,
+        }
+        response = self.make_monitoring_request("tokens", params=parameters)
+
+        resp = json.loads(response.body)
+
+        assert False == resp["result"]["status"], resp
+        err_msg = resp["result"]["error"]["message"]
+        assert "Unknown token_status 'invalid_status'" == err_msg, resp
 
     def test_token_in_multiple_realms(self):
         """
