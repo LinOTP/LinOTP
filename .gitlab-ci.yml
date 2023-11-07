@@ -63,6 +63,9 @@ build-and-upload-pypi-image-testenv:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       variables:
         PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_SHA
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^(branch-v|master)/
+      variables:
+        PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_SHA
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: true
