@@ -53,6 +53,11 @@
   box-shadow: inset 0px 0px 5px 0px rgba(255, 255, 255, 0.5);
 }
 
+#info_box {
+  max-height: 100px;
+  overflow-y: scroll;
+}
+
 #info_bar {
   display: none;
 }

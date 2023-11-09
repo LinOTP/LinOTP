@@ -229,6 +229,12 @@ function alert_info_text(params) {
     toggle_close_all_link();
 
     $('#info_box').show();
+
+    // Scroll to the bottom of the info box
+    $('#info_box').animate(
+        { scrollTop: $('#info_box').prop("scrollHeight") },
+        'slow'
+      )
 }
 
 /*
