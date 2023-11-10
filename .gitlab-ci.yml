@@ -333,17 +333,14 @@ lint:
     - CI_FLASK_VERSION: [Flask-1]
       CI_NODE_INDEX: [1, 2, 3, 4]
       CI_NODE_TOTAL: [4]
+  matrix-flask2-only:
+    - CI_FLASK_VERSION: [Flask-2]
+      CI_NODE_INDEX: [1, 2, 3, 4]
+      CI_NODE_TOTAL: [4]
   matrix-no-test-splitting-flask1-only:
     - CI_FLASK_VERSION: [Flask-1]
       CI_NODE_INDEX: [1]
       CI_NODE_TOTAL: [1]
-  script-install-flask2: &script-install-flask2
-    if [ "$CI_FLASK_VERSION" == "Flask-2" ];
-      then
-        pip3 install --upgrade pip wheel;
-        pip3 install --upgrade "Flask==2.1.3" Flask-JWT-Extended "Flask-Babel<3.0.0" Flask-SQLAlchemy pytest-flask;
-        if ! pip3 freeze | grep Flask==2; then echo "FLASK_VERSION is != 2" && exit 1; fi
-    ; fi
 
 .test-base:
   interruptible: true
@@ -361,13 +358,12 @@ lint:
   image: $PYPI_IMAGE_TAG
   rules:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merged_result'
+  parallel:
+    matrix: !reference [.parallel, matrix-flask2-only]
   variables:
     PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_SHA
     PYPI_ARGS: "-m \"not fails_in_pypi_tests\" -n auto"
   before_script:
-    # install env
-    - pip3 install --upgrade --upgrade-strategy eager -e ".[test]" smpplib pytest-test-groups pytest-xdist
-    - *script-install-flask2
     - *pytest-args
   
 .test-base-debs:
@@ -403,8 +399,6 @@ unit-test:
   artifacts:
     reports:
       junit: linotp/tests/unit/unit-*.xml
-  before_script:
-    !reference [.parallel, script-install-flask2]
   script:
     - *pytest-args
     - make unittests PYTESTARGS="$PYTESTARGS"
@@ -417,8 +411,6 @@ unit-test:
   artifacts:
     reports:
       junit: linotp/tests/functional/functional-*.xml
-  before_script:
-    !reference [.parallel, script-install-flask2]
   script:
     - *pytest-args
     - make functionaltests PYTESTARGS="$PYTESTARGS"
