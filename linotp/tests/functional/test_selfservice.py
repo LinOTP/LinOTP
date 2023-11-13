@@ -654,9 +654,9 @@ class TestSelfserviceController(TestController):
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
 
-    def test_enroll_onetime_spass(self):
+    def test_enroll_onetime_pw_token(self):
         """
-        selfservice: testing enrollment of a onetime spass token as normal user
+        selfservice: testing enrollment of a onetime pw token as normal user
         """
         self.deleteToken("token01")
 
@@ -672,8 +672,8 @@ class TestSelfserviceController(TestController):
             auth_user=auth_user,
             params={
                 "serial": "token01",
-                "type": "spass",
-                "pin": "!token0secret!",
+                "type": "pw",
+                "otpkey": "!token0secret!",
             },
         )
         print(response)
@@ -683,16 +683,16 @@ class TestSelfserviceController(TestController):
         )
 
         """ Verify that a spass token is properly created """
-        self.createPolicy("enrollSPASS")
+        self.createPolicy("enrollPW")
 
         response = self.make_userselfservice_request(
             "enroll",
             auth_user=auth_user,
             params={
                 "serial": "token01",
-                "type": "spass",
+                "type": "pw",
                 "onetime": "true",
-                "pin": "!token0secret!",
+                "otpkey": "!token0secret!",
             },
         )
         print(response)

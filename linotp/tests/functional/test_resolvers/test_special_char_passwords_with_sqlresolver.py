@@ -84,7 +84,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         assert "false" not in response.body
 
     def run_password_check(self, user, password, realm):
-        self.define_otp_pin_policy("pin")
+        self.define_otp_pin_policy("token_pin")
 
         # ------------------------------------------------------------------ --
 

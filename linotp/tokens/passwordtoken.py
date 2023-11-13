@@ -145,6 +145,10 @@ class PasswordTokenClass(HmacTokenClass):
         if "otpkey" not in param:
             raise ParameterError("Missing Parameter 'otpkey'!")
 
+        # mark this pw token as usable exactly once
+        if "onetime" in param:
+            self.count_auth_success_max = 1
+
         TokenClass.update(self, param)
 
         TokenClass.setOtpLen(self, len(param["otpkey"]))

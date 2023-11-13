@@ -244,16 +244,16 @@ def boolean(value):
     """
     type converter for boolean config entries
     """
-    true_def = ("yes", "true")
-    false_def = ("no", "false")
+    true_def = (1, "1", "yes", "true", True)
+    false_def = (0, "0", "no", "false", False)
 
-    if value in (True, False):
-        return value
+    if isinstance(value, str):
+        value = value.lower()
 
-    if value.lower() not in true_def and value.lower() not in false_def:
-        raise Exception("unable to convert %r" % value)
+    if value not in true_def and value not in false_def:
+        raise ValueError("unable to convert %r to a boolean" % value)
 
-    return value.lower() in true_def
+    return value in true_def
 
 
 def check_time_format_string(time_format_string):

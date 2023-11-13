@@ -2373,14 +2373,12 @@ def _calculate_validity_end(validity):
         validity = 10
 
     try:
-        int(validity)
-
         # in case of only <int> days are given, for compatibility
         # the day ends at 23:59 minutes. So we adjust the duration
         # expression with remaining hours and minutes
 
         end_date = (
-            datetime.date.today() + datetime.timedelta(days=validity)
+            datetime.date.today() + datetime.timedelta(days=int(validity))
         ).strftime("%d/%m/%y")
 
         end_date = "%s 23:59" % end_date

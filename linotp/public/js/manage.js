@@ -401,7 +401,7 @@ function get_scope_actions(scope) {
                     action = k + "=<string>";
                 } else
                     if ("set" == obj.result.value[k].type) {
-                        var values = obj.result.value[k].value;
+                        var values = obj.result.value[k].value || obj.result.value[k].range;
                         var arrayLength = values.length;
                         var desc = "";
                         var sep = ""
