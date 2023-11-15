@@ -517,39 +517,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 )
             )
 
-    elif method == "token_method":
-        log.debug("[checkPolicyPre] entering method %s", method)
-
-        # get the realms for this administrator
-        policies = getAdminPolicies("token_method")
-
-        log.debug(
-            "[checkPolicyPre] The admin >%r< may manage the "
-            "following realms: %r",
-            policies["admin"],
-            policies["realms"],
-        )
-
-        if policies["active"] and len(policies["realms"]) == 0:
-            log.error(
-                "[checkPolicyPre] The admin >%r< has no rights in "
-                "any realms!",
-                policies["admin"],
-            )
-
-            raise PolicyException(
-                _(
-                    "You do not have any rights in any "
-                    "realm! Check the policies."
-                )
-            )
-
-        return {
-            "realms": policies["realms"],
-            "admin": policies["admin"],
-            "active": policies["active"],
-        }
-
     elif method == "remove":
         policies = getAdminPolicies("remove")
         # FIXME: A token that belongs to multiple realms should not be
