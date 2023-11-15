@@ -1819,7 +1819,7 @@ class AdminController(BaseController, JWTMixin):
         """
         set the realms a token belongs to
 
-        :param serial:     (required)   serialnumber of the token
+        :param serial:     (required)   serial number of the token
         :param realms:     (required)   comma seperated list of realms
 
         :return:
@@ -2554,10 +2554,13 @@ class AdminController(BaseController, JWTMixin):
     @deprecated_methods(["POST"])
     def totp_lookup(self):
         """
-        get otp information for a totp token
+        Get information for a past otp value of a TOTP token.
+        Includes, when and how long the given OTP was valid.
 
-        :param serial:     (required)   serialnumber of the token
-        :param otp:        (optional)  - to return status to the token
+        :param serial:     (required)   serial number of the token
+        :param otp:        (required)   a past OTP value to check
+        :param window:     (optional)   the duration to search back from
+                                        current time. Defaults to "24h".
 
         :return:
             a json result with a boolean status and request result
