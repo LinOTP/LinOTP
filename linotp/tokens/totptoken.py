@@ -374,7 +374,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
     def time2float(self, curTime):
         """
-        time2float - convert a datetime object or an datetime sting into a float
+        time2float - convert a datetime object or an datetime string into a float
         s. http://bugs.python.org/issue12750
 
         :param curTime: time in datetime format
