@@ -1,6 +1,7 @@
 linotp (3.2.5~rc0-1) buster; urgency=low
 
-  * Set to version 3.2.5~rc0-1
+  Fix:
+  * show serial and token type in audit log in case of an error; e.g. if a token exceeded its failcounter
 
  -- LinOTP Packaging <packaging@linotp.de>  Thu, 16 Nov 2023 14:00:00 +0200
 
