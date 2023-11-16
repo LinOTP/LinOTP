@@ -1,3 +1,10 @@
+linotp (3.2.6~rc0-1) buster; urgency=low
+
+  * Set to version 3.2.6~rc0-1
+
+ -- LinOTP Packaging <packaging@linotp.de>  Fri, 01 Dec 2023 10:00:00 +0200
+
+
 linotp (3.2.5-1) buster; urgency=high
 
   Release 3.2.5 patches a session handling vulnerability in the Self
