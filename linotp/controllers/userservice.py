@@ -322,13 +322,12 @@ class UserserviceController(BaseController):
 
         # ------------------------------------------------------------------ --
 
-        # we put the authenticated user in the `request_context['AuthUser']`
-        # which is normaly filled by the getUserFromRequest for admins
-        # as we require the authenticated user in the __after__ method for
-        # audit and reporting
+        # `authUser` is set to the user from the authentication cookie so
+        # we can use it elsewhere to refer to the current authenticated user.
+        # This includes methods that implement HTTP requests as well as the
+        # auditing/accounting code in `__after__()`.
 
         g.authUser = identity
-        request_context["AuthUser"] = identity
 
         c.user = identity.login
         c.realm = identity.realm
@@ -378,10 +377,12 @@ class UserserviceController(BaseController):
                 "userservice/pre_context",
                 "userservice/userinfo",
             ]:
-                g.audit["user"] = "%r" % authUser
-                realm = ""
-                if authUser and authUser.realm:
-                    realm = authUser.realm
+                if authUser and isinstance(authUser, User):
+                    user, realm = authUser.login, authUser.realm
+                else:
+                    user, realm = repr(authUser), ""
+
+                g.audit["user"] = user
                 g.audit["realm"] = realm
 
                 log.debug(
@@ -524,7 +525,6 @@ class UserserviceController(BaseController):
             uid = "%s@%s" % (user.login, user.realm)
 
             g.authUser = user
-            request_context["authUser"] = user
 
             # -------------------------------------------------------------- --
 
@@ -1026,7 +1026,6 @@ class UserserviceController(BaseController):
                 raise UserNotFound("user %r not found!" % param.get("login"))
 
             g.authUser = user
-            request_context["authUser"] = user
 
             # -------------------------------------------------------------- --
 
