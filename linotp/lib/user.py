@@ -620,7 +620,7 @@ def getUserFromRequest():
 
     :return: the authenticated user as user object or None
     """
-    return request_context.get("AuthUser", None)
+    return getattr(g, "authUser", None)
 
 
 def get_userinfo(user: User, secure: bool = True) -> Dict:

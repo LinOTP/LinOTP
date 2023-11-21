@@ -29,6 +29,8 @@
 import logging
 from copy import deepcopy
 
+from flask import g
+
 from linotp.lib.context import request_context as context
 from linotp.lib.user import getUserRealms
 
@@ -64,7 +66,7 @@ def _getAuthenticatedUser():
     """
     replace the 'getUserFromRequest
     """
-    return context["AuthUser"]
+    return g.authUser
 
 
 def _getLinotpConfig(config=None):
