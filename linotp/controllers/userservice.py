@@ -190,6 +190,18 @@ def get_auth_user(request):
     return "unauthenticated", None, None
 
 
+def add_and_delete_cookies(response):
+    """Given a `Response` object, add or delete cookies as per the
+    `g.cookies_to_delete` and `g.cookies` variables.
+    """
+
+    for name in g.cookies_to_delete:
+        response.delete_cookie(name)
+
+    for name, kwargs in g.cookies.items():
+        response.set_cookie(name, **kwargs)
+
+
 def unauthorized(response_proxy, exception, status=401):
     """extend the standard sendResult to handle cookies"""
 
@@ -197,16 +209,7 @@ def unauthorized(response_proxy, exception, status=401):
 
     response.status_code = status
 
-    if response_proxy and response_proxy.delete_cookies:
-        for delete_cookie in response_proxy.delete_cookies:
-            response.delete_cookie(key=delete_cookie)
-
-    if response_proxy and response_proxy.cookies:
-        for args, kwargs in response_proxy.cookies:
-            response.set_cookie(*args, **kwargs)
-
-    if response_proxy and response_proxy.mime_type:
-        response.mime_type = response_proxy.mime_type
+    add_and_delete_cookies(response)
 
     return Unauthorized(response=response)
 
@@ -218,31 +221,9 @@ def sendResult(response_proxy, obj, id=1, opt=None, status=True):
         response=None, obj=obj, id=id, opt=opt, status=status
     )
 
-    if response_proxy and response_proxy.delete_cookies:
-        for delete_cookie in response_proxy.delete_cookies:
-            response.delete_cookie(key=delete_cookie)
-
-    if response_proxy and response_proxy.cookies:
-        for args, kwargs in response_proxy.cookies:
-            response.set_cookie(*args, **kwargs)
-
-    if response_proxy and response_proxy.mime_type:
-        response.mime_type = response_proxy.mime_type
+    add_and_delete_cookies(response)
 
     return response
-
-
-class LocalResponseProxy:
-    def __init__(self):
-        self.delete_cookies = set()
-        self.cookies = []
-        self.mime_type = None
-
-    def set_cookie(self, *args, **kwargs):
-        self.cookies.append((args, kwargs))
-
-    def delete_cookie(self, key):
-        self.delete_cookies.add(key)
 
 
 class UserserviceController(BaseController):
@@ -256,6 +237,12 @@ class UserserviceController(BaseController):
     """
 
     jwt_exempt = True  # Don't do JWT auth in this controller
+
+    def set_cookie(self, name, **kwargs):
+        g.cookies[name] = kwargs
+
+    def delete_cookie(self, name):
+        g.cookies.pop(name, None)
 
     def __before__(self, **params):
         """
@@ -271,8 +258,9 @@ class UserserviceController(BaseController):
 
         """
 
-        # for seamless migration from pylons to flask
-        self.response = LocalResponseProxy()
+        self.response = None
+        g.cookies_to_delete = []
+        g.cookies = {}
 
         action = request_context["action"]
 
@@ -564,7 +552,7 @@ class UserserviceController(BaseController):
                 user, self.client
             )
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "userauthcookie",
                 value=cookie_value,
                 secure=secure_cookie(),
@@ -651,9 +639,9 @@ class UserserviceController(BaseController):
             ret = create_auth_cookie(user, self.client)
             (cookie, expires, _exp) = ret
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
-                cookie,
+                value=cookie,
                 secure=secure_cookie(),
                 expires=expires,
             )
@@ -680,9 +668,9 @@ class UserserviceController(BaseController):
             )
             cookie, expires, expiration = ret
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
-                cookie,
+                value=cookie,
                 secure=secure_cookie(),
                 expires=expires,
             )
@@ -796,9 +784,9 @@ class UserserviceController(BaseController):
                 user, self.client
             )
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
-                cookie,
+                value=cookie,
                 secure=secure_cookie(),
                 expires=expires,
             )
@@ -838,9 +826,9 @@ class UserserviceController(BaseController):
                 user, self.client
             )
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
-                cookie,
+                value=cookie,
                 secure=secure_cookie(),
                 expires=expires,
             )
@@ -886,7 +874,7 @@ class UserserviceController(BaseController):
                     user, self.client
                 )
 
-                self.response.set_cookie(
+                self.set_cookie(
                     "user_selfservice",
                     value=cookie_value,
                     secure=secure_cookie(),
@@ -913,7 +901,7 @@ class UserserviceController(BaseController):
             user, self.client, state="credentials_verified"
         )
 
-        self.response.set_cookie(
+        self.set_cookie(
             "user_selfservice",
             value=cookie_value,
             secure=secure_cookie(),
@@ -953,7 +941,7 @@ class UserserviceController(BaseController):
                 user, self.client
             )
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
                 value=cookie_value,
                 secure=secure_cookie(),
@@ -1015,7 +1003,7 @@ class UserserviceController(BaseController):
             # we remove the out dated client cookie
 
             if user_selfservice_cookie and not auth_info[0]:
-                self.response.delete_cookie("user_selfservice")
+                self.delete_cookie("user_selfservice")
 
             # -------------------------------------------------------------- --
 
@@ -1218,7 +1206,7 @@ class UserserviceController(BaseController):
         try:
             cookie = request.cookies.get("user_selfservice")
             remove_auth_cookie(cookie)
-            self.response.delete_cookie(key="user_selfservice")
+            self.delete_cookie("user_selfservice")
 
             g.audit["success"] = True
 
