@@ -281,16 +281,16 @@ class UserserviceController(BaseController):
         # `__after__()` method.
 
         g.authUser = None
-        self.client = get_client(request) or ""
+        g.client = get_client(request) or ""
 
         # ------------------------------------------------------------------ --
 
         # build up general available variables
 
-        context = get_pre_context(self.client)
-        self.mfa_login = context["settings"]["mfa_login"]
-        self.autoassign = context["settings"]["autoassign"]
-        self.autoenroll = context["settings"]["autoenroll"]
+        context = get_pre_context(g.client)
+        g.mfa_login = context["settings"]["mfa_login"]
+        g.autoassign = context["settings"]["autoassign"]
+        g.autoenroll = context["settings"]["autoenroll"]
 
         # ------------------------------------------------------------------ --
 
@@ -329,7 +329,7 @@ class UserserviceController(BaseController):
 
         # finally check the validty of the session
 
-        if not check_session(request, g.authUser, self.client):
+        if not check_session(request, g.authUser, g.client):
 
             raise unauthorized(self.response, _("No valid session"))
 
@@ -538,7 +538,7 @@ class UserserviceController(BaseController):
 
             # check the authentication
 
-            if self.mfa_login:
+            if g.mfa_login:
                 res = self._mfa_login_check(user, passw, otp)
 
             else:
@@ -557,7 +557,7 @@ class UserserviceController(BaseController):
             log.debug("Successfully authenticated user %s:", uid)
 
             (cookie_value, expires, expiration) = create_auth_cookie(
-                user, self.client
+                user, g.client
             )
 
             self.set_cookie(
@@ -645,7 +645,7 @@ class UserserviceController(BaseController):
         # set the cookie for successful authenticated
 
         if res:
-            ret = create_auth_cookie(user, self.client)
+            ret = create_auth_cookie(user, g.client)
             (cookie, expires, _exp) = ret
 
             self.set_cookie(
@@ -671,7 +671,7 @@ class UserserviceController(BaseController):
 
             ret = create_auth_cookie(
                 user,
-                self.client,
+                g.client,
                 state="challenge_triggered",
                 state_data=reply,
             )
@@ -789,9 +789,7 @@ class UserserviceController(BaseController):
         )
 
         if res:
-            (cookie, expires, expiration) = create_auth_cookie(
-                user, self.client
-            )
+            (cookie, expires, expiration) = create_auth_cookie(user, g.client)
 
             self.set_cookie(
                 "user_selfservice",
@@ -831,9 +829,7 @@ class UserserviceController(BaseController):
             )
 
         if verified:
-            (cookie, expires, expiration) = create_auth_cookie(
-                user, self.client
-            )
+            (cookie, expires, expiration) = create_auth_cookie(user, g.client)
 
             self.set_cookie(
                 "user_selfservice",
@@ -880,7 +876,7 @@ class UserserviceController(BaseController):
                 log.debug("Successfully authenticated user %r:", user)
 
                 (cookie_value, expires, expiration) = create_auth_cookie(
-                    user, self.client
+                    user, g.client
                 )
 
                 self.set_cookie(
@@ -907,7 +903,7 @@ class UserserviceController(BaseController):
         # create the 'credentials_verified state'
 
         (cookie_value, expires, expiration) = create_auth_cookie(
-            user, self.client, state="credentials_verified"
+            user, g.client, state="credentials_verified"
         )
 
         self.set_cookie(
@@ -947,7 +943,7 @@ class UserserviceController(BaseController):
 
         if res:
             (cookie_value, expires, _expiration) = create_auth_cookie(
-                user, self.client
+                user, g.client
             )
 
             self.set_cookie(
@@ -1029,7 +1025,7 @@ class UserserviceController(BaseController):
 
             password = param["password"]
 
-            if self.mfa_login:
+            if g.mfa_login:
                 # allow the mfa login for users that have no token till now
                 # if the policy 'mfa_passOnNoToken' is defined with password
                 # only
@@ -1037,7 +1033,7 @@ class UserserviceController(BaseController):
                 tokenArray = getTokenForUser(g.authUser)
 
                 policy = get_client_policy(
-                    client=self.client,
+                    client=g.client,
                     scope="selfservice",
                     action="mfa_passOnNoToken",
                     userObj=user,
@@ -1117,11 +1113,11 @@ class UserserviceController(BaseController):
                 th = TokenHandler()
 
                 # if no token and otp, we might do an auto assign
-                if self.autoassign and otp:
+                if g.autoassign and otp:
                     ret = th.auto_assignToken(password + otp, user)
 
                 # if no token no otp, we might trigger an aouto enroll
-                elif self.autoenroll and not otp:
+                elif g.autoenroll and not otp:
                     (auto_enroll_return, reply) = th.auto_enrollToken(
                         password, user
                     )
@@ -1250,7 +1246,7 @@ class UserserviceController(BaseController):
 
         """
         try:
-            pre_context = get_pre_context(self.client)
+            pre_context = get_pre_context(g.client)
             return sendResult(self.response, True, opt=pre_context)
 
         except Exception as exx:
@@ -1274,7 +1270,7 @@ class UserserviceController(BaseController):
         """
 
         try:
-            context = get_context(config, g.authUser, self.client)
+            context = get_context(config, g.authUser, g.client)
             return sendResult(self.response, True, opt=context)
 
         except Exception as e:
@@ -2975,7 +2971,7 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization for this dynamic method
             pols = get_client_policy(
-                self.client,
+                g.client,
                 scope="selfservice",
                 realm=g.authUser.realm,
                 action=method,
