@@ -45,6 +45,28 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 
+linotp (3.2.5-1) buster; urgency=high
+
+  Release 3.2.5 patches a session handling vulnerability in the Self
+  Service API. This patch is necessary for all versions newer than LinOTP
+  3.0. We will provide additional details on
+  https://linotp.org/linotp-3-2-5.html.
+
+  Fixes:
+  * Ensure that userservice login results in exactly one session cookie per
+    response.
+  * Avoid a race condition in userservice request method setup which could
+    lead to a user being erroneously authenticated as a different user. 
+
+  Features:
+  * Use entirely random values for userservice session cookies.
+
+  Packaging:
+  * Debian postinst now correctly restarts the LinOTP service again to ensure
+    running the latest version without the need for manual intervention.
+
+ -- LinOTP Packaging <packaging@linotp.de>  Fri, 24 Nov 2023 10:00:00 +0200
+
 linotp (3.2.4-1) buster; urgency=low
 
   Features:
