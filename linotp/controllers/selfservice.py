@@ -126,7 +126,8 @@ class SelfserviceController(BaseController):
             c.licenseinfo = get_copyright_info()
             c.version_ref = base64.encodebytes(c.version.encode())[:6]
 
-            self.client = get_client(request)
+            g.authUser = None
+            g.client = get_client(request)
 
             # -------------------------------------------------------------- --
 
@@ -186,7 +187,7 @@ class SelfserviceController(BaseController):
 
             c.user = auth_user.login
             c.realm = auth_user.realm
-            self.authUser = auth_user
+            g.authUser = auth_user
 
             # -------------------------------------------------------------- --
 
@@ -195,9 +196,7 @@ class SelfserviceController(BaseController):
             if auth_type == "user_selfservice":
                 # checking the session only for not_form_access actions
                 if action not in self.form_access_methods:
-                    valid_session = check_session(
-                        request, auth_user, self.client
-                    )
+                    valid_session = check_session(request, auth_user, g.client)
 
                     if not valid_session:
                         g.audit["action"] = request.path[1:]
@@ -212,13 +211,13 @@ class SelfserviceController(BaseController):
 
             c.tokenArray = []
 
-            c.user = self.authUser.login
-            c.realm = self.authUser.realm
+            c.user = g.authUser.login
+            c.realm = g.authUser.realm
 
             # only the defined actions should be displayed
             # - remark: the generic actions like enrollTT are allready approved
             #   to have a rendering section and included
-            actions = get_selfservice_actions(self.authUser)
+            actions = get_selfservice_actions(g.authUser)
             c.actions = actions
 
             for action_name, action_value in actions.items():
@@ -242,7 +241,7 @@ class SelfserviceController(BaseController):
             c.otplen = -1
             c.totp_len = -1
 
-            c.pin_policy = _get_auth_PinPolicy(user=self.authUser)
+            c.pin_policy = _get_auth_PinPolicy(user=g.authUser)
 
         except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
             # the exception, when an abort() is called if forwarded
@@ -364,7 +363,7 @@ class SelfserviceController(BaseController):
                         section = sections.get(scope)
                         page = section.get("page")
                         c.scope = page.get("scope")
-                        c.authUser = self.authUser
+                        c.authUser = g.authUser
                         html = page.get("html")
                         res = render(os.path.sep + html).decode()
                         res = remove_empty_lines(res)
@@ -496,7 +495,7 @@ class SelfserviceController(BaseController):
         """
         This is the landing page for selfservice
         """
-        c.tokenArray = getTokenForUser(self.authUser)
+        c.tokenArray = getTokenForUser(g.authUser)
         return render("/selfservice/landing.mako")
 
     @deprecated_methods(["POST"])
@@ -512,7 +511,7 @@ class SelfserviceController(BaseController):
         This is the form for an google token to do web provisioning.
         """
         try:
-            c.actions = get_selfservice_actions(self.authUser)
+            c.actions = get_selfservice_actions(g.authUser)
             return render("/selfservice/webprovisiongoogle.mako")
 
         except Exception as exx:
@@ -524,7 +523,7 @@ class SelfserviceController(BaseController):
         """
         This returns a tokenlist as html output
         """
-        c.tokenArray = getTokenForUser(self.authUser)
+        c.tokenArray = getTokenForUser(g.authUser)
         res = render("/selfservice/tokenlist.mako")
         return res
 
