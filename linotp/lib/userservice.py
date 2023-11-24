@@ -26,15 +26,11 @@
 #
 """ logic for the userservice processing """
 
-import base64
-import binascii
 import copy
 import datetime
-import hashlib
-import hmac
 import json
 import logging
-import os
+import secrets
 
 # for the temporary rendering context, we use 'c'
 from linotp.flap import render_mako as render
@@ -56,10 +52,6 @@ from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 
-# const for encryption and iv
-SECRET_LEN = 32
-
-Cookie_Secret = binascii.hexlify(os.urandom(SECRET_LEN))
 Cookie_Cache = {}
 
 
@@ -125,9 +117,6 @@ def create_auth_cookie(user, client, state="authenticated", state_data=None):
              the expiration time as string
     """
 
-    secret = get_cookie_secret()
-    key = binascii.unhexlify(secret)
-
     # ---------------------------------------------------------------------- --
 
     # handle expiration calculation
@@ -157,10 +146,7 @@ def create_auth_cookie(user, client, state="authenticated", state_data=None):
     user_dict = {"login": user.login, "realm": user.realm}
 
     data = [user_dict, client, expiration, state, state_data]
-    hash_data = ("%r" % data).encode("utf-8")
-
-    digest = hmac.new(key, hash_data, digestmod=hashlib.sha256).digest()
-    auth_cookie = base64.urlsafe_b64encode(digest).decode().strip("=")
+    auth_cookie = secrets.token_hex(32)
 
     Cookie_Cache[auth_cookie] = data
 
@@ -245,17 +231,6 @@ def check_auth_cookie(cookie, user, client):
         cookie_client = None
 
     return user == cookie_user and cookie_client == client
-
-
-def get_cookie_secret():
-    """
-    get the cookie encryption secret from the config
-    - if the selfservice is droped from running localy, this
-      configuration option might not exist anymore
-
-    :return: return the cookie encryption secret
-    """
-    return Cookie_Secret
 
 
 def get_cookie_expiry():

@@ -38,8 +38,8 @@ def test_JWT_authentifictaion(app):
         realm="def_realm",
         resolver_config_identifier="def_resolver",
     )
-    with patch("linotp.lib.user.request_context") as mocked_request_context:
-        mocked_request_context.get.return_value = authUser
+    with patch("linotp.lib.user.getattr") as mocked_getattr:
+        mocked_getattr.return_value = authUser
 
         user = getUserFromRequest()
 
@@ -52,8 +52,8 @@ def test_empty_auth(app):
         realm="",
         resolver_config_identifier="",
     )
-    with patch("linotp.lib.user.request_context") as mocked_request_context:
-        mocked_request_context.get.return_value = authUser
+    with patch("linotp.lib.user.getattr") as mocked_getattr:
+        mocked_getattr.return_value = authUser
 
         user = getUserFromRequest()
 

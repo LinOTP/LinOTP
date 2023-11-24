@@ -165,7 +165,7 @@ class TestUserserviceLogin(TestUserserviceController):
         assert "page" in response
 
     def test_login_wrong_cookie(self):
-        """verify login with wrong cookie will drop cookie in response."""
+        """verify login with correct creds but wrong cookie will change cookie in response."""
 
         # ------------------------------------------------------------------ --
 
@@ -182,7 +182,8 @@ class TestUserserviceLogin(TestUserserviceController):
         response = self.client.post("userservice/login", data=auth_data)
 
         auth_cookie = self.get_cookies(response).get("user_selfservice")
-        assert not auth_cookie
+        assert auth_cookie
+        assert auth_cookie != wrong_cookie
 
         jresp = response.json
         assert jresp["result"]["value"] is True
