@@ -1,6 +1,7 @@
 linotp (3.3~0dev-1) buster-dev; urgency=low
 
   Features:
+  * limit info-box height in manage-ui. Notifications are scrollable, if combined size exceeds newly limited height.
   * tokens can be imported as disabled tokens
   * when triggering a challenge, a tokens description is returned
   * policies detail_on_success and detail_on_fail apply to all /validate enpoints
