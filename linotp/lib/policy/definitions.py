@@ -81,7 +81,6 @@ POLICY_DEFINTIONS = {
         "remove": {"type": "bool"},
         "userlist": {"type": "bool"},
         "tokenowner": {"type": "bool"},
-        "token_method": {"type": "bool"},
         "checkstatus": {"type": "bool"},
         "manageToken": {"type": "bool"},
         "getserial": {"type": "bool"},
@@ -654,7 +653,6 @@ def validate_policy_definition(policy):
     policy_definitions = get_policy_definitions(scope=scope)
 
     for action, value in parse_action(actions):
-
         # in the action value validation we only verify actions but not
         # the sub parts as these are used for naming items
         if "." in action:

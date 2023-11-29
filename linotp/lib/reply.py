@@ -207,7 +207,7 @@ def sendError(_response, exception, id=1, context=None):
     :param context:   default is None or 'before'
     :type  context:   string
 
-    :return:     json rendered sting result
+    :return:     json rendered string result
     :rtype:      string
 
     """
@@ -297,14 +297,14 @@ def sendResult(response, obj, id=1, opt=None, status=True):
 
     :param response: the pylons response object
     :type  response: response object
-    :param obj:      simple result object like dict, sting or list
+    :param obj:      simple result object like dict, string or list
     :type  obj:      dict or list or string/unicode
     :param  id:      id value, for future versions
     :type   id:      int
     :param opt:      optional parameter, which allows to provide more detail
     :type  opt:      None or simple type like dict, list or string/unicode
 
-    :return:     json rendered sting result
+    :return:     json rendered string result
     :rtype:      string
 
     """

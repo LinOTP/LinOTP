@@ -208,7 +208,7 @@ function alert_info_text(params) {
         s = str;
     }
 
-    new_info_bar = $('#info_bar').clone(true, true)
+    new_info_bar = $('#info_bar').clone(true, true);
     new_info_bar.removeAttr('id');
     new_info_bar.children('span').removeAttr('id');
 
@@ -224,7 +224,7 @@ function alert_info_text(params) {
     }
 
     new_info_bar.children('span').html(s);
-    new_info_bar.show()
+    new_info_bar.show();
 
     toggle_close_all_link();
 
@@ -234,7 +234,7 @@ function alert_info_text(params) {
     $('#info_box').animate(
         { scrollTop: $('#info_box').prop("scrollHeight") },
         'slow'
-      )
+    );
 }
 
 /*
@@ -410,7 +410,7 @@ function get_scope_actions(scope) {
                         var values = obj.result.value[k].value || obj.result.value[k].range;
                         var arrayLength = values.length;
                         var desc = "";
-                        var sep = ""
+                        var sep = "";
                         for (var i = 0; i < arrayLength; i++) {
                             if (i != 0) { sep = " "; }
                             desc = desc + sep + "<" + values[i] + ">";
@@ -632,9 +632,9 @@ function get_server_config(search_key) {
         throw i18n.gettext("Unable to load the server configuration.");
     }
     if (!data || !data.result || !data.result.status) {
-        var message = data && data.result && data.result.error && data.result.error.message
+        var message = data && data.result && data.result.error && data.result.error.message;
         if (!message) {
-            message = i18n.gettext("Unable to load the server configuration.")
+            message = i18n.gettext("Unable to load the server configuration.");
         }
         throw message;
     } else {
@@ -687,7 +687,7 @@ function load_token_config() {
     $('#tab_token_settings div form').each(function () {
         var validator = $(this).validate();
         validator.resetForm();
-    })
+    });
 
     // might raise an error, which must be catched by the caller
     $systemConfig = get_server_config();
@@ -835,7 +835,7 @@ function clientUrlFetch(myUrl, params, callback, parameter) {
             }
         }
     });
-    return promise
+    return promise;
 }
 
 /*
@@ -956,7 +956,7 @@ function token_operations_callback(responses) {
     $.each(responses, function (index, responseData) {
         // "responseData" will contain an array of response information for each specific request
         if (responseData.length !== 3 || responseData[1] !== 'success') {
-            error_messages.push('Request ' + index + ' unsucessful')
+            error_messages.push('Request ' + index + ' unsucessful');
             return true; // skip to next item of each loop
         }
         var obj = responseData[0];
@@ -965,7 +965,7 @@ function token_operations_callback(responses) {
         }
         else if (obj.result.value == 0) {
             // No operation performed on token
-            error_messages.push(obj.detail.message)
+            error_messages.push(obj.detail.message);
         }
     });
 
@@ -991,7 +991,7 @@ function token_operation(tokens, url, params) {
     var requests = Array();
     for (var i = 0; i < tokens.length; i++) {
         params['serial'] = tokens[i];
-        var promise = clientUrlFetch(url, params)
+        var promise = clientUrlFetch(url, params);
         requests.push(promise);
     }
 
@@ -1023,7 +1023,7 @@ function token_operation(tokens, url, params) {
 function tokens_operation(tokens, url, params) {
     var requests = Array();
     params['serial'] = tokens;
-    var promise = clientUrlFetch(url, params)
+    var promise = clientUrlFetch(url, params);
     requests.push(promise);
 
     // By using the 'when' function (that takes a list of promises/deferreds as
@@ -1413,9 +1413,9 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             if (users.length >= 1) {
                 var login = escape(users[0].login);
                 var user = login;
-                var email = escape(jQuery.trim(emails[0]))
+                var email = escape(jQuery.trim(emails[0]));
                 if (email.length > 0) {
-                    user = "<a href=mailto:" + email + ">" + login + "</a>"
+                    user = "<a href=mailto:" + email + ">" + login + "</a>";
                 }
                 // the input parts for the fragment are already escaped
                 $('#token_enroll_user').html(user);
@@ -1637,7 +1637,7 @@ function tokentype_changed() {
                     policy_def['realm'] = selected_users[0].realm;
                     policy_def['user'] = selected_users[0].login;
                     rand_pin = get_policy(policy_def).length;
-                    options = { 'otp_pin_random': rand_pin }
+                    options = { 'otp_pin_random': rand_pin };
                 }
                 var l_params = window[functionString]($systemConfig, options);
             }
@@ -1675,7 +1675,7 @@ $.fn.enableUIComponents = function () {
     });
 
     return this;
-}
+};
 
 /**
  * adds icons to the given dialogs buttons
@@ -1770,7 +1770,7 @@ $.fn.dialog_icons = function () {
     });
 
     return this;
-}
+};
 
 // #################################################
 //
@@ -2167,7 +2167,7 @@ function parseLicense(response, textStatus, xhr) {
             'title': i18n.gettext('License upload'),
             'text': message,
             'is_escaped': true
-        })
+        });
 
     }
 
@@ -2180,7 +2180,7 @@ function testXMLObject(xml) {
             throw "Error: xml needs reparsing";
         }
         else {
-            state = "successful"
+            state = "successful";
             return true;
         }
     } catch (e) {
@@ -2366,7 +2366,7 @@ function check_for_welcome_screen() {
             + '<p>' + i18n.gettext("<a href='https://linotp.de'>netgo provides LinOTP</a> as an enterprise MFA solution.") + '</p>'
             + '<p>' + i18n.gettext("If you are interested in our MFA platform using LinOTP at its core and want to know more, feel free to <a href='https://linotp.de/en/contact.html'>contact us</a>.")
             + '</p>'
-            + '<br/>'
+            + '<br/>';
         var button = i18n.gettext("OK");
 
         show_welcome_screen(title, text, button);
@@ -2393,7 +2393,7 @@ function check_for_welcome_screen() {
                 + '<br/>'
                 + '<div id="welcome-buttons">'
                 + '<a class="light-text-color feedback-button" href="https://linotp.de/en/contact.html" target="_blank">' + i18n.gettext("Feedback") + '</a>'
-                + '</div>'
+                + '</div>';
             var button = i18n.gettext("Close");
 
             show_welcome_screen(title, text, button);
@@ -2412,7 +2412,7 @@ function check_for_welcome_screen() {
                 + '<br/>'
                 + '<div id="welcome-buttons">'
                 + '<a class="light-text-color feedback-button" href="https://linotp.de/en/contact.html" target="_blank">' + i18n.gettext("Feedback") + '</a>'
-                + '</div>'
+                + '</div>';
             var button = i18n.gettext("OK");
 
             var dialog = show_welcome_screen(title, text, button);
@@ -2895,7 +2895,7 @@ function save_system_config() {
     var token_last_access = "False";
     if ($('#token_last_access_check').is(':checked')) {
         token_last_access = "True";
-        var token_last_access_entry = $('#token_last_access_entry').val()
+        var token_last_access_entry = $('#token_last_access_entry').val();
         if (token_last_access_entry.length > 0) {
             token_last_access = token_last_access_entry;
         }
@@ -2939,7 +2939,7 @@ function save_system_config() {
         'resolver_lookup_cache.enabled': resolver_cache_enabled,
         'user_lookup_cache.enabled': user_cache_enabled,
         'token.last_access': token_last_access,
-	'AutoResyncTimeout': $('#sys_autoResyncTimeout').val(),
+        'AutoResyncTimeout': $('#sys_autoResyncTimeout').val(),
         'mayOverwriteClient': $('#sys_mayOverwriteClient').val(),
         'totp.timeShift': $('#totp_timeShift').val(),
         'totp.timeStep': $('#totp_timeStep').val(),
@@ -3005,7 +3005,7 @@ function save_ldap_config(callback = null) {
         '#ldap_only_trusted_certs': 'only_trusted_certs',
     };
     var url = '/system/setResolver';
-    var params = {}
+    var params = {};
 
     params['name'] = resolvername;
     params['previous_name'] = g.current_resolver_name;
@@ -3060,7 +3060,7 @@ function save_http_config() {
     var resolvertype = "httpresolver";
 
     var url = '/system/setResolver';
-    var params = get_form_input('form_httpconfig')
+    var params = get_form_input('form_httpconfig');
 
     params['name'] = resolvername;
     params['previous_name'] = g.current_resolver_name;
@@ -3342,9 +3342,9 @@ function realms_load() {
                     };
                     var realm = data.result.value[g.realm_to_edit.name];
                     if (realm.admin) {
-                        $("#button_realms_delete").button('disable')
+                        $("#button_realms_delete").button('disable');
                     } else {
-                        $("#button_realms_delete").button('enable')
+                        $("#button_realms_delete").button('enable');
                     }
                 } // end of stop function
             }); // end of selectable
@@ -4306,7 +4306,7 @@ $(document).ready(function () {
             },
             id: "button_new_resolver_type_http",
             text: "HTTP"
-        }
+        };
     }
 
     $dialog_ask_new_resolvertype = $('#dialog_resolver_create').dialog(dialog_resolver_create_config);
@@ -4435,7 +4435,7 @@ $(document).ready(function () {
                         var error = $("#form_httpconfig").validate().errorList[0];
                         if (error !== undefined) {
                             // open tab that contains the first faulty input if it is hidden in another tab
-                            var tab_id = $(error.element.closest(".ui-tabs-panel")).attr("id")
+                            var tab_id = $(error.element.closest(".ui-tabs-panel")).attr("id");
                             if (tab_id !== undefined) {
                                 var index = $('#http_setting_tabs a[href="#' + tab_id + '"]').parent().index();
                                 $("#http_setting_tabs").tabs("option", "active", index);
@@ -4703,8 +4703,8 @@ $(document).ready(function () {
     var $dialog_tools_migrateresolver = create_tools_migrateresolver_dialog();
     $('#menu_tools_migrateresolver').click(function () {
         //_fill_realms($('#tools_getserial_realm'),1)
-        _fill_resolvers($('#copy_to_resolver'))
-        _fill_resolvers($('#copy_from_resolver'))
+        _fill_resolvers($('#copy_to_resolver'));
+        _fill_resolvers($('#copy_from_resolver'));
         $dialog_tools_migrateresolver.dialog('open');
     });
 
@@ -6109,7 +6109,7 @@ function openExpirationDialog() {
                         "countAuthSuccessMax": $("#setexpiration_count_success").val() || "unlimited",
                         "validityPeriodStart": validityPeriodStart,
                         "validityPeriodEnd": validityPeriodEnd
-                    }
+                    };
 
 
                     $.post("/admin/setValidity", data, function (data, textStatus, XMLHttpRequest) {
@@ -6142,7 +6142,7 @@ function openExpirationDialog() {
             var tokens = get_selected_tokens();
             $('#dialog_setexpiration_tokens').text(tokens.join(", "));
 
-            setexpiration_validator = $("form", this).validate()
+            setexpiration_validator = $("form", this).validate();
             setexpiration_validator.resetForm();
 
             var showWarning = tokens.length > 1;
@@ -7028,7 +7028,7 @@ function resolver_set_ldap(obj) {
     // indicate whether the resolver will be saved during test
     originalLdapFormData = $('#form_ldapconfig').serialize();
     changeListener = $("#form_ldapconfig").on("change", function () {
-        $("#button_test_ldap").data("save-resolver", $(this).serialize() != originalLdapFormData)
+        $("#button_test_ldap").data("save-resolver", $(this).serialize() != originalLdapFormData);
         if ($("#button_test_ldap").data("save-resolver")) {
             $("#button_test_ldap").button('option', 'label', i18n.gettext("Save & test resolver"));
         } else {
@@ -7229,7 +7229,7 @@ function get_form_input(form_name) {
 }
 
 function resolver_set_http(data) {
-    set_form_input('form_httpconfig', data)
+    set_form_input('form_httpconfig', data);
     http_resolver_https();
 }
 
@@ -7359,7 +7359,7 @@ function resolver_set_sql(obj) {
     // indicate whether the resolver will be saved during test
     originalSqlFormData = $('#form_sqlconfig').serialize();
     changeListener = $("#form_sqlconfig").on("change", function () {
-        $("#button_test_sql").data("save-resolver", $(this).serialize() != originalSqlFormData)
+        $("#button_test_sql").data("save-resolver", $(this).serialize() != originalSqlFormData);
         if ($("#button_test_sql").data("save-resolver")) {
             $("#button_test_sql").button('option', 'label', i18n.gettext("Save & test resolver"));
         } else {
@@ -7723,7 +7723,7 @@ function sortChildsOfElement(elem) {
         $.each(items, function (i, child) {
             parent.append(child);
         });
-    })
+    });
 }
 
 function view_token() {
