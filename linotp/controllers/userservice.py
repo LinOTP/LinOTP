@@ -189,6 +189,18 @@ def get_auth_user(request):
     return "unauthenticated", None, None
 
 
+def add_and_delete_cookies(response):
+    """Given a `Response` object, add or delete cookies as per the
+    `g.cookies_to_delete` and `g.cookies` variables.
+    """
+
+    for name in g.cookies_to_delete:
+        response.delete_cookie(name)
+
+    for name, kwargs in g.cookies.items():
+        response.set_cookie(name, **kwargs)
+
+
 def unauthorized(response_proxy, exception, status=401):
     """extend the standard sendResult to handle cookies"""
 
@@ -196,16 +208,7 @@ def unauthorized(response_proxy, exception, status=401):
 
     response.status_code = status
 
-    if response_proxy and response_proxy.delete_cookies:
-        for delete_cookie in response_proxy.delete_cookies:
-            response.delete_cookie(key=delete_cookie)
-
-    if response_proxy and response_proxy.cookies:
-        for args, kwargs in response_proxy.cookies:
-            response.set_cookie(*args, **kwargs)
-
-    if response_proxy and response_proxy.mime_type:
-        response.mime_type = response_proxy.mime_type
+    add_and_delete_cookies(response)
 
     return Unauthorized(response=response)
 
@@ -217,31 +220,9 @@ def sendResult(response_proxy, obj, id=1, opt=None, status=True):
         response=None, obj=obj, id=id, opt=opt, status=status
     )
 
-    if response_proxy and response_proxy.delete_cookies:
-        for delete_cookie in response_proxy.delete_cookies:
-            response.delete_cookie(key=delete_cookie)
-
-    if response_proxy and response_proxy.cookies:
-        for args, kwargs in response_proxy.cookies:
-            response.set_cookie(*args, **kwargs)
-
-    if response_proxy and response_proxy.mime_type:
-        response.mime_type = response_proxy.mime_type
+    add_and_delete_cookies(response)
 
     return response
-
-
-class LocalResponseProxy:
-    def __init__(self):
-        self.delete_cookies = set()
-        self.cookies = []
-        self.mime_type = None
-
-    def set_cookie(self, *args, **kwargs):
-        self.cookies.append((args, kwargs))
-
-    def delete_cookie(self, key):
-        self.delete_cookies.add(key)
 
 
 class UserserviceController(BaseController):
@@ -255,6 +236,12 @@ class UserserviceController(BaseController):
     """
 
     jwt_exempt = True  # Don't do JWT auth in this controller
+
+    def set_cookie(self, name, **kwargs):
+        g.cookies[name] = kwargs
+
+    def delete_cookie(self, name):
+        g.cookies.pop(name, None)
 
     def __before__(self, **params):
         """
@@ -270,27 +257,46 @@ class UserserviceController(BaseController):
 
         """
 
-        # for seamless migration from pylons to flask
-        self.response = LocalResponseProxy()
+        # the following actions dont require an authenticated session
+
+        NON_AUTHENTICATED_REQUEST_LIST = [
+            "auth",
+            "pre_context",
+            "login",
+            "logout",
+        ]
+
+        self.response = None
+        g.cookies_to_delete = []
+        g.cookies = {}
 
         action = request_context["action"]
 
-        self.client = get_client(request) or ""
+        # We set `g.authUser` to `None` on the off-chance that we're
+        # dealing with a request from the
+        # `NON_AUTHENTICATED_REQUEST_LIST`. We don't look at the
+        # authentication cookie for these (chances are there won't be
+        # one, anyway) but we don't want to make problems for
+        # downstream consumers of `g.authUser`, such as the
+        # `__after__()` method.
+
+        g.authUser = None
+        g.client = get_client(request) or ""
 
         # ------------------------------------------------------------------ --
 
         # build up general available variables
 
-        context = get_pre_context(self.client)
-        self.mfa_login = context["settings"]["mfa_login"]
-        self.autoassign = context["settings"]["autoassign"]
-        self.autoenroll = context["settings"]["autoenroll"]
+        context = get_pre_context(g.client)
+        g.mfa_login = context["settings"]["mfa_login"]
+        g.autoassign = context["settings"]["autoassign"]
+        g.autoenroll = context["settings"]["autoenroll"]
 
         # ------------------------------------------------------------------ --
 
-        # the following actions dont require an authenticated session
+        # If the request doesn't require authentication, we're done here.
 
-        if action in ["auth", "pre_context", "login", "logout"]:
+        if action in NON_AUTHENTICATED_REQUEST_LIST:
             return
 
         # ------------------------------------------------------------------ --
@@ -308,16 +314,12 @@ class UserserviceController(BaseController):
 
         # ------------------------------------------------------------------ --
 
-        # make the authenticated user global available
+        # `authUser` is set to the user from the authentication cookie so
+        # we can use it elsewhere to refer to the current authenticated user.
+        # This includes methods that implement HTTP requests as well as the
+        # auditing/accounting code in `__after__()`.
 
-        self.authUser = identity
-
-        # we put the authenticated user in the `request_context['AuthUser']`
-        # which is normaly filled by the getUserFromRequest for admins
-        # as we require the authenticated user in the __after__ method for
-        # audit and reporting
-
-        request_context["AuthUser"] = self.authUser
+        g.authUser = identity
 
         c.user = identity.login
         c.realm = identity.realm
@@ -326,7 +328,8 @@ class UserserviceController(BaseController):
 
         # finally check the validty of the session
 
-        if not check_session(request, self.authUser, self.client):
+        if not check_session(request, g.authUser, g.client):
+
             raise unauthorized(self.response, _("No valid session"))
 
         # ------------------------------------------------------------------ --
@@ -358,7 +361,7 @@ class UserserviceController(BaseController):
 
         action = request_context["action"]
 
-        authUser = request_context["AuthUser"]
+        authUser = g.authUser
 
         try:
             if g.audit["action"] not in [
@@ -366,10 +369,12 @@ class UserserviceController(BaseController):
                 "userservice/pre_context",
                 "userservice/userinfo",
             ]:
-                g.audit["user"] = authUser.login if authUser else ""
-                realm = ""
-                if authUser and authUser.realm:
-                    realm = authUser.realm
+                if authUser and isinstance(authUser, User):
+                    user, realm = authUser.login, authUser.realm
+                else:
+                    user, realm = repr(authUser), ""
+
+                g.audit["user"] = user
                 g.audit["realm"] = realm
 
                 log.debug(
@@ -511,8 +516,7 @@ class UserserviceController(BaseController):
 
             uid = "%s@%s" % (user.login, user.realm)
 
-            self.authUser = user
-            request_context["AuthUser"] = user
+            g.authUser = user
 
             # -------------------------------------------------------------- --
 
@@ -534,7 +538,7 @@ class UserserviceController(BaseController):
 
             # check the authentication
 
-            if self.mfa_login:
+            if g.mfa_login:
                 res = self._mfa_login_check(user, passw, otp)
 
             else:
@@ -553,10 +557,10 @@ class UserserviceController(BaseController):
             log.debug("Successfully authenticated user %s:", uid)
 
             (cookie_value, expires, expiration) = create_auth_cookie(
-                user, self.client
+                user, g.client
             )
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "userauthcookie",
                 value=cookie_value,
                 secure=secure_cookie(),
@@ -591,7 +595,7 @@ class UserserviceController(BaseController):
         if not user:
             raise UserNotFound("no user info in authentication cache")
 
-        request_context["AuthUser"] = user
+        g.authUser = user
         request_context["selfservice"] = {"state": auth_state, "user": user}
 
         if auth_state == "credentials_verified":
@@ -641,12 +645,12 @@ class UserserviceController(BaseController):
         # set the cookie for successful authenticated
 
         if res:
-            ret = create_auth_cookie(user, self.client)
+            ret = create_auth_cookie(user, g.client)
             (cookie, expires, _exp) = ret
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
-                cookie,
+                value=cookie,
                 secure=secure_cookie(),
                 expires=expires,
             )
@@ -667,15 +671,15 @@ class UserserviceController(BaseController):
 
             ret = create_auth_cookie(
                 user,
-                self.client,
+                g.client,
                 state="challenge_triggered",
                 state_data=reply,
             )
             cookie, expires, expiration = ret
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
-                cookie,
+                value=cookie,
                 secure=secure_cookie(),
                 expires=expires,
             )
@@ -785,13 +789,11 @@ class UserserviceController(BaseController):
         )
 
         if res:
-            (cookie, expires, expiration) = create_auth_cookie(
-                user, self.client
-            )
+            (cookie, expires, expiration) = create_auth_cookie(user, g.client)
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
-                cookie,
+                value=cookie,
                 secure=secure_cookie(),
                 expires=expires,
             )
@@ -827,13 +829,11 @@ class UserserviceController(BaseController):
             )
 
         if verified:
-            (cookie, expires, expiration) = create_auth_cookie(
-                user, self.client
-            )
+            (cookie, expires, expiration) = create_auth_cookie(user, g.client)
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
-                cookie,
+                value=cookie,
                 secure=secure_cookie(),
                 expires=expires,
             )
@@ -876,10 +876,10 @@ class UserserviceController(BaseController):
                 log.debug("Successfully authenticated user %r:", user)
 
                 (cookie_value, expires, expiration) = create_auth_cookie(
-                    user, self.client
+                    user, g.client
                 )
 
-                self.response.set_cookie(
+                self.set_cookie(
                     "user_selfservice",
                     value=cookie_value,
                     secure=secure_cookie(),
@@ -903,10 +903,10 @@ class UserserviceController(BaseController):
         # create the 'credentials_verified state'
 
         (cookie_value, expires, expiration) = create_auth_cookie(
-            user, self.client, state="credentials_verified"
+            user, g.client, state="credentials_verified"
         )
 
-        self.response.set_cookie(
+        self.set_cookie(
             "user_selfservice",
             value=cookie_value,
             secure=secure_cookie(),
@@ -914,7 +914,7 @@ class UserserviceController(BaseController):
         )
 
         tokenList = getTokenForUser(
-            self.authUser, active=True, exclude_rollout=False
+            g.authUser, active=True, exclude_rollout=False
         )
 
         reply = {
@@ -943,10 +943,10 @@ class UserserviceController(BaseController):
 
         if res:
             (cookie_value, expires, _expiration) = create_auth_cookie(
-                user, self.client
+                user, g.client
             )
 
-            self.response.set_cookie(
+            self.set_cookie(
                 "user_selfservice",
                 value=cookie_value,
                 secure=secure_cookie(),
@@ -1008,7 +1008,7 @@ class UserserviceController(BaseController):
             # we remove the out dated client cookie
 
             if user_selfservice_cookie and not auth_info[0]:
-                self.response.delete_cookie("user_selfservice")
+                self.delete_cookie("user_selfservice")
 
             # -------------------------------------------------------------- --
 
@@ -1018,22 +1018,21 @@ class UserserviceController(BaseController):
             if not user:
                 raise UserNotFound("user %r not found!" % param.get("login"))
 
-            self.authUser = user
-            request_context["AuthUser"] = user
+            g.authUser = user
 
             # -------------------------------------------------------------- --
 
             password = param["password"]
 
-            if self.mfa_login:
+            if g.mfa_login:
                 # allow the mfa login for users that have no token till now
                 # if the policy 'mfa_passOnNoToken' is defined with password
                 # only
 
-                tokenArray = getTokenForUser(self.authUser)
+                tokenArray = getTokenForUser(g.authUser)
 
                 policy = get_client_policy(
-                    client=self.client,
+                    client=g.client,
                     scope="selfservice",
                     action="mfa_passOnNoToken",
                     userObj=user,
@@ -1113,11 +1112,11 @@ class UserserviceController(BaseController):
                 th = TokenHandler()
 
                 # if no token and otp, we might do an auto assign
-                if self.autoassign and otp:
+                if g.autoassign and otp:
                     ret = th.auto_assignToken(password + otp, user)
 
                 # if no token no otp, we might trigger an aouto enroll
-                elif self.autoenroll and not otp:
+                elif g.autoenroll and not otp:
                     (auto_enroll_return, reply) = th.auto_enrollToken(
                         password, user
                     )
@@ -1157,7 +1156,7 @@ class UserserviceController(BaseController):
                 active = None
 
             tokenArray = getTokenForUser(
-                self.authUser, active=active, exclude_rollout=False
+                g.authUser, active=active, exclude_rollout=False
             )
 
             db.session.commit()
@@ -1181,7 +1180,8 @@ class UserserviceController(BaseController):
         """
 
         try:
-            uinfo = get_userinfo(self.authUser)
+
+            uinfo = get_userinfo(g.authUser)
 
             g.audit["success"] = True
 
@@ -1211,7 +1211,7 @@ class UserserviceController(BaseController):
         try:
             cookie = request.cookies.get("user_selfservice")
             remove_auth_cookie(cookie)
-            self.response.delete_cookie(key="user_selfservice")
+            self.delete_cookie("user_selfservice")
 
             g.audit["success"] = True
 
@@ -1245,7 +1245,7 @@ class UserserviceController(BaseController):
 
         """
         try:
-            pre_context = get_pre_context(self.client)
+            pre_context = get_pre_context(g.client)
             return sendResult(self.response, True, opt=pre_context)
 
         except Exception as exx:
@@ -1269,7 +1269,7 @@ class UserserviceController(BaseController):
         """
 
         try:
-            context = get_context(config, self.authUser, self.client)
+            context = get_context(config, g.authUser, g.client)
             return sendResult(self.response, True, opt=context)
 
         except Exception as e:
@@ -1304,21 +1304,21 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre(
-                "selfservice", "userenable", param, authUser=self.authUser
+                "selfservice", "userenable", param, authUser=g.authUser
             )
             th = TokenHandler()
-            if th.isTokenOwner(serial, self.authUser):
+            if th.isTokenOwner(serial, g.authUser):
                 log.info(
                     "[userenable] user %s@%s is enabling his token with "
                     "serial %s.",
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                     serial,
                 )
                 ret = th.enableToken(True, None, serial)
                 res["enable token"] = ret
 
-                g.audit["realm"] = self.authUser.realm
+                g.audit["realm"] = g.authUser.realm
                 g.audit["success"] = ret
 
             db.session.commit()
@@ -1369,20 +1369,20 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre(
-                "selfservice", "userdisable", param, authUser=self.authUser
+                "selfservice", "userdisable", param, authUser=g.authUser
             )
             th = TokenHandler()
-            if th.isTokenOwner(serial, self.authUser):
+            if th.isTokenOwner(serial, g.authUser):
                 log.info(
                     "user %s@%s is disabling his token with serial %s.",
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                     serial,
                 )
                 ret = th.enableToken(False, None, serial)
                 res["disable token"] = ret
 
-                g.audit["realm"] = self.authUser.realm
+                g.audit["realm"] = g.authUser.realm
                 g.audit["success"] = ret
 
             db.session.commit()
@@ -1418,7 +1418,7 @@ class UserserviceController(BaseController):
 
         try:
             # check selfservice authorization
-            checkPolicyPre("selfservice", "userdelete", param, self.authUser)
+            checkPolicyPre("selfservice", "userdelete", param, g.authUser)
 
             try:
                 serial = param["serial"]
@@ -1426,18 +1426,18 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if th.isTokenOwner(serial, self.authUser):
+            if th.isTokenOwner(serial, g.authUser):
                 log.info(
                     "[userdelete] user %s@%s is deleting his token with "
                     "serial %s.",
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                     serial,
                 )
                 ret = th.removeToken(serial=serial)
                 res["delete token"] = ret
 
-                g.audit["realm"] = self.authUser.realm
+                g.audit["realm"] = g.authUser.realm
                 g.audit["success"] = ret
 
             db.session.commit()
@@ -1475,19 +1475,19 @@ class UserserviceController(BaseController):
         serial = None
 
         try:
-            checkPolicyPre("selfservice", "userreset", param, self.authUser)
+            checkPolicyPre("selfservice", "userreset", param, g.authUser)
             try:
                 serial = param["serial"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, self.authUser):
+            if True == th.isTokenOwner(serial, g.authUser):
                 log.info(
                     "[userreset] user %s@%s is resetting the failcounter"
                     " of his token with serial %s",
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                     serial,
                 )
                 ret = resetToken(serial=serial)
@@ -1529,7 +1529,7 @@ class UserserviceController(BaseController):
 
         try:
             # check selfservice authorization
-            checkPolicyPre("selfservice", "userunassign", param, self.authUser)
+            checkPolicyPre("selfservice", "userunassign", param, g.authUser)
 
             try:
                 serial = param["serial"]
@@ -1539,11 +1539,11 @@ class UserserviceController(BaseController):
             upin = param.get("pin", None)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, self.authUser):
+            if True == th.isTokenOwner(serial, g.authUser):
                 log.info(
                     "user %s@%s is unassigning his token with serial %s.",
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                     serial,
                 )
 
@@ -1551,7 +1551,7 @@ class UserserviceController(BaseController):
                 res["unassign token"] = ret
 
                 g.audit["success"] = ret
-                g.audit["realm"] = self.authUser.realm
+                g.audit["realm"] = g.authUser.realm
 
             db.session.commit()
             return sendResult(self.response, res, 1)
@@ -1588,7 +1588,7 @@ class UserserviceController(BaseController):
         # # if there is a pin
         try:
             # check selfservice authorization
-            checkPolicyPre("selfservice", "usersetpin", param, self.authUser)
+            checkPolicyPre("selfservice", "usersetpin", param, g.authUser)
 
             try:
                 userPin = param["userpin"]
@@ -1597,23 +1597,23 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, self.authUser):
+            if True == th.isTokenOwner(serial, g.authUser):
                 log.info(
                     "user %s@%s is setting the OTP PIN "
                     "for token with serial %s",
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                     serial,
                 )
 
-                check_res = checkOTPPINPolicy(userPin, self.authUser)
+                check_res = checkOTPPINPolicy(userPin, g.authUser)
 
                 if not check_res["success"]:
                     log.warning(
                         "Setting of OTP PIN for Token %s"
                         " by user %s failed: %s",
                         serial,
-                        self.authUser.login,
+                        g.authUser.login,
                         check_res["error"],
                     )
 
@@ -1621,7 +1621,7 @@ class UserserviceController(BaseController):
                         response, _("Error: %s") % check_res["error"]
                     )
 
-                if 1 == getOTPPINEncrypt(serial=serial, user=self.authUser):
+                if 1 == getOTPPINEncrypt(serial=serial, user=g.authUser):
                     param["encryptpin"] = "True"
                 ret = setPin(userPin, None, serial, param)
                 res["set userpin"] = ret
@@ -1660,7 +1660,7 @@ class UserserviceController(BaseController):
         # # if there is a pin
         try:
             # check selfservice authorization
-            checkPolicyPre("selfservice", "usersetmpin", param, self.authUser)
+            checkPolicyPre("selfservice", "usersetmpin", param, g.authUser)
             try:
                 pin = param["pin"]
                 serial = param["serial"]
@@ -1668,12 +1668,12 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, self.authUser):
+            if True == th.isTokenOwner(serial, g.authUser):
                 log.info(
                     "user %s@%s is setting the mOTP PIN"
                     " for token with serial %s",
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                     serial,
                 )
                 ret = setPinUser(pin, serial)
@@ -1718,7 +1718,7 @@ class UserserviceController(BaseController):
 
         try:
             # check selfservice authorization
-            checkPolicyPre("selfservice", "userresync", param, self.authUser)
+            checkPolicyPre("selfservice", "userresync", param, g.authUser)
 
             try:
                 serial = param["serial"]
@@ -1728,11 +1728,11 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, self.authUser):
+            if True == th.isTokenOwner(serial, g.authUser):
                 log.info(
                     "user %s@%s is resyncing his token with serial %s",
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                     serial,
                 )
                 ret = th.resyncToken(otp1, otp2, None, serial)
@@ -1797,7 +1797,7 @@ class UserserviceController(BaseController):
         try:
             params = self.request_params
 
-            checkPolicyPre("selfservice", "userverify", params, self.authUser)
+            checkPolicyPre("selfservice", "userverify", params, g.authUser)
 
             # -------------------------------------------------------------- --
 
@@ -1870,7 +1870,7 @@ class UserserviceController(BaseController):
             token = tokens[0]
 
             th = TokenHandler()
-            if not th.isTokenOwner(token.getSerial(), self.authUser):
+            if not th.isTokenOwner(token.getSerial(), g.authUser):
                 raise Exception("User is not token owner")
 
             # -------------------------------------------------------------- --
@@ -1921,7 +1921,7 @@ class UserserviceController(BaseController):
             elif action == "verify otp":
                 vh = ValidationHandler()
                 (res, _opt) = vh.checkUserPass(
-                    self.authUser, passw=params["otp"], options=params
+                    g.authUser, passw=params["otp"], options=params
                 )
 
                 db.session.commit()
@@ -1951,7 +1951,7 @@ class UserserviceController(BaseController):
                     ).format(
                         token.type,
                         token.token.LinOtpTokenSerialnumber,
-                        self.authUser.login,
+                        g.authUser.login,
                     )
 
                     options = {"content_type": "0", "data": data}
@@ -2053,13 +2053,11 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
-            checkPolicyPre("selfservice", "userassign", param, self.authUser)
+            checkPolicyPre("selfservice", "userassign", param, g.authUser)
 
             # check if token is in another realm
             realm_list = getTokenRealms(serial)
-            if not self.authUser.realm.lower() in realm_list and len(
-                realm_list
-            ):
+            if not g.authUser.realm.lower() in realm_list and len(realm_list):
                 # if the token is assigned to realms, then the user must be in
                 # one of the realms, otherwise the token can not be assigned
                 raise Exception(
@@ -2081,12 +2079,12 @@ class UserserviceController(BaseController):
 
             log.info(
                 "user %s@%s is assign the token with serial %s to himself.",
-                self.authUser.login,
-                self.authUser.realm,
+                g.authUser.login,
+                g.authUser.realm,
                 serial,
             )
 
-            ret_assign = th.assignToken(serial, self.authUser, upin)
+            ret_assign = th.assignToken(serial, g.authUser, upin)
 
             # -------------------------------------------------------------- --
 
@@ -2100,10 +2098,10 @@ class UserserviceController(BaseController):
 
             res["assign token"] = ret_assign
 
-            g.audit["realm"] = self.authUser.realm
+            g.audit["realm"] = g.authUser.realm
             g.audit["success"] = ret_assign
 
-            checkPolicyPost("selfservice", "userassign", param, self.authUser)
+            checkPolicyPost("selfservice", "userassign", param, g.authUser)
 
             db.session.commit()
             return sendResult(self.response, res, 1)
@@ -2143,7 +2141,7 @@ class UserserviceController(BaseController):
         try:
             # check selfservice authorization
             checkPolicyPre(
-                "selfservice", "usergetserialbyotp", param, self.authUser
+                "selfservice", "usergetserialbyotp", param, g.authUser
             )
             try:
                 otp = param["otp"]
@@ -2155,7 +2153,7 @@ class UserserviceController(BaseController):
             g.audit["token_type"] = ttype
             th = TokenHandler()
             serial, _username, _resolverClass = th.get_serial_by_otp(
-                None, otp, 10, typ=ttype, realm=self.authUser.realm, assigned=0
+                None, otp, 10, typ=ttype, realm=g.authUser.realm, assigned=0
             )
             res = {"serial": serial}
 
@@ -2207,7 +2205,7 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             # check selfservice authorization
-            checkPolicyPre("selfservice", "userinit", param, self.authUser)
+            checkPolicyPre("selfservice", "userinit", param, g.authUser)
 
             serial = param.get("serial", None)
             prefix = param.get("prefix", None)
@@ -2226,7 +2224,7 @@ class UserserviceController(BaseController):
                 # query for hmac_otplen
 
                 hmac_otplen = get_selfservice_action_value(
-                    "hmac_otplen", user=self.authUser, default=6
+                    "hmac_otplen", user=g.authUser, default=6
                 )
 
                 param["otplen"] = param.get("otplen", hmac_otplen)
@@ -2236,7 +2234,7 @@ class UserserviceController(BaseController):
                 # query for hashlib
 
                 hmac_hashlib = get_selfservice_action_value(
-                    "hmac_hashlib", user=self.authUser, default=1
+                    "hmac_hashlib", user=g.authUser, default=1
                 )
 
                 param["hashlib"] = param.get(
@@ -2249,7 +2247,7 @@ class UserserviceController(BaseController):
                 # query for timestep
 
                 totp_timestep = get_selfservice_action_value(
-                    "totp_timestep", user=self.authUser, default=30
+                    "totp_timestep", user=g.authUser, default=30
                 )
 
                 param["timeStep"] = param.get("timeStep", totp_timestep)
@@ -2259,7 +2257,7 @@ class UserserviceController(BaseController):
                 # query for totp_otplen
 
                 totp_otplen = get_selfservice_action_value(
-                    "totp_otplen", user=self.authUser, default=6
+                    "totp_otplen", user=g.authUser, default=6
                 )
 
                 param["otplen"] = param.get("totp_otplen", totp_otplen)
@@ -2269,7 +2267,7 @@ class UserserviceController(BaseController):
                 # query for totp hashlib
 
                 totp_hashlib = get_selfservice_action_value(
-                    "totp_hashlib", user=self.authUser, default=1
+                    "totp_hashlib", user=g.authUser, default=1
                 )
 
                 param["hashlib"] = param.get(
@@ -2289,8 +2287,8 @@ class UserserviceController(BaseController):
                 "and type %s by user %s@%s",
                 serial,
                 tok_type,
-                self.authUser.login,
-                self.authUser.realm,
+                g.authUser.login,
+                g.authUser.realm,
             )
 
             log.debug(
@@ -2299,16 +2297,16 @@ class UserserviceController(BaseController):
                 serial,
                 desc,
                 otppin,
-                self.authUser.login,
-                self.authUser.realm,
+                g.authUser.login,
+                g.authUser.realm,
             )
             log.debug(param)
 
             # extend the interface by parameters, so that decisssion could
             # be made in the token update method
-            param["::scope::"] = {"selfservice": True, "user": self.authUser}
+            param["::scope::"] = {"selfservice": True, "user": g.authUser}
 
-            (ret, tokenObj) = th.initToken(param, self.authUser)
+            (ret, tokenObj) = th.initToken(param, g.authUser)
             if tokenObj is not None and hasattr(tokenObj, "getInfo"):
                 info = tokenObj.getInfo()
                 response_detail.update(info)
@@ -2316,15 +2314,15 @@ class UserserviceController(BaseController):
             # result enrichment - if the token is sucessfully created,
             # some processing info is added to the result document,
             #  e.g. the otpkey :-) as qr code
-            initDetail = tokenObj.getInitDetail(param, self.authUser)
+            initDetail = tokenObj.getInitDetail(param, g.authUser)
             response_detail.update(initDetail)
 
             # -------------------------------------------------------------- --
 
             g.audit["serial"] = response_detail.get("serial", "")
             g.audit["success"] = ret
-            g.audit["user"] = self.authUser.login
-            g.audit["realm"] = self.authUser.realm
+            g.audit["user"] = g.authUser.login
+            g.audit["realm"] = g.authUser.realm
 
             g.audit["success"] = ret
 
@@ -2337,7 +2335,7 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
-            checkPolicyPost("selfservice", "enroll", param, user=self.authUser)
+            checkPolicyPost("selfservice", "enroll", param, user=g.authUser)
 
             db.session.commit()
 
@@ -2426,7 +2424,7 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre(
-                "selfservice", "userwebprovision", param, self.authUser
+                "selfservice", "userwebprovision", param, g.authUser
             )
 
             # -------------------------------------------------------------- --
@@ -2469,8 +2467,8 @@ class UserserviceController(BaseController):
                     " %s, desc: %s for user %s @ %s.",
                     serial,
                     description,
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                 )
 
                 (ret1, _tokenObj) = th.initToken(
@@ -2484,13 +2482,13 @@ class UserserviceController(BaseController):
                         "timeWindow": 180,
                         "hashlib": "sha1",
                     },
-                    self.authUser,
+                    g.authUser,
                 )
 
                 if ret1:
                     url = create_oathtoken_url(
-                        self.authUser.login,
-                        self.authUser.realm,
+                        g.authUser.login,
+                        g.authUser.realm,
                         otpkey,
                         serial=serial,
                     )
@@ -2529,8 +2527,8 @@ class UserserviceController(BaseController):
                     "%s, description: %s for user %s @ %s.",
                     serial,
                     description,
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                 )
 
                 (ret1, _tokenObj) = th.initToken(
@@ -2544,24 +2542,22 @@ class UserserviceController(BaseController):
                         "timeWindow": 180,
                         "hashlib": "sha1",
                     },
-                    self.authUser,
+                    g.authUser,
                 )
 
                 if ret1:
                     pparam = {
-                        "user.login": self.authUser.login,
-                        "user.realm": self.authUser.realm,
+                        "user.login": g.authUser.login,
+                        "user.realm": g.authUser.realm,
                         "otpkey": otpkey,
                         "serial": serial,
                         "type": t_type,
                         "description": description,
                     }
-                    url = create_google_authenticator(
-                        pparam, user=self.authUser
-                    )
+                    url = create_google_authenticator(pparam, user=g.authUser)
                     label = "%s@%s" % (
-                        self.authUser.login,
-                        self.authUser.realm,
+                        g.authUser.login,
+                        g.authUser.realm,
                     )
                     ret = {
                         "url": url,
@@ -2588,7 +2584,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = ret1
             param["serial"] = serial
 
-            checkPolicyPost("selfservice", "enroll", param, user=self.authUser)
+            checkPolicyPost("selfservice", "enroll", param, user=g.authUser)
 
             db.session.commit()
             return sendResult(
@@ -2648,17 +2644,17 @@ class UserserviceController(BaseController):
             curTime = param.get("curTime", None)
 
             th = TokenHandler()
-            if True != th.isTokenOwner(serial, self.authUser):
+            if True != th.isTokenOwner(serial, g.authUser):
                 error = _("The serial %s does not belong to user %s@%s") % (
                     serial,
-                    self.authUser.login,
-                    self.authUser.realm,
+                    g.authUser.login,
+                    g.authUser.realm,
                 )
                 log.error(error)
                 return sendError(response, error, 1)
 
             max_count = checkPolicyPre(
-                "selfservice", "max_count", param, self.authUser
+                "selfservice", "max_count", param, g.authUser
             )
             log.debug("checkpolicypre returned %s", max_count)
 
@@ -2729,11 +2725,11 @@ class UserserviceController(BaseController):
 
         try:
             log.debug("params: %r", param)
-            checkPolicyPre("selfservice", "userhistory", param, self.authUser)
+            checkPolicyPre("selfservice", "userhistory", param, g.authUser)
 
             lines, total, page = audit_search(
                 param,
-                user=self.authUser,
+                user=g.authUser,
                 columns=[
                     "date",
                     "action",
@@ -2783,8 +2779,8 @@ class UserserviceController(BaseController):
                  { 'activate': True, 'ocratoken' : {
                         'url' :     url,
                         'img' :     '<img />',
-                        'label' :   "%s@%s" % (self.authUser.login,
-                                                   self.authUser.realm),
+                        'label' :   "%s@%s" % (g.authUser.login,
+                                                   g.authUser.realm),
                         'serial' :  serial,
                     }  }
         :raises Exception:
@@ -2798,7 +2794,7 @@ class UserserviceController(BaseController):
             # check selfservice authorization
 
             checkPolicyPre(
-                "selfservice", "useractivateocra2token", param, self.authUser
+                "selfservice", "useractivateocra2token", param, g.authUser
             )
 
             try:
@@ -2828,7 +2824,7 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            (ret, tokenObj) = th.initToken(helper_param, self.authUser)
+            (ret, tokenObj) = th.initToken(helper_param, g.authUser)
 
             info = {}
             serial = ""
@@ -2844,7 +2840,7 @@ class UserserviceController(BaseController):
             ret = {
                 "url": url,
                 "img": create_img(url, width=400, alt=url),
-                "label": "%s@%s" % (self.authUser.login, self.authUser.realm),
+                "label": "%s@%s" % (g.authUser.login, g.authUser.realm),
                 "serial": serial,
                 "transaction": trans,
             }
@@ -2852,7 +2848,7 @@ class UserserviceController(BaseController):
             g.audit["serial"] = serial
             g.audit["token_type"] = typ
             g.audit["success"] = True
-            g.audit["realm"] = self.authUser.realm
+            g.audit["realm"] = g.authUser.realm
 
             db.session.commit()
             return sendResult(
@@ -2904,7 +2900,7 @@ class UserserviceController(BaseController):
             # check selfservice authorization
 
             checkPolicyPre(
-                "selfservice", "userwebprovision", param, self.authUser
+                "selfservice", "userwebprovision", param, g.authUser
             )
 
             passw = param.get("pass", None)
@@ -2928,7 +2924,7 @@ class UserserviceController(BaseController):
             g.audit["transactionid"] = transid
             g.audit["token_type"] = reply["token_type"]
             g.audit["success"] = ok
-            g.audit["realm"] = self.authUser.realm
+            g.audit["realm"] = g.authUser.realm
 
             db.session.commit()
             return sendResult(self.response, value, opt)
@@ -2974,20 +2970,19 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization for this dynamic method
             pols = get_client_policy(
-                self.client,
+                g.client,
                 scope="selfservice",
-                realm=self.authUser.realm,
+                realm=g.authUser.realm,
                 action=method,
-                userObj=self.authUser.realm,
+                userObj=g.authUser.realm,
                 find_resolver=False,
             )
             if not pols or len(pols) == 0:
                 log.error(
-                    "user %r not authorized to call %s", self.authUser, method
+                    "user %r not authorized to call %s", g.authUser, method
                 )
                 raise PolicyException(
-                    "user %r not authorized to call %s"
-                    % (self.authUser, method)
+                    "user %r not authorized to call %s" % (g.authUser, method)
                 )
 
             if typ in tokenclass_registry:
@@ -3070,21 +3065,21 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             checkPolicyPre(
-                "selfservice", "usersetdescription", param, self.authUser
+                "selfservice", "usersetdescription", param, g.authUser
             )
 
             th = TokenHandler()
 
-            if not th.isTokenOwner(serial, self.authUser):
+            if not th.isTokenOwner(serial, g.authUser):
                 raise Exception(
-                    "User %r is not owner of the token" % self.authUser.login
+                    "User %r is not owner of the token" % g.authUser.login
                 )
 
             log.info(
                 "user %s@%s is changing description of token with "
                 "serial %s.",
-                self.authUser.login,
-                self.authUser.realm,
+                g.authUser.login,
+                g.authUser.realm,
                 serial,
             )
 
@@ -3092,7 +3087,7 @@ class UserserviceController(BaseController):
 
             res = {"set description": ret}
 
-            g.audit["realm"] = self.authUser.realm
+            g.audit["realm"] = g.authUser.realm
             g.audit["success"] = ret
 
             db.session.commit()

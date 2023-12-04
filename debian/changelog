@@ -31,10 +31,6 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
       * accepts most fields of a AuditEntry as query parameter to filter by
   * the new API endpoints all return dates in ISO 8601-compliant format
   * support for Flask 2 installation
-  * when using the forward token and a challenge is triggered, the response detail
-    contains information about the target token
-  * forward tokens do not count for license
-  * the forward token now supports the offline capability of the qr token
   * password token now supports the 'onetime' parameter as the former spass token did
   * added validator for policy actions
 
@@ -44,11 +40,45 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * Filtering for active/inactive token works correctly
   * no more support for truncated transaction ids
   * legacy selfservice qr and push token enrollment breaks with strings in otppin policy
-  * forward token supports forwarding to a qr and push token
   * More customisation in /selfservice-legacy was broken (Followup to a v3.2.3 fix)
   * drop ability to define autoassignment policy with values
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
+
+linotp (3.2.5-1) buster; urgency=high
+
+  Release 3.2.5 patches a session handling vulnerability in the Self
+  Service API. This patch is necessary for all versions newer than LinOTP
+  3.0. We will provide additional details on
+  https://linotp.org/linotp-3-2-5.html.
+
+  Fixes:
+  * Ensure that userservice login results in exactly one session cookie per
+    response.
+  * Avoid a race condition in userservice request method setup which could
+    lead to a user being erroneously authenticated as a different user. 
+
+  Features:
+  * Use entirely random values for userservice session cookies.
+
+  Packaging:
+  * Debian postinst now correctly restarts the LinOTP service again to ensure
+    running the latest version without the need for manual intervention.
+
+ -- LinOTP Packaging <packaging@linotp.de>  Fri, 24 Nov 2023 10:00:00 +0200
+
+linotp (3.2.4-1) buster; urgency=low
+
+  Features:
+  * when using the forward token and a challenge is triggered, the response detail
+    contains information about the target token
+  * forward tokens do not count for license
+  * the forward token now supports the offline capability of the qr token
+
+  Fix:
+  * forward token supports forwarding to a qr and push token
+
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 15 Nov 2023 14:00:00 +0200
 
 linotp (3.2.3-1) buster; urgency=low
 
