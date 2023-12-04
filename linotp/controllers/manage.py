@@ -782,7 +782,7 @@ class ManageController(BaseController):
 
         try:
             user = getUserFromRequest()
-            logged_in_admin: User = request_context["AuthUser"]
+            logged_in_admin: User = g.authUser
 
             response_detail = {
                 "version": get_version(),

@@ -595,7 +595,7 @@ class UserserviceController(BaseController):
         if not user:
             raise UserNotFound("no user info in authentication cache")
 
-        request_context["AuthUser"] = user
+        g.authUser = user
         request_context["selfservice"] = {"state": auth_state, "user": user}
 
         if auth_state == "credentials_verified":

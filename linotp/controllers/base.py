@@ -222,7 +222,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
         """Check whether the current request needs to be authenticated using
         JWT, and if so, whether it contains a valid JWT access token.
         The login name from the access token is stored in the
-        request_context['AuthUser'] via quering the jwt identity with
+        g.authUser via quering the jwt identity with
         get_jwt_identiy for the benefit of `lib.user.getUserFromRequest()`.
         """
 
