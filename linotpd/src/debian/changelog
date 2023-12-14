@@ -1,3 +1,10 @@
+linotp (2.12.7-1) buster; urgency=medium
+
+  Fix:
+  * qrtoken callback policies takes client into account (backport)
+
+ -- LinOTP Packaging <packaging@linotp.de>  Tue, 14 Dec 2023 15:45:00 +0100
+
 linotp (2.12.6-1) buster; urgency=medium
 
   Fix:
