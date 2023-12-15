@@ -270,7 +270,7 @@ build-linotp-docker-image:buster:
     LINOTP_IMAGE: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
   before_script:
     - apk add --no-cache py-pip
-    - pip install "docker-compose==${DOCKER_COMPOSE_VERSION}"
+    - pip install "docker-compose==${DOCKER_COMPOSE_VERSION}" --break-system-packages
     - *docker-registry
     - cp -r apt/${DEBIAN_RELEASE_NAME} linotpd/src/linotp/tests/integration/apt
     - cd linotpd/src/linotp/tests/integration
