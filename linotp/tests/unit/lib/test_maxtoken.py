@@ -6,6 +6,7 @@ from mock import patch
 
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy.maxtoken import (
+    calculate_token_limit,
     check_maxtoken_for_user,
     check_maxtoken_for_user_by_type,
 )
@@ -177,3 +178,20 @@ class MaxTokenPolicyTest(unittest.TestCase):
                 "was not in boundaries but no exception was "
                 "raised"
             )
+
+
+class MaxTokenAlgorithmTest(unittest.TestCase):
+    def test_standard_case(self):
+        max_token = [2]
+        result = calculate_token_limit(max_token)
+        assert result == 2
+
+    def test_multiple_realms(self):
+        max_token = [3, 2, True, -1]
+        result = calculate_token_limit(max_token)
+        assert result == 2
+
+    def test_no_limits_set(self):
+        max_token = [True, -1]
+        result = calculate_token_limit(max_token)
+        assert result is None
