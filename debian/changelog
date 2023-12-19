@@ -42,6 +42,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * legacy selfservice qr and push token enrollment breaks with strings in otppin policy
   * More customisation in /selfservice-legacy was broken (Followup to a v3.2.3 fix)
   * drop ability to define autoassignment policy with values
+  * support the LOGGING_LEVEL="WARN" with error message to support the migration from linotp2 versions
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 
