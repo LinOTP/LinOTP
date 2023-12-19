@@ -680,12 +680,7 @@ def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
         val = urllib.parse.urlencode({"alt": alt})
         alt_str = " alt=%r " % (val[len("alt=") :])
 
-    ret_img = '<img id="%s" %s  %s  src="%s"/>' % (
-        img_id,
-        alt_str,
-        width_str,
-        img_src,
-    )
+    ret_img = f'<img id="{img_id}" {alt_str}  {width_str}  src="{img_src}"/>'
 
     return ret_img
 
