@@ -141,13 +141,6 @@ def schema():
             default=0,
             help="help for CVT",
         ),
-        s.ConfigItem(
-            "MIGRATE",
-            str,
-            migrate=lambda s: "WARNING",
-            default="ERROR",
-            help="help for migrate value",
-        ),
     ]
 
 
@@ -189,7 +182,6 @@ def test_configschema_find_item(schema, key, result):
 @pytest.mark.parametrize(
     "key,value,refuse_unknown,result,result_value",
     [
-        ("MIGRATE", "WARN", False, "OK", "WARNING"),
         ("FOO", "bar", False, "OK", "bar"),
         ("BAZ", "456", False, "OK", 456),
         ("BAZ", 456, False, "OK", 456),
