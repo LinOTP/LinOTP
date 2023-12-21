@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 import textwrap
 from dataclasses import dataclass
 from typing import Any, Callable, Type
@@ -127,22 +126,6 @@ def check_absolute_pathname():
     return f
 
 
-# support the migration of the logging level value from WARN to WARNING
-def migrate_logging_level(value):
-
-    if value and value.upper() != "WARN":
-        return value
-
-    message = """
-Your configuration contains the entry:
-    LOGGING_*LEVEL="WARN"
-This is not supported anymore. Please rewrite the config entry to:
-    LOGGING_*LEVEL="WARNING"
-"""
-    print(message, file=sys.stderr)
-    return "WARNING"
-
-
 @dataclass
 class ConfigItem:
     """This class represents individual configuration settings. A
@@ -152,7 +135,6 @@ class ConfigItem:
     name: str  # Name of the item
     type: Type = str  # Type of the item
     convert: Callable[[str], Type] = None  # Converts strings to type
-    migrate: Callable[[str], str] = None  # Migrates a value
     validate: Callable[[str, Any], None] = None  # Checks if value is valid
     default: Any = None  # Default value of item
     help: str = ""  # Help message string
@@ -209,10 +191,6 @@ class ConfigSchema:
                 if item.convert is not None
                 else item.type(value)
             )
-        # migrate the values if the values have to have a new value
-        if item.migrate is not None:
-            value = item.migrate(value)
-
         # Validate the value if a validate function is registered
         if item.validate is not None:
             item.validate(key, value)
@@ -416,7 +394,6 @@ _config_schema = ConfigSchema(
         ConfigItem(
             "LOGGING_LEVEL",
             str,
-            migrate=migrate_logging_level,
             validate=check_membership(VALID_LOG_LEVELS),
             default="INFO",
             help=(
@@ -427,7 +404,6 @@ _config_schema = ConfigSchema(
         ConfigItem(
             "LOGGING_SQLALCHEMY_LEVEL",
             str,
-            migrate=migrate_logging_level,
             validate=check_membership(VALID_LOG_LEVELS),
             default="WARNING",
             help=(
@@ -438,7 +414,6 @@ _config_schema = ConfigSchema(
         ConfigItem(
             "LOGGING_FILE_LEVEL",
             str,
-            migrate=migrate_logging_level,
             validate=check_membership(VALID_LOG_LEVELS),
             default="WARNING",
             help=(
@@ -453,7 +428,6 @@ _config_schema = ConfigSchema(
         ConfigItem(
             "LOGGING_CONSOLE_LEVEL",
             str,
-            migrate=migrate_logging_level,
             validate=check_membership(VALID_LOG_LEVELS),
             default="WARNING",
             help=(
