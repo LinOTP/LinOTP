@@ -31,6 +31,7 @@ import datetime
 import json
 import logging
 import secrets
+from typing import Dict, List, Union
 
 # for the temporary rendering context, we use 'c'
 from linotp.flap import render_mako as render
@@ -41,9 +42,13 @@ from linotp.lib.policy.action import (
     get_selfservice_action_value,
     get_selfservice_actions,
 )
+from linotp.lib.policy.maxtoken import (
+    get_maxtoken_for_user,
+    get_maxtoken_for_user_by_type,
+)
 from linotp.lib.realm import getDefaultRealm, getRealms
 from linotp.lib.selfservice import get_imprint
-from linotp.lib.token import get_tokens
+from linotp.lib.token import get_token_type_list, get_tokens
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
 from linotp.lib.type_utils import parse_duration
 from linotp.lib.user import User, get_userinfo, getRealmBox
@@ -329,7 +334,12 @@ def get_pre_context(client):
     }
 
 
-def get_context(config, user, client):
+# This is the type of the dict for token-type specific limits
+# in the userservice context
+ContextTokenTypeLimit = Dict[str, Union[str, int]]
+
+
+def get_context(config, user: User, client: str):
     """
     get the user dependend rendering context
 
@@ -351,6 +361,22 @@ def get_context(config, user, client):
             context["actions"].append(action_name)
         else:
             context["settings"][action_name] = action_value
+
+    # Token limits
+    all_token_limit = get_maxtoken_for_user(user)
+
+    token_types_limits: List[ContextTokenTypeLimit] = []
+    for token_type in get_token_type_list():
+        token_limit = get_maxtoken_for_user_by_type(user, token_type)
+        if token_limit is not None:
+            token_types_limits.append(
+                {"token_type": token_type, "max_token": token_limit}
+            )
+
+    context["settings"]["token_limits"] = {
+        "all_token": all_token_limit,
+        "token_types": token_types_limits,
+    }
 
     return context
 

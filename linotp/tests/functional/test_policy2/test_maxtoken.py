@@ -345,4 +345,127 @@ class TestPolicyMaxtoken(TestController):
         assert "false" not in response, response
 
 
-# eof
+class TestMaxtokenSelfService(TestController):
+    """
+    Test the maxtoken info in context of selfservice
+    """
+
+    def setUp(self):
+        TestController.setUp(self)
+        self.delete_all_policies()
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+        self.create_common_resolvers()
+        self.create_common_realms()
+
+    def tearDown(self):
+        TestController.tearDown(self)
+
+    def enroll_token(self, token_params=None):
+        parameters = {
+            "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
+            "description": "myToken",
+        }
+        if token_params:
+            parameters.update(token_params)
+
+        response = self.make_admin_request("init", params=parameters)
+        return response
+
+    def test_all_token_limits_set(self):
+
+        policy = {
+            "name": "maxtoken",
+            "realm": "*",
+            "active": "True",
+            "client": "",
+            "user": "*",
+            "time": "",
+            "action": "maxtoken=4, ",
+            "scope": "enrollment",
+        }
+
+        self.create_policy(policy)
+
+        for i in range(1, 4):
+            token_params = {
+                "serial": "#TCOUNT%d" % i,
+                "user": "passthru_user1@myDefRealm",
+            }
+            self.enroll_token(token_params)
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        response = self.make_userselfservice_request(
+            "context", auth_user=auth_user
+        )
+
+        all_token_limits = response.json["detail"]["settings"]["token_limits"][
+            "all_token"
+        ]
+        assert all_token_limits == 4
+
+    def test_all_token_limits_not_set(self):
+        for i in range(1, 4):
+            token_params = {
+                "serial": "#TCOUNT%d" % i,
+                "user": "passthru_user1@myDefRealm",
+            }
+            self.enroll_token(token_params)
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        response = self.make_userselfservice_request(
+            "context", auth_user=auth_user
+        )
+
+        all_token_limits = response.json["detail"]["settings"]["token_limits"][
+            "all_token"
+        ]
+        assert all_token_limits is None
+
+    def test_token_limit_pro_type(self):
+        policy = {
+            "name": "maxtoken_for_type",
+            "realm": "*",
+            "active": "True",
+            "client": "",
+            "user": "*",
+            "time": "",
+            "action": "maxtoken=5, maxtokenPW=3",
+            "scope": "enrollment",
+        }
+
+        self.create_policy(policy)
+
+        for i in range(1, 4):
+            token_params = {
+                "serial": "#TCOUNT%d" % i,
+                "type": "pw",
+                "user": "passthru_user1@myDefRealm",
+            }
+            self.enroll_token(token_params)
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        response = self.make_userselfservice_request(
+            "context", auth_user=auth_user
+        )
+
+        token_limit_res = response.json["detail"]["settings"]["token_limits"][
+            "token_types"
+        ]
+        assert len(token_limit_res) == 1
+        token_limit = token_limit_res[0]
+        assert token_limit["max_token"] == 3
+        assert token_limit["token_type"] == "pw"
