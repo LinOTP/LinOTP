@@ -252,7 +252,7 @@ class SelfserviceController(BaseController):
         except Exception as exx:
             log.error("[__before__] failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
     @deprecated_methods(["POST"])
     def index(self):
@@ -516,7 +516,7 @@ class SelfserviceController(BaseController):
 
         except Exception as exx:
             log.error("[webprovisiongoogletoken] failed with error: %r", exx)
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def usertokenlist(self):

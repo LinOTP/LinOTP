@@ -76,7 +76,7 @@ class AuthController(BaseController):
         except Exception as exx:
             log.error("[__before__::%r]", action)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
     def index(self):
         """

@@ -113,7 +113,7 @@ class GettokenController(BaseController):
 
         getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
         if not getotp_active:
-            return sendError(response, "getotp is not activated.", 0)
+            return sendError("getotp is not activated.", 0)
 
         param = self.request_params
         ret = {}
@@ -152,14 +152,12 @@ class GettokenController(BaseController):
         except PolicyException as pe:
             log.error("[getotp] gettoken/getotp policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
             db.session.rollback()
-            return sendError(
-                response, "gettoken/getmultiotp failed: %r" % exx, 0
-            )
+            return sendError("gettoken/getmultiotp failed: %r" % exx, 0)
 
     @deprecated_methods(["POST"])
     def getotp(self):
@@ -183,7 +181,7 @@ class GettokenController(BaseController):
 
         getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
         if not getotp_active:
-            return sendError(response, "getotp is not activated.", 0)
+            return sendError("getotp is not activated.", 0)
 
         param = self.request_params
         ret = {}
@@ -250,7 +248,6 @@ class GettokenController(BaseController):
                 log.debug("[getmultiotp] max_count policy: %s", max_count)
                 if max_count <= 0:
                     return sendError(
-                        response,
                         "The policy forbids receiving"
                         " OTP values for the token %s in "
                         "this realm" % serial,
@@ -290,12 +287,12 @@ class GettokenController(BaseController):
         except PolicyException as pe:
             log.error("[getotp] gettoken/getotp policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[getotp] gettoken/getotp failed: %r", exx)
             db.session.rollback()
-            return sendError(response, "gettoken/getotp failed: %s" % exx, 0)
+            return sendError("gettoken/getotp failed: %s" % exx, 0)
 
 
 # eof###########################################################################

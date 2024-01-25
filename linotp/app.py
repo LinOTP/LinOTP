@@ -1116,7 +1116,7 @@ def create_app(config_name=None, config_extra=None):
         this handler will be called so that an error response can be
         returned to the user.
         """
-        return sendError(None, e)
+        return sendError(e)
 
     @babel.localeselector
     def get_locale():

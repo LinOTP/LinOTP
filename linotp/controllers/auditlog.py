@@ -76,7 +76,7 @@ class AuditlogController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[__after__] unable to create a session cookie: %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="after")
+            return sendError(exx, context="after")
 
     def get_audit_entries(self):
         """
@@ -177,7 +177,7 @@ class AuditlogController(BaseController, JWTMixin):
         except PolicyException as pe:
             log.error("[getAuditEntries] policy failed: %r", pe)
             db.session.rollback()
-            error = sendError(None, pe)
+            error = sendError(pe)
             error.status_code = 403
             return error
 
@@ -209,7 +209,7 @@ class AuditlogController(BaseController, JWTMixin):
         except Exception as ex:
             log.error("[getAuditEntries] error getting audit entries: %r", ex)
             db.session.rollback()
-            return sendError(response, ex)
+            return sendError(ex)
 
     def _get_search_dict_from_request_params(self):
         request_param_to_audit_query_param_mapping = {

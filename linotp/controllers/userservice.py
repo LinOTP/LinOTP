@@ -204,7 +204,7 @@ def add_and_delete_cookies(response):
 def unauthorized(exception, status=401):
     """extend the standard sendResult to handle cookies"""
 
-    response = sendError(_response=None, exception=exception)
+    response = sendError(exception=exception)
 
     response.status_code = status
 
@@ -417,7 +417,7 @@ class UserserviceController(BaseController):
         except Exception as acc:
             # the exception, when an abort() is called if forwarded
             log.error("[__after__::%r] webob.exception %r", action, acc)
-            return sendError(response, acc, context="__after__")
+            return sendError(acc, context="__after__")
 
     def _identify_user(self, params):
         """
@@ -575,7 +575,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = False
 
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     def _login_with_cookie(self, cookie, params):
         """
@@ -1162,7 +1162,7 @@ class UserserviceController(BaseController):
         except Exception as exx:
             log.error("failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def userinfo(self):
@@ -1247,7 +1247,7 @@ class UserserviceController(BaseController):
         except Exception as exx:
             log.error("pre_context failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def context(self):
@@ -1271,7 +1271,7 @@ class UserserviceController(BaseController):
         except Exception as e:
             log.error("[context] failed with error: %r", e)
             db.session.rollback()
-            return sendError(response, e)
+            return sendError(e)
 
     # action hooks for the js methods ########################################
     @methods(["POST"])
@@ -1323,7 +1323,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("[enable] policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except LicenseException as lex:
             log.error("[enable] license exception: %r", lex)
@@ -1331,12 +1331,12 @@ class UserserviceController(BaseController):
             msg = _(
                 "Failed to enable token, please contact your administrator"
             )
-            return sendError(response, msg, 1)
+            return sendError(msg, 1)
 
         except Exception as e:
             log.error("[enable] failed: %r", e)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(e, 1)
 
     ########################################################
     @methods(["POST"])
@@ -1387,12 +1387,12 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("policy failed %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as e:
             log.error("failed: %r", e)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(e, 1)
 
     @methods(["POST"])
     def delete(self):
@@ -1442,7 +1442,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("[userdelete] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as e:
             log.error(
@@ -1451,7 +1451,7 @@ class UserserviceController(BaseController):
                 c.user,
             )
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(e, 1)
 
     @methods(["POST"])
     def reset(self):
@@ -1497,12 +1497,12 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as e:
             log.error("error resetting token with serial %s: %r", serial, e)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(e, 1)
 
     @methods(["POST"])
     def unassign(self):
@@ -1555,14 +1555,14 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as e:
             log.error(
                 "unassigning token %s of user %s failed! %r", serial, c.user, e
             )
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(e, 1)
 
     @methods(["POST"])
     def setpin(self):
@@ -1613,9 +1613,7 @@ class UserserviceController(BaseController):
                         check_res["error"],
                     )
 
-                    return sendError(
-                        response, _("Error: %s") % check_res["error"]
-                    )
+                    return sendError(_("Error: %s") % check_res["error"])
 
                 if 1 == getOTPPINEncrypt(serial=serial, user=g.authUser):
                     param["encryptpin"] = "True"
@@ -1630,12 +1628,12 @@ class UserserviceController(BaseController):
         except PolicyException as pex:
             log.error("policy failed: %r", pex)
             db.session.rollback()
-            return sendError(response, pex, 1)
+            return sendError(pex, 1)
 
         except Exception as exx:
             log.error("Error setting OTP PIN: %r", exx)
             db.session.rollback()
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def setmpin(self):
@@ -1683,12 +1681,12 @@ class UserserviceController(BaseController):
         except PolicyException as pex:
             log.error("policy failed: %r", pex)
             db.session.rollback()
-            return sendError(response, pex, 1)
+            return sendError(pex, 1)
 
         except Exception as exx:
             log.error("Error setting the mOTP PIN %r", exx)
             db.session.rollback()
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def resync(self):
@@ -1742,12 +1740,12 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as e:
             log.error("error resyncing token with serial %s:%r", serial, e)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(e, 1)
 
     @deprecated_methods(["GET"])
     def verify(self):
@@ -2009,13 +2007,13 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe)
+            return sendError(pe)
 
         except Exception as exx:
             g.audit["success"] = False
             log.error("error verifying token with serial %s: %r", serial, exx)
             db.session.rollback()
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def assign(self):
@@ -2103,12 +2101,12 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("[userassign] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[userassign] token assignment failed! %r", exx)
             db.session.rollback()
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @deprecated_methods(["POST"])
     def getSerialByOtp(self):
@@ -2160,12 +2158,12 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("token getSerialByOtp failed! %r", exx)
             db.session.rollback()
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def enroll(self):
@@ -2346,7 +2344,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("[userinit] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except LicenseException as lex:
             log.error("[enroll] license exception: %r", lex)
@@ -2354,12 +2352,12 @@ class UserserviceController(BaseController):
             msg = _(
                 "Failed to enroll token, please contact your administrator"
             )
-            return sendError(response, msg, 1)
+            return sendError(msg, 1)
 
         except Exception as e:
             log.error("[userinit] token initialization failed! %r", e)
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(e, 1)
 
     @methods(["POST"])
     def webprovision(self):
@@ -2564,7 +2562,6 @@ class UserserviceController(BaseController):
                     }
             else:
                 return sendError(
-                    response,
                     _(
                         "valid types are 'oathtoken' and 'googleauthenticator' and "
                         "'googleauthenticator_time'. You provided %s"
@@ -2588,7 +2585,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("[userwebprovision] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except LicenseException as lex:
             log.error("[userwebprovision] license exception: %r", lex)
@@ -2596,14 +2593,14 @@ class UserserviceController(BaseController):
             msg = _(
                 "Failed to enroll token, please contact your administrator"
             )
-            return sendError(response, msg, 1)
+            return sendError(msg, 1)
 
         except Exception as exx:
             log.error(
                 "[userwebprovision] token initialization failed! %r", exx
             )
             db.session.rollback()
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @deprecated_methods(["POST"])
     def getmultiotp(self):
@@ -2622,7 +2619,7 @@ class UserserviceController(BaseController):
 
         getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
         if not getotp_active:
-            return sendError(response, _("getotp is not activated."), 0)
+            return sendError(_("getotp is not activated."), 0)
 
         param = self.request_params
         ret = {}
@@ -2644,7 +2641,7 @@ class UserserviceController(BaseController):
                     g.authUser.realm,
                 )
                 log.error(error)
-                return sendError(response, error, 1)
+                return sendError(error, 1)
 
             max_count = checkPolicyPre(
                 "selfservice", "max_count", param, g.authUser
@@ -2673,13 +2670,13 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("[usergetmultiotp] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as e:
             log.error("[usergetmultiotp] gettoken/getmultiotp failed: %r", e)
             db.session.rollback()
             return sendError(
-                response, _("selfservice/usergetmultiotp failed: %r") % e, 0
+                _("selfservice/usergetmultiotp failed: %r") % e, 0
             )
 
     @deprecated_methods(["POST"])
@@ -2750,14 +2747,12 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("[search] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[search] audit/search failed: %r", exx)
             db.session.rollback()
-            return sendError(
-                response, _("audit/search failed: %s") % str(exx), 0
-            )
+            return sendError(_("audit/search failed: %s") % str(exx), 0)
 
     @methods(["POST"])
     def activateocratoken(self):
@@ -2797,7 +2792,6 @@ class UserserviceController(BaseController):
 
             if typ and typ.lower() not in ["ocra2"]:
                 return sendError(
-                    response,
                     _("valid types is 'ocra2'. You provided %s") % typ,
                 )
 
@@ -2849,12 +2843,12 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("token initialization failed! %r", exx)
             db.session.rollback()
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def finishocra2token(self):
@@ -2923,7 +2917,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("[userfinishocra2token] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as e:
             error = (
@@ -2931,7 +2925,7 @@ class UserserviceController(BaseController):
             )
             log.error(error)
             db.session.rollback()
-            return sendError(response, error, 1)
+            return sendError(error, 1)
 
     def _token_call(self):
         """
@@ -3012,7 +3006,7 @@ class UserserviceController(BaseController):
         except PolicyException as pe:
             log.error("[token_call] policy failed: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error(
@@ -3023,7 +3017,7 @@ class UserserviceController(BaseController):
                 exx,
             )
             db.session.rollback()
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def setdescription(self):
@@ -3087,12 +3081,12 @@ class UserserviceController(BaseController):
         except PolicyException as pex:
             log.error("[setdescription] policy failed")
             db.session.rollback()
-            return sendError(response, pex, 1)
+            return sendError(pex, 1)
 
         except Exception as exx:
             log.error("failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
 
 # eof##########################################################################

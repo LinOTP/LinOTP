@@ -157,7 +157,7 @@ class SystemController(BaseController):
         except PolicyException as pex:
             log.error("[__before__::%r] policy exception %r", action, pex)
             db.session.rollback()
-            return sendError(response, pex, context="before")
+            return sendError(pex, context="before")
 
         except flap.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
@@ -168,7 +168,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
     @staticmethod
     def __after__(response):
@@ -188,7 +188,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[__after__] exception %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="after")
+            return sendError(exx, context="after")
 
     ########################################################
     @methods(["POST"])
@@ -262,7 +262,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[setDefault] commit failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -364,12 +364,12 @@ class SystemController(BaseController):
         except ValueError as exx:
             log.error("[setConfig] error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
         except Exception as exx:
             log.error("[setConfig] error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     # config callback helper
 
@@ -437,7 +437,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[delConfig] error deleting config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     ########################################################
@@ -522,7 +522,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[getConfig] error getting config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -554,12 +554,12 @@ class SystemController(BaseController):
         except PolicyException as pex:
             log.error("[getRealms] policy exception: %r", pex)
             db.session.rollback()
-            return sendError(response, pex)
+            return sendError(pex)
 
         except Exception as exx:
             log.error("[getRealms] error getting realms: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -747,12 +747,12 @@ class SystemController(BaseController):
                 list(param.keys()),
             )
             db.session.rollback()
-            return sendError(response, msg % new_resolver_name)
+            return sendError(msg % new_resolver_name)
 
         except Exception as exx:
             log.error("[setResolver] error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -779,7 +779,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[getResolvers] error getting resolvers: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -849,7 +849,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[delResolver] error deleting resolver: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -890,7 +890,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[getResolver] error getting resolver: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
         finally:
             log.debug("[getResolver] done")
@@ -934,7 +934,7 @@ class SystemController(BaseController):
                 "[setDefaultRealm] setting default realm failed: %r", exx
             )
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -963,7 +963,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[getDefaultRealm] return default realm failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -1044,7 +1044,7 @@ class SystemController(BaseController):
             err = "Failed to set realm with %r " % param
             log.error("[setRealm] %r %r", err, exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -1089,7 +1089,7 @@ class SystemController(BaseController):
                 if hasattr(exx, "message") and exx.message == param_err_msg
                 else realm
             )
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -1195,7 +1195,7 @@ class SystemController(BaseController):
 
         except Exception as exx:
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -1317,7 +1317,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[policies_flexi] error in policy flexi: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -1362,7 +1362,7 @@ class SystemController(BaseController):
                 "[getPolicyDef] error getting policy definitions: %r", exx
             )
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     #########################################################
     def _add_dynamic_tokens(self, scope):
@@ -1583,7 +1583,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[checkPolicy] error checking policy: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ##########################################################################
     @deprecated_methods(["POST"])
@@ -1704,7 +1704,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[getPolicy] error getting policy: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -1750,7 +1750,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[delPolicy] error deleting policy: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
         finally:
             db.session.close()
@@ -1825,7 +1825,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[setupSecurityModule] : setup failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
 
@@ -1855,7 +1855,7 @@ class SystemController(BaseController):
                 "[getSupportInfo] : failed to access support info: %r", exx
             )
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def isSupportValid(self):
@@ -1948,7 +1948,7 @@ class SystemController(BaseController):
             log.error("[isSupportValid] failed verify support info: %r", exx)
 
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def setSupport(self):
@@ -2082,7 +2082,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def getProvider(self):
@@ -2127,7 +2127,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("error getting config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def testProvider(self):
@@ -2168,7 +2168,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("error getting config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def delProvider(self):
@@ -2225,7 +2225,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def setDefaultProvider(self):
@@ -2262,7 +2262,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def getProviderDef(self):
@@ -2298,7 +2298,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
 
 # eof #########################################################################

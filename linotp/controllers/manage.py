@@ -111,7 +111,7 @@ class ManageController(BaseController):
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
         finally:
             log.debug("[__before__::%r] done", action)
@@ -249,7 +249,7 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.error("[index] Error during checking policies: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as ex:
             log.error("[index] failed! %r", ex)
@@ -499,12 +499,12 @@ class ManageController(BaseController):
                 "[tokenview_flexi] Error during checking policies: %r", pe
             )
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[tokenview_flexi] failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def userview_flexi(self):
@@ -640,12 +640,12 @@ class ManageController(BaseController):
                 "[userview_flexi] Error during checking policies: %r", pe
             )
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[userview_flexi] failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def tokeninfo(self):
@@ -716,12 +716,12 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.error("[tokeninfo] Error during checking policies: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[tokeninfo] failed! %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def help(self, id=None):
@@ -765,7 +765,7 @@ class ManageController(BaseController):
         except Exception as exx:
             log.error("[help] Error loading helpfile: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     # ------------------------------------------------------------------------ -
     @methods(["GET"])
@@ -796,7 +796,7 @@ class ManageController(BaseController):
             log.error("manage/context failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
 
 # ###########################################################

@@ -89,7 +89,7 @@ class ReportingController(BaseController):
         except Exception as exception:
             log.error(exception)
             db.session.rollback()
-            return sendError(response, exception, context="before")
+            return sendError(exception, context="before")
 
     @staticmethod
     def __after__(response):
@@ -110,7 +110,7 @@ class ReportingController(BaseController):
         except Exception as exception:
             log.error(exception)
             db.session.rollback()
-            return sendError(response, exception, context="after")
+            return sendError(exception, context="after")
 
     @deprecated_methods(["POST"])
     def maximum(self):
@@ -173,12 +173,12 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
         finally:
             db.session.close()
@@ -303,12 +303,12 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
     @methods(["POST"])
     def delete_all(self):
@@ -370,12 +370,12 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
     @methods(["POST"])
     def delete_before(self):
@@ -431,17 +431,17 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except ValueError as value_error:
             log.error(value_error)
             db.session.rollback()
-            return sendError(response, value_error, 1)
+            return sendError(value_error, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
     @deprecated_methods(["POST"])
     def show(self):
@@ -545,14 +545,14 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except ValueError as value_error:
             log.error(value_error)
             db.session.rollback()
-            return sendError(response, value_error, 1)
+            return sendError(value_error, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)

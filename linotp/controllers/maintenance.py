@@ -123,7 +123,7 @@ class MaintenanceController(BaseController):
         except Exception as exx:
             db.session.rollback()
             log.error(exx)
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @deprecated_methods(["POST"])
     def check_status(self):

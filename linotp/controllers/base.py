@@ -242,7 +242,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             CSRFError,
         ):
             log.error("jwt_check: Failed JWT authentication")
-            response = sendError(None, "Not authenticated")
+            response = sendError("Not authenticated")
             response.status_code = 401
             return response
 

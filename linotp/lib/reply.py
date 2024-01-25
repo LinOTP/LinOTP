@@ -143,7 +143,7 @@ def _get_httperror_from_params(request):
     return httperror
 
 
-def sendError(_response, exception, id=1, context=None):
+def sendError(exception, id=1, context=None):
     """
     sendError - return a HTML or JSON error result document
 

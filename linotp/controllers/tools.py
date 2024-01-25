@@ -86,12 +86,12 @@ class ToolsController(BaseController):
         except PolicyException as exx:
             log.error("policy failed %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
     @staticmethod
     def __after__(response):
@@ -111,7 +111,7 @@ class ToolsController(BaseController):
         except Exception as exx:
             log.error(exx)
             db.session.rollback()
-            return sendError(response, exx, context="after")
+            return sendError(exx, context="after")
 
     @methods(["POST"])
     def setPassword(self):
@@ -167,7 +167,7 @@ class ToolsController(BaseController):
 
             log.error(exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def migrate_resolver(self):
@@ -212,7 +212,7 @@ class ToolsController(BaseController):
         except Exception as e:
             log.error("migrate resolver failed")
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(e, 1)
 
     @methods(["POST"])
     def import_users(self):
@@ -393,14 +393,14 @@ class ToolsController(BaseController):
 
             db.session.rollback()
 
-            return sendError(response, "%r" % pexx, 1)
+            return sendError("%r" % pexx, 1)
 
         except Exception as exx:
             log.error("Error during user import: %r", exx)
 
             db.session.rollback()
 
-            return sendError(response, exx)
+            return sendError(exx)
 
         finally:
             log.debug("done")
