@@ -213,7 +213,7 @@ def unauthorized(response_proxy, exception, status=401):
     return Unauthorized(response=response)
 
 
-def sendResult(response_proxy, obj, id=1, opt=None, status=True):
+def sendResult(obj, id=1, opt=None, status=True):
     """extend the standard sendResult to handle cookies"""
 
     response = sendResponse(obj=obj, id=id, opt=opt, status=status)
@@ -327,7 +327,6 @@ class UserserviceController(BaseController):
         # finally check the validty of the session
 
         if not check_session(request, g.authUser, g.client):
-
             raise unauthorized(self.response, _("No valid session"))
 
         # ------------------------------------------------------------------ --
@@ -510,7 +509,7 @@ class UserserviceController(BaseController):
                     "login"
                 )
                 g.audit["success"] = False
-                return sendResult(self.response, False, 0)
+                return sendResult(False, 0)
 
             uid = "%s@%s" % (user.login, user.realm)
 
@@ -526,7 +525,7 @@ class UserserviceController(BaseController):
                 log.info("Missing password for user %r", uid)
                 g.audit["action_detail"] = "Missing password for user %r" % uid
                 g.audit["success"] = False
-                return sendResult(self.response, False, 0)
+                return sendResult(False, 0)
 
             (otp, passw) = password.split(":")
             otp = base64.b32decode(otp)
@@ -548,7 +547,7 @@ class UserserviceController(BaseController):
                     "User %r failed to authenticate!" % uid
                 )
                 g.audit["success"] = False
-                return sendResult(self.response, False, 0)
+                return sendResult(False, 0)
 
             # -------------------------------------------------------------- --
 
@@ -569,7 +568,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(self.response, True, 0)
+            return sendResult(True, 0)
 
         except Exception as exx:
             g.audit["info"] = ("%r" % exx)[:80]
@@ -656,7 +655,7 @@ class UserserviceController(BaseController):
             g.audit["info"] = "User %r authenticated from otp" % user
 
             db.session.commit()
-            return sendResult(self.response, res, 0)
+            return sendResult(res, 0)
 
         # -------------------------------------------------------------- --
 
@@ -732,7 +731,7 @@ class UserserviceController(BaseController):
                 reply["transactionId"] = transaction_id
 
             db.session.commit()
-            return sendResult(self.response, False, 0, opt=reply)
+            return sendResult(False, 0, opt=reply)
 
         # -------------------------------------------------------------- --
 
@@ -740,7 +739,7 @@ class UserserviceController(BaseController):
 
         if not res and not reply:
             db.session.commit()
-            return sendResult(self.response, False, 0)
+            return sendResult(False, 0)
 
     def _login_with_cookie_challenge(self, cookie, params):
         """
@@ -800,7 +799,7 @@ class UserserviceController(BaseController):
             g.audit["info"] = "%r logged in " % user
 
         db.session.commit()
-        return sendResult(self.response, res, 0)
+        return sendResult(res, 0)
 
     def _login_with_cookie_challenge_check_status(self, user, transid):
         """Check status of the login challenge.
@@ -842,7 +841,7 @@ class UserserviceController(BaseController):
         detail = get_transaction_detail(transid)
 
         db.session.commit()
-        return sendResult(self.response, verified, opt=detail)
+        return sendResult(verified, opt=detail)
 
     def _login_with_otp(self, user, passw, param):
         """
@@ -859,7 +858,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = False
 
             db.session.commit()
-            return sendResult(self.response, False, 0)
+            return sendResult(False, 0)
 
         # ------------------------------------------------------------------ --
 
@@ -893,7 +892,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = res
 
             db.session.commit()
-            return sendResult(self.response, res, 0, reply)
+            return sendResult(res, 0, reply)
 
         # ------------------------------------------------------------------ --
 
@@ -927,7 +926,7 @@ class UserserviceController(BaseController):
         g.audit["success"] = True
         db.session.commit()
 
-        return sendResult(self.response, False, 0, opt=reply)
+        return sendResult(False, 0, opt=reply)
 
     def _login_with_password_only(self, user, password):
         """
@@ -956,7 +955,7 @@ class UserserviceController(BaseController):
 
         db.session.commit()
 
-        return sendResult(self.response, res, 0)
+        return sendResult(res, 0)
 
     @deprecated_methods(["GET"])
     def login(self):
@@ -1062,7 +1061,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = False
 
             db.session.rollback()
-            return sendResult(self.response, False, 0)
+            return sendResult(False, 0)
 
     def _default_auth_check(self, user, password, otp=None):
         """
@@ -1158,7 +1157,7 @@ class UserserviceController(BaseController):
             )
 
             db.session.commit()
-            return sendResult(self.response, tokenArray, 0)
+            return sendResult(tokenArray, 0)
 
         except Exception as exx:
             log.error("failed with error: %r", exx)
@@ -1178,13 +1177,12 @@ class UserserviceController(BaseController):
         """
 
         try:
-
             uinfo = get_userinfo(g.authUser)
 
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(self.response, uinfo, 0)
+            return sendResult(uinfo, 0)
 
         except Exception as exx:
             db.session.rollback()
@@ -1214,7 +1212,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(self.response, True, 0)
+            return sendResult(True, 0)
 
         except Exception as exx:
             db.session.rollback()
@@ -1244,7 +1242,7 @@ class UserserviceController(BaseController):
         """
         try:
             pre_context = get_pre_context(g.client)
-            return sendResult(self.response, True, opt=pre_context)
+            return sendResult(True, opt=pre_context)
 
         except Exception as exx:
             log.error("pre_context failed with error: %r", exx)
@@ -1268,7 +1266,7 @@ class UserserviceController(BaseController):
 
         try:
             context = get_context(config, g.authUser, g.client)
-            return sendResult(self.response, True, opt=context)
+            return sendResult(True, opt=context)
 
         except Exception as e:
             log.error("[context] failed with error: %r", e)
@@ -1320,7 +1318,7 @@ class UserserviceController(BaseController):
                 g.audit["success"] = ret
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("[enable] policy failed %r", pe)
@@ -1384,7 +1382,7 @@ class UserserviceController(BaseController):
                 g.audit["success"] = ret
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("policy failed %r", pe)
@@ -1439,7 +1437,7 @@ class UserserviceController(BaseController):
                 g.audit["success"] = ret
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("[userdelete] policy failed: %r", pe)
@@ -1494,7 +1492,7 @@ class UserserviceController(BaseController):
                 g.audit["success"] = ret
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
@@ -1552,7 +1550,7 @@ class UserserviceController(BaseController):
                 g.audit["realm"] = g.authUser.realm
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
@@ -1627,7 +1625,7 @@ class UserserviceController(BaseController):
                 g.audit["success"] = ret
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pex:
             log.error("policy failed: %r", pex)
@@ -1680,7 +1678,7 @@ class UserserviceController(BaseController):
                 g.audit["success"] = ret
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pex:
             log.error("policy failed: %r", pex)
@@ -1739,7 +1737,7 @@ class UserserviceController(BaseController):
                 g.audit["success"] = ret
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
@@ -1902,7 +1900,7 @@ class UserserviceController(BaseController):
                 )
 
                 db.session.commit()
-                return sendResult(self.response, res)
+                return sendResult(res)
 
             # -------------------------------------------------------------- --
 
@@ -1910,9 +1908,7 @@ class UserserviceController(BaseController):
                 detail = get_transaction_detail(transaction_id)
 
                 db.session.commit()
-                return sendResult(
-                    self.response, detail.get("valid_tan", False), opt=detail
-                )
+                return sendResult(detail.get("valid_tan", False), opt=detail)
 
             # -------------------------------------------------------------- --
 
@@ -1923,7 +1919,7 @@ class UserserviceController(BaseController):
                 )
 
                 db.session.commit()
-                return sendResult(self.response, res)
+                return sendResult(res)
 
             # -------------------------------------------------------------- --
 
@@ -2008,7 +2004,7 @@ class UserserviceController(BaseController):
                 # close down the session and submit the result
 
                 db.session.commit()
-                return sendResult(self.response, False, opt=detail_response)
+                return sendResult(False, opt=detail_response)
 
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
@@ -2102,7 +2098,7 @@ class UserserviceController(BaseController):
             checkPolicyPost("selfservice", "userassign", param, g.authUser)
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("[userassign] policy failed: %r", pe)
@@ -2159,7 +2155,7 @@ class UserserviceController(BaseController):
             g.audit["serial"] = serial
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
@@ -2345,7 +2341,7 @@ class UserserviceController(BaseController):
                 hparam["qr"] = param.get("qr") or "html"
                 return sendQRImageResult(response, rdata, hparam)
             else:
-                return sendResult(self.response, ret, opt=response_detail)
+                return sendResult(ret, opt=response_detail)
 
         except PolicyException as pe:
             log.error("[userinit] policy failed: %r", pe)
@@ -2586,7 +2582,6 @@ class UserserviceController(BaseController):
 
             db.session.commit()
             return sendResult(
-                self.response,
                 {"init": ret1, "setpin": False, "oathtoken": ret},
             )
 
@@ -2673,7 +2668,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(self.response, ret, 0)
+            return sendResult(ret, 0)
 
         except PolicyException as pe:
             log.error("[usergetmultiotp] policy failed: %r", pe)
@@ -2849,9 +2844,7 @@ class UserserviceController(BaseController):
             g.audit["realm"] = g.authUser.realm
 
             db.session.commit()
-            return sendResult(
-                self.response, {"activate": True, "ocratoken": ret}
-            )
+            return sendResult({"activate": True, "ocratoken": ret})
 
         except PolicyException as pe:
             log.error("policy failed: %r", pe)
@@ -2925,7 +2918,7 @@ class UserserviceController(BaseController):
             g.audit["realm"] = g.authUser.realm
 
             db.session.commit()
-            return sendResult(self.response, value, opt)
+            return sendResult(value, opt)
 
         except PolicyException as pe:
             log.error("[userfinishocra2token] policy failed: %r", pe)
@@ -3014,7 +3007,7 @@ class UserserviceController(BaseController):
                     g.audit["success"] = False
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("[token_call] policy failed: %r", pe)
@@ -3089,7 +3082,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = ret
 
             db.session.commit()
-            return sendResult(self.response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pex:
             log.error("[setdescription] policy failed")
