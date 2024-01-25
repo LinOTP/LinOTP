@@ -517,7 +517,7 @@ def json2xml(json_obj, line_padding=""):
     return "%s%s" % (line_padding, json_obj)
 
 
-def sendXMLResult(_response, obj, id=1, opt=None):
+def sendXMLResult(obj, id=1, opt=None):
     """
     send the result as an xml format
     """
@@ -545,7 +545,7 @@ def sendXMLResult(_response, obj, id=1, opt=None):
     return Response(response=res, status=200, mimetype="text/xml")
 
 
-def sendXMLError(_response, exception, id=1):
+def sendXMLError(exception, id=1):
     if not hasattr(exception, "getId"):
         errId = -311
         errDesc = str(exception)
