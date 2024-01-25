@@ -54,10 +54,10 @@ import logging
 from flask_babel import gettext as _
 from werkzeug.exceptions import Forbidden, Unauthorized
 
-from flask import current_app, g
+from flask import Response, current_app, g
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import config, request, response
+from linotp.flap import config, request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.apps import create_google_authenticator, create_oathtoken_url
@@ -2732,7 +2732,7 @@ class UserserviceController(BaseController):
                 ],
             )
 
-            response.content_type = "application/json"
+            Response.content_type = "application/json"
 
             if not total:
                 total = len(lines)

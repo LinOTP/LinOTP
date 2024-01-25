@@ -45,7 +45,7 @@ from flask import (
 )
 
 from linotp.controllers.base import BaseController, JWTMixin, methods
-from linotp.flap import config, request, response
+from linotp.flap import config, request
 from linotp.lib import deprecated_methods
 from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.challenges import Challenges

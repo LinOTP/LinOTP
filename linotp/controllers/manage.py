@@ -36,13 +36,13 @@ import os
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
 
-from flask import current_app, g, redirect, url_for
+from flask import Response, current_app, g, redirect, url_for
 
 import linotp
 from linotp.controllers.base import BaseController, jwt_exempt, methods
 from linotp.flap import config
 from linotp.flap import render_mako as render
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.config import getFromConfig
@@ -326,7 +326,7 @@ class ManageController(BaseController):
         If this action was called, the user hasn't created a custom css yet. To avoid hitting
         the debug console over and over, we serve an empty file.
         """
-        response.headers["Content-type"] = "text/css"
+        Response.headers["Content-type"] = "text/css"
         return ""
 
     def _flexi_error(self, error):

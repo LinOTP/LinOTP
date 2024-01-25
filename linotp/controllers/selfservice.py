@@ -45,7 +45,7 @@ from linotp.controllers.base import BaseController
 from linotp.controllers.userservice import get_auth_user, getTokenForUser
 from linotp.flap import config
 from linotp.flap import render_mako as render
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context

@@ -31,8 +31,9 @@ U2F controller - interface to the list of valid facets
 
 import json
 
+from flask import Response
+
 from linotp.controllers.base import BaseController
-from linotp.flap import response
 from linotp.lib import deprecated_methods
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicy
@@ -79,7 +80,7 @@ class U2FController(BaseController):
         valid_facets = valid_facets_action_value.split(";")
 
         # Prepare the response
-        response.content_type = (
+        Response.content_type = (
             "application/fido.trusted-­apps+json"  # as specified by FIDO
         )
         response_dict = {

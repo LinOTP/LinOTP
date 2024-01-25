@@ -12,7 +12,6 @@ from mako.lookup import TemplateLookup
 from werkzeug.local import LocalProxy
 
 import flask
-from flask import Response as response
 from flask import abort, redirect
 
 from linotp.lib.fs_utils import ensure_dir

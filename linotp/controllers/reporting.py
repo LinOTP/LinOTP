@@ -38,7 +38,7 @@ from werkzeug.datastructures import Headers
 from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.policy import (

@@ -36,7 +36,7 @@ from werkzeug.datastructures import FileStorage
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context

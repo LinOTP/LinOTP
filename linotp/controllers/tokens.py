@@ -6,7 +6,7 @@ from difflib import get_close_matches
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController, JWTMixin
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult

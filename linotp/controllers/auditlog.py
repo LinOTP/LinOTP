@@ -3,7 +3,7 @@ import logging
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController, JWTMixin
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.lib.audit.iterator import AuditQuery
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre

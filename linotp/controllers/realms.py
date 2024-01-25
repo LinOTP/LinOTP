@@ -4,7 +4,7 @@ from pprint import pprint
 from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController, JWTMixin
-from linotp.flap import config, request, response
+from linotp.flap import config, request
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPost, checkPolicyPre
 from linotp.lib.realm import getRealms
