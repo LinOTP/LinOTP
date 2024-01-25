@@ -342,7 +342,7 @@ class AdminController(BaseController, JWTMixin):
             db.session.commit()
 
             if output_format == "csv":
-                return sendCSVResult(response, result)
+                return sendCSVResult(result)
             else:
                 return sendResult(result)
 

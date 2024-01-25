@@ -439,13 +439,10 @@ def sendResultIterator(
     yield "] " + postfix
 
 
-def sendCSVResult(
-    response, obj, flat_lines=False, filename="linotp-tokendata.csv"
-):
+def sendCSVResult(obj, flat_lines=False, filename="linotp-tokendata.csv"):
     """
     returns a CSV document of the input data (like in /admin/show)
 
-    :param response: The pylons response object
     :param obj: The data, that gets serialized as CSV
     :type obj: JSON object
     :param flat_lines: If True the object only contains a list of the
