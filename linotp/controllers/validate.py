@@ -223,7 +223,7 @@ class ValidateController(BaseController):
                     log.warning("failed to send QRImage: %r ", exc)
                     return sendQRImageResult(response, opt, param)
             else:
-                return sendResult(response, ok, 0, opt=opt)
+                return sendResult(ok, 0, opt=opt)
 
         except Exception as exx:
             log.error("[check] validate/check failed: %r", exx)
@@ -231,7 +231,7 @@ class ValidateController(BaseController):
             # SMS, we write this to the detail info.
             g.audit["info"] = "%r" % exx
             db.session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(False, 0)
 
         finally:
             db.session.close()
@@ -323,13 +323,13 @@ class ValidateController(BaseController):
             g.audit["info"] = str(opt)
 
             db.session.commit()
-            return sendResult(response, ok, 0, opt=opt)
+            return sendResult(ok, 0, opt=opt)
 
         except Exception as exx:
             log.error("check_status failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(False, 0)
 
     @deprecated_methods(["GET"])
     def check_yubikey(self):
@@ -380,13 +380,13 @@ class ValidateController(BaseController):
                 ok = False
 
             db.session.commit()
-            return sendResult(response, ok, 0, opt=opt)
+            return sendResult(ok, 0, opt=opt)
 
         except Exception as exx:
             log.error("[check_yubikey] validate/check_yubikey failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(False, 0)
 
     def _check_url(self):
         """
@@ -424,7 +424,7 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.error("[check_url] validate/check_url failed: %r", exx)
             db.session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(False, 0)
 
     @deprecated_methods(["GET"])
     def samlcheck(self):
@@ -481,14 +481,12 @@ class ValidateController(BaseController):
                     log.debug(f"[samlcheck] {attributes}")
 
             db.session.commit()
-            return sendResult(
-                response, {"auth": ok, "attributes": attributes}, 0, opt
-            )
+            return sendResult({"auth": ok, "attributes": attributes}, 0, opt)
 
         except Exception as exx:
             log.error("[samlcheck] validate/check failed: %r", exx)
             db.session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(False, 0)
 
     @deprecated_methods(["GET"])
     def check_t(self):
@@ -550,13 +548,13 @@ class ValidateController(BaseController):
                     log.warning("failed to send QRImage: %r ", exc)
                     return sendQRImageResult(response, opt, param)
             else:
-                return sendResult(response, value, 1, opt=opt)
+                return sendResult(value, 1, opt=opt)
 
         except Exception as exx:
             log.error("[check_t] validate/check_t failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(False, 0)
 
     # ------------------------------------------------------------------------ -
     @deprecated_methods(["GET"])
@@ -615,14 +613,14 @@ class ValidateController(BaseController):
             g.audit["success"] = ok
             db.session.commit()
 
-            return sendResult(response, ok)
+            return sendResult(ok)
 
         except Exception as exx:
             log.error("validate/accept_transaction failed: %r", exx)
             g.audit["info"] = "%r" % exx
             db.session.rollback()
 
-            return sendResult(response, False, 0)
+            return sendResult(False, 0)
 
     # ------------------------------------------------------------------------ -
     @deprecated_methods(["GET"])
@@ -681,14 +679,14 @@ class ValidateController(BaseController):
             g.audit["success"] = ok
             db.session.commit()
 
-            return sendResult(response, ok)
+            return sendResult(ok)
 
         except Exception as exx:
             log.error("validate/reject_transaction failed: %r", exx)
             g.audit["info"] = "%r" % exx
             db.session.rollback()
 
-            return sendResult(response, False, 0)
+            return sendResult(False, 0)
 
     @deprecated_methods(["GET"])
     def check_s(self):
@@ -766,13 +764,13 @@ class ValidateController(BaseController):
                     log.warning("failed to send QRImage: %r ", exc)
                     return sendQRImageResult(response, opt, param)
             else:
-                return sendResult(response, ok, 0, opt=opt)
+                return sendResult(ok, 0, opt=opt)
 
         except Exception as exx:
             log.error("[check_s] validate/check_s failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
-            return sendResult(response, False, id=0, status=False)
+            return sendResult(False, id=0, status=False)
 
     @deprecated_methods(["GET"])
     def simplecheck(self):
@@ -841,7 +839,7 @@ class ValidateController(BaseController):
         :raises Exception:
             if an error occurs status in the response is set to false
         """
-        return sendResult(response, True, 0)
+        return sendResult(True, 0)
 
     def fail(self):
         """
@@ -853,7 +851,7 @@ class ValidateController(BaseController):
         :raises Exception:
             if an error occurs status in the response is set to false
         """
-        return sendResult(response, False, 0)
+        return sendResult(False, 0)
 
     @deprecated_methods(["GET"])
     def smspin(self):
@@ -909,7 +907,7 @@ class ValidateController(BaseController):
                 raise Exception(message)
 
             db.session.commit()
-            return sendResult(response, ret, opt)
+            return sendResult(ret, opt)
 
         except Exception as exx:
             log.error("[smspin] validate/smspin failed: %r", exx)
@@ -917,7 +915,7 @@ class ValidateController(BaseController):
             # the SMS, we write this to the detail info.
             g.audit["info"] = str(exx)
             db.session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(False, 0)
 
     @deprecated_methods(["GET"])
     def pair(self):
@@ -996,7 +994,7 @@ class ValidateController(BaseController):
             g.audit["serial"] = token.getSerial()
 
             db.session.commit()
-            return sendResult(response, False)
+            return sendResult(False)
 
         # ------------------------------------------------------------------- --
 
@@ -1004,7 +1002,7 @@ class ValidateController(BaseController):
             log.error("validate/pair failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
-            return sendResult(response, False, 0, status=False)
+            return sendResult(False, 0, status=False)
 
 
 # eof #########################################################################

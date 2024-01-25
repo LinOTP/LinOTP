@@ -136,7 +136,7 @@ class MigrateController(BaseController):
             for val in ["Token", "Config"]:
                 result[val] = backup_data[val]
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as pe:
             db.session.rollback()
@@ -258,7 +258,7 @@ class MigrateController(BaseController):
 
             db.session.commit()
             log.debug("[restore] success")
-            return sendResult(response, counters)
+            return sendResult(counters)
 
         except PolicyException as pe:
             log.error("[restore] policy failed: %r", pe)

@@ -204,7 +204,7 @@ class AuditlogController(BaseController, JWTMixin):
             db.session.commit()
 
             # return a list of the audit log entries
-            return sendResult(response, result)
+            return sendResult(result)
 
         except Exception as ex:
             log.error("[getAuditEntries] error getting audit entries: %r", ex)

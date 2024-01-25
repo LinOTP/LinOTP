@@ -158,7 +158,6 @@ class ToolsController(BaseController):
             g.audit["success"] = True
 
             return sendResult(
-                response,
                 obj=True,
                 opt={"detail": ("password updated for %r" % username)},
             )
@@ -208,7 +207,7 @@ class ToolsController(BaseController):
             ret = mg.migrate_resolver(src=src_resolver, target=target_resolver)
 
             db.session.commit()
-            return sendResult(response, ret)
+            return sendResult(ret)
 
         except Exception as e:
             log.error("migrate resolver failed")
@@ -377,7 +376,7 @@ class ToolsController(BaseController):
             )
 
             if dryrun:
-                return sendResult(response, result)
+                return sendResult(result)
 
             # -------------------------------------------------------------- --
 
@@ -387,7 +386,7 @@ class ToolsController(BaseController):
 
             db.session.commit()
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as pexx:
             log.error("Error during user import: %r", pexx)

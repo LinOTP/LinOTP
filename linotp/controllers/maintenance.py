@@ -118,7 +118,7 @@ class MaintenanceController(BaseController):
 
             set_logging_level(name, level)
             db.session.commit()
-            return sendResult(response, True)
+            return sendResult(True)
 
         except Exception as exx:
             db.session.rollback()
@@ -146,7 +146,7 @@ class MaintenanceController(BaseController):
             config_count = db.session.query(Config).count()
             opt["config"] = {"entries": config_count}
 
-            return sendResult(response, True, 0, opt=opt)
+            return sendResult(True, 0, opt=opt)
 
         except Exception as exx:
             db.session.rollback()  # why?

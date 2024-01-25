@@ -151,7 +151,7 @@ class ResolversController(BaseController, JWTMixin):
             db.session.commit()
 
             # return a list of the resolvers
-            return sendResult(response, resolvers)
+            return sendResult(resolvers)
 
         except Exception as ex:
             log.error("[getResolvers] error getting resolvers: %r", ex)
@@ -327,7 +327,7 @@ class ResolversController(BaseController, JWTMixin):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(response, res)
+            return sendResult(res)
 
         except Exception as exception:
             log.error("[get_users] failed: %r", exception)
@@ -433,7 +433,7 @@ class ResolversController(BaseController, JWTMixin):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except UserNotFoundException as user_not_found_exception:
             log.error(f"[get_user] failed: {user_not_found_exception}")

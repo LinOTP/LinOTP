@@ -216,9 +216,7 @@ def unauthorized(response_proxy, exception, status=401):
 def sendResult(response_proxy, obj, id=1, opt=None, status=True):
     """extend the standard sendResult to handle cookies"""
 
-    response = sendResponse(
-        response=None, obj=obj, id=id, opt=opt, status=status
-    )
+    response = sendResponse(obj=obj, id=id, opt=opt, status=status)
 
     add_and_delete_cookies(response)
 

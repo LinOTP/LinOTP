@@ -168,7 +168,7 @@ class ReportingController(BaseController):
                     result[realm][stat] = get_max_token_count_in_period(
                         realm, status=stat, start=start, end=end
                     )
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
@@ -298,7 +298,7 @@ class ReportingController(BaseController):
                 "to": end.isoformat(),
             }
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
@@ -365,7 +365,7 @@ class ReportingController(BaseController):
 
             result = delete(realms=realms, status=status)
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
@@ -426,7 +426,7 @@ class ReportingController(BaseController):
 
             result = delete(date=border_day, realms=realms, status=status)
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)

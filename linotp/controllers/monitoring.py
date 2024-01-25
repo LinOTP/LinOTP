@@ -168,7 +168,7 @@ class MonitoringController(BaseController):
             result["Realms"] = realm_info
 
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
@@ -216,7 +216,7 @@ class MonitoringController(BaseController):
 
             result["netto"] = total - ldap - sql - passwd - policies - realms
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except Exception as exception:
             log.error(exception)
@@ -250,7 +250,7 @@ class MonitoringController(BaseController):
             monit_handler = MonitorHandler()
             res["encryption"] = monit_handler.check_encryption()
 
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exception:
             log.error(exception)
@@ -278,7 +278,7 @@ class MonitoringController(BaseController):
                 if err.type != "UNLICENSED":
                     raise err
                 opt = {"valid": False, "message": "%r" % err}
-                return sendResult(response, {}, 1, opt=opt)
+                return sendResult({}, 1, opt=opt)
 
             # Add Extra info
             # if needed; use details = None ... for no details!)...
@@ -288,7 +288,7 @@ class MonitoringController(BaseController):
             )
             if not license_ok:
                 res = {"valid": license_ok, "message": license_msg}
-                return sendResult(response, res, 1)
+                return sendResult(res, 1)
 
             details = {"valid": license_ok}
 
@@ -304,7 +304,7 @@ class MonitoringController(BaseController):
                 res["token-active"] = active_tokencount
                 res["token-left"] = res["token-num"] - active_tokencount
 
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exception:
             log.error(exception)
@@ -355,7 +355,7 @@ class MonitoringController(BaseController):
             result["Realms"] = realm_info
 
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
@@ -416,7 +416,7 @@ class MonitoringController(BaseController):
             result["Realms"] = realm_info
             result["total"] = monit_handl.active_users_total(realms)
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)

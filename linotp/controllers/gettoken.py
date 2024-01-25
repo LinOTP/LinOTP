@@ -147,7 +147,7 @@ class GettokenController(BaseController):
                     "utf-8"
                 )
             else:
-                return sendResult(response, ret, 0)
+                return sendResult(ret, 0)
 
         except PolicyException as pe:
             log.error("[getotp] gettoken/getotp policy failed: %r", pe)
@@ -285,7 +285,7 @@ class GettokenController(BaseController):
                 ret["pass"] = passw
 
             db.session.commit()
-            return sendResult(response, ret, 0)
+            return sendResult(ret, 0)
 
         except PolicyException as pe:
             log.error("[getotp] gettoken/getotp policy failed: %r", pe)

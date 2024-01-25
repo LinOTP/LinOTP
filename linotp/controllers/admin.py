@@ -201,7 +201,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["success"] = len(ret) > 0
 
             db.session.commit()
-            return sendResult(response, ret)
+            return sendResult(ret)
 
         except PolicyException as pe:
             log.error("Error getting token owner. Exception was %r", pe)
@@ -344,7 +344,7 @@ class AdminController(BaseController, JWTMixin):
             if output_format == "csv":
                 return sendCSVResult(response, result)
             else:
-                return sendResult(response, result)
+                return sendResult(result)
 
         except PolicyException as pe:
             log.error("[show] policy failed: %r", pe)
@@ -432,7 +432,7 @@ class AdminController(BaseController, JWTMixin):
                 opt_result_dict["message"] = msg
 
             db.session.commit()
-            return sendResult(response, ret, opt=opt_result_dict)
+            return sendResult(ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error("[remove] policy failed %r", pe)
@@ -500,7 +500,7 @@ class AdminController(BaseController, JWTMixin):
             checkPolicyPost("admin", "enable", param, user=user)
 
             db.session.commit()
-            return sendResult(response, ret, opt=opt_result_dict)
+            return sendResult(ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error("[enable] policy failed %r", pe)
@@ -571,7 +571,7 @@ class AdminController(BaseController, JWTMixin):
             ret["user_resolver"] = resolverClass
 
             db.session.commit()
-            return sendResult(response, ret, 1)
+            return sendResult(ret, 1)
 
         except PolicyException as pe:
             log.error("[disable] policy failed %r", pe)
@@ -639,7 +639,7 @@ class AdminController(BaseController, JWTMixin):
                 opt_result_dict["message"] = "No tokens for this user"
 
             db.session.commit()
-            return sendResult(response, ret, opt=opt_result_dict)
+            return sendResult(ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error("[disable] policy failed %r", pe)
@@ -692,9 +692,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["action_detail"] = "%r - %r" % (unique, new_serial)
 
             db.session.commit()
-            return sendResult(
-                response, {"unique": unique, "new_serial": new_serial}, 1
-            )
+            return sendResult({"unique": unique, "new_serial": new_serial}, 1)
 
         except PolicyException as pe:
             log.error("[check_serial] policy failed %r", pe)
@@ -872,7 +870,7 @@ class AdminController(BaseController, JWTMixin):
                 hparam["qr"] = params.get("qr") or "html"
                 return sendQRImageResult(response, rdata, hparam)
             else:
-                return sendResult(response, ret, opt=response_detail)
+                return sendResult(ret, opt=response_detail)
 
         # ------------------------------------------------------------------- --
 
@@ -945,7 +943,7 @@ class AdminController(BaseController, JWTMixin):
                 opt_result_dict["message"] = "No tokens for this user"
 
             db.session.commit()
-            return sendResult(response, ret, opt=opt_result_dict)
+            return sendResult(ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error("[unassign] policy failed %r", pe)
@@ -1015,7 +1013,7 @@ class AdminController(BaseController, JWTMixin):
                 g.audit["realm"] = getTokenRealms(serial)
 
             db.session.commit()
-            return sendResult(response, res, len(serials))
+            return sendResult(res, len(serials))
 
         except PolicyException as pe:
             log.error("[assign] policy failed %r", pe)
@@ -1114,7 +1112,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["success"] = count
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("[setPin] policy failed %r, %r", msg, pe)
@@ -1255,7 +1253,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["action_detail"] = ("%r " % serials)[:80]
 
             db.session.commit()
-            return sendResult(response, serials, 1)
+            return sendResult(serials, 1)
 
         except PolicyException as pex:
             log.error("policy failed%r", pex)
@@ -1614,7 +1612,7 @@ class AdminController(BaseController, JWTMixin):
                 g.audit["realm"] = getTokenRealms(serial)
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("[set] policy failed: %s, %r", msg, pe)
@@ -1698,7 +1696,7 @@ class AdminController(BaseController, JWTMixin):
                 g.audit["realm"] = getDefaultRealm()
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("[resync] policy failed %r", pe)
@@ -1770,7 +1768,7 @@ class AdminController(BaseController, JWTMixin):
                 usage["searchfields"] = getSearchFields(user)
                 res = usage
                 db.session.commit()
-                return sendResult(response, res)
+                return sendResult(res)
 
             list_params = {}
             list_params.update(param)
@@ -1858,7 +1856,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["realm"] = realmList
 
             db.session.commit()
-            return sendResult(response, ret, 1)
+            return sendResult(ret, 1)
 
         except PolicyException as pe:
             log.error("[tokenrealm] policy failed %r", pe)
@@ -1917,7 +1915,7 @@ class AdminController(BaseController, JWTMixin):
                 opt_result_dict["message"] = "No tokens for this user"
 
             db.session.commit()
-            return sendResult(response, ret, opt=opt_result_dict)
+            return sendResult(ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error("[reset] policy failed %r", pe)
@@ -1987,7 +1985,7 @@ class AdminController(BaseController, JWTMixin):
             db.session.commit()
             # Success
             if 1 == ret:
-                return sendResult(response, True)
+                return sendResult(True)
             else:
                 return sendError(
                     response, "copying token pin failed: %s" % err_string
@@ -2064,7 +2062,7 @@ class AdminController(BaseController, JWTMixin):
             db.session.commit()
             # Success
             if 1 == ret:
-                return sendResult(response, True)
+                return sendResult(True)
             else:
                 return sendError(
                     response, "copying token user failed: %s" % err_string
@@ -2120,7 +2118,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["realm"] = getTokenRealms(g.audit["serial"])
 
             db.session.commit()
-            return sendResult(response, res)
+            return sendResult(res)
 
         except PolicyException as pe:
             log.error("[losttoken] Policy Exception: %r", pe)
@@ -2544,7 +2542,7 @@ class AdminController(BaseController, JWTMixin):
             res = {"result": status, "desc": desc}
 
             db.session.commit()
-            return sendResult(response, res)
+            return sendResult(res)
 
         except Exception as exx:
             log.error("[testresolver] failed: %r", exx)
@@ -2598,7 +2596,7 @@ class AdminController(BaseController, JWTMixin):
             if not tokens:
                 g.audit["success"] = False
                 g.audit["info"] = "no token found"
-                return sendResult(response, False)
+                return sendResult(False)
 
             token = tokens[0]
 
@@ -2616,7 +2614,7 @@ class AdminController(BaseController, JWTMixin):
                 )
 
             db.session.commit()
-            return sendResult(response, res, opt=opt)
+            return sendResult(res, opt=opt)
 
             # -------------------------------------------------------------- --
 
@@ -2628,7 +2626,7 @@ class AdminController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[totp_lookup] failed: %r", exx)
             db.session.rollback()
-            return sendResult(response, exx, 0)
+            return sendResult(exx, 0)
 
     @deprecated_methods(["POST"])
     def checkstatus(self):
@@ -2740,7 +2738,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["success"] = res
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except PolicyException as pe:
             log.error("[checkstatus] policy failed: %r", pe)
@@ -2750,7 +2748,7 @@ class AdminController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[checkstatus] failed: %r", exx)
             db.session.rollback()
-            return sendResult(response, exx, 0)
+            return sendResult(exx, 0)
 
     # ------------------------------------------------------------------------ -
     @methods(["POST"])
@@ -2813,7 +2811,7 @@ class AdminController(BaseController, JWTMixin):
 
             # ---------------------------------------------------------------- -
 
-            return sendResult(response, True)
+            return sendResult(True)
 
         # -------------------------------------------------------------------- -
 
@@ -2821,7 +2819,7 @@ class AdminController(BaseController, JWTMixin):
             log.error("admin/unpair failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
-            return sendResult(response, False, 0, status=False)
+            return sendResult(False, 0, status=False)
 
 
 # eof ########################################################################

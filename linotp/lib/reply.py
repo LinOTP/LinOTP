@@ -291,12 +291,10 @@ def sendError(_response, exception, id=1, context=None):
         return response
 
 
-def sendResult(response, obj, id=1, opt=None, status=True):
+def sendResult(obj, id=1, opt=None, status=True):
     """
     sendResult - return an json result document
 
-    :param response: the pylons response object
-    :type  response: response object
     :param obj:      simple result object like dict, string or list
     :type  obj:      dict or list or string/unicode
     :param  id:      id value, for future versions

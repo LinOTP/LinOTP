@@ -393,9 +393,7 @@ class JWTMixin(object):
                 continue
 
             response = sendResult(
-                None,
-                True,
-                opt={"message": f"Login successful for {username}"},
+                True, opt={"message": f"Login successful for {username}"}
             )
 
             access_token = create_access_token(
@@ -411,9 +409,7 @@ class JWTMixin(object):
             return response
 
         response = sendResult(
-            None,
-            False,
-            opt={"message": "Bad username or password"},
+            False, opt={"message": "Bad username or password"}
         )
         response.status_code = 401
         return response
@@ -427,7 +423,7 @@ class JWTMixin(object):
         """
         auth_user = getUserFromRequest()
         response = sendResult(
-            None, True, opt={"message": f"Logout successful for {auth_user}"}
+            True, opt={"message": f"Logout successful for {auth_user}"}
         )
 
         unset_jwt_cookies(response)

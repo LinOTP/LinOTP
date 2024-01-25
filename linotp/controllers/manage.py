@@ -492,7 +492,7 @@ class ManageController(BaseController):
 
             db.session.commit()
             # The flexi handler should support std LinOTP output
-            return sendResult(response, res)
+            return sendResult(res)
 
         except PolicyException as pe:
             log.error(
@@ -633,7 +633,7 @@ class ManageController(BaseController):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(response, res)
+            return sendResult(res)
 
         except PolicyException as pe:
             log.error(
@@ -790,7 +790,7 @@ class ManageController(BaseController):
                 "user": get_userinfo(user),
                 "permissions": logged_in_admin.getPermissions().parse_for_context_api(),
             }
-            return sendResult(response, True, opt=response_detail)
+            return sendResult(True, opt=response_detail)
 
         except Exception as exx:
             log.error("manage/context failed: %r", exx)

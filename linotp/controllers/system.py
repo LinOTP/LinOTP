@@ -257,7 +257,7 @@ class SystemController(BaseController):
                 raise ParameterError("Usage: %s" % description, id=77)
 
             db.session.commit()
-            return sendResult(response, res)
+            return sendResult(res)
 
         except Exception as exx:
             log.error("[setDefault] commit failed: %r", exx)
@@ -359,7 +359,7 @@ class SystemController(BaseController):
             log.debug(
                 "[setConfig] saved configuration: %r", list(param.keys())
             )
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except ValueError as exx:
             log.error("[setConfig] error saving config: %r", exx)
@@ -432,7 +432,7 @@ class SystemController(BaseController):
             g.audit["info"] = key
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[delConfig] error deleting config: %r", exx)
@@ -517,7 +517,7 @@ class SystemController(BaseController):
                 g.audit["info"] = "config key %s" % key
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[getConfig] error getting config: %r", exx)
@@ -549,7 +549,7 @@ class SystemController(BaseController):
             realms = getRealms(realm_name)
 
             db.session.commit()
-            return sendResult(response, realms, 1)
+            return sendResult(realms, 1)
 
         except PolicyException as pex:
             log.error("[getRealms] policy exception: %r", pex)
@@ -738,7 +738,7 @@ class SystemController(BaseController):
                 deleteResolver(previous_name)
 
             db.session.commit()
-            return sendResult(response, True, 1)
+            return sendResult(True, 1)
 
         except ResolverLoadConfigError as exx:
             log.error(
@@ -774,7 +774,7 @@ class SystemController(BaseController):
 
             g.audit["success"] = True
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[getResolvers] error getting resolvers: %r", exx)
@@ -844,7 +844,7 @@ class SystemController(BaseController):
             g.audit["info"] = resolver_name
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[delResolver] error deleting resolver: %r", exx)
@@ -885,7 +885,7 @@ class SystemController(BaseController):
             g.audit["info"] = resolver
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[getResolver] error getting resolver: %r", exx)
@@ -927,7 +927,7 @@ class SystemController(BaseController):
             g.audit["info"] = defRealm
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error(
@@ -958,7 +958,7 @@ class SystemController(BaseController):
             g.audit["info"] = defRealm
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[getDefaultRealm] return default realm failed: %r", exx)
@@ -1038,7 +1038,7 @@ class SystemController(BaseController):
             )
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             err = "Failed to set realm with %r " % param
@@ -1079,7 +1079,7 @@ class SystemController(BaseController):
             g.audit["success"] = True
             g.audit["info"] = realm
 
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[delRealm] error deleting realm: %r", exx)
@@ -1191,7 +1191,7 @@ class SystemController(BaseController):
                 g.audit["success"] = False
                 raise Exception("setPolicy failed: name and action required!")
 
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             db.session.rollback()
@@ -1355,7 +1355,7 @@ class SystemController(BaseController):
             g.audit["info"] = scope
 
             db.session.commit()
-            return sendResult(response, pol, 1)
+            return sendResult(pol, 1)
 
         except Exception as exx:
             log.error(
@@ -1578,7 +1578,7 @@ class SystemController(BaseController):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[checkPolicy] error checking policy: %r", exx)
@@ -1699,7 +1699,7 @@ class SystemController(BaseController):
                     filename, mimetype="text/plain", as_attachment=True
                 )
             else:
-                return sendResult(response, pol, 1)
+                return sendResult(pol, 1)
 
         except Exception as exx:
             log.error("[getPolicy] error getting policy: %r", exx)
@@ -1745,7 +1745,7 @@ class SystemController(BaseController):
             g.audit["info"] = name
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[delPolicy] error deleting policy: %r", exx)
@@ -1820,7 +1820,7 @@ class SystemController(BaseController):
 
             g.audit["success"] = ret
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[setupSecurityModule] : setup failed: %r", exx)
@@ -1848,7 +1848,7 @@ class SystemController(BaseController):
             res.update(lic_info)
 
             g.audit["success"] = True
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error(
@@ -1942,7 +1942,7 @@ class SystemController(BaseController):
 
             db.session.commit()
 
-            return sendResult(response, res, 1, opt=info)
+            return sendResult(res, 1, opt=info)
 
         except Exception as exx:
             log.error("[isSupportValid] failed verify support info: %r", exx)
@@ -2077,7 +2077,7 @@ class SystemController(BaseController):
             g.audit["info"] = name
 
             db.session.commit()
-            return sendResult(response, res, 1, opt=reply)
+            return sendResult(res, 1, opt=reply)
 
         except Exception as exx:
             log.error("error saving config: %r", exx)
@@ -2122,7 +2122,7 @@ class SystemController(BaseController):
                 g.audit["info"] = provider_name
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("error getting config: %r", exx)
@@ -2163,7 +2163,7 @@ class SystemController(BaseController):
             g.audit["info"] = provider_name
 
             db.session.commit()
-            return sendResult(response, status, 1)
+            return sendResult(status, 1)
 
         except Exception as exx:
             log.error("error getting config: %r", exx)
@@ -2220,7 +2220,7 @@ class SystemController(BaseController):
             g.audit["info"] = provider_name
 
             db.session.commit()
-            return sendResult(response, res > 0, 1, opt=reply)
+            return sendResult(res > 0, 1, opt=reply)
 
         except Exception as exx:
             log.error("error saving config: %r", exx)
@@ -2257,7 +2257,7 @@ class SystemController(BaseController):
             g.audit["info"] = provider_name
 
             db.session.commit()
-            return sendResult(response, res, 1, opt=reply)
+            return sendResult(res, 1, opt=reply)
 
         except Exception as exx:
             log.error("error saving config: %r", exx)
@@ -2293,7 +2293,7 @@ class SystemController(BaseController):
             res = {}
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("error saving config: %r", exx)

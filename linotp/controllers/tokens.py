@@ -262,7 +262,7 @@ class TokensController(BaseController, JWTMixin):
             result["pageRecords"] = lines
 
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as pe:
             log.exception("[get_tokens] policy failed: {}".format(pe))
@@ -363,7 +363,7 @@ class TokensController(BaseController, JWTMixin):
             g.audit["info"] = "realm: {}".format(filter_realm)
 
             db.session.commit()
-            return sendResult(response, formatted_token)
+            return sendResult(formatted_token)
 
         except PolicyException as pe:
             log.exception("[get_token_by_serial] policy failed: {}".format(pe))

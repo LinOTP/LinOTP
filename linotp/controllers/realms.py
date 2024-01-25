@@ -135,7 +135,7 @@ class RealmsController(BaseController, JWTMixin):
             ]
 
             db.session.commit()
-            return sendResult(response, formatted_realms)
+            return sendResult(formatted_realms)
 
         except Exception as e:
             log.error("[get_realms] failed: {}".format(e))
