@@ -30,8 +30,10 @@ import os
 
 from werkzeug.exceptions import InternalServerError
 
+from flask import abort
+
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import abort, config, request
+from linotp.flap import config, request
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.logs import set_logging_level
