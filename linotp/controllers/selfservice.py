@@ -36,7 +36,7 @@ import os
 
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
-from werkzeug.exceptions import Unauthorized
+from werkzeug.exceptions import Forbidden, Unauthorized
 
 from flask import Response, current_app, g, redirect, url_for
 
@@ -243,7 +243,7 @@ class SelfserviceController(BaseController):
 
             c.pin_policy = _get_auth_PinPolicy(user=g.authUser)
 
-        except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
+        except (Unauthorized, Forbidden) as acc:
             # the exception, when an abort() is called if forwarded
             log.info("[__before__::%r] webob.exception %r", action, acc)
             db.session.rollback()

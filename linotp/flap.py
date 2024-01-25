@@ -9,8 +9,6 @@ from builtins import KeyError
 from flask_babel import get_locale
 from mako.exceptions import text_error_template
 from mako.lookup import TemplateLookup
-from werkzeug.exceptions import Forbidden as HTTPForbidden
-from werkzeug.exceptions import Unauthorized as HTTPUnauthorized
 from werkzeug.local import LocalProxy
 
 import flask

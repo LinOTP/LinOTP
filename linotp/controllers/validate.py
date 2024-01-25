@@ -32,6 +32,7 @@ validate controller - to check the authentication request
 import logging
 
 from flask_babel import gettext as _
+from werkzeug.exceptions import Unauthorized
 
 from flask import current_app, g
 
@@ -415,7 +416,7 @@ class ValidateController(BaseController):
             else:
                 return "Preshared Key Todo"
 
-        except flap.HTTPUnauthorized as acc:
+        except Unauthorized as acc:
             # the exception, when an abort() is called if forwarded
             log.error("[__before__::%r] webob.exception %r", acc)
             db.session.rollback()
