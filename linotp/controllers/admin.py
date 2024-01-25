@@ -868,7 +868,7 @@ class AdminController(BaseController, JWTMixin):
                 (rdata, hparam) = token.getQRImageData(response_detail)
                 hparam.update(response_detail)
                 hparam["qr"] = params.get("qr") or "html"
-                return sendQRImageResult(response, rdata, hparam)
+                return sendQRImageResult(rdata, hparam)
             else:
                 return sendResult(ret, opt=response_detail)
 

@@ -218,10 +218,10 @@ class ValidateController(BaseController):
                     param["alt"] = "%s" % opt
                     if "transactionid" in opt:
                         param["transactionid"] = opt["transactionid"]
-                    return sendQRImageResult(response, dataobj, param)
+                    return sendQRImageResult(dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r ", exc)
-                    return sendQRImageResult(response, opt, param)
+                    return sendQRImageResult(opt, param)
             else:
                 return sendResult(ok, 0, opt=opt)
 
@@ -543,10 +543,10 @@ class ValidateController(BaseController):
                     param["alt"] = "%s" % opt
                     if "transactionid" in opt:
                         param["transactionid"] = opt["transactionid"]
-                    return sendQRImageResult(response, dataobj, param)
+                    return sendQRImageResult(dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r ", exc)
-                    return sendQRImageResult(response, opt, param)
+                    return sendQRImageResult(opt, param)
             else:
                 return sendResult(value, 1, opt=opt)
 
@@ -759,10 +759,10 @@ class ValidateController(BaseController):
                     param["alt"] = "%s" % opt
                     if "transactionid" in opt:
                         param["transactionid"] = opt["transactionid"]
-                    return sendQRImageResult(response, dataobj, param)
+                    return sendQRImageResult(dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r ", exc)
-                    return sendQRImageResult(response, opt, param)
+                    return sendQRImageResult(opt, param)
             else:
                 return sendResult(ok, 0, opt=opt)
 

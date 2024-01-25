@@ -2337,7 +2337,7 @@ class UserserviceController(BaseController):
                 (rdata, hparam) = tokenObj.getQRImageData(response_detail)
                 hparam.update(response_detail)
                 hparam["qr"] = param.get("qr") or "html"
-                return sendQRImageResult(response, rdata, hparam)
+                return sendQRImageResult(rdata, hparam)
             else:
                 return sendResult(ret, opt=response_detail)
 

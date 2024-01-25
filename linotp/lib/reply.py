@@ -567,13 +567,12 @@ def sendXMLError(exception, id=1):
     return Response(response=res, status=200, mimetype="text/xml")
 
 
-def sendQRImageResult(response, data, param=None, id=1, typ="html"):
+def sendQRImageResult(data, param=None, id=1, typ="html"):
     """
     method
         sendQRImageResult
 
     arguments
-        response - the pylon response object
         param    - the paramters of the request
         id       -
         html     - print qrcode wrapped by html or not
@@ -610,7 +609,6 @@ def sendQRImageResult(response, data, param=None, id=1, typ="html"):
     elif typ in ["png"]:
         content_type = "image/png"
         ret = create_png(img_data)
-        response.content_length = len(ret)
 
     else:
         content_type = "text/html"
