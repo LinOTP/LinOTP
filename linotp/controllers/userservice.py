@@ -201,7 +201,7 @@ def add_and_delete_cookies(response):
         response.set_cookie(name, **kwargs)
 
 
-def unauthorized(response_proxy, exception, status=401):
+def unauthorized(exception, status=401):
     """extend the standard sendResult to handle cookies"""
 
     response = sendError(_response=None, exception=exception)
@@ -308,7 +308,7 @@ class UserserviceController(BaseController):
             "userservice",
             "user_selfservice",
         ]:
-            raise unauthorized(self.response, _("No valid session"))
+            raise unauthorized(_("No valid session"))
 
         # ------------------------------------------------------------------ --
 
@@ -327,7 +327,7 @@ class UserserviceController(BaseController):
         # finally check the validty of the session
 
         if not check_session(request, g.authUser, g.client):
-            raise unauthorized(self.response, _("No valid session"))
+            raise unauthorized(_("No valid session"))
 
         # ------------------------------------------------------------------ --
 
@@ -341,7 +341,7 @@ class UserserviceController(BaseController):
         # any other action requires a full ' state
 
         if auth_state != "authenticated":
-            raise unauthorized(self.response, _("No valid session"))
+            raise unauthorized(_("No valid session"))
 
         # ------------------------------------------------------------------ --
 
