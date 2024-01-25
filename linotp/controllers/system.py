@@ -1451,9 +1451,7 @@ class SystemController(BaseController):
                     "[importPolicy] Error loading/importing policy "
                     "file. file empty!"
                 )
-                return sendErrorMethod(
-                    response, "Error loading policy. File is empty!"
-                )
+                return sendErrorMethod("Error loading policy. File is empty!")
 
             # the contents of filestring needs to be parsed and
             # stored as policies.
@@ -1473,12 +1471,12 @@ class SystemController(BaseController):
 
             db.session.commit()
 
-            return sendResultMethod(response, res)
+            return sendResultMethod(res)
 
         except Exception as exx:
             log.error("[importPolicy] failed! %r", exx)
             db.session.rollback()
-            return sendErrorMethod(response, exx)
+            return sendErrorMethod(exx)
 
     ############################################################
     @deprecated_methods(["POST"])
@@ -1990,7 +1988,7 @@ class SystemController(BaseController):
                 log.debug("[setSupport] plaintext: %s", support_description)
             else:
                 return sendErrorMethod(
-                    response, "No key 'license' in the upload request"
+                    "No key 'license' in the upload request"
                 )
 
             log.debug("[setSupport] license %s", support_description)
@@ -2002,12 +2000,12 @@ class SystemController(BaseController):
                 raise Exception(msg)
 
             db.session.commit()
-            return sendResultMethod(response, res, 1, opt=message)
+            return sendResultMethod(res, 1, opt=message)
 
         except Exception as exx:
             log.error("[setSupport] failed to set support license: %r", exx)
             db.session.rollback()
-            return sendErrorMethod(response, exx)
+            return sendErrorMethod(exx)
 
     @methods(["POST"])
     def setProvider(self):

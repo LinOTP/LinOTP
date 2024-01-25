@@ -2249,7 +2249,7 @@ class AdminController(BaseController, JWTMixin):
                     "file or type empty!"
                 )
                 return sendErrorMethod(
-                    response, ("Error loading tokens. File or Type empty!")
+                    ("Error loading tokens. File or Type empty!")
                 )
 
             if typeString not in known_types:
@@ -2260,7 +2260,6 @@ class AdminController(BaseController, JWTMixin):
                     ", ".join(known_types),
                 )
                 return sendErrorMethod(
-                    response,
                     (
                         "Unknown file type: >>%s<<. We only know the "
                         "types: %s" % (typeString, ", ".join(known_types))
@@ -2439,9 +2438,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["realm"] = tokenrealm
 
             db.session.commit()
-            return sendResultMethod(
-                response, res, opt={"imported": len(TOKENS)}
-            )
+            return sendResultMethod(res, opt={"imported": len(TOKENS)})
 
         except PolicyException as pex:
             log.error("[loadtokens] Failed checking policy: %r", pex)
@@ -2451,7 +2448,7 @@ class AdminController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[loadtokens] failed! %r", exx)
             db.session.rollback()
-            return sendErrorMethod(response, "%r" % exx)
+            return sendErrorMethod("%r" % exx)
 
     def _ldap_parameter_mapping(self, params):
         """
