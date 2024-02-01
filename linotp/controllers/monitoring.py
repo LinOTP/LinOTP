@@ -33,7 +33,7 @@ import logging
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController
-from linotp.flap import config, request, response
+from linotp.flap import config, request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
@@ -79,7 +79,7 @@ class MonitoringController(BaseController):
         except Exception as exception:
             log.error(exception)
             db.session.rollback()
-            return sendError(response, exception, context="before")
+            return sendError(exception, context="before")
 
     @staticmethod
     def __after__(response):
@@ -100,7 +100,7 @@ class MonitoringController(BaseController):
         except Exception as exception:
             log.error(exception)
             db.session.rollback()
-            return sendError(response, exception, context="after")
+            return sendError(exception, context="after")
 
         finally:
             db.session.close()
@@ -168,17 +168,17 @@ class MonitoringController(BaseController):
             result["Realms"] = realm_info
 
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
     @deprecated_methods(["POST"])
     def config(self):
@@ -216,11 +216,11 @@ class MonitoringController(BaseController):
 
             result["netto"] = total - ldap - sql - passwd - policies - realms
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except Exception as exception:
             log.error(exception)
-            return sendError(response, exception)
+            return sendError(exception)
 
     @deprecated_methods(["POST"])
     def storageEncryption(self):
@@ -250,11 +250,11 @@ class MonitoringController(BaseController):
             monit_handler = MonitorHandler()
             res["encryption"] = monit_handler.check_encryption()
 
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exception:
             log.error(exception)
-            return sendError(response, exception)
+            return sendError(exception)
 
     @deprecated_methods(["POST"])
     def license(self):
@@ -278,7 +278,7 @@ class MonitoringController(BaseController):
                 if err.type != "UNLICENSED":
                     raise err
                 opt = {"valid": False, "message": "%r" % err}
-                return sendResult(response, {}, 1, opt=opt)
+                return sendResult({}, 1, opt=opt)
 
             # Add Extra info
             # if needed; use details = None ... for no details!)...
@@ -288,7 +288,7 @@ class MonitoringController(BaseController):
             )
             if not license_ok:
                 res = {"valid": license_ok, "message": license_msg}
-                return sendResult(response, res, 1)
+                return sendResult(res, 1)
 
             details = {"valid": license_ok}
 
@@ -304,11 +304,11 @@ class MonitoringController(BaseController):
                 res["token-active"] = active_tokencount
                 res["token-left"] = res["token-num"] - active_tokencount
 
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exception:
             log.error(exception)
-            return sendError(response, exception)
+            return sendError(exception)
 
     @deprecated_methods(["POST"])
     def userinfo(self):
@@ -355,17 +355,17 @@ class MonitoringController(BaseController):
             result["Realms"] = realm_info
 
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
     @deprecated_methods(["POST"])
     def activeUsers(self):
@@ -416,14 +416,14 @@ class MonitoringController(BaseController):
             result["Realms"] = realm_info
             result["total"] = monit_handl.active_users_total(realms)
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)

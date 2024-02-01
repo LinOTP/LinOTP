@@ -4,7 +4,7 @@ from pprint import pprint
 from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController, JWTMixin
-from linotp.flap import config, request, response
+from linotp.flap import config, request
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPost, checkPolicyPre
 from linotp.lib.realm import getRealms
@@ -73,7 +73,7 @@ class RealmsController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[__after__] unable to create a session cookie: %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="after")
+            return sendError(exx, context="after")
 
     def get_realms(self):
         """
@@ -113,7 +113,7 @@ class RealmsController(BaseController, JWTMixin):
         except PolicyException as pe:
             log.error("[get_realms] policy failed: {}".format(pe))
             db.session.rollback()
-            error = sendError(None, pe.message)
+            error = sendError(pe.message)
             error.status_code = 403
             return error
 
@@ -135,12 +135,12 @@ class RealmsController(BaseController, JWTMixin):
             ]
 
             db.session.commit()
-            return sendResult(response, formatted_realms)
+            return sendResult(formatted_realms)
 
         except Exception as e:
             log.error("[get_realms] failed: {}".format(e))
             db.session.rollback()
-            return sendError(None, e.message)
+            return sendError(e.message)
 
     def get_users(self, realm_name: str):
         """
@@ -207,13 +207,13 @@ class RealmsController(BaseController, JWTMixin):
                 "Admin has no rights to list users in the requested realm."
             )
             db.session.rollback()
-            error = sendError(None, PolicyException(exception_description))
+            error = sendError(PolicyException(exception_description))
             error.status_code = 403
             return error
         except Exception as exception:
             log.error("[realms.get_users] failed: %r", exception)
             db.session.rollback()
-            error = sendError(None, exception)
+            error = sendError(exception)
             error.status_code = 500
             return error
 

@@ -30,10 +30,11 @@ import os
 import pytest
 from mock import patch
 from sqlalchemy.exc import OperationalError
+from werkzeug.exceptions import Unauthorized
 
 import flask
 
-from linotp.flap import HTTPUnauthorized, config
+from linotp.flap import config
 from linotp.model import Config, LoggingConfig, db
 
 
@@ -96,7 +97,7 @@ class TestMaintCertificateHandling(object):
 
         config["MAINTENANCE_VERIFY_CLIENT_ENV_VAR"] = "TEST_VAR_NOTSET"
 
-        with pytest.raises(HTTPUnauthorized) as err:
+        with pytest.raises(Unauthorized) as err:
             self.maint.__before__(action="check_status")
 
         assert err.value.code == 401

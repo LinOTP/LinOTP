@@ -143,7 +143,7 @@ def _get_httperror_from_params(request):
     return httperror
 
 
-def sendError(_response, exception, id=1, context=None):
+def sendError(exception, id=1, context=None):
     """
     sendError - return a HTML or JSON error result document
 
@@ -291,12 +291,10 @@ def sendError(_response, exception, id=1, context=None):
         return response
 
 
-def sendResult(response, obj, id=1, opt=None, status=True):
+def sendResult(obj, id=1, opt=None, status=True):
     """
     sendResult - return an json result document
 
-    :param response: the pylons response object
-    :type  response: response object
     :param obj:      simple result object like dict, string or list
     :type  obj:      dict or list or string/unicode
     :param  id:      id value, for future versions
@@ -441,13 +439,10 @@ def sendResultIterator(
     yield "] " + postfix
 
 
-def sendCSVResult(
-    response, obj, flat_lines=False, filename="linotp-tokendata.csv"
-):
+def sendCSVResult(obj, flat_lines=False, filename="linotp-tokendata.csv"):
     """
     returns a CSV document of the input data (like in /admin/show)
 
-    :param response: The pylons response object
     :param obj: The data, that gets serialized as CSV
     :type obj: JSON object
     :param flat_lines: If True the object only contains a list of the
@@ -519,7 +514,7 @@ def json2xml(json_obj, line_padding=""):
     return "%s%s" % (line_padding, json_obj)
 
 
-def sendXMLResult(_response, obj, id=1, opt=None):
+def sendXMLResult(obj, id=1, opt=None):
     """
     send the result as an xml format
     """
@@ -547,7 +542,7 @@ def sendXMLResult(_response, obj, id=1, opt=None):
     return Response(response=res, status=200, mimetype="text/xml")
 
 
-def sendXMLError(_response, exception, id=1):
+def sendXMLError(exception, id=1):
     if not hasattr(exception, "getId"):
         errId = -311
         errDesc = str(exception)
@@ -572,13 +567,12 @@ def sendXMLError(_response, exception, id=1):
     return Response(response=res, status=200, mimetype="text/xml")
 
 
-def sendQRImageResult(response, data, param=None, id=1, typ="html"):
+def sendQRImageResult(data, param=None, id=1, typ="html"):
     """
     method
         sendQRImageResult
 
     arguments
-        response - the pylon response object
         param    - the paramters of the request
         id       -
         html     - print qrcode wrapped by html or not
@@ -615,7 +609,6 @@ def sendQRImageResult(response, data, param=None, id=1, typ="html"):
     elif typ in ["png"]:
         content_type = "image/png"
         ret = create_png(img_data)
-        response.content_length = len(ret)
 
     else:
         content_type = "text/html"

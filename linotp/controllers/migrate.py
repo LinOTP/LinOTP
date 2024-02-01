@@ -38,7 +38,6 @@ import logging
 import os
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import response
 from linotp.lib import deprecated_methods
 from linotp.lib.migrate import DecryptionError, MigrationHandler
 from linotp.lib.policy import PolicyException
@@ -136,17 +135,17 @@ class MigrateController(BaseController):
             for val in ["Token", "Config"]:
                 result[val] = backup_data[val]
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as pe:
             db.session.rollback()
             log.error("[backup] policy failed: %r", pe)
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             db.session.rollback()
             log.error("[backup] failed: %r", exx)
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def restore(self):
@@ -258,22 +257,22 @@ class MigrateController(BaseController):
 
             db.session.commit()
             log.debug("[restore] success")
-            return sendResult(response, counters)
+            return sendResult(counters)
 
         except PolicyException as pe:
             log.error("[restore] policy failed: %r", pe)
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except DecryptionError as err:
             decryption_error = True
             log.error("Error - failed with %r", err)
             db.session.rollback()
-            return sendError(response, err)
+            return sendError(err)
 
         except Exception as err:
             log.error("Error - failed with %r", err)
             db.session.rollback()
-            return sendError(response, err)
+            return sendError(err)
 
         finally:
             if remove_backup_file and os.path.isfile(backup_file):

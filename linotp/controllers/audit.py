@@ -33,7 +33,7 @@ import logging
 from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController
-from linotp.flap import config, request, response
+from linotp.flap import config, request
 from linotp.lib import deprecated_methods
 from linotp.lib.audit.iterator import (
     AuditQuery,
@@ -167,12 +167,12 @@ class AuditController(BaseController):
         except PolicyException as pe:
             log.error("[getotp] gettoken/getotp policy failedi: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[search] audit/search failed: %r", exx)
             db.session.rollback()
-            return sendError(response, "audit/search failed", 0)
+            return sendError("audit/search failed", 0)
 
 
 # eof###########################################################################

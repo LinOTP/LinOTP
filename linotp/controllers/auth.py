@@ -33,7 +33,6 @@ import logging
 
 from linotp.controllers.base import BaseController, add_hyphenated_url
 from linotp.flap import render_mako as render
-from linotp.flap import response
 from linotp.flap import tmpl_context as c
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.context import request_context
@@ -76,7 +75,7 @@ class AuthController(BaseController):
         except Exception as exx:
             log.error("[__before__::%r]", action)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
     def index(self):
         """

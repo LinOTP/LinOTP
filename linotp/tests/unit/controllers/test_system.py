@@ -82,8 +82,8 @@ class TestSetResolver(unittest.TestCase):
                 "linotp.controllers.system.sendResult"
             ) as mock_sendresult:
                 # sendError returns the exception
-                mock_senderror.side_effect = lambda response, exx: exx
-                mock_sendresult.side_effect = lambda response, obj, *args: obj
+                mock_senderror.side_effect = lambda exx: exx
+                mock_sendresult.side_effect = lambda obj, *args: obj
                 mock_request.json = params
                 ret = self.system.setResolver()
 

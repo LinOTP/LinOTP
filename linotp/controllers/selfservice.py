@@ -36,7 +36,7 @@ import os
 
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
-from werkzeug.exceptions import Unauthorized
+from werkzeug.exceptions import Forbidden, Unauthorized
 
 from flask import Response, current_app, g, redirect, url_for
 
@@ -45,7 +45,7 @@ from linotp.controllers.base import BaseController
 from linotp.controllers.userservice import get_auth_user, getTokenForUser
 from linotp.flap import config
 from linotp.flap import render_mako as render
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
@@ -243,7 +243,7 @@ class SelfserviceController(BaseController):
 
             c.pin_policy = _get_auth_PinPolicy(user=g.authUser)
 
-        except (flap.HTTPUnauthorized, flap.HTTPForbidden) as acc:
+        except (Unauthorized, Forbidden) as acc:
             # the exception, when an abort() is called if forwarded
             log.info("[__before__::%r] webob.exception %r", action, acc)
             db.session.rollback()
@@ -252,7 +252,7 @@ class SelfserviceController(BaseController):
         except Exception as exx:
             log.error("[__before__] failed with error: %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
     @deprecated_methods(["POST"])
     def index(self):
@@ -400,9 +400,7 @@ class SelfserviceController(BaseController):
         Return an empty file instead of a 404 (which would mean hitting the
         debug console)
         """
-        response = Response("")
-        response.headers["Content-type"] = "text/css"
-        return response
+        return ""
 
     @deprecated_methods(["POST"])
     def assign(self):
@@ -516,7 +514,7 @@ class SelfserviceController(BaseController):
 
         except Exception as exx:
             log.error("[webprovisiongoogletoken] failed with error: %r", exx)
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def usertokenlist(self):

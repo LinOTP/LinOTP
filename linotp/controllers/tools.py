@@ -36,7 +36,7 @@ from werkzeug.datastructures import FileStorage
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
@@ -86,12 +86,12 @@ class ToolsController(BaseController):
         except PolicyException as exx:
             log.error("policy failed %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
     @staticmethod
     def __after__(response):
@@ -111,7 +111,7 @@ class ToolsController(BaseController):
         except Exception as exx:
             log.error(exx)
             db.session.rollback()
-            return sendError(response, exx, context="after")
+            return sendError(exx, context="after")
 
     @methods(["POST"])
     def setPassword(self):
@@ -158,7 +158,6 @@ class ToolsController(BaseController):
             g.audit["success"] = True
 
             return sendResult(
-                response,
                 obj=True,
                 opt={"detail": ("password updated for %r" % username)},
             )
@@ -168,7 +167,7 @@ class ToolsController(BaseController):
 
             log.error(exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def migrate_resolver(self):
@@ -208,12 +207,12 @@ class ToolsController(BaseController):
             ret = mg.migrate_resolver(src=src_resolver, target=target_resolver)
 
             db.session.commit()
-            return sendResult(response, ret)
+            return sendResult(ret)
 
         except Exception as e:
             log.error("migrate resolver failed")
             db.session.rollback()
-            return sendError(response, e, 1)
+            return sendError(e, 1)
 
     @methods(["POST"])
     def import_users(self):
@@ -377,7 +376,7 @@ class ToolsController(BaseController):
             )
 
             if dryrun:
-                return sendResult(response, result)
+                return sendResult(result)
 
             # -------------------------------------------------------------- --
 
@@ -387,21 +386,21 @@ class ToolsController(BaseController):
 
             db.session.commit()
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as pexx:
             log.error("Error during user import: %r", pexx)
 
             db.session.rollback()
 
-            return sendError(response, "%r" % pexx, 1)
+            return sendError("%r" % pexx, 1)
 
         except Exception as exx:
             log.error("Error during user import: %r", exx)
 
             db.session.rollback()
 
-            return sendError(response, exx)
+            return sendError(exx)
 
         finally:
             log.debug("done")

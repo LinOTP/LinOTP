@@ -83,7 +83,7 @@ class TestAdminController(unittest.TestCase):
     @mock.patch("linotp.controllers.admin.TokenIterator")
     @mock.patch("linotp.controllers.admin.checkPolicyPre")
     @mock.patch("linotp.model.db.session")
-    @mock.patch("linotp.controllers.admin.response")
+    @mock.patch("linotp.controllers.admin.Response")
     @mock.patch("linotp.app.request")
     @mock.patch(
         "linotp.controllers.admin.BaseController.__init__", return_value=None

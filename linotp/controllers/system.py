@@ -36,12 +36,13 @@ from html import escape
 from configobj import ConfigObj
 from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
+from werkzeug.exceptions import Unauthorized
 
 from flask import current_app, g
 from flask import send_file as flask_send_file
 
 from linotp import flap
-from linotp.flap import config, request, response
+from linotp.flap import config, request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.config import (
@@ -157,9 +158,9 @@ class SystemController(BaseController):
         except PolicyException as pex:
             log.error("[__before__::%r] policy exception %r", action, pex)
             db.session.rollback()
-            return sendError(response, pex, context="before")
+            return sendError(pex, context="before")
 
-        except flap.HTTPUnauthorized as acc:
+        except Unauthorized as acc:
             # the exception, when an abort() is called if forwarded
             log.error("[__before__::%r] webob.exception %r", action, acc)
             db.session.rollback()
@@ -168,7 +169,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
     @staticmethod
     def __after__(response):
@@ -188,7 +189,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[__after__] exception %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="after")
+            return sendError(exx, context="after")
 
     ########################################################
     @methods(["POST"])
@@ -257,12 +258,12 @@ class SystemController(BaseController):
                 raise ParameterError("Usage: %s" % description, id=77)
 
             db.session.commit()
-            return sendResult(response, res)
+            return sendResult(res)
 
         except Exception as exx:
             log.error("[setDefault] commit failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -359,17 +360,17 @@ class SystemController(BaseController):
             log.debug(
                 "[setConfig] saved configuration: %r", list(param.keys())
             )
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except ValueError as exx:
             log.error("[setConfig] error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
         except Exception as exx:
             log.error("[setConfig] error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     # config callback helper
 
@@ -432,12 +433,12 @@ class SystemController(BaseController):
             g.audit["info"] = key
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[delConfig] error deleting config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     ########################################################
@@ -517,12 +518,12 @@ class SystemController(BaseController):
                 g.audit["info"] = "config key %s" % key
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[getConfig] error getting config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -549,17 +550,17 @@ class SystemController(BaseController):
             realms = getRealms(realm_name)
 
             db.session.commit()
-            return sendResult(response, realms, 1)
+            return sendResult(realms, 1)
 
         except PolicyException as pex:
             log.error("[getRealms] policy exception: %r", pex)
             db.session.rollback()
-            return sendError(response, pex)
+            return sendError(pex)
 
         except Exception as exx:
             log.error("[getRealms] error getting realms: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -738,7 +739,7 @@ class SystemController(BaseController):
                 deleteResolver(previous_name)
 
             db.session.commit()
-            return sendResult(response, True, 1)
+            return sendResult(True, 1)
 
         except ResolverLoadConfigError as exx:
             log.error(
@@ -747,12 +748,12 @@ class SystemController(BaseController):
                 list(param.keys()),
             )
             db.session.rollback()
-            return sendError(response, msg % new_resolver_name)
+            return sendError(msg % new_resolver_name)
 
         except Exception as exx:
             log.error("[setResolver] error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -774,12 +775,12 @@ class SystemController(BaseController):
 
             g.audit["success"] = True
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[getResolvers] error getting resolvers: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -844,12 +845,12 @@ class SystemController(BaseController):
             g.audit["info"] = resolver_name
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[delResolver] error deleting resolver: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -885,12 +886,12 @@ class SystemController(BaseController):
             g.audit["info"] = resolver
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[getResolver] error getting resolver: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
         finally:
             log.debug("[getResolver] done")
@@ -927,14 +928,14 @@ class SystemController(BaseController):
             g.audit["info"] = defRealm
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error(
                 "[setDefaultRealm] setting default realm failed: %r", exx
             )
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -958,12 +959,12 @@ class SystemController(BaseController):
             g.audit["info"] = defRealm
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[getDefaultRealm] return default realm failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -1038,13 +1039,13 @@ class SystemController(BaseController):
             )
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             err = "Failed to set realm with %r " % param
             log.error("[setRealm] %r %r", err, exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -1079,7 +1080,7 @@ class SystemController(BaseController):
             g.audit["success"] = True
             g.audit["info"] = realm
 
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[delRealm] error deleting realm: %r", exx)
@@ -1089,7 +1090,7 @@ class SystemController(BaseController):
                 if hasattr(exx, "message") and exx.message == param_err_msg
                 else realm
             )
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -1191,11 +1192,11 @@ class SystemController(BaseController):
                 g.audit["success"] = False
                 raise Exception("setPolicy failed: name and action required!")
 
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -1317,7 +1318,7 @@ class SystemController(BaseController):
         except Exception as exx:
             log.error("[policies_flexi] error in policy flexi: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @deprecated_methods(["POST"])
@@ -1355,14 +1356,14 @@ class SystemController(BaseController):
             g.audit["info"] = scope
 
             db.session.commit()
-            return sendResult(response, pol, 1)
+            return sendResult(pol, 1)
 
         except Exception as exx:
             log.error(
                 "[getPolicyDef] error getting policy definitions: %r", exx
             )
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     #########################################################
     def _add_dynamic_tokens(self, scope):
@@ -1451,9 +1452,7 @@ class SystemController(BaseController):
                     "[importPolicy] Error loading/importing policy "
                     "file. file empty!"
                 )
-                return sendErrorMethod(
-                    response, "Error loading policy. File is empty!"
-                )
+                return sendErrorMethod("Error loading policy. File is empty!")
 
             # the contents of filestring needs to be parsed and
             # stored as policies.
@@ -1473,12 +1472,12 @@ class SystemController(BaseController):
 
             db.session.commit()
 
-            return sendResultMethod(response, res)
+            return sendResultMethod(res)
 
         except Exception as exx:
             log.error("[importPolicy] failed! %r", exx)
             db.session.rollback()
-            return sendErrorMethod(response, exx)
+            return sendErrorMethod(exx)
 
     ############################################################
     @deprecated_methods(["POST"])
@@ -1578,12 +1577,12 @@ class SystemController(BaseController):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[checkPolicy] error checking policy: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ##########################################################################
     @deprecated_methods(["POST"])
@@ -1699,12 +1698,12 @@ class SystemController(BaseController):
                     filename, mimetype="text/plain", as_attachment=True
                 )
             else:
-                return sendResult(response, pol, 1)
+                return sendResult(pol, 1)
 
         except Exception as exx:
             log.error("[getPolicy] error getting policy: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])
@@ -1745,12 +1744,12 @@ class SystemController(BaseController):
             g.audit["info"] = name
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[delPolicy] error deleting policy: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
         finally:
             db.session.close()
@@ -1820,12 +1819,12 @@ class SystemController(BaseController):
 
             g.audit["success"] = ret
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("[setupSecurityModule] : setup failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     ########################################################
 
@@ -1848,14 +1847,14 @@ class SystemController(BaseController):
             res.update(lic_info)
 
             g.audit["success"] = True
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error(
                 "[getSupportInfo] : failed to access support info: %r", exx
             )
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def isSupportValid(self):
@@ -1942,13 +1941,13 @@ class SystemController(BaseController):
 
             db.session.commit()
 
-            return sendResult(response, res, 1, opt=info)
+            return sendResult(res, 1, opt=info)
 
         except Exception as exx:
             log.error("[isSupportValid] failed verify support info: %r", exx)
 
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def setSupport(self):
@@ -1990,7 +1989,7 @@ class SystemController(BaseController):
                 log.debug("[setSupport] plaintext: %s", support_description)
             else:
                 return sendErrorMethod(
-                    response, "No key 'license' in the upload request"
+                    "No key 'license' in the upload request"
                 )
 
             log.debug("[setSupport] license %s", support_description)
@@ -2002,12 +2001,12 @@ class SystemController(BaseController):
                 raise Exception(msg)
 
             db.session.commit()
-            return sendResultMethod(response, res, 1, opt=message)
+            return sendResultMethod(res, 1, opt=message)
 
         except Exception as exx:
             log.error("[setSupport] failed to set support license: %r", exx)
             db.session.rollback()
-            return sendErrorMethod(response, exx)
+            return sendErrorMethod(exx)
 
     @methods(["POST"])
     def setProvider(self):
@@ -2077,12 +2076,12 @@ class SystemController(BaseController):
             g.audit["info"] = name
 
             db.session.commit()
-            return sendResult(response, res, 1, opt=reply)
+            return sendResult(res, 1, opt=reply)
 
         except Exception as exx:
             log.error("error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def getProvider(self):
@@ -2122,12 +2121,12 @@ class SystemController(BaseController):
                 g.audit["info"] = provider_name
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("error getting config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def testProvider(self):
@@ -2163,12 +2162,12 @@ class SystemController(BaseController):
             g.audit["info"] = provider_name
 
             db.session.commit()
-            return sendResult(response, status, 1)
+            return sendResult(status, 1)
 
         except Exception as exx:
             log.error("error getting config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def delProvider(self):
@@ -2220,12 +2219,12 @@ class SystemController(BaseController):
             g.audit["info"] = provider_name
 
             db.session.commit()
-            return sendResult(response, res > 0, 1, opt=reply)
+            return sendResult(res > 0, 1, opt=reply)
 
         except Exception as exx:
             log.error("error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @methods(["POST"])
     def setDefaultProvider(self):
@@ -2257,12 +2256,12 @@ class SystemController(BaseController):
             g.audit["info"] = provider_name
 
             db.session.commit()
-            return sendResult(response, res, 1, opt=reply)
+            return sendResult(res, 1, opt=reply)
 
         except Exception as exx:
             log.error("error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def getProviderDef(self):
@@ -2293,12 +2292,12 @@ class SystemController(BaseController):
             res = {}
 
             db.session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(res, 1)
 
         except Exception as exx:
             log.error("error saving config: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
 
 # eof #########################################################################

@@ -42,7 +42,7 @@ import linotp
 from linotp.controllers.base import BaseController, jwt_exempt, methods
 from linotp.flap import config
 from linotp.flap import render_mako as render
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.config import getFromConfig
@@ -111,7 +111,7 @@ class ManageController(BaseController):
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(response, exx, context="before")
+            return sendError(exx, context="before")
 
         finally:
             log.debug("[__before__::%r] done", action)
@@ -249,7 +249,7 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.error("[index] Error during checking policies: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as ex:
             log.error("[index] failed! %r", ex)
@@ -326,7 +326,6 @@ class ManageController(BaseController):
         If this action was called, the user hasn't created a custom css yet. To avoid hitting
         the debug console over and over, we serve an empty file.
         """
-        response.headers["Content-type"] = "text/css"
         return ""
 
     def _flexi_error(self, error):
@@ -492,19 +491,19 @@ class ManageController(BaseController):
 
             db.session.commit()
             # The flexi handler should support std LinOTP output
-            return sendResult(response, res)
+            return sendResult(res)
 
         except PolicyException as pe:
             log.error(
                 "[tokenview_flexi] Error during checking policies: %r", pe
             )
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[tokenview_flexi] failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def userview_flexi(self):
@@ -633,19 +632,19 @@ class ManageController(BaseController):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(response, res)
+            return sendResult(res)
 
         except PolicyException as pe:
             log.error(
                 "[userview_flexi] Error during checking policies: %r", pe
             )
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[userview_flexi] failed: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def tokeninfo(self):
@@ -716,12 +715,12 @@ class ManageController(BaseController):
         except PolicyException as pe:
             log.error("[tokeninfo] Error during checking policies: %r", pe)
             db.session.rollback()
-            return sendError(response, pe, 1)
+            return sendError(pe, 1)
 
         except Exception as exx:
             log.error("[tokeninfo] failed! %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def help(self, id=None):
@@ -765,7 +764,7 @@ class ManageController(BaseController):
         except Exception as exx:
             log.error("[help] Error loading helpfile: %r", exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
     # ------------------------------------------------------------------------ -
     @methods(["GET"])
@@ -790,13 +789,13 @@ class ManageController(BaseController):
                 "user": get_userinfo(user),
                 "permissions": logged_in_admin.getPermissions().parse_for_context_api(),
             }
-            return sendResult(response, True, opt=response_detail)
+            return sendResult(True, opt=response_detail)
 
         except Exception as exx:
             log.error("manage/context failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
-            return sendError(response, exx)
+            return sendError(exx)
 
 
 # ###########################################################

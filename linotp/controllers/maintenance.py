@@ -30,8 +30,10 @@ import os
 
 from werkzeug.exceptions import InternalServerError
 
+from flask import abort
+
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import abort, config, request, response
+from linotp.flap import config, request
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.logs import set_logging_level
@@ -118,12 +120,12 @@ class MaintenanceController(BaseController):
 
             set_logging_level(name, level)
             db.session.commit()
-            return sendResult(response, True)
+            return sendResult(True)
 
         except Exception as exx:
             db.session.rollback()
             log.error(exx)
-            return sendError(response, exx, 1)
+            return sendError(exx, 1)
 
     @deprecated_methods(["POST"])
     def check_status(self):
@@ -146,7 +148,7 @@ class MaintenanceController(BaseController):
             config_count = db.session.query(Config).count()
             opt["config"] = {"entries": config_count}
 
-            return sendResult(response, True, 0, opt=opt)
+            return sendResult(True, 0, opt=opt)
 
         except Exception as exx:
             db.session.rollback()  # why?

@@ -38,7 +38,7 @@ from werkzeug.datastructures import Headers
 from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.policy import (
@@ -89,7 +89,7 @@ class ReportingController(BaseController):
         except Exception as exception:
             log.error(exception)
             db.session.rollback()
-            return sendError(response, exception, context="before")
+            return sendError(exception, context="before")
 
     @staticmethod
     def __after__(response):
@@ -110,7 +110,7 @@ class ReportingController(BaseController):
         except Exception as exception:
             log.error(exception)
             db.session.rollback()
-            return sendError(response, exception, context="after")
+            return sendError(exception, context="after")
 
     @deprecated_methods(["POST"])
     def maximum(self):
@@ -168,17 +168,17 @@ class ReportingController(BaseController):
                     result[realm][stat] = get_max_token_count_in_period(
                         realm, status=stat, start=start, end=end
                     )
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
         finally:
             db.session.close()
@@ -298,17 +298,17 @@ class ReportingController(BaseController):
                 "to": end.isoformat(),
             }
 
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
     @methods(["POST"])
     def delete_all(self):
@@ -365,17 +365,17 @@ class ReportingController(BaseController):
 
             result = delete(realms=realms, status=status)
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
     @methods(["POST"])
     def delete_before(self):
@@ -426,22 +426,22 @@ class ReportingController(BaseController):
 
             result = delete(date=border_day, realms=realms, status=status)
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except ValueError as value_error:
             log.error(value_error)
             db.session.rollback()
-            return sendError(response, value_error, 1)
+            return sendError(value_error, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)
 
     @deprecated_methods(["POST"])
     def show(self):
@@ -545,14 +545,14 @@ class ReportingController(BaseController):
         except PolicyException as policy_exception:
             log.error(policy_exception)
             db.session.rollback()
-            return sendError(response, policy_exception, 1)
+            return sendError(policy_exception, 1)
 
         except ValueError as value_error:
             log.error(value_error)
             db.session.rollback()
-            return sendError(response, value_error, 1)
+            return sendError(value_error, 1)
 
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
-            return sendError(response, exc)
+            return sendError(exc)

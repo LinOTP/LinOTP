@@ -6,7 +6,7 @@ from difflib import get_close_matches
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController, JWTMixin
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
@@ -102,7 +102,7 @@ class TokensController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[__after__] unable to create a session cookie: %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="after")
+            return sendError(exx, context="after")
 
     def get_tokens(self):
         """
@@ -262,19 +262,19 @@ class TokensController(BaseController, JWTMixin):
             result["pageRecords"] = lines
 
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except PolicyException as pe:
             log.exception("[get_tokens] policy failed: {}".format(pe))
             db.session.rollback()
-            error = sendError(None, pe)
+            error = sendError(pe)
             error.status_code = 403
             return error
 
         except Exception as e:
             log.exception("[get_tokens] failed: {}".format(e))
             db.session.rollback()
-            return sendError(None, e)
+            return sendError(e)
 
     def _map_sort_param_to_token_param(self, sort_param: str):
         sortParameterNameMapping = {
@@ -363,19 +363,19 @@ class TokensController(BaseController, JWTMixin):
             g.audit["info"] = "realm: {}".format(filter_realm)
 
             db.session.commit()
-            return sendResult(response, formatted_token)
+            return sendResult(formatted_token)
 
         except PolicyException as pe:
             log.exception("[get_token_by_serial] policy failed: {}".format(pe))
             db.session.rollback()
-            error = sendError(None, pe)
+            error = sendError(pe)
             error.status_code = 403
             return error
 
         except Exception as e:
             log.exception("[get_token_by_serial] failed: {}".format(e))
             db.session.rollback()
-            return sendError(None, e)
+            return sendError(e)
 
 
 class TokenAdapter:

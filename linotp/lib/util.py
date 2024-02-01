@@ -35,11 +35,13 @@ from typing import Any, Dict
 
 import netaddr
 
+from flask import abort
+
 from linotp import __api__ as linotp_api
 from linotp import __copyright__ as linotp_copyright
 from linotp import __product__ as linotp_product
 from linotp import __version__ as linotp_version
-from linotp.flap import abort, config
+from linotp.flap import config
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypto.utils import geturandom
 from linotp.lib.error import InvalidFunctionParameter, ParameterError

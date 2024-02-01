@@ -4,7 +4,7 @@ from math import ceil
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController, JWTMixin
-from linotp.flap import request, response
+from linotp.flap import request
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
@@ -98,7 +98,7 @@ class ResolversController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[__after__] unable to create a session cookie: %r", exx)
             db.session.rollback()
-            return sendError(response, exx, context="after")
+            return sendError(exx, context="after")
 
     def get_resolvers(self):
         """
@@ -140,7 +140,7 @@ class ResolversController(BaseController, JWTMixin):
         except PolicyException as pe:
             log.error("[get_resolvers] policy failed: %r", pe)
             db.session.rollback()
-            error = sendError(None, pe)
+            error = sendError(pe)
             error.status_code = 403
             return error
 
@@ -151,12 +151,12 @@ class ResolversController(BaseController, JWTMixin):
             db.session.commit()
 
             # return a list of the resolvers
-            return sendResult(response, resolvers)
+            return sendResult(resolvers)
 
         except Exception as ex:
             log.error("[getResolvers] error getting resolvers: %r", ex)
             db.session.rollback()
-            return sendError(response, ex)
+            return sendError(ex)
 
     def get_users(self, resolver_name):
         """
@@ -242,7 +242,7 @@ class ResolversController(BaseController, JWTMixin):
                 resolver_name,
             )
             db.session.rollback()
-            error = sendError(None, exception)
+            error = sendError(exception)
             error.status_code = 500
             return error
 
@@ -261,13 +261,13 @@ class ResolversController(BaseController, JWTMixin):
                 "Admin has no rights to list users in the requested resolver."
             )
             db.session.rollback()
-            error = sendError(None, PolicyException(exception_description))
+            error = sendError(PolicyException(exception_description))
             error.status_code = 403
             return error
         except Exception as exception:
             log.error("[get_users] failed: %r", exception)
             db.session.rollback()
-            error = sendError(None, exception)
+            error = sendError(exception)
             error.status_code = 500
             return error
 
@@ -327,12 +327,12 @@ class ResolversController(BaseController, JWTMixin):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(response, res)
+            return sendResult(res)
 
         except Exception as exception:
             log.error("[get_users] failed: %r", exception)
             db.session.rollback()
-            error = sendError(None, exception)
+            error = sendError(exception)
             error.status_code = 500
             return error
 
@@ -392,7 +392,7 @@ class ResolversController(BaseController, JWTMixin):
                 f"[get_user] cannot find resolver {resolver_name} to retrieve its users",
             )
             db.session.rollback()
-            error = sendError(None, exception)
+            error = sendError(exception)
             error.status_code = 500
             return error
 
@@ -410,13 +410,13 @@ class ResolversController(BaseController, JWTMixin):
                 "Admin has no rights to list users in the requested resolver."
             )
             db.session.rollback()
-            error = sendError(None, PolicyException(exception_description))
+            error = sendError(PolicyException(exception_description))
             error.status_code = 403
             return error
         except Exception as exception:
             log.error(f"[get_user] failed: {exception}")
             db.session.rollback()
-            error = sendError(None, exception)
+            error = sendError(exception)
             error.status_code = 500
             return error
 
@@ -433,18 +433,18 @@ class ResolversController(BaseController, JWTMixin):
             g.audit["success"] = True
 
             db.session.commit()
-            return sendResult(response, result)
+            return sendResult(result)
 
         except UserNotFoundException as user_not_found_exception:
             log.error(f"[get_user] failed: {user_not_found_exception}")
             db.session.rollback()
-            error = sendError(None, user_not_found_exception)
+            error = sendError(user_not_found_exception)
             error.status_code = 404
             return error
 
         except Exception as exception:
             log.error(f"[get_user] failed: {exception}")
             db.session.rollback()
-            error = sendError(None, exception)
+            error = sendError(exception)
             error.status_code = 500
             return error
