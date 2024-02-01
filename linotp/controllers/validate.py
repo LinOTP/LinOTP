@@ -34,7 +34,7 @@ import logging
 from flask_babel import gettext as _
 from werkzeug.exceptions import Unauthorized
 
-from flask import Response, abort, current_app, g
+from flask import abort, current_app, g
 
 from linotp.controllers.base import BaseController
 from linotp.flap import tmpl_context as c
@@ -406,7 +406,6 @@ class ValidateController(BaseController):
                 ok = False
 
             db.session.commit()
-            Response.headers["blablafoo"] = "application/json"
 
             # TODO: this code seems not to be finished
             if not ok:

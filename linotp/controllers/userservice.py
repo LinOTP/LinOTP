@@ -54,7 +54,7 @@ import logging
 from flask_babel import gettext as _
 from werkzeug.exceptions import Forbidden, Unauthorized
 
-from flask import Response, current_app, g
+from flask import current_app, g
 
 from linotp.controllers.base import BaseController, methods
 from linotp.flap import config, request
@@ -2731,8 +2731,6 @@ class UserserviceController(BaseController):
                     "info",
                 ],
             )
-
-            Response.content_type = "application/json"
 
             if not total:
                 total = len(lines)

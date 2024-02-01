@@ -400,9 +400,7 @@ class SelfserviceController(BaseController):
         Return an empty file instead of a 404 (which would mean hitting the
         debug console)
         """
-        response = Response("")
-        response.headers["Content-type"] = "text/css"
-        return response
+        return ""
 
     @deprecated_methods(["POST"])
     def assign(self):
