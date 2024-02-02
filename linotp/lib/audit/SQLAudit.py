@@ -240,9 +240,7 @@ class Audit(AuditBase):
                 # look if we have multiple serials inside
                 serials = serial.split(",")
                 for serial in serials:
-                    p = {}
-                    p.update(param)
-                    p["serial"] = serial
+                    p = {**param, "serial": serial}
                     self.log_entry(p)
 
         except Exception as exx:
@@ -299,47 +297,32 @@ class Audit(AuditBase):
         """
         create the sqlalchemy condition from the params
         """
-        conditions = []
-        boolCheck = and_
-        if not AND:
-            boolCheck = or_
+        key_mapping = {
+            "serial": AuditTable.serial,
+            "user": AuditTable.user,
+            "realm": AuditTable.realm,
+            "action": AuditTable.action,
+            "action_detail": AuditTable.action_detail,
+            "date": AuditTable.timestamp,
+            "number": AuditTable.id,
+            "success": AuditTable.success,
+            "tokentype": AuditTable.tokentype,
+            "administrator": AuditTable.administrator,
+            "info": AuditTable.info,
+            "linotp_server": AuditTable.linotp_server,
+            "client": AuditTable.client,
+            "log_level": AuditTable.log_level,
+            "clearance_level": AuditTable.clearance_level,
+        }
 
-        for k, v in list(param.items()):
-            if "" != v:
-                if "serial" == k:
-                    conditions.append(AuditTable.serial.like(v))
-                elif "user" == k:
-                    conditions.append(AuditTable.user.like(v))
-                elif "realm" == k:
-                    conditions.append(AuditTable.realm.like(v))
-                elif "action" == k:
-                    conditions.append(AuditTable.action.like(v))
-                elif "action_detail" == k:
-                    conditions.append(AuditTable.action_detail.like(v))
-                elif "date" == k:
-                    conditions.append(AuditTable.timestamp.like(v))
-                elif "number" == k:
-                    conditions.append(AuditTable.id.like(v))
-                elif "success" == k:
-                    conditions.append(AuditTable.success.like(v))
-                elif "tokentype" == k:
-                    conditions.append(AuditTable.tokentype.like(v))
-                elif "administrator" == k:
-                    conditions.append(AuditTable.administrator.like(v))
-                elif "info" == k:
-                    conditions.append(AuditTable.info.like(v))
-                elif "linotp_server" == k:
-                    conditions.append(AuditTable.linotp_server.like(v))
-                elif "client" == k:
-                    conditions.append(AuditTable.client.like(v))
-                elif "log_level" == k:
-                    conditions.append(AuditTable.log_level.like(v))
-                elif "clearance_level" == k:
-                    conditions.append(AuditTable.clearance_level.like(v))
+        conditions = [
+            key_mapping[k].like(v)
+            for k, v in param.items()
+            if v != "" and k in key_mapping
+        ]
 
-        all_conditions = None
-        if conditions:
-            all_conditions = boolCheck(*conditions)
+        boolCheck = and_ if AND else or_
+        all_conditions = boolCheck(*conditions) if conditions else None
 
         return all_conditions
 
@@ -354,18 +337,15 @@ class Audit(AuditBase):
         line = self._attr_to_dict(audit_line)
 
         # replace None values with an empty string
-        for key, value in list(line.items()):
-            if value is None:
-                line[key] = ""
+        line = {
+            key: value if value is not None else ""
+            for key, value in line.items()
+        }
 
         # Signature check
         # TODO: use instead the verify_init
-
-        res = self._verify(line, audit_line.signature)
-        if res == 1:
-            line["sig_check"] = "OK"
-        else:
-            line["sig_check"] = "FAIL"
+        sig_check_result = self._verify(line, audit_line.signature)
+        line["sig_check"] = "OK" if sig_check_result == 1 else "FAIL"
 
         return line
 

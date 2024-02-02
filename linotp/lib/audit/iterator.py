@@ -145,19 +145,7 @@ class AuditQuery(object):
             # convert table data to dict!
             row = self.audit_obj.row2dict(row)
         if "number" in row:
-            cell = []
-            for col in self._columns:
-                # In the previous implementation there were two conflicting ways
-                # of handling the case where 'col' doesn't exist in 'row'. When
-                # exporting all columns it was implemented like this: row.get(col, '')
-                # When exporting only selected columns like this: row.get(col)
-                # In the second case None is returned which in JSON translates as
-                # null.
-                # In order to differentiate between the empty string (which could be
-                # a valid value for most fields) and non-existence I chose the second
-                # option. If this causes problems, the issue has to be
-                # revisited.
-                cell.append(row.get(col))
+            cell = [row.get(col) for col in self._columns]
             entry = {"id": row["number"], "cell": cell}
             if self.headers is True:
                 entry["data"] = self._columns

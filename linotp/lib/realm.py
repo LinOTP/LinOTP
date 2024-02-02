@@ -121,17 +121,12 @@ def realm2Objects(realmList):
     :return: list of realmObjects
     :rtype:  list
     """
-    realm_set = set()
-    realmObjList = []
-    if realmList is not None:
-        # make the requested realms uniq
-        for r in realmList:
-            realm_set.add(r)
-
-        for r in list(realm_set):
-            realmObj = getRealmObject(name=r)
-            if realmObj is not None:
-                realmObjList.append(realmObj)
+    realm_set = set(realmList) if realmList else set()
+    realmObjList = [
+        getRealmObject(name=r)
+        for r in realm_set
+        if getRealmObject(name=r) is not None
+    ]
     return realmObjList
 
 
@@ -614,8 +609,7 @@ def match_realms(request_realms, allowed_realms):
         realms = list(all_allowed_realms)
     # support for empty realms or no realms by realm = *
     elif "*" in request_realms:
-        realms = list(all_allowed_realms)
-        realms.append("/:no realm:/")
+        realms = list(all_allowed_realms | {"/:no realm:/"})
     # other cases, we iterate through the realm list
     elif len(request_realms) > 0 and not (request_realms == [""]):
         invalid_realms = []

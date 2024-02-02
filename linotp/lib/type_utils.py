@@ -303,11 +303,7 @@ def check_networks_expression(networks):
     if networks == "":
         return True
 
-    ok = True
-
-    for network in networks.split(","):
-        ok = ok and is_network(network)
-    return ok
+    return all(is_network(network) for network in networks.split(","))
 
 
 def is_network(network):

@@ -101,9 +101,7 @@ class LinOtpConfig(dict):
         if do_reload is True:
             # in case there is no entry in the dbconf or
             # the config file is newer, we write the config back to the db
-            entries = list(conf.keys())
-            for entry in entries:
-                del conf[entry]
+            conf.clear()
 
             # get all configs from the DB
             (dbconf, delay) = _retrieveAllConfigDB()

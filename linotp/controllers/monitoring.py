@@ -159,10 +159,10 @@ class MonitoringController(BaseController):
 
             realms = match_realms(request_realms, realm_whitelist)
 
-            realm_info = {}
-            for a_realm in realms:
-                token_count = monit_handler.token_count([a_realm], status)
-                realm_info[a_realm] = token_count
+            realm_info = {
+                a_realm: monit_handler.token_count([a_realm], status)
+                for a_realm in realms
+            }
 
             result["Summary"] = monit_handler.token_count(realms, status)
             result["Realms"] = realm_info
@@ -348,9 +348,9 @@ class MonitoringController(BaseController):
             if "/:no realm:/" in realms:
                 realms.remove("/:no realm:/")
 
-            realm_info = {}
-            for a_realm in realms:
-                realm_info[a_realm] = monit_handler.resolverinfo(a_realm)
+            realm_info = {
+                realm: monit_handler.resolverinfo(realm) for realm in realms
+            }
 
             result["Realms"] = realm_info
 
@@ -407,11 +407,10 @@ class MonitoringController(BaseController):
 
             realms = match_realms(request_realms, realm_whitelist)
 
-            realm_info = {}
-            for a_realm in realms:
-                realm_info[a_realm] = monit_handl.active_users_per_realm(
-                    a_realm
-                )
+            realm_info = {
+                realm: monit_handl.active_users_per_realm(realm)
+                for realm in realms
+            }
 
             result["Realms"] = realm_info
             result["total"] = monit_handl.active_users_total(realms)

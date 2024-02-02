@@ -298,8 +298,6 @@ class ValidateController(BaseController):
 
             for ch in challenges:
                 tokens = get_tokens(serial=ch.getTokenSerial())
-                if not tokens:
-                    continue
 
                 for token in tokens:
                     serials.append(token.getSerial())
@@ -704,11 +702,11 @@ class ValidateController(BaseController):
         """
         param = self.request_params
 
-        options = {}
-        options.update(param)
-        for k in ["user", "serial", "pass", "init"]:
-            if k in options:
-                del options[k]
+        options = {
+            k: v
+            for k, v in param.items()
+            if k not in ["user", "serial", "pass", "init"]
+        }
 
         try:
             passw = param.get("pass")

@@ -1984,7 +1984,7 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
 
     # in case we got a serial
     if serial != "" and serial is not None:
-        realms = linotp.lib.token.getTokenRealms(serial)
+        realms = set(linotp.lib.token.getTokenRealms(serial))
 
         log.debug(
             "the token %r is contained in the realms: %r", serial, realms
@@ -1992,15 +1992,10 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
 
         log.debug("the policy contains the realms: %r", policies["realms"])
 
-        for r in realms:
-            if fitAllRealms:
-                if r not in policies["realms"]:
-                    return False
-            else:
-                if r in policies["realms"]:
-                    return True
-
-        return fitAllRealms
+        if fitAllRealms:
+            return realms.issubset(policies["realms"])
+        else:
+            return bool(realms.intersection(policies["realms"]))
 
     # in case of the admin policies - no user name is verified:
     # the username could be empty (not dummy) which prevents an

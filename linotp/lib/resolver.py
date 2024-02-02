@@ -409,7 +409,10 @@ def getResolverInfo(resolvername, passwords=False):
     res_conf, _missing = resolver_cls.filter_config(
         linotp_config, resolvername
     )
-
+    # suppress global config entries
+    res_conf = {
+        k: v for k, v in res_conf.items() if not k.startswith("linotp.")
+    }
     # --------------------------------------------------------------------- --
 
     # now prepare the resolver config output, which should contain
@@ -417,45 +420,34 @@ def getResolverInfo(resolvername, passwords=False):
     # - no global entries, starting with 'linotp.'
     # - adjusted passwords
     # - all values as text
-
-    for key in list(res_conf.keys()):
-        # suppress global config entries
-
-        if key.startswith("linotp."):
-            del res_conf[key]
-            continue
-
+    for key, value in res_conf.items():
         # should passwords be displayed?
         if key in resolver_cls.crypted_parameters:
             # we have to be sure that we only have encrypted data objects for
             # secret data
-            if not isinstance(res_conf[key], EncryptedData):
+            if not isinstance(value, EncryptedData):
                 raise Exception("Encrypted Data Object expected")
 
             # if parameter password is True, we need to unencrypt
             if passwords:
-                res_conf[key] = res_conf[key].get_unencrypted()
+                res_conf[key] = value.get_unencrypted()
 
         # as we have in the resolver config typed values, this might
         # lead to some trouble. so we prepare for output comparison
         # the string representation
 
-        if not isinstance(res_conf[key], str):
-            res_conf[key] = "%r" % res_conf[key]
+        if not isinstance(value, str):
+            res_conf[key] = "%r" % value
 
     if "readonly" in res_conf:
-        readonly = False
         try:
-            readonly = boolean(res_conf["readonly"])
+            result["readonly"] = boolean(res_conf["readonly"])
         except Exception:
             log.info(
                 "Failed to convert 'readonly' attribute %r:%r",
                 resolvername,
                 res_conf["readonly"],
             )
-
-        if readonly:
-            result["readonly"] = True
 
     result["type"] = resolver_type
     result["data"] = res_conf
@@ -705,22 +697,16 @@ def _get_resolver_config(resolver_config_identifier):
 
     # identify the fully qualified resolver spec by all possible resolver
     # prefixes, which are taken from the resolver_classes list
-    lookup_keys = []
-    config_keys = list(resolver_registry.keys())
-    for entry in config_keys:
-        lookup_keys.append("linotp." + entry)
+    lookup_keys = [f"linotp.{entry}" for entry in resolver_registry.keys()]
 
     # we got the resolver prefix, now we can search in the config for
     # all resolver configuration entries
-    resolver_config = {}
-    config = context["Config"]
-
-    for key, value in list(config.items()):
-        if key.endswith(resolver_config_identifier):
-            for entry in lookup_keys:
-                if key.startswith(entry):
-                    resolver_config[key] = value
-
+    resolver_config = {
+        key: value
+        for key, value in context["Config"].items()
+        if key.endswith(resolver_config_identifier)
+        and any(key.startswith(entry) for entry in lookup_keys)
+    }
     return resolver_config
 
 
@@ -928,10 +914,10 @@ def get_resolver_types():
 
     :return: array of resolvertypes like 'passwdresolver'
     """
-    types = []
-    for resolver_cls in list(resolver_registry.values()):
-        type_ = resolver_cls.getResolverClassType()
-        types.append(type_)
+    types = [
+        resolver_cls.getResolverClassType()
+        for resolver_cls in resolver_registry.values()
+    ]
     return types
 
 

@@ -270,11 +270,13 @@ class User(object):
         if not self.exists():
             return [self.realm or getDefaultRealm()]
 
-        realms = set()
-
-        for realm, realm_definition in list(getRealms().items()):
-            if self.resolver in realm_definition["useridresolver"]:
-                realms.add(realm)
+        realms = list(
+            {
+                realm
+                for realm, realm_definition in getRealms().items()
+                if self.resolver in realm_definition.get("useridresolver", [])
+            }
+        )
 
         return realms
 
@@ -348,28 +350,27 @@ class User(object):
         if not realms:
             return self._exists
 
-        found = []
-        for realm_name, definition in list(realms.items()):
+        for realm_name, definition in realms.items():
             resolvers = definition.get("useridresolver", [])
             for realm_resolver in resolvers:
                 log.debug("checking in %r", realm_resolver)
-                y = getResolverObject(realm_resolver)
-                if y:
-                    log.debug("checking in module %r", y)
-                    uid = y.getUserId(self.login)
-                    if not uid:
-                        continue
-                    found.append((self.login, realm_name, uid, realm_resolver))
-                    log.debug("type of uid: %s", type(uid))
-                    log.debug(
-                        "type of realm_resolver: %s", type(realm_resolver)
-                    )
+                resolver_obj = getResolverObject(realm_resolver)
+                if resolver_obj:
+                    log.debug("checking in module %r", resolver_obj)
+                    uid = resolver_obj.getUserId(self.login)
+                    if uid:
+                        log.debug("type of uid: %s", type(uid))
+                        log.debug(
+                            "type of realm_resolver: %s", type(realm_resolver)
+                        )
+                        self._exists = True
+                        self.realm = realm_name
+                        self.uid = uid
+                        self.resolver = realm_resolver
+                        return self._exists
                 else:
                     log.error("module %r not found!", realm_resolver)
 
-        if found:
-            self._exists = True
-            (self.login, self.realm, self.uid, self.resolver) = found[0]
         return self._exists
 
     def checkPass(self, password):
@@ -804,26 +805,20 @@ def getResolvers(user):
             return [resolver_spec]
 
     user_realm = user.realm.strip().lower()
-    lookup_realms = set()
 
     if user_realm and user_realm in realms:
-        lookup_realms.add(user_realm)
-
+        lookup_realms = {user_realm}
     elif user_realm.endswith("*"):
         pattern = user.realm.strip()[:-1]
-        for r in realms:
-            if r.startswith(pattern):
-                lookup_realms.add(r)
-
+        lookup_realms = {r for r in realms if r.startswith(pattern)}
     elif user_realm == "*":
-        for r in realms:
-            lookup_realms.add(r)
-
+        lookup_realms = set(realms)
     elif user_realm and user_realm not in realms:
-        pass
-
+        lookup_realms = set()
     elif default_realm:
-        lookup_realms.add(default_realm)
+        lookup_realms = {default_realm}
+    else:
+        lookup_realms = set()
 
     # finally try to get the reolvers for the user
 
@@ -1544,16 +1539,12 @@ def getUserListIterators(param, search_user):
     :param param: request params (dict), which might be realm or resolver conf
     :param search_user: restrict the resolvers to those of the search_user
     """
-    user_iters = []
-    searchDict = {}
-
     log.debug("Entering function getUserListIterator")
 
-    searchDict.update(param)
-    if "realm" in searchDict:
-        del searchDict["realm"]
-    if "resConf" in searchDict:
-        del searchDict["resConf"]
+    user_iters = []
+    searchDict = {
+        k: v for k, v in param.items() if k not in ("realm", "resConf")
+    }
     log.debug("searchDict %r", searchDict)
 
     resolverrrs = getResolvers(search_user)

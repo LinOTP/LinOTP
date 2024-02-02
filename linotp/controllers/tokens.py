@@ -255,11 +255,9 @@ class TokensController(BaseController, JWTMixin):
             result["totalRecords"] = info["tokens"]
 
             # now row by row
-            lines = []
-            for token in tokens:
-                formatted_token = TokenAdapter(token).to_JSON_format()
-                lines.append(formatted_token)
-            result["pageRecords"] = lines
+            result["pageRecords"] = [
+                TokenAdapter(token).to_JSON_format() for token in tokens
+            ]
 
             db.session.commit()
             return sendResult(result)

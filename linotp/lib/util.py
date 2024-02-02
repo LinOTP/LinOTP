@@ -27,6 +27,7 @@
 """ contains utility functions """
 
 import binascii
+import copy
 import logging
 import re
 import secrets
@@ -123,24 +124,16 @@ def get_request_param(request, key, default=None):
 
 
 def getLowerParams(param):
-    ret = {}
-    for key in param:
-        lkey = key.lower()
-        # strip the session parameter!
-        if "session" != lkey:
-            lval = param[key]
-            ret[lkey] = lval
-    return ret
+    return {
+        key.lower(): val
+        for key, val in param.items()
+        if key.lower() != "session"
+    }
 
 
 def uniquify(doubleList):
     # uniquify the realm list
-    uniqueList = []
-    for e in doubleList:
-        if e.lower() not in uniqueList:
-            uniqueList.append(e.lower())
-
-    return uniqueList
+    return list(set(map(str.lower, doubleList)))
 
 
 def generate_otpkey(key_size: int = 20) -> str:
@@ -186,12 +179,9 @@ def remove_session_from_param(param):
     session parameter in the param dictionary.
     So we remove the session from the params.
     """
-    return_param = {}
-    for key in list(param.keys()):
-        if "session" != key.lower():
-            return_param[key] = param[key]
-
-    return return_param
+    return {
+        key: value for key, value in param.items() if key.lower() != "session"
+    }
 
 
 ###############################################################################
@@ -466,14 +456,7 @@ def dict_copy(dict_):
     # iterative one, because our dicts are only
     # 3 to 4 levels deep.
 
-    copy = {}
-    for key, value in dict_.items():
-        if isinstance(value, dict):
-            fragment = {key: dict_copy(value)}
-        else:
-            fragment = {key: value}
-        copy.update(fragment)
-    return copy
+    return copy.deepcopy(dict_)
 
 
 # courtesies to pydantic:
@@ -484,9 +467,9 @@ def deep_update(
     for updating_mapping in updating_mappings:
         for k, v in updating_mapping.items():
             if (
-                k in updated_mapping
+                isinstance(v, dict)
+                and k in updated_mapping
                 and isinstance(updated_mapping[k], dict)
-                and isinstance(v, dict)
             ):
                 updated_mapping[k] = deep_update(updated_mapping[k], v)
             else:

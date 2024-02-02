@@ -471,9 +471,9 @@ def add_dynamic_selfservice_policies(config, actions):
     :return: hash of {tokentype : html for tab}
     """
 
-    dynamic_policies = []
+    dynamic_policies = set()
 
-    defined_policies = []
+    defined_policies = {pol.split("=")[0] for pol in actions if "=" in pol}
 
     for tok in tokenclass_registry:
         tclt = tokenclass_registry.get(tok)
@@ -482,17 +482,8 @@ def add_dynamic_selfservice_policies(config, actions):
             try:
                 policy = tclt.getClassInfo("policy", ret=None)
                 if policy is not None and "selfservice" in policy:
-                    scope_policies = list(policy.get("selfservice").keys())
-                    """ initialize the policies """
-                    if len(defined_policies) == 0:
-                        for pol in actions:
-                            if "=" in pol:
-                                (name, val) = pol.split("=")
-                                defined_policies.append(name)
-
-                    for local_policy in scope_policies:
-                        if local_policy not in defined_policies:
-                            dynamic_policies.append(local_policy)
+                    local_policies = policy["selfservice"].keys()
+                    dynamic_policies.update(local_policies)
             except Exception as exx:
                 log.info(
                     "[_add_dynamic_actions] no policy for tokentype "
@@ -501,7 +492,7 @@ def add_dynamic_selfservice_policies(config, actions):
                     exx,
                 )
 
-    return dynamic_policies
+    return list(dynamic_policies - defined_policies)
 
 
 def add_local_policies():

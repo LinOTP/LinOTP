@@ -201,7 +201,6 @@ class GettokenController(BaseController):
 
             if serial:
                 log.debug("[getotp] retrieving OTP value for token %s", serial)
-
             elif user.login:
                 log.debug(
                     "[getotp] retrieving OTP value for token for user "
@@ -219,8 +218,7 @@ class GettokenController(BaseController):
                         "Returning the list of serials"
                     )
                     res = -3
-                    for token in toks:
-                        serials.append(token.getSerial())
+                    serials = [token.getSerial() for token in toks]
                 elif 1 == tokennum:
                     serial = toks[0].getSerial()
                     log.debug(

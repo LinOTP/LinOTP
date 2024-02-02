@@ -602,9 +602,10 @@ class LinOTPApp(Flask):
 
         from linotp.provider import Provider_types, getProvider
 
-        provider = {}
-        for provider_type in list(Provider_types.keys()):
-            provider[provider_type] = getProvider(provider_type)
+        provider = {
+            provider_type: getProvider(provider_type)
+            for provider_type in Provider_types.keys()
+        }
 
         request_context["Provider"] = provider
 
@@ -720,9 +721,9 @@ class LinOTPApp(Flask):
         # AVAILABLE_CONTROLLERS
         enabled = self.config["ENABLE_CONTROLLERS"].strip()
 
-        available_controllers = set(
+        available_controllers = {
             controller.strip() for controller in enabled.split()
-        )
+        }
 
         if "ALL" in available_controllers:
             available_controllers = (
@@ -731,9 +732,7 @@ class LinOTPApp(Flask):
             available_controllers.remove("ALL")
 
         disabled = self.config["DISABLE_CONTROLLERS"].split()
-        disable_controllers = set(
-            controller.strip() for controller in disabled
-        )
+        disable_controllers = {controller.strip() for controller in disabled}
 
         controllers = available_controllers - disable_controllers
 

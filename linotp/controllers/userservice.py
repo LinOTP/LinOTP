@@ -194,11 +194,8 @@ def add_and_delete_cookies(response):
     `g.cookies_to_delete` and `g.cookies` variables.
     """
 
-    for name in g.cookies_to_delete:
-        response.delete_cookie(name)
-
-    for name, kwargs in g.cookies.items():
-        response.set_cookie(name, **kwargs)
+    [response.delete_cookie(name) for name in g.cookies_to_delete]
+    [response.set_cookie(name, **kwargs) for name, kwargs in g.cookies.items()]
 
 
 def unauthorized(exception, status=401):
@@ -1843,12 +1840,13 @@ class UserserviceController(BaseController):
 
                 challenge = valid_challenges[0]
 
-                serials = [c.tokenserial for c in valid_challenges]
-                serials = list(set(serials))  # remove duplicates
+                serials = {c.tokenserial for c in valid_challenges}
 
-                tokens = []
-                for serial in serials:
-                    tokens.extend(get_tokens(serial=serial))
+                tokens = [
+                    token
+                    for serial in serials
+                    for token in get_tokens(serial=serial)
+                ]
 
             elif serial:
                 tokens = get_tokens(serial=serial)

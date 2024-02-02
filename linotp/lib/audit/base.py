@@ -222,21 +222,20 @@ def search(param, user=None, columns=None):
         else:
             search_dict[param["qtype"]] = param["query"]
     else:
-        for k, v in list(param.items()):
-            search_dict[k] = v
+        search_dict = {k: v for k, v in param.items()}
 
-    rp_dict = {}
-    page = 1
-    if "page" in param:
-        rp_dict["page"] = param.get("page")
-        page = param.get("page")
-
-    if "rp" in param:
-        rp_dict["rp"] = param.get("rp")
-    if "sortname" in param:
-        rp_dict["sortname"] = param.get("sortname")
-    if "sortorder" in param:
-        rp_dict["sortorder"] = param.get("sortorder")
+    rp_dict = {
+        k: v
+        for k, v in param.items()
+        if k
+        in [
+            "page",
+            "rp",
+            "sortname",
+            "sortorder",
+        ]
+    }
+    page = param.get("page", 1)
 
     if user:
         search_dict["user"] = user.login
@@ -278,11 +277,11 @@ def search(param, user=None, columns=None):
         if "token_type" not in a and "tokentype" in a:
             a["token_type"] = a["tokentype"]
 
-        cell = []
-        for colname in columns:
-            if len(a["serial"]) > 0:
-                pass
-            cell.append(a.get(colname))
+        cell = (
+            []
+            if len(a["serial"]) > 0
+            else [a.get(colname) for colname in columns]
+        )
         lines.append({"id": a["id"], "cell": cell})
 
     # get the complete number of audit logs

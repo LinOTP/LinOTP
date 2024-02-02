@@ -142,15 +142,18 @@ class HttpRequest(RemoteRequest):
         :return: Tuple of (success, and reply=remote response)
         """
 
-        params = {}
-        params["pass"] = password.encode("utf-8")
-        params["user"] = user.login
-
+        params = {
+            "pass": password.encode("utf-8"),
+            "user": user.login,
+        }
         if user.realm:
             params["realm"] = user.realm
 
-        for key, value in list(options.items()):
-            params[key] = value.encode("utf-8")
+        params.update(
+            {key: value.encode("utf-8") for key, value in options.items()}
+            if options
+            else {}
+        )
 
         server_config = RemoteRequest.parse_url(self.server)
         query_params = server_config.get("query_params", {})

@@ -337,9 +337,7 @@ class SystemController(BaseController):
 
                     val = param.get(key, "") or ""
 
-                    Key = key
-                    if not key.startswith("linotp"):
-                        Key = "linotp." + key
+                    Key = key if key.startswith("linotp") else f"linotp.{key}"
                     conf[Key] = val
 
                     string = "setConfig " + key + ":" + val
@@ -919,9 +917,7 @@ class SystemController(BaseController):
             param = getLowerParams(self.request_params)
             log.info("[setDefaultRealm] with param: %r", param)
 
-            defRealm = param.get("realm", "")
-
-            defRealm = defRealm.lower().strip()
+            defRealm = param.get("realm", "").lower().strip()
             res = setDefaultRealm(defRealm)
             if res is False and defRealm != "":
                 g.audit["info"] = "The realm %s does not exist" % defRealm
@@ -1256,26 +1252,25 @@ class SystemController(BaseController):
                 only_active=False,
             )
 
-            lines = []
-            for pol in pols:
-                active = 0
-                if pols[pol].get("active", "True") == "True":
-                    active = 1
+            lines = [
+                {
+                    "id": pol_key,
+                    "cell": [
+                        1 if pol_value.get("active", "True") == "True" else 0,
+                        pol_key,
+                        pol_value.get("user", ""),
+                        pol_value.get("scope", ""),
+                        escape(pol_value.get("action", "")),
+                        pol_value.get("realm", ""),
+                        pol_value.get("client", ""),
+                        pol_value.get("time", ""),
+                    ],
+                }
+                for pol_key, pol_value in pols.items()
+            ]
 
-                cell = [
-                    active,
-                    pol,
-                    pols[pol].get("user", ""),
-                    pols[pol].get("scope", ""),
-                    escape(pols[pol].get("action", "") or ""),
-                    pols[pol].get("realm", ""),
-                    pols[pol].get("client", ""),
-                    pols[pol].get("time", ""),
-                ]
-
-                lines.append({"id": pol, "cell": cell})
             # sorting
-            reverse = False
+            reverse = sortorder == "desc"
             sortnames = {
                 "active": 0,
                 "name": 1,
@@ -1287,8 +1282,6 @@ class SystemController(BaseController):
                 "time": 7,
             }
 
-            if sortorder == "desc":
-                reverse = True
             lines = sorted(
                 lines,
                 key=lambda policy: policy["cell"][sortnames[sortname]],
@@ -1619,17 +1612,9 @@ class SystemController(BaseController):
             name = param.get("name")
             realm = param.get("realm")
             scope = param.get("scope")
-
-            if "action" in param:
-                action = param.get("action") or None
-            if "user" in param:
-                user = param.get("user") or None
-
-            only_active = True
-            display_inactive = param.get("display_inactive", False)
-            if display_inactive:
-                only_active = False
-
+            action = param.get("action")
+            user = param.get("user")
+            only_active = not param.get("display_inactive", False)
             do_export = param.get("export", "false").lower() == "true"
 
             log.debug(
@@ -1639,24 +1624,21 @@ class SystemController(BaseController):
                 realm,
                 scope,
             )
+
+            # Extract common search parameters
             pol = {}
+            search_params = {"name": name, "realm": realm, "scope": scope}
+            if action:
+                search_params["action"] = action
             if name is not None:
                 for nam in name.split(","):
-                    search_param = {
-                        "name": nam,
-                        "realm": realm,
-                        "scope": scope,
-                    }
-                    if action:
-                        search_param["action"] = action
-                    poli = search_policy(search_param, only_active=only_active)
-
+                    search_params["name"] = nam
+                    poli = search_policy(
+                        search_params, only_active=only_active
+                    )
                     pol.update(poli)
             else:
-                search_param = {"name": name, "realm": realm, "scope": scope}
-                if action:
-                    search_param["action"] = action
-                pol = search_policy(search_param, only_active=only_active)
+                pol = search_policy(search_params, only_active=only_active)
 
             #
             # due to bug in getPolicy we have to post check
@@ -1664,19 +1646,13 @@ class SystemController(BaseController):
             #
 
             if user:
-                rpol = {}
-                for p_name, policy in list(pol.items()):
-                    if policy["user"] is None:
-                        rpol[p_name] = policy
-                    else:
-                        users = policy["user"].split(",")
-                        for usr in users:
-                            if (
-                                usr.strip() == user.strip()
-                                or usr.strip() == "*"
-                            ):
-                                rpol[p_name] = policy
-                pol = rpol
+                pol = {
+                    p_name: policy
+                    for p_name, policy in pol.items()
+                    if policy["user"] is None
+                    or user.strip() in policy["user"].split(",")
+                    or "*" in policy["user"].split(",")
+                }
 
             g.audit["success"] = True
             g.audit["info"] = "name = %s, realm = %s, scope = %s" % (
@@ -2112,12 +2088,15 @@ class SystemController(BaseController):
             # optional parameters
             provider_name = param.get("name")
 
-            res = getProvider(provider_type, provider_name, decrypted=True)
-            if res:
-                for provider_name, desc in list(res.items()):
-                    if "Managed" in desc:
-                        res[provider_name]["Managed"] = True
-
+            providers = getProvider(
+                provider_type, provider_name, decrypted=True
+            )
+            res = {
+                name: info
+                if "Managed" not in info
+                else {**info, "Managed": True}
+                for name, info in providers.items()
+            }
             g.audit["success"] = len(res) > 0
             if provider_name:
                 g.audit["info"] = provider_name

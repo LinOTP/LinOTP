@@ -370,18 +370,15 @@ class FinishTokens(object):
 
     @staticmethod
     def reset_failcounter(all_tokens):
-        for token in all_tokens:
-            token.reset()
+        [token.reset() for token in all_tokens]
 
     @staticmethod
     def increment_counters(all_tokens, reset=True):
-        for token in all_tokens:
-            token.incOtpCounter(reset=reset)
+        [token.incOtpCounter(reset=reset) for token in all_tokens]
 
     @staticmethod
     def increment_failcounters(all_tokens):
-        for token in all_tokens:
-            token.incOtpFailCounter()
+        [token.incOtpFailCounter() for token in all_tokens]
 
     def create_audit_entry(self, action_detail="no token found!", tokens=None):
         """
@@ -404,16 +401,12 @@ class FinishTokens(object):
             return
 
         # for multiple tokens we concat the serials / types of all token
-        serials = set()
-        types = set()
-
-        for token in tokens:
-            serials.add(token.getSerial())
-            types.add(token.getType())
+        serials = {token.getSerial() for token in tokens}
+        types = {token.getType() for token in tokens}
 
         # TODO: move the limit of serials and types into the audit module
-        g.audit["serial"] = " ".join(list(serials))[:29]
-        g.audit["token_type"] = " ".join(list(types))[:39]
+        g.audit["serial"] = " ".join(serials)[:29]
+        g.audit["token_type"] = " ".join(types)[:39]
 
         return
 

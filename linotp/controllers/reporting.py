@@ -151,7 +151,6 @@ class ReportingController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        result = {}
         try:
             # ------------------------------------------------------------- --
             start = datetime(year=1970, month=1, day=1)
@@ -164,17 +163,19 @@ class ReportingController(BaseController):
 
             request_realms = self.request_params.get("realms", "").split(",")
             status = self.request_params.get("status", ["total"])
-            if status != ["total"]:
-                status = status.split(",")
+            status = status.split(",") if status != ["total"] else ["total"]
 
             realms = self._match_allowed_realms(request_realms)
 
-            for realm in realms:
-                result[realm] = {}
-                for stat in status:
-                    result[realm][stat] = get_max_token_count_in_period(
+            result = {
+                realm: {
+                    stat: get_max_token_count_in_period(
                         realm, status=stat, start=start, end=end
                     )
+                    for stat in status
+                }
+                for realm in realms
+            }
             return sendResult(result)
 
         except PolicyException as policy_exception:
@@ -234,12 +235,10 @@ class ReportingController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        result = {}
         try:
             request_realms = self.request_params.get("realms", "").split(",")
             status = self.request_params.get("status", ["total"])
-            if status != ["total"]:
-                status = status.split(",")
+            status = status.split(",") if status != ["total"] else ["total"]
 
             # ------------------------------------------------------------- --
 
@@ -267,34 +266,29 @@ class ReportingController(BaseController):
 
             realms = self._match_allowed_realms(request_realms)
 
-            result["realms"] = []
+            result = {
+                "realms": [],
+                "from": start.isoformat(),
+                "to": end.isoformat(),
+            }
             for realm in realms:
-                result_realm = {"name": realm}
-                max_token_counts = {}
+                result_realm = {"name": realm, "maxtokencount": {}}
                 for stat in status:
                     # search for the max token in the period [start : end]
-
                     max_token_stat = get_max_token_count_in_period(
                         realm, status=stat, start=start, end=end
                     )
 
                     # if none is found (-1) we search for the last entry
                     # before the period start
-
                     if max_token_stat == -1:
                         max_token_stat = get_last_token_count_before_date(
                             realm, status=stat, before_date=start
                         )
 
-                    max_token_counts[stat] = max_token_stat
+                    result_realm["maxtokencount"][stat] = max_token_stat
 
-                result_realm["maxtokencount"] = max_token_counts
                 result["realms"].append(result_realm)
-
-            result["period"] = {
-                "from": start.isoformat(),
-                "to": end.isoformat(),
-            }
 
             return sendResult(result)
 

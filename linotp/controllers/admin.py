@@ -287,9 +287,9 @@ class AdminController(BaseController, JWTMixin):
             output_format = param.get("outform")
             is_tokeninfo_json = param.get("tokeninfo_format") == "json"
 
-            user_fields = []
-            if ufields:
-                user_fields = [u.strip() for u in ufields.split(",")]
+            user_fields = (
+                [u.strip() for u in ufields.split(",")] if ufields else []
+            )
 
             user = getUserFromParam(param)
 
@@ -397,15 +397,23 @@ class AdminController(BaseController, JWTMixin):
 
             if user:
                 tokens = get_tokens(user)
-                for token in tokens:
-                    serials.add(token.getSerial())
+                serials.update(token.getSerial() for token in tokens)
+
+            g.audit["serial"] = " ".join(serials)
+
+            realms = {
+                realm
+                for serial in set(serials)
+                for realm in getTokenRealms(serial)
+            }
+
+            g.audit["realm"] = "%r" % realms
 
             log.info(
                 "[remove] removing token with serial %r for user %r",
                 serials,
                 user.login,
             )
-            g.audit["serial"] = " ".join(serials)
 
             ret = 0
             check_params = {}
@@ -1273,9 +1281,11 @@ class AdminController(BaseController, JWTMixin):
             except KeyError:
                 raise ParameterError("missing parameter: tokens[]")
 
-            tokens = []
-            for serial in serials:
-                tokens.extend(get_tokens(serial=serial))
+            tokens = [
+                token
+                for serial in serials
+                for token in get_tokens(serial=serial)
+            ]
 
             # -------------------------------------------------------------- --
 
@@ -1572,12 +1582,9 @@ class AdminController(BaseController, JWTMixin):
                     serial,
                 )
                 tokens = get_tokens(user, serial)
-                ret = 0
-                for tok in tokens:
-                    tok.count_auth = ca
-                    count = count + 1
-                    ret += 1
-                res["set countAuth"] = ret
+                [setattr(token, "count_auth", ca) for token in tokens]
+                count += len(tokens)
+                res["set countAuth"] = len(tokens)
                 g.audit["action_detail"] += "countAuth=%d, " % ca
 
             if "countAuthMax".lower() in param:
@@ -1589,12 +1596,9 @@ class AdminController(BaseController, JWTMixin):
                     serial,
                 )
                 tokens = get_tokens(user, serial)
-                ret = 0
-                for tok in tokens:
-                    tok.count_auth_max = ca
-                    count = count + 1
-                    ret += 1
-                res["set countAuthMax"] = ret
+                [setattr(tok, "count_auth_max", ca) for tok in tokens]
+                count += len(tokens)
+                res["set countAuthMax"] = len(tokens)
                 g.audit["action_detail"] += "countAuthMax=%d, " % ca
 
             if "countAuthSuccess".lower() in param:
@@ -1607,12 +1611,9 @@ class AdminController(BaseController, JWTMixin):
                     serial,
                 )
                 tokens = get_tokens(user, serial)
-                ret = 0
-                for tok in tokens:
-                    tok.count_auth_success = ca
-                    count = count + 1
-                    ret += 1
-                res["set countAuthSuccess"] = ret
+                [setattr(tok, "count_auth_success", ca) for tok in tokens]
+                count += len(tokens)
+                res["set countAuthSuccess"] = len(tokens)
                 g.audit["action_detail"] += "countAuthSuccess=%d, " % ca
 
             if "countAuthSuccessMax".lower() in param:
@@ -1625,12 +1626,9 @@ class AdminController(BaseController, JWTMixin):
                     serial,
                 )
                 tokens = get_tokens(user, serial)
-                ret = 0
-                for tok in tokens:
-                    tok.count_auth_success_max = ca
-                    count = count + 1
-                    ret += 1
-                res["set countAuthSuccessMax"] = ret
+                [setattr(tok, "count_auth_success_max", ca) for tok in tokens]
+                count += len(tokens)
+                res["set countAuthSuccessMax"] = len(tokens)
                 g.audit["action_detail"] += "countAuthSuccessMax=%d, " % ca
 
             if "validityPeriodStart".lower() in param:
@@ -1643,12 +1641,9 @@ class AdminController(BaseController, JWTMixin):
                     serial,
                 )
                 tokens = get_tokens(user, serial)
-                ret = 0
-                for tok in tokens:
-                    tok.validity_period_start = ca
-                    count = count + 1
-                    ret += 1
-                res["set validityPeriodStart"] = ret
+                [setattr(tok, "validity_period_start", ca) for tok in tokens]
+                count += len(tokens)
+                res["set validityPeriodStart"] = len(tokens)
                 g.audit["action_detail"] += "validityPeriodStart=%s, " % str(
                     ca
                 )
@@ -1663,12 +1658,9 @@ class AdminController(BaseController, JWTMixin):
                     serial,
                 )
                 tokens = get_tokens(user, serial)
-                ret = 0
-                for tok in tokens:
-                    tok.validity_period_end = ca
-                    count = count + 1
-                    ret += 1
-                res["set validityPeriodEnd"] = ret
+                [setattr(tok, "validity_period_end", ca) for tok in tokens]
+                count += len(tokens)
+                res["set validityPeriodEnd"] = len(tokens)
                 g.audit["action_detail"] += "validityPeriodEnd=%s, " % str(ca)
 
             if "phone" in param:
@@ -1680,12 +1672,10 @@ class AdminController(BaseController, JWTMixin):
                     serial,
                 )
                 tokens = get_tokens(user, serial)
-                ret = 0
                 for tok in tokens:
                     tok.addToTokenInfo("phone", ca)
-                    count = count + 1
-                    ret += 1
-                res["set phone"] = ret
+                count += len(tokens)
+                res["set phone"] = len(tokens)
                 g.audit["action_detail"] += "phone=%s, " % str(ca)
 
             if count == 0:

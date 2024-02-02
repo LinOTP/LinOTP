@@ -251,28 +251,21 @@ class ValidationHandler(object):
 
         :return: tuple of boolean and detail dict
         """
-        reply = {}
 
-        serials = []
         challenges = Challenges.lookup_challenges(transid=transid)
-
-        for challenge in challenges:
-            serials.append(challenge.tokenserial)
+        serials = [challenge.tokenserial for challenge in challenges]
 
         if not serials:
-            reply["value"] = False
-            reply["failure"] = (
-                "No challenge for transaction %r found" % transid
-            )
-
+            reply = {
+                "value": False,
+                "failure": "No challenge for transaction %r found" % transid,
+            }
             return False, reply
 
         ok = False
-        reply["failcount"] = 0
-        reply["value"] = False
-        reply["token_type"] = ""
+        reply = {"value": False, "failcount": 0, "token_type": ""}
 
-        token_type = options.get("token_type", None)
+        token_type = options.get("token_type") if options else None
 
         for serial in serials:
             tokens = get_tokens(
@@ -295,10 +288,14 @@ class ValidationHandler(object):
             if opt:
                 reply.update(opt)
 
-            reply["value"] = ok
-            reply["token_type"] = token.getType()
-            reply["failcount"] = token.getFailCount()
-            reply["serial"] = token.getSerial()
+            reply.update(
+                {
+                    "value": ok,
+                    "token_type": token.getType(),
+                    "failcount": token.getFailCount(),
+                    "serial": token.getSerial(),
+                }
+            )
 
             if ok:
                 break
@@ -898,10 +895,11 @@ class ValidationHandler(object):
         challenge_tokens = list(set(challenge_tokens))
 
         # end of token verification loop
-        matching_challenges = []
-        for token in valid_tokens:
-            matching_challenges.extend(token.matching_challenges)
-
+        matching_challenges = [
+            challenge
+            for token in valid_tokens
+            for challenge in token.matching_challenges
+        ]
         matching_challenges = list(set(matching_challenges))
 
         # if there are related / sub challenges, we have to call their janitor
@@ -975,8 +973,6 @@ class ValidationHandler(object):
         opt = None
         res = False
 
-        tokenList = []
-
         # strip the yubico OTP and the PIN
         modhex_serial = passw[:-32][-16:]
         try:
@@ -987,15 +983,16 @@ class ValidationHandler(object):
             return res, opt
 
         #  build list of possible yubikey tokens
-        serials = [serialnum]
-        for i in range(1, 3):
-            serials.append("%s_%s" % (serialnum, i))
+        serials = [f"{serialnum}_{i}" for i in range(3)]
+        serials.insert(0, serialnum)
 
-        for serial in serials:
-            tokens = get_tokens(serial=serial, read_for_update=True)
-            tokenList.extend(tokens)
+        tokenList = [
+            token
+            for serial in serials
+            for token in get_tokens(serial=serial, read_for_update=True)
+        ]
 
-        if len(tokenList) == 0:
+        if not tokenList:
             g.audit["action_detail"] = (
                 "The serial %s could not be found!" % serialnum
             )

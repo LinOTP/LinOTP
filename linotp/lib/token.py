@@ -692,18 +692,14 @@ class TokenHandler(object):
         token_type = options.get("token_type", None)
 
         # List of (token, pin) pairs
-        matching_tokens = []
-
-        tokens = self.getTokensOfType(
-            typ=token_type, realm=token_src_realm, assigned="0"
-        )
-        for token in tokens:
-            token_exists = token.check_otp_exist(
-                otp=otp, window=token.getOtpCountWindow()
+        matching_tokens = [
+            token
+            for token in self.getTokensOfType(
+                typ=token_type, realm=token_src_realm, assigned="0"
             )
-
-            if token_exists >= 0:
-                matching_tokens.append(token)
+            if token.check_otp_exist(otp=otp, window=token.getOtpCountWindow())
+            >= 0
+        ]
 
         if len(matching_tokens) != 1:
             log.warning(
@@ -958,18 +954,18 @@ class TokenHandler(object):
 
         :return:         returns the token object.
         """
-        result_token = None
-
-        validation_results = []
         log.debug("Searching appropriate token for otp %r", otp)
+
+        result_token = None
 
         if token_list is None:
             token_list = self.getTokensOfType(typ, realm, assigned)
 
-        for token in token_list:
-            r = token.check_otp_exist(otp=otp, window=window)
-            if r >= 0:
-                validation_results.append(token)
+        validation_results = [
+            token
+            for token in token_list
+            if token.check_otp_exist(otp=otp, window=window) >= 0
+        ]
 
         if len(validation_results) == 1:
             result_token = validation_results[0]
@@ -993,7 +989,6 @@ class TokenHandler(object):
            3. assigned or unassigned tokens (1/0)
         TODO: rename function to "getTokens"
         """
-        tokenList = []
         sqlQuery = Token.query
         if typ is not None:
             # filter for type
@@ -1024,13 +1019,15 @@ class TokenHandler(object):
                 )
             ).distinct()
 
-        for token in sqlQuery:
-            # the token is the database object, but we want
-            # an instance of the tokenclass!
-            tokenList.append(createTokenClassObject(token))
-
-        log.debug("[getTokensOfType] retrieved matching tokens: %r", tokenList)
-        return tokenList
+        # the token is the database object, but we want
+        # an instance of the tokenclass!
+        token_list = [
+            createTokenClassObject(token) for token in sqlQuery.all()
+        ]
+        log.debug(
+            "[getTokensOfType] retrieved matching tokens: %r", token_list
+        )
+        return token_list
 
     def removeToken(self, user=None, serial=None):
         """
@@ -1067,7 +1064,6 @@ class TokenHandler(object):
             #  due to legacy SQLAlchemy it could happen that the
             #  foreign key relation could not be deleted
             #  so we do this manualy
-
             for t_id in set(token_ids):
                 TokenRealm.query.filter(TokenRealm.token_id == t_id).delete()
 
@@ -1385,10 +1381,10 @@ def get_token_type_list():
 
     :return: list of token types
     """
-    token_types = []
-
-    for token_class_obj in set(tokenclass_registry.values()):
-        token_types.append(token_class_obj.getClassType())
+    token_types = [
+        token_class.getClassType()
+        for token_class in set(tokenclass_registry.values())
+    ]
 
     return token_types
 
@@ -1428,8 +1424,7 @@ def getRealms4Token(user, tokenrealm=None):
             log.debug("[getRealms4Token] String: adding realm: %r", tokenrealm)
             realms.append(tokenrealm)
         elif isinstance(tokenrealm, list):
-            for tr in tokenrealm:
-                realms.append(tr)
+            realms.extend(tokenrealm)
 
     realmList = realm2Objects(realms)
 
@@ -1443,13 +1438,10 @@ def get_tokenserial_of_transaction(transId):
     :param transId: the state / transaction id
     :return: the serial number or None
     """
-    serials = []
-
-    challenges = Challenges.lookup_challenges(transid=transId)
-
-    for challenge in challenges:
-        serials.append(challenge.tokenserial)
-
+    serials = [
+        challenge.tokenserial
+        for challenge in Challenges.lookup_challenges(transid=transId)
+    ]
     return serials
 
 

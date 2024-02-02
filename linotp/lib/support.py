@@ -918,21 +918,24 @@ def get_public_keys():
     :return: list with unique public keys
     """
 
-    pubKeys = {}  # we use a dict to preserve the type of the license
-    pubKeys["linotp"] = PUB_KEY_LINOTP
+    # we use a dict to preserve the type of the license
+    pubKeys = {"linotp": PUB_KEY_LINOTP}
 
-    key_files = set()
-    for key_dir in PUB_KEY_DIRS:
-        if os.path.isdir(key_dir):
-            for key_file in os.listdir(key_dir):
-                for extension in PUB_KEY_EXTS:
-                    if key_file.endswith(extension):
-                        key_files.add(os.path.join(key_dir, key_file))
+    def has_valid_extension(file_name):
+        return any(file_name.endswith(extension) for extension in PUB_KEY_EXTS)
+
+    key_files = {
+        os.path.join(key_dir, key_file)
+        for key_dir in PUB_KEY_DIRS
+        if os.path.isdir(key_dir)
+        for key_file in os.listdir(key_dir)
+        if has_valid_extension(key_file)
+    }
 
     for key_file in key_files:
         try:
             key_text = readPublicKey(key_file)
-            if key_text and key_text not in list(pubKeys.values()):
+            if key_text and key_text not in pubKeys.values():
                 idx = os.path.split(key_file)[-1]
                 if idx[-4:] == ".pem":
                     idx, _sep, _rest = idx.rpartition(".pem")
@@ -1047,12 +1050,7 @@ def readPublicKey(filename):
             exx,
         )
 
-    pem_lines = []
-    lines = pem.split("\n")
-    for line in lines:
-        # we drop all empty lines
-        if line.strip():
-            pem_lines.append(line)
+    pem_lines = [line for line in pem.split("\n") if line.strip()]
 
     # only add keys, which contain key definition at start and at end
     if (

@@ -100,15 +100,10 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     # defined by utf8 in bytes + the clipping of 6 bytes each. But as this
     # could vary, we could not calculate the number of chunks and thus use
     # an iterator to split the value into chunks
-
-    chunks = []
-    if len(value) < len(value.encode("utf-8")):
-        text_slice = utf8_slice
-    else:
-        text_slice = simple_slice
-
-    for cont_value in text_slice(value, MAX_VALUE_LEN):
-        chunks.append(cont_value)
+    text_slice = (
+        utf8_slice if len(value) < len(value.encode("utf-8")) else simple_slice
+    )
+    chunks = [cont_value for cont_value in text_slice(value, MAX_VALUE_LEN)]
 
     # ---------------------------------------------------------------------- --
 
