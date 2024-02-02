@@ -825,19 +825,21 @@ def setupResolvers(config=None, cache_dir="/tmp"):
     unique_resolver_classes = set(resolver_classes)
 
     for resolver_cls in unique_resolver_classes:
-        if hasattr(resolver_cls, "setup"):
-            try:
-                if not hasattr(resolver_cls, "_setup_done"):
-                    resolver_cls.setup(config=config, cache_dir=cache_dir)
-                    setattr(resolver_cls, "_setup_done", True)
+        if not hasattr(resolver_cls, "setup") or hasattr(
+            resolver_cls, "_setup_done"
+        ):
+            continue
 
-            except Exception as exx:
-                log.error(
-                    "Resolver setup: Failed to call setup of %r. "
-                    "Exception was %r",
-                    resolver_cls,
-                    exx,
-                )
+        try:
+            resolver_cls.setup(config=config, cache_dir=cache_dir)
+            setattr(resolver_cls, "_setup_done", True)
+        except Exception as exx:
+            log.error(
+                "Resolver setup: Failed to call setup of %r. "
+                "Exception was %r",
+                resolver_cls,
+                exx,
+            )
 
 
 def initResolvers():

@@ -396,13 +396,11 @@ class Challenges(object):
             c_now = datetime.datetime.now()
             if c_now > c_expire_time:
                 expired_challenges.append(challenge)
-            else:
+            elif filter_open and challenge.is_open():
                 # if we want to see only the open challenges, we check so :)
-                if filter_open:
-                    if challenge.is_open():
-                        valid_chalenges.append(challenge)
-                else:
-                    valid_chalenges.append(challenge)
+                valid_chalenges.append(challenge)
+            elif not filter_open:
+                valid_chalenges.append(challenge)
 
         return expired_challenges, valid_chalenges
 

@@ -165,13 +165,15 @@ class ExtFlaskConfig(FlaskConfig):
         This is particularly useful when using LinOTP in a Docker-like
         environment.
         """
-        if self.config_schema is not None:
-            for key, value in os.environ.items():
-                if key.startswith(ENV_PREFIX) and key != f"{ENV_PREFIX}CFG":
-                    config_key = key[ENV_PREFIX_LENGTH:]
-                    item = self.config_schema.find_item(config_key)
-                    if item is not None:
-                        self[config_key] = value
+        if self.config_schema is None:
+            return
+        for key, value in os.environ.items():
+            if key.startswith(ENV_PREFIX) and key != f"{ENV_PREFIX}CFG":
+                config_key = key[ENV_PREFIX_LENGTH:]
+                item = self.config_schema.find_item(config_key)
+                if item is not None:
+                    self[config_key] = value
+                    log.debug("Set %s from environment variable.", config_key)
 
     def update(self, config_dict):
         """Take configuration variables from a dictionary. We don't want
