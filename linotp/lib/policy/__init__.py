@@ -3635,7 +3635,7 @@ def get_pin_policies(user):
     return pin_policies
 
 
-def check_token_reporting(realm):
+def get_active_token_statuses_for_reporting(realm):
     """
     parse reporting policies for given realm and user
     :param realm: the realm to be reported

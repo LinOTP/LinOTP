@@ -31,7 +31,7 @@ from sqlalchemy import and_, func, or_
 
 from linotp.lib.context import request_context
 from linotp.lib.monitoring import MonitorHandler
-from linotp.lib.policy import check_token_reporting
+from linotp.lib.policy import get_active_token_statuses_for_reporting
 from linotp.model import db
 from linotp.model.reporting import Reporting
 
@@ -65,7 +65,7 @@ def token_reporting(event, tokenrealms):
         realms = [tokenrealms]
 
     for realm in realms:
-        action = check_token_reporting(realm)
+        action = get_active_token_statuses_for_reporting(realm)
         mh = MonitorHandler()
         counters = mh.token_count(realm, action[:])
         for key, val in list(counters.items()):

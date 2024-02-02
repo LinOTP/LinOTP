@@ -44,8 +44,8 @@ from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.policy import (
     PolicyException,
-    check_token_reporting,
     checkAuthorisation,
+    get_active_token_statuses_for_reporting,
     getAdminPolicies,
 )
 from linotp.lib.realm import match_realms
@@ -557,7 +557,8 @@ class ReportingController(BaseController):
             realms = self._match_allowed_realms(request_realms)
 
             statuses = {
-                realm: check_token_reporting(realm) for realm in realms
+                realm: get_active_token_statuses_for_reporting(realm)
+                for realm in realms
             }
 
             db.session.commit()
