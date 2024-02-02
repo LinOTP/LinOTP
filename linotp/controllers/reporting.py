@@ -32,6 +32,7 @@ reporting controller - interfaces for Reporting
 """
 import logging
 from datetime import datetime, timedelta
+from typing import List
 
 from werkzeug.datastructures import Headers
 
@@ -44,6 +45,7 @@ from linotp.lib.context import request_context
 from linotp.lib.policy import (
     PolicyException,
     checkAuthorisation,
+    get_active_token_statuses_for_reporting,
     getAdminPolicies,
 )
 from linotp.lib.realm import match_realms
@@ -112,6 +114,33 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(exception, context="after")
 
+    @staticmethod
+    def _match_allowed_realms(requested_realms: List[str]):
+        """Returns a list of realm names the user is allowed to access for given scope.action.
+
+        Args:
+            requested_realms (List[str]): List of realms, the user wants to access.
+                Use `["*"]` to match against all realms including "/:no realm:/".
+
+        Returns:
+            List[str]: List of realms the user is allowed to access for given action.
+        """
+        scope = "reporting.access"
+        action = request_context["action"]
+
+        realm_whitelist = []
+        policies = getAdminPolicies(action, scope)
+
+        if policies["active"] and policies["realms"]:
+            realm_whitelist = policies.get("realms")
+
+        # if there are no policies for us, we are allowed to see all realms
+        if not realm_whitelist or "*" in realm_whitelist:
+            realm_whitelist = list(request_context["Realms"].keys())
+
+        realms = match_realms(requested_realms, realm_whitelist)
+        return realms
+
     @deprecated_methods(["POST"])
     def maximum(self):
         """
@@ -150,17 +179,7 @@ class ReportingController(BaseController):
             if status != ["total"]:
                 status = status.split(",")
 
-            realm_whitelist = []
-            policies = getAdminPolicies("maximum", scope="reporting.access")
-
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = list(request_context["Realms"].keys())
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             for realm in realms:
                 result[realm] = {}
@@ -258,16 +277,7 @@ class ReportingController(BaseController):
 
             # ------------------------------------------------------------- --
 
-            realm_whitelist = []
-            policies = getAdminPolicies("period", scope="reporting.access")
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = request_context["Realms"].keys()
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             result["realms"] = []
             for realm in realms:
@@ -335,17 +345,7 @@ class ReportingController(BaseController):
             if status != ["total"]:
                 status = status.split(",")
 
-            realm_whitelist = []
-            policies = getAdminPolicies("delete_all", scope="reporting.access")
-
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = list(request_context["Realms"].keys())
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             if "*" in status:
                 status.remove("*")
@@ -412,17 +412,7 @@ class ReportingController(BaseController):
             # this may throw ValueError if date is in wrong format
             datetime.strptime(border_day, "%Y-%m-%d")
 
-            realm_whitelist = []
-            policies = getAdminPolicies("delete_before", scope="reporting")
-
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = list(request_context["Realms"].keys())
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             result = delete(date=border_day, realms=realms, status=status)
             db.session.commit()
@@ -494,17 +484,7 @@ class ReportingController(BaseController):
             if "date" in param:
                 start_day = convert_to_datetime(param.get("date"), TIME_FMTS)
 
-            realm_whitelist = []
-            policies = getAdminPolicies("show", scope="reporting.access")
-
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = list(request_context["Realms"].keys())
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             reports = ReportingIterator(
                 realms=realms,
@@ -552,6 +532,41 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(value_error, 1)
 
+        except Exception as exc:
+            log.error(exc)
+            db.session.rollback()
+            return sendError(exc)
+
+    @deprecated_methods(["POST"])
+    def reported_statuses(self):
+        """
+        description:
+            get all reported token_status per realm
+
+        :param realms: (optional) specifies the realms for which token status will be returned.
+            Use "*" to get all realms the requesting user has access to including "/:no realm:/".
+
+        :return: Dict[str, List[str]] of all reported token_status per requested realm.
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+        """
+        try:
+            request_realms = self.request_params.get("realms", "").split(",")
+
+            realms = self._match_allowed_realms(request_realms)
+
+            statuses = {
+                realm: get_active_token_statuses_for_reporting(realm)
+                for realm in realms
+            }
+
+            db.session.commit()
+            return sendResult(statuses)
+        except PolicyException as policy_exception:
+            log.error(policy_exception)
+            db.session.rollback()
+            return sendError(policy_exception, 1)
         except Exception as exc:
             log.error(exc)
             db.session.rollback()

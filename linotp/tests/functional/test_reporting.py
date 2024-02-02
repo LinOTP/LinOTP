@@ -981,6 +981,88 @@ class TestReportingController(TestController):
 
             assert len(response.json["result"]["value"]) == 4, response.json
 
+    def test_reported_statuses(self):
+        # set policies:
+        policy_params = [
+            {
+                "name": "test_reported_statuses1",
+                "scope": "reporting",
+                "action": "token_status=inactive",
+                "user": "*",
+                "realm": "*",
+            },
+            {
+                "name": "test_reported_statuses2",
+                "scope": "reporting",
+                "action": "token_total, token_status=active",
+                "user": "*",
+                "realm": "mydefrealm,mymixrealm",
+            },
+            {
+                "name": "test_reported_statuses3",
+                "scope": "reporting",
+                "action": "token_total, token_status=assigned",
+                "user": "*",
+                "realm": "mydefrealm",
+            },
+        ]
+        for params in policy_params:
+            self.create_policy(params)
+
+        response = self.make_reporting_request("reported_statuses")
+
+        resp = json.loads(response.body)
+        values = resp.get("result")
+        assert values.get("status"), response
+        expected = {
+            "mymixrealm": ["active", "total"],
+            "mydefrealm": ["active", "assigned", "total"],
+            "linotp_admins": ["inactive"],
+            "myotherrealm": ["inactive"],
+        }
+        result = {k: sorted(v) for k, v in values.get("value").items()}
+        assert result == expected, response
+
+        params = {"realms": "*"}
+        response = self.make_reporting_request("reported_statuses", params)
+
+        resp = json.loads(response.body)
+        values = resp.get("result")
+        assert values.get("status"), response
+        expected = {
+            "mymixrealm": ["active", "total"],
+            "mydefrealm": ["active", "assigned", "total"],
+            "linotp_admins": ["inactive"],
+            "myotherrealm": ["inactive"],
+            "/:no realm:/": ["inactive"],
+        }
+        result = {k: sorted(v) for k, v in values.get("value").items()}
+        assert result == expected, response
+
+        #######################
+        # restrict user `admin` access to only realm `mydefrealm`
+        policy_params = {
+            "name": "restrict_reported_statuses",
+            "scope": "reporting.access",
+            "action": "reported_statuses",
+            "user": "admin",
+            "realm": "mydefrealm",
+        }
+        self.create_policy(policy_params)
+
+        params = {"realms": "*"}
+        response = self.make_reporting_request("reported_statuses", params)
+
+        resp = json.loads(response.body)
+        values = resp.get("result")
+        assert values.get("status"), response
+        expected = {
+            "mydefrealm": ["active", "assigned", "total"],
+            "/:no realm:/": ["inactive"],
+        }
+        result = {k: sorted(v) for k, v in values.get("value").items()}
+        assert result == expected, response
+
     def test_bug_1479_token_enrollment(self):
         """Not really to do with the reporting controller but still a
         possible reporting issue. This could not be reproduced but we're
@@ -1008,3 +1090,113 @@ class TestReportingController(TestController):
         }
         response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response
+
+    def test_bug_LINOTP_2086_delete_before(self):
+        """
+        This test is to show the fix for bug LINOTP_2086 where the user could delete entries
+        of realms they did not have access to, because the checked policy scope
+        was `reporting` instead of `reporting.access`.
+        """
+        self.delete_all_reports()
+
+        # set policy to prevent user `admin` from accessing `delete_before` for `mydefrealm`:
+        policy_params = {
+            "name": "test_delete_before",
+            "scope": "reporting.access",
+            "action": "*",
+            "user": "admin",
+            "realm": "mymixrealm",
+        }
+
+        self.create_policy(policy_params)
+
+        today = datetime.now()
+        yesterday = today - timedelta(days=1)
+        two_days_ago = today - timedelta(days=2)
+
+        # create old reports:
+        report_2 = Reporting(
+            timestamp=two_days_ago,
+            event="token_init",
+            realm="mydefrealm",
+            parameter="active",
+            count=1,
+        )
+        report_1 = Reporting(
+            timestamp=yesterday,
+            event="token_init",
+            realm="mydefrealm",
+            parameter="active",
+            count=2,
+        )
+        report_0 = Reporting(
+            event="token_init", realm="mydefrealm", parameter="active", count=3
+        )
+
+        with DBSession() as session:
+            # check if reports are in database
+            session.query(Reporting).delete()
+            session.commit()
+
+        with DBSession() as session:
+            session.add(report_0)
+            session.add(report_1)
+            session.add(report_2)
+            session.commit()
+
+        with DBSession() as session:
+            # check if reports are in database
+            table_content = session.query(Reporting).count()
+            assert table_content == 3, table_content
+
+        # try to delete reports
+        today_str = today.strftime("%Y-%m-%d")
+        parameter = {"date": today_str, "realms": "*", "status": "active"}
+        response = self.make_reporting_request(
+            "delete_before", params=parameter
+        )
+
+        resp = json.loads(response.body)
+        values = resp.get("result")
+        assert values.get("status"), response
+        assert values.get("value") == 0, response
+
+        with DBSession() as session:
+            # check if reports are still in database
+            table_content = session.query(Reporting).count()
+            assert table_content == 3, table_content
+
+        # Check if we also still can delete
+        # Create report
+        report_3 = Reporting(
+            timestamp=two_days_ago,
+            event="token_init",
+            realm="mymixrealm",
+            parameter="active",
+            count=1,
+        )
+        with DBSession() as session:
+            session.add(report_3)
+            session.commit()
+
+        with DBSession() as session:
+            # check if reports are in database
+            table_content = session.query(Reporting).count()
+            assert table_content == 4, table_content
+
+        # try to delete reports
+        today_str = today.strftime("%Y-%m-%d")
+        parameter = {"date": today_str, "realms": "*", "status": "active"}
+        response = self.make_reporting_request(
+            "delete_before", params=parameter
+        )
+
+        resp = json.loads(response.body)
+        values = resp.get("result")
+        assert values.get("status"), response
+        assert values.get("value") == 1, response
+
+        with DBSession() as session:
+            # check if reports are still in database
+            table_content = session.query(Reporting).count()
+            assert table_content == 3, table_content

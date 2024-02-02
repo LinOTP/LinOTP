@@ -501,6 +501,7 @@ POLICY_DEFINTIONS = {
             'Date must be geiven as "yyyy-mm-dd"',
         },
         "show": {"type": "bool"},
+        "reported_statuses": {"type": "bool"},
     },
 }
 

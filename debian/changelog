@@ -33,6 +33,10 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * support for Flask 2 installation
   * password token now supports the 'onetime' parameter as the former spass token did
   * added validator for policy actions
+  * new API endpoint to retrieve all currently reported token statuses:
+    * /reporting/reported_statuses
+      * accepts query parameter `realms` to filter by realms.
+        Use `realms=*` to get all realms including `/:no realm:/`.
 
   Fix:
   * After a logout the jwt token can not be reused
@@ -42,6 +46,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * legacy selfservice qr and push token enrollment breaks with strings in otppin policy
   * More customisation in /selfservice-legacy was broken (Followup to a v3.2.3 fix)
   * drop ability to define autoassignment policy with values
+  * `/reporting/delete_before` matches realms to correct policy
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 
