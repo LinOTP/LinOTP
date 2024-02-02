@@ -44,6 +44,7 @@ from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.policy import (
     PolicyException,
+    check_token_reporting,
     checkAuthorisation,
     getAdminPolicies,
 )
@@ -531,6 +532,40 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(value_error, 1)
 
+        except Exception as exc:
+            log.error(exc)
+            db.session.rollback()
+            return sendError(exc)
+
+    @deprecated_methods(["POST"])
+    def reported_statuses(self):
+        """
+        description:
+            get all reported token_status per realm
+
+        :param realms: (optional) specifies the realms for which token status will be returned.
+            Use "*" to get all realms the requesting user has access to including "/:no realm:/".
+
+        :return: Dict[str, List[str]] of all reported token_status per requested realm.
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+        """
+        try:
+            request_realms = self.request_params.get("realms", "").split(",")
+
+            realms = self._match_allowed_realms(request_realms)
+
+            statuses = {
+                realm: check_token_reporting(realm) for realm in realms
+            }
+
+            db.session.commit()
+            return sendResult(statuses)
+        except PolicyException as policy_exception:
+            log.error(policy_exception)
+            db.session.rollback()
+            return sendError(policy_exception, 1)
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
