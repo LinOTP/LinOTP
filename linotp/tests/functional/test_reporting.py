@@ -1008,3 +1008,78 @@ class TestReportingController(TestController):
         }
         response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response
+
+    def test_bug_LINOTP_2086_delete_before(self):
+        """
+        This test is to show the fix for bug LINOTP_2086 where the user could delete entries
+        of realms they did not have access to, because the checked policy scope
+        was `reporting` instead of `reporting.access`.
+        """
+        self.delete_all_reports()
+
+        # set policy to prevent user `admin` from accessing `delete_before` for `mydefrealm`:
+        policy_params = {
+            "name": "test_delete_before",
+            "scope": "reporting.access",
+            "action": "*",
+            "user": "admin",
+            "realm": "not_mydefrealm",
+        }
+
+        self.create_policy(policy_params)
+
+        today = datetime.now()
+        yesterday = today - timedelta(days=1)
+        two_days_ago = today - timedelta(days=2)
+
+        # create old reports:
+        report_2 = Reporting(
+            timestamp=two_days_ago,
+            event="token_init",
+            realm="mydefrealm",
+            parameter="active",
+            count=1,
+        )
+        report_1 = Reporting(
+            timestamp=yesterday,
+            event="token_init",
+            realm="mydefrealm",
+            parameter="active",
+            count=2,
+        )
+        report_0 = Reporting(
+            event="token_init", realm="mydefrealm", parameter="active", count=3
+        )
+
+        with DBSession() as session:
+            # check if reports are in database
+            session.query(Reporting).delete()
+            session.commit()
+
+        with DBSession() as session:
+            session.add(report_0)
+            session.add(report_1)
+            session.add(report_2)
+            session.commit()
+
+        with DBSession() as session:
+            # check if reports are in database
+            table_content = session.query(Reporting).count()
+            assert table_content == 3, table_content
+
+        # try to delete reports
+        yest = yesterday.strftime("%Y-%m-%d")
+        parameter = {"date": yest, "realms": "*", "status": "active"}
+        response = self.make_reporting_request(
+            "delete_before", params=parameter
+        )
+
+        with DBSession() as session:
+            # check if reports are still in database
+            table_content = session.query(Reporting).count()
+            assert table_content == 3, table_content
+
+        resp = json.loads(response.body)
+        values = resp.get("result")
+        assert values.get("status"), response
+        assert values.get("value") == 0, response

@@ -413,7 +413,9 @@ class ReportingController(BaseController):
             datetime.strptime(border_day, "%Y-%m-%d")
 
             realm_whitelist = []
-            policies = getAdminPolicies("delete_before", scope="reporting")
+            policies = getAdminPolicies(
+                "delete_before", scope="reporting.access"
+            )
 
             if policies["active"] and policies["realms"]:
                 realm_whitelist = policies.get("realms")
