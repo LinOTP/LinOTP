@@ -33,6 +33,10 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * support for Flask 2 installation
   * password token now supports the 'onetime' parameter as the former spass token did
   * added validator for policy actions
+  * new API endpoint to retrieve all currently reported token statuses:
+    * /reporting/reported_statuses
+      * accepts query parameter `realms` to filter by realms.
+        Use `realms=*` to get all realms including `/:no realm:/`.
 
   Fix:
   * After a logout the jwt token can not be reused
