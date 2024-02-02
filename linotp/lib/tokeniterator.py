@@ -312,9 +312,7 @@ class TokenIterator(object):
         if not user:
             return ucondition
 
-        loginUser = user.login.lower()
-        loginUser = loginUser.replace('"', "")
-        loginUser = loginUser.replace("'", "")
+        loginUser = user.login.lower().replace('"', "").replace("'", "")
 
         searchType = "any"
         # search for a 'blank' user
@@ -542,10 +540,7 @@ class TokenIterator(object):
         one realm, than to follow the join on database level
         """
         realms = getRealms()
-        if "*" in valid_realms:
-            search_realms = list(realms.keys())
-        else:
-            search_realms = valid_realms
+        search_realms = realms.keys() if "*" in valid_realms else valid_realms
 
         resolvers = {
             realms.get(realm, {}).get("useridresolver", [])
@@ -590,12 +585,12 @@ class TokenIterator(object):
         return resSet
 
     def getUserDetail(self, tok):
-        userInfo = {}
         uInfo = {}
-
-        userInfo["User.description"] = ""
-        userInfo["User.userid"] = ""
-        userInfo["User.username"] = ""
+        userInfo = {
+            "User.description": "",
+            "User.userid": "",
+            "User.username": "",
+        }
         for field in self.user_fields:
             userInfo["User.%s" % field] = ""
 

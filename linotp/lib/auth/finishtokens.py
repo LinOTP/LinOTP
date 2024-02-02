@@ -270,9 +270,7 @@ class FinishTokens(object):
 
         challenge_tokens = self.challenge_tokens
 
-        options = self.options
-        if not options:
-            options = {}
+        options = self.options or {}
 
         action_detail = "challenge created"
 
@@ -294,17 +292,13 @@ class FinishTokens(object):
             # composed by the top level transaction id and the message
             # and below in a dict for each token a challenge description -
             # the key is the token type combined with its token serial number
-
-            all_reply = {}
-            all_reply["challenges"] = {}
-            challenge_count = 0
+            all_reply = {"challenges": {}}
             transactionid = ""
-            challenge_id = ""
-            for challenge_token in challenge_tokens:
-                challenge_count += 1
-                id_postfix = ".%02d" % challenge_count
-                if transactionid:
-                    challenge_id = "%s%s" % (transactionid, id_postfix)
+            for i, challenge_token in enumerate(challenge_tokens, 1):
+                id_postfix = f".{i:02d}"
+                challenge_id = (
+                    f"{transactionid}{id_postfix}" if transactionid else ""
+                )
 
                 (_res, reply) = Challenges.create_challenge(
                     challenge_token,
@@ -356,15 +350,15 @@ class FinishTokens(object):
                 tok.inc_count_auth()
 
             tok.statusValidationFail()
-
             Challenges.finish_challenges(tok, success=False)
 
         pin_policies = get_pin_policies(user) or []
 
-        if 1 in pin_policies:
-            action_detail = "wrong user password -1"
-        else:
-            action_detail = "wrong otp pin -1"
+        action_detail = (
+            "wrong user password -1"
+            if 1 in pin_policies
+            else "wrong otp pin -1"
+        )
 
         return (False, None, action_detail)
 

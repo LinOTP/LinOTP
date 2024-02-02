@@ -180,12 +180,13 @@ class TokensController(BaseController, JWTMixin):
             check_result = checkPolicyPre("admin", "show")
 
             # If policies are active, restrict the result to the tokens in the
-            # realms that the admin is allowed to see:
-            if check_result["active"] and check_result["realms"]:
-                allowed_realms = check_result["realms"]
-            else:
-                # Else, we are allowed to show tokens from all realms
-                allowed_realms = ["*"]
+            # realms that the admin is allowed to see.
+            # Else, we are allowed to show tokens from all realms
+            allowed_realms = (
+                check_result["realms"]
+                if check_result["active"] and check_result["realms"]
+                else ["*"]
+            )
 
             log.info(
                 "[get_tokens] admin {} may view tokens the following realms: {}".format(
@@ -197,6 +198,8 @@ class TokensController(BaseController, JWTMixin):
 
             page = int(param.get("page", 0)) + 1
             page_size = param.get("pageSize")
+            if page_size is not None:
+                page_size = int(page_size)
             sort_by = self._map_sort_param_to_token_param(
                 param.get("sortBy") or "serial"
             )
@@ -216,9 +219,6 @@ class TokensController(BaseController, JWTMixin):
                 raise PolicyException(
                     "You dont have permissions on any of your requested realms."
                 )
-
-            if page_size is not None:
-                page_size = int(page_size)
 
             if page_size == 0:
                 # Retrieve all available tokens

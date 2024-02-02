@@ -370,11 +370,10 @@ def sendResultIterator(
     start_at = 0
     stop_at = 0
     if page is not None:
-        if not rp:
-            rp = 16
+        rp = int(rp) if rp else 16
         try:
-            start_at = int(page) * int(rp)
-            stop_at = start_at + int(rp)
+            start_at = int(page) * rp
+            stop_at = start_at + rp
         except ValueError as exx:
             err["result"]["error"] = {
                 "code": 9876,
@@ -423,13 +422,12 @@ def sendResultIterator(
             if counter >= stop_at:
                 # stop iterating if we reached the last one of the page
                 break
-            counter = counter + 1
         else:
             # no paging - no limit
             res = "%s%s\n" % (sep, next_one)
             sep = ","
             yield res
-            counter = counter + 1
+        counter = counter + 1
 
     # we add the amount of queried objects
     total = '"queried" : %d' % counter

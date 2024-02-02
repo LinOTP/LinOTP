@@ -102,26 +102,20 @@ def parse_duration(duration_str, time_delta_compliant=False):
                 % duration_str
             )
 
-    time_params = {}
+    time_params = {
+        "days": 0,
+        "hours": 0,
+        "minutes": 0,
+        "seconds": 0,
+    }
+    days_multiplier = {"years": 365, "months": 30, "weeks": 7}
 
     for name, param in parts.items():
-        if not param:
-            continue
-
-        if name == "months":
-            name = "days"
-            param = 30 * float(param)
-        elif name == "weeks":
-            name = "days"
-            param = 7 * float(param)
-        elif name == "years":
-            name = "days"
-            param = 365 * float(param)
-
-        if name in time_params:
-            time_params[name] = float(time_params.get(name)) + float(param)
-        else:
-            time_params[name] = float(param)
+        if param:
+            if name in days_multiplier:
+                time_params["days"] += days_multiplier[name] * float(param)
+            else:
+                time_params[name] += float(param)
 
     return timedelta(**time_params)
 

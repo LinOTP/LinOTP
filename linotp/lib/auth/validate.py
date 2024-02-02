@@ -27,6 +27,7 @@
 """ validation processing logic"""
 
 import binascii
+import copy
 import json
 import logging
 from datetime import datetime
@@ -390,9 +391,6 @@ class ValidationHandler(object):
 
         # there is only one challenge per transaction id
         # if not multiple challenges, where transaction id is the parent one
-        reply = {}
-        involved_tokens = []
-
         transactions = {}
         for ch in challenges:
             # is the requester authorized
@@ -404,21 +402,15 @@ class ValidationHandler(object):
             if not tokens:
                 continue
 
-            involved_tokens.extend(tokens)
-
             # as one challenge belongs exactly to only one token,
             # we take this one as the token
             token = tokens[0]
             owner = get_token_owner(token)
-
             if user and user != owner:
                 continue
 
-            involved_tokens.extend(tokens)
-
             # we only check the user password / token pin if the user
             # paranmeter is given
-
             if user and owner:
                 pin_match = check_pin(
                     token, password, user=owner, options=None
@@ -429,13 +421,13 @@ class ValidationHandler(object):
             if not pin_match:
                 continue
 
-            trans_dict = {}
-
-            trans_dict["received_count"] = ch.received_count
-            trans_dict["received_tan"] = ch.received_tan
-            trans_dict["valid_tan"] = ch.valid_tan
-            trans_dict["message"] = ch.getChallenge()
-            trans_dict["status"] = ch.getStatus()
+            trans_dict = {
+                "received_count": ch.received_count,
+                "received_tan": ch.received_tan,
+                "valid_tan": ch.valid_tan,
+                "message": ch.getChallenge(),
+                "status": ch.getStatus(),
+            }
 
             # -------------------------------------------------------------- --
 
@@ -484,8 +476,7 @@ class ValidationHandler(object):
             trans_dict["token"] = token_dict
             transactions[ch.transid] = trans_dict
 
-        if transactions:
-            reply["transactions"] = transactions
+        reply = {"transactions": transactions} if transactions else {}
 
         return len(reply) > 0, reply
 
@@ -712,14 +703,12 @@ class ValidationHandler(object):
 
         # if we got a validation against a sub_challenge, we extend this to
         # be a validation to all challenges of the transaction id
-        import copy
-
         check_options = copy.deepcopy(options)
-        state = check_options.get(
+        transid = check_options.get(
             "state", check_options.get("transactionid", "")
         )
-        if state and "." in state:
-            transid = state.split(".")[0]
+        if transid and "." in transid:
+            transid = transid.split(".")[0]
             if "state" in check_options:
                 check_options["state"] = transid
             if "transactionid" in check_options:
@@ -733,15 +722,9 @@ class ValidationHandler(object):
         # that belong to this transaction id:
 
         challenges = []
-        transaction_serials = []
-        transid = check_options.get(
-            "state", check_options.get("transactionid", "")
-        )
-
         # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-        audit_entry = {}
-        audit_entry["action_detail"] = "no token found!"
+        audit_entry = {"action_detail": "no token found!"}
 
         challenge_tokens = []
         pin_matching_tokens = []
@@ -753,18 +736,15 @@ class ValidationHandler(object):
         validation_results = {}
 
         for token in tokenList:
-            audit_entry["serial"] = token.getSerial()
-            audit_entry["token_type"] = token.getType()
+            audit_entry.update(
+                {"serial": token.getSerial(), "token_type": token.getType()}
+            )
 
             # preselect: the token must be in the same realm as the user
             if user is not None:
                 t_realms = token.token.getRealmNames()
                 u_realm = user.realm
-                if (
-                    len(t_realms) > 0
-                    and len(u_realm) > 0
-                    and u_realm.lower() not in t_realms
-                ):
+                if t_realms and u_realm and u_realm.lower() not in t_realms:
                     audit_entry[
                         "action_detail"
                     ] = "Realm mismatch for token and user"
@@ -807,8 +787,9 @@ class ValidationHandler(object):
             # token validity handling
 
             if token.is_not_yet_valid():
-                msg = "Authentication validity period mismatch!"
-                audit_entry["action_detail"] = msg
+                audit_entry[
+                    "action_detail"
+                ] = "Authentication validity period mismatch!"
                 token.incOtpFailCounter()
                 continue
 
@@ -826,11 +807,11 @@ class ValidationHandler(object):
                 token.incOtpFailCounter()
 
                 # what should happen with exceeding tokens
-
-                t_realms = None
-
-                if not user.login and not user.realm:
-                    t_realms = token.token.getRealmNames()
+                t_realms = (
+                    token.token.getRealmNames()
+                    if not user.login and not user.realm
+                    else None
+                )
 
                 if disable_on_authentication_exceed(user, realms=t_realms):
                     token.enable(False)

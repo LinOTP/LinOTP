@@ -147,9 +147,7 @@ def generate_otpkey(key_size: int = 20) -> str:
 
 def generate_password(size=6, characters=None):
     if not characters:
-        characters = (
-            string.ascii_lowercase + string.ascii_uppercase + string.digits
-        )
+        characters = string.ascii_letters + string.digits
 
     return "".join(secrets.choice(characters) for _x in range(size))
 
@@ -419,7 +417,6 @@ def str2unicode(input_str):
     :return: unicode output
     """
 
-    output_str = input_str
     conversions = [
         {},
         {"encoding": "utf-8"},
@@ -428,14 +425,12 @@ def str2unicode(input_str):
     ]
     for param in conversions:
         try:
-            output_str = str(input_str, **param)
-            break
+            return str(input_str, **param)
         except UnicodeDecodeError as exx:
-            if param == conversions[-1]:
-                log.info("no unicode conversion found for %r", input_str)
-                raise exx
+            pass
 
-    return output_str
+    log.error("No Unicode conversion found for %r", input_str)
+    raise UnicodeDecodeError("Unable to convert binary string to Unicode.")
 
 
 def unicode_compare(x, y):

@@ -348,9 +348,7 @@ class Challenges(object):
     def get_challenges(
         token=None, transid=None, options=None, filter_open=False
     ):
-        state = options and options.get(
-            "state", options.get("transactionid", None)
-        )
+        state = options and options.get("state", options.get("transactionid"))
 
         if not transid:
             transid = state
@@ -458,9 +456,7 @@ class Challenges(object):
         hsm = context["hsm"].get("obj")
 
         # we query for all challenges of the token to identify the valid ones
-        (expired_challenges, valid_challenges) = Challenges.get_challenges(
-            token
-        )
+        expired_challenges, valid_challenges = Challenges.get_challenges(token)
 
         if success:
             for challenge in token.matching_challenges:

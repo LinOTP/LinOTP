@@ -1704,11 +1704,9 @@ class SystemController(BaseController):
             log.info("[delPolicy] deleting policy: %r", self.request_params)
 
             # support the ignor of policy impact check
-            enforce = self.request_params.get("enforce", "False")
-            if enforce.lower() == "true":
-                enforce = True
-            else:
-                enforce = False
+            enforce = (
+                self.request_params.get("enforce", "false").lower() == "true"
+            )
 
             name_param = self.request_params["name"]
             names = name_param.split(",")

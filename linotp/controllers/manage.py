@@ -161,12 +161,10 @@ class ManageController(BaseController):
 
             # check for support of setting admin password
 
-            c.admin_can_change_password = False
-            if (
+            c.admin_can_change_password = (
                 "linotpadmin.user" in config
                 and "linotpadmin.password" in config
-            ):
-                c.admin_can_change_password = True
+            )
 
             # -------------------------------------------------------------- --
 
@@ -216,9 +214,10 @@ class ManageController(BaseController):
 
             # Use HTTP_X_FORWARDED_HOST in preference to HTTP_HOST
             # in case we're running behind a reverse proxy
-            http_host = request.environ.get("HTTP_X_FORWARDED_HOST", "")
-            if not http_host:
-                http_host = request.environ.get("HTTP_HOST")
+            http_host = request.environ.get(
+                "HTTP_X_FORWARDED_HOST"
+            ) or request.environ.get("HTTP_HOST")
+
             url_scheme = request.environ.get("wsgi.url_scheme")
 
             db.session.commit()

@@ -258,7 +258,7 @@ class ValidateController(BaseController):
             #
             # we require either state or transactionid as parameter
 
-            transid = param.get("state", param.get("transactionid", None))
+            transid = param.get("state", param.get("transactionid"))
             if not transid:
                 raise ParameterError(
                     _(

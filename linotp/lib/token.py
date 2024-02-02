@@ -765,9 +765,9 @@ class TokenHandler(object):
 
         tokens = self.getTokensOfType(typ=None, realm=user.realm, assigned="0")
         for token in tokens:
-            token_exists = -1
             from linotp.lib import policy
 
+            (pin, otp) = token.splitPinPass(passw)
             if policy.autoassignment_forward(user) and token.type == "remote":
                 ruser = User(user.login, user.realm)
                 token_exists = token.check_otp_exist(
@@ -776,9 +776,7 @@ class TokenHandler(object):
                     user=ruser,
                     autoassign=True,
                 )
-                (pin, otp) = token.splitPinPass(passw)
             else:
-                (pin, otp) = token.splitPinPass(passw)
                 token_exists = token.check_otp_exist(
                     otp=otp, window=token.getOtpCountWindow()
                 )
@@ -1455,7 +1453,6 @@ def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
     if user and user.login:
         resolverUid = user.resolverUid
         v = None
-        k = None
         for k in resolverUid:
             v = resolverUid.get(k)
         user_id = v
@@ -2003,13 +2000,10 @@ def add_time_info(list_of_tokens, mode="accessed"):
 
     token_access = getFromConfig("linotp.token.last_access", None)
 
-    if token_access in [None, False]:
+    if token_access in [None, False] or token_access.lower() == "false":
         return
-    elif token_access is True:
-        token_access_fmt = DEFAULT_TIMEFORMAT
-    elif token_access.lower() == "false":
-        return
-    elif token_access.lower() == "true":
+
+    if token_access is True or token_access.lower() == "true":
         token_access_fmt = DEFAULT_TIMEFORMAT
     else:
         token_access_fmt = token_access

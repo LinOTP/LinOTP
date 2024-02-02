@@ -293,15 +293,14 @@ class AdminController(BaseController, JWTMixin):
 
             user = getUserFromParam(param)
 
-            filterRealm = []
             # check admin authorization
             res = checkPolicyPre("admin", "show", param, user=user)
 
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
-            filterRealm = ["*"]
-            if res["active"] and res["realms"]:
-                filterRealm = res["realms"]
+            filterRealm = (
+                res["realms"] if res["active"] and res["realms"] else ["*"]
+            )
 
             if realm:
                 # If the admin wants to see only one realm, then do it:
@@ -435,7 +434,7 @@ class AdminController(BaseController, JWTMixin):
                 users.add(token.getUsername())
                 token_types.add(token.type)
 
-                ret = ret + th.removeToken(user, serial)
+                ret += th.removeToken(user, serial)
 
             g.audit["success"] = 1 if len(serials) == ret else 0
             g.audit["token_type"] = ", ".join(token_types)
@@ -446,10 +445,11 @@ class AdminController(BaseController, JWTMixin):
 
             # if not token could be removed, create a response detailed
             if ret == 0:
-                if user:
-                    msg = "No tokens for this user %r" % user.login
-                else:
-                    msg = "No token with serials %r" % serials
+                msg = (
+                    "No tokens for this user %r" % user.login
+                    if user
+                    else "No token with serials %r" % serials
+                )
 
                 opt_result_dict["message"] = msg
 
@@ -1434,7 +1434,7 @@ class AdminController(BaseController, JWTMixin):
             checkPolicyPre("admin", "set", param, user=user)
 
             th = TokenHandler()
-            tokens = []
+            tokens_user_serial = []
             # # if there is a pin
             if "pin" in param:
                 msg = "[set] setting pin failed"
@@ -1581,7 +1581,11 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = get_tokens(user, serial)
+                tokens = (
+                    tokens_user_serial
+                    if tokens_user_serial
+                    else get_tokens(user, serial)
+                )
                 [setattr(token, "count_auth", ca) for token in tokens]
                 count += len(tokens)
                 res["set countAuth"] = len(tokens)
@@ -1595,7 +1599,11 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = get_tokens(user, serial)
+                tokens = (
+                    tokens_user_serial
+                    if tokens_user_serial
+                    else get_tokens(user, serial)
+                )
                 [setattr(tok, "count_auth_max", ca) for tok in tokens]
                 count += len(tokens)
                 res["set countAuthMax"] = len(tokens)
@@ -1610,7 +1618,11 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = get_tokens(user, serial)
+                tokens = (
+                    tokens_user_serial
+                    if tokens_user_serial
+                    else get_tokens(user, serial)
+                )
                 [setattr(tok, "count_auth_success", ca) for tok in tokens]
                 count += len(tokens)
                 res["set countAuthSuccess"] = len(tokens)
@@ -1625,7 +1637,11 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = get_tokens(user, serial)
+                tokens = (
+                    tokens_user_serial
+                    if tokens_user_serial
+                    else get_tokens(user, serial)
+                )
                 [setattr(tok, "count_auth_success_max", ca) for tok in tokens]
                 count += len(tokens)
                 res["set countAuthSuccessMax"] = len(tokens)
@@ -1640,7 +1656,11 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = get_tokens(user, serial)
+                tokens = (
+                    tokens_user_serial
+                    if tokens_user_serial
+                    else get_tokens(user, serial)
+                )
                 [setattr(tok, "validity_period_start", ca) for tok in tokens]
                 count += len(tokens)
                 res["set validityPeriodStart"] = len(tokens)
@@ -1657,7 +1677,11 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = get_tokens(user, serial)
+                tokens = (
+                    tokens_user_serial
+                    if tokens_user_serial
+                    else get_tokens(user, serial)
+                )
                 [setattr(tok, "validity_period_end", ca) for tok in tokens]
                 count += len(tokens)
                 res["set validityPeriodEnd"] = len(tokens)
@@ -1671,7 +1695,11 @@ class AdminController(BaseController, JWTMixin):
                     ca,
                     serial,
                 )
-                tokens = get_tokens(user, serial)
+                tokens = (
+                    tokens_user_serial
+                    if tokens_user_serial
+                    else get_tokens(user, serial)
+                )
                 for tok in tokens:
                     tok.addToTokenInfo("phone", ca)
                 count += len(tokens)

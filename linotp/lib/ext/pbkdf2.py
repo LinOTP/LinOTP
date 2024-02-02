@@ -273,7 +273,7 @@ def crypt(word, salt=None, iterations=None):
         if ch not in allowed:
             raise ValueError("Illegal character %r in salt" % (ch,))
 
-    if iterations is None or iterations == 400:
+    if iterations is None:
         iterations = 400
         salt = "$p5k2$$" + salt
     else:

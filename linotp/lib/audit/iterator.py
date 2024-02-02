@@ -38,91 +38,81 @@ class AuditQuery(object):
     """build the the audit query and return result iterator"""
 
     def __init__(self, param, audit_obj, user=None, columns=None):
-        self.page = 1
-        self.headers = False
-        self._columns = None
-        self._search_dict = {}
-        self._rp_dict = {}
+        self.headers = "headers" in param
+        self._columns = columns or self._get_default_columns()
+        self._search_dict = self._build_search_dict(param, user)
+        self._rp_dict = self._build_rp_dict(param)
+        self.page = self._rp_dict.get("page", 1)
 
         self.audit_obj = audit_obj
+        return
 
-        if "headers" in param:
-            self.headers = True
+    def _get_default_columns(self):
+        return [
+            "number",
+            "date",
+            "sig_check",
+            "missing_line",
+            "action",
+            "success",
+            "serial",
+            "token_type",
+            "user",
+            "realm",
+            "administrator",
+            "action_detail",
+            "info",
+            "linotp_server",
+            "client",
+            "log_level",
+            "clearance_level",
+        ]
 
-        if columns:
-            # Explicit list of what columns to return
-            self._columns = columns
-        else:
-            # Use all columns
-            self._columns = [
-                "number",
-                "date",
-                "sig_check",
-                "missing_line",
-                "action",
-                "success",
-                "serial",
-                "token_type",
-                "user",
-                "realm",
-                "administrator",
-                "action_detail",
-                "info",
-                "linotp_server",
-                "client",
-                "log_level",
-                "clearance_level",
-            ]
+    def _build_search_dict(self, param, user):
+        search_dict = {}
 
         if "query" in param:
             if "extsearch" == param["qtype"]:
-                # search patterns are delimited with ;
                 search_list = param["query"].split(";")
+
                 for s in search_list:
-                    key, e, value = s.partition("=")
-                    key = key.strip()
-                    value = value.strip()
-
-                    self._search_dict[key] = value
+                    key, _, value = s.partition("=")
+                    key, value = key.strip(), value.strip()
+                    search_dict[key] = value
             else:
-                value = param["query"]
-                self._search_dict[param["qtype"]] = value
+                search_dict[param["qtype"]] = param["query"]
         else:
-            for key, value in list(param.items()):
-                self._search_dict[key] = value
-
-        if "page" in param:
-            try:
-                self.page = int(param.get("page", "1") or "1")
-                if self.page < 0 or self.page > sys.maxsize:
-                    self.page = 1
-            except ValueError:
-                self.page = 1
-            self._rp_dict["page"] = self.page
-
-        # verify that rows per page is uint
-        if "rp" in param:
-            try:
-                rp = int(param.get("rp", "15") or "15")
-                if rp < 0 or rp > sys.maxsize:
-                    rp = 15
-            except ValueError:
-                rp = 15
-            self._rp_dict["rp"] = "%d" % rp
-
-        self._rp_dict["sortname"] = param.get("sortname")
-
-        # verify sort order: could be one of ['asc', 'desc']
-        sortorder = param.get("sortorder", "asc") or "asc"
-        if sortorder not in ["desc", "asc"]:
-            sortorder = "asc"
-        self._rp_dict["sortorder"] = sortorder
+            search_dict = {key: value for key, value in param.items()}
 
         if user:
-            self._search_dict["user"] = user.login
-            self._search_dict["realm"] = user.realm
+            search_dict["user"] = user.login
+            search_dict["realm"] = user.realm
 
-        return
+        return search_dict
+
+    def _build_rp_dict(self, param):
+        rp_dict = {
+            "sortname": param.get("sortname"),
+            "sortorder": self._get_sort_order(param.get("sortorder", "asc")),
+        }
+        if "page" in param:
+            rp_dict["page"] = self._parse_int(param.get("page", "1"), 1)
+        if "rp" in param:
+            rp_dict["rp"] = "%d" % self._parse_int(param.get("rp", "15"), 15)
+
+        return rp_dict
+
+    def _parse_int(self, value, fallback):
+        try:
+            res = int(value)
+            if res < 0 or res > sys.maxsize:
+                return fallback
+            return res
+        except ValueError:
+            return fallback
+
+    def _get_sort_order(self, order):
+        return "desc" if order == "desc" else "asc"
 
     def get_page(self):
         return self.page

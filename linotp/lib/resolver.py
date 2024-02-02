@@ -290,11 +290,7 @@ def getResolverList(filter_resolver_type=None, config=None):
     local_admin_resolver = current_app.config["ADMIN_RESOLVER_NAME"]
 
     admin_resolvers = get_admin_resolvers()
-
-    if not config:
-        conf = context.get("Config")
-    else:
-        conf = config
+    conf = config or context.get("Config")
 
     for entry in conf:
         for typ in resolvertypes:
@@ -681,8 +677,7 @@ def _flush_user_resolver_cache(resolver_spec):
 
     # if a resolver is redefined, we have to refresh the related realm cache
     for realm_name, realm_spec in list(realms.items()):
-        resolvers = realm_spec.get("useridresolver", [])
-        if resolver_spec in resolvers:
+        if resolver_spec in realm_spec.get("useridresolver", []):
             delete_realm_resolver_cache(realm_name)
 
 
@@ -802,13 +797,9 @@ def setupResolvers(config=None, cache_dir="/tmp"):
 
     :return: -nothing-
     """
-
-    resolver_classes = list(resolver_registry.values())
-
-    # resolver classes can have multiple aliases, so
-    # resolver_classes can contain duplicates.
-
-    unique_resolver_classes = set(resolver_classes)
+    # resolver classes can have multiple aliases, hence can contain duplicates.
+    # so we remove them:
+    unique_resolver_classes = set(resolver_registry.values())
 
     for resolver_cls in unique_resolver_classes:
         if not hasattr(resolver_cls, "setup") or hasattr(

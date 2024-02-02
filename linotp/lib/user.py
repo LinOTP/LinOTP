@@ -857,12 +857,7 @@ def getResolversOfUser(user):
     """
 
     login = user.login
-    realm = user.realm
-
-    if not realm:
-        realm = getDefaultRealm()
-
-    realm = realm.lower()
+    realm = user.realm.lower() if user.realm else getDefaultRealm().lower()
 
     # calling the worker which stores resolver in the cache
     # but only if a resolver was found
@@ -872,8 +867,7 @@ def getResolversOfUser(user):
     if not resolvers:
         log.info("user %r not found in realm %r", login, realm)
         return []
-
-    if not resolvers and "*" in login:
+    if "*" in login:
         return getResolvers(user)
 
     # -- ------------------------------------------------------------------ --
@@ -964,18 +958,14 @@ def get_resolvers_of_user(login, realm):
 
         return Resolvers
 
-    resolvers_lookup_cache = _get_resolver_lookup_cache(realm)
-
     # ---------------------------------------------------------------------- --
 
     # we use a request local cache
     # - which is usefull especially if no persistant cache is enabled
+    cache_key = json.dumps({"login": login, "realm": realm})
 
-    key = {"login": login, "realm": realm}
-    p_key = json.dumps(key)
-
-    if p_key in request_context["UserRealmLookup"]:
-        return request_context["UserRealmLookup"][p_key]
+    if cache_key in request_context["UserRealmLookup"]:
+        return request_context["UserRealmLookup"][cache_key]
 
     # ---------------------------------------------------------------------- --
 
@@ -983,17 +973,17 @@ def get_resolvers_of_user(login, realm):
     # otherwise we have to provide the partial function to the beaker cache
 
     try:
-        if not resolvers_lookup_cache:
-            Resolvers = _get_resolvers_of_user(login=login, realm=realm)
-
-        else:
+        resolvers_lookup_cache = _get_resolver_lookup_cache(realm)
+        if resolvers_lookup_cache:
             p_get_resolvers_of_user = partial(
                 _get_resolvers_of_user, login=login, realm=realm
             )
 
             Resolvers = resolvers_lookup_cache.get_value(
-                key=p_key, createfunc=p_get_resolvers_of_user
+                key=cache_key, createfunc=p_get_resolvers_of_user
             )
+        else:
+            Resolvers = _get_resolvers_of_user(login=login, realm=realm)
 
     except NoResolverFound:
         log.info("No resolver found for user %r in realm %r", login, realm)
@@ -1007,7 +997,7 @@ def get_resolvers_of_user(login, realm):
 
     # fill in the result into the request local cache
 
-    request_context["UserRealmLookup"][p_key] = Resolvers
+    request_context["UserRealmLookup"][cache_key] = Resolvers
 
     # ---------------------------------------------------------------------- --
 
@@ -1561,10 +1551,11 @@ def getUserListIterators(param, search_user):
             y = getResolverObject(resolver_spec)
             log.debug("With this search dictionary: %r ", searchDict)
 
-            if hasattr(y, "getUserListIterator"):
-                uit = y.getUserListIterator(searchDict, limit_size=False)
-            else:
-                uit = iter(y.getUserList(searchDict))
+            uit = (
+                y.getUserListIterator(searchDict, limit_size=False)
+                if hasattr(y, "getUserListIterator")
+                else iter(y.getUserList(searchDict))
+            )
 
             user_iters.append((uit, resolver_spec))
 

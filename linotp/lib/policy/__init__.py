@@ -2038,9 +2038,7 @@ def _check_token_count(user=None, realm=None, post_check=False):
     # one token available without hitting the tocken count limit
     # - we use the to simplify the algorithm
 
-    count_offset = 1
-    if post_check:
-        count_offset = 0
+    count_offset = 0 if post_check else 1
 
     # ---------------------------------------------------------------------- --
 

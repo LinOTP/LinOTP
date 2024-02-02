@@ -82,24 +82,16 @@ class HmacOtp:
         return sotp
 
     def checkOtp(self, anOtpVal, window, symetric=False):
-        res = -1
-        start = self.counter
+        start = max(0, self.counter - window) if symetric else self.counter
         end = self.counter + window
-        if symetric is True:
-            # changed window/2 to window for TOTP
-            start = self.counter - (window)
-            start = 0 if (start < 0) else start
-            end = self.counter + (window)
 
         for c in range(start, end):
             otpval = self.generate(c)
 
             if otpval == anOtpVal:
-                res = c
-                break
+                return c
 
-        # return -1 or the counter
-        return res
+        return -1
 
 
 # eof##########################################################################

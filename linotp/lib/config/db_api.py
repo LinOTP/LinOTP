@@ -240,12 +240,9 @@ def _removeConfigDB(key):
     """
     log.debug("removing config entry %r from database table", key)
 
-    if not key.startswith("linotp."):
-        if not key.startswith("enclinotp."):
-            key = "linotp." + key
-
-    if isinstance(key, str):
-        key = "" + key
+    key = str(key)
+    if not key.startswith(("linotp.", "enclinotp.")):
+        key = f"linotp.{key}"
 
     confEntries = Config.query.filter_by(Key=str(key)).all()
 
@@ -280,13 +277,9 @@ def _removeConfigDB(key):
 
 def _retrieveConfigDB(Key):
     # prepend "linotp." if required
-    key = Key
-    if not key.startswith("linotp."):
-        if not key.startswith("enclinotp."):
-            key = "linotp." + Key
-
-    if isinstance(key, str):
-        key = "" + key
+    key = str(Key)
+    if not key.startswith(("linotp.", "enclinotp.")):
+        key = f"linotp.{key}"
 
     myVal = None
 
@@ -333,7 +326,6 @@ def _retrieveAllConfigDB():
     """
 
     config = {}
-    delay = False
 
     conf_dict = {}
     type_dict = {}
