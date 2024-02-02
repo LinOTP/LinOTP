@@ -32,6 +32,7 @@ reporting controller - interfaces for Reporting
 """
 import logging
 from datetime import datetime, timedelta
+from typing import List
 
 from werkzeug.datastructures import Headers
 
@@ -112,6 +113,33 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(exception, context="after")
 
+    @staticmethod
+    def _match_allowed_realms(requested_realms: List[str]):
+        """Returns a list of realm names the user is allowed to access for given scope.action.
+
+        Args:
+            requested_realms (List[str]): List of realms, the user wants to access.
+                Use `["*"]` to match against all realms including "/:no realm:/".
+
+        Returns:
+            List[str]: List of realms the user is allowed to access for given action.
+        """
+        scope = "reporting.access"
+        action = request_context["action"]
+
+        realm_whitelist = []
+        policies = getAdminPolicies(action, scope)
+
+        if policies["active"] and policies["realms"]:
+            realm_whitelist = policies.get("realms")
+
+        # if there are no policies for us, we are allowed to see all realms
+        if not realm_whitelist or "*" in realm_whitelist:
+            realm_whitelist = list(request_context["Realms"].keys())
+
+        realms = match_realms(requested_realms, realm_whitelist)
+        return realms
+
     @deprecated_methods(["POST"])
     def maximum(self):
         """
@@ -150,17 +178,7 @@ class ReportingController(BaseController):
             if status != ["total"]:
                 status = status.split(",")
 
-            realm_whitelist = []
-            policies = getAdminPolicies("maximum", scope="reporting.access")
-
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = list(request_context["Realms"].keys())
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             for realm in realms:
                 result[realm] = {}
@@ -258,16 +276,7 @@ class ReportingController(BaseController):
 
             # ------------------------------------------------------------- --
 
-            realm_whitelist = []
-            policies = getAdminPolicies("period", scope="reporting.access")
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = request_context["Realms"].keys()
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             result["realms"] = []
             for realm in realms:
@@ -335,17 +344,7 @@ class ReportingController(BaseController):
             if status != ["total"]:
                 status = status.split(",")
 
-            realm_whitelist = []
-            policies = getAdminPolicies("delete_all", scope="reporting.access")
-
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = list(request_context["Realms"].keys())
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             if "*" in status:
                 status.remove("*")
@@ -412,19 +411,7 @@ class ReportingController(BaseController):
             # this may throw ValueError if date is in wrong format
             datetime.strptime(border_day, "%Y-%m-%d")
 
-            realm_whitelist = []
-            policies = getAdminPolicies(
-                "delete_before", scope="reporting.access"
-            )
-
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = list(request_context["Realms"].keys())
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             result = delete(date=border_day, realms=realms, status=status)
             db.session.commit()
@@ -496,17 +483,7 @@ class ReportingController(BaseController):
             if "date" in param:
                 start_day = convert_to_datetime(param.get("date"), TIME_FMTS)
 
-            realm_whitelist = []
-            policies = getAdminPolicies("show", scope="reporting.access")
-
-            if policies["active"] and policies["realms"]:
-                realm_whitelist = policies.get("realms")
-
-            # if there are no policies for us, we are allowed to see all realms
-            if not realm_whitelist or "*" in realm_whitelist:
-                realm_whitelist = list(request_context["Realms"].keys())
-
-            realms = match_realms(request_realms, realm_whitelist)
+            realms = self._match_allowed_realms(request_realms)
 
             reports = ReportingIterator(
                 realms=realms,
