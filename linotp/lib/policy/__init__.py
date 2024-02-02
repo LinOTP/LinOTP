@@ -3646,22 +3646,21 @@ def check_token_reporting(realm):
         realm = None
 
     report_policies = getPolicy({"scope": "reporting", "realm": realm})
-    actions = []
+    unique_statuses = set()
 
-    for polname, policy in sorted(list(report_policies.items())):
-        action = policy.get("action", "")
-        action = str(action)
-        action = action.split(",")
-        for act in action:
+    for polname, policy in sorted(report_policies.items()):
+        actions = str(policy.get("action", "")).split(",")
+
+        for act in actions:
             if "token_total" in act:
-                actions.append("total")
+                unique_statuses.add("total")
             if "token_user_total" in act:
-                actions.append("total users")
+                unique_statuses.add("total users")
             if "token_status" in act:
-                status = act.split("=")
-                actions.append(status[1])
+                status = act.split("=")[1]
+                unique_statuses.add(status)
             if act == "*":
-                status = [
+                all_status_values = [
                     "active",
                     "inactive",
                     "assigned",
@@ -3673,9 +3672,8 @@ def check_token_reporting(realm):
                     "total",
                     "total users",
                 ]
-                for stat in status:
-                    actions.append(str(stat))
-    return actions
+                unique_statuses.update(all_status_values)
+    return list(unique_statuses)
 
 
 def supports_offline(realms, token):
