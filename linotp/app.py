@@ -80,7 +80,7 @@ from .lib.tools.flask_jwt_extended_migration import (
 from .lib.user import User, getUserFromRequest
 from .lib.util import get_client
 from .model import SYS_EXIT_CODE, setup_db
-from .settings import configs
+from .settings import ConfigSchema, configs
 from .tokens import reload_classes as reload_token_classes
 
 log = logging.getLogger(__name__)
@@ -89,6 +89,9 @@ start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
 LINOTP_CFG_DEFAULT = "linotp.cfg"  # within app.root_path
+
+ENV_PREFIX = "LINOTP_"
+ENV_PREFIX_LENGTH = len(ENV_PREFIX)
 
 AVAILABLE_CONTROLLERS = {
     "admin",
@@ -125,7 +128,7 @@ class ExtFlaskConfig(FlaskConfig):
     in the configuration are relative to `ROOT_DIR`.
     """
 
-    config_schema = None
+    config_schema: ConfigSchema = None
 
     class RelativePathName(str):
         """“Marker” that a string is really a relative path name."""
@@ -164,8 +167,8 @@ class ExtFlaskConfig(FlaskConfig):
         """
         if self.config_schema is not None:
             for key, value in os.environ.items():
-                if key.startswith("LINOTP_") and key != "LINOTP_CFG":
-                    config_key = key[7:]
+                if key.startswith(ENV_PREFIX) and key != f"{ENV_PREFIX}CFG":
+                    config_key = key[ENV_PREFIX_LENGTH:]
                     item = self.config_schema.find_item(config_key)
                     if item is not None:
                         self[config_key] = value
