@@ -399,14 +399,22 @@ def modhex_decode(m: str) -> str:
 
 
 def checksum(msg: bytes) -> int:
+    # Initial CRC value
     crc = 0xFFFF
-    for b in msg:
-        crc = crc ^ (b & 0xFF)
-        for _j in range(0, 8):
-            n = crc & 1
+
+    # Iterate through each byte in the message
+    for byte in msg:
+        crc = crc ^ (byte & 0xFF)
+
+        # Iterate through each bit in the byte
+        for _ in range(8):
+            # Check the least significant bit
+            lsb = crc & 1
             crc = crc >> 1
-            if n != 0:
+            if lsb != 0:
+                # XOR with the polynomial if the lsb is 1
                 crc = crc ^ 0x8408
+
     return crc
 
 
