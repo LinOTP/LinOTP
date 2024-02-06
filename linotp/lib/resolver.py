@@ -459,51 +459,42 @@ def deleteResolver(resolvername):
             f"default admin resolver {resolvername} is not allowed to be removed!"
         )
 
-    res = False
-
     resolvertypes = get_resolver_types()
     conf = context.get("Config")
 
-    delEntries = []
+    del_entries = []
     resolver_specs = set()
 
     for entry in conf:
         rest = entry.split(".", 3)
-        lSplit = len(rest)
-        if lSplit > 3:
-            rConf = rest[lSplit - 1]
-            if rConf == resolvername:
-                if rest[0] == "linotp" or rest[0] == "enclinotp":
-                    typ = rest[1]
-                    if typ in resolvertypes:
-                        delEntries.append(entry)
-                        resolver_conf = get_resolver_class_config(typ)
-                        resolver_class = resolver_conf.get(typ, {}).get(
-                            "clazz"
-                        )
-                        fqn = ".".join([resolver_class, resolvername])
-                        resolver_specs.add(fqn)
+        if len(rest) > 3 and rest[-1] == resolvername:
+            typ = rest[1]
+            if rest[0] in ("linotp", "enclinotp") and typ in resolvertypes:
+                del_entries.append(entry)
+                resolver_conf = get_resolver_class_config(typ)
+                resolver_class = resolver_conf.get(typ, {}).get("clazz")
+                fqn = f"{resolver_class}.{resolvername}"
+                resolver_specs.add(fqn)
 
-    if len(delEntries) > 0:
+    if del_entries:
         try:
-            for entry in delEntries:
-                res = removeFromConfig(entry)
-                res = True
+            for entry in del_entries:
+                removeFromConfig(entry)
         except Exception as exx:
             log.error(
                 "Deleting resolver %s failed. Exception was %r",
                 resolvername,
                 exx,
             )
-            res = False
+            return False
 
-    if res:
         # on success we can flush the caches
         for resolver_spec in resolver_specs:
             _flush_user_resolver_cache(resolver_spec)
             _delete_from_resolver_config_cache(resolver_spec)
+        return True
 
-    return res
+    return False
 
 
 def getResolverObjectByName(resolver_name: str):
@@ -830,7 +821,7 @@ def closeResolvers():
     hook to close the resolvers at the end of the request
     """
     try:
-        for resolver in list(context.get("resolvers_loaded", {}).values()):
+        for resolver in context.get("resolvers_loaded", {}).values():
             if hasattr(resolver, "close"):
                 resolver.close()
     except Exception as exx:
