@@ -183,8 +183,8 @@ def _store_continous_entry_db(chunks, key, val, typ, desc):
 
     for i, cont_value in enumerate(chunks):
         cont_typ = "C"
-        cont_desc = "%d:%d" % (i, number_of_chunks - 1)
-        cont_key = "%s__[%d:%d]" % (key, i, number_of_chunks - 1)
+        cont_desc = f"{i}:{number_of_chunks - 1}"
+        cont_key = f"{key}__[{i}:{number_of_chunks - 1}]"
 
         # first one will contain the correct key with type 'C' continuous
         if i == 0:
@@ -257,7 +257,7 @@ def _removeConfigDB(key):
     # if entry is a contious type, delete all of this kind
     if theConf.Type == "C" and theConf.Description[: len("0:")] == "0:":
         _start, end = theConf.Description.split(":")
-        search_key = "%s__[%%:%s]" % (key, end)
+        search_key = f"{key}__[%:{end}]"
         cont_entries = Config.query.filter(Config.Key.like(search_key)).all()
 
         to_be_deleted.extend(cont_entries)
@@ -304,7 +304,7 @@ def _retrieveConfigDB(Key):
     value = theConf.Value
 
     for i in range(int(end)):
-        search_key = "%s__[%d:%d]" % (key, i, int(end))
+        search_key = f"{key}__[{i}:{int(end)}]"
         cont_entries = Config.query.filter_by(Key=search_key).all()
         if cont_entries:
             value = value + cont_entries[0].Value
@@ -359,7 +359,7 @@ def _retrieveAllConfigDB():
         value = conf_dict[key]
 
         for i in range(number + 1):
-            search_key = "%s__[%d:%d]" % (key, i, number)
+            search_key = f"{key}__[{i}:{number}]"
 
             if search_key in conf_dict:
                 value = value + conf_dict[search_key]
@@ -367,7 +367,7 @@ def _retrieveAllConfigDB():
 
         conf_dict[key] = value
 
-        search_key = "%s__[%d:%d]" % (key, number, number)
+        search_key = f"{key}__[{number}:{number}]"
         # allow the reading of none existing entries
         type_dict[key] = type_dict.get(search_key)
         desc_dict[key] = desc_dict.get(search_key)
@@ -378,10 +378,10 @@ def _retrieveAllConfigDB():
 
     for key, value in list(conf_dict.items()):
         if key.startswith("linotp.") is False:
-            key = "linotp." + key
+            key = f"linotp.{key}"
 
         if isinstance(key, str):
-            key = "" + key
+            key = str(key)
 
         nVal = expand_here(value)
         config[key] = nVal

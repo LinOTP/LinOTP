@@ -244,12 +244,12 @@ class SystemController(BaseController):
                 if k.lower() in param:
                     value = param[k.lower()]
                     ret = storeConfig(k, value)
-                    des = "set " + k
+                    des = f"set {k}"
                     res[des] = ret
                     count = count + 1
 
                     g.audit["success"] = count
-                    g.audit["info"] += "%s=%s, " % (k, value)
+                    g.audit["info"] += f"{k}={value}, "
 
             if count == 0:
                 log.warning(
@@ -340,11 +340,11 @@ class SystemController(BaseController):
                     Key = key if key.startswith("linotp") else f"linotp.{key}"
                     conf[Key] = val
 
-                    string = "setConfig " + key + ":" + val
+                    string = f"setConfig {key}:{val}"
                     res[string] = True
 
                     g.audit["success"] = True
-                    g.audit["info"] += "%s=%s, " % (key, val)
+                    g.audit["info"] += f"{key}={val}, "
 
                 updateConfig(conf)
 

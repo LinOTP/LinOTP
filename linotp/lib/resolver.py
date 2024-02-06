@@ -138,8 +138,8 @@ def save_resolver_config(resolver, config, prefix, name):
         if key.startswith("linotp."):
             continue
 
-        # use a the fully qualified key name
-        l_key = "%s.%s.%s" % (prefix, key, name)
+        # Construct the fully qualified key name
+        full_key = f"{prefix}.{key}.{name}"
 
         # do some type naming
         typ = "unknown"
@@ -150,7 +150,7 @@ def save_resolver_config(resolver, config, prefix, name):
             except Exception as _exx:
                 log.error("unknown data type for %s", key)
 
-        res = storeConfig(l_key, value, typ=typ)
+        res = storeConfig(full_key, value, typ=typ)
 
     return res
 
@@ -251,7 +251,7 @@ def get_cls_identifier(config_identifier):
             continue
 
         for cls_identifier in cls_identifiers:
-            if config_entry.startswith("linotp." + cls_identifier):
+            if config_entry.startswith(f"linotp.{cls_identifier}"):
                 return cls_identifier
 
     return None
