@@ -50,7 +50,6 @@ def parse_datetime(d_string):
     :return: datetime object
     """
 
-    startdate = None
     fmts = [
         "%d.%m.%Y+%H:%M",
         "%d.%m.%Y %H:%M",
@@ -62,15 +61,14 @@ def parse_datetime(d_string):
         "%Y-%m-%d",
     ]
 
-    if d_string is not None and len(d_string) > 0:
+    if d_string:
         for fmt in fmts:
             try:
-                startdate = datetime.datetime.strptime(d_string, fmt)
-                break
+                return datetime.datetime.strptime(d_string, fmt)
             except ValueError:
-                startdate = None
+                pass
 
-    return startdate
+    return None
 
 
 def parse_dat_data(data, d_string=None):
