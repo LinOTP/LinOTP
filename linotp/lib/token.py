@@ -674,7 +674,7 @@ class TokenHandler(object):
         # only auto assign if no token exists
 
         tokens = get_tokens(user)
-        if len(tokens) > 0:
+        if tokens:
             log.debug(
                 "No auto_assigment for user %r@%r. User already has"
                 " some tokens.",
@@ -749,7 +749,7 @@ class TokenHandler(object):
         # check if user has a token
         # TODO: this may dependend on a policy definition
         tokens = get_tokens(user, "")
-        if len(tokens) > 0:
+        if tokens:
             log.debug(
                 "[auto_assignToken] no auto_assigment for user %r@%r. "
                 "User already has some tokens.",
@@ -1485,7 +1485,7 @@ def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
 
     for token in tokens:
         info = token.LinOtpTokenInfo
-        if len(info) > 0:
+        if info:
             tinfo = json.loads(info)
             rollout = tinfo.get("rollout", None)
             if rollout is not None:
