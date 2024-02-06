@@ -317,13 +317,10 @@ class LinOtpConfig(dict):
 
         self.glo.setConfig(dic)
 
-        #
         # finally sync the entries to the database
-        #
-
-        for key in dic:
+        for key, value in dic.items():
             if key != "linotp.Config":
-                _storeConfigDB(key, dic.get(key))
+                _storeConfigDB(key, value)
 
         _storeConfigDB("linotp.Config", datetime.now())
         return res

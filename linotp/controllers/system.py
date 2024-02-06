@@ -471,29 +471,28 @@ class SystemController(BaseController):
             # if there is no parameter, we return them all
             if len(param) == 0:
                 conf = getLinotpConfig()
-                keys = sorted(conf.keys())
-                for key in keys:
+                for key, value in sorted(conf.items()):
                     parts = key.split(".")
 
                     if parts[0] == "enclinotp":
                         continue
 
                     if parts[0] == "linotp":
-                        Key = key[len("linotp.") :]
+                        stripped_key = key[len("linotp.") :]
 
                         #
                         # Todo: move the handling of extra data to the
                         #       json reply formatter
                         #
 
-                        typ = type(conf.get(key)).__name__
+                        typ = type(value).__name__
                         if typ not in ["str", "unicode"]:
                             if typ == "datetime":
-                                res[Key] = str(conf.get(key))
+                                res[stripped_key] = str(value)
                             else:
-                                res[Key] = conf.get(key)
+                                res[stripped_key] = value
                         else:
-                            res[Key] = conf.get(key)
+                            res[stripped_key] = value
 
                 g.audit["success"] = True
                 g.audit["info"] = "complete config"
@@ -810,20 +809,18 @@ class SystemController(BaseController):
             resolver_name = param["resolver"]
 
             # only delete a resolver, if it is not used by any realm
-            found = False
             fRealms = []
             realms = getRealms()
-            for realm in realms:
-                info = realms.get(realm)
-                resolver_specs = info.get("useridresolver")
+            for realm, info in realms.items():
+                resolver_specs = info.get("useridresolver", [])
 
-                for resolver_spec in resolver_specs:
-                    __, config_identifier = parse_resolver_spec(resolver_spec)
-                    if resolver_name == config_identifier:
-                        fRealms.append(realm)
-                        found = True
+                if any(
+                    resolver_name == parse_resolver_spec(resolver_spec)[1]
+                    for resolver_spec in resolver_specs
+                ):
+                    fRealms.append(realm)
 
-            if found is True:
+            if fRealms:
                 g.audit["failed"] = res
                 err = "Resolver %r  still in use by the realms: %r" % (
                     resolver_name,
