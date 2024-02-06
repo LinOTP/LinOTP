@@ -109,10 +109,10 @@ class RemoteRequest(object):
         query_parts = query.split("&")
         q = {}
         for query_part in query_parts:
-            if "=" in query:
+            if "=" in query_part:
                 key, value = query_part.split("=")
             else:
-                key = query
+                key = query_part
                 value = ""
             # only add if key is not an empty strings
             if key.strip():
