@@ -1062,13 +1062,15 @@ class TokenHandler(object):
             #  due to legacy SQLAlchemy it could happen that the
             #  foreign key relation could not be deleted
             #  so we do this manualy
-            for t_id in set(token_ids):
-                TokenRealm.query.filter(TokenRealm.token_id == t_id).delete()
+            TokenRealm.query.filter(TokenRealm.token_id.in_(token_ids)).delete(
+                synchronize_session=False
+            )
 
             db.session.commit()
 
-            for token in tokens:
-                db.session.delete(token)
+            Token.query.filter(Token.LinOtpTokenId.in_(token_ids)).delete(
+                synchronize_session=False
+            )
 
         except Exception as exx:
             raise TokenAdminError(
