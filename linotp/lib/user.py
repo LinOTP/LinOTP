@@ -150,11 +150,11 @@ class User(object):
 
         # if there is a resolver_config_identifier we have to care for
 
-        resolvers_list = self._filter_for_resolver_config_identitier(
+        filtered_resolvers_list = self._filter_for_resolver_config_identitier(
             resolvers_list
         )
 
-        for resolver_spec in resolvers_list:
+        for resolver_spec in filtered_resolvers_list:
             try:
                 # we can use the user in resolver lookup cache
                 # instead of asking the resolver
@@ -175,7 +175,6 @@ class User(object):
                 # 2. the resolver spec list
                 y = getResolverObject(resolver_spec)
                 resId = y.getResolverId()
-
                 resCId = resolver_spec
                 __, conf = parse_resolver_spec(resolver_spec)
                 self.resolverConf[resolver_spec] = (resId, resCId, conf)
