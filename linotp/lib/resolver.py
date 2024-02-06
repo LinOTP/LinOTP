@@ -284,45 +284,50 @@ def getResolverList(filter_resolver_type=None, config=None):
     :type filter_resolver_type: string
     :rtype: Dictionary of the resolvers and their configuration
     """
-    Resolvers = {}
+    resolvers = {}
     resolvertypes = get_resolver_types()
-
     local_admin_resolver = current_app.config["ADMIN_RESOLVER_NAME"]
-
     admin_resolvers = get_admin_resolvers()
     conf = config or context.get("Config")
 
     for entry in conf:
-        for typ in resolvertypes:
-            if entry.startswith("linotp." + typ):
+        for resolver_type in resolvertypes:
+            if entry.startswith(f"linotp.{resolver_type}") and (
+                filter_resolver_type is None
+                or filter_resolver_type == resolver_type
+            ):
                 # the resolver might contain dots "." so take
                 # all after the 3rd dot for the resolver name
-                r = {}
                 resolver = entry.split(".", 3)
-
                 # An old entry without resolver name
                 if len(resolver) <= 3:
                     break
-                r["resolvername"] = resolver[3]
-                r["entry"] = entry
-                r["type"] = typ
+                # this is a patch for a hack:
+                #
+                # as entry, the first found resolver is shown
+                # as the PasswdResolver only has one entry, this always
+                # has been 'fileName', which now as could be 'readonly'
+                # thus we skip the readonly entry:
+                if resolver[2] == "readonly":
+                    continue
 
-                # return the resolver spec, which is required to define a realm
-                resolver_cls = get_resolver_class(typ)
-                r["spec"] = resolver_cls.db_prefix + "." + resolver[3]
-                r["admin"] = resolver[3] in admin_resolvers
+                resolver_name = resolver[3]
+                resolver_info = {
+                    "resolvername": resolver_name,
+                    "entry": entry,
+                    "type": resolver_type,
+                    "spec": f"{get_resolver_class(resolver_type).db_prefix}.{resolver_name}",
+                    "admin": resolver_name in admin_resolvers,
+                    "immutable": local_admin_resolver == resolver_name,
+                }
 
-                # set the immutable flag if its the local_admin_resolver
-                r["immutable"] = local_admin_resolver == resolver[3]
-
-                readonly_entry = ".".join(
-                    [resolver[0], resolver[1], "readonly", resolver[3]]
+                readonly_entry = (
+                    f"{resolver[0]}.{resolver[1]}.readonly.{resolver_name}"
                 )
-
                 if readonly_entry in conf:
-                    readonly = False
                     try:
-                        readonly = boolean(conf[readonly_entry])
+                        if boolean(conf[readonly_entry]):
+                            resolver_info["readonly"] = True
                     except Exception as _exx:
                         log.info(
                             "Failed to convert 'readonly' attribute %r:%r",
@@ -330,28 +335,11 @@ def getResolverList(filter_resolver_type=None, config=None):
                             conf[readonly_entry],
                         )
 
-                    if readonly:
-                        r["readonly"] = True
-                #
-                # this is a patch for a hack:
-                #
-                # as entry, the first found resolver is shown
-                # as the PasswdResolver only has one entry, this always
-                # has been 'fileName', which now as could be 'readonly'
-                # thus we skip the readonly entry:
-
-                key = resolver[2]
-                if key == "readonly":
-                    continue
-
-                if (filter_resolver_type is None) or (
-                    filter_resolver_type and filter_resolver_type == typ
-                ):
-                    Resolvers[resolver[3]] = r
+                resolvers[resolver_name] = resolver_info
                 # Dont check the other resolver types
                 break
 
-    return Resolvers
+    return resolvers
 
 
 def getResolverInfo(resolvername, passwords=False):
