@@ -376,7 +376,7 @@ def _retrieveAllConfigDB():
 
     # normal processing as before continous here
 
-    for key, value in list(conf_dict.items()):
+    for key, value in conf_dict.items():
         if key.startswith("linotp.") is False:
             key = f"linotp.{key}"
 
@@ -394,7 +394,7 @@ def _retrieveAllConfigDB():
     # decrypt the data when needed.
     # This allows to drop the delayed loading handling
 
-    for key, value in list(config.items()):
+    for key, value in config.items():
         myTyp = type_dict.get(key)
 
         if myTyp and myTyp == "encrypted_data":

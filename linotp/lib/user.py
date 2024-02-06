@@ -708,7 +708,7 @@ def getUserRealms(user, allRealms=None, defaultRealm=None):
         Realms.append(user.realm.lower())
     else:
         # we got a resolver and will get all realms the resolver belongs to.
-        for key, val in list(allRealms.items()):
+        for key, val in allRealms.items():
             log.debug("[getUserRealms] evaluating realm %r: %r ", key, val)
             for reso in val["useridresolver"]:
                 resotype, resoname = reso.rsplit(".", 1)
@@ -772,7 +772,7 @@ def find_resolver_spec_for_config_identifier(realms_dict, config_identifier):
     # assumes, that the config_identifier is globally
     # unique. This is not necessarily the case
 
-    for realm_dict in list(realms_dict.values()):
+    for realm_dict in realms_dict.values():
         resolver_specs = realm_dict["useridresolver"]
         for resolver_spec in resolver_specs:
             __, current_config_identifier = parse_resolver_spec(resolver_spec)

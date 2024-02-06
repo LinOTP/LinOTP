@@ -222,7 +222,7 @@ def parse_config(config_dict):
 
     # ---------------------------------------------------------------------- --
 
-    for composite_key, value in list(config_dict.items()):
+    for composite_key, value in config_dict.items():
         tree.consume_entry(composite_key, value)
 
     return tree

@@ -297,24 +297,14 @@ class LinOtpConfig(dict):
         :return : return the std value like the std dict does, whatever this is
         :rtype  : any value a dict update will return
         """
-
-        #
         # first check if all data is type compliant
-        #
-
-        for key, val in list(dic.items()):
+        for key, val in dic.items():
             self._check_type(key, val)
 
-        #
         # put the data in the parent dictionary
-        #
-
         res = super().update(dic)
 
-        #
         # and sync the data with the global config dict
-        #
-
         self.glo.setConfig(dic)
 
         # finally sync the entries to the database

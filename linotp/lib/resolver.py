@@ -244,7 +244,7 @@ def get_cls_identifier(config_identifier):
     """
 
     config = context.get("Config")
-    cls_identifiers = list(resolver_registry.keys())
+    cls_identifiers = resolver_registry.keys()
 
     for config_entry in config:
         if not config_entry.endswith(config_identifier):
@@ -995,15 +995,12 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
         # is allowed
 
         if previous_readonly:
-            for key, p_value in list(previous_param.items()):
+            for key, p_value in previous_param.items():
                 # we inherit the readonly parameter if it is
                 # not provided by the ui
-
                 if key == "readonly":
                     param["readonly"] = boolean(p_value)
-                    continue
-
-                if p_value != param.get(key, ""):
+                elif p_value != param.get(key, ""):
                     raise Exception("Readonly Resolver Change not allowed!")
 
         # check if the primary key changed - if so, we need

@@ -696,10 +696,8 @@ class SystemController(BaseController):
             if mode == "rename":
                 # lookup in which realm definition the resolvers is used
 
-                change_realms = {}
-
-                for realm_name, realm_description in list(getRealms().items()):
-                    resolvers = realm_description.get("useridresolver")
+                for realm_name, realm_description in getRealms().items():
+                    resolvers = realm_description.get("useridresolver", [])
 
                     for current_resolver in resolvers:
                         if previous_name == current_resolver.split(".")[-1]:

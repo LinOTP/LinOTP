@@ -720,7 +720,7 @@ def _verify_signature(pub_keys, lic_str, lic_sign):
         return False
 
     # verify signature with crypto.rsa
-    for pub_key_name, pub_key in list(pub_keys.items()):
+    for pub_key_name, pub_key in pub_keys.items():
         if verify_rsa_signature(
             pub_key.strip().encode("utf-8"), lic_str.encode("utf-8"), lic_sign
         ):
