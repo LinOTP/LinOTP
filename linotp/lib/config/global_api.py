@@ -121,12 +121,9 @@ class LinotpAppConfig:
         try:
             if isinstance(conf, (list, dict)):
                 for k in conf:
-                    if k in self.config:
-                        del self.config[k]
-
+                    self.config.pop(k, None)
             elif isinstance(conf, str):
-                if conf in self.config:
-                    del self.config[conf]
+                self.config.pop(conf, None)
 
         finally:
             self.configLock.release()
