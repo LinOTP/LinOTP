@@ -266,8 +266,7 @@ class AuditlogController(BaseController, JWTMixin):
 
         # replace wildcard operator `*` by `%`
         for k, v in search_params.items():
-            if not isinstance(v, str):
-                continue
-            search_params[k] = v.replace("*", "%")
+            if isinstance(v, str):
+                search_params[k] = v.replace("*", "%")
 
         return search_params
