@@ -130,7 +130,7 @@ def realm2Objects(realmList):
     return realmObjList
 
 
-def getRealmObject(name="", id=0):
+def getRealmObject(name=""):
     """
     returns the Realm Object for a given realm name.
     If the given realm name is not found, it returns "None"
@@ -138,24 +138,16 @@ def getRealmObject(name="", id=0):
     :param name: realmname to be searched
     :type  name: string
 
-    TODO: search by id not implemented, yet
-    :param id:   id of the realm object
-    :type  id:   integer
-
     :return : realmObject - the database object
     :rtype  : the sql db object
     """
 
-    log.debug("Getting realm object for name=%s, id=%i", name, id)
-    realmObj = None
+    log.debug("Getting realm object for name=%s", name)
 
-    name = "" + str(name)
-    if 0 == id:
-        realmObjects = Realm.query.filter(
-            func.lower(Realm.name) == name.lower()
-        )
-        if realmObjects.count() > 0:
-            realmObj = realmObjects[0]
+    name = str(name).strip()
+    realmObj = Realm.query.filter(
+        func.lower(Realm.name) == name.lower()
+    ).first()
 
     return realmObj
 
