@@ -329,10 +329,9 @@ class FinishTokens(object):
         where the pin matched (but OTP failed
         and increment only these
         """
-        pin_matching_tokens = self.pin_matching_tokens
         action_detail = "wrong otp value"
 
-        for tok in pin_matching_tokens:
+        for tok in self.pin_matching_tokens:
             tok.statusValidationFail()
             tok.inc_count_auth()
             Challenges.finish_challenges(tok, success=False)
@@ -341,10 +340,9 @@ class FinishTokens(object):
 
     def finish_invalid_tokens(self):
         """"""
-        invalid_tokens = self.invalid_tokens
         user = self.user
 
-        for tok in invalid_tokens:
+        for tok in self.invalid_tokens:
             # count all token accesses
             if tok.count_auth_max > 0:
                 tok.inc_count_auth()
