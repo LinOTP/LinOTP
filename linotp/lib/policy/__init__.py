@@ -352,7 +352,7 @@ def _checkSystemPolicyPost(method, param=None, user=None):
                 )
 
                 lowerRealms = uniquify(pol["realms"])
-                for realm, _v in list(res.items()):
+                for realm in list(res.keys()):
                     if (
                         realm.lower() not in lowerRealms
                         and "*" not in lowerRealms
