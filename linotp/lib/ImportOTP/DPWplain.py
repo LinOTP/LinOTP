@@ -62,8 +62,7 @@ def parseDPWdata(data):
         log.debug("[parseDPWdata] checking line: %r", line)
         m = re.match(r"(\S.*?)\s.*?(\S.*)", line)
         if m:
-            serial = m.groups()[0]
-            key = m.groups()[1]
+            serial, key = m.groups()[:2]
             if checkserial(serial):
                 log.debug("import tagespasswort token with serial %r", serial)
                 TOKENS[serial] = {"hmac_key": key, "type": TOKEN_TYPE}
