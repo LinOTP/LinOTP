@@ -397,9 +397,18 @@ def add_dynamic_selfservice_enrollment(config, actions):
 
     dynanmic_actions = {}
 
+    def _add_to_dynanmic_actions(action: str):
+        service = selfservice.get(action)
+        tab = service.get("title")
+        c.scope = tab.get("scope")
+        t_file = tab.get("html")
+        t_html = render(t_file).decode().strip()
+        e_name = f"{tok}.selfservice.{action}"
+        dynanmic_actions[e_name] = t_html
+
     for tclass_object in set(tokenclass_registry.values()):
-        tok = tclass_object.getClassType()
         if hasattr(tclass_object, "getClassInfo"):
+            tok = tclass_object.getClassType()
             try:
                 selfservice = tclass_object.getClassInfo(
                     "selfservice", ret=None
@@ -409,21 +418,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                     "enroll" in selfservice
                     and "enroll" + tok.upper() in actions
                 ):
-                    service = selfservice.get("enroll")
-                    tab = service.get("title")
-                    c.scope = tab.get("scope")
-                    t_file = tab.get("html")
-                    t_html = render(t_file).decode()
-                    """ remove empty lines """
-                    t_html = "\n".join(
-                        [
-                            line
-                            for line in t_html.split("\n")
-                            if line.strip() != ""
-                        ]
-                    )
-                    e_name = "%s.%s.%s" % (tok, "selfservice", "enroll")
-                    dynanmic_actions[e_name] = t_html
+                    _add_to_dynanmic_actions("enroll")
 
                 # # check if there are other selfserive policy actions
                 policy = tclass_object.getClassInfo("policy", ret=None)
@@ -433,21 +428,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                         if action in selfserv_policies:
                             # # now lookup, if there is an additional section
                             # # in the selfservice to render
-                            service = selfservice.get(action)
-                            tab = service.get("title")
-                            c.scope = tab.get("scope")
-                            t_file = tab.get("html")
-                            t_html = render(t_file).decode()
-                            """ remove empty lines """
-                            t_html = "\n".join(
-                                [
-                                    line
-                                    for line in t_html.split("\n")
-                                    if line.strip() != ""
-                                ]
-                            )
-                            e_name = "%s.%s.%s" % (tok, "selfservice", action)
-                            dynanmic_actions[e_name] = t_html
+                            _add_to_dynanmic_actions(action)
 
             except Exception as exx:
                 log.info(
