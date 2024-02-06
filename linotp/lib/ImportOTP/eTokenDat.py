@@ -214,16 +214,17 @@ class DatToken(object):
         # sccPrTime=2011/05/03 02:46:54;
         # crypto=HmacSHA256;
         # sccVer=6.2;
-        params = value.split(";")
-        for param in params:
-            if "=" in param:
-                (key, val) = param.split("=")
+        params = dict(
+            param.split("=") for param in value.split(";") if "=" in param
+        )
+        for key, val in params.items():
+            # Again, call a specific attribute or generic setter
+            setter_method = getattr(self, "set_" + key, None)
+            if callable(setter_method):
+                setter_method(val)
+            else:
+                self.set(key, val)
 
-                # again call a secific attribute or generic setter
-                if hasattr(self, "set_" + key):
-                    getattr(self, "set_" + key)(val)
-                else:
-                    self.set(key, val)
         return
 
     # below: more or less generic setters
