@@ -770,7 +770,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             policies = {
                 "active": p1["active"],
                 "admin": p1["admin"],
-                "realms": p1["realms"] + p2["realms"],
+                "realms": list(set(p1["realms"] + p2["realms"])),
                 "resolvers": p1["resolvers"] + p2["resolvers"],
             }
         else:
