@@ -412,7 +412,7 @@ class AdminController(BaseController, JWTMixin):
 
                 ret = ret + th.removeToken(user, serial)
 
-            g.audit["success"] = 0
+            g.audit["success"] = 1 if len(serials) == ret else 0
             g.audit["serial"] = " ".join(serials)
 
             opt_result_dict = {}
@@ -1958,18 +1958,17 @@ class AdminController(BaseController, JWTMixin):
             )
             ret = th.copyTokenPin(serial_from, serial_to)
 
-            g.audit["success"] = ret
+            g.audit["success"] = 1 if ret == 1 else 0
             g.audit["serial"] = serial_to
             g.audit["action_detail"] = "from %s" % serial_from
 
             err_string = str(ret)
             if -1 == ret:
                 err_string = "can not get PIN from source token"
-            if -2 == ret:
+            elif -2 == ret:
                 err_string = "can not set PIN to destination token"
             if 1 != ret:
                 g.audit["action_detail"] += ", " + err_string
-                g.audit["success"] = 0
 
             db.session.commit()
             # Success
@@ -2096,7 +2095,7 @@ class AdminController(BaseController, JWTMixin):
             th = TokenHandler()
             res = th.losttoken(serial, param=param)
 
-            g.audit["success"] = ret
+            g.audit["success"] = 1 if res else 0
             g.audit["serial"] = res.get("serial")
             g.audit["action_detail"] = "from %s" % serial
             g.audit["source_realm"] = getTokenRealms(serial)
