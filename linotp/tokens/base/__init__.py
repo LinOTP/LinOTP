@@ -54,7 +54,7 @@ from linotp.lib.realm import getDefaultRealm
 from linotp.lib.reply import create_img
 from linotp.lib.token import getTokenRealms
 from linotp.lib.type_utils import boolean
-from linotp.lib.user import User, getUserResolverId
+from linotp.lib.user import User, getUserInfo, getUserResolverId
 from linotp.lib.util import generate_otpkey
 from linotp.model import db
 from linotp.model.token import Token
@@ -1042,6 +1042,17 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             )
         uuserid = self.token.LinOtpUserid or ""
         return (uuserid, uidResolver, uidResolverClass)
+
+    def getUsername(self):
+        """get the username of the token owner
+
+        Returns:
+            str: username
+        """
+        uid, resolver, resolverClass = self.getUser()
+        userInfo = getUserInfo(uid, resolver, resolverClass)
+        username = userInfo.get("username", "")
+        return username
 
     def setUid(self, uid, uidResolver, uidResClass):
         """
