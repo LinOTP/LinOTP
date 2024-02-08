@@ -133,11 +133,6 @@ class AdminController(BaseController, JWTMixin):
         try:
             g.audit["administrator"] = getUserFromRequest()
 
-            serial = request.params.get("serial")
-            if serial:
-                g.audit["serial"] = serial
-                g.audit["token_type"] = getTokenType(serial)
-
             # ------------------------------------------------------------- --
 
             # show the token usage counter for the actions which change the
@@ -676,12 +671,6 @@ class AdminController(BaseController, JWTMixin):
                 serial = self.request_params["serial"]
             except KeyError:
                 raise ParameterError("Missing parameter: 'serial'")
-
-            # check admin authorization
-            # try:
-            #    checkPolicyPre('admin', 'disable', param )
-            # except PolicyException as pe:
-            #    return sendError(pe, 1)
 
             log.info("[check_serial] checking serial %s", serial)
             th = TokenHandler()
