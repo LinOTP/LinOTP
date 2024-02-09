@@ -590,15 +590,7 @@ class TokenHandler(object):
         # ----------------------------------------------------------------- --
 
         # handle the token owner
-
-        toks = get_tokens(None, serial)
-
-        if len(toks) > 1:
-            raise TokenAdminError("multiple tokens found!", id=1101)
-        if len(toks) == 0:
-            raise TokenAdminError("no token found!", id=1102)
-
-        token = toks[0]
+        token = get_token(serial)
 
         (token_userid, _idResolver, token_idResolverClass) = token.getUser()
 
@@ -618,15 +610,7 @@ class TokenHandler(object):
         :param serial: the token serial number
         :return: boolean - True if it has an owner
         """
-
-        toks = get_tokens(None, serial)
-
-        if len(toks) > 1:
-            raise TokenAdminError("multiple tokens found!", id=1101)
-        if len(toks) == 0:
-            raise TokenAdminError("no token found!", id=1102)
-
-        token = toks[0]
+        token = get_token(serial)
 
         (uuserid, uidResolver, uidResolverClass) = token.getUser()
 
@@ -643,11 +627,7 @@ class TokenHandler(object):
         :param serial: serial number of the token
         :return: user object
         """
-        token = None
-
-        toks = get_tokens(None, serial)
-        if len(toks) > 0:
-            token = toks[0]
+        token = get_token(serial)
 
         user = get_token_owner(token)
 
@@ -855,16 +835,8 @@ class TokenHandler(object):
         if param is None:
             param = {}
 
-        toks = get_tokens(None, serial)
-        # toks  = Session.query(Token).filter(
-        #  Token.LinOtpTokenSerialnumber == serial)
+        token = get_token(serial)
 
-        if len(toks) > 1:
-            raise TokenAdminError("multiple tokens found!", id=1101)
-        if len(toks) == 0:
-            raise TokenAdminError("no token %r found!" % serial, id=1102)
-
-        token = toks[0]
         if user.login == "":
             report = False
         else:
@@ -904,16 +876,7 @@ class TokenHandler(object):
         """
         unassignToken - used to assign and to unassign token
         """
-        toks = get_tokens(None, serial)
-        # toks  = Session.query(Token).filter(
-        #               Token.LinOtpTokenSerialnumber == serial)
-
-        if len(toks) > 1:
-            raise TokenAdminError("multiple tokens found!", id=1101)
-        if len(toks) == 0:
-            raise TokenAdminError("no token found!", id=1102)
-
-        token = toks[0]
+        token = get_token(serial)
         no_user = User("", "", "")
         token.setUser(no_user, True)
         if pin:
@@ -1241,17 +1204,11 @@ class TokenHandler(object):
             serial_from,
             serial_to,
         )
-        tokens_from = get_tokens(None, serial_from)
-        tokens_to = get_tokens(None, serial_to)
-        if len(tokens_from) != 1:
-            log.error("[copyTokenPin] not a unique token to copy from found")
-            return -1
-        if len(tokens_to) != 1:
-            log.error("[copyTokenPin] not a unique token to copy to found")
-            return -2
+        token_from = get_token(serial_from)
+        token_to = get_token(serial_to)
         import linotp.tokens.base
 
-        linotp.tokens.base.TokenClass.copy_pin(tokens_from[0], tokens_to[0])
+        linotp.tokens.base.TokenClass.copy_pin(token_from, token_to)
         return 1
 
     def copyTokenUser(self, serial_from, serial_to):
@@ -1269,16 +1226,10 @@ class TokenHandler(object):
             serial_from,
             serial_to,
         )
-        tokens_from = get_tokens(None, serial_from)
-        tokens_to = get_tokens(None, serial_to)
-        if len(tokens_from) != 1:
-            log.error("[copyTokenUser] not a unique token to copy from found")
-            return -1
-        if len(tokens_to) != 1:
-            log.error("[copyTokenUser] not a unique token to copy to found")
-            return -2
-        uid, ures, resclass = tokens_from[0].getUser()
-        tokens_to[0].setUid(uid, ures, resclass)
+        token_from = get_token(serial_from)
+        token_to = get_token(serial_to)
+        uid, ures, resclass = token_from.getUser()
+        token_to.setUid(uid, ures, resclass)
 
         self.copyTokenRealms(serial_from, serial_to)
         return 1
@@ -1562,34 +1513,19 @@ def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
 
 def setRealms(serial, realmList):
     # set the tokenlist of DB tokens
-    tokenList = get_raw_tokens(None, serial)
-
-    if len(tokenList) == 0:
-        raise TokenAdminError(
-            "setRealms failed. No token with serial %s found" % serial, id=1119
-        )
+    token = get_raw_token(serial)
 
     realmObjList = realm2Objects(realmList)
+    token.setRealms(realmObjList)
 
-    for token in tokenList:
-        token.setRealms(realmObjList)
-
-    return len(tokenList)
+    return 1
 
 
 def getTokenRealms(serial):
     """
     This function returns a list of the realms of a token
     """
-    tokenList = get_raw_tokens(None, serial)
-
-    if len(tokenList) == 0:
-        raise TokenAdminError(
-            "getTokenRealms failed. No token with serial %s found" % serial,
-            id=1119,
-        )
-
-    token = tokenList[0]
+    token = get_raw_token(serial)
 
     return token.getRealmNames()
 
@@ -1791,6 +1727,11 @@ def get_tokens(
     return [createTokenClassObject(token) for token in tokens]
 
 
+def get_token(serial: string):
+    token = get_raw_token(serial)
+    return createTokenClassObject(token)
+
+
 def get_raw_tokens(
     user: User = None,
     serial: string = None,
@@ -1930,6 +1871,21 @@ def get_raw_tokens(
     return tokenList
 
 
+def get_raw_token(serial: string):
+    tokens = get_raw_tokens(serial=serial)
+    number_of_tokens = len(tokens)
+    if number_of_tokens == 1:
+        return tokens[0]
+    elif number_of_tokens == 0:
+        raise TokenAdminError(
+            "No token with serial %s found" % serial, id=1102
+        )
+    else:
+        raise TokenAdminError(
+            "multiple tokens found with serial %s!" % serial, id=1101
+        )
+
+
 def setDefaults(token):
     #  set the defaults
     token.LinOtpOtpLen = int(getFromConfig("DefaultOtpLen", 6))
@@ -1944,11 +1900,10 @@ def tokenExist(serial):
     """
     returns true if the token exists
     """
-    if serial:
-        toks = get_tokens(None, serial)
-        return len(toks) > 0
-    else:
-        # If we have no serial we return false anyway!
+    try:
+        token = get_token(serial)
+        return True
+    except:
         return False
 
 
@@ -2123,41 +2078,29 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
         dictionary of otp values
     """
     ret = {"result": False}
-    toks = get_tokens(None, serial)
+    token = get_token(serial)
 
-    if len(toks) > 1:
-        raise TokenAdminError(
-            "multiple tokens found - cannot get OTP!", id=1201
-        )
+    log.debug(
+        "[get_multi_otp] getting multiple otp values for token %r. "
+        "curTime=%r",
+        token,
+        curTime,
+    )
 
-    if len(toks) == 0:
-        log.warning("No token with serial %r found", serial)
-        ret["error"] = "No Token with serial %s found." % serial
+    # if the token does not support getting the OTP
+    # value, res==False is returned
+    (res, error, otp_dict) = token.get_multi_otp(
+        count=count,
+        epoch_start=epoch_start,
+        epoch_end=epoch_end,
+        curTime=curTime,
+    )
 
-    if len(toks) == 1:
-        token = toks[0]
-        log.debug(
-            "[get_multi_otp] getting multiple otp values for token %r. "
-            "curTime=%r",
-            token,
-            curTime,
-        )
-
-        # if the token does not support getting the OTP
-        # value, res==False is returned
-
-        (res, error, otp_dict) = token.get_multi_otp(
-            count=count,
-            epoch_start=epoch_start,
-            epoch_end=epoch_end,
-            curTime=curTime,
-        )
-
-        if res is True:
-            ret = otp_dict
-            ret["result"] = True
-        else:
-            ret["error"] = error
+    if res is True:
+        ret = otp_dict
+        ret["result"] = True
+    else:
+        ret["error"] = error
 
     return ret
 
@@ -2180,22 +2123,8 @@ def getOtp(serial, curTime=None):
 
     """
     log.debug("[getOtp] retrieving OTP value for token %r", serial)
-    toks = get_tokens(None, serial)
-
-    if len(toks) > 1:
-        raise TokenAdminError(
-            "multiple tokens found - cannot get OTP!", id=1101
-        )
-
-    if len(toks) == 0:
-        log.warning("[getOTP] there is no token with serial %r", serial)
-        return (-1, "", "", "")
-
-    if len(toks) == 1:
-        token = toks[0]
-        # if the token does not support getting the OTP value, a -2 is
-        # returned.
-        return token.getOtp(curTime=curTime)
+    token = get_token(serial)
+    return token.getOtp(curTime=curTime)
 
 
 def setPin(pin, user, serial, param=None):

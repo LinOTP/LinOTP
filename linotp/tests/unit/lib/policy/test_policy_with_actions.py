@@ -379,8 +379,12 @@ class PolicyActionTest(unittest.TestCase):
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.lib.policy.processing.get_policies")
     @patch("linotp.lib.token.TokenHandler.getTokenOwner")
+    @patch("linotp.lib.token.TokenHandler.copyTokenUser")
+    @patch("linotp.lib.token.TokenHandler.copyTokenPin")
     def test_losttoken(
         self,
+        mocked_copyTokenPin,
+        mocked_copyTokenUser,
         mocked_getTokenOwner,
         mocked__get_policies,
         mocked_get_policy_definitions,
@@ -389,6 +393,9 @@ class PolicyActionTest(unittest.TestCase):
 
         fake_user = LinotpUser(login="fake_user", realm="defaultrealm")
         mocked_getTokenOwner.return_value = fake_user
+
+        mocked_copyTokenUser.return_value = 1
+        mocked_copyTokenPin.return_value = 1
 
         policy_set = copy.deepcopy(PolicySet)
 

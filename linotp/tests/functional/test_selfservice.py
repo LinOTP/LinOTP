@@ -207,7 +207,7 @@ class TestSelfserviceController(TestController):
         )
         print(response)
         assert '"status": false' in response
-        assert "no token found!" in response
+        assert "No token with serial XXXX found" in response
 
         response = self.make_userselfservice_request(
             "resync",

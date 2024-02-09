@@ -78,6 +78,7 @@ from linotp.lib.resolver import (
 )
 from linotp.lib.token import (
     TokenHandler,
+    get_token,
     get_tokens,
     getTokenRealms,
     getTokenType,
@@ -197,7 +198,7 @@ class AdminController(BaseController, JWTMixin):
             owner = th.getTokenOwner(serial)
             if owner.info:
                 ret = owner.info
-                token = get_tokens(serial=serial)[0]
+                token = get_token(serial)
                 g.audit["success"] = 1
                 g.audit["token_type"] = token.type
                 g.audit["user"] = ret.get("username")
@@ -419,8 +420,7 @@ class AdminController(BaseController, JWTMixin):
                 check_params["serial"] = serial
                 checkPolicyPre("admin", "remove", check_params)
 
-                tokens = get_tokens(serial=serial)
-                token = tokens[0]
+                token = get_token(serial)
                 realms.update(token.getRealms())
                 users.add(token.getUsername())
                 token_types.add(token.type)
@@ -586,8 +586,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["success"] = 1
             g.audit["serial"] = serial
             if serial:
-                tokens = get_tokens(serial=serial)
-                token = tokens[0]
+                token = get_token(serial)
                 g.audit["token_type"] = token.type
                 g.audit["user"] = token.getUsername()
                 g.audit["realm"] = ", ".join(token.getRealms())
@@ -954,8 +953,7 @@ class AdminController(BaseController, JWTMixin):
                 user.realm,
             )
             g.audit["serial"] = serial
-            tokens = get_tokens(serial=serial)
-            token = tokens[0]
+            token = get_token(serial)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = user.realm or ", ".join(token.getRealms())
@@ -1035,8 +1033,7 @@ class AdminController(BaseController, JWTMixin):
 
                 # assignToken overwrites the token realms with the users realms
                 # -> we need to trigger reporting for them.
-                tokens = get_tokens(serial=serial)
-                token = tokens[0]
+                token = get_token(serial)
                 token_source_realms = token.getRealms() or ["/:no realm:/"]
 
                 # do the assignment
@@ -1045,8 +1042,7 @@ class AdminController(BaseController, JWTMixin):
                 )
 
                 source_realms.update(token_source_realms)
-                tokens = get_tokens(serial=serial)
-                token = tokens[0]
+                token = get_token(serial)
                 realms.update(token.getRealms())
                 users.add(token.getUsername())
                 token_types.add(token.type)
@@ -1159,8 +1155,7 @@ class AdminController(BaseController, JWTMixin):
 
             g.audit["success"] = count
             g.audit["serial"] = serial
-            tokens = get_tokens(serial=serial)
-            token = tokens[0]
+            token = get_token(serial)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())
@@ -1518,11 +1513,10 @@ class AdminController(BaseController, JWTMixin):
                     timeStep,
                     serial,
                 )
-                tokens = get_tokens(serial=serial)
-                for token in tokens:
-                    token.timeStep = timeStep
+                token = get_token(serial)
+                token.timeStep = timeStep
 
-                res["set timeStep"] = len(tokens)
+                res["set timeStep"] = 1
                 count = count + 1
                 g.audit["action_detail"] += "timeStep=%d, " % timeStep
 
@@ -1950,8 +1944,7 @@ class AdminController(BaseController, JWTMixin):
 
             g.audit["success"] = ret
             g.audit["serial"] = serial
-            tokens = get_tokens(serial=serial)
-            token = tokens[0]
+            token = get_token(serial)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(realmList)
@@ -2092,8 +2085,7 @@ class AdminController(BaseController, JWTMixin):
 
             g.audit["success"] = 1 if ret == 1 else 0
             g.audit["serial"] = serial_to
-            tokens = get_tokens(serial=serial_to)
-            token = tokens[0]
+            token = get_token(serial_to)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())
@@ -2169,8 +2161,7 @@ class AdminController(BaseController, JWTMixin):
 
             g.audit["success"] = ret
             g.audit["serial"] = serial_to
-            tokens = get_tokens(serial=serial_to)
-            token = tokens[0]
+            token = get_token(serial_to)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())
@@ -2237,8 +2228,7 @@ class AdminController(BaseController, JWTMixin):
             new_serial = res.get("serial")
             g.audit["success"] = 1 if res else 0
             g.audit["serial"] = new_serial
-            tokens = get_tokens(serial=new_serial)
-            token = tokens[0]
+            token = get_token(new_serial)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())
@@ -2744,8 +2734,7 @@ class AdminController(BaseController, JWTMixin):
             res, opt = token.get_otp_detail(otp=otp, window=window)
             g.audit["success"] = res
             g.audit["serial"] = serial
-            tokens = get_tokens(serial=serial)
-            token = tokens[0]
+            token = get_token(serial)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())
@@ -2874,8 +2863,7 @@ class AdminController(BaseController, JWTMixin):
                 stat["challenges"] = chall_dict
 
                 # # add the token info to the stat dict
-                tokens = get_tokens(serial=serial)
-                token = tokens[0]
+                token = get_token(serial)
                 stat["tokeninfo"] = token.get_vars(save=True)
 
                 # # add the local stat to the summary status dict

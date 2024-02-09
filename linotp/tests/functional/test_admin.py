@@ -447,8 +447,8 @@ class TestAdminController(TestController):
         response = self.make_admin_request("remove", params=params)
 
         jresp = response.json
-        assert response.json["result"]["status"]
-        assert response.json["result"]["value"] == len(serials)
+        assert jresp["result"]["status"]
+        assert jresp["result"]["value"] == len(serials)
 
         # submit the delete of the tokens within one request
 
@@ -456,8 +456,8 @@ class TestAdminController(TestController):
         response = self.make_admin_request("remove", params=params)
 
         jresp = response.json
-        assert response.json["result"]["status"] is False
-        assert response.json["result"]["error"]["code"] == 1119
+        assert jresp["result"]["status"] is False
+        assert jresp["result"]["error"]["code"] == 1102
 
     def test_assign(self):
         serial = self.createToken2(serial="F722362")
