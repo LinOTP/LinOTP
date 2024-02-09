@@ -912,8 +912,6 @@ class AdminController(BaseController, JWTMixin):
 
             user = getUserFromParam(param)
 
-            g.audit["source_realm"] = getTokenRealms(serial)
-
             # check admin authorization
             checkPolicyPre("admin", "unassign", param)
 
@@ -2044,7 +2042,6 @@ class AdminController(BaseController, JWTMixin):
             g.audit["success"] = ret
             g.audit["serial"] = serial_to
             g.audit["action_detail"] = "from %s" % serial_from
-            g.audit["source_realm"] = getTokenRealms(serial_from)
             g.audit["realm"] = ", ".join(getTokenRealms(serial_to))
 
             err_string = str(ret)
