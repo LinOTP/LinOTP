@@ -585,10 +585,11 @@ class AdminController(BaseController, JWTMixin):
             if "" != serial:
                 checkPolicyPost("admin", "getserial", {"serial": serial})
 
-            g.audit["success"] = 1
+            g.audit["success"] = 0
             g.audit["serial"] = serial
             if serial:
                 token = get_token(serial)
+                g.audit["success"] = 1
                 g.audit["token_type"] = token.type
                 g.audit["user"] = token.getUsername()
                 g.audit["realm"] = ", ".join(token.getRealms())
