@@ -56,15 +56,28 @@ class TestAdminController(TestController):
         self.delete_all_resolvers()
         TestController.tearDown(self)
 
+    def init_token(self, params: dict):
+        """Creates the token
+
+        Args:
+            params (dict): parameters to init the token with
+
+        Returns:
+            str: token serial
+        """
+        response = self.make_admin_request("init", params=params)
+        response_json = response.json
+        assert response_json["result"]["value"], response_json
+        serial = response_json["detail"]["serial"]
+        return serial
+
     def createToken3(self):
         parameters = {
             "serial": "003e808e",
             "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
             "description": "my EToken",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
+        return self.init_token(parameters)
 
     def createToken2(self, serial="F722362"):
         parameters = {
@@ -72,10 +85,7 @@ class TestAdminController(TestController):
             "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
             "description": "TestToken" + serial,
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
-        return serial
+        return self.init_token(parameters)
 
     def createTokenSHA256(self, serial="SHA256"):
         parameters = {
@@ -84,15 +94,11 @@ class TestAdminController(TestController):
             "type": "hmac",
             "hashlib": "sha256",
         }
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
-        return serial
+        return self.init_token(parameters)
 
     def createSPASS(self, serial="LSSP0001", pin="1test@pin!42"):
         parameters = {"serial": serial, "type": "spass", "pin": pin}
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
-        return serial
+        return self.init_token(parameters)
 
     def createToken(self):
         parameters = {
@@ -102,9 +108,7 @@ class TestAdminController(TestController):
             "pin": "pin",
             "description": "TestToken1",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
+        self.init_token(parameters)
 
         parameters = {
             "serial": "F722363",
@@ -113,9 +117,7 @@ class TestAdminController(TestController):
             "pin": "pin",
             "description": "TestToken2",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
+        self.init_token(parameters)
 
         parameters = {
             "serial": "F722364",
@@ -124,9 +126,7 @@ class TestAdminController(TestController):
             "pin": "pin",
             "description": "TestToken3",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
+        self.init_token(parameters)
 
         # test the update
         parameters = {
@@ -136,10 +136,7 @@ class TestAdminController(TestController):
             "pin": "Pin3",
             "description": "TestToken3",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        # log.error("response %s\n",response)
-        assert '"value": true' in response, response
+        self.init_token(parameters)
 
     def removeTokenByUser(self, user):
         # final delete all tokens of user root
@@ -1139,3 +1136,274 @@ class TestAdminController(TestController):
         )
 
         assert '"status": true' in response, response
+
+    def test_audit_for_actions(self):
+        # Untested so far: resync
+        audit_mapping = {
+            "action": 4,
+            "success": 5,
+            "serial": 6,
+            "type": 7,
+            "user": 8,
+            "realm": 9,
+        }
+        params = {
+            "serial": "serial_1",
+            "type": "pw",
+            "otpkey": "123",
+            "user": "root",
+            "realm": "mydefrealm",
+        }
+
+        expected_audit = {
+            "success": "1",
+            "serial": params["serial"],
+            "type": params["type"],
+            "user": params["user"],
+            "realm": params["realm"],
+        }
+        expected_audit_faulty = {
+            "success": "0",
+            "serial": f"{params['serial']}",
+            "type": "",
+            "user": "",
+            "realm": "",
+        }
+
+        def get_last_audit_entry():
+            response = self.make_audit_request("search")
+            res = response.json
+            assert res["rows"]
+            return res["rows"][-1]["cell"]
+
+        # test init
+        action = "init"
+        self.init_token(params)
+
+        audit_entry = get_last_audit_entry()
+        assert f"admin/{action}" == audit_entry[audit_mapping["action"]]
+        for key, expected in expected_audit.items():
+            actual = audit_entry[audit_mapping[key]]
+            assert expected == actual, actual
+        self.delete_all_token()
+
+        # Test other:
+        for action, values in {
+            "remove": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "enable": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "disable": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "assign": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "user": "hans",
+                },
+                "expected_audit": {**expected_audit, "user": "hans"},
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "user": "hans",
+                },
+            },
+            "unassign": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "getTokenOwner": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "losttoken": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": {
+                    **expected_audit,
+                    "serial": f"lost{params['serial']}",
+                    "type": "pw",
+                },
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "reset": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "getSerialByOtp": {
+                "request_params": {"otp": params["otpkey"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "serial": "",
+                },
+            },
+            "check_serial": {
+                "request_params": {"serial": "unique_serial"},
+                "expected_audit": {
+                    **expected_audit,
+                    "serial": "unique_serial",
+                    "type": "",
+                    "user": "",
+                    "realm": "",
+                },
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    # TODO
+                    # Should check_serial have success=1 when serial is take?
+                    # Currently we return a new unique serial
+                    "success": "1",
+                    "serial": "unique_serial",
+                },
+            },
+            "setPin": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "userpin": "123",
+                },
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "setValidity": {
+                "request_params": {
+                    "tokens": [params["serial"]],
+                    "validityPeriodStart": "1355302800",
+                },
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    # TODO
+                    # Should setValidity return success=1 if requested token(s) dont exist?
+                    "success": "1",
+                },
+            },
+            "set": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "MaxFailCount": "1",
+                },
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    # TODO
+                    # Should set return success=1 if requested token(s) dont exist?
+                    # currently success equals `count` where `count += 1` for each set param
+                    # even when the method returns `0`
+                    "success": "1",
+                },
+            },
+            "tokenrealm": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "realms": "myotherrealm",
+                },
+                "expected_audit": {**expected_audit, "realm": "myotherrealm"},
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "realm": "myotherrealm",
+                },
+            },
+            "copyTokenPin": {
+                "request_params": {
+                    "from": params["serial"],
+                    "to": f"{params['serial']}_to",
+                },
+                "expected_audit": {
+                    **expected_audit,
+                    "serial": f"{params['serial']}_to",
+                },
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "serial": f"{params['serial']}_to",
+                },
+            },
+            "copyTokenUser": {
+                "request_params": {
+                    "from": params["serial"],
+                    "to": f"{params['serial']}_to",
+                },
+                "expected_audit": {
+                    **expected_audit,
+                    "serial": f"{params['serial']}_to",
+                },
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "serial": f"{params['serial']}_to",
+                },
+            },
+            "unpair": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": {
+                    **expected_audit,
+                    "success": "0",  # as its a PW token
+                },
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "totp_lookup": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "otp": params["otpkey"],
+                },
+                "expected_audit": {
+                    **expected_audit,
+                    "success": "0",  # as its a PW token
+                    "type": "",
+                    "user": "",
+                    "realm": "",
+                },
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+        }.items():
+            self.init_token(params)
+
+            request_params = values["request_params"]
+
+            if action in ["copyTokenPin", "copyTokenUser"]:
+                new_serial = request_params["to"]
+                self.init_token({**params, "serial": new_serial})
+
+            content_type = (
+                "application/json" if action in ["setValidity"] else None
+            )
+            response = self.make_admin_request(
+                action=action, params=request_params, content_type=content_type
+            )
+
+            audit_entry = get_last_audit_entry()
+            assert f"admin/{action}" == audit_entry[audit_mapping["action"]]
+            for key, expected in values["expected_audit"].items():
+                actual = audit_entry[audit_mapping[key]]
+                assert expected == actual, action
+
+            self.delete_all_token()
+
+            # Test with faulty input since tokens are deleted
+            if action == "check_serial":
+                # init token with taken serial
+                self.init_token(
+                    params={**params, "serial": request_params["serial"]}
+                )
+
+            self.make_admin_request(
+                action=action,
+                params=request_params,
+                content_type=content_type,
+            )
+            audit_entry = get_last_audit_entry()
+            for key, expected in values["expected_audit_faulty"].items():
+                actual = audit_entry[audit_mapping[key]]
+                try:
+                    assert expected == actual, action
+                except:
+                    raise
+
+            self.delete_all_token()
