@@ -1103,6 +1103,7 @@ class AdminController(BaseController, JWTMixin):
         userpin\
         sopin\
         "
+        msg = "setting Pin failed"
         try:
             param = getLowerParams(self.request_params)
 
