@@ -1401,9 +1401,6 @@ class TestAdminController(TestController):
             audit_entry = get_last_audit_entry()
             for key, expected in values["expected_audit_faulty"].items():
                 actual = audit_entry[audit_mapping[key]]
-                try:
-                    assert expected == actual, action
-                except:
-                    raise
+                assert expected == actual, action
 
             self.delete_all_token()
