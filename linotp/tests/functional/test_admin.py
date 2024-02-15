@@ -32,7 +32,9 @@
 import json
 import logging
 
+from linotp.model.reporting import Reporting
 from linotp.tests import TestController
+from linotp.tests.functional.test_reporting import DBSession
 
 log = logging.getLogger(__name__)
 
@@ -54,6 +56,7 @@ class TestAdminController(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
+        self.delete_all_policies()
         TestController.tearDown(self)
 
     def init_token(self, params: dict):
@@ -1403,4 +1406,271 @@ class TestAdminController(TestController):
                 actual = audit_entry[audit_mapping[key]]
                 assert expected == actual, action
 
+            self.delete_all_token()
+
+    def create_reporting_policy(self, policy_params: dict = None):
+        policy_params = policy_params or {}
+        params = {
+            "name": policy_params.get("name", "reporting_policy"),
+            "scope": policy_params.get("scope", "reporting"),
+            "action": policy_params.get(
+                "action",
+                "token_total, token_status=active, token_status=inactive, token_status=assigned, token_status=unassigned",
+            ),
+            "user": policy_params.get("user", "*"),
+            "realm": policy_params.get("realm", "*"),
+        }
+        self.create_policy(params)
+
+    def test_reporting_for_actions(self):
+        """Test if action trigger expected report"""
+
+        # default params to init the token
+        default_params = {
+            "serial": "serial_1",
+            "type": "pw",
+            "otpkey": "123",
+            "user": "root",
+            "realm": "mydefrealm",
+        }
+
+        # expected_realm_strings is the expected report
+        # in form of
+        # [f"{entry.realm} {entry.parameter} {entry.count}" for entry in report]
+        test_dicts = [
+            {
+                "test_scenario": "init without realm",
+                "action": "init",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "type": default_params["type"],
+                    "otpkey": default_params["otpkey"],
+                },
+                "expected_realm_strings": [
+                    "/:no realm:/ total 1",
+                    "/:no realm:/ assigned 0",
+                    "/:no realm:/ unassigned 1",
+                    "/:no realm:/ active 1",
+                    "/:no realm:/ inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "init with realm",
+                "action": "init",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "type": default_params["type"],
+                    "otpkey": default_params["otpkey"],
+                    "realm": default_params["realm"],
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 1",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "init with user",
+                "action": "init",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "type": default_params["type"],
+                    "otpkey": default_params["otpkey"],
+                    "user": default_params["user"],
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 1",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "assign to user",
+                "action": "assign",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "user": "hans",
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 1",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "assign to non-existing user",
+                "action": "assign",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "user": "non-existing user123",
+                },
+                "expected_realm_strings": [],
+            },
+            {
+                "test_scenario": "unassign from user",
+                "action": "unassign",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 1",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "enable token",
+                "action": "enable",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 1",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "disable token",
+                "action": "disable",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 1",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 0",
+                    "mydefrealm inactive 1",
+                ],
+            },
+            {
+                "test_scenario": "delete token",
+                "action": "remove",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 0",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 0",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "losttoken",
+                "action": "losttoken",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 2",
+                    "mydefrealm assigned 2",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 1",
+                ],
+            },
+            {
+                "test_scenario": "set tokenrealm",
+                "action": "tokenrealm",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "realms": "myotherrealm",
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 0",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 0",
+                    "mydefrealm inactive 0",
+                    "myotherrealm total 1",
+                    "myotherrealm assigned 1",
+                    "myotherrealm unassigned 0",
+                    "myotherrealm active 1",
+                    "myotherrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "remove tokenrealm",
+                "action": "tokenrealm",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "realms": "",
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 0",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 0",
+                    "mydefrealm inactive 0",
+                    "/:no realm:/ total 1",
+                    "/:no realm:/ assigned 1",
+                    "/:no realm:/ unassigned 0",
+                    "/:no realm:/ active 1",
+                    "/:no realm:/ inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "copyTokenUser",
+                "action": "copyTokenUser",
+                "request_params": {
+                    "from": default_params["serial"],
+                    "to": f"{default_params['serial']}_to",
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 2",
+                    "mydefrealm assigned 2",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 2",
+                    "mydefrealm inactive 0",
+                ],
+            },
+        ]
+        for test_dict in test_dicts:
+            action = test_dict["action"]
+            if action != "init":
+                # init a token to perform the action on
+                init_params = (
+                    test_dict.get("optional_init_params") or default_params
+                )
+                self.init_token(params=init_params)
+
+                if action in ["copyTokenUser"]:
+                    new_serial = test_dict["request_params"]["to"]
+                    self.init_token({**init_params, "serial": new_serial})
+
+            # create policy
+            self.create_reporting_policy()
+
+            # trigger action
+            response = self.make_admin_request(
+                action, params=test_dict.get("request_params")
+            )
+
+            # verify reporting for action
+            with DBSession() as session:
+                entries = session.query(Reporting).all()
+                reported_realm_strings = [
+                    f"{entry.realm} {entry.parameter} {entry.count}"
+                    for entry in entries
+                ]
+
+                expected_realm_strings = test_dict["expected_realm_strings"]
+
+                assert len(reported_realm_strings) == len(
+                    expected_realm_strings
+                ), test_dict["test_scenario"]
+
+                for realm_string in expected_realm_strings:
+                    assert realm_string in reported_realm_strings, test_dict[
+                        "test_scenario"
+                    ]
+
+                # Clean up reporting and Tokens
+                session.query(Reporting).delete()
+                session.commit()
+            # Clean up policies and tokens
+            self.delete_all_policies()
             self.delete_all_token()
