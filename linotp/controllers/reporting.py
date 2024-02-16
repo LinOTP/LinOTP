@@ -45,8 +45,8 @@ from linotp.lib.context import request_context
 from linotp.lib.policy import (
     PolicyException,
     checkAuthorisation,
-    get_active_token_statuses_for_reporting,
     getAdminPolicies,
+    match_allowed_realms,
 )
 from linotp.lib.realm import match_realms
 from linotp.lib.reply import (
@@ -127,19 +127,7 @@ class ReportingController(BaseController):
         """
         scope = "reporting.access"
         action = request_context["action"]
-
-        realm_whitelist = []
-        policies = getAdminPolicies(action, scope)
-
-        if policies["active"] and policies["realms"]:
-            realm_whitelist = policies.get("realms")
-
-        # if there are no policies for us, we are allowed to see all realms
-        if not realm_whitelist or "*" in realm_whitelist:
-            realm_whitelist = list(request_context["Realms"].keys())
-
-        realms = match_realms(requested_realms, realm_whitelist)
-        return realms
+        return match_allowed_realms(scope, action, requested_realms)
 
     @deprecated_methods(["POST"])
     def maximum(self):

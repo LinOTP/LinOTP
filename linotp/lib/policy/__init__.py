@@ -30,7 +30,7 @@
 import logging
 import re
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, List
 
 from flask_babel import gettext as _
 
@@ -71,7 +71,7 @@ from linotp.lib.policy.util import (
     parse_action_value,
     special_characters,
 )
-from linotp.lib.realm import getRealms
+from linotp.lib.realm import getRealms, match_realms
 from linotp.lib.user import User, getResolversOfUser
 
 # for generating random passwords
@@ -3801,6 +3801,32 @@ def get_single_auth_policy(policy_name, user=None, realms=None):
         )
 
     return action_values.pop()
+
+
+def match_allowed_realms(scope: str, action: str, requested_realms: List[str]):
+    """Returns a list of realm names the user is allowed to access for given scope.action.
+
+    Args:
+        scope (str): policy scope
+        action (str): policy action
+        requested_realms (List[str]): List of realms, the user wants to access.
+            Use `["*"]` to match against all realms including "/:no realm:/".
+
+    Returns:
+        List[str]: List of realms the user is allowed to access for given action.
+    """
+    realm_whitelist = []
+    policies = getAdminPolicies(action, scope)
+
+    if policies["active"] and policies["realms"]:
+        realm_whitelist = policies.get("realms")
+
+    # if there are no policies for us, we are allowed to see all realms
+    if not realm_whitelist or "*" in realm_whitelist:
+        realm_whitelist = list(request_context["Realms"].keys())
+
+    realms = match_realms(requested_realms, realm_whitelist)
+    return realms
 
 
 # eof ####################################################################
