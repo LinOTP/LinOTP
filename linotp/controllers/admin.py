@@ -136,7 +136,6 @@ class AdminController(BaseController, JWTMixin):
         """
 
         action = request_context["action"]
-        audit = config.get("audit")
 
         try:
             g.audit["administrator"] = getUserFromRequest()
@@ -2256,8 +2255,6 @@ class AdminController(BaseController, JWTMixin):
             if an error occurs an exception is serialized and returned
 
         """
-
-        ret = 0
         res = {}
         param = self.request_params.copy()
 
