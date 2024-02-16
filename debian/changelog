@@ -34,7 +34,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * password token now supports the 'onetime' parameter as the former spass token did
   * added validator for policy actions
   * new API endpoint to retrieve all currently reported token statuses:
-    * /reporting/reported_statuses
+    * /system/getReportedStatuses
       * accepts query parameter `realms` to filter by realms.
         Use `realms=*` to get all realms including `/:no realm:/`.
   * Extend Audit from AdminController
