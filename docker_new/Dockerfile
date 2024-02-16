@@ -23,6 +23,8 @@ RUN apt-get update \
     libldap2-dev libsasl2-dev \
     # required for pysodium
     libsodium-dev \
+    # required for mysql
+    default-libmysqlclient-dev pkg-config \
     # to check if given DB is available
     netcat-openbsd \
     # entrypoint and signal handling

@@ -22,5 +22,6 @@ cryptography
 click
 jsonschema
 psycopg2-binary # for postgres
+mysqlclient # for mysql
 Werkzeug==2.2.2 #pinned for compatibility
 gunicorn
