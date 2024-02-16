@@ -63,6 +63,7 @@ SYSTEM_ACTIONS = {
     "delProvider": "write",
     "testProvider": "read",
     "getProvider": "read",
+    "getReportedStatuses": "read",
 }
 
 POLICY_DEFINTIONS = {
@@ -501,7 +502,6 @@ POLICY_DEFINTIONS = {
             'Date must be geiven as "yyyy-mm-dd"',
         },
         "show": {"type": "bool"},
-        "reported_statuses": {"type": "bool"},
     },
 }
 

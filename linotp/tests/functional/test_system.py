@@ -28,6 +28,7 @@
 
 """
 """
+import json
 import logging
 import os
 from typing import Callable
@@ -736,6 +737,102 @@ scope = gettoken
         )
         assert '"status": false' in response, response
         mock.assert_not_called()
+
+    def test_getReportedStatuses(self):
+        self.create_common_resolvers()
+        self.create_common_realms()
+        # setup reporting policies:
+        policy_params = [
+            {
+                "name": "test_reported_statuses1",
+                "scope": "reporting",
+                "action": "token_status=inactive",
+                "user": "*",
+                "realm": "*",
+            },
+            {
+                "name": "test_reported_statuses2",
+                "scope": "reporting",
+                "action": "token_total, token_status=active",
+                "user": "*",
+                "realm": "mydefrealm,mymixrealm",
+            },
+            {
+                "name": "test_reported_statuses3",
+                "scope": "reporting",
+                "action": "token_total, token_status=assigned",
+                "user": "*",
+                "realm": "mydefrealm",
+            },
+        ]
+        for params in policy_params:
+            self.create_policy(params)
+
+        response = self.make_system_request("getReportedStatuses")
+
+        resp = json.loads(response.body)
+        values = resp.get("result")
+        assert values.get("status"), response
+        expected = {
+            "mymixrealm": ["active", "total"],
+            "mydefrealm": ["active", "assigned", "total"],
+            "linotp_admins": ["inactive"],
+            "myotherrealm": ["inactive"],
+        }
+        result = {k: sorted(v) for k, v in values.get("value").items()}
+        assert result == expected, response
+
+        params = {"realms": "*"}
+        response = self.make_system_request("getReportedStatuses", params)
+
+        resp = json.loads(response.body)
+        values = resp.get("result")
+        assert values.get("status"), response
+        expected = {
+            "mymixrealm": ["active", "total"],
+            "mydefrealm": ["active", "assigned", "total"],
+            "linotp_admins": ["inactive"],
+            "myotherrealm": ["inactive"],
+            "/:no realm:/": ["inactive"],
+        }
+        result = {k: sorted(v) for k, v in values.get("value").items()}
+        assert result == expected, response
+
+        #######################
+        # restrict user `admin` access to only realm `mydefrealm`
+        policy_params = [
+            {
+                "name": "system_rw_to_admin",
+                "scope": "system",
+                "action": "write,read",
+                "user": "admin",
+                "realm": "*",
+            },
+            {
+                "name": "restrict_reported_statuses",
+                "scope": "system",
+                "action": "read",
+                "user": "root",
+                "realm": "mydefrealm",
+            },
+        ]
+        for policy in policy_params:
+            self.create_policy(policy)
+
+        params = {"realms": "*"}
+        response = self.make_system_request(
+            "getReportedStatuses", params, auth_user="root"
+        )
+
+        resp = json.loads(response.body)
+        values = resp.get("result")
+        assert values.get("status"), response
+        expected = {
+            "mydefrealm": ["active", "assigned", "total"],
+            "/:no realm:/": ["inactive"],
+        }
+        result = {k: sorted(v) for k, v in values.get("value").items()}
+        assert result == expected, response
 
 
 class TestSystemControllerExtended:
