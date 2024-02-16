@@ -68,14 +68,36 @@ start_linotp() {
     fi
 }
 
-if [ -n "$LINOTP_DB_HOST" ]; then
-    echo "Waiting for PostgreSQL..."
+# fetch host and port of database from LINOTP_DATABASE_URI
+eval $(python3 -c "from urllib.parse import urlparse
+def get_port(r):
+    if r.port:
+        return r.port
+    elif 'postgres' in r.scheme:
+        return 5432
+    elif 'mysql' in r.scheme:
+        return 3306
+    else:
+        raise ValueError('Unsupported database scheme in LINOTP_DATABASE_URI')
+
+uri = \"$LINOTP_DATABASE_URI\"
+if not uri.startswith('sqlite'):
+    r = urlparse(uri)
+    print(f\"LINOTP_DB_HOST={r.hostname}\")
+    print(f\"LINOTP_DB_PORT={get_port(r)}\")
+")
+
+if [ -n "${LINOTP_DB_PORT:-}" ]; then
+    # this implicitly does not check
+    # if URI starts with `sqlite`
+    # because we dont provide a port in this case
+    echo "Waiting for Database..."
 
     while ! nc -z $LINOTP_DB_HOST $LINOTP_DB_PORT; do
         sleep $LINOTP_DB_WAITTIME
     done
 
-    echo "PostgreSQL started"
+    echo "Database started"
 fi
 
 if [ -z "$LINOTP_CFG" ]; then

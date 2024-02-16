@@ -90,8 +90,6 @@ ENV LINOTP_USER=linotp \
     LINOTP_ADMIN_PASSWORD= \
     LINOTP_CFG= \
     LINOTP_DATABASE_URI=sqlite:///$LINOTP_ROOT_DIR/linotp.db \
-    LINOTP_DB_HOST= \
-    LINOTP_DB_PORT=3306 \
     LINOTP_DB_WAITTIME=30s \
     LINOTP_SESSION_COOKIE_SECURE=true \
     # root level dirs
