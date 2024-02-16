@@ -21,6 +21,6 @@ bcrypt
 cryptography
 click
 jsonschema
-psycopg2 # for postgres
+psycopg2-binary # for postgres
 Werkzeug==2.2.2 #pinned for compatibility
 gunicorn

@@ -23,8 +23,6 @@ RUN apt-get update \
     libldap2-dev libsasl2-dev \
     # required for pysodium
     libsodium-dev \
-    # required for psycopg2
-    libpq-dev \
     # to check if given DB is available
     netcat-openbsd \
     # entrypoint and signal handling
