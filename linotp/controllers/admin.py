@@ -1963,10 +1963,10 @@ class AdminController(BaseController, JWTMixin):
 
             try:
                 realms = param["realms"]
-                realmList = list({r.strip() for r in realms.split(",")})
-                g.audit["realm"] = ", ".join(realmList)
             except KeyError:
                 raise ParameterError("Missing parameter: 'realms'")
+            realmList = list({r.strip() for r in realms.split(",")})
+            g.audit["realm"] = ", ".join(realmList)
 
             # check admin authorization
             checkPolicyPre("admin", "tokenrealm", param)
