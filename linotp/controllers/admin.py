@@ -1984,7 +1984,9 @@ class AdminController(BaseController, JWTMixin):
             token = get_token(serial)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
-            g.audit["info"] = realms
+            g.audit[
+                "info"
+            ] = f"From {','.join(source_realms)} to {','.join(realmList or ['/:no realm:/'])}"
             g.reporting["realms"] = source_realms.union(
                 {realm if realm else "/:no realm:/" for realm in realmList}
             )
