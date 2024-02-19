@@ -404,7 +404,11 @@ class UserserviceController(BaseController):
                         source_realms = g.audit.get("source_realm")
                         token_reporting(event, source_realms)
 
-                    target_realms = g.audit.get("realm")
+                    target_realms = (
+                        g.audit.get("realm").split(", ")
+                        if g.audit.get("realm")
+                        else ["/:no realm:/"]
+                    )
                     token_reporting(event, target_realms)
 
                     g.audit["action_detail"] += get_token_num_info()

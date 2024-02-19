@@ -78,6 +78,7 @@ from linotp.lib.resolver import (
 )
 from linotp.lib.token import (
     TokenHandler,
+    get_token,
     get_tokens,
     getTokenRealms,
     getTokenType,
@@ -118,6 +119,13 @@ class AdminController(BaseController, JWTMixin):
     The functions are described below in more detail.
     """
 
+    def __before__(self, *args, **kwargs):
+        """
+        __before__ is called after every action
+        """
+
+        g.reporting = {"realms": set()}
+
     @staticmethod
     def __after__(response):
         """
@@ -128,15 +136,9 @@ class AdminController(BaseController, JWTMixin):
         """
 
         action = request_context["action"]
-        audit = config.get("audit")
 
         try:
             g.audit["administrator"] = getUserFromRequest()
-
-            serial = request.params.get("serial")
-            if serial:
-                g.audit["serial"] = serial
-                g.audit["token_type"] = getTokenType(serial)
 
             # ------------------------------------------------------------- --
 
@@ -157,12 +159,9 @@ class AdminController(BaseController, JWTMixin):
             ]:
                 event = "token_" + action
 
-                if g.audit.get("source_realm"):
-                    source_realms = g.audit.get("source_realm")
-                    token_reporting(event, source_realms)
-
-                target_realms = g.audit.get("realm")
-                token_reporting(event, target_realms)
+                realms_to_report = g.reporting["realms"]
+                if realms_to_report:
+                    token_reporting(event, realms_to_report)
 
                 g.audit["action_detail"] += get_token_num_info()
 
@@ -190,6 +189,7 @@ class AdminController(BaseController, JWTMixin):
         ret = {}
         try:
             serial = self.request_params["serial"]
+            g.audit["serial"] = serial
 
             # check admin authorization
             checkPolicyPre("admin", "tokenowner", self.request_params)
@@ -197,8 +197,13 @@ class AdminController(BaseController, JWTMixin):
             owner = th.getTokenOwner(serial)
             if owner.info:
                 ret = owner.info
-
-            g.audit["success"] = len(ret) > 0
+                token = get_token(serial)
+                g.audit["success"] = 1
+                g.audit["token_type"] = token.type
+                g.audit["user"] = ret.get("username")
+                g.audit["realm"] = ", ".join(token.getRealms())
+            else:
+                g.audit["success"] = 0
 
             db.session.commit()
             return sendResult(ret)
@@ -376,9 +381,11 @@ class AdminController(BaseController, JWTMixin):
         param = self.request_params
 
         try:
-            serials = param.get("serial", [])
-            if serials and not isinstance(serials, list):
-                serials = [serials]
+            serials = param.get("serial", set())
+            if isinstance(serials, str):
+                serials = {serials}
+            elif isinstance(serials, list):
+                serials = set(serials)
 
             user = getUserFromParam(param)
 
@@ -391,34 +398,41 @@ class AdminController(BaseController, JWTMixin):
             if user:
                 tokens = get_tokens(user)
                 for token in tokens:
-                    serials.append(token.getSerial())
-
-            realms = set()
-            for serial in set(serials):
-                realms.union(getTokenRealms(serial))
-
-            g.audit["realm"] = "%r" % realms
+                    serials.add(token.getSerial())
 
             log.info(
                 "[remove] removing token with serial %r for user %r",
                 serials,
                 user.login,
             )
+            g.audit["serial"] = " ".join(serials)
 
             ret = 0
             check_params = {}
             check_params.update(param)
 
+            realms = set()
+            users = set()
+            token_types = set()
             th = TokenHandler()
-            for serial in set(serials):
+            for serial in serials:
                 # check admin authorization
                 check_params["serial"] = serial
                 checkPolicyPre("admin", "remove", check_params)
 
+                token = get_token(serial)
+                token_realms = token.getRealms()
+                realms.update(token_realms)
+                g.reporting["realms"].update(token_realms or ["/:no realm:/"])
+                users.add(token.getUsername())
+                token_types.add(token.type)
+
                 ret = ret + th.removeToken(user, serial)
 
-            g.audit["success"] = 0
-            g.audit["serial"] = " ".join(serials)
+            g.audit["success"] = 1 if len(serials) == ret else 0
+            g.audit["token_type"] = ", ".join(token_types)
+            g.audit["user"] = ", ".join(users)
+            g.audit["realm"] = ", ".join(realms)
 
             opt_result_dict = {}
 
@@ -465,6 +479,8 @@ class AdminController(BaseController, JWTMixin):
         try:
             serial = param.get("serial")
             user = getUserFromParam(param)
+            g.audit["serial"] = serial
+            g.audit["user"] = user.login
 
             # check admin authorization
             checkPolicyPre("admin", "enable", param, user=user)
@@ -479,17 +495,30 @@ class AdminController(BaseController, JWTMixin):
             ret = th.enableToken(True, user, serial)
 
             g.audit["success"] = ret
-            g.audit["user"] = user.login
 
-            if not user:
-                g.audit["realm"] = getTokenRealms(serial)
-            else:
-                g.audit["realm"] = user.realm
-                if g.audit["realm"] == "":
-                    realms = set()
-                    for tokenserial in get_tokens(user, serial):
-                        realms.union(tokenserial.getRealms())
-                    g.audit["realm"] = realms
+            tokens = get_tokens(user, serial=serial)
+            g.audit["serial"] = (
+                serial
+                if serial
+                else " ".join(
+                    [t.token.LinOtpTokenSerialnumber for t in tokens]
+                )
+            )
+            g.audit["token_type"] = ", ".join([t.type for t in tokens])
+            g.audit["user"] = ", ".join([t.getUsername() for t in tokens])
+            # get all token realms - including "/:no realm:/"
+            # if a token was in no realm (for reporting)
+            realms = [
+                realm
+                for token in tokens
+                for realm in (token.getRealms() or ["/:no realm:/"])
+            ]
+            # replace "/:no realm:/" by empty string for audit
+            audit_realms = [
+                realm if realm != "/:no realm:/" else "" for realm in realms
+            ]
+            g.audit["realm"] = ", ".join(audit_realms)
+            g.reporting["realms"] = set(realms)
 
             opt_result_dict = {}
             if ret == 0 and serial:
@@ -562,8 +591,14 @@ class AdminController(BaseController, JWTMixin):
             if "" != serial:
                 checkPolicyPost("admin", "getserial", {"serial": serial})
 
-            g.audit["success"] = 1
+            g.audit["success"] = 0
             g.audit["serial"] = serial
+            if serial:
+                token = get_token(serial)
+                g.audit["success"] = 1
+                g.audit["token_type"] = token.type
+                g.audit["user"] = token.getUsername()
+                g.audit["realm"] = ", ".join(token.getRealms())
 
             ret["success"] = True
             ret["serial"] = serial
@@ -606,6 +641,8 @@ class AdminController(BaseController, JWTMixin):
             serial = param.get("serial")
             user = getUserFromParam(param)
             auth_user = getUserFromRequest()
+            g.audit["serial"] = serial
+            g.audit["user"] = user.login
 
             # check admin authorization
             checkPolicyPre("admin", "disable", param, user=user)
@@ -619,18 +656,33 @@ class AdminController(BaseController, JWTMixin):
             )
             ret = th.enableToken(False, user, serial)
 
-            g.audit["success"] = ret
-            g.audit["user"] = user.login
+            tokens = get_tokens(user, serial=serial)
 
-            if not user:
-                g.audit["realm"] = getTokenRealms(serial)
-            else:
-                g.audit["realm"] = user.realm
-                if g.audit["realm"] == "":
-                    realms = set()
-                    for tokenserial in get_tokens(user, serial):
-                        realms.union(tokenserial.getRealms())
-                    g.audit["realm"] = realms
+            g.audit["success"] = ret
+            g.audit["serial"] = (
+                serial
+                if serial
+                else " ".join(
+                    [t.token.LinOtpTokenSerialnumber for t in tokens]
+                )
+            )
+            g.audit["token_type"] = ", ".join([t.type for t in tokens])
+            g.audit["user"] = user.login or ", ".join(
+                [t.getUsername() for t in tokens]
+            )
+            # get all token realms - including "/:no realm:/"
+            # if a token was in no realm (for reporting)
+            realms = [
+                realm
+                for token in tokens
+                for realm in (token.getRealms() or ["/:no realm:/"])
+            ]
+            # replace "/:no realm:/" by empty string for audit
+            audit_realms = [
+                realm if realm != "/:no realm:/" else "" for realm in realms
+            ]
+            g.audit["realm"] = ", ".join(audit_realms)
+            g.reporting["realms"] = set(realms)
 
             opt_result_dict = {}
             if ret == 0 and serial:
@@ -674,21 +726,15 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 serial = self.request_params["serial"]
+                g.audit["serial"] = serial
             except KeyError:
                 raise ParameterError("Missing parameter: 'serial'")
-
-            # check admin authorization
-            # try:
-            #    checkPolicyPre('admin', 'disable', param )
-            # except PolicyException as pe:
-            #    return sendError(pe, 1)
 
             log.info("[check_serial] checking serial %s", serial)
             th = TokenHandler()
             (unique, new_serial) = th.check_serial(serial)
 
             g.audit["success"] = True
-            g.audit["serial"] = serial
             g.audit["action_detail"] = "%r - %r" % (unique, new_serial)
 
             db.session.commit()
@@ -796,12 +842,16 @@ class AdminController(BaseController, JWTMixin):
 
             # --------------------------------------------------------------- --
 
-            # if no user is given, we put the token in all realms of the admin
-
-            tokenrealm = None
-            if user.login == "":
-                log.debug("[init] setting tokenrealm %r", res["realms"])
-                tokenrealm = res["realms"]
+            # if no user is given, and the admin does not have permissions
+            # on all realms, we set the tokens realm to the ones the admin has access to.
+            # Otherwise the admin would not see the created token.
+            tokenrealms = (
+                res["realms"]
+                if user.login == "" and "*" not in res["realms"]
+                else []
+            )
+            if tokenrealms:
+                log.debug("[init] setting tokenrealm %r", tokenrealms)
 
             # --------------------------------------------------------------- --
 
@@ -828,7 +878,7 @@ class AdminController(BaseController, JWTMixin):
 
             # --------------------------------------------------------------- --
 
-            (ret, token) = th.initToken(params, user, tokenrealm=tokenrealm)
+            (ret, token) = th.initToken(params, user, tokenrealm=tokenrealms)
 
             # --------------------------------------------------------------- --
 
@@ -848,12 +898,8 @@ class AdminController(BaseController, JWTMixin):
 
             g.audit["success"] = ret
             g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
-
-            if g.audit["realm"] == "":
-                g.audit["realm"] = tokenrealm
-
-            g.audit["success"] = ret
+            g.audit["realm"] = user.realm or ", ".join(tokenrealms)
+            g.reporting["realms"] = set(token.getRealms() or ["/:no realm:/"])
             # --------------------------------------------------------------- --
 
             checkPolicyPost("admin", "init", params, user=user)
@@ -914,8 +960,6 @@ class AdminController(BaseController, JWTMixin):
 
             user = getUserFromParam(param)
 
-            g.audit["source_realm"] = getTokenRealms(serial)
-
             # check admin authorization
             checkPolicyPre("admin", "unassign", param)
 
@@ -927,14 +971,17 @@ class AdminController(BaseController, JWTMixin):
                 user.login,
                 user.realm,
             )
+            g.audit["serial"] = serial
+            token = get_token(serial)
+            g.audit["token_type"] = token.type
+            g.audit["user"] = token.getUsername()
+            token_realms = token.getRealms()
+            g.audit["realm"] = ", ".join(token_realms)
+            g.reporting["realms"] = set(token_realms or ["/:no realm:/"])
+
             ret = th.unassignToken(serial, user, None)
 
             g.audit["success"] = ret
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
-
-            if "" == g.audit["realm"]:
-                g.audit["realm"] = getTokenRealms(serial)
 
             opt_result_dict = {}
             if ret == 0 and serial:
@@ -982,9 +1029,14 @@ class AdminController(BaseController, JWTMixin):
 
             user = getUserFromParam(param)
 
-            serials = param.get("serial", [])
-            if serials and not isinstance(serials, list):
-                serials = [serials]
+            serials = param.get("serial", set())
+            if isinstance(serials, str):
+                serials = {serials}
+            elif isinstance(serials, list):
+                serials = set(serials)
+
+            g.audit["serial"] = " ".join(serials)
+            g.audit["user"] = user.login
 
             log.info("[assign] assigning token(s) with serial(s) %r", serials)
 
@@ -993,24 +1045,42 @@ class AdminController(BaseController, JWTMixin):
 
             res = True
             th = TokenHandler()
-            for serial in set(serials):
+            realms = set()
+            users = set()
+            token_types = set()
+            for serial in serials:
                 # check admin authorization
 
                 call_params["serial"] = serial
                 checkPolicyPre("admin", "assign", call_params)
+
+                # assignToken overwrites the token realms with the users realms
+                # -> we need to trigger reporting for them.
+                token = get_token(serial)
+                token_source_realms = set(
+                    token.getRealms() or ["/:no realm:/"]
+                )
 
                 # do the assignment
                 res = res and th.assignToken(
                     serial, user, upin, param=call_params
                 )
 
+                token = get_token(serial)
+                token_realms = token.getRealms()
+                realms.update(token_realms)
+                users.add(token.getUsername())
+                token_types.add(token.type)
+                g.reporting["realms"] = set(
+                    token_source_realms.union(token_realms or ["/:no realm:/"])
+                )
+
             checkPolicyPost("admin", "assign", param, user)
 
             g.audit["success"] = res
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
-            if "" == g.audit["realm"]:
-                g.audit["realm"] = getTokenRealms(serial)
+            g.audit["token_type"] = ", ".join(token_types)
+            g.audit["user"] = user.login or ", ".join(users)
+            g.audit["realm"] = ", ".join(realms)
 
             db.session.commit()
             return sendResult(res, len(serials))
@@ -1053,8 +1123,20 @@ class AdminController(BaseController, JWTMixin):
         userpin\
         sopin\
         "
+        msg = "setting Pin failed"
         try:
             param = getLowerParams(self.request_params)
+
+            try:
+                serial = param["serial"]
+                g.audit["serial"] = serial
+            except KeyError:
+                raise ParameterError("Missing parameter: 'serial'")
+
+            token = get_token(serial)
+            g.audit["token_type"] = token.type
+            g.audit["user"] = token.getUsername()
+            g.audit["realm"] = ", ".join(token.getRealms())
 
             # # if there is a pin
             if "userpin" in param:
@@ -1063,11 +1145,6 @@ class AdminController(BaseController, JWTMixin):
                     userPin = param["userpin"]
                 except KeyError:
                     raise ParameterError("Missing parameter: 'userpin'")
-
-                try:
-                    serial = param["serial"]
-                except KeyError:
-                    raise ParameterError("Missing parameter: 'serial'")
 
                 # check admin authorization
                 checkPolicyPre("admin", "setPin", param)
@@ -1087,11 +1164,6 @@ class AdminController(BaseController, JWTMixin):
                 except KeyError:
                     raise ParameterError("Missing parameter: 'userpin'")
 
-                try:
-                    serial = param["serial"]
-                except KeyError:
-                    raise ParameterError("Missing parameter: 'serial'")
-
                 # check admin authorization
                 checkPolicyPre("admin", "setPin", param)
 
@@ -1110,6 +1182,10 @@ class AdminController(BaseController, JWTMixin):
                 )
 
             g.audit["success"] = count
+            token = get_token(serial)
+            g.audit["token_type"] = token.type
+            g.audit["user"] = token.getUsername()
+            g.audit["realm"] = ", ".join(token.getRealms())
 
             db.session.commit()
             return sendResult(res, 1)
@@ -1193,6 +1269,7 @@ class AdminController(BaseController, JWTMixin):
 
             try:
                 serials = self.request_params["tokens"]
+                g.audit["serial"] = " ".join(serials)
             except KeyError:
                 raise ParameterError("missing parameter: tokens[]")
 
@@ -1204,6 +1281,10 @@ class AdminController(BaseController, JWTMixin):
 
             # push the validity values into the tokens
 
+            users = set()
+            realms = set()
+            token_types = set()
+            th = TokenHandler()
             for token in tokens:
                 # ---------------------------------------------------------- --
 
@@ -1248,8 +1329,14 @@ class AdminController(BaseController, JWTMixin):
 
                     token.validity_period_end = validity_period_end
 
-            g.audit["success"] = 1
+                realms.update(token.getRealms())
+                users.add(token.getUsername())
+                token_types.add(token.type)
 
+            g.audit["success"] = 1
+            g.audit["token_type"] = ", ".join(token_types)
+            g.audit["user"] = ", ".join(users)
+            g.audit["realm"] = ", ".join(realms)
             g.audit["action_detail"] = ("%r " % serials)[:80]
 
             db.session.commit()
@@ -1329,11 +1416,15 @@ class AdminController(BaseController, JWTMixin):
 
             serial = param.get("serial")
             user = getUserFromParam(param)
+            g.audit["serial"] = serial
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
 
             # check admin authorization
             checkPolicyPre("admin", "set", param, user=user)
 
             th = TokenHandler()
+            tokens = []
             # # if there is a pin
             if "pin" in param:
                 msg = "[set] setting pin failed"
@@ -1452,11 +1543,10 @@ class AdminController(BaseController, JWTMixin):
                     timeStep,
                     serial,
                 )
-                tokens = get_tokens(serial=serial)
-                for token in tokens:
-                    token.timeStep = timeStep
+                token = get_token(serial)
+                token.timeStep = timeStep
 
-                res["set timeStep"] = len(tokens)
+                res["set timeStep"] = 1
                 count = count + 1
                 g.audit["action_detail"] += "timeStep=%d, " % timeStep
 
@@ -1604,12 +1694,28 @@ class AdminController(BaseController, JWTMixin):
                     ParameterError("Usage: %s" % description, id=77)
                 )
 
+            # TODO
+            # Handle multiple tokens
+            # e.g serials = " ".join([t.token.LinOtpTokenSerialnumber for t in tokens])
             g.audit["success"] = count
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
-
-            if g.audit["realm"] == "":
-                g.audit["realm"] = getTokenRealms(serial)
+            tokens = get_tokens(user, serial=serial)
+            g.audit["serial"] = (
+                serial
+                if serial
+                else " ".join(
+                    [t.token.LinOtpTokenSerialnumber for t in tokens]
+                )
+            )
+            g.audit["token_type"] = ", ".join([t.type for t in tokens])
+            g.audit["user"] = user.login or ", ".join(
+                [t.getUsername() for t in tokens]
+            )
+            realms = (
+                [user.realm]
+                if user.realm != ""
+                else [realm for t in tokens for realm in t.getRealms()]
+            )
+            g.audit["realm"] = ", ".join(realms)
 
             db.session.commit()
             return sendResult(res, 1)
@@ -1657,6 +1763,9 @@ class AdminController(BaseController, JWTMixin):
         try:
             serial = param.get("serial")
             user = getUserFromParam(param)
+            g.audit["serial"] = serial
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
 
             try:
                 otp1 = param["otp1"]
@@ -1690,10 +1799,24 @@ class AdminController(BaseController, JWTMixin):
             res = th.resyncToken(otp1, otp2, user, serial, options)
 
             g.audit["success"] = res
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
-            if "" == g.audit["realm"] and "" != g.audit["user"]:
-                g.audit["realm"] = getDefaultRealm()
+            tokens = get_tokens(user, serial=serial)
+            g.audit["serial"] = (
+                serial
+                if serial
+                else " ".join(
+                    [t.token.LinOtpTokenSerialnumber for t in tokens]
+                )
+            )
+            g.audit["token_type"] = ", ".join([t.type for t in tokens])
+            g.audit["user"] = user.login or ", ".join(
+                [t.getUsername() for t in tokens]
+            )
+            realms = (
+                [user.realm]
+                if user.realm != ""
+                else [realm for t in tokens for realm in t.getRealms()]
+            )
+            g.audit["realm"] = ", ".join(realms)
 
             db.session.commit()
             return sendResult(res, 1)
@@ -1743,6 +1866,7 @@ class AdminController(BaseController, JWTMixin):
             # and add this as paramter list to the getUserListIterators
 
             realm = param.get("realm")
+            g.audit["realm"] = realm
 
             # Here we need to list the users, that are only visible in the
             # realm!! we could also only list the users in the realm, if the
@@ -1752,6 +1876,7 @@ class AdminController(BaseController, JWTMixin):
 
             filter_fields = 0
             user = getUserFromParam(param)
+            g.audit["user"] = user.login
 
             log.info("[userlist] displaying users with param: %s, ", param)
 
@@ -1786,6 +1911,7 @@ class AdminController(BaseController, JWTMixin):
             users_iters = getUserListIterators(list_params, user)
 
             g.audit["success"] = True
+            g.audit["realm"] = realm
             g.audit["info"] = "realm: %s" % realm
 
             db.session.commit()
@@ -1831,6 +1957,7 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 serial = param["serial"]
+                g.audit["serial"] = serial
             except KeyError:
                 raise ParameterError("Missing parameter: 'serial'")
 
@@ -1838,22 +1965,31 @@ class AdminController(BaseController, JWTMixin):
                 realms = param["realms"]
             except KeyError:
                 raise ParameterError("Missing parameter: 'realms'")
+            realmList = list({r.strip() for r in realms.split(",")})
+            g.audit["realm"] = ", ".join(realmList)
 
             # check admin authorization
             checkPolicyPre("admin", "tokenrealm", param)
 
-            g.audit["source_realm"] = getTokenRealms(serial)
+            source_realms = set(getTokenRealms(serial) or ["/:no realm:/"])
             log.info(
                 "[tokenrealm] setting realms for token %s to %s",
                 serial,
                 realms,
             )
-            realmList = [r.strip() for r in realms.split(",")]
             ret = setRealms(serial, realmList)
 
             g.audit["success"] = ret
-            g.audit["info"] = realms
-            g.audit["realm"] = realmList
+            g.audit["serial"] = serial
+            token = get_token(serial)
+            g.audit["token_type"] = token.type
+            g.audit["user"] = token.getUsername()
+            g.audit[
+                "info"
+            ] = f"From {','.join(source_realms)} to {','.join(realmList or ['/:no realm:/'])}"
+            g.reporting["realms"] = source_realms.union(
+                {realm if realm else "/:no realm:/" for realm in realmList}
+            )
 
             db.session.commit()
             return sendResult(ret, 1)
@@ -1888,6 +2024,9 @@ class AdminController(BaseController, JWTMixin):
 
         serial = param.get("serial")
         user = getUserFromParam(param)
+        g.audit["serial"] = serial
+        g.audit["user"] = user.login
+        g.audit["realm"] = user.realm
 
         try:
             # check admin authorization
@@ -1900,8 +2039,24 @@ class AdminController(BaseController, JWTMixin):
             ret = resetToken(user, serial)
 
             g.audit["success"] = ret
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
+            tokens = get_tokens(user, serial=serial)
+            g.audit["serial"] = (
+                serial
+                if serial
+                else " ".join(
+                    [t.token.LinOtpTokenSerialnumber for t in tokens]
+                )
+            )
+            g.audit["token_type"] = ", ".join([t.type for t in tokens])
+            g.audit["user"] = user.login or ", ".join(
+                [t.getUsername() for t in tokens]
+            )
+            realms = (
+                [user.realm]
+                if user.realm != ""
+                else [realm for t in tokens for realm in t.getRealms()]
+            )
+            g.audit["realm"] = ", ".join(realms)
 
             # DeleteMe: This code will never run, since getUserFromParam
             # always returns a realm!
@@ -1955,6 +2110,7 @@ class AdminController(BaseController, JWTMixin):
 
             try:
                 serial_to = param["to"]
+                g.audit["serial"] = serial_to
             except KeyError:
                 raise ParameterError("Missing parameter: 'to'")
 
@@ -1969,18 +2125,21 @@ class AdminController(BaseController, JWTMixin):
             )
             ret = th.copyTokenPin(serial_from, serial_to)
 
-            g.audit["success"] = ret
+            g.audit["success"] = 1 if ret == 1 else 0
             g.audit["serial"] = serial_to
+            token = get_token(serial_to)
+            g.audit["token_type"] = token.type
+            g.audit["user"] = token.getUsername()
+            g.audit["realm"] = ", ".join(token.getRealms())
             g.audit["action_detail"] = "from %s" % serial_from
 
             err_string = str(ret)
             if -1 == ret:
                 err_string = "can not get PIN from source token"
-            if -2 == ret:
+            elif -2 == ret:
                 err_string = "can not set PIN to destination token"
             if 1 != ret:
                 g.audit["action_detail"] += ", " + err_string
-                g.audit["success"] = 0
 
             db.session.commit()
             # Success
@@ -2028,6 +2187,7 @@ class AdminController(BaseController, JWTMixin):
 
             try:
                 serial_to = param["to"]
+                g.audit["serial"] = serial_to
             except KeyError:
                 raise ParameterError("Missing parameter: 'to'")
 
@@ -2043,10 +2203,13 @@ class AdminController(BaseController, JWTMixin):
             ret = th.copyTokenUser(serial_from, serial_to)
 
             g.audit["success"] = ret
-            g.audit["serial"] = serial_to
+            token = get_token(serial_to)
+            token_realms = token.getRealms()
+            g.audit["token_type"] = token.type
+            g.audit["user"] = token.getUsername()
+            g.audit["realm"] = ", ".join(token_realms)
             g.audit["action_detail"] = "from %s" % serial_from
-            g.audit["source_realm"] = getTokenRealms(serial_from)
-            g.audit["realm"] = getTokenRealms(serial_to)
+            g.reporting["realms"] = set(token_realms or ["/:no realms"])
 
             err_string = str(ret)
             if -1 == ret:
@@ -2094,24 +2257,32 @@ class AdminController(BaseController, JWTMixin):
             if an error occurs an exception is serialized and returned
 
         """
-
-        ret = 0
         res = {}
         param = self.request_params.copy()
 
         try:
             serial = param["serial"]
+            g.audit["serial"] = serial
 
             # check admin authorization
             checkPolicyPre("admin", "losttoken", param)
+
             th = TokenHandler()
             res = th.losttoken(serial, param=param)
+            g.audit["success"] = 1 if res else 0
 
-            g.audit["success"] = ret
-            g.audit["serial"] = res.get("serial")
+            new_serial = res.get("serial")
+            g.audit["serial"] = new_serial
+            token = get_token(new_serial)
+            token_realms = token.getRealms()
+            g.audit["token_type"] = token.type
+            g.audit["user"] = token.getUsername()
+            g.audit["realm"] = ", ".join(token_realms)
             g.audit["action_detail"] = "from %s" % serial
-            g.audit["source_realm"] = getTokenRealms(serial)
-            g.audit["realm"] = getTokenRealms(g.audit["serial"])
+            g.reporting["realms"] = set(
+                (token_realms or ["/:no realm:/"])
+                + (getTokenRealms(serial) or ["/:no realm:/"])
+            )
 
             db.session.commit()
             return sendResult(res)
@@ -2433,9 +2604,14 @@ class AdminController(BaseController, JWTMixin):
                 tokenFile,
                 len(TOKENS),
             )
-            g.audit["serial"] = ", ".join(list(TOKENS.keys()))
             g.audit["success"] = ret
+            g.audit["serial"] = ", ".join(TOKENS.keys())
+            g.audit["token_type"] = ", ".join(
+                [token_info.get("type") for token_info in TOKENS.values()]
+            )
+            g.audit["user"] = ""
             g.audit["realm"] = tokenrealm
+            g.reporting["realms"] = {tokenrealm or "/:no realm:/"}
 
             db.session.commit()
             return sendResultMethod(res, opt={"imported": len(TOKENS)})
@@ -2534,6 +2710,11 @@ class AdminController(BaseController, JWTMixin):
 
             res = {"result": status, "desc": desc}
 
+            # TODO
+            # set g.audit["success"]
+            # `status` sadly has different types....
+            # g.audit["success"] = ????
+
             db.session.commit()
             return sendResult(res)
 
@@ -2592,6 +2773,10 @@ class AdminController(BaseController, JWTMixin):
                 return sendResult(False)
 
             token = tokens[0]
+
+            g.audit["token_type"] = token.type
+            g.audit["user"] = token.getUsername()
+            g.audit["realm"] = ", ".join(token.getRealms())
 
             # -------------------------------------------------------------- --
 
@@ -2661,6 +2846,9 @@ class AdminController(BaseController, JWTMixin):
             )
             user = getUserFromParam(param)
             serial = param.get("serial")
+            g.audit["serial"] = serial
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
             all = param.get("open", "False").lower() == "true"
 
             if all:
@@ -2706,6 +2894,9 @@ class AdminController(BaseController, JWTMixin):
                 serials.add(challenge.getTokenSerial())
 
             status = {}
+            realms = set()
+            users = set()
+            token_types = set()
             # # sort all information by token serial number
             for serial in serials:
                 stat = {}
@@ -2720,15 +2911,22 @@ class AdminController(BaseController, JWTMixin):
                 stat["challenges"] = chall_dict
 
                 # # add the token info to the stat dict
-                tokens = get_tokens(serial=serial)
-                token = tokens[0]
+                token = get_token(serial)
                 stat["tokeninfo"] = token.get_vars(save=True)
 
                 # # add the local stat to the summary status dict
                 status[serial] = stat
 
+                realms.update(token.getRealms())
+                users.add(token.getUsername())
+                token_types.add(token.type)
+
             res["values"] = status
             g.audit["success"] = res
+            g.audit["serial"] = " ".join(serials)
+            g.audit["token_type"] = ", ".join(token_types)
+            g.audit["user"] = user.login or ", ".join(users)
+            g.audit["realm"] = ", ".join(realms)
 
             db.session.commit()
             return sendResult(res, 1)
@@ -2763,6 +2961,9 @@ class AdminController(BaseController, JWTMixin):
 
             serial = params.get("serial")
             user = getUserFromParam(params)
+            g.audit["serial"] = serial
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
 
             # ---------------------------------------------------------------- -
 
@@ -2784,22 +2985,15 @@ class AdminController(BaseController, JWTMixin):
 
             token = tokens[0]
 
-            # ---------------------------------------------------------------- -
-
-            # prepare some audit entries
-            t_owner = token.getUser()
-
-            realms = token.getRealms()
-            realm = ""
-            if realms:
-                realm = realms[0]
-
-            g.audit["user"] = t_owner or ""
-            g.audit["realm"] = realm
-
+            g.audit["token_type"] = token.type
+            g.audit["user"] = token.getUsername()
+            g.audit["realm"] = ", ".join(token.getRealms())
             # ---------------------------------------------------------------- -
 
             token.unpair()
+
+            g.audit["success"] = 1
+
             db.session.commit()
 
             # ---------------------------------------------------------------- -

@@ -32,7 +32,9 @@
 import json
 import logging
 
+from linotp.model.reporting import Reporting
 from linotp.tests import TestController
+from linotp.tests.functional.test_reporting import DBSession
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +56,23 @@ class TestAdminController(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
+        self.delete_all_policies()
         TestController.tearDown(self)
+
+    def init_token(self, params: dict):
+        """Creates the token
+
+        Args:
+            params (dict): parameters to init the token with
+
+        Returns:
+            str: token serial
+        """
+        response = self.make_admin_request("init", params=params)
+        response_json = response.json
+        assert response_json["result"]["value"], response_json
+        serial = response_json["detail"]["serial"]
+        return serial
 
     def createToken3(self):
         parameters = {
@@ -62,9 +80,7 @@ class TestAdminController(TestController):
             "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
             "description": "my EToken",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
+        return self.init_token(parameters)
 
     def createToken2(self, serial="F722362"):
         parameters = {
@@ -72,10 +88,7 @@ class TestAdminController(TestController):
             "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
             "description": "TestToken" + serial,
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
-        return serial
+        return self.init_token(parameters)
 
     def createTokenSHA256(self, serial="SHA256"):
         parameters = {
@@ -84,15 +97,11 @@ class TestAdminController(TestController):
             "type": "hmac",
             "hashlib": "sha256",
         }
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
-        return serial
+        return self.init_token(parameters)
 
     def createSPASS(self, serial="LSSP0001", pin="1test@pin!42"):
         parameters = {"serial": serial, "type": "spass", "pin": pin}
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
-        return serial
+        return self.init_token(parameters)
 
     def createToken(self):
         parameters = {
@@ -102,9 +111,7 @@ class TestAdminController(TestController):
             "pin": "pin",
             "description": "TestToken1",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
+        self.init_token(parameters)
 
         parameters = {
             "serial": "F722363",
@@ -113,9 +120,7 @@ class TestAdminController(TestController):
             "pin": "pin",
             "description": "TestToken2",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
+        self.init_token(parameters)
 
         parameters = {
             "serial": "F722364",
@@ -124,9 +129,7 @@ class TestAdminController(TestController):
             "pin": "pin",
             "description": "TestToken3",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        assert '"value": true' in response, response
+        self.init_token(parameters)
 
         # test the update
         parameters = {
@@ -136,10 +139,7 @@ class TestAdminController(TestController):
             "pin": "Pin3",
             "description": "TestToken3",
         }
-
-        response = self.make_admin_request("init", params=parameters)
-        # log.error("response %s\n",response)
-        assert '"value": true' in response, response
+        self.init_token(parameters)
 
     def removeTokenByUser(self, user):
         # final delete all tokens of user root
@@ -447,8 +447,8 @@ class TestAdminController(TestController):
         response = self.make_admin_request("remove", params=params)
 
         jresp = response.json
-        assert response.json["result"]["status"]
-        assert response.json["result"]["value"] == len(serials)
+        assert jresp["result"]["status"]
+        assert jresp["result"]["value"] == len(serials)
 
         # submit the delete of the tokens within one request
 
@@ -456,8 +456,8 @@ class TestAdminController(TestController):
         response = self.make_admin_request("remove", params=params)
 
         jresp = response.json
-        assert response.json["result"]["status"] is False
-        assert response.json["result"]["error"]["code"] == 1119
+        assert jresp["result"]["status"] is False
+        assert jresp["result"]["error"]["code"] == 1102
 
     def test_assign(self):
         serial = self.createToken2(serial="F722362")
@@ -1139,3 +1139,538 @@ class TestAdminController(TestController):
         )
 
         assert '"status": true' in response, response
+
+    def test_audit_for_actions(self):
+        # Untested so far: resync
+        audit_mapping = {
+            "action": 4,
+            "success": 5,
+            "serial": 6,
+            "type": 7,
+            "user": 8,
+            "realm": 9,
+        }
+        params = {
+            "serial": "serial_1",
+            "type": "pw",
+            "otpkey": "123",
+            "user": "root",
+            "realm": "mydefrealm",
+        }
+
+        expected_audit = {
+            "success": "1",
+            "serial": params["serial"],
+            "type": params["type"],
+            "user": params["user"],
+            "realm": params["realm"],
+        }
+        expected_audit_faulty = {
+            "success": "0",
+            "serial": f"{params['serial']}",
+            "type": "",
+            "user": "",
+            "realm": "",
+        }
+
+        def get_last_audit_entry():
+            response = self.make_audit_request("search")
+            res = response.json
+            assert res["rows"]
+            return res["rows"][-1]["cell"]
+
+        # test init
+        action = "init"
+        self.init_token(params)
+
+        audit_entry = get_last_audit_entry()
+        assert f"admin/{action}" == audit_entry[audit_mapping["action"]]
+        for key, expected in expected_audit.items():
+            actual = audit_entry[audit_mapping[key]]
+            assert expected == actual, actual
+        self.delete_all_token()
+
+        # Test other:
+        for action, values in {
+            "remove": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "enable": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "disable": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "assign": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "user": "hans",
+                },
+                "expected_audit": {**expected_audit, "user": "hans"},
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "user": "hans",
+                },
+            },
+            "unassign": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "getTokenOwner": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "losttoken": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": {
+                    **expected_audit,
+                    "serial": f"lost{params['serial']}",
+                    "type": "pw",
+                },
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "reset": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "getSerialByOtp": {
+                "request_params": {"otp": params["otpkey"]},
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "serial": "",
+                },
+            },
+            "check_serial": {
+                "request_params": {"serial": "unique_serial"},
+                "expected_audit": {
+                    **expected_audit,
+                    "serial": "unique_serial",
+                    "type": "",
+                    "user": "",
+                    "realm": "",
+                },
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    # TODO
+                    # Should check_serial have success=1 when serial is take?
+                    # Currently we return a new unique serial
+                    "success": "1",
+                    "serial": "unique_serial",
+                },
+            },
+            "setPin": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "userpin": "123",
+                },
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "setValidity": {
+                "request_params": {
+                    "tokens": [params["serial"]],
+                    "validityPeriodStart": "1355302800",
+                },
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    # TODO
+                    # Should setValidity return success=1 if requested token(s) dont exist?
+                    "success": "1",
+                },
+            },
+            "set": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "MaxFailCount": "1",
+                },
+                "expected_audit": expected_audit,
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    # TODO
+                    # Should set return success=1 if requested token(s) dont exist?
+                    # currently success equals `count` where `count += 1` for each set param
+                    # even when the method returns `0`
+                    "success": "1",
+                },
+            },
+            "tokenrealm": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "realms": "myotherrealm",
+                },
+                "expected_audit": {**expected_audit, "realm": "myotherrealm"},
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "realm": "myotherrealm",
+                },
+            },
+            "copyTokenPin": {
+                "request_params": {
+                    "from": params["serial"],
+                    "to": f"{params['serial']}_to",
+                },
+                "expected_audit": {
+                    **expected_audit,
+                    "serial": f"{params['serial']}_to",
+                },
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "serial": f"{params['serial']}_to",
+                },
+            },
+            "copyTokenUser": {
+                "request_params": {
+                    "from": params["serial"],
+                    "to": f"{params['serial']}_to",
+                },
+                "expected_audit": {
+                    **expected_audit,
+                    "serial": f"{params['serial']}_to",
+                },
+                "expected_audit_faulty": {
+                    **expected_audit_faulty,
+                    "serial": f"{params['serial']}_to",
+                },
+            },
+            "unpair": {
+                "request_params": {"serial": params["serial"]},
+                "expected_audit": {
+                    **expected_audit,
+                    "success": "0",  # as its a PW token
+                },
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+            "totp_lookup": {
+                "request_params": {
+                    "serial": params["serial"],
+                    "otp": params["otpkey"],
+                },
+                "expected_audit": {
+                    **expected_audit,
+                    "success": "0",  # as its a PW token
+                    "type": "",
+                    "user": "",
+                    "realm": "",
+                },
+                "expected_audit_faulty": expected_audit_faulty,
+            },
+        }.items():
+            self.init_token(params)
+
+            request_params = values["request_params"]
+
+            if action in ["copyTokenPin", "copyTokenUser"]:
+                new_serial = request_params["to"]
+                self.init_token({**params, "serial": new_serial})
+
+            content_type = (
+                "application/json" if action in ["setValidity"] else None
+            )
+            response = self.make_admin_request(
+                action=action, params=request_params, content_type=content_type
+            )
+
+            audit_entry = get_last_audit_entry()
+            assert f"admin/{action}" == audit_entry[audit_mapping["action"]]
+            for key, expected in values["expected_audit"].items():
+                actual = audit_entry[audit_mapping[key]]
+                assert expected == actual, action
+
+            self.delete_all_token()
+
+            # Test with faulty input since tokens are deleted
+            if action == "check_serial":
+                # init token with taken serial
+                self.init_token(
+                    params={**params, "serial": request_params["serial"]}
+                )
+
+            self.make_admin_request(
+                action=action,
+                params=request_params,
+                content_type=content_type,
+            )
+            audit_entry = get_last_audit_entry()
+            for key, expected in values["expected_audit_faulty"].items():
+                actual = audit_entry[audit_mapping[key]]
+                assert expected == actual, action
+
+            self.delete_all_token()
+
+    def create_reporting_policy(self, policy_params: dict = None):
+        policy_params = policy_params or {}
+        params = {
+            "name": policy_params.get("name", "reporting_policy"),
+            "scope": policy_params.get("scope", "reporting"),
+            "action": policy_params.get(
+                "action",
+                "token_total, token_status=active, token_status=inactive, token_status=assigned, token_status=unassigned",
+            ),
+            "user": policy_params.get("user", "*"),
+            "realm": policy_params.get("realm", "*"),
+        }
+        self.create_policy(params)
+
+    def test_reporting_for_actions(self):
+        """Test if action trigger expected report"""
+
+        # default params to init the token
+        default_params = {
+            "serial": "serial_1",
+            "type": "pw",
+            "otpkey": "123",
+            "user": "root",
+            "realm": "mydefrealm",
+        }
+
+        # expected_realm_strings is the expected report
+        # in form of
+        # [f"{entry.realm} {entry.parameter} {entry.count}" for entry in report]
+        test_dicts = [
+            {
+                "test_scenario": "init without realm",
+                "action": "init",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "type": default_params["type"],
+                    "otpkey": default_params["otpkey"],
+                },
+                "expected_realm_strings": [
+                    "/:no realm:/ total 1",
+                    "/:no realm:/ assigned 0",
+                    "/:no realm:/ unassigned 1",
+                    "/:no realm:/ active 1",
+                    "/:no realm:/ inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "init with realm",
+                "action": "init",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "type": default_params["type"],
+                    "otpkey": default_params["otpkey"],
+                    "realm": default_params["realm"],
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 1",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "init with user",
+                "action": "init",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "type": default_params["type"],
+                    "otpkey": default_params["otpkey"],
+                    "user": default_params["user"],
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 1",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "assign to user",
+                "action": "assign",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "user": "hans",
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 1",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "assign to non-existing user",
+                "action": "assign",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "user": "non-existing user123",
+                },
+                "expected_realm_strings": [],
+            },
+            {
+                "test_scenario": "unassign from user",
+                "action": "unassign",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 1",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "enable token",
+                "action": "enable",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 1",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "disable token",
+                "action": "disable",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 1",
+                    "mydefrealm assigned 1",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 0",
+                    "mydefrealm inactive 1",
+                ],
+            },
+            {
+                "test_scenario": "delete token",
+                "action": "remove",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 0",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 0",
+                    "mydefrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "losttoken",
+                "action": "losttoken",
+                "request_params": {"serial": default_params["serial"]},
+                "expected_realm_strings": [
+                    "mydefrealm total 2",
+                    "mydefrealm assigned 2",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 1",
+                    "mydefrealm inactive 1",
+                ],
+            },
+            {
+                "test_scenario": "set tokenrealm",
+                "action": "tokenrealm",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "realms": "myotherrealm",
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 0",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 0",
+                    "mydefrealm inactive 0",
+                    "myotherrealm total 1",
+                    "myotherrealm assigned 1",
+                    "myotherrealm unassigned 0",
+                    "myotherrealm active 1",
+                    "myotherrealm inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "remove tokenrealm",
+                "action": "tokenrealm",
+                "request_params": {
+                    "serial": default_params["serial"],
+                    "realms": "",
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 0",
+                    "mydefrealm assigned 0",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 0",
+                    "mydefrealm inactive 0",
+                    "/:no realm:/ total 1",
+                    "/:no realm:/ assigned 1",
+                    "/:no realm:/ unassigned 0",
+                    "/:no realm:/ active 1",
+                    "/:no realm:/ inactive 0",
+                ],
+            },
+            {
+                "test_scenario": "copyTokenUser",
+                "action": "copyTokenUser",
+                "request_params": {
+                    "from": default_params["serial"],
+                    "to": f"{default_params['serial']}_to",
+                },
+                "expected_realm_strings": [
+                    "mydefrealm total 2",
+                    "mydefrealm assigned 2",
+                    "mydefrealm unassigned 0",
+                    "mydefrealm active 2",
+                    "mydefrealm inactive 0",
+                ],
+            },
+        ]
+        for test_dict in test_dicts:
+            action = test_dict["action"]
+            if action != "init":
+                # init a token to perform the action on
+                init_params = (
+                    test_dict.get("optional_init_params") or default_params
+                )
+                self.init_token(params=init_params)
+
+                if action in ["copyTokenUser"]:
+                    new_serial = test_dict["request_params"]["to"]
+                    self.init_token({**init_params, "serial": new_serial})
+
+            # create policy
+            self.create_reporting_policy()
+
+            # trigger action
+            response = self.make_admin_request(
+                action, params=test_dict.get("request_params")
+            )
+
+            # verify reporting for action
+            with DBSession() as session:
+                entries = session.query(Reporting).all()
+                reported_realm_strings = [
+                    f"{entry.realm} {entry.parameter} {entry.count}"
+                    for entry in entries
+                ]
+
+                expected_realm_strings = test_dict["expected_realm_strings"]
+
+                assert len(reported_realm_strings) == len(
+                    expected_realm_strings
+                ), test_dict["test_scenario"]
+
+                for realm_string in expected_realm_strings:
+                    assert realm_string in reported_realm_strings, test_dict[
+                        "test_scenario"
+                    ]
+
+                # Clean up reporting and Tokens
+                session.query(Reporting).delete()
+                session.commit()
+            # Clean up policies and tokens
+            self.delete_all_policies()
+            self.delete_all_token()

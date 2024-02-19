@@ -61,7 +61,7 @@ def token_reporting(event, tokenrealms):
     realms = tokenrealms
     if not tokenrealms or len(tokenrealms) == 0:
         realms = ["/:no realm:/"]
-    elif not isinstance(tokenrealms, (list, tuple)):
+    elif not isinstance(tokenrealms, (list, tuple, set)):
         realms = [tokenrealms]
 
     for realm in realms:

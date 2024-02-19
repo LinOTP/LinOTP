@@ -60,7 +60,7 @@ from linotp.lib.reply import (
     sendQRImageResult,
     sendResult,
 )
-from linotp.lib.token import get_token_owner, get_tokens
+from linotp.lib.token import get_token, get_token_owner, get_tokens
 from linotp.lib.user import User, getUserFromParam, getUserId, getUserInfo
 from linotp.lib.util import get_client
 from linotp.model import db
@@ -956,15 +956,7 @@ class ValidateController(BaseController):
             # --------------------------------------------------------------- -
 
             # TODO: pairing policy
-            tokens = get_tokens(None, pairing_data.serial)
-
-            if not tokens:
-                raise Exception("Invalid serial in pairing response")
-
-            if len(tokens) > 1:
-                raise Exception("Multiple tokens found. Pairing not possible")
-
-            token = tokens[0]
+            token = get_token(pairing_data.serial)
 
             # prepare some audit entries
             t_owner = token.getUser()
