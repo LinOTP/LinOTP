@@ -141,7 +141,7 @@ test_requirements = [
 # install with
 # > pip install -e ".[prod]"
 production_requirements = (
-    ["gunicorn"]
+    ["gunicorn", "setuptools>65.5.0"]
     + smpp_requirements
     + postgres_requirements
     + mysql_requirements
