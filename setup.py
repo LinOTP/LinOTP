@@ -150,7 +150,12 @@ production_requirements = (
 # install with
 # > pip install -e ".[develop]"
 development_requirements = (
-    test_requirements
+    [
+        # pin pip due to https://github.com/jazzband/pip-tools/releases/tag/7.0.0
+        "pip<23.2",
+        "pip-tools",
+    ]
+    + test_requirements
     + code_quality_requirements
     + apidocs_requirements
     + smpp_requirements
