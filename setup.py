@@ -68,25 +68,6 @@ install_requirements = [
     "jsonschema",
 ]
 
-# Requirements needed to run all the tests
-# install with
-# > pip install -e ".[test]"
-test_requirements = [
-    "flask_testing",
-    "pytest",
-    "pytest-cov",
-    "pytest-freezegun",
-    "pytest-flask",
-    "pytest-mock",
-    "selenium<4.10.0",
-    "pytest-testconfig",
-    "mock",
-    "mockldap",
-    "freezegun",
-    "coverage",
-    "flaky",
-]
-
 # Additional packages useful to improve and guarantee
 # code quality
 # > pip install -e ".[code_quality]"
@@ -112,26 +93,6 @@ setup_requirements = [
     "Babel",
 ]
 
-# Requirements for SMPP support.
-# Use
-# > pip install -e ".[smpp]"
-# to install.
-smpp_requirements = [
-    "smpplib",
-]
-
-# all packages that are required during development of LinOTP
-# install with
-# > pip install -e ".[develop]"
-development_requirements = (
-    test_requirements
-    + code_quality_requirements
-    + apidocs_requirements
-    + smpp_requirements
-    + setup_requirements
-)
-
-
 # install with
 # > pip install -e ".[postgres]"
 postgres_requirements = [
@@ -145,6 +106,47 @@ mysql_requirements = [
     # 'mysql' driver is deprecated and replaced by 'mysqlclient'
     "mysqlclient",
 ]
+
+# Requirements for SMPP support.
+# Use
+# > pip install -e ".[smpp]"
+# to install.
+smpp_requirements = [
+    "smpplib",
+]
+
+# Requirements needed to run all the tests
+# install with
+# > pip install -e ".[test]"
+test_requirements = [
+    "flask_testing",
+    "pytest",
+    "pytest-cov",
+    "pytest-freezegun",
+    "pytest-flask",
+    "pytest-mock",
+    "pytest-testconfig",
+    "pytest-test-groups",
+    "pytest-xdist",
+    "selenium",
+    "mock",
+    "mockldap",
+    "freezegun",
+    "coverage",
+    "flaky",
+] + smpp_requirements
+
+# all packages that are required during development of LinOTP
+# install with
+# > pip install -e ".[develop]"
+development_requirements = (
+    test_requirements
+    + code_quality_requirements
+    + apidocs_requirements
+    + smpp_requirements
+    + setup_requirements
+)
+
 
 # Inspired by http://www.mattlayman.com/2015/i18n.html
 
