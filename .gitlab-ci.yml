@@ -1,5 +1,6 @@
 include:
   - template: Code-Quality.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
   - project: 'dev/ext-project-packaging/ci-includes'
     file: 'gitbox-deb-ci.yml'
 
@@ -24,6 +25,8 @@ variables:
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
   PYPI_IMAGE: $IMAGE_PREFIX/linotp-pypi-testenv
   NEW_DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
+  # Variables for security scan evaluation
+  SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
   # Variables for upload-debs
   REPOSITORY: linotp3
   COMPONENT: linotp
@@ -133,6 +136,44 @@ container_scanning:
     expire_in: 2 weeks
     reports:
       container_scanning: gl-container-scanning-report.json
+
+secret_detection:
+  needs: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  artifacts:
+    paths:
+      - $SECRET_DETECTION_REPORT_FILE
+    expire_in: 1 hour
+
+.report_evaluation:
+  variables:
+      SEVERITIES: "Critical,High"
+      GIT_STRATEGY: none
+  cache: {}
+  before_script:
+    - apt-get install -y jq
+  script:
+    - |
+      if [ -f "$REPORT_FILE" ]; then
+        VULNERABILITIES_COUNT=$(jq --arg severities "$SEVERITIES" '.vulnerabilities | map(select(.severity as $s | $severities | split(",") | any(. == $s))) | length' "$REPORT_FILE")
+        if [ "$VULNERABILITIES_COUNT" -gt 0 ]; then
+          echo "Vulnerabilities detected. Please analyze the artifact $REPORT_FILE used by the '${CI_JOB_NAME}' job."
+          jq --arg severities "$SEVERITIES" '.vulnerabilities | map(select(.severity as $s | $severities | split(",") | any(. == $s)))' "$REPORT_FILE"
+          exit 80
+        else
+          echo "No vulnerabilities detected."
+        fi
+      else
+        echo "Artifact $REPORT_FILE does not exist. The job creating it for '${CI_JOB_NAME}' likely didn't create one. Hence, no evaluation can be performed."
+      fi
+
+secret_detection_evaluation:
+  extends: .report_evaluation
+  needs: ["secret_detection"]
+  variables:
+    REPORT_FILE: $SECRET_DETECTION_REPORT_FILE
+
 
 pre-commit-check:
   stage: check-and-build
