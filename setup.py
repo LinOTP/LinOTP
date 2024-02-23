@@ -40,24 +40,27 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 # install with
 # > pip install -e .
 install_requirements = [
+    # Flask=2.2.0 breaks tests
     "Flask<2.2",
+    # Flask-Babel=3.0.0 removes @babel.localeselector
     "Flask-Babel<3.0.0",
-    "flask-jwt-extended>=3",
-    "SQLAlchemy>=0.6,<1.4",
-    "flask-sqlalchemy",
+    "flask-jwt-extended",
+    "SQLAlchemy<1.4",
+    # flask-sqlalchemy=3.0.0 needs SQLAlchemy>=1.4.18
+    "flask-sqlalchemy<3",
     "mako",
     "beaker",
-    "docutils>=0.4",
+    "docutils",
     "pycryptodomex",
-    "pyrad>=1.1",
+    "pyrad",
     "netaddr",
-    "qrcode>=2.4",
-    "configobj>=4.6.0",
+    "qrcode",
+    "configobj",
     "httplib2",
     "requests",
     "pillow",
     "passlib",
-    "pysodium>=0.6.8",
+    "pysodium",
     # python-ldap needs libsasl2-dev and libldap2-dev system packages on
     # debian buster to be installable via pip or install python-ldap via
     # apt.
@@ -74,9 +77,7 @@ install_requirements = [
 code_quality_requirements = [
     "pylint",
     "autopep8",
-    # black will go back to the latest version as soon as we
-    # switch to flask 2 (this is due to a conflict with click)
-    "black<=21.6b0",
+    "black",
     "pre-commit",
     "mypy",
     "sqlalchemy-stubs",
@@ -86,7 +87,7 @@ code_quality_requirements = [
 # packages needed to build the api documentation
 # install with
 # > pip install -e ".[apidocs]"
-apidocs_requirements = ["Sphinx>4.0", "mock", "webhelpers2", "jinja2<=3.0.3"]
+apidocs_requirements = ["Sphinx", "mock", "webhelpers2", "jinja2"]
 
 # packages needed during package build phase
 setup_requirements = [
