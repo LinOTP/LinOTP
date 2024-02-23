@@ -136,6 +136,16 @@ test_requirements = [
     "flaky",
 ] + smpp_requirements
 
+# all packages that are required for production setup of LinOTP
+# install with
+# > pip install -e ".[prod]"
+production_requirements = (
+    ["gunicorn"]
+    + smpp_requirements
+    + postgres_requirements
+    + mysql_requirements
+)
+
 # all packages that are required during development of LinOTP
 # install with
 # > pip install -e ".[develop]"
@@ -186,6 +196,7 @@ setup(
         "test": test_requirements,
         "code_quality": code_quality_requirements,
         "develop": development_requirements,
+        "prod": production_requirements,
         "apidocs": apidocs_requirements,
     },
     tests_require=test_requirements,
