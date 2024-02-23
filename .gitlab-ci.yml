@@ -23,6 +23,7 @@ variables:
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
   PYPI_IMAGE: $IMAGE_PREFIX/linotp-pypi-testenv
+  NEW_DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
   # Variables for upload-debs
   REPOSITORY: linotp3
   COMPONENT: linotp
@@ -53,7 +54,7 @@ stages:
 build-and-upload-pypi-image-testenv:
   stage: pypi-image
   # image: docker:latest
-  # TODO: user docker:latest again once the pipeline-issue
+  # TODO: use docker:latest again once the pipeline-issue
   # https://forum.gitlab.com/t/the-ci-cd-pipeline-suddenly-fails-without-any-changes-done-to-the-repository/81117
   # has been resolved.
   # For now we use the proposed solution with the previous (and working) image `docker:20.10.22-dind` referenced by hash
@@ -78,6 +79,60 @@ build-and-upload-pypi-image-testenv:
   script:
     - docker build -t "$PYPI_IMAGE_TAG" -f Dockerfile.pypi-testenv .
     - docker push "$PYPI_IMAGE_TAG"
+
+build-and-upload-new-docker:
+  stage: check-and-build
+  needs: []
+  # image: docker:latest
+  # TODO: use docker:latest again once the pipeline-issue
+  # https://forum.gitlab.com/t/the-ci-cd-pipeline-suddenly-fails-without-any-changes-done-to-the-repository/81117
+  # has been resolved.
+  # For now we use the proposed solution with the previous (and working) image `docker:20.10.22-dind` referenced by hash
+  # docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
+  image: docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
+  before_script:
+    - *docker-registry
+  script:
+    - docker build -t "$NEW_DOCKER_IMAGE_TAG" -f docker_new/Dockerfile .
+    - docker push "$NEW_DOCKER_IMAGE_TAG"
+
+container_scanning:
+  image:
+    name: docker.io/aquasec/trivy:latest
+    entrypoint: [""]
+  needs: ["build-and-upload-new-docker"]
+  variables:
+    SEVERITIES: CRITICAL
+    GIT_STRATEGY: none
+    TRIVY_USERNAME: "$CI_REGISTRY_USER"
+    TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
+    TRIVY_AUTH_URL: "$CI_REGISTRY"
+    FULL_IMAGE_NAME: $NEW_DOCKER_IMAGE_TAG
+  script:
+    - trivy --version
+    # cache cleanup is needed when scanning images with the same tags, it does not remove the database
+    - time trivy image --clear-cache
+    # update vulnerabilities db
+    - time trivy image --download-db-only --no-progress --cache-dir .trivycache/
+    # Builds report and puts it in the default workdir $CI_PROJECT_DIR, so `artifacts:` can take it from there
+    - time trivy image --scanners vuln --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/contrib/gitlab.tpl"
+        --output "$CI_PROJECT_DIR/gl-container-scanning-report.json" "$FULL_IMAGE_NAME"
+    # Prints full report
+    - time trivy image --scanners vuln --exit-code 0 --cache-dir .trivycache/ --no-progress "$FULL_IMAGE_NAME"
+    # Fail on critical vulnerabilities that could be fixed
+    - time trivy image --scanners vuln --exit-code 1 --cache-dir .trivycache/ --severity "$SEVERITIES" --ignore-unfixed --no-progress "$FULL_IMAGE_NAME"
+  cache:
+    paths:
+      - .trivycache/
+  # Enables https://docs.gitlab.com/ee/user/application_security/container_scanning/ (Container Scanning report is available on GitLab EE Ultimate or GitLab.com Gold)
+  artifacts:
+    when: always
+    expose_as: container_scanning
+    paths:
+      - $CI_PROJECT_DIR/gl-container-scanning-report.json
+    expire_in: 2 weeks
+    reports:
+      container_scanning: gl-container-scanning-report.json
 
 pre-commit-check:
   stage: check-and-build
