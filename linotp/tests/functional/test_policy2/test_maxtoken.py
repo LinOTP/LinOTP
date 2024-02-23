@@ -374,7 +374,6 @@ class TestMaxtokenSelfService(TestController):
         return response
 
     def test_all_token_limits_set(self):
-
         policy = {
             "name": "maxtoken",
             "realm": "*",
