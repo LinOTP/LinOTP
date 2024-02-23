@@ -46,8 +46,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install python dependencies into VENV_ROOT
 RUN python -m venv $VENV_ROOT
-COPY docker_new/requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+COPY requirements-prod.txt .
+RUN pip install --upgrade pip && pip install -r requirements-prod.txt
 
 WORKDIR $LINOTP_HOME
 
