@@ -1,5 +1,7 @@
 include:
   - template: Code-Quality.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
   - project: 'dev/ext-project-packaging/ci-includes'
     file: 'gitbox-deb-ci.yml'
 
@@ -23,6 +25,10 @@ variables:
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
   PYPI_IMAGE: $IMAGE_PREFIX/linotp-pypi-testenv
+  NEW_DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
+  # Variables for security scan evaluation
+  SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
+  SAST_DETECTION_REPORT_FILE: gl-sast-report.json
   # Variables for upload-debs
   REPOSITORY: linotp3
   COMPONENT: linotp
@@ -53,7 +59,7 @@ stages:
 build-and-upload-pypi-image-testenv:
   stage: pypi-image
   # image: docker:latest
-  # TODO: user docker:latest again once the pipeline-issue
+  # TODO: use docker:latest again once the pipeline-issue
   # https://forum.gitlab.com/t/the-ci-cd-pipeline-suddenly-fails-without-any-changes-done-to-the-repository/81117
   # has been resolved.
   # For now we use the proposed solution with the previous (and working) image `docker:20.10.22-dind` referenced by hash
@@ -78,6 +84,119 @@ build-and-upload-pypi-image-testenv:
   script:
     - docker build -t "$PYPI_IMAGE_TAG" -f Dockerfile.pypi-testenv .
     - docker push "$PYPI_IMAGE_TAG"
+
+build-and-upload-new-docker:
+  stage: check-and-build
+  needs: []
+  # image: docker:latest
+  # TODO: use docker:latest again once the pipeline-issue
+  # https://forum.gitlab.com/t/the-ci-cd-pipeline-suddenly-fails-without-any-changes-done-to-the-repository/81117
+  # has been resolved.
+  # For now we use the proposed solution with the previous (and working) image `docker:20.10.22-dind` referenced by hash
+  # docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
+  image: docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
+  before_script:
+    - *docker-registry
+  script:
+    - docker build -t "$NEW_DOCKER_IMAGE_TAG" -f docker_new/Dockerfile .
+    - docker push "$NEW_DOCKER_IMAGE_TAG"
+
+container_scanning:
+  image:
+    name: docker.io/aquasec/trivy:latest
+    entrypoint: [""]
+  needs: ["build-and-upload-new-docker"]
+  variables:
+    SEVERITIES: CRITICAL
+    GIT_STRATEGY: none
+    TRIVY_USERNAME: "$CI_REGISTRY_USER"
+    TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
+    TRIVY_AUTH_URL: "$CI_REGISTRY"
+    FULL_IMAGE_NAME: $NEW_DOCKER_IMAGE_TAG
+  script:
+    - trivy --version
+    # cache cleanup is needed when scanning images with the same tags, it does not remove the database
+    - time trivy image --clear-cache
+    # update vulnerabilities db
+    - time trivy image --download-db-only --no-progress --cache-dir .trivycache/
+    # Builds report and puts it in the default workdir $CI_PROJECT_DIR, so `artifacts:` can take it from there
+    - time trivy image --scanners vuln --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/contrib/gitlab.tpl"
+        --output "$CI_PROJECT_DIR/gl-container-scanning-report.json" "$FULL_IMAGE_NAME"
+    # Prints full report
+    - time trivy image --scanners vuln --exit-code 0 --cache-dir .trivycache/ --no-progress "$FULL_IMAGE_NAME"
+    # Fail on critical vulnerabilities that could be fixed
+    - time trivy image --scanners vuln --exit-code 1 --cache-dir .trivycache/ --severity "$SEVERITIES" --ignore-unfixed --no-progress "$FULL_IMAGE_NAME"
+  cache:
+    paths:
+      - .trivycache/
+  # Enables https://docs.gitlab.com/ee/user/application_security/container_scanning/ (Container Scanning report is available on GitLab EE Ultimate or GitLab.com Gold)
+  artifacts:
+    when: always
+    expose_as: container_scanning
+    paths:
+      - $CI_PROJECT_DIR/gl-container-scanning-report.json
+    expire_in: 2 weeks
+    reports:
+      container_scanning: gl-container-scanning-report.json
+
+secret_detection:
+  needs: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  artifacts:
+    paths:
+      - $SECRET_DETECTION_REPORT_FILE
+    expire_in: 1 hour
+
+.report_evaluation:
+  variables:
+      SEVERITIES: "Critical,High"
+      GIT_STRATEGY: none
+  cache: {}
+  before_script:
+    - apt-get install -y jq
+  script:
+    - |
+      if [ -f "$REPORT_FILE" ]; then
+        VULNERABILITIES_COUNT=$(jq --arg severities "$SEVERITIES" '.vulnerabilities | map(select(.severity as $s | $severities | split(",") | any(. == $s))) | length' "$REPORT_FILE")
+        if [ "$VULNERABILITIES_COUNT" -gt 0 ]; then
+          echo "Vulnerabilities detected. Please analyze the artifact $REPORT_FILE used by the '${CI_JOB_NAME}' job."
+          jq --arg severities "$SEVERITIES" '.vulnerabilities | map(select(.severity as $s | $severities | split(",") | any(. == $s)))' "$REPORT_FILE"
+          exit 80
+        else
+          echo "No vulnerabilities detected."
+        fi
+      else
+        echo "Artifact $REPORT_FILE does not exist. The job creating it for '${CI_JOB_NAME}' likely didn't create one. Hence, no evaluation can be performed."
+      fi
+
+secret_detection_evaluation:
+  extends: .report_evaluation
+  needs: ["secret_detection"]
+  variables:
+    REPORT_FILE: $SECRET_DETECTION_REPORT_FILE
+
+semgrep-sast:
+  needs: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  variables:
+    SAST_SEMGREP_METRICS: "false"
+  artifacts:
+    paths:
+      - $SAST_DETECTION_REPORT_FILE
+    expire_in: 1 hour
+
+semgrep-sast_evaluation:
+  extends: .report_evaluation
+  needs: ["semgrep-sast"]
+  variables:
+    REPORT_FILE: $SAST_DETECTION_REPORT_FILE
+  before_script:
+    - apt-get install -y jq
+    # remove cmd call from report by hand (because "# nosec" does not work in semgrep job)
+    # Update this command in case the job fails after altering "mysql_cmd.py"
+    - jq '(.vulnerabilities[] | select(.location.file == "linotp/cli/mysql_cmd.py" and .location.start_line == 140)) |= null' $REPORT_FILE > tmp.json && mv tmp.json $REPORT_FILE
 
 pre-commit-check:
   stage: check-and-build
@@ -321,14 +440,6 @@ lint:
 
 ## Test stages
 .parallel:
-  matrix:
-    - CI_FLASK_VERSION: [Flask-1, Flask-2]
-      CI_NODE_INDEX: [1, 2, 3, 4]
-      CI_NODE_TOTAL: [4]
-  matrix-no-test-splitting:
-    - CI_FLASK_VERSION: [Flask-1, Flask-2]
-      CI_NODE_INDEX: [1]
-      CI_NODE_TOTAL: [1]
   matrix-flask1-only:
     - CI_FLASK_VERSION: [Flask-1]
       CI_NODE_INDEX: [1, 2, 3, 4]
@@ -345,7 +456,7 @@ lint:
 .test-base:
   interruptible: true
   parallel:
-    matrix: !reference [.parallel, matrix]
+    matrix: !reference [.parallel, matrix-flask1-only]
   artifacts:
     reports:
       coverage_report:
@@ -441,8 +552,6 @@ functional-test-mysql:
   extends:
     - .test-base-debs
     - .buster-tests
-  parallel:
-    matrix: !reference [.parallel, matrix-flask1-only]
   variables:
     LINOTP_IMAGE: "linotp"
     LINOTP_HOST: "test-linotp"

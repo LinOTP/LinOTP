@@ -531,3 +531,33 @@ docker-run-linotp-functional-test:
 				--abort-on-container-exit \
 				--force-recreate
 	docker rm $(FUNCTIONAL_DOCKER_CONTAINER_NAME) $(FUNCTIONAL_MYSQL_CONTAINER_NAME)
+
+
+#
+# # Requirements
+#
+reqs: requirements.txt requirements-all.txt requirements-dev.txt requirements-prod.txt requirements-test.txt 
+
+requirements.txt: setup.py
+	pip-compile \
+	--output-file requirements.txt
+
+requirements-all.txt: setup.py
+	pip-compile \
+	--all-extras  \
+	--output-file requirements-all.txt
+
+requirements-dev.txt: setup.py
+	pip-compile \
+	--output-file requirements-dev.txt
+	--extra develop
+
+requirements-prod.txt: setup.py
+	pip-compile \
+	--output-file requirements-prod.txt \
+	--extra prod
+
+requirements-test.txt: setup.py
+	pip-compile \
+	--output-file requirements-test.txt \
+	--extra test

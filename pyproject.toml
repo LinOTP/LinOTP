@@ -50,13 +50,8 @@ known_third_party = [
   "webhelpers",
   "werkzeug",
 ]
-known_flask = [
-  "flask",
-]
-known_first_party = [
-  "linotp",
-  "linotp_selenium_helper",
-]
+known_flask = ["flask"]
+known_first_party = ["linotp", "linotp_selenium_helper"]
 sections = [
   "FUTURE",
   "STDLIB",
@@ -65,3 +60,9 @@ sections = [
   "FIRSTPARTY",
   "LOCALFOLDER",
 ]
+
+[tool.pip-tools]
+generate-hashes = true
+strip-extras = true
+allow-unsafe = true
+emit-index-url = false

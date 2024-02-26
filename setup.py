@@ -38,26 +38,29 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 
 # LinOTP runtime dependencies
 # install with
-# > pip install -e .
+# > pip install -r requirements.txt
 install_requirements = [
+    # Flask=2.2.0 breaks tests
     "Flask<2.2",
+    # Flask-Babel=3.0.0 removes @babel.localeselector
     "Flask-Babel<3.0.0",
-    "flask-jwt-extended>=3",
-    "SQLAlchemy>=0.6,<1.4",
-    "flask-sqlalchemy",
+    "flask-jwt-extended",
+    "SQLAlchemy<1.4",
+    # flask-sqlalchemy=3.0.0 needs SQLAlchemy>=1.4.18
+    "flask-sqlalchemy<3",
     "mako",
     "beaker",
-    "docutils>=0.4",
+    "docutils",
     "pycryptodomex",
-    "pyrad>=1.1",
+    "pyrad",
     "netaddr",
-    "qrcode>=2.4",
-    "configobj>=4.6.0",
+    "qrcode",
+    "configobj",
     "httplib2",
     "requests",
     "pillow",
     "passlib",
-    "pysodium>=0.6.8",
+    "pysodium",
     # python-ldap needs libsasl2-dev and libldap2-dev system packages on
     # debian buster to be installable via pip or install python-ldap via
     # apt.
@@ -68,34 +71,13 @@ install_requirements = [
     "jsonschema",
 ]
 
-# Requirements needed to run all the tests
-# install with
-# > pip install -e ".[test]"
-test_requirements = [
-    "flask_testing",
-    "pytest",
-    "pytest-cov",
-    "pytest-freezegun",
-    "pytest-flask",
-    "pytest-mock",
-    "selenium<4.10.0",
-    "pytest-testconfig",
-    "mock",
-    "mockldap",
-    "freezegun",
-    "coverage",
-    "flaky",
-]
-
 # Additional packages useful to improve and guarantee
 # code quality
 # > pip install -e ".[code_quality]"
 code_quality_requirements = [
     "pylint",
     "autopep8",
-    # black will go back to the latest version as soon as we
-    # switch to flask 2 (this is due to a conflict with click)
-    "black<=21.6b0",
+    "black",
     "pre-commit",
     "mypy",
     "sqlalchemy-stubs",
@@ -105,32 +87,12 @@ code_quality_requirements = [
 # packages needed to build the api documentation
 # install with
 # > pip install -e ".[apidocs]"
-apidocs_requirements = ["Sphinx>4.0", "mock", "webhelpers2", "jinja2<=3.0.3"]
+apidocs_requirements = ["Sphinx", "mock", "webhelpers2", "jinja2"]
 
 # packages needed during package build phase
 setup_requirements = [
     "Babel",
 ]
-
-# Requirements for SMPP support.
-# Use
-# > pip install -e ".[smpp]"
-# to install.
-smpp_requirements = [
-    "smpplib",
-]
-
-# all packages that are required during development of LinOTP
-# install with
-# > pip install -e ".[develop]"
-development_requirements = (
-    test_requirements
-    + code_quality_requirements
-    + apidocs_requirements
-    + smpp_requirements
-    + setup_requirements
-)
-
 
 # install with
 # > pip install -e ".[postgres]"
@@ -145,6 +107,62 @@ mysql_requirements = [
     # 'mysql' driver is deprecated and replaced by 'mysqlclient'
     "mysqlclient",
 ]
+
+# Requirements for SMPP support.
+# Use
+# > pip install -e ".[smpp]"
+# to install.
+smpp_requirements = [
+    "smpplib",
+]
+
+# Requirements needed to run all the tests
+# install with
+# > pip install -r requirements-test.txt
+test_requirements = [
+    "flask_testing",
+    "pytest",
+    "pytest-cov",
+    "pytest-freezegun",
+    "pytest-flask",
+    "pytest-mock",
+    "pytest-testconfig",
+    "pytest-test-groups",
+    "pytest-xdist",
+    "selenium",
+    "mock",
+    "mockldap",
+    "freezegun",
+    "coverage",
+    "flaky",
+] + smpp_requirements
+
+# all packages that are required for production setup of LinOTP
+# install with
+# > pip install -r requirements-prod.txt
+production_requirements = (
+    ["gunicorn", "setuptools>65.5.0"]
+    + smpp_requirements
+    + postgres_requirements
+    + mysql_requirements
+)
+
+# all packages that are required during development of LinOTP
+# install with
+# > pip install -r requirements-dev.txt
+development_requirements = (
+    [
+        # pin pip due to https://github.com/jazzband/pip-tools/releases/tag/7.0.0
+        "pip<23.2",
+        "pip-tools",
+    ]
+    + test_requirements
+    + code_quality_requirements
+    + apidocs_requirements
+    + smpp_requirements
+    + setup_requirements
+)
+
 
 # Inspired by http://www.mattlayman.com/2015/i18n.html
 
@@ -184,6 +202,7 @@ setup(
         "test": test_requirements,
         "code_quality": code_quality_requirements,
         "develop": development_requirements,
+        "prod": production_requirements,
         "apidocs": apidocs_requirements,
     },
     tests_require=test_requirements,

@@ -266,7 +266,6 @@ class ForwardTokenClass(TokenClass):
         targetToken = self._getTargetToken(forwardSerial)
 
         if "challenge" in targetToken.mode:
-
             # create the challenge for the target token
 
             (success, message, data, attributes) = targetToken.createChallenge(

@@ -810,7 +810,6 @@ class TestPushToken(TestController):
         pin=None,
         serial=None,
     ):
-
         if not serial:
             serial = self.tokens[user_token_id]["serial"]
 

@@ -11,6 +11,6 @@ RUN apt-get update && \
 RUN useradd -ms /bin/bash tester && echo "root:Test123!\ntester:Test123!" | chpasswd
 
 COPY ./ ./
-RUN pip3 install -e . && pip3 install -e ".[test]" smpplib pytest-test-groups pytest-xdist
+RUN pip3 install -r requirements-test.txt
 
 USER tester
