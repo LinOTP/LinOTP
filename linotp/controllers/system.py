@@ -58,7 +58,9 @@ from linotp.lib.error import ParameterError
 from linotp.lib.policy import (
     PolicyException,
     checkPolicyPre,
+    get_active_token_statuses_for_reporting,
     get_client_policy,
+    match_allowed_realms,
     search_policy,
 )
 from linotp.lib.policy.definitions import get_policy_definitions
@@ -2298,6 +2300,43 @@ class SystemController(BaseController):
             log.error("error saving config: %r", exx)
             db.session.rollback()
             return sendError(exx)
+
+    @deprecated_methods(["POST"])
+    def getReportedStatuses(self):
+        """
+        description:
+            get all reported token_status per realm
+
+        :param realms: (optional) specifies the realms for which token status will be returned.
+            Use "*" to get all realms the requesting user has access to including "/:no realm:/".
+
+        :return: Dict[str, List[str]] of all reported token_status per requested realm.
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+        """
+        try:
+            request_realms = self.request_params.get("realms", "").split(",")
+
+            realms = match_allowed_realms(
+                scope="system", action="read", requested_realms=request_realms
+            )
+
+            statuses = {
+                realm: get_active_token_statuses_for_reporting(realm)
+                for realm in realms
+            }
+
+            db.session.commit()
+            return sendResult(statuses)
+        except PolicyException as policy_exception:
+            log.error(policy_exception)
+            db.session.rollback()
+            return sendError(policy_exception, 1)
+        except Exception as exc:
+            log.error(exc)
+            db.session.rollback()
+            return sendError(exc)
 
 
 # eof #########################################################################

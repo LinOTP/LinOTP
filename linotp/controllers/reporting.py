@@ -45,8 +45,8 @@ from linotp.lib.context import request_context
 from linotp.lib.policy import (
     PolicyException,
     checkAuthorisation,
-    get_active_token_statuses_for_reporting,
     getAdminPolicies,
+    match_allowed_realms,
 )
 from linotp.lib.realm import match_realms
 from linotp.lib.reply import (
@@ -127,19 +127,7 @@ class ReportingController(BaseController):
         """
         scope = "reporting.access"
         action = request_context["action"]
-
-        realm_whitelist = []
-        policies = getAdminPolicies(action, scope)
-
-        if policies["active"] and policies["realms"]:
-            realm_whitelist = policies.get("realms")
-
-        # if there are no policies for us, we are allowed to see all realms
-        if not realm_whitelist or "*" in realm_whitelist:
-            realm_whitelist = list(request_context["Realms"].keys())
-
-        realms = match_realms(requested_realms, realm_whitelist)
-        return realms
+        return match_allowed_realms(scope, action, requested_realms)
 
     @deprecated_methods(["POST"])
     def maximum(self):
@@ -532,41 +520,6 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(value_error, 1)
 
-        except Exception as exc:
-            log.error(exc)
-            db.session.rollback()
-            return sendError(exc)
-
-    @deprecated_methods(["POST"])
-    def reported_statuses(self):
-        """
-        description:
-            get all reported token_status per realm
-
-        :param realms: (optional) specifies the realms for which token status will be returned.
-            Use "*" to get all realms the requesting user has access to including "/:no realm:/".
-
-        :return: Dict[str, List[str]] of all reported token_status per requested realm.
-
-        :raises Exception:
-            if an error occurs an exception is serialized and returned
-        """
-        try:
-            request_realms = self.request_params.get("realms", "").split(",")
-
-            realms = self._match_allowed_realms(request_realms)
-
-            statuses = {
-                realm: get_active_token_statuses_for_reporting(realm)
-                for realm in realms
-            }
-
-            db.session.commit()
-            return sendResult(statuses)
-        except PolicyException as policy_exception:
-            log.error(policy_exception)
-            db.session.rollback()
-            return sendError(policy_exception, 1)
         except Exception as exc:
             log.error(exc)
             db.session.rollback()
