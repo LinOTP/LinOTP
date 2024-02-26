@@ -38,7 +38,7 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 
 # LinOTP runtime dependencies
 # install with
-# > pip install -e .
+# > pip install -r requirements.txt
 install_requirements = [
     # Flask=2.2.0 breaks tests
     "Flask<2.2",
@@ -118,7 +118,7 @@ smpp_requirements = [
 
 # Requirements needed to run all the tests
 # install with
-# > pip install -e ".[test]"
+# > pip install -r requirements-test.txt
 test_requirements = [
     "flask_testing",
     "pytest",
@@ -139,7 +139,7 @@ test_requirements = [
 
 # all packages that are required for production setup of LinOTP
 # install with
-# > pip install -e ".[prod]"
+# > pip install -r requirements-prod.txt
 production_requirements = (
     ["gunicorn", "setuptools>65.5.0"]
     + smpp_requirements
@@ -149,7 +149,7 @@ production_requirements = (
 
 # all packages that are required during development of LinOTP
 # install with
-# > pip install -e ".[develop]"
+# > pip install -r requirements-dev.txt
 development_requirements = (
     [
         # pin pip due to https://github.com/jazzband/pip-tools/releases/tag/7.0.0

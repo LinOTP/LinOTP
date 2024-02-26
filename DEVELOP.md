@@ -64,11 +64,7 @@ $ source linotp_dev/bin/activate
 ```
 Then, install the development dependencies:
 ```terminal
-$ pip3 install -e .
-```
-In order to run automated tests you must also install the test dependencies:
-```terminal
-$ pip3 install -e ".[test]"
+$ pip3 install -r requirements-dev.txt && pip3 install -e .
 ```
 
 For a quickstart using the default configuration, run:
@@ -380,7 +376,7 @@ You can find sample test files under `linotpd/src/linotp/tests/integration`.
 To run a type check on the source code, install `mypy` and `sqlalchemy-stubs`.
 Both requirements are part of the develop requirements:
 ```terminal
-$ pip3 install -e ".[develop]"
+$ pip3 install -r requirements-dev.txt
 ```
 Then run `mypy` on a directory of your choice like
 ```terminal
@@ -402,7 +398,7 @@ file for the configuration.
 
 Install `pre-commit` manually via pip or as part of our develop dependencies:
 ```terminal
-$ pip3 install -e ".[develop]"
+$ pip3 install -r requirements-dev.txt
 ```
 Then install the pre-commit hook in git so that it runs before a commit to
 ensure correct formatting. The same hook is tested in CI, so we strongly
