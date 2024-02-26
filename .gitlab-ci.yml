@@ -440,14 +440,6 @@ lint:
 
 ## Test stages
 .parallel:
-  matrix:
-    - CI_FLASK_VERSION: [Flask-1, Flask-2]
-      CI_NODE_INDEX: [1, 2, 3, 4]
-      CI_NODE_TOTAL: [4]
-  matrix-no-test-splitting:
-    - CI_FLASK_VERSION: [Flask-1, Flask-2]
-      CI_NODE_INDEX: [1]
-      CI_NODE_TOTAL: [1]
   matrix-flask1-only:
     - CI_FLASK_VERSION: [Flask-1]
       CI_NODE_INDEX: [1, 2, 3, 4]
@@ -464,7 +456,7 @@ lint:
 .test-base:
   interruptible: true
   parallel:
-    matrix: !reference [.parallel, matrix]
+    matrix: !reference [.parallel, matrix-flask1-only]
   artifacts:
     reports:
       coverage_report:
@@ -560,8 +552,6 @@ functional-test-mysql:
   extends:
     - .test-base-debs
     - .buster-tests
-  parallel:
-    matrix: !reference [.parallel, matrix-flask1-only]
   variables:
     LINOTP_IMAGE: "linotp"
     LINOTP_HOST: "test-linotp"
