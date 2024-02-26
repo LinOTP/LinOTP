@@ -1,5 +1,6 @@
 include:
   - template: Code-Quality.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
   - project: 'dev/ext-project-packaging/ci-includes'
     file: 'gitbox-deb-ci.yml'
@@ -27,6 +28,7 @@ variables:
   NEW_DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
   # Variables for security scan evaluation
   SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
+  SAST_DETECTION_REPORT_FILE: gl-sast-report.json
   # Variables for upload-debs
   REPOSITORY: linotp3
   COMPONENT: linotp
@@ -174,6 +176,27 @@ secret_detection_evaluation:
   variables:
     REPORT_FILE: $SECRET_DETECTION_REPORT_FILE
 
+semgrep-sast:
+  needs: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  variables:
+    SAST_SEMGREP_METRICS: "false"
+  artifacts:
+    paths:
+      - $SAST_DETECTION_REPORT_FILE
+    expire_in: 1 hour
+
+semgrep-sast_evaluation:
+  extends: .report_evaluation
+  needs: ["semgrep-sast"]
+  variables:
+    REPORT_FILE: $SAST_DETECTION_REPORT_FILE
+  before_script:
+    - apt-get install -y jq
+    # remove cmd call from report by hand (because "# nosec" does not work in semgrep job)
+    # Update this command in case the job fails after altering "mysql_cmd.py"
+    - jq '(.vulnerabilities[] | select(.location.file == "linotp/cli/mysql_cmd.py" and .location.start_line == 140)) |= null' $REPORT_FILE > tmp.json && mv tmp.json $REPORT_FILE
 
 pre-commit-check:
   stage: check-and-build
