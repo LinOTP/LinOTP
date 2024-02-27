@@ -149,6 +149,8 @@ secret_detection:
     expire_in: 1 hour
 
 .report_evaluation:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   variables:
       SEVERITIES: "Critical,High"
       GIT_STRATEGY: none
