@@ -101,12 +101,6 @@ if [ -n "${LINOTP_DB_PORT:-}" ]; then
 fi
 
 if [ -z "$LINOTP_CFG" ]; then
-    # check if there's a config file in CONFIG_DIR
-    # and use the first one as LINOTP_CFG
-    file="$(find $CONFIG_DIR -name "*.cfg" | head -n 1)"
-    [ -n "$file" ] && [ -f "$file" ] && export LINOTP_CFG="$file"
-fi
-if [ -z "$LINOTP_CFG" ]; then
     echo >&2 "No configuration file specified for LINOTP_CFG"
 elif ! [ -f "$LINOTP_CFG" ]; then
     echo >&2 "Configuration file $LINOTP_CFG (LINOTP_CFG) does not exist"

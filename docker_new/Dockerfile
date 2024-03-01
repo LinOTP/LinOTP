@@ -96,7 +96,6 @@ ENV LINOTP_USER=linotp \
     LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;/$TRANSLATIONS_DIR \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
-    CONFIG_DIR=/config \
     # misc
     SQLALCHEMY_LOGGING_LEVEL=ERROR \
     DEBIAN_FRONTEND=noninteractive \
@@ -119,7 +118,6 @@ RUN mkdir -p \
     $LINOTP_DATA_DIR \
     $LINOTP_LOG_FILE_DIR \
     $LINOTP_CUSTOM_TEMPLATES_DIR \
-    $CONFIG_DIR \
     $TRANSLATIONS_DIR \
     && \
     # Create symlink for assets customization
@@ -131,8 +129,7 @@ VOLUME $LINOTP_ROOT_DIR \
     $LINOTP_DATA_DIR \
     $LINOTP_LOG_FILE_DIR \
     $LINOTP_CUSTOM_TEMPLATES_DIR \
-    $TRANSLATIONS_DIR \
-    $CONFIG_DIR
+    $TRANSLATIONS_DIR
 
 # Create and set the user to run the container and chown directories
 RUN useradd -r $LINOTP_USER && \
@@ -140,8 +137,7 @@ RUN useradd -r $LINOTP_USER && \
     $LINOTP_ROOT_DIR \
     $LINOTP_LOG_FILE_DIR \
     $LINOTP_CACHE_DIR \
-    $LINOTP_DATA_DIR \
-    $CONFIG_DIR
+    $LINOTP_DATA_DIR
 USER $LINOTP_USER
 
 ENTRYPOINT [ "tini", "--", "./entrypoint.sh" ] 
