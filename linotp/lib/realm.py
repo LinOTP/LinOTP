@@ -550,36 +550,33 @@ def deleteRealm(realmname):
 
 
 def _delete_realm_config(realmname):
-    #
-    # we test if before delete there has been a default
-    # if yes - check after delete, if still one there
-    #         and set the last available to default
-    #
+    """Deletes the realm from config
+    and resets default realm if it was the default realm
+
+    Args:
+        realmname (str): name of the realm
+
+    Returns:
+        boolean: true if realm was deleted else false
+    """
+    # Test if realm is defined
+    if not isRealmDefined(realmname):
+        return False
 
     defRealm = getDefaultRealm()
-    hadDefRealmBefore = False
-    if defRealm != "":
-        hadDefRealmBefore = True
+    was_default_realm = realmname.lower() == defRealm.lower()
 
-    # now test if realm is defined
-    if isRealmDefined(realmname) is True:
-        if realmname.lower() == defRealm.lower():
-            setDefaultRealm("")
-        if realmname == "_default_":
-            realmConfig = "useridresolver"
-        else:
-            realmConfig = "useridresolver.group." + realmname
+    realmConfig = (
+        f"useridresolver.group.{realmname}"
+        if realmname != "_default_"
+        else "useridresolver"
+    )
 
-        return removeFromConfig(realmConfig, iCase=True)
+    was_removed = removeFromConfig(realmConfig, iCase=True)
+    if was_removed and was_default_realm:
+        setDefaultRealm("")
 
-    if hadDefRealmBefore is True:
-        defRealm = getDefaultRealm()
-        if defRealm == "":
-            realms = getRealms()
-            if len(realms) == 2:
-                for k in realms:
-                    if k != realm:
-                        setDefaultRealm(k)
+    return was_removed
 
 
 def match_realms(request_realms, allowed_realms):
