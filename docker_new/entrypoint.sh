@@ -101,7 +101,7 @@ if [ -n "${LINOTP_DB_PORT:-}" ]; then
 fi
 
 if [ -z "$LINOTP_CFG" ]; then
-    echo >&2 "No configuration file specified for LINOTP_CFG"
+    echo >&2 "No configuration file specified for LINOTP_CFG (using environment variables only)"
 elif ! [ -f "$LINOTP_CFG" ]; then
     echo >&2 "Configuration file $LINOTP_CFG (LINOTP_CFG) does not exist"
     exit 1
