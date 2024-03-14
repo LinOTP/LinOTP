@@ -294,6 +294,8 @@ class SelfserviceController(BaseController):
         # prepare the realms and put the default realm on the top
 
         defaultRealm = getDefaultRealm()
+
+        # domain-knowledge: defaultRealm is the first realm
         realmArray = [defaultRealm] + [
             realm for realm in getRealms() if realm != defaultRealm
         ]
