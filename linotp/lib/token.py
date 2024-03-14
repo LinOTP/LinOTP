@@ -954,8 +954,6 @@ class TokenHandler(object):
         """
         log.debug("Searching appropriate token for otp %r", otp)
 
-        result_token = None
-
         if token_list is None:
             token_list = self.getTokensOfType(typ, realm, assigned)
 
@@ -965,16 +963,14 @@ class TokenHandler(object):
             if token.check_otp_exist(otp=otp, window=window) >= 0
         ]
 
-        if len(validation_results) == 1:
-            result_token = validation_results[0]
-        elif len(validation_results) > 1:
+        if len(validation_results) > 1:
             raise TokenAdminError(
                 "get_token_by_otp: multiple tokens are "
                 "matching this OTP value!",
                 id=1200,
             )
 
-        return result_token
+        return None if len(validation_results) == 0 else validation_results[0]
 
     # local method
     def getTokensOfType(self, typ=None, realm=None, assigned=None):
