@@ -325,8 +325,6 @@ def _retrieveAllConfigDB():
     :return: config dict
     """
 
-    config = {}
-
     conf_dict = {}
     type_dict = {}
     desc_dict = {}
@@ -376,16 +374,10 @@ def _retrieveAllConfigDB():
 
     # normal processing as before continous here
 
-    for key, value in conf_dict.items():
-        if key.startswith("linotp.") is False:
-            key = f"linotp.{key}"
-
-        if isinstance(key, str):
-            key = str(key)
-
-        nVal = expand_here(value)
-        config[key] = nVal
-
+    config = {
+        k if k.startswith("linotp.") else f"linotp.{k}": expand_here(v)
+        for k, v in conf_dict.items()
+    }
     # ---------------------------------------------------------------------- --
 
     # special treatment of encrypted_data:
