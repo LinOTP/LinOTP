@@ -35,6 +35,7 @@ import logging
 import urllib.error
 import urllib.parse
 import urllib.request
+from urllib.parse import unquote, urlparse
 
 import httplib2
 
@@ -87,7 +88,7 @@ class RemoteRequest(object):
 
     @staticmethod
     def parse_url(url):
-        parsed = urllib.parse.urlparse(url)
+        parsed = urlparse(url)
         url_info = {
             "scheme": parsed.scheme,
             "netloc": parsed.netloc,
@@ -116,11 +117,10 @@ class RemoteRequest(object):
                 value = ""
             # only add if key is not an empty strings
             if key.strip():
-                q[urllib.parse.unquote(key.strip())] = urllib.parse.unquote(
-                    value.strip()
-                )
+                q[unquote(key.strip())] = unquote(value.strip())
 
         url_info["query_params"] = q
+
         return url_info
 
 
