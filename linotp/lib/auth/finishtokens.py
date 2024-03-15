@@ -99,12 +99,7 @@ class FinishTokens(object):
         # next handle the challenges
         if self.challenge_tokens:
             (ret, reply, detail) = self.finish_challenge_token()
-
-            # do we have to increment the counter to prevent a replay???
-            # self.increment_counters(self.challenge_tokens)
-
             self.create_audit_entry(detail, self.challenge_tokens)
-
             return ret, reply
 
         # if there is no token left, we end up here
@@ -270,9 +265,7 @@ class FinishTokens(object):
 
         challenge_tokens = self.challenge_tokens
 
-        options = self.options
-        if not options:
-            options = {}
+        options = self.options or {}
 
         action_detail = "challenge created"
 
@@ -294,17 +287,13 @@ class FinishTokens(object):
             # composed by the top level transaction id and the message
             # and below in a dict for each token a challenge description -
             # the key is the token type combined with its token serial number
-
-            all_reply = {}
-            all_reply["challenges"] = {}
-            challenge_count = 0
+            all_reply = {"challenges": {}}
             transactionid = ""
-            challenge_id = ""
-            for challenge_token in challenge_tokens:
-                challenge_count += 1
-                id_postfix = ".%02d" % challenge_count
-                if transactionid:
-                    challenge_id = "%s%s" % (transactionid, id_postfix)
+            for i, challenge_token in enumerate(challenge_tokens, 1):
+                id_postfix = f".{i:02d}"
+                challenge_id = (
+                    f"{transactionid}{id_postfix}" if transactionid else ""
+                )
 
                 (_res, reply) = Challenges.create_challenge(
                     challenge_token,
@@ -335,10 +324,9 @@ class FinishTokens(object):
         where the pin matched (but OTP failed
         and increment only these
         """
-        pin_matching_tokens = self.pin_matching_tokens
         action_detail = "wrong otp value"
 
-        for tok in pin_matching_tokens:
+        for tok in self.pin_matching_tokens:
             tok.statusValidationFail()
             tok.inc_count_auth()
             Challenges.finish_challenges(tok, success=False)
@@ -347,41 +335,33 @@ class FinishTokens(object):
 
     def finish_invalid_tokens(self):
         """"""
-        invalid_tokens = self.invalid_tokens
         user = self.user
 
-        for tok in invalid_tokens:
+        for tok in self.invalid_tokens:
             # count all token accesses
             if tok.count_auth_max > 0:
                 tok.inc_count_auth()
 
             tok.statusValidationFail()
-
             Challenges.finish_challenges(tok, success=False)
 
         pin_policies = get_pin_policies(user) or []
 
-        if 1 in pin_policies:
-            action_detail = "wrong user password -1"
-        else:
-            action_detail = "wrong otp pin -1"
+        action_detail = (
+            "wrong user password -1"
+            if 1 in pin_policies
+            else "wrong otp pin -1"
+        )
 
         return (False, None, action_detail)
 
     @staticmethod
     def reset_failcounter(all_tokens):
-        for token in all_tokens:
-            token.reset()
-
-    @staticmethod
-    def increment_counters(all_tokens, reset=True):
-        for token in all_tokens:
-            token.incOtpCounter(reset=reset)
+        [token.reset() for token in all_tokens]
 
     @staticmethod
     def increment_failcounters(all_tokens):
-        for token in all_tokens:
-            token.incOtpFailCounter()
+        [token.incOtpFailCounter() for token in all_tokens]
 
     def create_audit_entry(self, action_detail="no token found!", tokens=None):
         """
@@ -404,16 +384,12 @@ class FinishTokens(object):
             return
 
         # for multiple tokens we concat the serials / types of all token
-        serials = set()
-        types = set()
-
-        for token in tokens:
-            serials.add(token.getSerial())
-            types.add(token.getType())
+        serials = {token.getSerial() for token in tokens}
+        types = {token.getType() for token in tokens}
 
         # TODO: move the limit of serials and types into the audit module
-        g.audit["serial"] = " ".join(list(serials))[:29]
-        g.audit["token_type"] = " ".join(list(types))[:39]
+        g.audit["serial"] = " ".join(serials)[:29]
+        g.audit["token_type"] = " ".join(types)[:39]
 
         return
 

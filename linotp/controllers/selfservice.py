@@ -40,7 +40,6 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 
 from flask import Response, current_app, g, redirect, url_for
 
-from linotp import flap
 from linotp.controllers.base import BaseController
 from linotp.controllers.userservice import get_auth_user, getTokenForUser
 from linotp.flap import config
@@ -221,10 +220,11 @@ class SelfserviceController(BaseController):
             c.actions = actions
 
             for action_name, action_value in actions.items():
-                if action_value is True:
-                    c.__setattr__(action_name, -1)
-                    continue
-                c.__setattr__(action_name, action_value)
+                setattr(
+                    c,
+                    action_name,
+                    -1 if action_value is True else action_value,
+                )
 
             c.dynamic_actions = add_dynamic_selfservice_enrollment(
                 config, c.actions
@@ -293,11 +293,11 @@ class SelfserviceController(BaseController):
         # prepare the realms and put the default realm on the top
 
         defaultRealm = getDefaultRealm()
-        realmArray = [defaultRealm]
 
-        for realm in getRealms():
-            if realm != defaultRealm:
-                realmArray.append(realm)
+        # domain-knowledge: defaultRealm is the first realm
+        realmArray = [defaultRealm] + [
+            realm for realm in getRealms() if realm != defaultRealm
+        ]
 
         # ------------------------------------------------------------------ --
 

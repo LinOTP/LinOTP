@@ -175,10 +175,10 @@ def updateConfig(confi):
     """
     update the server config entries incl. syncing it to disc
     """
-    entries = {}
+    entries = set()
     update_entries = {}
 
-    for entry in list(confi.keys()):
+    for entry in confi.keys():
         if entry.endswith(".type") or entry.endswith(".desc"):
             key = entry[: -len(".type")]
         else:
@@ -193,23 +193,19 @@ def updateConfig(confi):
             and not confi.get(key + ".desc")
         ):
             update_entries[key] = confi.get(key)
-
         else:
-            entries[key] = (
+            entries.add(key)
+            storeConfig(
+                key,
                 confi.get(key),
                 confi.get(key + ".type"),
                 confi.get(key + ".desc"),
             )
 
-    for key, data_tuple in list(entries.items()):
-        val, typ, desc = data_tuple
-
-        storeConfig(key, val, typ, desc)
-
     if update_entries:
         conf = getLinotpConfig()
-
         conf.update(update_entries)
+
     return True
 
 
@@ -243,47 +239,22 @@ def removeFromConfig(key, iCase=False):
     log.debug("Removing config entry %r", key)
     conf = getLinotpConfig()
 
-    if iCase is False:
-        if key in conf:
-            del conf[key]
-    else:
-        # case insensitive delete
-        # #- might have multiple hits
-        fConf = []
-        for k in conf:
-            if (
-                k.lower() == key.lower()
-                or k.lower() == "linotp." + key.lower()
-            ):
-                fConf.append(k)
+    if iCase:
+        # Case-insensitive delete
+        fConf = [
+            k
+            for k in conf
+            if k.lower() == key.lower() or k.lower() == "linotp." + key.lower()
+        ]
 
-        if len(fConf) > 0:
-            for k in fConf:
-                if k in conf or "linotp." + k in conf:
-                    del conf[k]
+        for k in fConf:
+            if k in conf or "linotp." + k in conf:
+                del conf[k]
+    elif key in conf:
+        # Case-sensitive delete
+        del conf[key]
 
     return True
-
-
-# several config functions to follow
-def setDefaultMaxFailCount(maxFailCount):
-    return storeConfig("DefaultMaxFailCount", maxFailCount)
-
-
-def setDefaultSyncWindow(syncWindowSize):
-    return storeConfig("DefaultSyncWindow", syncWindowSize)
-
-
-def setDefaultCountWindow(countWindowSize):
-    return storeConfig("DefaultCountWindow", countWindowSize)
-
-
-def setDefaultOtpLen(otpLen):
-    return storeConfig("DefaultOtpLen", otpLen)
-
-
-def setDefaultResetFailCount(resetFailCount):
-    return storeConfig("DefaultResetFailCount", resetFailCount)
 
 
 # eof #########################################################################

@@ -201,7 +201,6 @@ class GettokenController(BaseController):
 
             if serial:
                 log.debug("[getotp] retrieving OTP value for token %s", serial)
-
             elif user.login:
                 log.debug(
                     "[getotp] retrieving OTP value for token for user "
@@ -219,8 +218,7 @@ class GettokenController(BaseController):
                         "Returning the list of serials"
                     )
                     res = -3
-                    for token in toks:
-                        serials.append(token.getSerial())
+                    serials = [token.getSerial() for token in toks]
                 elif 1 == tokennum:
                     serial = toks[0].getSerial()
                     log.debug(
@@ -260,21 +258,18 @@ class GettokenController(BaseController):
 
             if int(res) < 0:
                 ret["result"] = False
-                if -1 == otpval:
-                    ret["description"] = "No Token with this serial number"
-                if -2 == otpval:
-                    ret[
-                        "description"
-                    ] = "This Token does not support the getOtp function"
-                if -3 == otpval:
-                    ret["description"] = "The user has more than one token"
+                error_messages = {
+                    -1: "No Token with this serial number",
+                    -2: "This Token does not support the getOtp function",
+                    -3: "The user has more than one token",
+                    -4: "No Token found for this user",
+                    -5: "You need to provide a user or a serial",
+                }
+                ret["description"] = error_messages.get(
+                    res, f"Unexpected error: {res}"
+                )
+                if res == -3:
                     ret["serials"] = serials
-                if -4 == otpval:
-                    ret["description"] = "No Token found for this user"
-                if -5 == otpval:
-                    ret[
-                        "description"
-                    ] = "you need to provide a user or a serial"
             else:
                 ret["result"] = True
                 ret["otpval"] = otpval

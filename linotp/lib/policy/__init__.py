@@ -352,7 +352,7 @@ def _checkSystemPolicyPost(method, param=None, user=None):
                 )
 
                 lowerRealms = uniquify(pol["realms"])
-                for realm, _v in list(res.items()):
+                for realm in list(res.keys()):
                     if (
                         realm.lower() not in lowerRealms
                         and "*" not in lowerRealms
@@ -1984,7 +1984,7 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
 
     # in case we got a serial
     if serial != "" and serial is not None:
-        realms = linotp.lib.token.getTokenRealms(serial)
+        realms = set(linotp.lib.token.getTokenRealms(serial))
 
         log.debug(
             "the token %r is contained in the realms: %r", serial, realms
@@ -1992,15 +1992,10 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
 
         log.debug("the policy contains the realms: %r", policies["realms"])
 
-        for r in realms:
-            if fitAllRealms:
-                if r not in policies["realms"]:
-                    return False
-            else:
-                if r in policies["realms"]:
-                    return True
-
-        return fitAllRealms
+        if fitAllRealms:
+            return realms.issubset(policies["realms"])
+        else:
+            return bool(realms.intersection(policies["realms"]))
 
     # in case of the admin policies - no user name is verified:
     # the username could be empty (not dummy) which prevents an
@@ -2043,9 +2038,7 @@ def _check_token_count(user=None, realm=None, post_check=False):
     # one token available without hitting the tocken count limit
     # - we use the to simplify the algorithm
 
-    count_offset = 1
-    if post_check:
-        count_offset = 0
+    count_offset = 0 if post_check else 1
 
     # ---------------------------------------------------------------------- --
 
@@ -3188,38 +3181,6 @@ def trigger_sms(realms=None):
             client,
             scope="authentication",
             action="trigger_sms",
-            realm=realm,
-            user=login,
-            userObj=user,
-        )
-
-        if len(pol) > 0:
-            log.debug("found policy in realm %s", realm)
-            ret = True
-
-    return ret
-
-
-def trigger_phone_call_on_empty_pin(realms=None):
-    """Trigger a phone call on empty pin?
-
-    returns true if a check_s should be allowed to trigger an phone call
-    for the voice token
-    """
-    client = _get_client()
-    user = _getUserFromParam()
-
-    login = user.login
-    if realms is None:
-        realm = user.realm or _getDefaultRealm()
-        realms = [realm]
-
-    ret = False
-    for realm in realms:
-        pol = has_client_policy(
-            client,
-            scope="authentication",
-            action="trigger_voice",
             realm=realm,
             user=login,
             userObj=user,

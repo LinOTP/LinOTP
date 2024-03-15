@@ -46,22 +46,17 @@ def iterate_users(user_iterators):
     :return: generator of user data dicts (yield)
     """
 
-    for itera in user_iterators:
-        user_iterator = itera[0]
-        reso = itera[1]
-
+    for user_iterator, resolver in user_iterators:
         try:
             while True:
                 user_data = next(user_iterator)
                 if isinstance(user_data, list):
-                    for data in user_data:
-                        data["resolver"] = reso
-                        resp = "%s" % json.dumps(data)
-                        yield resp
+                    yield from (
+                        json.dumps({**data, "resolver": resolver})
+                        for data in user_data
+                    )
                 else:
-                    user_data["resolver"] = reso
-                    resp = "%s" % json.dumps(user_data)
-                    yield resp
+                    yield json.dumps({**user_data, "resolver": resolver})
         except StopIteration as exx:
             # pass on to next iterator
             pass
@@ -81,27 +76,26 @@ def iterate_resolverusers(user_iterators):
     :return: generator of ResolverUsers (yield)
     """
 
-    for itera in user_iterators:
-        user_iterator = itera[0]
-        resolver_spec = itera[1]
+    for user_iterator, resolver_spec in user_iterators:
         resolver_name = resolver_spec.split(".")[-1]
         resolver = get_resolver(resolver_name)
         try:
             while True:
                 user_data = next(user_iterator)
                 if isinstance(user_data, list):
-                    for data in user_data:
-                        user = ResolverUser.from_dict(
-                            resolver.name, resolver.type, data
-                        ).as_dict()
-                        resp = "%s" % json.dumps(user)
-                        yield resp
+                    yield from (
+                        json.dumps(
+                            ResolverUser.from_dict(
+                                resolver.name, resolver.type, data
+                            ).as_dict()
+                        )
+                        for data in user_data
+                    )
                 else:
                     user = ResolverUser.from_dict(
                         resolver.name, resolver.type, user_data
                     ).as_dict()
-                    resp = "%s" % json.dumps(user)
-                    yield resp
+                    yield json.dumps(user)
         except StopIteration as exx:
             # pass on to next iterator
             pass

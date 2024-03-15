@@ -194,11 +194,8 @@ def add_and_delete_cookies(response):
     `g.cookies_to_delete` and `g.cookies` variables.
     """
 
-    for name in g.cookies_to_delete:
-        response.delete_cookie(name)
-
-    for name, kwargs in g.cookies.items():
-        response.set_cookie(name, **kwargs)
+    [response.delete_cookie(name) for name in g.cookies_to_delete]
+    [response.set_cookie(name, **kwargs) for name, kwargs in g.cookies.items()]
 
 
 def unauthorized(exception, status=401):
@@ -1843,12 +1840,13 @@ class UserserviceController(BaseController):
 
                 challenge = valid_challenges[0]
 
-                serials = [c.tokenserial for c in valid_challenges]
-                serials = list(set(serials))  # remove duplicates
+                serials = {c.tokenserial for c in valid_challenges}
 
-                tokens = []
-                for serial in serials:
-                    tokens.extend(get_tokens(serial=serial))
+                tokens = [
+                    token
+                    for serial in serials
+                    for token in get_tokens(serial=serial)
+                ]
 
             elif serial:
                 tokens = get_tokens(serial=serial)
@@ -2928,98 +2926,6 @@ class UserserviceController(BaseController):
             log.error(error)
             db.session.rollback()
             return sendError(error, 1)
-
-    def _token_call(self):
-        """
-        the generic method call for an dynamic token
-        """
-        param = self.request_params.copy()
-
-        res = {}
-
-        try:
-            # # method could be part of the virtual url
-            context = request.path_info.split("/")
-            if len(context) > 2:
-                method = context[2]
-            else:
-                try:
-                    method = param["method"]
-                except KeyError as exx:
-                    raise ParameterError("Missing parameter: '%s'" % str(exx))
-
-            try:
-                typ = param["type"]
-            except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
-
-            serial = param.get("serial", None)
-
-            # check selfservice authorization for this dynamic method
-            pols = get_client_policy(
-                g.client,
-                scope="selfservice",
-                realm=g.authUser.realm,
-                action=method,
-                userObj=g.authUser.realm,
-                find_resolver=False,
-            )
-            if not pols or len(pols) == 0:
-                log.error(
-                    "user %r not authorized to call %s", g.authUser, method
-                )
-                raise PolicyException(
-                    "user %r not authorized to call %s" % (g.authUser, method)
-                )
-
-            if typ in tokenclass_registry:
-                token_cls = tokenclass_registry.get(typ)
-                tclt = None
-                if serial is not None:
-                    toks = get_raw_tokens(None, serial)
-                    tokenNum = len(toks)
-                    if tokenNum == 1:
-                        token = toks[0]
-                        # object method call
-                        tclt = token_cls(token)
-
-                # static method call
-                if tclt is None:
-                    tclt = token_cls
-                method = "" + method.strip()
-                if hasattr(tclt, method):
-                    # TODO: check that method name is a function / method
-                    ret = getattr(tclt, method)(param)
-                    if len(ret) == 1:
-                        res = ret[0]
-                    if len(ret) > 1:
-                        res = ret[1]
-                    g.audit["success"] = res
-                else:
-                    res["status"] = "method %s.%s not supported!" % (
-                        typ,
-                        method,
-                    )
-                    g.audit["success"] = False
-
-            db.session.commit()
-            return sendResult(res, 1)
-
-        except PolicyException as pe:
-            log.error("[token_call] policy failed: %r", pe)
-            db.session.rollback()
-            return sendError(pe, 1)
-
-        except Exception as exx:
-            log.error(
-                "[token_call] calling method %s.%s of user %s failed! %r",
-                typ,
-                method,
-                c.user,
-                exx,
-            )
-            db.session.rollback()
-            return sendError(exx, 1)
 
     @methods(["POST"])
     def setdescription(self):

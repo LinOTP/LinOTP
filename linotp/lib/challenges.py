@@ -348,9 +348,7 @@ class Challenges(object):
     def get_challenges(
         token=None, transid=None, options=None, filter_open=False
     ):
-        state = options and options.get(
-            "state", options.get("transactionid", None)
-        )
+        state = options and options.get("state", options.get("transactionid"))
 
         if not transid:
             transid = state
@@ -396,13 +394,11 @@ class Challenges(object):
             c_now = datetime.datetime.now()
             if c_now > c_expire_time:
                 expired_challenges.append(challenge)
-            else:
+            elif filter_open and challenge.is_open():
                 # if we want to see only the open challenges, we check so :)
-                if filter_open:
-                    if challenge.is_open():
-                        valid_chalenges.append(challenge)
-                else:
-                    valid_chalenges.append(challenge)
+                valid_chalenges.append(challenge)
+            elif not filter_open:
+                valid_chalenges.append(challenge)
 
         return expired_challenges, valid_chalenges
 
@@ -416,7 +412,7 @@ class Challenges(object):
         """
         from linotp.lib.token import get_token
 
-        to_be_closed_challenges = []
+        to_be_closed_challenges = set()
 
         for matching_challenge in matching_challenges:
             # gather all challenges which are now obsolete
@@ -427,17 +423,17 @@ class Challenges(object):
             to_be_closed = token.challenge_janitor(
                 [matching_challenge], token_challenges
             )
-            to_be_closed_challenges.extend(to_be_closed)
+            to_be_closed_challenges.update(to_be_closed)
 
             # gather all challenges which are part of the same transaction
             transid = matching_challenge.transid
             if "." in transid:
                 transid = transid.split(".")[0]
             transid_challenges = Challenges.lookup_challenges(transid=transid)
-            to_be_closed_challenges.extend(transid_challenges)
+            to_be_closed_challenges.update(transid_challenges)
 
         hsm = context["hsm"].get("obj")
-        for challenge in set(to_be_closed_challenges):
+        for challenge in to_be_closed_challenges:
             challenge.close()
             # and calculate the mac for this token data
             challenge.signChallenge(hsm)
@@ -460,9 +456,7 @@ class Challenges(object):
         hsm = context["hsm"].get("obj")
 
         # we query for all challenges of the token to identify the valid ones
-        (expired_challenges, valid_challenges) = Challenges.get_challenges(
-            token
-        )
+        expired_challenges, valid_challenges = Challenges.get_challenges(token)
 
         if success:
             for challenge in token.matching_challenges:

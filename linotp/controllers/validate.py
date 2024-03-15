@@ -258,7 +258,7 @@ class ValidateController(BaseController):
             #
             # we require either state or transactionid as parameter
 
-            transid = param.get("state", param.get("transactionid", None))
+            transid = param.get("state", param.get("transactionid"))
             if not transid:
                 raise ParameterError(
                     _(
@@ -298,8 +298,6 @@ class ValidateController(BaseController):
 
             for ch in challenges:
                 tokens = get_tokens(serial=ch.getTokenSerial())
-                if not tokens:
-                    continue
 
                 for token in tokens:
                     serials.append(token.getSerial())
@@ -384,43 +382,6 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.error("[check_yubikey] validate/check_yubikey failed: %r", exx)
             g.audit["info"] = str(exx)
-            db.session.rollback()
-            return sendResult(False, 0)
-
-    def _check_url(self):
-        """
-        TODO: implement function that works with pam_url.
-        """
-        ok = False
-        param = self.request_params
-        try:
-            try:
-                (ok, opt) = self._check(param)
-            except AuthorizeException as acc:
-                log.warning(
-                    "[check_url] authorization failed for validate/check_url: %r",
-                    acc,
-                )
-                g.audit["success"] = False
-                g.audit["action_detail"] = str(acc)
-                ok = False
-
-            db.session.commit()
-
-            # TODO: this code seems not to be finished
-            if not ok:
-                abort(403)
-            else:
-                return "Preshared Key Todo"
-
-        except Unauthorized as acc:
-            # the exception, when an abort() is called if forwarded
-            log.error("[__before__::%r] webob.exception %r", acc)
-            db.session.rollback()
-            raise acc
-
-        except Exception as exx:
-            log.error("[check_url] validate/check_url failed: %r", exx)
             db.session.rollback()
             return sendResult(False, 0)
 
@@ -704,11 +665,11 @@ class ValidateController(BaseController):
         """
         param = self.request_params
 
-        options = {}
-        options.update(param)
-        for k in ["user", "serial", "pass", "init"]:
-            if k in options:
-                del options[k]
+        options = {
+            k: v
+            for k, v in param.items()
+            if k not in ["user", "serial", "pass", "init"]
+        }
 
         try:
             passw = param.get("pass")

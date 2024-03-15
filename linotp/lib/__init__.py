@@ -50,24 +50,6 @@ def render_calling_path(func):
     return f"**{methods}** */{module_name}/{func_name}*\n "
 
 
-def deprecated(func):
-    """This is a decorator which can be used to mark functions
-    as deprecated. It will result in a warning being emmitted
-    when the function is used."""
-
-    def newFunc(*args, **kwargs):
-        warnings.warn(
-            "Call to deprecated function %s." % func.__name__,
-            category=DeprecationWarning,
-        )
-        return func(*args, **kwargs)
-
-    newFunc.__name__ = func.__name__
-    newFunc.__doc__ = func.__doc__
-    newFunc.__dict__.update(func.__dict__)
-    return newFunc
-
-
 def deprecated_methods(deprecated_methods_list):
     """
     deprecated_methods - decorator function
@@ -129,33 +111,6 @@ def deprecated_methods(deprecated_methods_list):
             doc_posttext = doc_posttext = """ """
 
         return doc_posttext
-
-    def get_conditional_deprecation_warnings(func_name):
-        """Helper function: This is the message which is gonna be printed if the function is called
-        with the wrong call method. e.g. a POST method(deprecated GET) being called
-        by Get"""
-
-        conditional_deprecation_warnings = []
-
-        if is_get_deprecated():
-            warning_message = (
-                f"method: [{func_name}] should be called only by POST method"
-            )
-            conditional_deprecation_warnings.append(
-                {"condition_method": "GET", "warning_message": warning_message}
-            )
-        if is_post_deprecated():
-            warning_message = (
-                f"method: [{func_name}] should be called only by GET method"
-            )
-            conditional_deprecation_warnings.append(
-                {
-                    "condition_method": "POST",
-                    "warning_message": warning_message,
-                }
-            )
-
-        return conditional_deprecation_warnings
 
     # the actuall decorator is here
     def inner_func(func):

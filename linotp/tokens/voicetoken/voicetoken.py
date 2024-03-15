@@ -31,16 +31,12 @@ import logging
 
 from flask_babel import gettext as _
 
-from linotp.lib.auth.validate import check_otp, check_pin, split_pin_otp
+from linotp.lib.auth.validate import check_pin, split_pin_otp
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ParameterError
 from linotp.lib.HMAC import HmacOtp
-from linotp.lib.policy import (
-    get_client_policy,
-    getPolicy,
-    trigger_phone_call_on_empty_pin,
-)
+from linotp.lib.policy import get_client_policy
 from linotp.lib.policy.action import get_action_value
 from linotp.lib.token import get_token_owner
 from linotp.lib.user import getUserDetail

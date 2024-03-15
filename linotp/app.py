@@ -43,7 +43,6 @@ from flask_jwt_extended.exceptions import (
 from jwt import ExpiredSignatureError
 from jwt.exceptions import InvalidSignatureError
 
-from flask import Blueprint
 from flask import Config as FlaskConfig
 from flask import Flask, abort, current_app
 from flask import g as flask_g
@@ -80,7 +79,7 @@ from .lib.tools.flask_jwt_extended_migration import (
 from .lib.user import User, getUserFromRequest
 from .lib.util import get_client
 from .model import SYS_EXIT_CODE, setup_db
-from .settings import configs
+from .settings import ConfigSchema, configs
 from .tokens import reload_classes as reload_token_classes
 
 log = logging.getLogger(__name__)
@@ -89,6 +88,9 @@ start_time = time.time()
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
 LINOTP_CFG_DEFAULT = "linotp.cfg"  # within app.root_path
+
+ENV_PREFIX = "LINOTP_"
+ENV_PREFIX_LENGTH = len(ENV_PREFIX)
 
 AVAILABLE_CONTROLLERS = {
     "admin",
@@ -125,7 +127,7 @@ class ExtFlaskConfig(FlaskConfig):
     in the configuration are relative to `ROOT_DIR`.
     """
 
-    config_schema = None
+    config_schema: ConfigSchema = None
 
     class RelativePathName(str):
         """“Marker” that a string is really a relative path name."""
@@ -162,13 +164,15 @@ class ExtFlaskConfig(FlaskConfig):
         This is particularly useful when using LinOTP in a Docker-like
         environment.
         """
-        if self.config_schema is not None:
-            for key, value in os.environ.items():
-                if key.startswith("LINOTP_") and key != "LINOTP_CFG":
-                    config_key = key[7:]
-                    item = self.config_schema.find_item(config_key)
-                    if item is not None:
-                        self[config_key] = value
+        if self.config_schema is None:
+            return
+        for key, value in os.environ.items():
+            if key.startswith(ENV_PREFIX) and key != f"{ENV_PREFIX}CFG":
+                config_key = key[ENV_PREFIX_LENGTH:]
+                item = self.config_schema.find_item(config_key)
+                if item is not None:
+                    self[config_key] = value
+                    log.debug("Set %s from environment variable.", config_key)
 
     def update(self, config_dict):
         """Take configuration variables from a dictionary. We don't want
@@ -597,9 +601,10 @@ class LinOTPApp(Flask):
 
         from linotp.provider import Provider_types, getProvider
 
-        provider = {}
-        for provider_type in list(Provider_types.keys()):
-            provider[provider_type] = getProvider(provider_type)
+        provider = {
+            provider_type: getProvider(provider_type)
+            for provider_type in Provider_types.keys()
+        }
 
         request_context["Provider"] = provider
 
@@ -631,23 +636,6 @@ class LinOTPApp(Flask):
             )
 
         return dict_file
-
-    def getConfigRootDirectory(self):
-        """
-        Get root directory for local configuration files. This directory
-        is used for storing files such as the DB secret key.
-
-        An exception is thrown if the directory does not exist.
-        """
-        rootdir = config.get("ROOT_DIR")
-
-        if not rootdir:
-            raise ConfigurationError("Root directory (ROOT_DIR) is not set")
-
-        if not os.path.exists(rootdir):
-            raise ConfigurationError("Root directory {} does not exist")
-
-        return rootdir
 
     def getCacheManager(self):
         """
@@ -715,9 +703,9 @@ class LinOTPApp(Flask):
         # AVAILABLE_CONTROLLERS
         enabled = self.config["ENABLE_CONTROLLERS"].strip()
 
-        available_controllers = set(
+        available_controllers = {
             controller.strip() for controller in enabled.split()
-        )
+        }
 
         if "ALL" in available_controllers:
             available_controllers = (
@@ -726,9 +714,7 @@ class LinOTPApp(Flask):
             available_controllers.remove("ALL")
 
         disabled = self.config["DISABLE_CONTROLLERS"].split()
-        disable_controllers = set(
-            controller.strip() for controller in disabled
-        )
+        disable_controllers = {controller.strip() for controller in disabled}
 
         controllers = available_controllers - disable_controllers
 

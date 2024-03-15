@@ -370,11 +370,10 @@ def sendResultIterator(
     start_at = 0
     stop_at = 0
     if page is not None:
-        if not rp:
-            rp = 16
+        rp = int(rp) if rp else 16
         try:
-            start_at = int(page) * int(rp)
-            stop_at = start_at + int(rp)
+            start_at = int(page) * rp
+            stop_at = start_at + rp
         except ValueError as exx:
             err["result"]["error"] = {
                 "code": 9876,
@@ -423,13 +422,12 @@ def sendResultIterator(
             if counter >= stop_at:
                 # stop iterating if we reached the last one of the page
                 break
-            counter = counter + 1
         else:
             # no paging - no limit
             res = "%s%s\n" % (sep, next_one)
             sep = ","
             yield res
-            counter = counter + 1
+        counter = counter + 1
 
     # we add the amount of queried objects
     total = '"queried" : %d' % counter
@@ -490,28 +488,19 @@ def sendCSVResult(obj, flat_lines=False, filename="linotp-tokendata.csv"):
 
 
 def json2xml(json_obj, line_padding=""):
-    result_list = list()
+    if isinstance(json_obj, list):
+        return "\n".join(
+            f"{line_padding}<value>{json2xml(sub_elem, line_padding)}</value>"
+            for sub_elem in json_obj
+        )
 
-    json_obj_type = type(json_obj)
+    if isinstance(json_obj, dict):
+        return "\n".join(
+            f"{line_padding}<{tag_name}>{json2xml(sub_obj, line_padding)}</{tag_name}>"
+            for tag_name, sub_obj in json_obj.items()
+        )
 
-    if json_obj_type is list:
-        for sub_elem in json_obj:
-            result_list.append("%s<value>" % line_padding)
-            result_list.append(json2xml(sub_elem, line_padding))
-            result_list.append("%s</value>" % line_padding)
-
-        return "".join(result_list)
-
-    if json_obj_type is dict:
-        for tag_name in json_obj:
-            sub_obj = json_obj[tag_name]
-            result_list.append("%s<%s>" % (line_padding, tag_name))
-            result_list.append(json2xml(sub_obj, "" + line_padding))
-            result_list.append("%s</%s>" % (line_padding, tag_name))
-
-        return "".join(result_list)
-
-    return "%s%s" % (line_padding, json_obj)
+    return f"{line_padding}{json_obj}"
 
 
 def sendXMLResult(obj, id=1, opt=None):
@@ -700,21 +689,18 @@ def create_html(data, width=0, alt=None, list_id="challenge_data"):
 
     if alt is not None:
         if isinstance(alt, str):
-            alt_str = "<p>%s</p>" % alt
+            alt_str = f"<p>{alt}</p>"
         elif isinstance(alt, dict):
-            alta = []
-            for k in list(alt.keys()):
-                alta.append(
-                    '<li> %s: <span class="%s">%s</span> </li>'
-                    % (k, k, alt.get(k))
-                )
-            alt_str = '<ul id="%s">%s</ul>' % (list_id, " ".join(alta))
+            list_items = [
+                f'<li> {key}: <span class="{key}">{value}</span> </li>'
+                for key, value in alt.items()
+            ]
+            alt_str = f'<ul id="{list_id}">{"".join(list_items)}</ul>'
         elif isinstance(alt, list):
-            alta = []
-            for k in alt:
-                alta.append("<li> %s </li>" % (k))
+            list_items = [f"<li> {item} </li>" for item in alt]
+            alt_str = f'<ul id="{list_id}">{"".join(list_items)}</ul>'
 
-    ret_html = "<html><body><div>%s%s</div></body></html>" % (img, alt_str)
+    ret_html = f"<html><body><div>{img}{alt_str}</div></body></html>"
 
     return ret_html
 

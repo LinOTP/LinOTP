@@ -142,11 +142,7 @@ def compare(one, two):
     :return: boolean
 
     """
-    res = True
-    for tup1, tup2 in zip(one, two):
-        res = res and (tup1 == tup2)
-
-    return res
+    return all(tup1 == tup2 for tup1, tup2 in zip(one, two))
 
 
 def get_hashalgo_from_description(description, fallback="sha1"):

@@ -104,14 +104,12 @@ def _user_expression_match(login_user, token_owner_iterator):
     # create regex
     user_search_expression = _compile_regex(login_user)
 
-    serials = []
-
     # compare for each owner
-
-    for serial, owner in token_owner_iterator:
-        if _compare_regex(user_search_expression, owner):
-            serials.append(serial)
-
+    serials = [
+        serial
+        for serial, owner in token_owner_iterator
+        if _compare_regex(user_search_expression, owner)
+    ]
     return serials
 
 
@@ -175,13 +173,11 @@ class TokenIterator(object):
             filterRealm = filterRealm.split(",")
 
         if type(filterRealm) in [list]:
-            s_realms = []
-            for f in filterRealm:
-                #  support for multiple realm filtering in the ui
-                #  as a coma separated string
-                for s_realm in f.split(","):
-                    s_realms.append(s_realm.strip())
-            filterRealm = s_realms
+            #  support for multiple realm filtering in the ui
+            #  as a coma separated string
+            filterRealm = [
+                realm.strip() for f in filterRealm for realm in f.split(",")
+            ]
 
         #  create a list of all realms, which are allowed to be searched
         #  based on the list of the existing ones
@@ -316,9 +312,7 @@ class TokenIterator(object):
         if not user:
             return ucondition
 
-        loginUser = user.login.lower()
-        loginUser = loginUser.replace('"', "")
-        loginUser = loginUser.replace("'", "")
+        loginUser = user.login.lower().replace('"', "").replace("'", "")
 
         searchType = "any"
         # search for a 'blank' user
@@ -341,27 +335,24 @@ class TokenIterator(object):
                     Token.LinOtpUserid == None,
                 )
             )
-
-        if searchType == "exact":
+        elif searchType == "exact":
             serials = []
-            users = []
 
             # if search for a realmuser 'user@realm' we can take the
             # realm from the argument
             if len(user.realm) > 0:
-                users.append(user)
+                users = [user]
             else:
                 # otherwise we add all users which are possible combinations
                 # from loginname and entry of the valid realms.
                 # In case of a '*' wildcard in the list, we take all available
                 # realms
-                if "*" in valid_realms:
-                    valid_realm_list = list(getRealms().keys())
-                else:
-                    valid_realm_list = valid_realms
-
-                for realm in valid_realm_list:
-                    users.append(User(user.login, realm))
+                valid_realm_list = (
+                    list(getRealms().keys())
+                    if "*" in valid_realms
+                    else valid_realms
+                )
+                users = [User(user.login, realm) for realm in valid_realm_list]
 
             # resolve the realm with wildcard:
             # identify all users and add these to the userlist
@@ -390,9 +381,10 @@ class TokenIterator(object):
 
             for usr in userlist:
                 try:
-                    tokens = get_raw_tokens(user=usr)
-                    for tok in tokens:
-                        serials.append(tok.LinOtpTokenSerialnumber)
+                    serials.extend(
+                        tok.LinOtpTokenSerialnumber
+                        for tok in get_raw_tokens(user=usr)
+                    )
                 except UserError as ex:
                     # we get an exception if the user is not found
                     log.debug("[TokenIterator::init] no exact user: %r", user)
@@ -491,15 +483,14 @@ class TokenIterator(object):
 
         if filterRealm:
             # get all matching realms
-            search_realms = set()
-
-            realms = getRealms()
-            for realm in realms:
-                for frealm in filterRealm:
-                    if fnmatch.fnmatch(realm, frealm):
-                        search_realms.add(realm)
-
-            search_realms = list(search_realms)
+            search_realms = list(
+                {
+                    realm
+                    for frealm in filterRealm
+                    for realm in getRealms()
+                    if fnmatch.fnmatch(realm, frealm)
+                }
+            )
 
             # define the token id condition
             token_ids = self._get_tokens_in_realm(search_realms)
@@ -531,18 +522,15 @@ class TokenIterator(object):
             .filter(Realm.name.in_(valid_realms))
             .all()
         )
-        realm_ids = set()
-        for realm_tuple in realm_id_tuples:
-            realm_ids.add(realm_tuple[0])
+        realm_ids = {realm_tuple[0] for realm_tuple in realm_id_tuples}
+
         # get all tokenrealm ids
         token_id_tuples = (
             db.session.query(TokenRealm.token_id)
             .filter(TokenRealm.realm_id.in_(realm_ids))
             .all()
         )
-        token_ids = set()
-        for token_tuple in token_id_tuples:
-            token_ids.add(token_tuple[0])
+        token_ids = {token_tuple[0] for token_tuple in token_id_tuples}
 
         return token_ids
 
@@ -551,16 +539,13 @@ class TokenIterator(object):
         it's easier and more efficient to look for the resolver definition in
         one realm, than to follow the join on database level
         """
-        resolvers = set()
         realms = getRealms()
-        if "*" in valid_realms:
-            search_realms = list(realms.keys())
-        else:
-            search_realms = valid_realms
+        search_realms = realms.keys() if "*" in valid_realms else valid_realms
 
-        for realm in search_realms:
-            resolvers.update(realms.get(realm, {}).get("useridresolver", []))
-
+        resolvers = {
+            realms.get(realm, {}).get("useridresolver", [])
+            for realm in search_realms
+        }
         return list(resolvers)
 
     def _map_sort_param_to_token_param(self, sort_param: str):
@@ -600,12 +585,12 @@ class TokenIterator(object):
         return resSet
 
     def getUserDetail(self, tok):
-        userInfo = {}
         uInfo = {}
-
-        userInfo["User.description"] = ""
-        userInfo["User.userid"] = ""
-        userInfo["User.username"] = ""
+        userInfo = {
+            "User.description": "",
+            "User.userid": "",
+            "User.username": "",
+        }
         for field in self.user_fields:
             userInfo["User.%s" % field] = ""
 

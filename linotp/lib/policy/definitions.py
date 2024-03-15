@@ -590,25 +590,23 @@ def _get_policy_definitions():
 
         # get all policy sections like: admin, selfservice . . '''
 
-        pol_keys = list(pol.keys())
+        pol_keys = pol.keys()
 
-        for pol_section in list(policy.keys()):
+        for pol_section, pol_entry in policy.items():
             # if we have a dyn token definition of this section type
             # add this to this section - and make sure, that it is
             # then token type prefixed
 
             if pol_section in pol_keys:
-                pol_entry = policy.get(pol_section)
-                for pol_def in pol_entry:
+                for pol_def, pol_value in pol_entry.items():
                     set_def = pol_def
 
                     # check if the token type is already part of
                     # the policy name
-
                     if ttype.lower() not in set_def.lower():
-                        set_def = "%s_%s" % (ttype, pol_def)
+                        set_def = f"{ttype}_{pol_def}"
 
-                    pol[pol_section][set_def] = pol_entry.get(pol_def)
+                    pol[pol_section][set_def] = pol_value
 
     return pol
 

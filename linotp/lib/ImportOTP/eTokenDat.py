@@ -50,7 +50,6 @@ def parse_datetime(d_string):
     :return: datetime object
     """
 
-    startdate = None
     fmts = [
         "%d.%m.%Y+%H:%M",
         "%d.%m.%Y %H:%M",
@@ -62,15 +61,14 @@ def parse_datetime(d_string):
         "%Y-%m-%d",
     ]
 
-    if d_string is not None and len(d_string) > 0:
+    if d_string:
         for fmt in fmts:
             try:
-                startdate = datetime.datetime.strptime(d_string, fmt)
-                break
+                return datetime.datetime.strptime(d_string, fmt)
             except ValueError:
-                startdate = None
+                pass
 
-    return startdate
+    return None
 
 
 def parse_dat_data(data, d_string=None):
@@ -199,6 +197,9 @@ class DatToken(object):
                 self.set(key, val)
         return
 
+    # The following setters are used in `add_info`!
+    # via `getattr(self, "set_" + key)(val)`.
+    # Your IDE will likely tell you they're unsused, though.
     def set_sccTokenData(self, value):
         """
         parse the detail token definition by calling again
@@ -216,16 +217,17 @@ class DatToken(object):
         # sccPrTime=2011/05/03 02:46:54;
         # crypto=HmacSHA256;
         # sccVer=6.2;
-        params = value.split(";")
-        for param in params:
-            if "=" in param:
-                (key, val) = param.split("=")
+        params = dict(
+            param.split("=") for param in value.split(";") if "=" in param
+        )
+        for key, val in params.items():
+            # Again, call a specific attribute or generic setter
+            setter_method = getattr(self, "set_" + key, None)
+            if callable(setter_method):
+                setter_method(val)
+            else:
+                self.set(key, val)
 
-                # again call a secific attribute or generic setter
-                if hasattr(self, "set_" + key):
-                    getattr(self, "set_" + key)(val)
-                else:
-                    self.set(key, val)
         return
 
     # below: more or less generic setters

@@ -100,15 +100,10 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     # defined by utf8 in bytes + the clipping of 6 bytes each. But as this
     # could vary, we could not calculate the number of chunks and thus use
     # an iterator to split the value into chunks
-
-    chunks = []
-    if len(value) < len(value.encode("utf-8")):
-        text_slice = utf8_slice
-    else:
-        text_slice = simple_slice
-
-    for cont_value in text_slice(value, MAX_VALUE_LEN):
-        chunks.append(cont_value)
+    text_slice = (
+        utf8_slice if len(value) < len(value.encode("utf-8")) else simple_slice
+    )
+    chunks = [cont_value for cont_value in text_slice(value, MAX_VALUE_LEN)]
 
     # ---------------------------------------------------------------------- --
 
@@ -188,8 +183,8 @@ def _store_continous_entry_db(chunks, key, val, typ, desc):
 
     for i, cont_value in enumerate(chunks):
         cont_typ = "C"
-        cont_desc = "%d:%d" % (i, number_of_chunks - 1)
-        cont_key = "%s__[%d:%d]" % (key, i, number_of_chunks - 1)
+        cont_desc = f"{i}:{number_of_chunks - 1}"
+        cont_key = f"{key}__[{i}:{number_of_chunks - 1}]"
 
         # first one will contain the correct key with type 'C' continuous
         if i == 0:
@@ -245,12 +240,9 @@ def _removeConfigDB(key):
     """
     log.debug("removing config entry %r from database table", key)
 
-    if not key.startswith("linotp."):
-        if not key.startswith("enclinotp."):
-            key = "linotp." + key
-
-    if isinstance(key, str):
-        key = "" + key
+    key = str(key)
+    if not key.startswith(("linotp.", "enclinotp.")):
+        key = f"linotp.{key}"
 
     confEntries = Config.query.filter_by(Key=str(key)).all()
 
@@ -265,7 +257,7 @@ def _removeConfigDB(key):
     # if entry is a contious type, delete all of this kind
     if theConf.Type == "C" and theConf.Description[: len("0:")] == "0:":
         _start, end = theConf.Description.split(":")
-        search_key = "%s__[%%:%s]" % (key, end)
+        search_key = f"{key}__[%:{end}]"
         cont_entries = Config.query.filter(Config.Key.like(search_key)).all()
 
         to_be_deleted.extend(cont_entries)
@@ -285,13 +277,9 @@ def _removeConfigDB(key):
 
 def _retrieveConfigDB(Key):
     # prepend "linotp." if required
-    key = Key
-    if not key.startswith("linotp."):
-        if not key.startswith("enclinotp."):
-            key = "linotp." + Key
-
-    if isinstance(key, str):
-        key = "" + key
+    key = str(Key)
+    if not key.startswith(("linotp.", "enclinotp.")):
+        key = f"linotp.{key}"
 
     myVal = None
 
@@ -316,7 +304,7 @@ def _retrieveConfigDB(Key):
     value = theConf.Value
 
     for i in range(int(end)):
-        search_key = "%s__[%d:%d]" % (key, i, int(end))
+        search_key = f"{key}__[{i}:{int(end)}]"
         cont_entries = Config.query.filter_by(Key=search_key).all()
         if cont_entries:
             value = value + cont_entries[0].Value
@@ -336,9 +324,6 @@ def _retrieveAllConfigDB():
 
     :return: config dict
     """
-
-    config = {}
-    delay = False
 
     conf_dict = {}
     type_dict = {}
@@ -372,7 +357,7 @@ def _retrieveAllConfigDB():
         value = conf_dict[key]
 
         for i in range(number + 1):
-            search_key = "%s__[%d:%d]" % (key, i, number)
+            search_key = f"{key}__[{i}:{number}]"
 
             if search_key in conf_dict:
                 value = value + conf_dict[search_key]
@@ -380,7 +365,7 @@ def _retrieveAllConfigDB():
 
         conf_dict[key] = value
 
-        search_key = "%s__[%d:%d]" % (key, number, number)
+        search_key = f"{key}__[{number}:{number}]"
         # allow the reading of none existing entries
         type_dict[key] = type_dict.get(search_key)
         desc_dict[key] = desc_dict.get(search_key)
@@ -389,16 +374,10 @@ def _retrieveAllConfigDB():
 
     # normal processing as before continous here
 
-    for key, value in list(conf_dict.items()):
-        if key.startswith("linotp.") is False:
-            key = "linotp." + key
-
-        if isinstance(key, str):
-            key = "" + key
-
-        nVal = expand_here(value)
-        config[key] = nVal
-
+    config = {
+        k if k.startswith("linotp.") else f"linotp.{k}": expand_here(v)
+        for k, v in conf_dict.items()
+    }
     # ---------------------------------------------------------------------- --
 
     # special treatment of encrypted_data:
@@ -407,7 +386,7 @@ def _retrieveAllConfigDB():
     # decrypt the data when needed.
     # This allows to drop the delayed loading handling
 
-    for key, value in list(config.items()):
+    for key, value in config.items():
         myTyp = type_dict.get(key)
 
         if myTyp and myTyp == "encrypted_data":

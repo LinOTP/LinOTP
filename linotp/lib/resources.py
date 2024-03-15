@@ -63,11 +63,11 @@ def string_to_list(string_list, sep=","):
     :param string_list: single string which should be split into a list
     :param sep: the item separator
     """
-    entries = []
-
-    for entry in string_list.split(sep):
-        if entry and entry.strip():
-            entries.append(entry.strip())
+    entries = [
+        entry.strip()
+        for entry in string_list.split(sep)
+        if entry and entry.strip()
+    ]
 
     return entries
 

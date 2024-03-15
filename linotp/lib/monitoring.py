@@ -78,9 +78,8 @@ class MonitorHandler(object):
             if "/:no realm:/" in realm or realm == "":
                 #  get all tokenrealm ids
                 token_id_tuples = db.session.query(TokenRealm.token_id).all()
-                token_ids = set()
-                for token_tuple in token_id_tuples:
-                    token_ids.add(token_tuple[0])
+                token_ids = {token_tuple[0] for token_tuple in token_id_tuples}
+
                 # all tokens, which are not references in TokenRealm
                 cond += (and_(not_(Token.LinOtpTokenId.in_(token_ids))),)
                 if "/:no realm:/" in realm:
@@ -274,11 +273,12 @@ class MonitorHandler(object):
 
         realminfo = context.get("Config").getRealms().get(realm)
         resolver_specs = realminfo.get("useridresolver", "")
-        realmdict = {}
-
-        for resolver_spec in resolver_specs:
-            __, config_identifier = parse_resolver_spec(resolver_spec)
-            realmdict[config_identifier] = 0
+        realmdict = {
+            config_identifier: 0
+            for _, config_identifier in map(
+                parse_resolver_spec, resolver_specs
+            )
+        }
 
         user = getUserFromParam({"realm": realm})
         users = getUserList({"realm": realm, "username": "*"}, user)

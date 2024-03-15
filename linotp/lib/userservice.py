@@ -397,9 +397,18 @@ def add_dynamic_selfservice_enrollment(config, actions):
 
     dynanmic_actions = {}
 
+    def _add_to_dynanmic_actions(action: str):
+        service = selfservice.get(action)
+        tab = service.get("title")
+        c.scope = tab.get("scope")
+        t_file = tab.get("html")
+        t_html = render(t_file).decode().strip()
+        e_name = f"{tok}.selfservice.{action}"
+        dynanmic_actions[e_name] = t_html
+
     for tclass_object in set(tokenclass_registry.values()):
-        tok = tclass_object.getClassType()
         if hasattr(tclass_object, "getClassInfo"):
+            tok = tclass_object.getClassType()
             try:
                 selfservice = tclass_object.getClassInfo(
                     "selfservice", ret=None
@@ -409,21 +418,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                     "enroll" in selfservice
                     and "enroll" + tok.upper() in actions
                 ):
-                    service = selfservice.get("enroll")
-                    tab = service.get("title")
-                    c.scope = tab.get("scope")
-                    t_file = tab.get("html")
-                    t_html = render(t_file).decode()
-                    """ remove empty lines """
-                    t_html = "\n".join(
-                        [
-                            line
-                            for line in t_html.split("\n")
-                            if line.strip() != ""
-                        ]
-                    )
-                    e_name = "%s.%s.%s" % (tok, "selfservice", "enroll")
-                    dynanmic_actions[e_name] = t_html
+                    _add_to_dynanmic_actions("enroll")
 
                 # # check if there are other selfserive policy actions
                 policy = tclass_object.getClassInfo("policy", ret=None)
@@ -433,21 +428,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
                         if action in selfserv_policies:
                             # # now lookup, if there is an additional section
                             # # in the selfservice to render
-                            service = selfservice.get(action)
-                            tab = service.get("title")
-                            c.scope = tab.get("scope")
-                            t_file = tab.get("html")
-                            t_html = render(t_file).decode()
-                            """ remove empty lines """
-                            t_html = "\n".join(
-                                [
-                                    line
-                                    for line in t_html.split("\n")
-                                    if line.strip() != ""
-                                ]
-                            )
-                            e_name = "%s.%s.%s" % (tok, "selfservice", action)
-                            dynanmic_actions[e_name] = t_html
+                            _add_to_dynanmic_actions(action)
 
             except Exception as exx:
                 log.info(
@@ -471,9 +452,9 @@ def add_dynamic_selfservice_policies(config, actions):
     :return: hash of {tokentype : html for tab}
     """
 
-    dynamic_policies = []
+    dynamic_policies = set()
 
-    defined_policies = []
+    defined_policies = {pol.split("=")[0] for pol in actions if "=" in pol}
 
     for tok in tokenclass_registry:
         tclt = tokenclass_registry.get(tok)
@@ -482,17 +463,8 @@ def add_dynamic_selfservice_policies(config, actions):
             try:
                 policy = tclt.getClassInfo("policy", ret=None)
                 if policy is not None and "selfservice" in policy:
-                    scope_policies = list(policy.get("selfservice").keys())
-                    """ initialize the policies """
-                    if len(defined_policies) == 0:
-                        for pol in actions:
-                            if "=" in pol:
-                                (name, val) = pol.split("=")
-                                defined_policies.append(name)
-
-                    for local_policy in scope_policies:
-                        if local_policy not in defined_policies:
-                            dynamic_policies.append(local_policy)
+                    local_policies = policy["selfservice"].keys()
+                    dynamic_policies.update(local_policies)
             except Exception as exx:
                 log.info(
                     "[_add_dynamic_actions] no policy for tokentype "
@@ -501,7 +473,7 @@ def add_dynamic_selfservice_policies(config, actions):
                     exx,
                 )
 
-    return dynamic_policies
+    return list(dynamic_policies - defined_policies)
 
 
 def add_local_policies():

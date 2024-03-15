@@ -169,29 +169,15 @@ def delete(realms, status, date=None):
     if not isinstance(realms, (list, tuple)):
         realms = realms.split(",")
 
-    realm_cond = tuple()
-    for realm in realms:
-        realm_cond += (or_(Reporting.realm == realm),)
+    realm_cond = or_(*(Reporting.realm == realm for realm in realms))
+    status_cond = or_(*(Reporting.parameter == stat for stat in status))
+    date_cond = Reporting.timestamp < date if date else True
 
-    status_cond = tuple()
-    for stat in status:
-        status_cond += (or_(Reporting.parameter == stat),)
+    conds = and_(date_cond, realm_cond, status_cond)
 
-    date_cond = tuple()
-    if date:
-        date_cond += (and_(Reporting.timestamp < date),)
-
-    conds = (
-        and_(*date_cond),
-        or_(*realm_cond),
-        or_(*status_cond),
-    )
-
-    rows = Reporting.query.filter(*conds)
+    rows = Reporting.query.filter(conds)
     row_num = rows.count()
-
-    for row in rows:
-        db.session.delete(row)
+    rows.delete()
     return row_num
 
 

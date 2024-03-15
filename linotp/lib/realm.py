@@ -121,21 +121,16 @@ def realm2Objects(realmList):
     :return: list of realmObjects
     :rtype:  list
     """
-    realm_set = set()
-    realmObjList = []
-    if realmList is not None:
-        # make the requested realms uniq
-        for r in realmList:
-            realm_set.add(r)
-
-        for r in list(realm_set):
-            realmObj = getRealmObject(name=r)
-            if realmObj is not None:
-                realmObjList.append(realmObj)
+    realm_set = set(realmList) if realmList else set()
+    realmObjList = [
+        getRealmObject(name=r)
+        for r in realm_set
+        if getRealmObject(name=r) is not None
+    ]
     return realmObjList
 
 
-def getRealmObject(name="", id=0):
+def getRealmObject(name=""):
     """
     returns the Realm Object for a given realm name.
     If the given realm name is not found, it returns "None"
@@ -143,24 +138,16 @@ def getRealmObject(name="", id=0):
     :param name: realmname to be searched
     :type  name: string
 
-    TODO: search by id not implemented, yet
-    :param id:   id of the realm object
-    :type  id:   integer
-
     :return : realmObject - the database object
     :rtype  : the sql db object
     """
 
-    log.debug("Getting realm object for name=%s, id=%i", name, id)
-    realmObj = None
+    log.debug("Getting realm object for name=%s", name)
 
-    name = "" + str(name)
-    if 0 == id:
-        realmObjects = Realm.query.filter(
-            func.lower(Realm.name) == name.lower()
-        )
-        if realmObjects.count() > 0:
-            realmObj = realmObjects[0]
+    name = str(name).strip()
+    realmObj = Realm.query.filter(
+        func.lower(Realm.name) == name.lower()
+    ).first()
 
     return realmObj
 
@@ -555,36 +542,33 @@ def deleteRealm(realmname):
 
 
 def _delete_realm_config(realmname):
-    #
-    # we test if before delete there has been a default
-    # if yes - check after delete, if still one there
-    #         and set the last available to default
-    #
+    """Deletes the realm from config
+    and resets default realm if it was the default realm
+
+    Args:
+        realmname (str): name of the realm
+
+    Returns:
+        boolean: true if realm was deleted else false
+    """
+    # Test if realm is defined
+    if not isRealmDefined(realmname):
+        return False
 
     defRealm = getDefaultRealm()
-    hadDefRealmBefore = False
-    if defRealm != "":
-        hadDefRealmBefore = True
+    was_default_realm = realmname.lower() == defRealm.lower()
 
-    # now test if realm is defined
-    if isRealmDefined(realmname) is True:
-        if realmname.lower() == defRealm.lower():
-            setDefaultRealm("")
-        if realmname == "_default_":
-            realmConfig = "useridresolver"
-        else:
-            realmConfig = "useridresolver.group." + realmname
+    realmConfig = (
+        f"useridresolver.group.{realmname}"
+        if realmname != "_default_"
+        else "useridresolver"
+    )
 
-        return removeFromConfig(realmConfig, iCase=True)
+    was_removed = removeFromConfig(realmConfig, iCase=True)
+    if was_removed and was_default_realm:
+        setDefaultRealm("")
 
-    if hadDefRealmBefore is True:
-        defRealm = getDefaultRealm()
-        if defRealm == "":
-            realms = getRealms()
-            if len(realms) == 2:
-                for k in realms:
-                    if k != realm:
-                        setDefaultRealm(k)
+    return was_removed
 
 
 def match_realms(request_realms, allowed_realms):
@@ -614,8 +598,7 @@ def match_realms(request_realms, allowed_realms):
         realms = list(all_allowed_realms)
     # support for empty realms or no realms by realm = *
     elif "*" in request_realms:
-        realms = list(all_allowed_realms)
-        realms.append("/:no realm:/")
+        realms = list(all_allowed_realms | {"/:no realm:/"})
     # other cases, we iterate through the realm list
     elif len(request_realms) > 0 and not (request_realms == [""]):
         invalid_realms = []

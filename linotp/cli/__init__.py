@@ -41,9 +41,6 @@ from flask.cli import FlaskGroup, with_appcontext
 
 from linotp.app import create_app
 
-FLASK_APP_DEFAULT = "linotp.app"  # Contains default `create_app()` factory
-FLASK_ENV_DEFAULT = "development"  # Default Flask environment, for debugging
-
 
 class Echo:
     """Echo class, which extends `click.echo()` to respect verbosity.

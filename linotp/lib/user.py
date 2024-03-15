@@ -150,11 +150,11 @@ class User(object):
 
         # if there is a resolver_config_identifier we have to care for
 
-        resolvers_list = self._filter_for_resolver_config_identitier(
+        filtered_resolvers_list = self._filter_for_resolver_config_identitier(
             resolvers_list
         )
 
-        for resolver_spec in resolvers_list:
+        for resolver_spec in filtered_resolvers_list:
             try:
                 # we can use the user in resolver lookup cache
                 # instead of asking the resolver
@@ -175,7 +175,6 @@ class User(object):
                 # 2. the resolver spec list
                 y = getResolverObject(resolver_spec)
                 resId = y.getResolverId()
-
                 resCId = resolver_spec
                 __, conf = parse_resolver_spec(resolver_spec)
                 self.resolverConf[resolver_spec] = (resId, resCId, conf)
@@ -270,11 +269,13 @@ class User(object):
         if not self.exists():
             return [self.realm or getDefaultRealm()]
 
-        realms = set()
-
-        for realm, realm_definition in list(getRealms().items()):
-            if self.resolver in realm_definition["useridresolver"]:
-                realms.add(realm)
+        realms = list(
+            {
+                realm
+                for realm, realm_definition in getRealms().items()
+                if self.resolver in realm_definition.get("useridresolver", [])
+            }
+        )
 
         return realms
 
@@ -348,28 +349,27 @@ class User(object):
         if not realms:
             return self._exists
 
-        found = []
-        for realm_name, definition in list(realms.items()):
+        for realm_name, definition in realms.items():
             resolvers = definition.get("useridresolver", [])
             for realm_resolver in resolvers:
                 log.debug("checking in %r", realm_resolver)
-                y = getResolverObject(realm_resolver)
-                if y:
-                    log.debug("checking in module %r", y)
-                    uid = y.getUserId(self.login)
-                    if not uid:
-                        continue
-                    found.append((self.login, realm_name, uid, realm_resolver))
-                    log.debug("type of uid: %s", type(uid))
-                    log.debug(
-                        "type of realm_resolver: %s", type(realm_resolver)
-                    )
+                resolver_obj = getResolverObject(realm_resolver)
+                if resolver_obj:
+                    log.debug("checking in module %r", resolver_obj)
+                    uid = resolver_obj.getUserId(self.login)
+                    if uid:
+                        log.debug("type of uid: %s", type(uid))
+                        log.debug(
+                            "type of realm_resolver: %s", type(realm_resolver)
+                        )
+                        self._exists = True
+                        self.realm = realm_name
+                        self.uid = uid
+                        self.resolver = realm_resolver
+                        return self._exists
                 else:
                     log.error("module %r not found!", realm_resolver)
 
-        if found:
-            self._exists = True
-            (self.login, self.realm, self.uid, self.resolver) = found[0]
         return self._exists
 
     def checkPass(self, password):
@@ -707,7 +707,7 @@ def getUserRealms(user, allRealms=None, defaultRealm=None):
         Realms.append(user.realm.lower())
     else:
         # we got a resolver and will get all realms the resolver belongs to.
-        for key, val in list(allRealms.items()):
+        for key, val in allRealms.items():
             log.debug("[getUserRealms] evaluating realm %r: %r ", key, val)
             for reso in val["useridresolver"]:
                 resotype, resoname = reso.rsplit(".", 1)
@@ -771,7 +771,7 @@ def find_resolver_spec_for_config_identifier(realms_dict, config_identifier):
     # assumes, that the config_identifier is globally
     # unique. This is not necessarily the case
 
-    for realm_dict in list(realms_dict.values()):
+    for realm_dict in realms_dict.values():
         resolver_specs = realm_dict["useridresolver"]
         for resolver_spec in resolver_specs:
             __, current_config_identifier = parse_resolver_spec(resolver_spec)
@@ -804,26 +804,20 @@ def getResolvers(user):
             return [resolver_spec]
 
     user_realm = user.realm.strip().lower()
-    lookup_realms = set()
 
     if user_realm and user_realm in realms:
-        lookup_realms.add(user_realm)
-
+        lookup_realms = {user_realm}
     elif user_realm.endswith("*"):
         pattern = user.realm.strip()[:-1]
-        for r in realms:
-            if r.startswith(pattern):
-                lookup_realms.add(r)
-
+        lookup_realms = {r for r in realms if r.startswith(pattern)}
     elif user_realm == "*":
-        for r in realms:
-            lookup_realms.add(r)
-
+        lookup_realms = set(realms)
     elif user_realm and user_realm not in realms:
-        pass
-
+        lookup_realms = set()
     elif default_realm:
-        lookup_realms.add(default_realm)
+        lookup_realms = {default_realm}
+    else:
+        lookup_realms = set()
 
     # finally try to get the reolvers for the user
 
@@ -862,12 +856,7 @@ def getResolversOfUser(user):
     """
 
     login = user.login
-    realm = user.realm
-
-    if not realm:
-        realm = getDefaultRealm()
-
-    realm = realm.lower()
+    realm = user.realm.lower() if user.realm else getDefaultRealm().lower()
 
     # calling the worker which stores resolver in the cache
     # but only if a resolver was found
@@ -877,8 +866,7 @@ def getResolversOfUser(user):
     if not resolvers:
         log.info("user %r not found in realm %r", login, realm)
         return []
-
-    if not resolvers and "*" in login:
+    if "*" in login:
         return getResolvers(user)
 
     # -- ------------------------------------------------------------------ --
@@ -969,18 +957,14 @@ def get_resolvers_of_user(login, realm):
 
         return Resolvers
 
-    resolvers_lookup_cache = _get_resolver_lookup_cache(realm)
-
     # ---------------------------------------------------------------------- --
 
     # we use a request local cache
     # - which is usefull especially if no persistant cache is enabled
+    cache_key = json.dumps({"login": login, "realm": realm})
 
-    key = {"login": login, "realm": realm}
-    p_key = json.dumps(key)
-
-    if p_key in request_context["UserRealmLookup"]:
-        return request_context["UserRealmLookup"][p_key]
+    if cache_key in request_context["UserRealmLookup"]:
+        return request_context["UserRealmLookup"][cache_key]
 
     # ---------------------------------------------------------------------- --
 
@@ -988,17 +972,17 @@ def get_resolvers_of_user(login, realm):
     # otherwise we have to provide the partial function to the beaker cache
 
     try:
-        if not resolvers_lookup_cache:
-            Resolvers = _get_resolvers_of_user(login=login, realm=realm)
-
-        else:
+        resolvers_lookup_cache = _get_resolver_lookup_cache(realm)
+        if resolvers_lookup_cache:
             p_get_resolvers_of_user = partial(
                 _get_resolvers_of_user, login=login, realm=realm
             )
 
             Resolvers = resolvers_lookup_cache.get_value(
-                key=p_key, createfunc=p_get_resolvers_of_user
+                key=cache_key, createfunc=p_get_resolvers_of_user
             )
+        else:
+            Resolvers = _get_resolvers_of_user(login=login, realm=realm)
 
     except NoResolverFound:
         log.info("No resolver found for user %r in realm %r", login, realm)
@@ -1012,7 +996,7 @@ def get_resolvers_of_user(login, realm):
 
     # fill in the result into the request local cache
 
-    request_context["UserRealmLookup"][p_key] = Resolvers
+    request_context["UserRealmLookup"][cache_key] = Resolvers
 
     # ---------------------------------------------------------------------- --
 
@@ -1544,16 +1528,12 @@ def getUserListIterators(param, search_user):
     :param param: request params (dict), which might be realm or resolver conf
     :param search_user: restrict the resolvers to those of the search_user
     """
-    user_iters = []
-    searchDict = {}
-
     log.debug("Entering function getUserListIterator")
 
-    searchDict.update(param)
-    if "realm" in searchDict:
-        del searchDict["realm"]
-    if "resConf" in searchDict:
-        del searchDict["resConf"]
+    user_iters = []
+    searchDict = {
+        k: v for k, v in param.items() if k not in ("realm", "resConf")
+    }
     log.debug("searchDict %r", searchDict)
 
     resolverrrs = getResolvers(search_user)
@@ -1570,10 +1550,11 @@ def getUserListIterators(param, search_user):
             y = getResolverObject(resolver_spec)
             log.debug("With this search dictionary: %r ", searchDict)
 
-            if hasattr(y, "getUserListIterator"):
-                uit = y.getUserListIterator(searchDict, limit_size=False)
-            else:
-                uit = iter(y.getUserList(searchDict))
+            uit = (
+                y.getUserListIterator(searchDict, limit_size=False)
+                if hasattr(y, "getUserListIterator")
+                else iter(y.getUserList(searchDict))
+            )
 
             user_iters.append((uit, resolver_spec))
 

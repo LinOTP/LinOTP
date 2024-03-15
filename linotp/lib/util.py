@@ -27,6 +27,7 @@
 """ contains utility functions """
 
 import binascii
+import copy
 import logging
 import re
 import secrets
@@ -123,24 +124,16 @@ def get_request_param(request, key, default=None):
 
 
 def getLowerParams(param):
-    ret = {}
-    for key in param:
-        lkey = key.lower()
-        # strip the session parameter!
-        if "session" != lkey:
-            lval = param[key]
-            ret[lkey] = lval
-    return ret
+    return {
+        key.lower(): val
+        for key, val in param.items()
+        if key.lower() != "session"
+    }
 
 
 def uniquify(doubleList):
     # uniquify the realm list
-    uniqueList = []
-    for e in doubleList:
-        if e.lower() not in uniqueList:
-            uniqueList.append(e.lower())
-
-    return uniqueList
+    return list(set(map(str.lower, doubleList)))
 
 
 def generate_otpkey(key_size: int = 20) -> str:
@@ -154,9 +147,7 @@ def generate_otpkey(key_size: int = 20) -> str:
 
 def generate_password(size=6, characters=None):
     if not characters:
-        characters = (
-            string.ascii_lowercase + string.ascii_uppercase + string.digits
-        )
+        characters = string.ascii_letters + string.digits
 
     return "".join(secrets.choice(characters) for _x in range(size))
 
@@ -186,12 +177,9 @@ def remove_session_from_param(param):
     session parameter in the param dictionary.
     So we remove the session from the params.
     """
-    return_param = {}
-    for key in list(param.keys()):
-        if "session" != key.lower():
-            return_param[key] = param[key]
-
-    return return_param
+    return {
+        key: value for key, value in param.items() if key.lower() != "session"
+    }
 
 
 ###############################################################################
@@ -411,14 +399,22 @@ def modhex_decode(m: str) -> str:
 
 
 def checksum(msg: bytes) -> int:
+    # Initial CRC value
     crc = 0xFFFF
-    for b in msg:
-        crc = crc ^ (b & 0xFF)
-        for _j in range(0, 8):
-            n = crc & 1
+
+    # Iterate through each byte in the message
+    for byte in msg:
+        crc = crc ^ (byte & 0xFF)
+
+        # Iterate through each bit in the byte
+        for _ in range(8):
+            # Check the least significant bit
+            lsb = crc & 1
             crc = crc >> 1
-            if n != 0:
+            if lsb != 0:
+                # XOR with the polynomial if the lsb is 1
                 crc = crc ^ 0x8408
+
     return crc
 
 
@@ -429,7 +425,6 @@ def str2unicode(input_str):
     :return: unicode output
     """
 
-    output_str = input_str
     conversions = [
         {},
         {"encoding": "utf-8"},
@@ -438,14 +433,12 @@ def str2unicode(input_str):
     ]
     for param in conversions:
         try:
-            output_str = str(input_str, **param)
-            break
+            return str(input_str, **param)
         except UnicodeDecodeError as exx:
-            if param == conversions[-1]:
-                log.info("no unicode conversion found for %r", input_str)
-                raise exx
+            pass
 
-    return output_str
+    log.error("No Unicode conversion found for %r", input_str)
+    raise UnicodeDecodeError("Unable to convert binary string to Unicode.")
 
 
 def unicode_compare(x, y):
@@ -466,14 +459,7 @@ def dict_copy(dict_):
     # iterative one, because our dicts are only
     # 3 to 4 levels deep.
 
-    copy = {}
-    for key, value in dict_.items():
-        if isinstance(value, dict):
-            fragment = {key: dict_copy(value)}
-        else:
-            fragment = {key: value}
-        copy.update(fragment)
-    return copy
+    return copy.deepcopy(dict_)
 
 
 # courtesies to pydantic:
@@ -484,9 +470,9 @@ def deep_update(
     for updating_mapping in updating_mappings:
         for k, v in updating_mapping.items():
             if (
-                k in updated_mapping
+                isinstance(v, dict)
+                and k in updated_mapping
                 and isinstance(updated_mapping[k], dict)
-                and isinstance(v, dict)
             ):
                 updated_mapping[k] = deep_update(updated_mapping[k], v)
             else:

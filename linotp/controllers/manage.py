@@ -48,7 +48,7 @@ from linotp.lib import deprecated_methods
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
-from linotp.lib.ImportOTP import getImportText, getKnownTypes
+from linotp.lib.ImportOTP import getImportText
 from linotp.lib.policy import PolicyException, checkPolicyPre, getAdminPolicies
 from linotp.lib.policy.definitions import get_policy_definitions
 from linotp.lib.realm import getRealms
@@ -71,7 +71,6 @@ from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 
-KNOWN_TYPES = getKnownTypes()
 IMPORT_TEXT = getImportText()
 
 log.info("importing linotp.lib. Known import types: %s", IMPORT_TEXT)
@@ -161,86 +160,56 @@ class ManageController(BaseController):
 
             # check for support of setting admin password
 
-            c.admin_can_change_password = False
-            if (
+            c.admin_can_change_password = (
                 "linotpadmin.user" in config
                 and "linotpadmin.password" in config
-            ):
-                c.admin_can_change_password = True
+            )
 
             # -------------------------------------------------------------- --
 
             # add render info for token type config
             confs = _getTokenTypeConfig("config")
-            token_config_tab = {}
-            token_config_div = {}
-            for conf in confs:
-                tab = ""
-                div = ""
-                try:
-                    # loc = conf +'_token_settings'
-                    tab = confs.get(conf).get("title")
-                    # tab = '<li ><a href=#'+loc+'>'+tab+'</a></li>'
-
-                    div = confs.get(conf).get("html")
-                    # div = +div+'</div>'
-                except Exception as exx:
-                    log.debug(
-                        "[index] no config info for token type %s  (%r)",
-                        conf,
-                        exx,
-                    )
-
-                if (
-                    tab is not None
-                    and div is not None
-                    and len(tab) > 0
-                    and len(div) > 0
-                ):
-                    token_config_tab[conf] = tab
-                    token_config_div[conf] = div
-
-            c.token_config_tab = token_config_tab
-            c.token_config_div = token_config_div
+            try:
+                c.token_config_tab = {
+                    conf: v["title"]
+                    for conf, v in confs.items()
+                    if v.get("title")
+                }
+                c.token_config_div = {
+                    conf: v["html"]
+                    for conf, v in confs.items()
+                    if v.get("html")
+                }
+            except Exception as exx:
+                c.token_config_tab = {}
+                c.token_config_div = {}
+                log.debug(
+                    "[index] no config info for a token type (%r)",
+                    exx,
+                )
 
             #  add the enrollment fragments from the token definition
             enrolls = _getTokenTypeConfig("init")
-
-            token_enroll_tab = {}
-            token_enroll_div = {}
-            for conf in enrolls:
-                tab = ""
-                div = ""
-                try:
-                    tab = enrolls.get(conf).get("title")
-                    div = enrolls.get(conf).get("html")
-                except Exception as e:
-                    log.debug(
-                        "[index] no enrollment info for token type %s  (%r)",
-                        conf,
-                        e,
-                    )
-
-                if (
-                    tab is not None
-                    and div is not None
-                    and len(tab) > 0
-                    and len(div) > 0
-                ):
-                    token_enroll_tab[conf] = tab
-                    token_enroll_div[conf] = div
-
-            c.token_enroll_tab = token_enroll_tab
-            c.token_enroll_div = token_enroll_div
+            try:
+                c.token_enroll_tab = {
+                    conf: v["title"]
+                    for conf, v in enrolls.items()
+                    if v.get("title")
+                }
+                c.token_enroll_div = {
+                    conf: v["html"]
+                    for conf, v in enrolls.items()
+                    if v.get("html")
+                }
+            except Exception as exx:
+                c.token_config_tab = {}
+                c.token_config_div = {}
+                log.debug(
+                    "[index] no enrollment info for a token type (%r)",
+                    exx,
+                )
 
             c.tokentypes = _getTokenTypes()
-
-            # Use HTTP_X_FORWARDED_HOST in preference to HTTP_HOST
-            # in case we're running behind a reverse proxy
-            http_host = request.environ.get("HTTP_X_FORWARDED_HOST", "")
-            if not http_host:
-                http_host = request.environ.get("HTTP_HOST")
-            url_scheme = request.environ.get("wsgi.url_scheme")
 
             db.session.commit()
             ren = render("/manage/manage-base.mako")
@@ -272,8 +241,7 @@ class ManageController(BaseController):
         render the tokentype info mako
         """
         c.title = "TokenTypeInfo"
-        ttinfo = []
-        ttinfo.extend(list(tokenclass_registry.keys()))
+        ttinfo = [tok for tok in tokenclass_registry.keys()]
         for tok in tokenclass_registry:
             tclass_object = tokenclass_registry.get(tok)
             if hasattr(tclass_object, "getClassType"):
@@ -327,21 +295,6 @@ class ManageController(BaseController):
         the debug console over and over, we serve an empty file.
         """
         return ""
-
-    def _flexi_error(self, error):
-        return json.dumps(
-            {
-                "page": 1,
-                "total": 1,
-                "rows": [
-                    {
-                        "id": "error",
-                        "cell": ["E r r o r", error, "", "", "", "", "", ""],
-                    }
-                ],
-            },
-            indent=3,
-        )
 
     @deprecated_methods(["POST"])
     def tokenview_flexi(self):
@@ -455,30 +408,29 @@ class ManageController(BaseController):
             )
             c.resultset = c.tokenArray.getResultSetInfo()
             # If we have chosen a page to big!
-            lines = []
-            for tok in c.tokenArray:
-                uid = tok["LinOtp.Userid"]
-                uid = uid.decode("utf-8") if isinstance(uid, bytes) else uid
-                lines.append(
-                    {
-                        "id": tok["LinOtp.TokenSerialnumber"],
-                        "cell": [
-                            tok["LinOtp.TokenSerialnumber"],
-                            tok["LinOtp.Isactive"],
-                            tok["User.username"],
-                            tok["LinOtp.RealmNames"],
-                            tok["LinOtp.TokenType"],
-                            tok["LinOtp.FailCount"],
-                            tok["LinOtp.TokenDesc"],
-                            tok["LinOtp.MaxFail"],
-                            tok["LinOtp.OtpLen"],
-                            tok["LinOtp.CountWindow"],
-                            tok["LinOtp.SyncWindow"],
-                            uid,
-                            tok["LinOtp.IdResClass"].split(".")[-1],
-                        ],
-                    }
-                )
+            lines = [
+                {
+                    "id": tok["LinOtp.TokenSerialnumber"],
+                    "cell": [
+                        tok["LinOtp.TokenSerialnumber"],
+                        tok["LinOtp.Isactive"],
+                        tok["User.username"],
+                        tok["LinOtp.RealmNames"],
+                        tok["LinOtp.TokenType"],
+                        tok["LinOtp.FailCount"],
+                        tok["LinOtp.TokenDesc"],
+                        tok["LinOtp.MaxFail"],
+                        tok["LinOtp.OtpLen"],
+                        tok["LinOtp.CountWindow"],
+                        tok["LinOtp.SyncWindow"],
+                        tok["LinOtp.Userid"].decode("utf-8")
+                        if isinstance(tok["LinOtp.Userid"], bytes)
+                        else tok["LinOtp.Userid"],
+                        tok["LinOtp.IdResClass"].split(".")[-1],
+                    ],
+                }
+                for tok in c.tokenArray
+            ]
 
             # We need to return 'page', 'total', 'rows'
             res = {
@@ -691,14 +643,8 @@ class ManageController(BaseController):
                 User("", "", ""), serial, filterRealm=filterRealm
             )
 
-            # now row by row
-            lines = []
-            for tok in toks:
-                lines.append(tok)
-            if len(lines) > 0:
-                c.tokeninfo = lines[0]
-            else:
-                c.tokeninfo = {}
+            token_info = next(toks, {})
+            c.tokeninfo = token_info
 
             for k in c.tokeninfo:
                 if "LinOtp.TokenInfo" == k:

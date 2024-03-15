@@ -674,7 +674,7 @@ class TokenHandler(object):
         # only auto assign if no token exists
 
         tokens = get_tokens(user)
-        if len(tokens) > 0:
+        if tokens:
             log.debug(
                 "No auto_assigment for user %r@%r. User already has"
                 " some tokens.",
@@ -692,18 +692,14 @@ class TokenHandler(object):
         token_type = options.get("token_type", None)
 
         # List of (token, pin) pairs
-        matching_tokens = []
-
-        tokens = self.getTokensOfType(
-            typ=token_type, realm=token_src_realm, assigned="0"
-        )
-        for token in tokens:
-            token_exists = token.check_otp_exist(
-                otp=otp, window=token.getOtpCountWindow()
+        matching_tokens = [
+            token
+            for token in self.getTokensOfType(
+                typ=token_type, realm=token_src_realm, assigned="0"
             )
-
-            if token_exists >= 0:
-                matching_tokens.append(token)
+            if token.check_otp_exist(otp=otp, window=token.getOtpCountWindow())
+            >= 0
+        ]
 
         if len(matching_tokens) != 1:
             log.warning(
@@ -753,7 +749,7 @@ class TokenHandler(object):
         # check if user has a token
         # TODO: this may dependend on a policy definition
         tokens = get_tokens(user, "")
-        if len(tokens) > 0:
+        if tokens:
             log.debug(
                 "[auto_assignToken] no auto_assigment for user %r@%r. "
                 "User already has some tokens.",
@@ -769,9 +765,9 @@ class TokenHandler(object):
 
         tokens = self.getTokensOfType(typ=None, realm=user.realm, assigned="0")
         for token in tokens:
-            token_exists = -1
             from linotp.lib import policy
 
+            (pin, otp) = token.splitPinPass(passw)
             if policy.autoassignment_forward(user) and token.type == "remote":
                 ruser = User(user.login, user.realm)
                 token_exists = token.check_otp_exist(
@@ -780,9 +776,7 @@ class TokenHandler(object):
                     user=ruser,
                     autoassign=True,
                 )
-                (pin, otp) = token.splitPinPass(passw)
             else:
-                (pin, otp) = token.splitPinPass(passw)
                 token_exists = token.check_otp_exist(
                     otp=otp, window=token.getOtpCountWindow()
                 )
@@ -958,29 +952,25 @@ class TokenHandler(object):
 
         :return:         returns the token object.
         """
-        result_token = None
-
-        validation_results = []
         log.debug("Searching appropriate token for otp %r", otp)
 
         if token_list is None:
             token_list = self.getTokensOfType(typ, realm, assigned)
 
-        for token in token_list:
-            r = token.check_otp_exist(otp=otp, window=window)
-            if r >= 0:
-                validation_results.append(token)
+        validation_results = [
+            token
+            for token in token_list
+            if token.check_otp_exist(otp=otp, window=window) >= 0
+        ]
 
-        if len(validation_results) == 1:
-            result_token = validation_results[0]
-        elif len(validation_results) > 1:
+        if len(validation_results) > 1:
             raise TokenAdminError(
                 "get_token_by_otp: multiple tokens are "
                 "matching this OTP value!",
                 id=1200,
             )
 
-        return result_token
+        return None if len(validation_results) == 0 else validation_results[0]
 
     # local method
     def getTokensOfType(self, typ=None, realm=None, assigned=None):
@@ -993,7 +983,6 @@ class TokenHandler(object):
            3. assigned or unassigned tokens (1/0)
         TODO: rename function to "getTokens"
         """
-        tokenList = []
         sqlQuery = Token.query
         if typ is not None:
             # filter for type
@@ -1024,13 +1013,15 @@ class TokenHandler(object):
                 )
             ).distinct()
 
-        for token in sqlQuery:
-            # the token is the database object, but we want
-            # an instance of the tokenclass!
-            tokenList.append(createTokenClassObject(token))
-
-        log.debug("[getTokensOfType] retrieved matching tokens: %r", tokenList)
-        return tokenList
+        # the token is the database object, but we want
+        # an instance of the tokenclass!
+        token_list = [
+            createTokenClassObject(token) for token in sqlQuery.all()
+        ]
+        log.debug(
+            "[getTokensOfType] retrieved matching tokens: %r", token_list
+        )
+        return token_list
 
     def removeToken(self, user=None, serial=None):
         """
@@ -1067,14 +1058,15 @@ class TokenHandler(object):
             #  due to legacy SQLAlchemy it could happen that the
             #  foreign key relation could not be deleted
             #  so we do this manualy
-
-            for t_id in set(token_ids):
-                TokenRealm.query.filter(TokenRealm.token_id == t_id).delete()
+            TokenRealm.query.filter(TokenRealm.token_id.in_(token_ids)).delete(
+                synchronize_session=False
+            )
 
             db.session.commit()
 
-            for token in tokens:
-                db.session.delete(token)
+            Token.query.filter(Token.LinOtpTokenId.in_(token_ids)).delete(
+                synchronize_session=False
+            )
 
         except Exception as exx:
             raise TokenAdminError(
@@ -1385,10 +1377,10 @@ def get_token_type_list():
 
     :return: list of token types
     """
-    token_types = []
-
-    for token_class_obj in set(tokenclass_registry.values()):
-        token_types.append(token_class_obj.getClassType())
+    token_types = [
+        token_class.getClassType()
+        for token_class in set(tokenclass_registry.values())
+    ]
 
     return token_types
 
@@ -1428,8 +1420,7 @@ def getRealms4Token(user, tokenrealm=None):
             log.debug("[getRealms4Token] String: adding realm: %r", tokenrealm)
             realms.append(tokenrealm)
         elif isinstance(tokenrealm, list):
-            for tr in tokenrealm:
-                realms.append(tr)
+            realms.extend(tokenrealm)
 
     realmList = realm2Objects(realms)
 
@@ -1443,13 +1434,10 @@ def get_tokenserial_of_transaction(transId):
     :param transId: the state / transaction id
     :return: the serial number or None
     """
-    serials = []
-
-    challenges = Challenges.lookup_challenges(transid=transId)
-
-    for challenge in challenges:
-        serials.append(challenge.tokenserial)
-
+    serials = [
+        challenge.tokenserial
+        for challenge in Challenges.lookup_challenges(transid=transId)
+    ]
     return serials
 
 
@@ -1463,7 +1451,6 @@ def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
     if user and user.login:
         resolverUid = user.resolverUid
         v = None
-        k = None
         for k in resolverUid:
             v = resolverUid.get(k)
         user_id = v
@@ -1496,7 +1483,7 @@ def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
 
     for token in tokens:
         info = token.LinOtpTokenInfo
-        if len(info) > 0:
+        if info:
             tinfo = json.loads(info)
             rollout = tinfo.get("rollout", None)
             if rollout is not None:
@@ -2011,13 +1998,10 @@ def add_time_info(list_of_tokens, mode="accessed"):
 
     token_access = getFromConfig("linotp.token.last_access", None)
 
-    if token_access in [None, False]:
+    if token_access in [None, False] or token_access.lower() == "false":
         return
-    elif token_access is True:
-        token_access_fmt = DEFAULT_TIMEFORMAT
-    elif token_access.lower() == "false":
-        return
-    elif token_access.lower() == "true":
+
+    if token_access is True or token_access.lower() == "true":
         token_access_fmt = DEFAULT_TIMEFORMAT
     else:
         token_access_fmt = token_access

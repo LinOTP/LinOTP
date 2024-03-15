@@ -101,9 +101,7 @@ class LinOtpConfig(dict):
         if do_reload is True:
             # in case there is no entry in the dbconf or
             # the config file is newer, we write the config back to the db
-            entries = list(conf.keys())
-            for entry in entries:
-                del conf[entry]
+            conf.clear()
 
             # get all configs from the DB
             (dbconf, delay) = _retrieveAllConfigDB()
@@ -299,33 +297,20 @@ class LinOtpConfig(dict):
         :return : return the std value like the std dict does, whatever this is
         :rtype  : any value a dict update will return
         """
-
-        #
         # first check if all data is type compliant
-        #
-
-        for key, val in list(dic.items()):
+        for key, val in dic.items():
             self._check_type(key, val)
 
-        #
         # put the data in the parent dictionary
-        #
-
         res = super().update(dic)
 
-        #
         # and sync the data with the global config dict
-        #
-
         self.glo.setConfig(dic)
 
-        #
         # finally sync the entries to the database
-        #
-
-        for key in dic:
+        for key, value in dic.items():
             if key != "linotp.Config":
-                _storeConfigDB(key, dic.get(key))
+                _storeConfigDB(key, value)
 
         _storeConfigDB("linotp.Config", datetime.now())
         return res

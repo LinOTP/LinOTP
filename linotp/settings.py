@@ -150,10 +150,7 @@ class ConfigSchema:
         items more efficiently. If `refuse_unknown` is `True`, any items
         that are not in the schema will not validate.
         """
-        self.schema = {}
-        if schema is not None:
-            for s in schema:
-                self.schema[s.name] = s
+        self.schema = {s.name: s for s in schema} if schema is not None else {}
         self.refuse_unknown = refuse_unknown
 
     def find_item(self, key):

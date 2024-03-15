@@ -44,7 +44,7 @@ from flask_jwt_extended import (
 from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
 from jwt import ExpiredSignatureError, InvalidSignatureError
 
-from flask import Blueprint, after_this_request, current_app, g, jsonify
+from flask import Blueprint, current_app, g, jsonify
 
 from linotp.flap import request
 from linotp.lib import deprecated_methods, render_calling_path

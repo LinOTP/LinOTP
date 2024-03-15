@@ -35,6 +35,7 @@ import logging
 import urllib.error
 import urllib.parse
 import urllib.request
+from urllib.parse import unquote, urlparse
 
 import httplib2
 
@@ -87,7 +88,7 @@ class RemoteRequest(object):
 
     @staticmethod
     def parse_url(url):
-        parsed = urllib.parse.urlparse(url)
+        parsed = urlparse(url)
         url_info = {
             "scheme": parsed.scheme,
             "netloc": parsed.netloc,
@@ -109,18 +110,17 @@ class RemoteRequest(object):
         query_parts = query.split("&")
         q = {}
         for query_part in query_parts:
-            if "=" in query:
+            if "=" in query_part:
                 key, value = query_part.split("=")
             else:
-                key = query
+                key = query_part
                 value = ""
             # only add if key is not an empty strings
             if key.strip():
-                q[urllib.parse.unquote(key.strip())] = urllib.parse.unquote(
-                    value.strip()
-                )
+                q[unquote(key.strip())] = unquote(value.strip())
 
         url_info["query_params"] = q
+
         return url_info
 
 
@@ -142,15 +142,18 @@ class HttpRequest(RemoteRequest):
         :return: Tuple of (success, and reply=remote response)
         """
 
-        params = {}
-        params["pass"] = password.encode("utf-8")
-        params["user"] = user.login
-
+        params = {
+            "pass": password.encode("utf-8"),
+            "user": user.login,
+        }
         if user.realm:
             params["realm"] = user.realm
 
-        for key, value in list(options.items()):
-            params[key] = value.encode("utf-8")
+        params.update(
+            {key: value.encode("utf-8") for key, value in options.items()}
+            if options
+            else {}
+        )
 
         server_config = RemoteRequest.parse_url(self.server)
         query_params = server_config.get("query_params", {})

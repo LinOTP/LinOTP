@@ -78,9 +78,12 @@ class U2FController(BaseController):
         valid_facets = valid_facets_action_value.split(";")
 
         response_dict = {
-            "trustedFacets": [{"version": {"major": 1, "minor": 0}, "ids": []}]
+            "trustedFacets": [
+                {
+                    "version": {"major": 1, "minor": 0},
+                    "ids": [facet.strip() for facet in valid_facets],
+                }
+            ]
         }
-        for facet in valid_facets:
-            facet = facet.strip()
-            response_dict["trustedFacets"][0]["ids"].append(facet)
+
         return json.dumps(response_dict)
