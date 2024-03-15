@@ -3193,38 +3193,6 @@ def trigger_sms(realms=None):
     return ret
 
 
-def trigger_phone_call_on_empty_pin(realms=None):
-    """Trigger a phone call on empty pin?
-
-    returns true if a check_s should be allowed to trigger an phone call
-    for the voice token
-    """
-    client = _get_client()
-    user = _getUserFromParam()
-
-    login = user.login
-    if realms is None:
-        realm = user.realm or _getDefaultRealm()
-        realms = [realm]
-
-    ret = False
-    for realm in realms:
-        pol = has_client_policy(
-            client,
-            scope="authentication",
-            action="trigger_voice",
-            realm=realm,
-            user=login,
-            userObj=user,
-        )
-
-        if len(pol) > 0:
-            log.debug("found policy in realm %s", realm)
-            ret = True
-
-    return ret
-
-
 def get_auth_AutoSMSPolicy(realms=None):
     """Returns true, if the autosms policy is set in one of the realms.
 

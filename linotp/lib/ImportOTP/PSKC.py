@@ -159,11 +159,9 @@ def parsePSKCdata(
         namespace = match.group(1)
         log.debug("Found namespace %s", namespace)
 
-    PSKC_VERSION = elem_keycontainer.get("Version")
     KEYNAME = None
     MACKEY_bin = None
     ENC_ALGO = None
-    ENC_MODE = None
 
     PBE_DERIVE_ALGO = None
     PBE_SALT = None
@@ -179,12 +177,10 @@ def parsePSKCdata(
         enckeyTag = getTagName(list(elem_encKey)[0])
         # This will hold the name of the preshared key
         if "KeyName" == enckeyTag:
-            ENC_MODE = "AES128"
             KEYNAME = list(elem_encKey)[0].text
             log.debug("The keyname of preshared encryption is <<%r>>", KEYNAME)
         # check for PasswordBasedEncyprion (chapter 6.2)
         elif "DerivedKey" == enckeyTag:
-            ENC_MODE = "PBE"
             log.debug("We found PBE.")
             # Now we check for KeyDerivationMethod
             elem_keyderivation = list(list(elem_encKey)[0])
@@ -371,7 +367,6 @@ def parsePSKCdata(
             KD_algo = None
             KD_counter = None
             KD_TimeInterval = None
-            KD_TimeOffset = None
             for e in list(elem_keydata):
                 eTag = getTagName(e)
                 log.debug("Evaluating element <<%r>>", eTag)

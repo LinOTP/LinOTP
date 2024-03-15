@@ -41,7 +41,6 @@ from werkzeug.exceptions import Unauthorized
 from flask import current_app, g
 from flask import send_file as flask_send_file
 
-from linotp import flap
 from linotp.flap import config, request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
@@ -2117,7 +2116,6 @@ class SystemController(BaseController):
         """
 
         status = False
-        p_response = "Can't Connect"
 
         try:
             try:

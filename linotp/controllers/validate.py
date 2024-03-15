@@ -385,43 +385,6 @@ class ValidateController(BaseController):
             db.session.rollback()
             return sendResult(False, 0)
 
-    def _check_url(self):
-        """
-        TODO: implement function that works with pam_url.
-        """
-        ok = False
-        param = self.request_params
-        try:
-            try:
-                (ok, opt) = self._check(param)
-            except AuthorizeException as acc:
-                log.warning(
-                    "[check_url] authorization failed for validate/check_url: %r",
-                    acc,
-                )
-                g.audit["success"] = False
-                g.audit["action_detail"] = str(acc)
-                ok = False
-
-            db.session.commit()
-
-            # TODO: this code seems not to be finished
-            if not ok:
-                abort(403)
-            else:
-                return "Preshared Key Todo"
-
-        except Unauthorized as acc:
-            # the exception, when an abort() is called if forwarded
-            log.error("[__before__::%r] webob.exception %r", acc)
-            db.session.rollback()
-            raise acc
-
-        except Exception as exx:
-            log.error("[check_url] validate/check_url failed: %r", exx)
-            db.session.rollback()
-            return sendResult(False, 0)
-
     @deprecated_methods(["GET"])
     def samlcheck(self):
         """

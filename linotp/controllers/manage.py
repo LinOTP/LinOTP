@@ -48,7 +48,7 @@ from linotp.lib import deprecated_methods
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
-from linotp.lib.ImportOTP import getImportText, getKnownTypes
+from linotp.lib.ImportOTP import getImportText
 from linotp.lib.policy import PolicyException, checkPolicyPre, getAdminPolicies
 from linotp.lib.policy.definitions import get_policy_definitions
 from linotp.lib.realm import getRealms
@@ -71,7 +71,6 @@ from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 
-KNOWN_TYPES = getKnownTypes()
 IMPORT_TEXT = getImportText()
 
 log.info("importing linotp.lib. Known import types: %s", IMPORT_TEXT)
@@ -212,14 +211,6 @@ class ManageController(BaseController):
 
             c.tokentypes = _getTokenTypes()
 
-            # Use HTTP_X_FORWARDED_HOST in preference to HTTP_HOST
-            # in case we're running behind a reverse proxy
-            http_host = request.environ.get(
-                "HTTP_X_FORWARDED_HOST"
-            ) or request.environ.get("HTTP_HOST")
-
-            url_scheme = request.environ.get("wsgi.url_scheme")
-
             db.session.commit()
             ren = render("/manage/manage-base.mako")
             return ren
@@ -304,21 +295,6 @@ class ManageController(BaseController):
         the debug console over and over, we serve an empty file.
         """
         return ""
-
-    def _flexi_error(self, error):
-        return json.dumps(
-            {
-                "page": 1,
-                "total": 1,
-                "rows": [
-                    {
-                        "id": "error",
-                        "cell": ["E r r o r", error, "", "", "", "", "", ""],
-                    }
-                ],
-            },
-            indent=3,
-        )
 
     @deprecated_methods(["POST"])
     def tokenview_flexi(self):

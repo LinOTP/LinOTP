@@ -99,12 +99,7 @@ class FinishTokens(object):
         # next handle the challenges
         if self.challenge_tokens:
             (ret, reply, detail) = self.finish_challenge_token()
-
-            # do we have to increment the counter to prevent a replay???
-            # self.increment_counters(self.challenge_tokens)
-
             self.create_audit_entry(detail, self.challenge_tokens)
-
             return ret, reply
 
         # if there is no token left, we end up here
@@ -363,10 +358,6 @@ class FinishTokens(object):
     @staticmethod
     def reset_failcounter(all_tokens):
         [token.reset() for token in all_tokens]
-
-    @staticmethod
-    def increment_counters(all_tokens, reset=True):
-        [token.incOtpCounter(reset=reset) for token in all_tokens]
 
     @staticmethod
     def increment_failcounters(all_tokens):

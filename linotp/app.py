@@ -43,7 +43,6 @@ from flask_jwt_extended.exceptions import (
 from jwt import ExpiredSignatureError
 from jwt.exceptions import InvalidSignatureError
 
-from flask import Blueprint
 from flask import Config as FlaskConfig
 from flask import Flask, abort, current_app
 from flask import g as flask_g
@@ -637,23 +636,6 @@ class LinOTPApp(Flask):
             )
 
         return dict_file
-
-    def getConfigRootDirectory(self):
-        """
-        Get root directory for local configuration files. This directory
-        is used for storing files such as the DB secret key.
-
-        An exception is thrown if the directory does not exist.
-        """
-        rootdir = config.get("ROOT_DIR")
-
-        if not rootdir:
-            raise ConfigurationError("Root directory (ROOT_DIR) is not set")
-
-        if not os.path.exists(rootdir):
-            raise ConfigurationError("Root directory {} does not exist")
-
-        return rootdir
 
     def getCacheManager(self):
         """

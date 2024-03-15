@@ -40,7 +40,6 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 
 from flask import Response, current_app, g, redirect, url_for
 
-from linotp import flap
 from linotp.controllers.base import BaseController
 from linotp.controllers.userservice import get_auth_user, getTokenForUser
 from linotp.flap import config

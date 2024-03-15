@@ -100,9 +100,6 @@ def b2a_hex(s):
     return _b2a_hex(s).decode("us-ascii")
 
 
-xrange = range
-
-
 class PBKDF2(object):
     """PBKDF2.py : PKCS#5 v2.0 Password-Based Key Derivation
 
@@ -172,13 +169,6 @@ class PBKDF2(object):
             U = self.__prf(self.__passphrase, U)
             result = binxor(result, U)
         return result
-
-    def hexread(self, octets):
-        """Read the specified number of octets. Return them as hexadecimal.
-
-        Note that len(obj.hexread(n)) == 2*n.
-        """
-        return b2a_hex(self.read(octets))
 
     def _setup(self, passphrase, salt, iterations, prf):
         # Sanity checks:

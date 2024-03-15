@@ -30,19 +30,12 @@ admin controller - interfaces to administrate LinOTP
 """
 import json
 import logging
-import os
 from datetime import datetime
 
 from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
 
-from flask import (
-    Response,
-    after_this_request,
-    current_app,
-    g,
-    stream_with_context,
-)
+from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController, JWTMixin, methods
 from linotp.flap import config, request
@@ -2643,44 +2636,6 @@ class AdminController(BaseController, JWTMixin):
             log.error("[loadtokens] failed! %r", exx)
             db.session.rollback()
             return sendErrorMethod("%r" % exx)
-
-    def _ldap_parameter_mapping(self, params):
-        """
-        translate the ui parameters into LDAPResolver format
-        """
-
-        # setup the ldap parameters including defaults
-
-        ldap_params = {
-            "NOREFERRALS": "True",
-            "CACERTIFICATE": "",
-            "EnforceTLS": "False",
-        }
-
-        mapping = {
-            "ldap_basedn": "LDAPBASE",
-            "ldap_uri": "LDAPURI",
-            "ldap_binddn": "BINDDN",
-            "ldap_password": "BINDPW",
-            "ldap_timeout": "TIMEOUT",
-            "ldap_basedn": "LDAPBASE",
-            "ldap_loginattr": "LOGINNAMEATTRIBUTE",
-            "ldap_searchfilter": "LDAPSEARCHFILTER",
-            "ldap_userfilter": "LDAPFILTER",
-            "ldap_mapping": "USERINFO",
-            "ldap_uidtype": "UIDTYPE",
-            "ldap_sizelimit": "SIZELIMIT",
-            "noreferrals": "NOREFERRALS",
-            "ldap_certificate": "CACERTIFICATE",
-            "enforcetls": "EnforceTLS",
-        }
-        for key, value in list(params.items()):
-            if key.lower() in mapping:
-                ldap_params[mapping[key.lower()]] = value
-            else:
-                ldap_params[key] = value
-
-        return ldap_params
 
     @methods(["POST"])
     def testresolver(self):

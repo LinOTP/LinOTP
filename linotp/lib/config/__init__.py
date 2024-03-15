@@ -257,25 +257,4 @@ def removeFromConfig(key, iCase=False):
     return True
 
 
-# several config functions to follow
-def setDefaultMaxFailCount(maxFailCount):
-    return storeConfig("DefaultMaxFailCount", maxFailCount)
-
-
-def setDefaultSyncWindow(syncWindowSize):
-    return storeConfig("DefaultSyncWindow", syncWindowSize)
-
-
-def setDefaultCountWindow(countWindowSize):
-    return storeConfig("DefaultCountWindow", countWindowSize)
-
-
-def setDefaultOtpLen(otpLen):
-    return storeConfig("DefaultOtpLen", otpLen)
-
-
-def setDefaultResetFailCount(resetFailCount):
-    return storeConfig("DefaultResetFailCount", resetFailCount)
-
-
 # eof #########################################################################
