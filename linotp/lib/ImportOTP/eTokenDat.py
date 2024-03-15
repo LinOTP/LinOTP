@@ -197,6 +197,9 @@ class DatToken(object):
                 self.set(key, val)
         return
 
+    # The following setters are used in `add_info`!
+    # via `getattr(self, "set_" + key)(val)`.
+    # Your IDE will likely tell you they're unsused, though.
     def set_sccTokenData(self, value):
         """
         parse the detail token definition by calling again
