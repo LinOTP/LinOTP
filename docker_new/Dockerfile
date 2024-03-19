@@ -124,9 +124,7 @@ RUN mkdir -p \
 # Create volumes for root level dirs
 VOLUME $LINOTP_ROOT_DIR \
     $LINOTP_CACHE_DIR \
-    $LINOTP_LOG_FILE_DIR \
-    $LINOTP_CUSTOM_TEMPLATES_DIR \
-    $TRANSLATIONS_DIR
+    $LINOTP_LOG_FILE_DIR
 
 # Create and set the user to run the container and chown directories
 RUN useradd -r $LINOTP_USER && \
