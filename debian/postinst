@@ -167,27 +167,6 @@ configure_apache() {
 
 }
 
-# create_tmpfiles FILE
-#
-# This is a greatly simplified version of "systemd-tmpfiles" (it only
-# does what we need). It saves us from having to install systemd in
-# a Docker environment just to get at "systemd-tmpfiles". Of course
-# we could just create and chown /run/linotp instead but that wouldn't
-# be DRY.
-
-create_tmpfiles() {
-  while read -a f; do
-    case "${f[0]}" in
-      d) mkdir -p -m "${f[2]}" "${f[1]}"
-        chown "${f[3]}:${f[4]}" "${f[1]}"
-        ;;
-      *) echo >&2 "$0: unsupported entry type '${f[0]}', ignoring"
-        ;;
-    esac
-  done </usr/lib/tmpfiles.d/$1
-}
-
-
 # set_file_permissions
 #
 # - adjust read permission for sensitive files
@@ -242,8 +221,6 @@ if [ "$1" = configure ]; then
   create_dir "cache" "$CACHEDIR"
   create_dir "etc" "$CONFIG_DIR"
   create_dir "template" "$TEMPLATEDIR"
-  create_tmpfiles linotp.conf  # for DATA_DIR
-
 fi
 
 # Allow dbconfig-common to configure the database

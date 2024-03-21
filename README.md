@@ -39,7 +39,7 @@ Before launching the LinOTP server, you must make sure that a number
 of important directories exist. You can inspect their default values
 using the command
 ```terminal
-$ linotp config show ROOT_DIR LOG_FILE_DIR DATA_DIR CACHE_DIR
+$ linotp config show ROOT_DIR LOG_FILE_DIR CACHE_DIR
 ```
 and use a configuration file to change them:
 ```terminal
@@ -48,21 +48,18 @@ $ sudoedit /etc/linotp/linotp.cfg
 # ... hack away at linotp.cfg ...
 $ export LINOTP_CFG=/etc/linotp/linotp.cfg
 $ cat $LINOTP_CFG
-DATA_DIR = "/tmp/linotp-data"    # for example
-$ linotp config show DATA_DIR
+CACHE_DIR = "/tmp/linotp-cache"    # for example
+$ linotp config show CACHE_DIR
 …
-DATA_DIR=/tmp/linotp-data
+CACHE_DIR=/tmp/linotp-cache
 ```
 Our recommendation is to use `/etc/linotp` as `ROOT_DIR`, and to place
 a `linotp.cfg` file there containing your settings. Suitable defaults
-for `LOG_FILE_DIR`, `CACHE_DIR`, and `DATA_DIR` are `/var/log/linotp`,
-`/var/cache/linotp`, and `/run/linotp`, respectively. Note that these
+for `LOG_FILE_DIR`, and `CACHE_DIR` are `/var/log/linotp`,
+`/var/cache/linotp`, respectively. Note that these
 directories should belong to the user that will be running LinOTP. You
 may find it convenient to create a `linotp` system user for the
-purpose. Also note that modern Linux distributions commonly use a
-RAM-based file system for `/run`, so you will have to arrange for
-`/run/linotp` to be recreated whenever the system is booted. The
-`tmpfiles.d(5)` mechanism of systemd is helpful here.
+purpose.
 
 Also note that environment variables can be used to specify LinOTP
 configuration settings. If a configuration setting inside LinOTP is
@@ -77,7 +74,7 @@ LinOTP configuration.)
 If you have adjusted the directories to your liking in the configuration
 file (or process environment), you can create them using a command like
 ```terminal
-$ for d in $(linotp config show --values ROOT_DIR LOG_FILE_DIR DATA_DIR CACHE_DIR)
+$ for d in $(linotp config show --values ROOT_DIR LOG_FILE_DIR CACHE_DIR)
 > do
 >    sudo mkdir -p "$d"
 >    sudo chown $USER "$d"
