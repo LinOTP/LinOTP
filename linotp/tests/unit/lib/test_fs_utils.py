@@ -82,19 +82,19 @@ def test_ensure_dir_bad_config(app, var):
 
 
 def test_ensure__dir_missing_base_dir(app, caplog):
-    os.rmdir(app.config["DATA_DIR"])
+    os.rmdir(app.config["CACHE_DIR"])
     with pytest.raises(FileNotFoundError) as ex:
-        ensure_dir(app, "test", "DATA_DIR", "foo", mode=0x700)
+        ensure_dir(app, "test", "CACHE_DIR", "foo", mode=0x700)
     assert (
-        f"Directory '{app.config['DATA_DIR']}' (DATA_DIR) does not exist"
+        f"Directory '{app.config['CACHE_DIR']}' (CACHE_DIR) does not exist"
         in str(ex.value)
     )
 
 
 def test_ensure_dir_bad_base_dir(app):
-    os.rmdir(app.config["DATA_DIR"])
-    with open(app.config["DATA_DIR"], "w") as f:
+    os.rmdir(app.config["CACHE_DIR"])
+    with open(app.config["CACHE_DIR"], "w") as f:
         f.write("FOO\n")
     with pytest.raises(NotADirectoryError) as ex:
-        ensure_dir(app, "test", "DATA_DIR", "bar", mode=0x700)
-    assert "(DATA_DIR) is not a directory" in str(ex.value)
+        ensure_dir(app, "test", "CACHE_DIR", "bar", mode=0x700)
+    assert "(CACHE_DIR) is not a directory" in str(ex.value)

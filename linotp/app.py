@@ -264,7 +264,6 @@ class ExtFlaskConfig(FlaskConfig):
         BASE_DIR_SETTINGS = {
             "ROOT_DIR",
             "CACHE_DIR",
-            "DATA_DIR",
             "LOG_FILE_DIR",
         }
         if self.config_schema is None:

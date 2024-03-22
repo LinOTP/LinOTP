@@ -248,24 +248,6 @@ LinOTP distribution package for that distribution. These include:
   `CACHE_DIR/beaker`. These assignments cannot be changed except by
   changing the LinOTP source code.
 
-- `DATA_DIR`: Short-lived temporary data can be stored in
-  subdirectories of this directory. It defaults to `ROOT_DIR/data` but
-  in a distribution wil probably end up as `/run/linotp`. Currently
-  this is only used to cache Mako templates that have been compiled to
-  Python, in the `template-cache` subdirectory. Again, this can only
-  be changed by editing the LinOTP source code.
-
-  Note that while the other directories can usually be created when
-  LinOTP is installed, the volatile nature of `/run` on most systems
-  can make it necessary to recreate `DATA_DIR` at odd times (e.g.,
-  after a system reboot). Since making new directories in `/run`
-  usually requires root privileges, LinOTP will generally not be a in
-  a position to do it by itself (or shouldn't be in such a position in
-  any case). A good approach to use instead is systemd's `tmpfiles`
-  mechanism. Installs that do not use systemd (such as Docker-based
-  installs) need to ensure that the directory is created by some other
-  means.
-
 - `LOG_FILE_DIR`: This is where the log file ends up if you're logging
   to a file (which is something LinOTP does by default). By default
   this is `ROOT_DIR/logs` but distribution packages will probably wish

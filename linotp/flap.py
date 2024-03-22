@@ -109,7 +109,7 @@ def _make_mako_lookup(app):
     # Make a Mako `TemplateLookup` from the app configuration.
 
     mod_dir = ensure_dir(
-        app, "Mako template cache", "DATA_DIR", "template-cache", mode=0o770
+        app, "Mako template cache", "CACHE_DIR", "template-cache", mode=0o770
     )
 
     kwargs = {

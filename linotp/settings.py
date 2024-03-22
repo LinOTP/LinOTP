@@ -253,17 +253,6 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "DATA_DIR",
-            str,
-            default="data",
-            help=(
-                "Directory for transient runtime data. The content of "
-                "this directory is not expected to survive system "
-                "reboots, i.e., it could be located below `/run` on "
-                "systems where `/run` is a RAM disk."
-            ),
-        ),
-        ConfigItem(
             "ENABLE_CONTROLLERS",
             str,
             default="ALL",
