@@ -71,7 +71,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR $LINOTP_HOME
 
 COPY linotp/i18n $I18N_DIR
-COPY docker_new/translations.sh .
+COPY docker/linotp/translations.sh .
 RUN ./translations.sh
 
 
@@ -108,7 +108,7 @@ COPY --from=builder $VENV_ROOT $VENV_ROOT
 # Copy the translations we created in the translations stage
 COPY --from=translations $TRANSLATIONS_DIR $TRANSLATIONS_DIR
 # Copy relevant files to start linotp and create symlink
-COPY linotpapp.py docker_new/entrypoint.sh docker_new/symlink_custom_assets.py ./
+COPY linotpapp.py docker/linotp/entrypoint.sh docker/linotp/symlink_custom_assets.py ./
 
 # Create directories
 RUN mkdir -p \

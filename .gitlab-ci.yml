@@ -98,7 +98,7 @@ build-and-upload-new-docker:
   before_script:
     - *docker-registry
   script:
-    - docker build -t "$NEW_DOCKER_IMAGE_TAG" -f docker_new/Dockerfile .
+    - docker build -t "$NEW_DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
     - docker push "$NEW_DOCKER_IMAGE_TAG"
 
 container_scanning:
