@@ -82,7 +82,7 @@ build-and-upload-pypi-image-testenv:
   before_script:
     - *docker-registry
   script:
-    - docker build -t "$PYPI_IMAGE_TAG" -f Dockerfile.pypi-testenv .
+    - docker build -t "$PYPI_IMAGE_TAG" -f docker/Dockerfile.testenv-pypi .
     - docker push "$PYPI_IMAGE_TAG"
 
 build-and-upload-new-docker:
@@ -241,9 +241,9 @@ pre-commit-check:
     - apk add --no-cache make
     - TESTENV_DEB_IMAGE=$IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME
     - SOFTHSM_DEB_IMAGE=$IMAGE_PREFIX_CI/linotp-softhsm-deb-$DEBIAN_RELEASE_NAME
-    - BUILDER_CACHE_KEY=$(sha256sum Dockerfile.builder | cut -d ' ' -f1)
+    - BUILDER_CACHE_KEY=$(sha256sum docker/Dockerfile.builder-deb | cut -d ' ' -f1)
     - BUILDER_CACHE_IMAGE=$IMAGE_PREFIX_CI/linotp-builder-deb-$DEBIAN_RELEASE_NAME
-    - LINOTP_CACHE_KEY=$(sha256sum Dockerfile | cut -d ' ' -f1)
+    - LINOTP_CACHE_KEY=$(sha256sum docker/Dockerfile.linotp-deb | cut -d ' ' -f1)
     - LINOTP_CACHE_IMAGE=$IMAGE_PREFIX_CI/linotp-deb-$DEBIAN_RELEASE_NAME
     # Pull the old images to speedup the build process, the hope is
     # that the modified time will always be the same unless the file
