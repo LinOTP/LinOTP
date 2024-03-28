@@ -482,6 +482,79 @@ All of these can be conveniently built and run using targets in the
 Refer to the `Makefile` for details of how these targets interact, and
 for additional configuration parameters.
 
+## Container-based LinOTP
+
+Here's how to build a container image for LinOTP which works with
+container runtimes such as Docker and does *not* depend on LinOTP's
+Debian packaging:
+
+### Building an Image
+
+From the base directory of the LinOTP distribution, run the following
+command:
+```terminal
+$ docker build -f docker/Dockerfile.main -t linotp .
+```
+
+### Running a LinOTP Container
+
+To run the previously-built image as a container named `my_linotp`,
+run
+```terminal
+$ docker run -p 5000:5000 --name my_linotp linotp
+```
+You may wish to use the `--env` option to pass configuration settings
+to LinOTP (prefixed with `LINOTP_`, as in `LINOTP_DATABASE_URI`), or
+`-v` to mount volumes. See the *LinOTP Containerisation Guide* for
+more details.
+
+### Customisation
+
+- Custom translations can be installed by mounting a translation
+  directory over `/custom-translations`. This directory should contain
+  a subdirectory hierarchy like `{LANGUAGE_TAG}/LC_MESSAGES/linotp.po`,
+  e.g.., `eo/LC_MESSAGES/linotp.po`. (How to obtain the `linotp.po`
+  file for your desired language is beyond the scope of this
+  document.)
+- Custom Mako templates can be installed by mounting a directory over
+  `/custom-templates` whose content follows the directory structure
+  within `linotp/templates` (just so stuff is where LinOTP expects it
+  to be). For example, if you have a custom `audit.mako` template for
+  LinOTP's `/manage` endpoint, copy `audit.mako` into a directory called
+  `my_templates/manage` and invoke LinOTP like
+  ```terminal
+  $ docker run -p 5000:5000 -name my_linotp \
+    -v ./my_templates:/custom-templates linotp
+  ```
+- Other files such as image files, CSS style sheets or JavaScript
+  files, can go into a directory that is mounted on `/custom-assets`.
+  For example, if you want to customise the appearance of the
+  self-service component using a `selfservice-style.css` file that you
+  wrote, create a `my-assets` directory, copy your stylesheet into it,
+  and use the `-v ./my-assets:/custom-assets` option when starting
+  the LinOTP container. (Please do this only if you know what you're
+  doing. If you break LinOTP, you get to keep the pieces.)
+- To make LinOTP data such as the (SQLite) database, audit keys, and
+  encryption key persistent, mount a Docker volume on `/data`:
+  ```terminal
+  $ docker run -p 5000:5000 -name my_linotp \
+    -v my_persistent_volume:/data linotp
+  ```
+  (Refer to the Docker documentation to find out about named volumes,
+  or use a local directory as in the previous examples.)
+
+  **YOU WILL DEFINITELY WANT TO DO THIS IF YOU PLAN TO DO MORE WITH
+  LINOTP THAN JUST FOOL AROUND FOR A BIT, BECAUSE IF THE ENCRYPTION
+  KEY FOR THE DATABASE EVER GETS LOST, YOU WILL BE, TO USE THE
+  TECHNICAL TERM, WELL AND TRULY F...ED.**
+
+  (Having said that, LinOTP always puts the content of `/data` into a
+  volume, even if you don't specify one explicitly, so the encryption
+  key shouldn't get lost between runs of the same LinOTP container; it
+  may just be tedious to get at from outside the running container. If
+  you need to, refer to the `docker inspect` command to find out where
+  Docker hides it.)
+
 ## Gitlab-CI Pipelines
 
 ### Failing *-test-pypi Jobs

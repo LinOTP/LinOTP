@@ -183,12 +183,12 @@ deb-install: builddeb
 # These targets are for building and running docker containers
 # for integration and builds
 #
-# Container name | Dockerfile location | Purpose
-# ---------------------------------------------------------------------------------------------------
-# linotp-builder | Dockerfile.builder | Container ready to build linotp packages
-# linotp         |                    | Runs linotp in apache
-# selenium-test  | tests/integration  | Run LinOTP Selenium tests against selenium remote
-# linotp-unit    | linotp/tests/unit  | Run LinOTP Unit tests
+# Container name | Dockerfile location           | Purpose
+# --------------------------------------------------------------------------------------------------
+# linotp-builder | docker/Dockerfile.builder-deb | Container ready to build linotp packages
+# linotp         |                               | Runs (deb-based) linotp in apache
+# selenium-test  | tests/integration             | Run LinOTP Selenium tests against selenium remote
+# linotp-unit    | linotp/tests/unit             | Run LinOTP Unit tests
 ######################################################################################################
 
 
@@ -270,7 +270,7 @@ DOCKER_TAG_ARGS=$(foreach tag,$(DOCKER_TAGS),-t $(DOCKER_IMAGE):$(tag))
 docker-build-linotp-builder: DOCKER_IMAGE=linotp-builder
 docker-build-linotp-builder:
 	$(DOCKER_BUILD) \
-		-f Dockerfile.builder \
+		-f docker/Dockerfile.builder-deb \
 		$(DOCKER_TAG_ARGS) \
 		-t $(DOCKER_IMAGE) \
 		.
@@ -319,8 +319,8 @@ docker-build-linotp: DOCKER_IMAGE=linotp
 docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	# Target: docker-build-linotp
 	mkdir -vp $(DOCKER_BUILDDIR)
-	cp Dockerfile \
-		config/*.tmpl \
+	cp docker/Dockerfile.linotp-deb $(DOCKER_BUILDDIR)/Dockerfile
+	cp config/*.tmpl \
 		linotp/tests/integration/testdata/se_mypasswd \
 		$(DOCKER_BUILDDIR)
 	cp $(BUILDDIR)/dockerfy $(DOCKER_BUILDDIR)

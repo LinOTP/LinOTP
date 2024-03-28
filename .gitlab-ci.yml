@@ -17,15 +17,15 @@ variables:
   DEPENDENCY_GPG_KEYID: ""
   DEPENDENCY_GPG_KEY_URL: http://debs-devel.corp.linotp.de/misc/gpg/linotp-dev-archive-keyring.gpg
   DOCKER_TAGS: $CI_PIPELINE_ID
-  IMAGE_PREFIX: $CI_REGISTRY/$CI_PROJECT_PATH/ci
+  IMAGE_PREFIX_CI: $CI_REGISTRY/$CI_PROJECT_PATH/ci
   NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
   # Docker network per build - needed for DNS resolution between services (service linotp needs db)
   FF_NETWORK_PER_BUILD: 1
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
-  PYPI_IMAGE: $IMAGE_PREFIX/linotp-pypi-testenv
-  NEW_DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
+  PYPI_IMAGE: $IMAGE_PREFIX_CI/linotp-testenv-pypi
+  DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/b/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
   # Variables for security scan evaluation
   SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
   SAST_DETECTION_REPORT_FILE: gl-sast-report.json
@@ -82,10 +82,10 @@ build-and-upload-pypi-image-testenv:
   before_script:
     - *docker-registry
   script:
-    - docker build -t "$PYPI_IMAGE_TAG" -f Dockerfile.pypi-testenv .
+    - docker build -t "$PYPI_IMAGE_TAG" -f docker/Dockerfile.testenv-pypi .
     - docker push "$PYPI_IMAGE_TAG"
 
-build-and-upload-new-docker:
+build-and-upload-docker:
   stage: check-and-build
   needs: []
   # image: docker:latest
@@ -98,21 +98,21 @@ build-and-upload-new-docker:
   before_script:
     - *docker-registry
   script:
-    - docker build -t "$NEW_DOCKER_IMAGE_TAG" -f docker_new/Dockerfile .
-    - docker push "$NEW_DOCKER_IMAGE_TAG"
+    - docker build -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
+    - docker push "$DOCKER_IMAGE_TAG"
 
 container_scanning:
   image:
     name: docker.io/aquasec/trivy:latest
     entrypoint: [""]
-  needs: ["build-and-upload-new-docker"]
+  needs: ["build-and-upload-docker"]
   variables:
     SEVERITIES: CRITICAL
     GIT_STRATEGY: none
     TRIVY_USERNAME: "$CI_REGISTRY_USER"
     TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
     TRIVY_AUTH_URL: "$CI_REGISTRY"
-    FULL_IMAGE_NAME: $NEW_DOCKER_IMAGE_TAG
+    FULL_IMAGE_NAME: $DOCKER_IMAGE_TAG
   script:
     - trivy --version
     # cache cleanup is needed when scanning images with the same tags, it does not remove the database
@@ -239,18 +239,19 @@ pre-commit-check:
     - *docker-registry
   script:
     - apk add --no-cache make
-    - REGISTRY_IMAGE=$IMAGE_PREFIX/linotp-${DEBIAN_RELEASE_NAME}
-    - BUILDER_CACHE_KEY=$(sha256sum Dockerfile.builder | cut -d ' ' -f1)
-    - BUILDER_CACHE_IMAGE=$REGISTRY_IMAGE-builder:${BUILDER_CACHE_KEY}
-    - LINOTP_CACHE_KEY=$(sha256sum Dockerfile | cut -d ' ' -f1)
-    - LINOTP_CACHE_IMAGE=$REGISTRY_IMAGE:${LINOTP_CACHE_KEY}
+    - TESTENV_DEB_IMAGE=$IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME
+    - SOFTHSM_DEB_IMAGE=$IMAGE_PREFIX_CI/linotp-softhsm-deb-$DEBIAN_RELEASE_NAME
+    - BUILDER_CACHE_KEY=$(sha256sum docker/Dockerfile.builder-deb | cut -d ' ' -f1)
+    - BUILDER_CACHE_IMAGE=$IMAGE_PREFIX_CI/linotp-builder-deb-$DEBIAN_RELEASE_NAME
+    - LINOTP_CACHE_KEY=$(sha256sum docker/Dockerfile.linotp-deb | cut -d ' ' -f1)
+    - LINOTP_CACHE_IMAGE=$IMAGE_PREFIX_CI/linotp-deb-$DEBIAN_RELEASE_NAME
     # Pull the old images to speedup the build process, the hope is
     # that the modified time will always be the same unless the file
     # has actually been changed
     - export DOCKER_BUILDKIT=1
-    - docker pull debian:${DEBIAN_RELEASE_NAME}
-    - docker pull $BUILDER_CACHE_IMAGE || true
-    - docker pull $LINOTP_CACHE_IMAGE || true
+    - docker pull debian:$DEBIAN_RELEASE_NAME
+    - docker pull $BUILDER_CACHE_IMAGE:$BUILDER_CACHE_KEY || true
+    - docker pull $LINOTP_CACHE_IMAGE:$LINOTP_CACHE_KEY || true
     # Build the images
     - *docker-build-args
     - >
@@ -265,21 +266,21 @@ pre-commit-check:
     #  registry/ci/release/linotp-IMAGENAME:pipelineID
     #  registry/ci/release/linotp-IMAGENAME:sha256
     # First for linotp-builder
-    - docker tag linotp-builder:latest "${BUILDER_CACHE_IMAGE}"
-    - docker tag linotp-builder:latest "$REGISTRY_IMAGE-builder:${CI_PIPELINE_ID}"
-    - docker push "${BUILDER_CACHE_IMAGE}"
-    - docker push "$REGISTRY_IMAGE-builder:${CI_PIPELINE_ID}"
+    - docker tag linotp-builder:latest "$BUILDER_CACHE_IMAGE:$BUILDER_CACHE_KEY"
+    - docker tag linotp-builder:latest "$BUILDER_CACHE_IMAGE:$CI_PIPELINE_ID"
+    - docker push "$BUILDER_CACHE_IMAGE:$BUILDER_CACHE_KEY"
+    - docker push "$BUILDER_CACHE_IMAGE:$CI_PIPELINE_ID"
     # Now do the same for linotp
-    - docker tag linotp:latest "${LINOTP_CACHE_IMAGE}"
-    - docker tag linotp:latest "$REGISTRY_IMAGE:${CI_PIPELINE_ID}"
-    - docker push "${LINOTP_CACHE_IMAGE}"
-    - docker push "$REGISTRY_IMAGE:${CI_PIPELINE_ID}"
+    - docker tag linotp:latest "$LINOTP_CACHE_IMAGE:$LINOTP_CACHE_KEY"
+    - docker tag linotp:latest "$LINOTP_CACHE_IMAGE:$CI_PIPELINE_ID"
+    - docker push "$LINOTP_CACHE_IMAGE:$LINOTP_CACHE_KEY"
+    - docker push "$LINOTP_CACHE_IMAGE:$CI_PIPELINE_ID"
     # Now we push the testenv and softhsm images. We do not bother to cache
     # this because they change every time we do a new linotp build.
-    - docker tag linotp-testenv:latest "$REGISTRY_IMAGE-testenv:${CI_PIPELINE_ID}"
-    - docker push "$REGISTRY_IMAGE-testenv:${CI_PIPELINE_ID}"
-    - docker tag linotp-softhsm:latest "$REGISTRY_IMAGE-softhsm:${CI_PIPELINE_ID}"
-    - docker push "$REGISTRY_IMAGE-softhsm:${CI_PIPELINE_ID}"
+    - docker tag linotp-testenv:latest "$TESTENV_DEB_IMAGE:$CI_PIPELINE_ID"
+    - docker push "$TESTENV_DEB_IMAGE:$CI_PIPELINE_ID"
+    - docker tag linotp-softhsm:latest "$SOFTHSM_DEB_IMAGE:$CI_PIPELINE_ID"
+    - docker push "$SOFTHSM_DEB_IMAGE:$CI_PIPELINE_ID"
     # Log all the images to stdout
     - docker images
     # Save build job id to artifacts for later uploads
@@ -303,7 +304,7 @@ build:debian-buster:
 lint:
   stage: lint
   when: manual
-  image: ${IMAGE_PREFIX}/${DEBIAN_RELEASE_NAME}/linotp-testenv:${CI_PIPELINE_ID}
+  image: $IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME:$CI_PIPELINE_ID
   needs: ["build:debian-buster"]
   interruptible: true
   variables:
@@ -485,7 +486,7 @@ lint:
     - .only-nightly-and-merge
   stage: test
   needs: build:debian-buster
-  image: ${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}-testenv:${CI_PIPELINE_ID}
+  image: $IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME:$CI_PIPELINE_ID
 
 unit-test-pypi:
   extends: .test-base-pypi
@@ -555,7 +556,7 @@ functional-test-mysql:
     - .test-base-debs
     - .buster-tests
   variables:
-    LINOTP_IMAGE: "linotp"
+    LINOTP_IMAGE: "linotp-deb"
     LINOTP_HOST: "test-linotp"
     LINOTP_PORT: "443"
     LINOTP_PROTOCOL: "https"
@@ -610,7 +611,7 @@ e2e-test-mariadb:
     - .e2e-test
     - .mariadb-database
   services:
-    - name: "${IMAGE_PREFIX}/${LINOTP_IMAGE}-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
+    - name: "${IMAGE_PREFIX_CI}/${LINOTP_IMAGE}-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
       alias: test-linotp
     - name: $BLACKDOG_LDAP_IMAGE
       alias: blackdog-ldap
@@ -637,7 +638,7 @@ e2e-test-softhsm:
 # Auto-generate API docs using Sphinx.
 apidocs:
   stage: apidocs
-  image: $IMAGE_PREFIX/linotp-buster:${CI_PIPELINE_ID}
+  image: $IMAGE_PREFIX_CI/linotp-deb-buster:${CI_PIPELINE_ID}
   interruptible: true
   needs: ["build:debian-buster"]
   script:
