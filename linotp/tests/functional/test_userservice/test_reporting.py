@@ -108,3 +108,79 @@ class TestUserserviceReporting(TestController):
             with DBSession() as session:
                 entries = session.query(Reporting).all()
                 assert [] == entries, action
+
+    def test_authorized_request_does_trigger_reporting_userservice_controller(
+        self,
+    ):
+        actions_to_test = ["enable", "disable"]
+        # create token without triggering reporting
+        user = "passthru_user1"
+        realm = "myDefRealm"
+        auth_user = {"login": f"{user}@{realm}", "password": "geheim1"}
+        parameters = {
+            "serial": "F722362",
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": user,
+            "pin": "pin",
+            "description": "TestToken1",
+        }
+        serial = self.init_token(parameters)
+
+        # create reporting policy
+        self.create_reporting_policy()
+        # create selfservice policy
+        params = {
+            "name": "allow",
+            "scope": "selfservice",
+            "action": ",".join(actions_to_test),
+            "user": "*",
+            "realm": "*",
+            "active": True,
+        }
+        response = self.make_system_request("setPolicy", params)
+
+        # trigger action
+        for action in actions_to_test:
+            response = self.make_userselfservice_request(
+                action, params={"serial": serial}, auth_user=auth_user
+            )
+
+            # verify no reporting was triggered
+            with DBSession() as session:
+                entries = session.query(Reporting).all()
+                assert 5 == len(entries), action
+
+                # Clean up reporting and Tokens
+                session.query(Reporting).delete()
+                session.commit()
+
+    def test_authorized_request_does_not_trigger_reporting_userservice_controller_without_policy(
+        self,
+    ):
+        actions_to_test = ["enable", "disable"]
+        # create token without triggering reporting
+        user = "passthru_user1"
+        realm = "myDefRealm"
+        auth_user = {"login": f"{user}@{realm}", "password": "geheim1"}
+        parameters = {
+            "serial": "F722362",
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": user,
+            "pin": "pin",
+            "description": "TestToken1",
+        }
+        serial = self.init_token(parameters)
+
+        # create policy
+        self.create_reporting_policy()
+
+        # trigger action that would trigger reporting pre LINOTP-2084
+        for action in actions_to_test:
+            response = self.make_userselfservice_request(
+                action, params={"serial": serial}, auth_user=auth_user
+            )
+
+            # verify no reporting was triggered
+            with DBSession() as session:
+                entries = session.query(Reporting).all()
+                assert [] == entries, action
