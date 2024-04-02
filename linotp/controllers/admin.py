@@ -131,14 +131,15 @@ class AdminController(BaseController, JWTMixin):
         action = request_context["action"]
 
         try:
-            g.audit["administrator"] = getUserFromRequest()
+            authUser = getUserFromRequest()
+            g.audit["administrator"] = authUser
 
             # ------------------------------------------------------------- --
 
             # show the token usage counter for the actions which change the
             # numbers of tokens
 
-            if action in [
+            if authUser and action in [
                 "assign",
                 "unassign",
                 "enable",

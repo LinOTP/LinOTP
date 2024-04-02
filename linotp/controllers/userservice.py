@@ -104,6 +104,7 @@ from linotp.lib.user import (
     User,
     get_userinfo,
     getRealmBox,
+    getUserFromRequest,
     getUserId,
     splitUser,
 )
@@ -356,7 +357,7 @@ class UserserviceController(BaseController):
 
         action = request_context["action"]
 
-        authUser = g.authUser
+        authUser = getUserFromRequest()
 
         try:
             if g.audit["action"] not in [
@@ -387,7 +388,7 @@ class UserserviceController(BaseController):
 
                 # actions which change the token amount do some reporting
 
-                if action in [
+                if authUser and action in [
                     "assign",
                     "unassign",
                     "enable",
