@@ -1674,3 +1674,33 @@ class TestAdminController(TestController):
             # Clean up policies and tokens
             self.delete_all_policies()
             self.delete_all_token()
+
+    def test_bug_LINOTP_2084_unauthorized_request_does_not_trigger_reporting_admin_controller(
+        self,
+    ):
+        # create token without triggering reporting
+        serial = self.createSPASS()
+        # create policy
+        self.create_reporting_policy()
+
+        # trigger action that would trigger reporting pre LINOTP-2084
+        for action in [
+            "assign",
+            "unassign",
+            "enable",
+            "disable",
+            "init",
+            "loadtokens",
+            "copyTokenUser",
+            "losttoken",
+            "remove",
+            "tokenrealm",
+        ]:
+            response = self.make_request(
+                "admin", action, params={"serial": serial}
+            )
+
+            # verify no reporting was triggered
+            with DBSession() as session:
+                entries = session.query(Reporting).all()
+                assert [] == entries, action
