@@ -124,10 +124,6 @@ RUN mkdir -p \
     # Create symlink for assets customization
     python symlink_custom_assets.py && rm symlink_custom_assets.py
 
-# Create volumes for root level dirs
-VOLUME $LINOTP_ROOT_DIR \
-    $LINOTP_CACHE_DIR \
-    $LINOTP_LOG_FILE_DIR
 
 # Create and set the user to run the container and chown directories
 RUN useradd -r $LINOTP_USER && \
@@ -136,5 +132,10 @@ RUN useradd -r $LINOTP_USER && \
     $LINOTP_LOG_FILE_DIR \
     $LINOTP_CACHE_DIR
 USER $LINOTP_USER
+
+# Create volumes for root level dirs
+VOLUME $LINOTP_ROOT_DIR \
+    $LINOTP_CACHE_DIR \
+    $LINOTP_LOG_FILE_DIR
 
 ENTRYPOINT [ "tini", "--", "./entrypoint.sh" ] 
