@@ -26,6 +26,7 @@ variables:
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
   PYPI_IMAGE: $IMAGE_PREFIX_CI/linotp-testenv-pypi
   DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/b/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
+  DOCKER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/linotp
   # Variables for security scan evaluation
   SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
   SAST_DETECTION_REPORT_FILE: gl-sast-report.json
@@ -50,6 +51,7 @@ stages:
   - lint
   - coverage-report
   - apidocs
+  - upload-image
   - upload-debian-packages
   - iso
 
@@ -666,6 +668,13 @@ apidocs:
 upload-debs:
   stage: upload-debian-packages
   extends: .upload-debs
+
+# Upload container image
+
+upload-container-image:
+  stage: upload-image
+  extends: .upload-container-image
+  needs: ["container_scanning"]
 
 # Build and upload are being handled by dev/linotp/sva2/build-isos
 .build-and-upload-iso:
