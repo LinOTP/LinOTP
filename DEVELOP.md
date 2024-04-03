@@ -493,8 +493,11 @@ Debian packaging:
 From the base directory of the LinOTP distribution, run the following
 command:
 ```terminal
-$ docker build -f docker/Dockerfile.main -t linotp .
+$ docker build -f docker/Dockerfile.linotp -t linotp .
 ```
+(If you're a lazy sort of person, omitting `-f docker/Dockerfile.linotp` 
+is fine because `./Dockerfile` is a symbolic link to
+`./docker/Dockerfile.linotp`.)
 
 ### Running a LinOTP Container
 
