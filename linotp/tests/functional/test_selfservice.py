@@ -880,6 +880,37 @@ class TestSelfserviceController(TestController):
         user = response_dict["detail"]["user"]["username"]
         assert user == "passthru_user1"
 
+    def test_last_access_in_context(self):
+        """
+        Check value of last_access in /userservice/context
+
+        refers to LINOTP-2135
+        """
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+        # Test default last_access is False
+        response = self.make_userselfservice_request(
+            "context", auth_user=auth_user
+        )
+        response_dict = json.loads(response.body)
+
+        last_access = response_dict["detail"]["settings"]["last_access"]
+        assert not last_access
+
+        # Test last_access is True
+        param = {"linotp.token.last_access": True}
+        _response = self.make_system_request("setConfig", params=param)
+        response = self.make_userselfservice_request(
+            "context", auth_user=auth_user
+        )
+        response_dict = json.loads(response.body)
+
+        last_access = response_dict["detail"]["settings"]["last_access"]
+        assert last_access
+
     def test_setdescription(self):
         """
         selfservice: testing set token description as normal user
