@@ -38,6 +38,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
       * accepts query parameter `realms` to filter by realms.
         Use `realms=*` to get all realms including `/:no realm:/`.
   * Extend Audit from AdminController
+  * /userservice/context additionally returns wether usage timestamps are logged in token info in `["detail"]["settings"]["last_access"]`
 
   Fix:
   * After a logout the jwt token can not be reused

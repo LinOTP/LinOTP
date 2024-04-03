@@ -37,6 +37,7 @@ from typing import Dict, List, Union
 from linotp.flap import render_mako as render
 from linotp.flap import tmpl_context as c
 from linotp.lib.challenges import Challenges
+from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.policy.action import (
     get_selfservice_action_value,
@@ -354,6 +355,13 @@ def get_context(config, user: User, client: str):
     context["user"] = get_userinfo(user)
     context["imprint"] = get_imprint(user.realm)
     context["tokenArray"] = getTokenForUser(user)
+
+    token_access = getFromConfig("linotp.token.last_access")
+    if token_access in [None, False] or token_access.lower() == "false":
+        token_access = False
+    else:
+        token_access = True
+    context["settings"]["last_access"] = token_access
 
     context["actions"] = list()
     for action_name, action_value in get_selfservice_actions(user).items():
