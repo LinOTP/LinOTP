@@ -104,6 +104,7 @@ from linotp.lib.user import (
     User,
     get_userinfo,
     getRealmBox,
+    getUserFromRequest,
     getUserId,
     splitUser,
 )
@@ -264,6 +265,7 @@ class UserserviceController(BaseController):
         self.response = None
         g.cookies_to_delete = []
         g.cookies = {}
+        g.reporting = {"realms": []}
 
         action = request_context["action"]
 
@@ -355,7 +357,7 @@ class UserserviceController(BaseController):
 
         action = request_context["action"]
 
-        authUser = g.authUser
+        auth_user = getUserFromRequest()
 
         try:
             if g.audit["action"] not in [
@@ -363,10 +365,10 @@ class UserserviceController(BaseController):
                 "userservice/pre_context",
                 "userservice/userinfo",
             ]:
-                if authUser and isinstance(authUser, User):
-                    user, realm = authUser.login, authUser.realm
+                if auth_user and isinstance(auth_user, User):
+                    user, realm = auth_user.login, auth_user.realm
                 else:
-                    user, realm = repr(authUser), ""
+                    user, realm = repr(auth_user), ""
 
                 g.audit["user"] = user
                 g.audit["realm"] = realm
@@ -386,7 +388,7 @@ class UserserviceController(BaseController):
 
                 # actions which change the token amount do some reporting
 
-                if action in [
+                if auth_user and action in [
                     "assign",
                     "unassign",
                     "enable",
@@ -397,16 +399,9 @@ class UserserviceController(BaseController):
                 ]:
                     event = "token_" + action
 
-                    if g.audit.get("source_realm"):
-                        source_realms = g.audit.get("source_realm")
-                        token_reporting(event, source_realms)
-
-                    target_realms = (
-                        g.audit.get("realm").split(", ")
-                        if g.audit.get("realm")
-                        else ["/:no realm:/"]
-                    )
-                    token_reporting(event, target_realms)
+                    realms_to_report = g.reporting["realms"]
+                    if realms_to_report:
+                        token_reporting(event, set(realms_to_report))
 
                     g.audit["action_detail"] += get_token_num_info()
 
@@ -1316,6 +1311,7 @@ class UserserviceController(BaseController):
                 res["enable token"] = ret
 
                 g.audit["realm"] = g.authUser.realm
+                g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
                 g.audit["success"] = ret
 
             db.session.commit()
@@ -1380,6 +1376,7 @@ class UserserviceController(BaseController):
                 res["disable token"] = ret
 
                 g.audit["realm"] = g.authUser.realm
+                g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
                 g.audit["success"] = ret
 
             db.session.commit()
@@ -1435,6 +1432,7 @@ class UserserviceController(BaseController):
                 res["delete token"] = ret
 
                 g.audit["realm"] = g.authUser.realm
+                g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
                 g.audit["success"] = ret
 
             db.session.commit()
@@ -1547,8 +1545,12 @@ class UserserviceController(BaseController):
                 ret = th.unassignToken(serial, None, upin)
                 res["unassign token"] = ret
 
-                g.audit["success"] = ret
                 g.audit["realm"] = g.authUser.realm
+                g.reporting["realms"] = [
+                    g.authUser.realm or "/:no realm:/",
+                    "/:no realm:/",
+                ]
+                g.audit["success"] = ret
 
             db.session.commit()
             return sendResult(res, 1)
@@ -2050,8 +2052,10 @@ class UserserviceController(BaseController):
             checkPolicyPre("selfservice", "userassign", param, g.authUser)
 
             # check if token is in another realm
-            realm_list = getTokenRealms(serial)
-            if not g.authUser.realm.lower() in realm_list and len(realm_list):
+            source_realms = getTokenRealms(serial)
+            if not g.authUser.realm.lower() in source_realms and len(
+                source_realms
+            ):
                 # if the token is assigned to realms, then the user must be in
                 # one of the realms, otherwise the token can not be assigned
                 raise Exception(
@@ -2066,7 +2070,6 @@ class UserserviceController(BaseController):
                 raise Exception(
                     _("The token is already assigned to another user.")
                 )
-
             # -------------------------------------------------------------- --
 
             # assign  token to user
@@ -2093,6 +2096,10 @@ class UserserviceController(BaseController):
             res["assign token"] = ret_assign
 
             g.audit["realm"] = g.authUser.realm
+            source_realms_reporting = source_realms or ["/:no realm:/"]
+            g.reporting["realms"] = source_realms_reporting + [
+                g.authUser.realm or "/:no realm:/"
+            ]
             g.audit["success"] = ret_assign
 
             checkPolicyPost("selfservice", "userassign", param, g.authUser)
@@ -2317,6 +2324,7 @@ class UserserviceController(BaseController):
             g.audit["success"] = ret
             g.audit["user"] = g.authUser.login
             g.audit["realm"] = g.authUser.realm
+            g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
 
             g.audit["success"] = ret
 
@@ -2910,6 +2918,7 @@ class UserserviceController(BaseController):
             g.audit["token_type"] = reply["token_type"]
             g.audit["success"] = ok
             g.audit["realm"] = g.authUser.realm
+            g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
 
             db.session.commit()
             return sendResult(value, opt)

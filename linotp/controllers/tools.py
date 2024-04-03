@@ -132,8 +132,8 @@ class ToolsController(BaseController):
             old_pw = self.request_params["old_password"]
             new_pw = self.request_params["new_password"]
 
-            authenticated_user = getUserFromRequest()
-            username = authenticated_user.login
+            auth_user = getUserFromRequest()
+            username = auth_user.login
 
             if not username:
                 raise Exception("Missing authenticated user!")
