@@ -357,7 +357,7 @@ class UserserviceController(BaseController):
 
         action = request_context["action"]
 
-        authUser = getUserFromRequest()
+        auth_user = getUserFromRequest()
 
         try:
             if g.audit["action"] not in [
@@ -365,10 +365,10 @@ class UserserviceController(BaseController):
                 "userservice/pre_context",
                 "userservice/userinfo",
             ]:
-                if authUser and isinstance(authUser, User):
-                    user, realm = authUser.login, authUser.realm
+                if auth_user and isinstance(auth_user, User):
+                    user, realm = auth_user.login, auth_user.realm
                 else:
-                    user, realm = repr(authUser), ""
+                    user, realm = repr(auth_user), ""
 
                 g.audit["user"] = user
                 g.audit["realm"] = realm
@@ -388,7 +388,7 @@ class UserserviceController(BaseController):
 
                 # actions which change the token amount do some reporting
 
-                if authUser and action in [
+                if auth_user and action in [
                     "assign",
                     "unassign",
                     "enable",
