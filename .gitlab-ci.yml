@@ -55,9 +55,6 @@ stages:
   - upload-debian-packages
   - iso
 
-.docker-registry: &docker-registry
-  docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
 build-and-upload-pypi-image-testenv:
   stage: pypi-image
   # image: docker:latest
@@ -82,7 +79,7 @@ build-and-upload-pypi-image-testenv:
   variables:
     PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_REF_NAME
   before_script:
-    - *docker-registry
+    - !reference [.docker-registry]
   script:
     - docker build -t "$PYPI_IMAGE_TAG" -f docker/Dockerfile.testenv-pypi .
     - docker push "$PYPI_IMAGE_TAG"
@@ -98,7 +95,7 @@ build-and-upload-docker:
   # docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
   image: docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
   before_script:
-    - *docker-registry
+    - !reference [.docker-registry]
   script:
     - docker build -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
     - docker push "$DOCKER_IMAGE_TAG"
@@ -238,7 +235,7 @@ pre-commit-check:
     max: 2
   needs: []
   before_script:
-    - *docker-registry
+    - !reference [.docker-registry]
   script:
     - apk add --no-cache make
     - TESTENV_DEB_IMAGE=$IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME
