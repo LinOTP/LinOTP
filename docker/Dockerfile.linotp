@@ -30,6 +30,8 @@ RUN apt-get update \
     default-libmysqlclient-dev pkg-config \
     # to check if given DB is available
     netcat-openbsd \
+    # custom root-level CA certificate handling
+    ca-certificates doas \
     # entrypoint and signal handling
     tini \
     && apt-get clean \
@@ -112,6 +114,8 @@ COPY --from=builder $VENV_ROOT $VENV_ROOT
 COPY --from=translations $TRANSLATIONS_DIR $TRANSLATIONS_DIR
 # Copy relevant files to start linotp and create symlink
 COPY linotpapp.py docker/linotp/entrypoint.sh docker/linotp/symlink_custom_assets.py ./
+# Copy configuration file for `doas`
+COPY docker/linotp/doas.conf /etc/doas.conf
 
 # Create directories
 RUN mkdir -p \
