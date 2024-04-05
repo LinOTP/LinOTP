@@ -128,7 +128,9 @@ RUN mkdir -p \
     $TRANSLATIONS_DIR \
     && \
     # Create symlink for assets customization
-    python symlink_custom_assets.py && rm symlink_custom_assets.py
+    python symlink_custom_assets.py && rm symlink_custom_assets.py \
+    # Let people put custom CA certificates into a top-level directory
+    && ln -s /usr/local/share/ca-certificates /ca-certificates
 
 
 # Create and set the user to run the container and chown directories
