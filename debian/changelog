@@ -55,6 +55,13 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 
+linotp (3.2.6-1) buster; urgency=low
+
+  Fix:
+  * show serial and token type in audit log in case of an error; e.g. if a token exceeded its failcounter
+
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 31 Jan 2024 10:00:00 +0200
+
 linotp (3.2.5-1) buster; urgency=high
 
   Release 3.2.5 patches a session handling vulnerability in the Self
