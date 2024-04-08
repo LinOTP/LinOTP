@@ -1,4 +1,4 @@
-linotp (3.3~0dev-1) buster-dev; urgency=low
+linotp (3.3~rc0-1) UNRELEASED; urgency=low
 
   Features:
   * new API endpoints to retrieve tokens:
@@ -59,7 +59,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * requests to userservice API are logging the username in the audit-log instead of the User-Object
   * replace deprecated `DATA_DIR` with `CACHE_DIR`. Mako template cache now uses `CACHE_DIR`.
 
- -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
+ -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 
 linotp (3.2.6-1) buster; urgency=low
 
