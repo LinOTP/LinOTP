@@ -26,6 +26,7 @@ variables:
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
   PYPI_IMAGE: $IMAGE_PREFIX_CI/linotp-testenv-pypi
   DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/b/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
+  DOCKER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/linotp
   # Variables for security scan evaluation
   SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
   SAST_DETECTION_REPORT_FILE: gl-sast-report.json
@@ -50,11 +51,9 @@ stages:
   - lint
   - coverage-report
   - apidocs
+  - upload-image
   - upload-debian-packages
   - iso
-
-.docker-registry: &docker-registry
-  docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 build-and-upload-pypi-image-testenv:
   stage: pypi-image
@@ -80,7 +79,7 @@ build-and-upload-pypi-image-testenv:
   variables:
     PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_REF_NAME
   before_script:
-    - *docker-registry
+    - !reference [.docker-registry]
   script:
     - docker build -t "$PYPI_IMAGE_TAG" -f docker/Dockerfile.testenv-pypi .
     - docker push "$PYPI_IMAGE_TAG"
@@ -96,7 +95,7 @@ build-and-upload-docker:
   # docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
   image: docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
   before_script:
-    - *docker-registry
+    - !reference [.docker-registry]
   script:
     - docker build -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
     - docker push "$DOCKER_IMAGE_TAG"
@@ -236,7 +235,7 @@ pre-commit-check:
     max: 2
   needs: []
   before_script:
-    - *docker-registry
+    - !reference [.docker-registry]
   script:
     - apk add --no-cache make
     - TESTENV_DEB_IMAGE=$IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME
@@ -666,6 +665,13 @@ apidocs:
 upload-debs:
   stage: upload-debian-packages
   extends: .upload-debs
+
+# Upload container image
+
+upload-container-image:
+  stage: upload-image
+  extends: .upload-container-image
+  needs: ["container_scanning"]
 
 # Build and upload are being handled by dev/linotp/sva2/build-isos
 .build-and-upload-iso:
