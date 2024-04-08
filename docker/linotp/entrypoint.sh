@@ -68,6 +68,13 @@ start_linotp() {
     fi
 }
 
+# Enable additional root CA certificates (if any).
+# These must be in /usr/local/share/ca-certificates in files whose names
+# end with `.crt`. If the `TLS_CA_CERTS` environment variable is set,
+# split its content into files in /usr/local/share/ca-certificates first.
+
+doas /usr/local/sbin/install-ca-certificates
+
 # fetch host and port of database from LINOTP_DATABASE_URI
 eval $(python3 -c "from urllib.parse import urlparse
 def get_port(r):
