@@ -41,7 +41,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * /userservice/context additionally returns wether usage timestamps are logged in token info in `["detail"]["settings"]["last_access"]`
 
   Fix:
-  * After a logout the jwt token can not be reused
+  * JWT are revoked after logout and server restart
   * Correct pagination of sendResultIterator for page 0 and first object in list
   * Filtering for active/inactive token works correctly
   * no more support for truncated transaction ids
