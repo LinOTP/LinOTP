@@ -53,6 +53,7 @@ linotp (3.3~0dev-1) buster-dev; urgency=low
   * AdminController triggers reporting for realms correctly
   * UserserviceController triggers reporting for realms correctly
   * Replace deprecated `DATA_DIR` with `CACHE_DIR`. Mako template cache now uses `CACHE_DIR`.
+  * forward token with an empty pin supports forwarding to a push token
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 23 Feb 2022 08:51:51 +0100
 
