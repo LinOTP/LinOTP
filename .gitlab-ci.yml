@@ -490,6 +490,7 @@ lint:
 unit-test-pypi:
   extends: .test-base-pypi
   script:
+      - pip3 install -e .
       - make unittests PYTESTARGS="$PYTESTARGS"
 
 .functional-test-base-pypi:
