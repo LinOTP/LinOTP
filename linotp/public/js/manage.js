@@ -940,7 +940,7 @@ function assign_callback(xhdr, textStatus, serials) {
         alert_info_text({
             'text': escape(obj.result.error.message),
             'type': ERROR,
-            'is_esacped': true
+            'is_escaped': true
         });
     } else
         view_setpin_after_assigning(serials);
