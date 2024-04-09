@@ -6381,7 +6381,7 @@ function delete_sms_provider(provider) {
                     'is_escaped': true
                 });
             } else if (data.result.value == false) {
-                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occurred'));
                 alert_box({
                     'title': i18n.gettext('Failed to delete provider'),
                     'text': reason_text,
@@ -6548,7 +6548,7 @@ function delete_email_provider(provider) {
                     'is_escaped': true
                 });
             } else if (data.result.value == false) {
-                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occurred'));
                 alert_box({
                     'title': i18n.gettext('Failed to delete provider'),
                     'text': reason_text,
@@ -6674,7 +6674,7 @@ function delete_push_provider(provider) {
                 });
 
             } else if (data.result.value == false) {
-                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occurred'));
                 alert_box({
                     'title': i18n.gettext('Failed to delete provider'),
                     'text': reason_text,
@@ -6800,7 +6800,7 @@ function delete_voice_provider(provider) {
                 });
 
             } else if (data.result.value == false) {
-                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occurred'));
                 alert_box({
                     'title': i18n.gettext('Failed to delete provider'),
                     'text': reason_text,
