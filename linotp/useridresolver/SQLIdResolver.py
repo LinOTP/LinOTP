@@ -950,7 +950,7 @@ class IdResolver(UserIdResolver):
             log.debug("[getUserList] getting SQL users from table %r", table)
 
             sStr = self._createSearchString(dbObj, table, searchDict)
-            log.debug("[getUserList] creating searchstring <<%r>>", sStr)
+            log.debug("[getUserList] creating searchString <<%r>>", sStr)
             log.debug("[getUserList] type of searchString: %s", type(sStr))
             select = table.select(sStr, limit=self.limit)
 

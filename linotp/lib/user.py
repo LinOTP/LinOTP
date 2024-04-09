@@ -523,7 +523,7 @@ def get_user_from_options(
             user = options["user"]
 
         else:
-            log.warning("unknow type of user object %r", options["user"])
+            log.warning("unknown type of user object %r", options["user"])
 
     realm = user.realm
     login = user.login or ""

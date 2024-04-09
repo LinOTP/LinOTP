@@ -956,7 +956,7 @@ function token_operations_callback(responses) {
     $.each(responses, function (index, responseData) {
         // "responseData" will contain an array of response information for each specific request
         if (responseData.length !== 3 || responseData[1] !== 'success') {
-            error_messages.push('Request ' + index + ' unsucessful');
+            error_messages.push('Request ' + index + ' unsuccessful');
             return true; // skip to next item of each loop
         }
         var obj = responseData[0];
