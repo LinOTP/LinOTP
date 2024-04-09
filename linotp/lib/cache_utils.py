@@ -40,7 +40,7 @@ log = logging.getLogger(__name__)
 def cache_in_request(
     _func=None,
     *,
-    key_generator=lambda *args, **kwargs: args + tuple(kwargs.items())
+    key_generator=lambda *args, **kwargs: args + tuple(kwargs.items()),
 ):
     """Decorator to use for caching function calls in the request context
 
@@ -82,25 +82,16 @@ def cache_in_request(
 
             cache_key = key_generator(*args, **kwargs)
 
-            log_message = (
-                "["
-                + func_to_cache.__name__
-                + "]:"
-                + " getting output values from cache"
-            )
+            log_prefix = f"[{func_to_cache.__name__}]"
             if cache_key not in request_context[cache_name]:
-                log_message = (
-                    "["
-                    + func_to_cache.__name__
-                    + "]:"
-                    + "output values not in cache, getting values from DB"
-                )
+                log.debug(f"{log_prefix}: output values not in cache")
 
                 request_context[cache_name][cache_key] = func_to_cache(
                     *args, **kwargs
                 )
+            else:
+                log.debug(f"{log_prefix}: getting output values from cache")
 
-            log.info(log_message)
             return request_context[cache_name][cache_key]
 
         return request_cacher

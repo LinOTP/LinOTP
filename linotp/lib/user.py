@@ -1062,8 +1062,8 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
     """
 
-    log.info(
-        "lookup the user %r or uid %r for resolver %r",
+    log.debug(
+        "User lookup for login %r or uid %r in resolver %r",
         login,
         user_id,
         resolver_spec,
@@ -1155,14 +1155,14 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
     try:
         if not user_lookup_cache:
-            log.info("lookup user without user lookup cache")
+            log.debug("lookup user without user lookup cache")
 
             result = _lookup_user_in_resolver(
                 login, user_id, resolver_spec, user_info
             )
 
         else:
-            log.info("lookup user using the user lookup cache")
+            log.debug("lookup user using the user lookup cache")
 
             p_lookup_user_in_resolver = partial(
                 _lookup_user_in_resolver,
@@ -1241,7 +1241,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
     # we end up here if everything was okay
 
-    log.info("lookup done for %r: %r", p_key, result)
+    log.debug("lookup done for %r: %r", p_key, result)
     return result
 
 

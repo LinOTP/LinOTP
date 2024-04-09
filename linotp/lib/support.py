@@ -1005,11 +1005,15 @@ def check_date(expire_type, expire):
     for fmt in ("%d.%m.%Y", "%m/%d/%Y", "%Y-%m-%d"):
         try:
             expiration_date = datetime.datetime.strptime(expire, fmt)
+            log.debug(
+                "License expiration format '%s' matched by '%r'",
+                fmt,
+                expire,
+            )
             break
         except BaseException:
-            log.info(
-                "License expiration format incorrect. Format is %s, "
-                "but got %r",
+            log.debug(
+                "License expiration format '%s' not matched by '%r'",
                 fmt,
                 expire,
             )

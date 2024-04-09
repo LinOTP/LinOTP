@@ -788,7 +788,7 @@ class IdResolver(UserIdResolver):
                     % (invalid_columns, [co.name for co in table.columns])
                 )
             else:
-                log.info("Valid mapping: %r", self.sqlUserInfo)
+                log.debug("Valid mapping: %r", self.sqlUserInfo)
 
         except Exception as exx:
             log.error("[checkMapping] Exception: %r", exx)
