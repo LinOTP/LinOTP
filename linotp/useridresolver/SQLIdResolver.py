@@ -949,7 +949,7 @@ class IdResolver(UserIdResolver):
             table = dbObj.getTable(self.sqlTable)
             log.debug("[getUserList] getting SQL users from table %r", table)
 
-            sStr = self._creatSearchString(dbObj, table, searchDict)
+            sStr = self._createSearchString(dbObj, table, searchDict)
             log.debug("[getUserList] creating searchstring <<%r>>", sStr)
             log.debug("[getUserList] type of searchString: %s", type(sStr))
             select = table.select(sStr, limit=self.limit)
@@ -1066,7 +1066,7 @@ class IdResolver(UserIdResolver):
             table.c[column_name] == loginId
         )
 
-    def _creatSearchString(self, dbObj, table, searchDict: dict):
+    def _createSearchString(self, dbObj, table, searchDict: dict):
         def get_column(column_name: str):
             # case-insensitive fetching of all possible column_names
             possible_column_name_list = [
@@ -1076,7 +1076,7 @@ class IdResolver(UserIdResolver):
             ]
             if not possible_column_name_list:
                 raise KeyError(
-                    "[_creatSearchString] no column found for %s", column_name
+                    "[_createSearchString] no column found for %s", column_name
                 )
 
             # more tolerant mapping of column names for some sql dialects
@@ -1167,7 +1167,7 @@ class IdResolver(UserIdResolver):
 
         # AND filter
         for key, value in searchDict.items():
-            log.debug("[__createSearchString] proccessing key %s", key)
+            log.debug("[__createSearchString] processing key %s", key)
 
             try:
                 column = get_column(key)

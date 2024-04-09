@@ -86,7 +86,7 @@ class User(object):
 
         log.debug("[User.__init__] user created ")
 
-    def _filter_for_resolver_config_identitier(self, resolvers_list):
+    def _filter_for_resolver_config_identifier(self, resolvers_list):
         """
         filter_for_resolver_spec filters a list of resolvers:
         - if no resolver_config_identifier exists
@@ -150,7 +150,7 @@ class User(object):
 
         # if there is a resolver_config_identifier we have to care for
 
-        filtered_resolvers_list = self._filter_for_resolver_config_identitier(
+        filtered_resolvers_list = self._filter_for_resolver_config_identifier(
             resolvers_list
         )
 
@@ -316,7 +316,7 @@ class User(object):
 
         return userlist
 
-    def get_full_qalified_names(self):
+    def get_full_qualified_names(self):
         """Get full qualified names.
 
         :return: list of full qualified names

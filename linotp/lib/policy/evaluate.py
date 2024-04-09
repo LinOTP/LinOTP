@@ -709,7 +709,7 @@ def user_list_compare(policy_conditions, login):
     else:
         raise Exception("unsupported type of login")
 
-    full_qualified_names = user.get_full_qalified_names()
+    full_qualified_names = user.get_full_qualified_names()
 
     matched = False
     match_type = NOT_MATCH
