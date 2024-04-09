@@ -1,4 +1,4 @@
-linotp (3.3~rc0-1) UNRELEASED; urgency=low
+linotp (3.3~rc1~dev0-1) UNRELEASED; urgency=low
 
   Features:
   * new API endpoints to retrieve tokens:
