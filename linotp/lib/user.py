@@ -478,7 +478,7 @@ def splitUser(username):
 def _get_resolver_from_param(param):
     """
     extract the resolver shortname from the given parameter,
-    which could be "res_name (fq resolber name) "
+    which could be "res_name (fq resolver name) "
     """
 
     resolver_config_identifier = param.get("resConf", "")
@@ -497,11 +497,11 @@ def get_user_from_options(
     return a tuple of user login and realm considering the options contexts
 
     in the token implementation we often require to make a policy lookup.
-    As the policies are user and realm dependend we require to define for
+    As the policies are user and realm dependent we require to define for
     witch user or realm this lookup should be made. The input can be taken
     from:
     - the token owner or
-    - options, the request addtional parameters which might contain a user
+    - options, the request additional parameters which might contain a user
       object or a login name or
     - the token realm, if neither user or owner is given
 
@@ -628,7 +628,7 @@ def get_userinfo(user: User, secure: bool = True) -> Dict:
     gather information about a user to be returned for rendering
 
     - to ease the rendering process, in case of an error we just return an
-      empyt structure and log the errors
+      empty structure and log the errors
 
     :param user: User class object
     :param secure: defines if the crypted password will be part of the
@@ -764,7 +764,7 @@ def find_resolver_spec_for_config_identifier(realms_dict, config_identifier):
     :param realms_dict: A realms dictionary
     :param config_identifier: The config identifier to search for
 
-    :return Resolver specification (or None if no match occured)
+    :return Resolver specification (or None if no match occurred)
     """
 
     # FIXME: Exactly as the old algorithm this method
@@ -1054,9 +1054,9 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     :remark: the userinfo should not be part of this api and not be cached
 
     :param login: login name
-    :param user_id: the users uiniq identifier
+    :param user_id: the users unique identifier
     :param resolver_spec: the resolver specifier
-    :paran user_info: optional parameter, required to fill the cache
+    :param user_info: optional parameter, required to fill the cache
 
     :return: login, uid, user info
 

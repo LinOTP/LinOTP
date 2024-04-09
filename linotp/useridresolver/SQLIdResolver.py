@@ -115,7 +115,7 @@ DB_crypt_schemes = [
     "oracle11",
 ]
 
-# legacy password schemes partialy without identifier
+# legacy password schemes partially without identifier
 Archaic_crypt_schemes = ["des_crypt", "bsdi_crypt", "bigcrypt"]
 
 
@@ -141,17 +141,17 @@ log = logging.getLogger(__name__)
 def check_password(password, crypted_password, salt=None):
     """
     check the crypted password and the optional salt
-    for various passsword schemes defining a passlib crypto context
+    for various password schemes defining a passlib crypto context
 
     - {id}pwdata - LDAP format
     - $id$pwdata - modular crypt format
-    - other format like the atlasian or php passwords
+    - other format like the Atlassian or PHP passwords
     - support db format
     - support for archaic formats like Des
 
-    the defintions of the crypto context is made above in the schema lists
+    the definitions of the crypto context is made above in the schema lists
 
-    the algorithm iterates over the crypto contexti to identify the type
+    the algorithm iterates over the crypto contexts to identify the type
     of the password and, if salt is provided, tries to verify with or
     without salt.
 
@@ -186,7 +186,7 @@ def check_password(password, crypted_password, salt=None):
 
 def make_connect(driver, user, pass_, server, port, db, conParams=""):
     """
-    create a connect string from decicated parts
+    create a connect string from separate parts
     - to build a SQLAlchemy Uri
 
     :param    driver: mysql, postgres, ...
@@ -208,7 +208,7 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
     connect = ""
     if "?odbc_connect=" in driver:
         # we have the need to support the odbc_connect mode
-        # where the parameters of the drivers will be concated
+        # where the parameters of the drivers will be concatenated
         # The template for the odbc_connect string is submitted
         # in the field "Additional connection parameters:"
         param_str = conParams
@@ -250,13 +250,13 @@ def build_simple_connect(
     """
     build from the parameters the sql connect url
 
-    :param driver: the url protocoll / prefix
+    :param driver: the url protocol / prefix
     :param user: the database accessing user
     :param pass_: the password of database accessing user
     :param server: the hostname for the server could be empty
     :param port: the port on th server host, could be empty
     :param db: the database on the server
-    :param conParams: additional and otpional database parameter
+    :param conParams: additional and optional database parameter
 
     return the connection string
     """
@@ -322,7 +322,7 @@ def build_simple_connect(
 class dbObject:
     def __init__(self):
         """
-        constructor - initaialize the database object
+        constructor - initialize the database object
         """
         self.engine = None
         self.meta = None
@@ -871,7 +871,7 @@ class IdResolver(UserIdResolver):
         """
         return all user related information
 
-        @param userId: specied user
+        @param userId: specified user
         @type userId:  string
         @return: dictionary, containing all user related info
         @rtype:  dict
@@ -934,7 +934,7 @@ class IdResolver(UserIdResolver):
         """
         retrieve a list of users
 
-        :param searchDict: dictionary of the search criterias
+        :param searchDict: dictionary of the search criteria
         :type  searchDict: dict
         :return: list of user descriptions (as dict)
         """
@@ -1008,7 +1008,7 @@ class IdResolver(UserIdResolver):
         add to an existing filter the WHERE filter if it exist.
         This can be used for the getUserList or getUserId
 
-        :param filtr: filter espression
+        :param filtr: filter expression
         :return: new filter string
         """
         # use the Where clause to only see certain users.
