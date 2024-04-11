@@ -41,6 +41,8 @@ from typing import Any, Callable, Dict, Tuple, Union
 import ldap
 import ldap.filter
 
+from linotp.lib.util import get_log_level
+
 try:
     from ldap import LDAP_CONTROL_PAGE_OID
 
@@ -1720,12 +1722,8 @@ def ldap_test(
     if loginattribute:
         params["LOGINNAMEATTRIBUTE"] = loginattribute
 
-    global_log_level = (
-        current_app.config["LOGGING_LEVEL"]
-        if "LOGGING_LEVEL" in current_app.config
-        else current_app.config["LOG_LEVEL"]
-    )
-    if not all_cases or global_log_level == "DEBUG":
+    log_level = get_log_level(current_app)
+    if not all_cases or log_level == "DEBUG":
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)

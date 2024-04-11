@@ -77,9 +77,9 @@ from .lib.tools.flask_jwt_extended_migration import (
     verify_jwt_in_request,
 )
 from .lib.user import User, getUserFromRequest
-from .lib.util import get_client
+from .lib.util import get_client, get_log_level
 from .model import SYS_EXIT_CODE, setup_db
-from .settings import ConfigSchema, configs
+from .settings import ConfigSchema, _config_schema, configs
 from .tokens import reload_classes as reload_token_classes
 
 log = logging.getLogger(__name__)
@@ -818,12 +818,6 @@ class LinOTPApp(Flask):
 def init_logging(app):
     """Sets up logging for LinOTP."""
 
-    global_log_level = (
-        app.config["LOGGING_LEVEL"]
-        if "LOGGING_LEVEL" in app.config
-        else app.config["LOG_LEVEL"]
-    )
-
     if app.config["LOG_CONFIG"] is None:
         app.config["LOG_CONFIG"] = {
             "version": 1,
@@ -856,7 +850,7 @@ def init_logging(app):
             "loggers": {
                 "linotp": {
                     "handlers": ["console", "file"],
-                    "level": global_log_level,
+                    "level": get_log_level(app),
                     "propagate": True,
                 },
                 "sqlalchemy.engine": {
