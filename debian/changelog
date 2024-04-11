@@ -1,3 +1,9 @@
+linotp (3.4~dev0-1) UNRELEASED; urgency=low
+
+  * dummy changelog entry for 3.4
+
+ -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
+
 linotp (3.3~rc0-1) UNRELEASED; urgency=low
 
   Features:
