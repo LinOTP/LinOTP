@@ -415,7 +415,6 @@ class LinOTPApp(Flask):
     def start_session(self):
         # we add a unique request id to the request environment
         # so we can trace individual requests in the logging
-
         request.environ["REQUEST_ID"] = str(uuid4())
         request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
@@ -449,7 +448,8 @@ class LinOTPApp(Flask):
                 e,
             )
 
-        self.create_context(request, request.environ)
+        if not self.is_request_static():
+            self.create_context(request, request.environ)
 
     def is_request_static(self):
         return request.path.startswith(self.static_url_path)
@@ -545,9 +545,13 @@ class LinOTPApp(Flask):
 
         flask_g.audit = self.audit_obj.initialize(request, client=client)
 
-        authUser = None
         try:
             c_identity = get_jwt_identity()
+        except Exception as exx:
+            c_identity = {}
+
+        authUser = None
+        try:
             if c_identity:
                 authUser = User(
                     login=c_identity["username"],
@@ -557,7 +561,7 @@ class LinOTPApp(Flask):
                     ].rpartition(".")[-1],
                 )
         except Exception as exx:
-            log.error("Failed to identify jwt user: %r", exx)
+            log.warning("Failed to identify jwt user: %r", exx)
 
         flask_g.authUser = authUser
 
