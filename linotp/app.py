@@ -545,9 +545,13 @@ class LinOTPApp(Flask):
 
         flask_g.audit = self.audit_obj.initialize(request, client=client)
 
-        authUser = None
         try:
             c_identity = get_jwt_identity()
+        except Exception as exx:
+            c_identity = {}
+
+        authUser = None
+        try:
             if c_identity:
                 authUser = User(
                     login=c_identity["username"],
