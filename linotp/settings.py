@@ -381,7 +381,7 @@ _config_schema = ConfigSchema(
             "LOGGING_LEVEL",
             str,
             validate=check_membership(VALID_LOG_LEVELS),
-            default="INFO",
+            default="WARNING",
             help=(
                 "Deprecation Warning: Soon to be replaced with `LOG_LEVEL`!"
                 "Messages will be logged only if they are at this level "
@@ -392,7 +392,7 @@ _config_schema = ConfigSchema(
             "LOG_LEVEL",
             str,
             validate=check_membership(VALID_LOG_LEVELS),
-            default="INFO",
+            default="WARNING",
             help=(
                 "Messages will be logged only if they are at this level "
                 "or above."
