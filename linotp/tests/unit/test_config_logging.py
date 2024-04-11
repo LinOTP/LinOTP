@@ -60,7 +60,7 @@ def test_logging_levels(
     app.config["LOG_LEVEL"] = ll
     app.config["LOG_FILE_LEVEL"] = lfl
     app.config["LOG_CONSOLE_LEVEL"] = lcl
-    app.config["LOGGING"] = None
+    app.config["LOG_CONFIG"] = None
     init_logging(app)  # Enact the configuration
     caplog.clear()
     MESSAGE = "foo bar baz"

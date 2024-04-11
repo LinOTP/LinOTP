@@ -222,7 +222,7 @@ values of environment variables appropriately. For example, the value
 of `LINOTP_LOG_FILE_MAX_LENGTH` will be converted to an integer to set
 the `LOG_FILE_MAX_LENGTH` configuration setting, and you may wish to
 amuse yourself by investigating what happens to the value of
-`LINOTP_LOGGING`.
+`LINOTP_LOG_CONFIG`.
 
 ### Predefined directory names
 

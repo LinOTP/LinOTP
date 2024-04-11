@@ -824,8 +824,8 @@ def init_logging(app):
         else app.config["LOG_LEVEL"]
     )
 
-    if app.config["LOGGING"] is None:
-        app.config["LOGGING"] = {
+    if app.config["LOG_CONFIG"] is None:
+        app.config["LOG_CONFIG"] = {
             "version": 1,
             "disable_existing_loggers": True,
             "handlers": {
@@ -869,7 +869,7 @@ def init_logging(app):
 
     if app.cli_cmd != "config":
         ensure_dir(app, "log", "LOG_FILE_DIR", mode=0o770)
-        logging_dictConfig(app.config["LOGGING"])
+        logging_dictConfig(app.config["LOG_CONFIG"])
 
     app.logger = logging.getLogger(app.name)
     app.logger.info("LinOTP {} starting ...".format(__version__))

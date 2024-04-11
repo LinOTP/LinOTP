@@ -437,13 +437,13 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOGGING",
+            "LOG_CONFIG",
             dict,
             convert=json.loads,
             default=None,
             help=(
                 "You can completely redefine the LinOTP logging setup by "
-                "passing a configuration dictionary in `LOGGING`. Do "
+                "passing a configuration dictionary in `LOG_CONFIG`. Do "
                 "this only if you know what you are doing. The default "
                 "value of `None`  enables a basic setup based on the "
                 "`LOG_FILE_*` and `LOGGING_*` parameters."
@@ -868,7 +868,7 @@ def _init_app(app):
 # what types our `ConfigItem` instances are supposed to have, so we can
 # specify everything as strings (e.g., in environment variables) and still
 # end up with `int`s in the actual settings (for an extreme – but cool –
-# example, check out `LOGGING` above), and (b) it's a lot easier to
+# example, check out `LOG_CONFIG` above), and (b) it's a lot easier to
 # auto-generate commented sample configuration files from the schema than
 # it would be from Python code, so we save ourselves from getting into a
 # situation where a traditional Flask `Config` class and the sample config
