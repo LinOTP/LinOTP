@@ -53,7 +53,7 @@ LINOTPD_PROJS := linotpd
 # to logstash -- logstash always gets whatever LINOTP_LOG_LEVEL lets
 # through, so LINOTP_LOG_CONSOLE_LEVEL can be used to have less stuff
 # show up on the console than in logstash).
-# SQLALCHEMY_LOGGING_LEVEL controls the amount of logging done by SQLAlchemy
+# LINOTP_LOGGING_SQLALCHEMY_LEVEL controls the amount of logging done by SQLAlchemy
 # (who would have guessed); DEBUG will log SQL queries and results,
 # INFO will log just queries (no results) and WARN will log neither.
 # APACHE_LOGLEVEL limits the amount of stuff Apache writes to its error
@@ -65,7 +65,7 @@ LINOTPD_PROJS := linotpd
 
 export LINOTP_LOG_LEVEL=INFO
 export LINOTP_LOG_CONSOLE_LEVEL=DEBUG
-export SQLALCHEMY_LOGGING_LEVEL=ERROR
+export LINOTP_LOGGING_SQLALCHEMY_LEVEL=ERROR
 export APACHE_LOGLEVEL=DEBUG
 
 
@@ -441,7 +441,7 @@ docker-run-linotp-sqlite: docker-build-linotp
 		 -e HEALTHCHECK_PORT=80 \
 		 -e LINOTP_LOG_LEVEL=$(LINOTP_LOG_LEVEL) \
 		 -e LINOTP_LOG_CONSOLE_LEVEL=$(LINOTP_LOG_CONSOLE_LEVEL) \
-		 -e SQLALCHEMY_LOGGING_LEVEL=$(SQLALCHEMY_LOGGING_LEVEL) \
+		 -e LINOTP_LOGGING_SQLALCHEMY_LEVEL=$(LINOTP_LOGGING_SQLALCHEMY_LEVEL) \
 		 -e APACHE_LOGLEVEL=$(APACHE_LOGLEVEL) \
 		linotp
 
