@@ -415,7 +415,6 @@ class LinOTPApp(Flask):
     def start_session(self):
         # we add a unique request id to the request environment
         # so we can trace individual requests in the logging
-
         request.environ["REQUEST_ID"] = str(uuid4())
         request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
@@ -449,7 +448,8 @@ class LinOTPApp(Flask):
                 e,
             )
 
-        self.create_context(request, request.environ)
+        if not self.is_request_static():
+            self.create_context(request, request.environ)
 
     def is_request_static(self):
         return request.path.startswith(self.static_url_path)
