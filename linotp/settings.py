@@ -409,7 +409,7 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOGGING_FILE_LEVEL",
+            "LOG_FILE_LEVEL",
             str,
             validate=check_membership(VALID_LOG_LEVELS),
             default="WARNING",
@@ -417,7 +417,7 @@ _config_schema = ConfigSchema(
                 "Messages will be written to the log file only if they "
                 "are at this level or above. Messages must pass "
                 "`LOG_LEVEL` first, i.e., even if "
-                "`LOGGING_FILE_LEVEL` is more relaxed than "
+                "`LOG_FILE_LEVEL` is more relaxed than "
                 "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
                 "above will be logged to the file."
             ),
@@ -431,7 +431,7 @@ _config_schema = ConfigSchema(
                 "Messages will be written to the console only if they "
                 "are at this level or above. Messages must pass "
                 "`LOG_LEVEL` first, i.e., even if "
-                "`LOGGING_FILE_LEVEL` is more relaxed than "
+                "`LOG_FILE_LEVEL` is more relaxed than "
                 "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
                 "above will be logged to the console."
             ),
@@ -902,7 +902,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SESSION_COOKIE_SECURE = False
     LOG_LEVEL = "DEBUG"
-    LOGGING_FILE_LEVEL = LOG_LEVEL
+    LOG_FILE_LEVEL = LOG_LEVEL
     DATABASE_URI = "sqlite:///" + os.path.join(basedir, "linotp-dev.sqlite")
 
 

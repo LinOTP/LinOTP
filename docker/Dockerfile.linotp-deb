@@ -97,7 +97,7 @@ ENV TZ="Europe/Berlin" \
     LINOTP_APACHE_HSTS=true \
     LINOTP_SESSION_COOKIE_SECURE=true \
     LINOTP_LOG_LEVEL=INFO \
-    LINOTP_LOGGING_FILE_LEVEL=INFO \
+    LINOTP_LOG_FILE_LEVEL=INFO \
     LINOTP_LOGGING_CONSOLE_LEVEL=INFO \
     SQLALCHEMY_LOGGING_LEVEL=ERROR \
     APACHE_LOGLEVEL=info \
@@ -115,11 +115,11 @@ ENV LINOTP_CFG_TEMPLATE=/etc/linotp/linotp-docker.cfg.tmpl \
     FLASK_ENV=production
 
 RUN echo 'APT::Install-Recommends "0"; \n\
-            APT::Get::Assume-Yes "true"; \n\
-            APT::Install-Suggests "0";' \
-            > /etc/apt/apt.conf.d/01buildconfig \
+    APT::Get::Assume-Yes "true"; \n\
+    APT::Install-Suggests "0";' \
+    > /etc/apt/apt.conf.d/01buildconfig \
     && sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
-        /etc/apt/sources.list
+    /etc/apt/sources.list
 
 # Use eatmydata to speed up apt-get and pip operations
 RUN apt-get update && apt-get install eatmydata \
@@ -141,27 +141,27 @@ RUN test -z "$DEPENDENCY_GPG_KEY_URL" \
 #   need to be an exhaustive list because apt will install any
 #   missing packages when the linotp deb is installed further on.
 RUN apt-get update && apt-get install \
-        make mariadb-client locales \
-        adduser debconf openssl pwgen python3-configobj \
-        python3-beaker python3-passlib python3-cryptography python3-bcrypt python3-pygments \
-        python3-decorator python3-docutils \
-        python3-flask-babel python3-formencode python3-httplib2 \
-        python3-jsonschema \
-        python3-ldap python3-mako python3-mysqldb python3-netaddr \
-        python3-pycryptodome \
-        python3-pyrad python3-qrcode python3-routes \
-        python3-sqlalchemy python3-flask-sqlalchemy \
-	python3-smpplib \
-        apache2 libapache2-mod-wsgi-py3 \
-        python3-pysodium python3-requests \
-        python3-setuptools python3-usb \
-        distro-info-data \
-        libjs-jquery \
-        lsb-release \
-        dh-python \
-        python3-flask \
-        python3-psycopg2 python3-pymysql \
-        python3-pip
+    make mariadb-client locales \
+    adduser debconf openssl pwgen python3-configobj \
+    python3-beaker python3-passlib python3-cryptography python3-bcrypt python3-pygments \
+    python3-decorator python3-docutils \
+    python3-flask-babel python3-formencode python3-httplib2 \
+    python3-jsonschema \
+    python3-ldap python3-mako python3-mysqldb python3-netaddr \
+    python3-pycryptodome \
+    python3-pyrad python3-qrcode python3-routes \
+    python3-sqlalchemy python3-flask-sqlalchemy \
+    python3-smpplib \
+    apache2 libapache2-mod-wsgi-py3 \
+    python3-pysodium python3-requests \
+    python3-setuptools python3-usb \
+    distro-info-data \
+    libjs-jquery \
+    lsb-release \
+    dh-python \
+    python3-flask \
+    python3-psycopg2 python3-pymysql \
+    python3-pip
 
 # Install linotp packages from local files.
 COPY apt /opt/linotp/apt
@@ -191,11 +191,11 @@ RUN chmod 755 /etc/linotp/docker-init.d/*
 
 ENTRYPOINT [ "/usr/local/bin/dockerfy", \
     "--run", "/bin/run-parts", "--verbose", "--exit-on-error", "/etc/linotp/docker-init.d", "--" \
-]
+    ]
 
 CMD [ \
     "/usr/sbin/apache2ctl", "-DFOREGROUND" \
-]
+    ]
 
 COPY ./se_mypasswd /etc/se_mypasswd
 

@@ -835,7 +835,7 @@ def init_logging(app):
                     "formatter": "linotp_console",
                 },
                 "file": {
-                    "level": app.config["LOGGING_FILE_LEVEL"],
+                    "level": app.config["LOG_FILE_LEVEL"],
                     "class": "logging.handlers.RotatingFileHandler",
                     "formatter": "linotp_file",
                     "filename": os.path.join(
