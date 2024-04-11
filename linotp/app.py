@@ -830,7 +830,7 @@ def init_logging(app):
             "disable_existing_loggers": True,
             "handlers": {
                 "console": {
-                    "level": app.config["LOGGING_CONSOLE_LEVEL"],
+                    "level": app.config["LOG_CONSOLE_LEVEL"],
                     "class": "logging.StreamHandler",
                     "formatter": "linotp_console",
                 },

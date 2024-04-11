@@ -1,7 +1,7 @@
 # Unit tests for the logging configuration
 #
 # This tests the configuration parameters LOG_LEVEL, LOG_FILE_LEVEL,
-# and LOGGING_CONSOLE_LEVEL.
+# and LOG_CONSOLE_LEVEL.
 
 import logging
 
@@ -14,7 +14,7 @@ from linotp.app import init_logging
     "ll,lfl,lcl,use_lvl,to_log,to_file,to_console",
     [
         # `ll` is `LOG_LEVEL`; a message must clear this to be logged at all.
-        # `lfl` and `lcl` are `LOG_FILE_LEVEL` and `LOGGING_CONSOLE_LEVEL`;
+        # `lfl` and `lcl` are `LOG_FILE_LEVEL` and `LOG_CONSOLE_LEVEL`;
         # messages meant for the log file or console must clear these once
         # they have cleared `LOG_LEVEL`.
         # `use_lvl`, which must be numeric, is the log level to be used for
@@ -59,7 +59,7 @@ def test_logging_levels(
     app.config["LOG_FILE_DIR"] = str(log_dir)
     app.config["LOG_LEVEL"] = ll
     app.config["LOG_FILE_LEVEL"] = lfl
-    app.config["LOGGING_CONSOLE_LEVEL"] = lcl
+    app.config["LOG_CONSOLE_LEVEL"] = lcl
     app.config["LOGGING"] = None
     init_logging(app)  # Enact the configuration
     caplog.clear()

@@ -423,7 +423,7 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOGGING_CONSOLE_LEVEL",
+            "LOG_CONSOLE_LEVEL",
             str,
             validate=check_membership(VALID_LOG_LEVELS),
             default="WARNING",
