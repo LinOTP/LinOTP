@@ -412,7 +412,7 @@ _config_schema = ConfigSchema(
             "LOG_FILE_LEVEL",
             str,
             validate=check_membership(VALID_LOG_LEVELS),
-            default="WARNING",
+            default="DEBUG",
             help=(
                 "Messages will be written to the log file only if they "
                 "are at this level or above. Messages must pass "
