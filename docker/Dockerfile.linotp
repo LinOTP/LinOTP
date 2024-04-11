@@ -101,7 +101,7 @@ ENV LINOTP_USER=linotp \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
     # misc
-    LINOTP_LOGGING_SQLALCHEMY_LEVEL=ERROR \
+    LINOTP_LOG_LEVEL_DB_CLIENT=ERROR \
     DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=linotp.app \
     FLASK_ENV=production

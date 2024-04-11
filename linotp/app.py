@@ -861,7 +861,7 @@ def init_logging(app):
                 },
                 "sqlalchemy.engine": {
                     "handlers": ["console", "file"],
-                    "level": app.config["LOGGING_SQLALCHEMY_LEVEL"],
+                    "level": app.config["LOG_LEVEL_DB_CLIENT"],
                     "propagate": True,
                 },
             },

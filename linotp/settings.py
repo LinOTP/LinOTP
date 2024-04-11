@@ -399,7 +399,7 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOGGING_SQLALCHEMY_LEVEL",
+            "LOG_LEVEL_DB_CLIENT",
             str,
             validate=check_membership(VALID_LOG_LEVELS),
             default="WARNING",
