@@ -557,7 +557,7 @@ class LinOTPApp(Flask):
                     ].rpartition(".")[-1],
                 )
         except Exception as exx:
-            log.error("Failed to identify jwt user: %r", exx)
+            log.warning("Failed to identify jwt user: %r", exx)
 
         flask_g.authUser = authUser
 
