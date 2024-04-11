@@ -266,7 +266,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
             )
 
     except Exception as exx:
-        echo(f"Exception occured during database setup: {exx!r}")
+        echo(f"Exception occurred during database setup: {exx!r}")
         db.session.rollback()
         raise exx
 

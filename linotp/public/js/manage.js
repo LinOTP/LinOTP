@@ -171,8 +171,8 @@ function on_submit_flexi() {
 }
 
 /*
- * write tnto the report line
- * :param params: dicttionary with
+ * write into the report line
+ * :param params: dictionary with
  * text - If the parameter is the ID of an element, we pass the text
  *       of this very element
  * param - replace parameter
@@ -267,7 +267,7 @@ alert_box_is_locked = false;
 
 /*
  * pop up an alert box
- * :param params: dicttionary
+ * :param params: dictionary
  * s - If the parameter is the ID of an element, we pass the text
  *     of this very element
  */
@@ -318,9 +318,9 @@ function alert_box(params) {
 
 }
 
-// ####################################################
+// #################################################
 //
-//  functions for seletected tokens and selected users
+//  functions for selected tokens and selected users
 //
 
 function get_selected_tokens() {
@@ -593,7 +593,7 @@ function disable_all_buttons() {
 }
 
 /*
- * initalize the list of all avaliable token types
+ * initialize the list of all available token types
  * - required to show and hide the dynamic enrollment section
  */
 function init_$tokentypes() {
@@ -689,7 +689,7 @@ function load_token_config() {
         validator.resetForm();
     });
 
-    // might raise an error, which must be catched by the caller
+    // might raise an error, which must be caught by the caller
     $systemConfig = get_server_config();
 
     for (tt in $tokenConfigInbacks) {
@@ -731,7 +731,7 @@ function load_token_config() {
             }
         }
         catch (err) {
-            //console_log('callbacack for ' + tt + ' not found!')
+            //console_log('callback for ' + tt + ' not found!')
         }
     }
     return;
@@ -940,7 +940,7 @@ function assign_callback(xhdr, textStatus, serials) {
         alert_info_text({
             'text': escape(obj.result.error.message),
             'type': ERROR,
-            'is_esacped': true
+            'is_escaped': true
         });
     } else
         view_setpin_after_assigning(serials);
@@ -956,7 +956,7 @@ function token_operations_callback(responses) {
     $.each(responses, function (index, responseData) {
         // "responseData" will contain an array of response information for each specific request
         if (responseData.length !== 3 || responseData[1] !== 'success') {
-            error_messages.push('Request ' + index + ' unsucessful');
+            error_messages.push('Request ' + index + ' unsuccessful');
             return true; // skip to next item of each loop
         }
         var obj = responseData[0];
@@ -6381,7 +6381,7 @@ function delete_sms_provider(provider) {
                     'is_escaped': true
                 });
             } else if (data.result.value == false) {
-                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occurred'));
                 alert_box({
                     'title': i18n.gettext('Failed to delete provider'),
                     'text': reason_text,
@@ -6548,7 +6548,7 @@ function delete_email_provider(provider) {
                     'is_escaped': true
                 });
             } else if (data.result.value == false) {
-                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occurred'));
                 alert_box({
                     'title': i18n.gettext('Failed to delete provider'),
                     'text': reason_text,
@@ -6674,7 +6674,7 @@ function delete_push_provider(provider) {
                 });
 
             } else if (data.result.value == false) {
-                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occurred'));
                 alert_box({
                     'title': i18n.gettext('Failed to delete provider'),
                     'text': reason_text,
@@ -6800,7 +6800,7 @@ function delete_voice_provider(provider) {
                 });
 
             } else if (data.result.value == false) {
-                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occurred'));
                 alert_box({
                     'title': i18n.gettext('Failed to delete provider'),
                     'text': reason_text,

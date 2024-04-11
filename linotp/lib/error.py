@@ -124,7 +124,6 @@ class ProgrammingError(Exception):
 
 
 class InvalidFunctionParameter(Exception):
-
     """
     used to signify an invalid function parameter
 
@@ -142,7 +141,6 @@ class InvalidFunctionParameter(Exception):
 
 
 class TokenStateError(UserError):
-
     """
     raised by StatefulTokenMixin, if a stateful token got
     a request that doesn't fit its internal rollout state
@@ -153,7 +151,7 @@ class TokenStateError(UserError):
     """
 
     def __init__(self, message):
-        log.debug("TokenStateError occured. Message: %s", message)
+        log.debug("TokenStateError occurred. Message: %s", message)
         UserError.__init__(self, "Unfitting request for this token")
 
 

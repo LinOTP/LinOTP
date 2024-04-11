@@ -49,7 +49,7 @@ def fn_mock_domain_comp(user_obj, condition):
     without the need to contact a resolver
     """
 
-    fqn = user_obj.get_full_qalified_names()
+    fqn = user_obj.get_full_qualified_names()
     if condition in fqn:
         return True
 

@@ -309,8 +309,8 @@ class LinOTPApp(Flask):
 
         # ------------------------------------------------------------------ --
 
-        # we create a app shared linotp config object which main purpose is
-        # to syncronize the access to changes within multiple threads
+        # we create an app-wide shared linotp config object whose main purpose is
+        # to synchronize the access to changes within multiple threads
 
         self.linotp_app_config: Optional[LinotpAppConfig] = None
 
@@ -413,7 +413,7 @@ class LinOTPApp(Flask):
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
-        # we add a unique request id to the request enviroment
+        # we add a unique request id to the request environment
         # so we can trace individual requests in the logging
 
         request.environ["REQUEST_ID"] = str(uuid4())
@@ -519,7 +519,7 @@ class LinOTPApp(Flask):
 
         # ------------------------------------------------------------------------
 
-        # setup the knowlege where we are
+        # setup the knowledge where we are
 
         request_context["action"] = None
         request_context["controller"] = None
@@ -669,7 +669,7 @@ class LinOTPApp(Flask):
                     else:
                         request_params[key] = request.values.get(key)
         except UnicodeDecodeError as exx:
-            # we supress Exception here as it will be handled in the
+            # we suppress Exception here as it will be handled in the
             # controller which will return corresponding response
             log.warning("Failed to access request parameters: %r", exx)
 
