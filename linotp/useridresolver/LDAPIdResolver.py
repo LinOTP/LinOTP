@@ -1720,7 +1720,12 @@ def ldap_test(
     if loginattribute:
         params["LOGINNAMEATTRIBUTE"] = loginattribute
 
-    if not all_cases or current_app.config["LOGGING_LEVEL"] == "DEBUG":
+    global_log_level = (
+        current_app.config["LOGGING_LEVEL"]
+        if "LOGGING_LEVEL" in current_app.config
+        else current_app.config["LOG_LEVEL"]
+    )
+    if not all_cases or global_log_level == "DEBUG":
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)

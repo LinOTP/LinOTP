@@ -48,9 +48,9 @@ LINOTPD_PROJS := linotpd
 
 # These variables let you set the amount of stuff LinOTP is logging.
 #
-# LINOTP_LOGGING_LEVEL controls the amount of logging in general while
+# LINOTP_LOG_LEVEL controls the amount of logging in general while
 # LINOTP_LOGGING_CONSOLE_LEVEL controls logging to the console (as opposed
-# to logstash -- logstash always gets whatever LINOTP_LOGGING_LEVEL lets
+# to logstash -- logstash always gets whatever LINOTP_LOG_LEVEL lets
 # through, so LINOTP_LOGGING_CONSOLE_LEVEL can be used to have less stuff
 # show up on the console than in logstash).
 # SQLALCHEMY_LOGGING_LEVEL controls the amount of logging done by SQLAlchemy
@@ -63,8 +63,8 @@ LINOTPD_PROJS := linotpd
 # trickery and/or use a different (and unsupported by us) web server
 # than Apache to run LinOTP.
 
-export LINOTP_LOGGING_LEVEL=INFO
-export LINOTP_LOGGING_CONSOLE_LEVEL=DEBUG
+export LINOTP_LOG_LEVEL=INFO
+export LINOTP_LOG_CONSOLE_LEVEL=DEBUG
 export SQLALCHEMY_LOGGING_LEVEL=ERROR
 export APACHE_LOGLEVEL=DEBUG
 
@@ -439,8 +439,8 @@ docker-run-linotp-sqlite: docker-build-linotp
 	# Run linotp in a standalone container
 	$(DOCKER_RUN) -it \
 		 -e HEALTHCHECK_PORT=80 \
-		 -e LINOTP_LOGGING_LEVEL=$(LINOTP_LOGGING_LEVEL) \
-		 -e LINOTP_LOGGING_CONSOLE_LEVEL=$(LINOTP_LOGGING_CONSOLE_LEVEL) \
+		 -e LINOTP_LOG_LEVEL=$(LINOTP_LOG_LEVEL) \
+		 -e LINOTP_LOG_CONSOLE_LEVEL=$(LINOTP_LOG_CONSOLE_LEVEL) \
 		 -e SQLALCHEMY_LOGGING_LEVEL=$(SQLALCHEMY_LOGGING_LEVEL) \
 		 -e APACHE_LOGLEVEL=$(APACHE_LOGLEVEL) \
 		linotp

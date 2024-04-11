@@ -818,6 +818,12 @@ class LinOTPApp(Flask):
 def init_logging(app):
     """Sets up logging for LinOTP."""
 
+    global_log_level = (
+        app.config["LOGGING_LEVEL"]
+        if "LOGGING_LEVEL" in app.config
+        else app.config["LOG_LEVEL"]
+    )
+
     if app.config["LOGGING"] is None:
         app.config["LOGGING"] = {
             "version": 1,
@@ -850,7 +856,7 @@ def init_logging(app):
             "loggers": {
                 "linotp": {
                     "handlers": ["console", "file"],
-                    "level": app.config["LOGGING_LEVEL"],
+                    "level": global_log_level,
                     "propagate": True,
                 },
                 "sqlalchemy.engine": {

@@ -155,7 +155,7 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
             AUDIT_PUBLIC_KEY_FILE=key_directory / "audit-public.pem",
             AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
             SECRET_FILE=key_directory / "encKey",
-            LOGGING_LEVEL="DEBUG",
+            LOG_LEVEL="DEBUG",
             LOGGING_CONSOLE_LEVEL="DEBUG",
             DISABLE_CONTROLLERS="",
         )
