@@ -1,5 +1,19 @@
 linotp (3.3~rc1~dev0-1) UNRELEASED; urgency=low
 
+  Breaking Changes:
+  * Renamed the following config variables and some changed their defaults:
+    * `LOGGING_FILE_LEVEL` -> `LOG_FILE_LEVEL`
+      * default: `WARNING` -> `DEBUG`
+    * `LOGGING_CONSOLE_LEVEL` -> `LOG_CONSOLE_LEVEL`
+      * default: `WARNING` -> `DEBUG`
+    * `LOGGING_SQLALCHEMY_LEVEL` -> `LOG_LEVEL_DB_CLIENT`
+    * `LOGGING` -> `LOG_CONFIG`
+  * default of `LOGGING_LEVEL` changed from `INFO` to `WARNING`
+
+  Deprecations:
+  * In the future config variable `LOGGING_LEVEL` will be replaced by `LOG_LEVEL`.
+    `LOG_LEVEL` can and should be used from now on. `LOG_LEVEL` defaults to `WARNING`.
+
   Features:
   * new API endpoints to retrieve tokens:
     * /api/v2/tokens
