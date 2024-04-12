@@ -395,7 +395,10 @@ _config_schema = ConfigSchema(
             default="WARNING",
             help=(
                 "Messages will be logged only if they are at this level "
-                "or above."
+                "or above. You can also limit the logged messages via "
+                "`LOG_FILE_LEVEL` and `LOG_CONSOLE_LEVEL`. Messages will "
+                "only be logged to file/console if they are greater or equal to both "
+                "`LOG_LEVEL` and `LOG_FILE_LEVEL`/`LOG_CONSOLE_LEVEL`."
             ),
         ),
         ConfigItem(
