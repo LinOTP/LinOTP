@@ -314,6 +314,70 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
+            "LOGGING_LEVEL",
+            str,
+            validate=check_membership(VALID_LOG_LEVELS),
+            default="WARNING",
+            help=(
+                "Deprecation Warning: Soon to be replaced with `LOG_LEVEL`!"
+                "Messages will be logged only if they are at this level "
+                "or above."
+            ),
+        ),
+        ConfigItem(
+            "LOG_LEVEL",
+            str,
+            validate=check_membership(VALID_LOG_LEVELS),
+            default="WARNING",
+            help=(
+                "Messages will be logged only if they are at this level "
+                "or above. You can also limit the logged messages via "
+                "`LOG_FILE_LEVEL` and `LOG_CONSOLE_LEVEL`. Messages will "
+                "only be logged to file/console if they are greater or equal to both "
+                "`LOG_LEVEL` and `LOG_FILE_LEVEL`/`LOG_CONSOLE_LEVEL`."
+            ),
+        ),
+        ConfigItem(
+            "LOG_CONSOLE_LEVEL",
+            str,
+            validate=check_membership(VALID_LOG_LEVELS),
+            default="DEBUG",
+            help=(
+                "Messages will be written to the log file only if they "
+                "are at this level or above and if this level >= `LOG_LEVEL`."
+                "i.e., even if `LOG_CONSOLE_LEVEL` is more relaxed than "
+                "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
+                "above will be logged to the console."
+            ),
+        ),
+        ConfigItem(
+            "LOG_CONSOLE_LINE_FORMAT",
+            str,
+            default=(
+                "%(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
+            ),
+            help=(
+                "Format for individual lines in the console log. "
+                "This is the log which is gonna be available through"
+                "journalctl "
+                "Refer to the Python documentation for the details on "
+                "log file format strings."
+            ),
+        ),
+        ConfigItem(
+            "LOG_FILE_LEVEL",
+            str,
+            validate=check_membership(VALID_LOG_LEVELS),
+            default="DEBUG",
+            help=(
+                "Messages will be written to the log file only if they "
+                "are at this level or above and if this level >= `LOG_LEVEL`."
+                "i.e., even if `LOG_FILE_LEVEL` is more relaxed than "
+                "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
+                "above will be logged to the file."
+            ),
+        ),
+        ConfigItem(
             "LOG_FILE_DIR",
             str,
             default="logs",
@@ -347,20 +411,6 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOG_CONSOLE_LINE_FORMAT",
-            str,
-            default=(
-                "%(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
-            ),
-            help=(
-                "Format for individual lines in the console log. "
-                "This is the log which is gonna be available through"
-                "journalctl "
-                "Refer to the Python documentation for the details on "
-                "log file format strings."
-            ),
-        ),
-        ConfigItem(
             "LOG_FILE_MAX_LENGTH",
             int,
             validate=check_int_in_range(min=0),
@@ -378,30 +428,6 @@ _config_schema = ConfigSchema(
             help=("Up to this many old log files will be kept."),
         ),
         ConfigItem(
-            "LOGGING_LEVEL",
-            str,
-            validate=check_membership(VALID_LOG_LEVELS),
-            default="WARNING",
-            help=(
-                "Deprecation Warning: Soon to be replaced with `LOG_LEVEL`!"
-                "Messages will be logged only if they are at this level "
-                "or above."
-            ),
-        ),
-        ConfigItem(
-            "LOG_LEVEL",
-            str,
-            validate=check_membership(VALID_LOG_LEVELS),
-            default="WARNING",
-            help=(
-                "Messages will be logged only if they are at this level "
-                "or above. You can also limit the logged messages via "
-                "`LOG_FILE_LEVEL` and `LOG_CONSOLE_LEVEL`. Messages will "
-                "only be logged to file/console if they are greater or equal to both "
-                "`LOG_LEVEL` and `LOG_FILE_LEVEL`/`LOG_CONSOLE_LEVEL`."
-            ),
-        ),
-        ConfigItem(
             "LOG_LEVEL_DB_CLIENT",
             str,
             validate=check_membership(VALID_LOG_LEVELS),
@@ -409,32 +435,6 @@ _config_schema = ConfigSchema(
             help=(
                 "Messages from the SQLAlchemy subsystem will be logged "
                 "only if they are at this level or above."
-            ),
-        ),
-        ConfigItem(
-            "LOG_FILE_LEVEL",
-            str,
-            validate=check_membership(VALID_LOG_LEVELS),
-            default="DEBUG",
-            help=(
-                "Messages will be written to the log file only if they "
-                "are at this level or above and if this level >= `LOG_LEVEL`."
-                "i.e., even if `LOG_FILE_LEVEL` is more relaxed than "
-                "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
-                "above will be logged to the file."
-            ),
-        ),
-        ConfigItem(
-            "LOG_CONSOLE_LEVEL",
-            str,
-            validate=check_membership(VALID_LOG_LEVELS),
-            default="DEBUG",
-            help=(
-                "Messages will be written to the log file only if they "
-                "are at this level or above and if this level >= `LOG_LEVEL`."
-                "i.e., even if `LOG_CONSOLE_LEVEL` is more relaxed than "
-                "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
-                "above will be logged to the console."
             ),
         ),
         ConfigItem(
