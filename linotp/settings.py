@@ -333,8 +333,8 @@ _config_schema = ConfigSchema(
                 "Messages will be logged only if they are at this level "
                 "or above. You can also limit the logged messages via "
                 "`LOG_FILE_LEVEL` and `LOG_CONSOLE_LEVEL`. Messages will "
-                "only be logged to file/console if they are greater or equal to both "
-                "`LOG_LEVEL` and `LOG_FILE_LEVEL`/`LOG_CONSOLE_LEVEL`."
+                "only be logged to file/console if their level is greater or equal "
+                "to both `LOG_LEVEL` and `LOG_FILE_LEVEL`/`LOG_CONSOLE_LEVEL`."
             ),
         ),
         ConfigItem(
@@ -358,8 +358,8 @@ _config_schema = ConfigSchema(
             ),
             help=(
                 "Format for individual lines in the console log. "
-                "This is the log which is gonna be available through"
-                "journalctl "
+                "This is the log which will usually be passed to "
+                "journald or the container log."
                 "Refer to the Python documentation for the details on "
                 "log file format strings."
             ),
