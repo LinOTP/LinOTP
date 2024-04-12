@@ -415,9 +415,8 @@ _config_schema = ConfigSchema(
             default="DEBUG",
             help=(
                 "Messages will be written to the log file only if they "
-                "are at this level or above. Messages must pass "
-                "`LOG_LEVEL` first, i.e., even if "
-                "`LOG_FILE_LEVEL` is more relaxed than "
+                "are at this level or above and if this level >= `LOG_LEVEL`."
+                "i.e., even if `LOG_FILE_LEVEL` is more relaxed than "
                 "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
                 "above will be logged to the file."
             ),
@@ -428,10 +427,9 @@ _config_schema = ConfigSchema(
             validate=check_membership(VALID_LOG_LEVELS),
             default="DEBUG",
             help=(
-                "Messages will be written to the console only if they "
-                "are at this level or above. Messages must pass "
-                "`LOG_LEVEL` first, i.e., even if "
-                "`LOG_CONSOLE_LEVEL` is more relaxed than "
+                "Messages will be written to the log file only if they "
+                "are at this level or above and if this level >= `LOG_LEVEL`."
+                "i.e., even if `LOG_CONSOLE_LEVEL` is more relaxed than "
                 "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
                 "above will be logged to the console."
             ),
