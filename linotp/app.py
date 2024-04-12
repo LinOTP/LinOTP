@@ -77,9 +77,9 @@ from .lib.tools.flask_jwt_extended_migration import (
     verify_jwt_in_request,
 )
 from .lib.user import User, getUserFromRequest
-from .lib.util import get_client
+from .lib.util import get_client, get_log_level
 from .model import SYS_EXIT_CODE, setup_db
-from .settings import ConfigSchema, configs
+from .settings import ConfigSchema, _config_schema, configs
 from .tokens import reload_classes as reload_token_classes
 
 log = logging.getLogger(__name__)
@@ -818,18 +818,18 @@ class LinOTPApp(Flask):
 def init_logging(app):
     """Sets up logging for LinOTP."""
 
-    if app.config["LOGGING"] is None:
-        app.config["LOGGING"] = {
+    if app.config["LOG_CONFIG"] is None:
+        app.config["LOG_CONFIG"] = {
             "version": 1,
             "disable_existing_loggers": True,
             "handlers": {
                 "console": {
-                    "level": app.config["LOGGING_CONSOLE_LEVEL"],
+                    "level": app.config["LOG_CONSOLE_LEVEL"],
                     "class": "logging.StreamHandler",
                     "formatter": "linotp_console",
                 },
                 "file": {
-                    "level": app.config["LOGGING_FILE_LEVEL"],
+                    "level": app.config["LOG_FILE_LEVEL"],
                     "class": "logging.handlers.RotatingFileHandler",
                     "formatter": "linotp_file",
                     "filename": os.path.join(
@@ -850,12 +850,12 @@ def init_logging(app):
             "loggers": {
                 "linotp": {
                     "handlers": ["console", "file"],
-                    "level": app.config["LOGGING_LEVEL"],
+                    "level": get_log_level(app),
                     "propagate": True,
                 },
                 "sqlalchemy.engine": {
                     "handlers": ["console", "file"],
-                    "level": app.config["LOGGING_SQLALCHEMY_LEVEL"],
+                    "level": app.config["LOG_LEVEL_DB_CLIENT"],
                     "propagate": True,
                 },
             },
@@ -863,7 +863,7 @@ def init_logging(app):
 
     if app.cli_cmd != "config":
         ensure_dir(app, "log", "LOG_FILE_DIR", mode=0o770)
-        logging_dictConfig(app.config["LOGGING"])
+        logging_dictConfig(app.config["LOG_CONFIG"])
 
     app.logger = logging.getLogger(app.name)
     app.logger.info("LinOTP {} starting ...".format(__version__))
