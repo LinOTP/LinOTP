@@ -33,6 +33,9 @@ variables:
   # Variables for upload-debs
   REPOSITORY: linotp3
   COMPONENT: linotp
+  # uncomment `CI_DEBUG_SERVICES` to capture logs of job-services (e.g. the linotp container in e2e tests)
+  # CI_DEBUG_SERVICES: "true"
+
 
 workflow:
   rules:
