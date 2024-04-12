@@ -87,8 +87,7 @@ RUN ./translations.sh
 FROM base
 
 ENV LINOTP_ROOT_DIR=/data \
-    LINOTP_CACHE_DIR=/cache \
-    LINOTP_LOG_FILE_DIR=/logs
+    LINOTP_CACHE_DIR=/cache
 ENV LINOTP_USER=linotp \
     LINOTP_ADMIN_USER=admin \
     LINOTP_ADMIN_PASSWORD= \
@@ -96,12 +95,14 @@ ENV LINOTP_USER=linotp \
     LINOTP_DATABASE_URI=sqlite:///$LINOTP_ROOT_DIR/linotp.db \
     LINOTP_DB_WAITTIME=30s \
     LINOTP_SESSION_COOKIE_SECURE=true \
+    # disable file logger
+    LINOTP_LOG_FILE_DIR=/ \
+    LINOTP_LOG_FILE_NAME=/dev/null \
     # root level dirs
     LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;/$TRANSLATIONS_DIR \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
     # misc
-    LINOTP_LOG_LEVEL_DB_CLIENT=ERROR \
     DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=linotp.app \
     FLASK_ENV=production
@@ -123,7 +124,6 @@ COPY docker/linotp/doas.conf /etc/doas.conf
 RUN mkdir -p \
     $LINOTP_ROOT_DIR \
     $LINOTP_CACHE_DIR \
-    $LINOTP_LOG_FILE_DIR \
     $LINOTP_CUSTOM_TEMPLATES_DIR \
     $TRANSLATIONS_DIR \
     && \
@@ -137,13 +137,11 @@ RUN mkdir -p \
 RUN useradd -r $LINOTP_USER && \
     chown -R $LINOTP_USER:$LINOTP_USER \
     $LINOTP_ROOT_DIR \
-    $LINOTP_LOG_FILE_DIR \
     $LINOTP_CACHE_DIR
 USER $LINOTP_USER
 
 # Create volumes for root level dirs
 VOLUME $LINOTP_ROOT_DIR \
-    $LINOTP_CACHE_DIR \
-    $LINOTP_LOG_FILE_DIR
+    $LINOTP_CACHE_DIR 
 
 ENTRYPOINT [ "tini", "--", "./entrypoint.sh" ] 
