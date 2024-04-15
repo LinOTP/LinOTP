@@ -9,6 +9,8 @@ linotp (3.3~rc1~dev0-1) UNRELEASED; urgency=low
     * `LOGGING_SQLALCHEMY_LEVEL` -> `LOG_LEVEL_DB_CLIENT`
     * `LOGGING` -> `LOG_CONFIG`
   * default of `LOGGING_LEVEL` changed from `INFO` to `WARNING`
+  * Manage UI: Login / Logout redirect is now handled client-side. /manage/ and /manage/login will
+    no-longer be 30x redirected to each other by LinOTP server.
 
   Deprecations:
   * In the future config variable `LOGGING_LEVEL` will be replaced by `LOG_LEVEL`.
@@ -44,7 +46,6 @@ linotp (3.3~rc1~dev0-1) UNRELEASED; urgency=low
     * /manage/context
   * the new API endpoints all return dates in ISO 8601-compliant format
   * limit info-box height in manage-ui. Notifications are scrollable, if combined size exceeds newly limited height.
-  * the manage ui login will no longer use refresh and reloads
   * Server-side invalidation of admin sessions on logout to prevent re-using a JWT after a user dropped its session
   * tokens can be imported as disabled tokens
   * when triggering a challenge, the token description is returned to help identify the token
