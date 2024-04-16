@@ -94,7 +94,8 @@
 				}
 				else {
 					clearTimeout(o.sfTimer);
-					o.sfTimer = setTimeout($.proxy(close, $this, o), o.delay);
+					// custom fix for LINOTP-2158
+					o.sfTimer = setTimeout(close.bind($this, o), o.delay);
 				}
 			},
 			touchHandler = function (e) {
