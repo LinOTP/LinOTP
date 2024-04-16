@@ -148,17 +148,16 @@
 			hset: {},
 			rePosDrag: function () {
 				var cdleft = 0 - this.hDiv.scrollLeft;
-				if (this.hDiv.scrollLeft > 0) cdleft -= Math.floor(p.cgwidth / 2);
+				if (this.hDiv.scrollLeft > 0) cdleft -= p.cgwidth / 2;
 				$(g.cDrag).css({
 					top: g.hDiv.offsetTop + 1
 				});
-				var cdpad = this.cdpad;
 				$('div', g.cDrag).hide();
 				$('thead tr:first th:visible', this.hDiv).each(function () {
 					var n = $('thead tr:first th:visible', g.hDiv).index(this);
-					var cdpos = parseInt($('div', this).width());
+					var cdpos = $(this).outerWidth();
 					if (cdleft == 0) cdleft -= Math.floor(p.cgwidth / 2);
-					cdpos = cdpos + cdleft + cdpad;
+					cdpos = cdpos + cdleft;
 					if (isNaN(cdpos)) {
 						cdpos = 0;
 					}
@@ -1197,15 +1196,6 @@
             var cdcol = $('thead tr:first th:first', g.hDiv).get(0);
             if(cdcol !== null) {
                 g.cDrag.className = 'cDrag';
-                g.cdpad = 0;
-                g.cdpad += (isNaN(parseInt($('div', cdcol).css('borderLeftWidth'), 10)) ? 0 : parseInt($('div', cdcol).css('borderLeftWidth'), 10));
-                g.cdpad += (isNaN(parseInt($('div', cdcol).css('borderRightWidth'), 10)) ? 0 : parseInt($('div', cdcol).css('borderRightWidth'), 10));
-                g.cdpad += (isNaN(parseInt($('div', cdcol).css('paddingLeft'), 10)) ? 0 : parseInt($('div', cdcol).css('paddingLeft'), 10));
-                g.cdpad += (isNaN(parseInt($('div', cdcol).css('paddingRight'), 10)) ? 0 : parseInt($('div', cdcol).css('paddingRight'), 10));
-                g.cdpad += (isNaN(parseInt($(cdcol).css('borderLeftWidth'), 10)) ? 0 : parseInt($(cdcol).css('borderLeftWidth'), 10));
-                g.cdpad += (isNaN(parseInt($(cdcol).css('borderRightWidth'), 10)) ? 0 : parseInt($(cdcol).css('borderRightWidth'), 10));
-                g.cdpad += (isNaN(parseInt($(cdcol).css('paddingLeft'), 10)) ? 0 : parseInt($(cdcol).css('paddingLeft'), 10));
-                g.cdpad += (isNaN(parseInt($(cdcol).css('paddingRight'), 10)) ? 0 : parseInt($(cdcol).css('paddingRight'), 10));
                 $(g.bDiv).before(g.cDrag);
                 var cdheight = $(g.bDiv).height();
                 var hdheight = $(g.hDiv).height();
