@@ -102,6 +102,9 @@ ENV LINOTP_USER=linotp \
     LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;/$TRANSLATIONS_DIR \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
+    # Disable legacy selfservice
+    LINOTP_DISABLE_CONTROLLERS=selfservice \
+    LINOTP_SITE_ROOT_REDIRECT=/selfservice/ \
     # misc
     DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=linotp.app \
