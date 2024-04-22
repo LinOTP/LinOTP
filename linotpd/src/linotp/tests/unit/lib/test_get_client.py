@@ -27,12 +27,52 @@
 
 """
 
+import socket
 import unittest
 
+import netaddr
 from mock import patch
 
 from linotp.lib.type_utils import get_ip_address, get_ip_network
 from linotp.lib.util import _get_client_from_request, _is_addr_in_network
+
+netw_dict = {
+    "136.243.104.66/29": netaddr.IPNetwork("136.243.104.66/29"),
+    "140.181.3.1/29": netaddr.IPNetwork("140.181.3.1/29"),
+    "140.181.3.1/16": netaddr.IPNetwork("140.181.3.1/16"),
+    "91.208.83.132": netaddr.IPNetwork("91.208.83.132/32"),
+    "93.184.216.34/29": netaddr.IPNetwork("93.184.216.34/29"),
+    "140.181.3.144": netaddr.IPNetwork("140.181.3.144/32"),
+    "121.121.121.121": netaddr.IPNetwork("121.121.121.121/32"),
+    "123.234.123.234": netaddr.IPNetwork("123.234.123.234"),
+}
+
+addr_dict = {
+    "93.184.216.34": netaddr.IPAddress("93.184.216.34"),
+    "136.243.104.66": netaddr.IPAddress("136.243.104.66"),
+    "140.181.3.7": netaddr.IPAddress("140.181.3.7"),
+    "140.181.3.121": netaddr.IPAddress("140.181.3.121"),
+    "123.234.123.234": netaddr.IPAddress("123.234.123.234"),
+}
+
+
+def mock_IPNet(address):
+    if address in [
+        "my.other.test.domain/29",
+        "www.my.test.domain",
+        "my.local.test.domain",
+    ]:
+        raise netaddr.core.AddrFormatError("invalid IPNetwork %r" % address)
+
+    return netw_dict.get(address)
+
+
+def mock_IPAddr(address):
+    if address in ["www.my.test.domain"]:
+        raise netaddr.core.AddrFormatError("invalid IPNetwork %r" % address)
+
+    return addr_dict.get(address)
+
 
 # client.FORWARDED_PROXY
 # client.X_FORWARDED_FOR
@@ -72,8 +112,8 @@ class TestGetClientCase(unittest.TestCase):
         request = Request(environ)
         client = _get_client_from_request(request)
 
-        self.assertTrue(client is not None)
-        self.assertTrue(client == "127.0.0.1")
+        assert client is not None
+        assert client == "127.0.0.1"
 
         # ------------------------------------------------------------------ --
 
@@ -90,7 +130,7 @@ class TestGetClientCase(unittest.TestCase):
         environ = {
             "REMOTE_ADDR": "123.234.123.234",  # the last requester, the proxy
             "HTTP_X_FORWARDED_FOR": (
-                "11.22.33.44 , " "12.22.33.44, " "123.234.123.234"
+                "11.22.33.44 , 12.22.33.44, 123.234.123.234"
             ),  # the originator
         }
 
@@ -99,7 +139,7 @@ class TestGetClientCase(unittest.TestCase):
         request = Request(environ)
         client = _get_client_from_request(request)
 
-        self.assertTrue(client == "123.234.123.234")
+        assert client == "123.234.123.234"
 
         # 2.b
 
@@ -111,7 +151,7 @@ class TestGetClientCase(unittest.TestCase):
         request = Request(environ)
         client = _get_client_from_request(request)
 
-        self.assertTrue(client == "11.22.33.44")
+        assert client == "11.22.33.44"
 
         # 2.c
 
@@ -123,20 +163,20 @@ class TestGetClientCase(unittest.TestCase):
         request = Request(environ)
         client = _get_client_from_request(request)
 
-        self.assertTrue(client == "11.22.33.44")
+        assert client == "11.22.33.44"
 
         # 3 wrong proxy format
 
         LinConfig = {
             "client.X_FORWARDED_FOR": "true",
-            "client.FORWARDED_PROXY": "www.example.com.xx, 123.234.123.234",
+            "client.FORWARDED_PROXY": "www.my.test.domain, 123.234.123.234",
         }
 
         request = Request(environ)
 
         # with self.assertRaises(Exception) as exx:
         client = _get_client_from_request(request)
-        self.assertTrue(client == "11.22.33.44")
+        assert client == "11.22.33.44"
 
         LinConfig = {
             "client.X_FORWARDED_FOR": "true",
@@ -147,11 +187,13 @@ class TestGetClientCase(unittest.TestCase):
 
         # with self.assertRaises(Exception) as exx:
         client = _get_client_from_request(request)
-        self.assertTrue(client == "11.22.33.44")
+        assert client == "11.22.33.44"
 
         return
 
     @patch("linotp.lib.util.getFromConfig", mocked_getFromConfig)
+    @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
+    @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
     def test_get_client_from_request_by_forwarded(self):
         """
          according to the spec the old expression is the same as the
@@ -165,7 +207,10 @@ class TestGetClientCase(unittest.TestCase):
         global LinConfig
 
         forward_test_strings = [
-            ('for=192.0.2.43,for="[2001:db8:cafe::17]",for=unknown', "192.0.2.43"),
+            (
+                'for=192.0.2.43,for="[2001:db8:cafe::17]",for=unknown',
+                "192.0.2.43",
+            ),
             ('for="_gazonk"', "_gazonk"),
             ('for="_gazonk:800"', "_gazonk"),
             ('For="[2001:db8:cafe::17]:4711"', "2001:db8:cafe::17"),
@@ -188,13 +233,19 @@ class TestGetClientCase(unittest.TestCase):
             request = Request(environ)
             client = _get_client_from_request(request)
 
-            self.assertTrue(client == forward_test_string[1], client)
+            assert client == forward_test_string[1], client
 
+    @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
+    @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
     def test_ipaddr_value(self):
         """unit test for get_ip_address"""
-        ip_address = get_ip_address("www.example.com")
-        ip_tuple = ip_address.words
-        assert (93, 184, 216, 34) == ip_tuple
+
+        with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
+            mHostName.return_value = "91.208.83.132"
+            ip_address = get_ip_address("www.my.test.domain")
+
+            ip_tuple = ip_address.words
+            assert (91, 208, 83, 132) == ip_tuple
 
         ip_addr = get_ip_address("93.184.216.34")
         ip_tuple = ip_addr.words
@@ -203,7 +254,7 @@ class TestGetClientCase(unittest.TestCase):
         ip_addr = get_ip_address("93.184.216.34/32")
         assert ip_addr is None
 
-        ip_addr = get_ip_address("example.com.xxx")
+        ip_addr = get_ip_address("does_not_exist.domain")
         assert ip_addr is None
 
         ip_addr = get_ip_address("  ")
@@ -211,6 +262,8 @@ class TestGetClientCase(unittest.TestCase):
 
         return
 
+    @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
+    @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
     def test_network_value(self):
         """unit test for get_ip_network"""
 
@@ -219,19 +272,30 @@ class TestGetClientCase(unittest.TestCase):
         ip_tuple = ip_network.network.words
         assert (93, 184, 216, 32) == ip_tuple
 
-        ip_network = get_ip_network("gsi.de")
-        ip_tuple = ip_network.network.words
-        ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
-        assert (140, 181, 3) == ip_range
+        with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
+            mHostName.return_value = "140.181.3.144"
 
-        ip_network = get_ip_network("keyidentity.com/29")
-        assert len(list(ip_network)) == 8
-        ip_tuple = ip_network.network.words
-        ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
-        assert (136, 243, 104) == ip_range
+            ip_network = get_ip_network("my.local.test.domain")
+            ip_tuple = ip_network.network.words
+            ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
+            assert (140, 181, 3) == ip_range
 
-        ip_network = get_ip_network("example.xxx")
-        assert ip_network is None
+        with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
+            mHostName.return_value = "136.243.104.66"
+
+            ip_network = get_ip_network("my.other.test.domain/29")
+            assert len(list(ip_network)) == 8
+            ip_tuple = ip_network.network.words
+            ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
+            assert (136, 243, 104) == ip_range
+
+        with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
+            mHostName.side_effect = socket.gaierror(
+                "[Errno 8] nodename nor servname provided, or not known"
+            )
+
+            ip_network = get_ip_network("does_not_exist.domain")
+            assert ip_network is None
 
         ip_network = get_ip_network("  ")
         assert ip_network is None
@@ -239,13 +303,18 @@ class TestGetClientCase(unittest.TestCase):
         ip_network = get_ip_network(None)
         assert ip_network is None
 
-        return
-
+    @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
+    @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
     def test_addr_in_network(self):
         """unit test for _is_addr_in_network"""
 
-        in_network = _is_addr_in_network("136.243.104.66", "keyidentity.com/29")
-        assert in_network is True
+        with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
+            mHostName.return_value = "136.243.104.66"
+
+            in_network = _is_addr_in_network(
+                "136.243.104.66", "my.other.test.domain/29"
+            )
+            assert in_network is True
 
         in_network = _is_addr_in_network("140.181.3.7", "140.181.3.1/29")
         assert in_network is True
@@ -256,8 +325,13 @@ class TestGetClientCase(unittest.TestCase):
         in_network = _is_addr_in_network("140.181.3.121", " ")
         assert in_network is False
 
-        in_network = _is_addr_in_network("140.181.3.121", "example.net.xxx ")
-        assert in_network is False
+        with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
+            mHostName.side_effect = socket.gaierror(
+                "[Errno 8] nodename nor servname provided, or not known"
+            )
+
+            in_network = _is_addr_in_network("140.181.3.121", "www.my.test.domain ")
+            assert in_network is False
 
         return
 
