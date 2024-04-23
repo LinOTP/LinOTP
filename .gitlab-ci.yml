@@ -444,24 +444,9 @@ lint:
       alias: db
 
 ## Test stages
-.parallel:
-  matrix-flask1-only:
-    - CI_FLASK_VERSION: [Flask-1]
-      CI_NODE_INDEX: [1, 2, 3, 4]
-      CI_NODE_TOTAL: [4]
-  matrix-flask2-only:
-    - CI_FLASK_VERSION: [Flask-2]
-      CI_NODE_INDEX: [1, 2, 3, 4]
-      CI_NODE_TOTAL: [4]
-  matrix-no-test-splitting-flask1-only:
-    - CI_FLASK_VERSION: [Flask-1]
-      CI_NODE_INDEX: [1]
-      CI_NODE_TOTAL: [1]
-
 .test-base:
   interruptible: true
-  parallel:
-    matrix: !reference [.parallel, matrix-flask1-only]
+  parallel: 4
   artifacts:
     reports:
       coverage_report:
@@ -474,8 +459,6 @@ lint:
   image: $PYPI_IMAGE_TAG
   rules:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merged_result'
-  parallel:
-    matrix: !reference [.parallel, matrix-flask2-only]
   variables:
     PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_SHA
     PYPI_ARGS: "-m \"not fails_in_pypi_tests\" -n auto"
@@ -636,7 +619,10 @@ e2e-test-softhsm:
     LINOTP_IMAGE: "linotp-softhsm"
   allow_failure: true
   parallel:
-    matrix: !reference [.parallel, matrix-no-test-splitting-flask1-only]
+    # too few tests -> dont split
+    matrix: 
+    - CI_NODE_INDEX: [1]
+      CI_NODE_TOTAL: [1]
 
 # Auto-generate API docs using Sphinx.
 apidocs:
