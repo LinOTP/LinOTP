@@ -149,4 +149,6 @@ USER $LINOTP_USER
 VOLUME $LINOTP_ROOT_DIR \
     $LINOTP_CACHE_DIR 
 
+EXPOSE 5000
+
 ENTRYPOINT [ "tini", "--", "./entrypoint.sh" ] 
