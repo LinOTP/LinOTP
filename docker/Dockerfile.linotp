@@ -108,7 +108,7 @@ ENV LINOTP_USER=linotp \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
     # Disable legacy selfservice
-    LINOTP_DISABLE_CONTROLLERS=selfservice \
+    LINOTP_DISABLE_CONTROLLERS=gettoken,selfservice \
     LINOTP_SITE_ROOT_REDIRECT=/selfservice/ \
     # misc
     DEBIAN_FRONTEND=noninteractive \
