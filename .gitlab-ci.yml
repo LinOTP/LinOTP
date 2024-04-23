@@ -26,6 +26,8 @@ variables:
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
   PYPI_IMAGE: $IMAGE_PREFIX_CI/linotp-testenv-pypi
   DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/b/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
+  DOCKER_TEST_IMG_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-testimg:$CI_PIPELINE_ID
+  DOCKER_TEST_ENV_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-testenv:$CI_PIPELINE_ID
   DOCKER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/linotp
   # Variables for security scan evaluation
   SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
@@ -102,6 +104,10 @@ build-and-upload-docker:
   script:
     - docker build -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
     - docker push "$DOCKER_IMAGE_TAG"
+    - docker build -t "$DOCKER_TEST_ENV_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testenv .
+    - docker push "$DOCKER_TEST_ENV_IMAGE_TAG"
+    - docker build -t "$DOCKER_TEST_IMG_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testimg .
+    - docker push "$DOCKER_TEST_IMG_IMAGE_TAG"
 
 container_scanning:
   image:
@@ -609,6 +615,49 @@ e2e-test-mariadb:
       alias: test-chrome
   allow_failure: false
 
+.e2e-test-docker:
+  image:
+    name: $DOCKER_TEST_ENV_IMAGE_TAG
+    entrypoint: [""]
+  extends:
+    - .e2e-test
+  needs:
+    - build-and-upload-docker
+  variables:
+    LINOTP_PORT: "5000"
+    LINOTP_PROTOCOL: "http"
+  services:
+    - name: $BLACKDOG_LDAP_IMAGE
+      alias: blackdog-ldap
+    - name: $BLACKDOG_MYSQL_IMAGE
+      alias: blackdog-mysql
+    - name: selenium/standalone-chrome-debug:latest
+      alias: test-chrome
+    # implicitly start linotp latest, as it relies on the DB
+    - name: $DOCKER_TEST_IMG_IMAGE_TAG
+      alias: test-linotp
+      command:
+        - "--with-bootstrap"
+      variables:
+        LINOTP_DB_WAITTIME: 10s
+        LINOTP_ADMIN_PASSWORD: admin
+        LINOTP_LOG_LEVEL: INFO
+        LINOTP_SESSION_COOKIE_SECURE: "false"
+        # reenable selfservice for some e2e tests
+        LINOTP_DISABLE_CONTROLLERS: "gettoken"
+        LINOTP_SITE_ROOT_REDIRECT: ""
+
+e2e-test-docker-mariadb:
+  extends:
+    - .e2e-test-docker
+    - .mariadb-database
+  services: 
+    - !reference [".e2e-test-docker", "services"]
+    - name: ${DB}
+      alias: db
+      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_unicode_ci"]
+  allow_failure: false
+
 # End to end test using Soft HSM image
 e2e-test-softhsm:
   extends:
@@ -617,6 +666,19 @@ e2e-test-softhsm:
   variables:
     ALL_JOB_ARGS: "-m smoketest -v"
     LINOTP_IMAGE: "linotp-softhsm"
+  allow_failure: true
+  parallel:
+    # too few tests -> dont split
+    matrix: 
+    - CI_NODE_INDEX: [1]
+      CI_NODE_TOTAL: [1]
+
+e2e-test-docker-softhsm:
+  extends:
+    - e2e-test-docker-mariadb
+    - .only-nightly-and-merge
+  variables:
+    ALL_JOB_ARGS: "-m smoketest -v"
   allow_failure: true
   parallel:
     # too few tests -> dont split
