@@ -665,7 +665,7 @@ e2e-test-softhsm:
     - .only-nightly-and-merge
   variables:
     ALL_JOB_ARGS: "-m smoketest -v"
-    LINOTP_IMAGE: "linotp-softhsm"
+    LINOTP_IMAGE: "linotp-softhsm-deb"
   allow_failure: true
   parallel:
     # too few tests -> dont split
