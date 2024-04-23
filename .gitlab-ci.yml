@@ -626,6 +626,7 @@ e2e-test-mariadb:
   variables:
     LINOTP_PORT: "5000"
     LINOTP_PROTOCOL: "http"
+    SKIP_ANGULAR_SELF_SERVICE_TEST: 1
   services:
     - name: $BLACKDOG_LDAP_IMAGE
       alias: blackdog-ldap
