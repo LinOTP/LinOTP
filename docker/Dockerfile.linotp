@@ -130,6 +130,8 @@ RUN mkdir -p \
     $LINOTP_CUSTOM_TEMPLATES_DIR \
     $TRANSLATIONS_DIR \
     && \
+    # set doas permissions (mainly for GitLab ci)
+    chmod 644 /etc/doas.conf && \
     # Create symlink for assets customization
     python symlink_custom_assets.py && rm symlink_custom_assets.py \
     # Let people put custom CA certificates into a top-level directory
