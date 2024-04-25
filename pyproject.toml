@@ -63,6 +63,6 @@ sections = [
 
 [tool.pip-tools]
 generate-hashes = true
-strip-extras = true
+strip-extras = false
 allow-unsafe = true
 emit-index-url = false

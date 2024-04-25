@@ -129,7 +129,7 @@ test_requirements = [
     "pytest-testconfig",
     "pytest-test-groups",
     "pytest-xdist",
-    "selenium",
+    "selenium<4.10.0",
     "mock",
     "mockldap",
     "freezegun",

@@ -86,9 +86,8 @@ class TestGetUserFromOptions(unittest.TestCase):
             )
 
             assert (
-                login == result["login"] and realm == result["realm"],
-                "failed on run %r:%r:%r" % (login, realm, run),
-            )
+                login == result["login"] and realm == result["realm"]
+            ), "failed on run %r:%r:%r" % (login, realm, run)
 
         return
 
@@ -146,9 +145,8 @@ class TestGetUserFromOptions(unittest.TestCase):
             )
 
             assert (
-                login == result["login"] and realm == result["realm"],
-                "failed on run %r:%r:%r" % (login, realm, run),
-            )
+                login == result["login"] and realm == result["realm"]
+            ), "failed on run %r:%r:%r" % (login, realm, run)
 
         return
 
