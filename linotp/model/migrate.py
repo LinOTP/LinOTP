@@ -654,8 +654,6 @@ class Migration:
         audit_obj = getAudit()
         audit_obj.delete_all_entries()
 
-        log.info("All limotp2 audit entries deleted.")
-
         # ----------------------------------------------------------------- --
 
         if not self.engine.url.drivername.startswith("mysql"):
