@@ -41,6 +41,7 @@ import logging
 from binascii import unhexlify
 
 from sqlalchemy import Column, and_, asc, desc, or_, schema, types
+from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.orm import validates
 
 from flask import current_app
@@ -505,7 +506,20 @@ class Audit(AuditBase):
         try:
             command = f"TRUNCATE TABLE {AuditTable.__tablename__};"
             db.session.execute(command)
+            log.info("All linotp2 audit entries deleted.")
+        except (OperationalError, ProgrammingError) as exx:
+            # an operational error (used by mysql) is an error condition in
+            # the database which is not directly related to our request. It is
+            # either an connection or an access privilege problem.
+            # postgres uses an ProgrammingError in case of the missing truncate
+            # privilege
+            # In both cases we do not raise the exception and only log the
+            # error. The idea is that, if the error would not be caused by the
+            # missing privilege the error will be raised in other places too.
+            log.error("Operational Error on audit table: %r", exx)
+
         except Exception as exx:
+            log.error("Failed to truncate audit table: %r", exx)
             db.session.rollback()
             raise exx
 
