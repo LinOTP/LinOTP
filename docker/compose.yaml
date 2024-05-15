@@ -1,0 +1,28 @@
+services:
+  linotp:
+    build:
+      context: ..
+    environment:
+      LINOTP_DATABASE_URI: "postgres://linotpuser:linotppass@linotp-db/linotp_db" #gitleaks:allow
+      LINOTP_LOG_LEVEL: "INFO"
+      LINOTP_SITE_ROOT_REDIRECT: "/manage/"
+    command: "--with-bootstrap"
+    volumes:
+      - linotp_data:/data
+    depends_on:
+      - linotp-db
+    ports:
+      - "5000:5000"
+
+  linotp-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: "linotp_db"
+      POSTGRES_USER: "linotpuser"
+      POSTGRES_PASSWORD: "linotppass"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  linotp_data:
+  pg_data:
