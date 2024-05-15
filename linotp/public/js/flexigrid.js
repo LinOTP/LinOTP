@@ -824,21 +824,6 @@
 					});
 				}
 			},
-
-			combo_flag: true,
-			combo_resetIndex: function(selObj)
-			{
-				if(this.combo_flag) {
-					selObj.selectedIndex = 0;
-				}
-				this.combo_flag = true;
-			},
-			combo_doSelectAction: function(selObj)
-			{
-				eval( selObj.options[selObj.selectedIndex].value );
-				selObj.selectedIndex = 0;
-				this.combo_flag = false;
-			},
 			//Add title attribute to div if cell contents is truncated
 			addTitleToCell: function(tdDiv) {
 				if(p.addTitleToCell) {
@@ -1029,49 +1014,6 @@
 			$(g.gDiv).prepend(g.tDiv);
 		}
 		g.hDiv.className = 'hDiv';
-
-		// Define a combo button set with custom action'ed calls when clicked.
-		if( p.combobuttons && $(g.tDiv2) )
-		{
-			var btnDiv = document.createElement('div');
-			btnDiv.className = 'fbutton';
-
-			var tSelect = document.createElement('select');
-			$(tSelect).change( function () { g.combo_doSelectAction( tSelect ) } );
-			$(tSelect).click( function () { g.combo_resetIndex( tSelect) } );
-			tSelect.className = 'cselect';
-			$(btnDiv).append(tSelect);
-
-			for (i=0;i<p.combobuttons.length;i++)
-			{
-				var btn = p.combobuttons[i];
-				if (!btn.separator)
-				{
-					var btnOpt = document.createElement('option');
-					btnOpt.innerHTML = btn.name;
-
-					if (btn.bclass)
-						$(btnOpt)
-						.addClass(btn.bclass)
-						.css({paddingLeft:20})
-						;
-					if (btn.bimage)  // if bimage defined, use its string as an image url for this buttons style (RS)
-						$(btnOpt).css( 'background', 'url('+btn.bimage+') no-repeat center left' );
-						$(btnOpt).css( 'paddingLeft', 20 );
-
-					if (btn.tooltip) // add title if exists (RS)
-						$(btnOpt)[0].title = btn.tooltip;
-
-					if (btn.onpress)
-					{
-						btnOpt.value = btn.onpress;
-					}
-					$(tSelect).append(btnOpt);
-				}
-			}
-			$('.tDiv2').append(btnDiv);
-		}
-
 
 		$(t).before(g.hDiv);
 		g.hTable.cellPadding = 0;
