@@ -55,7 +55,7 @@ def has_column(engine: Engine, table_name: str, column: sa.Column) -> bool:
     """
 
     insp = inspect(engine)
-    tables = insp.get_table_names()
+    tables = [tn.lower() for tn in insp.get_table_names()]
     if table_name not in tables:
         return False
 
@@ -321,9 +321,10 @@ class MYSQL_Migration:
 
         :param tables: list of tables where the data should be converted to utf8
         """
-        if "Config" in tables:
+        tables = [t.lower() for t in tables]
+        if "config" in tables:
             self._convert_Config_to_utf8()
-        if "Token" in tables:
+        if "token" in tables:
             self._convert_Token_to_utf8()
         if "imported_user" in tables:
             self._convert_ImportedUser_to_utf8()

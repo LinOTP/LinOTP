@@ -173,13 +173,12 @@ def setup_db(app) -> None:
 
     db.init_app(app)
 
-    table_names = db.engine.table_names()
-
     cli_cmd = getattr(app, "cli_cmd", "")
     if cli_cmd == "init-database":
         return
 
-    if "Config" not in table_names:
+    table_names = [tn.lower() for tn in db.engine.table_names()]
+    if "config" not in table_names:
         log.critical(
             "Database schema must be initialised, "
             "run `linotp init database`."
@@ -188,11 +187,11 @@ def setup_db(app) -> None:
 
     if audit_database_uri != "OFF":
         engine = db.get_engine(app=app, bind="auditdb")
-        auditdb_table_names = engine.table_names()
 
         from linotp.lib.audit.SQLAudit import AuditTable
 
-        if AuditTable.__tablename__ not in auditdb_table_names:
+        auditdb_table_names = [tn.lower() for tn in engine.table_names()]
+        if AuditTable.__tablename__.lower() not in auditdb_table_names:
             log.critical(
                 "Audit database schema must be initialised, "
                 "run `linotp init database`."
