@@ -250,7 +250,7 @@ class MYSQL_Migration:
     def _get_tables(self) -> Any:
         """Query the linotp database for all tables.
 
-        :yield: table name
+        :yield: list of tables in database
         """
         for result in self._execute("show tables;"):
             yield result[0]
