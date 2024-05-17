@@ -109,7 +109,7 @@ ENV LINOTP_USER=linotp \
     CUSTOM_ASSETS_DIR=/custom-assets \
     # Disable legacy selfservice
     LINOTP_DISABLE_CONTROLLERS=gettoken,selfservice \
-    LINOTP_SITE_ROOT_REDIRECT=/selfservice/ \
+    LINOTP_SITE_ROOT_REDIRECT=/manage/ \
     # misc
     DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=linotp.app \
