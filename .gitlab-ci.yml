@@ -431,6 +431,17 @@ lint:
       alias: db
       command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
 
+.mysql-lower-case-table-names-database:
+  extends:
+    - .only-nightly-and-merge
+  variables:
+    <<: *mysql-vars
+    DB: mysql:5.5
+  services:
+    - name: ${DB}
+      alias: db
+      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci", "--lower-case-table-names=1"]
+
 .postgres-database:
   extends:
     - .only-nightly-and-merge
@@ -542,6 +553,11 @@ functional-test-mysql:
   extends:
     - .functional-test-base-dbs
     - .mysql-database
+
+functional-test-mysql-lower-case-table-names:
+  extends:
+    - .functional-test-base-dbs
+    - .mysql-lower-case-table-names-database
 
 .e2e-test:
   extends:
@@ -657,7 +673,15 @@ e2e-test-docker-mariadb:
     - name: ${DB}
       alias: db
       command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_unicode_ci"]
-  allow_failure: false
+
+e2e-test-mysql-lower-case-table-names:
+  extends:
+    - .e2e-test-docker
+    - .mysql-lower-case-table-names-database
+  services: 
+    - !reference [".e2e-test-docker", "services"]
+    - !reference [".mysql-lower-case-table-names-database", "services"]
+  # TODO: can we assert that tables are really lower case in this job?
 
 # End to end test using Soft HSM image
 e2e-test-softhsm:
