@@ -431,6 +431,26 @@ lint:
       alias: db
       command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
 
+.mysql-lower-case-table-names-database:
+  extends:
+    - .only-nightly-and-merge
+  variables:
+    <<: *mysql-vars
+    DB: mysql:5.5
+  services:
+    - name: ${DB}
+      alias: db
+      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci", "--lower-case-table-names=1"]
+  script:
+      # check that config table is stored lower case, i.e. the tests executed verify that lower case table names work.
+    - |
+      TABLES=$(python3 -c "from sqlalchemy import create_engine; print(*create_engine('$LINOTP_DATABASE_URI').table_names(), sep='\n')")
+      echo $TABLES
+      if [[ "$TABLES" =~ "Config" || ! "$TABLES" =~ "config" ]]; then
+        echo "ERROR: Expected to find table 'config' and not 'Config' in lower case table name tests."
+        exit 1
+      fi
+
 .postgres-database:
   extends:
     - .only-nightly-and-merge
@@ -542,6 +562,14 @@ functional-test-mysql:
   extends:
     - .functional-test-base-dbs
     - .mysql-database
+
+functional-test-mysql-lower-case-table-names:
+  extends:
+    - .functional-test-base-dbs
+    - .mysql-lower-case-table-names-database
+  script:
+    - !reference [".functional-test-base-dbs", "script"]
+    - !reference [".mysql-lower-case-table-names-database", "script"]
 
 .e2e-test:
   extends:
@@ -657,7 +685,17 @@ e2e-test-docker-mariadb:
     - name: ${DB}
       alias: db
       command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_unicode_ci"]
-  allow_failure: false
+
+e2e-test-mysql-lower-case-table-names:
+  extends:
+    - .e2e-test-docker
+    - .mysql-lower-case-table-names-database
+  services: 
+    - !reference [".e2e-test-docker", "services"]
+    - !reference [".mysql-lower-case-table-names-database", "services"]
+  script:
+    - !reference [".e2e-test-docker", "script"]
+    - !reference [".mysql-lower-case-table-names-database", "script"]
 
 # End to end test using Soft HSM image
 e2e-test-softhsm:
