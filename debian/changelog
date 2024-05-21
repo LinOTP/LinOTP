@@ -55,6 +55,7 @@ linotp (3.3~rc1~dev0-1) UNRELEASED; urgency=low
   * support for Flask 2 installation
   * /userservice/context additionally returns wether usage timestamps are logged in token info in `["detail"]["settings"]["last_access"]`
   * improved audit log messages in the /admin/ API
+  * Support for MySQL databases that are run with lower_case_table_names=1 (default on Windows)
 
   Fix:
   * Removed: LinOTP no longer supports truncated transaction ids
