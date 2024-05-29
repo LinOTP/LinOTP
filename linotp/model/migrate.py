@@ -56,7 +56,7 @@ def has_column(engine: Engine, table_name: str, column: sa.Column) -> bool:
 
     insp = inspect(engine)
     tables = [tn.lower() for tn in insp.get_table_names()]
-    if table_name not in tables:
+    if table_name.lower() not in tables:
         return False
 
     #
@@ -538,7 +538,11 @@ class Migration:
                     migration_step()
 
                 except Exception as exx:
-                    log.error("Failed to upgrade database! %r", exx)
+                    log.error(
+                        "Failed to upgrade database during migration step: %r",
+                        function_name,
+                    )
+                    log.error(exx, stack_info=True, exc_info=True)
                     model.db.session.rollback()  # pylint: disable=E1101
                     raise exx
 
