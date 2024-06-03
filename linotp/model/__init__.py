@@ -63,8 +63,10 @@ implicit_returning = True
 # # due to reserved keywords 'session' and 'timestamp'
 COL_PREFIX = ""
 
-# exit code 4 prevents gunicorn from restarting workers
+# exit code 3 and 4 prevents gunicorn from restarting workers
+# https://github.com/benoitc/gunicorn/blob/9802e21f779d9f1f208a1a3288218bd5b843ad46/gunicorn/arbiter.py#L528
 SYS_EXIT_CODE = 4
+EXIT_CODE_DB_NOT_CURRENT = 3
 
 # TODO: Get from app config
 # SQLU = config.get("sqlalchemy.url", "")
@@ -203,7 +205,7 @@ def setup_db(app) -> None:
         log.critical(
             "Database schema is not current, run `linotp init database`."
         )
-        sys.exit(SYS_EXIT_CODE)
+        sys.exit(EXIT_CODE_DB_NOT_CURRENT)
 
 
 def init_db_tables(app, drop_data=False, add_defaults=True):
