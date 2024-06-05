@@ -1300,12 +1300,15 @@ class IdResolver(UserIdResolver):
         try:
             # OR filter
             searchFilterOr = ""
-            searchTermValue = searchDict.pop("searchTerm", None)
+            searchTermValue = searchDict.get("searchTerm")
             if searchTermValue:
                 for tmp, ldapKey in self.userinfo.items():
                     searchFilterOr += "(%s=%s)" % (ldapKey, searchTermValue)
             # AND filter
             for searchKey, searchValue in searchDict.items():
+                if searchKey == "searchTerm":
+                    # already handled in OR filter
+                    continue
                 log.debug(
                     "[getUserList] searchkeys: %r / %r", searchKey, searchValue
                 )
