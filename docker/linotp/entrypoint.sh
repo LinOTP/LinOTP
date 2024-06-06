@@ -30,6 +30,12 @@ bootstrap_linotp() {
     fi
 }
 
+initdb_linotp(){
+    echo >&2 " --- Initializing LinOTP's database ---"
+    echo >&2 " --- This will also run necessary migrations ---"
+    linotp -v init database
+}
+
 start_linotp() {
     echo >&2 "--- Starting LinOTP ---"
     if [ "$MODE" = "production" ]; then
@@ -45,14 +51,22 @@ start_linotp() {
         exit_status=$?
         if [ $exit_status == 4 ]; then
 			# NOTE: `<<-` needs tabs as indents to work properly
-			cat <<-EOF
+			cat <<-EOF >&2
 			Gunicorn and LinOTP shut down.
 			If this happened during your container startup, it's likely you're missing files to start LinOTP.
 			Please refer to the logs.
-			Or try starting the container by adding \`--with-bootstrap\` at the end e.g.
+			Or try starting the container by adding \`--with-bootstrap\` at the end, e.g.,
 			\`docker run linotp --with-bootstrap\` to bootstrap all needed files.
 			EOF
-        fi
+	elif [ $exit_status == 3 ]; then
+	                cat <<-EOF >&2
+			Gunicorn and LinOTP shut down.
+			Database schema is not current. You need to run database migrations.
+			Start the container with \`--with-migrations\` added to the command line, e.g.,
+			\`docker run linotp --with-migrations\`, to run the necessary initializations.
+			Make sure to have proper backups for yourself.
+			EOF
+	fi
     elif [ "$MODE" = "development" ]; then
         if [ -n "${I_KNOW_THIS_IS_BAD_AND_IF_TERRIBLE_THINGS_HAPPEN_IT_WILL_BE_MY_OWN_FAULT:-}" ]; then
             echo >&2 "Starting development server on..."
@@ -127,7 +141,12 @@ else
             # run in production mode with bootstrap
             bootstrap_linotp
             start_linotp
-            ;;
+	    ;;
+	--with-migrations)
+	    initdb_linotp
+	    start_linotp
+	    ;;	     
+	    
         *)
             # Execute LinOTP CLI command
             if ! linotp "$@"; then
