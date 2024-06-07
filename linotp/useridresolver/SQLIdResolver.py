@@ -1156,7 +1156,7 @@ class IdResolver(UserIdResolver):
         exp = None
 
         # OR filter
-        searchTermValue = searchDict.pop("searchTerm", None)
+        searchTermValue = searchDict.get("searchTerm")
         if searchTermValue:
             for column_name in self.sqlUserInfo.keys():
                 column = get_column(column_name)
@@ -1167,6 +1167,9 @@ class IdResolver(UserIdResolver):
 
         # AND filter
         for key, value in searchDict.items():
+            if key == "searchTerm":
+                # already handled in OR filter
+                continue
             log.debug("[__createSearchString] processing key %s", key)
 
             try:
