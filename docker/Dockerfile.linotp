@@ -113,7 +113,8 @@ ENV LINOTP_USER=linotp \
     # misc
     DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=linotp.app \
-    FLASK_ENV=production
+    FLASK_ENV=production \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 WORKDIR $LINOTP_HOME
 
