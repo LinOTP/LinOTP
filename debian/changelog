@@ -137,7 +137,7 @@ linotp (3.2.2-1) buster; urgency=low
   Fixes:
   * Challenge database is reset once to ensure that Backups pre LinOTP 3
     correctly restore existing challenge-response tokens.
-  * Migrate encypted data 'password' with legacy proprietary padding (LinOTP 2.9)
+  * Migrate encrypted data 'password' with legacy proprietary padding (LinOTP 2.9)
   * Fix migration of yubico token to LinOTP 3.2
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 21 Dec 2022 17:40:00 +0100
@@ -221,7 +221,7 @@ linotp (3.2-1) buster; urgency=low
   * Added a jwt based admin authentication into LinOTP, so that configuring
     apache to protect admin access to linotp is not needed any more.
     Linotp therefore uses a special realm, the admin realm, which contains the
-    resolvers that are allowed to adminstrate LinOTP. For bootstraping, an
+    resolvers that are allowed to administrate LinOTP. For bootstrapping, an
     internal reserved managed resolver is used for which users could be added via
     the linotp command line tool (s. README.md). The Manage-ui and the
     corresponding interfaces have been extended to indicate if a realm or
@@ -301,17 +301,17 @@ linotp (3.1-1) buster; urgency=medium
     changes.
   * Remove references to the deactivated newsletter and former company names
   * Legacy Selfservice now correctly recognizes type=yubikey tokens in MFA login.
-  * Manage-UI no longer gets stuck in the interface initializtaion if the logged
+  * Manage-UI no longer gets stuck in the interface initialization if the logged
     in user is missing required admin permissions. Now, it is guaranteed that a
     logout is always possible.
   * support the assignment of multiple tokens within one request to
-    prevent raceconditions for example with token_count policies
+    prevent race conditions for example with token_count policies
   * getotp view is now working with python3
   * Token validity period (stored in UTC) is now compared against current
     time in UTC instead of the server's timezone.
   * Log username, realm, serial and token type in audit table when performing a
     `validate/check_status` request.
-  * Fix padding of crypted data by migrating to pkcs7 padding
+  * Fix padding of encrypted data by migrating to pkcs7 padding
     via the `linotp init database` command.
   * Validate no longer wrongly references autoenrollment for users that do
     not own any tokens as the error message.
@@ -333,7 +333,7 @@ linotp (3.0-1) buster; urgency=medium
     path if the user requests the site root path ("/"). If not set, the browser
     is redirected to the legacy selfservice. The new Selfservice will pick
     priority over the deprecated Selfservice if installed.
-  * Support reencoding of LinOTP 2 databases from ISO 8859-1 (Latin1) to UTF-8
+  * Support re-encoding of LinOTP 2 databases from ISO 8859-1 (Latin1) to UTF-8
     via the LinOTP CLI. Latin1 used to be the default for Python 2 against mysql
     but is no longer valid for Python 3.
   * Selfservice supports testing tokens after enrollment via the policy
@@ -357,7 +357,7 @@ linotp (3.0-1) buster; urgency=medium
     * `/usr/share/linotp/linotp.cfg` contains distribution default settings.
     * Support for wildcard paths.
     * By default, `/etc/linotp/linotp.cfg` and `/etc/linotp/conf.d/*.cfg` are
-      configured for adminsistrator configuration overrides.
+      configured for administrator configuration overrides.
     * LINOTP_CFG env treats directory `/foo` like `/foo/*.cfg`.
     * Read config file list from file if `LINOTP_CFG` doesn't exist.
   * Support for SoftHSMv2.
@@ -371,7 +371,7 @@ linotp (3.0-1) buster; urgency=medium
   * Improved error code separation to differentiate between different problems
     preventing token enrollment.
   * The `/userservice/enroll` API now honors default values for hotp and totp
-    tokens defined by the folowing selfservice policies:
+    tokens defined by the following selfservice policies:
     * hmac_otplen, totp_otplen: for the number of digits of an OTP.
     * hmac_hashlib, totp_hashlib: the HMAC hashing algorithm used.
     * totp_timestep: the time stepping for totp tokens.
