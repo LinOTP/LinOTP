@@ -785,9 +785,9 @@ def _lookup_provider_policies(provider_type):
         }
     )
 
-    for policy in policies:
+    for policy_name, policy in policies.items():
         provider_name = get_action_value(
-            policy,
+            {policy_name: policy},
             scope="authentication",
             action=provider_action_name,
             default="",
@@ -796,7 +796,7 @@ def _lookup_provider_policies(provider_type):
         if provider_name not in provider_policies:
             provider_policies[provider_name] = []
 
-        provider_policies[provider_name].append(policy)
+        provider_policies[provider_name].append(policy_name)
 
     return provider_policies
 
