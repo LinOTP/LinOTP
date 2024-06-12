@@ -506,7 +506,7 @@ class Audit(AuditBase):
         try:
             command = f"TRUNCATE TABLE {AuditTable.__tablename__};"
             db.session.execute(command)
-            log.info("All linotp2 audit entries deleted.")
+
         except (OperationalError, ProgrammingError) as exx:
             # an operational error (used by mysql) is an error condition in
             # the database which is not directly related to our request. It is
