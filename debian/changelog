@@ -56,7 +56,6 @@ linotp (3.3~rc1~dev0-1) UNRELEASED; urgency=low
   * /userservice/context now returns whether usage timestamp logging is enabled in LinOTP
   * improved audit log messages for /admin/ API
   * support for MySQL databases that are run with lower_case_table_names=1 (default on Windows)
-  * allow db migration from LinOTP 2.x for db users without SQL privileges to TRUNCATE the audit table.
 
   Fixes:
   * Removed: LinOTP no longer supports truncated transaction ids or checking partial transaction id matches 
