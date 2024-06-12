@@ -652,14 +652,19 @@ class Migration:
 
         # ----------------------------------------------------------------- --
 
-        # with linotp3 we drop all previous audit entries to fix audit signing
-
+        # with LinOTP 3.0.0 we changed the audit signing method
+        # making signatures of older entries invalid.
+        # We log a warning to suggest manual deletion of old entries.
         from linotp.lib.audit.base import getAudit
 
         audit_obj = getAudit()
-        audit_obj.delete_all_entries()
-
-        log.info("All limotp2 audit entries deleted.")
+        total_audit_entries = audit_obj.getTotal()
+        if total_audit_entries > 0:
+            log.info(
+                "You have audit log entries from LinOTP 2.x. "
+                "Their signatures will be invalid from LinOTP 3.0.0 on. "
+                "We suggest you to run TRUNCATE on the audit database table."
+            )
 
         # ----------------------------------------------------------------- --
 

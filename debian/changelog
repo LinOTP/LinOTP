@@ -9,6 +9,9 @@ linotp (3.3~rc1~dev0-1) UNRELEASED; urgency=low
     * `LOGGING_SQLALCHEMY_LEVEL` -> `LOG_LEVEL_DB_CLIENT`
     * `LOGGING` -> `LOG_CONFIG`
   * default of `LOGGING_LEVEL` changed from `INFO` to `WARNING`
+  * when migrating from LinOTP 2.x, the audit log is no longer truncated to circumvent issues with
+    privileges in different database handlers. Old audit log entries that are not truncated now,
+    are reported to have a failing signature check because the method has changed with LinOTP version 3.0.
 
   Deprecations:
   * In the future config variable `LOGGING_LEVEL` will be replaced by `LOG_LEVEL`.
