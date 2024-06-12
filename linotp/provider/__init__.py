@@ -456,9 +456,13 @@ def delProvider(provider_type, provider_name):
     # find out, which providers we have
     config = getLinotpConfig()
 
-    # if the provider is the default one, we don't delete this one
+    # The default provider shall not be deleted, unless it is the last one (of that type).
+
     default_provider_key = Default_Provider_Key[provider_type]
-    if default_provider_key in config:
+
+    is_last_provider_of_type = len(get_all_new_providers(provider_type)) == 1
+
+    if not is_last_provider_of_type and default_provider_key in config:
         default_provider = config[default_provider_key]
 
         if provider_name == default_provider:
