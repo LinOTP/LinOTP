@@ -3850,7 +3850,7 @@ msgid ""
 "'ldaps://'"
 msgstr ""
 "Wenn Sie weder STARTTLS noch 'ldaps://' benutzen, bleibt Ihre Verbindung "
-"unverschlüsseltgeplante Features in LinOTP"
+"unverschlüsselt"
 
 msgid ""
 "Your current LinOTP Smart Virtual Appliancedemo license is about to expire "
