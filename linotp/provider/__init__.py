@@ -765,7 +765,7 @@ def _lookup_provider_policies(provider_type):
     """
     helper, to prevent deleting a provider while it is still used in a policy
 
-    :param provider_type: the type of provider: sms or email
+    :param provider_type: the type of provider: 'sms' or 'email
     :return: a dictionary with provider names as key and list of policy names
     """
     provider_policies = {}
