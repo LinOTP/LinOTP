@@ -108,7 +108,7 @@ class TestProviderController(TestController):
 
         return response
 
-    def setPolicy(self, policy_params=None):
+    def setProviderPolicy(self, policy_params=None):
         params = {
             "name": "smsprovider_newone",
             "scope": "authentication",
@@ -171,6 +171,94 @@ class TestProviderController(TestController):
         response = self.make_system_request("setProvider", params=params)
 
         return response
+
+    def del_provider(self, provider_name, provider_type):
+        params = {
+            "name": provider_name,
+            "type": provider_type,
+        }
+
+        response = self.make_system_request("delProvider", params=params)
+        return response
+
+    def test_del_provider(self):
+        """
+        Check if providers can be deleted only when allowed.
+        1- A default provider shall not be deleted.(unless it is the last one -->4)
+        2- A provider with a related policy shall not be deleted.
+        3- A provider shall still be deleted when there exists a provider
+        policy which is not related to that specific provider. (yeah right, it
+        sounds dumb but the world is complicated and you need to make sure things run as expected.)
+        4- A default provider shall be deleted when it is the last one.
+
+        """
+
+        response = self.define_new_provider({"name": "first_one"})
+        assert '"value": true' in response, response
+        response = self.define_new_provider({"name": "second_one"})
+        assert '"value": true' in response, response
+
+        # check if the first_one is the default
+        params = {"type": "sms"}
+        response = self.make_system_request("getProvider", params=params)
+        jresp = json.loads(response.body)
+        provider = jresp["result"]["value"].get("first_one", {})
+        assert provider.get("Default", False), response
+
+        # 1- now check if we can delete the first_one (default)
+        response = self.del_provider(
+            provider_name="first_one", provider_type="sms"
+        )
+        assert '"value": false' in response, response
+        assert (
+            '"message": "Default provider could not be deleted!"' in response
+        ), response
+
+        # set a policies for both providers
+        self.setProviderPolicy(
+            {
+                "name": "first_provider_policy",
+                "action": "sms_provider=first_one",
+            }
+        )
+        self.setProviderPolicy(
+            {
+                "name": "second_provider_policy",
+                "action": "sms_provider=second_one",
+            }
+        )
+
+        # 2- deleting the provider with a policy should fail:
+        response = self.del_provider(
+            provider_name="second_one", provider_type="sms"
+        )
+        assert '"value": false' in response, response
+        assert (
+            '"message": "Unable to delete - provider used in policies!\\n[second_provider_policy]"'
+            in response
+        ), response
+
+        # let's clean that policy because we want to now remove that provider
+        response = self.make_system_request(
+            action="delPolicy", params={"name": "second_provider_policy"}
+        )
+
+        # 3- The provider without a policy shall be deleted
+        # even though there is a policy for the other one
+        response = self.del_provider(
+            provider_name="second_one", provider_type="sms"
+        )
+        assert '"value": true' in response, response
+
+        # 4- deleting the last provider is allowed, even though it is the default provider
+        # we should however remove it's policy
+        response = self.make_system_request(
+            action="delPolicy", params={"name": "first_provider_policy"}
+        )
+        response = self.del_provider(
+            provider_name="first_one", provider_type="sms"
+        )
+        assert '"value": true' in response, response
 
     def test_create_legacy_provider(self):
         """
@@ -351,7 +439,7 @@ class TestProviderController(TestController):
         assert not provider.get("Default", True), response
 
         # define smsprovider policy to use the 'newone'
-        response = self.setPolicy()
+        response = self.setProviderPolicy()
         assert '"setPolicy smsprovider_newone"' in response, response
 
         # trigger sms and check that the correct provider is used
@@ -413,7 +501,7 @@ class TestProviderController(TestController):
         assert provider.get("Default", False), response
 
         # define sms provider policy to use the 'newone'
-        response = self.setPolicy(
+        response = self.setProviderPolicy(
             policy_params={
                 "user": "egon",
             }
