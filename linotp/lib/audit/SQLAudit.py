@@ -41,7 +41,6 @@ import logging
 from binascii import unhexlify
 
 from sqlalchemy import Column, and_, asc, desc, or_, schema, types
-from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.orm import validates
 
 from flask import current_app
@@ -49,17 +48,6 @@ from flask import current_app
 from linotp.lib.audit.base import AuditBase
 from linotp.lib.crypto.rsa import RSA_Signature
 from linotp.model import db, implicit_returning
-
-TRUNCATION_PRIVILEGE_ERROR = """
-==============================================================================
-Failed to clear all audit entries:
------------------------------------
-This may have been caused by a missing 'TRUNCATE' privilege.
-To reset your audit entries anyway, you need to execute the following SQL
-command from an administrator account:
-        %r
-==============================================================================
-"""
 
 log = logging.getLogger(__name__)
 
@@ -509,34 +497,6 @@ class Audit(AuditBase):
             c = db.session.query(AuditTable).filter(condition).count()
 
         return c
-
-    def delete_all_entries(self):
-        """delete_all_entries: support the cleanup of all audit database entries."""
-
-        log.debug('sql audit interface "delete_all_entries" called.')
-        command = f"TRUNCATE TABLE {AuditTable.__tablename__};"
-
-        nested = db.session.begin_nested()
-        try:
-            db.session.execute(command)
-            nested.commit()
-            log.info("All linotp2 audit entries deleted.")
-        except (OperationalError, ProgrammingError) as exx:
-            # an operational error (used by mysql) is an error condition in
-            # the database which is not directly related to our request. It is
-            # either an connection or an access privilege problem.
-            # postgres uses an ProgrammingError in case of the missing truncate
-            # privilege
-            # In both cases we do not raise the exception and only log the
-            # error. The idea is that, if the error would not be caused by the
-            # missing privilege the error will be raised in other places too.
-            log.info("Operational Error on audit table: %r", exx)
-            log.error(TRUNCATION_PRIVILEGE_ERROR, command)
-            nested.rollback()
-        except Exception as exx:
-            log.error("Failed to truncate audit table: %r", exx)
-            nested.rollback()
-            raise exx
 
 
 def getAsString(data):
