@@ -181,12 +181,7 @@ class TestProviderController(TestController):
 
         return response
 
-    def del_provider(self, provider_name, provider_type):
-        params = {
-            "name": provider_name,
-            "type": provider_type,
-        }
-
+    def del_provider(self, params):
         response = self.make_system_request("delProvider", params=params)
         return response
 
@@ -213,9 +208,7 @@ class TestProviderController(TestController):
         assert provider.get("Default", False), response
 
         # 1- now check if we can delete the first_one (default)
-        response = self.del_provider(
-            provider_name="first_one", provider_type="sms"
-        )
+        response = self.del_provider({"name": "first_one", "type": "sms"})
         assert '"value": false' in response, response
         assert (
             '"message": "Default provider could not be deleted!"' in response
@@ -236,9 +229,7 @@ class TestProviderController(TestController):
         )
 
         # 2- deleting the provider with a policy should fail:
-        response = self.del_provider(
-            provider_name="second_one", provider_type="sms"
-        )
+        response = self.del_provider({"name": "second_one", "type": "sms"})
         assert '"value": false' in response, response
         assert (
             '"message": "Unable to delete - provider used in policies!\\n[second_provider_policy]"'
@@ -252,9 +243,7 @@ class TestProviderController(TestController):
 
         # 3- The provider without a policy shall be deleted
         # even though there is a policy for the other one
-        response = self.del_provider(
-            provider_name="second_one", provider_type="sms"
-        )
+        response = self.del_provider({"name": "second_one", "type": "sms"})
         assert '"value": true' in response, response
 
         # 4- deleting the last provider is allowed, even though it is the default provider
@@ -262,9 +251,7 @@ class TestProviderController(TestController):
         response = self.make_system_request(
             action="delPolicy", params={"name": "first_provider_policy"}
         )
-        response = self.del_provider(
-            provider_name="first_one", provider_type="sms"
-        )
+        response = self.del_provider({"name": "first_one", "type": "sms"})
         assert '"value": true' in response, response
 
     def test_create_legacy_provider(self):
@@ -552,7 +539,7 @@ class TestProviderController(TestController):
         )
 
         params = {"managed": "mypass", "name": "managed_one", "type": "sms"}
-        response = self.make_system_request("delProvider", params)
+        response = self.del_provider(params)
         assert '"value": true' in response, response
 
     @patch.object(
@@ -645,7 +632,7 @@ class TestProviderController(TestController):
         # finally we can delete the second, non default one
 
         params = {"type": "voice", "name": provider_name_2}
-        response = self.make_system_request("delProvider", params=params)
+        response = self.del_provider(params)
         assert '"value": true' in response, response
 
 
