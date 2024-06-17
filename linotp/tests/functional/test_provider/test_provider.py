@@ -153,6 +153,15 @@ class TestProviderController(TestController):
         for entry in entries:
             self.delete_config(prefix=entry)
 
+    def define_new_provider_with_check(self, provider_params=None):
+        """Wrapper function to create provider and check success"""
+        response = self.define_new_provider(provider_params)
+        if '"value": true' not in response:
+            raise ProviderCreationError(
+                f"Provider creation failed: {response}"
+            )
+        return response
+
     def define_new_provider(self, provider_params=None):
         """
         define the new provider via setProvider
@@ -193,10 +202,8 @@ class TestProviderController(TestController):
 
         """
 
-        response = self.define_new_provider({"name": "first_one"})
-        assert '"value": true' in response, response
-        response = self.define_new_provider({"name": "second_one"})
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check({"name": "first_one"})
+        self.define_new_provider_with_check({"name": "second_one"})
 
         # check if the first_one is the default
         params = {"type": "sms"}
@@ -282,8 +289,7 @@ class TestProviderController(TestController):
         """
         check if new provider is default after create
         """
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
@@ -313,8 +319,7 @@ class TestProviderController(TestController):
         # verify the new provider interface
 
         provider_params = {"config": config.encode("utf-8")}
-        response = self.define_new_provider(provider_params=provider_params)
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check(provider_params=provider_params)
 
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
@@ -385,8 +390,7 @@ class TestProviderController(TestController):
         check if legacy provider is loaded by default
         """
 
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
@@ -428,8 +432,7 @@ class TestProviderController(TestController):
         assert provider.get("Default", False), response
 
         # create new provider
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
         # check that this is not the default one
         params = {"type": "sms"}
@@ -465,8 +468,7 @@ class TestProviderController(TestController):
         """
 
         # create new provider
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
         # check that this is the default one
         params = {"type": "sms"}
@@ -525,13 +527,11 @@ class TestProviderController(TestController):
         check that a managed provider does not return the configuration
         """
 
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
-        response = self.define_new_provider(
+        self.define_new_provider_with_check(
             {"managed": "mypass", "name": "managed_one"}
         )
-        assert '"value": true' in response, response
 
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
@@ -540,19 +540,19 @@ class TestProviderController(TestController):
         provider = jresp["result"]["value"].get("managed_one", {})
         assert not provider.get("Default", True), response
 
-        response = self.define_new_provider(
-            {"managed": "wrongpass", "name": "managed_one"}
-        )
+        with self.assertRaises(ProviderCreationError) as cm:
+            self.define_new_provider_with_check(
+                {"managed": "wrongpass", "name": "managed_one"}
+            )
         msg = "Not allowed to overwrite "
-        assert msg in response, response
+        assert msg in str(cm.exception), cm.exception
 
-        response = self.define_new_provider(
+        self.define_new_provider_with_check(
             {"managed": "mypass", "name": "managed_one"}
         )
-        assert '"value": true' in response, response
 
         params = {"managed": "mypass", "name": "managed_one", "type": "sms"}
-        self.make_system_request("delProvider", params)
+        response = self.make_system_request("delProvider", params)
         assert '"value": true' in response, response
 
     @patch.object(
@@ -595,8 +595,7 @@ class TestProviderController(TestController):
             "class": "CustomVoiceProvider",
         }
 
-        response = self.define_new_provider(provider_params=provider_params)
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check(provider_params=provider_params)
 
         # ----------------------------------------------------------------- --
 
@@ -628,8 +627,7 @@ class TestProviderController(TestController):
             "class": "CustomVoiceProvider",
         }
 
-        response = self.define_new_provider(provider_params=provider_params)
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check(provider_params=provider_params)
 
         # ----------------------------------------------------------------- --
 
@@ -649,6 +647,12 @@ class TestProviderController(TestController):
         params = {"type": "voice", "name": provider_name_2}
         response = self.make_system_request("delProvider", params=params)
         assert '"value": true' in response, response
+
+
+class ProviderCreationError(Exception):
+    """Exception raised when provider creation fails."""
+
+    pass
 
 
 # eof #####################################################################
