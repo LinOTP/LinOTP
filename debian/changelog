@@ -1,4 +1,4 @@
-linotp (3.3~rc1~dev0-1) UNRELEASED; urgency=low
+linotp (3.3-1) buster; urgency=low
 
   Breaking Changes:
   * Renamed the following config variables and some changed their defaults:
@@ -79,7 +79,7 @@ linotp (3.3~rc1~dev0-1) UNRELEASED; urgency=low
   * trim excessive error logging when accessing `/static` files without a valid session
 
 
- -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
+ -- LinOTP Packaging <packaging@linotp.de>  Mon, 17 Jun 2024 10:00:00 +0200
 
 linotp (3.2.6-1) buster; urgency=low
 
