@@ -185,42 +185,30 @@ class TestProviderController(TestController):
         response = self.make_system_request("delProvider", params=params)
         return response
 
-    def test_del_provider(self):
-        """
-        Check if providers can be deleted only when allowed.
-        1- A default provider shall not be deleted.(unless it is the last one -->4)
-        2- A provider with a related policy shall not be deleted.
-        3- A provider shall still be deleted when there exists a provider
-        policy which is not related to that specific provider. (yeah right, it
-        sounds dumb but the world is complicated and you need to make sure things run as expected.)
-        4- A default provider shall be deleted when it is the last one.
-
-        """
-
+    def test_del_default_provider_fails(self):
+        """A default provider shall not be deleted(as far as there are other providers)."""
         self.define_new_provider_with_check({"name": "first_one"})
         self.define_new_provider_with_check({"name": "second_one"})
 
         # check if the first_one is the default
+        # Note: LinOTP sets the first added provider as default
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
         jresp = json.loads(response.body)
         provider = jresp["result"]["value"].get("first_one", {})
         assert provider.get("Default", False), response
 
-        # 1- now check if we can delete the first_one (default)
         response = self.del_provider({"name": "first_one", "type": "sms"})
         assert '"value": false' in response, response
         assert (
             '"message": "Default provider could not be deleted!"' in response
         ), response
 
-        # set a policies for both providers
-        self.setProviderPolicy(
-            {
-                "name": "first_provider_policy",
-                "action": "sms_provider=first_one",
-            }
-        )
+    def test_del_provider_with_policy_fails(self):
+        """A provider which has associated policies shall not be deleted."""
+        self.define_new_provider_with_check({"name": "first_one"})
+        self.define_new_provider_with_check({"name": "second_one"})
+
         self.setProviderPolicy(
             {
                 "name": "second_provider_policy",
@@ -228,7 +216,7 @@ class TestProviderController(TestController):
             }
         )
 
-        # 2- deleting the provider with a policy should fail:
+        #  deleting the provider with a policy should fail:
         response = self.del_provider({"name": "second_one", "type": "sms"})
         assert '"value": false' in response, response
         assert (
@@ -236,21 +224,47 @@ class TestProviderController(TestController):
             in response
         ), response
 
-        # let's clean that policy because we want to now remove that provider
-        response = self.make_system_request(
-            action="delPolicy", params={"name": "second_provider_policy"}
+    def test_del_non_default_provider_succeeds(self):
+        """
+        A provider shall be deleted when it is not default and does not have
+        policies associated with it. Even though there are policies associated
+        with other providers.
+        """
+
+        self.define_new_provider_with_check({"name": "first_one"})
+        self.define_new_provider_with_check({"name": "second_one"})
+
+        # for those of you in the future or those who travel in time to get to see this
+        # and are asking yourself: "why should I ever care whether there is a policy for
+        # the other provider or not?". The answer is:
+        # Well this has been a bug case. We just don't want to it to be repeated again.
+        self.setProviderPolicy(
+            {
+                "name": "first_provider_policy",
+                "action": "sms_provider=first_one",
+            }
         )
 
-        # 3- The provider without a policy shall be deleted
+        # The provider without a policy shall be deleted
         # even though there is a policy for the other one
         response = self.del_provider({"name": "second_one", "type": "sms"})
         assert '"value": true' in response, response
 
-        # 4- deleting the last provider is allowed, even though it is the default provider
-        # we should however remove it's policy
-        response = self.make_system_request(
-            action="delPolicy", params={"name": "first_provider_policy"}
-        )
+    def test_del_last_but_default_provider_succeds(self):
+        """
+        A default provider shall be deleted when it is the last one.
+        """
+
+        self.define_new_provider_with_check({"name": "first_one"})
+
+        # Check if the first_one is the default
+        params = {"type": "sms"}
+        response = self.make_system_request("getProvider", params=params)
+        jresp = json.loads(response.body)
+        provider = jresp["result"]["value"].get("first_one", {})
+        assert provider.get("Default", False), response
+
+        # Deleting the last provider is allowed, even though it is the default provider
         response = self.del_provider({"name": "first_one", "type": "sms"})
         assert '"value": true' in response, response
 
