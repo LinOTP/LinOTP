@@ -405,12 +405,7 @@ lint:
 
 .mariadb-database:
   rules:
-    - if: $NIGHTLY_PIPELINE
-      when: always
-    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train'
-      variables:
-        NIGHTLY_PIPELINE: 1
-      when: always
+    - !reference [.nightly-test-set-rules, rules]
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
   variables:
