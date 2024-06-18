@@ -115,7 +115,7 @@ elif ! [ -f "$LINOTP_CFG" ]; then
     echo >&2 "Configuration file $LINOTP_CFG (LINOTP_CFG) does not exist"
     exit 1
 else
-    echo >&2 "LINOTP_CFG is $file"
+    echo >&2 "LINOTP_CFG is $LINOTP_CFG"
 fi
 
 if [ -z "${1-}" ]; then
