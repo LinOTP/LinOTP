@@ -375,12 +375,12 @@ lint:
 
 # Nightly tests are scheduled to run once a day and contain
 # more tests than the regular set
-# Merge_trains too run against more to prevent a broken master
-.only-nightly-and-merge:
+# Merge_trains and tag-pipelines too run against more to prevent a broken master
+.nightly-test-set-rules:
   rules:
     - if: $NIGHTLY_PIPELINE
       when: always
-    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train'
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train' || $CI_COMMIT_TAG 
       variables:
         NIGHTLY_PIPELINE: 1
       when: always
@@ -422,7 +422,7 @@ lint:
 
 .mysql-database:
   extends:
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   variables:
     <<: *mysql-vars
     DB: mysql:5.5
@@ -433,7 +433,7 @@ lint:
 
 .mysql-lower-case-table-names-database:
   extends:
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   variables:
     <<: *mysql-vars
     DB: mysql:5.5
@@ -453,7 +453,7 @@ lint:
 
 .postgres-database:
   extends:
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   variables:
     DB: postgres:12
     POSTGRES_DB: linotp_db
@@ -494,7 +494,7 @@ lint:
 .test-base-debs:
   extends:
     - .test-base
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   stage: test
   needs: build:debian-buster
   image: $IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME:$CI_PIPELINE_ID
@@ -551,7 +551,7 @@ functional-test-mariadb:
   extends:
     - .functional-test-base-dbs
     - .mariadb-database
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
 
 functional-test-postgres:
   extends:
@@ -701,7 +701,7 @@ e2e-test-mysql-lower-case-table-names:
 e2e-test-softhsm:
   extends:
     - e2e-test-mariadb
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   variables:
     ALL_JOB_ARGS: "-m smoketest -v"
     LINOTP_IMAGE: "linotp-softhsm-deb"
@@ -715,7 +715,7 @@ e2e-test-softhsm:
 e2e-test-docker-softhsm:
   extends:
     - e2e-test-docker-mariadb
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   variables:
     ALL_JOB_ARGS: "-m smoketest -v"
   allow_failure: true
