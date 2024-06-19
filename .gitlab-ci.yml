@@ -757,7 +757,6 @@ upload-debs:
 upload-container-image:
   stage: upload-image
   extends: .upload-container-image
-  needs: ["container_scanning"]
 
 # Build and upload are being handled by dev/linotp/sva2/build-isos
 .build-and-upload-iso:
