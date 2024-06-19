@@ -658,7 +658,7 @@ class Migration:
         from linotp.lib.audit.base import getAudit
 
         audit_obj = getAudit()
-        total_audit_entries = audit_obj.getTotal()
+        total_audit_entries = audit_obj.getTotal({})
         if total_audit_entries > 0:
             log.info(
                 "You have audit log entries from LinOTP 2.x. "

@@ -1,3 +1,10 @@
+linotp (3.3.2-1) buster; urgency=low
+
+  Fix:
+    * migration to 3.0.0 no longer fails (due to missing arg)
+
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 19 Jun 2024 10:00:00 +0200
+
 linotp (3.3.1-1) buster; urgency=low
 
   * fix unbound variable in containers `entrypoint.sh`
