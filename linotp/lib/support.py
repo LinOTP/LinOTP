@@ -303,7 +303,7 @@ def setDemoSupportLicense():
     set the demo license to be the current one
 
     :param licString: the license with description and signature
-    :return: tuple with status (boolean) and if an error occured, the reason
+    :return: tuple with status (boolean) and if an error occurred, the reason
     """
     return setSupportLicense(DEMO_LICENSE)
 
@@ -317,7 +317,7 @@ def setSupportLicense(licString):
     set the license to be the current one
 
     :param licString: the license with description and signature
-    :return: tuple with status (boolean) and if an error occured, the reason
+    :return: tuple with status (boolean) and if an error occurred, the reason
     """
     ret = True
     msg = ""
@@ -368,7 +368,7 @@ def do_nagging(lic_info, nag_days=7):
     duration = int(lic_info.license_expiration.replace("days", "").strip())
     lic_start_date = expire_date - datetime.timedelta(days=duration)
 
-    # calulate the nagging start date with given nag_offset
+    # calculate the nagging start date with given nag_offset
     nag_start_date = lic_start_date + datetime.timedelta(days=nag_offset)
 
     if now_date <= nag_start_date:
@@ -497,7 +497,7 @@ def setSupportLicenseInfo(lic_dict, lic_sign):
 
     :param lic_dict: the license with description
     :param lic_sign: the license signature
-    :return: tuple with status (boolean) and if faild, the reason
+    :return: tuple with status (boolean) and if failed, the reason
     """
 
     verifyLicenseInfo(lic_dict, lic_sign, raiseException=True)
@@ -524,7 +524,7 @@ def setSupportLicenseInfo(lic_dict, lic_sign):
 
 def _get_license_duration():
     """
-    helper to retreive the license duration from the config
+    helper to retrieve the license duration from the config
 
     :return: text with signature:timestamp
     """
@@ -671,7 +671,7 @@ def verifyLicenseInfo(
 
 def verify_signature(lic_dict, lic_sign, licStr=None):
     """
-    verfiy the license signature with crypto.rsa
+    verify the license signature with crypto.rsa
 
     :param lic_dict: the dict with the license data
     :param lic_sign: the license signature
@@ -1005,11 +1005,15 @@ def check_date(expire_type, expire):
     for fmt in ("%d.%m.%Y", "%m/%d/%Y", "%Y-%m-%d"):
         try:
             expiration_date = datetime.datetime.strptime(expire, fmt)
+            log.debug(
+                "License expiration format '%s' matched by '%r'",
+                fmt,
+                expire,
+            )
             break
         except BaseException:
-            log.info(
-                "License expiration format incorrect. Format is %s, "
-                "but got %r",
+            log.debug(
+                "License expiration format '%s' not matched by '%r'",
                 fmt,
                 expire,
             )

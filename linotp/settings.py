@@ -314,6 +314,70 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
+            "LOGGING_LEVEL",
+            str,
+            validate=check_membership(VALID_LOG_LEVELS),
+            default="WARNING",
+            help=(
+                "Deprecation Warning: Soon to be replaced with `LOG_LEVEL`!"
+                "Messages will be logged only if they are at this level "
+                "or above."
+            ),
+        ),
+        ConfigItem(
+            "LOG_LEVEL",
+            str,
+            validate=check_membership(VALID_LOG_LEVELS),
+            default="WARNING",
+            help=(
+                "Messages will be logged only if they are at this level "
+                "or above. You can also limit the logged messages via "
+                "`LOG_FILE_LEVEL` and `LOG_CONSOLE_LEVEL`. Messages will "
+                "only be logged to file/console if their level is greater or equal "
+                "to both `LOG_LEVEL` and `LOG_FILE_LEVEL`/`LOG_CONSOLE_LEVEL`."
+            ),
+        ),
+        ConfigItem(
+            "LOG_CONSOLE_LEVEL",
+            str,
+            validate=check_membership(VALID_LOG_LEVELS),
+            default="DEBUG",
+            help=(
+                "Messages will be written to the log file only if they "
+                "are at this level or above and if this level >= `LOG_LEVEL`."
+                "i.e., even if `LOG_CONSOLE_LEVEL` is more relaxed than "
+                "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
+                "above will be logged to the console."
+            ),
+        ),
+        ConfigItem(
+            "LOG_CONSOLE_LINE_FORMAT",
+            str,
+            default=(
+                "%(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
+            ),
+            help=(
+                "Format for individual lines in the console log. "
+                "This is the log which will usually be passed to "
+                "journald or the container log."
+                "Refer to the Python documentation for the details on "
+                "log file format strings."
+            ),
+        ),
+        ConfigItem(
+            "LOG_FILE_LEVEL",
+            str,
+            validate=check_membership(VALID_LOG_LEVELS),
+            default="DEBUG",
+            help=(
+                "Messages will be written to the log file only if they "
+                "are at this level or above and if this level >= `LOG_LEVEL`."
+                "i.e., even if `LOG_FILE_LEVEL` is more relaxed than "
+                "`LOG_LEVEL`, only messages at `LOG_LEVEL` or "
+                "above will be logged to the file."
+            ),
+        ),
+        ConfigItem(
             "LOG_FILE_DIR",
             str,
             default="logs",
@@ -347,20 +411,6 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOG_CONSOLE_LINE_FORMAT",
-            str,
-            default=(
-                "%(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
-            ),
-            help=(
-                "Format for individual lines in the console log. "
-                "This is the log which is gonna be available through"
-                "journalctl "
-                "Refer to the Python documentation for the details on "
-                "log file format strings."
-            ),
-        ),
-        ConfigItem(
             "LOG_FILE_MAX_LENGTH",
             int,
             validate=check_int_in_range(min=0),
@@ -378,17 +428,7 @@ _config_schema = ConfigSchema(
             help=("Up to this many old log files will be kept."),
         ),
         ConfigItem(
-            "LOGGING_LEVEL",
-            str,
-            validate=check_membership(VALID_LOG_LEVELS),
-            default="INFO",
-            help=(
-                "Messages will be logged only if they are at this level "
-                "or above."
-            ),
-        ),
-        ConfigItem(
-            "LOGGING_SQLALCHEMY_LEVEL",
+            "LOG_LEVEL_DB_CLIENT",
             str,
             validate=check_membership(VALID_LOG_LEVELS),
             default="WARNING",
@@ -398,41 +438,13 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
-            "LOGGING_FILE_LEVEL",
-            str,
-            validate=check_membership(VALID_LOG_LEVELS),
-            default="WARNING",
-            help=(
-                "Messages will be written to the log file only if they "
-                "are at this level or above. Messages must pass "
-                "`LOGGING_LEVEL` first, i.e., even if "
-                "`LOGGING_FILE_LEVEL` is more relaxed than "
-                "`LOGGING_LEVEL`, only messages at `LOGGING_LEVEL` or "
-                "above will be logged to the file."
-            ),
-        ),
-        ConfigItem(
-            "LOGGING_CONSOLE_LEVEL",
-            str,
-            validate=check_membership(VALID_LOG_LEVELS),
-            default="WARNING",
-            help=(
-                "Messages will be written to the console only if they "
-                "are at this level or above. Messages must pass "
-                "`LOGGING_LEVEL` first, i.e., even if "
-                "`LOGGING_FILE_LEVEL` is more relaxed than "
-                "`LOGGING_LEVEL`, only messages at `LOGGING_LEVEL` or "
-                "above will be logged to the console."
-            ),
-        ),
-        ConfigItem(
-            "LOGGING",
+            "LOG_CONFIG",
             dict,
             convert=json.loads,
             default=None,
             help=(
                 "You can completely redefine the LinOTP logging setup by "
-                "passing a configuration dictionary in `LOGGING`. Do "
+                "passing a configuration dictionary in `LOG_CONFIG`. Do "
                 "this only if you know what you are doing. The default "
                 "value of `None`  enables a basic setup based on the "
                 "`LOG_FILE_*` and `LOGGING_*` parameters."
@@ -857,7 +869,7 @@ def _init_app(app):
 # what types our `ConfigItem` instances are supposed to have, so we can
 # specify everything as strings (e.g., in environment variables) and still
 # end up with `int`s in the actual settings (for an extreme – but cool –
-# example, check out `LOGGING` above), and (b) it's a lot easier to
+# example, check out `LOG_CONFIG` above), and (b) it's a lot easier to
 # auto-generate commented sample configuration files from the schema than
 # it would be from Python code, so we save ourselves from getting into a
 # situation where a traditional Flask `Config` class and the sample config
@@ -890,15 +902,15 @@ Config = type("Config", (object,), _attrs)
 class DevelopmentConfig(Config):
     DEBUG = True
     SESSION_COOKIE_SECURE = False
-    LOGGING_LEVEL = "DEBUG"
-    LOGGING_FILE_LEVEL = LOGGING_LEVEL
+    LOG_LEVEL = "DEBUG"
+    LOG_FILE_LEVEL = LOG_LEVEL
     DATABASE_URI = "sqlite:///" + os.path.join(basedir, "linotp-dev.sqlite")
 
 
 class TestingConfig(Config):
     TESTING = True
     SESSION_COOKIE_SECURE = False
-    LOGGING_LEVEL = "DEBUG"
+    LOG_LEVEL = "DEBUG"
     DATABASE_URI = "sqlite:///" + os.path.join(basedir, "linotp-test.sqlite")
 
 

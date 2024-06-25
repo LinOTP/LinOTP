@@ -77,9 +77,9 @@ from .lib.tools.flask_jwt_extended_migration import (
     verify_jwt_in_request,
 )
 from .lib.user import User, getUserFromRequest
-from .lib.util import get_client
+from .lib.util import get_client, get_log_level
 from .model import SYS_EXIT_CODE, setup_db
-from .settings import ConfigSchema, configs
+from .settings import ConfigSchema, _config_schema, configs
 from .tokens import reload_classes as reload_token_classes
 
 log = logging.getLogger(__name__)
@@ -309,8 +309,8 @@ class LinOTPApp(Flask):
 
         # ------------------------------------------------------------------ --
 
-        # we create a app shared linotp config object which main purpose is
-        # to syncronize the access to changes within multiple threads
+        # we create an app-wide shared linotp config object whose main purpose is
+        # to synchronize the access to changes within multiple threads
 
         self.linotp_app_config: Optional[LinotpAppConfig] = None
 
@@ -413,9 +413,8 @@ class LinOTPApp(Flask):
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
-        # we add a unique request id to the request enviroment
+        # we add a unique request id to the request environment
         # so we can trace individual requests in the logging
-
         request.environ["REQUEST_ID"] = str(uuid4())
         request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
@@ -449,7 +448,8 @@ class LinOTPApp(Flask):
                 e,
             )
 
-        self.create_context(request, request.environ)
+        if not self.is_request_static():
+            self.create_context(request, request.environ)
 
     def is_request_static(self):
         return request.path.startswith(self.static_url_path)
@@ -519,7 +519,7 @@ class LinOTPApp(Flask):
 
         # ------------------------------------------------------------------------
 
-        # setup the knowlege where we are
+        # setup the knowledge where we are
 
         request_context["action"] = None
         request_context["controller"] = None
@@ -545,9 +545,13 @@ class LinOTPApp(Flask):
 
         flask_g.audit = self.audit_obj.initialize(request, client=client)
 
-        authUser = None
         try:
             c_identity = get_jwt_identity()
+        except Exception as exx:
+            c_identity = {}
+
+        authUser = None
+        try:
             if c_identity:
                 authUser = User(
                     login=c_identity["username"],
@@ -557,7 +561,7 @@ class LinOTPApp(Flask):
                     ].rpartition(".")[-1],
                 )
         except Exception as exx:
-            log.error("Failed to identify jwt user: %r", exx)
+            log.warning("Failed to identify jwt user: %r", exx)
 
         flask_g.authUser = authUser
 
@@ -669,7 +673,7 @@ class LinOTPApp(Flask):
                     else:
                         request_params[key] = request.values.get(key)
         except UnicodeDecodeError as exx:
-            # we supress Exception here as it will be handled in the
+            # we suppress Exception here as it will be handled in the
             # controller which will return corresponding response
             log.warning("Failed to access request parameters: %r", exx)
 
@@ -814,18 +818,18 @@ class LinOTPApp(Flask):
 def init_logging(app):
     """Sets up logging for LinOTP."""
 
-    if app.config["LOGGING"] is None:
-        app.config["LOGGING"] = {
+    if app.config["LOG_CONFIG"] is None:
+        app.config["LOG_CONFIG"] = {
             "version": 1,
             "disable_existing_loggers": True,
             "handlers": {
                 "console": {
-                    "level": app.config["LOGGING_CONSOLE_LEVEL"],
+                    "level": app.config["LOG_CONSOLE_LEVEL"],
                     "class": "logging.StreamHandler",
                     "formatter": "linotp_console",
                 },
                 "file": {
-                    "level": app.config["LOGGING_FILE_LEVEL"],
+                    "level": app.config["LOG_FILE_LEVEL"],
                     "class": "logging.handlers.RotatingFileHandler",
                     "formatter": "linotp_file",
                     "filename": os.path.join(
@@ -846,12 +850,12 @@ def init_logging(app):
             "loggers": {
                 "linotp": {
                     "handlers": ["console", "file"],
-                    "level": app.config["LOGGING_LEVEL"],
+                    "level": get_log_level(app),
                     "propagate": True,
                 },
                 "sqlalchemy.engine": {
                     "handlers": ["console", "file"],
-                    "level": app.config["LOGGING_SQLALCHEMY_LEVEL"],
+                    "level": app.config["LOG_LEVEL_DB_CLIENT"],
                     "propagate": True,
                 },
             },
@@ -859,7 +863,7 @@ def init_logging(app):
 
     if app.cli_cmd != "config":
         ensure_dir(app, "log", "LOG_FILE_DIR", mode=0o770)
-        logging_dictConfig(app.config["LOGGING"])
+        logging_dictConfig(app.config["LOG_CONFIG"])
 
     app.logger = logging.getLogger(app.name)
     app.logger.info("LinOTP {} starting ...".format(__version__))

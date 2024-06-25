@@ -3245,7 +3245,7 @@ msgstr "Unbekannte Methode im Self-Service-Portal: %s"
 msgid "Unknown provider! %r"
 msgstr "Unbekannter Provider! %r"
 
-msgid "Unknown server error occured"
+msgid "Unknown server error occurred"
 msgstr "Ein unbekannter Serverfehler ist aufgetreten"
 
 msgid "Upload the eToken data file:"
@@ -3850,7 +3850,7 @@ msgid ""
 "'ldaps://'"
 msgstr ""
 "Wenn Sie weder STARTTLS noch 'ldaps://' benutzen, bleibt Ihre Verbindung "
-"unverschlüsseltgeplante Features in LinOTP"
+"unverschlüsselt"
 
 msgid ""
 "Your current LinOTP Smart Virtual Appliancedemo license is about to expire "

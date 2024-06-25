@@ -54,7 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install python dependencies into VENV_ROOT
 RUN python -m venv $VENV_ROOT
 COPY requirements-prod.txt .
-RUN pip install --upgrade pip && pip install -r requirements-prod.txt
+RUN pip install pip==24.0 && pip install -r requirements-prod.txt
 
 WORKDIR $LINOTP_HOME
 
@@ -88,13 +88,11 @@ RUN ./translations.sh
 
 FROM base
 
-HEALTHCHECK --interval=20s --timeout=5s --retries=3 \
-    --start-period=60s \
-    CMD curl -sf http://localhost:5000/ || exit 1
+HEALTHCHECK --interval=20s --timeout=5s --retries=3 --start-period=60s \
+    CMD curl -sfL http://localhost:5000/ || exit 1
 
 ENV LINOTP_ROOT_DIR=/data \
-    LINOTP_CACHE_DIR=/cache \
-    LINOTP_LOG_FILE_DIR=/logs
+    LINOTP_CACHE_DIR=/cache
 ENV LINOTP_USER=linotp \
     LINOTP_ADMIN_USER=admin \
     LINOTP_ADMIN_PASSWORD= \
@@ -102,15 +100,21 @@ ENV LINOTP_USER=linotp \
     LINOTP_DATABASE_URI=sqlite:///$LINOTP_ROOT_DIR/linotp.db \
     LINOTP_DB_WAITTIME=30s \
     LINOTP_SESSION_COOKIE_SECURE=true \
+    # disable file logger
+    LINOTP_LOG_FILE_DIR=/ \
+    LINOTP_LOG_FILE_NAME=/dev/null \
     # root level dirs
     LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;/$TRANSLATIONS_DIR \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
+    # Disable legacy selfservice
+    LINOTP_DISABLE_CONTROLLERS=gettoken,selfservice \
+    LINOTP_SITE_ROOT_REDIRECT=/manage/ \
     # misc
-    SQLALCHEMY_LOGGING_LEVEL=ERROR \
     DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=linotp.app \
-    FLASK_ENV=production
+    FLASK_ENV=production \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 WORKDIR $LINOTP_HOME
 
@@ -129,10 +133,11 @@ COPY docker/linotp/doas.conf /etc/doas.conf
 RUN mkdir -p \
     $LINOTP_ROOT_DIR \
     $LINOTP_CACHE_DIR \
-    $LINOTP_LOG_FILE_DIR \
     $LINOTP_CUSTOM_TEMPLATES_DIR \
     $TRANSLATIONS_DIR \
     && \
+    # set doas permissions (mainly for GitLab ci)
+    chmod 644 /etc/doas.conf && \
     # Create symlink for assets customization
     python symlink_custom_assets.py && rm symlink_custom_assets.py \
     # Let people put custom CA certificates into a top-level directory
@@ -143,13 +148,13 @@ RUN mkdir -p \
 RUN useradd -r $LINOTP_USER && \
     chown -R $LINOTP_USER:$LINOTP_USER \
     $LINOTP_ROOT_DIR \
-    $LINOTP_LOG_FILE_DIR \
     $LINOTP_CACHE_DIR
 USER $LINOTP_USER
 
 # Create volumes for root level dirs
 VOLUME $LINOTP_ROOT_DIR \
-    $LINOTP_CACHE_DIR \
-    $LINOTP_LOG_FILE_DIR
+    $LINOTP_CACHE_DIR 
+
+EXPOSE 5000
 
 ENTRYPOINT [ "tini", "--", "./entrypoint.sh" ] 

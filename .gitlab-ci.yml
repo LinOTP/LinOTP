@@ -26,6 +26,8 @@ variables:
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
   PYPI_IMAGE: $IMAGE_PREFIX_CI/linotp-testenv-pypi
   DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/b/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
+  DOCKER_TEST_IMG_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-testimg:$CI_PIPELINE_ID
+  DOCKER_TEST_ENV_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-testenv:$CI_PIPELINE_ID
   DOCKER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/linotp
   # Variables for security scan evaluation
   SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
@@ -33,6 +35,9 @@ variables:
   # Variables for upload-debs
   REPOSITORY: linotp3
   COMPONENT: linotp
+  # uncomment `CI_DEBUG_SERVICES` to capture logs of job-services (e.g. the linotp container in e2e tests)
+  # CI_DEBUG_SERVICES: "true"
+
 
 workflow:
   rules:
@@ -99,6 +104,10 @@ build-and-upload-docker:
   script:
     - docker build -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
     - docker push "$DOCKER_IMAGE_TAG"
+    - docker build -t "$DOCKER_TEST_ENV_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testenv .
+    - docker push "$DOCKER_TEST_ENV_IMAGE_TAG"
+    - docker build -t "$DOCKER_TEST_IMG_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testimg .
+    - docker push "$DOCKER_TEST_IMG_IMAGE_TAG"
 
 container_scanning:
   image:
@@ -366,12 +375,12 @@ lint:
 
 # Nightly tests are scheduled to run once a day and contain
 # more tests than the regular set
-# Merge_trains too run against more to prevent a broken master
-.only-nightly-and-merge:
+# Merge_trains and tag-pipelines too run against more to prevent a broken master
+.nightly-test-set-rules:
   rules:
     - if: $NIGHTLY_PIPELINE
       when: always
-    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train'
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train' || $CI_COMMIT_TAG 
       variables:
         NIGHTLY_PIPELINE: 1
       when: always
@@ -396,12 +405,7 @@ lint:
 
 .mariadb-database:
   rules:
-    - if: $NIGHTLY_PIPELINE
-      when: always
-    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train'
-      variables:
-        NIGHTLY_PIPELINE: 1
-      when: always
+    - !reference [.nightly-test-set-rules, rules]
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
   variables:
@@ -413,7 +417,7 @@ lint:
 
 .mysql-database:
   extends:
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   variables:
     <<: *mysql-vars
     DB: mysql:5.5
@@ -422,9 +426,29 @@ lint:
       alias: db
       command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
 
+.mysql-lower-case-table-names-database:
+  extends:
+    - .nightly-test-set-rules
+  variables:
+    <<: *mysql-vars
+    DB: mysql:5.5
+  services:
+    - name: ${DB}
+      alias: db
+      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci", "--lower-case-table-names=1"]
+  script:
+      # check that config table is stored lower case, i.e. the tests executed verify that lower case table names work.
+    - |
+      TABLES=$(python3 -c "from sqlalchemy import create_engine; print(*create_engine('$LINOTP_DATABASE_URI').table_names(), sep='\n')")
+      echo $TABLES
+      if [[ "$TABLES" =~ "Config" || ! "$TABLES" =~ "config" ]]; then
+        echo "ERROR: Expected to find table 'config' and not 'Config' in lower case table name tests."
+        exit 1
+      fi
+
 .postgres-database:
   extends:
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   variables:
     DB: postgres:12
     POSTGRES_DB: linotp_db
@@ -441,24 +465,9 @@ lint:
       alias: db
 
 ## Test stages
-.parallel:
-  matrix-flask1-only:
-    - CI_FLASK_VERSION: [Flask-1]
-      CI_NODE_INDEX: [1, 2, 3, 4]
-      CI_NODE_TOTAL: [4]
-  matrix-flask2-only:
-    - CI_FLASK_VERSION: [Flask-2]
-      CI_NODE_INDEX: [1, 2, 3, 4]
-      CI_NODE_TOTAL: [4]
-  matrix-no-test-splitting-flask1-only:
-    - CI_FLASK_VERSION: [Flask-1]
-      CI_NODE_INDEX: [1]
-      CI_NODE_TOTAL: [1]
-
 .test-base:
   interruptible: true
-  parallel:
-    matrix: !reference [.parallel, matrix-flask1-only]
+  parallel: 4
   artifacts:
     reports:
       coverage_report:
@@ -471,8 +480,6 @@ lint:
   image: $PYPI_IMAGE_TAG
   rules:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merged_result'
-  parallel:
-    matrix: !reference [.parallel, matrix-flask2-only]
   variables:
     PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_SHA
     PYPI_ARGS: "-m \"not fails_in_pypi_tests\" -n auto"
@@ -482,7 +489,7 @@ lint:
 .test-base-debs:
   extends:
     - .test-base
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   stage: test
   needs: build:debian-buster
   image: $IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME:$CI_PIPELINE_ID
@@ -539,7 +546,7 @@ functional-test-mariadb:
   extends:
     - .functional-test-base-dbs
     - .mariadb-database
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
 
 functional-test-postgres:
   extends:
@@ -550,6 +557,14 @@ functional-test-mysql:
   extends:
     - .functional-test-base-dbs
     - .mysql-database
+
+functional-test-mysql-lower-case-table-names:
+  extends:
+    - .functional-test-base-dbs
+    - .mysql-lower-case-table-names-database
+  script:
+    - !reference [".functional-test-base-dbs", "script"]
+    - !reference [".mysql-lower-case-table-names-database", "script"]
 
 .e2e-test:
   extends:
@@ -623,17 +638,87 @@ e2e-test-mariadb:
       alias: test-chrome
   allow_failure: false
 
+.e2e-test-docker:
+  image:
+    name: $DOCKER_TEST_ENV_IMAGE_TAG
+    entrypoint: [""]
+  extends:
+    - .e2e-test
+  needs:
+    - build-and-upload-docker
+  variables:
+    LINOTP_PORT: "5000"
+    LINOTP_PROTOCOL: "http"
+    SKIP_ANGULAR_SELF_SERVICE_TEST: 1
+  services:
+    - name: $BLACKDOG_LDAP_IMAGE
+      alias: blackdog-ldap
+    - name: $BLACKDOG_MYSQL_IMAGE
+      alias: blackdog-mysql
+    - name: selenium/standalone-chrome-debug:latest
+      alias: test-chrome
+    # implicitly start linotp latest, as it relies on the DB
+    - name: $DOCKER_TEST_IMG_IMAGE_TAG
+      alias: test-linotp
+      command:
+        - "--with-bootstrap"
+      variables:
+        LINOTP_DB_WAITTIME: 10s
+        LINOTP_ADMIN_PASSWORD: admin
+        LINOTP_LOG_LEVEL: INFO
+        LINOTP_SESSION_COOKIE_SECURE: "false"
+        # reenable selfservice for some e2e tests
+        LINOTP_DISABLE_CONTROLLERS: "gettoken"
+        LINOTP_SITE_ROOT_REDIRECT: ""
+
+e2e-test-docker-mariadb:
+  extends:
+    - .e2e-test-docker
+    - .mariadb-database
+  services: 
+    - !reference [".e2e-test-docker", "services"]
+    - name: ${DB}
+      alias: db
+      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_unicode_ci"]
+
+e2e-test-mysql-lower-case-table-names:
+  extends:
+    - .e2e-test-docker
+    - .mysql-lower-case-table-names-database
+  services: 
+    - !reference [".e2e-test-docker", "services"]
+    - !reference [".mysql-lower-case-table-names-database", "services"]
+  script:
+    - !reference [".e2e-test-docker", "script"]
+    - !reference [".mysql-lower-case-table-names-database", "script"]
+
 # End to end test using Soft HSM image
 e2e-test-softhsm:
   extends:
     - e2e-test-mariadb
-    - .only-nightly-and-merge
+    - .nightly-test-set-rules
   variables:
     ALL_JOB_ARGS: "-m smoketest -v"
-    LINOTP_IMAGE: "linotp-softhsm"
+    LINOTP_IMAGE: "linotp-softhsm-deb"
   allow_failure: true
   parallel:
-    matrix: !reference [.parallel, matrix-no-test-splitting-flask1-only]
+    # too few tests -> dont split
+    matrix: 
+    - CI_NODE_INDEX: [1]
+      CI_NODE_TOTAL: [1]
+
+e2e-test-docker-softhsm:
+  extends:
+    - e2e-test-docker-mariadb
+    - .nightly-test-set-rules
+  variables:
+    ALL_JOB_ARGS: "-m smoketest -v"
+  allow_failure: true
+  parallel:
+    # too few tests -> dont split
+    matrix: 
+    - CI_NODE_INDEX: [1]
+      CI_NODE_TOTAL: [1]
 
 # Auto-generate API docs using Sphinx.
 apidocs:
@@ -672,7 +757,6 @@ upload-debs:
 upload-container-image:
   stage: upload-image
   extends: .upload-container-image
-  needs: ["container_scanning"]
 
 # Build and upload are being handled by dev/linotp/sva2/build-isos
 .build-and-upload-iso:

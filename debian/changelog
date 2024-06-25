@@ -6,12 +6,42 @@ linotp (3.4~dev0-1) UNRELEASED; urgency=low
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 
-linotp (3.3~rc0-1) UNRELEASED; urgency=low
+linotp (3.3.2-1) buster; urgency=low
+
+  Fix:
+    * migration to 3.0.0 no longer fails (due to missing arg)
+
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 19 Jun 2024 10:00:00 +0200
+
+linotp (3.3.1-1) buster; urgency=low
+
+  * fix unbound variable in containers `entrypoint.sh`
+
+ -- LinOTP Packaging <packaging@linotp.de>  Tue, 18 Jun 2024 10:00:00 +0200
+
+linotp (3.3-1) buster; urgency=low
+
+  Breaking Changes:
+  * Renamed the following config variables and some changed their defaults:
+    * `LOGGING_FILE_LEVEL` -> `LOG_FILE_LEVEL`
+      * default: `WARNING` -> `DEBUG`
+    * `LOGGING_CONSOLE_LEVEL` -> `LOG_CONSOLE_LEVEL`
+      * default: `WARNING` -> `DEBUG`
+    * `LOGGING_SQLALCHEMY_LEVEL` -> `LOG_LEVEL_DB_CLIENT`
+    * `LOGGING` -> `LOG_CONFIG`
+  * default of `LOGGING_LEVEL` changed from `INFO` to `WARNING`
+  * when migrating from LinOTP 2.x, the audit log is no longer truncated to circumvent issues with
+    privileges in different database handlers. Old audit log entries that are not truncated now,
+    are reported to have a failing signature check because the method has changed with LinOTP version 3.0.
+
+  Deprecations:
+  * In the future config variable `LOGGING_LEVEL` will be replaced by `LOG_LEVEL`.
+    `LOG_LEVEL` can and should be used from now on. `LOG_LEVEL` defaults to `WARNING`.
 
   Features:
   * new API endpoints to retrieve tokens:
     * /api/v2/tokens
-      * accepts query parameters `userId` and`resolverName` to filter Tokens by
+      * accepts query parameters `userId` and `resolverName` to filter tokens by
       * accepts query parameter `searchTerm` to filter all other columns
     * /api/v2/tokens/<serial>
   * new API endpoint to retrieve realms:
@@ -27,6 +57,8 @@ linotp (3.3~rc0-1) UNRELEASED; urgency=low
       * accepts any field of a user as query parameter to filter by
       * accepts query parameter `searchTerm` to filter users where one field matches the given value
       * sortable by fields
+    * /api/v2/resolvers/<resolver_name>/users/<user_id>
+      * shows the single user info 
   * new API endpoint to retrieve AuditLog:
     * /api/v2/auditlog
       * accepts most fields of an AuditEntry as query parameter to filter by
@@ -38,36 +70,37 @@ linotp (3.3~rc0-1) UNRELEASED; urgency=low
     * /manage/context
   * the new API endpoints all return dates in ISO 8601-compliant format
   * limit info-box height in manage-ui. Notifications are scrollable, if combined size exceeds newly limited height.
-  * the manage ui login will no longer use refresh and reloads
   * Server-side invalidation of admin sessions on logout to prevent re-using a JWT after a user dropped its session
   * tokens can be imported as disabled tokens
   * when triggering a challenge, the token description is returned to help identify the token
-  * password token now supports the 'onetime' parameter as the former spass token did
-  * added validator for policy actions
-  * policies detail_on_success and detail_on_fail apply to all /validate enpoints
+  * password token now supports the 'onetime' parameter as the former SPASS token type did
+  * added validation for policy actions. The validation is based on the policy definitions and saving a policy with an invalid action is rejected
+  * policies detail_on_success and detail_on_fail apply to all /validate endpoints
   * /validate endpoints return user information (e.g. given name, phone) when detail_on_success is set
-  * support for Flask 2 installation
-  * /userservice/context additionally returns wether usage timestamps are logged in token info in `["detail"]["settings"]["last_access"]`
-  * improved audit log messages in the /admin/ API
+  * /userservice/context now returns whether usage timestamp logging is enabled in LinOTP
+  * improved audit log messages for /admin/ API
+  * support for MySQL databases that are run with lower_case_table_names=1 (default on Windows)
 
-  Fix:
-  * Removed: LinOTP no longer supports truncated transaction ids
+  Fixes:
+  * Removed: LinOTP no longer supports truncated transaction ids or checking partial transaction id matches 
   * Upon user logout, admin sessions weren't properly invalidated, allowing to re-use JWTs of logged-out users
   * when using pagination, /admin/userlist would not return the last user of the page,
     if the list of users for that page is greater or equal to the value of `rp` (default: 16)
-  * forward token with an empty pin supports forwarding to a push token
+  * forward token with an empty pin now supports forwarding to push tokens (was broken since 3.2.4)
   * filtering for active/inactive token works correctly
   * legacy selfservice qr and push token enrollment breaks with strings in otppin policy
-  * more customisation in /selfservice-legacy was broken (Followup to a v3.2.3 fix)
-  * drop ability to define autoassignment policy with values
-  * `/reporting/delete_before` matches realms to correct policy
-  * AdminController and UserserviceController do not trigger reporting on unauthorized requests
-  * AdminController triggers reporting for realms correctly
-  * UserserviceController triggers reporting for realms correctly
+  * legacy selfservice customisation not working in login screen
+  * drop ability to define autoassignment policy with values, it is now only acting as a boolean policy
+  * an admin could use `reporting/delete_before` for realms they did not have access to
+  * AdminController and UserserviceController did trigger reporting on unauthorized requests
+  * AdminController was not triggering reporting for the correct realms in some circumstances
+  * UserserviceController was not triggering reporting for the correct realms in some circumstances
   * requests to userservice API are logging the username in the audit-log instead of the User-Object
   * replace deprecated `DATA_DIR` with `CACHE_DIR`. Mako template cache now uses `CACHE_DIR`.
+  * trim excessive error logging when accessing `/static` files without a valid session
 
- -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
+
+ -- LinOTP Packaging <packaging@linotp.de>  Mon, 17 Jun 2024 10:00:00 +0200
 
 linotp (3.2.6-1) buster; urgency=low
 
@@ -126,7 +159,7 @@ linotp (3.2.2-1) buster; urgency=low
   Fixes:
   * Challenge database is reset once to ensure that Backups pre LinOTP 3
     correctly restore existing challenge-response tokens.
-  * Migrate encypted data 'password' with legacy proprietary padding (LinOTP 2.9)
+  * Migrate encrypted data 'password' with legacy proprietary padding (LinOTP 2.9)
   * Fix migration of yubico token to LinOTP 3.2
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 21 Dec 2022 17:40:00 +0100
@@ -210,7 +243,7 @@ linotp (3.2-1) buster; urgency=low
   * Added a jwt based admin authentication into LinOTP, so that configuring
     apache to protect admin access to linotp is not needed any more.
     Linotp therefore uses a special realm, the admin realm, which contains the
-    resolvers that are allowed to adminstrate LinOTP. For bootstraping, an
+    resolvers that are allowed to administrate LinOTP. For bootstrapping, an
     internal reserved managed resolver is used for which users could be added via
     the linotp command line tool (s. README.md). The Manage-ui and the
     corresponding interfaces have been extended to indicate if a realm or
@@ -290,17 +323,17 @@ linotp (3.1-1) buster; urgency=medium
     changes.
   * Remove references to the deactivated newsletter and former company names
   * Legacy Selfservice now correctly recognizes type=yubikey tokens in MFA login.
-  * Manage-UI no longer gets stuck in the interface initializtaion if the logged
+  * Manage-UI no longer gets stuck in the interface initialization if the logged
     in user is missing required admin permissions. Now, it is guaranteed that a
     logout is always possible.
   * support the assignment of multiple tokens within one request to
-    prevent raceconditions for example with token_count policies
+    prevent race conditions for example with token_count policies
   * getotp view is now working with python3
   * Token validity period (stored in UTC) is now compared against current
     time in UTC instead of the server's timezone.
   * Log username, realm, serial and token type in audit table when performing a
     `validate/check_status` request.
-  * Fix padding of crypted data by migrating to pkcs7 padding
+  * Fix padding of encrypted data by migrating to pkcs7 padding
     via the `linotp init database` command.
   * Validate no longer wrongly references autoenrollment for users that do
     not own any tokens as the error message.
@@ -322,7 +355,7 @@ linotp (3.0-1) buster; urgency=medium
     path if the user requests the site root path ("/"). If not set, the browser
     is redirected to the legacy selfservice. The new Selfservice will pick
     priority over the deprecated Selfservice if installed.
-  * Support reencoding of LinOTP 2 databases from ISO 8859-1 (Latin1) to UTF-8
+  * Support re-encoding of LinOTP 2 databases from ISO 8859-1 (Latin1) to UTF-8
     via the LinOTP CLI. Latin1 used to be the default for Python 2 against mysql
     but is no longer valid for Python 3.
   * Selfservice supports testing tokens after enrollment via the policy
@@ -346,7 +379,7 @@ linotp (3.0-1) buster; urgency=medium
     * `/usr/share/linotp/linotp.cfg` contains distribution default settings.
     * Support for wildcard paths.
     * By default, `/etc/linotp/linotp.cfg` and `/etc/linotp/conf.d/*.cfg` are
-      configured for adminsistrator configuration overrides.
+      configured for administrator configuration overrides.
     * LINOTP_CFG env treats directory `/foo` like `/foo/*.cfg`.
     * Read config file list from file if `LINOTP_CFG` doesn't exist.
   * Support for SoftHSMv2.
@@ -360,7 +393,7 @@ linotp (3.0-1) buster; urgency=medium
   * Improved error code separation to differentiate between different problems
     preventing token enrollment.
   * The `/userservice/enroll` API now honors default values for hotp and totp
-    tokens defined by the folowing selfservice policies:
+    tokens defined by the following selfservice policies:
     * hmac_otplen, totp_otplen: for the number of digits of an OTP.
     * hmac_hashlib, totp_hashlib: the HMAC hashing algorithm used.
     * totp_timestep: the time stepping for totp tokens.

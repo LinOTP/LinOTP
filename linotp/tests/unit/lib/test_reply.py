@@ -117,9 +117,8 @@ class TestReplyTestCase(object):
             )
         except ProgrammingError:
             assert (
-                False,
-                "request_context was used outside of request_context_safety",
-            )
+                False
+            ), "request_context was used outside of request_context_safety"
 
         result = ""
         for chunk in res:
@@ -136,9 +135,8 @@ class TestReplyTestCase(object):
             )
         except ProgrammingError:
             assert (
-                False,
-                "request_context was used outside of request_context_safety",
-            )
+                False
+            ), "request_context was used outside of request_context_safety"
 
         result = ""
         for chunk in res:

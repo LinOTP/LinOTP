@@ -55,8 +55,8 @@ def has_column(engine: Engine, table_name: str, column: sa.Column) -> bool:
     """
 
     insp = inspect(engine)
-    tables = insp.get_table_names()
-    if table_name not in tables:
+    tables = [tn.lower() for tn in insp.get_table_names()]
+    if table_name.lower() not in tables:
         return False
 
     #
@@ -250,7 +250,7 @@ class MYSQL_Migration:
     def _get_tables(self) -> Any:
         """Query the linotp database for all tables.
 
-        :yield: table name
+        :yield: list of tables in database
         """
         for result in self._execute("show tables;"):
             yield result[0]
@@ -321,9 +321,10 @@ class MYSQL_Migration:
 
         :param tables: list of tables where the data should be converted to utf8
         """
-        if "Config" in tables:
+        tables = [t.lower() for t in tables]
+        if "config" in tables:
             self._convert_Config_to_utf8()
-        if "Token" in tables:
+        if "token" in tables:
             self._convert_Token_to_utf8()
         if "imported_user" in tables:
             self._convert_ImportedUser_to_utf8()
@@ -537,7 +538,11 @@ class Migration:
                     migration_step()
 
                 except Exception as exx:
-                    log.error("Failed to upgrade database! %r", exx)
+                    log.error(
+                        "Failed to upgrade database during migration step: %r",
+                        function_name,
+                    )
+                    log.error(exx, stack_info=True, exc_info=True)
                     model.db.session.rollback()  # pylint: disable=E1101
                     raise exx
 
@@ -647,14 +652,19 @@ class Migration:
 
         # ----------------------------------------------------------------- --
 
-        # with linotp3 we drop all previous audit entries to fix audit signing
-
+        # with LinOTP 3.0.0 we changed the audit signing method
+        # making signatures of older entries invalid.
+        # We log a warning to suggest manual deletion of old entries.
         from linotp.lib.audit.base import getAudit
 
         audit_obj = getAudit()
-        audit_obj.delete_all_entries()
-
-        log.info("All limotp2 audit entries deleted.")
+        total_audit_entries = audit_obj.getTotal({})
+        if total_audit_entries > 0:
+            log.info(
+                "You have audit log entries from LinOTP 2.x. "
+                "Their signatures will be invalid from LinOTP 3.0.0 on. "
+                "We suggest you to run TRUNCATE on the audit database table."
+            )
 
         # ----------------------------------------------------------------- --
 

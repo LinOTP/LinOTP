@@ -47,6 +47,7 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.crypto.utils import geturandom
 from linotp.lib.error import InvalidFunctionParameter, ParameterError
 from linotp.lib.type_utils import boolean, get_ip_address, get_ip_network
+from linotp.settings import _config_schema
 
 hostname_regex = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 
@@ -84,6 +85,21 @@ def get_copyright_info():
     and selfservice portal.
     """
     return linotp_copyright
+
+
+def get_log_level(app) -> str:
+    """Returns the apps `LOG_LEVEL`
+    This is a workaround until deprecated `LOGGING_LEVEL` is removed.
+
+    Note: Potential errors are not caught intentionally to fail
+          tests after we removed `LOGGING_LEVEL`.
+          So that we can remove this function.
+    """
+    logging_level_default = _config_schema.find_item("LOGGING_LEVEL").default
+    if app.config["LOGGING_LEVEL"] != logging_level_default:
+        return app.config["LOGGING_LEVEL"]
+
+    return app.config["LOG_LEVEL"]
 
 
 def getParam(param, which, optional=True):

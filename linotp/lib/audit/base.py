@@ -196,14 +196,6 @@ class AuditBase(object):
         """
         return iter([])
 
-    def delete_all_entries(self):
-        """interface delete_all_entries.
-
-        support the cleanup of all audit database entries.
-        """
-        log.debug('audit base class interface "delete_all_entries" called.')
-        return
-
 
 def search(param, user=None, columns=None):
     audit_obj = current_app.audit_obj

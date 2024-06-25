@@ -36,6 +36,8 @@ initdb_linotp(){
     linotp -v init database
 }
 
+export MODE="${MODE:-production}"
+export SERVICE="0.0.0.0:5000"
 start_linotp() {
     echo >&2 "--- Starting LinOTP ---"
     if [ "$MODE" = "production" ]; then
@@ -127,11 +129,8 @@ elif ! [ -f "$LINOTP_CFG" ]; then
     echo >&2 "Configuration file $LINOTP_CFG (LINOTP_CFG) does not exist"
     exit 1
 else
-    echo >&2 "LINOTP_CFG is $file"
+    echo >&2 "LINOTP_CFG is $LINOTP_CFG"
 fi
-
-export MODE="${MODE:-production}"
-export SERVICE="${SERVICE:-0.0.0.0:5000}"
 
 if [ -z "${1-}" ]; then
     start_linotp
