@@ -1,7 +1,7 @@
 # Unit tests for the logging configuration
 #
-# This tests the configuration parameters LOGGING_LEVEL, LOGGING_FILE_LEVEL,
-# and LOGGING_CONSOLE_LEVEL.
+# This tests the configuration parameters LOG_LEVEL, LOG_FILE_LEVEL,
+# and LOG_CONSOLE_LEVEL.
 
 import logging
 
@@ -13,10 +13,10 @@ from linotp.app import init_logging
 @pytest.mark.parametrize(
     "ll,lfl,lcl,use_lvl,to_log,to_file,to_console",
     [
-        # `ll` is `LOGGING_LEVEL`; a message must clear this to be logged at all.
-        # `lfl` and `lcl` are `LOGGING_FILE_LEVEL` and `LOGGING_CONSOLE_LEVEL`;
+        # `ll` is `LOG_LEVEL`; a message must clear this to be logged at all.
+        # `lfl` and `lcl` are `LOG_FILE_LEVEL` and `LOG_CONSOLE_LEVEL`;
         # messages meant for the log file or console must clear these once
-        # they have cleared `LOGGING_LEVEL`.
+        # they have cleared `LOG_LEVEL`.
         # `use_lvl`, which must be numeric, is the log level to be used for
         # the test message.
         # `to_log`, `to_file`, and `to_console` specify whether we expect the
@@ -57,10 +57,10 @@ def test_logging_levels(
     log_file.write_text("")  # Ensure file exists
 
     app.config["LOG_FILE_DIR"] = str(log_dir)
-    app.config["LOGGING_LEVEL"] = ll
-    app.config["LOGGING_FILE_LEVEL"] = lfl
-    app.config["LOGGING_CONSOLE_LEVEL"] = lcl
-    app.config["LOGGING"] = None
+    app.config["LOG_LEVEL"] = ll
+    app.config["LOG_FILE_LEVEL"] = lfl
+    app.config["LOG_CONSOLE_LEVEL"] = lcl
+    app.config["LOG_CONFIG"] = None
     init_logging(app)  # Enact the configuration
     caplog.clear()
     MESSAGE = "foo bar baz"

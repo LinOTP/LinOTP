@@ -26,6 +26,8 @@
 #
 """LinOTP Selenium Test that tests the selfservice in the WebUI"""
 
+import os
+
 import pytest
 
 from linotp_selenium_helper import (
@@ -34,6 +36,14 @@ from linotp_selenium_helper import (
     SelfService,
     TestCase,
 )
+
+
+def get_services_to_test():
+    skip_angular = os.environ.get("SKIP_ANGULAR_SELF_SERVICE_TEST", "") != ""
+    if skip_angular:
+        # TODO enable for `AngularSelfService` once we test it
+        return [SelfService]
+    return [SelfService, AngularSelfService]
 
 
 class TestSelfservice:
@@ -46,7 +56,7 @@ class TestSelfservice:
     def setUp(self, testcase):
         self.testcase = testcase
 
-    @pytest.fixture(scope="module", params=[SelfService, AngularSelfService])
+    @pytest.fixture(scope="module", params=get_services_to_test())
     def selfservice(self, testcase, request):
         # for each of the params in fixture params:
         current_selfservice_class = request.param

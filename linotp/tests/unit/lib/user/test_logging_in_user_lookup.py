@@ -60,8 +60,14 @@ def mocked_getResolverObject(resolver_spec):
 class MockedLogging:
     log_data = []
 
+    def debug(self, *args, **kwargs):
+        self.log("debug", args, kwargs)
+
     def info(self, *args, **kwargs):
         self.log("info", args, kwargs)
+
+    def warning(self, *args, **kwargs):
+        self.log("warning", args, kwargs)
 
     def error(self, *args, **kwargs):
         self.log("error", args, kwargs)

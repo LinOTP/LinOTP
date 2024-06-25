@@ -208,7 +208,7 @@ class ReportingController(BaseController):
         :param from: (optional) (default is 1970-1-1)
                     the start day for the reporting max lookup
 
-        :param to: (optional) (default is tomorow 0:0:0)
+        :param to: (optional) (default is tomorrow 0:0:0)
                     the end day for the reporting max lookup
 
         :return:
@@ -311,7 +311,7 @@ class ReportingController(BaseController):
         description:
             delete entries from the reporting database table
 
-        :param realms:  takes realms, only the reporting entries from this realm are dedleted
+        :param realms: takes realms, only the reporting entries from this realm are deleted
         :param status: (optional) filters reporting entries by status like 'assigned' or 'inactive'
 
         returns: dict in which value is the number of deleted rows
@@ -372,7 +372,7 @@ class ReportingController(BaseController):
                 date must be given in format 'yyyy-mm-dd' . if no date is given, all entries get deleted
 
         :param realms: (optional) takes realms, only the reporting entries
-                from this realm are dedleted
+                from this realm are deleted
 
         :param status: (optional) filters reporting entries by status
                 like 'assigned' or 'inactive'
@@ -433,7 +433,7 @@ class ReportingController(BaseController):
 
         :param sortby:  (optional) sort the output by column
         :param sortdir: (optional) asc/desc
-        :param page:    (optional) reqeuest a certain page
+        :param page:    (optional) request a certain page
         :param pagesize: (optional) limit the number of returned tokens
         :param outform: (optional) if set to "csv", the output will be a .csv file
 

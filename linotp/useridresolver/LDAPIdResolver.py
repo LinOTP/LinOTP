@@ -41,6 +41,8 @@ from typing import Any, Callable, Dict, Tuple, Union
 import ldap
 import ldap.filter
 
+from linotp.lib.util import get_log_level
+
 try:
     from ldap import LDAP_CONTROL_PAGE_OID
 
@@ -1298,12 +1300,15 @@ class IdResolver(UserIdResolver):
         try:
             # OR filter
             searchFilterOr = ""
-            searchTermValue = searchDict.pop("searchTerm", None)
+            searchTermValue = searchDict.get("searchTerm")
             if searchTermValue:
                 for tmp, ldapKey in self.userinfo.items():
                     searchFilterOr += "(%s=%s)" % (ldapKey, searchTermValue)
             # AND filter
             for searchKey, searchValue in searchDict.items():
+                if searchKey == "searchTerm":
+                    # already handled in OR filter
+                    continue
                 log.debug(
                     "[getUserList] searchkeys: %r / %r", searchKey, searchValue
                 )
@@ -1720,7 +1725,8 @@ def ldap_test(
     if loginattribute:
         params["LOGINNAMEATTRIBUTE"] = loginattribute
 
-    if not all_cases or current_app.config["LOGGING_LEVEL"] == "DEBUG":
+    log_level = get_log_level(current_app)
+    if not all_cases or log_level == "DEBUG":
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
