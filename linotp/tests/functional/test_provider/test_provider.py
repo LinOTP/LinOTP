@@ -68,6 +68,10 @@ def mocked_connectiontest(CustomVoiceProvider_Object, *argparams, **kwparams):
     return True, "Bad Request"
 
 
+def jr(response):
+    return json.loads(response.body)
+
+
 class TestProviderController(TestController):
     def setUp(self):
         self.removeProviderConfig()
@@ -108,7 +112,7 @@ class TestProviderController(TestController):
 
         return response
 
-    def setPolicy(self, policy_params=None):
+    def setProviderPolicy(self, policy_params=None):
         params = {
             "name": "smsprovider_newone",
             "scope": "authentication",
@@ -153,6 +157,15 @@ class TestProviderController(TestController):
         for entry in entries:
             self.delete_config(prefix=entry)
 
+    def define_new_provider_with_check(self, provider_params=None):
+        """Wrapper function to create provider and check success"""
+        response = self.define_new_provider(provider_params)
+        if '"value": true' not in response:
+            raise ProviderCreationError(
+                f"Provider creation failed: {response}"
+            )
+        return response
+
     def define_new_provider(self, provider_params=None):
         """
         define the new provider via setProvider
@@ -172,6 +185,90 @@ class TestProviderController(TestController):
 
         return response
 
+    def del_provider(self, params):
+        response = self.make_system_request("delProvider", params=params)
+        return jr(response)
+
+    def test_del_default_provider_fails(self):
+        """A default provider shall not be deleted(as far as there are other providers)."""
+        self.define_new_provider_with_check({"name": "first_one"})
+        self.define_new_provider_with_check({"name": "second_one"})
+
+        # check if the first_one is the default
+        # Note: LinOTP sets the first added provider as default
+        params = {"type": "sms"}
+        response = self.make_system_request("getProvider", params=params)
+        jresp = jr(response)
+        provider = jresp["result"]["value"].get("first_one", {})
+        assert provider.get("Default", False), jresp
+
+        jresp = self.del_provider({"name": "first_one", "type": "sms"})
+        assert jresp["result"]["value"] is False, jresp
+        msg = "Default provider could not be deleted!"
+        assert msg in jresp["detail"]["message"], jresp
+
+    def test_del_provider_with_policy_fails(self):
+        """A provider which has associated policies shall not be deleted."""
+        self.define_new_provider_with_check({"name": "first_one"})
+        self.define_new_provider_with_check({"name": "second_one"})
+
+        self.setProviderPolicy(
+            {
+                "name": "second_provider_policy",
+                "action": "sms_provider=second_one",
+            }
+        )
+
+        #  deleting the provider with a policy should fail:
+        jresp = self.del_provider({"name": "second_one", "type": "sms"})
+        assert jresp["result"]["value"] is False, jresp
+        msg = "Unable to delete - provider used in policies!\n[second_provider_policy]"
+        assert msg in jresp["detail"]["message"], jresp
+
+    def test_del_non_default_provider_succeeds(self):
+        """
+        A provider shall be deleted when it is not default and does not have
+        policies associated with it. Even though there are policies associated
+        with other providers.
+        """
+
+        self.define_new_provider_with_check({"name": "first_one"})
+        self.define_new_provider_with_check({"name": "second_one"})
+
+        # for those of you in the future or those who travel in time to get to see this
+        # and are asking yourself: "why should I ever care whether there is a policy for
+        # the other provider or not?". The answer is:
+        # Well this has been a bug case. We just don't want to it to be repeated again.
+        self.setProviderPolicy(
+            {
+                "name": "first_provider_policy",
+                "action": "sms_provider=first_one",
+            }
+        )
+
+        # The provider without a policy shall be deleted
+        # even though there is a policy for the other one
+        jresp = self.del_provider({"name": "second_one", "type": "sms"})
+        assert jresp["result"]["value"] is True, jresp
+
+    def test_del_last_but_default_provider_succeds(self):
+        """
+        A default provider shall be deleted when it is the last one.
+        """
+
+        self.define_new_provider_with_check({"name": "first_one"})
+
+        # Check if the first_one is the default
+        params = {"type": "sms"}
+        response = self.make_system_request("getProvider", params=params)
+        jresp = jr(response)
+        provider = jresp["result"]["value"].get("first_one", {})
+        assert provider.get("Default", False), jresp
+
+        # Deleting the last provider is allowed, even though it is the default provider
+        jresp = self.del_provider({"name": "first_one", "type": "sms"})
+        assert jresp["result"]["value"] is True, jresp
+
     def test_create_legacy_provider(self):
         """
         check if legacy provider is default after create
@@ -182,9 +279,9 @@ class TestProviderController(TestController):
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("imported_default", {})
-        assert provider.get("Default", False), response
+        assert provider.get("Default", False), jresp
 
         params = {"type": "email"}
         response = self.make_system_request("getProvider", params=params)
@@ -194,15 +291,14 @@ class TestProviderController(TestController):
         """
         check if new provider is default after create
         """
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("newone", {})
-        assert provider.get("Default", False), response
+        assert provider.get("Default", False), jresp
 
         response = self.define_legacy_provider()
         assert "/tmp/legacy" in response, response
@@ -210,9 +306,9 @@ class TestProviderController(TestController):
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("imported_default", {})
-        assert not provider.get("Default", False), response
+        assert not provider.get("Default", False), jresp
 
     def test_create_unicode_provider(self):
         """
@@ -225,15 +321,14 @@ class TestProviderController(TestController):
         # verify the new provider interface
 
         provider_params = {"config": config.encode("utf-8")}
-        response = self.define_new_provider(provider_params=provider_params)
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check(provider_params=provider_params)
 
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("newone", {})
-        assert provider.get("Default", False), response
+        assert provider.get("Default", False), jresp
 
         p_config = provider.get("Config", "")
         assert config == p_config, jresp
@@ -249,9 +344,9 @@ class TestProviderController(TestController):
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("imported_default", {})
-        assert not provider.get("Default", False), response
+        assert not provider.get("Default", False), jresp
 
         p_config = provider.get("Config", "")
         assert config == p_config, jresp
@@ -272,9 +367,9 @@ class TestProviderController(TestController):
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("imported_default", {})
-        assert provider.get("Default", False), response
+        assert provider.get("Default", False), jresp
 
         serial = "sms1234"
         response = self.create_sms_token(serial=serial)
@@ -297,15 +392,14 @@ class TestProviderController(TestController):
         check if legacy provider is loaded by default
         """
 
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("newone", {})
-        assert provider.get("Default", False), response
+        assert provider.get("Default", False), jresp
 
         serial = "sms1234"
         response = self.create_sms_token(serial=serial)
@@ -335,23 +429,22 @@ class TestProviderController(TestController):
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("imported_default", {})
-        assert provider.get("Default", False), response
+        assert provider.get("Default", False), jresp
 
         # create new provider
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
         # check that this is not the default one
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("newone", {})
-        assert not provider.get("Default", True), response
+        assert not provider.get("Default", True), jresp
 
         # define smsprovider policy to use the 'newone'
-        response = self.setPolicy()
+        response = self.setProviderPolicy()
         assert '"setPolicy smsprovider_newone"' in response, response
 
         # trigger sms and check that the correct provider is used
@@ -377,15 +470,14 @@ class TestProviderController(TestController):
         """
 
         # create new provider
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
         # check that this is the default one
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("newone", {})
-        assert provider.get("Default", False), response
+        assert provider.get("Default", False), jresp
 
         # create legacy provider
         response = self.define_legacy_provider()
@@ -395,9 +487,9 @@ class TestProviderController(TestController):
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("imported_default", {})
-        assert not provider.get("Default", True), response
+        assert not provider.get("Default", True), jresp
 
         # set legacy provider as default provider
         params = {"type": "sms", "name": "imported_default"}
@@ -408,12 +500,12 @@ class TestProviderController(TestController):
 
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("imported_default", {})
-        assert provider.get("Default", False), response
+        assert provider.get("Default", False), jresp
 
         # define sms provider policy to use the 'newone'
-        response = self.setPolicy(
+        response = self.setProviderPolicy(
             policy_params={
                 "user": "egon",
             }
@@ -437,35 +529,33 @@ class TestProviderController(TestController):
         check that a managed provider does not return the configuration
         """
 
-        response = self.define_new_provider()
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check()
 
-        response = self.define_new_provider(
+        self.define_new_provider_with_check(
             {"managed": "mypass", "name": "managed_one"}
         )
-        assert '"value": true' in response, response
 
         params = {"type": "sms"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get("managed_one", {})
-        assert not provider.get("Default", True), response
+        assert not provider.get("Default", True), jresp
 
-        response = self.define_new_provider(
-            {"managed": "wrongpass", "name": "managed_one"}
-        )
+        with self.assertRaises(ProviderCreationError) as cm:
+            self.define_new_provider_with_check(
+                {"managed": "wrongpass", "name": "managed_one"}
+            )
         msg = "Not allowed to overwrite "
-        assert msg in response, response
+        assert msg in str(cm.exception), cm.exception
 
-        response = self.define_new_provider(
+        self.define_new_provider_with_check(
             {"managed": "mypass", "name": "managed_one"}
         )
-        assert '"value": true' in response, response
 
         params = {"managed": "mypass", "name": "managed_one", "type": "sms"}
-        self.make_system_request("delProvider", params)
-        assert '"value": true' in response, response
+        jresp = self.del_provider(params)
+        assert jresp["result"]["value"] is True, jresp
 
     @patch.object(
         linotp.provider.voiceprovider.custom_voice_provider.CustomVoiceProvider,
@@ -507,8 +597,7 @@ class TestProviderController(TestController):
             "class": "CustomVoiceProvider",
         }
 
-        response = self.define_new_provider(provider_params=provider_params)
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check(provider_params=provider_params)
 
         # ----------------------------------------------------------------- --
 
@@ -517,9 +606,9 @@ class TestProviderController(TestController):
         params = {"type": "voice"}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get(provider_name, {})
-        assert provider.get("Default", False), response
+        assert provider.get("Default", False), jresp
 
         params = {"type": "voice", "name": provider_name}
         response = self.make_system_request("testProvider", params=params)
@@ -540,8 +629,7 @@ class TestProviderController(TestController):
             "class": "CustomVoiceProvider",
         }
 
-        response = self.define_new_provider(provider_params=provider_params)
-        assert '"value": true' in response, response
+        self.define_new_provider_with_check(provider_params=provider_params)
 
         # ----------------------------------------------------------------- --
 
@@ -550,17 +638,23 @@ class TestProviderController(TestController):
         params = {"type": "voice", "name": provider_name_2}
         response = self.make_system_request("getProvider", params=params)
 
-        jresp = json.loads(response.body)
+        jresp = jr(response)
         provider = jresp["result"]["value"].get(provider_name_2, {})
-        assert not provider.get("Default", False), response
+        assert not provider.get("Default", False), jresp
 
         # ----------------------------------------------------------------- --
 
         # finally we can delete the second, non default one
 
         params = {"type": "voice", "name": provider_name_2}
-        response = self.make_system_request("delProvider", params=params)
-        assert '"value": true' in response, response
+        jresp = self.del_provider(params)
+        assert jresp["result"]["value"] is True, jresp
+
+
+class ProviderCreationError(Exception):
+    """Exception raised when provider creation fails."""
+
+    pass
 
 
 # eof #####################################################################

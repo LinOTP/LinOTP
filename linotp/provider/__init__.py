@@ -456,9 +456,13 @@ def delProvider(provider_type, provider_name):
     # find out, which providers we have
     config = getLinotpConfig()
 
-    # if the provider is the default one, we don't delete this one
+    # The default provider shall not be deleted, unless it is the last one (of that type).
+
     default_provider_key = Default_Provider_Key[provider_type]
-    if default_provider_key in config:
+
+    is_last_provider_of_type = len(get_all_new_providers(provider_type)) == 1
+
+    if not is_last_provider_of_type and default_provider_key in config:
         default_provider = config[default_provider_key]
 
         if provider_name == default_provider:
@@ -765,7 +769,7 @@ def _lookup_provider_policies(provider_type):
     """
     helper, to prevent deleting a provider while it is still used in a policy
 
-    :param provider_type: the type of provider: sms or email
+    :param provider_type: the type of provider: 'sms' or 'email
     :return: a dictionary with provider names as key and list of policy names
     """
     provider_policies = {}
@@ -785,9 +789,9 @@ def _lookup_provider_policies(provider_type):
         }
     )
 
-    for policy in policies:
+    for policy_name, policy in policies.items():
         provider_name = get_action_value(
-            policy,
+            {policy_name: policy},
             scope="authentication",
             action=provider_action_name,
             default="",
@@ -796,7 +800,7 @@ def _lookup_provider_policies(provider_type):
         if provider_name not in provider_policies:
             provider_policies[provider_name] = []
 
-        provider_policies[provider_name].append(policy)
+        provider_policies[provider_name].append(policy_name)
 
     return provider_policies
 
