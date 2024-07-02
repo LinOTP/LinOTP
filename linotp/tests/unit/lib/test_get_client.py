@@ -35,7 +35,7 @@ import pytest
 from mock import patch
 
 from linotp.lib.type_utils import get_ip_address, get_ip_network
-from linotp.lib.util import _get_client_from_request, _is_addr_in_network
+from linotp.lib.util import _get_client_from_request, is_addr_in_network
 
 netw_dict = {
     "136.243.104.66/29": netaddr.IPNetwork("136.243.104.66/29"),
@@ -313,18 +313,18 @@ class TestGetClientCase(unittest.TestCase):
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.return_value = "136.243.104.66"
 
-            in_network = _is_addr_in_network(
+            in_network = is_addr_in_network(
                 "136.243.104.66", "my.other.test.domain/29"
             )
             assert in_network is True
 
-        in_network = _is_addr_in_network("140.181.3.7", "140.181.3.1/29")
+        in_network = is_addr_in_network("140.181.3.7", "140.181.3.1/29")
         assert in_network is True
 
-        in_network = _is_addr_in_network(" 140.181.3.121", " 140.181.3.1/16 ")
+        in_network = is_addr_in_network(" 140.181.3.121", " 140.181.3.1/16 ")
         assert in_network is True
 
-        in_network = _is_addr_in_network("140.181.3.121", " ")
+        in_network = is_addr_in_network("140.181.3.121", " ")
         assert in_network is False
 
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
@@ -332,7 +332,7 @@ class TestGetClientCase(unittest.TestCase):
                 "[Errno 8] nodename nor servname provided, or not known"
             )
 
-            in_network = _is_addr_in_network(
+            in_network = is_addr_in_network(
                 "140.181.3.121", "www.my.test.domain "
             )
             assert in_network is False

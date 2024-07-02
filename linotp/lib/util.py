@@ -202,7 +202,7 @@ def remove_session_from_param(param):
 # Client overwriting stuff
 
 
-def _is_addr_in_network(addr, network):
+def is_addr_in_network(addr, network):
     """
     helper method to check if a client is in the proxy network range
 
@@ -251,7 +251,7 @@ def _get_client_from_request(request=None):
         ).split(",")
 
         for x_forwarded_proxy in x_forwarded_proxies:
-            if _is_addr_in_network(remote_addr, x_forwarded_proxy):
+            if is_addr_in_network(remote_addr, x_forwarded_proxy):
                 ref_clients = request.environ.get("HTTP_X_FORWARDED_FOR", "")
                 for ref_client in ref_clients.split(","):
                     # the first ip in the list is the originator
@@ -282,7 +282,7 @@ def _get_client_from_request(request=None):
         )
 
         for forwarded_proxy in forwarded_proxies:
-            if _is_addr_in_network(remote_addr, forwarded_proxy):
+            if is_addr_in_network(remote_addr, forwarded_proxy):
                 # example is:
                 # "Forwarded: for=192.0.2.43, for=198.51.100.17"
 
