@@ -1,8 +1,10 @@
 linotp (3.3.3~dev0-1) UNRELEASED; urgency=low
 
-  * dummy changelog entry for 3.3.3
+  Fix:
+    * SMTP now sends e-mails with a "Date:" header to 
+      accommodate picky SMTP servers on the receiving side
 
- -- LinOTP Packaging <packaging@linotp.de>  Thu, 20 Jun 2024 10:00:00 +0200
+ -- LinOTP Packaging <packaging@linotp.de>   Fri, 5 Jul 2024 16:00:00 +0100
 
 linotp (3.3.2-1) buster; urgency=low
 
