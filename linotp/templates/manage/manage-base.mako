@@ -350,23 +350,30 @@
             </fieldset>
         </div>  <!-- tab system settings gui -->
         <div id='tab_content_system_client'>
-            <fieldset>
+            <%
+                disabled_attr = "disabled" if c.app_config_trusted_proxies else ""
+            %>
+            <fieldset class="${disabled_attr}">
                     <legend>${_("Client Identification with Proxy")}</legend>
                     <table>
                         <tr><td><label for="sys_x_forwarded_for">${_("Support for HTTP_X_FORWARDED_FOR")}</label></td>
-                        <td><input type='checkbox' name='sys_x_forwarded_for' id='sys_x_forwarded_for' value='sys_x_forwarded_for'
-                            title='${_("If checked a realm dropdown box will be displayed on the selfservice portal logon page.")}'></td></tr>
-
+                        <td><input type='checkbox' name='sys_x_forwarded_for' id='sys_x_forwarded_for' value='sys_x_forwarded_for' ${disabled_attr}
+                            title='${_("LinOTP will ")}'></td></tr>
                         <tr><td><label for="sys_forwarded">${_("Support for HTTP_FORWARDED")}</label></td>
-                        <td><input type='checkbox' name='sys_forwarded' id='sys_forwarded' value='sys_forwarded'
-                            title='${_("If checked a realm dropdown box will be displayed on the selfservice portal logon page.")}'></td></tr>
-
-                        <tr><td><label for=sys_forwarded_proxy> ${_("Trusted Forwarding Proxy")}: </label></td><td></td></tr>
-                        <tr><td colspan=2><input type="text" name="sys_forwarded_proxy" id="sys_forwarded_proxy" size="35"
+                        <td><input type='checkbox' name='sys_forwarded' id='sys_forwarded' value='sys_forwarded' ${disabled_attr}
+                            title='${_("LinOTP will ")}'></td></tr>
+                        <tr><td><label for="sys_forwarded_proxy">${_("Trusted Forwarding Proxy")}: </label></td><td></td></tr>
+                        <tr><td colspan="2"><input type="text" name="sys_forwarded_proxy" id="sys_forwarded_proxy" size="35" ${disabled_attr}
                                 title='${_("The ip address of the trusted forwarding proxy, which provides the REMOTE_ADDR.")}'></td></tr>
-
                     </table>
             </fieldset>
+            % if c.app_config_trusted_proxies:
+            <div class="info_box" style="display: block; margin: 1em 0;">
+                <p>${_("The trusted forwarding proxy configuration is overwritten at server instance level with the LinOTP configuration TRUSTED_PROXIES. The system configuration shown above is not in effect.")}</p>
+                ${_("LinOTP trusts the following services: ")}
+                <pre>${", ".join(c.app_config_trusted_proxies)}</pre>
+            </div>
+            % endif
         </div>
         <!-- tab system settings client -->
 
