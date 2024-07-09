@@ -48,6 +48,7 @@ from passlib.hash import (
     sha512_crypt,
 )
 
+from linotp.lib.config.util import expand_here
 from linotp.lib.type_utils import text
 
 from . import resolver_registry
@@ -134,11 +135,7 @@ class IdResolver(UserIdResolver):
         "description": 4,
         "email": 4,
     }
-
-    resolver_parameters: ResParamsType = {
-        "fileName": (True, None, text),
-        "linotp.root": (False, None, text),
-    }
+    resolver_parameters: ResParamsType = {"fileName": (True, None, text)}
     resolver_parameters.update(UserIdResolver.resolver_parameters)
 
     @classmethod
@@ -602,10 +599,7 @@ class IdResolver(UserIdResolver):
 
         fileName = l_config["fileName"]
 
-        # support for relative file names
-
-        if "%(here)s" in fileName and "linotp.root" in l_config:
-            fileName = fileName.replace("%(here)s", l_config["linotp.root"])
+        fileName = expand_here(fileName)
 
         fileName = os.path.realpath(fileName)
 

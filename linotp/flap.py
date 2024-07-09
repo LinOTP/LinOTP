@@ -91,9 +91,7 @@ def set_config():
     Set up config from flask request object
     """
     flask.g.request_context = {
-        "config": {  # This must die, die, die!!!
-            "linotp.root": os.path.dirname(os.path.abspath(__file__)),
-        },
+        "config": {},  # This must die, die, die!!!
     }
 
     # We get this from `load_environment()`, and it basically sucks.
