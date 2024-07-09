@@ -34,7 +34,7 @@ from uuid import uuid4
 
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
-from flask_babel import Babel, gettext
+from flask_babel import Babel
 from flask_jwt_extended.exceptions import (
     CSRFError,
     NoAuthorizationError,
@@ -76,10 +76,10 @@ from .lib.tools.flask_jwt_extended_migration import (
     get_jwt_identity,
     verify_jwt_in_request,
 )
-from .lib.user import User, getUserFromRequest
+from .lib.user import User
 from .lib.util import get_client, get_log_level
 from .model import SYS_EXIT_CODE, setup_db
-from .settings import ConfigSchema, _config_schema, configs
+from .settings import ConfigSchema, configs
 from .tokens import reload_classes as reload_token_classes
 
 log = logging.getLogger(__name__)
