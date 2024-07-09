@@ -53,6 +53,7 @@ from linotp.lib.type_utils import text
 from . import resolver_registry
 from .UserIdResolver import (
     ResolverLoadConfigError,
+    ResParamsType,
     UserIdResolver,
     getResolverClass,
 )
@@ -134,9 +135,10 @@ class IdResolver(UserIdResolver):
         "email": 4,
     }
 
-    resolver_parameters: Dict[
-        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
-    ] = {"fileName": (True, None, text), "linotp.root": (False, None, text)}
+    resolver_parameters: ResParamsType = {
+        "fileName": (True, None, text),
+        "linotp.root": (False, None, text),
+    }
     resolver_parameters.update(UserIdResolver.resolver_parameters)
 
     @classmethod

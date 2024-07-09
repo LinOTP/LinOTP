@@ -57,6 +57,7 @@ from linotp.model import db
 from linotp.useridresolver.UserIdResolver import (
     ResolverLoadConfigError,
     ResolverNotAvailable,
+    ResParamsType,
     UserIdResolver,
 )
 
@@ -443,9 +444,7 @@ class IdResolver(UserIdResolver):
 
     crypted_parameters = ["Password"]
 
-    resolver_parameters: Dict[
-        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
-    ] = {
+    resolver_parameters: ResParamsType = {
         "Connect": (False, "", text),
         "Driver": (False, None, text),
         "Server": (False, "", text),

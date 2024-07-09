@@ -62,6 +62,7 @@ from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import (
     ResolverLoadConfigError,
     ResolverNotAvailable,
+    ResParamsType,
     UserIdResolver,
 )
 
@@ -154,9 +155,7 @@ class IdResolver(UserIdResolver):
     crypted_parameters = ["BINDPW"]
     primary_key = "UIDTYPE"
 
-    resolver_parameters: Dict[
-        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
-    ] = {
+    resolver_parameters: ResParamsType = {
         "LDAPURI": (True, None, text),
         "LDAPBASE": (True, None, text),
         "BINDDN": (True, None, text),

@@ -58,6 +58,11 @@ class ResolverNotAvailable(Exception):
     pass
 
 
+ResParamsType = Dict[
+    str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
+]
+
+
 class UserIdResolver(object):
     fields = {
         "username": 1,
@@ -75,9 +80,7 @@ class UserIdResolver(object):
 
     critical_parameters: List[str] = []
     crypted_parameters: List[str] = []
-    resolver_parameters: Dict[
-        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
-    ] = {"readonly": (False, False, boolean)}
+    resolver_parameters: ResParamsType = {"readonly": (False, False, boolean)}
 
     def __init(self):
         """
