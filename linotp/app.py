@@ -403,6 +403,9 @@ class LinOTPApp(Flask):
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
+        if self.is_request_static():
+            return
+
         # we add a unique request id to the request environment
         # so we can trace individual requests in the logging
         request.environ["REQUEST_ID"] = str(uuid4())
@@ -438,15 +441,16 @@ class LinOTPApp(Flask):
                 e,
             )
 
-        if not self.is_request_static():
-            self.create_context(request, request.environ)
+        self.create_context(request, request.environ)
 
     def is_request_static(self):
         return request.path.startswith(self.static_url_path)
 
     def finalise_request(self, exc):
-        if not self.is_request_static():
-            drop_security_module()
+        if self.is_request_static():
+            return
+
+        drop_security_module()
 
         closeResolvers()
 
@@ -478,10 +482,12 @@ class LinOTPApp(Flask):
         # probably doing more work here than we need to. Global
         # variables suck.
 
+        if self.is_request_static():
+            return
+
         setup_request_context()
 
-        if not self.is_request_static():
-            allocate_security_module()
+        allocate_security_module()
 
     def create_context(self, request, environment):
         """
