@@ -503,7 +503,7 @@ def deleteRealm(realmname):
     :type  realmname: string
     """
 
-    admin_realm_name = context.config["ADMIN_REALM_NAME"].lower()
+    admin_realm_name = current_app.config["ADMIN_REALM_NAME"].lower()
 
     if realmname == admin_realm_name:
         raise DeleteForbiddenError(
