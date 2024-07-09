@@ -320,30 +320,20 @@ class LinOTPApp(Flask):
             __name__, static_folder="public", static_url_path="/static"
         )
 
-    def _run_setup(self):
+    def setup_resolvers(self):
         """
-        Set up the app and database context for a request. Some of this is
-        intended to be done only once and could be refactored into a
-        before_first_request function
+        Set up the available resolver classes
         """
-
-        l_config = getLinotpConfig()  # SQL-based configuration
-        resolver_setup_done = config.get("resolver_setup_done", False)
-        if resolver_setup_done is False:
-            try:
-                cache_dir = ensure_dir(
-                    self,
-                    "resolver cache",
-                    "CACHE_DIR",
-                    "resolvers",
-                    mode=0o770,
-                )
-                setupResolvers(config=l_config, cache_dir=cache_dir)
-                config["resolver_setup_done"] = True
-            except Exception as exx:
-                config["resolver_setup_done"] = False
-                log.error("Failed to setup resolver: %r", exx)
-                raise exx
+        log.debug("Setting up resolvers")
+        try:
+            cache_dir = ensure_dir(
+                self, "resolver cache", "CACHE_DIR", "resolvers", mode=0o770
+            )
+            setupResolvers(config=getLinotpConfig(), cache_dir=cache_dir)
+            log.debug("Setting up resolvers successful")
+        except Exception as exx:
+            log.error("Failed to setup resolvers: %r", exx)
+            raise exx
 
     def check_license(self):
         """
@@ -1075,8 +1065,8 @@ def create_app(config_name=None, config_extra=None):
     # Add pre request handlers
     app.before_first_request(init_logging_config)
     app.before_first_request(app.init_jwt_config)
+    app.before_first_request(app.setup_resolvers)
     app.before_request(app.setup_env)
-    app.before_request(app._run_setup)
     app.before_request(app.start_session)
 
     # Per controller setup and handlers
