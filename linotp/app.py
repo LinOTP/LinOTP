@@ -50,7 +50,7 @@ from flask import jsonify, redirect, url_for
 from flask.helpers import get_env
 
 from . import __version__
-from .flap import config, request, set_config, setup_mako
+from .flap import config, request, setup_mako, setup_request_context
 from .flap import tmpl_context as c
 from .lib.audit.base import getAudit
 from .lib.config import getLinotpConfig
@@ -488,7 +488,7 @@ class LinOTPApp(Flask):
         # probably doing more work here than we need to. Global
         # variables suck.
 
-        set_config()
+        setup_request_context()
 
         if not self.is_request_static():
             allocate_security_module()
@@ -1061,7 +1061,7 @@ def create_app(config_name=None, config_extra=None):
         setup_db(app)
 
         init_linotp_config(app)
-        set_config()  # ensure `request_context` exists
+        setup_request_context()
 
         init_security_provider()
 
