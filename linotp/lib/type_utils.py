@@ -161,18 +161,6 @@ def is_integer(value):
     return True
 
 
-def text(value):
-    """
-    type converter for text config entries
-
-    if the value is unicode or str, leave it as is
-    otherwise take the string representation
-    """
-    if isinstance(value, str) or isinstance(value, str):
-        return value
-    return "%r" % value
-
-
 def encrypted_data(value):
     """
     type converter for config entries -

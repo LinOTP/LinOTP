@@ -49,7 +49,6 @@ from passlib.hash import (
 )
 
 from linotp.lib.config.util import expand_here
-from linotp.lib.type_utils import text
 
 from . import resolver_registry
 from .UserIdResolver import (
@@ -135,7 +134,7 @@ class IdResolver(UserIdResolver):
         "description": 4,
         "email": 4,
     }
-    resolver_parameters: ResParamsType = {"fileName": (True, None, text)}
+    resolver_parameters: ResParamsType = {"fileName": (True, None, str)}
     resolver_parameters.update(UserIdResolver.resolver_parameters)
 
     @classmethod
