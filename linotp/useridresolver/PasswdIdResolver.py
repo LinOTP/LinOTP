@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 """This module implements the communication interface
-   for resolvin user info to the /etc/passwd user base
+   for resolving user info to the /etc/passwd user base
 
 PasswdIdResolver.IdResolver class
     implements the UserIdResolver for local /etc/passwd lookup
@@ -605,7 +605,7 @@ class IdResolver(UserIdResolver):
 
         if not os.path.isfile(fileName) or not os.access(fileName, os.R_OK):
             raise ResolverLoadConfigError(
-                "File %r does not exist or is not accesible" % fileName
+                "File %r does not exist or is not accessible" % fileName
             )
         self.fileName = fileName
         self.loadFile()

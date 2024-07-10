@@ -26,7 +26,7 @@
 #    Support: www.linotp.de
 #
 """
-This module implements the communication interface for resolvin user
+This module implements the communication interface for resolving user
 info to the user base:
 
 UserIdResolver Interface class.
@@ -139,7 +139,7 @@ class UserIdResolver(object):
     @classmethod
     def missing_crypted_parameters(cls, new_params):
         """
-        detect, which crypted parameters are missing
+        detect, which encrypted parameters are missing
 
         :param new_params: the set of new parameters
         :param previous_params: the set of previous parameters
@@ -225,7 +225,7 @@ class UserIdResolver(object):
         """
         return ""
 
-    def getUserList(self, serachDict):
+    def getUserList(self, search_dict):
         """
         This function finds the user objects,
         that have the term 'value' in the user object field 'key'
@@ -255,7 +255,7 @@ class UserIdResolver(object):
         which is used to check if all required parameters are correctly set
 
         - we have to support as well linotp global config entries, which are
-          indicated by startting with a 'linotp.' prefix. Example is the
+          indicated by starting with a 'linotp.' prefix. Example is the
           linotp.use_system_certs, which is used in the ldap resolver
 
         to support the variations of key, an list of search keys is build. for

@@ -98,7 +98,7 @@ def createDBRealm(realm):
     :param realm: the realm name
     :type  realm: string
 
-    :return : if realm is created(True) or already esists(False)
+    :return : if realm is created(True) or already exists(False)
     :rtype  : boolean
     """
 
@@ -115,7 +115,7 @@ def realm2Objects(realmList):
     """
     convert a list of realm names to a list of realmObjects
 
-    :param realmList: list of realnames
+    :param realmList: list of realm names
     :type  realmList: list
 
     :return: list of realmObjects
@@ -190,9 +190,9 @@ def getRealms(aRealmName=""):
     lookup for a defined realm or all realms
 
     :note:  the realms dict is inserted into the LinOtp Config object
-    so that a lookup has not to reparse the whole config again
+    so that a lookup has not to re-parse the whole config again
 
-    :param aRealmName: a realmname - the realm, that is of interestet,
+    :param aRealmName: a realm name - the realm, that is of interest,
                                      if empty, all realms are returned
     :type  aRealmName: string
 
@@ -228,7 +228,7 @@ def getRealms(aRealmName=""):
 
     # only parse once per session
     if realms is None:
-        realms = _initalGetRealms()
+        realms = _initialGetRealms()
         config.setRealms(realms)
 
     # -- ------------------------------------------------------------ --
@@ -238,10 +238,10 @@ def getRealms(aRealmName=""):
     # which is used for the user resolver lookup for a given realm
     # -- ------------------------------------------------------------ --
 
-    for realm_name, realm_defintion in realms.items():
-        _check_for_cache_flush(realm_name, realm_defintion)
+    for realm_name, realm_definition in realms.items():
+        _check_for_cache_flush(realm_name, realm_definition)
 
-        realm_defintion["admin"] = realm_name == admin_realm_name
+        realm_definition["admin"] = realm_name == admin_realm_name
 
     # check if any realm is searched
     if not isinstance(aRealmName, str):
@@ -256,7 +256,7 @@ def getRealms(aRealmName=""):
     return realms
 
 
-def _lookup_realm_config(realm_name, realm_defintion=None):
+def _lookup_realm_config(realm_name, realm_definition=None):
     """
     realm configuration cache handling -
         per realm the list of resolvers are stored
@@ -266,7 +266,7 @@ def _lookup_realm_config(realm_name, realm_defintion=None):
       the cache
 
     :param realm_name: the realm name
-    :param realm_defintion: the list of the resolvers
+    :param realm_definition: the list of the resolvers
 
     :return: return the list of resolver strings or None
     """
@@ -277,7 +277,7 @@ def _lookup_realm_config(realm_name, realm_defintion=None):
             only called on a cache miss
 
         :param realm_name: the realm name
-        :param realm_defintion: the list of the resolvers
+        :param realm_definition: the list of the resolvers
                - used to fill the cache
 
         :return: return the list of resolver strings or None
@@ -292,13 +292,13 @@ def _lookup_realm_config(realm_name, realm_defintion=None):
     realm_config_cache = _get_realm_config_cache()
 
     if not realm_config_cache:
-        conf_entry = __lookup_realm_config(realm_name, realm_defintion)
+        conf_entry = __lookup_realm_config(realm_name, realm_definition)
         if conf_entry:
             conf_entry = json.loads(conf_entry)
         return conf_entry
 
     p_lookup_resolver_config = partial(
-        __lookup_realm_config, realm_name, realm_defintion
+        __lookup_realm_config, realm_name, realm_definition
     )
 
     p_key = realm_name
@@ -341,7 +341,7 @@ def _delete_from_realm_config_cache(realm_name):
         realm_config_cache.remove_value(key=realm_name)
 
 
-def _initalGetRealms():
+def _initialGetRealms():
     """
     initaly parse all config entries, and extract the realm definition
 
