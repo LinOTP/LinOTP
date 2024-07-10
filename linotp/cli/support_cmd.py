@@ -39,7 +39,8 @@ import click
 from flask import current_app
 from flask.cli import AppGroup, with_appcontext
 
-from linotp.app import allocate_security_module, set_config
+from linotp.app import allocate_security_module
+from linotp.flap import setup_request_context
 from linotp.lib.support import (
     InvalidLicenseException,
     getSupportLicenseInfo,
@@ -68,7 +69,7 @@ def _setup_security_context():
     and we need to call the function again.
     """
 
-    set_config()  # ensure `request_context` exists
+    setup_request_context()
     allocate_security_module()
 
 

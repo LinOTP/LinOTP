@@ -78,7 +78,7 @@ def test_resolver_fail():
 
     msg = (
         "File '/dev/shm/this_file_does_not_exist' does not "
-        "exist or is not accesible"
+        "exist or is not accessible"
     )
 
     with pytest.raises(ResolverLoadConfigError, match=msg):

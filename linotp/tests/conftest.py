@@ -48,7 +48,7 @@ import linotp.controllers
 from linotp import app as app_py
 from linotp.app import LinOTPApp, create_app
 from linotp.cli.init_cmd import create_audit_keys, create_secret_key
-from linotp.flap import set_config
+from linotp.flap import setup_request_context
 from linotp.flap import tmpl_context as c
 from linotp.model import init_db_tables
 
@@ -218,7 +218,7 @@ def app(base_app, monkeypatch):
     monkeypatch.setattr(app_py, "log_request_timedelta", lambda self: None)
 
     with base_app.app_context():
-        set_config()
+        setup_request_context()
 
         yield base_app
 
