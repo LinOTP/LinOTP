@@ -52,11 +52,12 @@ from sqlalchemy.sql import text as sql_text
 
 from flask import current_app
 
-from linotp.lib.type_utils import encrypted_data, text
+from linotp.lib.type_utils import encrypted_data
 from linotp.model import db
 from linotp.useridresolver.UserIdResolver import (
     ResolverLoadConfigError,
     ResolverNotAvailable,
+    ResParamsType,
     UserIdResolver,
 )
 
@@ -443,22 +444,20 @@ class IdResolver(UserIdResolver):
 
     crypted_parameters = ["Password"]
 
-    resolver_parameters: Dict[
-        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
-    ] = {
-        "Connect": (False, "", text),
-        "Driver": (False, None, text),
-        "Server": (False, "", text),
-        "Port": (False, "", text),
-        "Database": (False, "", text),
-        "User": (False, "", text),
-        "conParams": (False, "", text),
+    resolver_parameters: ResParamsType = {
+        "Connect": (False, "", str),
+        "Driver": (False, None, str),
+        "Server": (False, "", str),
+        "Port": (False, "", str),
+        "Database": (False, "", str),
+        "User": (False, "", str),
+        "conParams": (False, "", str),
         "Password": (True, "", encrypted_data),
         "Limit": (False, "1000", int),
-        "Table": (False, "", text),
-        "Where": (False, "", text),
-        "Map": (False, "", text),
-        "Encoding": (False, DEFAULT_ENCODING, text),
+        "Table": (False, "", str),
+        "Where": (False, "", str),
+        "Map": (False, "", str),
+        "Encoding": (False, DEFAULT_ENCODING, str),
     }
     resolver_parameters.update(UserIdResolver.resolver_parameters)
 

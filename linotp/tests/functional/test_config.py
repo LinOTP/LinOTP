@@ -609,12 +609,12 @@ class TestConfigController(TestController):
 
         return
 
-    def test_delete_of_previous_continous(self):
+    def test_delete_of_previous_continuous(self):
         """
         store concurrently multiple different config entries at once
 
         to deal correctly with multiple joined config entries on every store
-        request all potential continous config entries are deleted upfront, as
+        request all potential continuous config entries are deleted upfront, as
         the updated entry might be shorter than the previous one.
         So we query the database for such entries and mark them for delete.
         This algorithm works fine for standard sql databases.

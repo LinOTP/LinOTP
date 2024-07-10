@@ -120,35 +120,6 @@ class CompatibleTestResponse(TestResponse):
         return f"{super().__repr__()} {self.body}"
 
 
-class ConfigWrapper:
-    """
-    Compatibility wrapper for old style configuration
-
-    We map old lower case config values to upper case values.
-    This is a class so that we can raise warnings later on in
-    the porting cycle
-    """
-
-    mappings = {
-        "sqlalchemy.url": "DATABASE_URI",
-    }
-
-    def __init__(self, config):
-        self.config = config
-
-    def _mapkey(self, key):
-        if key in list(self.mappings.keys()):
-            return self.mappings[key]
-        else:
-            return key
-
-    def __getitem__(self, key):
-        return self.config[self._mapkey(key)]
-
-    def get(self, key):
-        return self.config.get(self._mapkey(key))
-
-
 class TestController(TestCase):
     """
     the TestController, which loads the linotp app upfront
