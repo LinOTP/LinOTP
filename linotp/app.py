@@ -407,7 +407,7 @@ class LinOTPApp(Flask):
         request.environ["REQUEST_ID"] = str(uuid4())
         request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
-        self.create_context(request, request.environ)
+        self.create_context()
 
     def is_request_static(self) -> bool:
         return request.path.startswith(self.static_url_path)
@@ -441,7 +441,7 @@ class LinOTPApp(Flask):
 
         log_request_timedelta(log)
 
-    def create_context(self, request, environment):
+    def create_context(self):
         """
         create the request context for all controllers
         """
@@ -450,9 +450,6 @@ class LinOTPApp(Flask):
         allocate_security_module()
 
         linotp_config = getLinotpConfig()  # SQL-based configuration
-
-        # make the request id available in the request context
-        request_context["RequestId"] = environment["REQUEST_ID"]
 
         # a request local cache to get the user info from the resolver
         request_context["UserLookup"] = {}
