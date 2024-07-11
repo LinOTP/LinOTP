@@ -407,6 +407,17 @@ class LinOTPApp(Flask):
         request.environ["REQUEST_ID"] = str(uuid4())
         request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
+        if log.isEnabledFor(logging.DEBUG):
+            # check debug log level beforehand to not slow down
+            # by not parsing the request params in production
+            log.debug(
+                "Starting Request: [Request ID: %s] [%s] %s",
+                request.environ.get("REQUEST_ID"),
+                request.method,
+                request.path,
+            )
+            log.debug("Request params: %r", self.getRequestParams())
+
         self.create_context()
 
     def is_request_static(self) -> bool:
@@ -440,6 +451,13 @@ class LinOTPApp(Flask):
                 del data
 
         log_request_timedelta(log)
+
+        log.debug(
+            "Finished Request: [Request ID: %s] [%s] %s",
+            request.environ.get("REQUEST_ID"),
+            request.method,
+            request.path,
+        )
 
     def create_context(self):
         """

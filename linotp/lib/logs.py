@@ -36,6 +36,7 @@ def log_request_timedelta(logger):
     :param logger: The logger that should be used
     """
 
+    request_id = request.environ.get("REQUEST_ID")
     start = request.environ.get("REQUEST_START_TIMESTAMP")
 
     if start is None:
@@ -46,7 +47,9 @@ def log_request_timedelta(logger):
 
     extra = {"type": "request_timedelta", "timedelta": delta_sec}
 
-    logger.debug("Spent %f seconds for request" % delta_sec, extra=extra)
+    logger.debug(
+        "Spent %f seconds for request %s", delta_sec, request_id, extra=extra
+    )
 
 
 # ------------------------------------------------------------------------------
