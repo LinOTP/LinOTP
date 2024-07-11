@@ -64,12 +64,7 @@ from .lib.resolver import (
 )
 from .lib.security.provider import SecurityProvider
 from .lib.tools.expiring_list import CustomExpiringList
-from .lib.tools.flask_jwt_extended_migration import (
-    JWTManager,
-    get_jwt_identity,
-    verify_jwt_in_request,
-)
-from .lib.user import User
+from .lib.tools.flask_jwt_extended_migration import JWTManager
 from .lib.util import get_client, get_log_level
 from .middlewares.trusted_proxy_handler import TrustedProxyHandler
 from .model import SYS_EXIT_CODE, setup_db
@@ -510,27 +505,6 @@ class LinOTPApp(Flask):
         request_context["Client"] = client
 
         flask_g.audit = self.audit_obj.initialize(request, client=client)
-
-        try:
-            verify_jwt_in_request(optional=True)
-            c_identity = get_jwt_identity()
-        except Exception as exx:
-            c_identity = {}
-
-        authUser = None
-        try:
-            if c_identity:
-                authUser = User(
-                    login=c_identity["username"],
-                    realm=c_identity.get("realm"),
-                    resolver_config_identifier=c_identity[
-                        "resolver"
-                    ].rpartition(".")[-1],
-                )
-        except Exception as exx:
-            log.warning("Failed to identify jwt user: %r", exx)
-
-        flask_g.authUser = authUser
 
         request_context["UserLookup"] = {}
 
