@@ -441,30 +441,13 @@ class LinOTPApp(Flask):
 
         log_request_timedelta(log)
 
-    def setup_env(self):
-        # The following functions are called here because they're
-        # stuffing bits into `flask.g`, which is a per-request global
-        # object. Much of what is stuffed into `flask.g` is actually
-        # application-wide stuff that has no business being stored in
-        # `flask.g` in the first place, but lots of code expects to be
-        # able to look at the "request context" and find stuff
-        # there. Disentangling the application-wide stuff in the
-        # request context from the request-scoped stuff is a major
-        # project that will not be undertaken just now, and we're
-        # probably doing more work here than we need to. Global
-        # variables suck.
-
-        if self.exclude_from_before_request_setup():
-            return
-
-        setup_request_context()
-
-        allocate_security_module()
-
     def create_context(self, request, environment):
         """
         create the request context for all controllers
         """
+
+        setup_request_context()
+        allocate_security_module()
 
         linotp_config = getLinotpConfig()  # SQL-based configuration
 
@@ -1030,7 +1013,6 @@ def create_app(config_name=None, config_extra=None):
         setup_db(app)
 
         init_linotp_config(app)
-        setup_request_context()
 
         init_security_provider()
 
@@ -1047,7 +1029,6 @@ def create_app(config_name=None, config_extra=None):
     app.before_first_request(init_logging_config)
     app.before_first_request(app.init_jwt_config)
     app.before_first_request(app.setup_resolvers)
-    app.before_request(app.setup_env)
     app.before_request(app.start_session)
 
     # Per controller setup and handlers
