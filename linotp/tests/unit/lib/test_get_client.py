@@ -34,6 +34,8 @@ import netaddr
 import pytest
 from mock import patch
 
+from flask import current_app
+
 from linotp.lib.type_utils import get_ip_address, get_ip_network
 from linotp.lib.util import _get_client_from_request, is_addr_in_network
 
@@ -94,6 +96,35 @@ class TestGetClientCase(unittest.TestCase):
     """
     unit test for methods to access the client information
     """
+
+    @patch("linotp.lib.util.getFromConfig", mocked_getFromConfig)
+    def test_get_client_from_request_by_x_forwarded_for_with_TRUSTED_PROXIES_setting(
+        self,
+    ):
+        """
+        When the TRUSTED_PROXIES setting item is set, the x_forwarded_for setting (which is
+        currently set through the UI) does not take effect. i.e. the get_client would not affect
+        remote_addr.
+        """
+
+        current_app.config["TRUSTED_PROXIES"] = ["mytrustedproxy.proxy"]
+
+        global LinConfig
+        LinConfig = {
+            "client.X_FORWARDED_FOR": "true",
+            "client.FORWARDED_PROXY": "123.234.123.234",
+        }
+
+        environ = {
+            "REMOTE_ADDR": "123.234.123.234",
+            "HTTP_X_FORWARDED_FOR": "11.22.33.44",
+        }
+
+        request = Request(environ)
+        client = _get_client_from_request(request)
+
+        # remote address has not changed
+        assert client == "123.234.123.234"
 
     @patch("linotp.lib.util.getFromConfig", mocked_getFromConfig)
     def test_get_client_from_request_by_x_forwarded_for(self):
