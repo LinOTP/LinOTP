@@ -106,6 +106,7 @@ ENV LINOTP_USER=linotp \
     LINOTP_LOG_FILE_NAME=/dev/null \
     # root level dirs
     LINOTP_CACHE_DIR=/cache \
+    LINOTP_BACKUP_DIR=/backups \
     LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;/$TRANSLATIONS_DIR \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
@@ -135,6 +136,7 @@ COPY docker/linotp/doas.conf /etc/doas.conf
 RUN mkdir -p \
     $LINOTP_ROOT_DIR \
     $LINOTP_CACHE_DIR \
+    $LINOTP_BACKUP_DIR \
     $LINOTP_CUSTOM_TEMPLATES_DIR \
     $TRANSLATIONS_DIR \
     && \
@@ -150,7 +152,8 @@ RUN mkdir -p \
 RUN useradd -r $LINOTP_USER && \
     chown -R $LINOTP_USER:$LINOTP_USER \
     $LINOTP_ROOT_DIR \
-    $LINOTP_CACHE_DIR
+    $LINOTP_CACHE_DIR \
+    $LINOTP_BACKUP_DIR
 USER $LINOTP_USER
 
 # Create volumes for root level dirs
