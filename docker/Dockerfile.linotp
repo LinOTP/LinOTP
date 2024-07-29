@@ -54,7 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install python dependencies into VENV_ROOT
 RUN python -m venv $VENV_ROOT
 COPY requirements-prod.txt .
-RUN pip install pip==24.0 && pip install -r requirements-prod.txt
+RUN pip install pip==24.0 pip-tools && pip-sync requirements-prod.txt
 
 WORKDIR $LINOTP_HOME
 
