@@ -72,30 +72,55 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
     "options,deleted,remaining,cleaned",
     [
         (
-            ["--max", 10, "--min", 5],
+            [
+                "--cleanup-threshold",
+                10,
+                "--max-entries-to-keep",
+                5,
+                "--export",
+            ],
             AUDIT_AMOUNT_ENTRIES - 5,
             5,
             True,
         ),
         (
-            ["--max", AUDIT_AMOUNT_ENTRIES, "--min", 5],
+            [
+                "--cleanup-threshold",
+                AUDIT_AMOUNT_ENTRIES,
+                "--max-entries-to-keep",
+                5,
+                "--export",
+            ],
             0,
             AUDIT_AMOUNT_ENTRIES,
             False,
         ),
         (
-            ["--max", AUDIT_AMOUNT_ENTRIES - 1, "--min", 0],
+            [
+                "--cleanup-threshold",
+                AUDIT_AMOUNT_ENTRIES - 1,
+                "--max-entries-to-keep",
+                0,
+                "--export",
+            ],
             AUDIT_AMOUNT_ENTRIES,
             0,
             True,
         ),
         (
             [
-                "--max",
+                "--cleanup-threshold",
                 AUDIT_AMOUNT_ENTRIES - 1,
-                "--min",
+                "--max-entries-to-keep",
                 AUDIT_AMOUNT_ENTRIES - 1,
+                "--export",
             ],
+            1,
+            AUDIT_AMOUNT_ENTRIES - 1,
+            True,
+        ),
+        (
+            ["--max-entries-to-keep", AUDIT_AMOUNT_ENTRIES - 1, "--export"],
             1,
             AUDIT_AMOUNT_ENTRIES - 1,
             True,
@@ -118,12 +143,15 @@ def test_audit_cleanup_parameters(
     remaining: int,
     cleaned: bool,
 ):
-    """Run audit cleanup with different max and min values"""
+    """Run audit cleanup with different `cleanup-threshold` and `max-entries-to-keep` values"""
 
     freezer.move_to("2020-01-01 09:50:00")
     formated_time = datetime.now().strftime(
         app.config["BACKUP_FILE_TIME_FORMAT"]
     )
+
+    # Set BACKUP_DIR to `./backup` (instead of creating `/var/linotp/backup`)
+    app.config["BACKUP_DIR"] = "backup"
 
     result = runner.invoke(cli_main, ["-vv", "audit", "cleanup"] + options)
 
@@ -163,11 +191,8 @@ def test_audit_cleanup_disabled_export(
             "-vv",
             "audit",
             "cleanup",
-            "--max",
+            "--max-entries-to-keep",
             "10",
-            "--min",
-            "10",
-            "--no-export",
             "--exportdir",
             str(export_dir),
         ],
@@ -200,10 +225,9 @@ def test_audit_cleanup_custom_export_dir(
             "-vvv",
             "audit",
             "cleanup",
-            "--max",
+            "--max-entries-to-keep",
             "10",
-            "--min",
-            "10",
+            "--export",
             "--exportdir",
             str(export_dir),
         ],
@@ -223,23 +247,26 @@ def test_audit_cleanup_custom_export_dir(
     assert num_lines == deleted + 1
 
 
-def test_run_janitor_max_min(runner: FlaskCliRunner, setup_audit_table: None):
-    """Run janitor with min greater than max"""
-    max = 5
-    min = 6
-    # run linotp audit-janitor
+def test_run_janitor_invalid_threshold(
+    runner: FlaskCliRunner, setup_audit_table: None
+):
+    """Run janitor with `cleanup-threshold` smaller than `max-entries-to-keep`"""
+    cleanup_threshold = 5
+    max_entries_to_keep = cleanup_threshold + 1
+    # run `linotp audit cleanup`
     result = runner.invoke(
         cli_main,
         [
             "audit",
             "cleanup",
-            "--max",
-            max,
-            "--min",
-            min,
+            "--cleanup-threshold",
+            cleanup_threshold,
+            "--max-entries-to-keep",
+            max_entries_to_keep,
         ],
     )
     assert result.exit_code == 1
     assert (
-        "Error: --max must be greater than or equal to --min" in result.stderr
+        "Error: --cleanup-threshold must be greater than or equal to --max-entries-to-keep"
+        in result.stderr
     )

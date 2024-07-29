@@ -60,6 +60,9 @@ def test_dbsnapshot(app, runner, freezer):
     freezer.move_to("2020-08-18 19:25:33")
     str_now = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
+    # Set BACKUP_DIR to `./backup` (instead of creating `/var/linotp/backup`)
+    app.config["BACKUP_DIR"] = "backup"
+
     # Create a database backup
     result = runner.invoke(cli_main, ["-v", "dbsnapshot", "create"])
     assert result.exit_code == 0
@@ -93,6 +96,9 @@ def test_dbsnapshot(app, runner, freezer):
 def test_dbsnapshot_restore_cmd(app, runner, freezer, args, result):
     freezer.move_to("2020-08-18 19:25:33")
     str_now = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
+
+    # Set BACKUP_DIR to `./backup` (instead of creating `/var/linotp/backup`)
+    app.config["BACKUP_DIR"] = "backup"
 
     backup_result = runner.invoke(cli_main, ["dbsnapshot", "create"])
     assert backup_result.exit_code == 0
