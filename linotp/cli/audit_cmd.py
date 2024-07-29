@@ -102,9 +102,9 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
     ),
 )
 @click.option(
-    "--no-export",
+    "--export",
     is_flag=True,
-    help="Do not write a backup file for the deleted audit lines.",
+    help="Write a backup file for the deleted audit lines.",
 )
 @click.option(
     "--exportdir",
@@ -120,7 +120,7 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
 )
 @with_appcontext
 def cleanup_command(
-    maximum: int, minimum: int, no_export: bool, exportdir: Optional[str]
+    maximum: int, minimum: int, export: bool, exportdir: Optional[str]
 ):
     """This function removes old entries from the audit table.
 
@@ -134,11 +134,11 @@ def cleanup_command(
             app.echo("Error: --max must be greater than or equal to --min.")
             sys.exit(1)
 
-        if no_export:
-            export_path = None
-        else:
+        if export:
             export_path = Path(exportdir or current_app.config["BACKUP_DIR"])
             export_path.mkdir(parents=True, exist_ok=True)
+        else:
+            export_path = None
 
         sqljanitor = SQLJanitor(export_dir=export_path)
 

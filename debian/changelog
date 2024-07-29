@@ -2,6 +2,10 @@ linotp (3.4~dev0-1) UNRELEASED; urgency=low
 
   Breaking Changes:
   * changed default `BACKUP_DIR` to `/var/backups/linotp`
+  * breaking changes to `linotp audit cleanup`:
+    * option `--no-export` is removed
+    * option `--export` is added to trigger the export
+    * export is disabled by default. Use `linotp audit cleanup --export` to trigger it.
 
   Fix:
   * wrongly aligned resize bar on Manage UI flexigrid tables when browser is zoomed or scaled
