@@ -146,34 +146,31 @@ def cleanup_command(
 
         app.echo(
             f'{cleanup_infos["entries_in_audit"]} entries found in database.',
-            v=2,
+            v=1,
         )
 
-        if cleanup_infos["entries_deleted"] > 0:
+        entries_deleted = cleanup_infos["entries_deleted"]
+        if entries_deleted > 0:
             app.echo(
-                f'{cleanup_infos["entries_in_audit"] - minimum} entries '
-                f"cleaned up. {minimum} entries left in database.\n"
-                f"Min: {minimum}, Max: {maximum}.",
-                v=1,
+                f"{entries_deleted} entries cleaned up.\n"
+                f"{minimum} entries left in database."
             )
 
             if cleanup_infos["export_filename"]:
-                app.echo(
-                    f'Exported into {cleanup_infos["export_filename"]}',
-                    v=2,
-                )
+                app.echo(f'Exported into {cleanup_infos["export_filename"]}')
+            else:
+                app.echo("No export was triggered.")
 
             app.echo(
-                f'Cleaning up took {cleanup_infos["time_taken"]} seconds',
-                v=2,
+                f'Cleaning up took {cleanup_infos["time_taken"]} seconds', v=1
             )
         else:
             app.echo(
                 f'Nothing cleaned up. {cleanup_infos["entries_in_audit"]} '
                 "entries in database.\n"
-                f"Min: {minimum}, Max: {maximum}.",
-                v=1,
             )
+
+        app.echo(f"Called with --min: {minimum}, --max: {maximum}.", v=1)
 
     except Exception as exx:
         app.echo(f"Error while cleanup up audit table: {exx!s}")
