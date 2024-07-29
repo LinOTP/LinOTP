@@ -298,7 +298,9 @@ class SQLJanitor:
             if delete_from > 0:
                 # if export is enabled, we start the export now
                 export_file = self.export_data(delete_from)
-                cleanup_infos["export_filename"] = str(export_file)
+                cleanup_infos["export_filename"] = (
+                    str(export_file) if export_file else None
+                )
 
                 db.session.query(AuditTable).filter(
                     AuditTable.id <= delete_from
