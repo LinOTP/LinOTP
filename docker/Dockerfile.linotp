@@ -91,8 +91,9 @@ FROM base
 HEALTHCHECK --interval=20s --timeout=5s --retries=3 --start-period=60s \
     CMD curl -sfL http://localhost:5000/ || exit 1
 
-ENV LINOTP_ROOT_DIR=/data \
-    LINOTP_CACHE_DIR=/cache
+# keep LINOTP_ROOT_DIR in a seperate ENV declaration
+# as it's used in e.g. LINOTP_DATABASE_URI below
+ENV LINOTP_ROOT_DIR=/data
 ENV LINOTP_USER=linotp \
     LINOTP_ADMIN_USER=admin \
     LINOTP_ADMIN_PASSWORD= \
@@ -104,6 +105,7 @@ ENV LINOTP_USER=linotp \
     LINOTP_LOG_FILE_DIR=/ \
     LINOTP_LOG_FILE_NAME=/dev/null \
     # root level dirs
+    LINOTP_CACHE_DIR=/cache \
     LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;/$TRANSLATIONS_DIR \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
