@@ -44,14 +44,14 @@
             - linotpAudit.janitor.logdir = /var/log/linotp/
 """
 
-import datetime
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 import click
-from sqlalchemy import asc, desc
-from sqlalchemy.sql.functions import count
+from sqlalchemy import desc
+from sqlalchemy.sql.functions import count, max, min
 
 from flask import current_app
 from flask.cli import AppGroup, with_appcontext
@@ -136,13 +136,13 @@ def cleanup_command(
     if cleanup_threshold is None:
         cleanup_threshold = max_entries_to_keep
 
-    try:
-        if not (0 <= max_entries_to_keep <= cleanup_threshold):
-            app.echo(
-                "Error: --cleanup-threshold must be greater than or equal to --max-entries-to-keep."
-            )
-            sys.exit(1)
+    if not (0 <= max_entries_to_keep <= cleanup_threshold):
+        app.echo(
+            "Error: --cleanup-threshold must be greater than or equal to --max-entries-to-keep."
+        )
+        sys.exit(1)
 
+    try:
         if export:
             export_path = Path(exportdir or current_app.config["BACKUP_DIR"])
             export_path.mkdir(parents=True, exist_ok=True)
@@ -284,45 +284,39 @@ class SQLJanitor:
             "time_taken": 0,
         }
 
-        start_time = datetime.datetime.now()
+        start_time = datetime.now()
 
         total = int(db.session.query(count(AuditTable.id)).scalar())
         cleanup_infos["entries_in_audit"] = total
+        first_id = db.session.query(min(AuditTable.id)).scalar()
+        cleanup_infos["first_entry_id"] = first_id
+        last_id = db.session.query(max(AuditTable.id)).scalar()
+        cleanup_infos["last_entry_id"] = last_id
+
         if total > cleanup_threshold:
-            first_id = int(
-                db.session.query(AuditTable.id)
-                .order_by(asc(AuditTable.id))
-                .limit(1)
-                .scalar()
-            )
-            cleanup_infos["first_entry_id"] = first_id
-
-            last_id = int(
-                db.session.query(AuditTable.id)
-                .order_by(desc(AuditTable.id))
-                .limit(1)
-                .scalar()
-            )
-            cleanup_infos["last_entry_id"] = last_id
-
             delete_from = last_id - max_entries_to_keep
-            if delete_from > 0:
-                # if export is enabled, we start the export now
-                export_file = self.export_data(delete_from)
-                cleanup_infos["export_filename"] = (
-                    str(export_file) if export_file else None
-                )
+        else:
+            delete_from = 0
 
-                db.session.query(AuditTable).filter(
-                    AuditTable.id <= delete_from
-                ).delete()
+        if delete_from > 0:
+            # if export is enabled, we start the export now
+            export_file = self.export_data(delete_from)
+            cleanup_infos["export_filename"] = (
+                str(export_file) if export_file else None
+            )
 
-                db.session.commit()
+            result = (
+                db.session.query(AuditTable)
+                .filter(AuditTable.id <= delete_from)
+                .delete()
+            )
 
-                cleanup_infos["entries_deleted"] = total - max_entries_to_keep
-                cleanup_infos["cleaned"] = True
+            db.session.commit()
 
-        end_time = datetime.datetime.now()
+            cleanup_infos["entries_deleted"] = result
+            cleanup_infos["cleaned"] = True
+
+        end_time = datetime.now()
 
         duration = end_time - start_time
         cleanup_infos["time_taken"] = duration.seconds
