@@ -8,7 +8,7 @@ ARG BASE_IMAGE=python:3.11-slim-bookworm
 
 # 'base' holds dependencies and ENV shared by stages
 
-FROM $BASE_IMAGE as base
+FROM $BASE_IMAGE AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -54,7 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install python dependencies into VENV_ROOT
 RUN python -m venv $VENV_ROOT
 COPY requirements-prod.txt .
-RUN pip install pip==24.0 && pip install -r requirements-prod.txt
+RUN pip install pip==24.0 pip-tools && pip-sync requirements-prod.txt
 
 WORKDIR $LINOTP_HOME
 
@@ -70,7 +70,7 @@ RUN pip install .
 # TRANSLATIONS #
 ################
 
-FROM base as translations
+FROM base AS translations
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gettext
