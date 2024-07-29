@@ -72,33 +72,32 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
     "cleanup",
     help=(
         "Reduce the number of audit log entries in the database.\n\n"
-        "If more than --max entries are in the audit table, older "
-        "entries will be deleted so that only --min entries remain "
-        "in the table. Set --min and --max to the same value to "
-        "delete only those entries that exceed the maximum number "
-        "(--max) of entries allowed"
+        "If more than --max-entries-to-keep entries are in the audit table, "
+        "older entries will be deleted so that only --max-entries-to-keep "
+        "entries remain in the table."
     ),
 )
 @click.option(
-    "--max",
-    "maximum",
-    default=10000,
-    help=(
-        "The maximum number of entries that may be in the database"
-        "before entries are deleted. Defaults to 10,000."
-    ),
-)
-@click.option(
-    "--min",
-    "minimum",
+    "--max-entries-to-keep",
+    "max_entries_to_keep",
     default=5000,
     help=(
-        "The number of entries that should remain in the database if "
-        "data is cleaned up. You need to set a lower number than --max "
-        "if you do not want directly reach the limit again. Set it to "
-        "the same value as --max to only delete entries that are "
-        "exceeding the maximum allowed number of entries. Defaults to "
-        "5,000."
+        "The maximum number of entries to keep if cleanup is triggered. "
+        "Defaults to 5,000."
+    ),
+)
+@click.option(
+    "--cleanup-threshold",
+    "cleanup_threshold",
+    type=int,
+    help=(
+        "Specify the maximum number of entries in the database that triggers the cleanup process. "
+        "When the number of entries exceeds this threshold, the cleanup process is initiated. "
+        "This value must be greater than or equal to the value specified for --max-entries-to-keep. "
+        "If you do not want to directly reach the limit again, set it to a lower number than --max-entries-to-keep. "
+        "This is especially usefull for cronjobs triggering an export. In this case, setting --cleanup-threshold "
+        "to e.g. twice the amount of --max-entries-to-keep will drastically reduce the number of backup-files. "
+        "Defaults to the value of --max-entries-to-keep."
     ),
 )
 @click.option(
@@ -120,18 +119,28 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
 )
 @with_appcontext
 def cleanup_command(
-    maximum: int, minimum: int, export: bool, exportdir: Optional[str]
+    max_entries_to_keep: int,
+    cleanup_threshold: Optional[int],
+    export: bool,
+    exportdir: Optional[str],
 ):
     """This function removes old entries from the audit table.
 
-    If more than max entries are in the audit table, older entries
-    will be deleted so that only min entries remain in the table.
+    If more than `max_entries_to_keep` entries are in the audit table, older entries
+    will be deleted so that only `max_entries_to_keep` entries remain in the table.
+    Cleanup is only triggered if the number of entries is greater than `cleanup_threshold`.
     """
 
     app = current_app
+
+    if cleanup_threshold is None:
+        cleanup_threshold = max_entries_to_keep
+
     try:
-        if not (0 <= minimum <= maximum):
-            app.echo("Error: --max must be greater than or equal to --min.")
+        if not (0 <= max_entries_to_keep <= cleanup_threshold):
+            app.echo(
+                "Error: --cleanup-threshold must be greater than or equal to --max-entries-to-keep."
+            )
             sys.exit(1)
 
         if export:
@@ -142,7 +151,9 @@ def cleanup_command(
 
         sqljanitor = SQLJanitor(export_dir=export_path)
 
-        cleanup_infos = sqljanitor.cleanup(maximum, minimum)
+        cleanup_infos = sqljanitor.cleanup(
+            cleanup_threshold, max_entries_to_keep
+        )
 
         app.echo(
             f'{cleanup_infos["entries_in_audit"]} entries found in database.',
@@ -153,7 +164,7 @@ def cleanup_command(
         if entries_deleted > 0:
             app.echo(
                 f"{entries_deleted} entries cleaned up.\n"
-                f"{minimum} entries left in database."
+                f"{max_entries_to_keep} entries left in database."
             )
 
             if cleanup_infos["export_filename"]:
@@ -170,7 +181,10 @@ def cleanup_command(
                 "entries in database.\n"
             )
 
-        app.echo(f"Called with --min: {minimum}, --max: {maximum}.", v=1)
+        app.echo(
+            f"Called with --max-entries-to-keep: {max_entries_to_keep}, --cleanup-threshold: {cleanup_threshold}.",
+            v=1,
+        )
 
     except Exception as exx:
         app.echo(f"Error while cleanup up audit table: {exx!s}")
@@ -241,13 +255,13 @@ class SQLJanitor:
 
         return export_file
 
-    def cleanup(self, max_entries, min_entries):
+    def cleanup(self, cleanup_threshold, max_entries_to_keep):
         """
         identify the audit data and delete them
 
-        :param max_entries: the maximum amount of data
-        :param min_entries: the minimum amount of data that should
-                            not be deleted
+        :param cleanup_threshold: the maximum amount of data.
+            cleanup is triggered if the number of entries exceed `cleanup_threshold`.
+        :param max_entries_to_keep: the minimum amount of data that should not be deleted
 
         :return: cleanup_infos - {
             'cleaned': False,
@@ -274,7 +288,7 @@ class SQLJanitor:
 
         total = int(db.session.query(count(AuditTable.id)).scalar())
         cleanup_infos["entries_in_audit"] = total
-        if total > max_entries:
+        if total > cleanup_threshold:
             first_id = int(
                 db.session.query(AuditTable.id)
                 .order_by(asc(AuditTable.id))
@@ -291,7 +305,7 @@ class SQLJanitor:
             )
             cleanup_infos["last_entry_id"] = last_id
 
-            delete_from = last_id - min_entries
+            delete_from = last_id - max_entries_to_keep
             if delete_from > 0:
                 # if export is enabled, we start the export now
                 export_file = self.export_data(delete_from)
@@ -305,7 +319,7 @@ class SQLJanitor:
 
                 db.session.commit()
 
-                cleanup_infos["entries_deleted"] = total - min_entries
+                cleanup_infos["entries_deleted"] = total - max_entries_to_keep
                 cleanup_infos["cleaned"] = True
 
         end_time = datetime.datetime.now()

@@ -242,7 +242,7 @@ setup(
         (
             "share/man/man1",
             [
-                "man/man1/linotp-audit-janitor.1",
+                "man/man1/linotp-audit-cleanup.1",
                 "man/man1/linotp-backup.1",
                 "man/man1/linotp-config.1",
                 "man/man1/linotp-init.1",

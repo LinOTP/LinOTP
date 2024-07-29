@@ -1,0 +1,58 @@
+.\" Manpage for linotp.
+.\" Copyright (C) 2019-     netgo software GmbH
+
+.TH linotp-audit-cleanup 1 "10 Aug 2020" "3.0" "LinOTP"
+
+.SH NAME
+linotp-audit-cleanup \- remove old entries from the audit table.
+
+.SH SYNOPSIS
+\fIlinotp audit cleanup\fR [--max=<max entries>] [--keep=<number of entries to keep>] [--exportdir=<path to export removed entries>]
+
+.SH DESCRIPTION
+This tool removes old entries from the audit table.
+If more than --max-entries-to-keep entries are in the audit table, 
+older entries will be deleted so that only --max-entries-to-keep
+entries remain in the table.
+If "exportdir" is given, the removed entries will
+be exported as "SQLData.year.month.day-max_id.csv"
+
+.SH COMMON OPTIONS
+
+.PP
+\fB\--max-entries-to-keep=<max entries to keep>\fR
+.RS 4
+The maximum number of entries to keep if cleanup is triggered. Defaults to 5,000.
+.RE
+
+.PP
+\fB\--cleanup-threshold=<cleanup threshold>\fR
+.RS 4
+Specify the maximum number of entries in the database that triggers the cleanup process.
+When the number of entries exceeds this threshold, the cleanup process is initiated.
+This value must be greater than or equal to the value specified for --max-entries-to-keep.
+If you do not want to directly reach the limit again, set it to a lower number than --max-entries-to-keep.
+This is especially usefull for cronjobs triggering an export. In this case, setting --cleanup-threshold
+to e.g. twice the amount of --max-entries-to-keep will drastically reduce the number of backup-files.
+Defaults to the value of --max-entries-to-keep.
+.RE
+
+.PP
+\fB\--export\fR
+.RS 4
+If --export is given, all entries which are removed will be exported
+into a csv file into the BACKUP_DIR path given as "SQLData.year.month.day-max_id.csv".
+.RE
+
+.PP
+\fB\--exportdir=<path to export removed entries>\fR
+.RS 4
+If given alongside --export, exported file will be written into given path
+instead of BACKUP_DIR.
+.RE
+
+.SH SEE ALSO
+\fBlinotp\fR(1)
+
+.SH INTERNET SOURCES
+https://www.linotp.org
