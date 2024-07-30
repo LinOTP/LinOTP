@@ -1548,6 +1548,9 @@ msgstr "LinOTP Support und Subskription"
 msgid "LinOTP error "
 msgstr "LinOTP-Fehler "
 
+msgid "LinOTP trusts the following services: "
+msgstr "LinOTP vertraut den folgenden Diensten: "
+
 msgid "Load Token File"
 msgstr "Tokendatei laden"
 
@@ -2876,6 +2879,15 @@ msgstr "Der Token den Sie zuweisen wollen ist nicht in Ihrem Realm enthalten!"
 #, python-format
 msgid "The tokentype '%s' could not be found."
 msgstr "Der Tokentyp '%s' konnte nicht gefunden werden."
+
+msgid ""
+"The trusted forwarding proxy configuration is overwritten at server instance "
+"level with the LinOTP configuration TRUSTED_PROXIES. The system "
+"configuration shown above is not in effect."
+msgstr ""
+"Die Trusted Forwarding Proxy-Konfiguration wird auf Serverinstanzebene mit der "
+"LinOTP-Konfiguration TRUSTED_PROXIES überschrieben. Die oben angezeigte "
+"Systemkonfiguration ist nicht wirksam."
 
 msgid "The upload of your support and subscription license failed: "
 msgstr "Das Laden der Support- und Subskriptionsdatei ist fehlgeschlagen: "
