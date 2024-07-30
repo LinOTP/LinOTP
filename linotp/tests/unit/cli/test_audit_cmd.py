@@ -24,7 +24,7 @@
 #    Support: www.linotp.de
 #
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import List
 
@@ -41,16 +41,24 @@ from linotp.model import db
 # -------------------------------------------------------------------------- --
 
 AUDIT_AMOUNT_ENTRIES = 100
+FREEZE_DATE = datetime(2020, 1, 1, tzinfo=timezone.utc)
 
 
 @pytest.fixture
-def setup_audit_table(app: LinOTPApp):
-    """Add AUDIT_AMOUNT_ENTRIES entries into the fresh audit database"""
+def setup_audit_table(app: LinOTPApp, freezer: FrozenDateTimeFactory):
+    """
+    Add AUDIT_AMOUNT_ENTRIES entries into the fresh audit database.
+    One entry per day until (but excluding) `FREEZE_DATE`.
+    """
 
     entry = {
         "action": "validate/check",
     }
-    for _ in range(AUDIT_AMOUNT_ENTRIES):
+
+    start_date = FREEZE_DATE - timedelta(days=AUDIT_AMOUNT_ENTRIES)
+    for i in range(AUDIT_AMOUNT_ENTRIES):
+        current_date = start_date + timedelta(days=i)
+        freezer.move_to(current_date)
         app.audit_obj.log_entry(entry)
 
 
@@ -69,7 +77,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
 
 
 @pytest.mark.parametrize(
-    "options,deleted,remaining,cleaned",
+    "options,deleted,remaining,cleaned,exit_code,partial_err_msg",
     [
         (
             [
@@ -82,6 +90,8 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             AUDIT_AMOUNT_ENTRIES - 5,
             5,
             True,
+            0,
+            "",
         ),
         (
             [
@@ -94,6 +104,8 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             0,
             AUDIT_AMOUNT_ENTRIES,
             False,
+            0,
+            f"{AUDIT_AMOUNT_ENTRIES} entries in database",
         ),
         (
             [
@@ -106,6 +118,8 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             AUDIT_AMOUNT_ENTRIES,
             0,
             True,
+            0,
+            "",
         ),
         (
             [
@@ -118,18 +132,24 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             1,
             AUDIT_AMOUNT_ENTRIES - 1,
             True,
+            0,
+            "",
         ),
         (
             ["--max-entries-to-keep", AUDIT_AMOUNT_ENTRIES - 1, "--export"],
             1,
             AUDIT_AMOUNT_ENTRIES - 1,
             True,
+            0,
+            "",
         ),
         (
             [],
             0,
             AUDIT_AMOUNT_ENTRIES,
             False,
+            0,
+            "0 entries in database",
         ),
     ],
 )
@@ -142,10 +162,12 @@ def test_audit_cleanup_parameters(
     deleted: int,
     remaining: int,
     cleaned: bool,
+    exit_code: int,
+    partial_err_msg: str,
 ):
     """Run audit cleanup with different `cleanup-threshold` and `max-entries-to-keep` values"""
 
-    freezer.move_to("2020-01-01 09:50:00")
+    freezer.move_to(FREEZE_DATE)
     formated_time = datetime.now().strftime(
         app.config["BACKUP_FILE_TIME_FORMAT"]
     )
@@ -155,7 +177,7 @@ def test_audit_cleanup_parameters(
 
     result = runner.invoke(cli_main, ["-vv", "audit", "cleanup"] + options)
 
-    assert result.exit_code == 0
+    assert result.exit_code == exit_code
 
     filename = f"SQLAuditExport.{formated_time}.{deleted}.csv"
     export_file = Path(app.config["BACKUP_DIR"]) / filename
@@ -167,7 +189,7 @@ def test_audit_cleanup_parameters(
         assert f"Exported into {export_file}" in result.stderr
     else:
         assert not export_file.is_file()
-        assert f"{remaining} entries in database" in result.stderr
+        assert partial_err_msg in result.stderr
         assert "Exported" not in result.stderr
 
     assert db.session.query(AuditTable).count() == remaining
@@ -180,7 +202,7 @@ def test_audit_cleanup_disabled_export(
     export_dir: Path,
     setup_audit_table: None,
 ):
-    freezer.move_to("2020-01-01 09:50:00")
+    freezer.move_to(FREEZE_DATE)
     formated_time = datetime.now().strftime(
         app.config["BACKUP_FILE_TIME_FORMAT"]
     )
@@ -214,7 +236,7 @@ def test_audit_cleanup_custom_export_dir(
     export_dir: Path,
     setup_audit_table: None,
 ):
-    freezer.move_to("2020-01-01 09:50:00")
+    freezer.move_to(FREEZE_DATE)
     formated_time = datetime.now().strftime(
         app.config["BACKUP_FILE_TIME_FORMAT"]
     )
