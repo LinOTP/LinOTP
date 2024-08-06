@@ -373,12 +373,14 @@ class JWTMixin(object):
         """
 
         username = self.request_params.get("username")
+        g.audit["user"] = username
         password = self.request_params.get("password")
 
         # Search for the user in the admin realm and check the
         # given password.
 
         admin_realm_name = current_app.config["ADMIN_REALM_NAME"]
+        g.audit["realm"] = admin_realm_name
         admin_realm = getRealms(admin_realm_name)
         admin_resolvers = admin_realm[admin_realm_name]["useridresolver"]
 
@@ -392,6 +394,18 @@ class JWTMixin(object):
             if not resolver.checkPass(uid, password):
                 continue
 
+            g.audit["administrator"] = f"{username}@{admin_realm_name}"
+            authUser = User(
+                login=username,
+                realm=admin_realm_name,
+                resolver_config_identifier=resolver_specification.rpartition(
+                    "."
+                )[-1],
+            )
+            g.audit["authUser"] = authUser
+            # save authUser in request_context as it's used by `getUserFromRequest()`
+            g.authUser = authUser
+
             response = sendResult(
                 True, opt={"message": f"Login successful for {username}"}
             )
@@ -399,12 +413,14 @@ class JWTMixin(object):
             access_token = create_access_token(
                 identity={
                     "username": username,
-                    "realm": current_app.config["ADMIN_REALM_NAME"],
+                    "realm": admin_realm_name,
                     "resolver": resolver_specification,
                 },
             )
 
             set_access_cookies(response, access_token)
+
+            g.audit["success"] = 1
 
             return response
 
@@ -422,6 +438,10 @@ class JWTMixin(object):
         See the Flask-JWT-Extended docs for ideas about how to do this.
         """
         auth_user = getUserFromRequest()
+        if auth_user:
+            g.audit["user"] = auth_user.login
+            g.audit["realm"] = auth_user.realm
+
         response = sendResult(
             True, opt={"message": f"Logout successful for {auth_user}"}
         )
@@ -435,6 +455,8 @@ class JWTMixin(object):
         expires_in = int(expires_at - datetime.now().timestamp())
 
         current_app.jwt_blocklist.add_item(jti, expiry=expires_in)
+
+        g.audit["success"] = 1
         return response
 
     # We have to make our own `_url_methods` dictionary; it will not
