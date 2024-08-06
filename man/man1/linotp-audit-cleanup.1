@@ -38,6 +38,13 @@ Defaults to the value of --max-entries-to-keep.
 .RE
 
 .PP
+\fB\--delete-after-days=<number of days>\fR
+.RS 4
+Delete entries older than the given number of days (starting from the beginning of the day).
+Can't be used alongside `--max-entries-to-keep` or `--cleanup-threshold`!
+.RE
+
+.PP
 \fB\--export\fR
 .RS 4
 If --export is given, all entries which are removed will be exported

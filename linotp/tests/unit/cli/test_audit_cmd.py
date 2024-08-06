@@ -151,6 +151,64 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             0,
             "0 entries in database",
         ),
+        (
+            [
+                "--max-entries-to-keep",
+                AUDIT_AMOUNT_ENTRIES,
+                "--export",
+                "--delete-after-days",
+                "1",
+            ],
+            0,
+            AUDIT_AMOUNT_ENTRIES,
+            False,
+            1,
+            "`--delete-after-days` can not be used alongside",
+        ),
+        (
+            [
+                "--delete-after-days",
+                "0",
+            ],
+            AUDIT_AMOUNT_ENTRIES,
+            0,
+            False,
+            0,
+            "",
+        ),
+        (
+            [
+                "--delete-after-days",
+                "1",
+            ],
+            AUDIT_AMOUNT_ENTRIES - 1,
+            1,
+            False,
+            0,
+            "",
+        ),
+        (
+            [
+                "--delete-after-days",
+                "99",
+            ],
+            1,
+            AUDIT_AMOUNT_ENTRIES - 1,
+            False,
+            0,
+            "",
+        ),
+        (
+            [
+                "--delete-after-days",
+                "100",
+            ],
+            0,
+            AUDIT_AMOUNT_ENTRIES,
+            False,
+            0,
+            "",
+        ),
     ],
 )
 def test_audit_cleanup_parameters(
