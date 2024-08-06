@@ -1183,5 +1183,11 @@ class TestController(TestCase):
         response.body = response.data.decode("utf-8")
         return response
 
+    def get_last_audit_entry(self):
+        response = self.make_audit_request("search")
+        res = response.json
+        assert res["rows"]
+        return res["rows"][-1]["cell"]
+
 
 # eof #
