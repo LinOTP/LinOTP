@@ -44,14 +44,14 @@
             - linotpAudit.janitor.logdir = /var/log/linotp/
 """
 
-import datetime
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
 import click
-from sqlalchemy import asc, desc
-from sqlalchemy.sql.functions import count
+from sqlalchemy import desc
+from sqlalchemy.sql.functions import count, max, min
 
 from flask import current_app
 from flask.cli import AppGroup, with_appcontext
@@ -80,7 +80,7 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
 @click.option(
     "--max-entries-to-keep",
     "max_entries_to_keep",
-    default=5000,
+    type=int,
     help=(
         "The maximum number of entries to keep if cleanup is triggered. "
         "Defaults to 5,000."
@@ -98,6 +98,15 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
         "This is especially usefull for cronjobs triggering an export. In this case, setting --cleanup-threshold "
         "to e.g. twice the amount of --max-entries-to-keep will drastically reduce the number of backup-files. "
         "Defaults to the value of --max-entries-to-keep."
+    ),
+)
+@click.option(
+    "--delete-after-days",
+    "delete_after_days",
+    type=int,
+    help=(
+        "Delete entries older than the given number of days (starting from the beginning of the day). "
+        "Can't be used alongside `--max-entries-to-keep` or `--cleanup-threshold`!"
     ),
 )
 @click.option(
@@ -119,8 +128,9 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
 )
 @with_appcontext
 def cleanup_command(
-    max_entries_to_keep: int,
+    max_entries_to_keep: Optional[int],
     cleanup_threshold: Optional[int],
+    delete_after_days: Optional[str],
     export: bool,
     exportdir: Optional[str],
 ):
@@ -133,16 +143,28 @@ def cleanup_command(
 
     app = current_app
 
-    if cleanup_threshold is None:
-        cleanup_threshold = max_entries_to_keep
+    if delete_after_days is not None and (
+        cleanup_threshold or max_entries_to_keep
+    ):
+        app.echo(
+            "`--delete-after-days` can not be used alongside `--max-entries-to-keep` or `--cleanup-threshold`"
+        )
+        sys.exit(1)
 
-    try:
+    if delete_after_days is None:
+        if max_entries_to_keep is None:
+            max_entries_to_keep = 5000
+
+        if cleanup_threshold is None:
+            cleanup_threshold = max_entries_to_keep
+
         if not (0 <= max_entries_to_keep <= cleanup_threshold):
             app.echo(
                 "Error: --cleanup-threshold must be greater than or equal to --max-entries-to-keep."
             )
             sys.exit(1)
 
+    try:
         if export:
             export_path = Path(exportdir or current_app.config["BACKUP_DIR"])
             export_path.mkdir(parents=True, exist_ok=True)
@@ -152,19 +174,17 @@ def cleanup_command(
         sqljanitor = SQLJanitor(export_dir=export_path)
 
         cleanup_infos = sqljanitor.cleanup(
-            cleanup_threshold, max_entries_to_keep
+            cleanup_threshold, max_entries_to_keep, delete_after_days
         )
 
-        app.echo(
-            f'{cleanup_infos["entries_in_audit"]} entries found in database.',
-            v=1,
-        )
+        entries_in_audit = cleanup_infos["entries_in_audit"]
+        app.echo(f"{entries_in_audit} entries found in database.", v=1)
 
         entries_deleted = cleanup_infos["entries_deleted"]
         if entries_deleted > 0:
             app.echo(
                 f"{entries_deleted} entries cleaned up.\n"
-                f"{max_entries_to_keep} entries left in database."
+                f"{entries_in_audit - entries_deleted} entries left in database."
             )
 
             if cleanup_infos["export_filename"]:
@@ -182,7 +202,7 @@ def cleanup_command(
             )
 
         app.echo(
-            f"Called with --max-entries-to-keep: {max_entries_to_keep}, --cleanup-threshold: {cleanup_threshold}.",
+            f"Called with --max-entries-to-keep: {max_entries_to_keep}, --cleanup-threshold: {cleanup_threshold}, --delete-after-days: {delete_after_days}.",
             v=1,
         )
 
@@ -255,13 +275,20 @@ class SQLJanitor:
 
         return export_file
 
-    def cleanup(self, cleanup_threshold, max_entries_to_keep):
+    def cleanup(
+        self,
+        cleanup_threshold,
+        max_entries_to_keep,
+        delete_after_days: Optional[int] = None,
+    ):
         """
         identify the audit data and delete them
 
         :param cleanup_threshold: the maximum amount of data.
             cleanup is triggered if the number of entries exceed `cleanup_threshold`.
         :param max_entries_to_keep: the minimum amount of data that should not be deleted
+        :param delete_after_days: Delete entries older than the given number of days (starting from the beginning of the day).
+            Can't be used alongside `cleanup_threshold` or `max_entries_to_keep`.
 
         :return: cleanup_infos - {
             'cleaned': False,
@@ -284,45 +311,62 @@ class SQLJanitor:
             "time_taken": 0,
         }
 
-        start_time = datetime.datetime.now()
+        start_time = datetime.now(timezone.utc)
+
+        if delete_after_days is not None and (
+            cleanup_threshold or max_entries_to_keep
+        ):
+            raise ValueError(
+                "param `delete_after_days` can not be used alongside `cleanup_threshold` and `max_entries_to_keep`"
+            )
 
         total = int(db.session.query(count(AuditTable.id)).scalar())
         cleanup_infos["entries_in_audit"] = total
-        if total > cleanup_threshold:
-            first_id = int(
-                db.session.query(AuditTable.id)
-                .order_by(asc(AuditTable.id))
-                .limit(1)
-                .scalar()
-            )
-            cleanup_infos["first_entry_id"] = first_id
+        first_id = db.session.query(min(AuditTable.id)).scalar()
+        cleanup_infos["first_entry_id"] = first_id
+        last_id = db.session.query(max(AuditTable.id)).scalar()
+        cleanup_infos["last_entry_id"] = last_id
 
-            last_id = int(
-                db.session.query(AuditTable.id)
-                .order_by(desc(AuditTable.id))
-                .limit(1)
-                .scalar()
+        if delete_after_days is not None:
+            start_of_day = datetime(
+                start_time.year,
+                start_time.month,
+                start_time.day,
+                tzinfo=timezone.utc,
             )
-            cleanup_infos["last_entry_id"] = last_id
-
+            cutoff_date = start_of_day - timedelta(days=delete_after_days)
+            cutoff_iso = cutoff_date.isoformat(timespec="milliseconds")
+            # Query for the highest ID that is older than the cutoff date
+            delete_from = (
+                db.session.query(max(AuditTable.id))
+                .filter(AuditTable.timestamp < cutoff_iso)
+                .scalar()
+                or 0
+            )
+        elif total > cleanup_threshold:
             delete_from = last_id - max_entries_to_keep
-            if delete_from > 0:
-                # if export is enabled, we start the export now
-                export_file = self.export_data(delete_from)
-                cleanup_infos["export_filename"] = (
-                    str(export_file) if export_file else None
-                )
+        else:
+            delete_from = 0
 
-                db.session.query(AuditTable).filter(
-                    AuditTable.id <= delete_from
-                ).delete()
+        if delete_from > 0:
+            # if export is enabled, we start the export now
+            export_file = self.export_data(delete_from)
+            cleanup_infos["export_filename"] = (
+                str(export_file) if export_file else None
+            )
 
-                db.session.commit()
+            result = (
+                db.session.query(AuditTable)
+                .filter(AuditTable.id <= delete_from)
+                .delete()
+            )
 
-                cleanup_infos["entries_deleted"] = total - max_entries_to_keep
-                cleanup_infos["cleaned"] = True
+            db.session.commit()
 
-        end_time = datetime.datetime.now()
+            cleanup_infos["entries_deleted"] = result
+            cleanup_infos["cleaned"] = True
+
+        end_time = datetime.now(timezone.utc)
 
         duration = end_time - start_time
         cleanup_infos["time_taken"] = duration.seconds
