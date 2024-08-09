@@ -31,7 +31,11 @@
 
 import json
 import logging
+from unittest.mock import Mock, patch
 
+from flask.testing import FlaskClient
+
+from linotp.model.local_admin_user import LocalAdminResolver
 from linotp.model.reporting import Reporting
 from linotp.tests import TestController
 from linotp.tests.functional.test_reporting import DBSession
@@ -1173,17 +1177,11 @@ class TestAdminController(TestController):
             "realm": "",
         }
 
-        def get_last_audit_entry():
-            response = self.make_audit_request("search")
-            res = response.json
-            assert res["rows"]
-            return res["rows"][-1]["cell"]
-
         # test init
         action = "init"
         self.init_token(params)
 
-        audit_entry = get_last_audit_entry()
+        audit_entry = self.get_last_audit_entry()
         assert f"admin/{action}" == audit_entry[audit_mapping["action"]]
         for key, expected in expected_audit.items():
             actual = audit_entry[audit_mapping[key]]
@@ -1381,7 +1379,7 @@ class TestAdminController(TestController):
                 action=action, params=request_params, content_type=content_type
             )
 
-            audit_entry = get_last_audit_entry()
+            audit_entry = self.get_last_audit_entry()
             assert f"admin/{action}" == audit_entry[audit_mapping["action"]]
             for key, expected in values["expected_audit"].items():
                 actual = audit_entry[audit_mapping[key]]
@@ -1401,12 +1399,77 @@ class TestAdminController(TestController):
                 params=request_params,
                 content_type=content_type,
             )
-            audit_entry = get_last_audit_entry()
+            audit_entry = self.get_last_audit_entry()
             for key, expected in values["expected_audit_faulty"].items():
                 actual = audit_entry[audit_mapping[key]]
                 assert expected == actual, action
 
             self.delete_all_token()
+
+    def test_audit_for_successful_admin_login(
+        self,
+    ) -> None:
+        username = "admin"
+        password = "Test123!"
+
+        local_admin_resoler = LocalAdminResolver(self.app)
+        local_admin_resoler.add_user(username, password)
+
+        client = FlaskClient(self.app)
+        res = client.post(
+            "/admin/login", data=dict(username=username, password=password)
+        )
+
+        audit_entry = self.get_last_audit_entry()
+        assert "admin/login" == audit_entry[4]
+        assert "1" == audit_entry[5]
+        assert username == audit_entry[8]
+        assert "linotp_admins" == audit_entry[9]
+        assert (
+            f"{username}@linotp_admins (LinOTP_local_admins)"
+            in audit_entry[10]
+        )
+
+    def test_audit_for_unsuccessful_admin_login(
+        self,
+    ) -> None:
+        username = "admin"
+        password = "Test123!"
+
+        local_admin_resoler = LocalAdminResolver(self.app)
+        local_admin_resoler.add_user(username, password)
+
+        client = FlaskClient(self.app)
+        res = client.post(
+            "/admin/login",
+            data=dict(username=username, password=password + "WRONG"),
+        )
+
+        audit_entry = self.get_last_audit_entry()
+        assert "admin/login" == audit_entry[4]
+        assert "0" == audit_entry[5]
+        assert username == audit_entry[8]
+        assert "linotp_admins" == audit_entry[9]
+        assert f"{username}@linotp_admins" not in audit_entry[10]
+
+    @patch("linotp.controllers.base.get_jwt")
+    def test_audit_for_successful_admin_logout(
+        self, get_jwt_mock: Mock
+    ) -> None:
+        get_jwt_mock.return_value = {"jti": None, "exp": 1}
+
+        username = "admin"
+
+        res = self._make_authenticated_request(
+            controller="admin", action="logout"
+        )
+
+        audit_entry = self.get_last_audit_entry()
+        assert "admin/logout" == audit_entry[4]
+        assert "1" == audit_entry[5]
+        assert username == audit_entry[8]
+        assert "linotp_admins" == audit_entry[9]
+        assert f"{username}@linotp_admins" in audit_entry[10]
 
     def create_reporting_policy(self, policy_params: dict = None):
         policy_params = policy_params or {}
