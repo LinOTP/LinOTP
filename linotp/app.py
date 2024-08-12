@@ -112,6 +112,8 @@ AVAILABLE_CONTROLLERS = {
     "auditlog:/api/v2/auditlog",
 }
 
+HEALTHCHECK_ENDPOINT = "healthcheck"
+
 
 class ConfigurationError(Exception):
     pass
@@ -1066,7 +1068,9 @@ def create_app(config_name=None, config_extra=None):
         reload_token_classes()
         app.check_license()
 
-    app.add_url_rule("/healthcheck/status", "healthcheck", healthcheck)
+    app.add_url_rule(
+        f"/{HEALTHCHECK_ENDPOINT}/status", HEALTHCHECK_ENDPOINT, healthcheck
+    )
 
     # Add pre request handlers
     app.before_first_request(init_logging_config)
