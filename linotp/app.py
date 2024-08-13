@@ -112,6 +112,8 @@ AVAILABLE_CONTROLLERS = {
     "auditlog:/api/v2/auditlog",
 }
 
+HEALTHCHECK_ENDPOINT = "healthcheck"
+
 
 class ConfigurationError(Exception):
     pass
@@ -403,7 +405,7 @@ class LinOTPApp(Flask):
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
-        if self.is_request_static():
+        if self.exclude_from_before_request_setup():
             return
 
         # we add a unique request id to the request environment
@@ -443,11 +445,17 @@ class LinOTPApp(Flask):
 
         self.create_context(request, request.environ)
 
-    def is_request_static(self):
+    def is_request_static(self) -> bool:
         return request.path.startswith(self.static_url_path)
 
+    def is_healthcheck_request(self) -> bool:
+        return request.path.startswith(f"/{HEALTHCHECK_ENDPOINT}")
+
+    def exclude_from_before_request_setup(self) -> bool:
+        return self.is_request_static() or self.is_healthcheck_request()
+
     def finalise_request(self, exc):
-        if self.is_request_static():
+        if self.exclude_from_before_request_setup():
             return
 
         drop_security_module()
@@ -482,7 +490,7 @@ class LinOTPApp(Flask):
         # probably doing more work here than we need to. Global
         # variables suck.
 
-        if self.is_request_static():
+        if self.exclude_from_before_request_setup():
             return
 
         setup_request_context()
@@ -1066,7 +1074,9 @@ def create_app(config_name=None, config_extra=None):
         reload_token_classes()
         app.check_license()
 
-    app.add_url_rule("/healthcheck/status", "healthcheck", healthcheck)
+    app.add_url_rule(
+        f"/{HEALTHCHECK_ENDPOINT}/status", HEALTHCHECK_ENDPOINT, healthcheck
+    )
 
     # Add pre request handlers
     app.before_first_request(init_logging_config)
