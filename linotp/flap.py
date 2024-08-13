@@ -17,7 +17,7 @@ from linotp.lib.fs_utils import ensure_dir
 
 log = logging.getLogger(__name__)
 
-config = LocalProxy(lambda: flask.g.request_context["config"])
+config = LocalProxy(lambda: flask.current_app.config)
 
 error_document_template = """
     <html>
@@ -86,18 +86,14 @@ class RequestContextProxy(object):
 tmpl_context = RequestContextProxy()
 
 
-def set_config():
+def setup_request_context():
     """
-    Set up config from flask request object
+    Set up global request_context
+    FIXME: get rid of request_context all together
+           or at least initialize it somewhere else
+           to get rid of this method
     """
-    flask.g.request_context = {
-        "config": {  # This must die, die, die!!!
-            "linotp.root": os.path.dirname(os.path.abspath(__file__)),
-        },
-    }
-
-    # We get this from `load_environment()`, and it basically sucks.
-    flask.g.request_context["config"].update(flask.current_app.config)
+    flask.g.request_context = {}
 
 
 def setup_mako(app):

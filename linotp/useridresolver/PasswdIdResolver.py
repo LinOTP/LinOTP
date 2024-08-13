@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 """This module implements the communication interface
-   for resolvin user info to the /etc/passwd user base
+   for resolving user info to the /etc/passwd user base
 
 PasswdIdResolver.IdResolver class
     implements the UserIdResolver for local /etc/passwd lookup
@@ -48,11 +48,12 @@ from passlib.hash import (
     sha512_crypt,
 )
 
-from linotp.lib.type_utils import text
+from linotp.lib.config.util import expand_here
 
 from . import resolver_registry
 from .UserIdResolver import (
     ResolverLoadConfigError,
+    ResParamsType,
     UserIdResolver,
     getResolverClass,
 )
@@ -133,10 +134,7 @@ class IdResolver(UserIdResolver):
         "description": 4,
         "email": 4,
     }
-
-    resolver_parameters: Dict[
-        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
-    ] = {"fileName": (True, None, text), "linotp.root": (False, None, text)}
+    resolver_parameters: ResParamsType = {"fileName": (True, None, str)}
     resolver_parameters.update(UserIdResolver.resolver_parameters)
 
     @classmethod
@@ -600,16 +598,13 @@ class IdResolver(UserIdResolver):
 
         fileName = l_config["fileName"]
 
-        # support for relative file names
-
-        if "%(here)s" in fileName and "linotp.root" in l_config:
-            fileName = fileName.replace("%(here)s", l_config["linotp.root"])
+        fileName = expand_here(fileName)
 
         fileName = os.path.realpath(fileName)
 
         if not os.path.isfile(fileName) or not os.access(fileName, os.R_OK):
             raise ResolverLoadConfigError(
-                "File %r does not exist or is not accesible" % fileName
+                "File %r does not exist or is not accessible" % fileName
             )
         self.fileName = fileName
         self.loadFile()

@@ -34,7 +34,7 @@ from uuid import uuid4
 
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
-from flask_babel import Babel, gettext
+from flask_babel import Babel
 from flask_jwt_extended.exceptions import (
     CSRFError,
     NoAuthorizationError,
@@ -50,7 +50,7 @@ from flask import jsonify, redirect, url_for
 from flask.helpers import get_env
 
 from . import __version__
-from .flap import config, request, set_config, setup_mako
+from .flap import config, request, setup_mako, setup_request_context
 from .flap import tmpl_context as c
 from .lib.audit.base import getAudit
 from .lib.config import getLinotpConfig
@@ -76,10 +76,10 @@ from .lib.tools.flask_jwt_extended_migration import (
     get_jwt_identity,
     verify_jwt_in_request,
 )
-from .lib.user import User, getUserFromRequest
+from .lib.user import User
 from .lib.util import get_client, get_log_level
 from .model import SYS_EXIT_CODE, setup_db
-from .settings import ConfigSchema, _config_schema, configs
+from .settings import ConfigSchema, configs
 from .tokens import reload_classes as reload_token_classes
 
 log = logging.getLogger(__name__)
@@ -111,6 +111,8 @@ AVAILABLE_CONTROLLERS = {
     "resolvers:/api/v2/resolvers",
     "auditlog:/api/v2/auditlog",
 }
+
+HEALTHCHECK_ENDPOINT = "healthcheck"
 
 
 class ConfigurationError(Exception):
@@ -320,30 +322,20 @@ class LinOTPApp(Flask):
             __name__, static_folder="public", static_url_path="/static"
         )
 
-    def _run_setup(self):
+    def setup_resolvers(self):
         """
-        Set up the app and database context for a request. Some of this is
-        intended to be done only once and could be refactored into a
-        before_first_request function
+        Set up the available resolver classes
         """
-
-        l_config = getLinotpConfig()  # SQL-based configuration
-        resolver_setup_done = config.get("resolver_setup_done", False)
-        if resolver_setup_done is False:
-            try:
-                cache_dir = ensure_dir(
-                    self,
-                    "resolver cache",
-                    "CACHE_DIR",
-                    "resolvers",
-                    mode=0o770,
-                )
-                setupResolvers(config=l_config, cache_dir=cache_dir)
-                config["resolver_setup_done"] = True
-            except Exception as exx:
-                config["resolver_setup_done"] = False
-                log.error("Failed to setup resolver: %r", exx)
-                raise exx
+        log.debug("Setting up resolvers")
+        try:
+            cache_dir = ensure_dir(
+                self, "resolver cache", "CACHE_DIR", "resolvers", mode=0o770
+            )
+            setupResolvers(config=getLinotpConfig(), cache_dir=cache_dir)
+            log.debug("Setting up resolvers successful")
+        except Exception as exx:
+            log.error("Failed to setup resolvers: %r", exx)
+            raise exx
 
     def check_license(self):
         """
@@ -413,6 +405,9 @@ class LinOTPApp(Flask):
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
+        if self.exclude_from_before_request_setup():
+            return
+
         # we add a unique request id to the request environment
         # so we can trace individual requests in the logging
         request.environ["REQUEST_ID"] = str(uuid4())
@@ -448,15 +443,22 @@ class LinOTPApp(Flask):
                 e,
             )
 
-        if not self.is_request_static():
-            self.create_context(request, request.environ)
+        self.create_context(request, request.environ)
 
-    def is_request_static(self):
+    def is_request_static(self) -> bool:
         return request.path.startswith(self.static_url_path)
 
+    def is_healthcheck_request(self) -> bool:
+        return request.path.startswith(f"/{HEALTHCHECK_ENDPOINT}")
+
+    def exclude_from_before_request_setup(self) -> bool:
+        return self.is_request_static() or self.is_healthcheck_request()
+
     def finalise_request(self, exc):
-        if not self.is_request_static():
-            drop_security_module()
+        if self.exclude_from_before_request_setup():
+            return
+
+        drop_security_module()
 
         closeResolvers()
 
@@ -488,10 +490,12 @@ class LinOTPApp(Flask):
         # probably doing more work here than we need to. Global
         # variables suck.
 
-        set_config()
+        if self.exclude_from_before_request_setup():
+            return
 
-        if not self.is_request_static():
-            allocate_security_module()
+        setup_request_context()
+
+        allocate_security_module()
 
     def create_context(self, request, environment):
         """
@@ -1061,7 +1065,7 @@ def create_app(config_name=None, config_extra=None):
         setup_db(app)
 
         init_linotp_config(app)
-        set_config()  # ensure `request_context` exists
+        setup_request_context()
 
         init_security_provider()
 
@@ -1070,13 +1074,15 @@ def create_app(config_name=None, config_extra=None):
         reload_token_classes()
         app.check_license()
 
-    app.add_url_rule("/healthcheck/status", "healthcheck", healthcheck)
+    app.add_url_rule(
+        f"/{HEALTHCHECK_ENDPOINT}/status", HEALTHCHECK_ENDPOINT, healthcheck
+    )
 
     # Add pre request handlers
     app.before_first_request(init_logging_config)
     app.before_first_request(app.init_jwt_config)
+    app.before_first_request(app.setup_resolvers)
     app.before_request(app.setup_env)
-    app.before_request(app._run_setup)
     app.before_request(app.start_session)
 
     # Per controller setup and handlers

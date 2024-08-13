@@ -89,7 +89,7 @@ RUN ./translations.sh
 FROM base
 
 HEALTHCHECK --interval=20s --timeout=5s --retries=3 --start-period=60s \
-    CMD curl -sfL http://localhost:5000/ || exit 1
+    CMD curl -sfL http://localhost:5000/healthcheck/status || exit 1
 
 ENV LINOTP_ROOT_DIR=/data \
     LINOTP_CACHE_DIR=/cache

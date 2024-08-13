@@ -124,7 +124,6 @@ class RemoveForbiddenError(Exception):
 
 
 class SystemController(BaseController):
-
     """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server. The SystemController is used to configure the LinOTP
@@ -527,7 +526,7 @@ class SystemController(BaseController):
     @deprecated_methods(["POST"])
     def getRealms(self):
         """
-        returns all realm definitinos as a json result.
+        returns all realm definitions as a json result.
         :params realm: (optional) a realm name
         :return:
             a json result with a list of Realms
@@ -1100,8 +1099,8 @@ class SystemController(BaseController):
         :param name: name of the policy
         :param action: which action may be executed
         :param scope: selfservice
-        :param realm: This polcy holds for this realm
-        :param user: (optional) This polcy binds to this user
+        :param realm: This policy holds for this realm
+        :param user: (optional) This policy binds to this user
         :param time: (optional) on which time does this policy hold
         :param client: (optional) for which requesting client this should be:
         :return:
@@ -1443,7 +1442,7 @@ class SystemController(BaseController):
                 )
                 return sendErrorMethod("Error loading policy. File is empty!")
 
-            # the contents of filestring needs to be parsed and
+            # the contents of fileString needs to be parsed and
             # stored as policies.
             config = fileString.split("\n")
             policies = ConfigObj(config)
@@ -1483,9 +1482,9 @@ class SystemController(BaseController):
         :return:
             a json result like this:
               value : { "allowed" : "true",
-                        "policy" : <Name der Policy, die das erlaubt hat> }
+                        "policy" : <Name of the policy that allowed this action> }
               value : { "allowed" : "false",
-                         "info" : <sowas wie die Fehlermeldung> }
+                         "info" : <e.g. an error message> }
 
         :raises Exception:
             if an error occurs an exception is serialized and returned
@@ -1697,7 +1696,7 @@ class SystemController(BaseController):
         try:
             log.info("[delPolicy] deleting policy: %r", self.request_params)
 
-            # support the ignor of policy impact check
+            # support the ignore of policy impact check
             enforce = (
                 self.request_params.get("enforce", "false").lower() == "true"
             )
@@ -1925,9 +1924,9 @@ class SystemController(BaseController):
         hook to load a support subscription file
 
         receives the data with a form post file upload
-        and installes it after license verification
+        and installs it after license verification
 
-        :param format: the response format, either xml/htmll or jsom
+        :param format: the response format, either xml/html or json
 
         :return:
             a json result with a boolean status and request result
@@ -1989,7 +1988,7 @@ class SystemController(BaseController):
         :param config: the configuration for this provider
         :param timeout: the timeout
 
-        :return: jsom document with value True or False with message in detail
+        :return: json document with value True or False with message in detail
 
         :raises Exception:
             if an error occurs an exception is serialized and returned
@@ -2084,9 +2083,11 @@ class SystemController(BaseController):
                 provider_type, provider_name, decrypted=True
             )
             res = {
-                name: info
-                if "Managed" not in info
-                else {**info, "Managed": True}
+                name: (
+                    info
+                    if "Managed" not in info
+                    else {**info, "Managed": True}
+                )
                 for name, info in providers.items()
             }
             g.audit["success"] = len(res) > 0

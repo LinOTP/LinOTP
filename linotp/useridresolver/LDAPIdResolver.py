@@ -57,11 +57,12 @@ from flask import current_app
 from flask.cli import with_appcontext
 
 from linotp.lib.resources import ResourceScheduler, string_to_list
-from linotp.lib.type_utils import boolean, encrypted_data, text
+from linotp.lib.type_utils import boolean, encrypted_data
 from linotp.useridresolver import resolver_registry
 from linotp.useridresolver.UserIdResolver import (
     ResolverLoadConfigError,
     ResolverNotAvailable,
+    ResParamsType,
     UserIdResolver,
 )
 
@@ -154,23 +155,21 @@ class IdResolver(UserIdResolver):
     crypted_parameters = ["BINDPW"]
     primary_key = "UIDTYPE"
 
-    resolver_parameters: Dict[
-        str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
-    ] = {
-        "LDAPURI": (True, None, text),
-        "LDAPBASE": (True, None, text),
-        "BINDDN": (True, None, text),
+    resolver_parameters: ResParamsType = {
+        "LDAPURI": (True, None, str),
+        "LDAPBASE": (True, None, str),
+        "BINDDN": (True, None, str),
         "BINDPW": (True, None, encrypted_data),
-        "LOGINNAMEATTRIBUTE": (True, None, text),
-        "LDAPFILTER": (True, None, text),
-        "LDAPSEARCHFILTER": (True, None, text),
-        "USERINFO": (True, True, text),
-        "UIDTYPE": (False, DEFAULT_UID_TYPE, text),
+        "LOGINNAMEATTRIBUTE": (True, None, str),
+        "LDAPFILTER": (True, None, str),
+        "LDAPSEARCHFILTER": (True, None, str),
+        "USERINFO": (True, True, str),
+        "UIDTYPE": (False, DEFAULT_UID_TYPE, str),
         "EnforceTLS": (False, True, boolean),
         "only_trusted_certs": (False, True, boolean),
         "NOREFERRALS": (False, False, boolean),
         "PROXY": (False, False, boolean),
-        "TIMEOUT": (False, TIMEOUT_NO_LIMIT, text),
+        "TIMEOUT": (False, TIMEOUT_NO_LIMIT, str),
         "SIZELIMIT": (False, DEFAULT_SIZELIMIT, int),
     }
 
