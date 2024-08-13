@@ -106,6 +106,9 @@ class ManageController(BaseController):
                 "linotpadmin.user" in config
                 and "linotpadmin.password" in config
             )
+            c.app_config_trusted_proxies = current_app.config[
+                "TRUSTED_PROXIES"
+            ]
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)

@@ -601,6 +601,17 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
+            "TRUSTED_PROXIES",
+            list,
+            convert=lambda s: s.split(",") if s else [],
+            default=[],
+            help=(
+                "Comma-separated list of IP host and network addresses"
+                " for proxies which are trusted to provide reliable "
+                "`X-Forwarded-For` headers."
+            ),
+        ),
+        ConfigItem(
             "MAINTENANCE_VERIFY_CLIENT_ENV_VAR",
             str,
             default="",

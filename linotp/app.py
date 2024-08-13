@@ -78,6 +78,7 @@ from .lib.tools.flask_jwt_extended_migration import (
 )
 from .lib.user import User
 from .lib.util import get_client, get_log_level
+from .middlewares.trusted_proxy_handler import TrustedProxyHandler
 from .model import SYS_EXIT_CODE, setup_db
 from .settings import ConfigSchema, configs
 from .tokens import reload_classes as reload_token_classes
@@ -1154,6 +1155,11 @@ def create_app(config_name=None, config_extra=None):
                 sort_by=["cumulative"],
             )
             log.info("PROFILE is enabled (do not use this in production!)")
+
+    trusted_proxies = app.config["TRUSTED_PROXIES"]
+
+    if trusted_proxies:
+        app.wsgi_app = TrustedProxyHandler(app.wsgi_app, trusted_proxies)
 
     if app.cli_cmd in ["run", ""]:
         # we also do this when `app.cli_cmd=""`

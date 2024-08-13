@@ -202,7 +202,7 @@ def remove_session_from_param(param):
 # Client overwriting stuff
 
 
-def _is_addr_in_network(addr, network):
+def is_addr_in_network(addr, network):
     """
     helper method to check if a client is in the proxy network range
 
@@ -234,30 +234,67 @@ def _get_client_from_request(request=None):
         "REMOTE_ADDR", request.environ.get("HTTP_REMOTE_ADDR", None)
     )
 
-    x_forwarded_for = boolean(
-        config.get(
-            "client.X_FORWARDED_FOR",
-            getFromConfig("client.X_FORWARDED_FOR", "False"),
-        )
-    )
+    if not is_TRUSTED_PROXIES_active():
+        if is_x_forwarded_for_active():
+            # check, if the request passed by a qualified proxy
 
-    if x_forwarded_for:
-        # check, if the request passed by a qualified proxy
+            remote_addr = client
+            x_forwarded_proxies = config.get(
+                "client.FORWARDED_PROXY",
+                getFromConfig("client.FORWARDED_PROXY", ""),
+            ).split(",")
 
-        remote_addr = client
-        x_forwarded_proxies = config.get(
-            "client.FORWARDED_PROXY",
-            getFromConfig("client.FORWARDED_PROXY", ""),
-        ).split(",")
+            for x_forwarded_proxy in x_forwarded_proxies:
+                if is_addr_in_network(remote_addr, x_forwarded_proxy):
+                    ref_clients = request.environ.get(
+                        "HTTP_X_FORWARDED_FOR", ""
+                    )
+                    for ref_client in ref_clients.split(","):
+                        # the first ip in the list is the originator
+                        client = ref_client.strip()
+                        break
 
-        for x_forwarded_proxy in x_forwarded_proxies:
-            if _is_addr_in_network(remote_addr, x_forwarded_proxy):
-                ref_clients = request.environ.get("HTTP_X_FORWARDED_FOR", "")
-                for ref_client in ref_clients.split(","):
-                    # the first ip in the list is the originator
-                    client = ref_client.strip()
-                    break
+        if is_http_forwarded_active():
+            # check, if the request passed by a qaulified proxy
 
+            remote_addr = client
+            forwarded_proxies = config.get(
+                "client.FORWARDED_PROXY",
+                getFromConfig("client.FORWARDED_PROXY", "").split(","),
+            )
+
+            for forwarded_proxy in forwarded_proxies:
+                if is_addr_in_network(remote_addr, forwarded_proxy):
+                    # example is:
+                    # "Forwarded: for=192.0.2.43, for=198.51.100.17"
+
+                    entries = request.environ.get(
+                        "HTTP_FORWARDED", request.environ.get("Forwarded", "")
+                    )
+
+                    forwarded_set = []
+                    entries = entries.replace("Forwarded:", "")
+                    for entry in entries.split(","):
+                        if entry.lower().startswith("for"):
+                            value = entry.split("=")[1]
+                            value = value.split(";")[0].strip()
+                            if "]" in value:
+                                ipvalue = value.split("]")[0].split("[")[1]
+                            elif ":" in value:
+                                ipvalue = value.split(":")[0]
+                            else:
+                                ipvalue = value
+                            forwarded_set.append(ipvalue.strip('"'))
+
+                    for originator in forwarded_set:
+                        client = originator
+                        break
+
+    log.debug("got the client %s", client)
+    return client
+
+
+def is_http_forwarded_active():
     # "Forwarded" Header
     #
     # In 2014 RFC 7239 standardized a new Forwarded header with similar purpose
@@ -266,50 +303,28 @@ def _get_client_from_request(request=None):
     #
     # Forwarded: for=192.0.2.60; proto=http; by=203.0.113.43
 
-    forwarded = boolean(
+    return boolean(
         config.get(
             "client.FORWARDED", getFromConfig("client.FORWARDED", "false")
         )
     )
 
-    if forwarded:
-        # check, if the request passed by a qaulified proxy
 
-        remote_addr = client
-        forwarded_proxies = config.get(
-            "client.FORWARDED_PROXY",
-            getFromConfig("client.FORWARDED_PROXY", "").split(","),
+def is_x_forwarded_for_active():
+    x_forwarded_for = boolean(
+        config.get(
+            "client.X_FORWARDED_FOR",
+            getFromConfig("client.X_FORWARDED_FOR", "False"),
         )
+    )
+    return x_forwarded_for
 
-        for forwarded_proxy in forwarded_proxies:
-            if _is_addr_in_network(remote_addr, forwarded_proxy):
-                # example is:
-                # "Forwarded: for=192.0.2.43, for=198.51.100.17"
 
-                entries = request.environ.get(
-                    "HTTP_FORWARDED", request.environ.get("Forwarded", "")
-                )
-
-                forwarded_set = []
-                entries = entries.replace("Forwarded:", "")
-                for entry in entries.split(","):
-                    if entry.lower().startswith("for"):
-                        value = entry.split("=")[1]
-                        value = value.split(";")[0].strip()
-                        if "]" in value:
-                            ipvalue = value.split("]")[0].split("[")[1]
-                        elif ":" in value:
-                            ipvalue = value.split(":")[0]
-                        else:
-                            ipvalue = value
-                        forwarded_set.append(ipvalue.strip('"'))
-
-                for originator in forwarded_set:
-                    client = originator
-                    break
-
-    log.debug("got the client %s", client)
-    return client
+def is_TRUSTED_PROXIES_active():
+    trusted_proxies_settings = config.get("TRUSTED_PROXIES", [])
+    if trusted_proxies_settings:
+        return True
+    return False
 
 
 def get_client(request):

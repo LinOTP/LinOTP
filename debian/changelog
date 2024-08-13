@@ -10,16 +10,18 @@ linotp (3.4~dev0-1) UNRELEASED; urgency=low
       * `--max-entries-to-keep` specifies the number of entries to keep in the db. Defaults to 5000.
       * `--cleanup-threshold`: When the number of entries exceeds this threshold, the cleanup process is initiated.
         Defaults to the value of `--max-entries-to-keep`.
-    
+
   Features:
+  * TRUSTED_PROXIES config variable is added, through which the requests from these proxies will get their
+    X_FORWARDED_FOR header removed. This config will override the trusted forwarding proxy configuration
+    in the manage ui->system configuration.
   * add option `--delete-after-days` to `linotp audit cleanup`:
     Delete entries older than the given number of days (starting from the beginning of the day).
     Can't be used alongside `--max-entries-to-keep` or `--cleanup-threshold`!
   * audit log entries of `/admin/login` and `admin/logout` now state `success`, `user`, `realm` and `administrator` correctly
-  
+
   Fix:
   * wrongly aligned resize bar on Manage UI flexigrid tables when browser is zoomed or scaled
-
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 
