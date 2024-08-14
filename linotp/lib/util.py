@@ -26,17 +26,12 @@
 #
 """ contains utility functions """
 
-import binascii
 import copy
 import logging
 import re
 import secrets
 import string
 from typing import Any, Dict
-
-import netaddr
-
-from flask import abort
 
 from linotp import __api__ as linotp_api
 from linotp import __copyright__ as linotp_copyright
