@@ -222,7 +222,16 @@ class TestGetClientCase(unittest.TestCase):
         client = _get_client_from_request(request)
         assert client == "11.22.33.44"
 
-        return
+        # 4 missing/empty X_FORWARDED_FOR header of a FORWARDED_PROXY
+        LinConfig = {
+            "client.X_FORWARDED_FOR": "true",
+            "client.FORWARDED_PROXY": "123.234.123.234",
+        }
+        environ = {"REMOTE_ADDR": "123.234.123.234"}
+        request = Request(environ)
+
+        client = _get_client_from_request(request)
+        assert client == "123.234.123.234"
 
     @patch("linotp.lib.util.getFromConfig", mocked_getFromConfig)
     @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
@@ -267,6 +276,17 @@ class TestGetClientCase(unittest.TestCase):
             client = _get_client_from_request(request)
 
             assert client == forward_test_string[1], client
+
+        # missing/empty FORWARDED header of a FORWARDED_PROXY
+        LinConfig = {
+            "client.FORWARDED": "true",
+            "client.FORWARDED_PROXY": "123.234.123.234",
+        }
+        environ = {"REMOTE_ADDR": "123.234.123.234"}
+        request = Request(environ)
+
+        client = _get_client_from_request(request)
+        assert client == "123.234.123.234", client
 
     @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
     @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
