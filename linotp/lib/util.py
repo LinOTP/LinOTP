@@ -246,12 +246,15 @@ def _get_client_from_request(request=None):
 
             for x_forwarded_proxy in x_forwarded_proxies:
                 if is_addr_in_network(remote_addr, x_forwarded_proxy):
-                    ref_clients = request.environ.get(
-                        "HTTP_X_FORWARDED_FOR", ""
-                    )
-                    for ref_client in ref_clients.split(","):
+                    xff: str = request.environ.get("HTTP_X_FORWARDED_FOR", "")
+                    ref_clients = [
+                        client.strip()
+                        for client in xff.split(",")
+                        if client.strip()
+                    ]
+                    if ref_clients:
                         # the first ip in the list is the originator
-                        client = ref_client.strip()
+                        client = ref_clients[0]
                         break
 
         if is_http_forwarded_active():
