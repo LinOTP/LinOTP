@@ -423,14 +423,15 @@ def add_dynamic_selfservice_enrollment(config, actions):
                 )
                 # # check if we have a policy in the token definition for the enroll
                 if (
-                    "enroll" in selfservice
+                    selfservice is not None
+                    and "enroll" in selfservice
                     and "enroll" + tok.upper() in actions
                 ):
                     _add_to_dynanmic_actions("enroll")
 
                 # # check if there are other selfserive policy actions
                 policy = tclass_object.getClassInfo("policy", ret=None)
-                if "selfservice" in policy:
+                if policy is not None and "selfservice" in policy:
                     selfserv_policies = list(policy.get("selfservice").keys())
                     for action in actions:
                         if action in selfserv_policies:
