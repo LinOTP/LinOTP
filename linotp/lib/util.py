@@ -26,17 +26,12 @@
 #
 """ contains utility functions """
 
-import binascii
 import copy
 import logging
 import re
 import secrets
 import string
 from typing import Any, Dict
-
-import netaddr
-
-from flask import abort
 
 from linotp import __api__ as linotp_api
 from linotp import __copyright__ as linotp_copyright
@@ -246,16 +241,19 @@ def _get_client_from_request(request=None):
 
             for x_forwarded_proxy in x_forwarded_proxies:
                 if is_addr_in_network(remote_addr, x_forwarded_proxy):
-                    ref_clients = request.environ.get(
-                        "HTTP_X_FORWARDED_FOR", ""
-                    )
-                    for ref_client in ref_clients.split(","):
+                    xff: str = request.environ.get("HTTP_X_FORWARDED_FOR", "")
+                    ref_clients = [
+                        client.strip()
+                        for client in xff.split(",")
+                        if client.strip()
+                    ]
+                    if ref_clients:
                         # the first ip in the list is the originator
-                        client = ref_client.strip()
+                        client = ref_clients[0]
                         break
 
         if is_http_forwarded_active():
-            # check, if the request passed by a qaulified proxy
+            # Check if the request passed through a qualified proxy
 
             remote_addr = client
             forwarded_proxies = config.get(
@@ -264,31 +262,34 @@ def _get_client_from_request(request=None):
             )
 
             for forwarded_proxy in forwarded_proxies:
-                if is_addr_in_network(remote_addr, forwarded_proxy):
-                    # example is:
-                    # "Forwarded: for=192.0.2.43, for=198.51.100.17"
+                if not is_addr_in_network(remote_addr, forwarded_proxy):
+                    continue
+                # Example: "Forwarded: for=192.0.2.43, for=198.51.100.17"
+                entries: str = request.environ.get(
+                    "HTTP_FORWARDED", request.environ.get("Forwarded", "")
+                )
+                entries = [
+                    entry.strip()
+                    for entry in entries.replace("Forwarded:", "").split(",")
+                    if entry.strip()
+                ]
 
-                    entries = request.environ.get(
-                        "HTTP_FORWARDED", request.environ.get("Forwarded", "")
-                    )
-
-                    forwarded_set = []
-                    entries = entries.replace("Forwarded:", "")
-                    for entry in entries.split(","):
-                        if entry.lower().startswith("for"):
-                            value = entry.split("=")[1]
-                            value = value.split(";")[0].strip()
-                            if "]" in value:
-                                ipvalue = value.split("]")[0].split("[")[1]
-                            elif ":" in value:
-                                ipvalue = value.split(":")[0]
-                            else:
-                                ipvalue = value
-                            forwarded_set.append(ipvalue.strip('"'))
-
-                    for originator in forwarded_set:
-                        client = originator
+                ipvalue = None
+                for entry in entries:
+                    if entry.lower().startswith("for"):
+                        value = entry.split("=")[1].split(";")[0].strip()
+                        if "]" in value:
+                            ipvalue = value.split("]")[0].split("[")[1]
+                        elif ":" in value:
+                            ipvalue = value.split(":")[0]
+                        else:
+                            ipvalue = value
+                        ipvalue = ipvalue.strip('""')
                         break
+
+                if ipvalue is not None:
+                    client = ipvalue
+                    break
 
     log.debug("got the client %s", client)
     return client

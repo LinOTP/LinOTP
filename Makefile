@@ -549,7 +549,7 @@ requirements-all.txt: setup.py
 
 requirements-dev.txt: setup.py
 	pip-compile \
-	--output-file requirements-dev.txt
+	--output-file requirements-dev.txt \
 	--extra develop
 
 requirements-prod.txt: setup.py
