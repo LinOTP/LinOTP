@@ -689,18 +689,20 @@ class TimeHmacTokenClass(HmacTokenClass):
         secObj = self._get_secret_object()
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
+        hashlib = self.getHashlib(self.hashlibStr)
         timeStepping = int(self.getFromTokenInfo("timeStep", 30))
         shift = int(self.getFromTokenInfo("timeShift", 0))
 
         try:
-            window = int(self.token.LinOtpSyncWindow) * timeStepping
+            counterWindow = int(self.token.LinOtpSyncWindow)
         except BaseException:
-            window = 10 * timeStepping
+            counterWindow = 10
+        timeWindow = counterWindow * timeStepping
 
         log.debug(
             "[resync] timestep: %r, syncWindow: %r, timeShift: %r",
             timeStepping,
-            window,
+            timeWindow,
             shift,
         )
 
@@ -716,26 +718,18 @@ class TimeHmacTokenClass(HmacTokenClass):
         log.debug("[resync] tokenCounter: %r", oCount)
         log.debug(
             "[resync] now checking window %s, timeStepping %s",
-            window,
+            timeWindow,
             timeStepping,
         )
         # check 2nd value
-        hmac2Otp = HmacOtp(
-            secObj, counter, otplen, self.getHashlib(self.hashlibStr)
-        )
+        hmac2Otp = HmacOtp(secObj, counter, otplen, hashlib)
         log.debug("[resync] %s in otpkey: %s ", otp2, secObj)
-        res2 = hmac2Otp.checkOtp(
-            otp2, int(window // timeStepping), symetric=True
-        )  # TEST -remove the 10
+        res2 = hmac2Otp.checkOtp(otp2, counterWindow, symetric=True)
         log.debug("[resync] res 2: %r", res2)
         # check 1st value
-        hmac2Otp = HmacOtp(
-            secObj, counter - 1, otplen, self.getHashlib(self.hashlibStr)
-        )
+        hmac2Otp = HmacOtp(secObj, counter - 1, otplen, hashlib)
         log.debug("[resync] %s in otpkey: %s ", otp1, secObj)
-        res1 = hmac2Otp.checkOtp(
-            otp1, int(window // timeStepping), symetric=True
-        )  # TEST -remove the 10
+        res1 = hmac2Otp.checkOtp(otp1, counterWindow, symetric=True)
         log.debug("[resync] res 1: %r", res1)
 
         if res1 < oCount:
