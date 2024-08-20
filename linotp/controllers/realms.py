@@ -3,6 +3,7 @@ import logging
 from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController, JWTMixin
+from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult, sendResultIterator
@@ -56,6 +57,9 @@ class RealmsController(BaseController, JWTMixin):
         :param response: the previously created response - for modification
         :return: return the response
         """
+
+        action = request_context["action"]
+
         try:
             g.audit["administrator"] = getUserFromRequest()
 
@@ -64,7 +68,7 @@ class RealmsController(BaseController, JWTMixin):
             return response
 
         except Exception as exx:
-            log.error("[__after__] unable to create a session cookie: %r", exx)
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx, context="after")
 

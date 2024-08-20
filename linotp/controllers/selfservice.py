@@ -242,12 +242,12 @@ class SelfserviceController(BaseController):
 
         except (Unauthorized, Forbidden) as acc:
             # the exception, when an abort() is called if forwarded
-            log.info("[__before__::%r] webob.exception %r", action, acc)
+            log.info("[__before__::%r] auth exception %r", action, acc)
             db.session.rollback()
             raise acc
 
         except Exception as exx:
-            log.error("[__before__] failed with error: %r", exx)
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx, context="before")
 

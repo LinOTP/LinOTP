@@ -80,11 +80,6 @@ class ToolsController(BaseController):
         try:
             checkToolsAuthorisation(action, params)
 
-        except PolicyException as exx:
-            log.error("policy failed %r", exx)
-            db.session.rollback()
-            return sendError(exx, context="before")
-
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
@@ -99,6 +94,8 @@ class ToolsController(BaseController):
         :return: return the response
         """
 
+        action = request_context["action"]
+
         try:
             # finally create the audit entry
             current_app.audit_obj.log(g.audit)
@@ -106,7 +103,7 @@ class ToolsController(BaseController):
             return response
 
         except Exception as exx:
-            log.error(exx)
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx, context="after")
 

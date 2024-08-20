@@ -160,7 +160,7 @@ class AdminController(BaseController, JWTMixin):
             return response
 
         except Exception as exx:
-            log.error("[__after__] unable to create a session cookie: %r", exx)
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx, context="after")
 

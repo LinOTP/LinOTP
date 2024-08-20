@@ -408,10 +408,10 @@ class UserserviceController(BaseController):
 
             return response
 
-        except Exception as acc:
-            # the exception, when an abort() is called if forwarded
-            log.error("[__after__::%r] webob.exception %r", action, acc)
-            return sendError(acc, context="__after__")
+        except Exception as exx:
+            log.error("[__after__::%r] exception %r", action, exx)
+            db.session.rollback()
+            return sendError(exx, context="after")
 
     def _identify_user(self, params):
         """

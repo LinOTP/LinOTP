@@ -154,11 +154,6 @@ class SystemController(BaseController):
                 "isSupportValid",
             ]:
                 checkPolicyPre("system", action)
-        except PolicyException as pex:
-            log.error("[__before__::%r] policy exception %r", action, pex)
-            db.session.rollback()
-            return sendError(pex, context="before")
-
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
@@ -173,6 +168,8 @@ class SystemController(BaseController):
         :return: return the response
         """
 
+        action = request_context["action"]
+
         try:
             g.audit["administrator"] = getUserFromRequest()
             current_app.audit_obj.log(g.audit)
@@ -180,7 +177,7 @@ class SystemController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__] exception %r", exx)
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx, context="after")
 

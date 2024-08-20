@@ -72,7 +72,7 @@ class AuthController(BaseController):
             c.licenseinfo = get_copyright_info()
 
         except Exception as exx:
-            log.error("[__before__::%r]", action)
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx, context="before")
 

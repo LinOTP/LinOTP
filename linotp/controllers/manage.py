@@ -115,9 +115,6 @@ class ManageController(BaseController):
             db.session.rollback()
             return sendError(exx, context="before")
 
-        finally:
-            log.debug("[__before__::%r] done", action)
-
     @staticmethod
     def __after__(response):
         """

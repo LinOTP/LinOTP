@@ -85,10 +85,10 @@ class ReportingController(BaseController):
 
         try:
             checkAuthorisation(scope="reporting.access", method=action)
-        except Exception as exception:
-            log.error(exception)
+        except Exception as exx:
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exception, context="before")
+            return sendError(exx, context="before")
 
     @staticmethod
     def __after__(response):
@@ -99,6 +99,8 @@ class ReportingController(BaseController):
         :return: return the response
         """
 
+        action = request_context["action"]
+
         try:
             g.audit["administrator"] = getUserFromRequest()
 
@@ -106,10 +108,10 @@ class ReportingController(BaseController):
             db.session.commit()  # FIXME: may not be needed
             return response
 
-        except Exception as exception:
-            log.error(exception)
+        except Exception as exx:
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exception, context="after")
+            return sendError(exx, context="after")
 
     @staticmethod
     def _match_allowed_realms(requested_realms: List[str]):

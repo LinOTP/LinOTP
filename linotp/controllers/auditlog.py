@@ -65,6 +65,9 @@ class AuditlogController(BaseController, JWTMixin):
         :param response: the previously created response - for modification
         :return: return the response
         """
+
+        action = request_context["action"]
+
         try:
             g.audit["administrator"] = getUserFromRequest()
 
@@ -73,7 +76,7 @@ class AuditlogController(BaseController, JWTMixin):
             return response
 
         except Exception as exx:
-            log.error("[__after__] unable to create a session cookie: %r", exx)
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx, context="after")
 
