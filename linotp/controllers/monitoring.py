@@ -33,7 +33,6 @@ import logging
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController
-from linotp.flap import config, request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context

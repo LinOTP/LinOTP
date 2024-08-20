@@ -38,14 +38,14 @@ from werkzeug.datastructures import FileStorage
 from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController, JWTMixin, methods
-from linotp.flap import config, request
+from linotp.flap import request
 from linotp.lib import deprecated_methods
 from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.challenges import Challenges
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError, TokenAdminError
 from linotp.lib.ImportOTP.oath import parseOATHcsv
-from linotp.lib.ImportOTP.safenet import ImportException, parseSafeNetXML
+from linotp.lib.ImportOTP.safenet import parseSafeNetXML
 from linotp.lib.ImportOTP.yubico import parseYubicoCSV
 from linotp.lib.policy import (
     PolicyException,
@@ -53,7 +53,7 @@ from linotp.lib.policy import (
     checkPolicyPre,
     getOTPPINEncrypt,
 )
-from linotp.lib.realm import getDefaultRealm, getRealms
+from linotp.lib.realm import getRealms
 from linotp.lib.reply import (
     sendCSVResult,
     sendError,
@@ -64,17 +64,12 @@ from linotp.lib.reply import (
     sendXMLResult,
 )
 from linotp.lib.reporting import token_reporting
-from linotp.lib.resolver import (
-    get_resolver_class,
-    getResolverInfo,
-    getResolverObject,
-)
+from linotp.lib.resolver import get_resolver_class, getResolverInfo
 from linotp.lib.token import (
     TokenHandler,
     get_token,
     get_tokens,
     getTokenRealms,
-    getTokenType,
     resetToken,
     setPin,
     setPinSo,
@@ -99,7 +94,6 @@ log = logging.getLogger(__name__)
 
 
 class AdminController(BaseController, JWTMixin):
-
     """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server.

@@ -37,8 +37,6 @@ from flask import current_app, g
 
 from linotp.controllers.base import BaseController, methods
 from linotp.flap import request
-from linotp.flap import tmpl_context as c
-from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
 from linotp.lib.policy import (
@@ -46,7 +44,6 @@ from linotp.lib.policy import (
     checkPolicyPre,
     checkToolsAuthorisation,
 )
-from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.resolver import DeleteForbiddenError, getResolverList
 from linotp.lib.tools.import_user import (
@@ -60,7 +57,7 @@ from linotp.lib.tools.import_user.SQLImportHandler import (
 )
 from linotp.lib.tools.set_password import DataBaseContext, SetPasswordHandler
 from linotp.lib.type_utils import boolean
-from linotp.lib.user import getUserFromRequest, setRealm
+from linotp.lib.user import getUserFromRequest
 from linotp.model import db
 
 log = logging.getLogger(__name__)

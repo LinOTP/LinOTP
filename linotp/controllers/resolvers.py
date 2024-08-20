@@ -4,7 +4,6 @@ from math import ceil
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController, JWTMixin
-from linotp.flap import request
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
@@ -12,7 +11,7 @@ from linotp.lib.resolver import get_resolver, get_resolvers
 from linotp.lib.user import User as RealmUser
 from linotp.lib.user import getUserFromRequest
 from linotp.model import db
-from linotp.model.resolver import Resolver, ResolverType, User
+from linotp.model.resolver import Resolver, User
 
 log = logging.getLogger(__name__)
 

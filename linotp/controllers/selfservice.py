@@ -30,7 +30,6 @@ selfservice controller - This is the controller for the self service interface,
 
 """
 import base64
-import json
 import logging
 import os
 
@@ -54,7 +53,6 @@ from linotp.lib.policy.action import get_selfservice_actions
 from linotp.lib.realm import getDefaultRealm, getRealms
 from linotp.lib.reply import sendError
 from linotp.lib.selfservice import get_imprint
-from linotp.lib.token import getTokenType
 from linotp.lib.user import getRealmBox
 from linotp.lib.userservice import (
     add_dynamic_selfservice_enrollment,

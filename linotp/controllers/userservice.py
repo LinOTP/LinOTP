@@ -91,7 +91,6 @@ from linotp.lib.support import LicenseException
 from linotp.lib.token import (
     TokenHandler,
     get_multi_otp,
-    get_raw_tokens,
     get_tokens,
     getTokenRealms,
     getTokenType,
@@ -120,7 +119,6 @@ from linotp.lib.userservice import (
 )
 from linotp.lib.util import generate_otpkey, get_client
 from linotp.model import db
-from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 

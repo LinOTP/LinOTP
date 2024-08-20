@@ -36,7 +36,7 @@ import os
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
 
-from flask import current_app, g, redirect, url_for
+from flask import current_app, g
 
 import linotp
 from linotp.controllers.base import BaseController, jwt_exempt, methods

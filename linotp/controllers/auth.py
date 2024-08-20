@@ -34,7 +34,6 @@ import logging
 from linotp.controllers.base import BaseController, add_hyphenated_url
 from linotp.flap import render_mako as render
 from linotp.flap import tmpl_context as c
-from linotp.lib.config import getLinotpConfig
 from linotp.lib.context import request_context
 from linotp.lib.reply import sendError
 from linotp.lib.util import get_copyright_info, get_version
