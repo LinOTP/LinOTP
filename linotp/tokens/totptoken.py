@@ -717,14 +717,17 @@ class TimeHmacTokenClass(HmacTokenClass):
         hmac2Otp = HmacOtp(secObj, counter_T0, otplen, hashlib)
         res2 = hmac2Otp.checkOtp(otp2, counter_window, symetric=True)
         log.debug("[resync] counter for given OTP: %r", res2)
+        if res2 == -1:
+            log.debug("[resync] no OTP match in the checked window.")
 
         log.debug("[resync] checking otp1: %s", otp1)
         hmac2Otp = HmacOtp(secObj, counter_T0 - 1, otplen, hashlib)
         res1 = hmac2Otp.checkOtp(otp1, counter_window, symetric=True)
         log.debug("[resync] counter for given OTP: %r", res1)
+        if res1 == -1:
+            log.debug("[resync] no OTP match in the checked window.")
 
-        if res1 < oCount:
-            # A previous OTP value was used again!
+        if res1 != -1 and res1 < counter_token:
             log.warning(
                 "[resync] a previous OTP value was used again! "
                 "current token counter: %i, presented counter: %i",
