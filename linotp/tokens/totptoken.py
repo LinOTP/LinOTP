@@ -29,7 +29,7 @@
 import datetime
 import logging
 import time
-from typing import Any, Union
+from typing import Union
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
@@ -689,61 +689,49 @@ class TimeHmacTokenClass(HmacTokenClass):
         secObj = self._get_secret_object()
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
-        timeStepping = int(self.getFromTokenInfo("timeStep", 30))
-        shift = int(self.getFromTokenInfo("timeShift", 0))
+        hashlib = self.getHashlib(self.hashlibStr)
+        time_step = int(self.getFromTokenInfo("timeStep", 30))
+        time_shift = int(self.getFromTokenInfo("timeShift", 0))
 
         try:
-            window = int(self.token.LinOtpSyncWindow) * timeStepping
+            counter_window = int(self.token.LinOtpSyncWindow)
         except BaseException:
-            window = 10 * timeStepping
+            counter_window = 10
+        time_window = counter_window * time_step
+
+        T0 = time.time() + time_shift
+        counter_T0 = int(T0 // time_step)
+        counter_token = self.getOtpCount()
+
+        log.debug("[resync] current time T0: %i, counter: %i", T0, counter_T0)
+        log.debug("[resync] current token counter: %r", counter_token)
 
         log.debug(
-            "[resync] timestep: %r, syncWindow: %r, timeShift: %r",
-            timeStepping,
-            window,
-            shift,
+            "[resync] checking time_window: %s, time_step: %s, current token time_shift: %s",
+            time_window,
+            time_step,
+            time_shift,
         )
 
-        T0 = time.time() + shift
+        log.debug("[resync] checking otp2: %s", otp2)
+        hmac2Otp = HmacOtp(secObj, counter_T0, otplen, hashlib)
+        res2 = hmac2Otp.checkOtp(otp2, counter_window, symetric=True)
+        log.debug("[resync] counter for given OTP: %r", res2)
+        if res2 == -1:
+            log.debug("[resync] no OTP match in the checked window.")
 
-        log.debug("[resync] T0 : %i", T0)
-        # T = (Current Unix time - T0) / timeStepping
-        counter = int(T0 // timeStepping)
-        log.debug("[resync] counter (current time): %i", counter)
+        log.debug("[resync] checking otp1: %s", otp1)
+        hmac2Otp = HmacOtp(secObj, counter_T0 - 1, otplen, hashlib)
+        res1 = hmac2Otp.checkOtp(otp1, counter_window, symetric=True)
+        log.debug("[resync] counter for given OTP: %r", res1)
+        if res1 == -1:
+            log.debug("[resync] no OTP match in the checked window.")
 
-        oCount = self.getOtpCount()
-
-        log.debug("[resync] tokenCounter: %r", oCount)
-        log.debug(
-            "[resync] now checking window %s, timeStepping %s",
-            window,
-            timeStepping,
-        )
-        # check 2nd value
-        hmac2Otp = HmacOtp(
-            secObj, counter, otplen, self.getHashlib(self.hashlibStr)
-        )
-        log.debug("[resync] %s in otpkey: %s ", otp2, secObj)
-        res2 = hmac2Otp.checkOtp(
-            otp2, int(window // timeStepping), symetric=True
-        )  # TEST -remove the 10
-        log.debug("[resync] res 2: %r", res2)
-        # check 1st value
-        hmac2Otp = HmacOtp(
-            secObj, counter - 1, otplen, self.getHashlib(self.hashlibStr)
-        )
-        log.debug("[resync] %s in otpkey: %s ", otp1, secObj)
-        res1 = hmac2Otp.checkOtp(
-            otp1, int(window // timeStepping), symetric=True
-        )  # TEST -remove the 10
-        log.debug("[resync] res 1: %r", res1)
-
-        if res1 < oCount:
-            # A previous OTP value was used again!
+        if res1 != -1 and res1 < counter_token:
             log.warning(
                 "[resync] a previous OTP value was used again! "
-                "tokencounter: %i, presented counter %i",
-                oCount,
+                "current token counter: %i, presented counter: %i",
+                counter_token,
                 res1,
             )
             res1 = -1
@@ -751,8 +739,8 @@ class TimeHmacTokenClass(HmacTokenClass):
         if res1 != -1 and res1 + 1 == res2:
             # here we calculate the new drift/shift between the server time and
             # the tokentime
-            tokentime = (res2 + 0.5) * timeStepping
-            currenttime = T0 - shift
+            tokentime = (res2 + 0.5) * time_step
+            currenttime = T0 - time_shift
             new_shift = tokentime - currenttime
             log.debug(
                 "[resync] the counters %r and %r matched. New shift: %r",

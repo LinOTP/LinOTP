@@ -19,6 +19,7 @@ linotp (3.4~dev0-1) UNRELEASED; urgency=low
     Delete entries older than the given number of days (starting from the beginning of the day).
     Can't be used alongside `--max-entries-to-keep` or `--cleanup-threshold`!
   * audit log entries of `/admin/login` and `admin/logout` now state `success`, `user`, `realm` and `administrator` correctly
+  * improved debug log output for TOTP resync routine
 
   Fix:
   * wrongly aligned resize bar on Manage UI flexigrid tables when browser is zoomed or scaled
