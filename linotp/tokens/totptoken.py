@@ -29,7 +29,7 @@
 import datetime
 import logging
 import time
-from typing import Any, Union
+from typing import Union
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
