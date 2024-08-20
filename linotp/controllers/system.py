@@ -36,7 +36,6 @@ from html import escape
 from configobj import ConfigObj
 from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
-from werkzeug.exceptions import Unauthorized
 
 from flask import current_app, g
 from flask import send_file as flask_send_file
@@ -159,12 +158,6 @@ class SystemController(BaseController):
             log.error("[__before__::%r] policy exception %r", action, pex)
             db.session.rollback()
             return sendError(pex, context="before")
-
-        except Unauthorized as acc:
-            # the exception, when an abort() is called if forwarded
-            log.error("[__before__::%r] webob.exception %r", action, acc)
-            db.session.rollback()
-            raise acc
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
