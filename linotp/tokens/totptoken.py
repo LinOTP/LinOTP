@@ -699,44 +699,35 @@ class TimeHmacTokenClass(HmacTokenClass):
             counterWindow = 10
         timeWindow = counterWindow * timeStepping
 
+        T0 = time.time() + shift
+        counter = int(T0 // timeStepping)
+        oCount = self.getOtpCount()
+
+        log.debug("[resync] current time T0: %i, counter: %i", T0, counter)
+        log.debug("[resync] current token counter: %r", oCount)
+
         log.debug(
-            "[resync] timestep: %r, syncWindow: %r, timeShift: %r",
-            timeStepping,
+            "[resync] checking timeWindow: %s, timeStep: %s, current token timeShift: %s",
             timeWindow,
+            timeStepping,
             shift,
         )
 
-        T0 = time.time() + shift
-
-        log.debug("[resync] T0 : %i", T0)
-        # T = (Current Unix time - T0) / timeStepping
-        counter = int(T0 // timeStepping)
-        log.debug("[resync] counter (current time): %i", counter)
-
-        oCount = self.getOtpCount()
-
-        log.debug("[resync] tokenCounter: %r", oCount)
-        log.debug(
-            "[resync] now checking window %s, timeStepping %s",
-            timeWindow,
-            timeStepping,
-        )
-        # check 2nd value
+        log.debug("[resync] checking otp2: %s", otp2)
         hmac2Otp = HmacOtp(secObj, counter, otplen, hashlib)
-        log.debug("[resync] %s in otpkey: %s ", otp2, secObj)
         res2 = hmac2Otp.checkOtp(otp2, counterWindow, symetric=True)
-        log.debug("[resync] res 2: %r", res2)
-        # check 1st value
+        log.debug("[resync] counter for given OTP: %r", res2)
+
+        log.debug("[resync] checking otp1: %s", otp1)
         hmac2Otp = HmacOtp(secObj, counter - 1, otplen, hashlib)
-        log.debug("[resync] %s in otpkey: %s ", otp1, secObj)
         res1 = hmac2Otp.checkOtp(otp1, counterWindow, symetric=True)
-        log.debug("[resync] res 1: %r", res1)
+        log.debug("[resync] counter for given OTP: %r", res1)
 
         if res1 < oCount:
             # A previous OTP value was used again!
             log.warning(
                 "[resync] a previous OTP value was used again! "
-                "tokencounter: %i, presented counter %i",
+                "current token counter: %i, presented counter: %i",
                 oCount,
                 res1,
             )
