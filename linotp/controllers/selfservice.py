@@ -228,8 +228,7 @@ class SelfserviceController(BaseController):
                 config, c.actions
             )
 
-            # we require to establish all token local defined
-            # policies to be initialiezd
+            # all token policies need to be initialized for selfservice controller
             additional_policies = add_dynamic_selfservice_policies(
                 config, actions
             )
