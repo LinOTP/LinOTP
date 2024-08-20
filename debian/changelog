@@ -1,4 +1,4 @@
-linotp (3.3.3~dev0-1) UNRELEASED; urgency=low
+linotp (3.3.3~rc0-1) UNRELEASED; urgency=low
 
   Fix:
     * SMTP now sends e-mails with a "Date:" header to 
