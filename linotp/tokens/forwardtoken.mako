@@ -64,7 +64,7 @@ function forward_get_enroll_params(){
 	var params ={};
 
     params['forward.serial'] 		= $('#forward_serial').val();
-    params['description'] 			= "forward:" + $('#forward_server').val();
+    params['description'] 			= "forward:" + $('#forward_serial').val();
 
     jQuery.extend(params, add_user_data());
 
