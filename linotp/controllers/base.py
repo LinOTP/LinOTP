@@ -25,10 +25,7 @@
 #    Support: www.linotp.de
 #
 """The Controller's Base class """
-
-import functools
 import logging
-import secrets
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from inspect import getfullargspec
@@ -44,10 +41,10 @@ from flask_jwt_extended import (
 from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
 from jwt import ExpiredSignatureError, InvalidSignatureError
 
-from flask import Blueprint, current_app, g, jsonify
+from flask import Blueprint, current_app, g
 
 from linotp.flap import request
-from linotp.lib import deprecated_methods, render_calling_path
+from linotp.lib import render_calling_path
 from linotp.lib.context import request_context
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
@@ -61,9 +58,7 @@ from linotp.lib.user import (
     User,
     getUserFromParam,
     getUserFromRequest,
-    getUserId,
 )
-from linotp.model import db
 
 log = logging.getLogger(__name__)
 
