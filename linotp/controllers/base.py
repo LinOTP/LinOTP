@@ -43,7 +43,7 @@ from flask_jwt_extended.exceptions import (
     NoAuthorizationError,
     RevokedTokenError,
 )
-from jwt import ExpiredSignatureError, InvalidSignatureError
+from jwt import DecodeError, ExpiredSignatureError, InvalidSignatureError
 
 from flask import Blueprint, current_app, g
 
@@ -247,6 +247,15 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                 "jwt_check: An already revoked jwt token was used to access a jwt protected method.\n"
                 "This can be a user who saved a token and reused it, or an attacker "
                 "using a stolen jwt token: \n %r",
+                e,
+            )
+        except DecodeError as e:
+            cookie_name = current_app.config["JWT_ACCESS_COOKIE_NAME"]
+            cookie = request.cookies[cookie_name]
+            log.error("jwt_check: could not decode JWT: %r", cookie)
+        except Exception as e:
+            log.error(
+                "jwt_check: Unknown error when getting identity from JWT: %r",
                 e,
             )
         response = sendError("Not authenticated")
