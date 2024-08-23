@@ -38,7 +38,11 @@ from flask_jwt_extended import (
     set_access_cookies,
     unset_jwt_cookies,
 )
-from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
+from flask_jwt_extended.exceptions import (
+    CSRFError,
+    NoAuthorizationError,
+    RevokedTokenError,
+)
 from jwt import ExpiredSignatureError, InvalidSignatureError
 
 from flask import Blueprint, current_app, g
@@ -230,6 +234,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
         try:
             verify_jwt_in_request()
+            return
         except (
             NoAuthorizationError,
             ExpiredSignatureError,
@@ -237,9 +242,16 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             CSRFError,
         ):
             log.error("jwt_check: Failed JWT authentication")
-            response = sendError("Not authenticated")
-            response.status_code = 401
-            return response
+        except RevokedTokenError as e:
+            log.error(
+                "jwt_check: An already revoked jwt token was used to access a jwt protected method.\n"
+                "This can be a user who saved a token and reused it, or an attacker "
+                "using a stolen jwt token: \n %r",
+                e,
+            )
+        response = sendError("Not authenticated")
+        response.status_code = 401
+        return response
 
     def parse_requesting_user(self):
         """

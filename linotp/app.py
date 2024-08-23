@@ -35,13 +35,6 @@ from uuid import uuid4
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 from flask_babel import Babel
-from flask_jwt_extended.exceptions import (
-    CSRFError,
-    NoAuthorizationError,
-    RevokedTokenError,
-)
-from jwt import ExpiredSignatureError
-from jwt.exceptions import InvalidSignatureError
 
 from flask import Config as FlaskConfig
 from flask import Flask, abort, current_app
@@ -414,36 +407,6 @@ class LinOTPApp(Flask):
         request.environ["REQUEST_ID"] = str(uuid4())
         request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
-        # extract the username if request is authorized
-        try:
-            verify_jwt_in_request(optional=True)
-            identity = get_jwt_identity()
-            if identity:
-                log.debug(
-                    "start_session: request session identity is %r",
-                    identity["username"],
-                )
-        except (
-            NoAuthorizationError,
-            ExpiredSignatureError,
-            InvalidSignatureError,
-            CSRFError,
-        ) as e:
-            # We do not need to do anything, authorization is checked in BaseController::jwt_check
-            log.debug(
-                "start_session: Unauthorized request, "
-                "no request session identity set %r",
-                e,
-            )
-        except RevokedTokenError as e:
-            log.error(
-                "%r : \n"
-                "An already revoked jwt token was used to access a jwt protected method.\n"
-                "This can be a user who saved a token and reused it, or an attacker "
-                "using a stolen jwt token",
-                e,
-            )
-
         self.create_context(request, request.environ)
 
     def is_request_static(self) -> bool:
@@ -551,6 +514,7 @@ class LinOTPApp(Flask):
         flask_g.audit = self.audit_obj.initialize(request, client=client)
 
         try:
+            verify_jwt_in_request(optional=True)
             c_identity = get_jwt_identity()
         except Exception as exx:
             c_identity = {}
