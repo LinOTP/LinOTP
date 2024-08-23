@@ -1,9 +1,8 @@
-import re
+import logging
 from datetime import datetime, timedelta
 from typing import Callable, Optional
 
 import pytest
-from flask_jwt_extended import create_access_token
 from freezegun import freeze_time
 
 from flask import Response
@@ -149,6 +148,32 @@ class TestJwtAdmin:
             )
 
             response = self.do_authenticated_request(client)
+
+            result = response.json["result"]
+
+            assert result["status"] is False
+            assert result["error"]["message"] == "Not authenticated"
+            assert response.status_code == 401
+
+    def test_access_with_faulty_jwt(
+        self,
+        create_common_resolvers: Callable,
+        create_common_realms: Callable,
+        scoped_authclient: Callable[..., FlaskClient],
+        caplog,
+    ) -> None:
+        with scoped_authclient(verify_jwt=True) as client:
+            faulty_token = "faulty_jwt"
+            client.set_cookie(
+                "localhost.local", "access_token_cookie", faulty_token
+            )
+
+            with caplog.at_level(logging.ERROR):
+                response = self.do_authenticated_request(client)
+            assert (
+                f"jwt_check: could not decode JWT: '{faulty_token}'"
+                in caplog.text
+            )
 
             result = response.json["result"]
 
