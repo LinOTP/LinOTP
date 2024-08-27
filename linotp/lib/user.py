@@ -63,13 +63,6 @@ class NoResolverFound(Exception):
 
 class User(object):
     def __init__(self, login="", realm="", resolver_config_identifier=""):
-        log.debug(
-            "[User.__init__] creating user %r,%r,%r",
-            login,
-            realm,
-            resolver_config_identifier,
-        )
-
         self.login = login
         self.realm = realm
         self.resolver_config_identifier = resolver_config_identifier
@@ -81,8 +74,6 @@ class User(object):
         self.resolverUid = {}
         self.resolverConf = {}
         self.resolvers_list = []
-
-        log.debug("[User.__init__] user created ")
 
     def _filter_for_resolver_config_identifier(self, resolvers_list):
         """
