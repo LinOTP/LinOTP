@@ -20,6 +20,7 @@ linotp (3.4~dev0-1) UNRELEASED; urgency=low
     Can't be used alongside `--max-entries-to-keep` or `--cleanup-threshold`!
   * audit log entries of `/admin/login` and `admin/logout` now state `success`, `user`, `realm` and `administrator` correctly
   * improved debug log output for TOTP resync routine
+  * improved (mostly by reducing) debug log output during server start and request context.
 
   Fixes:
   * wrongly aligned resize bar on Manage UI flexigrid tables when browser is zoomed or scaled
