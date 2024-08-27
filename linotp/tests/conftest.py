@@ -259,7 +259,7 @@ def hsm_obj(app: LinOTPApp):
 
     The hsm object is returned
     """
-    app.setup_env()
+    app.create_context()
 
     return c["hsm"]["obj"]
 

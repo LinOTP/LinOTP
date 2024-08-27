@@ -32,7 +32,7 @@ reliance for changes in the code base
 
 
 import pytest
-from mock import PropertyMock, patch
+from mock import patch
 
 from linotp.lib.security.provider import SecurityProvider
 
@@ -121,15 +121,15 @@ def test_hsm_functionality(app):
 )
 def test_hsm_for_static_requests(app, request_path, should_have_hsm):
     """For static requests there should be no hsm allocated
-    static request pathes start with '/static/'
+    static request paths start with '/static/'
     This is the exact value of app.static_url_path
     """
 
     with patch("linotp.app.request.path", request_path) as _, patch(
-        "linotp.app.c"
-    ) as context_mock:
+        "linotp.app.init_key_partition"
+    ) as _, patch("linotp.app.c") as context_mock:
         context_mock.hsm = {}
-        app.setup_env()
+        app.create_context()
 
     if should_have_hsm:
         assert "obj" in context_mock.hsm

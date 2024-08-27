@@ -394,6 +394,9 @@ class LinOTPApp(Flask):
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
+        """
+        initialize the request metadata
+        """
         if self.exclude_from_before_request_setup():
             return
 
@@ -412,8 +415,6 @@ class LinOTPApp(Flask):
                 request.path,
             )
             log.debug("Request params: %r", self.getRequestParams())
-
-        self.create_context()
 
     def is_request_static(self) -> bool:
         return request.path.startswith(self.static_url_path)
@@ -458,6 +459,8 @@ class LinOTPApp(Flask):
         """
         create the request context for all controllers
         """
+        if self.exclude_from_before_request_setup():
+            return
 
         setup_request_context()
         allocate_security_module()
@@ -505,8 +508,6 @@ class LinOTPApp(Flask):
         request_context["Client"] = client
 
         flask_g.audit = self.audit_obj.initialize(request, client=client)
-
-        request_context["UserLookup"] = {}
 
         # ------------------------------------------------------------------ --
         # get the current resolvers
@@ -1019,6 +1020,7 @@ def create_app(config_name=None, config_extra=None):
     app.before_first_request(app.init_jwt_config)
     app.before_first_request(app.setup_resolvers)
     app.before_request(app.start_session)
+    app.before_request(app.create_context)
 
     # Per controller setup and handlers
     app.setup_controllers()
