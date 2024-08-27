@@ -432,10 +432,10 @@ class SecurityProvider(object):
                 else:
                     # create new entry
                     log.debug(
-                        "[getSecurityModule] getting new Session (%s) "
-                        "from pool %s",
+                        "[getSecurityModule] getting new session (id=%s) "
+                        "from pool '%s'",
                         sessionId,
-                        pool,
+                        hsm_id,
                     )
                     found = self._allocate_hsm_for_session(pool, sessionId)
                     self.rwLock.release()
