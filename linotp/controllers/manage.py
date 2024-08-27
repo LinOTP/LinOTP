@@ -71,10 +71,6 @@ from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 
-IMPORT_TEXT = getImportText()
-
-log.info("importing linotp.lib. Known import types: %s", IMPORT_TEXT)
-
 
 class ManageController(BaseController):
     def __before__(self, **params):
@@ -152,8 +148,9 @@ class ManageController(BaseController):
             c.debug = current_app.config["DEBUG"]
             c.title = "LinOTP Management"
 
-            log.debug("[index] importers: %s", IMPORT_TEXT)
-            c.importers = IMPORT_TEXT
+            c.importers = getImportText()
+            log.debug("[index] importers: %s", c.importers)
+
             c.help_url = config.get("HELP_URL").format(linotp.__version__)
 
             # -------------------------------------------------------------- --
@@ -248,7 +245,6 @@ class ManageController(BaseController):
                 ii = tclass_object.getClassType()
                 ttinfo.append(ii)
 
-        log.debug("[index] importers: %s", IMPORT_TEXT)
         c.tokeninfo = ttinfo
 
         return render("/manage/tokentypeinfo.mako").decode("utf-8")
