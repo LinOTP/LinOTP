@@ -28,35 +28,14 @@
    syncronysation and provides this to all requests
 """
 
-import copy
 import logging
 
 from linotp.flap import tmpl_context as c
 from linotp.lib.config.config_class import LinOtpConfig
-from linotp.lib.config.db_api import _retrieveAllConfigDB
-from linotp.lib.config.parsing import parse_config
 from linotp.lib.config.type_definition import type_definitions
-from linotp.lib.config.util import expand_here
 from linotp.lib.crypto.encrypted_data import EncryptedData
 
 log = logging.getLogger(__name__)
-
-# A global object containing the complete configuration from the
-# database as a dict. See _retrieveAllConfigDB() for the format
-linotp_config = None
-
-# Complete configuration tree in a hierarchical style
-linotp_config_tree = None
-
-
-def refresh_config():
-    """
-    retrieves all config entries from the database and rewrites the
-    global linotp_config object
-    """
-
-    global linotp_config
-    linotp_config, delay = _retrieveAllConfigDB()
 
 
 ###############################################################################
@@ -82,18 +61,6 @@ def getLinotpConfig():
     :return: local config dict
     :rtype: dict
     """
-
-    global linotp_config
-    global linotp_config_tree
-
-    # TODO: replication
-
-    if linotp_config is None:
-        # Read all the configuration from the database
-        refresh_config()
-
-    if linotp_config_tree is None:
-        linotp_config_tree = parse_config(linotp_config)
 
     ret = {}
     try:
@@ -121,6 +88,9 @@ def getLinotpConfig():
                     c.linotpConfig = ret
 
     except Exception as exx:
+        # FIXME: this happens once every server start and seems quite unnecessary.
+        # Please, please, please refactor this method in the future to get rid
+        # of the FOUR instantiations of LinOtpConfig() in this method alone.
         log.debug(
             "Bad Hack: Retrieving LinotpConfig without controller context"
         )
@@ -232,7 +202,6 @@ def getFromConfig(key, defVal=None, decrypt=False):
 def refreshConfig():
     conf = getLinotpConfig()
     conf.refreshConfig(do_reload=True)
-    return
 
 
 def removeFromConfig(key, iCase=False):
