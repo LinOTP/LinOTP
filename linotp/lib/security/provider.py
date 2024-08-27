@@ -33,7 +33,6 @@ import _thread
 import logging
 import time
 
-from linotp.lib.crypto.utils import zerome
 from linotp.lib.error import HSMException
 from linotp.lib.rw_lock import RWLock
 from linotp.lib.security import FatalHSMException
@@ -143,8 +142,6 @@ class SecurityProvider(object):
         if module_id is None:
             module_id = self.activeOne
 
-        log.debug("[loadSecurityModule] Loading module %s", module_id)
-
         if module_id not in self.config:
             return ret
 
@@ -176,9 +173,6 @@ class SecurityProvider(object):
 
         ret = klass(config, add_conf=additional_config)
         self.security_modules[module_id] = ret
-
-        log.debug("[loadSecurityModule] returning %r", ret)
-
         return ret
 
     def get_config_entries(self, config_name):
@@ -255,38 +249,37 @@ class SecurityProvider(object):
                 log.error(error)
                 raise HSMException(error, id=707)
 
-        for provider_id in provider_ids:
-            pool = self._getHsmPool_(provider_id)
-            log.debug("[createHSMPool] already got this pool: %r", pool)
-            if pool is None:
-                # get the number of entries from the hsd (id) config
-                conf = self.config.get(provider_id)
-                poolsize = int(conf.get("poolsize", 10))
-                log.debug(
-                    "[createHSMPool] creating pool for %r with size %r",
-                    provider_id,
-                    poolsize,
-                )
+        for id in provider_ids:
+            pool = self._getHsmPool_(id)
+            if pool is not None:
+                log.debug("[createHSMPool] already got this pool: %r", pool)
+                continue
 
-                pool = []
-                for _i in range(0, poolsize):
-                    error = ""
-                    hsm = None
-                    try:
-                        hsm = self.loadSecurityModule(provider_id)
-                    except FatalHSMException as exx:
-                        log.error("[createHSMPool] %r %r ", provider_id, exx)
-                        if provider_id == self.activeOne:
-                            raise exx
-                        error = "%r: %r" % (provider_id, exx)
+            conf = self.config.get(id)
+            size = int(conf.get("poolsize", 10))
+            log.debug(
+                "[createHSMPool] creating pool %r with size=%r", id, size
+            )
 
-                    except Exception as exx:
-                        log.error("[createHSMPool] %r ", exx)
-                        error = "%r: %r" % (provider_id, exx)
+            pool = []
+            for _i in range(0, size):
+                error = ""
+                hsm = None
+                try:
+                    hsm = self.loadSecurityModule(id)
+                except FatalHSMException as exx:
+                    log.error("[createHSMPool] %r %r ", id, exx)
+                    if id == self.activeOne:
+                        raise exx
+                    error = "%r: %r" % (id, exx)
 
-                    pool.append({"obj": hsm, "session": 0, "error": error})
+                except Exception as exx:
+                    log.error("[createHSMPool] %r ", exx)
+                    error = "%r: %r" % (id, exx)
 
-                self.hsmpool[provider_id] = pool
+                pool.append({"obj": hsm, "session": 0, "error": error})
+
+            self.hsmpool[id] = pool
         return pool
 
     def _find_hsm_of_session(self, pool, sessionId):
