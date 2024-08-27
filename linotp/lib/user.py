@@ -32,8 +32,6 @@ import re
 from functools import partial
 from typing import Dict
 
-from flask_jwt_extended.utils import get_jwt_identity
-
 from flask import g
 
 from linotp.lib.cache import get_cache

@@ -25,10 +25,7 @@
 #    Support: www.linotp.de
 #
 """The Controller's Base class """
-
-import functools
 import logging
-import secrets
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from inspect import getfullargspec
@@ -41,13 +38,17 @@ from flask_jwt_extended import (
     set_access_cookies,
     unset_jwt_cookies,
 )
-from flask_jwt_extended.exceptions import CSRFError, NoAuthorizationError
-from jwt import ExpiredSignatureError, InvalidSignatureError
+from flask_jwt_extended.exceptions import (
+    CSRFError,
+    NoAuthorizationError,
+    RevokedTokenError,
+)
+from jwt import DecodeError, ExpiredSignatureError, InvalidSignatureError
 
-from flask import Blueprint, current_app, g, jsonify
+from flask import Blueprint, current_app, g
 
 from linotp.flap import request
-from linotp.lib import deprecated_methods, render_calling_path
+from linotp.lib import render_calling_path
 from linotp.lib.context import request_context
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
@@ -61,9 +62,7 @@ from linotp.lib.user import (
     User,
     getUserFromParam,
     getUserFromRequest,
-    getUserId,
 )
-from linotp.model import db
 
 log = logging.getLogger(__name__)
 
@@ -235,6 +234,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
         try:
             verify_jwt_in_request()
+            return
         except (
             NoAuthorizationError,
             ExpiredSignatureError,
@@ -242,9 +242,25 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             CSRFError,
         ):
             log.error("jwt_check: Failed JWT authentication")
-            response = sendError("Not authenticated")
-            response.status_code = 401
-            return response
+        except RevokedTokenError as e:
+            log.error(
+                "jwt_check: An already revoked jwt token was used to access a jwt protected method.\n"
+                "This can be a user who saved a token and reused it, or an attacker "
+                "using a stolen jwt token: \n %r",
+                e,
+            )
+        except DecodeError as e:
+            cookie_name = current_app.config["JWT_ACCESS_COOKIE_NAME"]
+            cookie = request.cookies[cookie_name]
+            log.error("jwt_check: could not decode JWT: %r", cookie)
+        except Exception as e:
+            log.error(
+                "jwt_check: Unknown error when getting identity from JWT: %r",
+                e,
+            )
+        response = sendError("Not authenticated")
+        response.status_code = 401
+        return response
 
     def parse_requesting_user(self):
         """

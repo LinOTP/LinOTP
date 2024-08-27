@@ -24,6 +24,7 @@ linotp (3.4~dev0-1) UNRELEASED; urgency=low
   Fix:
   * wrongly aligned resize bar on Manage UI flexigrid tables when browser is zoomed or scaled
   * when rolling out a forwarding token via /manage, the serial of the target token is included in the description 
+  * faulty JWTs don't cause a `500 Internal Server Error` anymore and the error gets logged properly
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 
