@@ -291,7 +291,6 @@ def _get_client_from_request(request=None):
                     client = ipvalue
                     break
 
-    log.debug("got the client %s", client)
     return client
 
 
@@ -356,7 +355,7 @@ def get_client(request):
         if client:
             log.debug("client overwritten to %s", client)
 
-    log.debug("returning client %s", client)
+    log.debug("get_client: client is %s", client)
     return client
 
 

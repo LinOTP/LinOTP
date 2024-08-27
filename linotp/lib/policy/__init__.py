@@ -29,7 +29,6 @@
 
 import logging
 import re
-from copy import deepcopy
 from typing import Dict, List
 
 from flask_babel import gettext as _
@@ -58,8 +57,6 @@ from linotp.lib.policy.util import (
     _get_pin_values,
     _getAuthenticatedUser,
     _getDefaultRealm,
-    _getLinotpConfig,
-    _getRealms,
     _getUserFromParam,
     _getUserRealms,
     ascii_lowercase,
@@ -68,11 +65,10 @@ from linotp.lib.policy.util import (
     get_realm_from_policies,
     get_resolvers_for_realms,
     letters,
-    parse_action_value,
     special_characters,
 )
 from linotp.lib.realm import getRealms, match_realms
-from linotp.lib.user import User, getResolversOfUser
+from linotp.lib.user import User
 
 # for generating random passwords
 from linotp.lib.util import generate_password, uniquify
@@ -2943,7 +2939,6 @@ def set_realm(login, realm, exception=False):
 
     client = _get_client()
 
-    log.debug("got the client %s", client)
     log.debug("users %s original realm is %s", login, realm)
 
     policies = get_client_policy(
@@ -2985,8 +2980,6 @@ def check_user_authorization(login, realm, exception=False):
     ):
         log.debug("absolutely no authorization policy.")
         return True
-
-    log.debug("got the client %s", client)
 
     policies = get_client_policy(
         client,
