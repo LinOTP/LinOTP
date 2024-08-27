@@ -170,7 +170,6 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             if self.jwt_exempt or getattr(
                 method.__func__, "jwt_exempt", False
             ):
-                log.debug(f"JWT exempt: {method}")
                 self.jwt_exempt_methods.add(method_name)
 
             # Add another route if the method has an optional second
@@ -216,6 +215,11 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                     self.add_url_rule(
                         url.replace("_", "-"), method_name, view_func=method
                     )
+        if len(self.jwt_exempt_methods) > 0:
+            log.debug(
+                f"No admin authorization required in {self.__class__.__name__} for actions: "
+                + ", ".join(self.jwt_exempt_methods)
+            )
 
     def jwt_check(self):
         """Check whether the current request needs to be authenticated using
