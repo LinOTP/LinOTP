@@ -2,7 +2,7 @@ import logging
 
 from flask import Response, current_app, g, stream_with_context
 
-from linotp.controllers.base import BaseController, JWTMixin
+from linotp.controllers.base import BaseController
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.realm import getRealms
@@ -15,7 +15,7 @@ from linotp.model import db
 log = logging.getLogger(__name__)
 
 
-class RealmsController(BaseController, JWTMixin):
+class RealmsController(BaseController):
     """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server.

@@ -3,7 +3,7 @@ from math import ceil
 
 from flask import current_app, g
 
-from linotp.controllers.base import BaseController, JWTMixin
+from linotp.controllers.base import BaseController
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
@@ -20,7 +20,7 @@ class UserNotFoundException(Exception):
     pass
 
 
-class ResolversController(BaseController, JWTMixin):
+class ResolversController(BaseController):
     """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server.

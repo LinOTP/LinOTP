@@ -5,7 +5,7 @@ from difflib import get_close_matches
 
 from flask import current_app, g
 
-from linotp.controllers.base import BaseController, JWTMixin
+from linotp.controllers.base import BaseController
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
@@ -18,7 +18,7 @@ from linotp.model import db
 log = logging.getLogger(__name__)
 
 
-class TokensController(BaseController, JWTMixin):
+class TokensController(BaseController):
     """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server.

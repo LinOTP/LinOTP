@@ -2,7 +2,7 @@ import logging
 
 from flask import current_app, g
 
-from linotp.controllers.base import BaseController, JWTMixin
+from linotp.controllers.base import BaseController
 from linotp.lib.audit.iterator import AuditQuery
 from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
@@ -17,7 +17,7 @@ class UserNotFoundException(Exception):
     pass
 
 
-class AuditlogController(BaseController, JWTMixin):
+class AuditlogController(BaseController):
     """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server.
