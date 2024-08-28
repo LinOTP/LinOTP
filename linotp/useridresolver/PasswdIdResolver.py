@@ -38,7 +38,6 @@ Remarks:
 import logging
 import os
 import re
-from typing import Any, Callable, Dict, Tuple, Union
 
 from passlib.hash import (
     des_crypt,
@@ -146,7 +145,7 @@ class IdResolver(UserIdResolver):
         :param config: the linotp config
         :type  config: the linotp config dict
         """
-        log.info("Setting up the PasswdResolver")
+        log.debug("Setting up PasswdIdResolver")
         return
 
     def __init__(self):

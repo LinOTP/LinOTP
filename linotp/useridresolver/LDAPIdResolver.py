@@ -36,7 +36,7 @@ import json
 import logging
 import sys
 from datetime import datetime
-from typing import Any, Callable, Dict, Tuple, Union
+from typing import Dict
 
 import ldap
 import ldap.filter
@@ -200,8 +200,7 @@ class IdResolver(UserIdResolver):
         :param config: the linotp config
         :return: -nothing-
         """
-
-        log.info("[setup] Setting up the LDAPResolver")
+        log.debug("Setting up LDAPIdResolver")
         return
 
     @classmethod
