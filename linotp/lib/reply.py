@@ -33,14 +33,14 @@ import logging
 import urllib.error
 import urllib.parse
 import urllib.request
+from typing import Union
 
 import qrcode
 
 from flask import Response, current_app, g
 from flask import request as flask_request
 
-from linotp.flap import request
-from linotp.flap import tmpl_context as c
+from linotp.lib.config import getLinotpConfig
 from linotp.lib.context import request_context
 from linotp.lib.error import LinotpError
 from linotp.lib.policy import is_auth_return
@@ -56,7 +56,7 @@ required = False
 
 LINOTP_ERRORS = [707]
 
-httpErr = {
+standard_http_errors = {
     "400": "Bad Request",
     "401": "Unauthorized",
     "403": "Forbidden",
@@ -85,7 +85,7 @@ resp = """
 log = logging.getLogger(__name__)
 
 
-def _get_httperror_from_params(request):
+def _get_httperror_code_from_params() -> Union[str, None]:
     """
     Extract an httperror parameter from the client request
 
@@ -143,7 +143,7 @@ def _get_httperror_from_params(request):
     return httperror
 
 
-def sendError(exception, id=1):
+def sendError(exception: Union[Exception, str], id: int = 1):
     """
     sendError - return a HTML or JSON error result document
 
@@ -223,12 +223,12 @@ def sendError(exception, id=1):
 
     # check if we have an additional request parameter 'httperror'
     # which triggers the error to be delivered as HTTP Error
-    httperror = _get_httperror_from_params(request)
+    error_code = _get_httperror_code_from_params()
 
     send_custom_http_status = False
-    if httperror is not None:
+    if error_code is not None:
         # Client wants custom HTTP status
-        linotp_errors = c.linotpConfig.get("linotp.errors", None)
+        linotp_errors = getLinotpConfig().get("linotp.errors", None)
         if not linotp_errors:
             # Send custom HTTP status in every error case
             send_custom_http_status = True
@@ -244,9 +244,11 @@ def sendError(exception, id=1):
 
         # Always set a reason, when no standard one found (e.g. custom HTTP
         # code like 444) use 'LinOTP Error'
-        reason = httpErr.get(httperror, "LinOTP Error")
-        code = httperror
-        status = "%s %s" % (httperror, reason)
+        reason = "LinOTP Error"
+        if error_code in standard_http_errors:
+            reason = standard_http_errors[error_code]
+        code = error_code
+        status = "%s %s" % (error_code, reason)
         desc = "[%s] %d: %s" % (get_version(), errId, errDesc)
         ret = resp % (code, status, code, status, desc)
 
