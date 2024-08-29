@@ -83,7 +83,7 @@ class ToolsController(BaseController):
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="before")
+            return sendError(exx)
 
     @staticmethod
     def __after__(response):
@@ -105,7 +105,7 @@ class ToolsController(BaseController):
         except Exception as exx:
             log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="after")
+            return sendError(exx)
 
     @methods(["POST"])
     def setPassword(self):

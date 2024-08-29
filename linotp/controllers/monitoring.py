@@ -78,7 +78,7 @@ class MonitoringController(BaseController):
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="before")
+            return sendError(exx)
 
     @staticmethod
     def __after__(response):
@@ -101,7 +101,7 @@ class MonitoringController(BaseController):
         except Exception as exx:
             log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="after")
+            return sendError(exx)
 
         finally:
             db.session.close()

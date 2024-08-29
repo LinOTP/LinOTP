@@ -36,12 +36,12 @@ import urllib.request
 
 import qrcode
 
-from flask import Response, current_app, g, jsonify
+from flask import Response, current_app, g
 from flask import request as flask_request
 
 from linotp.flap import request
 from linotp.flap import tmpl_context as c
-from linotp.lib.context import request_context, request_context_safety
+from linotp.lib.context import request_context
 from linotp.lib.error import LinotpError
 from linotp.lib.policy import is_auth_return
 from linotp.lib.util import (
@@ -143,7 +143,7 @@ def _get_httperror_from_params(request):
     return httperror
 
 
-def sendError(exception, id=1, context=None):
+def sendError(exception, id=1):
     """
     sendError - return a HTML or JSON error result document
 
@@ -192,20 +192,12 @@ def sendError(exception, id=1, context=None):
         Case 4.2: An exception is raised with errId 555
           - LinOTP will return a response with HTTP status 200.
 
-    remark for 'context' parameter:
-     the 'context' is especially required to catch errors from the _before_
-     methods. The return of a _before_ must be of type response and
-     must have the attribute response._exception set, to stop further
-     processing, which otherwise will have ugly results!!
-
     :param response:  the pylon response object
     :type  response:  response object
-    :param exception: should be a linotp exception (s. linotp.lib.error.py)
-    :type  exception: exception
+    :param exception: should be a linotp exception (see linotp.lib.error.py) or a free text error
+    :type  exception: exception or str
     :param id:        id value, for future versions
     :type  id:        int
-    :param context:   default is None or 'before'
-    :type  context:   string
 
     :return:     json rendered string result
     :rtype:      string
@@ -258,12 +250,7 @@ def sendError(exception, id=1, context=None):
         desc = "[%s] %d: %s" % (get_version(), errId, errDesc)
         ret = resp % (code, status, code, status, desc)
 
-        response = Response(response=ret, status=code, mimetype="text/html")
-
-        if context in ["before", "after"]:
-            response._exception = exception
-
-        return response
+        return Response(response=ret, status=code, mimetype="text/html")
 
     else:
         # Send JSON response with HTTP status 200 OK
@@ -281,14 +268,7 @@ def sendError(exception, id=1, context=None):
             "id": id,
         }
         data = json.dumps(res, indent=3)
-        response = Response(
-            response=data, status=200, mimetype="application/json"
-        )
-
-        if context in ["before", "after"]:
-            response._exception = exception
-
-        return response
+        return Response(response=data, status=200, mimetype="application/json")
 
 
 def sendResult(obj, id=1, opt=None, status=True):

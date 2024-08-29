@@ -104,7 +104,7 @@ class TokensController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="after")
+            return sendError(exx)
 
     def get_tokens(self):
         """
