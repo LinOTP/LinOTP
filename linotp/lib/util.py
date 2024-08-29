@@ -41,7 +41,12 @@ from linotp.flap import config
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypto.utils import geturandom
 from linotp.lib.error import InvalidFunctionParameter, ParameterError
-from linotp.lib.type_utils import boolean, get_ip_address, get_ip_network
+from linotp.lib.type_utils import (
+    boolean,
+    get_ip_address,
+    get_ip_network,
+    is_ip_address_dotted_quad,
+)
 from linotp.settings import _config_schema
 
 hostname_regex = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
@@ -328,32 +333,45 @@ def is_TRUSTED_PROXIES_active():
 
 
 def get_client(request):
-    """
-    This function returns the client.
+    """This function returns the client.
 
     It first tries to get the client as it is passed as the HTTP Client
     via REMOTE_ADDR.
 
-    If this client Address is in a list, that is allowed to overwrite its
-    client address (like e.g. a FreeRADIUS server, which will always pass the
-    FreeRADIUS address but not the address of the RADIUS client) it checks for
-    the existance of the client parameter.
+    If this client Address is in a list, that is allowed to overwrite
+    its client address (like e.g. a FreeRADIUS server, which will
+    always pass the FreeRADIUS address but not the address of the
+    RADIUS client) it checks for the existance of the client parameter
+    as long as the `GET_CLIENT_ADDRESS_FROM_POST_DATA` configuration
+    entry is set to `True`.
     """
-    may_overwrite = []
-    over_client = getFromConfig("mayOverwriteClient", "")
-    try:
-        may_overwrite = [c.strip() for c in over_client.split(",")]
-    except Exception as e:
-        log.warning("evaluating config entry 'mayOverwriteClient': %r", e)
-
     client = _get_client_from_request(request)
 
-    if client in may_overwrite or client is None:
-        log.debug("client %s may overwrite!", client)
+    if config["GET_CLIENT_ADDRESS_FROM_POST_DATA"]:
+        may_overwrite = []
+        over_client = getFromConfig("mayOverwriteClient", "")
+        try:
+            may_overwrite = [c.strip() for c in over_client.split(",")]
+        except Exception as e:
+            log.warning("evaluating config entry 'mayOverwriteClient': %r", e)
 
-        client = get_request_param(request, "client")
-        if client:
-            log.debug("client overwritten to %s", client)
+        if client in may_overwrite:
+            client_from_post = get_request_param(request, "client")
+            if client_from_post:  # not `None` nor an empty string
+                log.warning(
+                    "DEPRECATION WARNING: "
+                    "Passing the client IP address in POST data is "
+                    "deprecated. Change your client code!"
+                )
+                log.debug(
+                    "Client IP address %r overwritten by %r",
+                    client,
+                    client_from_post,
+                )
+                client = client_from_post
+
+    if not is_ip_address_dotted_quad(client):
+        raise ValueError("client address is not a dotted quad: %r" % client)
 
     log.debug("get_client: client is %s", client)
     return client

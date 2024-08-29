@@ -36,8 +36,13 @@ from mock import patch
 
 from flask import current_app
 
+import linotp.lib.config
 from linotp.lib.type_utils import get_ip_address, get_ip_network
-from linotp.lib.util import _get_client_from_request, is_addr_in_network
+from linotp.lib.util import (
+    _get_client_from_request,
+    get_client,
+    is_addr_in_network,
+)
 
 netw_dict = {
     "136.243.104.66/29": netaddr.IPNetwork("136.243.104.66/29"),
@@ -87,8 +92,10 @@ def mocked_getFromConfig(key, default):
 
 
 class Request(object):
-    def __init__(self, environ):
+    def __init__(self, environ, values=None):
         self.environ = environ
+        self.values = values or {}
+        self.is_json = False
 
 
 @pytest.mark.usefixtures("app")
@@ -389,6 +396,65 @@ class TestGetClientCase(unittest.TestCase):
             assert in_network is False
 
         return
+
+
+# Test (deprecated) `client=ADDR` POST parameter feature, including
+# whether it can be enabled/disabled using the
+# `GET_CLIENT_ADDRESS_FROM_POST_DATA` config item.
+
+
+@pytest.mark.parametrize(
+    "use_post,overwriters,issue_warning,result",
+    [
+        (False, "", False, "11.12.13.14"),
+        (False, "11.12.13.14", False, "11.12.13.14"),
+        (True, "", False, "11.12.13.14"),
+        (True, "11.12.13.14", True, "15.16.17.18"),
+        (True, "11.12.13.13,11.12.13.14,11.12.13.15", True, "15.16.17.18"),
+        (True, "11.12.13.13, 11.12.13.14 ,11.12.13.15", True, "15.16.17.18"),
+        (True, "11.12.13.13,11.12.13.15", False, "11.12.13.14"),
+    ],
+)
+@patch("linotp.lib.util.getFromConfig", mocked_getFromConfig)
+def test_get_client_from_post_data(
+    caplog, app, use_post, overwriters, issue_warning, result
+):
+    MESSAGE = "DEPRECATION WARNING: Passing the client IP address in POST "
+    app.config["GET_CLIENT_ADDRESS_FROM_POST_DATA"] = use_post
+    LinConfig["mayOverwriteClient"] = overwriters
+    request = Request(
+        environ={"REMOTE_ADDR": "11.12.13.14"},
+        values={"client": "15.16.17.18"},
+    )
+    caplog.clear()
+    addr = get_client(request)
+    assert addr == result
+    if issue_warning:
+        assert any(msg.startswith(MESSAGE) for msg in caplog.messages)
+
+
+@patch("linotp.lib.util.getFromConfig", mocked_getFromConfig)
+def test_get_client_from_post_data_no_client_parameter(app):
+    app.config["GET_CLIENT_ADDRESS_FROM_POST_DATA"] = True
+    LinConfig["mayOverwriteClient"] = "11.12.13.14"
+    request = Request(
+        environ={"REMOTE_ADDR": "11.12.13.14"},
+        values={},
+    )
+    assert get_client(request) == "11.12.13.14"
+
+
+@patch("linotp.lib.util.getFromConfig", mocked_getFromConfig)
+def test_get_client_from_post_data_malformed_client(app):
+    app.config["GET_CLIENT_ADDRESS_FROM_POST_DATA"] = True
+    LinConfig["mayOverwriteClient"] = "11.12.13.14"
+    request = Request(
+        environ={"REMOTE_ADDR": "11.12.13.14"},
+        values={"client": "foobar"},
+    )
+    with pytest.raises(ValueError) as ex:
+        get_client(request)
+    assert str(ex.value) == "client address is not a dotted quad: 'foobar'"
 
 
 # eof #
