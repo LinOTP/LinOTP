@@ -612,6 +612,20 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
+            "GET_CLIENT_ADDRESS_FROM_POST_DATA",
+            bool,
+            convert=to_boolean,
+            default=False,
+            help=(
+                "Various LinOTP API endpoints allow requests from "
+                "certain IP addresses to pass a `client=` parameter "
+                "in HTTP POST data that gives the “real” client address. "
+                "This feature is deprecated but if you need it for "
+                "your own code, you can enable it here for the time "
+                "being."
+            ),
+        ),
+        ConfigItem(
             "MAINTENANCE_VERIFY_CLIENT_ENV_VAR",
             str,
             default="",
