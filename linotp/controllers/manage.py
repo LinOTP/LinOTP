@@ -105,6 +105,9 @@ class ManageController(BaseController):
             c.app_config_trusted_proxies = current_app.config[
                 "TRUSTED_PROXIES"
             ]
+            c.app_config_CLIENT_PARAM_ENABLED = current_app.config[
+                "GET_CLIENT_ADDRESS_FROM_POST_DATA"
+            ]
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
