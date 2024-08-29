@@ -10,6 +10,12 @@ linotp (3.4~dev0-1) UNRELEASED; urgency=low
       * `--max-entries-to-keep` specifies the number of entries to keep in the db. Defaults to 5000.
       * `--cleanup-threshold`: When the number of entries exceeds this threshold, the cleanup process is initiated.
         Defaults to the value of `--max-entries-to-keep`.
+  * The `client=` HTTP POST parameter is now looked at, and the "Authorization:"
+    text field on the "System config" dialog in the web-based management UI is
+    enabled, only if the `GET_CLIENT_ADDRESS_FROM_POST_DATA` config is set to a
+    true value (the default is "false", for security reasons).  The `client=`
+    parameter feature as a whole is deprecated and may be removed in a future
+    version of LinOTP.
 
   Features:
   * TRUSTED_PROXIES config variable is added, through which the requests from these proxies will get their
