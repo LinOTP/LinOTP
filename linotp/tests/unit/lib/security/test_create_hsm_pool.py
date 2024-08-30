@@ -34,6 +34,8 @@ reliance for changes in the code base
 import pytest
 from mock import patch
 
+import flask
+
 from linotp.lib.security.provider import SecurityProvider
 
 
@@ -125,6 +127,7 @@ def test_hsm_for_static_requests(app, request_path, should_have_hsm):
     This is the exact value of app.static_url_path
     """
 
+    flask.request.environ["REMOTE_ADDR"] = "11.12.13.14"  # Any will do
     with patch("linotp.app.request.path", request_path) as _, patch(
         "linotp.app.init_key_partition"
     ) as _, patch("linotp.app.c") as context_mock:
