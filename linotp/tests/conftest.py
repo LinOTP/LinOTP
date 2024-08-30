@@ -39,7 +39,6 @@ from unittest.mock import patch
 
 import pytest
 
-from flask import g
 from flask.globals import current_app
 from flask.testing import FlaskClient
 
@@ -243,7 +242,7 @@ def adminclient(client, request):
         "linotp.controllers.base.verify_jwt_in_request",
         lambda: None,
     ), patch(
-        "linotp.app.get_jwt_identity",
+        "linotp.controllers.base.get_jwt_identity",
         lambda: {
             "username": admin_user,
             "realm": current_app.config["ADMIN_REALM_NAME"],
@@ -260,7 +259,7 @@ def hsm_obj(app: LinOTPApp):
 
     The hsm object is returned
     """
-    app.setup_env()
+    app.create_context()
 
     return c["hsm"]["obj"]
 
@@ -315,7 +314,7 @@ def scoped_authclient(
     original_verify_jwt_in_request = (
         linotp.controllers.base.verify_jwt_in_request
     )
-    original_get_jwt_identity = linotp.app.get_jwt_identity
+    original_get_jwt_identity = linotp.controllers.base.get_jwt_identity
 
     @contextlib.contextmanager
     def auth_context_manager(
@@ -328,7 +327,7 @@ def scoped_authclient(
                 "linotp.controllers.base.verify_jwt_in_request",
                 lambda: None,
             ), patch(
-                "linotp.app.get_jwt_identity",
+                "linotp.controllers.base.get_jwt_identity",
                 lambda: {
                     "username": username,
                     "resolver": resolver,
@@ -342,7 +341,7 @@ def scoped_authclient(
                 "linotp.controllers.base.verify_jwt_in_request",
                 original_verify_jwt_in_request,
             ), patch(
-                "linotp.app.get_jwt_identity",
+                "linotp.controllers.base.get_jwt_identity",
                 original_get_jwt_identity,
             ):
                 yield client

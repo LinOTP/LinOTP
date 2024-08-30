@@ -36,7 +36,7 @@ import os
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
 
-from flask import current_app, g, redirect, url_for
+from flask import current_app, g
 
 import linotp
 from linotp.controllers.base import BaseController, jwt_exempt, methods
@@ -70,10 +70,6 @@ from linotp.model import db
 from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
-
-IMPORT_TEXT = getImportText()
-
-log.info("importing linotp.lib. Known import types: %s", IMPORT_TEXT)
 
 
 class ManageController(BaseController):
@@ -113,10 +109,7 @@ class ManageController(BaseController):
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="before")
-
-        finally:
-            log.debug("[__before__::%r] done", action)
+            return sendError(exx)
 
     @staticmethod
     def __after__(response):
@@ -155,8 +148,9 @@ class ManageController(BaseController):
             c.debug = current_app.config["DEBUG"]
             c.title = "LinOTP Management"
 
-            log.debug("[index] importers: %s", IMPORT_TEXT)
-            c.importers = IMPORT_TEXT
+            c.importers = getImportText()
+            log.debug("[index] importers: %s", c.importers)
+
             c.help_url = config.get("HELP_URL").format(linotp.__version__)
 
             # -------------------------------------------------------------- --
@@ -251,7 +245,6 @@ class ManageController(BaseController):
                 ii = tclass_object.getClassType()
                 ttinfo.append(ii)
 
-        log.debug("[index] importers: %s", IMPORT_TEXT)
         c.tokeninfo = ttinfo
 
         return render("/manage/tokentypeinfo.mako").decode("utf-8")

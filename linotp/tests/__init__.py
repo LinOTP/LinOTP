@@ -46,14 +46,12 @@ directory.
 
 import base64
 import copy
-import hashlib
 import io
 import json
 import logging
 import os
 import warnings
 from datetime import datetime
-from distutils.version import LooseVersion
 from typing import Optional
 from unittest import TestCase
 from unittest.mock import Mock, patch
@@ -62,12 +60,10 @@ from uuid import uuid4
 import pytest
 from packaging import version
 
-from flask import Flask, Response
 from flask import __version__ as FLASK_VERSION
 from flask import _request_ctx_stack as flask_request_ctx_stack
 from flask import current_app, g, request
 
-from linotp.app import create_app
 from linotp.lib.tools.flask_migration import TestResponse
 from linotp.lib.user import User
 
@@ -331,7 +327,7 @@ class TestController(TestCase):
         return response
 
     @patch("linotp.controllers.base.verify_jwt_in_request", lambda: True)
-    @patch("linotp.app.get_jwt_identity")
+    @patch("linotp.controllers.base.get_jwt_identity")
     def _make_authenticated_request(
         self,
         app_get_jwt_identity: Mock,

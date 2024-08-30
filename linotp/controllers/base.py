@@ -170,7 +170,6 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             if self.jwt_exempt or getattr(
                 method.__func__, "jwt_exempt", False
             ):
-                log.debug(f"JWT exempt: {method}")
                 self.jwt_exempt_methods.add(method_name)
 
             # Add another route if the method has an optional second
@@ -216,37 +215,48 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                     self.add_url_rule(
                         url.replace("_", "-"), method_name, view_func=method
                     )
+        if len(self.jwt_exempt_methods) > 0:
+            log.debug(
+                f"No admin authorization required in {self.__class__.__name__} for actions: "
+                + ", ".join(self.jwt_exempt_methods)
+            )
 
     def jwt_check(self):
         """Check whether the current request needs to be authenticated using
         JWT, and if so, whether it contains a valid JWT access token.
-        The login name from the access token is stored in the
-        g.authUser via quering the jwt identity with
-        get_jwt_identiy for the benefit of `lib.user.getUserFromRequest()`.
+        The login name from the access token is then stored in g.authUser
+        for the benefit of `lib.user.getUserFromRequest()`.
         """
 
-        method = request.url_rule.endpoint[
-            request.url_rule.endpoint.rfind(".") + 1 :
-        ]
+        g.authUser = None
+
+        method = request.url_rule.endpoint.rsplit(".", 1)[1]
         if method in self.jwt_exempt_methods:
-            log.debug("jwt_check: operation is exempt from JWT check")
+            log.debug("jwt_check: Operation is exempt from JWT check")
             return None
 
         try:
             verify_jwt_in_request()
+
+            identity = get_jwt_identity()
+            log.debug("jwt_check: Authorized user is %r", identity)
+            g.authUser = User(
+                identity["username"],
+                identity["realm"],
+                identity["resolver"].rpartition(".")[-1],
+            )
             return
         except (
             NoAuthorizationError,
             ExpiredSignatureError,
             InvalidSignatureError,
             CSRFError,
-        ):
-            log.error("jwt_check: Failed JWT authentication")
+        ) as e:
+            log.debug("jwt_check: Unauthorized request (%s)", type(e).__name__)
         except RevokedTokenError as e:
-            log.error(
-                "jwt_check: An already revoked jwt token was used to access a jwt protected method.\n"
-                "This can be a user who saved a token and reused it, or an attacker "
-                "using a stolen jwt token: \n %r",
+            log.warning(
+                "jwt_check: An attempt was made to use an already revoked JWT token to access a protected method. "
+                "This can be a user who saved and reused a token, or an attacker using a stolen token:\n%r",
                 e,
             )
         except DecodeError as e:

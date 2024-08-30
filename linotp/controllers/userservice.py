@@ -91,7 +91,6 @@ from linotp.lib.support import LicenseException
 from linotp.lib.token import (
     TokenHandler,
     get_multi_otp,
-    get_raw_tokens,
     get_tokens,
     getTokenRealms,
     getTokenType,
@@ -120,7 +119,6 @@ from linotp.lib.userservice import (
 )
 from linotp.lib.util import generate_otpkey, get_client
 from linotp.model import db
-from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 
@@ -410,10 +408,10 @@ class UserserviceController(BaseController):
 
             return response
 
-        except Exception as acc:
-            # the exception, when an abort() is called if forwarded
-            log.error("[__after__::%r] webob.exception %r", action, acc)
-            return sendError(acc, context="__after__")
+        except Exception as exx:
+            log.error("[__after__::%r] exception %r", action, exx)
+            db.session.rollback()
+            return sendError(exx)
 
     def _identify_user(self, params):
         """

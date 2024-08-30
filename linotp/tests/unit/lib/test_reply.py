@@ -34,9 +34,11 @@ import pytest
 import flask
 
 from linotp.lib import reply
-from linotp.lib.context import request_context
 from linotp.lib.error import ProgrammingError
-from linotp.lib.reply import _get_httperror_from_params, sendResultIterator
+from linotp.lib.reply import (
+    _get_httperror_code_from_params,
+    sendResultIterator,
+)
 
 
 @pytest.mark.usefixtures("app")
@@ -53,7 +55,7 @@ class TestReplyTestCase(object):
     )
     def test_httperror_from_params(self, app, querystring, result):
         with app.test_request_context(querystring):
-            httperror = _get_httperror_from_params(None)
+            httperror = _get_httperror_code_from_params()
             assert httperror == result
 
     @pytest.fixture
@@ -72,7 +74,7 @@ class TestReplyTestCase(object):
     @pytest.mark.usefixtures("unicodeDecodeError")
     def test_httperror_with_UnicodeDecodeError(self):
         with flask.current_app.test_request_context("/?httperror=555"):
-            httperror = _get_httperror_from_params(None)
+            httperror = _get_httperror_code_from_params()
             assert httperror == "555"
 
     @pytest.mark.usefixtures("unicodeDecodeError")
@@ -81,7 +83,7 @@ class TestReplyTestCase(object):
         with flask.current_app.test_request_context(
             "/?httperror=555&httperror=777"
         ):
-            httperror = _get_httperror_from_params(None)
+            httperror = _get_httperror_code_from_params()
             assert httperror == "777"
 
     def test_httperror_with_Exception(self, monkeypatch):
@@ -92,7 +94,7 @@ class TestReplyTestCase(object):
         monkeypatch.setattr(reply, "current_app", fake_current_app())
 
         with flask.current_app.test_request_context("/?httperror=555"):
-            httperror = _get_httperror_from_params(None)
+            httperror = _get_httperror_code_from_params()
             assert httperror is None
 
     def test_response_iterator(self):

@@ -30,7 +30,6 @@ selfservice controller - This is the controller for the self service interface,
 
 """
 import base64
-import json
 import logging
 import os
 
@@ -54,7 +53,6 @@ from linotp.lib.policy.action import get_selfservice_actions
 from linotp.lib.realm import getDefaultRealm, getRealms
 from linotp.lib.reply import sendError
 from linotp.lib.selfservice import get_imprint
-from linotp.lib.token import getTokenType
 from linotp.lib.user import getRealmBox
 from linotp.lib.userservice import (
     add_dynamic_selfservice_enrollment,
@@ -230,8 +228,7 @@ class SelfserviceController(BaseController):
                 config, c.actions
             )
 
-            # we require to establish all token local defined
-            # policies to be initialiezd
+            # all token policies need to be initialized for selfservice controller
             additional_policies = add_dynamic_selfservice_policies(
                 config, actions
             )
@@ -245,14 +242,14 @@ class SelfserviceController(BaseController):
 
         except (Unauthorized, Forbidden) as acc:
             # the exception, when an abort() is called if forwarded
-            log.info("[__before__::%r] webob.exception %r", action, acc)
+            log.info("[__before__::%r] auth exception %r", action, acc)
             db.session.rollback()
             raise acc
 
         except Exception as exx:
-            log.error("[__before__] failed with error: %r", exx)
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="before")
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def index(self):

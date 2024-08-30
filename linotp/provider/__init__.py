@@ -36,12 +36,7 @@ from functools import partial
 from flask_babel import gettext as _
 
 import linotp.lib.policy
-from linotp.lib.config import (
-    getLinotpConfig,
-    linotp_config_tree,
-    removeFromConfig,
-    storeConfig,
-)
+from linotp.lib.config import getLinotpConfig, removeFromConfig, storeConfig
 from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
 from linotp.lib.context import request_context
 from linotp.lib.module_loader import import_submodules

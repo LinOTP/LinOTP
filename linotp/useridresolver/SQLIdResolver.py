@@ -32,15 +32,11 @@ The LinOTP server imports this module to use SQL databases as a userstore.
 Dependencies: UserIdResolver
 """
 
-import base64
-import hashlib
 import json
 import logging
-import re
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Callable, Dict, Tuple, Union
 
 from passlib.context import CryptContext
 from passlib.exc import MissingBackendError
@@ -545,7 +541,7 @@ class IdResolver(UserIdResolver):
         :param config: the linotp config
         :type  config: the linotp config dict
         """
-        log.info("Setting up the SQLResolver")
+        log.debug("Setting up SQLIdResolver")
         return
 
     def __init__(self):

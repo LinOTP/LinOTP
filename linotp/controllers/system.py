@@ -36,12 +36,11 @@ from html import escape
 from configobj import ConfigObj
 from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
-from werkzeug.exceptions import Unauthorized
 
 from flask import current_app, g
 from flask import send_file as flask_send_file
 
-from linotp.flap import config, request
+from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.config import (
@@ -155,21 +154,10 @@ class SystemController(BaseController):
                 "isSupportValid",
             ]:
                 checkPolicyPre("system", action)
-        except PolicyException as pex:
-            log.error("[__before__::%r] policy exception %r", action, pex)
-            db.session.rollback()
-            return sendError(pex, context="before")
-
-        except Unauthorized as acc:
-            # the exception, when an abort() is called if forwarded
-            log.error("[__before__::%r] webob.exception %r", action, acc)
-            db.session.rollback()
-            raise acc
-
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="before")
+            return sendError(exx)
 
     @staticmethod
     def __after__(response):
@@ -180,6 +168,8 @@ class SystemController(BaseController):
         :return: return the response
         """
 
+        action = request_context["action"]
+
         try:
             g.audit["administrator"] = getUserFromRequest()
             current_app.audit_obj.log(g.audit)
@@ -187,9 +177,9 @@ class SystemController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__] exception %r", exx)
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="after")
+            return sendError(exx)
 
     ########################################################
     @methods(["POST"])

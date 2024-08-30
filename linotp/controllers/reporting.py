@@ -39,16 +39,13 @@ from werkzeug.datastructures import Headers
 from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import request
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
 from linotp.lib.policy import (
     PolicyException,
     checkAuthorisation,
-    getAdminPolicies,
     match_allowed_realms,
 )
-from linotp.lib.realm import match_realms
 from linotp.lib.reply import (
     sendCSVIterator,
     sendError,
@@ -88,10 +85,10 @@ class ReportingController(BaseController):
 
         try:
             checkAuthorisation(scope="reporting.access", method=action)
-        except Exception as exception:
-            log.error(exception)
+        except Exception as exx:
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exception, context="before")
+            return sendError(exx)
 
     @staticmethod
     def __after__(response):
@@ -102,6 +99,8 @@ class ReportingController(BaseController):
         :return: return the response
         """
 
+        action = request_context["action"]
+
         try:
             g.audit["administrator"] = getUserFromRequest()
 
@@ -109,10 +108,10 @@ class ReportingController(BaseController):
             db.session.commit()  # FIXME: may not be needed
             return response
 
-        except Exception as exception:
-            log.error(exception)
+        except Exception as exx:
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exception, context="after")
+            return sendError(exx)
 
     @staticmethod
     def _match_allowed_realms(requested_realms: List[str]):

@@ -33,7 +33,6 @@ import logging
 from flask import current_app, g
 
 from linotp.controllers.base import BaseController
-from linotp.flap import config, request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context
@@ -76,10 +75,10 @@ class MonitoringController(BaseController):
 
         try:
             checkAuthorisation(scope="monitoring", method=action)
-        except Exception as exception:
-            log.error(exception)
+        except Exception as exx:
+            log.error("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exception, context="before")
+            return sendError(exx)
 
     @staticmethod
     def __after__(response):
@@ -90,6 +89,8 @@ class MonitoringController(BaseController):
         :return: return the response
         """
 
+        action = request_context["action"]
+
         try:
             g.audit["administrator"] = getUserFromRequest()
 
@@ -97,10 +98,10 @@ class MonitoringController(BaseController):
             db.session.commit()
             return response
 
-        except Exception as exception:
-            log.error(exception)
+        except Exception as exx:
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exception, context="after")
+            return sendError(exx)
 
         finally:
             db.session.close()

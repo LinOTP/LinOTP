@@ -64,12 +64,7 @@ from .lib.resolver import (
 )
 from .lib.security.provider import SecurityProvider
 from .lib.tools.expiring_list import CustomExpiringList
-from .lib.tools.flask_jwt_extended_migration import (
-    JWTManager,
-    get_jwt_identity,
-    verify_jwt_in_request,
-)
-from .lib.user import User
+from .lib.tools.flask_jwt_extended_migration import JWTManager
 from .lib.util import get_client, get_log_level
 from .middlewares.trusted_proxy_handler import TrustedProxyHandler
 from .model import SYS_EXIT_CODE, setup_db
@@ -399,6 +394,9 @@ class LinOTPApp(Flask):
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
+        """
+        initialize the request metadata
+        """
         if self.exclude_from_before_request_setup():
             return
 
@@ -407,7 +405,16 @@ class LinOTPApp(Flask):
         request.environ["REQUEST_ID"] = str(uuid4())
         request.environ["REQUEST_START_TIMESTAMP"] = datetime.now()
 
-        self.create_context(request, request.environ)
+        if log.isEnabledFor(logging.DEBUG):
+            # check debug log level beforehand to not slow down
+            # by not parsing the request params in production
+            log.debug(
+                "Starting Request: [Request ID: %s] [%s] %s",
+                request.environ.get("REQUEST_ID"),
+                request.method,
+                request.path,
+            )
+            log.debug("Request params: %r", self.getRequestParams())
 
     def is_request_static(self) -> bool:
         return request.path.startswith(self.static_url_path)
@@ -441,35 +448,24 @@ class LinOTPApp(Flask):
 
         log_request_timedelta(log)
 
-    def setup_env(self):
-        # The following functions are called here because they're
-        # stuffing bits into `flask.g`, which is a per-request global
-        # object. Much of what is stuffed into `flask.g` is actually
-        # application-wide stuff that has no business being stored in
-        # `flask.g` in the first place, but lots of code expects to be
-        # able to look at the "request context" and find stuff
-        # there. Disentangling the application-wide stuff in the
-        # request context from the request-scoped stuff is a major
-        # project that will not be undertaken just now, and we're
-        # probably doing more work here than we need to. Global
-        # variables suck.
+        log.debug(
+            "Finished Request: [Request ID: %s] [%s] %s",
+            request.environ.get("REQUEST_ID"),
+            request.method,
+            request.path,
+        )
 
+    def create_context(self):
+        """
+        create the request context for all controllers
+        """
         if self.exclude_from_before_request_setup():
             return
 
         setup_request_context()
-
         allocate_security_module()
 
-    def create_context(self, request, environment):
-        """
-        create the request context for all controllers
-        """
-
         linotp_config = getLinotpConfig()  # SQL-based configuration
-
-        # make the request id available in the request context
-        request_context["RequestId"] = environment["REQUEST_ID"]
 
         # a request local cache to get the user info from the resolver
         request_context["UserLookup"] = {}
@@ -512,29 +508,6 @@ class LinOTPApp(Flask):
         request_context["Client"] = client
 
         flask_g.audit = self.audit_obj.initialize(request, client=client)
-
-        try:
-            verify_jwt_in_request(optional=True)
-            c_identity = get_jwt_identity()
-        except Exception as exx:
-            c_identity = {}
-
-        authUser = None
-        try:
-            if c_identity:
-                authUser = User(
-                    login=c_identity["username"],
-                    realm=c_identity.get("realm"),
-                    resolver_config_identifier=c_identity[
-                        "resolver"
-                    ].rpartition(".")[-1],
-                )
-        except Exception as exx:
-            log.warning("Failed to identify jwt user: %r", exx)
-
-        flask_g.authUser = authUser
-
-        request_context["UserLookup"] = {}
 
         # ------------------------------------------------------------------ --
         # get the current resolvers
@@ -1030,7 +1003,6 @@ def create_app(config_name=None, config_extra=None):
         setup_db(app)
 
         init_linotp_config(app)
-        setup_request_context()
 
         init_security_provider()
 
@@ -1047,8 +1019,8 @@ def create_app(config_name=None, config_extra=None):
     app.before_first_request(init_logging_config)
     app.before_first_request(app.init_jwt_config)
     app.before_first_request(app.setup_resolvers)
-    app.before_request(app.setup_env)
     app.before_request(app.start_session)
+    app.before_request(app.create_context)
 
     # Per controller setup and handlers
     app.setup_controllers()

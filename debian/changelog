@@ -20,11 +20,14 @@ linotp (3.4~dev0-1) UNRELEASED; urgency=low
     Can't be used alongside `--max-entries-to-keep` or `--cleanup-threshold`!
   * audit log entries of `/admin/login` and `admin/logout` now state `success`, `user`, `realm` and `administrator` correctly
   * improved debug log output for TOTP resync routine
+  * improved (mostly by reducing) debug log output during server start and request context.
 
-  Fix:
+  Fixes:
   * wrongly aligned resize bar on Manage UI flexigrid tables when browser is zoomed or scaled
   * when rolling out a forwarding token via /manage, the serial of the target token is included in the description 
   * faulty JWTs don't cause a `500 Internal Server Error` anymore and the error gets logged properly
+  * login and logout endpoint for admin authentication was mixed into all /api/v2 controllers which made
+    it possible to use e.g. /api/v2/realms/login. Please use only /admin/<login/logout>
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 

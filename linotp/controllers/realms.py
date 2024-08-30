@@ -2,7 +2,8 @@ import logging
 
 from flask import Response, current_app, g, stream_with_context
 
-from linotp.controllers.base import BaseController, JWTMixin
+from linotp.controllers.base import BaseController
+from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult, sendResultIterator
@@ -14,7 +15,7 @@ from linotp.model import db
 log = logging.getLogger(__name__)
 
 
-class RealmsController(BaseController, JWTMixin):
+class RealmsController(BaseController):
     """
     The linotp.controllers are the implementation of the web-API to talk to
     the LinOTP server.
@@ -56,6 +57,9 @@ class RealmsController(BaseController, JWTMixin):
         :param response: the previously created response - for modification
         :return: return the response
         """
+
+        action = request_context["action"]
+
         try:
             g.audit["administrator"] = getUserFromRequest()
 
@@ -64,9 +68,9 @@ class RealmsController(BaseController, JWTMixin):
             return response
 
         except Exception as exx:
-            log.error("[__after__] unable to create a session cookie: %r", exx)
+            log.error("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
-            return sendError(exx, context="after")
+            return sendError(exx)
 
     def get_realms(self):
         """
