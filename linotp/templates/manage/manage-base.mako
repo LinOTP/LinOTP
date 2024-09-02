@@ -309,12 +309,20 @@
 
                 </table>
             </fieldset>
+	    <%
+	        may_overwrite_disabled = "disabled" if not c.app_config_CLIENT_PARAM_ENABLED else ""
+	    %>
             <fieldset>
                 <legend>${_("Authorization")}</legend>
-                    <label for=sys_mayOverwriteClient>${_("Override authentication client")}:</label>
-                    <input type='text' name='sys_mayOverwriteClient' id='sys_mayOverwriteClient' size='40'
+		<label for="sys_mayOverwriteClient" class="${may_overwrite_disabled}">${_("Override authentication client")}:</label>
+		<input type="text" name="sys_mayOverwriteClient" id="sys_mayOverwriteClient" size="40" ${may_overwrite_disabled} class="${may_overwrite_disabled}"
                     title="${_('This is a comma-separated list of the LinOTP clients, for example a RADIUS Server, which are allowed to pass their own clients IP-address as a parameter. This modified address can then be used in policy definitions.')}">
-            </fieldset>
+		% if not c.app_config_CLIENT_PARAM_ENABLED:
+		<div class="info_box" style="display: block; margin: 1em 0;">
+		    ${_("Note: Parameter-based client address overrides are deprecated. For now, you can re-enable this feature by setting the LinOTP config variable, GET_CLIENT_ADDRESS_FROM_POST_DATA, to 'True'. This feature may be removed entirely in a future version of LinOTP. Please use the standard 'X-Forwarded-For' headers in LinOTP API requests in your own code.")}
+		</div>
+		% endif
+	    </fieldset>
         </div>
         <div id="tab_content_system_caching">
             <fieldset>

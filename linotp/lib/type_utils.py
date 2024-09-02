@@ -382,6 +382,22 @@ def is_ip_address(address):
     return get_ip_address(address) is not None
 
 
+_dotted_quad_regex = re.compile(r"^\d+(\.\d+){3}$")
+
+
+def is_ip_address_dotted_quad(address):
+    """Check whether `address` is an IP address in dotted-quad notation.
+    `is_ip_address()` will also accept DNS names, which is not what we want.
+    `netaddr.IPAddress()` returns valid results for strange input like `1.2`,
+    which might technically be an IP address but is not what people expect,
+    so we don't bother with it.
+    Note that this will fail dismally in an IPv6 environment.
+    """
+    return bool(  # Use `bool` here to turn `None` into `False`
+        _dotted_quad_regex.match(address)
+    ) and all(0 <= int(q) < 256 for q in address.split("."))
+
+
 def parse_timeout(timeout_val, seperator=","):
     """
     parse a timeout value which migth be a single value or a tuple of

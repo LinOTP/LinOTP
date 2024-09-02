@@ -39,6 +39,7 @@ from unittest.mock import patch
 
 import pytest
 
+import flask
 from flask.globals import current_app
 from flask.testing import FlaskClient
 
@@ -259,6 +260,7 @@ def hsm_obj(app: LinOTPApp):
 
     The hsm object is returned
     """
+    flask.request.environ["REMOTE_ADDR"] = "11.12.13.14"  # Any will do
     app.create_context()
 
     return c["hsm"]["obj"]
