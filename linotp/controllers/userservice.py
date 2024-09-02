@@ -1999,6 +1999,10 @@ class UserserviceController(BaseController):
                 if transaction_data:
                     detail_response["transactionData"] = transaction_data
 
+                if token.type == "forward":
+                    # Add info about the token that this token forwards to.
+                    detail_response.update(token._get_target_info())
+
                 # ---------------------------------------------------------- --
 
                 # close down the session and submit the result
