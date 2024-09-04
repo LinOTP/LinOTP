@@ -35,6 +35,7 @@ import pytest
 from mock import patch
 
 from linotp.lib.policy.action import (
+    PolicyConversionError,
     get_selfservice_action_value,
     get_selfservice_actions,
 )
@@ -206,6 +207,60 @@ class SelfserviceActionTest(unittest.TestCase):
 
         assert "otp_pin_maxlength" in res
         assert res["otp_pin_maxlength"] == 4
+
+    @patch("linotp.lib.token.context", new=fake_context)
+    @patch("linotp.lib.policy.action.get_policy_definitions")
+    @patch("linotp.lib.policy.processing.get_policies")
+    @patch("linotp.lib.policy.action._get_client")
+    def test_get_selfservice_actions_faulty_policy(
+        self,
+        mocked__get_client,
+        mocked__get_policies,
+        mocked_get_policy_definitions,
+    ):
+        """
+        Verify that get_selfservice_actions raises PolicyConversionError on faulty policy.
+        Occured when restoring some LinOTP2 backups in LINOTP-2191.
+        """
+
+        # Setup faulty policy
+        policy_set = copy.deepcopy(PolicySet)
+        policy_name = "broken_policy"
+        policy_action = "totp_hashlib"
+        faulty_policy_action_value = "BROKEN"
+        policy_set[policy_name] = {
+            "realm": "*",
+            "active": "True",
+            "client": "*",
+            "user": "*",
+            "time": "* * * * * *;",
+            "action": f"{policy_action}={faulty_policy_action_value}",
+            "scope": "selfservice",
+        }
+        mocked__get_policies.return_value = policy_set
+        mocked_get_policy_definitions.return_value = {
+            "selfservice": {
+                "totp_hashlib": {"type": "int"},
+            }
+        }
+
+        # verify call raises PolicyConversionError
+        with pytest.raises(PolicyConversionError) as excinfo:
+            res = get_selfservice_actions(
+                LinotpUser(login="simple_user", realm="defaultrealm"),
+                policy_action,
+            )
+
+        # Verify error message
+        error_message = str(excinfo.value)
+        assert (
+            f"Could not parse selfservice-policy '{policy_name}'"
+            in error_message
+        )
+        assert (
+            f"Could not convert value '{faulty_policy_action_value}'"
+            in error_message
+        )
 
     @patch("linotp.lib.token.context", new=fake_context)
     @patch("linotp.lib.policy.action.get_policy_definitions")
