@@ -26,24 +26,6 @@
 #    Support: www.linotp.de
 #
 
-""" This is a janitor program, that cleans up the audit log.
-
-    If the audit entries exceed the linotpAudit.sql.highwatermark
-    the tool will delete old entries and only leave the
-    linotpAudit.sql.lowwatermark entries
-
-    14-09-02: added ability to dump the 'to be deleted audit data' into a
-              directory. This could be defined by 2 new linotp config
-              entries:
-
-            - linotpAudit.janitor.dir = /tmp
-
-              the dumpfile is extend with date and the biggest id of the
-              to be deleted data eg:     SQLData.2014.9.2-22382.csv
-
-            - linotpAudit.janitor.logdir = /var/log/linotp/
-"""
-
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
