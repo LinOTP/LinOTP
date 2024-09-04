@@ -26,24 +26,6 @@
 #    Support: www.linotp.de
 #
 
-""" This is a janitor program, that cleans up the audit log.
-
-    If the audit entries exceed the linotpAudit.sql.highwatermark
-    the tool will delete old entries and only leave the
-    linotpAudit.sql.lowwatermark entries
-
-    14-09-02: added ability to dump the 'to be deleted audit data' into a
-              directory. This could be defined by 2 new linotp config
-              entries:
-
-            - linotpAudit.janitor.dir = /tmp
-
-              the dumpfile is extend with date and the biggest id of the
-              to be deleted data eg:     SQLData.2014.9.2-22382.csv
-
-            - linotpAudit.janitor.logdir = /var/log/linotp/
-"""
-
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -91,13 +73,12 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
     "cleanup_threshold",
     type=int,
     help=(
-        "Specify the maximum number of entries in the database that triggers the cleanup process. "
-        "When the number of entries exceeds this threshold, the cleanup process is initiated. "
-        "This value must be greater than or equal to the value specified for --max-entries-to-keep. "
-        "If you do not want to directly reach the limit again, set it to a lower number than --max-entries-to-keep. "
-        "This is especially usefull for cronjobs triggering an export. In this case, setting --cleanup-threshold "
-        "to e.g. twice the amount of --max-entries-to-keep will drastically reduce the number of backup-files. "
-        "Defaults to the value of --max-entries-to-keep."
+        "Specify a threshold above --max-entries-to-keep. Cleanup will only be triggered when this "
+        "threshold is exceeded, even if --max-entries-to-keep has already been surpassed. This option "
+        "helps to manage cleanup frequency and reduce the number of backup files. For cron jobs that "
+        "trigger exports (when --export is set), consider setting --cleanup-threshold to a higher value "
+        "(e.g., twice the --max-entries-to-keep). If not specified, cleanup will run whenever the "
+        "number of entries exceeds --max-entries-to-keep."
     ),
 )
 @click.option(
@@ -130,7 +111,7 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
 def cleanup_command(
     max_entries_to_keep: Optional[int],
     cleanup_threshold: Optional[int],
-    delete_after_days: Optional[str],
+    delete_after_days: Optional[int],
     export: bool,
     exportdir: Optional[str],
 ):
@@ -216,7 +197,7 @@ class SQLJanitor:
     script to help the house keeping of audit entries
     """
 
-    def __init__(self, export_dir: Path = None):
+    def __init__(self, export_dir: Optional[Path] = None):
         self.export_dir = export_dir
 
         self.app = current_app
@@ -268,9 +249,7 @@ class SQLJanitor:
                             "exporting of unknown data / data type %r" % val,
                             v=1,
                         )
-
-                prin = "; ".join(row_data)
-                f.write(prin)
+                f.write("; ".join(row_data))
                 f.write("\n")
 
         return export_file
