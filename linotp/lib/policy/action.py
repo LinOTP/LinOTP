@@ -214,7 +214,13 @@ class PolicyActionTyping:
 
                 return False
 
-            return bool(action_value)
+            converted_value = bool(action_value)
+            log.warning(
+                "action value '%r' not of type bool, int or str -> converting to '%r'",
+                action_value,
+                converted_value,
+            )
+            return converted_value
 
         elif typing == "int":
             return int(action_value)
