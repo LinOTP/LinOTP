@@ -27,7 +27,7 @@
 """policy action processing"""
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Union
 from warnings import warn
 
 from linotp.lib.user import User
@@ -164,7 +164,12 @@ class PolicyActionTyping:
         """Helper class for the policy typing."""
         self.definitions = get_policy_definitions()
 
-    def convert(self, scope: str, action_name: str, action_value: str) -> Any:
+    def convert(
+        self,
+        scope: str,
+        action_name: str,
+        action_value: Union[bool, int, str],
+    ) -> Any:
         """Convert the action values acording to the policy definitions.
 
         :paran scope: of the action
