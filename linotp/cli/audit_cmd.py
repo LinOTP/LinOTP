@@ -73,13 +73,12 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
     "cleanup_threshold",
     type=int,
     help=(
-        "Specify the maximum number of entries in the database that triggers the cleanup process. "
-        "When the number of entries exceeds this threshold, the cleanup process is initiated. "
-        "This value must be greater than or equal to the value specified for --max-entries-to-keep. "
-        "If you do not want to directly reach the limit again, set it to a lower number than --max-entries-to-keep. "
-        "This is especially usefull for cronjobs triggering an export. In this case, setting --cleanup-threshold "
-        "to e.g. twice the amount of --max-entries-to-keep will drastically reduce the number of backup-files. "
-        "Defaults to the value of --max-entries-to-keep."
+        "Specify a threshold above --max-entries-to-keep. Cleanup will only be triggered when this "
+        "threshold is exceeded, even if --max-entries-to-keep has already been surpassed. This option "
+        "helps to manage cleanup frequency and reduce the number of backup files. For cron jobs that "
+        "trigger exports (when --export is set), consider setting --cleanup-threshold to a higher value "
+        "(e.g., twice the --max-entries-to-keep). If not specified, cleanup will run whenever the "
+        "number of entries exceeds --max-entries-to-keep."
     ),
 )
 @click.option(
