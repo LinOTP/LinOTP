@@ -112,7 +112,7 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
 def cleanup_command(
     max_entries_to_keep: Optional[int],
     cleanup_threshold: Optional[int],
-    delete_after_days: Optional[str],
+    delete_after_days: Optional[int],
     export: bool,
     exportdir: Optional[str],
 ):
@@ -198,7 +198,7 @@ class SQLJanitor:
     script to help the house keeping of audit entries
     """
 
-    def __init__(self, export_dir: Path = None):
+    def __init__(self, export_dir: Optional[Path] = None):
         self.export_dir = export_dir
 
         self.app = current_app
@@ -250,9 +250,7 @@ class SQLJanitor:
                             "exporting of unknown data / data type %r" % val,
                             v=1,
                         )
-
-                prin = "; ".join(row_data)
-                f.write(prin)
+                f.write("; ".join(row_data))
                 f.write("\n")
 
         return export_file
