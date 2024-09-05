@@ -102,7 +102,17 @@ build-and-upload-docker:
   before_script:
     - !reference [.docker-registry]
   script:
-    - docker build -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
+    # We're using labels to add some interesting build metadata to the
+    # container image. This makes it easier to identify exactly what is
+    # in the image. The `IMAGE_VERSION` maps any version number like
+    # `.devX` or `.rcY` to `.0`.
+    - IMAGE_VERSION="$(sed -Ene '/__version__ =/{s/^.*= "(.*)"/\1/;s/\.(dev|rc)[0-9]+/.0/;p}' linotp/__init__.py)"
+    - DATE=$(date +"%Y%m%d")
+    - docker build
+        --label de.linotp.commit-ref="$CI_COMMIT_REF_NAME"
+        --label de.linotp.commit-hash="$CI_COMMIT_SHORT_SHA"
+        --label de.linotp.tag="$IMAGE_VERSION-$DATE"
+        -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
     - docker push "$DOCKER_IMAGE_TAG"
     - docker build -t "$DOCKER_TEST_ENV_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testenv .
     - docker push "$DOCKER_TEST_ENV_IMAGE_TAG"
