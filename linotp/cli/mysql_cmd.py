@@ -43,6 +43,7 @@ instance from MySQL to PostgreSQL (for example).
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 import click
 from sqlalchemy import create_engine
@@ -98,8 +99,6 @@ def backup_mysql_database():
     """
     app = current_app
 
-    filename = get_backup_filename("linotp_backup_%s.sql")
-    backup_filename = os.path.abspath(filename)
     # ---------------------------------------------------------------------- --
 
     # setup db engine, session and meta from sql uri
@@ -115,6 +114,15 @@ def backup_mysql_database():
             f"is {engine.url.drivername!r}"
         )
         raise click.Abort()
+
+    # ---------------------------------------------------------------------- --
+
+    # Setup backup_dir
+
+    filename = get_backup_filename("linotp_backup_%s.sql")
+    backup_dir = Path(current_app.config["BACKUP_DIR"])
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    backup_filename = os.path.join(backup_dir, filename)
 
     # ---------------------------------------------------------------------- --
 

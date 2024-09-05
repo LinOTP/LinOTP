@@ -230,9 +230,6 @@ def test_audit_cleanup_parameters(
         app.config["BACKUP_FILE_TIME_FORMAT"]
     )
 
-    # Set BACKUP_DIR to `./backup` (instead of creating `/var/linotp/backup`)
-    app.config["BACKUP_DIR"] = "backup"
-
     result = runner.invoke(cli_main, ["-vv", "audit", "cleanup"] + options)
 
     assert result.exit_code == exit_code
