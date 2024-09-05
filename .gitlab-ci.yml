@@ -206,7 +206,7 @@ semgrep-sast_evaluation:
     - apt-get install -y jq
     # remove cmd call from report by hand (because "# nosec" does not work in semgrep job)
     # Update this command in case the job fails after altering "mysql_cmd.py"
-    - jq '(.vulnerabilities[] | select(.location.file == "linotp/cli/mysql_cmd.py" and .location.start_line == 140)) |= null' $REPORT_FILE > tmp.json && mv tmp.json $REPORT_FILE
+    - jq '(.vulnerabilities[] | select(.location.file == "linotp/cli/mysql_cmd.py" and .location.start_line == 148)) |= null' $REPORT_FILE > tmp.json && mv tmp.json $REPORT_FILE
 
 pre-commit-check:
   stage: check-and-build
