@@ -224,7 +224,7 @@ _config_schema = ConfigSchema(
         ConfigItem(
             "BACKUP_DIR",
             str,
-            default="/var/backups/linotp",
+            default="backup",
             help=(
                 "Directory for the backup files creates via "
                 "`linotp backup` command"
