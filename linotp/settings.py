@@ -226,8 +226,8 @@ _config_schema = ConfigSchema(
             str,
             default="backup",
             help=(
-                "Directory for the backup files creates via "
-                "`linotp backup` command"
+                "Directory for backup files created via e.g."
+                "`linotp backup` or `linotp audit cleanup --export` commands"
             ),
         ),
         ConfigItem(
