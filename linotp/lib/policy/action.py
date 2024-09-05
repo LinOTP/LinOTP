@@ -27,7 +27,7 @@
 """policy action processing"""
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Union
 from warnings import warn
 
 from linotp.lib.user import User
@@ -101,10 +101,17 @@ def get_selfservice_actions(user=None, action=None):
     all_actions = {}
     for policy in policies.values():
         actions = parse_action_value(policy.get("action", {}))
-        if not action:
-            all_actions.update(pat.convert_actions(scope, actions))
-        elif action in actions:
-            all_actions[action] = pat.convert(scope, action, actions[action])
+        try:
+            if not action:
+                all_actions.update(pat.convert_actions(scope, actions))
+            elif action in actions:
+                all_actions[action] = pat.convert(
+                    scope, action, actions[action]
+                )
+        except PolicyConversionError as err:
+            raise PolicyConversionError(
+                f"Could not parse selfservice-policy '{policy['name']}': {err}"
+            ) from err
 
     return all_actions
 
@@ -140,7 +147,12 @@ def get_action_value(
 
         if action in actions:
             current = all_actions.setdefault(action, [])
-            current.append(pat.convert(scope, action, actions[action]))
+            try:
+                current.append(pat.convert(scope, action, actions[action]))
+            except PolicyConversionError as err:
+                raise PolicyConversionError(
+                    f"Could not parse policy '{policy['name']}': {err}"
+                ) from err
             all_actions[action] = current
 
     if action not in all_actions:
@@ -157,6 +169,11 @@ def get_action_value(
     return all_actions[action][0]
 
 
+class PolicyConversionError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
 class PolicyActionTyping:
     """Convert the action value according to the policy definition."""
 
@@ -164,7 +181,12 @@ class PolicyActionTyping:
         """Helper class for the policy typing."""
         self.definitions = get_policy_definitions()
 
-    def convert(self, scope: str, action_name: str, action_value: str) -> Any:
+    def convert(
+        self,
+        scope: str,
+        action_name: str,
+        action_value: Union[bool, int, str],
+    ) -> Any:
         """Convert the action values acording to the policy definitions.
 
         :paran scope: of the action
@@ -172,58 +194,68 @@ class PolicyActionTyping:
         :param action_value: the un parsed action value
         :return: the typed value
         """
-
-        if action_name not in self.definitions[scope]:
-            return action_value
-
-        typing = self.definitions[scope][action_name].get("type")
-
-        if typing is None:
-            return action_value
-
-        elif typing == "bool":
-            if action_value in [True, False]:
+        try:
+            if action_name not in self.definitions[scope]:
                 return action_value
 
-            msg = (
-                "%s:%s : action value %r is not compliant with "
-                "action type 'bool'" % (scope, action_name, action_value)
-            )
-            warn(msg, DeprecationWarning)
+            typing = self.definitions[scope][action_name].get("type")
 
-            if action_value in [-1, "-1"]:
-                return False
+            if typing is None:
+                return action_value
 
-            if isinstance(action_value, int):
-                return action_value > 0
+            elif typing == "bool":
+                if action_value in [True, False]:
+                    return action_value
 
-            if isinstance(action_value, str):
-                if action_value.lower() == "true":
-                    return True
+                msg = (
+                    "%s:%s : action value %r is not compliant with "
+                    "action type 'bool'" % (scope, action_name, action_value)
+                )
+                warn(msg, DeprecationWarning)
 
-                if action_value.lower() == "false":
+                if action_value in [-1, "-1"]:
                     return False
 
-                if action_value.isdigit():
-                    return int(action_value) > 0
+                if isinstance(action_value, int):
+                    return action_value > 0
 
-                return False
+                if isinstance(action_value, str):
+                    if action_value.lower() == "true":
+                        return True
 
-            return bool(action_value)
+                    if action_value.lower() == "false":
+                        return False
 
-        elif typing == "int":
-            return int(action_value)
+                    if action_value.isdigit():
+                        return int(action_value) > 0
 
-        elif typing in ["str", "string"]:
-            return str(action_value)
+                    return False
 
-        elif typing == "set":
-            # in case of a set, we try our best:
-            # if int() else return as is
-            if isinstance(action_value, str) and action_value.isdigit():
+                converted_value = bool(action_value)
+                log.warning(
+                    "action value '%r' not of type bool, int or str -> converting to '%r'",
+                    action_value,
+                    converted_value,
+                )
+                return converted_value
+
+            elif typing == "int":
                 return int(action_value)
 
-        return action_value
+            elif typing in ["str", "string"]:
+                return str(action_value)
+
+            elif typing == "set":
+                # in case of a set, we try our best:
+                # if int() else return as is
+                if isinstance(action_value, str) and action_value.isdigit():
+                    return int(action_value)
+
+            return action_value
+        except Exception as err:
+            raise PolicyConversionError(
+                f"Could not convert value '{action_value}' of '{scope}:{action_name}': {err}"
+            ) from err
 
     def convert_actions(self, scope: str, actions: Dict) -> Dict:
         """type conversion of an action dict.
