@@ -50,11 +50,8 @@ class TrustedProxyHandler:
 
         resolved_trusted_proxies = self._resolve_proxies(self.trusted_proxies)
 
-        if (
-            self._is_address_in_networks_list(
-                orig_remote_addr, resolved_trusted_proxies
-            )
-            and real_remote_addr
+        if real_remote_addr and self._is_address_in_networks_list(
+            orig_remote_addr, resolved_trusted_proxies
         ):
             environ["REMOTE_ADDR"] = real_remote_addr
             environ.update(
