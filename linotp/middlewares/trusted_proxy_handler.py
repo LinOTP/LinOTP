@@ -59,15 +59,21 @@ class TrustedProxyHandler:
         return self.app(environ, start_response)
 
     def _get_remote_addr(self, x_forwarded_for: str):
-        """Selects the new remote addr from the given list of ips in
-        X-Forwarded-For. It picks up the first one, ignoring all the rest of the list
+        """
+        Extract the first IP address from X-Forwarded-For header.
+
+        Args:
+            x_forwarded_for (str): The X-Forwarded-For header value.
+
+        Returns:
+            str: The first valid IP address or None if not available.
         """
 
-        x_forwarded_for = x_forwarded_for.split(",")
-        x_forwarded_for = [
-            x for x in [x.strip() for x in x_forwarded_for] if x
-        ]
-        return x_forwarded_for[0] if x_forwarded_for else None
+        for ip in x_forwarded_for.split(","):
+            ip = ip.strip()
+            if ip:
+                return ip
+        return None
 
     def _resolve_proxies(self, proxies):
         """
