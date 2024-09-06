@@ -488,7 +488,7 @@ def getDefaultRealm(config=None):
     else:
         defaultRealm = config.get(defaultRealmDef, "")
 
-    if defaultRealm is None or defaultRealm == "":
+    if not defaultRealm:
         log.info("Configuration issue: No default realm defined.")
         defaultRealm = ""
 
