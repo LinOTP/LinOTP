@@ -24,6 +24,7 @@ Usage Example:
 """
 
 import logging
+from typing import Set, Union
 
 from linotp.lib.type_utils import get_ip_address, get_ip_network
 from linotp.lib.util import is_addr_in_network
@@ -37,9 +38,9 @@ class TrustedProxyHandler:
     it matches the trusted proxies in the settings.
     """
 
-    def __init__(self, app, trusted_proxies):
+    def __init__(self, app, trusted_proxies: Union[list, set]):
         self.app = app
-        self.trusted_proxies = trusted_proxies
+        self.trusted_proxies = set(trusted_proxies)
 
     def __call__(self, environ, start_response):
         orig_remote_addr = environ.get("REMOTE_ADDR")
@@ -75,22 +76,22 @@ class TrustedProxyHandler:
                 return ip
         return None
 
-    def _resolve_proxies(self, proxies):
+    def _resolve_proxies(self, proxies: Set[str]):
         """
         Resolve DNS hostnames in the list of proxies to IP addresses.
 
         Args:
-            proxies (list): List of IP addresses, network addresses, or DNS hostnames.
+            proxies (set): Set of IP addresses, network addresses, or DNS hostnames.
 
         Returns:
-            list: List of resolved IP addresses and network addresses.
+            set: Set of resolved IP addresses and network addresses.
         """
 
-        resolved_proxies = []
+        resolved_proxies = set()
         for proxy in proxies:
             ip_addr = get_ip_address(proxy) or get_ip_network(proxy)
             if ip_addr:
-                resolved_proxies.append(ip_addr)
+                resolved_proxies.add(ip_addr)
             else:
                 log.warning(
                     f"Disregarding non-supported or bad proxy definition: '{proxy}'. This could also be due to a domain name that could not be resolved"
@@ -98,13 +99,13 @@ class TrustedProxyHandler:
 
         return resolved_proxies
 
-    def _is_address_in_networks_list(self, addr, networks):
+    def _is_address_in_networks_list(self, addr: str, networks: set):
         """
         Check if the address is in the specified networks list.
 
         Args:
             addr (str): The IP address to check.
-            networks (list): A list of network ranges to check against.
+            networks (set): A set of network ranges to check against.
 
         Returns:
             bool: True if the address is in any of the specified networks, False otherwise.
