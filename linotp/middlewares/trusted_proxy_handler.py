@@ -39,7 +39,7 @@ class TrustedProxyHandler:
 
     def __init__(self, app, trusted_proxies):
         self.app = app
-        self.trusted_proxies = self._resolve_proxies(trusted_proxies)
+        self.trusted_proxies = trusted_proxies
 
     def __call__(self, environ, start_response):
         orig_remote_addr = environ.get("REMOTE_ADDR")
@@ -48,9 +48,11 @@ class TrustedProxyHandler:
             environ.get("HTTP_X_FORWARDED_FOR", "")
         )
 
+        resolved_trusted_proxies = self._resolve_proxies(self.trusted_proxies)
+
         if (
             self._is_address_in_networks_list(
-                orig_remote_addr, self.trusted_proxies
+                orig_remote_addr, resolved_trusted_proxies
             )
             and real_remote_addr
         ):
