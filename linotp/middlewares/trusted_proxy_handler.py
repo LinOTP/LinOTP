@@ -54,9 +54,7 @@ class TrustedProxyHandler:
             orig_remote_addr, resolved_trusted_proxies
         ):
             environ["REMOTE_ADDR"] = real_remote_addr
-            environ.update(
-                {"linotp.proxy_fix.orig_remote_addr": orig_remote_addr}
-            )
+            environ["linotp.proxy_fix.orig_remote_addr"] = orig_remote_addr
 
         return self.app(environ, start_response)
 
