@@ -66,7 +66,7 @@ class MaintenanceController(BaseController):
                 created by sendError with the context info 'before'
         """
 
-        env_var = config.get("MAINTENANCE_VERIFY_CLIENT_ENV_VAR", False)
+        env_var = config["MAINTENANCE_VERIFY_CLIENT_ENV_VAR"]
 
         if env_var:
             client_cert = request.environ.get(env_var)
