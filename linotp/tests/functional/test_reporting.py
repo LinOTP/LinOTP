@@ -25,7 +25,6 @@
 #    Support: www.linotp.de
 #
 
-import json
 import logging
 import os
 from datetime import datetime, timedelta
@@ -122,7 +121,7 @@ class TestReportingController(TestController):
             params={"realms": "*", "status": "*"},
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
 
@@ -253,7 +252,7 @@ class TestReportingController(TestController):
         response = self.make_reporting_request(
             "delete_before", params=parameter
         )
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert values.get("value") == 1, response
@@ -295,7 +294,7 @@ class TestReportingController(TestController):
             params={"realm": "*", "status": "active"},
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert values.get("value") == 2, response
@@ -326,7 +325,7 @@ class TestReportingController(TestController):
             },
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert (
@@ -668,7 +667,7 @@ class TestReportingController(TestController):
             params={"realms": "mydefrealm, mymixrealm"},
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         value = values.get("value")
@@ -685,7 +684,7 @@ class TestReportingController(TestController):
         }
         self.create_policy(policy_params)
         response = self.make_reporting_request("maximum")
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status") == False, response
         assert values.get("error").get("code") == 410, response
@@ -779,7 +778,7 @@ class TestReportingController(TestController):
         self.create_token(serial="0047")
 
         response = self.make_reporting_request("show")
-        resp = json.loads(response.body)
+        resp = response.json
         assert resp.get("detail").get("report_rows") == 4, response
         assert resp.get("result").get("status"), response
         values = resp.get("result").get("value")
@@ -839,7 +838,7 @@ class TestReportingController(TestController):
         pagesize_value = 12
         parameter = {"page": page_value, "pagesize": pagesize_value}
         response = self.make_reporting_request("show", params=parameter)
-        resp = json.loads(response.body)
+        resp = response.json
         assert resp.get("detail").get("report_rows") == 50, response
         assert resp.get("detail").get("page") == page_value, response
         assert resp.get("detail").get("pagesize") == pagesize_value, response
@@ -895,7 +894,7 @@ class TestReportingController(TestController):
             assert '"value": true' in response
 
             response = self.make_system_request("getSupportInfo")
-            jresp = json.loads(response.body)
+            jresp = response.json
             user_num = jresp.get("result", {}).get("value", {}).get("user-num")
 
             assert user_num == "4"
@@ -1142,7 +1141,7 @@ class TestReportingController(TestController):
             "delete_before", params=parameter
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert values.get("value") == 0, response
@@ -1177,7 +1176,7 @@ class TestReportingController(TestController):
             "delete_before", params=parameter
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert values.get("value") == 1, response
