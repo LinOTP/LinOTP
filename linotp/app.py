@@ -367,7 +367,7 @@ class LinOTPApp(Flask):
         with Path(self.config["SECRET_FILE"]).open("rb") as key_file:
             secret_key = key_file.read(32)
             jwt_salt = secrets.token_bytes(16)
-            jwt_iterations = self.config.get("JWT_SECRET_ITERATIONS")
+            jwt_iterations = self.config["JWT_SECRET_ITERATIONS"]
             jwt_key = hashlib.pbkdf2_hmac(
                 "sha256",
                 secret_key,

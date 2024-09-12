@@ -239,9 +239,8 @@ def _get_client_from_request(request=None):
             # check, if the request passed by a qualified proxy
 
             remote_addr = client
-            x_forwarded_proxies = config.get(
-                "client.FORWARDED_PROXY",
-                getFromConfig("client.FORWARDED_PROXY", ""),
+            x_forwarded_proxies = getFromConfig(
+                "client.FORWARDED_PROXY", ""
             ).split(",")
 
             for x_forwarded_proxy in x_forwarded_proxies:
@@ -261,10 +260,9 @@ def _get_client_from_request(request=None):
             # Check if the request passed through a qualified proxy
 
             remote_addr = client
-            forwarded_proxies = config.get(
-                "client.FORWARDED_PROXY",
-                getFromConfig("client.FORWARDED_PROXY", "").split(","),
-            )
+            forwarded_proxies = getFromConfig(
+                "client.FORWARDED_PROXY", ""
+            ).split(",")
 
             for forwarded_proxy in forwarded_proxies:
                 if not is_addr_in_network(remote_addr, forwarded_proxy):
@@ -308,25 +306,15 @@ def is_http_forwarded_active():
     #
     # Forwarded: for=192.0.2.60; proto=http; by=203.0.113.43
 
-    return boolean(
-        config.get(
-            "client.FORWARDED", getFromConfig("client.FORWARDED", "false")
-        )
-    )
+    return boolean(getFromConfig("client.FORWARDED", False))
 
 
 def is_x_forwarded_for_active():
-    x_forwarded_for = boolean(
-        config.get(
-            "client.X_FORWARDED_FOR",
-            getFromConfig("client.X_FORWARDED_FOR", "False"),
-        )
-    )
-    return x_forwarded_for
+    return boolean(getFromConfig("client.X_FORWARDED_FOR", False))
 
 
 def is_TRUSTED_PROXIES_active():
-    trusted_proxies_settings = config.get("TRUSTED_PROXIES", [])
+    trusted_proxies_settings = config["TRUSTED_PROXIES"]
     if trusted_proxies_settings:
         return True
     return False

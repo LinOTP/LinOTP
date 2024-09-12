@@ -154,7 +154,7 @@ class ManageController(BaseController):
             c.importers = getImportText()
             log.debug("[index] importers: %s", c.importers)
 
-            c.help_url = config.get("HELP_URL").format(linotp.__version__)
+            c.help_url = config["HELP_URL"].format(linotp.__version__)
 
             # -------------------------------------------------------------- --
 

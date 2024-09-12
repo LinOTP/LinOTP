@@ -43,6 +43,10 @@ class TestTrustedProxyHandler(unittest.TestCase):
 
         self.assertEqual(environ_in_app.get("REMOTE_ADDR"), "1.2.3.4")
         self.assertEqual(environ_in_app.get("HTTP_X_FORWARDED_FOR"), "1.2.3.4")
+        self.assertEqual(
+            environ_in_app.get("linotp.proxy_fix.orig_remote_addr"),
+            environ["REMOTE_ADDR"],
+        )
 
     def test_untrusted_proxy(self):
         # List of trusted proxies
@@ -62,7 +66,7 @@ class TestTrustedProxyHandler(unittest.TestCase):
 
         self.assertEqual(environ_in_app.get("REMOTE_ADDR"), "10.0.0.2")
         self.assertEqual(environ_in_app.get("HTTP_X_FORWARDED_FOR"), "1.2.3.4")
-        self.assertNotIn("werkzeug.proxy_fix.orig", environ_in_app)
+        self.assertNotIn("linotp.proxy_fix.orig_remote_addr", environ_in_app)
 
     def test_trusted_proxy_not_set(self):
         # List of trusted proxies
@@ -82,4 +86,4 @@ class TestTrustedProxyHandler(unittest.TestCase):
 
         self.assertEqual(environ_in_app.get("REMOTE_ADDR"), "10.0.0.2")
         self.assertEqual(environ_in_app.get("HTTP_X_FORWARDED_FOR"), "1.2.3.4")
-        self.assertNotIn("werkzeug.proxy_fix.orig", environ_in_app)
+        self.assertNotIn("linotp.proxy_fix.orig_remote_addr", environ_in_app)

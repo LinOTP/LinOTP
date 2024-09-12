@@ -781,7 +781,7 @@ def get_details_for_response(response: Response) -> dict:
     if is_auth_return(success=login_successful, user=user):
         if login_successful:
             realm = user.realm if user else None
-            admin_realm = current_app.config.get("ADMIN_REALM_NAME")
+            admin_realm = current_app.config["ADMIN_REALM_NAME"]
 
             # user info
             if not user:
