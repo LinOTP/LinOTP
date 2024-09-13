@@ -330,7 +330,7 @@ def _retrieveAllConfigDB():
     desc_dict = {}
     cont_dict = {}
 
-    db_config = Config.query.all()
+    db_config: list[Config] = Config.query.all()
 
     # put all information in the dicts for later processing
 
