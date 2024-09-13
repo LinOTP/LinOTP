@@ -2329,13 +2329,9 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
+            g.audit["success"] = ret
             g.audit["serial"] = response_detail.get("serial", "")
-            g.audit["success"] = ret
-            g.audit["user"] = g.authUser.login
-            g.audit["realm"] = g.authUser.realm
             g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
-
-            g.audit["success"] = ret
 
             # -------------------------------------------------------------- --
 
