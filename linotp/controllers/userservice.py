@@ -646,6 +646,7 @@ class UserserviceController(BaseController):
                 expires=expires,
             )
 
+            g.audit["success"] = True
             g.audit["info"] = "User %r authenticated from otp" % user
 
             db.session.commit()
@@ -789,6 +790,7 @@ class UserserviceController(BaseController):
                 expires=expires,
             )
 
+            g.audit["success"] = True
             g.audit["action_detail"] = "expires: %s " % expiration
             g.audit["info"] = "%r logged in " % user
 
@@ -829,6 +831,7 @@ class UserserviceController(BaseController):
                 expires=expires,
             )
 
+            g.audit["success"] = True
             g.audit["action_detail"] = "expires: %s " % expiration
             g.audit["info"] = "%r logged in " % user
 
@@ -1149,6 +1152,8 @@ class UserserviceController(BaseController):
             tokenArray = getTokenForUser(
                 g.authUser, active=active, exclude_rollout=False
             )
+
+            g.audit["success"] = True
 
             db.session.commit()
             return sendResult(tokenArray, 0)
@@ -1896,6 +1901,7 @@ class UserserviceController(BaseController):
                     transid=transaction_id, passw=params["otp"], options=params
                 )
 
+                g.audit["success"] = res
                 db.session.commit()
                 return sendResult(res)
 
@@ -1903,9 +1909,11 @@ class UserserviceController(BaseController):
 
             elif action == "query transaction":
                 detail = get_transaction_detail(transaction_id)
+                res = detail.get("valid_tan", False)
+                g.audit["success"] = res
 
                 db.session.commit()
-                return sendResult(detail.get("valid_tan", False), opt=detail)
+                return sendResult(res, opt=detail)
 
             # -------------------------------------------------------------- --
 
@@ -1914,6 +1922,8 @@ class UserserviceController(BaseController):
                 (res, _opt) = vh.checkUserPass(
                     g.authUser, passw=params["otp"], options=params
                 )
+
+                g.audit["success"] = res
 
                 db.session.commit()
                 return sendResult(res)
@@ -2157,7 +2167,7 @@ class UserserviceController(BaseController):
             )
             res = {"serial": serial}
 
-            g.audit["success"] = 1
+            g.audit["success"] = True
             g.audit["serial"] = serial
 
             db.session.commit()
