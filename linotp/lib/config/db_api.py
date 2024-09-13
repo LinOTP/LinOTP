@@ -345,7 +345,7 @@ def _retrieveAllConfigDB():
         # search for the entry which starts with '0:' as it will provide the
         # number of continuous entries
 
-        if conf.Type == "C" and conf.Description[: len("0:")] == "0:":
+        if conf.Type == "C" and conf.Description.startswith("0:"):
             _start, num = conf.Description.split(":")
             cont_dict[conf.Key] = int(num)
 
