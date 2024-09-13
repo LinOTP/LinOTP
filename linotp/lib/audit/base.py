@@ -269,11 +269,7 @@ def search(param, user=None, columns=None):
         if "token_type" not in a and "tokentype" in a:
             a["token_type"] = a["tokentype"]
 
-        cell = (
-            []
-            if len(a["serial"]) > 0
-            else [a.get(colname) for colname in columns]
-        )
+        cell = [a.get(colname) for colname in columns]
         lines.append({"id": a["id"], "cell": cell})
 
     # get the complete number of audit logs
