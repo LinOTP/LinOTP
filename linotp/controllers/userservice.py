@@ -2418,7 +2418,7 @@ class UserserviceController(BaseController):
 
         try:
             ret = {}
-            ret1 = False
+            was_token_created = False
 
             typ = param["type"]
 
@@ -2482,7 +2482,7 @@ class UserserviceController(BaseController):
                     g.authUser.realm,
                 )
 
-                (ret1, _tokenObj) = th.initToken(
+                (was_token_created, _tokenObj) = th.initToken(
                     {
                         "type": t_type,
                         "serial": serial,
@@ -2496,7 +2496,7 @@ class UserserviceController(BaseController):
                     g.authUser,
                 )
 
-                if ret1:
+                if was_token_created:
                     url = create_oathtoken_url(
                         g.authUser.login,
                         g.authUser.realm,
@@ -2542,7 +2542,7 @@ class UserserviceController(BaseController):
                     g.authUser.realm,
                 )
 
-                (ret1, _tokenObj) = th.initToken(
+                (was_token_created, _tokenObj) = th.initToken(
                     {
                         "type": t_type,
                         "serial": serial,
@@ -2556,7 +2556,7 @@ class UserserviceController(BaseController):
                     g.authUser,
                 )
 
-                if ret1:
+                if was_token_created:
                     pparam = {
                         "user.login": g.authUser.login,
                         "user.realm": g.authUser.realm,
@@ -2591,14 +2591,14 @@ class UserserviceController(BaseController):
             g.audit["serial"] = serial
             # the Google and OATH are always HMAC; sometimes (FUTURE) totp"
             g.audit["token_type"] = t_type
-            g.audit["success"] = ret1
+            g.audit["success"] = was_token_created
             param["serial"] = serial
 
             checkPolicyPost("selfservice", "enroll", param, user=g.authUser)
 
             db.session.commit()
             return sendResult(
-                {"init": ret1, "setpin": False, "oathtoken": ret},
+                {"init": was_token_created, "setpin": False, "oathtoken": ret},
             )
 
         except PolicyException as pe:
