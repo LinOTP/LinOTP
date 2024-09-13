@@ -98,7 +98,7 @@ class AuditBase(object):
             "client": "",
             "success": False,
         }
-        audit["action"] = request.path
+        audit["action"] = request.path.lstrip("/")
         if client:
             audit["client"] = client
         return audit

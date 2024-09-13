@@ -1172,9 +1172,6 @@ class UserserviceController(BaseController):
 
         try:
             uinfo = get_userinfo(g.authUser)
-
-            g.audit["success"] = True
-
             db.session.commit()
             return sendResult(uinfo, 0)
 
