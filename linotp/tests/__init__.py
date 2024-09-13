@@ -1185,5 +1185,12 @@ class TestController(TestCase):
         assert res["rows"]
         return res["rows"][-1]["cell"]
 
+    def get_last_audit_entry_for_action(self, action: str):
+        response = self.make_audit_request("search")
+        res = response.json
+        entries = [row["cell"] for row in res["rows"]]
+        filtered_entries = [entry for entry in entries if entry[4] == action]
+        return filtered_entries[-1]
+
 
 # eof #
