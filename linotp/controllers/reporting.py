@@ -134,8 +134,9 @@ class ReportingController(BaseController):
         """
         return the maximum of tokens in a given realm with given status
 
-        :param realms: (required) takes realms, only the reporting entries for
-                this realms will be displayed
+        :param realms: (required) takes realms, only the reporting
+            entries for this realms will be displayed. If "realms" is
+            omitted, all realms are evaluated, including /:no realm:/.
 
         :param status: (optional) (default is 'active')
                 takes assigned/unassigned/active/ etc.
@@ -161,7 +162,7 @@ class ReportingController(BaseController):
             ) + timedelta(days=1)
             # ------------------------------------------------------------- --
 
-            request_realms = self.request_params.get("realms", "").split(",")
+            request_realms = self.request_params.get("realms", "*").split(",")
             status = self.request_params.get("status", ["total"])
             status = status.split(",") if status != ["total"] else ["total"]
 
@@ -198,8 +199,9 @@ class ReportingController(BaseController):
         return the maximum of tokens in a given realm with given status
         for a given period
 
-        :param realms: (required) takes realms, only the reporting entries for
-                this realms will be displayed
+        :param realms: (required) takes realms, only the reporting
+            entries for this realms will be displayed. If "realms" is
+            omitted, all realms are evaluated, including /:no realm:/.
 
         :param status: (optional) (default is 'active')
                 takes assigned/unassigned/active/ etc.
@@ -236,7 +238,7 @@ class ReportingController(BaseController):
 
         """
         try:
-            request_realms = self.request_params.get("realms", "").split(",")
+            request_realms = self.request_params.get("realms", "*").split(",")
             status = self.request_params.get("status", ["total"])
             status = status.split(",") if status != ["total"] else ["total"]
 
@@ -311,7 +313,10 @@ class ReportingController(BaseController):
         description:
             delete entries from the reporting database table
 
-        :param realms: takes realms, only the reporting entries from this realm are deleted
+        :param realms: takes realms, only the reporting entries from
+            this realm are deleted. If "realms" is omitted, all realms
+            are evaluated, including /:no realm:/.
+
         :param status: (optional) filters reporting entries by status like 'assigned' or 'inactive'
 
         returns: dict in which value is the number of deleted rows
@@ -322,7 +327,7 @@ class ReportingController(BaseController):
         """
 
         try:
-            request_realms = self.request_params.get("realms", "").split(",")
+            request_realms = self.request_params.get("realms", "*").split(",")
             status = self.request_params.get("status", ["total"])
             if status != ["total"]:
                 status = status.split(",")
@@ -371,8 +376,9 @@ class ReportingController(BaseController):
         :param date: (optional) only delete entries which are older than date;
                 date must be given in format 'yyyy-mm-dd' . if no date is given, all entries get deleted
 
-        :param realms: (optional) takes realms, only the reporting entries
-                from this realm are deleted
+        :param realms: (optional) takes realms, only the reporting
+            entries from this realm are deleted. If "realms" is omitted,
+            all realms are evaluated, including /:no realm:/.
 
         :param status: (optional) filters reporting entries by status
                 like 'assigned' or 'inactive'
@@ -384,7 +390,7 @@ class ReportingController(BaseController):
         """
 
         try:
-            request_realms = self.request_params.get("realms", "").split(",")
+            request_realms = self.request_params.get("realms", "*").split(",")
             status = self.request_params.get("status", ["total"])
             if status != ["total"]:
                 status = status.split(",")
@@ -425,8 +431,9 @@ class ReportingController(BaseController):
                 date must be given in format 'yyyy-mm-dd'
                 if no date is given, all entries are shown
 
-        :param realms: (optional) takes realms, only the reporting entries
-                from this realm are shown
+        :param realms: (optional) takes realms, only the reporting
+            entries from this realm are shown. If "realms" is omitted,
+            all realms are evaluated, including /:no realm:/.
 
         :param status: (optional) filters reporting entries by status
                 like 'assigned' or 'inactive'
@@ -459,7 +466,7 @@ class ReportingController(BaseController):
             sortdir = param.get("sortdir")
             psize = param.get("pagesize")
             output_format = param.get("outform", "json")
-            request_realms = param.get("realms", "").split(",")
+            request_realms = param.get("realms", "*").split(",")
             status = param.get("status", [])
 
             start_day = None

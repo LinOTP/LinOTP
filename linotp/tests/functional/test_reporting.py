@@ -25,7 +25,6 @@
 #    Support: www.linotp.de
 #
 
-import json
 import logging
 import os
 from datetime import datetime, timedelta
@@ -122,7 +121,7 @@ class TestReportingController(TestController):
             params={"realms": "*", "status": "*"},
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
 
@@ -253,7 +252,7 @@ class TestReportingController(TestController):
         response = self.make_reporting_request(
             "delete_before", params=parameter
         )
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert values.get("value") == 1, response
@@ -295,7 +294,7 @@ class TestReportingController(TestController):
             params={"realm": "*", "status": "active"},
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert values.get("value") == 2, response
@@ -326,7 +325,7 @@ class TestReportingController(TestController):
             },
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert (
@@ -668,7 +667,7 @@ class TestReportingController(TestController):
             params={"realms": "mydefrealm, mymixrealm"},
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         value = values.get("value")
@@ -685,10 +684,55 @@ class TestReportingController(TestController):
         }
         self.create_policy(policy_params)
         response = self.make_reporting_request("maximum")
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status") == False, response
         assert values.get("error").get("code") == 410, response
+
+    def test_reporting_show_no_realms(self):
+        # set reporting policy:
+        policy_params = {
+            "name": "test_init_token_1",
+            "scope": "reporting",
+            "action": "token_total",
+            "user": "*",
+            "realm": "*",
+        }
+        self.create_policy(policy_params)
+
+        # set reporting access policy:
+        policy_params = {
+            "name": "test_report_show",
+            "scope": "reporting.access",
+            "action": "show",
+            "user": "*",
+            "realm": "*",
+        }
+        self.create_policy(policy_params)
+
+        self.create_token(serial="0041", realm="mydefrealm", user="hans")
+        self.create_token(serial="0042", user="hans")
+        self.create_token(
+            serial="0043", realm="mymixrealm", user="hans", active=False
+        )
+        self.create_token(serial="0044", realm="mydefrealm", user="hans")
+        self.create_token(serial="0045", realm="mydefrealm", user="lorca")
+        self.create_token(serial="0046", realm="myotherrealm")
+        # create one token which does not belong to any realm and thus
+        # is reported as a /:no realm:/ event
+        self.create_token(
+            serial="0047",
+        )
+
+        response = self.make_reporting_request("show")
+        resp = response.json
+        assert resp.get("detail").get("report_rows") == 8, response
+        assert resp.get("result").get("status"), response
+        rows = resp.get("result").get("value")
+        all_realms = set()
+        for entry in rows:
+            all_realms.add(entry["realm"])
+        assert "/:no realm:/" in all_realms
 
     def test_reporting_show(self):
         # set reporting policy:
@@ -720,12 +764,35 @@ class TestReportingController(TestController):
         self.create_token(serial="0045", realm="mydefrealm", user="lorca")
         self.create_token(serial="0046", realm="myotherrealm")
 
+        # verify that the realm policy defintion restricts
+        # the reported realms:
+        #
+        # the policy restictes the realms to "mymixrealm, myotherrealm"
+        # It is verified that the realm 'mydefrealm'is not included in
+        # the output
+        # the realm '/:no realm:/' though is shown as request
+        # parameter 'realms' parameter is omitted which implies
+        # default value '*' for the 'realms' parameter. This is
+        # translated into: list(all_allowed_realms | {"/:no realm:/"})
+
+        self.create_token(serial="0047")
+
         response = self.make_reporting_request("show")
-        resp = json.loads(response.body)
-        assert resp.get("detail").get("report_rows") == 3, response
+        resp = response.json
+        assert resp.get("detail").get("report_rows") == 4, response
         assert resp.get("result").get("status"), response
         values = resp.get("result").get("value")
         assert values[2].get("count") == 1, response
+
+        response = self.make_reporting_request("show")
+        resp = response.json
+        rows = resp.get("result").get("value")
+        all_realms = set()
+        for entry in rows:
+            all_realms.add(entry["realm"])
+        assert "/:no realm:/" in all_realms
+        assert "mymixrealm" in all_realms
+        assert "mydefrealm" not in all_realms
 
         # test csv output
 
@@ -771,7 +838,7 @@ class TestReportingController(TestController):
         pagesize_value = 12
         parameter = {"page": page_value, "pagesize": pagesize_value}
         response = self.make_reporting_request("show", params=parameter)
-        resp = json.loads(response.body)
+        resp = response.json
         assert resp.get("detail").get("report_rows") == 50, response
         assert resp.get("detail").get("page") == page_value, response
         assert resp.get("detail").get("pagesize") == pagesize_value, response
@@ -827,7 +894,7 @@ class TestReportingController(TestController):
             assert '"value": true' in response
 
             response = self.make_system_request("getSupportInfo")
-            jresp = json.loads(response.body)
+            jresp = response.json
             user_num = jresp.get("result", {}).get("value", {}).get("user-num")
 
             assert user_num == "4"
@@ -1074,7 +1141,7 @@ class TestReportingController(TestController):
             "delete_before", params=parameter
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert values.get("value") == 0, response
@@ -1109,7 +1176,7 @@ class TestReportingController(TestController):
             "delete_before", params=parameter
         )
 
-        resp = json.loads(response.body)
+        resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
         assert values.get("value") == 1, response
