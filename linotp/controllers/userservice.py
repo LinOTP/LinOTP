@@ -646,6 +646,7 @@ class UserserviceController(BaseController):
                 expires=expires,
             )
 
+            g.audit["success"] = True
             g.audit["info"] = "User %r authenticated from otp" % user
 
             db.session.commit()
@@ -789,6 +790,7 @@ class UserserviceController(BaseController):
                 expires=expires,
             )
 
+            g.audit["success"] = True
             g.audit["action_detail"] = "expires: %s " % expiration
             g.audit["info"] = "%r logged in " % user
 
@@ -829,6 +831,7 @@ class UserserviceController(BaseController):
                 expires=expires,
             )
 
+            g.audit["success"] = True
             g.audit["action_detail"] = "expires: %s " % expiration
             g.audit["info"] = "%r logged in " % user
 
@@ -1150,6 +1153,8 @@ class UserserviceController(BaseController):
                 g.authUser, active=active, exclude_rollout=False
             )
 
+            g.audit["success"] = True
+
             db.session.commit()
             return sendResult(tokenArray, 0)
 
@@ -1172,9 +1177,6 @@ class UserserviceController(BaseController):
 
         try:
             uinfo = get_userinfo(g.authUser)
-
-            g.audit["success"] = True
-
             db.session.commit()
             return sendResult(uinfo, 0)
 
@@ -1899,6 +1901,7 @@ class UserserviceController(BaseController):
                     transid=transaction_id, passw=params["otp"], options=params
                 )
 
+                g.audit["success"] = res
                 db.session.commit()
                 return sendResult(res)
 
@@ -1906,9 +1909,11 @@ class UserserviceController(BaseController):
 
             elif action == "query transaction":
                 detail = get_transaction_detail(transaction_id)
+                res = detail.get("valid_tan", False)
+                g.audit["success"] = res
 
                 db.session.commit()
-                return sendResult(detail.get("valid_tan", False), opt=detail)
+                return sendResult(res, opt=detail)
 
             # -------------------------------------------------------------- --
 
@@ -1917,6 +1922,8 @@ class UserserviceController(BaseController):
                 (res, _opt) = vh.checkUserPass(
                     g.authUser, passw=params["otp"], options=params
                 )
+
+                g.audit["success"] = res
 
                 db.session.commit()
                 return sendResult(res)
@@ -2160,7 +2167,7 @@ class UserserviceController(BaseController):
             )
             res = {"serial": serial}
 
-            g.audit["success"] = 1
+            g.audit["success"] = True
             g.audit["serial"] = serial
 
             db.session.commit()
@@ -2322,13 +2329,9 @@ class UserserviceController(BaseController):
 
             # -------------------------------------------------------------- --
 
+            g.audit["success"] = ret
             g.audit["serial"] = response_detail.get("serial", "")
-            g.audit["success"] = ret
-            g.audit["user"] = g.authUser.login
-            g.audit["realm"] = g.authUser.realm
             g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
-
-            g.audit["success"] = ret
 
             # -------------------------------------------------------------- --
 
@@ -2411,7 +2414,7 @@ class UserserviceController(BaseController):
 
         try:
             ret = {}
-            ret1 = False
+            was_token_created = False
 
             typ = param["type"]
 
@@ -2475,7 +2478,7 @@ class UserserviceController(BaseController):
                     g.authUser.realm,
                 )
 
-                (ret1, _tokenObj) = th.initToken(
+                (was_token_created, _tokenObj) = th.initToken(
                     {
                         "type": t_type,
                         "serial": serial,
@@ -2489,7 +2492,7 @@ class UserserviceController(BaseController):
                     g.authUser,
                 )
 
-                if ret1:
+                if was_token_created:
                     url = create_oathtoken_url(
                         g.authUser.login,
                         g.authUser.realm,
@@ -2535,7 +2538,7 @@ class UserserviceController(BaseController):
                     g.authUser.realm,
                 )
 
-                (ret1, _tokenObj) = th.initToken(
+                (was_token_created, _tokenObj) = th.initToken(
                     {
                         "type": t_type,
                         "serial": serial,
@@ -2549,7 +2552,7 @@ class UserserviceController(BaseController):
                     g.authUser,
                 )
 
-                if ret1:
+                if was_token_created:
                     pparam = {
                         "user.login": g.authUser.login,
                         "user.realm": g.authUser.realm,
@@ -2584,14 +2587,14 @@ class UserserviceController(BaseController):
             g.audit["serial"] = serial
             # the Google and OATH are always HMAC; sometimes (FUTURE) totp"
             g.audit["token_type"] = t_type
-            g.audit["success"] = ret1
+            g.audit["success"] = was_token_created
             param["serial"] = serial
 
             checkPolicyPost("selfservice", "enroll", param, user=g.authUser)
 
             db.session.commit()
             return sendResult(
-                {"init": ret1, "setpin": False, "oathtoken": ret},
+                {"init": was_token_created, "setpin": False, "oathtoken": ret},
             )
 
         except PolicyException as pe:

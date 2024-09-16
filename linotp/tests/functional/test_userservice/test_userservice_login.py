@@ -30,6 +30,7 @@ from tempfile import NamedTemporaryFile
 from typing import Dict, Tuple
 
 import mock
+import pytest
 from mock import patch
 
 import linotp.provider.pushprovider.default_push_provider as default_provider
@@ -124,6 +125,15 @@ class TestUserserviceLogin(TestUserserviceController):
         assert settings["footer_text"] == footer_text
 
         return
+
+    def test_no_audit_precontext(self):
+        self.test_pre_context()
+
+        with pytest.raises(IndexError):
+            # no entry for pre_context
+            audit_entry = self.get_last_audit_entry_for_action(
+                "userservice/pre_context"
+            )
 
     def test_no_mfa_login(self):
         """test with no mfa authentication."""
@@ -264,6 +274,11 @@ class TestUserserviceLogin(TestUserserviceController):
         response.body = response.data.decode("utf-8")
 
         assert "page" in response
+
+    def test_audit_entry_login(self):
+        self.test_mfa_login_one_step()
+        audit_entry = self.get_last_audit_entry_for_action("userservice/login")
+        assert "1" == audit_entry[5]
 
     def test_mfa_login_two_step(self):
         """test with multiple step mfa authentication."""
