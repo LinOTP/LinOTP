@@ -38,6 +38,14 @@ linotp (3.4~dev0-1) UNRELEASED; urgency=low
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 
+linotp (3.3.3-1) buster; urgency=low
+
+  Fix:
+    * SMTP now sends e-mails with a "Date:" header to 
+      accommodate picky SMTP servers on the receiving side
+
+ -- LinOTP Packaging <packaging@linotp.de>   Mon, 16 Sep 2024 10:00:00 +0200
+
 linotp (3.3.2-1) buster; urgency=low
 
   Fix:

@@ -34,6 +34,7 @@ import re
 import smtplib
 import time
 
+from freezegun import freeze_time
 from mock import patch
 
 from linotp.tests import TestController
@@ -214,6 +215,39 @@ class TestEmailtokenController(TestController):
         assert response["result"]["status"]
         assert response["result"]["value"]
 
+    # some assertions moved here because of thematic similarity
+    # function branched because the freezegun scope broke otps
+    @freeze_time("2012-01-14 00:00:00")
+    def test_email_format(self):
+        """
+        Test that challenges email Header validity'
+        """
+        response = self.make_validate_request(
+            "check", params={"user": "root", "pass": self.pin}
+        )
+        assert (
+            self.mock_smtp_instance.sendmail.call_count >= 1
+        ), "smtplib.SMTP.sendmail() should have been called at least once"
+        call_args = self.mock_smtp_instance.sendmail.call_args
+
+        ordered_args = call_args[0]
+        email_from = ordered_args[0]
+        email_to = ordered_args[1]
+        message = ordered_args[2]
+
+        assert "linotp@example.com" == email_from
+        assert self.default_email_address == email_to
+
+        # searches for the date-header in the message
+        date = ""
+        for line in message.splitlines():
+            if not line:
+                break
+            if line.startswith("Date:"):
+                date = line
+                break
+        assert "Date: Sat, 14 Jan 2012 00:00:00 -0000" == date
+
     def test_timeout(self):
         """
         Test that challenges timeout after 'EmailChallengeValidityTime'
@@ -223,6 +257,7 @@ class TestEmailtokenController(TestController):
         time.sleep(
             int(self.challenge_validity * 1.2)
         )  # we wait 120% of the challenge timeout
+
         response = self.make_validate_request(
             "check", params={"user": "root", "pass": self.pin + otp}
         )
@@ -338,19 +373,18 @@ class TestEmailtokenController(TestController):
         :return: tuple of the response and the otp value
         :rtype: (dict, string)
         """
+
         response = self.make_validate_request(
             "check", params={"user": "root", "pass": self.pin}
         )
+
         assert (
             self.mock_smtp_instance.sendmail.call_count >= 1
         ), "smtplib.SMTP.sendmail() should have been called at least once"
         call_args = self.mock_smtp_instance.sendmail.call_args
+
         ordered_args = call_args[0]
-        email_from = ordered_args[0]
-        email_to = ordered_args[1]
         message = ordered_args[2]
-        assert "linotp@example.com" == email_from
-        assert self.default_email_address == email_to
 
         matches = re.search(r"\d{6}", message)
         assert matches is not None

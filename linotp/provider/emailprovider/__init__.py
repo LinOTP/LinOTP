@@ -33,6 +33,7 @@ import os
 import smtplib
 from email.header import Header
 from email.mime.text import MIMEText
+from email.utils import formatdate
 from hashlib import sha256
 
 from mako.template import Template
@@ -276,6 +277,10 @@ class SMTPEmailProvider(IEmailProvider):
         msg["Subject"] = Header(subject_replacement).encode("utf-8")
         msg["From"] = Header(email_from).encode("utf-8")
         msg["To"] = Header(email_to).encode("utf-8")
+        # "localtime" is set to False due to timezome mismatches in the functional tests.
+        # This means the "Date:" header contains the date in UTC instead of a localized timezone.
+        # The header will still be correct if this was set to True but the test will break.
+        msg["Date"] = formatdate(localtime=False)
 
         return msg.as_string()
 
@@ -341,6 +346,10 @@ class SMTPEmailProvider(IEmailProvider):
         replacements["Subject"] = Header(email_subject).encode("utf-8")
         replacements["From"] = Header(email_from).encode("utf-8")
         replacements["To"] = Header(email_to).encode("utf-8")
+        # "localtime" is set to False due to timezome mismatches in the functional tests.
+        # This means the "Date:" header contains the date in UTC instead of a localized timezone.
+        # The header will still be correct if this was set to True but the test will break.
+        replacements["Date"] = formatdate(localtime=False)
 
         template_data = template_message
 
