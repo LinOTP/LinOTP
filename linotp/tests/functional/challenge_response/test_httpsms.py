@@ -367,7 +367,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
                     sms_pin_success = cell[idx + 1] == "1"
                     break
 
-            assert sms_pin_success, response2
+            assert sms_pin_success, audit_response
 
             # test authentication
             response = self.make_validate_request(
