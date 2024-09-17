@@ -242,16 +242,19 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             if server_certificate:
                 pparams["verify"] = server_certificate
 
-            # -------------------------------------------------------------- --
+            if "HEADERS" in self.config and self.config["HEADERS"]:
+                pparams["headers"] = self.config["HEADERS"]
+
+            # ------------------------------------------------------ --
 
             # finally execute the request
-
             if method == "GET":
                 response = requests.get(url, params=parameter, **pparams)
             else:
                 response = requests.post(url, data=parameter, **pparams)
 
             reply = response.text
+
             # some providers like clickatell have no response.status!
             log.debug("HttpSMSProvider >>%r...%r<<", reply[:20], reply[-20:])
             ret = self._check_success(reply)
