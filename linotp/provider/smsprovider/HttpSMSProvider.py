@@ -63,7 +63,14 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             "[submitMessage] submitting message %s to %s", message, phone
         )
 
-        method = self.config.get("HTTP_Method", "POST")
+        method = self.config.get("HTTP_Method", "POST").upper()
+        if method not in ["GET", "POST"]:
+            msg = (
+                "Method for HttpSmsProvider method must be GET or POST - unsupported method: %s"
+                % method
+            )
+            log.error(msg)
+            raise Exception(msg)
 
         log.debug("[submitMessage] by method %s", method)
         parameter = self.getParameters(message, phone)
