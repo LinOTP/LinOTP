@@ -20,7 +20,12 @@ ENV PATH=$VENV_ROOT/bin:$PATH \
     I18N_DIR=$LINOTP_HOME/linotp/i18n
 
 # Install dependencies and clean up
-RUN apt-get update \
+# We add `bookworm-proposed-updates` to get at version `2.5.0-1+deb12u1`
+# of `libexpat1`, which fixes CVE-2024-4549[012]. Once Bookworm 12.8 is
+# out we can get rid of it again.
+
+RUN echo "deb http://deb.debian.org/debian bookworm-proposed-updates main" >/etc/apt/sources.list.d/proposed-updates.list \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
     # required for python-ldap
     libldap2-dev libsasl2-dev \
@@ -36,6 +41,8 @@ RUN apt-get update \
     tini \
     # required to run the HEALTHCHECK command
     curl  \
+    # required to make trivy happy
+    libexpat1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
