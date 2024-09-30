@@ -50,6 +50,7 @@ Remarks:
 import base64
 import json
 import logging
+from collections import defaultdict
 
 from flask_babel import gettext as _
 from werkzeug.exceptions import Forbidden, Unauthorized
@@ -126,7 +127,20 @@ ENCODING = "utf-8"
 
 HASHLIB_MAP = {1: "sha1", 2: "sha256", 3: "sha512"}
 
+# announce available reply channels via reply_mode
+# - online: token supports online mode where the user
+#   can independently answer the challenge via a
+#   different channel without having to enter an OTP.
+# - offline: token supports offline mode where the user
+#   needs to manually enter an OTP.
 
+REPLY_MODES = defaultdict(
+    lambda: ["offline"],
+    {
+        "push": ["online"],
+        "qr": ["offline", "online"],
+    },
+)
 # -------------------------------------------------------------------------- --
 
 
@@ -683,40 +697,23 @@ class UserserviceController(BaseController):
             # determine the tokentype and adjust the offline, online reply
 
             token_type = reply.get("linotp_tokentype")
+            reply["replyMode"] = REPLY_MODES[token_type]
 
-            # announce available reply channels via reply_mode
-            # - online: token supports online mode where the user can
-            #   independently answer the challenge via a different channel
-            #   without having to enter an OTP.
-            # - offline: token supports offline mode where the user needs
-            #   to manually enter an OTP.
-
-            reply_mode = ""
-
-            if token_type == "push":
-                reply_mode = ["online"]
-            elif token_type == "qr":
-                reply_mode = ["offline", "online"]
-            else:
-                reply_mode = ["offline"]
-
-            reply["replyMode"] = reply_mode
-
-            # ------------------------------------------------------------- --
+            # ------------------------------------------------------ --
 
             # add transaction data wrt to the new spec
 
             if reply.get("img_src"):
                 reply["transactionData"] = reply["message"]
 
-            # ------------------------------------------------------------- --
+            # ------------------------------------------------------ --
 
             # care for the messages as it is done with verify
 
             if token_type == "qr":
                 reply["message"] = _("Please scan the provided qr code")
 
-            # ------------------------------------------------------------- --
+            # ------------------------------------------------------ --
 
             # adjust the transactionid to transactionId for api conformance
 
@@ -1977,27 +1974,12 @@ class UserserviceController(BaseController):
                 else:
                     raise Exception("unsupported token mode")
 
-                # announce available reply channels via reply_mode
-                # - online: token supports online mode where the user can
-                #   independently answer the challenge via a different channel
-                #   without having to enter an OTP.
-                # - offline: token supports offline mode where the user needs
-                #   to manually enter an OTP.
-
-                if token.type == "push":
-                    reply_mode = ["online"]
-                elif token.type == "qr":
-                    reply_mode = ["offline", "online"]
-                else:
-                    reply_mode = ["offline"]
-
-                # ---------------------------------------------------------- --
-
+                # -------------------------------------------------- --
                 # create the challenge detail response
 
                 detail_response = {
                     "message": message,  # localized user facing message
-                    "replyMode": reply_mode,
+                    "replyMode": REPLY_MODES[token.type],
                 }
 
                 if transaction_id:
@@ -2007,11 +1989,23 @@ class UserserviceController(BaseController):
                     detail_response["transactionData"] = transaction_data
 
                 if token.type == "forward":
-                    # Add info about the token that this token forwards to.
-                    detail_response.update(token._get_target_info())
+                    # get the target token info.
+                    target_token_info = token._get_target_info()
 
-                # ---------------------------------------------------------- --
+                    # and add info about this token to the detail
+                    detail_response.update(target_token_info)
 
+                    # we have to set the reply mode in dependency of the  token type
+
+                    target_token_type = target_token_info[
+                        "linotp_forward_tokentype"
+                    ]
+
+                    detail_response["replyMode"] = REPLY_MODES[
+                        target_token_type
+                    ]
+
+                # ------------------------------------------------- --
                 # close down the session and submit the result
 
                 db.session.commit()
