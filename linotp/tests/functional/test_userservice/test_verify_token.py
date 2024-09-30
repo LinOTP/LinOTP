@@ -637,21 +637,10 @@ class TestUserserviceTokenTest(TestUserserviceController):
 
         assert "false" not in response
 
-    def test_qr_token(self):
+    def setup_qr_token_env(self):
         """
-        userservice token verification for qrtoken
-
-        which is done in the following steps
-
-        * define the callback url
-        * define the selfservice policies to verify the token
-        * enroll the qr token
-        * pair the qr token
-        * run first challenge & challenge verification against /validate/check*
-        * run challenge & challenge verification against /userservice/verify
-
+        define the qr token policies and callbacks
         """
-
         # set pairing callback policies
 
         cb_url = "/foo/bar/url"
@@ -693,17 +682,19 @@ class TestUserserviceTokenTest(TestUserserviceController):
         response = self.make_system_request(action="setPolicy", params=params)
         assert "false" not in response, response
 
-        # ------------------------------------------------------------------- --
-
-        # enroll the qr token:
+    def enroll_qr_token(
+        self,
+        user="passthru_user1@myDefRealm",
+        password="geheim1",
+        serial="qrtoken",
+        pin="1234",
+    ):
+        """
+        enroll the qr token:
+        """
 
         # response should contain pairing url, check if it was sent and
         # validate
-
-        user = "passthru_user1@myDefRealm"
-        auth_user = {"login": user, "password": "geheim1"}
-        serial = "qrtoken"
-        pin = "1234"
 
         secret_key, public_key = QR.create_keys()
 
@@ -725,7 +716,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         params = {"pairing_response": pairing_response}
 
         response = self.make_validate_request("pair", params)
-        response_dict = json.loads(response.body)
+        response_dict = response.json
 
         assert not response_dict.get("result", {}).get("value", True)
         assert response_dict.get("result", {}).get("status", False)
@@ -737,7 +728,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         params = {"serial": serial, "pass": pin, "data": serial}
 
         response = self.make_validate_request("check_s", params)
-        response_dict = json.loads(response.body)
+        response_dict = response.json
 
         assert "detail" in response_dict
         detail = response_dict.get("detail")
@@ -761,7 +752,36 @@ class TestUserserviceTokenTest(TestUserserviceController):
         response = self.make_validate_request("check_t", params)
         assert "false" not in response
 
-        # ------------------------------------------------------------------- --
+        return token_info, secret_key
+
+    def test_qr_token(self):
+        """
+        userservice token verification for qrtoken
+
+        which is done in the following steps
+
+        * define the callback url
+        * define the selfservice policies to verify the token
+        * enroll the qr token
+        * pair the qr token
+        * run first challenge & challenge verification against /validate/check*
+        * run challenge & challenge verification against /userservice/verify
+
+        """
+        self.setup_qr_token_env()
+
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        serial = "qrtoken"
+        pin = "1234"
+
+        token_info, secret_key = self.enroll_qr_token(
+            user=user, password=password, serial=serial, pin=pin
+        )
+
+        auth_user = {"login": user, "password": password}
+
+        # ---------------------------------------------------------- --
 
         # trigger a challenge against the userservice verify interface
 
@@ -771,7 +791,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
             "verify", params, auth_user=auth_user
         )
 
-        response_dict = json.loads(response.body)
+        response_dict = response.json
 
         assert "detail" in response_dict
         detail = response_dict.get("detail")
@@ -780,7 +800,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert "message" in detail
         assert "transactionData" in detail
 
-        # ------------------------------------------------------------------- --
+        # ---------------------------------------------------------- --
 
         # verify the transaction against the userservice verify interface
 
@@ -800,6 +820,66 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert "false" not in response
 
         return
+
+    def test_forward_to_qr_token(self):
+        """
+        userservice token verification for forward to qrtoken
+
+        * setup for the qr token s.: test_qr_token()
+
+        * run challenge & challenge verification against
+        /userservice/verify which should return the correct reply mode
+        for qr token, which is ["offline","online"]
+
+        """
+
+        self.setup_qr_token_env()
+
+        user = "passthru_user1@myDefRealm"
+        password = "geheim1"
+        serial = "qrtoken"
+        pin = "1234"
+
+        token_info, secret_key = self.enroll_qr_token(
+            user=user, password=password, serial=serial, pin=pin
+        )
+
+        auth_user = {
+            "login": user,
+            "password": password,
+        }  # ---------------------------------------------------------- --
+
+        # now enroll the forward token
+        forward_serial = "fw_to_" + serial
+        params = {
+            "type": "forward",
+            "pin": pin,
+            "user": user,
+            "serial": forward_serial,
+            "forward.serial": serial,
+            "description": "forward:2qr",
+        }
+        response = self.make_admin_request("init", params)
+        assert response.json["result"]["value"]
+
+        # ---------------------------------------------------------- --
+
+        # call the userservice/verify interface
+
+        params = {"serial": forward_serial}
+
+        response = self.make_userselfservice_request(
+            "verify", params, auth_user=auth_user
+        )
+
+        response_dict = response.json
+
+        assert "detail" in response_dict
+        detail = response_dict.get("detail")
+
+        assert detail["replyMode"] == ["offline", "online"]
+        assert detail["linotp_forward_tokenserial"] == "qrtoken"
+        assert detail["linotp_forward_tokentype"] == "qr"
 
     @patch.object(
         SMTPEmailProvider, "submitMessage", mocked_submitEmailMessage
