@@ -27,6 +27,7 @@
 """This file file contains the Forward token class"""
 
 import logging
+from typing import Optional
 
 from flask_babel import gettext as _
 
@@ -107,10 +108,20 @@ class ForwardTokenClass(TokenClass):
         TokenClass.__init__(self, aToken)
         self.setType("forward")
 
-        self.forwardSerial = None
-        self.mode = ["authenticate", "challenge"]
+        try:
+            # This try/except is merely a hacky way to bypass an
+            # Exception when the `_getTargetToken` does not find
+            # the target token and throws an Exception.
+            # Usecase: init with correct targetToken
+            forwardSerial = self.getFromTokenInfo("forward.serial")
+            if forwardSerial:
+                self.forwardSerial = forwardSerial
+                self._update_targetToken()
+        except:
+            self.forwardSerial = None
+            self.mode = ["authenticate", "challenge"]
+            self.targetToken: TokenClass = None
 
-        self.targetToken = None
         self.target_otp_count = -1
 
     @classmethod
@@ -183,9 +194,7 @@ class ForwardTokenClass(TokenClass):
     @property
     def supports_offline_mode(self):
         """getter - to check if the target token supports offline support"""
-        forwardSerial = self.getFromTokenInfo("forward.serial") or ""
-        targetToken = self._getTargetToken(forwardSerial)
-        return targetToken.supports_offline_mode
+        return self.targetToken.supports_offline_mode
 
     @supports_offline_mode.setter
     def supports_offline_mode(self, value):
@@ -199,18 +208,16 @@ class ForwardTokenClass(TokenClass):
         :param param: the request parameters
         :return: - nothing -
         """
-
-        self.forwardSerial = param["forward.serial"]
-
-        # get the otplen of the target token
-        targetToken = self._getTargetToken(self.forwardSerial)
-
         TokenClass.update(self, param)
 
-        self.setOtpLen(targetToken.getOtpLen())
+        self.forwardSerial = param["forward.serial"]
         self.addToTokenInfo("forward.serial", self.forwardSerial)
+        self._update_targetToken()
 
-        return
+    def _update_targetToken(self):
+        self.targetToken = self._getTargetToken(self.forwardSerial)
+        self.mode = self.targetToken.mode
+        self.setOtpLen(self.targetToken.getOtpLen())
 
     def authenticate(self, passw, user, options=None):
         """
@@ -262,15 +269,16 @@ class ForwardTokenClass(TokenClass):
         """
         create a challenge if the target token does support this
         """
-        forwardSerial = self.getFromTokenInfo("forward.serial")
-        targetToken = self._getTargetToken(forwardSerial)
 
-        if "challenge" in targetToken.mode:
+        if "challenge" in self.targetToken.mode:
             # create the challenge for the target token
 
-            (success, message, data, attributes) = targetToken.createChallenge(
-                transactionid, options
-            )
+            (
+                success,
+                message,
+                data,
+                attributes,
+            ) = self.targetToken.createChallenge(transactionid, options)
 
             # extend the challenge response (via the attributes) to contain
             # information about the forwarded token
@@ -284,17 +292,17 @@ class ForwardTokenClass(TokenClass):
 
     def _get_target_info(self):
         """small helper to build response detail of the target token"""
-        forwardSerial = self.getFromTokenInfo("forward.serial")
-        targetToken = self._getTargetToken(forwardSerial)
 
         prefix = "linotp_forward_"
         return {
-            prefix + "tokenserial": forwardSerial,
-            prefix + "tokendescription": targetToken.getDescription(),
-            prefix + "tokentype": targetToken.getType(),
+            prefix + "tokenserial": self.forwardSerial,
+            prefix + "tokendescription": self.targetToken.getDescription(),
+            prefix + "tokentype": self.targetToken.getType(),
         }
 
-    def check_challenge_response(self, challenges, user, passw, options=None):
+    def check_challenge_response(
+        self, challenges, user, passw, options: Optional[dict] = None
+    ):
         """
         reply the challenges of the target token
 
@@ -307,23 +315,23 @@ class ForwardTokenClass(TokenClass):
         with the option above should be our ones :)
 
         """
-        forwardSerial = self.getFromTokenInfo("forward.serial")
-        targetToken = self._getTargetToken(forwardSerial)
+        if options is None:
+            options = {}
         options["forwarded"] = self.getSerial()
 
-        result = targetToken.check_challenge_response(
+        result = self.targetToken.check_challenge_response(
             challenges, user, passw, options
         )
-        if len(targetToken.valid_token) > 0:
+        if len(self.targetToken.valid_token) > 0:
             self.valid_token.append(self)
-        if len(targetToken.challenge_token) > 0:
+        if len(self.targetToken.challenge_token) > 0:
             self.challenge_token.append(self)
-        if len(targetToken.pin_matching_token) > 0:
+        if len(self.targetToken.pin_matching_token) > 0:
             self.pin_matching_token.append(self)
-        if len(targetToken.invalid_token) > 0:
+        if len(self.targetToken.invalid_token) > 0:
             self.invalid_token.append(self)
 
-        self.matching_challenges = targetToken.matching_challenges
+        self.matching_challenges = self.targetToken.matching_challenges
         return result
 
     def do_request(self, passw, transactionid=None, user=None):
@@ -346,16 +354,16 @@ class ForwardTokenClass(TokenClass):
             forwardSerial,
         )
 
-        targetToken = self._getTargetToken(forwardSerial)
-
-        counter = targetToken.getOtpCount()
-        window = targetToken.getOtpCountWindow()
+        counter = self.targetToken.getOtpCount()
+        window = self.targetToken.getOtpCountWindow()
 
         # the push token expects passw to be a dict with accept or reject
-        if targetToken.type == "push" and not isinstance(passw, dict):
+        if self.targetToken.type == "push" and not isinstance(passw, dict):
             return (False, self.target_otp_count, None)
 
-        self.target_otp_count = targetToken.checkOtp(passw, counter, window)
+        self.target_otp_count = self.targetToken.checkOtp(
+            passw, counter, window
+        )
         res = self.target_otp_count >= 0
 
         return (res, self.target_otp_count, None)
@@ -364,9 +372,6 @@ class ForwardTokenClass(TokenClass):
         """
         helper - to get the target token
         """
-        if self.targetToken:
-            return self.targetToken
-
         from linotp.lib.token import get_tokens
 
         tokens = get_tokens(serial=forwardSerial)
@@ -376,8 +381,8 @@ class ForwardTokenClass(TokenClass):
                 "no target token with serial %r found" % forwardSerial
             )
 
-        self.targetToken = tokens[0]
-        return self.targetToken
+        targetToken = tokens[0]
+        return targetToken
 
     def checkResponse4Challenge(
         self, user, passw, options=None, challenges=None
@@ -422,10 +427,7 @@ class ForwardTokenClass(TokenClass):
     def getOfflineInfo(self):
         """interface the offline capability of the target token"""
 
-        forwardSerial = self.getFromTokenInfo("forward.serial") or ""
-        targetToken = self._getTargetToken(forwardSerial)
-
-        offline_info = targetToken.getOfflineInfo() or {}
+        offline_info = self.targetToken.getOfflineInfo() or {}
         offline_info.update(self._get_target_info())
         return offline_info
 
@@ -435,17 +437,15 @@ class ForwardTokenClass(TokenClass):
         * increment the target token otp count to prevent replay and
         * optionally reset the target token failcounter
         """
-        forwardSerial = self.getFromTokenInfo("forward.serial") or ""
-        targetToken = self._getTargetToken(forwardSerial)
 
         # we have to increment the target token otp counter here, as none
         # else is involved, using the preserved matching otp counter
-        targetToken.incOtpCounter(self.target_otp_count)
+        self.targetToken.incOtpCounter(self.target_otp_count)
 
         if not do_forward_failcounter(self):
             return
 
-        targetToken.reset()
+        self.targetToken.reset()
 
     def statusValidationFail(self):
         """
@@ -457,9 +457,7 @@ class ForwardTokenClass(TokenClass):
         if not do_forward_failcounter(self):
             return
 
-        forwardSerial = self.getFromTokenInfo("forward.serial") or ""
-        targetToken = self._getTargetToken(forwardSerial)
-        targetToken.incOtpFailCounter()
+        self.targetToken.incOtpFailCounter()
 
 
 # eof ########################################################################
