@@ -120,6 +120,7 @@ from linotp.lib.userservice import (
 )
 from linotp.lib.util import generate_otpkey, get_client
 from linotp.model import db
+from linotp.tokens.forwardtoken import ForwardTokenClass
 
 log = logging.getLogger(__name__)
 
@@ -697,7 +698,12 @@ class UserserviceController(BaseController):
             # determine the tokentype and adjust the offline, online reply
 
             token_type = reply.get("linotp_tokentype")
-            reply["replyMode"] = REPLY_MODES[token_type]
+            used_token_type = (
+                token_type
+                if token_type != "forward"
+                else reply.get("linotp_forward_tokentype")
+            )
+            reply["replyMode"] = REPLY_MODES[used_token_type]
 
             # ------------------------------------------------------ --
 
@@ -710,7 +716,7 @@ class UserserviceController(BaseController):
 
             # care for the messages as it is done with verify
 
-            if token_type == "qr":
+            if used_token_type == "qr":
                 reply["message"] = _("Please scan the provided qr code")
 
             # ------------------------------------------------------ --
@@ -1935,6 +1941,9 @@ class UserserviceController(BaseController):
 
                 # 'authenticate': default for non-challenge response tokens
                 #                 like ['hmac', 'totp', 'motp']
+                used_token_type = token.type
+                if isinstance(token, ForwardTokenClass):
+                    used_token_type = token.targetToken.type
 
                 if "authenticate" in token.mode:
                     message = _("Please enter your otp")
@@ -1962,7 +1971,7 @@ class UserserviceController(BaseController):
                             "failed to trigger challenge {:r}".format(reply)
                         )
 
-                    if token.type == "qr":
+                    if used_token_type == "qr":
                         transaction_data = reply["message"]
                         message = _("Please scan the provided qr code")
 
@@ -1979,7 +1988,7 @@ class UserserviceController(BaseController):
 
                 detail_response = {
                     "message": message,  # localized user facing message
-                    "replyMode": REPLY_MODES[token.type],
+                    "replyMode": REPLY_MODES[used_token_type],
                 }
 
                 if transaction_id:
@@ -1988,23 +1997,12 @@ class UserserviceController(BaseController):
                 if transaction_data:
                     detail_response["transactionData"] = transaction_data
 
-                if token.type == "forward":
+                if isinstance(token, ForwardTokenClass):
                     # get the target token info.
                     target_token_info = token._get_target_info()
 
                     # and add info about this token to the detail
                     detail_response.update(target_token_info)
-
-                    # we have to set the reply mode in dependency of the  token type
-
-                    target_token_type = target_token_info[
-                        "linotp_forward_tokentype"
-                    ]
-
-                    detail_response["replyMode"] = REPLY_MODES[
-                        target_token_type
-                    ]
-
                 # ------------------------------------------------- --
                 # close down the session and submit the result
 
