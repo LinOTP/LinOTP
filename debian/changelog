@@ -1,4 +1,4 @@
-linotp (3.4~rc0-1) UNRELEASED; urgency=low
+linotp (3.4~rc1-1) UNRELEASED; urgency=low
 
   Breaking Changes:
   * changed default `BACKUP_DIR` to `/var/backups/linotp` for deb-package
@@ -36,6 +36,11 @@ linotp (3.4~rc0-1) UNRELEASED; urgency=low
   * faulty JWTs don't cause a `500 Internal Server Error` anymore and the error gets logged properly
   * login and logout endpoint for admin authentication was mixed into all /api/v2 controllers which made
     it possible to use e.g. /api/v2/realms/login. Please use only /admin/<login/logout>
+  * faulty policies (e.g. `totp_hashlib=sha256`)now return and log a meaningful error message
+  * Userservice-API writes correct `success` value into audit log
+  * audit logs `success` of admin login/logout correctly with the username
+  * the last provider (of any kind) can now be deleted
+  * non-default providers can be deleted if and only if they are not part of an authentication policy
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 
