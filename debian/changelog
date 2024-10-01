@@ -28,6 +28,7 @@ linotp (3.4~rc0-1) UNRELEASED; urgency=low
   * audit log entries of `/admin/login` and `admin/logout` now state `success`, `user`, `realm` and `administrator` correctly
   * improved debug log output for TOTP resync routine
   * improved (mostly by reducing) debug log output during server start and request context.
+  * reporting api change: If the `realms` parameter is omitted, the realm `/:no realm:/` is now also evaluated.
 
   Fixes:
   * wrongly aligned resize bar on Manage UI flexigrid tables when browser is zoomed or scaled
