@@ -38,6 +38,7 @@ linotp (3.4~rc0-1) UNRELEASED; urgency=low
     it possible to use e.g. /api/v2/realms/login. Please use only /admin/<login/logout>
   * faulty policies (e.g. `totp_hashlib=sha256`)now return and log a meaningful error message
   * Userservice-API writes correct `success` value into audit log
+  * audit logs `success` of admin login/logout correctly with the username
   * the last provider (of any kind) can now be deleted
   * non-default providers can be deleted if and only if they are not part of an authentication policy
 
