@@ -38,6 +38,7 @@ linotp (3.4~rc0-1) UNRELEASED; urgency=low
     it possible to use e.g. /api/v2/realms/login. Please use only /admin/<login/logout>
   * faulty policies (e.g. `totp_hashlib=sha256`)now return and log a meaningful error message
   * Userservice-API writes correct `success` value into audit log
+  * the last provider (of any kind) can now be deleted
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 
