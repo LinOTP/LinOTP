@@ -10,11 +10,7 @@ linotp (3.3.3-1) buster; urgency=low
     * SMTP now sends e-mails with a "Date:" header to 
       accommodate picky SMTP servers on the receiving side
 
-  Feature:
-    * reporting api change: If the “realms” parameter is omitted, the
-      realm “/:no realm:/” is now also evaluated as the default.
-
- -- LinOTP Packaging <packaging@linotp.de>   Fri, 5 Jul 2024 16:00:00 +0100
+ -- LinOTP Packaging <packaging@linotp.de>   Mon, 16 Sep 2024 10:00:00 +0200
 
 linotp (3.3.2-1) buster; urgency=low
 
