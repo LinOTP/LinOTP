@@ -1,4 +1,4 @@
-linotp (3.4~rc0-1) UNRELEASED; urgency=low
+linotp (3.4~rc1-1) UNRELEASED; urgency=low
 
   Breaking Changes:
   * changed default `BACKUP_DIR` to `/var/backups/linotp` for deb-package
