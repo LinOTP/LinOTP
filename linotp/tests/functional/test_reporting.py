@@ -483,6 +483,14 @@ class TestReportingController(TestController):
                 "inactive": None,
             }
 
+            expected_period = {
+                "from": "1970-03-01T00:00:00",
+                "to": "2019-08-04T00:00:00",
+            }
+            assert (
+                expected_period == response.json["result"]["value"]["period"]
+            )
+
             # 0.b: checking the reporting borders
             # - the first entry 2019-08-04 only, thus there should be only
             #   null's in the response for the mydefrealm realm and
