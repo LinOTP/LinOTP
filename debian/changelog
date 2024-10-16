@@ -1,6 +1,7 @@
 linotp (3.3.4~dev0-1) UNRELEASED; urgency=low
 
-  * dummy changelog entry for 3.3.4
+  Fix:
+    * Restored the `period` return attribute in the /reporting/period API endpoint to resolve missing data issue.
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 16 Sep 2024 10:00:00 +0200
 
