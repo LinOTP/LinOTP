@@ -385,7 +385,8 @@ class UserserviceController(BaseController):
                 if auth_user and isinstance(auth_user, User):
                     user, realm = auth_user.login, auth_user.realm
                 else:
-                    user, realm = repr(auth_user), ""
+                    user = repr(auth_user) if auth_user else ""
+                    realm = ""
 
                 g.audit["user"] = user
                 g.audit["realm"] = realm
