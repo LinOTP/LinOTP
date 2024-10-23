@@ -2,6 +2,7 @@ linotp (3.4~rc2-1) UNRELEASED; urgency=low
   
   Fixes:
   * audit log entries for `/userservice/logout` now state `user` and `realm` correctly
+  * Restored the `period` return attribute in the /reporting/period API endpoint to resolve missing data issue.
 
  -- LinOTP Packaging <packaging@linotp.de>  Tue, 01 Oct 2024 11:13:00 +0200
  
