@@ -39,7 +39,6 @@ linotp (3.4~rc1-1) UNRELEASED; urgency=low
   * reporting api change: If the `realms` parameter is omitted, the realm `/:no realm:/` is now also evaluated.
 
   Fixes:
-  * wrongly aligned resize bar on Manage UI flexigrid tables when browser is zoomed or scaled
   * when rolling out a forwarding token via /manage, the serial of the target token is included in the description
   * faulty JWTs don't cause a `500 Internal Server Error` anymore and the error gets logged properly
   * login and logout endpoint for admin authentication was mixed into all /api/v2 controllers which made
