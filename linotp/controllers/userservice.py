@@ -304,6 +304,24 @@ class UserserviceController(BaseController):
 
         # ------------------------------------------------------------------ --
 
+        # Get the (possibly) authenticated user
+        auth_type, identity, auth_state = get_auth_user(request)
+
+        # ------------------------------------------------------------------ --
+
+        # `authUser` is set to the user from the authentication cookie so
+        # we can use it elsewhere to refer to the current authenticated user.
+        # This includes methods that implement HTTP requests as well as the
+        # auditing/accounting code in `__after__()`.
+
+        if identity:
+            g.authUser = identity
+
+            c.user = identity.login
+            c.realm = identity.realm
+
+        # ------------------------------------------------------------------ --
+
         # If the request doesn't require authentication, we're done here.
 
         if action in NON_AUTHENTICATED_REQUEST_LIST:
@@ -314,25 +332,11 @@ class UserserviceController(BaseController):
         # every action other than auth, login and pre_context requires a valid
         # session and cookie
 
-        auth_type, identity, auth_state = get_auth_user(request)
-
         if not identity or auth_type not in [
             "userservice",
             "user_selfservice",
         ]:
             raise unauthorized(_("No valid session"))
-
-        # ------------------------------------------------------------------ --
-
-        # `authUser` is set to the user from the authentication cookie so
-        # we can use it elsewhere to refer to the current authenticated user.
-        # This includes methods that implement HTTP requests as well as the
-        # auditing/accounting code in `__after__()`.
-
-        g.authUser = identity
-
-        c.user = identity.login
-        c.realm = identity.realm
 
         # ------------------------------------------------------------------ --
 
@@ -381,7 +385,8 @@ class UserserviceController(BaseController):
                 if auth_user and isinstance(auth_user, User):
                     user, realm = auth_user.login, auth_user.realm
                 else:
-                    user, realm = repr(auth_user), ""
+                    user = repr(auth_user) if auth_user else ""
+                    realm = ""
 
                 g.audit["user"] = user
                 g.audit["realm"] = realm
