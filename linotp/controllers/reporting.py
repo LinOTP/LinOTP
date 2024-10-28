@@ -269,8 +269,7 @@ class ReportingController(BaseController):
 
             result = {
                 "realms": [],
-                "from": start.isoformat(),
-                "to": end.isoformat(),
+                "period": {"from": start.isoformat(), "to": end.isoformat()},
             }
             for realm in realms:
                 result_realm = {"name": realm, "maxtokencount": {}}

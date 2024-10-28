@@ -108,6 +108,7 @@ ENV LINOTP_USER=linotp \
     LINOTP_DATABASE_URI=sqlite:///$LINOTP_ROOT_DIR/linotp.db \
     LINOTP_DB_WAITTIME=30s \
     LINOTP_SESSION_COOKIE_SECURE=true \
+    LINOTP_GET_CLIENT_ADDRESS_FROM_POST_DATA=false \
     # disable file logger
     LINOTP_LOG_FILE_DIR=/ \
     LINOTP_LOG_FILE_NAME=/dev/null \
