@@ -260,6 +260,7 @@ build-linotp-docker-image:buster:
 .e2e-test:
   stage: selenium-test
   image: docker:latest
+  resource_group: e2e-tests
   variables:
     INTEGRATION_TEST_CHROME: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}/tests/integration/chrome:${CI_PIPELINE_ID}"
     DELETE_OLD_SCRIPT_EXECUTORS: "${IMAGE_PREFIX}/linotp-${DEBIAN_RELEASE_NAME}/tests/integration/script-executor"
