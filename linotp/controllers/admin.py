@@ -754,42 +754,128 @@ class AdminController(BaseController, JWTMixin):
 
         common arguments:
 
-        :param otpkey: (required) the hmac Key of the token
-        :param genkey: (required) =1, if key should be generated. We e:ither need otpkey or genkey
-        :param keysize: (optional) either 20 or 32. Default is 20
-        :param serial: (re:quired) the serial number / identifier of the token
-        :param description: (optional)
-        :param pin: (optional) the pin of the user pass
-        :param user: (optional) login user name
-        :param realm: (optional) realm of the user
-        :param type: (opt:ional) the type of the token
-        :param tokenrealm: (optional) the realm a token should be put into
-        :param otplen: (optional) length of the OTP value
-        :param hashlib: (optional) used hashlib sha1 oder sha256
+        we either need otpkey or genkey for key generation
 
-        ocra2 arguments: for generating OCRA2 Tokens type=ocra2 you can specify the
-        following parameters:
+        :param otpkey: (required) the used token seed
+        :param genkey: (required) =1, if an hmac key should be generated instead.
 
-        :param ocrasuite: (optional) - if you do not want to use the default
-                ocra suite OCRA-1:HOTP-SHA256-8:QA64
-
-        :param sharedsecret: (optional) if you are in Step0 of enrolling an
-                OCRA2 token the sharedsecret=1 specifies, that you want to generate a shared secret
-
-        :param activationcode: (optional) if you are in Step1 of enrolling
-            an OCRA2 token you need to pass the activation code, that was generated in the QRTAN-App
-
-        qrtoken arguments: for generating QRTokens type=qr you can specify the
-            following parameters
-
-        :param hashlib: (optional) the hash algorithm used in the mac
-                calculation (sha512, sha256, sha1). default is sha256
+        the common reply includes the following components:
 
         :return:
             a json result with a boolean status and request result
 
         :raises Exception:
             if an error occurs an exception is serialized and returned
+
+        to customize your token you can use the following parameters:
+
+        :param keysize: (optional) either 20 or 32. Default is 20
+        :param serial: (optional) the serial number / identifier of the token, if no serial is
+            provided, it will be generated
+        :param description: (optional)
+        :param pin: (optional) the pin of the user pass
+        :param user: (optional) the user the token will be assigned to
+        :param realm: (optional) the realm of the user
+        :param type: (optional) the type of the token, if no type is provided an hmac token will
+            be generated
+        :param tokenrealm: (optional) the realm a token should be put into
+        :param otplen: (optional) the number of digits of the OTP value. Default length is 6
+        :param hashlib: (optional) the hash algorithm used in the mac
+                calculation (sha512, sha256, sha1). default is sha256
+
+        the usage scope can be managed with the following parameters:
+
+        :param scope: (optional) the path(s) the token can be used for
+        :param rollout: (optional) replaces scope={“path”:[“userservice”]} for rollout tokens
+
+        **token-type-specific parameters**
+
+        email token arguments: for generating email tokens type=email you can specify the
+        following parameters:
+
+        :param email_address: (required) the address the otp email will be sent to
+
+        forward token arguments: for generating forward tokens type=forward you can specify the
+        following parameters:
+
+        :param forward.serial: (required) the serial of the target-token
+
+        ocra2 token arguments: for generating OCRA2 tokens type=ocra2 you can specify the
+        following parameters:
+
+        :param ocrasuite: (optional) - if you do not want to use the default
+                ocra suite OCRA-1:HOTP-SHA256-8:QA644
+        :param sharedsecret: (optional) if you are in Step0 of enrolling an
+                OCRA2 token the sharedsecret=1 specifies, that you want to generate a shared secret4
+        :param activationcode: (optional) if you are in Step1 of enrolling
+            an OCRA2 token you need to pass the activation code, that was generated in the QRTAN-App
+
+        radius token arguments: for generating radius tokens type=radius you can specify the
+        following parameters:
+
+        :param radius.server: (required) the URL of the radius server
+        :param radius.local_checkpin: (required) if the pin should be checked locally or on the target server
+        :param radius.user: (required) the user on the radius server
+        :param radius.secret: (required) the shared secret of the radius server
+
+        remote token arguments: for generating remote tokens type=remote you can specify the
+        following parameters:
+
+        :param remote.server: (required) the linotp server the requests will be sent to
+        :param remote.local_checkpin: (required) if the pin should be checked locally or on the target server
+        :param remote.serial: (required) the serial of the target token on the remote server
+        :param remote.user: (optional) the user on the remote server
+        :param remote.realm: (optional) the realm of the remote user
+        :param remote.resconf: (optional) the resolver for the remote user
+
+        sms token arguments: for generating sms tokens type=sms you can specify the
+        following parameters:
+
+        :param phone: (required) the phone number the sms will be sent to
+
+        totp token arguments: for generating totp tokens type=totp you can specify the
+        following parameters:
+
+        :param timestep: (required) the time in seconds between new otps
+
+        yubico token arguments: for generating yubico tokens type=yubico you can specify the
+        following parameters:
+
+        :param yubico.tokenid: (required) the 12-character tokenid of the yubico token
+
+        +---------+--------------------------------------------------------------------------------+
+        | type    | required parameters                                                            |
+        +=========+================================================================================+
+        | hmac    | optkey/genkey=1                                                                |
+        +---------+--------------------------------------------------------------------------------+
+        | totp    | optkey/genkey=1, type=totp, timestep                                           |
+        +---------+--------------------------------------------------------------------------------+
+        | qr      | type=qr                                                                        |
+        +---------+--------------------------------------------------------------------------------+
+        | push    | type=push                                                                      |
+        +---------+--------------------------------------------------------------------------------+
+        | pw      | type=pw, otpkey                                                                |
+        +---------+--------------------------------------------------------------------------------+
+        | dpw     | type=dpw, otpkey                                                               |
+        +---------+--------------------------------------------------------------------------------+
+        | email   | type=email, email_address                                                      |
+        +---------+--------------------------------------------------------------------------------+
+        | motp    | type=motp, otpkey                                                              |
+        +---------+--------------------------------------------------------------------------------+
+        | sms     | type=sms, phone                                                                |
+        +---------+--------------------------------------------------------------------------------+
+        | voice   | type=voice, phone                                                              |
+        +---------+--------------------------------------------------------------------------------+
+        | ocra    | type=ocra2, sharedsecret, ocrasuite, otpkey                                    |
+        +---------+--------------------------------------------------------------------------------+
+        | yubikey | type=yubico, yubico.tokenid                                                    |
+        +---------+--------------------------------------------------------------------------------+
+        | forward | type=forward, forward.serial                                                   |
+        +---------+--------------------------------------------------------------------------------+
+        | radius  | type=radius, radius.server, radius.user, radius.secret, radius.local_checkpin  |
+        +---------+--------------------------------------------------------------------------------+
+        | remote  | type=remote, remote.server, remote.local_checkpin, remote.serial               |
+        +---------+--------------------------------------------------------------------------------+
 
         """
 
