@@ -1,6 +1,7 @@
 linotp (3.5~dev0-1) UNRELEASED; urgency=low
 
-  Dummy changelog entry for 3.5
+  Features:
+  * unhandled errors are now logged with traceback and returned in the response
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 
