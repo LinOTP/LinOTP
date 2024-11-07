@@ -35,6 +35,7 @@ from uuid import uuid4
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 from flask_babel import Babel
+from werkzeug.exceptions import HTTPException
 
 from flask import Config as FlaskConfig
 from flask import Flask, abort, current_app
@@ -1040,7 +1041,7 @@ def create_app(config_name=None, config_extra=None):
     app.teardown_request(app.finalise_request)
 
     @app.errorhandler(LinotpError)
-    def linotp_error_handler(e):
+    def linotp_error_handler(linotpError):
         """
         Pass LinotpError exceptions to sendError
 
@@ -1048,7 +1049,27 @@ def create_app(config_name=None, config_extra=None):
         this handler will be called so that an error response can be
         returned to the user.
         """
-        return sendError(e)
+        return sendError(linotpError)
+
+    @app.errorhandler(HTTPException)
+    def httpexception_handler(httpException):
+        """
+        Simply return the error response in case of an HTTPException
+
+        Usecase: Do not trigger `default_error_handler` for e.g. 404 errors
+        """
+        return httpException
+
+    @app.errorhandler(Exception)
+    def default_error_handler(exception):
+        """
+        Default error handler
+
+        Used when no other handler handles the Exception.
+        Logs the Exception with backtrace and returns our error response.
+        """
+        log.exception(exception)
+        return sendError(exception)
 
     @babel.localeselector
     def get_locale():
