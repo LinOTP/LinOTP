@@ -1,4 +1,4 @@
-linotp (3.4~rc2-1) UNRELEASED; urgency=low
+linotp (3.4-1) buster; urgency=low
   
   Breaking Changes:
   * For the container, the `client=` HTTP POST parameter is deprecated and disabled by default.
@@ -7,16 +7,6 @@ linotp (3.4~rc2-1) UNRELEASED; urgency=low
     (the default is "false", for security reasons). Only if re-enabled, the
     "Authorization:" config on the "System config" dialog in the web-based
     management UI is available again and `client=` parameters are looked at.
-
-  Fixes:
-  * audit log entries for `/userservice/logout` now state `user` and `realm` correctly
-  * Restored the `period` return attribute in the /reporting/period API endpoint to resolve missing data issue.
-
- -- LinOTP Packaging <packaging@linotp.de>  Tue, 01 Oct 2024 11:13:00 +0200
- 
-linotp (3.4~rc1-1) UNRELEASED; urgency=low
-
-  Breaking Changes:
   * default of `BACKUP_DIR` is now /var/backups/linotp for the Debian package
   * the CLI `linotp backup create` uses `BACKUP_DIR` to save backups instead of the current working directory
   * breaking changes to the `linotp audit cleanup` CLI:
@@ -50,8 +40,10 @@ linotp (3.4~rc1-1) UNRELEASED; urgency=low
   * audit log entries for userservice API requests state the correct `success` value
   * the last provider (of any kind) can now be deleted
   * non-default providers can be now be deleted as expected if and only if they are not part of an authentication policy
+  * audit log entries for `/userservice/logout` now state `user` and `realm` correctly
+  * Restored the `period` return attribute in the /reporting/period API endpoint to resolve missing data issue.
 
- -- LinOTP Packaging <packaging@linotp.de>  Tue, 01 Oct 2024 11:13:00 +0200
+ -- LinOTP Packaging <packaging@linotp.de>  Tue, 12 Nov 2024 12:34:56 +0200
 
 linotp (3.3.3-1) buster; urgency=low
 
