@@ -1,4 +1,4 @@
-linotp (3.4.1~dev0-1) UNRELEASED; urgency=low
+linotp (3.4.1~rc0-1) UNRELEASED; urgency=low
 
   Fixes:
   * actually set Token PIN in `userservice/enroll`
