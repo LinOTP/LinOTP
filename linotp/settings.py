@@ -615,7 +615,7 @@ _config_schema = ConfigSchema(
             "GET_CLIENT_ADDRESS_FROM_POST_DATA",
             bool,
             convert=to_boolean,
-            default=False,
+            default=True,
             help=(
                 "Various LinOTP API endpoints allow requests from "
                 "certain IP addresses to pass a `client=` parameter "
