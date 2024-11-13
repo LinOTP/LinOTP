@@ -94,6 +94,8 @@ setup(
         "python-ldap",
         # Pygments 2.6.0,1 breaks tests so exclude it
         "Pygments < 2.6.0",
+        # Tempita 0.6.0 breaks tests so exclude it
+        "Tempita < 0.6.0",
         # We also need bcrypt and M2Crypto. But these packages are so
         # problematic on many distributions, that we do not require it here!
     ],
