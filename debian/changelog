@@ -1,54 +1,61 @@
-linotp (3.5~dev0-1) UNRELEASED; urgency=low
+linotp (3.5.0~dev0-1) UNRELEASED; urgency=low
 
   Features:
   * unhandled errors are now logged with traceback and returned in the response
 
  -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
 
-linotp (3.4~dev0-1) UNRELEASED; urgency=low
-
+linotp (3.4.0-1) buster; urgency=low
+  
   Breaking Changes:
-  * changed default `BACKUP_DIR` to `/var/backups/linotp` for deb-package
-  * `linotp backup create` uses `BACKUP_DIR` to save backups instead of the current directory 
-  * breaking changes to `linotp audit cleanup`:
+  * For the container, the `client=` HTTP POST parameter is deprecated and disabled by default.
+    It will be removed in an upcoming version of LinOTP. It can be re-enabled
+    if the `GET_CLIENT_ADDRESS_FROM_POST_DATA` config is set to a true value
+    (the default is "false", for security reasons). Only if re-enabled, the
+    "Authorization:" config on the "System config" dialog in the web-based
+    management UI is available again and `client=` parameters are looked at.
+  * default of `BACKUP_DIR` is now /var/backups/linotp for the Debian package
+  * the CLI `linotp backup create` uses `BACKUP_DIR` to save backups instead of the current working directory
+  * breaking changes to the `linotp audit cleanup` CLI:
     * option `--no-export` is removed
     * option `--export` is added to trigger the export
-    * export is disabled by default. Use `linotp audit cleanup --export` to trigger it.
-    * replace options `--min` and `--max` in favor of `--max-entries-to-keep` and `--cleanup-threshold`:
-      * `--max-entries-to-keep` specifies the number of entries to keep in the db. Defaults to 5000.
-      * `--cleanup-threshold`: When the number of entries exceeds this threshold, the cleanup process is initiated.
-        Defaults to the value of `--max-entries-to-keep`.
-  * The `client=` HTTP POST parameter is now looked at, and the "Authorization:"
-    text field on the "System config" dialog in the web-based management UI is
-    enabled, only if the `GET_CLIENT_ADDRESS_FROM_POST_DATA` config is set to a
-    true value (the default is "false", for security reasons).  The `client=`
-    parameter feature as a whole is deprecated and may be removed in a future
-    version of LinOTP.
+    * export is disabled by default. Use `linotp audit cleanup --export` to trigger it. This restores LinOTP 2.x behavior
+    * options `--min` and `--max` are removed. They are replaced by `--max-entries-to-keep` and `--cleanup-threshold`:
+      * `--max-entries-to-keep` (default: 5000) specifies the number of entries to be retained in the audit database.
+      * `--cleanup-threshold`: (optional) cleanup is only initiated if the number of entries exceeds this threshold.
+        Must be greater than --max-entries-to-keep. No threshold is active by default, i.e. technically speaking,
+        this parameter is equal to `--max-entries-to-keep` by default.
 
   Features:
-  * TRUSTED_PROXIES config variable is added, through which the requests from these proxies will get their
-    X_FORWARDED_FOR header removed. This config will override the trusted forwarding proxy configuration
-    in the manage ui->system configuration.
+  * TRUSTED_PROXIES config variable is added to configure LinOTPs proxy trust.
+    This config will override (i.e. disable) the trusted forwarding proxy
+    configuration in the manage ui -> system configuration.
   * add option `--delete-after-days` to `linotp audit cleanup`:
     Delete entries older than the given number of days (starting from the beginning of the day).
     Can't be used alongside `--max-entries-to-keep` or `--cleanup-threshold`!
-  * audit log entries of `/admin/login` and `admin/logout` now state `success`, `user`, `realm` and `administrator` correctly
   * improved debug log output for TOTP resync routine
   * improved (mostly by reducing) debug log output during server start and request context.
+  * reporting api change: If the `realms` parameter is omitted, the realm `/:no realm:/` is now also evaluated.
 
   Fixes:
-  * wrongly aligned resize bar on Manage UI flexigrid tables when browser is zoomed or scaled
-  * when rolling out a forwarding token via /manage, the serial of the target token is included in the description 
+  * when rolling out a forwarding token via /manage, the serial of the target token is included in the description
   * faulty JWTs don't cause a `500 Internal Server Error` anymore and the error gets logged properly
   * login and logout endpoint for admin authentication was mixed into all /api/v2 controllers which made
     it possible to use e.g. /api/v2/realms/login. Please use only /admin/<login/logout>
+  * faulty policies (e.g. `totp_hashlib=sha256`) now return and log a meaningful error message
+  * audit log entries for `/admin/login` and `admin/logout` now state `success`, `user`, `realm` and `administrator` correctly
+  * audit log entries for userservice API requests state the correct `success` value
+  * the last provider (of any kind) can now be deleted
+  * non-default providers can be now be deleted as expected if and only if they are not part of an authentication policy
+  * audit log entries for `/userservice/logout` now state `user` and `realm` correctly
+  * Restored the `period` return attribute in the /reporting/period API endpoint to resolve missing data issue.
 
- -- LinOTP Packaging <packaging@linotp.de>  Mon, 08 Apr 2024 10:00:00 +0200
+ -- LinOTP Packaging <packaging@linotp.de>  Tue, 12 Nov 2024 12:34:56 +0200
 
 linotp (3.3.3-1) buster; urgency=low
 
   Fix:
-    * SMTP now sends e-mails with a "Date:" header to 
+    * SMTP now sends e-mails with a "Date:" header to
       accommodate picky SMTP servers on the receiving side
 
  -- LinOTP Packaging <packaging@linotp.de>   Mon, 16 Sep 2024 10:00:00 +0200

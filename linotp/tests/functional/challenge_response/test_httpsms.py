@@ -321,7 +321,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
             assert val == "0", response
 
     @patch.object(requests, "get")
-    def test_succesfull_auth(self, mocked_requests_get):
+    def test_successfull_auth(self, mocked_requests_get):
         """Successful SMS sending (via smspin) and authentication"""
 
         fake_http_response = FakeResponse()
@@ -338,7 +338,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
         }
 
         params = {
-            "name": "test_succesfull_auth",
+            "name": "test_successfull_auth",
             "config": json.dumps(sms_conf),
             "timeout": "100",
             "type": "sms",
@@ -367,7 +367,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
                     sms_pin_success = cell[idx + 1] == "1"
                     break
 
-            assert sms_pin_success, response2
+            assert sms_pin_success, audit_response
 
             # test authentication
             response = self.make_validate_request(
@@ -377,7 +377,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
             assert response.json["result"]["value"], response
 
     @patch.object(requests, "get")
-    def test_succesful_auth2(self, mocked_requests_get):
+    def test_successful_auth2(self, mocked_requests_get):
         """
         Successful SMS sending (via validate) and authentication
         """
@@ -396,7 +396,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
         }
 
         params = {
-            "name": "test_succesful_auth2",
+            "name": "test_successful_auth2",
             "config": json.dumps(sms_conf),
             "timeout": "100",
             "type": "sms",
@@ -406,6 +406,54 @@ class TestHttpSmsController(TestingChallengeResponseController):
             response = self.make_validate_request(
                 "check", params={"user": "user1", "pass": "1234"}
             )
+
+            # authentication fails but sms is sent
+            assert "state" in response.json["detail"]
+
+            # test authentication
+            response = self.make_validate_request(
+                "check", params={"user": "user1", "pass": "1234973532"}
+            )
+
+            assert response.json["result"]["value"], response
+
+    @patch.object(requests, "post")
+    def test_successfull_auth_with_headers(self, mocked_requests_post):
+        """
+        Successful SMS sending (via validate)
+        using a token based authentication in the http header
+        """
+
+        fake_http_response = FakeResponse()
+        fake_http_response.text = "ID=123"
+        mocked_requests_post.return_value = fake_http_response
+
+        sms_conf = {
+            "URL": self.sms_url,
+            "PARAMETER": {"account": "clickatel", "username": "legit"},
+            "HEADERS": {"AUTH_TOKEN": "authenticated"},
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "destination",
+            "HTTP_Method": "POST",
+            "RETURN_SUCCESS": "ID",
+        }
+
+        params = {
+            "name": "test_successful_auth2",
+            "config": json.dumps(sms_conf),
+            "timeout": "100",
+            "type": "sms",
+            "class": "smsprovider.HttpSMSProvider.HttpSMSProvider",
+        }
+        with DefaultProvider(self, params):
+            response = self.make_validate_request(
+                "check", params={"user": "user1", "pass": "1234"}
+            )
+
+            # verify that the request post method was called with
+            # with the AUTH_TOKEN in the headers
+            (_, kwargs) = mocked_requests_post.call_args
+            assert kwargs["headers"]["AUTH_TOKEN"] == "authenticated"
 
             # authentication fails but sms is sent
             assert "state" in response.json["detail"]
@@ -442,7 +490,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
             "RETURN_FAILED": "FAILED",
         }
         params = {
-            "name": "test_succesful_auth2",
+            "name": "test_successful_auth2",
             "config": json.dumps(sms_conf),
             "timeout": "100",
             "type": "sms",

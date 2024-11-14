@@ -111,7 +111,8 @@ build-and-upload-docker:
     - docker build
         --label de.linotp.commit-ref="$CI_COMMIT_REF_NAME"
         --label de.linotp.commit-hash="$CI_COMMIT_SHORT_SHA"
-        --label de.linotp.tag="$IMAGE_VERSION-$DATE"
+        --label de.linotp.image-tag="$IMAGE_VERSION-$DATE"
+        --label de.linotp.version="$IMAGE_VERSION"
         -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
     - docker push "$DOCKER_IMAGE_TAG"
     - docker build -t "$DOCKER_TEST_ENV_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testenv .
