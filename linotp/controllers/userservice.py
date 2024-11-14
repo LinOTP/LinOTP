@@ -2194,6 +2194,7 @@ class UserserviceController(BaseController):
         :param prefix: a prefix for the serial number
         :param description: an optional description for the token
         :param otppin: the pin for the token
+        :param pin: (Deprecated) a legacy parameter for token pin. Use `otppin` instead.
 
         :return:
             a json result with a boolean status and request result
@@ -2287,7 +2288,11 @@ class UserserviceController(BaseController):
                 param["serial"] = serial
 
             desc = param.get("description", "")
-            otppin = param.get("otppin")
+
+            # We currently need to support both `pin` and `otppin` due to legacy code
+            otppin = param.get("otppin", param.get("pin"))
+            # set correct param `pin` which is actually used in `th.initToken`
+            param["pin"] = otppin
 
             log.info(
                 "[userinit] initialize a token with serial %s "
