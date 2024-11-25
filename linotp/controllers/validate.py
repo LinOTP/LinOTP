@@ -35,7 +35,6 @@ from flask import current_app, g
 from flask_babel import gettext as _
 
 from linotp.controllers.base import BaseController
-from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.challenges import Challenges
@@ -52,11 +51,7 @@ from linotp.lib.policy import (
     is_auth_return,
 )
 from linotp.lib.realm import getDefaultRealm
-from linotp.lib.reply import (
-    apply_detail_policies,
-    sendQRImageResult,
-    sendResult,
-)
+from linotp.lib.reply import apply_detail_policies, sendQRImageResult, sendResult
 from linotp.lib.token import get_token, get_token_owner, get_tokens
 from linotp.lib.user import User, getUserId, getUserInfo
 from linotp.model import db
