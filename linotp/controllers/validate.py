@@ -241,10 +241,12 @@ class ValidateController(BaseController):
         """
         check the status of a transaction - for polling support
 
-        :param state:
-        :param transactionid:
-        :param serial:
-        :param pass:
+        :param transactionid: the transaction id of the challenge we want to check status for
+        :param state: alternative key to transactionid
+        :param user: (optional) the user the token belongs to (necessary if the challenge was triggered in a user context)
+        :param serial: (optional) or the serial we are searching for instead of user
+        :param pass: the pin or password for authorization of the request
+        :param use_offline: (optional) on success, the offline info is returned (applicable to token types that use `support_offline` policy)
 
         :return:
             a json result with a boolean status and request result

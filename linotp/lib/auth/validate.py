@@ -367,8 +367,8 @@ class ValidationHandler(object):
         :param transid: the transaction id where we request the status from
         :param user: the token owner user
         :param serial: or the serial we are searching for
-        :param password: the pin/password for authorization the request
-        :param use_offline: on success the offline info is returned
+        :param password: the pin/password for authorization of the request
+        :param use_offline: on success, the offline info is returned (applicable to token types that use `support_offline` policy)
 
         :return: tuple of success and detail dict
         """
