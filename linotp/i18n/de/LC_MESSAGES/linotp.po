@@ -24,21 +24,20 @@
 #    Support: www.linotp.de
 #
 # German translations for LinOTP
-# michael <michael.weber@netgo.de>, 2023.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: LinOTP 2\n"
+"Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2023-09-15 12:28+0200\n"
-"Last-Translator: michael <michael.weber@netgo.de>\n"
+"PO-Revision-Date: 2024-11-27 10:24+0100\n"
+"Last-Translator: lukas <lukas.engelter@netgo.de>\n"
 "Language-Team: German - Germany <support@linotp.de>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Gtranslator 3.38.0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.5\n"
 
 msgid " or "
 msgstr " oder "
@@ -1548,6 +1547,14 @@ msgstr "LinOTP Support und Subskription"
 msgid "LinOTP error "
 msgstr "LinOTP-Fehler "
 
+msgid "LinOTP honours HTTP_FORWARDED headers from trusted forwarding proxies."
+msgstr "LinOTP akzeptiert HTTP_FORWARDED-Header von vertrauenswürdigen Proxys."
+
+msgid ""
+"LinOTP honours HTTP_X_FORWARDED_FOR headers from trusted forwarding proxies."
+msgstr ""
+"LinOTP akzeptiert HTTP_X_FORWARDED_FOR-Header von vertrauenswürdigen Proxys."
+
 msgid "LinOTP trusts the following services: "
 msgstr "LinOTP vertraut den folgenden Diensten: "
 
@@ -1730,6 +1737,20 @@ msgstr "Es werden keine Benutzer gelöscht!"
 
 msgid "No valid session"
 msgstr "Keine gültige Session"
+
+msgid ""
+"Note: Parameter-based client address overrides are deprecated. For now, you "
+"can re-enable this feature by setting the LinOTP config variable, "
+"GET_CLIENT_ADDRESS_FROM_POST_DATA, to 'True'. This feature may be removed "
+"entirely in a future version of LinOTP. Please use the standard 'X-Forwarded-"
+"For' headers in LinOTP API requests in your own code."
+msgstr ""
+"Hinweis: Parameter-basierte Client-Overrides sind veraltet. Aktuell können "
+"Sie diese Funktion wieder aktivieren, indem Sie die LinOTP-"
+"Konfigurationsvariable GET_CLIENT_ADDRESS_FROM_POST_DATA auf ‘True’ setzen. "
+"Diese Funktion wird in einer zukünftigen Version von LinOTP vollständig "
+"entfernt werden. Bitte verwenden Sie die Standard ‘X-Forwarded-For’ Header "
+"in LinOTP API Anfragen in Ihrem eigenen Code."
 
 msgid "Number"
 msgstr "Nummer"
@@ -2885,8 +2906,8 @@ msgid ""
 "level with the LinOTP configuration TRUSTED_PROXIES. The system "
 "configuration shown above is not in effect."
 msgstr ""
-"Die Trusted Forwarding Proxy-Konfiguration wird auf Serverinstanzebene mit der "
-"LinOTP-Konfiguration TRUSTED_PROXIES überschrieben. Die oben angezeigte "
+"Die Trusted Forwarding Proxy-Konfiguration wird auf Serverinstanzebene mit "
+"der LinOTP-Konfiguration TRUSTED_PROXIES überschrieben. Die oben angezeigte "
 "Systemkonfiguration ist nicht wirksam."
 
 msgid "The upload of your support and subscription license failed: "
