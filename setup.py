@@ -26,7 +26,6 @@
 #
 
 import os
-import sys
 
 from setuptools import find_packages, setup
 from setuptools.command.build_py import build_py
@@ -267,20 +266,12 @@ setup(
     message_extractors={
         "linotp": [
             ("**.py", "python", None),
-            ("templates/**.mako", "mako", {"input_encoding": "utf-8"}),
-            ("tokens/**.mako", "mako", {"input_encoding": "utf-8"}),
-            ("public/js/manage.js", "javascript", {"input_encoding": "utf-8"}),
-            ("public/js/tools.js", "javascript", {"input_encoding": "utf-8"}),
-            (
-                "public/js/selfservice.js",
-                "javascript",
-                {"input_encoding": "utf-8"},
-            ),
-            (
-                "public/js/linotp_utils.js",
-                "javascript",
-                {"input_encoding": "utf-8"},
-            ),
+            ("templates/**.mako", "mako", None),
+            ("tokens/**.mako", "mako", None),
+            ("public/js/manage.js", "javascript", None),
+            ("public/js/tools.js", "javascript", None),
+            ("public/js/selfservice.js", "javascript", None),
+            ("public/js/linotp_utils.js", "javascript", None),
             ("public/**", "ignore", None),
         ]
     },
