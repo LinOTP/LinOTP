@@ -536,7 +536,10 @@ docker-run-linotp-functional-test:
 #
 # # Requirements
 #
-reqs: requirements.txt requirements-all.txt requirements-dev.txt requirements-prod.txt requirements-test.txt 
+del-reqs:
+	rm requirements*.txt
+
+reqs: del-reqs requirements.txt requirements-all.txt requirements-dev.txt requirements-prod.txt requirements-test.txt 
 
 requirements.txt: setup.py
 	pip-compile \
