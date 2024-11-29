@@ -140,10 +140,15 @@ container_scanning:
     - time trivy image --download-db-only --no-progress --cache-dir .trivycache/
     # Builds report and puts it in the default workdir $CI_PROJECT_DIR, so `artifacts:` can take it from there
     - time trivy image --scanners vuln --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@/contrib/gitlab.tpl"
-        --output "$CI_PROJECT_DIR/gl-container-scanning-report.json" "$FULL_IMAGE_NAME"
+      --output "$CI_PROJECT_DIR/gl-container-scanning-report.json" "$FULL_IMAGE_NAME"
     # Prints full report
     - time trivy image --scanners vuln --exit-code 0 --cache-dir .trivycache/ --no-progress "$FULL_IMAGE_NAME"
     # Fail on critical vulnerabilities that could be fixed
+    #   issue: pillow is reported as having a critical vulnerability that could be fixed
+    #   but we cant on python 3.7. We set an expiration date to the ignore so that we do
+    #   not forget to act. On version 3.4.x, we probably need to perma-ignore it, on master
+    #   we should be able to remove the vulnerability with a newer python version.
+    - echo "CVE-2023-50447 exp:2025-01-01" > .trivyignore
     - time trivy image --scanners vuln --exit-code 1 --cache-dir .trivycache/ --severity "$SEVERITIES" --ignore-unfixed --no-progress "$FULL_IMAGE_NAME"
   cache:
     paths:
