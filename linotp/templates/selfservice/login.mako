@@ -90,7 +90,7 @@
               %endif
               <tr>
                 <td><label for=password>${_("Password")}:</label></td>
-                <td><input type="password" id="password" name="password"></td>
+                <td><input autocomplete="off" type="password" id="password" name="password"></td>
               </tr>
               %if c.mfa_3_fields:
               <tr>
