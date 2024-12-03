@@ -2,8 +2,8 @@ include:
   - template: Code-Quality.gitlab-ci.yml
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - project: 'dev/ext-project-packaging/ci-includes'
-    file: 'gitbox-deb-ci.yml'
+  - project: "dev/ext-project-packaging/ci-includes"
+    file: "gitbox-deb-ci.yml"
 
 variables:
   LANG: C.UTF-8
@@ -38,15 +38,14 @@ variables:
   # uncomment `CI_DEBUG_SERVICES` to capture logs of job-services (e.g. the linotp container in e2e tests)
   # CI_DEBUG_SERVICES: "true"
 
-
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'              # Execute nightly pipeline
+    - if: $CI_PIPELINE_SOURCE == 'schedule' # Execute nightly pipeline
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"' # Execute pipeline in merge request context
-    - if: '$CI_PIPELINE_SOURCE == "web"'                 # Execute pipeline manually triggered from the web
-    - if: $CI_COMMIT_TAG                                 # Execute pipeline on release tag
-    - if: '$CI_COMMIT_BRANCH =~ /^(branch-v|master)/'    # Execute pipeline when a new commit is pushed to a stable or master branch
-    - if: $NIGHTLY_PIPELINE                              # Execute pipeline if run with this variable set
+    - if: '$CI_PIPELINE_SOURCE == "web"' # Execute pipeline manually triggered from the web
+    - if: $CI_COMMIT_TAG # Execute pipeline on release tag
+    - if: "$CI_COMMIT_BRANCH =~ /^(branch-v|master)/" # Execute pipeline when a new commit is pushed to a stable or master branch
+    - if: $NIGHTLY_PIPELINE # Execute pipeline if run with this variable set
 
 stages:
   - pypi-image
@@ -62,13 +61,7 @@ stages:
 
 build-and-upload-pypi-image-testenv:
   stage: pypi-image
-  # image: docker:latest
-  # TODO: use docker:latest again once the pipeline-issue
-  # https://forum.gitlab.com/t/the-ci-cd-pipeline-suddenly-fails-without-any-changes-done-to-the-repository/81117
-  # has been resolved.
-  # For now we use the proposed solution with the previous (and working) image `docker:20.10.22-dind` referenced by hash
-  # docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
-  image: docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
+  image: docker:latest
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       variables:
@@ -92,13 +85,7 @@ build-and-upload-pypi-image-testenv:
 build-and-upload-docker:
   stage: check-and-build
   needs: []
-  # image: docker:latest
-  # TODO: use docker:latest again once the pipeline-issue
-  # https://forum.gitlab.com/t/the-ci-cd-pipeline-suddenly-fails-without-any-changes-done-to-the-repository/81117
-  # has been resolved.
-  # For now we use the proposed solution with the previous (and working) image `docker:20.10.22-dind` referenced by hash
-  # docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
-  image: docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
+  image: docker:latest
   before_script:
     - !reference [.docker-registry]
   script:
@@ -109,11 +96,11 @@ build-and-upload-docker:
     - IMAGE_VERSION="$(sed -Ene '/__version__ =/{s/^.*= "(.*)"/\1/;s/\.(dev|rc)[0-9]+/.0/;p}' linotp/__init__.py)"
     - DATE=$(date +"%Y%m%d")
     - docker build
-        --label de.linotp.commit-ref="$CI_COMMIT_REF_NAME"
-        --label de.linotp.commit-hash="$CI_COMMIT_SHORT_SHA"
-        --label de.linotp.image-tag="$IMAGE_VERSION-$DATE"
-        --label de.linotp.version="$IMAGE_VERSION"
-        -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
+      --label de.linotp.commit-ref="$CI_COMMIT_REF_NAME"
+      --label de.linotp.commit-hash="$CI_COMMIT_SHORT_SHA"
+      --label de.linotp.image-tag="$IMAGE_VERSION-$DATE"
+      --label de.linotp.version="$IMAGE_VERSION"
+      -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
     - docker push "$DOCKER_IMAGE_TAG"
     - docker build -t "$DOCKER_TEST_ENV_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testenv .
     - docker push "$DOCKER_TEST_ENV_IMAGE_TAG"
@@ -176,8 +163,8 @@ secret_detection:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   variables:
-      SEVERITIES: "Critical,High"
-      GIT_STRATEGY: none
+    SEVERITIES: "Critical,High"
+    GIT_STRATEGY: none
   cache: {}
   before_script:
     - apt-get install -y jq
@@ -234,7 +221,7 @@ pre-commit-check:
       - $CI_PROJECT_DIR/.pre-commit-cache
   rules:
     - exists:
-      - .pre-commit-config.yaml
+        - .pre-commit-config.yaml
   before_script:
     - pip install pre-commit
   script:
@@ -279,13 +266,13 @@ pre-commit-check:
     # Build the images
     - *docker-build-args
     - >
-        make
-        docker-build-linotp-builder
-        docker-build-linotp
-        docker-build-linotp-test-image
-        docker-build-linotp-softhsm
-        BUILDDIR="${CI_PROJECT_DIR}"
-        DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS}"
+      make
+      docker-build-linotp-builder
+      docker-build-linotp
+      docker-build-linotp-test-image
+      docker-build-linotp-softhsm
+      BUILDDIR="${CI_PROJECT_DIR}"
+      DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS}"
     # Tag and push images to repository in the form:
     #  registry/ci/release/linotp-IMAGENAME:pipelineID
     #  registry/ci/release/linotp-IMAGENAME:sha256
@@ -324,7 +311,6 @@ build:debian-buster:
     reports:
       dotenv: build.env
 
-
 lint:
   stage: lint
   when: manual
@@ -346,7 +332,8 @@ lint:
     - "test $(( $EXIT_ON_WARNING && $STATUS & 4 )) -eq 0 || (echo 'Fail: Warnings'; false)"
   parallel:
     matrix:
-      - LINTED_MODULE: [controllers, lib, model, provider, tokens, useridresolver]
+      - LINTED_MODULE:
+          [controllers, lib, model, provider, tokens, useridresolver]
 
 # Provide pytest arguments based on base rules
 # The tests need a number of arguments based on the type
@@ -396,7 +383,7 @@ lint:
   rules:
     - if: $NIGHTLY_PIPELINE
       when: always
-    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train' || $CI_COMMIT_TAG 
+    - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merge_train' || $CI_COMMIT_TAG
       variables:
         NIGHTLY_PIPELINE: 1
       when: always
@@ -440,7 +427,12 @@ lint:
   services:
     - name: ${DB}
       alias: db
-      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+      command:
+        [
+          "mysqld",
+          "--character-set-server=utf8",
+          "--collation-server=utf8_general_ci",
+        ]
 
 .mysql-lower-case-table-names-database:
   extends:
@@ -451,9 +443,15 @@ lint:
   services:
     - name: ${DB}
       alias: db
-      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci", "--lower-case-table-names=1"]
+      command:
+        [
+          "mysqld",
+          "--character-set-server=utf8",
+          "--collation-server=utf8_general_ci",
+          "--lower-case-table-names=1",
+        ]
   script:
-      # check that config table is stored lower case, i.e. the tests executed verify that lower case table names work.
+    # check that config table is stored lower case, i.e. the tests executed verify that lower case table names work.
     - |
       TABLES=$(python3 -c "from sqlalchemy import create_engine; print(*create_engine('$LINOTP_DATABASE_URI').table_names(), sep='\n')")
       echo $TABLES
@@ -498,10 +496,10 @@ lint:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merged_result'
   variables:
     PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_SHA
-    PYPI_ARGS: "-m \"not fails_in_pypi_tests\" -n auto"
+    PYPI_ARGS: '-m "not fails_in_pypi_tests" -n auto'
   before_script:
     - *pytest-args
-  
+
 .test-base-debs:
   extends:
     - .test-base
@@ -513,8 +511,8 @@ lint:
 unit-test-pypi:
   extends: .test-base-pypi
   script:
-      - pip3 install -e .
-      - make unittests PYTESTARGS="$PYTESTARGS"
+    - pip3 install -e .
+    - make unittests PYTESTARGS="$PYTESTARGS"
 
 .functional-test-base-pypi:
   extends:
@@ -600,10 +598,10 @@ functional-test-mysql-lower-case-table-names:
     SELENIUM_PORT: "4444"
     SSL_TRUSTED_CERT: "
       Issuer: O = LinOTP-DE, CN = LinOTP-DE Root CA
-        Validity
-            Not Before: Feb  6 12:15:37 2022 GMT
-            Not After : Feb  4 12:15:37 2032 GMT
-        Subject: O = LinOTP-DE, CN = LinOTP-DE Root CA
+      Validity
+      Not Before: Feb  6 12:15:37 2022 GMT
+      Not After : Feb  4 12:15:37 2032 GMT
+      Subject: O = LinOTP-DE, CN = LinOTP-DE Root CA
       -----BEGIN CERTIFICATE-----
       MIIBojCCAUmgAwIBAgIQPlwfzlZDQsPhD1rWE9Ux3TAKBggqhkjOPQQDAjAwMRIw
       EAYDVQQKEwlMaW5PVFAtREUxGjAYBgNVBAMTEUxpbk9UUC1ERSBSb290IENBMB4X
@@ -626,12 +624,12 @@ functional-test-mysql-lower-case-table-names:
   script:
     - cd linotp/tests/integration
     - >
-        /usr/local/bin/dockerfy
-        --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini
-        --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT
-        --timeout 60m
-        --wait tcp://$LINOTP_HOST:$LINOTP_PORT
-        --timeout 60m
+      /usr/local/bin/dockerfy
+      --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini
+      --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT
+      --timeout 60m
+      --wait tcp://$LINOTP_HOST:$LINOTP_PORT
+      --timeout 60m
     - *pytest-args
     - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="$PYTESTARGS"
   after_script:
@@ -691,17 +689,22 @@ e2e-test-docker-mariadb:
   extends:
     - .e2e-test-docker
     - .mariadb-database
-  services: 
+  services:
     - !reference [".e2e-test-docker", "services"]
     - name: ${DB}
       alias: db
-      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_unicode_ci"]
+      command:
+        [
+          "mysqld",
+          "--character-set-server=utf8",
+          "--collation-server=utf8_unicode_ci",
+        ]
 
 e2e-test-mysql-lower-case-table-names:
   extends:
     - .e2e-test-docker
     - .mysql-lower-case-table-names-database
-  services: 
+  services:
     - !reference [".e2e-test-docker", "services"]
     - !reference [".mysql-lower-case-table-names-database", "services"]
   script:
@@ -719,9 +722,9 @@ e2e-test-softhsm:
   allow_failure: true
   parallel:
     # too few tests -> dont split
-    matrix: 
-    - CI_NODE_INDEX: [1]
-      CI_NODE_TOTAL: [1]
+    matrix:
+      - CI_NODE_INDEX: [1]
+        CI_NODE_TOTAL: [1]
 
 e2e-test-docker-softhsm:
   extends:
@@ -732,9 +735,9 @@ e2e-test-docker-softhsm:
   allow_failure: true
   parallel:
     # too few tests -> dont split
-    matrix: 
-    - CI_NODE_INDEX: [1]
-      CI_NODE_TOTAL: [1]
+    matrix:
+      - CI_NODE_INDEX: [1]
+        CI_NODE_TOTAL: [1]
 
 # Auto-generate API docs using Sphinx.
 apidocs:
@@ -761,8 +764,7 @@ apidocs:
   parallel:
     matrix:
       - DEBIAN_RELEASE_NAME:
-        - buster
-
+          - buster
 
 upload-debs:
   stage: upload-debian-packages
@@ -786,10 +788,10 @@ build-and-upload-iso:
   variables:
     UPLOAD: "yes"
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^dev\//'                  # Release candidate for QA
+    - if: '$CI_COMMIT_TAG =~ /^dev\//' # Release candidate for QA
       variables:
         BUILD: golden
-    - if: '$CI_COMMIT_TAG =~ /^release/'                # Release version
+    - if: "$CI_COMMIT_TAG =~ /^release/" # Release version
       variables:
         BUILD: release
 
@@ -802,5 +804,5 @@ build-iso:
     BUILD: commit
     UPLOAD: "no"
   rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'            # Nightly/Scheduled pipeline
-    - if: $CI_MERGE_REQUEST_REF_PATH                    # Commit on branch
+    - if: $CI_PIPELINE_SOURCE == 'schedule' # Nightly/Scheduled pipeline
+    - if: $CI_MERGE_REQUEST_REF_PATH # Commit on branch
