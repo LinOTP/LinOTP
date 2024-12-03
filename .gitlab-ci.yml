@@ -62,13 +62,7 @@ stages:
 
 build-and-upload-pypi-image-testenv:
   stage: pypi-image
-  # image: docker:latest
-  # TODO: use docker:latest again once the pipeline-issue
-  # https://forum.gitlab.com/t/the-ci-cd-pipeline-suddenly-fails-without-any-changes-done-to-the-repository/81117
-  # has been resolved.
-  # For now we use the proposed solution with the previous (and working) image `docker:20.10.22-dind` referenced by hash
-  # docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
-  image: docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
+  image: docker:latest
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       variables:
@@ -92,13 +86,7 @@ build-and-upload-pypi-image-testenv:
 build-and-upload-docker:
   stage: check-and-build
   needs: []
-  # image: docker:latest
-  # TODO: use docker:latest again once the pipeline-issue
-  # https://forum.gitlab.com/t/the-ci-cd-pipeline-suddenly-fails-without-any-changes-done-to-the-repository/81117
-  # has been resolved.
-  # For now we use the proposed solution with the previous (and working) image `docker:20.10.22-dind` referenced by hash
-  # docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
-  image: docker@sha256:c8bb6fa5388b56304dd770c4bc0478de81ce18540173b1a589178c0d31bfce90
+  image: docker:latest
   before_script:
     - !reference [.docker-registry]
   script:
