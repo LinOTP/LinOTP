@@ -117,3 +117,47 @@ class TestUserserviceEnrollment(TestController):
             "enroll", params={"type": "hmac"}, auth_user=auth_user
         )
         assert NOT_ALLOWED_ERROR in response, response
+
+    def test_correct_pin_on_enrollment(self):
+        """
+        Ensure that the correct pin is set when enrolling a token
+        """
+
+        # Setup
+        params = {
+            "name": "enroll",
+            "scope": "selfservice",
+            "action": "enrollPW",
+            "user": "*",
+            "realm": "*",
+            "active": True,
+        }
+
+        response = self.make_system_request("setPolicy", params)
+        assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+        token_params = {
+            "type": "pw",
+            "description": "Created via SelfService",
+            "otpkey": "key",
+            "otppin": "pin",
+        }
+        response = self.make_userselfservice_request(
+            "enroll", params=token_params, auth_user=auth_user
+        )
+        assert ' "value": true' in response, response
+
+        # Test for correct PIN + OTP
+        response = self.make_validate_request(
+            "check",
+            {
+                "user": auth_user["login"],
+                "pass": token_params["otppin"] + token_params["otpkey"],
+            },
+        )
+        assert response.json["result"]["status"]
+        assert response.json["result"]["value"]
