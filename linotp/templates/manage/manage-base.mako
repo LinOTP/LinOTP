@@ -366,10 +366,10 @@
                     <table>
                         <tr><td><label for="sys_x_forwarded_for">${_("Support for HTTP_X_FORWARDED_FOR")}</label></td>
                         <td><input type='checkbox' name='sys_x_forwarded_for' id='sys_x_forwarded_for' value='sys_x_forwarded_for' ${disabled_attr}
-                            title='${_("LinOTP will ")}'></td></tr>
+                            title='${_("LinOTP honours HTTP_X_FORWARDED_FOR headers from trusted forwarding proxies.")}'></td></tr>
                         <tr><td><label for="sys_forwarded">${_("Support for HTTP_FORWARDED")}</label></td>
                         <td><input type='checkbox' name='sys_forwarded' id='sys_forwarded' value='sys_forwarded' ${disabled_attr}
-                            title='${_("LinOTP will ")}'></td></tr>
+                            title='${_("LinOTP honours HTTP_FORWARDED headers from trusted forwarding proxies.")}'></td></tr>
                         <tr><td><label for="sys_forwarded_proxy">${_("Trusted Forwarding Proxy")}: </label></td><td></td></tr>
                         <tr><td colspan="2"><input type="text" name="sys_forwarded_proxy" id="sys_forwarded_proxy" size="35" ${disabled_attr}
                                 title='${_("The ip address of the trusted forwarding proxy, which provides the REMOTE_ADDR.")}'></td></tr>
