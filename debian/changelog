@@ -1,6 +1,7 @@
 linotp (3.4.2~dev0-1) UNRELEASED; urgency=low
 
-  DUMMY CHANGELOG for 3.4.2
+  Fixes:
+  * include json-translations in container
 
  -- LinOTP Packaging <packaging@linotp.de>  Tue, 17 Dec 2024 12:34:56 +0200
 
