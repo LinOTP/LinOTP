@@ -115,7 +115,7 @@ ENV LINOTP_USER=linotp \
     # root level dirs
     LINOTP_CACHE_DIR=/cache \
     LINOTP_BACKUP_DIR=/backups \
-    LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;/$TRANSLATIONS_DIR \
+    LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;$TRANSLATIONS_DIR \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
     # Disable legacy selfservice
