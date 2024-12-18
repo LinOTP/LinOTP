@@ -72,7 +72,7 @@ translate-%: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 # Compile a .po file to a .json file using the `pojson` tool.
 $(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 	mkdir -p $(I18N_JSON_DEST)
-	pojson -e utf-8 $< > $@
+	pojson -p -e utf-8 $< > $@
 
 # Compile all .po files to .mo files using babel. As a dependency,
 # the .po files are compiled to .json files. The order doesn't matter.
