@@ -15,9 +15,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     LINOTP_HOME=/app \
     VENV_ROOT=/opt/venv \
     TRANSLATIONS_DIR=/translations
-
-ENV PATH=$VENV_ROOT/bin:$PATH \
-    I18N_DIR=$LINOTP_HOME/linotp/i18n
+ENV PATH=$VENV_ROOT/bin:$PATH
 
 # Install dependencies and clean up
 # We add `bookworm-proposed-updates` to get at version `2.5.0-1+deb12u1`
@@ -56,37 +54,39 @@ FROM base AS builder
 # Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # required for building python-ldap
-    gcc
+    gcc \
+    # required for translations
+    make
+
+WORKDIR $LINOTP_HOME
 
 # Install python dependencies into VENV_ROOT
 RUN python -m venv $VENV_ROOT
 COPY requirements-prod.txt .
 RUN pip install pip==24.0 pip-tools && pip-sync requirements-prod.txt
 
-WORKDIR $LINOTP_HOME
-
-# Install linotp
+# Copy files needed to install linotp
 COPY config config
 COPY examples examples
 COPY man man
 COPY MANIFEST.in README.md setup.cfg setup.py ./
 COPY linotp linotp
+
+# Build translations:
+# json translations are build to `linotp/public/i18n/` and copied via venv
+# *.mo translations are copied via TRANSLATIONS_DIR
+COPY Makefile.linotp .
+RUN pip install pojson && \
+    make -f Makefile.linotp compile_catalog && \
+    mkdir -p $TRANSLATIONS_DIR && \
+    cd $LINOTP_HOME/linotp/i18n/ && \
+    find . -type f -name "*.mo" -exec cp --parents {} "$TRANSLATIONS_DIR"/ \;
+
+# Cleanup venv (e.g. remove pojson and its potential deps)
+RUN pip-sync requirements-prod.txt
+
+# Install LinOTP into venv
 RUN pip install .
-
-################
-# TRANSLATIONS #
-################
-
-FROM base AS translations
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gettext
-
-WORKDIR $LINOTP_HOME
-
-COPY linotp/i18n $I18N_DIR
-COPY docker/linotp/translations.sh .
-RUN ./translations.sh
 
 
 #########
@@ -115,7 +115,7 @@ ENV LINOTP_USER=linotp \
     # root level dirs
     LINOTP_CACHE_DIR=/cache \
     LINOTP_BACKUP_DIR=/backups \
-    LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;/$TRANSLATIONS_DIR \
+    LINOTP_BABEL_TRANSLATION_DIRECTORIES=/custom-translations;$TRANSLATIONS_DIR \
     LINOTP_CUSTOM_TEMPLATES_DIR=/custom-templates \
     CUSTOM_ASSETS_DIR=/custom-assets \
     # Disable legacy selfservice
@@ -131,8 +131,8 @@ WORKDIR $LINOTP_HOME
 
 # Copy the virtualenv we created in the builder stage
 COPY --from=builder $VENV_ROOT $VENV_ROOT
-# Copy the translations we created in the translations stage
-COPY --from=translations $TRANSLATIONS_DIR $TRANSLATIONS_DIR
+# Copy the translations we created in the builder stage
+COPY --from=builder $TRANSLATIONS_DIR $TRANSLATIONS_DIR
 # Copy relevant files to start linotp and create symlink
 COPY linotpapp.py docker/linotp/entrypoint.sh docker/linotp/symlink_custom_assets.py ./
 # Copy certificate installation script
@@ -154,7 +154,6 @@ RUN mkdir -p \
     python symlink_custom_assets.py && rm symlink_custom_assets.py \
     # Let people put custom CA certificates into a top-level directory
     && ln -s /usr/local/share/ca-certificates /ca-certificates
-
 
 # Create and set the user to run the container and chown directories
 RUN useradd -r $LINOTP_USER && \
