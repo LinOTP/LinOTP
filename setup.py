@@ -57,7 +57,6 @@ install_requirements = [
     "configobj",
     "httplib2",
     "requests",
-    "pillow",
     "passlib",
     "pysodium",
     # python-ldap needs libsasl2-dev and libldap2-dev system packages on
