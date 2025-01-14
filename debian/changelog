@@ -1,4 +1,4 @@
-linotp (3.5.0~dev0-1) UNRELEASED; urgency=low
+linotp (4.0.0~dev0-1) UNRELEASED; urgency=low
 
   Features:
   * unhandled errors are now logged with traceback and returned in the response
