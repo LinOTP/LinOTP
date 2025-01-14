@@ -736,12 +736,11 @@ e2e-test-docker-softhsm:
 # Auto-generate API docs using Sphinx.
 apidocs:
   stage: apidocs
-  image: $IMAGE_PREFIX_CI/linotp-deb-buster:${CI_PIPELINE_ID}
+  image: python:3.11-bookworm
   interruptible: true
   needs: ["build:debian-buster"]
   script:
-    - python3 --version
-    - pip3 install -e ".[apidocs]"
+    - pip install Sphinx mock webhelpers2 jinja2
     - cd ${CI_PROJECT_DIR}/api-doc
     - make apidocs
     - make html
