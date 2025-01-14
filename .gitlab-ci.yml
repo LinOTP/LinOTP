@@ -3,28 +3,19 @@ include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
   - project: "dev/ext-project-packaging/ci-includes"
-    file: "gitbox-deb-ci.yml"
+    file: "gitbox-upload-docker.yml"
 
 variables:
   LANG: C.UTF-8
-  IMAGE_NAME: linotp-build-test-environment_buster
-  BUILD_CODE_IMAGE: $CI_REGISTRY/$IMAGE_NAME:$CI_COMMIT_REF_NAME
-  LATEST_CODE_IMAGE: $CI_REGISTRY/$IMAGE_NAME:$CI_PIPELINE_ID
   DOCKERFY_URL: https://debs-devel.corp.linotp.de/misc/dockerfy/dockerfy
-  DEBIAN_MIRROR: ftp.de.debian.org
-  DEPENDENCY_DEB_REPO: http://debs-devel.corp.linotp.de/linotp3 buster linotp
-  # DEPENDENCY_GPG_KEYID: 7CC736921C5A21B7
-  DEPENDENCY_GPG_KEYID: ""
-  DEPENDENCY_GPG_KEY_URL: http://debs-devel.corp.linotp.de/misc/gpg/linotp-dev-archive-keyring.gpg
   DOCKER_TAGS: $CI_PIPELINE_ID
   IMAGE_PREFIX_CI: $CI_REGISTRY/$CI_PROJECT_PATH/ci
-  NOSE_COVER_PACKAGE: linotp
   DOCKER_COMPOSE_VERSION: "1.22.0"
   # Docker network per build - needed for DNS resolution between services (service linotp needs db)
   FF_NETWORK_PER_BUILD: 1
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
-  PYPI_IMAGE: $IMAGE_PREFIX_CI/linotp-testenv-pypi
+  PYPI_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-pypi:$CI_PIPELINE_ID
   DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/b/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
   DOCKER_TEST_IMG_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-testimg:$CI_PIPELINE_ID
   DOCKER_TEST_ENV_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-testenv:$CI_PIPELINE_ID
@@ -32,9 +23,6 @@ variables:
   # Variables for security scan evaluation
   SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
   SAST_DETECTION_REPORT_FILE: gl-sast-report.json
-  # Variables for upload-debs
-  REPOSITORY: linotp3
-  COMPONENT: linotp
   # uncomment `CI_DEBUG_SERVICES` to capture logs of job-services (e.g. the linotp container in e2e tests)
   # CI_DEBUG_SERVICES: "true"
 
@@ -48,41 +36,23 @@ workflow:
     - if: $NIGHTLY_PIPELINE # Execute pipeline if run with this variable set
 
 stages:
-  - pypi-image
-  - pypi-tests
   - check-and-build
   - test
   - lint
-  - coverage-report
   - apidocs
   - upload-image
-  - upload-debian-packages
-  - iso
 
-build-and-upload-pypi-image-testenv:
-  stage: pypi-image
+build-pypi:
+  stage: check-and-build
+  needs: []
   image: docker:latest
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      variables:
-        PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_SHA
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^(branch-v|master)/
-      variables:
-        PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_SHA
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: manual
-      allow_failure: true
-      variables:
-        PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_SHA
-  variables:
-    PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_COMMIT_REF_NAME
   before_script:
     - !reference [.docker-registry]
   script:
     - docker build -t "$PYPI_IMAGE_TAG" -f docker/Dockerfile.testenv-pypi .
     - docker push "$PYPI_IMAGE_TAG"
 
-build-and-upload-docker:
+build-docker:
   stage: check-and-build
   needs: []
   image: docker:latest
@@ -111,7 +81,7 @@ container_scanning:
   image:
     name: docker.io/aquasec/trivy:latest
     entrypoint: [""]
-  needs: ["build-and-upload-docker"]
+  needs: ["build-docker"]
   variables:
     SEVERITIES: CRITICAL
     GIT_STRATEGY: none
@@ -221,104 +191,20 @@ pre-commit-check:
   script:
     - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache pre-commit run --all-files
 
-.docker-build-args: &docker-build-args |
-  DOCKER_BUILD_ARGS="--build-arg BUILDKIT_INLINE_CACHE=1"
-  # Use cached docker images in non-nightly pipelines
-  if [ -z "${NIGHTLY_PIPELINE}" ]; then
-    DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --cache-from=$BUILDER_CACHE_IMAGE --cache-from=$LINOTP_CACHE_IMAGE"       
-  fi
-
-# Build docker images and debs
-# This builds the .debs and docker images (builder, linotp, testenv).
-# Everything else depends on these, so we build everything in one go
-# to make the build of all the images as fast as possible. We use
-# Docker caching to speed things up.
-.build-debs-and-images:
-  stage: check-and-build
-  image: docker:latest
-  interruptible: true
-  retry:
-    max: 2
-  needs: []
-  before_script:
-    - !reference [.docker-registry]
-  script:
-    - apk add --no-cache make
-    - TESTENV_DEB_IMAGE=$IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME
-    - SOFTHSM_DEB_IMAGE=$IMAGE_PREFIX_CI/linotp-softhsm-deb-$DEBIAN_RELEASE_NAME
-    - BUILDER_CACHE_KEY=$(sha256sum docker/Dockerfile.builder-deb | cut -d ' ' -f1)
-    - BUILDER_CACHE_IMAGE=$IMAGE_PREFIX_CI/linotp-builder-deb-$DEBIAN_RELEASE_NAME
-    - LINOTP_CACHE_KEY=$(sha256sum docker/Dockerfile.linotp-deb | cut -d ' ' -f1)
-    - LINOTP_CACHE_IMAGE=$IMAGE_PREFIX_CI/linotp-deb-$DEBIAN_RELEASE_NAME
-    # Pull the old images to speedup the build process, the hope is
-    # that the modified time will always be the same unless the file
-    # has actually been changed
-    - export DOCKER_BUILDKIT=1
-    - docker pull debian:$DEBIAN_RELEASE_NAME
-    - docker pull $BUILDER_CACHE_IMAGE:$BUILDER_CACHE_KEY || true
-    - docker pull $LINOTP_CACHE_IMAGE:$LINOTP_CACHE_KEY || true
-    # Build the images
-    - *docker-build-args
-    - >
-      make
-      docker-build-linotp-builder
-      docker-build-linotp
-      docker-build-linotp-test-image
-      docker-build-linotp-softhsm
-      BUILDDIR="${CI_PROJECT_DIR}"
-      DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS}"
-    # Tag and push images to repository in the form:
-    #  registry/ci/release/linotp-IMAGENAME:pipelineID
-    #  registry/ci/release/linotp-IMAGENAME:sha256
-    # First for linotp-builder
-    - docker tag linotp-builder:latest "$BUILDER_CACHE_IMAGE:$BUILDER_CACHE_KEY"
-    - docker tag linotp-builder:latest "$BUILDER_CACHE_IMAGE:$CI_PIPELINE_ID"
-    - docker push "$BUILDER_CACHE_IMAGE:$BUILDER_CACHE_KEY"
-    - docker push "$BUILDER_CACHE_IMAGE:$CI_PIPELINE_ID"
-    # Now do the same for linotp
-    - docker tag linotp:latest "$LINOTP_CACHE_IMAGE:$LINOTP_CACHE_KEY"
-    - docker tag linotp:latest "$LINOTP_CACHE_IMAGE:$CI_PIPELINE_ID"
-    - docker push "$LINOTP_CACHE_IMAGE:$LINOTP_CACHE_KEY"
-    - docker push "$LINOTP_CACHE_IMAGE:$CI_PIPELINE_ID"
-    # Now we push the testenv and softhsm images. We do not bother to cache
-    # this because they change every time we do a new linotp build.
-    - docker tag linotp-testenv:latest "$TESTENV_DEB_IMAGE:$CI_PIPELINE_ID"
-    - docker push "$TESTENV_DEB_IMAGE:$CI_PIPELINE_ID"
-    - docker tag linotp-softhsm:latest "$SOFTHSM_DEB_IMAGE:$CI_PIPELINE_ID"
-    - docker push "$SOFTHSM_DEB_IMAGE:$CI_PIPELINE_ID"
-    # Log all the images to stdout
-    - docker images
-    # Save build job id to artifacts for later uploads
-    - echo "$CI_JOB_ID" > apt/"$DEBIAN_RELEASE_NAME"_build_job_id.txt
-    - echo "DEB_ARTIFACTS_URL=https://${GITLAB_DOMAIN_NAME}/api/v4/projects/${CI_PROJECT_ID}/jobs/${CI_JOB_ID}/artifacts" >> build.env
-
-build:debian-buster:
-  extends: .build-debs-and-images
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-  artifacts:
-    expose_as: apt-buster
-    paths:
-      - apt/
-    name: "linotp-debs${CI_COMMIT_REF_SLUG}"
-    expire_in: 2 weeks
-    reports:
-      dotenv: build.env
-
 lint:
   stage: lint
+  needs: []
   when: manual
-  image: $IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME:$CI_PIPELINE_ID
-  needs: ["build:debian-buster"]
+  image: python:3.11-bookworm
   interruptible: true
   variables:
-    LINTED_MODULE: ""
-    DEBIAN_RELEASE_NAME: buster
     EXIT_ON_FATAL: "1"
     EXIT_ON_ERROR: "0"
     EXIT_ON_WARNING: "0"
+  before_script:
+    - pip install pylint
   script:
-    - pylint3 linotp/${LINTED_MODULE} && STATUS=0 || STATUS=$?
+    - pylint linotp/${LINTED_MODULE} && STATUS=0 || STATUS=$?
     - echo STATUS:$STATUS
     - "test $(( $STATUS & 32 )) -eq 0 || (echo 'Fail: usage error'; false)"
     - "test $(( $EXIT_ON_FATAL && $STATUS & 1 )) -eq 0 || (echo 'Fail: Fatal errors'; false)"
@@ -382,12 +268,6 @@ lint:
         NIGHTLY_PIPELINE: 1
       when: always
 
-# Tests should run on Debian buster
-.buster-tests:
-  variables:
-    DEBIAN_RELEASE_NAME: buster
-  needs: ["build:debian-buster"]
-
 # The next sections provide different database configurations
 .mysql-vars: &mysql-vars
   MYSQL_DATABASE: linotp_db
@@ -404,7 +284,6 @@ lint:
   rules:
     - !reference [.nightly-test-set-rules, rules]
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-
   variables:
     <<: *mysql-vars
     DB: mariadb:10.1
@@ -481,108 +360,96 @@ lint:
       coverage_report:
         coverage_format: cobertura
         path: ${CI_PROJECT_DIR}/coverage.xml
+  before_script:
+    - *pytest-args
 
 .test-base-pypi:
   extends: .test-base
-  stage: pypi-tests
+  stage: test
+  needs: [build-pypi]
   image: $PYPI_IMAGE_TAG
   rules:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merged_result'
   variables:
-    PYPI_IMAGE_TAG: $PYPI_IMAGE:$CI_MERGE_REQUEST_TARGET_BRANCH_SHA
     PYPI_ARGS: '-m "not fails_in_pypi_tests" -n auto'
-  before_script:
-    - *pytest-args
 
-.test-base-debs:
-  extends:
-    - .test-base
-    - .nightly-test-set-rules
-  stage: test
-  needs: build:debian-buster
-  image: $IMAGE_PREFIX_CI/linotp-testenv-deb-$DEBIAN_RELEASE_NAME:$CI_PIPELINE_ID
-
-unit-test-pypi:
-  extends: .test-base-pypi
-  script:
-    - pip3 install -e .
-    - make unittests PYTESTARGS="$PYTESTARGS"
-
-.functional-test-base-pypi:
-  extends:
-    - .test-base-pypi
-  artifacts:
-    reports:
-      junit: linotp/tests/functional/functional-pypi*.xml
-  script:
-    - make functionaltests PYTESTARGS="$PYTESTARGS"
-
-functional-test-pypi:
-  extends: .functional-test-base-pypi
-
-# Unit tests
 unit-test:
-  extends:
-    - .test-base-debs
-    - .buster-tests
+  extends: .test-base-pypi
   artifacts:
     reports:
       junit: linotp/tests/unit/unit-*.xml
   script:
-    - *pytest-args
     - make unittests PYTESTARGS="$PYTESTARGS"
 
-# Functional tests
 .functional-test-base:
   extends:
-    - .test-base-debs
-    - .buster-tests
+    - .test-base-pypi
   artifacts:
     reports:
       junit: linotp/tests/functional/functional-*.xml
   script:
-    - *pytest-args
     - make functionaltests PYTESTARGS="$PYTESTARGS"
 
-.functional-test-base-dbs:
-  extends: .functional-test-base
-
 functional-test:
-  extends: .functional-test-base
+  extends:
+    - .functional-test-base
+
+.functional-test-db-base:
+  extends:
+    - .functional-test-base
+  variables:
+    PYPI_ARGS: ""
+  script:
+    - echo "Waiting for database to be accessible at ${LINOTP_DB_HOST}:${LINOTP_DB_PORT}..."
+    - >
+      for i in {1..30}; do
+        if nc -z $LINOTP_DB_HOST $LINOTP_DB_PORT; then
+          echo "Database is accessible at ${LINOTP_DB_HOST}:${LINOTP_DB_PORT}!";
+          break;
+        fi;
+        echo "Attempt $i/30: Database at ${LINOTP_DB_HOST}:${LINOTP_DB_PORT} is not yet ready...";
+        sleep 5;
+      done;
+      if ! nc -z $LINOTP_DB_HOST $LINOTP_DB_PORT; then
+        echo "Failed to connect to database at ${LINOTP_DB_HOST}:${LINOTP_DB_PORT} after 30 attempts.";
+        exit 1;
+      fi
+    - !reference [".functional-test-base", "script"]
 
 functional-test-mariadb:
   extends:
-    - .functional-test-base-dbs
+    - .functional-test-db-base
     - .mariadb-database
     - .nightly-test-set-rules
 
 functional-test-postgres:
   extends:
-    - .functional-test-base-dbs
+    - .functional-test-db-base
     - .postgres-database
 
 functional-test-mysql:
   extends:
-    - .functional-test-base-dbs
+    - .functional-test-db-base
     - .mysql-database
 
 functional-test-mysql-lower-case-table-names:
   extends:
-    - .functional-test-base-dbs
+    - .functional-test-db-base
     - .mysql-lower-case-table-names-database
   script:
-    - !reference [".functional-test-base-dbs", "script"]
+    - !reference [".functional-test-db-base", "script"]
     - !reference [".mysql-lower-case-table-names-database", "script"]
 
 .e2e-test:
   extends:
-    - .test-base-debs
-    - .buster-tests
+    - .test-base
+  image: $DOCKER_TEST_ENV_IMAGE_TAG
+  needs: [build-docker]
   variables:
-    LINOTP_IMAGE: "linotp-deb"
     LINOTP_HOST: "test-linotp"
-    LINOTP_PORT: "443"
-    LINOTP_PROTOCOL: "https"
+    LINOTP_PORT: "5000"
+    LINOTP_PROTOCOL: "http"
+    SKIP_ANGULAR_SELF_SERVICE_TEST: 1
     LINOTP_USERNAME: "admin"
     LINOTP_PASSWORD: "admin"
     HEALTHCHECK_PORT: "80"
@@ -590,74 +457,6 @@ functional-test-mysql-lower-case-table-names:
     SELENIUM_PROTOCOL: "http"
     SELENIUM_HOST: "test-chrome"
     SELENIUM_PORT: "4444"
-    SSL_TRUSTED_CERT: "
-      Issuer: O = LinOTP-DE, CN = LinOTP-DE Root CA
-      Validity
-      Not Before: Feb  6 12:15:37 2022 GMT
-      Not After : Feb  4 12:15:37 2032 GMT
-      Subject: O = LinOTP-DE, CN = LinOTP-DE Root CA
-      -----BEGIN CERTIFICATE-----
-      MIIBojCCAUmgAwIBAgIQPlwfzlZDQsPhD1rWE9Ux3TAKBggqhkjOPQQDAjAwMRIw
-      EAYDVQQKEwlMaW5PVFAtREUxGjAYBgNVBAMTEUxpbk9UUC1ERSBSb290IENBMB4X
-      DTIyMDIwNjEyMTUzN1oXDTMyMDIwNDEyMTUzN1owMDESMBAGA1UEChMJTGluT1RQ
-      LURFMRowGAYDVQQDExFMaW5PVFAtREUgUm9vdCBDQTBZMBMGByqGSM49AgEGCCqG
-      SM49AwEHA0IABGZPiX58lcLz+oX/CNZFdJI3bWE9KdxRlmypYWwbZUqkhLn1ARWc
-      lblmltOU/L6/XlbYuLWdTE3Hk1VF7UA+zdejRTBDMA4GA1UdDwEB/wQEAwIBBjAS
-      BgNVHRMBAf8ECDAGAQH/AgEBMB0GA1UdDgQWBBRY28kvC11GjduDBsUaQvIr87ke
-      MDAKBggqhkjOPQQDAgNHADBEAiB9pumbZbFk5ChludETNKxFzSVRCx7Cbzm1zNCw
-      TGfofQIgFClkyscaKq+ALGjKzDAf+oF4A1BgOzqdFxafFePRH54=
-      -----END CERTIFICATE-----
-      "
-  artifacts:
-    name: browser-screenshots
-    paths:
-      - Screenshots/
-    when: on_failure
-    reports:
-      junit: linotp/tests/integration/e2e-*.xml
-  script:
-    - cd linotp/tests/integration
-    - >
-      /usr/local/bin/dockerfy
-      --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini
-      --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT
-      --timeout 60m
-      --wait tcp://$LINOTP_HOST:$LINOTP_PORT
-      --timeout 60m
-    - *pytest-args
-    - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="$PYTESTARGS"
-  after_script:
-    - mv linotp/tests/integration/Screenshots .
-
-e2e-test-mariadb:
-  extends:
-    - .e2e-test
-    - .mariadb-database
-  services:
-    - name: "${IMAGE_PREFIX_CI}/${LINOTP_IMAGE}-${DEBIAN_RELEASE_NAME}:${CI_PIPELINE_ID}"
-      alias: test-linotp
-    - name: $BLACKDOG_LDAP_IMAGE
-      alias: blackdog-ldap
-    - name: $BLACKDOG_MYSQL_IMAGE
-      alias: blackdog-mysql
-    - name: ${DB}
-      alias: db
-    - name: selenium/standalone-chrome-debug:latest
-      alias: test-chrome
-  allow_failure: false
-
-.e2e-test-docker:
-  image:
-    name: $DOCKER_TEST_ENV_IMAGE_TAG
-    entrypoint: [""]
-  extends:
-    - .e2e-test
-  needs:
-    - build-and-upload-docker
-  variables:
-    LINOTP_PORT: "5000"
-    LINOTP_PROTOCOL: "http"
-    SKIP_ANGULAR_SELF_SERVICE_TEST: 1
   services:
     - name: $BLACKDOG_LDAP_IMAGE
       alias: blackdog-ldap
@@ -678,13 +477,32 @@ e2e-test-mariadb:
         # reenable selfservice for some e2e tests
         LINOTP_DISABLE_CONTROLLERS: "gettoken"
         LINOTP_SITE_ROOT_REDIRECT: ""
+  script:
+    - cd linotp/tests/integration
+    - >
+      /usr/local/bin/dockerfy
+      --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini
+      --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT
+      --timeout 60m
+      --wait tcp://$LINOTP_HOST:$LINOTP_PORT
+      --timeout 60m
+    - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="$PYTESTARGS"
+  after_script:
+    - mv linotp/tests/integration/Screenshots .
+  artifacts:
+    name: browser-screenshots
+    paths:
+      - Screenshots/
+    when: on_failure
+    reports:
+      junit: linotp/tests/integration/e2e-*.xml
 
-e2e-test-docker-mariadb:
+e2e-test-mariadb:
   extends:
-    - .e2e-test-docker
+    - .e2e-test
     - .mariadb-database
   services:
-    - !reference [".e2e-test-docker", "services"]
+    - !reference [".e2e-test", "services"]
     - name: ${DB}
       alias: db
       command:
@@ -696,33 +514,18 @@ e2e-test-docker-mariadb:
 
 e2e-test-mysql-lower-case-table-names:
   extends:
-    - .e2e-test-docker
+    - .e2e-test
     - .mysql-lower-case-table-names-database
   services:
-    - !reference [".e2e-test-docker", "services"]
+    - !reference [".e2e-test", "services"]
     - !reference [".mysql-lower-case-table-names-database", "services"]
   script:
-    - !reference [".e2e-test-docker", "script"]
+    - !reference [".e2e-test", "script"]
     - !reference [".mysql-lower-case-table-names-database", "script"]
 
-# End to end test using Soft HSM image
 e2e-test-softhsm:
   extends:
     - e2e-test-mariadb
-    - .nightly-test-set-rules
-  variables:
-    ALL_JOB_ARGS: "-m smoketest -v"
-    LINOTP_IMAGE: "linotp-softhsm-deb"
-  allow_failure: true
-  parallel:
-    # too few tests -> dont split
-    matrix:
-      - CI_NODE_INDEX: [1]
-        CI_NODE_TOTAL: [1]
-
-e2e-test-docker-softhsm:
-  extends:
-    - e2e-test-docker-mariadb
     - .nightly-test-set-rules
   variables:
     ALL_JOB_ARGS: "-m smoketest -v"
@@ -738,7 +541,6 @@ apidocs:
   stage: apidocs
   image: python:3.11-bookworm
   interruptible: true
-  needs: ["build:debian-buster"]
   script:
     - pip install Sphinx mock webhelpers2 jinja2
     - cd ${CI_PROJECT_DIR}/api-doc
@@ -752,50 +554,8 @@ apidocs:
       - api-docs
     expire_in: 2 weeks
 
-# Upload deb packages
-.debian-releases:
-  parallel:
-    matrix:
-      - DEBIAN_RELEASE_NAME:
-          - buster
-
-upload-debs:
-  stage: upload-debian-packages
-  extends: .upload-debs
-
 # Upload container image
 
 upload-container-image:
   stage: upload-image
   extends: .upload-container-image
-
-# Build and upload are being handled by dev/linotp/sva2/build-isos
-.build-and-upload-iso:
-  stage: iso
-  trigger:
-    project: dev/linotp/sva2/build-isos
-    strategy: depend
-
-build-and-upload-iso:
-  extends: .build-and-upload-iso
-  variables:
-    UPLOAD: "yes"
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^dev\//' # Release candidate for QA
-      variables:
-        BUILD: golden
-    - if: "$CI_COMMIT_TAG =~ /^release/" # Release version
-      variables:
-        BUILD: release
-
-build-iso:
-  extends: .build-and-upload-iso
-  when: manual
-  allow_failure: true
-  variables:
-    DEB_ARTIFACTS_URL: $DEB_ARTIFACTS_URL
-    BUILD: commit
-    UPLOAD: "no"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule' # Nightly/Scheduled pipeline
-    - if: $CI_MERGE_REQUEST_REF_PATH # Commit on branch

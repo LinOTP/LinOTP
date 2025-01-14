@@ -28,3 +28,5 @@ RUN pip install -r requirements-test.txt
 
 # change user back to LINOTP_USER
 USER $LINOTP_USER
+
+ENTRYPOINT [""]
