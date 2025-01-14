@@ -464,7 +464,7 @@ lint:
     POSTGRES_PASSWORD: "linotppass"
     POSTGRES_HOST_AUTH_METHOD: trust
     LINOTP_DB_HOST: "db"
-    LINOTP_DB_PORT: "3306"
+    LINOTP_DB_PORT: "5432"
     LINOTP_DB_WAITTIME: 2m
     LINOTP_DATABASE_URI: postgres://linotp:linotppass@db/linotp_db
     LINOTP_PYTEST_DATABASE_URI: postgres://linotp:linotppass@db/linotp_db
