@@ -64,7 +64,13 @@ install_requirements = [
     # apt.
     "python-ldap",
     "bcrypt",
-    "cryptography",
+    # TODO
+    # Fix Breacking changes introduced with cryptography==35
+    # https://github.com/pyca/cryptography/blob/main/CHANGELOG.rst#3500---2021-09-29
+    # Raises `ValueError: error parsing asn1 value: ParseError { kind: ExtraData }`
+    # in `cert = x509.load_der_x509_certificate(...)` of `uf2token.py`
+    # during functional tests
+    "cryptography<35",
     "click",
     "jsonschema",
 ]
