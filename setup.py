@@ -117,23 +117,28 @@ smpp_requirements = [
 # Requirements needed to run all the tests
 # install with
 # > pip install -r requirements-test.txt
-test_requirements = [
-    "flask_testing",
-    "pytest",
-    "pytest-cov",
-    "pytest-freezegun",
-    "pytest-flask",
-    "pytest-mock",
-    "pytest-testconfig",
-    "pytest-test-groups",
-    "pytest-xdist",
-    "selenium<4.10.0",
-    "mock",
-    "mockldap",
-    "freezegun",
-    "coverage",
-    "flaky",
-] + smpp_requirements
+test_requirements = (
+    [
+        "flask_testing",
+        "pytest",
+        "pytest-cov",
+        "pytest-freezegun",
+        "pytest-flask",
+        "pytest-mock",
+        "pytest-testconfig",
+        "pytest-test-groups",
+        "pytest-xdist",
+        "selenium<4.10.0",
+        "mock",
+        "mockldap",
+        "freezegun",
+        "coverage",
+        "flaky",
+    ]
+    + smpp_requirements
+    + postgres_requirements
+    + mysql_requirements
+)
 
 # all packages that are required for production setup of LinOTP
 # install with
