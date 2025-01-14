@@ -3,7 +3,7 @@
 # and enhances it with the reqs needed to execute the e2e-tests on.
 
 # Build it from the root dir via e.g.:
-# docker build -f docker/Dockerfile.linotp-testenv -t linotp-test .
+# docker build -f docker/Dockerfile.linotp-testenv -t linotp-testenv .
 
 ARG BASE_IMAGE=linotp:latest
 
