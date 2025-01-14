@@ -24,6 +24,7 @@
 #    Support: www.linotp.de
 #
 
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import List
@@ -77,7 +78,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
 
 
 @pytest.mark.parametrize(
-    "options,deleted,remaining,cleaned,exit_code,partial_err_msg",
+    "options,deleted,remaining,cleaned,exported,exit_code,partial_err_msg",
     [
         (
             [
@@ -90,6 +91,21 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             AUDIT_AMOUNT_ENTRIES - 5,
             5,
             True,
+            True,
+            0,
+            "",
+        ),
+        (
+            [
+                "--cleanup-threshold",
+                10,
+                "--max-entries-to-keep",
+                5,
+            ],
+            AUDIT_AMOUNT_ENTRIES - 5,
+            5,
+            True,
+            False,
             0,
             "",
         ),
@@ -103,6 +119,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             ],
             0,
             AUDIT_AMOUNT_ENTRIES,
+            False,
             False,
             0,
             f"{AUDIT_AMOUNT_ENTRIES} entries in database",
@@ -118,6 +135,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             AUDIT_AMOUNT_ENTRIES,
             0,
             True,
+            True,
             0,
             "",
         ),
@@ -132,6 +150,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             1,
             AUDIT_AMOUNT_ENTRIES - 1,
             True,
+            True,
             0,
             "",
         ),
@@ -140,6 +159,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             1,
             AUDIT_AMOUNT_ENTRIES - 1,
             True,
+            True,
             0,
             "",
         ),
@@ -147,6 +167,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             [],
             0,
             AUDIT_AMOUNT_ENTRIES,
+            False,
             False,
             0,
             "0 entries in database",
@@ -162,6 +183,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             0,
             AUDIT_AMOUNT_ENTRIES,
             False,
+            False,
             1,
             "`--delete-after-days` can not be used alongside",
         ),
@@ -172,6 +194,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             ],
             AUDIT_AMOUNT_ENTRIES,
             0,
+            False,
             False,
             0,
             "",
@@ -184,6 +207,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             AUDIT_AMOUNT_ENTRIES - 1,
             1,
             False,
+            False,
             0,
             "",
         ),
@@ -195,6 +219,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             1,
             AUDIT_AMOUNT_ENTRIES - 1,
             False,
+            False,
             0,
             "",
         ),
@@ -205,6 +230,7 @@ def runner(app: LinOTPApp) -> FlaskCliRunner:
             ],
             0,
             AUDIT_AMOUNT_ENTRIES,
+            False,
             False,
             0,
             "",
@@ -220,6 +246,7 @@ def test_audit_cleanup_parameters(
     deleted: int,
     remaining: int,
     cleaned: bool,
+    exported: bool,
     exit_code: int,
     partial_err_msg: str,
 ):
@@ -236,15 +263,21 @@ def test_audit_cleanup_parameters(
 
     filename = f"SQLAuditExport.{formated_time}.{deleted}.csv"
     export_file = Path(app.config["BACKUP_DIR"]) / filename
+
     if cleaned:
+        assert f"{remaining} entries left in database" in result.stderr
+    else:
+        assert partial_err_msg in result.stderr
+
+    if exported:
+        assert export_file.is_file()
         num_lines = sum(1 for _ in export_file.open())
         # expected: Number of deleted lines + header row
         assert num_lines == deleted + 1
-        assert f"{remaining} entries left in database" in result.stderr
         assert f"Exported into {export_file}" in result.stderr
+        os.remove(export_file)
     else:
         assert not export_file.is_file()
-        assert partial_err_msg in result.stderr
         assert "Exported" not in result.stderr
 
     assert db.session.query(AuditTable).count() == remaining
