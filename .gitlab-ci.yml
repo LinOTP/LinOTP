@@ -523,6 +523,15 @@ e2e-test-mysql-lower-case-table-names:
     - !reference [".e2e-test", "script"]
     - !reference [".mysql-lower-case-table-names-database", "script"]
 
+e2e-test-postgres:
+  extends:
+    - .e2e-test
+    - .postgres-database
+  services:
+    - !reference [".e2e-test", "services"]
+    - name: ${DB}
+      alias: db
+
 e2e-test-softhsm:
   extends:
     - e2e-test-mariadb
