@@ -44,8 +44,6 @@ all:
 	@echo "make source - Create source package"
 	@echo "make create - Create the source packages"
 	@echo "make install - Install on local system"
-	@echo "make buildrpm - Generate a rpm package"
-	@echo "make builddeb - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 	@echo "make translate"
 
@@ -94,46 +92,6 @@ create: source
 .PHONY: install
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
-
-.PHONY: buildrpm
-buildrpm:
-	$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall
-
-.PHONY: prepare-deb-source
-prepare-deb-source: source
-	# Target: prepare-deb-source
-	mkdir -pv $(DEB_BUILDDIR)
-
-	# Unpack clean sources to a staging directory for building from. This is to ensure
-	# that we have built linotp from the same source tarball contents.
-
-	# The debian packaging directory is not included in the source tarball.
-	# See <https://wiki.debian.org/UpstreamGuide#Pristine_Upstream_Source> for rationale
-
-	# Create tarball copy in the format expected by dpkg-source
-	cd $(DEB_BUILDDIR) \
-		&& upstream_version=$(shell dpkg-parsechangelog | grep "^Version:" |cut -d' ' -f2 | cut -d- -f1) ;\
-		package_name=$(shell dpkg-parsechangelog | grep "^Source:" |cut -d' ' -f2 ) ;\
-		orig_tar_name="../$${package_name}_$${upstream_version}.$(TAR_SUFFIX)" ;\
-		cp $(BUILDDIR)/$(PROJECT)-*.tar.gz $${orig_tar_name} \
-		&& tar --strip-components=1 -xf $${orig_tar_name}
-
-	cp -r debian $(DEB_BUILDDIR)
-
-# Ubuntu builds create source packages in linotpd/src
-.PHONY: ppa-preprocess
-ppa-preprocess: source
-	$(MAKE) -f Makefile.linotp prepare-deb-source DEB_BUILDDIR=linotp-build TAR_SUFFIX=ubuntu-temp.tar.gz
-	cd linotp-build && debuild -S
-
-
-# Debian builds create binary packages in linotpd/build
-.PHONY: builddeb
-builddeb:
-	# Target: builddeb (Makefile.linotp)
-	./ci/update-debian-changelog .
-	$(MAKE) -f Makefile.linotp prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
-	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot $(DPKG_BUILDPACKAGE_ARGS)
 
 .PHONY: clean
 clean:

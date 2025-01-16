@@ -42,7 +42,6 @@ include linotp/dictionary
 recursive-include config *
 
 recursive-include tools *
-recursive-include examples *
 recursive-include linotp/tokens *.mako
 exclude linotp/controllers/testing.py
 include README.md

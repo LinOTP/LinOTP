@@ -66,9 +66,6 @@ RUN pip install pip==24.0 pip-tools && pip-sync requirements-prod.txt
 WORKDIR $LINOTP_HOME
 
 # Install linotp
-COPY config config
-COPY examples examples
-COPY man man
 COPY MANIFEST.in README.md setup.cfg setup.py ./
 COPY linotp linotp
 RUN pip install .

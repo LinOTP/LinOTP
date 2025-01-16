@@ -224,46 +224,6 @@ setup(
         ]
     },
     scripts=[],
-    data_files=[
-        (
-            "etc/linotp/",
-            [
-                "config/linotpapp.wsgi",
-                "config/push-ca-bundle.crt",
-                "config/etc/linotp.cfg",
-            ],
-        ),
-        (
-            "etc/linotp/apache-site-includes/",
-            [
-                "config/apache-site-includes/README.txt",
-            ],
-        ),
-        (
-            "share/doc/linotp/examples",
-            [
-                "examples/apache-site.conf",
-                "examples/mailtemplate-authenticate.eml",
-                "examples/mailtemplate-enroll.eml",
-                "examples/mailtemplate-set-pin.eml",
-            ],
-        ),
-        (
-            "share/man/man1",
-            [
-                "man/man1/linotp-audit-cleanup.1",
-                "man/man1/linotp-backup.1",
-                "man/man1/linotp-config.1",
-                "man/man1/linotp-init.1",
-            ],
-        ),
-        (
-            "share/linotp",
-            [
-                "config/share/linotp.cfg",
-            ],
-        ),
-    ],
     classifiers=[
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Programming Language :: Python",

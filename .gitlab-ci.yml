@@ -488,6 +488,7 @@ functional-test-mysql-lower-case-table-names:
       --timeout 60m
     - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="$PYTESTARGS"
   after_script:
+    - mkdir -p linotp/tests/integration/Screenshots
     - mv linotp/tests/integration/Screenshots .
   artifacts:
     name: browser-screenshots
