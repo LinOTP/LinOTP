@@ -371,7 +371,7 @@ lint:
   rules:
     - if: $CI_MERGE_REQUEST_EVENT_TYPE == 'merged_result'
   variables:
-    PYPI_ARGS: '-m "not fails_in_pypi_tests" -n auto'
+    PYPI_ARGS: "-n auto"
 
 unit-test:
   extends: .test-base-pypi
