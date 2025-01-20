@@ -55,7 +55,7 @@ install_requirements = [
     "pycryptodomex",
     "pyrad",
     "netaddr",
-    "qrcode",
+    "qrcode[png]",
     "configobj",
     "httplib2",
     "requests",
