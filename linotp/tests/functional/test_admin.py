@@ -55,7 +55,14 @@ class TestAdminController(TestController):
         """
 
         # Ensure that our session cookie is reset
-        self.client.cookie_jar.clear_session_cookies
+        cookie_jar = []
+        for cookie in self.client._cookies.values():
+            cookie_jar.append(cookie)
+
+        for cookie in cookie_jar:
+            self.client.delete_cookie(
+                cookie.key, path=cookie.path, domain=cookie.domain
+            )
 
         self.delete_all_token()
         self.delete_all_realms()

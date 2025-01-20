@@ -20,9 +20,8 @@ class TestJwtAdmin:
         cookie = next(
             (
                 cookie.value
-                for cookie in client.cookie_jar
-                if (cookie.name == cookie_name)
-                & (cookie.domain == "localhost.local")
+                for cookie in client._cookies.values()
+                if (cookie.key == cookie_name) & (cookie.domain == "localhost")
             ),
             None,
         )
@@ -164,9 +163,7 @@ class TestJwtAdmin:
     ) -> None:
         with scoped_authclient(verify_jwt=True) as client:
             faulty_token = "faulty_jwt"
-            client.set_cookie(
-                "localhost.local", "access_token_cookie", faulty_token
-            )
+            client.set_cookie("localhost", "access_token_cookie", faulty_token)
 
             with caplog.at_level(logging.ERROR):
                 response = self.do_authenticated_request(client)

@@ -68,14 +68,21 @@ def test_session_cookie_secure(
 
     # Note that we are using `client` rather than `adminclient`, because
     # `adminclient` already is logged in.
-    client.cookie_jar.clear()
+    cookie_jar = []
+    for cookie in client._cookies.values():
+        cookie_jar.append(cookie)
+
+    for cookie in cookie_jar:
+        client.delete_cookie(
+            cookie.key, path=cookie.path, domain=cookie.domain
+        )
     res = client.post(
         auth_type["api"],
         data={"username": "foooooo", "password": "baaaaar"},
     )
     assert res.status_code == 200
-    for cookie in client.cookie_jar:
-        if cookie.name == auth_type["cookie_name"]:
+    for cookie in client._cookies.values():
+        if cookie.key == auth_type["cookie_name"]:
             assert cookie.secure is secure_cookies
             break
     else:
