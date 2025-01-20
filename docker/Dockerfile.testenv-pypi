@@ -1,4 +1,4 @@
-FROM python:3.7-buster AS base
+FROM python:3.11-bookworm AS base
 
 RUN apt-get update && \
     apt-get install -y \
@@ -13,7 +13,9 @@ RUN apt-get update && \
 RUN useradd -ms /bin/bash tester && echo "root:Test123!\ntester:Test123!" | chpasswd
 
 COPY ./ ./
-RUN pip3 install -r requirements-test.txt \
-    && pip install .
 
+# due to incompatibility of funcparserlib using use_2to3:
+RUN pip install wheel "setuptools==58"
+RUN pip install -r requirements-test.txt \
+    && pip install .
 USER tester
