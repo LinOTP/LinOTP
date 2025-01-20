@@ -823,7 +823,7 @@ def test_init_audit_keys_cmd(
         assert s in cmd_result.output
     if makes_file:
         assert audit_keys.private.exists()
-        check_key_validity(audit_keys.private.read_text(), "RSA PRIVATE")
+        check_key_validity(audit_keys.private.read_text(), "PRIVATE")
         assert audit_keys.public.exists()
         check_key_validity(audit_keys.public.read_text(), "PUBLIC")
     if check_backup:
