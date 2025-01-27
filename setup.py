@@ -64,7 +64,13 @@ install_requirements = [
     # apt.
     "python-ldap",
     "bcrypt",
-    "cryptography",
+    # TODO
+    # Fix Breacking changes introduced with cryptography==35
+    # https://github.com/pyca/cryptography/blob/main/CHANGELOG.rst#3500---2021-09-29
+    # Raises `ValueError: error parsing asn1 value: ParseError { kind: ExtraData }`
+    # in `cert = x509.load_der_x509_certificate(...)` of `uf2token.py`
+    # during functional tests
+    "cryptography<35",
     "click",
     "jsonschema",
 ]
@@ -117,23 +123,28 @@ smpp_requirements = [
 # Requirements needed to run all the tests
 # install with
 # > pip install -r requirements-test.txt
-test_requirements = [
-    "flask_testing",
-    "pytest",
-    "pytest-cov",
-    "pytest-freezegun",
-    "pytest-flask",
-    "pytest-mock",
-    "pytest-testconfig",
-    "pytest-test-groups",
-    "pytest-xdist",
-    "selenium<4.10.0",
-    "mock",
-    "mockldap",
-    "freezegun",
-    "coverage",
-    "flaky",
-] + smpp_requirements
+test_requirements = (
+    [
+        "flask_testing",
+        "pytest",
+        "pytest-cov",
+        "pytest-freezegun",
+        "pytest-flask",
+        "pytest-mock",
+        "pytest-testconfig",
+        "pytest-test-groups",
+        "pytest-xdist",
+        "selenium<4.10.0",
+        "mock",
+        "mockldap",
+        "freezegun",
+        "coverage",
+        "flaky",
+    ]
+    + smpp_requirements
+    + postgres_requirements
+    + mysql_requirements
+)
 
 # all packages that are required for production setup of LinOTP
 # install with
@@ -213,46 +224,6 @@ setup(
         ]
     },
     scripts=[],
-    data_files=[
-        (
-            "etc/linotp/",
-            [
-                "config/linotpapp.wsgi",
-                "config/push-ca-bundle.crt",
-                "config/etc/linotp.cfg",
-            ],
-        ),
-        (
-            "etc/linotp/apache-site-includes/",
-            [
-                "config/apache-site-includes/README.txt",
-            ],
-        ),
-        (
-            "share/doc/linotp/examples",
-            [
-                "examples/apache-site.conf",
-                "examples/mailtemplate-authenticate.eml",
-                "examples/mailtemplate-enroll.eml",
-                "examples/mailtemplate-set-pin.eml",
-            ],
-        ),
-        (
-            "share/man/man1",
-            [
-                "man/man1/linotp-audit-cleanup.1",
-                "man/man1/linotp-backup.1",
-                "man/man1/linotp-config.1",
-                "man/man1/linotp-init.1",
-            ],
-        ),
-        (
-            "share/linotp",
-            [
-                "config/share/linotp.cfg",
-            ],
-        ),
-    ],
     classifiers=[
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Programming Language :: Python",

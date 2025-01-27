@@ -6,12 +6,14 @@ RUN apt-get update && \
     libldap2-dev \
     libsasl2-dev \
     ldap-utils \
-    libsodium-dev
+    libsodium-dev \
+    # to check if given DB is available
+    netcat-openbsd 
 
 RUN useradd -ms /bin/bash tester && echo "root:Test123!\ntester:Test123!" | chpasswd
 
 COPY ./ ./
 RUN pip3 install -r requirements-test.txt \
-    && pip install -e .
+    && pip install .
 
 USER tester

@@ -74,7 +74,6 @@ def ECDSA_sign(private_key, message):
     return priv.sign(message, ec.ECDSA(hashes.SHA256()))
 
 
-@pytest.mark.fails_in_pypi_tests
 class TestU2FController(TestController):
     ATTESTATION_PRIVATE_KEY_PEM = (
         "-----BEGIN EC PRIVATE KEY-----\n"

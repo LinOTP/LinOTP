@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# Create / update database
-
-. /usr/share/dbconfig-common/scripts/linotp/lib.sh
-configure_and_init_db

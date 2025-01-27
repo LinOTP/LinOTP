@@ -23,7 +23,6 @@ nose
 api-doc/build/
 api-doc/source/*.rst
 
-
 LinOTP_*.orig.tar.gz
 linotp/i18n/*/LC_MESSAGES/linotp.mo
 LinOTP-*.tar.gz
