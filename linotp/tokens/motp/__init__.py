@@ -134,7 +134,7 @@ class mTimeOtp(object):
             key = self.key
 
         vhash = b"%d%b%b" % (counter, key, pin)
-        motp = md5(vhash).hexdigest()[: self.digits]
+        motp = md5(vhash).hexdigest()[: self.digits]  # nosec B324
         return motp
 
 
