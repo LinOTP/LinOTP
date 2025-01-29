@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 """
- user entry comparison processing
+user entry comparison processing
 """
 
 import logging

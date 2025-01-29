@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 
-""" test for ValidateController """
+"""test for ValidateController"""
 
 import logging
 

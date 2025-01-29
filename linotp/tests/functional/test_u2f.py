@@ -25,9 +25,9 @@
 #    Support: www.linotp.de
 #
 """
-  Test the U2F token
-  To test the U2F token implementation, the behavior of a U2F device is simulated
-  using a demo certificate and a hard-coded key handle
+Test the U2F token
+To test the U2F token implementation, the behavior of a U2F device is simulated
+using a demo certificate and a hard-coded key handle
 """
 
 import base64

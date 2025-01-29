@@ -27,7 +27,7 @@
 
 
 """
-  Test linotp.tokens.emailtoken with template file and inline template
+Test linotp.tokens.emailtoken with template file and inline template
 """
 
 import json

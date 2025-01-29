@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 
-"""  This is the SMSClass to send SMS via HTTP Gateways """
+"""This is the SMSClass to send SMS via HTTP Gateways"""
 
 import logging
 import smtplib

@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 """handle all configuration items with aspekts like persitance and
-   syncronysation and provides this to all requests
+syncronysation and provides this to all requests
 """
 
 import logging

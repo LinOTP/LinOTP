@@ -45,7 +45,6 @@ log = logging.getLogger(__name__)
 
 
 class MaintenanceController(BaseController):
-
     """
     The maintenance controller is an internal interface
     for maintainers to change certain parameters (such as

@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 """This file containes the dynamic SPass token implementation:
-              - SpassTokenClass
+- SpassTokenClass
 """
 
 import logging

@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" checks the given static password against the otpkey."""
+"""checks the given static password against the otpkey."""
 
 import logging
 

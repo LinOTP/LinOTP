@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" the iterators for the audit objects """
+"""the iterators for the audit objects"""
 
 import json
 import logging

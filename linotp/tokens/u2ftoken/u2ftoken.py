@@ -60,7 +60,6 @@ log = logging.getLogger(__name__)
 @tokenclass_registry.class_entry("u2f")
 @tokenclass_registry.class_entry("linotp.tokens.u2ftoken.U2FTokenClass")
 class U2FTokenClass(TokenClass):
-
     """
     U2F token class implementation
 

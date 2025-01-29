@@ -25,9 +25,9 @@
 #    Support: www.linotp.de
 #
 """
-    base for a typing system:
+base for a typing system:
 
-        association of linotp system config entries with its types
+    association of linotp system config entries with its types
 """
 
 

@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" maxtoken policy processing """
+"""maxtoken policy processing"""
 
 import logging
 from typing import Any, Dict, List, Union
@@ -217,7 +217,7 @@ def get_maxtoken_for_user_by_type(
 
 
 def calculate_token_limit(
-    limit_info: List[Union[int, bool]]
+    limit_info: List[Union[int, bool]],
 ) -> Union[int, None]:
     """
     This function encapsulates the logic to calculate the token limit

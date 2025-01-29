@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 """lib to handle mobileOTP - Implementation inspired by:
-      https://github.com/neush/otpn900/blob/master/src/test_motp.c
+https://github.com/neush/otpn900/blob/master/src/test_motp.c
 """
 
 import logging

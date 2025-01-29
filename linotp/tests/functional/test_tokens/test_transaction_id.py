@@ -26,7 +26,7 @@
 #
 
 
-""" check if last access configuration does work """
+"""check if last access configuration does work"""
 
 
 from linotp.tests import TestController

@@ -26,7 +26,7 @@
 #
 
 
-""" verify that the failcounter is not incremented twice """
+"""verify that the failcounter is not incremented twice"""
 
 import json
 from datetime import datetime

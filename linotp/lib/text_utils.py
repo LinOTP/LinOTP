@@ -25,8 +25,8 @@
 #    Support: www.linotp.de
 #
 """
- module contains some helper function around the
- text processing of unicode and utf8 strings
+module contains some helper function around the
+text processing of unicode and utf8 strings
 """
 
 UTF8_MAX_BYTES = 6

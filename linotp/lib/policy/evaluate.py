@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" policy evaluation """
+"""policy evaluation"""
 from datetime import datetime
 from typing import Dict
 

@@ -27,5 +27,5 @@
 
 # from .trusted_proxy_handler import TrustedProxyHandler
 """
- This module contains our middlewares
+This module contains our middlewares
 """

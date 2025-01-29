@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" static policy definitions """
+"""static policy definitions"""
 
 import logging
 import re

@@ -53,7 +53,6 @@ log = logging.getLogger(__name__)
 
 
 class AuditController(BaseController):
-
     """
     this is the controller for doing some audit stuff
 

@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 
-" support redirecting requests to remote systems on base of policy defintion "
+"support redirecting requests to remote systems on base of policy defintion"
 
 import copy
 

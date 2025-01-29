@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-" verfify that the userservice pre_context works as intended"
+"verfify that the userservice pre_context works as intended"
 
 import unittest
 

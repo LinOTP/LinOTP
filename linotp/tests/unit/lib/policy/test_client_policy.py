@@ -25,7 +25,7 @@
 #    Support: www.lsexperts.de
 #
 
-""" unit test for policy query honoring client"""
+"""unit test for policy query honoring client"""
 
 import unittest
 

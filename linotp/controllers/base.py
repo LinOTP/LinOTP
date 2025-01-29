@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-"""The Controller's Base class """
+"""The Controller's Base class"""
 import logging
 from datetime import datetime, timedelta, timezone
 from functools import wraps

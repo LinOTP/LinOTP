@@ -74,7 +74,6 @@ CONTENT_TYPE_LOGIN = 2
 @tokenclass_registry.class_entry("push")
 @tokenclass_registry.class_entry("linotp.tokens.pushtoken.PushTokenClass")
 class PushTokenClass(TokenClass, StatefulTokenMixin):
-
     """"""
 
     # --------------------------------------------------------------------------- --

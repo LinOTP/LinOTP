@@ -26,7 +26,7 @@
 #
 
 
-""" used to do functional testing of the forward token"""
+"""used to do functional testing of the forward token"""
 
 import json
 import logging

@@ -23,12 +23,12 @@
 #   Contact: www.linotp.org
 #   Support: www.linotp.de
 #
-""" This module implements the communication
-                and data mapping to LDAP servers.
-                The LinOTPd imports this module to
-                use LDAP servers as a userstore.
+"""This module implements the communication
+              and data mapping to LDAP servers.
+              The LinOTPd imports this module to
+              use LDAP servers as a userstore.
 
-  Dependencies: UserIdResolver
+Dependencies: UserIdResolver
 """
 
 

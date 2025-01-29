@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 
-""" linotp local-admins commands.
+"""linotp local-admins commands.
 
 linotp local-admins list
 linotp local-admins add
@@ -67,9 +67,9 @@ def list_cmd(format, long):
 
     res = LocalAdminResolver(current_app)
     for user_info in res.list_users():
-        user_info[
-            "name"
-        ] = f"{user_info['givenname']} {user_info['surname']}".strip()
+        user_info["name"] = (
+            f"{user_info['givenname']} {user_info['surname']}".strip()
+        )
         try:
             print(format.format_map(user_info))
         except KeyError as ex:

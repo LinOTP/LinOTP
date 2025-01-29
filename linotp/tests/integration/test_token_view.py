@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-"""LinOTP Selenium Test for token view automation """
+"""LinOTP Selenium Test for token view automation"""
 
 import pytest
 

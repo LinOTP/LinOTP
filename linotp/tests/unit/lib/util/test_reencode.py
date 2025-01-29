@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-"""Tests for text_util re_encode which is required for linotp2 migration """
+"""Tests for text_util re_encode which is required for linotp2 migration"""
 
 import logging
 

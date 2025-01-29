@@ -312,8 +312,7 @@ class TestTotpController(TestController):
 
         td = dt - datetime.datetime(1970, 1, 1)
         tCounter = (
-            td.microseconds * 1.0
-            + (td.seconds + td.days * 24 * 3600) * 10**6
+            td.microseconds * 1.0 + (td.seconds + td.days * 24 * 3600) * 10**6
         ) / 10.0**6
 
         return tCounter

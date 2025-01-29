@@ -25,7 +25,7 @@
 #    Support: www.lsexperts.de
 #
 
-""" unit test for policy query with actions """
+"""unit test for policy query with actions"""
 
 import copy
 import datetime

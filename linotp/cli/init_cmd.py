@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 
-""" linotp init commands.
+"""linotp init commands.
 
 linotp init database
 linotp init enc-key

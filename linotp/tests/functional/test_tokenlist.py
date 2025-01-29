@@ -25,8 +25,7 @@
 #    Support: www.linotp.de
 #
 
-"""
-"""
+""" """
 
 import json
 

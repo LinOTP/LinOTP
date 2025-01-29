@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 
-""" test for json body as request parameters """
+"""test for json body as request parameters"""
 
 import copy
 import unittest

@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-" verfify that the userservice cookie is rfc6265 time format compliant"
+"verfify that the userservice cookie is rfc6265 time format compliant"
 
 import datetime
 import unittest

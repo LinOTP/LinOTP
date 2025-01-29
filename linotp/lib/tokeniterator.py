@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" contains the tokeniterator """
+"""contains the tokeniterator"""
 
 import fnmatch
 import logging

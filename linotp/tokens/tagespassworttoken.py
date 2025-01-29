@@ -24,8 +24,8 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" This file contains the dynamic tagespasswort token implementation:
-              - TagespasswortTokenClass   (DPW)"""
+"""This file contains the dynamic tagespasswort token implementation:
+- TagespasswortTokenClass   (DPW)"""
 
 import logging
 from datetime import datetime, timedelta

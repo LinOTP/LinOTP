@@ -26,8 +26,7 @@
 #
 
 
-"""
-"""
+""" """
 
 import binascii
 import json

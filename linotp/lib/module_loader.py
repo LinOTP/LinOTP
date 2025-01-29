@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" contains utility functions to load dynamic modules """
+"""contains utility functions to load dynamic modules"""
 
 
 import importlib

@@ -25,7 +25,7 @@
 #    Support: www.lsexperts.de
 #
 
-""" unit test for complex policy comparisons """
+"""unit test for complex policy comparisons"""
 
 import unittest
 

@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 
-""" the SMS Provider Interface """
+"""the SMS Provider Interface"""
 
 import logging
 import os

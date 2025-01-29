@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" validation processing logic"""
+"""validation processing logic"""
 
 import binascii
 import copy
@@ -510,9 +510,9 @@ class ValidationHandler(object):
                     "linotp.PassOnUserNotFound", False
                 )
                 if pass_on and pass_on.lower() == "true":
-                    g.audit[
-                        "action_detail"
-                    ] = "authenticated by PassOnUserNotFound"
+                    g.audit["action_detail"] = (
+                        "authenticated by PassOnUserNotFound"
+                    )
                     return (True, opt)
                 else:
                     g.audit["action_detail"] = "User not found"
@@ -632,9 +632,9 @@ class ValidationHandler(object):
                     "user %r has not token. PassOnNoToken"
                     " set - authenticated!"
                 )
-                g.audit[
-                    "action_detail"
-                ] = "Authenticated by passOnNoToken policy"
+                g.audit["action_detail"] = (
+                    "Authenticated by passOnNoToken policy"
+                )
                 return (True, opt)
 
             # if we have an user, check if we forward the request to another
@@ -745,9 +745,9 @@ class ValidationHandler(object):
                 t_realms = token.token.getRealmNames()
                 u_realm = user.realm
                 if t_realms and u_realm and u_realm.lower() not in t_realms:
-                    audit_entry[
-                        "action_detail"
-                    ] = "Realm mismatch for token and user"
+                    audit_entry["action_detail"] = (
+                        "Realm mismatch for token and user"
+                    )
 
                     continue
 
@@ -787,9 +787,9 @@ class ValidationHandler(object):
             # token validity handling
 
             if token.is_not_yet_valid():
-                audit_entry[
-                    "action_detail"
-                ] = "Authentication validity period mismatch!"
+                audit_entry["action_detail"] = (
+                    "Authentication validity period mismatch!"
+                )
                 token.incOtpFailCounter()
                 continue
 
@@ -852,9 +852,9 @@ class ValidationHandler(object):
                 log.error("checking token %r failed: %r", token, exx)
                 ret = -1
                 reply = "%r" % exx
-                audit_entry[
-                    "action_detail"
-                ] = "checking token %r failed: %r" % (token, exx)
+                audit_entry["action_detail"] = (
+                    "checking token %r failed: %r" % (token, exx)
+                )
 
                 audit_entry["info"] = audit_entry.get("info", "") + "%r" % exx
 

@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" Tages Password importer"""
+"""Tages Password importer"""
 
 import logging
 import re

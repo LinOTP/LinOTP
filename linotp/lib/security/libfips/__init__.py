@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 """
-    Interface for OpenSSL in FIPS mode
+Interface for OpenSSL in FIPS mode
 """
 
 # fips - interface for OpenSSL in FIPS mode

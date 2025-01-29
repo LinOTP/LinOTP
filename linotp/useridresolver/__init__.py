@@ -55,7 +55,6 @@ __version__ = "2.12"
 
 
 class ClassRegistry(dict):
-
     """
     A simple class registry, that provides a convenient decorator.
 

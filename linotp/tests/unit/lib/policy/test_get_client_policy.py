@@ -73,7 +73,6 @@ def m_get_policies():
 
 
 class TestGetClientPolicy(unittest.TestCase):
-
     """
     Policy test
     """

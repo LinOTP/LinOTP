@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" methods to handle support files """
+"""methods to handle support files"""
 
 import base64
 import binascii

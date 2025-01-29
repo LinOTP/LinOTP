@@ -26,77 +26,77 @@
 #
 
 """This file containes the dynamic sms token implementation:
-              - SMSTokenClass (sms)
+          - SMSTokenClass (sms)
 
-    the SMS Token is an challenge - response token, by the means, that there is
-    a first request, which triggers the challenge (=sending of sms message)
-    and a second request, which refers to the initial request by the
-    transactionid and verifies the otp value:
+the SMS Token is an challenge - response token, by the means, that there is
+a first request, which triggers the challenge (=sending of sms message)
+and a second request, which refers to the initial request by the
+transactionid and verifies the otp value:
 
-    /validate/check_s
+/validate/check_s
 
-    with params
-     :param serial: the token serialnumber [required]
-     :param pass: the token pin or
-                  if the token belongs to an user, the user pin/password
-                  (s. otppin policy) [required]
-    :param data: the message, that will contain the otp value [optional]
-                 * In the message, the strings <otp>, <serial> and
-                   <transactionid> will be replaced
-                 * if no data is provided, the smstext - policy value will be
-                   evaluated. Fallback is the message "<otp>"
-    :param message: alternative name for the data parameter
+with params
+ :param serial: the token serialnumber [required]
+ :param pass: the token pin or
+              if the token belongs to an user, the user pin/password
+              (s. otppin policy) [required]
+:param data: the message, that will contain the otp value [optional]
+             * In the message, the strings <otp>, <serial> and
+               <transactionid> will be replaced
+             * if no data is provided, the smstext - policy value will be
+               evaluated. Fallback is the message "<otp>"
+:param message: alternative name for the data parameter
 
-    :return: json result wit tansaction an message, that will be displayed to
-             the user
+:return: json result wit tansaction an message, that will be displayed to
+         the user
 
-                {
-                    "detail": {
-                        "transactionid": "172682842808",
-                        "message": "sms submitted",
-                        "state": "172682842808"
-                    },
-                    "version": "LinOTP 2.7.2.1",
-                    "jsonrpc": "2.0",
-                    "result": {
-                        "status": true,
-                        "value": false
-                    },
-                    "id": 0
+            {
+                "detail": {
+                    "transactionid": "172682842808",
+                    "message": "sms submitted",
+                    "state": "172682842808"
+                },
+                "version": "LinOTP 2.7.2.1",
+                "jsonrpc": "2.0",
+                "result": {
+                    "status": true,
+                    "value": false
+                },
+                "id": 0
 
-                }
+            }
 
-    for the validation of the sms request now the controller method
+for the validation of the sms request now the controller method
 
-    /validate/check_t
+/validate/check_t
 
-    could be used with the parameters
+could be used with the parameters
 
-    :param pass: received otp value
-    :param transactionid: the transactionid, which referes, that the pin
-                          has been verified and checked
+:param pass: received otp value
+:param transactionid: the transactionid, which referes, that the pin
+                      has been verified and checked
 
-    alternativly the controller method
+alternativly the controller method
 
-    /validate/check_s
+/validate/check_s
 
-    could be used as well, by providing the combination of the pin+otp
-    in the pass parameter:
+could be used as well, by providing the combination of the pin+otp
+in the pass parameter:
 
-    :param serial: serial number of the token
-    :param pass: the password consisting of fixed part and the otp part
+:param serial: serial number of the token
+:param pass: the password consisting of fixed part and the otp part
 
-    :return: json response
+:return: json response
 
-    {
-        "version": "LinOTP 2.7.2.1",
-        "jsonrpc": "2.0",
-        "result": {
-            "status": true,
-            "value": true
-        },
-        "id": 0
-    }
+{
+    "version": "LinOTP 2.7.2.1",
+    "jsonrpc": "2.0",
+    "result": {
+        "status": true,
+        "value": true
+    },
+    "id": 0
+}
 
 
 """

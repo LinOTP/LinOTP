@@ -25,8 +25,8 @@
 #    Support: www.linotp.de
 #
 """
- This module contains helper functions for 
- caching
+This module contains helper functions for
+caching
 """
 
 import functools
