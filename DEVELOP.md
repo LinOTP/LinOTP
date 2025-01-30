@@ -82,13 +82,6 @@ The last command starts a development server. Now you can open the LinOTP
 management interface in your browser (`http://localhost:5000/manage/`) and
 login as `<your_username>`.
 
-All available CLI commands have their own documentation, and you can find them
-listed in the top level man page **linotp(1)**. Should you not yet have
-installed the linotp man pages, you can also reference them by path, like this:
-```terminal
- $ man ./man/man1/linotp.1
-```
-
 `init database` will create a SQLite database by default. If you want to use a
 PostgreSQL or MariaDB database instead, you can override that setting through
 the following environment variable before running `linotp init database`:
@@ -413,74 +406,7 @@ To build the api documentation enter the following commands in your terminal:
 ```terminal
 $ cd api-doc
 $make apidocs html
-```x
-
-## Debian packages
-
-You can generate a LinOTP `.deb` package that is suitable for
-installation on a Debian GNU/Linux system using the
-```terminal
-$ make builddeb
 ```
-command from the top-level directory. This uses Debian packaging tools
-and therefore works best if you do it on a machine that is running
-Debian GNU/Linux. See below for building Debian packages inside a Docker
-container.
-
-The
-```terminal
-$ make deb-install
-```
-command will build a Debian package and place it in the `build`
-subdirectory of the top-level directory. You can specify a different
-directory by passing it to `make` as the value of the `DESTDIR`
-variable.
-
-
-### Using Docker to build the Debian package
-
-You can use the `Makefile` provided by the LinOTP distribution to
-build various Docker container images that help with LinOTP
-development:
-
-- A `linotp-builder` image includes everything that is necessary to
-  build LinOTP packages. This will use the `buster` version of Debian
-  GNU/Linux (the current stable version at the time of this writing),
-  no matter what flavour of Linux your machine is running.
-
-- A `linotp` image contains a ready-to-run LinOTP inside an Apache web
-  server.
-
-- A `linotp-unit` image contains a LinOTP setup that will run LinOTP
-  unit tests. It is based on the `linotp` image but contains
-  additional dependencies for the testing environment.
-
-- A `selenium-test` image contains a LinOTP setup that will run LinOTP
-  integration tests using Selenium in a different image.
-
-All of these can be conveniently built and run using targets in the
-`Makefile` in the top-level directory:
-
-- `make docker-linotp` will build LinOTP in a `linotp-builder`
-  container, extract the `.deb` file and place it in the `build`
-  subdirectory of the top-level directory.
-
-- `make docker-unit` and `make docker-functional` build LinOTP and run
-  unit tests and functional tests in their respective containers. Some
-  functional tests take a very long time and are therefore only run
-  once per night in our CI/CD environment; these can be enabled by
-  passing the `NIGHTLY=yes` variable to `make`.
-
-- `make docker-selenium` will build LinOTP and run Selenium-based
-  integration tests in a containerised environment.
-
-- `make docker-build-all` will build all container images.
-
-- `make docker-pylint` will run static source code checks on a LinOTP
-  test image.
-
-Refer to the `Makefile` for details of how these targets interact, and
-for additional configuration parameters.
 
 ## Container-based LinOTP
 
@@ -557,15 +483,3 @@ more details.
   may just be tedious to get at from outside the running container. If
   you need to, refer to the `docker inspect` command to find out where
   Docker hides it.)
-
-## Gitlab-CI Pipelines
-
-### Failing *-test-pypi Jobs
-
-If *-test-pypi jobs fail with
-```terminal
-WARNING: Failed to pull image with policy "if-not-present": [...] not found: manifest unknown: manifest unknown
-```
-please run the job `build-and-upload-pypi-image-testenv` and retry failed tests after the docker image was pushed.
-
-This will be the case when your merge request targets a non-protected branch; e.g. a merge request to another merge request branch.
