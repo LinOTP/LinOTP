@@ -26,7 +26,7 @@
 #
 
 """
-  Test the Yubikey.
+Test the Yubikey.
 """
 
 import json

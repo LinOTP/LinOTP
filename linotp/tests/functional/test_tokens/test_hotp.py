@@ -26,7 +26,7 @@
 #
 
 
-""" verify gettoken/getmultiotp support for different hash methods """
+"""verify gettoken/getmultiotp support for different hash methods"""
 
 import binascii
 from hashlib import sha1, sha256, sha512

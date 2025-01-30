@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" logic for the userservice processing """
+"""logic for the userservice processing"""
 
 import copy
 import datetime

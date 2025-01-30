@@ -24,8 +24,8 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" This file containes the dynamic hmac token implementation:
-              - HmacTokenClas   (HOTP)
+"""This file containes the dynamic hmac token implementation:
+- HmacTokenClas   (HOTP)
 """
 import logging
 import string

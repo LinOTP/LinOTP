@@ -63,7 +63,6 @@ def func(arg1, arg2):
 
 
 class TestLoggingDecorators(unittest.TestCase):
-
     """
     Unit tests for different logging decorators
     """

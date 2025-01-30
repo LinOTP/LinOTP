@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" contains utility functions """
+"""contains utility functions"""
 
 import copy
 import logging

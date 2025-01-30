@@ -36,6 +36,7 @@ import urllib.request
 from typing import Union
 
 import qrcode
+from qrcode.image.pure import PyPNGImage
 
 from flask import Response, current_app, g
 from flask import request as flask_request
@@ -591,7 +592,7 @@ def sendQRImageResult(data, param=None, id=1, typ="html"):
 def create_png(data, alt=None):
     """"""
 
-    img = qrcode.make(data)
+    img = qrcode.make(data, image_factory=PyPNGImage)
 
     with io.BytesIO() as output:
         img.save(output)

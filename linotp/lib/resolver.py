@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" resolver objects and processing """
+"""resolver objects and processing"""
 
 
 import json

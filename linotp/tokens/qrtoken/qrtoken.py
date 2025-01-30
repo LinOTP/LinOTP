@@ -80,7 +80,6 @@ QRTOKEN_VERSION = 1
 @tokenclass_registry.class_entry("qr")
 @tokenclass_registry.class_entry("linotp.tokens.qrtoken.QrTokenClass")
 class QrTokenClass(TokenClass, StatefulTokenMixin):
-
     """"""
 
     def __init__(self, token_model_object):

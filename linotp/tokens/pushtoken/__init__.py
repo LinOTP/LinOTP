@@ -39,7 +39,6 @@ _PushTokenPairingData = namedtuple(
 
 
 class PushTokenPairingData(_PushTokenPairingData):
-
     """
     holds all the information of a PushToken pairing response,
     namely user_public_key, user_token_id, serial, user_login,

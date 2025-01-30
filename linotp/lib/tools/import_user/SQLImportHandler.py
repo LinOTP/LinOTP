@@ -26,11 +26,11 @@
 #
 
 """
-  import user into an SQL Resolver
+import user into an SQL Resolver
 
-    * define the table
-    * import the users
-    * define the resolver
+  * define the table
+  * import the users
+  * define the resolver
 
 """
 import json

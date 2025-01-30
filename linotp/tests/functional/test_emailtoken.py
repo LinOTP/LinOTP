@@ -27,7 +27,7 @@
 
 
 """
-  Test linotp.tokens.emailtoken
+Test linotp.tokens.emailtoken
 """
 
 import re

@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 """
- This model contains the linotp processing logic
+This model contains the linotp processing logic
 """
 
 import warnings

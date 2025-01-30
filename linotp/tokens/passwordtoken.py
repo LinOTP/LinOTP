@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 
-""" This file containes PasswordTokenClass """
+"""This file containes PasswordTokenClass"""
 
 import logging
 

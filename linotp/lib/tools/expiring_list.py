@@ -29,7 +29,6 @@ import time
 
 
 class ExpiringList:
-
     """
     An interface class for a general storage of items in which
     each item has it's own expiry time

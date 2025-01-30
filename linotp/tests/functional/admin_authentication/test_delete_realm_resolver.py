@@ -48,10 +48,10 @@ class TestDeleteRealmAndResolver:
             data=dict(username="user1", password="geheim1"),
         )
 
-        cookies = client.cookie_jar._cookies["localhost.local"]["/"]
-
         # extract csrf token
-        csrf_token = cookies["csrf_access_token"].value
+        csrf_token = client._cookies[
+            ("localhost", "/", "csrf_access_token")
+        ].value
 
         # remove local admin resolver
         response = client.post(
@@ -123,10 +123,10 @@ class TestDeleteRealmAndResolver:
             ),
         )
 
-        cookies = client.cookie_jar._cookies["localhost.local"]["/"]
-
         # extract csrf token
-        csrf_token = cookies.get("csrf_access_token").value
+        csrf_token = client._cookies[
+            ("localhost", "/", "csrf_access_token")
+        ].value
 
         # remove local admin resolver
         response = client.post(

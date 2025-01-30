@@ -25,7 +25,7 @@
 #    Support: www.lsexperts.de
 #
 
-""" unit test for policy query selfservice actions """
+"""unit test for policy query selfservice actions"""
 
 import copy
 import unittest

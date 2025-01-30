@@ -27,11 +27,11 @@
 
 
 """Test for various policy aspects:
-    - adminstrative permissions
-    - authorization
-    - authentication
-    - selfservice
-    - enrollment
+- adminstrative permissions
+- authorization
+- authentication
+- selfservice
+- enrollment
 """
 
 import copy

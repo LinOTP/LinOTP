@@ -24,8 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-"""Interface to an EMail provider and implementation of the SMPT email provider
-"""
+"""Interface to an EMail provider and implementation of the SMPT email provider"""
 
 import copy
 import logging

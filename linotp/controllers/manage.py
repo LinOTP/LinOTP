@@ -422,9 +422,11 @@ class ManageController(BaseController):
                         tok["LinOtp.OtpLen"],
                         tok["LinOtp.CountWindow"],
                         tok["LinOtp.SyncWindow"],
-                        tok["LinOtp.Userid"].decode("utf-8")
-                        if isinstance(tok["LinOtp.Userid"], bytes)
-                        else tok["LinOtp.Userid"],
+                        (
+                            tok["LinOtp.Userid"].decode("utf-8")
+                            if isinstance(tok["LinOtp.Userid"], bytes)
+                            else tok["LinOtp.Userid"]
+                        ),
                         tok["LinOtp.IdResClass"].split(".")[-1],
                     ],
                 }

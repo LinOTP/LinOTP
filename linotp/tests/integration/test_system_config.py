@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-"""Selenium Test for changing the system configuration """
+"""Selenium Test for changing the system configuration"""
 
 import time
 from datetime import datetime, timedelta

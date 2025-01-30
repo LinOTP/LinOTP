@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" logic for the selfservice processing """
+"""logic for the selfservice processing"""
 
 
 import logging

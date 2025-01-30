@@ -24,11 +24,11 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" LinOTP Configuration class.
+"""LinOTP Configuration class.
 
-    a dictionary to hold the linotp configuration entries with
-    - a database back-end and
-    - application wide synchronization
+a dictionary to hold the linotp configuration entries with
+- a database back-end and
+- application wide synchronization
 """
 
 import logging

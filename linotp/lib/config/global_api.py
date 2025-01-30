@@ -25,14 +25,14 @@
 #    Support: www.linotp.de
 #
 """
-    manager for the app global linotp config dict.
+manager for the app global linotp config dict.
 
-    using rwlocks to synchronize the access to a linotp config dict for
-    the global app context.
+using rwlocks to synchronize the access to a linotp config dict for
+the global app context.
 
-    the purpose of this class is the speedup, so that a linotp config
-    dict in the request context is instantiated via a deep copy from
-    the flask app global linotp config dict instead of a database read.
+the purpose of this class is the speedup, so that a linotp config
+dict in the request context is instantiated via a deep copy from
+the flask app global linotp config dict instead of a database read.
 """
 
 import copy
@@ -41,7 +41,6 @@ from linotp.lib.rw_lock import RWLock
 
 
 class LinotpAppConfig:
-
     """Globals acts as a container for objects available throughout the
     life of the application
 

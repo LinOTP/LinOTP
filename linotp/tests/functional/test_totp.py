@@ -312,8 +312,7 @@ class TestTotpController(TestController):
 
         td = dt - datetime.datetime(1970, 1, 1)
         tCounter = (
-            td.microseconds * 1.0
-            + (td.seconds + td.days * 24 * 3600) * 10**6
+            td.microseconds * 1.0 + (td.seconds + td.days * 24 * 3600) * 10**6
         ) / 10.0**6
 
         return tCounter
@@ -859,13 +858,13 @@ class TestTotpController(TestController):
                     counter=counter + step * offset
                 )
 
-                info = (
-                    "First OTP: %s (%s), Second OTP: %s (%s)",
-                    first_otp,
-                    first_counter,
-                    second_otp,
-                    second_counter,
-                )
+                info = {
+                    "Offset": offset,
+                    "First OTP": first_otp,
+                    "First Counter": first_counter,
+                    "Second OTP": second_otp,
+                    "Second Counter": second_counter,
+                }
 
                 # start resync with a valid OTP
                 res = self.checkOtp(user, first_otp)
@@ -877,11 +876,11 @@ class TestTotpController(TestController):
                 if offset <= 3:
                     # as long as the OTP is not out of the sync range
                     # it should be good
-                    assert '"value": true' in res.body, offset
+                    assert '"value": true' in res.body, info
                 else:
                     # if we are out of the sync range the OTP should
                     # be rejected
-                    assert '"value": false' in res.body, offset
+                    assert '"value": false' in res.body, info
 
     def test_getotp(self):
         """

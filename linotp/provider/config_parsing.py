@@ -24,8 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-"""
-"""
+""" """
 
 import os
 from urllib.parse import urlparse

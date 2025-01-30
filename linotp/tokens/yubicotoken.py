@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" This file contains the Yubico token class"""
+"""This file contains the Yubico token class"""
 
 import binascii
 import datetime

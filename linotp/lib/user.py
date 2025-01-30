@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" contains user - related functions """
+"""contains user - related functions"""
 
 import json
 import logging

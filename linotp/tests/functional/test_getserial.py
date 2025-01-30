@@ -27,7 +27,7 @@
 
 
 """
-    test for admin/getSerialByOtp
+test for admin/getSerialByOtp
 """
 
 import os

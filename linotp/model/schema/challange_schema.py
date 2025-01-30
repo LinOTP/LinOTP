@@ -44,7 +44,6 @@ timestamp_column = "%stimestamp" % COL_PREFIX
 
 
 class ChallengeSchema(db.Model):
-
     """
     the generic challange handling
     """

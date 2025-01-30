@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" paralell test"""
+"""paralell test"""
 
 import base64
 import binascii

@@ -26,7 +26,7 @@
 #
 
 """
-  Test the Challenge Prompt
+Test the Challenge Prompt
 """
 
 import binascii

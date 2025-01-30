@@ -25,7 +25,7 @@
 #    Support: www.lsexperts.de
 #
 
-""" unit test for autosms policy """
+"""unit test for autosms policy"""
 
 import pytest
 

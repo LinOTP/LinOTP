@@ -23,7 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" methods to handle rsa signature - sign and verify """
+"""methods to handle rsa signature - sign and verify"""
 
 
 import logging

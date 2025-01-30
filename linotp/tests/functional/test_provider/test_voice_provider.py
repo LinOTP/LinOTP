@@ -25,8 +25,8 @@
 #    Support: www.linotp.de
 #
 """
-    functional test for the CustomVoiceProvider:
-    - check the CustomVoiceProvider functions
+functional test for the CustomVoiceProvider:
+- check the CustomVoiceProvider functions
 
 """
 

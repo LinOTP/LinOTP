@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" helper for the secure formatter objects"""
+"""helper for the secure formatter objects"""
 
 import string
 from logging import Formatter

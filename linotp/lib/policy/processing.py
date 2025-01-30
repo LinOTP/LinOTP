@@ -24,18 +24,18 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" policy processing functions
+"""policy processing functions
 
-    currently the external interfaces
-    - has_client_policy
-    - get_client_policy
-    - search_policy
+currently the external interfaces
+- has_client_policy
+- get_client_policy
+- search_policy
 
-    are migration wrappers, which trigger both, the legacy policy and the
-    new policy processing to support the direct comparison of the results.
+are migration wrappers, which trigger both, the legacy policy and the
+new policy processing to support the direct comparison of the results.
 
-    When the evaluation of the new policy engine is completed the methods
-    starting with new_ could be moved in place
+When the evaluation of the new policy engine is completed the methods
+starting with new_ could be moved in place
 """
 
 import logging

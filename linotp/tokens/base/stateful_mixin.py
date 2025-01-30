@@ -27,8 +27,8 @@
 
 
 """
-    A mixin used by token types that have different
-    rollout states (e.g. QRToken and OCRA2)
+A mixin used by token types that have different
+rollout states (e.g. QRToken and OCRA2)
 """
 
 import logging
@@ -39,7 +39,6 @@ log = logging.getLogger(__name__)
 
 
 class StatefulTokenMixin(object):
-
     """
     A mixin used by token types that have different
     rollout states (e.g. QRToken and OCRA2)

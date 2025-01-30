@@ -1769,7 +1769,7 @@ class TestValidateController(TestController):
         """
         serials = self.createToken()
 
-        parameters = {"user": "root", "pass": "\xC0"}
+        parameters = {"user": "root", "pass": "\xc0"}
 
         # dont replace with self.make_validate_request as it throw
         # the unicode exception without reaching the linotp server

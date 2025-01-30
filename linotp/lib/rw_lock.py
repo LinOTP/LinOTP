@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" Simple reader-writer locks in Python.
+"""Simple reader-writer locks in Python.
 
 Python offers a number of useful synchronization primitives in the threading and Queue modules.
 One that is missing, however, is a simple reader-writer lock (RWLock). A RWLock allows improved

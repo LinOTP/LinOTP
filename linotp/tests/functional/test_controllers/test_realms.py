@@ -26,8 +26,7 @@
 #
 
 
-"""
-"""
+""" """
 
 from linotp.tests import TestController
 

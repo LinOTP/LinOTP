@@ -25,8 +25,7 @@
 #    Support: www.linotp.de
 #
 
-"""
-"""
+""" """
 
 import json
 from urllib.parse import urlparse

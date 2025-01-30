@@ -24,8 +24,8 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" This file contains the YubiKey token class where the YubiKey is
-    run in Yubico AES mode without the YubiCloud"""
+"""This file contains the YubiKey token class where the YubiKey is
+run in Yubico AES mode without the YubiCloud"""
 
 
 import binascii

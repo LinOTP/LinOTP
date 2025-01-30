@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 
-""" unit test policy import """
+"""unit test policy import"""
 
 import unittest
 

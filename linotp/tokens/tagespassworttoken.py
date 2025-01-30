@@ -24,8 +24,8 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" This file contains the dynamic tagespasswort token implementation:
-              - TagespasswortTokenClass   (DPW)"""
+"""This file contains the dynamic tagespasswort token implementation:
+- TagespasswortTokenClass   (DPW)"""
 
 import logging
 from datetime import datetime, timedelta
@@ -71,7 +71,7 @@ class dpwOtp:
 
                 input_data = self.key + date_string.encode("utf-8")
 
-                md1 = md5(input_data).digest().hex()
+                md1 = md5(input_data).digest().hex()  # nosec B324
                 md = md1[len(md1) - self.digits :]
                 otp = int(md, 16)
                 otp = str(otp)

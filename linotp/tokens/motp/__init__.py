@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 """lib to handle mobileOTP - Implementation inspired by:
-      https://github.com/neush/otpn900/blob/master/src/test_motp.c
+https://github.com/neush/otpn900/blob/master/src/test_motp.c
 """
 
 import logging
@@ -134,7 +134,7 @@ class mTimeOtp(object):
             key = self.key
 
         vhash = b"%d%b%b" % (counter, key, pin)
-        motp = md5(vhash).hexdigest()[: self.digits]
+        motp = md5(vhash).hexdigest()[: self.digits]  # nosec B324
         return motp
 
 

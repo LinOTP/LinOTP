@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 
-""" linotp init commands.
+"""linotp init commands.
 
 linotp init database
 linotp init enc-key
@@ -214,7 +214,7 @@ def dump_key(filename, instructions=True):
             "Enjoy!\n"
         )
 
-    m = hashlib.sha1()
+    m = hashlib.sha1()  # nosec B324
     for k in range(0, len(secret_key), CHUNK_SIZE):
         chunk = secret_key[k : k + CHUNK_SIZE]
         check = binascii.crc32(chunk.encode("ascii")) & 0xFFFFFFFF

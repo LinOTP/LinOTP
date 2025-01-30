@@ -1549,9 +1549,9 @@ class SystemController(BaseController):
                 if len(pol) > 0:
                     g.audit["info"] = "allowed by policy %s" % list(pol.keys())
 
-            g.audit[
-                "action_detail"
-            ] = "action = %s, realm = %s, scope = %s" % (action, realm, scope)
+            g.audit["action_detail"] = (
+                "action = %s, realm = %s, scope = %s" % (action, realm, scope)
+            )
             g.audit["success"] = True
 
             db.session.commit()

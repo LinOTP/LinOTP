@@ -24,8 +24,8 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" This file containes the mOTP token implementation:
-              - http://motp.sourceforge.net/ -
+"""This file containes the mOTP token implementation:
+- http://motp.sourceforge.net/ -
 """
 
 import logging

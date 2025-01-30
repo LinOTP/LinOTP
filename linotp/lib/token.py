@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" contains several token api functions"""
+"""contains several token api functions"""
 
 import binascii
 import datetime

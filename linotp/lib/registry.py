@@ -29,7 +29,6 @@
 
 
 class ClassRegistry(dict):
-
     """
     A simple class registry, that provides a convenient decorator.
 

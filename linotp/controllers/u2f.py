@@ -43,7 +43,6 @@ required = False
 
 
 class U2FController(BaseController):
-
     """
     This U2F controller can be used by the U2F clients to receive a list of valid facets
     for the specified realm:

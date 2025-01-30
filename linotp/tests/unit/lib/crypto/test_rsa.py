@@ -23,7 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" test the linotp.lib.crypto.rsa cryptography """
+"""test the linotp.lib.crypto.rsa cryptography"""
 
 import base64
 import unittest

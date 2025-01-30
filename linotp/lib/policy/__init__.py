@@ -25,7 +25,7 @@
 #    Support: www.linotp.de
 #
 
-""" policy processing """
+"""policy processing"""
 
 import logging
 import re
@@ -3416,9 +3416,9 @@ def check_auth_tokentype(serial, exception=False, user=None):
         res = True
 
     if res is False and exception:
-        g.audit[
-            "action_detail"
-        ] = "failed due to authorization/tokentype policy"
+        g.audit["action_detail"] = (
+            "failed due to authorization/tokentype policy"
+        )
 
         raise AuthorizeException(
             "Authorization for token %s with type %s "

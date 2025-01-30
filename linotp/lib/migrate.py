@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" contains the hsm migration handler"""
+"""contains the hsm migration handler"""
 
 import binascii
 import hmac

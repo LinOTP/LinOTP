@@ -26,8 +26,8 @@
 #
 
 """
-     This file contains some tests, which should become
-     part of the functional tests
+This file contains some tests, which should become
+part of the functional tests
 """
 
 import binascii

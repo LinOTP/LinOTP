@@ -43,7 +43,6 @@ at the end of every thread. Otherwise you will risk data leaks between threads.
 
 
 class LocalContainer(object):
-
     """
     LocalContainer works as a thread safety wrapper for objects allowing
     item assignment. On construction it demands a factory function that

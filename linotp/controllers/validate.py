@@ -72,7 +72,6 @@ log = logging.getLogger(__name__)
 
 
 class ValidateController(BaseController):
-
     """
     The linotp.controllers are the implementation of the web-API to talk to the LinOTP server.
     The ValidateController is used to validate the username with its given OTP value.

@@ -26,7 +26,7 @@
 #
 
 
-""" the SMS Provider Interface """
+"""the SMS Provider Interface"""
 from linotp.provider import ProviderNotAvailable, provider_registry
 from linotp.provider.smsprovider import ISMSProvider
 

@@ -24,8 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-"""
-"""
+""" """
 
 
 class TwillioMixin:

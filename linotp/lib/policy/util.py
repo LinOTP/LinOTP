@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" policy processing utilities """
+"""policy processing utilities"""
 
 import logging
 from copy import deepcopy

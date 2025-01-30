@@ -24,7 +24,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" policy processing """
+"""policy processing"""
 
 import logging
 import urllib.error
@@ -91,9 +91,9 @@ class ForwardServerPolicy(object):
             # create an url from this
             parsed_list = list(parsed_server[:])
             parsed_list[ForwardServerPolicy.Path_index] = path.strip()
-            parsed_list[
-                ForwardServerPolicy.Query_index
-            ] = urllib.parse.urlencode(params)
+            parsed_list[ForwardServerPolicy.Query_index] = (
+                urllib.parse.urlencode(params)
+            )
             server_url = urllib.parse.urlunparse(tuple(parsed_list))
 
             servers.append(server_url)
@@ -130,9 +130,9 @@ class ForwardServerPolicy(object):
 
             parsed_list = list(parsed_server[:])
             parsed_list[ForwardServerPolicy.Path_index] = path.strip()
-            parsed_list[
-                ForwardServerPolicy.Query_index
-            ] = urllib.parse.urlencode(params)
+            parsed_list[ForwardServerPolicy.Query_index] = (
+                urllib.parse.urlencode(params)
+            )
             server_url = urllib.parse.urlunparse(tuple(parsed_list))
 
             if "radius://" in server_url:

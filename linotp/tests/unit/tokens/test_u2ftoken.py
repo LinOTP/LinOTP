@@ -34,7 +34,6 @@ from mock import MagicMock, Mock, patch
 
 
 class U2FTokenClassTestCase(unittest.TestCase):
-
     """
     This class tests the U2FTokenClass in isolation by mocking out
     all dependencies on other classes. Therefore the tests can be run without

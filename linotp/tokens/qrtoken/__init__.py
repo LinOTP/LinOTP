@@ -37,7 +37,6 @@ _QRTokenPairingData = namedtuple(
 
 
 class QRTokenPairingData(_QRTokenPairingData):
-
     """
     holds all the information of a QRToken pairing response,
     namely user_public_key, user_token_id, serial and user_login

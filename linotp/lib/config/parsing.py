@@ -25,8 +25,8 @@
 #    Support: www.linotp.de
 #
 """
-    This module provides an interface to parse linotp config
-    key-value pairs into a structured ConfigTree
+This module provides an interface to parse linotp config
+key-value pairs into a structured ConfigTree
 """
 
 import json
@@ -36,7 +36,6 @@ from collections import defaultdict
 
 
 class ConfigNotRecognized(Exception):
-
     """
     This exception should be raised by config parser functions, when the
     parser isn't responsible for the supplied type of config entry.
@@ -92,7 +91,6 @@ def parse_deprecated_enc(composite_key, value):
 
 
 class ConfigTree(dict):
-
     """
     A dictionary-like object, that processes config key-value pairs with
     a series of parsers.

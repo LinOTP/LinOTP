@@ -178,7 +178,7 @@ semgrep-sast_evaluation:
 pre-commit-check:
   stage: check-and-build
   needs: []
-  image: python:3.7-buster
+  image: python:3.11-bookworm
   interruptible: true
   cache:
     paths:

@@ -25,8 +25,8 @@
 #    Support: www.linotp.de
 #
 """
-    some config helper utilities
-    - located here as required in certain places
+some config helper utilities
+- located here as required in certain places
 """
 
 from flask import current_app

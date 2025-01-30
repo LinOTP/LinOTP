@@ -24,23 +24,23 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-""" This Security module (hsm) is used to access hardware security modules
-    via PKCS11 for encrypting and decrypting the data
+"""This Security module (hsm) is used to access hardware security modules
+via PKCS11 for encrypting and decrypting the data
 
-    linotp.ini:
-    linotpActiveSecurityModule = lunasa
-    linotpSecurity.lunasa.module = linotp.lib.security.pkcs11.Pkcs11SecurityModule
-    linotpSecurity.lunasa.library = libCryptoki2_64.so
-    linotpSecurity.lunasa.tokenHandle =21
-    linotpSecurity.lunasa.valueHandle =22
-    linotpSecurity.lunasa.configHandle =23
-    linotpSecurity.lunasa.defaultHandle =22
-    linotpSecurity.lunasa.configLabel = config
-    linotpSecurity.lunasa.tokenLabel = token
-    linotpSecurity.lunasa.valueLabel = value
-    linotpSecurity.lunasa.password = 6SNq-L9WL-SSW4-NGNL
-    linotpSecurity.lunasa.slotid = 1
-    linotpActiveSecurityModule = lunasa
+linotp.ini:
+linotpActiveSecurityModule = lunasa
+linotpSecurity.lunasa.module = linotp.lib.security.pkcs11.Pkcs11SecurityModule
+linotpSecurity.lunasa.library = libCryptoki2_64.so
+linotpSecurity.lunasa.tokenHandle =21
+linotpSecurity.lunasa.valueHandle =22
+linotpSecurity.lunasa.configHandle =23
+linotpSecurity.lunasa.defaultHandle =22
+linotpSecurity.lunasa.configLabel = config
+linotpSecurity.lunasa.tokenLabel = token
+linotpSecurity.lunasa.valueLabel = value
+linotpSecurity.lunasa.password = 6SNq-L9WL-SSW4-NGNL
+linotpSecurity.lunasa.slotid = 1
+linotpActiveSecurityModule = lunasa
 
 """
 

@@ -26,8 +26,7 @@
 #
 
 
-"""
-"""
+""" """
 import json
 import os
 

@@ -65,7 +65,6 @@ MC_ID = "MC001"
 
 
 class DummySMPPServer:
-
     """This class provides a very simple-minded SMPP server, for basic
     testing. It understands only the commands that the
     `SMPPSMSProvider` class is sending (via `smpplib`), and can give

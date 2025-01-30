@@ -41,6 +41,8 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 install_requirements = [
     # Flask=2.2.0 breaks tests
     "Flask<2.2",
+    # werkzeug=3.0 removes 'url_quote' from 'werkzeug.urls' breaking Flask<3
+    "werkzeug<3",
     # Flask-Babel=3.0.0 removes @babel.localeselector
     "Flask-Babel<3.0.0",
     "flask-jwt-extended",
@@ -53,7 +55,7 @@ install_requirements = [
     "pycryptodomex",
     "pyrad",
     "netaddr",
-    "qrcode",
+    "qrcode[png]",
     "configobj",
     "httplib2",
     "requests",
@@ -140,6 +142,7 @@ test_requirements = (
         "freezegun",
         "coverage",
         "flaky",
+        "setuptools==58",
     ]
     + smpp_requirements
     + postgres_requirements
@@ -150,7 +153,7 @@ test_requirements = (
 # install with
 # > pip install -r requirements-prod.txt
 production_requirements = (
-    ["gunicorn", "setuptools>65.5.0"]
+    ["gunicorn"]
     + smpp_requirements
     + postgres_requirements
     + mysql_requirements
@@ -160,11 +163,7 @@ production_requirements = (
 # install with
 # > pip install -r requirements-dev.txt
 development_requirements = (
-    [
-        # pin pip due to https://github.com/jazzband/pip-tools/releases/tag/7.0.0
-        "pip<23.2",
-        "pip-tools",
-    ]
+    ["pip-tools"]
     + test_requirements
     + code_quality_requirements
     + apidocs_requirements
@@ -227,7 +226,7 @@ setup(
     classifiers=[
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Internet",
         "Topic :: Security",
         "Topic :: System :: Systems Administration :: Authentication/Directory"

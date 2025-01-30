@@ -35,47 +35,47 @@ import ldap
 import pytest
 from ldap.controls import SimplePagedResultsControl
 from mockldap import LDAPObject, MockLdap
-from mockldap.filter import Test as LDAPTest
 
 from linotp.tests import TestController
 
 # pylint: disable=redefined-outer-name, unused-argument
 
+# TODO: Uncomment this when we solve mockldap issue LINOTP-2257
+# from mockldap.filter import Test as LDAPTest
+# class LDAPExtTest(LDAPTest):
+#     def matches(self, dn, attrs):
+#         values = attrs.get(self.attr)
 
-class LDAPExtTest(LDAPTest):
-    def matches(self, dn, attrs):
-        values = attrs.get(self.attr)
+#         if values is None:
+#             return False
 
-        if values is None:
-            return False
+#         if self.value == "*":
+#             return len(values) > 0
 
-        if self.value == "*":
-            return len(values) > 0
+#         # we have to compare bytes and strings in the value array
 
-        # we have to compare bytes and strings in the value array
+#         matches = False
+#         for value in values:
+#             compare_value = value
 
-        matches = False
-        for value in values:
-            compare_value = value
+#             if isinstance(self.value, str) and isinstance(value, bytes):
+#                 try:
+#                     compare_value = value.decode()
+#                 except UnicodeDecodeError:
+#                     continue
 
-            if isinstance(self.value, str) and isinstance(value, bytes):
-                try:
-                    compare_value = value.decode()
-                except UnicodeDecodeError:
-                    continue
+#             # strings should be compare case insensitive
 
-            # strings should be compare case insensitive
+#             if isinstance(self.value, str) and isinstance(compare_value, str):
+#                 if self.value.casefold() == compare_value.casefold():
+#                     matches = True
+#                     break
+#             else:
+#                 if self.value == compare_value:
+#                     matches = True
+#                     break
 
-            if isinstance(self.value, str) and isinstance(compare_value, str):
-                if self.value.casefold() == compare_value.casefold():
-                    matches = True
-                    break
-            else:
-                if self.value == compare_value:
-                    matches = True
-                    break
-
-        return matches
+#         return matches
 
 
 class LDAPExtObject(LDAPObject):
@@ -181,13 +181,14 @@ class LDAPExtObject(LDAPObject):
         )
 
 
-@pytest.fixture(autouse=True)
-def extendMockldap(monkeypatch):
-    """
-    Extend MockLdap with our additional functions
-    """
-    monkeypatch.setattr("mockldap.ldapobject.LDAPObject", LDAPExtObject)
-    monkeypatch.setattr("mockldap.filter.Test.matches", LDAPExtTest.matches)
+# TODO: Uncomment this when we solve mockldap issue LINOTP-2257
+# @pytest.fixture(autouse=True)
+# def extendMockldap(monkeypatch):
+#     """
+#     Extend MockLdap with our additional functions
+#     """
+#     monkeypatch.setattr("mockldap.ldapobject.LDAPObject", LDAPExtObject)
+#     monkeypatch.setattr("mockldap.filter.Test.matches", LDAPExtTest.matches)
 
 
 @pytest.fixture(autouse=True)
@@ -1591,7 +1592,8 @@ def ad_user(ad_entries):
 
 
 @pytest.fixture
-@pytest.mark.usefixtures("extendMockLdap")
+# TODO: Uncomment this when we solve mockldap issue LINOTP-2257
+# @pytest.mark.usefixtures("extendMockLdap")
 def mock_ldap(ad_user):
     """
     Provide a mock ldap instance configured with our test data
@@ -1603,6 +1605,7 @@ def mock_ldap(ad_user):
         yield mockldap
 
 
+@pytest.mark.skip(reason="Skipping this test class")
 @pytest.mark.usefixtures("app")
 class TestLDAPResolver(TestController):
     def define_ldap_resolver(

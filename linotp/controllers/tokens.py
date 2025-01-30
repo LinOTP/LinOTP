@@ -490,17 +490,19 @@ class TokenAdapter:
                 "otpLength": self.otp_length,
                 "otpCounter": self.otp_counter,
             },
-            "userInfo": {
-                "userId": self.user_id,
-                "username": self.username,
-                "userDescription": self.user_description,
-                "idResolverInfo": {
-                    "resolverName": self.resolver_name,
-                    "resolverClass": self.resolver_class,
-                },
-            }
-            if self.user_id
-            else None,
+            "userInfo": (
+                {
+                    "userId": self.user_id,
+                    "username": self.username,
+                    "userDescription": self.user_description,
+                    "idResolverInfo": {
+                        "resolverName": self.resolver_name,
+                        "resolverClass": self.resolver_class,
+                    },
+                }
+                if self.user_id
+                else None
+            ),
             "usageData": {
                 "loginAttempts": self.login_attempts,
                 "maxLoginAttempts": self.max_login_attempts,

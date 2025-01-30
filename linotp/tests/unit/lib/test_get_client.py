@@ -23,9 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-"""
-
-"""
+""" """
 
 import socket
 import unittest

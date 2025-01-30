@@ -26,82 +26,82 @@
 #
 
 """This file containes the standard token definitions:
-              - OCRA2TokenClass
+           - OCRA2TokenClass
 
-   the OCRA2 Token will use the standard challenge response
-   instead of the dedicated ocra/request and ocra/check_t
+the OCRA2 Token will use the standard challenge response
+instead of the dedicated ocra/request and ocra/check_t
 
-    rollout an ocra2 token:
-    ------------------------
-    The rollout is a 2 step process with the following steps:
+ rollout an ocra2 token:
+ ------------------------
+ The rollout is a 2 step process with the following steps:
 
-    1. call the /admin/init controller with the following parameters
+ 1. call the /admin/init controller with the following parameters
 
-      :param type: must be "ocra2" for an ocra2 token
-      :param genkey: must be "1", if the server should generate the seed
-                     otherwise you can use the :param otpkey: with the seed
-      :param ocrasuite: your ocra suite of choice e.g.
-                              "OCRA-1:HOTP-SHA256-8:C-QA64"
-      :param sharedsecret: value must be "1"
-      :param serial: optional, if the serial will be defined by external
+   :param type: must be "ocra2" for an ocra2 token
+   :param genkey: must be "1", if the server should generate the seed
+                  otherwise you can use the :param otpkey: with the seed
+   :param ocrasuite: your ocra suite of choice e.g.
+                           "OCRA-1:HOTP-SHA256-8:C-QA64"
+   :param sharedsecret: value must be "1"
+   :param serial: optional, if the serial will be defined by external
 
-    as reply a set of information is returned, where the relevant part is the
-    in the image data for the softtoken qrscan in the structure
-         detail/ocraurl/img
+ as reply a set of information is returned, where the relevant part is the
+ in the image data for the softtoken qrscan in the structure
+      detail/ocraurl/img
 
-    <img    width=250   src="data:image/png;base64,iVBO....
+ <img    width=250   src="data:image/png;base64,iVBO....
 
-    which could be embedded in the enrollment application. Other relevant
-    information (as well part in the qr encoded data) is the
+ which could be embedded in the enrollment application. Other relevant
+ information (as well part in the qr encoded data) is the
 
-    "sharedsecret": "25676ef34bd1873834bbe10c4c4176b0a9689619"
+ "sharedsecret": "25676ef34bd1873834bbe10c4c4176b0a9689619"
 
-    which is the server data part for the pairing process transferd to the
-    qrtan app.
+ which is the server data part for the pairing process transferd to the
+ qrtan app.
 
-    2. complete the rollout
-    The qrtan app will calculate an activation code, that must be transfered
-    back to the server as a set of input data for the second enrollment step by
-    calling the /admin/init controller with the following parameters:
+ 2. complete the rollout
+ The qrtan app will calculate an activation code, that must be transfered
+ back to the server as a set of input data for the second enrollment step by
+ calling the /admin/init controller with the following parameters:
 
-      :param type: must be of the same token type "ocra2"
-      :param serial: must be the same as received from the first request
-      :param genkey: must be of "1", which indicates, that the init is not
-                     finished
-      :param activationcode: "GEZDGNBVGY3TQOJQ01",
-      :param ocrasuite: same ocrasuite as above
-                              "OCRA-1:HOTP-SHA256-8:C-QA64",
-      :param message: optional the message, that is displayed in the app, e.g.
-                      "Transaktion: Ausrollen eines OCRA2 Tokens",
+   :param type: must be of the same token type "ocra2"
+   :param serial: must be the same as received from the first request
+   :param genkey: must be of "1", which indicates, that the init is not
+                  finished
+   :param activationcode: "GEZDGNBVGY3TQOJQ01",
+   :param ocrasuite: same ocrasuite as above
+                           "OCRA-1:HOTP-SHA256-8:C-QA64",
+   :param message: optional the message, that is displayed in the app, e.g.
+                   "Transaktion: Ausrollen eines OCRA2 Tokens",
 
-    As response again an <img > is returned, which is the 'finishing'
-    transaction, where the qrtan app will reply only with an otp value
+ As response again an <img > is returned, which is the 'finishing'
+ transaction, where the qrtan app will reply only with an otp value
 
 
-    Further challenge request and response processing could then be managed by
-    using the /validate/check_s with
+ Further challenge request and response processing could then be managed by
+ using the /validate/check_s with
 
-     :param serial: token serial number, as defined above
-     :param challenge: the challenge input data as heart of the transaction
+  :param serial: token serial number, as defined above
+  :param challenge: the challenge input data as heart of the transaction
 
-    or when using /validate/check with
+ or when using /validate/check with
 
-     :param user: the assigned token user / owner
-     :param passw: which contains the token pin
-     :param challenge: the challenge input data as heart of the transaction
+  :param user: the assigned token user / owner
+  :param passw: which contains the token pin
+  :param challenge: the challenge input data as heart of the transaction
 
-    a response to this request will then contain the /detail/ocraurl/img
-    image data and the transaction id, which is the referer to the incomming
-    challenge respones from the qrtan app.
+ a response to this request will then contain the /detail/ocraurl/img
+ image data and the transaction id, which is the referer to the incomming
+ challenge respones from the qrtan app.
 
-    The challenge response then is verified by /validate/check_t and the
-    parameters:
+ The challenge response then is verified by /validate/check_t and the
+ parameters:
 
-     :param transactionid: the transaction id "440364804594",
-     :param pass: the otp value e.g. "48344099"
+  :param transactionid: the transaction id "440364804594",
+  :param pass: the otp value e.g. "48344099"
 
-    But as well the /validate/check controller could be used to verify the
-    transaction by providing in addition the user name.
+ But as well the /validate/check controller could be used to verify the
+ transaction by providing in addition the user name.
 
 """
 

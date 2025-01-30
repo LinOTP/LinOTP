@@ -26,7 +26,7 @@
 #
 
 
-""" used to do testing of the radius token"""
+"""used to do testing of the radius token"""
 
 import logging
 

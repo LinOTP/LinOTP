@@ -28,7 +28,7 @@
 """
 This module helps decouple LinOTP functions from specific versions
 of flask_jwt_extended (v3 / v4)
-It basically loads different modules/functions based on the installed 
+It basically loads different modules/functions based on the installed
 version.
 
 Note for developers: The way it works is as follows:

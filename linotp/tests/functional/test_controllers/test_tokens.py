@@ -26,8 +26,7 @@
 #
 
 
-"""
-"""
+""" """
 import json
 from wsgiref import headers
 

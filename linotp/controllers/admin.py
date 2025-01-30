@@ -2076,9 +2076,9 @@ class AdminController(BaseController, JWTMixin):
             token = get_token(serial)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
-            g.audit[
-                "info"
-            ] = f"From {','.join(source_realms)} to {','.join(realmList or ['/:no realm:/'])}"
+            g.audit["info"] = (
+                f"From {','.join(source_realms)} to {','.join(realmList or ['/:no realm:/'])}"
+            )
             g.reporting["realms"] = source_realms.union(
                 {realm if realm else "/:no realm:/" for realm in realmList}
             )
@@ -2959,9 +2959,9 @@ class AdminController(BaseController, JWTMixin):
                 # # add the challenges info to the challenge dict
                 for challenge in challenges:
                     if challenge.getTokenSerial() == serial:
-                        chall_dict[
-                            challenge.getTransactionId()
-                        ] = challenge.get_vars(save=True)
+                        chall_dict[challenge.getTransactionId()] = (
+                            challenge.get_vars(save=True)
+                        )
                 stat["challenges"] = chall_dict
 
                 # # add the token info to the stat dict
