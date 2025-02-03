@@ -71,5 +71,5 @@ __contact__ = "www.linotp.org"
 __email__ = "info@linotp.de"
 # The versioning should follow "Milestones - LinOTP" which satisfies pep-0440
 # i.e.  [N!]N(.N)*[{a|b|rc}N][.postN][.devN] read the documentation before changing
-__version__ = "3.4.2.dev0"
+__version__ = "3.4.2rc0"
 __api__ = "2.0802"

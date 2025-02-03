@@ -164,6 +164,8 @@ class ManageUi(object):
         """Checks if the manage is open
         :return: boolean, whether the manage is open or not
         """
+        # close a potential welcome screen
+        self.welcome_screen.close_if_open()
         return self.is_tabs_visible(wait) and self.is_url_correct()
 
     def is_login_open(self) -> bool:
@@ -247,8 +249,6 @@ class ManageUi(object):
             self.login()
 
         assert self.is_manage_open(), "ManageUi is not open"
-
-        self.welcome_screen.close_if_open()
 
     def login(self) -> None:
         self.driver.get(self.manage_url)
@@ -415,7 +415,7 @@ class ManageUi(object):
         """
         Check whether a given element is visible without waiting
         """
-        if not self.is_manage_open():
+        if not self.is_url_correct():
             return False
 
         try:
