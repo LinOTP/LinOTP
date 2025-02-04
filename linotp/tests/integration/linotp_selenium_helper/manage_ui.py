@@ -150,23 +150,28 @@ class ManageUi(object):
         possible_urls = (self.URL, self.URL + "/", self.URL + "/#")
         return self.driver.current_url.endswith(possible_urls)
 
-    def is_tabs_visible(self, wait=0):
+    def is_tabs_visible(self, wait=0, raise_error=False):
         """Check if the element 'tabs' is visible
         This would serve as an extra safety to make sure the manage is open and accessible
         """
         try:
             self.wait_for_element_visibility("tabs", wait)
             return True
-        except:
+        except Exception as e:
+            if raise_error:
+                raise e
             return False
 
-    def is_manage_open(self, wait=0) -> bool:
+    def is_manage_open(self, wait=0, raise_error=False) -> bool:
         """Checks if the manage is open
         :return: boolean, whether the manage is open or not
         """
         # close a potential welcome screen
         self.welcome_screen.close_if_open()
-        return self.is_tabs_visible(wait) and self.is_url_correct()
+        return (
+            self.is_tabs_visible(wait, raise_error=raise_error)
+            and self.is_url_correct()
+        )
 
     def is_login_open(self) -> bool:
         possible_urls = (self.URL + "/login", self.URL + "/login#")
@@ -198,11 +203,9 @@ class ManageUi(object):
         Check we are on the right page
         """
         assert self.is_manage_open(
-            wait
-        ), "URL %s should end with %s - page not loaded? " % (
-            self.driver.current_url,
-            self.URL,
-        )
+            wait, raise_error=True
+        ), f"Current URL: {self.URL} \n 'Tabs' visible: {self.is_tabs_visible()}"
+
         assert self.driver.title == "Management - LinOTP"
 
     def find_by_css(self, css_value) -> WebElement:
