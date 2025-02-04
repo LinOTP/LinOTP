@@ -47,6 +47,7 @@ class EnrollTokenDialog(ManageDialog):
         overriden with a click on the enroll button
         """
         if not self.is_open():
+            self.manage.open_manage()
             self.driver.find_element(By.ID, "button_enroll").click()
 
         self.wait_for_dialog()

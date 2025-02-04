@@ -47,14 +47,14 @@ class TestManage:
         # self.manage = ManageUi(self)
         # WIP:
         # The above line should not be different from this one:
-        self.manage = self.testcase.manage_ui
+        self.manage: ManageUi = self.testcase.manage_ui
         # if this ^ proposal succeeds,
         # 1- remove the comment
         # 2- replace all self.manage with self.testcase.manage_ui
 
     def test_manage_open(self):
         self.manage.open_manage()
-        self.manage.check_manage_is_open()
+        self.manage.check_manage_is_open(wait=6)
 
     def test_close_menus(self):
         """
