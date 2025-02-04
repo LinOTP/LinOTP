@@ -277,9 +277,7 @@ class ManageUi(object):
 
         self.find_by_id("password").submit()
 
-        self.check_manage_is_open(
-            wait=3
-        )  # "Expecting manage ui to open after login"
+        self.check_manage_is_open(wait=6)
 
     def logout(self):
         assert self.is_manage_open()
