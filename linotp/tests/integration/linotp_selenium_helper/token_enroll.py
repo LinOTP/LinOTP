@@ -49,6 +49,7 @@ class EnrollTokenDialog(ManageDialog):
         self.manage.open_manage()
 
         if not self.is_open():
+            self.manage.open_manage()
             self.driver.find_element(By.ID, "button_enroll").click()
 
         self.wait_for_dialog()
