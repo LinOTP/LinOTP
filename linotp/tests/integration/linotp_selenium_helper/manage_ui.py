@@ -248,6 +248,7 @@ class ManageUi(object):
         if self.is_login_open():
             self.login()
 
+        self.welcome_screen.close_if_open()
         assert self.is_manage_open(), "ManageUi is not open"
 
     def login(self) -> None:
