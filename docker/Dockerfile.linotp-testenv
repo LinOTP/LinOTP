@@ -20,8 +20,12 @@ RUN curl -LO https://github.com/markriggins/dockerfy/releases/download/0.2.6/doc
 # install make to start integration tests
 RUN apt update && apt install -y make
 
-# due to incompatibility of funcparserlib using use_2to3:
-RUN pip install wheel "setuptools<58"
+# we pin setuptools==58
+# due to incompatibility of funcparserlib (needed by mockldap) using use_2to3
+# which was removed in setuptools and lets builds fail with v58.0.2:
+# https://setuptools.pypa.io/en/stable/history.html#v58-0-2
+RUN pip install "setuptools==58"
+
 # install test requirements
 COPY requirements-test.txt .
 RUN pip install -r requirements-test.txt

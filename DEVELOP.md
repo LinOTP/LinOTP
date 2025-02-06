@@ -68,8 +68,20 @@ source linotp_dev/bin/activate
 Then, install the development dependencies:
 
 ```terminal
-pip3 install -r requirements-dev.txt && pip3 install -e .
+pip3 pip install "setuptools==58"
+pip3 install -r requirements-dev.txt
+pip3 install -e .
 ```
+
+> **_NOTE:_**
+>
+> we pin setuptools==58
+> due to incompatibility of `funcparserlib` (needed by `mockldap`) using `use_2to3`
+> which was removed in setuptools and lets builds fail with v58.0.2:  
+> <https://setuptools.pypa.io/en/stable/history.html#v58-0-2>
+>
+> I'll add the error message so Devs can find this note:  
+> `error in funcparserlib setup command: use_2to3 is invalid.`
 
 For a quickstart using the default configuration, run:
 

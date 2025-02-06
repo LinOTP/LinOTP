@@ -14,8 +14,14 @@ RUN useradd -ms /bin/bash tester && echo "root:Test123!\ntester:Test123!" | chpa
 
 COPY ./ ./
 
-# due to incompatibility of funcparserlib using use_2to3:
-RUN pip install wheel "setuptools==58"
+# we pin setuptools==58
+# due to incompatibility of funcparserlib (needed by mockldap) using use_2to3
+# which was removed in setuptools and lets builds fail with v58.0.2:
+# https://setuptools.pypa.io/en/stable/history.html#v58-0-2
+RUN pip install "setuptools==58"
+
+# install test requirements
 RUN pip install -r requirements-test.txt \
     && pip install .
+
 USER tester
