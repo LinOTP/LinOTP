@@ -2215,6 +2215,43 @@ class UserserviceController(BaseController):
             # check selfservice authorization
             checkPolicyPre("selfservice", "userinit", param, g.authUser)
 
+            # Check setOTPPIN Permission
+            # and raise Exception when user sends otppin without Permission
+            otppin_in_params = any(key in param for key in ("otppin", "pin"))
+            try:
+                checkPolicyPre("selfservice", "usersetpin", param, g.authUser)
+                usersetpin = True
+            except PolicyException:
+                usersetpin = False
+            if usersetpin and not otppin_in_params:
+                msg = f"Enrolling Token by user {g.authUser.login} failed because they send no otppin when it was required by policy setOTPPIN"
+                log.warning(msg)
+                raise PolicyException(msg)
+            if not usersetpin and otppin_in_params:
+                msg = f"Enrolling Token by user {g.authUser.login} failed because they send otppin when it was not allowed by policy setOTPPIN"
+                log.warning(msg)
+                raise PolicyException(msg)
+
+            # We currently need to support both `pin` and `otppin` due to legacy code
+            if otppin_in_params:
+                otppin = param.get("otppin", param.get("pin"))
+                # Validate PIN
+                check_res = checkOTPPINPolicy(otppin, g.authUser)
+                if not check_res["success"]:
+                    log.warning(
+                        "Enrolling Token by user %s failed: %s",
+                        g.authUser.login,
+                        check_res["error"],
+                    )
+
+                    return sendError(_("Error: %s") % check_res["error"])
+
+                # set correct param `pin` which is actually used in `th.initToken`
+                param["pin"] = otppin
+            else:
+                # to not break debug log below
+                otppin = None
+
             serial = param.get("serial", None)
             prefix = param.get("prefix", None)
 
@@ -2288,11 +2325,6 @@ class UserserviceController(BaseController):
                 param["serial"] = serial
 
             desc = param.get("description", "")
-
-            # We currently need to support both `pin` and `otppin` due to legacy code
-            otppin = param.get("otppin", param.get("pin"))
-            # set correct param `pin` which is actually used in `th.initToken`
-            param["pin"] = otppin
 
             log.info(
                 "[userinit] initialize a token with serial %s "
