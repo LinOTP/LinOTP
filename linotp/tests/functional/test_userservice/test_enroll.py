@@ -135,7 +135,7 @@ class TestUserserviceEnrollment(TestController):
         params = {
             "name": "enroll",
             "scope": "selfservice",
-            "action": "enrollPW",
+            "action": "enrollPW, setOTPPIN",
             "user": "*",
             "realm": "*",
             "active": True,

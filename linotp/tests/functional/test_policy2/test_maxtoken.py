@@ -184,7 +184,7 @@ class TestPolicyMaxtoken(TestController):
             "name": "T1",
             "action": (
                 "enrollEMAIL, enrollSMS, assign, "
-                "webprovisionGOOGLE, webprovisionGOOGLEtime, "
+                "webprovisionGOOGLE, webprovisionGOOGLEtime, setOTPPIN"
             ),
             "user": " passthru.*.myDefRes:",
             "realm": "*",
