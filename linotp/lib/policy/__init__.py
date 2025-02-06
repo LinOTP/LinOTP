@@ -2661,11 +2661,14 @@ def checkOTPPINPolicy(pin, user):
                 pol["contents"],
             )
             if (
-                not (
-                    (policy_c and contains_c)
-                    or (policy_s and contains_s)
-                    or (policy_o and contains_other)
-                    or (policy_n and contains_n)
+                (policy_c or policy_n or policy_s or policy_o)
+                and (
+                    not (
+                        (policy_c and contains_c)
+                        or (policy_s and contains_s)
+                        or (policy_o and contains_other)
+                        or (policy_n and contains_n)
+                    )
                 )
             ) or (
                 (not policy_c and contains_c)

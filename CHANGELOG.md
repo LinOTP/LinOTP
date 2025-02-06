@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The `otppin` parameter is now required or prohibited based on the `setOTPPIN` policy
   - the provided `otppin` is validated against the following policies: `otp_pin_minlength`, `otp_pin_maxlength` and `otp_pin_contents`
 
+### Fixed
+
+- Don't reject empty string as `otppin` when `otp_pin_contents=+`
+
 ## [3.4.1-1] - 2024-11-27
 
 ### Fixed

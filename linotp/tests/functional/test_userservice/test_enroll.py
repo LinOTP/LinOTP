@@ -269,6 +269,22 @@ class TestUserserviceEnrollment(TestController):
             "realm": "*",
             "active": True,
         }
+        policy_otp_pin_contents_plus_only = {
+            "name": "otp_pin_contents_plus_only",
+            "scope": "selfservice",
+            "action": "otp_pin_contents=+",
+            "user": "*",
+            "realm": "*",
+            "active": True,
+        }
+        policy_otp_pin_contents_minus_only = {
+            "name": "otp_pin_contentsminus_only",
+            "scope": "selfservice",
+            "action": "otp_pin_contents=-",
+            "user": "*",
+            "realm": "*",
+            "active": True,
+        }
 
         tests: list[EnrollmentTestParams] = [
             {
@@ -538,6 +554,54 @@ class TestUserserviceEnrollment(TestController):
                     policy_otp_pin_contents_minus_nc,
                 ],
                 "enroll_params": {"type": "totp", "otppin": "a1"},
+                "expected": True,
+            },
+            {
+                "policies": [
+                    policy_enroll_totp_and_set_pin,
+                    policy_otp_pin_contents_plus_only,
+                ],
+                "enroll_params": {"type": "totp", "otppin": None},
+                "expected": False,
+            },
+            {
+                "policies": [
+                    policy_enroll_totp_and_set_pin,
+                    policy_otp_pin_contents_plus_only,
+                ],
+                "enroll_params": {"type": "totp", "otppin": "1"},
+                "expected": False,
+            },
+            {
+                "policies": [
+                    policy_enroll_totp_and_set_pin,
+                    policy_otp_pin_contents_plus_only,
+                ],
+                "enroll_params": {"type": "totp", "otppin": ""},
+                "expected": True,
+            },
+            {
+                "policies": [
+                    policy_enroll_totp_and_set_pin,
+                    policy_otp_pin_contents_minus_only,
+                ],
+                "enroll_params": {"type": "totp", "otppin": None},
+                "expected": False,
+            },
+            {
+                "policies": [
+                    policy_enroll_totp_and_set_pin,
+                    policy_otp_pin_contents_minus_only,
+                ],
+                "enroll_params": {"type": "totp", "otppin": "1"},
+                "expected": False,
+            },
+            {
+                "policies": [
+                    policy_enroll_totp_and_set_pin,
+                    policy_otp_pin_contents_minus_only,
+                ],
+                "enroll_params": {"type": "totp", "otppin": ""},
                 "expected": True,
             },
         ]
