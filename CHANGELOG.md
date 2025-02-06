@@ -946,7 +946,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
   ID and OTP. This used to happen when a user submitted the OTP for a
   transaction ID more than once within a very short timeframe
 - Server: Fix for missing LDAP uft-8 conversion
-- Server: Fix default hash algorithm. This  was causing issues in the YubiKey
+- Server: Fix default hash algorithm. This was causing issues in the YubiKey
   import
 - Server: Fix wrong audit log entries where "failcounter exceeded" was
   incorrectly being replaced with "no token found"
@@ -1635,12 +1635,12 @@ Service API. This patch is necessary for all versions newer than LinOTP
 
 ## [2.5.2-1.rc8] - 2013-07-12
 
-- Fixed multiple selected policies                      #12114
+- Fixed multiple selected policies #12114
 - Fixed for user with special char for access to selfservice #12110
-- Fixed export of policy with user with special chars   #12107
-- Fixed of missing manpage for source distribution      #12100
-- Fixed export of empty policies                        #12099
-- Fixed of weird PKG-INFO from build                    #12098
+- Fixed export of policy with user with special chars #12107
+- Fixed of missing manpage for source distribution #12100
+- Fixed export of empty policies #12099
+- Fixed of weird PKG-INFO from build #12098
 - Fixed for ad users with special char in dn for access to selfservice #12090
 
 ## [2.5.2-1.rc7] - 2013-07-08
@@ -1686,10 +1686,10 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Bug #3003, #3000 Closed (fixed) Wrong wsgi file in documentation
 - Bug #3002 Closed (fixed) Added info for creating certificates
 - Bug #2999, #2998, #2996, #2995, #2994, #2992, #2991 Closed (fixed) Improved documentation for manual installation
-- Bug #2975 Closed (fixed)  removed link to linotp-register
-- Bug #2969 Closed (fixed)  rewrite string handling in logging
+- Bug #2975 Closed (fixed) removed link to linotp-register
+- Bug #2969 Closed (fixed) rewrite string handling in logging
 - Enhancement #2909 Closed (fixed) Better handling of HSM errors
-- Bug Closed #2864 (fixed)  Tokenrealm does not work with sqlite
+- Bug Closed #2864 (fixed) Tokenrealm does not work with sqlite
 
 ## [2.5.2-0.rc2] - 2013-06-19
 
@@ -1785,7 +1785,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - moved etoken enrollment tool from server to EE client (#834)
 - performance fix - reduce userid lookup
 - renamed the webprovissionOCRA to activateQR #912
-- resolver init hook -  #941
+- resolver init hook - #941
 - reverted to the timeStepping=30 for the setup
 - set maximum auth count and validity period. (#743)
 - solve 2.6. compatibilty issue for time2float
@@ -2030,7 +2030,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Virtual Appliance/Install-CD: Added basic backup and restore scripts.
 - Virtual Appliance/Install-CD: Added openntpd
 - Improved logging
-- Added new user  manual for the self service portal
+- Added new user manual for the self service portal
 - Improved Self servie portal
 - Added checkPass function to useridresolvers. So that authentication to the selfservice portal
   can be made transparent with existing user store passwords
@@ -2043,7 +2043,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - changed to version 2.2 in LDAP response
 - WebUI: Added hour glass during testing LDAP connection
 - Added Test-LDAP-connection interface: /admin/testresolver
-- Fixed the Spass Token so it will *not* require a PIN during rollout
+- Fixed the Spass Token so it will _not_ require a PIN during rollout
 - Virtual Appliance: Added ldap-utils to the ISO
 - WebUI: Fixed missing column "phone"
 - WebUI: Fixed presetting of LDAP/AD attributes in the LDAP Resolver Dialog
