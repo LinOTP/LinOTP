@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - unhandled errors are now logged with traceback and returned in the response
 
+### Changed
+
+- `userservice/enroll` now validates otp pins:
+  - The `otppin` parameter is now required or prohibited based on the `setOTPPIN` policy
+  - the provided `otppin` is validated against the following policies: `otp_pin_minlength`, `otp_pin_maxlength` and `otp_pin_contents`
+
 ## [3.4.1-1] - 2024-11-27
 
 ### Fixed
