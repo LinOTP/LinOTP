@@ -440,7 +440,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
   - run - run a development server.
   - shell - run a shell in the app context.
 - Settings can now be configured using environment variables
-  LINOTP_<SETTING_NAME>.
+  `LINOTP_<SETTING_NAME>`.
 - Improved config file handling via LINOTP_CFG environment variable:
   - LINOTP_CFG env allows to set a custom search path for config files.
   - `/usr/share/linotp/linotp.cfg` contains distribution default settings.
@@ -592,7 +592,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
   of the actions are less explicitly defined regarding user and realm fields
 - Selfservice: MFA login with Push Token and QR Token is correctly processed
 - Incorrect max token count evaluation is fixed if a different, more specific
-  (not user:*) policy with other actions is defined.
+  (not `user:*`) policy with other actions is defined.
 
 ## [2.12-1] - 2020-07-28
 
@@ -1262,7 +1262,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 
 ### Added / Changed
 
-- Server: Add support for '*' wildcard in policy client definition
+- Server: Add support for `*` wildcard in policy client definition
 - Server: Add support to set random pin on token import
 
 ## [2.8-1] - 2015-11-25
@@ -1285,7 +1285,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Server: Add crypto migration controller to change in-use cryptographic
   techniques, switch to HSMs or replace in-use HSMs
 - Server: Add support for using UserPrincipalName as username
-- Server: Support wildcard '*' for serial number filter in admin/show
+- Server: Support wildcard `*` for serial number filter in admin/show
 - Tools: linotp-auth-radius: Support for unicode radius requests
 - Selfservice: Support yubikey tokens with public_uid
 - Server: Add target realm input for token imports
@@ -1537,7 +1537,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Made wildcard search in SQL Resolver more precise (#12135)
 - Small graphical WebUI fixes (#12229)
 - Added possibility to change the phone number of SMS token (#2953)
-- Require * for wildcard token search (#2838)
+- Require `*` for wildcard token search (#2838)
 - Removed PIL as a hard dependency (you may use pillow-pil) (#12409)
 - Only enable apache site on first installation (not upgrade) (#12246,
   #12457)
@@ -1586,7 +1586,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Added Challenge Response functionality for all tokens.
 - Added Challenge Response Policy (#12234)
 - Searching for tokens in the WebUI now uses wildcards.
-  - To find "benjamin" you will have to search for "ben*".
+  - To find benjamin you will have to search for `ben*`.
   - "ben" will return nothing.
 - Added UserPassOnNoToken Policy (#12145)
 - Export token list to csv (#2963)
