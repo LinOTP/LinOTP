@@ -21,7 +21,7 @@ Obtain the LinOTP source code from [LinOTP
 GitHub](https://github.com/LinOTP/LinOTP "LinOTP on GitHub"):
 
 ```terminal
-$ git clone https://github.com/LinOTP/LinOTP.git
+git clone https://github.com/LinOTP/LinOTP.git
 ```
 
 ## Set up your LinOTP development environment
@@ -42,7 +42,7 @@ On macOS, install the following dependencies to run LinOTP natively
 and build LinOTP via containers:
 
 ```terminal
-$ brew install libsodium coreutils
+brew install libsodium coreutils
 ```
 
 LinOTP can use a variety of SQL databases but MySQL/MariaDB is most
@@ -61,26 +61,26 @@ packages. We strongly recommend installing a virtual environment as
 follows:
 
 ```terminal
-$ python3 -m venv linotp_dev       # Pick a name but be consistent
-$ source linotp_dev/bin/activate
+python3 -m venv linotp_dev
+source linotp_dev/bin/activate
 ```
 
 Then, install the development dependencies:
 
 ```terminal
-$ pip3 install -r requirements-dev.txt && pip3 install -e .
+pip3 install -r requirements-dev.txt && pip3 install -e .
 ```
 
 For a quickstart using the default configuration, run:
 
 ```terminal
-$ mkdir -p linotp/cache linotp/data linotp/logs
-$ linotp init database
-$ linotp init audit-keys
-$ linotp init enc-key
-$ linotp local-admins add <your_username>
-$ linotp local-admins password --password <your_password> <your_username>
-$ linotp run
+mkdir -p linotp/cache linotp/data linotp/logs
+linotp init database
+linotp init audit-keys
+linotp init enc-key
+linotp local-admins add <your_username>
+linotp local-admins password --password <your_password> <your_username>
+linotp run
 ```
 
 The last command starts a development server. Now you can open the LinOTP
@@ -92,13 +92,13 @@ PostgreSQL or MariaDB database instead, you can override that setting through
 the following environment variable before running `linotp init database`:
 
 ```terminal
- $ export LINOTP_DATABASE_URI="postgres://user:pass@host/db_name"
+export LINOTP_DATABASE_URI="postgres://user:pass@host/db_name"            #gitleaks:allow
 ```
 
 or
 
 ```terminal
- $ export LINOTP_DATABASE_URI="mysql+pymysql://user:pass@host/db_name"
+export LINOTP_DATABASE_URI="mysql+pymysql://user:pass@host/db_name"       #gitleaks:allow
 ```
 
 Alternatively you can also set this variable in a LinOTP configuration file, as
@@ -271,7 +271,7 @@ To run LinOTP for development, execute Flask from the LinOTP source
 directory (`linotpd/src`) as follows:
 
 ```terminal
-$ FLASK_APP=linotp.app flask run
+FLASK_APP=linotp.app flask run
 ```
 
 This starts the Flask development server. Unless you specify otherwise
@@ -293,7 +293,7 @@ your development system, go to the LinOTP source directory and execute
 the
 
 ```terminal
-$ python3 setup.py develop
+python3 setup.py develop
 ```
 
 command. (This installs the `linotp` command in the virtualenv's `bin`
@@ -301,7 +301,7 @@ directory.) Giving the `make develop` command in the top-level
 directory should also do the trick. After this, a simple
 
 ```terminal
-$ linotp run
+linotp run
 ```
 
 will launch the Flask development server. (You can still use
@@ -311,8 +311,8 @@ Make sure to create an admin user, otherwise you will not be able to log in to
 LinOTP's management interface:
 
 ```
-$ linotp local-admins add <your_username>
-$ linotp local-admins password -p <your_password> <your_username>
+linotp local-admins add <your_username>
+linotp local-admins password -p <your_password> <your_username>
 ```
 
 ## Run unit, functional, and integration tests
@@ -323,22 +323,22 @@ You can run unit and functional tests by entering the respective
 commands below from the top-level directory of the LinOTP distribution:
 
 ```terminal
-$ make test               # will run all tests
-$ make unittests          # will run only unit tests
-$ make functionaltests    # will run only functional tests
-$ make integrationtests   # will run only integration tests
+make test               # will run all tests
+make unittests          # will run only unit tests
+make functionaltests    # will run only functional tests
+make integrationtests   # will run only integration tests
 ```
 
 You can also run the tests directly in their directories:
 
 ```terminal
-$ pytest linotpd/src/linotp/tests/unit
+pytest linotpd/src/linotp/tests/unit
 ```
 
 or
 
 ```terminal
-$ pytest linotpd/src/linotp/tests/functional
+pytest linotpd/src/linotp/tests/functional
 ```
 
 If you want to run only the tests in a single file, invoke `pytest`
@@ -348,7 +348,7 @@ When using `make`, you can pass command-line arguments to `pytest` by
 assigning them to `PYTESTARGS`:
 
 ```terminal
-$ make unittests PYTESTARGS="-vv"
+make unittests PYTESTARGS="-vv"
 ```
 
 See the [Pytest documentation](https://docs.pytest.org/) for more
@@ -366,7 +366,7 @@ Then start a LinOTP development server and edit
 You can now execute integration tests with:
 
 ```terminal
-$ pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_test_file>
+pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_test_file>
 ```
 
 You can find sample test files under `linotpd/src/linotp/tests/integration`.
@@ -377,13 +377,13 @@ To run a type check on the source code, install `mypy` and `sqlalchemy-stubs`.
 Both requirements are part of the develop requirements:
 
 ```terminal
-$ pip3 install -r requirements-dev.txt
+pip3 install -r requirements-dev.txt
 ```
 
 Then run `mypy` on a directory of your choice like
 
 ```terminal
-$ mypy some/python/dir
+mypy some/python/dir
 ```
 
 If you do not wish to be shown type errors from imported modules, use
@@ -402,7 +402,7 @@ file for the configuration.
 Install `pre-commit` manually via pip or as part of our develop dependencies:
 
 ```terminal
-$ pip3 install -r requirements-dev.txt
+pip3 install -r requirements-dev.txt
 ```
 
 Then install the pre-commit hook in git so that it runs before a commit to
@@ -411,13 +411,13 @@ advise to install the hook, even if you use all of the tools in your IDE.
 This way, you will never push a commit that fails the pre-check.
 
 ```terminal
-$ pre-commit install
+pre-commit install
 ```
 
 You can also run the pre-commit hook manually`:
 
 ```terminal
-$ pre-commit run
+pre-commit run
 ```
 
 Use the arguments `--files …` or `--all-files` to change what files are checked.
@@ -427,7 +427,7 @@ Use the arguments `--files …` or `--all-files` to change what files are checke
 First install the requirements to generate the api documentation:
 
 ```terminal
-$ pip3 install -e ".[apidocs]"
+pip3 install -e ".[apidocs]"
 ```
 
 However, this is not necessary if you have already installed the requirements
@@ -452,7 +452,7 @@ From the base directory of the LinOTP distribution, run the following
 command:
 
 ```terminal
-$ docker build -f docker/Dockerfile.linotp -t linotp .
+docker build -f docker/Dockerfile.linotp -t linotp .
 ```
 
 (If you're a lazy sort of person, omitting `-f docker/Dockerfile.linotp`

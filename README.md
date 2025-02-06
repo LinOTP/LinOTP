@@ -32,7 +32,7 @@ This package contains the LinOTP Server Core.
 Installing LinOTP can be performed easily by issuing the command::
 
 ```terminal
-$ pip install linotp
+pip install linotp
 ```
 
 (note that we recommend using a virtual environment).
@@ -42,7 +42,7 @@ of important directories exist. You can inspect their default values
 using the command
 
 ```terminal
-$ linotp config show ROOT_DIR LOG_FILE_DIR CACHE_DIR
+linotp config show ROOT_DIR LOG_FILE_DIR CACHE_DIR
 ```
 
 and use a configuration file to change them:
@@ -95,9 +95,9 @@ You can start directly by creating the encryption and audit-log keys
 and the database table structure:
 
 ```terminal
-$ linotp init enc-key --dump
-$ linotp init audit-keys
-$ linotp init database
+linotp init enc-key --dump
+linotp init audit-keys
+linotp init database
 ```
 
 Note that by default, LinOTP will use a SQLite database which is good
@@ -127,8 +127,8 @@ otherwise you will not be able to access the management interface. To create
 an administrator called "admin", do::
 
 ```terminal
-$ linotp local-admins add admin
-$ linotp local-admins password admin
+linotp local-admins add admin
+linotp local-admins password admin
 ```
 
 This last command will prompt you to enter a password for the admin user.
@@ -136,7 +136,7 @@ This last command will prompt you to enter a password for the admin user.
 Next, you're ready to start the webserver by issuing::
 
 ```terminal
-$ linotp run
+linotp run
 ```
 
 Now you can log in to the the web interface at <http://localhost:5000/manage>
@@ -156,7 +156,7 @@ database and it is accessible using the given user name and password,
 you can create the database schema again as above:
 
 ```terminal
-$ linotp init database
+linotp init database
 ```
 
 ## Security considerations
