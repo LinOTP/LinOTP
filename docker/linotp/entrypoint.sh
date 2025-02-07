@@ -4,7 +4,7 @@ set -o pipefail
 set -o nounset
 
 set_admin_password_env() {
-    mkpwd() { dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 ; }
+    mkpwd() { dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64; }
     pwd=$(mkpwd)
     while grep -q "[0OIl1]" <<<$pwd; do
         pwd=$(mkpwd)
@@ -30,14 +30,15 @@ bootstrap_linotp() {
     fi
 }
 
-initdb_linotp(){
-    echo >&2 " --- Initializing LinOTP's database ---"
-    echo >&2 " --- This will also run necessary migrations ---"
+initdb_linotp() {
+    echo >&2 "--- Initializing LinOTP's database ---"
+    echo >&2 "--- This will also run necessary migrations ---"
     linotp -v init database
 }
 
 export MODE="${MODE:-production}"
 export SERVICE="0.0.0.0:5000"
+
 start_linotp() {
     echo >&2 "--- Starting LinOTP ---"
     if [ "$MODE" = "production" ]; then
@@ -52,23 +53,23 @@ start_linotp() {
             "linotpapp:create_app()"
         exit_status=$?
         if [ $exit_status == 4 ]; then
-			# NOTE: `<<-` needs tabs as indents to work properly
-			cat <<-EOF >&2
+            # NOTE: `<<-` needs tabs as indents to work properly
+            cat <<-EOF >&2
 			Gunicorn and LinOTP shut down.
 			If this happened during your container startup, it's likely you're missing files to start LinOTP.
 			Please refer to the logs.
 			Or try starting the container by adding \`--with-bootstrap\` at the end, e.g.,
 			\`docker run linotp --with-bootstrap\` to bootstrap all needed files.
 			EOF
-	elif [ $exit_status == 3 ]; then
-	                cat <<-EOF >&2
+        elif [ $exit_status == 3 ]; then
+            cat <<-EOF >&2
 			Gunicorn and LinOTP shut down.
 			Database schema is not current. You need to run database migrations.
 			Start the container with \`--with-migrations\` added to the command line, e.g.,
 			\`docker run linotp --with-migrations\`, to run the necessary initializations.
 			Make sure to have proper backups for yourself.
 			EOF
-	fi
+        fi
     elif [ "$MODE" = "development" ]; then
         if [ -n "${I_KNOW_THIS_IS_BAD_AND_IF_TERRIBLE_THINGS_HAPPEN_IT_WILL_BE_MY_OWN_FAULT:-}" ]; then
             echo >&2 "Starting development server on..."
@@ -115,11 +116,9 @@ if [ -n "${LINOTP_DB_PORT:-}" ]; then
     # if URI starts with `sqlite`
     # because we dont provide a port in this case
     echo "Waiting for Database..."
-
     while ! nc -z $LINOTP_DB_HOST $LINOTP_DB_PORT; do
         sleep $LINOTP_DB_WAITTIME
     done
-
     echo "Database started"
 fi
 
@@ -136,22 +135,20 @@ if [ -z "${1-}" ]; then
     start_linotp
 else
     case "$1" in
-        --with-bootstrap)
-            # run in production mode with bootstrap
-            bootstrap_linotp
-            start_linotp
-	    ;;
-	--with-migrations)
-	    initdb_linotp
-	    start_linotp
-	    ;;	     
-	    
-        *)
-            # Execute LinOTP CLI command
-            if ! linotp "$@"; then
-                echo >&2 "Error invoking LinOTP (exit code $?)"
-            fi
-            ;;
+    --with-bootstrap)
+        # run in production mode with bootstrap
+        bootstrap_linotp
+        start_linotp
+        ;;
+    --with-migrations)
+        initdb_linotp
+        start_linotp
+        ;;
+    *)
+        # Execute LinOTP CLI command
+        if ! linotp "$@"; then
+            echo >&2 "Error invoking LinOTP (exit code $?)"
+        fi
+        ;;
     esac
 fi
-
