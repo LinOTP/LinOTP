@@ -28,6 +28,7 @@ bootstrap_linotp() {
         fi
         linotp -v local-admins password --password $LINOTP_ADMIN_PASSWORD $LINOTP_ADMIN_USER
         touch "$bootstrapped_file"
+        echo >&2 "Bootstrapping done"
     fi
 }
 
