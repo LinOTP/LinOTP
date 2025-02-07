@@ -36,14 +36,14 @@ from linotp.lib.user import getUserRealms
 
 LOG = logging.getLogger(__name__)
 
-lowercase = "abcdefghijklmnopqrstuvwxyz"
-uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-letters = lowercase + uppercase
-ascii_lowercase = lowercase
-ascii_uppercase = uppercase
-ascii_letters = ascii_lowercase + ascii_uppercase
-digits = "0123456789"
-special_characters = "!#$%&()*+,-./:;<=>?@[]^_"
+LOWERCASE = "abcdefghijklmnopqrstuvwxyz"
+UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+LETTERS = LOWERCASE + UPPERCASE
+ASCII_LOWERCASE = LOWERCASE
+ASCII_UPPERCASE = UPPERCASE
+ASCII_LETTERS = ASCII_LOWERCASE + ASCII_UPPERCASE
+DIGITS = "0123456789"
+SPECIAL_CHARACTERS = "!#$%&()*+,-./:;<=>?@[]^_"
 
 
 def _getUserRealms(user):

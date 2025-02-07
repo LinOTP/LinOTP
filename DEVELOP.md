@@ -15,14 +15,13 @@ The steps in a nutshell:
 7. Use pre-commit hooks for consistent formatting
 8. Build the LinOTP debian package
 
-
 ## Get the LinOTP source code
-
 
 Obtain the LinOTP source code from [LinOTP
 GitHub](https://github.com/LinOTP/LinOTP "LinOTP on GitHub"):
+
 ```terminal
-$ git clone https://github.com/LinOTP/LinOTP.git
+git clone https://github.com/LinOTP/LinOTP.git
 ```
 
 ## Set up your LinOTP development environment
@@ -31,6 +30,7 @@ If you want to develop LinOTP, you first need to install some software
 packages that LinOTP depends upon.
 
 On a Debian-based system, run as a superuser:
+
 ```terminal
 $ apt-get install build-essential python3-dev \
                 python3-mysqldb mariadb-server libmariadb-dev-compat libmariadb-dev \
@@ -40,8 +40,9 @@ $ apt-get install build-essential python3-dev \
 
 On macOS, install the following dependencies to run LinOTP natively
 and build LinOTP via containers:
+
 ```terminal
-$ brew install libsodium coreutils
+brew install libsodium coreutils
 ```
 
 LinOTP can use a variety of SQL databases but MySQL/MariaDB is most
@@ -58,24 +59,40 @@ A “virtual environment” lets you install additional packages locally
 prevents the pollution of your host system with non-distribution
 packages. We strongly recommend installing a virtual environment as
 follows:
+
 ```terminal
-$ python3 -m venv linotp_dev       # Pick a name but be consistent
-$ source linotp_dev/bin/activate
-```
-Then, install the development dependencies:
-```terminal
-$ pip3 install -r requirements-dev.txt && pip3 install -e .
+python3 -m venv linotp_dev
+source linotp_dev/bin/activate
 ```
 
-For a quickstart using the default configuration, run:
+Then, install the development dependencies:
+
 ```terminal
-$ mkdir -p linotp/cache linotp/data linotp/logs
-$ linotp init database
-$ linotp init audit-keys
-$ linotp init enc-key
-$ linotp local-admins add <your_username>
-$ linotp local-admins password --password <your_password> <your_username>
-$ linotp run
+pip3 pip install "setuptools==58"
+pip3 install -r requirements-dev.txt
+pip3 install -e .
+```
+
+> **_NOTE:_**
+>
+> we pin setuptools==58
+> due to incompatibility of `funcparserlib` (needed by `mockldap`) using `use_2to3`
+> which was removed in setuptools and lets builds fail with v58.0.2:  
+> <https://setuptools.pypa.io/en/stable/history.html#v58-0-2>
+>
+> I'll add the error message so Devs can find this note:  
+> `error in funcparserlib setup command: use_2to3 is invalid.`
+
+For a quickstart using the default configuration, run:
+
+```terminal
+mkdir -p linotp/cache linotp/data linotp/logs
+linotp init database
+linotp init audit-keys
+linotp init enc-key
+linotp local-admins add <your_username>
+linotp local-admins password --password <your_password> <your_username>
+linotp run
 ```
 
 The last command starts a development server. Now you can open the LinOTP
@@ -85,13 +102,17 @@ login as `<your_username>`.
 `init database` will create a SQLite database by default. If you want to use a
 PostgreSQL or MariaDB database instead, you can override that setting through
 the following environment variable before running `linotp init database`:
+
 ```terminal
- $ export LINOTP_DATABASE_URI="postgres://user:pass@host/db_name"
+export LINOTP_DATABASE_URI="postgres://user:pass@host/db_name"            #gitleaks:allow
 ```
+
 or
+
 ```terminal
- $ export LINOTP_DATABASE_URI="mysql+pymysql://user:pass@host/db_name"
+export LINOTP_DATABASE_URI="mysql+pymysql://user:pass@host/db_name"       #gitleaks:allow
 ```
+
 Alternatively you can also set this variable in a LinOTP configuration file, as
 we explain next.
 
@@ -114,8 +135,8 @@ defines a small set of "environments" that pre-cook basic configurations:
 - _development_ is aimed at LinOTP developers running LinOTP on their
   local machine. It enables debugging (including copious log messages,
   auto-reload if source code files change, and the interactive Flask
-  debugger) and defaults to using a local SQLite database. *This is
-  not safe to use in a production setting.*
+  debugger) and defaults to using a local SQLite database. _This is
+  not safe to use in a production setting._
 - _testing_ is an environment that facilitates running system
   tests. Like _development_, it enables more prolific logging output.
 - _production_ is a more streamlined and secure setup to be used on
@@ -135,7 +156,7 @@ one or more file names separated by colons. For example,
     LINOTP_CFG=/usr/share/linotp/linotp.cfg:/etc/linotp/linotp.cfg
 
 would read first the `/usr/share/linotp/linotp.cfg` file and then the
-`/etc/linotp/linotp.cfg` file. 
+`/etc/linotp/linotp.cfg` file.
 
 Later configuration settings override earlier ones, and settings in
 configuration files override hard-coded default settings in `settings.py`.
@@ -165,7 +186,7 @@ In the simplest case, configuration settings look like assignments to
 Python variables whose names consist strictly of uppercase letters,
 digits, and underscores, as in
 
-	LOG_FILE_DIR = "/var/log/linotp"
+    LOG_FILE_DIR = "/var/log/linotp"
 
 (Variables with lowercase letters in their names are ignored when a
 configuration file is scoured for settings, so you could use them as
@@ -186,8 +207,8 @@ effective one even for other earlier settings that use relative path
 names: After
 
     ROOT_DIR = "/var/foo"
-	LOG_FILE_DIR = "linotp"
-	ROOT_DIR = "/var/bar"
+    LOG_FILE_DIR = "linotp"
+    ROOT_DIR = "/var/bar"
 
 the effective value of `LOG_FILE_DIR` will be `/var/bar/./linotp`. (Note
 that we're inserting a `/./` to mark where the implicit value of
@@ -260,15 +281,17 @@ configuration path for Debian can be found in the file
 
 To run LinOTP for development, execute Flask from the LinOTP source
 directory (`linotpd/src`) as follows:
+
 ```terminal
-$ FLASK_APP=linotp.app flask run
+FLASK_APP=linotp.app flask run
 ```
+
 This starts the Flask development server. Unless you specify otherwise
 using the `--host` and `--port` options, the development server will
 bind to TCP port 5000 on the loopback address (127.0.0.1).
 
-The development server is fine for local experiments but should *under
-no circumstances* be used to run LinOTP in a production
+The development server is fine for local experiments but should _under
+no circumstances_ be used to run LinOTP in a production
 environment. The officially approved method for running LinOTP
 productively uses Apache and `mod_wsgi`, and the details of this are
 beyond the scope of this document. Refer to the content of the LinOTP
@@ -280,23 +303,28 @@ To make life easier, LinOTP offers a `linotp` command which you can
 run anywhere without having to define `FLASK_APP`. To enable this on
 your development system, go to the LinOTP source directory and execute
 the
+
 ```terminal
-$ python3 setup.py develop
+python3 setup.py develop
 ```
+
 command. (This installs the `linotp` command in the virtualenv's `bin`
 directory.) Giving the `make develop` command in the top-level
 directory should also do the trick. After this, a simple
+
 ```terminal
-$ linotp run
+linotp run
 ```
+
 will launch the Flask development server. (You can still use
 `FLASK_ENV` to specify the desired environment.)
 
 Make sure to create an admin user, otherwise you will not be able to log in to
 LinOTP's management interface:
+
 ```
-$ linotp local-admins add <your_username>
-$ linotp local-admins password -p <your_password> <your_username>
+linotp local-admins add <your_username>
+linotp local-admins password -p <your_password> <your_username>
 ```
 
 ## Run unit, functional, and integration tests
@@ -305,28 +333,36 @@ $ linotp local-admins password -p <your_password> <your_username>
 
 You can run unit and functional tests by entering the respective
 commands below from the top-level directory of the LinOTP distribution:
+
 ```terminal
-$ make test               # will run all tests
-$ make unittests          # will run only unit tests
-$ make functionaltests    # will run only functional tests
-$ make integrationtests   # will run only integration tests
+make test               # will run all tests
+make unittests          # will run only unit tests
+make functionaltests    # will run only functional tests
+make integrationtests   # will run only integration tests
 ```
+
 You can also run the tests directly in their directories:
+
 ```terminal
-$ pytest linotpd/src/linotp/tests/unit
+pytest linotpd/src/linotp/tests/unit
 ```
+
 or
+
 ```terminal
-$ pytest linotpd/src/linotp/tests/functional
+pytest linotpd/src/linotp/tests/functional
 ```
+
 If you want to run only the tests in a single file, invoke `pytest`
 with the path to that file.
 
 When using `make`, you can pass command-line arguments to `pytest` by
 assigning them to `PYTESTARGS`:
+
 ```terminal
-$ make unittests PYTESTARGS="-vv"
+make unittests PYTESTARGS="-vv"
 ```
+
 See the [Pytest documentation](https://docs.pytest.org/) for more
 information about using pytest.
 
@@ -340,29 +376,33 @@ Then start a LinOTP development server and edit
 `[linotp]` section contains its hostname/IP address and port number.
 
 You can now execute integration tests with:
-```terminal
-$ pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_test_file>
-```
-You can find sample test files under `linotpd/src/linotp/tests/integration`.
 
+```terminal
+pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_test_file>
+```
+
+You can find sample test files under `linotpd/src/linotp/tests/integration`.
 
 ## Use MyPy for typechecking
 
 To run a type check on the source code, install `mypy` and `sqlalchemy-stubs`.
 Both requirements are part of the develop requirements:
+
 ```terminal
-$ pip3 install -r requirements-dev.txt
+pip3 install -r requirements-dev.txt
 ```
+
 Then run `mypy` on a directory of your choice like
+
 ```terminal
-$ mypy some/python/dir
+mypy some/python/dir
 ```
+
 If you do not wish to be shown type errors from imported modules, use
 the `--follow-imports=silent` flag.
 
 The `--show-column-numbers` flag can also be helpful when looking for
 the exact location of a problem.
-
 
 ## pre-commit hooks for consistent formatting
 
@@ -372,30 +412,34 @@ to ensure a consistent style across the whole project. Inspect
 file for the configuration.
 
 Install `pre-commit` manually via pip or as part of our develop dependencies:
+
 ```terminal
-$ pip3 install -r requirements-dev.txt
+pip3 install -r requirements-dev.txt
 ```
+
 Then install the pre-commit hook in git so that it runs before a commit to
 ensure correct formatting. The same hook is tested in CI, so we strongly
 advise to install the hook, even if you use all of the tools in your IDE.
-This way, you will never push a commit that fails the pre-check. 
+This way, you will never push a commit that fails the pre-check.
+
 ```terminal
-$ pre-commit install
+pre-commit install
 ```
 
 You can also run the pre-commit hook manually`:
-```terminal
-$ pre-commit run
-```
-Use the arguments `--files …` or `--all-files` to change what files are checked.
 
+```terminal
+pre-commit run
+```
+
+Use the arguments `--files …` or `--all-files` to change what files are checked.
 
 ## api documentation / api-docs
 
-
 First install the requirements to generate the api documentation:
+
 ```terminal
-$ pip3 install -e ".[apidocs]"
+pip3 install -e ".[apidocs]"
 ```
 
 However, this is not necessary if you have already installed the requirements
@@ -411,17 +455,19 @@ $make apidocs html
 ## Container-based LinOTP
 
 Here's how to build a container image for LinOTP which works with
-container runtimes such as Docker and does *not* depend on LinOTP's
+container runtimes such as Docker and does _not_ depend on LinOTP's
 Debian packaging:
 
 ### Building an Image
 
 From the base directory of the LinOTP distribution, run the following
 command:
+
 ```terminal
-$ docker build -f docker/Dockerfile.linotp -t linotp .
+docker build -f docker/Dockerfile.linotp -t linotp .
 ```
-(If you're a lazy sort of person, omitting `-f docker/Dockerfile.linotp` 
+
+(If you're a lazy sort of person, omitting `-f docker/Dockerfile.linotp`
 is fine because `./Dockerfile` is a symbolic link to
 `./docker/Dockerfile.linotp`.)
 
@@ -429,12 +475,14 @@ is fine because `./Dockerfile` is a symbolic link to
 
 To run the previously-built image as a container named `my_linotp`,
 run
+
 ```terminal
 $ docker run -p 5000:5000 --name my_linotp linotp
 ```
+
 You may wish to use the `--env` option to pass configuration settings
 to LinOTP (prefixed with `LINOTP_`, as in `LINOTP_DATABASE_URI`), or
-`-v` to mount volumes. See the *LinOTP Containerisation Guide* for
+`-v` to mount volumes. See the _LinOTP Containerisation Guide_ for
 more details.
 
 ### Customisation
@@ -451,10 +499,12 @@ more details.
   to be). For example, if you have a custom `audit.mako` template for
   LinOTP's `/manage` endpoint, copy `audit.mako` into a directory called
   `my_templates/manage` and invoke LinOTP like
+
   ```terminal
   $ docker run -p 5000:5000 -name my_linotp \
     -v ./my_templates:/custom-templates linotp
   ```
+
 - Other files such as image files, CSS style sheets or JavaScript
   files, can go into a directory that is mounted on `/custom-assets`.
   For example, if you want to customise the appearance of the
@@ -465,10 +515,12 @@ more details.
   doing. If you break LinOTP, you get to keep the pieces.)
 - To make LinOTP data such as the (SQLite) database, audit keys, and
   encryption key persistent, mount a Docker volume on `/data`:
+
   ```terminal
   $ docker run -p 5000:5000 -name my_linotp \
     -v my_persistent_volume:/data linotp
   ```
+
   (Refer to the Docker documentation to find out about named volumes,
   or use a local directory as in the previous examples.)
 

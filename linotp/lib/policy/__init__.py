@@ -53,19 +53,19 @@ from linotp.lib.policy.processing import (
     search_policy,
 )
 from linotp.lib.policy.util import (
+    ASCII_LOWERCASE,
+    ASCII_UPPERCASE,
+    DIGITS,
+    LETTERS,
+    SPECIAL_CHARACTERS,
     _get_client,
     _get_pin_values,
     _getAuthenticatedUser,
     _getDefaultRealm,
     _getUserFromParam,
     _getUserRealms,
-    ascii_lowercase,
-    ascii_uppercase,
-    digits,
     get_realm_from_policies,
     get_resolvers_for_realms,
-    letters,
-    special_characters,
 )
 from linotp.lib.realm import getRealms, match_realms
 from linotp.lib.user import User
@@ -2661,11 +2661,14 @@ def checkOTPPINPolicy(pin, user):
                 pol["contents"],
             )
             if (
-                not (
-                    (policy_c and contains_c)
-                    or (policy_s and contains_s)
-                    or (policy_o and contains_other)
-                    or (policy_n and contains_n)
+                (policy_c or policy_n or policy_s or policy_o)
+                and (
+                    not (
+                        (policy_c and contains_c)
+                        or (policy_s and contains_s)
+                        or (policy_o and contains_other)
+                        or (policy_n and contains_n)
+                    )
                 )
             ) or (
                 (not policy_c and contains_c)
@@ -2777,7 +2780,7 @@ def createRandomPin(user, min_pin_length):
     :param user: user defines the realm/user policy selection
     :return: the new pin
     """
-    character_pool = letters + digits
+    character_pool = LETTERS + DIGITS
 
     pin_length = max(min_pin_length, _getRandomOTPPINLength(user))
 
@@ -2786,13 +2789,13 @@ def createRandomPin(user, min_pin_length):
     if contents:
         character_pool = ""
         if "c" in contents:
-            character_pool += ascii_lowercase
+            character_pool += ASCII_LOWERCASE
         if "C" in contents:
-            character_pool += ascii_uppercase
+            character_pool += ASCII_UPPERCASE
         if "n" in contents:
-            character_pool += digits
+            character_pool += DIGITS
         if "s" in contents:
-            character_pool += special_characters
+            character_pool += SPECIAL_CHARACTERS
 
     return generate_password(size=pin_length, characters=character_pool)
 

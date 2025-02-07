@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - unhandled errors are now logged with traceback and returned in the response
 
+### Changed
+
+- `userservice/enroll` now validates otp pins:
+  - The `otppin` parameter is now required or prohibited based on the `setOTPPIN` policy
+  - the provided `otppin` is validated against the following policies: `otp_pin_minlength`, `otp_pin_maxlength` and `otp_pin_contents`
+
+### Fixed
+
+- Don't reject empty string as `otppin` when `otp_pin_contents=+`
+
 ## [3.4.1-1] - 2024-11-27
 
 ### Fixed
@@ -440,7 +450,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
   - run - run a development server.
   - shell - run a shell in the app context.
 - Settings can now be configured using environment variables
-  LINOTP_<SETTING_NAME>.
+  `LINOTP_<SETTING_NAME>`.
 - Improved config file handling via LINOTP_CFG environment variable:
   - LINOTP_CFG env allows to set a custom search path for config files.
   - `/usr/share/linotp/linotp.cfg` contains distribution default settings.
@@ -592,7 +602,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
   of the actions are less explicitly defined regarding user and realm fields
 - Selfservice: MFA login with Push Token and QR Token is correctly processed
 - Incorrect max token count evaluation is fixed if a different, more specific
-  (not user:*) policy with other actions is defined.
+  (not `user:*`) policy with other actions is defined.
 
 ## [2.12-1] - 2020-07-28
 
@@ -946,7 +956,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
   ID and OTP. This used to happen when a user submitted the OTP for a
   transaction ID more than once within a very short timeframe
 - Server: Fix for missing LDAP uft-8 conversion
-- Server: Fix default hash algorithm. This  was causing issues in the YubiKey
+- Server: Fix default hash algorithm. This was causing issues in the YubiKey
   import
 - Server: Fix wrong audit log entries where "failcounter exceeded" was
   incorrectly being replaced with "no token found"
@@ -1262,7 +1272,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 
 ### Added / Changed
 
-- Server: Add support for '*' wildcard in policy client definition
+- Server: Add support for `*` wildcard in policy client definition
 - Server: Add support to set random pin on token import
 
 ## [2.8-1] - 2015-11-25
@@ -1285,7 +1295,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Server: Add crypto migration controller to change in-use cryptographic
   techniques, switch to HSMs or replace in-use HSMs
 - Server: Add support for using UserPrincipalName as username
-- Server: Support wildcard '*' for serial number filter in admin/show
+- Server: Support wildcard `*` for serial number filter in admin/show
 - Tools: linotp-auth-radius: Support for unicode radius requests
 - Selfservice: Support yubikey tokens with public_uid
 - Server: Add target realm input for token imports
@@ -1537,7 +1547,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Made wildcard search in SQL Resolver more precise (#12135)
 - Small graphical WebUI fixes (#12229)
 - Added possibility to change the phone number of SMS token (#2953)
-- Require * for wildcard token search (#2838)
+- Require `*` for wildcard token search (#2838)
 - Removed PIL as a hard dependency (you may use pillow-pil) (#12409)
 - Only enable apache site on first installation (not upgrade) (#12246,
   #12457)
@@ -1586,7 +1596,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Added Challenge Response functionality for all tokens.
 - Added Challenge Response Policy (#12234)
 - Searching for tokens in the WebUI now uses wildcards.
-  - To find "benjamin" you will have to search for "ben*".
+  - To find benjamin you will have to search for `ben*`.
   - "ben" will return nothing.
 - Added UserPassOnNoToken Policy (#12145)
 - Export token list to csv (#2963)
@@ -1635,12 +1645,12 @@ Service API. This patch is necessary for all versions newer than LinOTP
 
 ## [2.5.2-1.rc8] - 2013-07-12
 
-- Fixed multiple selected policies                      #12114
+- Fixed multiple selected policies #12114
 - Fixed for user with special char for access to selfservice #12110
-- Fixed export of policy with user with special chars   #12107
-- Fixed of missing manpage for source distribution      #12100
-- Fixed export of empty policies                        #12099
-- Fixed of weird PKG-INFO from build                    #12098
+- Fixed export of policy with user with special chars #12107
+- Fixed of missing manpage for source distribution #12100
+- Fixed export of empty policies #12099
+- Fixed of weird PKG-INFO from build #12098
 - Fixed for ad users with special char in dn for access to selfservice #12090
 
 ## [2.5.2-1.rc7] - 2013-07-08
@@ -1686,10 +1696,10 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Bug #3003, #3000 Closed (fixed) Wrong wsgi file in documentation
 - Bug #3002 Closed (fixed) Added info for creating certificates
 - Bug #2999, #2998, #2996, #2995, #2994, #2992, #2991 Closed (fixed) Improved documentation for manual installation
-- Bug #2975 Closed (fixed)  removed link to linotp-register
-- Bug #2969 Closed (fixed)  rewrite string handling in logging
+- Bug #2975 Closed (fixed) removed link to linotp-register
+- Bug #2969 Closed (fixed) rewrite string handling in logging
 - Enhancement #2909 Closed (fixed) Better handling of HSM errors
-- Bug Closed #2864 (fixed)  Tokenrealm does not work with sqlite
+- Bug Closed #2864 (fixed) Tokenrealm does not work with sqlite
 
 ## [2.5.2-0.rc2] - 2013-06-19
 
@@ -1785,7 +1795,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - moved etoken enrollment tool from server to EE client (#834)
 - performance fix - reduce userid lookup
 - renamed the webprovissionOCRA to activateQR #912
-- resolver init hook -  #941
+- resolver init hook - #941
 - reverted to the timeStepping=30 for the setup
 - set maximum auth count and validity period. (#743)
 - solve 2.6. compatibilty issue for time2float
@@ -2030,7 +2040,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Virtual Appliance/Install-CD: Added basic backup and restore scripts.
 - Virtual Appliance/Install-CD: Added openntpd
 - Improved logging
-- Added new user  manual for the self service portal
+- Added new user manual for the self service portal
 - Improved Self servie portal
 - Added checkPass function to useridresolvers. So that authentication to the selfservice portal
   can be made transparent with existing user store passwords
@@ -2043,7 +2053,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - changed to version 2.2 in LDAP response
 - WebUI: Added hour glass during testing LDAP connection
 - Added Test-LDAP-connection interface: /admin/testresolver
-- Fixed the Spass Token so it will *not* require a PIN during rollout
+- Fixed the Spass Token so it will _not_ require a PIN during rollout
 - Virtual Appliance: Added ldap-utils to the ISO
 - WebUI: Fixed missing column "phone"
 - WebUI: Fixed presetting of LDAP/AD attributes in the LDAP Resolver Dialog

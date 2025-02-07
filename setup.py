@@ -139,10 +139,14 @@ test_requirements = (
         "selenium<4.10.0",
         "mock",
         "mockldap",
+        # we pin setuptools==58
+        # due to incompatibility of funcparserlib (needed by mockldap) using use_2to3
+        # which was removed in setuptools and lets builds fail with v 58.0.2:
+        # https://setuptools.pypa.io/en/stable/history.html#v58-0-2
+        "setuptools==58",
         "freezegun",
         "coverage",
         "flaky",
-        "setuptools==58",
     ]
     + smpp_requirements
     + postgres_requirements

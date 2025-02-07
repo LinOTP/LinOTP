@@ -3,7 +3,7 @@
 LinOTP - the open-source solution for multi-factor authentication
 
 Copyright (C) 2010-2019 KeyIdentity GmbH
-Copyright (C) 2019-     netgo software GmbH
+Copyright (C) 2019- netgo software GmbH
 
 ## About LinOTP
 
@@ -30,18 +30,23 @@ This package contains the LinOTP Server Core.
 ## Installation
 
 Installing LinOTP can be performed easily by issuing the command::
+
 ```terminal
-$ pip install linotp
+pip install linotp
 ```
+
 (note that we recommend using a virtual environment).
 
 Before launching the LinOTP server, you must make sure that a number
 of important directories exist. You can inspect their default values
 using the command
+
 ```terminal
-$ linotp config show ROOT_DIR LOG_FILE_DIR CACHE_DIR
+linotp config show ROOT_DIR LOG_FILE_DIR CACHE_DIR
 ```
+
 and use a configuration file to change them:
+
 ```terminal
 $ sudo mkdir /etc/linotp
 $ sudoedit /etc/linotp/linotp.cfg
@@ -53,6 +58,7 @@ $ linotp config show CACHE_DIR
 …
 CACHE_DIR=/tmp/linotp-cache
 ```
+
 Our recommendation is to use `/etc/linotp` as `ROOT_DIR`, and to place
 a `linotp.cfg` file there containing your settings. Suitable defaults
 for `LOG_FILE_DIR`, and `CACHE_DIR` are `/var/log/linotp`,
@@ -73,6 +79,7 @@ LinOTP configuration.)
 
 If you have adjusted the directories to your liking in the configuration
 file (or process environment), you can create them using a command like
+
 ```terminal
 $ for d in $(linotp config show --values ROOT_DIR LOG_FILE_DIR CACHE_DIR)
 > do
@@ -80,16 +87,19 @@ $ for d in $(linotp config show --values ROOT_DIR LOG_FILE_DIR CACHE_DIR)
 >    sudo chown $USER "$d"
 > done
 ```
+
 (The `sudo` is required if you're using directories like
 `/var/cache/linotp` which only `root` can create.)
 
 You can start directly by creating the encryption and audit-log keys
 and the database table structure:
+
 ```terminal
-$ linotp init enc-key --dump
-$ linotp init audit-keys
-$ linotp init database
+linotp init enc-key --dump
+linotp init audit-keys
+linotp init database
 ```
+
 Note that by default, LinOTP will use a SQLite database which is good
 for testing and experiments but unsuitable for production use. LinOTP
 can create SQLite databases, so there is nothing to worry about. If
@@ -115,17 +125,21 @@ message and quit.
 The last step before starting LinOTP is to create an administrator account,
 otherwise you will not be able to access the management interface. To create
 an administrator called "admin", do::
+
 ```terminal
-$ linotp local-admins add admin
-$ linotp local-admins password admin
+linotp local-admins add admin
+linotp local-admins password admin
 ```
+
 This last command will prompt you to enter a password for the admin user.
 
 Next, you're ready to start the webserver by issuing::
+
 ```terminal
-$ linotp run
+linotp run
 ```
-Now you can log in to the the web interface at http://localhost:5000/manage
+
+Now you can log in to the the web interface at <http://localhost:5000/manage>
 with your administrator account and set up your LinOTP instance. We recommend
 you look up the documentation on creating a user ID resolver and realm, and how
 to enroll tokens.
@@ -140,8 +154,9 @@ configure the database connection with an existing database and user:
 Once you have ensured that your database server knows about the
 database and it is accessible using the given user name and password,
 you can create the database schema again as above:
+
 ```terminal
-$ linotp init database
+linotp init database
 ```
 
 ## Security considerations

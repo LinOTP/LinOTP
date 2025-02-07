@@ -891,7 +891,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
 
         policy = {
             "name": "T1",
-            "action": "enrollEMAIL, delete, history, verify,",
+            "action": "enrollEMAIL, delete, history, verify, setOTPPIN",
             "user": " passthru.*.myDefRes:",
             "realm": "*",
             "scope": "selfservice",
