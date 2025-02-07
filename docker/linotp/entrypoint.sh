@@ -62,6 +62,7 @@ start_linotp() {
 			\`docker run linotp --with-bootstrap\` to bootstrap all needed files.
 			EOF
         elif [ $exit_status == 3 ]; then
+            # NOTE: `<<-` needs tabs as indents to work properly
             cat <<-EOF >&2
 			Gunicorn and LinOTP shut down.
 			Database schema is not current. You need to run database migrations.
@@ -72,7 +73,7 @@ start_linotp() {
         fi
     elif [ "$MODE" = "development" ]; then
         if [ -n "${I_KNOW_THIS_IS_BAD_AND_IF_TERRIBLE_THINGS_HAPPEN_IT_WILL_BE_MY_OWN_FAULT:-}" ]; then
-            echo >&2 "Starting development server on..."
+            echo >&2 "Starting development server..."
             echo >&2 "(DO NOT DO THIS FOR A PRODUCTION-GRADE SERVER!!!)"
             exec linotp run
         else
