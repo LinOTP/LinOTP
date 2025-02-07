@@ -1,7 +1,8 @@
 #!/bin/bash
 
-set -o pipefail
-set -o nounset
+set -o errexit  # Exit script on any command failure
+set -o pipefail # Ensure pipelines fail correctly
+set -o nounset  # Treat unset variables as errors
 
 set_admin_password_env() {
     mkpwd() { dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64; }
