@@ -22,7 +22,7 @@ bootstrap_linotp() {
     else
         linotp -v init all
         linotp -v local-admins add $LINOTP_ADMIN_USER
-        if [ -z "$LINOTP_ADMIN_PASSWORD" ]; then
+        if [ -z "${LINOTP_ADMIN_PASSWORD:-}" ]; then
             set_admin_password_env
         fi
         linotp -v local-admins password --password $LINOTP_ADMIN_PASSWORD $LINOTP_ADMIN_USER
@@ -123,7 +123,7 @@ if [ -n "${LINOTP_DB_PORT:-}" ]; then
     echo "Database started"
 fi
 
-if [ -z "$LINOTP_CFG" ]; then
+if [ -z "${LINOTP_CFG:-}" ]; then
     echo >&2 "No configuration file specified for LINOTP_CFG (using environment variables only)"
 elif ! [ -f "$LINOTP_CFG" ]; then
     echo >&2 "Configuration file $LINOTP_CFG (LINOTP_CFG) does not exist"
