@@ -95,35 +95,72 @@ start_linotp() {
 
 doas /usr/local/sbin/install-ca-certificates
 
-# fetch host and port of database from LINOTP_DATABASE_URI
-eval $(python3 -c "from urllib.parse import urlparse
-def get_port(r):
-    if r.port:
-        return r.port
-    elif 'postgres' in r.scheme:
-        return 5432
-    elif 'mysql' in r.scheme:
-        return 3306
-    else:
-        raise ValueError('Unsupported database scheme in LINOTP_DATABASE_URI')
+wait_for_database() {
+    local max_retries=10
 
-uri = \"$LINOTP_DATABASE_URI\"
-if not uri.startswith('sqlite'):
-    r = urlparse(uri)
-    print(f\"LINOTP_DB_HOST={r.hostname}\")
-    print(f\"LINOTP_DB_PORT={get_port(r)}\")
-")
+    echo "Waiting for database at $LINOTP_DATABASE_URI to become available..."
 
-if [ -n "${LINOTP_DB_PORT:-}" ]; then
-    # this implicitly does not check
-    # if URI starts with `sqlite`
-    # because we dont provide a port in this case
-    echo "Waiting for Database..."
-    while ! nc -z $LINOTP_DB_HOST $LINOTP_DB_PORT; do
-        sleep $LINOTP_DB_WAITTIME
+    for i in $(seq 1 $max_retries); do
+        result_and_exit_code=$(
+            python -c "
+try:
+    import sys
+    from sqlalchemy import create_engine
+    from sqlalchemy.exc import OperationalError
+
+    engine = create_engine('$LINOTP_DATABASE_URI')
+    with engine.connect():
+        # return on success
+        sys.exit(0)
+except OperationalError as e:
+    error_msg = str(e).lower()
+    if 'password authentication failed' in error_msg or 'access denied' in error_msg:
+        print('Error: Invalid credentials/rights for user in LINOTP_DATABASE_URI=$LINOTP_DATABASE_URI', file=sys.stderr)
+        print(error_msg, file=sys.stderr)
+        # Exit on wrong creds/rights
+        sys.exit(1)
+    if 'name or service not known' in error_msg:
+        print('Error: Unknown host in LINOTP_DATABASE_URI=$LINOTP_DATABASE_URI', file=sys.stderr)
+        print('Continuing - host might resolve soon', file=sys.stderr)
+        sys.exit(2)
+    print(error_msg, file=sys.stderr)
+    sys.exit(3)
+except Exception as e:
+    error_msg = str(e).lower()
+    print(error_msg, file=sys.stderr)
+    sys.exit(3)
+" 2>&1
+            echo $?
+        ) # Capture both stdout/stderr + Python exit code in last line
+
+        # Extract last line (exit code) from result
+        exit_code=$(echo "$result_and_exit_code" | tail -n 1)
+        result=$(echo "$result_and_exit_code" | head -n -1) # Everything except last line
+
+        if [ "$exit_code" == "0" ]; then
+            echo >&2 "Database connection successful!"
+            return 0
+        elif [ "$exit_code" == "1" ]; then
+            echo >&2 "$result"
+            echo >&2 "Authentication error detected. Exiting gracefully."
+            exit 0 # Exit with 0 so Docker doesn't restart
+        else
+            if [ "$exit_code" == "3" ]; then
+                echo >&2 "Unkown Error:"
+            elif [ "$exit_code" == "2" ] || [ "$exit_code" == "3" ]; then
+                echo >&2 "$result"
+            fi
+            echo >&2 "Database not ready yet... retrying in ${LINOTP_DB_WAITTIME} ($i/$max_retries)"
+            sleep $LINOTP_DB_WAITTIME
+        fi
     done
-    echo "Database started"
-fi
+
+    echo >&2 "Database is unavailable after multiple attempts. Exiting."
+    exit 1
+}
+
+# Call the function to wait for the database
+wait_for_database
 
 if [ -z "${LINOTP_CFG:-}" ]; then
     echo >&2 "No configuration file specified for LINOTP_CFG (using environment variables only)"
