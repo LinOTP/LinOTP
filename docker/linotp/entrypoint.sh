@@ -4,6 +4,8 @@ set -o errexit  # Exit script on any command failure
 set -o pipefail # Ensure pipelines fail correctly
 set -o nounset  # Treat unset variables as errors
 
+log() { echo >&2 "$@"; }
+
 set_admin_password_env() {
     mkpwd() { dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64; }
     pwd=$(mkpwd)
@@ -11,15 +13,15 @@ set_admin_password_env() {
         pwd=$(mkpwd)
     done
     export LINOTP_ADMIN_PASSWORD=$pwd
-    echo >&2 "Password for '$LINOTP_ADMIN_USER' account set to '$LINOTP_ADMIN_PASSWORD'"
-    echo >&2 "Please change it at your earliest convenience!"
+    log "Password for '$LINOTP_ADMIN_USER' account set to '$LINOTP_ADMIN_PASSWORD'"
+    log "Please change it at your earliest convenience!"
 }
 
 bootstrap_linotp() {
-    echo >&2 "--- Bootstrapping LinOTP ---"
+    log "--- Bootstrapping LinOTP ---"
     bootstrapped_file="$LINOTP_ROOT_DIR"/bootstrapped
     if [ -f "$bootstrapped_file" ]; then
-        echo >&2 "Already bootstrapped - skipping"
+        log "Already bootstrapped - skipping"
     else
         linotp -v init all
         linotp -v local-admins add $LINOTP_ADMIN_USER
@@ -28,13 +30,13 @@ bootstrap_linotp() {
         fi
         linotp -v local-admins password --password $LINOTP_ADMIN_PASSWORD $LINOTP_ADMIN_USER
         touch "$bootstrapped_file"
-        echo >&2 "Bootstrapping done"
+        log "Bootstrapping done"
     fi
 }
 
 initdb_linotp() {
-    echo >&2 "--- Initializing LinOTP's database ---"
-    echo >&2 "--- This will also run necessary migrations ---"
+    log "--- Initializing LinOTP's database ---"
+    log "--- This will also run necessary migrations ---"
     linotp -v init database
 }
 
@@ -42,12 +44,12 @@ export MODE="${MODE:-production}"
 export SERVICE="0.0.0.0:5000"
 
 start_linotp() {
-    echo >&2 "--- Starting LinOTP ---"
+    log "--- Starting LinOTP ---"
     if [ "$MODE" = "production" ]; then
         # linotp does currently not support multiple gunicorn workers
         # due to its jwt and cookie handling.
         # Once supported, set `--workers="${WORKER_PROCESSES:-1}"`
-        echo >&2 "Starting gunicorn on $SERVICE ..."
+        log "Starting gunicorn on $SERVICE ..."
         gunicorn \
             --bind "${SERVICE}" --worker-tmp-dir=/dev/shm \
             --workers=1 --threads="${WORKER_THREADS:-4}" \
@@ -75,15 +77,15 @@ start_linotp() {
         fi
     elif [ "$MODE" = "development" ]; then
         if [ -n "${I_KNOW_THIS_IS_BAD_AND_IF_TERRIBLE_THINGS_HAPPEN_IT_WILL_BE_MY_OWN_FAULT:-}" ]; then
-            echo >&2 "Starting development server..."
-            echo >&2 "(DO NOT DO THIS FOR A PRODUCTION-GRADE SERVER!!!)"
+            log "Starting development server..."
+            log "(DO NOT DO THIS FOR A PRODUCTION-GRADE SERVER!!!)"
             exec linotp run
         else
-            echo >&2 "You're in mode 'development' and did not set env I_KNOW_THIS_IS_BAD_AND_IF_TERRIBLE_THINGS_HAPPEN_IT_WILL_BE_MY_OWN_FAULT"
+            log "You're in mode 'development' and did not set env I_KNOW_THIS_IS_BAD_AND_IF_TERRIBLE_THINGS_HAPPEN_IT_WILL_BE_MY_OWN_FAULT"
             exit 1
         fi
     else
-        echo >&2 "Unsupported MODE: $MODE"
+        log "Unsupported MODE: $MODE"
         exit 1
     fi
 }
@@ -98,7 +100,7 @@ doas /usr/local/sbin/install-ca-certificates
 wait_for_database() {
     local max_retries=10
 
-    echo "Waiting for database at $LINOTP_DATABASE_URI to become available..."
+    log "Waiting for database at $LINOTP_DATABASE_URI to become available..."
 
     for i in $(seq 1 $max_retries); do
         result_and_exit_code=$(
@@ -138,24 +140,24 @@ except Exception as e:
         result=$(echo "$result_and_exit_code" | head -n -1) # Everything except last line
 
         if [ "$exit_code" == "0" ]; then
-            echo >&2 "Database connection successful!"
+            log "Database connection successful!"
             return 0
         elif [ "$exit_code" == "1" ]; then
-            echo >&2 "$result"
-            echo >&2 "Authentication error detected. Exiting gracefully."
+            log "$result"
+            log "Authentication error detected. Exiting gracefully."
             exit 0 # Exit with 0 so Docker doesn't restart
         else
             if [ "$exit_code" == "3" ]; then
-                echo >&2 "Unkown Error:"
+                log "Unkown Error:"
             elif [ "$exit_code" == "2" ] || [ "$exit_code" == "3" ]; then
-                echo >&2 "$result"
+                log "$result"
             fi
-            echo >&2 "Database not ready yet... retrying in ${LINOTP_DB_WAITTIME} ($i/$max_retries)"
+            log "Database not ready yet... retrying in ${LINOTP_DB_WAITTIME} ($i/$max_retries)"
             sleep $LINOTP_DB_WAITTIME
         fi
     done
 
-    echo >&2 "Database is unavailable after multiple attempts. Exiting."
+    log "Database is unavailable after multiple attempts. Exiting."
     exit 1
 }
 
@@ -163,12 +165,12 @@ except Exception as e:
 wait_for_database
 
 if [ -z "${LINOTP_CFG:-}" ]; then
-    echo >&2 "No configuration file specified for LINOTP_CFG (using environment variables only)"
+    log "No configuration file specified for LINOTP_CFG (using environment variables only)"
 elif ! [ -f "$LINOTP_CFG" ]; then
-    echo >&2 "Configuration file $LINOTP_CFG (LINOTP_CFG) does not exist"
+    log "Configuration file $LINOTP_CFG (LINOTP_CFG) does not exist"
     exit 1
 else
-    echo >&2 "LINOTP_CFG is $LINOTP_CFG"
+    log "LINOTP_CFG is $LINOTP_CFG"
 fi
 
 if [ -z "${1-}" ]; then
@@ -187,7 +189,7 @@ else
     *)
         # Execute LinOTP CLI command
         if ! linotp "$@"; then
-            echo >&2 "Error invoking LinOTP (exit code $?)"
+            log "Error invoking LinOTP (exit code $?)"
         fi
         ;;
     esac
