@@ -91,12 +91,14 @@ start_linotp() {
     fi
 }
 
-# Enable additional root CA certificates (if any).
-# These must be in /usr/local/share/ca-certificates in files whose names
-# end with `.crt`. If the `TLS_CA_CERTS` environment variable is set,
-# split its content into files in /usr/local/share/ca-certificates first.
-
-doas /usr/local/sbin/install-ca-certificates
+install_certificates() {
+    # Enable additional root CA certificates (if any).
+    # These must be in /usr/local/share/ca-certificates in files whose names
+    # end with `.crt`. If the `TLS_CA_CERTS` environment variable is set,
+    # split its content into files in /usr/local/share/ca-certificates first.
+    log "Installing additional root CA certificates..."
+    doas /usr/local/sbin/install-ca-certificates
+}
 
 wait_for_database() {
     local max_retries=10
@@ -162,7 +164,8 @@ except Exception as e:
     exit 1
 }
 
-# Call the function to wait for the database
+# Execute setup tasks
+install_certificates
 wait_for_database
 
 if [ -z "${LINOTP_CFG:-}" ]; then
