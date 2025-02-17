@@ -19,16 +19,17 @@ set_admin_password_env() {
 
 bootstrap_linotp() {
     log "--- Bootstrapping LinOTP ---"
-    bootstrapped_file="$LINOTP_ROOT_DIR"/bootstrapped
-    if [ -f "$bootstrapped_file" ]; then
+    local bootstrapped_file="$LINOTP_ROOT_DIR/bootstrapped"
+
+    if [[ -f "$bootstrapped_file" ]]; then
         log "Already bootstrapped - skipping"
     else
         linotp -v init all
-        linotp -v local-admins add $LINOTP_ADMIN_USER
-        if [ -z "${LINOTP_ADMIN_PASSWORD:-}" ]; then
-            set_admin_password_env
-        fi
-        linotp -v local-admins password --password $LINOTP_ADMIN_PASSWORD $LINOTP_ADMIN_USER
+        linotp -v local-admins add "$LINOTP_ADMIN_USER"
+
+        [[ -z "${LINOTP_ADMIN_PASSWORD:-}" ]] && set_admin_password_env
+
+        linotp -v local-admins password --password "$LINOTP_ADMIN_PASSWORD" "$LINOTP_ADMIN_USER"
         touch "$bootstrapped_file"
         log "Bootstrapping done"
     fi
