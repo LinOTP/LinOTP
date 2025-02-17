@@ -6,13 +6,17 @@ set -o nounset  # Treat unset variables as errors
 
 log() { echo >&2 "$@"; }
 
-set_admin_password_env() {
+generate_password() {
     mkpwd() { dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64; }
     pwd=$(mkpwd)
     while grep -q "[0OIl1]" <<<$pwd; do
         pwd=$(mkpwd)
     done
-    export LINOTP_ADMIN_PASSWORD=$pwd
+    echo "$pwd"
+}
+
+set_admin_password_env() {
+    export LINOTP_ADMIN_PASSWORD=$(generate_password)
     log "Password for '$LINOTP_ADMIN_USER' account set to '$LINOTP_ADMIN_PASSWORD'"
     log "Please change it at your earliest convenience!"
 }
@@ -46,13 +50,13 @@ export SERVICE="0.0.0.0:5000"
 
 start_linotp() {
     log "--- Starting LinOTP ---"
-    if [ "$MODE" = "production" ]; then
+    if [[ "$MODE" == "production" ]]; then
         # linotp does currently not support multiple gunicorn workers
         # due to its jwt and cookie handling.
         # Once supported, set `--workers="${WORKER_PROCESSES:-1}"`
         log "Starting gunicorn on $SERVICE ..."
         gunicorn \
-            --bind "${SERVICE}" --worker-tmp-dir=/dev/shm \
+            --bind "$SERVICE" --worker-tmp-dir=/dev/shm \
             --workers=1 --threads="${WORKER_THREADS:-4}" \
             --worker-class=gthread --log-file=- \
             "linotpapp:create_app()"
@@ -76,7 +80,7 @@ start_linotp() {
 			Make sure to have proper backups for yourself.
 			EOF
         fi
-    elif [ "$MODE" = "development" ]; then
+    elif [[ "$MODE" == "development" ]]; then
         if [ -n "${I_KNOW_THIS_IS_BAD_AND_IF_TERRIBLE_THINGS_HAPPEN_IT_WILL_BE_MY_OWN_FAULT:-}" ]; then
             log "Starting development server..."
             log "(DO NOT DO THIS FOR A PRODUCTION-GRADE SERVER!!!)"
@@ -168,16 +172,17 @@ except Exception as e:
 install_certificates
 wait_for_database
 
-if [ -z "${LINOTP_CFG:-}" ]; then
+if [[ -z "${LINOTP_CFG:-}" ]]; then
     log "No configuration file specified for LINOTP_CFG (using environment variables only)"
-elif ! [ -f "$LINOTP_CFG" ]; then
+elif ! [[ -f "$LINOTP_CFG" ]]; then
     log "Configuration file $LINOTP_CFG (LINOTP_CFG) does not exist"
     exit 1
 else
     log "LINOTP_CFG is $LINOTP_CFG"
 fi
 
-if [ -z "${1-}" ]; then
+# Handle command-line arguments
+if [[ -z "${1-}" ]]; then
     start_linotp
 else
     case "$1" in
