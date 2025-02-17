@@ -33,8 +33,6 @@ RUN echo "deb http://deb.debian.org/debian bookworm-proposed-updates main" >/etc
     libsodium-dev \
     # required for mysql
     default-libmysqlclient-dev pkg-config \
-    # to check if given DB is available
-    netcat-openbsd \
     # custom root-level CA certificate handling
     ca-certificates doas \
     # entrypoint and signal handling
