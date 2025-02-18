@@ -156,7 +156,8 @@ except Exception as e:
         else
             if [ "$exit_code" == "3" ]; then
                 log "Unkown Error:"
-            elif [ "$exit_code" == "2" ] || [ "$exit_code" == "3" ]; then
+            fi
+            if [ "$exit_code" == "2" ] || [ "$exit_code" == "3" ]; then
                 log "$result"
             fi
             log "Database not ready yet... retrying in ${LINOTP_DB_WAITTIME} ($i/$max_retries)"
