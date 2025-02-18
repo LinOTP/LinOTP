@@ -33,8 +33,6 @@ RUN echo "deb http://deb.debian.org/debian bookworm-proposed-updates main" >/etc
     libsodium-dev \
     # required for mysql
     default-libmysqlclient-dev pkg-config \
-    # to check if given DB is available
-    netcat-openbsd \
     # custom root-level CA certificate handling
     ca-certificates doas \
     # entrypoint and signal handling
@@ -103,7 +101,7 @@ ENV LINOTP_USER=linotp \
     LINOTP_ADMIN_PASSWORD= \
     LINOTP_CFG= \
     LINOTP_DATABASE_URI=sqlite:///$LINOTP_ROOT_DIR/linotp.db \
-    LINOTP_DB_WAITTIME=30s \
+    LINOTP_DB_WAITTIME=5s \
     LINOTP_SESSION_COOKIE_SECURE=true \
     LINOTP_GET_CLIENT_ADDRESS_FROM_POST_DATA=false \
     # disable file logger

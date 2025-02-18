@@ -7,7 +7,7 @@ RUN apt-get update && \
     libsasl2-dev \
     ldap-utils \
     libsodium-dev \
-    # to check if given DB is available
+    # to check if given DB is available in gitlab-ci
     netcat-openbsd 
 
 RUN useradd -ms /bin/bash tester && echo "root:Test123!\ntester:Test123!" | chpasswd

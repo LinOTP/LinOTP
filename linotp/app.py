@@ -809,7 +809,6 @@ def init_logging(app):
         logging_dictConfig(app.config["LOG_CONFIG"])
 
     app.logger = logging.getLogger(app.name)
-    app.logger.info("LinOTP {} starting ...".format(__version__))
 
 
 def setup_cache(app):
@@ -998,6 +997,9 @@ def create_app(config_name=None, config_extra=None):
 
     setup_mako(app)
     init_logging(app)
+    if app.cli_cmd in ["run", ""]:
+        app.logger.info("LinOTP {} starting ...".format(__version__))
+
     # we need to set the JWT_VERIFY_SUB to False, as we do not have a "sub" attribute in the JWT
     # https://github.com/apache/superset/issues/30995
     app.config["JWT_VERIFY_SUB"] = False
