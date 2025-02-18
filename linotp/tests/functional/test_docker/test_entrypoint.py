@@ -13,8 +13,6 @@ ENTRYPOINT_SCRIPT = (
 # Mock commands called in entrypoint to avoid failure
 MOCK_DOAS = 'doas() { echo "Mocked doas: $@";}'
 MOCK_GUNICORN = 'gunicorn() { echo "Mocked gunicorn: $@";}'
-MOCK_PYTHON_SUCCESS = 'python() { echo "mocked python" && return 0;}'
-MOCK_PYTHON_FAILED_CREDS = 'python() { echo "mocked python" && return 1;}'
 
 
 class TestDockerLinotpEntrypoint:
@@ -90,7 +88,6 @@ class TestDockerLinotpEntrypoint:
             mock_commands=[
                 MOCK_DOAS,
                 MOCK_GUNICORN,
-                MOCK_PYTHON_SUCCESS,
                 self.get_mocked_linotp_command(),
             ],
             entry_point_args="--with-bootstrap",
@@ -127,35 +124,12 @@ class TestDockerLinotpEntrypoint:
         assert "Bootstrapping done" not in stderr, stderr
         assert not self.linotp_root.joinpath("bootstrapped").exists()
         # Check command failed
-        assert f"Unknown host in LINOTP_DATABASE_URI={uri}" in stderr, stderr
+        assert (
+            "Database is unavailable after multiple attempts. Exiting."
+            in stderr
+        ), stderr
+        assert "Error" not in stderr, stderr
         assert result.returncode == 1, stderr
-
-    def test_entrypoint_with_bootstrap_fails_on_invalid_cred_in_uri(
-        self, setup_env, monkeypatch: pytest.MonkeyPatch
-    ):
-        """Ensure --with-bootstrap fails with invalid LINOTP_DATABASE_URI"""
-        uri = "postgres://user:pass@unknown_host/linotp_db"  # gitleaks:allow
-        monkeypatch.setenv("LINOTP_DATABASE_URI", uri)
-
-        result = self.run_entrypoint_script(
-            mock_commands=[
-                MOCK_DOAS,
-                MOCK_GUNICORN,
-                MOCK_PYTHON_FAILED_CREDS,
-                self.get_mocked_linotp_command(),
-            ],
-            entry_point_args="--with-bootstrap",
-        )
-        stderr = result.stderr
-
-        # Check that bootstrap-related messages are in stderr
-        assert "Bootstrapping LinOTP" not in stderr, stderr
-        assert "Bootstrapping done" not in stderr, stderr
-        assert not self.linotp_root.joinpath("bootstrapped").exists()
-        # Check command failed
-        assert "Authentication error detected" in stderr, stderr
-        # returncode is 0 so that docker doesnt restart
-        assert result.returncode == 0, stderr
 
     @pytest.mark.parametrize(
         "fail_command",
@@ -173,7 +147,6 @@ class TestDockerLinotpEntrypoint:
             mock_commands=[
                 MOCK_DOAS,
                 MOCK_GUNICORN,
-                MOCK_PYTHON_SUCCESS,
                 self.get_mocked_linotp_command(fail_command),
             ],
             entry_point_args="--with-bootstrap",
@@ -215,7 +188,6 @@ class TestDockerLinotpEntrypoint:
             mock_commands=[
                 MOCK_DOAS,
                 MOCK_GUNICORN,
-                MOCK_PYTHON_SUCCESS,
                 self.get_mocked_linotp_command(),
             ],
             entry_point_args="--with-bootstrap",
