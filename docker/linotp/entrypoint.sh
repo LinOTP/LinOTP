@@ -107,7 +107,7 @@ install_certificates() {
 wait_for_database() {
     local max_retries=10
 
-    log "Waiting for database at $LINOTP_DATABASE_URI to become available..."
+    log "Waiting for database to become available..."
 
     for i in $(seq 1 "$max_retries"); do
         error_msg_and_exit_code=$(
@@ -141,19 +141,19 @@ except (NoSuchModuleError, OperationalError) as e:
         sys.exit(1)
     if 'password authentication failed' in error_msg :
         # Exit on wrong creds
-        print('Error: Invalid credentials for user in LINOTP_DATABASE_URI=$LINOTP_DATABASE_URI', file=sys.stderr)
+        print('Error: Invalid credentials for user in LINOTP_DATABASE_URI', file=sys.stderr)
         sys.exit(2)
     if 'access denied' in error_msg:
         # Exit on insufficient rights
-        print('Error: Insufficient rights for user in LINOTP_DATABASE_URI=$LINOTP_DATABASE_URI', file=sys.stderr)
+        print('Error: Insufficient rights for user in LINOTP_DATABASE_URI', file=sys.stderr)
         sys.exit(2)
     if 'failed: fatal:  database' in error_msg and 'does not exist' in error_msg:
         # Exit on non-existing database
-        print('Error: Given database name does not exist in LINOTP_DATABASE_URI=$LINOTP_DATABASE_URI', file=sys.stderr)
+        print('Error: Given database name does not exist in LINOTP_DATABASE_URI', file=sys.stderr)
         sys.exit(2)
     if 't load plugin: sqlalchemy.dialects:' in error_msg:
         # Invalid dialect (like postgres, mariadb or sqlite)
-        print('Error: Invalid dialect in LINOTP_DATABASE_URI=$LINOTP_DATABASE_URI', file=sys.stderr)
+        print('Error: Invalid dialect in LINOTP_DATABASE_URI', file=sys.stderr)
         sys.exit(2)
     print(f'Unexpected Error: {error_msg}', file=sys.stderr)
     sys.exit(3)
