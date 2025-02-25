@@ -107,62 +107,88 @@ install_certificates() {
 wait_for_database() {
     local max_retries=10
 
-    log "Waiting for database at $LINOTP_DATABASE_URI to become available..."
+    log "Waiting for database to become available..."
 
-    for i in $(seq 1 $max_retries); do
-        result_and_exit_code=$(
+    for i in $(seq 1 "$max_retries"); do
+        error_msg_and_exit_code=$(
             python -c "
 try:
+    # we're using the following exit-codes for sys.exit()
+    # they'll be picked up and handled by the caller
+    # 0 - success
+    # 1 - known error; should continue
+    # 2 - known error; should abort
+    # 3 - unknown error; should continue
     import sys
     from sqlalchemy import create_engine
-    from sqlalchemy.exc import OperationalError
+    from sqlalchemy.exc import NoSuchModuleError, OperationalError
 
     engine = create_engine('$LINOTP_DATABASE_URI')
     with engine.connect():
         # return on success
         sys.exit(0)
-except OperationalError as e:
+except (NoSuchModuleError, OperationalError) as e:
     error_msg = str(e).lower()
-    if 'password authentication failed' in error_msg or 'access denied' in error_msg:
-        print('Error: Invalid credentials/rights for user in LINOTP_DATABASE_URI=$LINOTP_DATABASE_URI', file=sys.stderr)
+
+    msg_that_indicate_booting_db = (
+        'name or service not known',
+        'is the server running on that host',
+        'the database system is starting up',
+    )
+    if any(msg in error_msg for msg in msg_that_indicate_booting_db):
+        # continue - might resolve soon (when db-container starts and is healthy)
         print(error_msg, file=sys.stderr)
-        # Exit on wrong creds/rights
         sys.exit(1)
-    if 'name or service not known' in error_msg:
-        print('Error: Unknown host in LINOTP_DATABASE_URI=$LINOTP_DATABASE_URI', file=sys.stderr)
-        print('Continuing - host might resolve soon', file=sys.stderr)
+    if 'password authentication failed' in error_msg :
+        # Exit on wrong creds
+        print('Error: Invalid credentials for user in LINOTP_DATABASE_URI', file=sys.stderr)
         sys.exit(2)
-    print(error_msg, file=sys.stderr)
+    if 'access denied' in error_msg:
+        # Exit on insufficient rights
+        print('Error: Insufficient rights for user in LINOTP_DATABASE_URI', file=sys.stderr)
+        sys.exit(2)
+    if 'failed: fatal:  database' in error_msg and 'does not exist' in error_msg:
+        # Exit on non-existing database
+        print('Error: Given database name does not exist in LINOTP_DATABASE_URI', file=sys.stderr)
+        sys.exit(2)
+    if 't load plugin: sqlalchemy.dialects:' in error_msg:
+        # Invalid dialect (like postgres, mariadb or sqlite)
+        print('Error: Invalid dialect in LINOTP_DATABASE_URI', file=sys.stderr)
+        sys.exit(2)
+    print(f'Unexpected Error: {error_msg}', file=sys.stderr)
     sys.exit(3)
 except Exception as e:
     error_msg = str(e).lower()
-    print(error_msg, file=sys.stderr)
+    print(f'Unexpected Error: {error_msg}', file=sys.stderr)
     sys.exit(3)
 " 2>&1
             echo $?
         ) # Capture both stdout/stderr + Python exit code in last line
 
-        # Extract last line (exit code) from result
-        exit_code=$(echo "$result_and_exit_code" | tail -n 1)
-        result=$(echo "$result_and_exit_code" | head -n -1) # Everything except last line
+        # Extract last line (exit code) and error messages
+        exit_code=$(echo "$error_msg_and_exit_code" | tail -n 1)
+        error_msg=$(echo "$error_msg_and_exit_code" | head -n -1)
 
-        if [ "$exit_code" == "0" ]; then
+        case "$exit_code" in
+        0)
             log "Database connection successful!"
             return 0
-        elif [ "$exit_code" == "1" ]; then
-            log "$result"
-            log "Authentication error detected. Exiting gracefully."
-            exit 0 # Exit with 0 so Docker doesn't restart
-        else
-            if [ "$exit_code" == "3" ]; then
-                log "Unkown Error:"
-            fi
-            if [ "$exit_code" == "2" ] || [ "$exit_code" == "3" ]; then
-                log "$result"
-            fi
+            ;;
+        1)
             log "Database not ready yet... retrying in ${LINOTP_DB_WAITTIME} ($i/$max_retries)"
-            sleep $LINOTP_DB_WAITTIME
-        fi
+            ;;
+        2)
+            log "$error_msg"
+            log "Exiting gracefully."
+            exit 0 # Prevent restart loops in Docker
+            ;;
+        *)
+            log "$error_msg"
+            log "Unexpected error encountered. Retrying in ${LINOTP_DB_WAITTIME} ($i/$max_retries)"
+            ;;
+        esac
+
+        sleep "$LINOTP_DB_WAITTIME"
     done
 
     log "Database is unavailable after multiple attempts. Exiting."
