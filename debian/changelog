@@ -1,9 +1,9 @@
-linotp (3.4.2~rc0-1) UNRELEASED; urgency=low
+linotp (3.4.2-1) buster; urgency=low
 
   Fix:
   * include json-translations in debian package and container
 
- -- LinOTP Packaging <packaging@linotp.de>  Tue, 17 Dec 2024 12:34:56 +0200
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 05 Mar 2025 08:00:00 +0200
 
 linotp (3.4.1-1) buster; urgency=low
 
