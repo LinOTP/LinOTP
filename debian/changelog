@@ -1,3 +1,10 @@
+linotp (3.4.3-1) buster; urgency=medium
+
+  Fix:
+  * timestamp rounding error in challenge signature verifcation when running LinOTP against MySQL 8 database
+
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 05 Mar 2025 17:40:00 +0100
+
 linotp (3.4.2-1) buster; urgency=low
 
   Fix:

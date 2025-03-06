@@ -25,8 +25,6 @@
 #    Support: www.linotp.de
 
 
-from datetime import datetime
-
 from sqlalchemy import (
     Boolean,
     Column,
@@ -44,7 +42,6 @@ timestamp_column = "%stimestamp" % COL_PREFIX
 
 
 class ChallengeSchema(db.Model):
-
     """
     the generic challange handling
     """
@@ -69,7 +66,7 @@ class ChallengeSchema(db.Model):
     challenge = Column("bchallenge", LargeBinary, default=None)
     session = Column(session_column, String(512), default="")
     tokenserial = Column("tokenserial", String(64), default="", index=True)
-    timestamp = Column(timestamp_column, DateTime, default=datetime.now())
+    timestamp = Column(timestamp_column, DateTime)
     received_count = Column("received_count", Integer, default=False)
     received_tan = Column("received_tan", Boolean, default=False)
     valid_tan = Column("valid_tan", Boolean, default=False)
