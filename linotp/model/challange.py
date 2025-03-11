@@ -72,7 +72,7 @@ class Challenge(ChallengeSchema):
             data = data.encode("utf-8")
         self.data = data
 
-        self.timestamp = datetime.now()
+        self.timestamp = datetime.now().replace(microsecond=0)
         self.session = "" + session
         self.received_count = 0
         self.received_tan = False

@@ -952,7 +952,9 @@
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
         <br>Stefan Pietsch, Eric Sesterhenn, Marian Pascalau,
         <br>Fabian Vallon, Veronika Schindler, Lukas Engelter,
-        <br>Mirko Ahnert, Chris Halls
+        <br>Mirko Ahnert, Chris Halls, Anselm Lingnau, Ana Barroso,
+        <br>Andreas Schwalb, Mahyar Moghimi, Michael Weber,
+        <br>Radoslaw Grabos, Felix Neumann
     </p>
 
 </div>

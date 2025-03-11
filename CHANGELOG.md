@@ -21,6 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don't reject empty string as `otppin` when `otp_pin_contents=+`
 
+## [3.4.3-1] - 2025-03-05
+
+### Fixed
+
+- timestamp rounding error in challenge signature verifcation when running LinOTP against MySQL 8 database
+
+## [3.4.1-1] - 2025-03-05
+
+### Fixed
+
+- include json-translations in debian package and container
+
 ## [3.4.1-1] - 2024-11-27
 
 ### Fixed
