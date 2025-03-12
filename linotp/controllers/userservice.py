@@ -2193,8 +2193,8 @@ class UserserviceController(BaseController):
         :param serial: a suggested serial number
         :param prefix: a prefix for the serial number
         :param description: an optional description for the token
-        :param otppin: the pin for the token
-        :param pin: (Deprecated) a legacy parameter for token pin. Use `otppin` instead.
+        :param pin: the pin for the token (policy: setOTPPIN)
+        :param otppin: motpPin for mOTP Tokens (policy: setMOTPPIN)
 
         :return:
             a json result with a boolean status and request result
@@ -2289,11 +2289,6 @@ class UserserviceController(BaseController):
 
             desc = param.get("description", "")
 
-            # We currently need to support both `pin` and `otppin` due to legacy code
-            otppin = param.get("otppin", param.get("pin"))
-            # set correct param `pin` which is actually used in `th.initToken`
-            param["pin"] = otppin
-
             log.info(
                 "[userinit] initialize a token with serial %s "
                 "and type %s by user %s@%s",
@@ -2305,14 +2300,12 @@ class UserserviceController(BaseController):
 
             log.debug(
                 "[userinit] Initializing the token serial: %s,"
-                " desc: %s, otppin: %s for user %s @ %s.",
+                " desc: %s, for user %s @ %s.",
                 serial,
                 desc,
-                otppin,
                 g.authUser.login,
                 g.authUser.realm,
             )
-            log.debug(param)
 
             # extend the interface by parameters, so that decisssion could
             # be made in the token update method
