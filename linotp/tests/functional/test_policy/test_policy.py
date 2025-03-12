@@ -993,6 +993,7 @@ class TestPolicies(TestPoliciesBase):
             "serial": "self002",
             "otpkey": "1234123412341234",
             "otppin": "1234",
+            "pin": "",
         }
         auth_user = ("postgres@myOtherRealm", "test123")
         response = self.make_userservice_request(
