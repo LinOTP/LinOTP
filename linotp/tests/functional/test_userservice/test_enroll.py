@@ -120,11 +120,16 @@ class TestUserserviceEnrollment(TestController):
 
     def test_correct_pin_on_enrollment(self):
         """
-        Ensure that the correct pin is set when enrolling a token
+        Ensure that the correct pin is set when enrolling a token.
+
+        This test performs the following steps:
+        1. Sets up a policy that allows token enrollment via self-service.
+        2. Enrolls a token with a specific PIN.
+        3. Validates that the token can be used with the correct PIN and OTP.
         """
 
         # Setup
-        params = {
+        policy_params = {
             "name": "enroll",
             "scope": "selfservice",
             "action": "enrollPW",
@@ -133,7 +138,7 @@ class TestUserserviceEnrollment(TestController):
             "active": True,
         }
 
-        response = self.make_system_request("setPolicy", params)
+        response = self.make_system_request("setPolicy", policy_params)
         assert "false" not in response, response
 
         auth_user = {
@@ -144,7 +149,7 @@ class TestUserserviceEnrollment(TestController):
             "type": "pw",
             "description": "Created via SelfService",
             "otpkey": "key",
-            "otppin": "pin",
+            "pin": "pin",
         }
         response = self.make_userselfservice_request(
             "enroll", params=token_params, auth_user=auth_user
@@ -156,8 +161,9 @@ class TestUserserviceEnrollment(TestController):
             "check",
             {
                 "user": auth_user["login"],
-                "pass": token_params["otppin"] + token_params["otpkey"],
+                "pass": token_params["pin"] + token_params["otpkey"],
             },
         )
-        assert response.json["result"]["status"]
-        assert response.json["result"]["value"]
+        resp_json = response.json
+        assert resp_json["result"]["status"] == True
+        assert resp_json["result"]["value"] == True
