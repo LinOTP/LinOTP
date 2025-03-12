@@ -2193,7 +2193,8 @@ class UserserviceController(BaseController):
         :param serial: a suggested serial number
         :param prefix: a prefix for the serial number
         :param description: an optional description for the token
-        :param otppin: the pin for the token
+        :param pin: the pin for the token (policy: setOTPPIN)
+        :param otppin: motpPin for mOTP Tokens (policy: setMOTPPIN)
 
         :return:
             a json result with a boolean status and request result
