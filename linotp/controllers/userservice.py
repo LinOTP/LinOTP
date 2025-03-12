@@ -2287,7 +2287,6 @@ class UserserviceController(BaseController):
                 param["serial"] = serial
 
             desc = param.get("description", "")
-            otppin = param.get("otppin")
 
             log.info(
                 "[userinit] initialize a token with serial %s "
@@ -2300,14 +2299,12 @@ class UserserviceController(BaseController):
 
             log.debug(
                 "[userinit] Initializing the token serial: %s,"
-                " desc: %s, otppin: %s for user %s @ %s.",
+                " desc: %s, for user %s @ %s.",
                 serial,
                 desc,
-                otppin,
                 g.authUser.login,
                 g.authUser.realm,
             )
-            log.debug(param)
 
             # extend the interface by parameters, so that decisssion could
             # be made in the token update method
