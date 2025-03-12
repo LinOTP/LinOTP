@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don't reject empty string as `otppin` when `otp_pin_contents=+`
 
+## [3.4.4-dev0] - UNRELEASED
+
+### Fixed
+
+- Reverse the commit that prevented setting the otppin for mOTP tokens
+  and used it as token pin instead (was broken since 3.4.1)
+
 ## [3.4.3-1] - 2025-03-05
 
 ### Fixed
