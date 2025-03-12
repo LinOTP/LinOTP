@@ -67,10 +67,20 @@ translate-%: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 	gtranslator $<
 	$(MAKE) -f Makefile.linotp compile_catalog
 
+check_pojson:
+	pip show pojson > /dev/null 2>&1 || { \
+		echo "pojson is not installed. Installing..."; \
+		apt-get update && apt-get install -y --no-install-recommends \
+		python3 python3-pip && \
+		python3 -m pip install --upgrade pip && \
+		python3 -m pip install pojson && \
+		apt-get clean && rm -rf /var/lib/apt/lists/*; \
+	}
+
 # Compile a .po file to a .json file using the `pojson` tool.
-$(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
+$(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po check_pojson
 	mkdir -p $(I18N_JSON_DEST)
-	pojson -e utf-8 $< > $@
+	pojson -p -e utf-8 $< > $@
 
 # Compile all .po files to .mo files using babel. As a dependency,
 # the .po files are compiled to .json files. The order doesn't matter.
