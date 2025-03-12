@@ -2216,27 +2216,27 @@ class UserserviceController(BaseController):
             checkPolicyPre("selfservice", "userinit", param, g.authUser)
 
             # Check setOTPPIN Permission
-            # and raise Exception when user sends otppin without Permission
-            otppin_in_params = any(key in param for key in ("otppin", "pin"))
+            # and raise Exception when user sends pin without Permission
+            # or when user does not send pin when it is required
             try:
                 checkPolicyPre("selfservice", "usersetpin", param, g.authUser)
-                usersetpin = True
+                has_setOTPPIN_policy = True
             except PolicyException:
-                usersetpin = False
-            if usersetpin and not otppin_in_params:
-                msg = f"Enrolling Token by user {g.authUser.login} failed because they send no otppin when it was required by policy setOTPPIN"
+                has_setOTPPIN_policy = False
+            pin_in_params = "pin" in param
+            if has_setOTPPIN_policy and not pin_in_params:
+                msg = f"Enrolling Token by user {g.authUser.login} failed because they send no pin when it was required by policy setOTPPIN"
                 log.warning(msg)
                 raise PolicyException(msg)
-            if not usersetpin and otppin_in_params:
-                msg = f"Enrolling Token by user {g.authUser.login} failed because they send otppin when it was not allowed by policy setOTPPIN"
+            if not has_setOTPPIN_policy and pin_in_params:
+                msg = f"Enrolling Token by user {g.authUser.login} failed because they send pin when it was not allowed by policy setOTPPIN"
                 log.warning(msg)
                 raise PolicyException(msg)
 
-            # We currently need to support both `pin` and `otppin` due to legacy code
-            if otppin_in_params:
-                otppin = param.get("otppin", param.get("pin"))
+            if pin_in_params:
+                pin = param.get("pin")
                 # Validate PIN
-                check_res = checkOTPPINPolicy(otppin, g.authUser)
+                check_res = checkOTPPINPolicy(pin, g.authUser)
                 if not check_res["success"]:
                     log.warning(
                         "Enrolling Token by user %s failed: %s",
@@ -2245,12 +2245,6 @@ class UserserviceController(BaseController):
                     )
 
                     return sendError(_("Error: %s") % check_res["error"])
-
-                # set correct param `pin` which is actually used in `th.initToken`
-                param["pin"] = otppin
-            else:
-                # to not break debug log below
-                otppin = None
 
             serial = param.get("serial", None)
             prefix = param.get("prefix", None)
