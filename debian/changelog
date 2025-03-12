@@ -1,6 +1,8 @@
 linotp (3.4.4~dev0-1) UNRELEASED; urgency=medium
 
-  DUMMY CHANGELOG for 3.4.4
+  Fix:
+  * Reverse the commit that prevented setting the otppin for mOTP tokens
+    and used it as token pin instead (was broken since 3.4.1)
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 12 Mar 2025 07:00:00 +0100
  
