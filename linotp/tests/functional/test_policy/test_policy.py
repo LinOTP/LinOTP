@@ -1022,625 +1022,623 @@ class TestPolicies(TestPoliciesBase):
     # Check the self services
     # ----------------------------------------------------------------- --
 
-    # TODO: reenable tests after mOTP is enrollment is fixed LINOTP-2263
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_421_selfService_disable(self):
-    #     """
-    #     Policy 421: Test disabling tokens in the selfservice portal
-    #     """
-
-    #     # myDefRealm is not allowed to disable
-    #     parameters = {"serial": "self001"}
-    #     auth_user = ("horst@myMixRealm", "test123")
-    #     response = self.make_userservice_request(
-    #         action="disable", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert not response.json["result"]["status"], response
-
-    #     # myOtherRealm is allowed to disable
-    #     parameters = {"serial": "self002"}
-    #     auth_user = ("postgres@myOtherRealm", "test123")
-    #     response = self.make_userservice_request(
-    #         action="disable", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["value"]["disable token"] == 1, response
-
-    #     # myOtherRealm: a user, not the owner of the token can not
-    #     # disable the token
-    #     parameters = {"serial": "self002"}
-    #     auth_user = ("b1822@myOtherRealm", "test123")
-    #     response = self.make_userservice_request(
-    #         action="disable", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-    #     assert response.json["result"]["value"] == {}, response
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_422_sefService_setOTPPIN(self):
-    #     """
-    #     Policy 422: Test setting PIN in the selfserivce portal
-    #     """
-    #     # myDefRealm is not allowed to disable
-    #     parameters = {"serial": "self001", "userpin": "test"}
-    #     auth_user = ("horst@myDefRealm", "test123")
-
-    #     response = self.make_userservice_request(
-    #         action="setpin", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert not response.json["result"]["status"], response
-
-    #     # myOtherRealm is allowed to set PIN
-    #     parameters = {"serial": "self002", "userpin": "test"}
-    #     auth_user = ("postgres@myOtherRealm", "test123")
-    #     response = self.make_userservice_request(
-    #         action="setpin", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     parameters = {"serial": "self001"}
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="remove", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     parameters = {"serial": "self002"}
-    #     auth_user = "superadmin"
-
-    #     response = self.make_admin_request(
-    #         action="remove", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_423_selfservice_webprovision(self):
-    #     """
-    #     Policy 423: Testing webprovisioning. myMixRealm users are allowed to
-    #                 provision, users in myDefRealm not.
-    #     """
-
-    #     parameters = {"type": "oathtoken"}
-    #     auth_user = ("user1@myDefRealm", "geheim1")
-    #     response = self.make_userservice_request(
-    #         action="webprovision", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert not response.json["result"]["status"], response
-
-    #     parameters = {"type": "oathtoken"}
-    #     auth_user = ("horst@myMixRealm", "test123")
-    #     response = self.make_userservice_request(
-    #         action="webprovision", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     parameters = {"type": "googleauthenticator"}
-    #     auth_user = ("horst@myMixRealm", "test123")
-    #     response = self.make_userservice_request(
-    #         action="webprovision", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_423a_selfservice_assign(self):
-    #     """
-    #     Policy 423a: users in myDefRealm are allowed to assign. use the token
-    #                  test_token_003
-    #     """
-    #     parameters = {"serial": "test_token_003", "realms": "myDefRealm"}
-    #     auth_user = "superadmin"
-
-    #     response = self.make_admin_request(
-    #         action="tokenrealm", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     response = self.make_admin_request(
-    #         action="show", params={}, auth_user=auth_user
-    #     )
-
-    #     token_found = False
-    #     tokens = response.json["result"]["value"]["data"]
-    #     for token in tokens:
-    #         if token["LinOtp.TokenSerialnumber"] == "test_token_003":
-    #             assert token["LinOtp.CountWindow"] == 10, token
-    #             assert token["LinOtp.MaxFail"] == 10, token
-    #             assert token["User.description"] == "", token
-    #             assert token["LinOtp.IdResClass"] == "", token
-    #             assert token["LinOtp.RealmNames"][0] == "mydefrealm", token
-    #             token_found = True
-
-    #     assert token_found
-
-    #     parameters = {"serial": "test_token_003"}
-    #     auth_user = ("horst@myDefRealm", "test123")
-    #     response = self.make_userservice_request(
-    #         action="assign", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # unassign the token
-    #     parameters = {"serial": "test_token_003"}
-    #     auth_user = "superadmin"
-
-    #     response = self.make_admin_request(
-    #         action="unassign", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_424_selfservice_assign(self):
-    #     """
-    #     Policy 424: user in myOtherRealm may not assign token
-    #     """
-    #     parameters = {"serial": "test_token_003", "realms": "myOtherRealm"}
-    #     auth_user = "superadmin"
-
-    #     response = self.make_admin_request(
-    #         action="tokenrealm", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # user tries to assign
-    #     parameters = {"serial": "test_token_003"}
-    #     auth_user = ("b1822@myOtherRealm", "test123")
-    #     response = self.make_userservice_request(
-    #         action="assign", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert not response.json["result"]["status"], response
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_425_selfservice_user(self):
-    #     """
-    #     Policy 425: check a user dependent policy
-    #     """
-    #     params = {
-    #         "name": "self_user_pol1",
-    #         "scope": "selfservice",
-    #         "realm": "myDefRealm",
-    #         "user": "user1",
-    #         "action": "webprovisionOATH",
-    #     }
-    #     auth_user = "superadmin"
-
-    #     response = self.make_system_request(
-    #         action="setPolicy", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # user in realm, who has no policy
-    #     parameters = {"type": "oathtoken"}
-    #     auth_user = ("user2@myDefRealm", "geheim2")
-    #     response = self.make_userservice_request(
-    #         action="webprovision", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert not response.json["result"]["status"], response
-
-    #     # user who has a policy
-    #     parameters = {"type": "oathtoken"}
-    #     auth_user = ("user1@myDefRealm", "geheim1")
-    #     response = self.make_userservice_request(
-    #         action="webprovision", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # delete the policy
-    #     params = {"name": "self_user_pol1"}
-    #     auth_user = "superadmin"
-
-    #     response = self.make_system_request(
-    #         action="delPolicy", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # delete both tokens
-    #     params = {"user": "user1"}
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="remove", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     params = {"user": "user2"}
-    #     auth_user = "superadmin"
-
-    #     response = self.make_admin_request(
-    #         action="remove", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_426_selfservice_resolver(self):
-    #     """
-    #     Policy 426: check a resolver dependent policy
-    #     """
-    #     params = {
-    #         "name": "self_res_pol1",
-    #         "scope": "selfservice",
-    #         "realm": "myMixRealm",
-    #         "user": "myDefRes:",
-    #         "action": "webprovisionOATH",
-    #     }
-    #     auth_user = "superadmin"
-    #     response = self.make_system_request(
-    #         action="setPolicy", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # delete the old self_03 policy, so that we can use
-    #     # the mixrealm to test
-    #     params = {"name": "self_03"}
-    #     auth_user = "superadmin"
-
-    #     response = self.make_system_request(
-    #         action="delPolicy", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # we list all the policy to find errors
-    #     params = {"scope": "selfservice", "realm": "mymixrealm"}
-    #     auth_user = "superadmin"
-    #     response = self.make_system_request(
-    #         action="getPolicy", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # user in resolver myOtherRes, who is not allowed to enroll token
-    #     parameters = {"type": "oathtoken"}
-    #     auth_user = ("max1@myMixRealm", "password1")
-    #     response = self.make_userservice_request(
-    #         action="webprovision", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert not response.json["result"]["status"], response
-
-    #     # user in resolver myDefRes, who is allowed to enroll token
-    #     parameters = {"type": "oathtoken"}
-    #     auth_user = ("user1@myMixRealm", "geheim1")
-    #     response = self.make_userservice_request(
-    #         action="webprovision", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # delete the policy
-    #     params = {"name": "self_res_pol1"}
-    #     auth_user = "superadmin"
-    #     response = self.make_system_request(
-    #         action="delPolicy", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # delete both tokens
-    #     params = {"user": "user1"}
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="remove", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     params = {"user": "user2"}
-    #     auth_user = "superadmin"
-
-    #     response = self.make_admin_request(
-    #         action="remove", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_427_selfservice_assign(self):
-    #     """
-    #     Policy 427: user in realm myDefRealm assignes a token, that is
-    #                 not contained in any realm
-    #     """
-    #     serial = "temp_spass_427"
-    #     parameters = {
-    #         "serial": serial,
-    #         "type": "spass",
-    #         "pin": "something",
-    #     }
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="init", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # check this token is in no realm
-    #     response = self.make_admin_request(
-    #         action="show", params={}, auth_user=auth_user
-    #     )
-
-    #     token_found = False
-    #     tokens = response.json["result"]["value"]["data"]
-    #     for token in tokens:
-    #         if token["LinOtp.TokenSerialnumber"] == serial:
-    #             assert token["LinOtp.CountWindow"] == 10, token
-    #             assert token["LinOtp.MaxFail"] == 10, token
-    #             assert token["User.description"] == "", token
-    #             assert token["LinOtp.IdResClass"] == "", token
-    #             assert token["LinOtp.RealmNames"] == [], token
-    #             token_found = True
-
-    #     assert token_found
-
-    #     # user tries to assign
-    #     parameters = {"serial": serial}
-    #     auth_user = ("horst@myDefRealm", "test123")
-
-    #     response = self.make_userservice_request(
-    #         action="assign", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["value"]["assign token"], response
-
-    #     params = {"serial": serial}
-    #     response = self.make_admin_request(
-    #         action="remove", params=params, auth_user="superadmin"
-    #     )
-
-    #     assert response.json["result"]["value"] == 1, response
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_428_selfservice_assign(self):
-    #     """
-    #     Policy 428: user in realm myDefRealm can not assign a token that
-    #                 is contained in another realm
-    #     """
-    #     serial = "temp_spass_428"
-    #     parameters = {
-    #         "serial": serial,
-    #         "type": "spass",
-    #         "pin": "something",
-    #     }
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="init", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # set the realm of the token
-    #     params = {"serial": serial, "realms": "myOtherRealm"}
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="tokenrealm", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["value"] == 1, response
-
-    #     # check this token is in no realm
-    #     params = {"serial": serial}
-    #     response = self.make_admin_request(
-    #         action="show", params=params, auth_user=auth_user
-    #     )
-
-    #     token_found = False
-    #     tokens = response.json["result"]["value"]["data"]
-    #     for token in tokens:
-    #         if token["LinOtp.TokenSerialnumber"] == "temp_spass_428":
-    #             assert token["LinOtp.CountWindow"] == 10, token
-    #             assert token["LinOtp.MaxFail"] == 10, token
-    #             assert token["User.description"] == "", token
-    #             assert token["LinOtp.IdResClass"] == "", token
-    #             assert "myotherrealm" in token["LinOtp.RealmNames"], token
-    #             token_found = True
-
-    #     assert token_found
-
-    #     # user tries to assign
-    #     parameters = {"serial": serial}
-    #     auth_user = ("horst@myDefRealm", "test123")
-    #     response = self.make_userservice_request(
-    #         action="assign", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert not response.json["result"]["status"], response
-    #     assert (
-    #         "The token you want to assign is not contained in"
-    #         " your realm!" in response
-    #     ), response
-
-    #     params = {"serial": serial}
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="remove", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["value"] == 1, response
-
-    # @pytest.mark.usefixtures(
-    #     "realms_and_resolver",
-    #     "admin_roles",
-    #     "selfservice_policies",
-    #     "enroll_tokens",
-    # )
-    # def test_429_get_serial_by_OTP(self):
-    #     """
-    #     Policy 429: get serial by OTP value
-    #     """
-    #     # TODO
-    #     seed = "154bf508c52f3048fcf9cf721bbb892637f5e348"
-    #     otps = ["295354", "297395", "027303", "618651"]
-
-    #     serial = "oath429"
-    #     parameters = {
-    #         "serial": serial,
-    #         "type": "hmac",
-    #         "otpkey": seed,
-    #         "pin": "something",
-    #     }
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="init", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-
-    #     # set the realm of the token
-    #     params = {"serial": serial, "realms": "myDefRealm"}
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="tokenrealm", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["value"] == 1, response
-
-    #     # check this token is in no realm
-    #     params = {"serial": serial}
-    #     response = self.make_admin_request(
-    #         action="show", params=params, auth_user=auth_user
-    #     )
-
-    #     token_found = False
-    #     tokens = response.json["result"]["value"]["data"]
-    #     for token in tokens:
-    #         if token["LinOtp.TokenSerialnumber"] == "oath429":
-    #             token_found = True
-
-    #     assert token_found, tokens
-
-    #     # user to get the serial of the OTP of the unassigned token.
-    #     parameters = {
-    #         "otp": otps[3],
-    #     }
-    #     auth_user = ("passthru_user1@myDefRealm", "geheim1")
-    #     response = self.make_userservice_request(
-    #         action="getSerialByOtp", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert not response.json["result"]["status"], response
-    #     assert (
-    #         "The policy settings do not allow you to request a "
-    #         "serial by OTP!" in response
-    #     ), response
-
-    #     # set policy
-    #     params = {
-    #         "name": "getSerial",
-    #         "scope": "selfservice",
-    #         "realm": "myDefRealm",
-    #         "action": "getserial",
-    #     }
-    #     auth_user = "superadmin"
-    #     response = self.make_system_request(
-    #         action="setPolicy", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["value"], response
-
-    #     # try again to get the serial
-    #     parameters = {"otp": otps[0], "realm": "myDefRealm"}
-    #     auth_user = ("passthru_user1@myDefRealm", "geheim1")
-    #     response = self.make_userservice_request(
-    #         action="getSerialByOtp", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-    #     assert (
-    #         response.json["result"]["value"]["serial"] == "oath429"
-    #     ), response
-
-    #     parameters = {"otp": otps[3]}
-    #     auth_user = ("passthru_user1@myDefRealm", "geheim1")
-    #     response = self.make_userservice_request(
-    #         action="getSerialByOtp", params=parameters, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["status"], response
-    #     assert (
-    #         response.json["result"]["value"]["serial"] == "oath429"
-    #     ), response
-
-    #     # remove the policy
-    #     params = {"name": "getSerial"}
-    #     auth_user = "superadmin"
-    #     response = self.make_system_request(
-    #         action="delPolicy", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["value"], response
-
-    #     # remove the token
-    #     params = {"serial": serial}
-    #     auth_user = "superadmin"
-    #     response = self.make_admin_request(
-    #         action="remove", params=params, auth_user=auth_user
-    #     )
-
-    #     assert response.json["result"]["value"] == 1, response
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_421_selfService_disable(self):
+        """
+        Policy 421: Test disabling tokens in the selfservice portal
+        """
+
+        # myDefRealm is not allowed to disable
+        parameters = {"serial": "self001"}
+        auth_user = ("horst@myMixRealm", "test123")
+        response = self.make_userservice_request(
+            action="disable", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+
+        # myOtherRealm is allowed to disable
+        parameters = {"serial": "self002"}
+        auth_user = ("postgres@myOtherRealm", "test123")
+        response = self.make_userservice_request(
+            action="disable", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["value"]["disable token"] == 1, response
+
+        # myOtherRealm: a user, not the owner of the token can not
+        # disable the token
+        parameters = {"serial": "self002"}
+        auth_user = ("b1822@myOtherRealm", "test123")
+        response = self.make_userservice_request(
+            action="disable", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"] == {}, response
+
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_422_sefService_setOTPPIN(self):
+        """
+        Policy 422: Test setting PIN in the selfserivce portal
+        """
+        # myDefRealm is not allowed to disable
+        parameters = {"serial": "self001", "userpin": "test"}
+        auth_user = ("horst@myDefRealm", "test123")
+
+        response = self.make_userservice_request(
+            action="setpin", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+
+        # myOtherRealm is allowed to set PIN
+        parameters = {"serial": "self002", "userpin": "test"}
+        auth_user = ("postgres@myOtherRealm", "test123")
+        response = self.make_userservice_request(
+            action="setpin", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {"serial": "self001"}
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="remove", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {"serial": "self002"}
+        auth_user = "superadmin"
+
+        response = self.make_admin_request(
+            action="remove", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_423_selfservice_webprovision(self):
+        """
+        Policy 423: Testing webprovisioning. myMixRealm users are allowed to
+                    provision, users in myDefRealm not.
+        """
+
+        parameters = {"type": "oathtoken"}
+        auth_user = ("user1@myDefRealm", "geheim1")
+        response = self.make_userservice_request(
+            action="webprovision", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+
+        parameters = {"type": "oathtoken"}
+        auth_user = ("horst@myMixRealm", "test123")
+        response = self.make_userservice_request(
+            action="webprovision", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {"type": "googleauthenticator"}
+        auth_user = ("horst@myMixRealm", "test123")
+        response = self.make_userservice_request(
+            action="webprovision", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_423a_selfservice_assign(self):
+        """
+        Policy 423a: users in myDefRealm are allowed to assign. use the token
+                     test_token_003
+        """
+        parameters = {"serial": "test_token_003", "realms": "myDefRealm"}
+        auth_user = "superadmin"
+
+        response = self.make_admin_request(
+            action="tokenrealm", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        response = self.make_admin_request(
+            action="show", params={}, auth_user=auth_user
+        )
+
+        token_found = False
+        tokens = response.json["result"]["value"]["data"]
+        for token in tokens:
+            if token["LinOtp.TokenSerialnumber"] == "test_token_003":
+                assert token["LinOtp.CountWindow"] == 10, token
+                assert token["LinOtp.MaxFail"] == 10, token
+                assert token["User.description"] == "", token
+                assert token["LinOtp.IdResClass"] == "", token
+                assert token["LinOtp.RealmNames"][0] == "mydefrealm", token
+                token_found = True
+
+        assert token_found
+
+        parameters = {"serial": "test_token_003"}
+        auth_user = ("horst@myDefRealm", "test123")
+        response = self.make_userservice_request(
+            action="assign", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # unassign the token
+        parameters = {"serial": "test_token_003"}
+        auth_user = "superadmin"
+
+        response = self.make_admin_request(
+            action="unassign", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_424_selfservice_assign(self):
+        """
+        Policy 424: user in myOtherRealm may not assign token
+        """
+        parameters = {"serial": "test_token_003", "realms": "myOtherRealm"}
+        auth_user = "superadmin"
+
+        response = self.make_admin_request(
+            action="tokenrealm", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # user tries to assign
+        parameters = {"serial": "test_token_003"}
+        auth_user = ("b1822@myOtherRealm", "test123")
+        response = self.make_userservice_request(
+            action="assign", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_425_selfservice_user(self):
+        """
+        Policy 425: check a user dependent policy
+        """
+        params = {
+            "name": "self_user_pol1",
+            "scope": "selfservice",
+            "realm": "myDefRealm",
+            "user": "user1",
+            "action": "webprovisionOATH",
+        }
+        auth_user = "superadmin"
+
+        response = self.make_system_request(
+            action="setPolicy", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # user in realm, who has no policy
+        parameters = {"type": "oathtoken"}
+        auth_user = ("user2@myDefRealm", "geheim2")
+        response = self.make_userservice_request(
+            action="webprovision", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+
+        # user who has a policy
+        parameters = {"type": "oathtoken"}
+        auth_user = ("user1@myDefRealm", "geheim1")
+        response = self.make_userservice_request(
+            action="webprovision", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # delete the policy
+        params = {"name": "self_user_pol1"}
+        auth_user = "superadmin"
+
+        response = self.make_system_request(
+            action="delPolicy", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # delete both tokens
+        params = {"user": "user1"}
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="remove", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        params = {"user": "user2"}
+        auth_user = "superadmin"
+
+        response = self.make_admin_request(
+            action="remove", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_426_selfservice_resolver(self):
+        """
+        Policy 426: check a resolver dependent policy
+        """
+        params = {
+            "name": "self_res_pol1",
+            "scope": "selfservice",
+            "realm": "myMixRealm",
+            "user": "myDefRes:",
+            "action": "webprovisionOATH",
+        }
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="setPolicy", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # delete the old self_03 policy, so that we can use
+        # the mixrealm to test
+        params = {"name": "self_03"}
+        auth_user = "superadmin"
+
+        response = self.make_system_request(
+            action="delPolicy", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # we list all the policy to find errors
+        params = {"scope": "selfservice", "realm": "mymixrealm"}
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="getPolicy", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # user in resolver myOtherRes, who is not allowed to enroll token
+        parameters = {"type": "oathtoken"}
+        auth_user = ("max1@myMixRealm", "password1")
+        response = self.make_userservice_request(
+            action="webprovision", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+
+        # user in resolver myDefRes, who is allowed to enroll token
+        parameters = {"type": "oathtoken"}
+        auth_user = ("user1@myMixRealm", "geheim1")
+        response = self.make_userservice_request(
+            action="webprovision", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # delete the policy
+        params = {"name": "self_res_pol1"}
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="delPolicy", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # delete both tokens
+        params = {"user": "user1"}
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="remove", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        params = {"user": "user2"}
+        auth_user = "superadmin"
+
+        response = self.make_admin_request(
+            action="remove", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_427_selfservice_assign(self):
+        """
+        Policy 427: user in realm myDefRealm assignes a token, that is
+                    not contained in any realm
+        """
+        serial = "temp_spass_427"
+        parameters = {
+            "serial": serial,
+            "type": "spass",
+            "pin": "something",
+        }
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # check this token is in no realm
+        response = self.make_admin_request(
+            action="show", params={}, auth_user=auth_user
+        )
+
+        token_found = False
+        tokens = response.json["result"]["value"]["data"]
+        for token in tokens:
+            if token["LinOtp.TokenSerialnumber"] == serial:
+                assert token["LinOtp.CountWindow"] == 10, token
+                assert token["LinOtp.MaxFail"] == 10, token
+                assert token["User.description"] == "", token
+                assert token["LinOtp.IdResClass"] == "", token
+                assert token["LinOtp.RealmNames"] == [], token
+                token_found = True
+
+        assert token_found
+
+        # user tries to assign
+        parameters = {"serial": serial}
+        auth_user = ("horst@myDefRealm", "test123")
+
+        response = self.make_userservice_request(
+            action="assign", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["value"]["assign token"], response
+
+        params = {"serial": serial}
+        response = self.make_admin_request(
+            action="remove", params=params, auth_user="superadmin"
+        )
+
+        assert response.json["result"]["value"] == 1, response
+
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_428_selfservice_assign(self):
+        """
+        Policy 428: user in realm myDefRealm can not assign a token that
+                    is contained in another realm
+        """
+        serial = "temp_spass_428"
+        parameters = {
+            "serial": serial,
+            "type": "spass",
+            "pin": "something",
+        }
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # set the realm of the token
+        params = {"serial": serial, "realms": "myOtherRealm"}
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="tokenrealm", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["value"] == 1, response
+
+        # check this token is in no realm
+        params = {"serial": serial}
+        response = self.make_admin_request(
+            action="show", params=params, auth_user=auth_user
+        )
+
+        token_found = False
+        tokens = response.json["result"]["value"]["data"]
+        for token in tokens:
+            if token["LinOtp.TokenSerialnumber"] == "temp_spass_428":
+                assert token["LinOtp.CountWindow"] == 10, token
+                assert token["LinOtp.MaxFail"] == 10, token
+                assert token["User.description"] == "", token
+                assert token["LinOtp.IdResClass"] == "", token
+                assert "myotherrealm" in token["LinOtp.RealmNames"], token
+                token_found = True
+
+        assert token_found
+
+        # user tries to assign
+        parameters = {"serial": serial}
+        auth_user = ("horst@myDefRealm", "test123")
+        response = self.make_userservice_request(
+            action="assign", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+        assert (
+            "The token you want to assign is not contained in"
+            " your realm!" in response
+        ), response
+
+        params = {"serial": serial}
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="remove", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["value"] == 1, response
+
+    @pytest.mark.usefixtures(
+        "realms_and_resolver",
+        "admin_roles",
+        "selfservice_policies",
+        "enroll_tokens",
+    )
+    def test_429_get_serial_by_OTP(self):
+        """
+        Policy 429: get serial by OTP value
+        """
+        # TODO
+        seed = "154bf508c52f3048fcf9cf721bbb892637f5e348"
+        otps = ["295354", "297395", "027303", "618651"]
+
+        serial = "oath429"
+        parameters = {
+            "serial": serial,
+            "type": "hmac",
+            "otpkey": seed,
+            "pin": "something",
+        }
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # set the realm of the token
+        params = {"serial": serial, "realms": "myDefRealm"}
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="tokenrealm", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["value"] == 1, response
+
+        # check this token is in no realm
+        params = {"serial": serial}
+        response = self.make_admin_request(
+            action="show", params=params, auth_user=auth_user
+        )
+
+        token_found = False
+        tokens = response.json["result"]["value"]["data"]
+        for token in tokens:
+            if token["LinOtp.TokenSerialnumber"] == "oath429":
+                token_found = True
+
+        assert token_found, tokens
+
+        # user to get the serial of the OTP of the unassigned token.
+        parameters = {
+            "otp": otps[3],
+        }
+        auth_user = ("passthru_user1@myDefRealm", "geheim1")
+        response = self.make_userservice_request(
+            action="getSerialByOtp", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+        assert (
+            "The policy settings do not allow you to request a "
+            "serial by OTP!" in response
+        ), response
+
+        # set policy
+        params = {
+            "name": "getSerial",
+            "scope": "selfservice",
+            "realm": "myDefRealm",
+            "action": "getserial",
+        }
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="setPolicy", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["value"], response
+
+        # try again to get the serial
+        parameters = {"otp": otps[0], "realm": "myDefRealm"}
+        auth_user = ("passthru_user1@myDefRealm", "geheim1")
+        response = self.make_userservice_request(
+            action="getSerialByOtp", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+        assert (
+            response.json["result"]["value"]["serial"] == "oath429"
+        ), response
+
+        parameters = {"otp": otps[3]}
+        auth_user = ("passthru_user1@myDefRealm", "geheim1")
+        response = self.make_userservice_request(
+            action="getSerialByOtp", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+        assert (
+            response.json["result"]["value"]["serial"] == "oath429"
+        ), response
+
+        # remove the policy
+        params = {"name": "getSerial"}
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="delPolicy", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["value"], response
+
+        # remove the token
+        params = {"serial": serial}
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="remove", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["value"] == 1, response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver", "admin_roles", "enroll_tokens"
