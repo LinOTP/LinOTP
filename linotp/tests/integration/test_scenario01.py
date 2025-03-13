@@ -180,6 +180,7 @@ class TestScenario01:
         motp_pin = "1234"
         selfservice.open()
         selfservice.login("mozart", "Test123!", test1_realm)
+        selfservice.select_tab(selfservice.tab_register_motp)
         driver.find_element(By.ID, "motp_secret").clear()
         driver.find_element(By.ID, "motp_secret").send_keys(motp_key)
         driver.find_element(By.ID, "motp_s_pin1").clear()

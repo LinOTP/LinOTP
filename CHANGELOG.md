@@ -14,12 +14,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `userservice/enroll` now validates otp pins:
-  - The `otppin` parameter is now required or prohibited based on the `setOTPPIN` policy
-  - the provided `otppin` is validated against the following policies: `otp_pin_minlength`, `otp_pin_maxlength` and `otp_pin_contents`
+  - The `pin` parameter is now required or prohibited based on the `setOTPPIN` policy
+  - the provided `pin` is validated against the following policies: `otp_pin_minlength`, `otp_pin_maxlength` and `otp_pin_contents`
 
 ### Fixed
 
-- Don't reject empty string as `otppin` when `otp_pin_contents=+`
+- Don't reject empty string as `pin` when `otp_pin_contents=+`
+
+## [3.4.4-dev0] - UNRELEASED
+
+### Fixed
+
+- Reverse the commit that prevented setting the otppin for mOTP tokens
+  and used it as token pin instead (was broken since 3.4.1)
 
 ## [3.4.3-1] - 2025-03-05
 

@@ -128,11 +128,16 @@ class TestUserserviceEnrollment(TestController):
 
     def test_correct_pin_on_enrollment(self):
         """
-        Ensure that the correct pin is set when enrolling a token
+        Ensure that the correct pin is set when enrolling a token.
+
+        This test performs the following steps:
+        1. Sets up a policy that allows token enrollment via self-service.
+        2. Enrolls a token with a specific PIN.
+        3. Validates that the token can be used with the correct PIN and OTP.
         """
 
         # Setup
-        params = {
+        policy_params = {
             "name": "enroll",
             "scope": "selfservice",
             "action": "enrollPW, setOTPPIN",
@@ -141,7 +146,7 @@ class TestUserserviceEnrollment(TestController):
             "active": True,
         }
 
-        response = self.make_system_request("setPolicy", params)
+        response = self.make_system_request("setPolicy", policy_params)
         assert "false" not in response, response
 
         auth_user = {
@@ -152,7 +157,7 @@ class TestUserserviceEnrollment(TestController):
             "type": "pw",
             "description": "Created via SelfService",
             "otpkey": "key",
-            "otppin": "pin",
+            "pin": "pin",
         }
         response = self.make_userselfservice_request(
             "enroll", params=token_params, auth_user=auth_user
@@ -164,11 +169,12 @@ class TestUserserviceEnrollment(TestController):
             "check",
             {
                 "user": auth_user["login"],
-                "pass": token_params["otppin"] + token_params["otpkey"],
+                "pass": token_params["pin"] + token_params["otpkey"],
             },
         )
-        assert response.json["result"]["status"]
-        assert response.json["result"]["value"]
+        resp_json = response.json
+        assert resp_json["result"]["status"] == True
+        assert resp_json["result"]["value"] == True
 
     def _assert_enrollment(self, params: EnrollmentTestParams):
         self.setUp()
@@ -291,21 +297,21 @@ class TestUserserviceEnrollment(TestController):
                 "policies": [
                     policy_enroll_totp_and_set_pin,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": True,
             },
             {
                 "policies": [
                     policy_enroll_totp_and_set_pin,
                 ],
-                "enroll_params": {"type": "totp", "otppin": None},
+                "enroll_params": {"type": "totp", "pin": None},
                 "expected": False,
             },
             {
                 "policies": [
                     policy_enroll_totp_and_set_pin,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "123"},
+                "enroll_params": {"type": "totp", "pin": "123"},
                 "expected": True,
             },
             {
@@ -313,7 +319,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_min_len_4,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": False,
             },
             {
@@ -321,7 +327,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_min_len_4,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "123"},
+                "enroll_params": {"type": "totp", "pin": "123"},
                 "expected": False,
             },
             {
@@ -329,7 +335,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_min_len_4,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "1234"},
+                "enroll_params": {"type": "totp", "pin": "1234"},
                 "expected": True,
             },
             {
@@ -337,7 +343,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_max_len_8,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "123456789"},
+                "enroll_params": {"type": "totp", "pin": "123456789"},
                 "expected": False,
             },
             {
@@ -345,7 +351,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_max_len_8,
                 ],
-                "enroll_params": {"type": "totp", "otppin": None},
+                "enroll_params": {"type": "totp", "pin": None},
                 "expected": False,
             },
             {
@@ -353,7 +359,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_max_len_8,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": True,
             },
             {
@@ -361,7 +367,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_max_len_8,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "123"},
+                "enroll_params": {"type": "totp", "pin": "123"},
                 "expected": True,
             },
             {
@@ -369,7 +375,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_c,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": False,
             },
             {
@@ -377,7 +383,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_c,
                 ],
-                "enroll_params": {"type": "totp", "otppin": None},
+                "enroll_params": {"type": "totp", "pin": None},
                 "expected": False,
             },
             {
@@ -385,7 +391,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_c,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "1!°"},
+                "enroll_params": {"type": "totp", "pin": "1!°"},
                 "expected": False,
             },
             {
@@ -393,7 +399,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_c,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a"},
+                "enroll_params": {"type": "totp", "pin": "a"},
                 "expected": True,
             },
             {
@@ -401,7 +407,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_n,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": False,
             },
             {
@@ -409,7 +415,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_n,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a!°"},
+                "enroll_params": {"type": "totp", "pin": "a!°"},
                 "expected": False,
             },
             {
@@ -417,7 +423,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_n,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "123"},
+                "enroll_params": {"type": "totp", "pin": "123"},
                 "expected": True,
             },
             {
@@ -425,7 +431,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_s,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": False,
             },
             {
@@ -433,7 +439,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_s,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a1°"},
+                "enroll_params": {"type": "totp", "pin": "a1°"},
                 "expected": False,
             },
             {
@@ -441,7 +447,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_s,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "!"},
+                "enroll_params": {"type": "totp", "pin": "!"},
                 "expected": True,
             },
             {
@@ -449,7 +455,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_o,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": False,
             },
             {
@@ -457,7 +463,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_o,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a1!"},
+                "enroll_params": {"type": "totp", "pin": "a1!"},
                 "expected": False,
             },
             {
@@ -465,7 +471,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_o,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "°"},
+                "enroll_params": {"type": "totp", "pin": "°"},
                 "expected": True,
             },
             {
@@ -473,7 +479,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_plus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": False,
             },
             {
@@ -481,7 +487,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_plus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a1!"},
+                "enroll_params": {"type": "totp", "pin": "a1!"},
                 "expected": False,
             },
             {
@@ -489,7 +495,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_plus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a"},
+                "enroll_params": {"type": "totp", "pin": "a"},
                 "expected": True,
             },
             {
@@ -497,7 +503,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_plus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "1"},
+                "enroll_params": {"type": "totp", "pin": "1"},
                 "expected": True,
             },
             {
@@ -505,7 +511,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_plus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a1"},
+                "enroll_params": {"type": "totp", "pin": "a1"},
                 "expected": True,
             },
             {
@@ -513,7 +519,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_minus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": False,
             },
             {
@@ -521,7 +527,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_minus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a"},
+                "enroll_params": {"type": "totp", "pin": "a"},
                 "expected": False,
             },
             {
@@ -529,7 +535,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_minus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "1"},
+                "enroll_params": {"type": "totp", "pin": "1"},
                 "expected": False,
             },
             {
@@ -537,7 +543,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_minus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a1!"},
+                "enroll_params": {"type": "totp", "pin": "a1!"},
                 "expected": False,
             },
             {
@@ -545,7 +551,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_minus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "!"},
+                "enroll_params": {"type": "totp", "pin": "!"},
                 "expected": False,
             },
             {
@@ -553,7 +559,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_minus_nc,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "a1"},
+                "enroll_params": {"type": "totp", "pin": "a1"},
                 "expected": True,
             },
             {
@@ -561,7 +567,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_plus_only,
                 ],
-                "enroll_params": {"type": "totp", "otppin": None},
+                "enroll_params": {"type": "totp", "pin": None},
                 "expected": False,
             },
             {
@@ -569,7 +575,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_plus_only,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "1"},
+                "enroll_params": {"type": "totp", "pin": "1"},
                 "expected": False,
             },
             {
@@ -577,7 +583,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_plus_only,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": True,
             },
             {
@@ -585,7 +591,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_minus_only,
                 ],
-                "enroll_params": {"type": "totp", "otppin": None},
+                "enroll_params": {"type": "totp", "pin": None},
                 "expected": False,
             },
             {
@@ -593,7 +599,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_minus_only,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "1"},
+                "enroll_params": {"type": "totp", "pin": "1"},
                 "expected": False,
             },
             {
@@ -601,7 +607,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp_and_set_pin,
                     policy_otp_pin_contents_minus_only,
                 ],
-                "enroll_params": {"type": "totp", "otppin": ""},
+                "enroll_params": {"type": "totp", "pin": ""},
                 "expected": True,
             },
         ]
@@ -640,7 +646,7 @@ class TestUserserviceEnrollment(TestController):
                 "policies": [
                     policy_enroll_totp,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "123"},
+                "enroll_params": {"type": "totp", "pin": "123"},
                 "expected": False,
             },
             {
@@ -648,7 +654,7 @@ class TestUserserviceEnrollment(TestController):
                     policy_enroll_totp,
                     policy_allow_set_pin,
                 ],
-                "enroll_params": {"type": "totp", "otppin": "123"},
+                "enroll_params": {"type": "totp", "pin": "123"},
                 "expected": True,
             },
             {

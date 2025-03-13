@@ -184,6 +184,10 @@
             urlparam['description'] = $("#motp_self_desc").val();
             urlparam['otpkey']      = $('#motp_secret').val();
             urlparam['otppin']      = $('#motp_s_pin1').val();
+            // Only include pin parameter if setOTPPIN policy is active
+            % if c.actions.get('setOTPPIN'):
+                urlparam['pin'] = $('#motp_token_pin1').val() || '';
+            % endif
             return urlparam;
         }
     </script>
@@ -217,6 +221,31 @@
                             <input autocomplete="off" type="password" onkeyup="checkpins('#motp_s_pin1,#motp_s_pin2');" id="motp_s_pin2" class="required text ui-widget-content ui-corner-all">
                         </td>
                     </tr>
+
+                    % if c.actions.get('setOTPPIN'):
+                    <tr id="pin_input">
+                        <td>
+                            <label for="motp_token_pin1">${_("Token-PIN")}</label>
+                        </td>
+                        <td>
+                            <input type="password" autocomplete="off" 
+                                   name="pin" id="motp_token_pin1" 
+                                   class="text ui-widget-content ui-corner-all">
+                        </td>
+                    </tr>
+                    <tr id="pin_confirm">
+                        <td>
+                            <label for="motp_token_pin2">${_("Token-PIN (again)")}</label>
+                        </td>
+                        <td>
+                            <input type="password" autocomplete="off" 
+                                   id="motp_token_pin" 
+                                   onkeyup="checkpins('#motp_token_pin1,#motp_token_pin2');"
+                                   class="text ui-widget-content ui-corner-all">
+                        </td>
+                    </tr>
+                    % endif
+
                     <tr>
                         <td>
                             <label for="motp_self_desc" id="motp_self_desc_label">${_("Description")}</label>
