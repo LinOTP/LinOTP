@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reverse the commit that prevented setting the otppin for mOTP tokens
   and used it as token pin instead (was broken since 3.4.1)
 
+### Changed
+
+- Change default JWT session timeout from 15 minutes to 30 minutes
+
 ## [3.4.3-1] - 2025-03-05
 
 ### Fixed
