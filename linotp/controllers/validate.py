@@ -32,9 +32,8 @@ validate controller - to check the authentication request
 import logging
 
 from flask_babel import gettext as _
-from werkzeug.exceptions import Unauthorized
 
-from flask import abort, current_app, g
+from flask import current_app, g
 
 from linotp.controllers.base import BaseController
 from linotp.flap import tmpl_context as c
@@ -56,15 +55,12 @@ from linotp.lib.policy import (
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.reply import (
     apply_detail_policies,
-    sendError,
     sendQRImageResult,
     sendResult,
 )
 from linotp.lib.token import get_token, get_token_owner, get_tokens
-from linotp.lib.user import User, getUserFromParam, getUserId, getUserInfo
-from linotp.lib.util import get_client
+from linotp.lib.user import User, getUserId, getUserInfo
 from linotp.model import db
-from linotp.tokens.base import TokenClass
 
 CONTENT_TYPE_PAIRING = 1
 
@@ -140,6 +136,10 @@ class ValidateController(BaseController):
         :rtype: Tuple(boolean, opt)
 
         """
+        user = request_context["RequestUser"]
+        # AUTHORIZATION Pre Check
+        check_user_authorization(user.login, user.realm, exception=True)
+
         opt = None
 
         options = {}
@@ -150,25 +150,13 @@ class ValidateController(BaseController):
             if para in options:
                 del options[para]
 
-        passw = param.get("pass")
-        user = getUserFromParam(param)
-
         # support for challenge verification
         challenge = param.get("challenge")
         if challenge is not None:
             options = {}
             options["challenge"] = challenge
 
-        g.audit["user"] = user.login
-        realm = user.realm or getDefaultRealm()
-        g.audit["realm"] = realm
-
-        # AUTHORIZATION Pre Check
-        # we need to overwrite the user.realm in case the
-        # user does not exist in the original realm (setrealm-policy)
-        user.realm = get_realm_for_setrealm(user.login, realm)
-        check_user_authorization(user.login, user.realm, exception=True)
-
+        passw = param.get("pass")
         vh = ValidationHandler()
         (ok, opt) = vh.checkUserPass(user, passw, options=options)
 
@@ -445,7 +433,7 @@ class ValidateController(BaseController):
                     )
                 if "True" == allowSAML:
                     # Now we get the attributes of the user
-                    user = getUserFromParam(param)
+                    user = request_context["RequestUser"]
                     (uid, resId, resIdC) = getUserId(user)
                     userInfo = getUserInfo(uid, resId, resIdC)
                     log.debug(
@@ -704,7 +692,7 @@ class ValidateController(BaseController):
             if serial is None:
                 user = param.get("user")
                 if user is not None:
-                    user = getUserFromParam(param)
+                    user = request_context["RequestUser"]
                     toks = get_tokens(user=user)
                     if len(toks) == 0:
                         raise Exception("No token found!")
@@ -863,9 +851,6 @@ class ValidateController(BaseController):
         message = "No sms message defined!"
 
         try:
-            user = getUserFromParam(param)
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm or getDefaultRealm()
             g.audit["success"] = 0
 
             (ret, opt) = self._check(param)
