@@ -89,17 +89,31 @@ class ValidateController(BaseController):
         """
         __before__ is called before every action
 
-        This currently only adds user_info to RequestUser.info since it was
-        previously only added for users with tokens (from their token info)
+        :param args: the arguments of the action
+        :param kwargs: the keyword arguments of the action
+        :return: None
         """
-        requestUser = request_context["RequestUser"]
-        if requestUser:
+
+        user = request_context["RequestUser"]
+        if user:
+            g.audit["user"] = user.login
+            g.audit["realm"] = user.realm
+
+            # we need to overwrite the user.realm in case the
+            # user does not exist in the original realm (setrealm-policy)
+            realm_to_set = get_realm_for_setrealm(user.login, user.realm)
+            if realm_to_set != user.realm:
+                user.realm = realm_to_set
+                request_context["RequestUser"] = user
+                g.audit["realm"] = realm_to_set
+
             try:
-                uid, resId, resIdC = getUserId(requestUser)
+                # fetch user info for details_on_success
+                uid, resId, resIdC = getUserId(user)
                 user_info = getUserInfo(uid, resId, resIdC)
                 if user_info:
-                    requestUser.info = user_info
-                request_context["RequestUser"] = requestUser
+                    user.info = user_info
+                request_context["RequestUser"] = user
             except:
                 pass
 
@@ -284,14 +298,10 @@ class ValidateController(BaseController):
                     )
                 )
 
-            #
             # serial is an optional parameter
-
             serial = param.get("serial", None)
 
-            # user is an optional parameter:
-            # if no 'user' in the parameters, the User object will be empty
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
 
             passw = param.get("pass")
             if passw is None:
