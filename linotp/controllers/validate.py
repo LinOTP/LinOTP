@@ -89,12 +89,8 @@ class ValidateController(BaseController):
         :param kwargs: the keyword arguments of the action
         :return: None
         """
-
         user = request_context["RequestUser"]
         if user:
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
-
             # we need to overwrite the user.realm in case the
             # user does not exist in the original realm (setrealm-policy)
             realm_to_set = get_realm_for_setrealm(user.login, user.realm)
