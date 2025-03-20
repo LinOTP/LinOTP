@@ -50,8 +50,8 @@ from linotp.lib.policy import (
     check_auth_serial,
     check_auth_tokentype,
     check_user_authorization,
+    get_realm_for_setrealm,
     is_auth_return,
-    set_realm,
 )
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.reply import (
@@ -152,7 +152,7 @@ class ValidateController(BaseController):
         # AUTHORIZATION Pre Check
         # we need to overwrite the user.realm in case the
         # user does not exist in the original realm (setrealm-policy)
-        user.realm = set_realm(user.login, realm, exception=True)
+        user.realm = get_realm_for_setrealm(user.login, realm)
         check_user_authorization(user.login, user.realm, exception=True)
 
         vh = ValidationHandler()
