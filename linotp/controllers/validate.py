@@ -140,23 +140,19 @@ class ValidateController(BaseController):
         # AUTHORIZATION Pre Check
         check_user_authorization(user.login, user.realm, exception=True)
 
-        opt = None
-
-        options = {}
-
-        # put everything in the options but the user, pass, init
-        options.update(param)
-        for para in ["pass", "user", "init"]:
-            if para in options:
-                del options[para]
-
-        # support for challenge verification
-        challenge = param.get("challenge")
-        if challenge is not None:
-            options = {}
-            options["challenge"] = challenge
-
         passw = param.get("pass")
+
+        # Handle challenge verification if present
+        challenge = param.get("challenge")
+        if challenge:
+            options = {"challenge": challenge}
+        else:
+            # Extract validation options from parameters
+            excluded_params = {"pass", "user", "init"}
+            options = {
+                k: v for k, v in param.items() if k not in excluded_params
+            }
+
         vh = ValidationHandler()
         (ok, opt) = vh.checkUserPass(user, passw, options=options)
 
