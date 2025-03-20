@@ -192,7 +192,7 @@ class GettokenController(BaseController):
 
         try:
             serial = getParam(param, "serial", optional)
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
             curTime = getParam(param, "curTime", optional)
 
             g.audit["user"] = user.login
