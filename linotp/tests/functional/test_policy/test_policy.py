@@ -4141,3 +4141,83 @@ class TestPolicies(TestPoliciesBase):
         )
 
         assert response.json["result"]["value"] == 1, response
+
+    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
+    def test_detail_on_success_with_passing_policies_passthru(self):
+        """
+        Check the authorization/detail_on_success with
+        passthru policy for users without tokens
+        """
+        self._test_detail_on_success_with_passing_policies("passthru")
+
+    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
+    def test_detail_on_success_with_passing_policies_passOnNoToken(self):
+        """
+        Check the authorization/detail_on_success with
+        passOnNoToken policy for users without tokens
+        """
+        self._test_detail_on_success_with_passing_policies("passOnNoToken")
+
+    def _test_detail_on_success_with_passing_policies(self, auth_policy):
+        """
+        Helper method to test detail_on_success with different authentication policies
+        """
+        # Set policies for authorization and authentication
+        policies = [
+            {
+                "name": "detail_on_success",
+                "scope": "authorization",
+                "realm": "myMixRealm",
+                "action": "detail_on_success",
+                "user": "*",
+                "client": "",
+            },
+            {
+                "name": auth_policy,
+                "scope": "authentication",
+                "realm": "myMixRealm",
+                "action": auth_policy,
+                "user": "*",
+                "client": "",
+            },
+        ]
+
+        # Create policies
+        for pol in policies:
+            response = self.make_system_request(
+                action="setPolicy", params=pol, auth_user="superadmin"
+            )
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"][
+                f"setPolicy {pol['name']}"
+            ], response
+
+        # Check successful validation with detail_on_success
+        params = {"user": "passthru_user1@myMixRealm", "pass": "geheim1"}
+        response = self.make_validate_request(action="check", params=params)
+
+        assert response.json["result"]["value"], response
+        assert response.json["detail"]["realm"] == "myMixRealm", response
+        assert response.json["detail"]["is_linotp_admin"] == False, response
+
+        expected_user = {
+            "username": "passthru_user1",
+            "userid": "1100",
+            "description": "Pascal True,Room 23,+49(0)1234-24,+49(0)5678-23,pass.true@example.com",
+            "email": "pass.true@example.com",
+            "givenname": "Pascal",
+            "surname": "True",
+            "phone": "+49(0)5678-23",
+            "mobile": "+49(0)1234-24",
+        }
+        assert response.json["detail"]["user"] == expected_user, response
+
+        # Clean up - delete policies
+        for pol in policies:
+            response = self.make_system_request(
+                action="delPolicy",
+                params={"name": pol["name"]},
+                auth_user="superadmin",
+            )
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"]["delPolicy"]

@@ -72,7 +72,6 @@ log = logging.getLogger(__name__)
 
 
 class ValidateController(BaseController):
-
     """
     The linotp.controllers are the implementation of the web-API to talk to the LinOTP server.
     The ValidateController is used to validate the username with its given OTP value.
@@ -85,6 +84,24 @@ class ValidateController(BaseController):
     """
 
     jwt_exempt = True  # Don't do JWT auth in this controller
+
+    def __before__(self, *args, **kwargs):
+        """
+        __before__ is called before every action
+
+        This currently only adds user_info to RequestUser.info since it was
+        previously only added for users with tokens (from their token info)
+        """
+        requestUser = request_context["RequestUser"]
+        if requestUser:
+            try:
+                uid, resId, resIdC = getUserId(requestUser)
+                user_info = getUserInfo(uid, resId, resIdC)
+                if user_info:
+                    requestUser.info = user_info
+                request_context["RequestUser"] = requestUser
+            except:
+                pass
 
     @staticmethod
     def __after__(response):
