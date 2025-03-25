@@ -1214,6 +1214,7 @@ class TestAdminController(TestController):
                 "expected_audit_faulty": {
                     **expected_audit_faulty,
                     "user": "hans",
+                    "realm": "mydefrealm",
                 },
             },
             "unassign": {

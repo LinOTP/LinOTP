@@ -333,7 +333,7 @@ class TokensController(BaseController):
 
         param = self.request_params
         try:
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
             check_result = checkPolicyPre("admin", "show", param, user=user)
 
             # realms:

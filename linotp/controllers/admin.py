@@ -279,7 +279,7 @@ class AdminController(BaseController, JWTMixin):
                 [u.strip() for u in ufields.split(",")] if ufields else []
             )
 
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
 
             # check admin authorization
             res = checkPolicyPre("admin", "show", param, user=user)
@@ -374,10 +374,7 @@ class AdminController(BaseController, JWTMixin):
             elif isinstance(serials, list):
                 serials = set(serials)
 
-            user = getUserFromParam(param)
-
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm or ""
+            user = request_context["RequestUser"]
 
             if not serials and not user:
                 raise ParameterError("missing parameter user or serial!")
@@ -474,9 +471,8 @@ class AdminController(BaseController, JWTMixin):
         param = self.request_params
         try:
             serial = param.get("serial")
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
             g.audit["serial"] = serial
-            g.audit["user"] = user.login
 
             # check admin authorization
             checkPolicyPre("admin", "enable", param, user=user)
@@ -635,10 +631,8 @@ class AdminController(BaseController, JWTMixin):
         param = self.request_params
         try:
             serial = param.get("serial")
-            user = getUserFromParam(param)
-            auth_user = getUserFromRequest()
+            user = request_context["RequestUser"]
             g.audit["serial"] = serial
-            g.audit["user"] = user.login
 
             # check admin authorization
             checkPolicyPre("admin", "disable", param, user=user)
@@ -826,14 +820,8 @@ class AdminController(BaseController, JWTMixin):
 
             # --------------------------------------------------------------- --
 
-            # fetch user from parameters.
-
-            user = getUserFromParam(params)
-
-            # --------------------------------------------------------------- --
-
             # check admin authorization
-
+            user = request_context["RequestUser"]
             res = checkPolicyPre("admin", "init", params, user=user)
 
             # --------------------------------------------------------------- --
@@ -893,7 +881,6 @@ class AdminController(BaseController, JWTMixin):
                 g.audit["token_type"] = token.type
 
             g.audit["success"] = ret
-            g.audit["user"] = user.login
             g.audit["realm"] = user.realm or ", ".join(tokenrealms)
             g.reporting["realms"] = set(token.getRealms() or ["/:no realm:/"])
             # --------------------------------------------------------------- --
@@ -954,7 +941,7 @@ class AdminController(BaseController, JWTMixin):
             except KeyError:
                 raise ParameterError("Missing parameter: 'serial'")
 
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
 
             # check admin authorization
             checkPolicyPre("admin", "unassign", param)
@@ -1023,7 +1010,7 @@ class AdminController(BaseController, JWTMixin):
         try:
             upin = param.get("pin")
 
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
 
             serials = param.get("serial", set())
             if isinstance(serials, str):
@@ -1032,7 +1019,6 @@ class AdminController(BaseController, JWTMixin):
                 serials = set(serials)
 
             g.audit["serial"] = " ".join(serials)
-            g.audit["user"] = user.login
 
             log.info("[assign] assigning token(s) with serial(s) %r", serials)
 
@@ -1413,12 +1399,10 @@ class AdminController(BaseController, JWTMixin):
             param = getLowerParams(self.request_params)
 
             serial = param.get("serial")
-            user = getUserFromParam(param)
             g.audit["serial"] = serial
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
 
             # check admin authorization
+            user = request_context["RequestUser"]
             checkPolicyPre("admin", "set", param, user=user)
 
             th = TokenHandler()
@@ -1768,10 +1752,8 @@ class AdminController(BaseController, JWTMixin):
         param = self.request_params
         try:
             serial = param.get("serial")
-            user = getUserFromParam(param)
             g.audit["serial"] = serial
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
+            user = request_context["RequestUser"]
 
             try:
                 otp1 = param["otp1"]
@@ -1881,8 +1863,7 @@ class AdminController(BaseController, JWTMixin):
             checkPolicyPre("admin", "userlist", param)
 
             filter_fields = 0
-            user = getUserFromParam(param)
-            g.audit["user"] = user.login
+            user = request_context["RequestUser"]
 
             log.info("[userlist] displaying users with param: %s, ", param)
 
@@ -2029,10 +2010,8 @@ class AdminController(BaseController, JWTMixin):
         param = self.request_params
 
         serial = param.get("serial")
-        user = getUserFromParam(param)
         g.audit["serial"] = serial
-        g.audit["user"] = user.login
-        g.audit["realm"] = user.realm
+        user = request_context["RequestUser"]
 
         try:
             # check admin authorization
@@ -2812,11 +2791,9 @@ class AdminController(BaseController, JWTMixin):
             transid = param.get("transactionid", None) or param.get(
                 "state", None
             )
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
             serial = param.get("serial")
             g.audit["serial"] = serial
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
             all = param.get("open", "False").lower() == "true"
 
             if all:
@@ -2928,10 +2905,8 @@ class AdminController(BaseController, JWTMixin):
             params = self.request_params.copy()
 
             serial = params.get("serial")
-            user = getUserFromParam(params)
             g.audit["serial"] = serial
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm
+            user = request_context["RequestUser"]
 
             # ---------------------------------------------------------------- -
 

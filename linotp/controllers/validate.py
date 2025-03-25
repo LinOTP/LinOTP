@@ -32,9 +32,8 @@ validate controller - to check the authentication request
 import logging
 
 from flask_babel import gettext as _
-from werkzeug.exceptions import Unauthorized
 
-from flask import abort, current_app, g
+from flask import current_app, g
 
 from linotp.controllers.base import BaseController
 from linotp.flap import tmpl_context as c
@@ -50,21 +49,18 @@ from linotp.lib.policy import (
     check_auth_serial,
     check_auth_tokentype,
     check_user_authorization,
+    get_realm_for_setrealm,
     is_auth_return,
-    set_realm,
 )
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.reply import (
     apply_detail_policies,
-    sendError,
     sendQRImageResult,
     sendResult,
 )
 from linotp.lib.token import get_token, get_token_owner, get_tokens
-from linotp.lib.user import User, getUserFromParam, getUserId, getUserInfo
-from linotp.lib.util import get_client
+from linotp.lib.user import User, getUserId, getUserInfo
 from linotp.model import db
-from linotp.tokens.base import TokenClass
 
 CONTENT_TYPE_PAIRING = 1
 
@@ -89,17 +85,27 @@ class ValidateController(BaseController):
         """
         __before__ is called before every action
 
-        This currently only adds user_info to RequestUser.info since it was
-        previously only added for users with tokens (from their token info)
+        :param args: the arguments of the action
+        :param kwargs: the keyword arguments of the action
+        :return: None
         """
-        requestUser = request_context["RequestUser"]
-        if requestUser:
+        user = request_context["RequestUser"]
+        if user:
+            # we need to overwrite the user.realm in case the
+            # user does not exist in the original realm (setrealm-policy)
+            realm_to_set = get_realm_for_setrealm(user.login, user.realm)
+            if realm_to_set != user.realm:
+                user.realm = realm_to_set
+                request_context["RequestUser"] = user
+                g.audit["realm"] = realm_to_set
+
             try:
-                uid, resId, resIdC = getUserId(requestUser)
+                # fetch user info for details_on_success
+                uid, resId, resIdC = getUserId(user)
                 user_info = getUserInfo(uid, resId, resIdC)
                 if user_info:
-                    requestUser.info = user_info
-                request_context["RequestUser"] = requestUser
+                    user.info = user_info
+                request_context["RequestUser"] = user
             except:
                 pass
 
@@ -126,34 +132,22 @@ class ValidateController(BaseController):
         :rtype: Tuple(boolean, opt)
 
         """
-        opt = None
-
-        options = {}
-
-        # put everything in the options but the user, pass, init
-        options.update(param)
-        for para in ["pass", "user", "init"]:
-            if para in options:
-                del options[para]
+        user = request_context["RequestUser"]
+        # AUTHORIZATION Pre Check
+        check_user_authorization(user.login, user.realm, exception=True)
 
         passw = param.get("pass")
-        user = getUserFromParam(param)
 
-        # support for challenge verification
+        # Handle challenge verification if present
         challenge = param.get("challenge")
-        if challenge is not None:
-            options = {}
-            options["challenge"] = challenge
-
-        g.audit["user"] = user.login
-        realm = user.realm or getDefaultRealm()
-        g.audit["realm"] = realm
-
-        # AUTHORIZATION Pre Check
-        # we need to overwrite the user.realm in case the
-        # user does not exist in the original realm (setrealm-policy)
-        user.realm = set_realm(user.login, realm, exception=True)
-        check_user_authorization(user.login, user.realm, exception=True)
+        if challenge:
+            options = {"challenge": challenge}
+        else:
+            # Extract validation options from parameters
+            excluded_params = {"pass", "user", "init"}
+            options = {
+                k: v for k, v in param.items() if k not in excluded_params
+            }
 
         vh = ValidationHandler()
         (ok, opt) = vh.checkUserPass(user, passw, options=options)
@@ -284,14 +278,10 @@ class ValidateController(BaseController):
                     )
                 )
 
-            #
             # serial is an optional parameter
-
             serial = param.get("serial", None)
 
-            # user is an optional parameter:
-            # if no 'user' in the parameters, the User object will be empty
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
 
             passw = param.get("pass")
             if passw is None:
@@ -435,7 +425,7 @@ class ValidateController(BaseController):
                     )
                 if "True" == allowSAML:
                     # Now we get the attributes of the user
-                    user = getUserFromParam(param)
+                    user = request_context["RequestUser"]
                     (uid, resId, resIdC) = getUserId(user)
                     userInfo = getUserInfo(uid, resId, resIdC)
                     log.debug(
@@ -694,7 +684,7 @@ class ValidateController(BaseController):
             if serial is None:
                 user = param.get("user")
                 if user is not None:
-                    user = getUserFromParam(param)
+                    user = request_context["RequestUser"]
                     toks = get_tokens(user=user)
                     if len(toks) == 0:
                         raise Exception("No token found!")
@@ -853,9 +843,6 @@ class ValidateController(BaseController):
         message = "No sms message defined!"
 
         try:
-            user = getUserFromParam(param)
-            g.audit["user"] = user.login
-            g.audit["realm"] = user.realm or getDefaultRealm()
             g.audit["success"] = 0
 
             (ret, opt) = self._check(param)

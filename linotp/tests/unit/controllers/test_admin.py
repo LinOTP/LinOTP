@@ -25,7 +25,6 @@
 #    Support: www.linotp.de
 #
 import copy
-import json
 import unittest
 
 import pytest
@@ -34,6 +33,7 @@ from mock import mock
 import flask
 
 from linotp.controllers.admin import AdminController
+from linotp.lib.user import User
 
 
 @pytest.mark.usefixtures("app")
@@ -85,6 +85,7 @@ class TestAdminController(unittest.TestCase):
     @mock.patch("linotp.model.db.session")
     @mock.patch("linotp.controllers.admin.Response")
     @mock.patch("linotp.app.request")
+    @mock.patch("linotp.controllers.admin.request_context", new={})
     @mock.patch(
         "linotp.controllers.admin.BaseController.__init__", return_value=None
     )
@@ -114,11 +115,16 @@ class TestAdminController(unittest.TestCase):
 
         flask.g.audit = {}
 
-        admin = AdminController()
-
-        mock_request.json = request_params
-
-        admin.show()
+        # Add a mock user to the request context
+        mock_user = User(login="admin", realm="adminrealm")
+        # Create a new dict for request_context to avoid modifying the mock directly
+        request_context = {"RequestUser": mock_user, "action": "show"}
+        with mock.patch(
+            "linotp.controllers.admin.request_context", new=request_context
+        ):
+            admin = AdminController()
+            mock_request.json = request_params
+            admin.show()
 
     @mock.patch("linotp.controllers.admin.AdminController._parse_tokeninfo")
     def test_with_tokeninfo_format(self, mock_parse_tokeninfo):

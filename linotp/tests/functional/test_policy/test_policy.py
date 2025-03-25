@@ -4221,3 +4221,109 @@ class TestPolicies(TestPoliciesBase):
             )
             assert response.json["result"]["status"], response
             assert response.json["result"]["value"]["delPolicy"]
+
+    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
+    def test_setrealm_in_check_status(self):
+        """
+        Confirm that setrealm changes the realm in check_status
+        LINOTP-2275
+        """
+        # Set policies for authorization and authentication
+        real_realm = "myDefRealm"
+        other_realm = "myMixRealm"
+
+        policies = [
+            {
+                "name": "setrealm",
+                "scope": "authorization",
+                "realm": "*",
+                "action": f"setrealm={real_realm}",
+                "user": "*",
+                "client": "",
+            },
+            {
+                "name": "challenge_response",
+                "scope": "authentication",
+                "realm": "*",
+                "action": "challenge_response=*",
+                "user": "*",
+                "client": "",
+            },
+        ]
+
+        # Create policies
+        for pol in policies:
+            response = self.make_system_request(
+                action="setPolicy", params=pol, auth_user="superadmin"
+            )
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"][
+                f"setPolicy {pol['name']}"
+            ], response
+
+        # enroll token
+        user = "passthru_user1"
+        otpkey = "otpkey"
+        pin = "pin"
+
+        params = {
+            "user": user,
+            "realm": real_realm,
+            "type": "pw",
+            "otpkey": otpkey,
+            "pin": pin,
+        }
+        response = self.make_admin_request(
+            action="init", params=params, auth_user="superadmin"
+        )
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"], response
+
+        # make validate/check request with real_realm to trigger challenge
+        response = self.make_validate_request(
+            action="check",
+            params={"user": user, "realm": real_realm, "pass": pin},
+        )
+        assert response.json["result"]["status"] is True, response
+        assert response.json["result"]["value"] is False, response
+        transaction_id = response.json["detail"]["transactionid"]
+        assert transaction_id, response
+
+        # check challenge status with other_realm
+        response = self.make_validate_request(
+            action="check_status",
+            params={
+                "user": user,
+                "realm": other_realm,
+                "transactionid": transaction_id,
+                "pass": pin,
+            },
+        )
+        assert response.json["result"]["status"] is True, response
+        assert response.json["result"]["value"] is True, response
+        assert (
+            response.json["detail"]["transactions"][transaction_id] is not None
+        ), response
+
+        # Accept challenge with other_realm
+        response = self.make_validate_request(
+            action="check",
+            params={
+                "user": user,
+                "realm": other_realm,
+                "transactionid": transaction_id,
+                "pass": otpkey,
+            },
+        )
+        assert response.json["result"]["status"] is True, response
+        assert response.json["result"]["value"] is True, response
+
+        # Clean up - delete policies
+        for pol in policies:
+            response = self.make_system_request(
+                action="delPolicy",
+                params={"name": pol["name"]},
+                auth_user="superadmin",
+            )
+            assert response.json["result"]["status"], response
+            assert response.json["result"]["value"]["delPolicy"]

@@ -489,7 +489,7 @@ class ManageController(BaseController):
             c.psize = param.get("rp")
             c.realm = param.get("realm")
 
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
             # check admin authorization
             # check if we got a realm or resolver, that is ok!
             checkPolicyPre(

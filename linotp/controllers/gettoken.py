@@ -192,12 +192,8 @@ class GettokenController(BaseController):
 
         try:
             serial = getParam(param, "serial", optional)
-            user = getUserFromParam(param)
+            user = request_context["RequestUser"]
             curTime = getParam(param, "curTime", optional)
-
-            g.audit["user"] = user.login
-            if "" != user.login:
-                g.audit["realm"] = user.realm or getDefaultRealm()
 
             if serial:
                 log.debug("[getotp] retrieving OTP value for token %s", serial)

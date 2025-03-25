@@ -2925,16 +2925,22 @@ def checkPolicyPost(controller, method, param=None, user=None):
 #
 
 
-def set_realm(login, realm, exception=False):
+def get_realm_for_setrealm(login, realm):
     """
-    this function reads the policy scope: authorization, client: x.y.z,
-    action: setrealm=new_realm and overwrites the existing realm of the user
-    with the new_realm.
-    This can be used, if the client is not able to pass a realm and the users
-    are not be located in the default realm.
+    This function reads the policy scope: authorization, client: x.y.z,
+    action: setrealm=new_realm and returns the realm that should be used
+    based on the policy.
 
-    returns:
-        realm    - name of the new realm taken from the policy
+    This can be used when the client is not able to pass a realm and the users
+    are not located in the default realm.
+
+    Args:
+        login (str): The login of the user
+        realm (str): The original realm of the requesting user
+
+    Returns:
+        str: The realm name that should be used according to policy setrealm
+             If no policy applies, returns the original realm
     """
 
     client = _get_client()
