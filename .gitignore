@@ -54,3 +54,6 @@ linotp.sqlite_audit
 linotp/audit-private.pem
 linotp/audit-public.pem
 linotp/encKey
+
+# MacOS
+.DS_Store
