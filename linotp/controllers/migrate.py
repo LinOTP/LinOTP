@@ -38,7 +38,6 @@ import logging
 import os
 
 from linotp.controllers.base import BaseController, methods
-from linotp.lib import deprecated_methods
 from linotp.lib.migrate import DecryptionError, MigrationHandler
 from linotp.lib.policy import PolicyException
 from linotp.lib.reply import sendError, sendResult
@@ -85,7 +84,7 @@ class MigrateController(BaseController):
             - and stored in an backup file (defined by the hash of backupid)
 
         :param pass: passphrase used for encrypting data in the backup file
-        :param backupid: used to controll the intermediate backup file
+        :param backupid: used to control the intermediate backup file
 
         """
 
@@ -159,7 +158,7 @@ class MigrateController(BaseController):
         written
 
         :param pass: passphrase used for encrypting data in the backup file
-        :param backupid: used to controll the intermediate backup file
+        :param backupid: used to control the intermediate backup file
         :param remove_backup (optional): if set to False, backup file will not
                 be deleted after backup.
                 Default is that backup is deleted, even in case of error
@@ -224,7 +223,7 @@ class MigrateController(BaseController):
 
                     # Counters is the last entry - compare the counters
                     elif "Counter" in restore_data and mig:
-                        # check inzegryty for 'number of entries'
+                        # check integrity for 'number of entries'
                         backup_data = restore_data["Counter"]
 
                         mac = mig.calculate_mac(json.dumps(backup_data))
