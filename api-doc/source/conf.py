@@ -26,7 +26,7 @@ author = "netgo software GmbH"
 # The short X.Y version
 version = "3.4"
 # The full version, including alpha/beta/rc tags
-release = "3.4.4.dev0"
+release = "3.4.4rc0"
 
 # -- General configuration ---------------------------------------------------
 

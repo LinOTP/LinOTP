@@ -1,4 +1,4 @@
-linotp (3.4.4~dev0-1) UNRELEASED; urgency=medium
+linotp (3.4.4~rc0-1) UNRELEASED; urgency=medium
 
   Fix:
   * Reverse the commit that prevented setting the otppin for mOTP tokens
@@ -12,7 +12,7 @@ linotp (3.4.4~dev0-1) UNRELEASED; urgency=medium
     Now, the user information is correctly included in the response.
   * Apply policy `setrealm` in ValidateController when the user is known
 
- -- LinOTP Packaging <packaging@linotp.de>  Wed, 12 Mar 2025 07:00:00 +0100
+ -- LinOTP Packaging <packaging@linotp.de>  Wed, 09 Apr 2025 11:00:00 +0100
  
 linotp (3.4.3-1) buster; urgency=medium
 
