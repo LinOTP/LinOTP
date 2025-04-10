@@ -35,7 +35,9 @@ from linotp.controllers.base import BaseController, add_hyphenated_url
 from linotp.flap import render_mako as render
 from linotp.flap import tmpl_context as c
 from linotp.lib.context import request_context
+from linotp.lib.realm import getDefaultRealm, getRealms
 from linotp.lib.reply import sendError
+from linotp.lib.user import getRealmBox
 from linotp.lib.util import get_copyright_info, get_version
 from linotp.model import db
 
@@ -70,6 +72,12 @@ class AuthController(BaseController):
         try:
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
+
+            c.defaultRealm = getDefaultRealm()
+            c.realmArray = [c.defaultRealm] + [
+                realm for realm in getRealms() if realm != c.defaultRealm
+            ]
+            c.realmbox = getRealmBox()
 
         except Exception as exx:
             log.error("[__before__::%r] exception %r", action, exx)

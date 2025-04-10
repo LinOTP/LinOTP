@@ -53,6 +53,24 @@ ${_("Enter your username, the OTP PIN (Password) and the OTP value.")}
                 <td>${_("username")}</td>
                 <td><input type="text" id="user" name="user" class="required"></td>
             </tr>
+            %if c.realmbox:
+            <tr>
+                <td>${_("realm")}</td>
+                <td>
+                    <select name="realm" id="realm">
+                        %for realm in c.realmArray:
+                        <option value="${realm}"
+                            %if c.defaultRealm == realm:
+                            selected
+                            %endif
+                            >
+                        ${realm}
+                        </option>
+                        %endfor
+                    </select>
+                </td>
+            </tr>
+            %endif
             <tr>
                 <td>${_("OTP PIN and OTP value")}</td>
                 <td><input type="password" autocomplete="off" name="pass" id="pass" class="required"></td>

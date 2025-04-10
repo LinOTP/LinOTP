@@ -45,11 +45,15 @@ function clientUrlFetchSync(myUrl, params) {
 
 function getOcra2Challenge() {
   var user = $("#user").val();
+  var realm = $("#realm").val();
   var targetId = "display";
   var userId = "user2";
 
   var params = {};
-  params["user"] = $("#user").val();
+  params["user"] = user;
+  if (realm != undefined) {
+    params["realm"] = realm;
+  }
   params["pass"] = $("#pin").val();
   params["data"] = $("#challenge").val();
   params["qr"] = "img";
@@ -73,6 +77,7 @@ function getOcra2Challenge() {
 
 function triggerChallenge() {
   var user = $("#user").val();
+  var realm = $("#realm").val();
   var pin = $("#pin").val();
   var data = $("#challenge").val();
 
@@ -82,6 +87,9 @@ function triggerChallenge() {
 
   var params = {};
   params["user"] = user;
+  if (realm != undefined) {
+    params["realm"] = realm;
+  }
   params["pass"] = pin;
   params["data"] = data;
   params["qr"] = "html";
@@ -130,11 +138,15 @@ function triggerChallenge() {
 
 function check_status() {
   var user = $("#user").val();
+  var realm = $("#realm").val();
   var pin = $("#pin").val();
   var transactionid = $("#transactionid").val();
 
   var params = {};
   params["user"] = user;
+  if (realm != undefined) {
+    params["realm"] = realm;
+  }
   params["pass"] = pin;
   params["transactionid"] = transactionid;
 
@@ -170,11 +182,15 @@ function check_status() {
 
 function submitChallengeResponse() {
   var user = $("#user").val();
+  var realm = $("#realm").val();
   var otp = $("#otp").val();
   var transactionid = $("#transactionid").val();
 
   var params = {};
   params["user"] = user;
+  if (realm != undefined) {
+    params["realm"] = realm;
+  }
   params["pass"] = otp;
   params["transactionid"] = transactionid;
 
@@ -199,6 +215,7 @@ function submitChallengeResponse() {
 function login_user(column) {
   var user = "";
   var pass = "";
+  var realm = $("#realm").val();
   if (column == 3) {
     user = $("#user3").val();
     pass = encodeURIComponent($("#pass3").val() + $("#otp3").val());
@@ -209,6 +226,9 @@ function login_user(column) {
 
   var params = {};
   params["user"] = user;
+  if (realm != undefined) {
+    params["realm"] = realm;
+  }
   params["pass"] = pass;
 
   var resp = clientUrlFetchSync("/validate/check", params);

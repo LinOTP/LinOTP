@@ -2,6 +2,14 @@
   width: 100%;
 }
 
+#auth table input,
+#auth table button,
+#auth table textarea,
+#auth table select {
+  width: 200px;
+  box-sizing: border-box;
+}
+
 #auth > table > tbody > tr:not(:last-child) > td {
   border-bottom: 1px solid grey;
 }

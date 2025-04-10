@@ -57,7 +57,26 @@ ${_("To verify your result enter the OTP value into the form below.")}
                 </tr><tr>
                 <td>${_("username")}</td>
                 <td><input type="text" id="user" name="user" class="required"></td>
-                </tr><tr>
+                </tr>
+                %if c.realmbox:
+                <tr>
+                    <td>${_("realm")}</td>
+                    <td>
+                        <select name="realm" id="realm">
+                            %for realm in c.realmArray:
+                            <option value="${realm}"
+                                %if c.defaultRealm == realm:
+                                selected
+                                %endif
+                                >
+                            ${realm}
+                            </option>
+                            %endfor
+                        </select>
+                    </td>
+                </tr>
+                %endif
+                <tr>
                 <td>${_("OTP PIN")}</td>
                 <td><input type="text" id="pin" name="pass" class="required"></td>
                 </tr><tr>
