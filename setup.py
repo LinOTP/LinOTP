@@ -103,21 +103,18 @@ setup_requirements = [
 # install with
 # > pip install -e ".[postgres]"
 postgres_requirements = [
-    # 'psycopg2' would require to compile some sources
-    "psycopg2-binary",
+    "psycopg2-binary",  # 'psycopg2' would require to compile some sources
 ]
 
 # install with
 # > pip install -e ".[mysql]"
 mysql_requirements = [
-    # 'mysql' driver is deprecated and replaced by 'mysqlclient'
     "mysqlclient",
 ]
 
 # Requirements for SMPP support.
-# Use
+# install with
 # > pip install -e ".[smpp]"
-# to install.
 smpp_requirements = [
     "smpplib",
 ]
