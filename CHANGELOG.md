@@ -21,12 +21,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don't reject empty string as `pin` when `otp_pin_contents=+`
 
-## [3.4.4-dev0] - UNRELEASED
+## [3.4.4-rc0] - UNRELEASED
 
 ### Fixed
 
 - Reverse the commit that prevented setting the otppin for mOTP tokens
   and used it as token pin instead (was broken since 3.4.1)
+- User information was not included in ValidateController responses when
+  - the `detail_on_success` policy was active
+  - the user had no tokens assigned
+  - authentication was successful through a passing policy (e.g., `passthru` or `passOnNoToken`)
+  Previously, in this scenario the user object in the response was empty, which could
+  impact integrations that rely on the detail_on_success policy, such as LinOTP IdP.
+  Now, the user information is correctly included in the response.
+- Apply policy `setrealm` in ValidateController when the user is known
 
 ### Changed
 
