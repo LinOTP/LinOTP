@@ -289,6 +289,8 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             log.error("Failed to connect to server %r", exx)
 
         request_context["RequestUser"] = requestUser
+        g.audit["user"] = requestUser.login if requestUser else None
+        g.audit["realm"] = requestUser.realm if requestUser else None
 
     @property
     def request_params(self):
