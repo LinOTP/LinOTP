@@ -100,7 +100,7 @@ class RWLock:
         """Demote an already-acquired write lock to a read lock"""
         self.monitor.acquire()
         self.rwlock = 1
-        self.readers_ok.notifyAll()
+        self.readers_ok.notify_all()
         self.monitor.release()
 
     def release(self):
@@ -119,5 +119,5 @@ class RWLock:
             self.writers_ok.release()
         elif wake_readers:
             self.readers_ok.acquire()
-            self.readers_ok.notifyAll()
+            self.readers_ok.notify_all()
             self.readers_ok.release()
