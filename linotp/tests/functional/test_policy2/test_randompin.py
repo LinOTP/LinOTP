@@ -218,6 +218,32 @@ class TestRandompinController(TestController):
             pin + token["otps"].popleft(),
         )
 
+    def test_selfservice_enroll(self):
+        """
+        otp_pin_random sets a random pin when enrolling a token in selfservice
+        """
+
+        self._create_selfservice_policy("myDefRealm")
+
+        user = "aἰσχύλος"  # realm myDefRealm
+        pwd = "Πέρσαι"
+        token1 = deepcopy(self.tokens[0])
+        token2 = deepcopy(self.tokens[0])
+
+        # Enroll first token without otp_pin_random policy
+        self._enroll_token_in_selfservice(user, pwd, token1)
+        # Login with only OTP succeeds
+        self._validate_check_s(token1["serial"], token1["otps"].popleft())
+
+        self._create_randompin_policy("myDefRealm")
+
+        # Enroll second token with otp_pin_random policy
+        self._enroll_token_in_selfservice(user, pwd, token2)
+        # Login with only OTP fails (because PIN is unknown)
+        self._validate_check_s(
+            token2["serial"], token2["otps"].popleft(), expected="value-false"
+        )
+
     def test_admin_setpin(self):
         """
         Admin can set the PIN, even after the user has set it in selfservice
@@ -385,7 +411,7 @@ class TestRandompinController(TestController):
         params = {
             "name": policy_name,
             "scope": "selfservice",
-            "action": "setOTPPIN",
+            "action": "setOTPPIN, enrollHMAC",
             "realm": realm,
         }
         self.create_policy(params)
@@ -405,6 +431,31 @@ class TestRandompinController(TestController):
         }
         self.create_policy(params)
         self.policies_for_deletion.add(policy_name)
+
+    def _enroll_token_in_selfservice(self, user, pwd, token):
+        """
+        Log into selfservice and enroll token
+
+        :param user: username or username@realm
+        :param pwd: user password for selfservice session
+        :param token: A dictionary with token information. This dictionary is
+            augmented with 'serial' after enrolling the token.
+        """
+        params = {
+            "otpkey": token["key"],
+            "type": token["type"],
+            "otplen": token["otplen"],
+        }
+
+        response = self.make_userservice_request(
+            "enroll", params, auth_user=(user, pwd)
+        )
+
+        content = response.json
+        assert content["result"]["status"]
+        assert content["result"]["value"]
+        token["serial"] = content["detail"]["serial"]
+        self.token_for_deletion.add(token["serial"])
 
     def _enroll_token(self, token, user=None):
         """
