@@ -4331,6 +4331,9 @@ msgstr "auf dem RADIUS Server"
 msgid "on remote server"
 msgstr "auf dem Remote-Server"
 
+msgid "operation successfully executed"
+msgstr "Operation erfolgreich ausgeführt"
+
 msgid "or email"
 msgstr "oder E-Mail"
 
