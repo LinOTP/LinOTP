@@ -69,8 +69,8 @@ class TestRandompinController(TestController):
         }
     ]
     # set up in setUp
-    policies_for_deletion = None
-    token_for_deletion = None
+    policies_for_deletion = set()
+    token_for_deletion = set()
 
     def setUp(self):
         TestController.setUp(self)
@@ -78,8 +78,6 @@ class TestRandompinController(TestController):
         self.create_common_realms()
         self.token_for_deletion = set()
         self.policies_for_deletion = set()
-
-        return
 
     def tearDown(self):
         # Delete policies
@@ -92,7 +90,6 @@ class TestRandompinController(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def test_simple_enroll(self):
         """
@@ -121,7 +118,6 @@ class TestRandompinController(TestController):
 
         # Login with only OTP fails
         self._validate(user, token2["otps"].popleft(), expected="value-false")
-        return
 
     def test_simple_assign(self):
         """
@@ -166,7 +162,6 @@ class TestRandompinController(TestController):
 
         # Login with only OTP fails (PIN unknown)
         self._validate(user, token2["otps"].popleft(), expected="value-false")
-        return
 
     def test_multi_assign(self):
         """
@@ -196,18 +191,9 @@ class TestRandompinController(TestController):
             token2["serial"], token2["otps"].popleft(), expected="value-false"
         )
 
-    def test_selfservice(self):
+    def test_selfservice_set_pin_after_enroll(self):
         """
-        User logs into selfservice and sets PIN then authenticates with PIN+OTP
-
-        After enrolling the PIN is unknown and the token can't be used. The
-        user can log into the selfservice and set a PIN for his token. Then
-        he can authenticate with PIN+OTP.
-
-        This test will fail with WebTest 1.2.1 (Debian Squeeze) because of a
-        bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
-        https://github.com/Pylons/webtest/
-                            commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
+        Token is enrolled by admin, user logs into selfservice, sets PIN and authenticates successfully
         """
 
         self._create_randompin_policy("myDefRealm")
@@ -215,6 +201,7 @@ class TestRandompinController(TestController):
 
         # Enroll token
         user = "aἰσχύλος"  # realm myDefRealm
+        pwd = "Πέρσαι"
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -222,7 +209,6 @@ class TestRandompinController(TestController):
         self._validate(user, token["otps"].popleft(), expected="value-false")
 
         # User logs into selfservice and sets PIN
-        pwd = "Πέρσαι"
         pin = "mytokenpin"
         self._set_pin_in_selfservice(user, pwd, token["serial"], pin)
 
@@ -231,7 +217,6 @@ class TestRandompinController(TestController):
             user,
             pin + token["otps"].popleft(),
         )
-        return
 
     def test_admin_setpin(self):
         """
@@ -279,7 +264,6 @@ class TestRandompinController(TestController):
             user,
             "second-admin-set-pin" + token["otps"].popleft(),
         )
-        return
 
     def test_assign_other_user(self):
         """
@@ -341,7 +325,6 @@ class TestRandompinController(TestController):
             user3,
             "admin-set-pin" + token["otps"].popleft(),
         )
-        return
 
     def test_randompin_with_autoassignment(self):
         """
@@ -376,7 +359,6 @@ class TestRandompinController(TestController):
                 user,
                 pwd + token["otps"].popleft(),
             )
-        return
 
     # -------- Private helper methods ----- --
     def _create_randompin_policy(self, realm):
@@ -393,7 +375,6 @@ class TestRandompinController(TestController):
         }
         self.create_policy(params)
         self.policies_for_deletion.add(policy_name)
-        return
 
     def _create_selfservice_policy(self, realm):
         """
@@ -409,7 +390,6 @@ class TestRandompinController(TestController):
         }
         self.create_policy(params)
         self.policies_for_deletion.add(policy_name)
-        return
 
     def _create_autoassignment_policy(self, realm):
         """
@@ -425,7 +405,6 @@ class TestRandompinController(TestController):
         }
         self.create_policy(params)
         self.policies_for_deletion.add(policy_name)
-        return
 
     def _enroll_token(self, token, user=None):
         """
@@ -450,7 +429,6 @@ class TestRandompinController(TestController):
         assert content["result"]["value"]
         token["serial"] = content["detail"]["serial"]
         self.token_for_deletion.add(token["serial"])
-        return
 
     def _validate(self, user, pwd, expected="success", err_msg=None):
         """
@@ -556,7 +534,7 @@ class TestRandompinController(TestController):
         Log into selfservice and set PIN
 
         :param user: username or username@realm
-        :param pwd: User password
+        :param pwd: user password for selfservice session
         :param serial: Token serial
         :param pin: The PIN to be set
         """
@@ -573,7 +551,6 @@ class TestRandompinController(TestController):
         assert content["result"]["status"]
         expected = {"set userpin": 1}
         assert expected == content["result"]["value"]
-        return
 
     def _set_pin(self, serial, pin):
         """
@@ -587,7 +564,6 @@ class TestRandompinController(TestController):
         content = response.json
         assert content["result"]["status"]
         assert content["result"]["value"]
-        return
 
     def _set_token_realm(self, serial, realm):
         """
@@ -602,4 +578,3 @@ class TestRandompinController(TestController):
         content = response.json
         assert content["result"]["status"]
         assert 1 == content["result"]["value"]
-        return
