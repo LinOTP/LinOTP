@@ -244,6 +244,29 @@ class TestRandompinController(TestController):
             token2["serial"], token2["otps"].popleft(), expected="value-false"
         )
 
+    def test_selfservice_assign(self):
+        """
+        userservice/assign is not affected by otp_pin_random
+        """
+
+        user = "aἰσχύλος"  # realm myDefRealm
+        pwd = "Πέρσαι"
+        token = deepcopy(self.tokens[0])
+
+        # Enroll token unassigned
+        self._enroll_token(token)
+        # authenticate successfully, no pin set yet
+        self._validate_check_s(token["serial"], token["otps"].popleft())
+
+        self._create_selfservice_policy("myDefRealm")
+        self._create_randompin_policy("myDefRealm")
+
+        # Assign token to user in selfservice
+        self._assign_in_selfservice(user, pwd, token["serial"])
+        # Login with only OTP still works because userservice/assign is
+        # not affected by otp_pin_random
+        self._validate(user, token["otps"].popleft())
+
     def test_admin_setpin(self):
         """
         Admin can set the PIN, even after the user has set it in selfservice
@@ -411,7 +434,7 @@ class TestRandompinController(TestController):
         params = {
             "name": policy_name,
             "scope": "selfservice",
-            "action": "setOTPPIN, enrollHMAC",
+            "action": "setOTPPIN, enrollHMAC, assign",
             "realm": realm,
         }
         self.create_policy(params)
@@ -558,6 +581,24 @@ class TestRandompinController(TestController):
         else:
             self.fail("Unknown 'expected' %s" % expected)
         return content
+
+    def _assign_in_selfservice(self, user, pwd, serial):
+        """
+        Log into selfservice and assign token
+
+        :param user: username or username@realm
+        :param pwd: user password for selfservice session
+        :param serial: Token serial number
+        :return: None
+        """
+        params = {"serial": serial}
+        response = self.make_userservice_request(
+            "assign", params, auth_user=(user, pwd)
+        )
+        content = response.json
+        assert content["result"]["status"]
+        expected = {"assign token": True}
+        assert expected == content["result"]["value"]
 
     def _assign(self, serial, user):
         """
