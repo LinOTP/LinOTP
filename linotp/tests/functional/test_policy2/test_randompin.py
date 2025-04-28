@@ -168,6 +168,34 @@ class TestRandompinController(TestController):
         self._validate(user, token2["otps"].popleft(), expected="value-false")
         return
 
+    def test_multi_assign(self):
+        """
+        Same as 'test_simple_assign' but with multiple tokens at once
+        """
+        # Enroll token
+        user = "aἰσχύλος"  # realm myDefRealm
+        token1 = deepcopy(self.tokens[0])
+        token2 = deepcopy(self.tokens[0])
+
+        self._enroll_token(token1)
+        self._enroll_token(token2)
+
+        # Login with only OTP succeeds
+        self._validate_check_s(token1["serial"], token1["otps"].popleft())
+        self._validate_check_s(token2["serial"], token2["otps"].popleft())
+
+        self._create_randompin_policy("myDefRealm")
+
+        self._assign([token1["serial"], token2["serial"]], user)
+
+        # Login with only OTP fails (PIN unknown)
+        self._validate_check_s(
+            token1["serial"], token1["otps"].popleft(), expected="value-false"
+        )
+        self._validate_check_s(
+            token2["serial"], token2["otps"].popleft(), expected="value-false"
+        )
+
     def test_selfservice(self):
         """
         User logs into selfservice and sets PIN then authenticates with PIN+OTP
@@ -512,13 +540,16 @@ class TestRandompinController(TestController):
         """
         params = {
             "serial": serial,
-            "user": user.encode("utf-8"),
+            "user": user,
         }
-        response = self.make_admin_request("assign", params=params)
+        response = self.make_admin_request(
+            "assign",
+            params=params,
+            content_type="application/json",  # json is necessary to assign multiple tokens at once
+        )
         content = response.json
         assert content["result"]["status"]
         assert content["result"]["value"]
-        return
 
     def _set_pin_in_selfservice(self, user, pwd, serial, pin):
         """
