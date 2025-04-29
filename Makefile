@@ -537,7 +537,7 @@ docker-run-linotp-functional-test:
 # # Requirements
 #
 del-reqs:
-	rm requirements*.txt
+	rm -f requirements*.txt
 
 reqs: del-reqs requirements.txt requirements-all.txt requirements-dev.txt requirements-prod.txt requirements-test.txt 
 
