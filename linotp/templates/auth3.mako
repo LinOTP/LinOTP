@@ -28,7 +28,7 @@
 </%doc>
 
 <%block name="title">
-        <title>LinOTP Auth testing</title>
+<title>LinOTP Auth testing</title>
 </%block>
 
 <%inherit file="auth-base.mako"/>
@@ -42,33 +42,31 @@ ${_("Enter your username, the OTP PIN (Password) and the OTP value.")}
 </p>
 </div> <!-- sidebar -->
 
-
 <div id="main">
 <h1>${_("Login")}</h1>
-<div id='register'>
-        <form class="cmxform"  id="form_login3" method="post" action="">
-            <frameset name=login>
-                <table>
-                <tr>
-                    <td>${_("username")}</td>
-                    <td><input type='text' id='user3' name="user"  class="required"></td>
-                </tr>
-                <tr>
-                    <td>${_("OTP PIN")}</td>
-                    <td><input type="password" autocomplete="off" name="pass" id="pass3"></td>
-                </tr>
-                <tr>
-                    <td>${_("OTP value")}</td>
-                    <td><input type="text" autocomplete="off" name="otp" id="otp3"></td>
-                </tr>
-                </table>
-            </frameset>
-            <input type="submit" value="${_('login')}">
-        </form>
+<div id="auth">
+    <form class="cmxform" id="form_login3" method="post" action="">
+        <section name="login">
+            <table>
+            <tr>
+                <td>${_("username")}</td>
+                <td><input type="text" id="user3" name="user" class="required"></td>
+            </tr>
+            <tr>
+                <td>${_("OTP PIN")}</td>
+                <td><input type="password" autocomplete="off" name="pass" id="pass3"></td>
+            </tr>
+            <tr>
+                <td>${_("OTP value")}</td>
+                <td><input type="text" autocomplete="off" name="otp" id="otp3"></td>
+            </tr>
+            </table>
+        </section>
+        <input type="submit" value="${_('login')}">
+    </form>
 </div>
-<div id='errorDiv'></div>
-<div id='successDiv'></div>
-
+<div id="errorDiv"></div>
+<div id="successDiv"></div>
 
 </div>  <!-- end of main-->
 

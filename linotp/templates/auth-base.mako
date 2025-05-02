@@ -58,7 +58,6 @@
 	<%block name="title"/>
 </head>
 <body>
-
 	<noscript>
 		<div class="javascript_error">${_("You need to enable Javascript to use the authentication forms.")}</div>
 		<style type="text/css">#wrap{display:none;}</style>

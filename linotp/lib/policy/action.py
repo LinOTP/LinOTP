@@ -187,9 +187,9 @@ class PolicyActionTyping:
         action_name: str,
         action_value: Union[bool, int, str],
     ) -> Any:
-        """Convert the action values acording to the policy definitions.
+        """Convert the action values according to the policy definitions.
 
-        :paran scope: of the action
+        :param scope: of the action
         :param action_name: the name of the action
         :param action_value: the un parsed action value
         :return: the typed value

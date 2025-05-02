@@ -28,7 +28,7 @@
 </%doc>
 
 <%block name="title">
-        <title>LinOTP OCRA2 Auth testing</title>
+<title>LinOTP OCRA2 Auth testing</title>
 </%block>
 
 <%inherit file="auth-base.mako"/>
@@ -38,67 +38,85 @@
 ${_("Here you may try to authenticate using your OCRA OTP token.")}
 </p>
 <p>
-${_('Enter your username, the OTP PIN and the input for the challenge.')}
-${_('By submitting this you will generate a QR image, that can be scaned with your OCRA2 Token reader.')}
-${_('To verify your result enter the OTP value into the form below.')}
+${_("Enter your username, the OTP PIN and the input for the challenge.")}
+${_("By submitting this you will generate a QR image, that can be scaned with your OCRA2 Token reader.")}
+${_("To verify your result enter the OTP value into the form below.")}
 </p>
 </div> <!-- sidebar -->
 
 
 <div id="main">
-<h1>${_('OCRA2 Login')}</h1>
-<div id='register'>
-        <table>
+<h1>${_("OCRA2 Login")}</h1>
+<div id="auth">
+    <table>
         <tr><td>
-        <form class="cmxform"  id="form_challenge_ocra2" method="post" action="">
-            <frameset name=login>
+        <form class="cmxform" id="form_challenge_ocra2" method="post" action="">
+            <section name="login">
                 <table><tr>
-                    <td><h2>${_('Submit a challenge:')}</h2></td>
+                    <td><h2>${_("Submit a challenge:")}</h2></td>
                 </tr><tr>
-                <td>${_('username')}</td>
-                <td><input type='text' id='user' name="user"  class="required"></td>
+                <td>${_("username")}</td>
+                <td><input type="text" id="user" name="user" class="required"></td>
+                </tr>
+                %if c.realmbox:
+                <tr>
+                    <td>${_("realm")}</td>
+                    <td>
+                        <select name="realm" id="realm">
+                            %for realm in c.realmArray:
+                            <option value="${realm}"
+                                %if c.defaultRealm == realm:
+                                selected
+                                %endif
+                                >
+                            ${realm}
+                            </option>
+                            %endfor
+                        </select>
+                    </td>
+                </tr>
+                %endif
+                <tr>
+                <td>${_("OTP PIN")}</td>
+                <td><input type="text" id="pin" name="pass" class="required"></td>
                 </tr><tr>
-                <td>${_('OTP PIN')}</td>
-                <td><input type='text' id='pin' name="pass"  class="required"></td>
+                    <td>${_("message / data")}</td>
+                    <td><textarea cols="40" rows="6" id="challenge" name="data" class="required"></textarea></td>
                 </tr><tr>
-                    <td>${_('message / data')}</td>
-                    <td><textarea cols="40" rows="6" id='challenge' name="data" class="required"> </textarea></td>
-                </tr><tr>
-                <td> </td>
+                <td></td>
                         <td>
                         <input type="submit" value="${_('get challenge')}">
                 </tr></table>
-            </frameset>
+            </section>
         </form>
         </td><td rowspan="3">
-        <div id='display'> </div>
+        <div id="display"></div>
         </td>
         </tr><tr>
             <td>
-                <h2>${_('Scan your challenge and get your OTP:')}</h2>
+                <h2>${_("Scan your challenge and get your OTP:")}</h2>
             </td>
         </tr><tr>
         <td>
-        <form class="cmxform"  id="form_login_ocra2" method="post" action="">
-            <frameset name=login>
+        <form class="cmxform" id="form_login_ocra2" method="post" action="">
+            <section name="login">
                 <table><tr>
-                    <td><h2>${_('Login:')}</h2></td>
+                    <td><h2>${_("Login:")}</h2></td>
                 </tr><tr>
-                    <td>${_('username')}</td>
-                    <td><input type='text' id='user2' name="user" class="required"></td>
+                    <td>${_("username")}</td>
+                    <td><input type="text" id="user2" name="user" class="required"></td>
                 </tr><tr>
-                    <td>${_('OTP PIN and OTP value')}</td>
-                    <td><input type="password" autocomplete="off" name="pass" id="pass" class=required></td>
+                    <td>${_("OTP PIN and OTP value")}</td>
+                    <td><input type="password" autocomplete="off" name="pass" id="pass" class="required"></td>
                 </tr></table>
-                </frameset>
-                <input type="submit"  value="${_('login')}">
+                </section>
+                <input type="submit" value="${_('login')}">
                 </form>
         </td></tr>
-        </table>
-
+    </table>
 </div>
-<div id='errorDiv'> </div>
-<div id='successDiv'> </div>
+<div id="errorDiv"></div>
+<div id="successDiv"></div>
 
 
 </div>  <!-- end of main-->
