@@ -700,9 +700,9 @@ pytest-mock==3.14.0 \
     --hash=sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f \
     --hash=sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0
     # via LinOTP (setup.py)
-pytest-test-groups==1.2.0 \
-    --hash=sha256:9e8c27e180ffc963da5fcbfa10a283851c6f90ae608d6bc3f11739d5b27c93ee \
-    --hash=sha256:a8403dbd50bdd742736e25e769e0bc570273ac28b527cbfc2be75430b5d9111a
+pytest-test-groups==1.1.0 \
+    --hash=sha256:8210002934b1932a2a1ee94f817109610f3ff371cf48c8c08f709c2f503db71e \
+    --hash=sha256:c17a445676969dd4442e1fe03acd8d8dda87bc8f3beee00a80d5d87adc33eb43
     # via LinOTP (setup.py)
 pytest-testconfig==0.2.0 \
     --hash=sha256:0cfaaf4f47e0cf84358ec8dd2294df0358da2bc29730069aad2b4a2094c1a295 \
