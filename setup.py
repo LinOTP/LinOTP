@@ -131,7 +131,11 @@ test_requirements = (
         "pytest-flask",
         "pytest-mock",
         "pytest-testconfig",
-        "pytest-test-groups",
+        # we pin pytest-test-groups==1.1.0
+        # because version 1.2.0 has an incompatibility between
+        # pytest args "-n X" and " --test-group-count=2 --test-group=1"
+        # https://github.com/mark-adams/pytest-test-groups/issues/31
+        "pytest-test-groups==1.1.0",
         "pytest-xdist",
         "selenium<4.10.0",
         "mock",
