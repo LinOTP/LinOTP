@@ -1,6 +1,7 @@
-linotp (3.4.4~rc0-1) UNRELEASED; urgency=medium
+linotp (3.4.4~rc1-1) UNRELEASED; urgency=medium
 
   Fix:
+  * Added a check to update CA certificates only if `.crt` files exist in `/usr/local/share/ca-certificates`.
   * Reverse the commit that prevented setting the otppin for mOTP tokens
     and used it as token pin instead (was broken since 3.4.1)
   * User information was not included in ValidateController responses when
