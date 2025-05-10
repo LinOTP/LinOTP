@@ -500,13 +500,6 @@ def set_defaults(app):
         description="Time during which no new e-mail is sent out",
     )
 
-    set_config(
-        key="OATHTokenSupport",
-        value="False",
-        typ="bool",
-        description="support for hmac token in oath format",
-    )
-
     # use the system certificate handling, especially for ldaps
     set_config(
         key="certificates.use_system_certificates",
