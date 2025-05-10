@@ -38,7 +38,6 @@ from flask_babel import gettext as _
 from linotp.lib.apps import (
     NoOtpAuthTokenException,
     create_google_authenticator,
-    create_oathtoken_url,
 )
 from linotp.lib.auth.validate import check_otp, check_pin
 from linotp.lib.challenges import Challenges
@@ -730,14 +729,17 @@ class HmacTokenClass(TokenClass):
                 p["otpkey"] = otpkey
                 p["serial"] = self.getSerial()
                 # label
-                goo_url = create_google_authenticator(p, user=user)
+                enrollment_url = create_google_authenticator(p, user=user)
 
-                response_detail["googleurl"] = {
+                enrollment_url_detail = {
                     "order": "0",
                     "description": _("OTPAuth Url"),
-                    "value": goo_url,
-                    "img": create_img(goo_url, width=250),
+                    "value": enrollment_url,
+                    "img": create_img(enrollment_url, width=250),
                 }
+                # add enrollment_url_detail to both `enrollment_url` and soon to be deprecated `googleurl`
+                response_detail["enrollment_url"] = enrollment_url_detail
+                response_detail["googleurl"] = enrollment_url_detail
 
             except NoOtpAuthTokenException as exx:
                 log.warning(exx)

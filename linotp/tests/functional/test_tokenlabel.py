@@ -57,9 +57,12 @@ class TestTokenlabel(TestController):
         response = self.make_admin_request(action="init", params=params)
 
         jresp = response.json
+        enrollment_url = jresp["detail"]["enrollment_url"]["value"]
+        # test for deprecated googleurl
         googleurl = jresp["detail"]["googleurl"]["value"]
+        assert googleurl == enrollment_url, response
 
-        uri = urlparse(googleurl)
+        uri = urlparse(enrollment_url)
         token_label = uri.path.partition(":")[2]
 
         assert token_label == "max1", response
@@ -89,9 +92,12 @@ class TestTokenlabel(TestController):
         response = self.make_admin_request(action="init", params=params)
 
         jresp = response.json
+        enrollment_url = jresp["detail"]["enrollment_url"]["value"]
+        # test for deprecated googleurl
         googleurl = jresp["detail"]["googleurl"]["value"]
+        assert googleurl == enrollment_url, response
 
-        uri = urlparse(googleurl)
+        uri = urlparse(enrollment_url)
         token_label = uri.path.partition(":")[2]
 
         assert token_label == "hmac1%3Amax1%40myOtherRealm", response
@@ -111,9 +117,12 @@ class TestTokenlabel(TestController):
 
         response = self.make_admin_request(action="init", params=params)
         jresp = response.json
+        enrollment_url = jresp["detail"]["enrollment_url"]["value"]
+        # test for deprecated googleurl
         googleurl = jresp["detail"]["googleurl"]["value"]
+        assert googleurl == enrollment_url, response
 
-        uri = urlparse(googleurl)
+        uri = urlparse(enrollment_url)
         issuer = uri.path.partition(":")[0]
 
         assert issuer == "/LinOTP", response
@@ -143,9 +152,12 @@ class TestTokenlabel(TestController):
 
         response = self.make_admin_request(action="init", params=params)
         jresp = response.json
+        enrollment_url = jresp["detail"]["enrollment_url"]["value"]
+        # test for deprecated googleurl
         googleurl = jresp["detail"]["googleurl"]["value"]
+        assert googleurl == enrollment_url, response
 
-        uri = urlparse(googleurl)
+        uri = urlparse(enrollment_url)
         issuer = uri.path.partition(":")[0]
 
         assert issuer == "/it%27s%20me", response

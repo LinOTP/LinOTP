@@ -1445,8 +1445,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         hparam = {}
 
         if response_detail is not None:
-            if "googleurl" in response_detail:
-                url = response_detail.get("googleurl")
+            if "enrollment_url" in response_detail:
+                url = response_detail.get("enrollment_url")
                 hparam["alt"] = url
 
         return url, hparam

@@ -745,6 +745,7 @@ class TestSelfserviceController(TestController):
         params = {"type": "hmac", "serial": serial, "genkey": 1, "user": user}
 
         response = self.make_admin_request("init", params=params)
+        assert "enrollment_url" in response, response
         assert "googleurl" in response, response
 
         # ----------------------------------------------------------------- --
@@ -875,6 +876,7 @@ class TestSelfserviceController(TestController):
         params = {"type": "hmac", "serial": serial, "genkey": 1, "user": user}
 
         response = self.make_admin_request("init", params=params)
+        assert "enrollment_url" in response, response
         assert "googleurl" in response, response
 
         params = {"serial": serial, "description": "my super token"}

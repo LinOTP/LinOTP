@@ -3423,8 +3423,11 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        googel_url = response.json["detail"]["googleurl"]["value"]
-        assert "otpauth://hotp/LinOTP:max1?" in googel_url, response
+        enrollment_url = response.json["detail"]["enrollment_url"]["value"]
+        assert "otpauth://hotp/LinOTP:max1?" in enrollment_url, response
+
+        googleurl = response.json["detail"]["googleurl"]["value"]
+        assert "otpauth://hotp/LinOTP:max1?" in googleurl, response
 
         # enroll token for max2
         params = {
@@ -3439,8 +3442,11 @@ class TestPolicies(TestPoliciesBase):
             action="init", params=params, auth_user=auth_user
         )
 
-        googel_url = response.json["detail"]["googleurl"]["value"]
-        assert "otpauth://hotp/LinOTP:max2?" in googel_url, response
+        enrollment_url = response.json["detail"]["enrollment_url"]["value"]
+        assert "otpauth://hotp/LinOTP:max2?" in enrollment_url, response
+
+        googleurl = response.json["detail"]["googleurl"]["value"]
+        assert "otpauth://hotp/LinOTP:max2?" in googleurl, response
 
         # add tokenissuer policy
         params = {
@@ -3470,8 +3476,10 @@ class TestPolicies(TestPoliciesBase):
         )
 
         msg = "otpauth://hotp/fakeissuer-myOtherRealm:max1?"
-        googel_url = response.json["detail"]["googleurl"]["value"]
-        assert msg in googel_url, response
+        enrollment_url = response.json["detail"]["enrollment_url"]["value"]
+        googleurl = response.json["detail"]["googleurl"]["value"]
+        assert msg in enrollment_url, response
+        assert msg in googleurl, response
 
         # delete the tokens of the user
         for serial in ["hmac1", "hmac2", "hmac3"]:

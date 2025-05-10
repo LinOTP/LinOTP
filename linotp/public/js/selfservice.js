@@ -330,10 +330,10 @@ function enroll_token(params) {
             }
             if (detail.hasOwnProperty('otpkey')) {
                 try {
-                    if (detail.hasOwnProperty('googleurl')) {
+                    if (detail.hasOwnProperty('enrollment_url')) {
                         details = details + '<li> Enrollment: <br>';
-                        details = details + '<a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
-                        details = details + '<br><a href="' + detail.googleurl.value + '">' + detail.googleurl.value + '</a></li>';
+                        details = details + '<a href="' + detail.enrollment_url.value +'">' + detail.enrollment_url.img + '</a>';
+                        details = details + '<br><a href="' + detail.enrollment_url.value + '">' + detail.enrollment_url.value + '</a></li>';
                         details = details + '<li> Seed: ' +
                             escape(detail.otpkey.value.substring('seed://'.length, detail.otpkey.value.length)) +
                             '</li>';
