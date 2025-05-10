@@ -718,64 +718,6 @@ class TestSelfserviceController(TestController):
         assert '"status": true' in response
         assert '"value": false' in response
 
-    def test_webprovision(self):
-        """
-        selfservice: testing user webprovision
-        """
-        self.deleteToken("token01")
-
-        auth_user = {
-            "login": "passthru_user1@myDefRealm",
-            "password": "geheim1",
-        }
-
-        response = self.make_userselfservice_request(
-            "webprovision",
-            auth_user=auth_user,
-            params={"serial": "token01", "type": "hmac"},
-        )
-
-        message = "You provided hmac"
-        assert message in response.json["result"]["error"]["message"], response
-
-        response = self.make_userselfservice_request(
-            "webprovision",
-            auth_user=auth_user,
-            params={"serial": "token01", "type": "googleauthenticator"},
-        )
-
-        assert (
-            '"message": "ERR410: The policy settings do not allow you to issue this request!"'
-            in response
-        ), response
-
-        self.createPolicy("webprovisionGOOGLE")
-
-        response = self.make_userselfservice_request(
-            "webprovision",
-            auth_user=auth_user,
-            params={"prefix": "LSGO", "type": "googleauthenticator"},
-        )
-        assert (
-            '"url": "otpauth://hotp/LinOTP:passthru_user1?' in response
-        ), response
-
-        # test
-        response = self.make_admin_request(
-            "show", params={"user": "passthru_user1@myDefRealm"}
-        )
-        assert '"LinOtp.TokenSerialnumber": "LSGO' in response, response
-        assert '"LinOtp.Isactive": true' in response, response
-
-        # UI
-
-        response = self.make_selfservice_request(
-            "webprovisiongoogletoken", auth_user=auth_user
-        )
-        assert "googletokenform" in response.body, response
-
-        return
-
     def test_getmultiotp(self):
         """selfservice: testing getting multiple otps.
 

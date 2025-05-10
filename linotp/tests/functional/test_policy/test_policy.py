@@ -963,7 +963,7 @@ class TestPolicies(TestPoliciesBase):
             "name": "self_03",
             "scope": "selfservice",
             "realm": "myMixRealm",
-            "action": "webprovisionOATH, webprovisionGOOGLE",
+            "action": "enrollHMAC",
         }
         response = self.make_system_request(
             action="setPolicy", params=parameters, auth_user="superadmin"
@@ -1115,42 +1115,6 @@ class TestPolicies(TestPoliciesBase):
         "selfservice_policies",
         "enroll_tokens",
     )
-    def test_423_selfservice_webprovision(self):
-        """
-        Policy 423: Testing webprovisioning. myMixRealm users are allowed to
-                    provision, users in myDefRealm not.
-        """
-
-        parameters = {"type": "oathtoken"}
-        auth_user = ("user1@myDefRealm", "geheim1")
-        response = self.make_userservice_request(
-            action="webprovision", params=parameters, auth_user=auth_user
-        )
-
-        assert not response.json["result"]["status"], response
-
-        parameters = {"type": "oathtoken"}
-        auth_user = ("horst@myMixRealm", "test123")
-        response = self.make_userservice_request(
-            action="webprovision", params=parameters, auth_user=auth_user
-        )
-
-        assert response.json["result"]["status"], response
-
-        parameters = {"type": "googleauthenticator"}
-        auth_user = ("horst@myMixRealm", "test123")
-        response = self.make_userservice_request(
-            action="webprovision", params=parameters, auth_user=auth_user
-        )
-
-        assert response.json["result"]["status"], response
-
-    @pytest.mark.usefixtures(
-        "realms_and_resolver",
-        "admin_roles",
-        "selfservice_policies",
-        "enroll_tokens",
-    )
     def test_423a_selfservice_assign(self):
         """
         Policy 423a: users in myDefRealm are allowed to assign. use the token
@@ -1243,7 +1207,7 @@ class TestPolicies(TestPoliciesBase):
             "scope": "selfservice",
             "realm": "myDefRealm",
             "user": "user1",
-            "action": "webprovisionOATH",
+            "action": "enrollHMAC",
         }
         auth_user = "superadmin"
 
@@ -1254,19 +1218,19 @@ class TestPolicies(TestPoliciesBase):
         assert response.json["result"]["status"], response
 
         # user in realm, who has no policy
-        parameters = {"type": "oathtoken"}
+        parameters = {"type": "hmac"}
         auth_user = ("user2@myDefRealm", "geheim2")
         response = self.make_userservice_request(
-            action="webprovision", params=parameters, auth_user=auth_user
+            action="enroll", params=parameters, auth_user=auth_user
         )
 
         assert not response.json["result"]["status"], response
 
         # user who has a policy
-        parameters = {"type": "oathtoken"}
+        parameters = {"type": "hmac"}
         auth_user = ("user1@myDefRealm", "geheim1")
         response = self.make_userservice_request(
-            action="webprovision", params=parameters, auth_user=auth_user
+            action="enroll", params=parameters, auth_user=auth_user
         )
 
         assert response.json["result"]["status"], response
@@ -1314,7 +1278,7 @@ class TestPolicies(TestPoliciesBase):
             "scope": "selfservice",
             "realm": "myMixRealm",
             "user": "myDefRes:",
-            "action": "webprovisionOATH",
+            "action": "enrollHMAC",
         }
         auth_user = "superadmin"
         response = self.make_system_request(
@@ -1344,19 +1308,19 @@ class TestPolicies(TestPoliciesBase):
         assert response.json["result"]["status"], response
 
         # user in resolver myOtherRes, who is not allowed to enroll token
-        parameters = {"type": "oathtoken"}
+        parameters = {"type": "hmac"}
         auth_user = ("max1@myMixRealm", "password1")
         response = self.make_userservice_request(
-            action="webprovision", params=parameters, auth_user=auth_user
+            action="enroll", params=parameters, auth_user=auth_user
         )
 
         assert not response.json["result"]["status"], response
 
         # user in resolver myDefRes, who is allowed to enroll token
-        parameters = {"type": "oathtoken"}
+        parameters = {"type": "hmac"}
         auth_user = ("user1@myMixRealm", "geheim1")
         response = self.make_userservice_request(
-            action="webprovision", params=parameters, auth_user=auth_user
+            action="enroll", params=parameters, auth_user=auth_user
         )
 
         assert response.json["result"]["status"], response
@@ -2646,7 +2610,7 @@ class TestPolicies(TestPoliciesBase):
                 "name": "cp_self_2",
                 "scope": "selfservice",
                 "user": "user1",
-                "action": "enrollHMAC, setOTPPIN, webprovisionGOOGLE",
+                "action": "enrollHMAC, setOTPPIN, enrollTOTP",
                 "realm": "myDefRealm",
                 "client": "172.16.200.10",
             },
@@ -2794,11 +2758,11 @@ class TestPolicies(TestPoliciesBase):
         assert '"action": "otppin=1",' in response, response
 
         # check scope selfservice
-        # Webprovisioning from 192.168.20.1 is not allowed
+        # enrollTOTP from 192.168.20.1 is not allowed
         params = {
             "user": "user1",
             "realm": "myDefRealm",
-            "action": "webprovisionGOOGLE",
+            "action": "enrollTOTP",
             "scope": "selfservice",
             "client": "192.168.20.1",
         }
@@ -2824,11 +2788,11 @@ class TestPolicies(TestPoliciesBase):
         assert '"allowed": true' in response, response
         assert '"action": "enrollHMAC, setOTPPIN",' in response, response
 
-        # webprovisioning from 172.16.200.X is allowrd
+        # enrollTOTP from 172.16.200.X is allowed
         params = {
             "user": "user1",
             "realm": "myDefRealm",
-            "action": "webprovisionGOOGLE",
+            "action": "enrollTOTP",
             "scope": "selfservice",
             "client": "172.16.200.10",
         }
@@ -2839,8 +2803,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert '"cp_self_2": {' in response, response
         assert (
-            '"action": "enrollHMAC, setOTPPIN, webprovisionGOOGLE",'
-            in response
+            '"action": "enrollHMAC, setOTPPIN, enrollTOTP",' in response
         ), response
 
         # delete the policies

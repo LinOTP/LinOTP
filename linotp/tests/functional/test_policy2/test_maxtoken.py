@@ -184,7 +184,7 @@ class TestPolicyMaxtoken(TestController):
             "name": "T1",
             "action": (
                 "enrollEMAIL, enrollSMS, assign, "
-                "webprovisionGOOGLE, webprovisionGOOGLEtime, setOTPPIN"
+                "enrollHMAC, enrollTOTP, setOTPPIN"
             ),
             "user": " passthru.*.myDefRes:",
             "realm": "*",
@@ -213,23 +213,20 @@ class TestPolicyMaxtoken(TestController):
 
         # 2. enroll hmac - ok
 
-        params = {"type": "googleauthenticator", "serial": "myGoo"}
+        params = {"type": "hmac", "pin": pin}
         response = self.make_userselfservice_request(
-            "webprovision",
+            "enroll",
             params=params,
             auth_user=auth_user,
             new_auth_cookie=True,
         )
+        hotp_serial = response.json["detail"]["serial"]
 
-        assert "oathtoken" in response, response
+        # # 3. enroll hmac - fail, only one hmac allowed
 
-        # 3. enroll hmac - fail, only one hmac allowed
-
-        params = {
-            "type": "googleauthenticator",
-        }
+        params = {"type": "hmac", "pin": pin}
         response = self.make_userselfservice_request(
-            "webprovision",
+            "enroll",
             params=params,
             auth_user=auth_user,
             new_auth_cookie=True,
@@ -328,7 +325,7 @@ class TestPolicyMaxtoken(TestController):
 
         # 12. admin removes old hmac token
 
-        params = {"serial": "myGoo"}
+        params = {"serial": hotp_serial}
         response = self.make_admin_request("remove", params=params)
 
         assert "false" not in response

@@ -62,70 +62,6 @@ class TestUserserviceEnrollment(TestController):
     def tearDown(self):
         TestController.tearDown(self)
 
-    def test_hotp_with_webprovisiongoogle(self):
-        """
-        Ensure that the webprovisionGOOGLE policy allows enrollment of a HOTP
-        token via the 'enroll' endpoint, but not another token type.
-        """
-        params = {
-            "name": "webprovisionHOTP",
-            "scope": "selfservice",
-            "action": "webprovisionGOOGLE",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
-        auth_user = {
-            "login": "passthru_user1@myDefRealm",
-            "password": "geheim1",
-        }
-
-        response = self.make_userselfservice_request(
-            "enroll", params={"type": "hmac"}, auth_user=auth_user
-        )
-        assert ' "value": true' in response, response
-
-        response = self.make_userselfservice_request(
-            "enroll", params={"type": "totp"}, auth_user=auth_user
-        )
-        assert NOT_ALLOWED_ERROR in response, response
-
-    def test_totp_with_webprovisiongoogletime(self):
-        """
-        Ensure that the webprovisionGOOGLEtime policy allows enrollment of a
-        TOTP token via the 'enroll' endpoint, but not another token type.
-        """
-        params = {
-            "name": "webprovisionTOTP",
-            "scope": "selfservice",
-            "action": "webprovisionGOOGLEtime",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-
-        response = self.make_system_request("setPolicy", params)
-        assert "false" not in response, response
-
-        auth_user = {
-            "login": "passthru_user1@myDefRealm",
-            "password": "geheim1",
-        }
-
-        response = self.make_userselfservice_request(
-            "enroll", params={"type": "totp"}, auth_user=auth_user
-        )
-        assert ' "value": true' in response, response
-
-        response = self.make_userselfservice_request(
-            "enroll", params={"type": "hmac"}, auth_user=auth_user
-        )
-        assert NOT_ALLOWED_ERROR in response, response
-
     def test_correct_pin_on_enrollment(self):
         """
         Ensure that the correct pin is set when enrolling a token.
@@ -206,7 +142,7 @@ class TestUserserviceEnrollment(TestController):
         policy_enroll_totp_and_set_pin = {
             "name": "enroll_totp_and_set_pin",
             "scope": "selfservice",
-            "action": "webprovisionGOOGLEtime,setOTPPIN",
+            "action": "enrollTOTP, setOTPPIN",
             "user": "*",
             "realm": "*",
             "active": True,
@@ -620,7 +556,7 @@ class TestUserserviceEnrollment(TestController):
         policy_enroll_totp = {
             "name": "enroll_totp",
             "scope": "selfservice",
-            "action": "webprovisionGOOGLEtime",
+            "action": "enrollTOTP",
             "user": "*",
             "realm": "*",
             "active": True,
