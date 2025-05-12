@@ -1,7 +1,10 @@
 linotp (3.4.4~rc1-1) UNRELEASED; urgency=medium
 
-  Fix:
-  * Added a check to update CA certificates only if `.crt` files exist in `/usr/local/share/ca-certificates`.
+  Features:
+  * Show success messages in manage UI for all token operations
+  * For container entrypoint: added a check to update CA certificates only if `.crt` files exist in `/usr/local/share/ca-certificates`.
+
+  Fixes:
   * Reverse the commit that prevented setting the otppin for mOTP tokens
     and used it as token pin instead (was broken since 3.4.1)
   * User information was not included in ValidateController responses when
@@ -12,6 +15,8 @@ linotp (3.4.4~rc1-1) UNRELEASED; urgency=medium
     impact integrations that rely on the detail_on_success policy, such as LinOTP IdP.
     Now, the user information is correctly included in the response.
   * Apply policy `setrealm` in ValidateController when the user is known
+  * otp_pin_random was breaking admin/assign in manage due to multi-token operation mode
+    not being compatible with otp_pin_random generation
 
  -- LinOTP Packaging <packaging@linotp.de>  Wed, 09 Apr 2025 11:00:00 +0100
  
