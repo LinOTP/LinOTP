@@ -38,16 +38,6 @@ from linotp.lib.policy.processing import get_client_policy
 from linotp.lib.policy.util import _get_client, _getUserRealms
 from linotp.lib.user import User
 
-# Define the map for the maxtoken policy lookup
-#   in selfservice/webprovision the provided token type parameter
-#   will be mapped to either hmac or totp
-
-WebprovisionTokenTypesMap = {
-    "oathtoken": "hmac",
-    "googleauthenticator": "hmac",
-    "googleauthenticator_time": "totp",
-}
-
 log = logging.getLogger(__name__)
 
 
@@ -62,7 +52,7 @@ def check_maxtoken(method, user, param):
 
     :raises PolicyException: if maxtoken policy would be violated
     """
-
+    # userwebprovision method is used by finishocra2token endpoint
     enroll_methods = ["init", "enroll", "userwebprovision", "userinit"]
     assign_methods = ["userassign", "assign"]
 
@@ -75,9 +65,6 @@ def check_maxtoken(method, user, param):
         log.debug("checking maxtokens of user by token type")
 
         type_of_token = param.get("type", "hmac")
-        type_of_token = WebprovisionTokenTypesMap.get(
-            type_of_token, type_of_token
-        )
         check_maxtoken_for_user_by_type(user, type_of_token=type_of_token)
 
     elif method in assign_methods:

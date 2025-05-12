@@ -99,8 +99,6 @@ class SelfserviceController(BaseController):
         "setmpin",
         "setpin",
         "unassign",
-        "webprovisiongoogletoken",
-        "webprovisionoathtoken",
     ]
 
     def __before__(self, **params):
@@ -492,26 +490,6 @@ class SelfserviceController(BaseController):
         """
         c.tokenArray = getTokenForUser(g.authUser)
         return render("/selfservice/landing.mako")
-
-    @deprecated_methods(["POST"])
-    def webprovisionoathtoken(self):
-        """
-        This is the form for an oathtoken to do web provisioning.
-        """
-        return render("/selfservice/webprovisionoath.mako")
-
-    @deprecated_methods(["POST"])
-    def webprovisiongoogletoken(self):
-        """
-        This is the form for an google token to do web provisioning.
-        """
-        try:
-            c.actions = get_selfservice_actions(g.authUser)
-            return render("/selfservice/webprovisiongoogle.mako")
-
-        except Exception as exx:
-            log.error("[webprovisiongoogletoken] failed with error: %r", exx)
-            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def usertokenlist(self):
