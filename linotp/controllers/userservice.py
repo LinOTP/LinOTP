@@ -2188,6 +2188,10 @@ class UserserviceController(BaseController):
             Depending on the token type more parameters have to be provided
             as http parameters
 
+        .. deprecated:: 4.0
+            The ``detail.googleurl`` field in the response is deprecated and will be
+            removed in version 5.0. Please use ``detail.enrollment_url`` instead.
+
         :param type: one of (hmac, totp, pw, ...)
         :param serial: a suggested serial number
         :param prefix: a prefix for the serial number
