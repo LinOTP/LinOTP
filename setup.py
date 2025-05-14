@@ -39,7 +39,10 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 # install with
 # > pip install -r requirements.txt
 install_requirements = [
-    # Flask=2.2.0 breaks tests
+    # Flask=2.2.0 breaks tests.
+    # Click is also pinned to <8.2 due to incompatibilities to the
+    # ancient flask version. This pinning cancan be resolved at the
+    # same time
     "Flask<2.2",
     # werkzeug=3.0 removes 'url_quote' from 'werkzeug.urls' breaking Flask<3
     "werkzeug<3",
@@ -73,7 +76,7 @@ install_requirements = [
     # in `cert = x509.load_der_x509_certificate(...)` of `uf2token.py`
     # during functional tests
     "cryptography<35",
-    "click",
+    "click<8.2",  # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
     "jsonschema",
 ]
 
