@@ -986,14 +986,13 @@ def create_app(config_name=None, config_extra=None):
 
     _configure_app(app, config_name, config_extra)
 
-    babel = Babel(app, configure_jinja=False, default_domain="linotp")
-
-    # Determine which languages are available in the i18n directory.
-    # Note that we always have English even without a translation file.
-
-    app.available_languages = list(
-        {"en"} | {t.language for t in babel.list_translations()}
-    )
+    with app.app_context():
+        # Determine which languages are available in the i18n directory.
+        # Note that we always have English even without a translation file.
+        babel = Babel(app, configure_jinja=False, default_domain="linotp")
+        app.available_languages = list(
+            {"en"} | {t.language for t in babel.list_translations()}
+        )
 
     setup_mako(app)
     init_logging(app)
@@ -1076,7 +1075,6 @@ def create_app(config_name=None, config_extra=None):
         log.exception(exception)
         return sendError(exception)
 
-    @babel.localeselector
     def get_locale():
         """Figure out the locale for this request. We look at the
         request's `Accept-Language` header and pick the first language
@@ -1090,6 +1088,8 @@ def create_app(config_name=None, config_extra=None):
         except RuntimeError as exx:
             # Working outside of request context.
             return babel.default_locale
+
+    babel.init_app(app, locale_selector=get_locale)
 
     # Enable profiling if desired. The options are debatable and could be
     # made more configurable. OTOH, we could all have a pony.
