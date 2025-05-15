@@ -280,9 +280,9 @@ flask==2.1.3 \
     #   flask-babel
     #   flask-jwt-extended
     #   flask-sqlalchemy
-flask-babel==2.0.0 \
-    --hash=sha256:e6820a052a8d344e178cdd36dd4bb8aea09b4bda3d5f9fa9f008df2c7f2f5468 \
-    --hash=sha256:f9faf45cdb2e1a32ea2ec14403587d4295108f35017a7821a2b1acb8cfd9257d
+flask-babel==4.0.0 \
+    --hash=sha256:638194cf91f8b301380f36d70e2034c77ee25b98cb5d80a1626820df9a6d4625 \
+    --hash=sha256:dbeab4027a3f4a87678a11686496e98e1492eb793cbdd77ab50f4e9a2602a593
     # via LinOTP (setup.py)
 flask-jwt-extended==4.7.1 \
     --hash=sha256:52f35bf0985354d7fb7b876e2eb0e0b141aaff865a22ff6cc33d9a18aa987978 \

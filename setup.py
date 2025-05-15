@@ -46,8 +46,7 @@ install_requirements = [
     "Flask<2.2",
     # werkzeug=3.0 removes 'url_quote' from 'werkzeug.urls' breaking Flask<3
     "werkzeug<3",
-    # Flask-Babel=3.0.0 removes @babel.localeselector
-    "Flask-Babel<3.0.0",
+    "Flask-Babel",
     "flask-jwt-extended",
     "SQLAlchemy<1.4",
     # flask-sqlalchemy=3.0.0 needs SQLAlchemy>=1.4.18
