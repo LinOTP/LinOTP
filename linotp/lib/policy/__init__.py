@@ -1770,18 +1770,6 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
             _("The policy settings do not allow you to issue this request!")
         )
 
-        # Here we check, if the tokennum exceeds the allowed tokens
-        if not _check_token_count():
-            log.error("The maximum token number is reached!")
-
-            raise PolicyException(
-                _(
-                    "You may not enroll any more tokens. "
-                    "Your maximum token number "
-                    "is reached!"
-                )
-            )
-
     elif method == "userhistory":
         if not get_selfservice_actions(authUser, "history"):
             log.warning(
