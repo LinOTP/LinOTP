@@ -64,7 +64,7 @@ from flask import __version__ as FLASK_VERSION
 from flask import _request_ctx_stack as flask_request_ctx_stack
 from flask import current_app, g, request
 
-from linotp.lib.tools.flask_migration import TestResponse
+from werkzeug.test import TestResponse
 from linotp.lib.user import User
 
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
