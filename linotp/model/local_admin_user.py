@@ -55,7 +55,6 @@ class NoSuchUserError(Exception):
 
 class LocalAdminResolver:
     def __init__(self, app: LinOTPApp) -> None:
-        setup_db(app)
         self.user_class = ImportedUserSchema
         self.session: Session = db.session()
         self.admin_resolver_name = app.config["ADMIN_RESOLVER_NAME"]

@@ -53,6 +53,7 @@ from flask import current_app
 from flask.cli import AppGroup
 
 from linotp.lib.audit.SQLAudit import AuditTable
+from linotp.model import db
 from linotp.model.config import Config
 from linotp.model.realm import Realm
 from linotp.model.token import Token
@@ -164,12 +165,6 @@ def backup_database_tables() -> int:
     audit_db = app.config["AUDIT_DATABASE_URI"]
     if audit_db == "SHARED":
         backup_classes["AuditTable"] = AuditTable
-
-    # ---------------------------------------------------------------------- --
-
-    # setup db engine, session and meta from sql uri
-
-    db = SQLAlchemy(app)
 
     app.echo(
         "extracting data from: %r:%r"
@@ -370,10 +365,6 @@ def restore_database_tables(
     backup_filename = _get_restore_filename(
         "linotp_backup_%s.sqldb", filename, date
     )
-
-    # ---------------------------------------------------------------------- --
-
-    db = SQLAlchemy(app)
 
     # ---------------------------------------------------------------------- --
 
