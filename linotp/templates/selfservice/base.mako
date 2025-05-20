@@ -114,13 +114,6 @@
                 <span>${c.dynamic_actions[entry] |n}</span></a></li>
         % endfor
 
-        % if 'webprovisionOATH' in c.actions:
-            <li><a href="webprovisionoathtoken"><span>${_("Enroll OATH token")}</span></a></li>
-        %endif
-        % if 'webprovisionGOOGLE' in c.actions or 'webprovisionGOOGLEtime' in c.actions:
-            <li><a href="webprovisiongoogletoken"><span>${_("Enroll OATH soft token")}</span></a></li>
-        %endif
-
         % if 'assign' in c.actions:
             <li><a href="assign"><span>${_("Assign Token")}</span></a></li>
         %endif

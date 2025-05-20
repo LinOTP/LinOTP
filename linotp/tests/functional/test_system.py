@@ -544,21 +544,21 @@ realm = realm2
 client = None
 user = lse_ad:
 time = None
-action = "webprovisionGOOGLE, "
+action = "enrollHMAC, "
 scope = selfservice
 [resovler_ss2]
 realm = realm2
 client = None
 user = "local:, koelbel"
 time = None
-action = "webprovisionGOOGLEtime, assign, "
+action = "enrollTOTP, assign, "
 scope = selfservice
 [ss1_maria]
 realm = realm1
 client = None
 user = maria
 time = None
-action = "max_count_hotp=10, webprovisionGOOGLE, getotp, enrollYUBICO, "
+action = "max_count_hotp=10, enrollHMAC, getotp, enrollYUBICO, "
 scope = selfservice
 [SMS]
 realm = realm1
@@ -572,7 +572,7 @@ realm = realm1
 client = None
 user = None
 time = None
-action = "webprovisionGOOGLE, max_count_hotp=5, getotp, assign, enrollSMS, enrollMOTP, setMOTPPIN, history"
+action = "enrollHMAC, max_count_hotp=5, getotp, assign, enrollSMS, enrollMOTP, setMOTPPIN, history"
 scope = selfservice
 [gettoken]
 realm = *

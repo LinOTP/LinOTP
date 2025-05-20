@@ -377,6 +377,7 @@ class Migration:
         "3.2.0.0",
         "3.2.2.0",
         "3.2.3.0",
+        "4.0.0.0",
     ]
     #!! the migration number should be the same as the linotp release number /
     # debian release number !!
@@ -952,3 +953,109 @@ class Migration:
         return True, (
             "Migration to 3.2.3 - to trigger debian dbconfig upgrade"
         )
+
+    def migrate_4_0_0_0(self):
+        """
+        Migration to 4.0.0 - remove OATHTokenSupport config item and update
+        webprovisionGOOGLE and webprovisionGOOGLEtime policies to enrollHMAC and enrollTOTP.
+        """
+        # Remove OATHTokenSupport policy
+        model.Config.query.filter(
+            model.Config.Key == "linotp.OATHTokenSupport"
+        ).delete(synchronize_session=False)
+
+        log.info("OATHTokenSupport policy removed")
+
+        # Migrate webprovisionGOOGLE and webprovisionGOOGLEtime policies
+        policy_entries = model.Config.query.filter(
+            sa.and_(
+                model.Config.Key.like("linotp.Policy.%.action"),
+                sa.or_(
+                    model.Config.Value.contains("webprovisionGOOGLE"),
+                    model.Config.Value.contains("webprovisionGOOGLEtime"),
+                ),
+            )
+        ).all()
+
+        for entry in policy_entries:
+            # Updating policy value
+            policy_actions = _parse_action(entry.Value)
+            new_value, changed = (
+                Migration_4_0_0_0.rename_webprovision_google_policies(
+                    list(policy_actions)
+                )
+            )
+            if changed:
+                log.info(
+                    "Updating policy value %r from %r to %r"
+                    % (entry.Key, entry.Value, new_value)
+                )
+                entry.Value = new_value
+                model.db.session.add(entry)
+
+        return True, (
+            "Migration to 4.0.0 - webprovision policies are updated and OATHTokenSupport config item is removed"
+        )
+
+
+def _parse_action(action_value):
+    # to avoid circular import import lazily parse_action
+    # parse_action is used here in migrate script and internally in policy module
+    # creating separate module only for it would be overkill at least for now
+    from linotp.lib.policy.util import parse_action
+
+    return parse_action(action_value)
+
+
+class Migration_4_0_0_0:
+    """This static class is a namespace for all migration functions
+    that are related to the migration to 4.0.0.0
+    """
+
+    @staticmethod
+    def rename_webprovision_google_policies(
+        entry_values: list[tuple[str, str | int | bool]],
+    ) -> tuple[str | None, bool]:
+        """
+        Map webprovisionGOOGLE and webprovisionGOOGLEtime policies to enrollHMAC and enrollTOTP.
+        This function builds new policy value string.
+        Duplicate policies are removed and formatting could be changed !
+
+        :param entry_values: List of tuples containing policy name and value.
+        :return: The updated entry value with mapped policies and a boolean indicating if the value was changed.
+        """
+        # If value doesnt contain webprovisionGOOGLE or webprovisionGOOGLEtime
+        # we dont change string
+
+        POLICY_MAPPINGS = {
+            "webprovisionGOOGLE": "enrollHMAC",
+            "webprovisionGOOGLEtime": "enrollTOTP",
+        }
+
+        if not any(name in POLICY_MAPPINGS for name, _ in entry_values):
+            return None, False
+
+        changed_policies = []
+        seen_keys = set()
+        for key, value in entry_values:
+            mapped_policy_key = POLICY_MAPPINGS.get(key.strip(), key)
+            if mapped_policy_key and mapped_policy_key not in seen_keys:
+                changed_policies.append((mapped_policy_key, value))
+                seen_keys.add(mapped_policy_key)
+
+        def format_single_action(
+            policy_action: tuple[str, str | int | bool],
+        ) -> str:
+            key, value = policy_action
+            # check is value is boolean and True
+            if isinstance(value, bool) and value:
+                return key
+            if isinstance(value, str) and value:
+                return f'{key}="{value}"'
+            return f"{key}={value}"
+
+        result = ", ".join(
+            format_single_action(policy_action)
+            for policy_action in changed_policies
+        )
+        return result, True

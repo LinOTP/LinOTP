@@ -16,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `userservice/enroll` now validates otp pins:
   - The `pin` parameter is now required or prohibited based on the `setOTPPIN` policy
   - the provided `pin` is validated against the following policies: `otp_pin_minlength`, `otp_pin_maxlength` and `otp_pin_contents`
+- `userservice/enroll` response for HOTP/TOTP tokens now includes a new field: `detail.enrollment_url`, which currently mirrors `detail.googleurl` property
+
+### Removed
+
+- webprovisionGOOGLE and webprovisionGOOGLEtime policies are removed and migrated to enrollHMAC and enrollTOTP respectively
+- OATHTokenSupport config item is removed and "OATH webprovision" is no longer supported in legacy selfservice
+- `userservice/webprovision` endpoint is removed
+
+### Deprecated
+
+- The `detail.googleurl` property in the `userservice/enroll` response will be removed in a future major release. Please update your integrations to use `detail.enrollment_url` instead.
 
 ### Fixed
 

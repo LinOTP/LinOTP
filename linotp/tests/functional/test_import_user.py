@@ -387,8 +387,12 @@ class TestImportUser(TestController):
             "enroll", params=params, auth_user=auth_user
         )
         jresp = json.loads(response.body)
-        img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
+        img = jresp.get("detail", {}).get("enrollment_url", {}).get("img", "")
 
+        assert "data:image" in img, response
+
+        # test for deprecated googleurl
+        img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
         assert "data:image" in img, response
 
         return
@@ -555,8 +559,12 @@ class TestImportUser(TestController):
             "enroll", params=params, auth_user=auth_user
         )
         jresp = json.loads(response.body)
-        img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
+        img = jresp.get("detail", {}).get("enrollment_url", {}).get("img", "")
 
+        assert "data:image" in img, response
+
+        # test for deprecated googleurl
+        img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
         assert "data:image" in img, response
 
         return

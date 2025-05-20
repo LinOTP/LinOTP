@@ -79,7 +79,6 @@ class TestMigrate(unittest.TestCase):
             "EmailChallengeValidityTime": "600",
             "EmailBlockingTimeout": "120",
             "PushChallengeValidityTime": "150",
-            "OATHTokenSupport": "False",
             "welcome_screen.last_shown": "0",
             "QRTokenOtpLen": "8",
             "EmailProvider": "linotp.provider.emailprovider.SMTPEmailProvider",

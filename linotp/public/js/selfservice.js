@@ -330,10 +330,10 @@ function enroll_token(params) {
             }
             if (detail.hasOwnProperty('otpkey')) {
                 try {
-                    if (detail.hasOwnProperty('googleurl')) {
+                    if (detail.hasOwnProperty('enrollment_url')) {
                         details = details + '<li> Enrollment: <br>';
-                        details = details + '<a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
-                        details = details + '<br><a href="' + detail.googleurl.value + '">' + detail.googleurl.value + '</a></li>';
+                        details = details + '<a href="' + detail.enrollment_url.value +'">' + detail.enrollment_url.img + '</a>';
+                        details = details + '<br><a href="' + detail.enrollment_url.value + '">' + detail.enrollment_url.value + '</a></li>';
                         details = details + '<li> Seed: ' +
                             escape(detail.otpkey.value.substring('seed://'.length, detail.otpkey.value.length)) +
                             '</li>';
@@ -500,50 +500,6 @@ function token_delete() {
         alert(i18n.gettext("Failed to delete token!\n") + escape(data.result.error.message));
     }
     return false;
-}
-
-function provisionOath() {
-    show_waiting();
-    var params = {'type' : 'oathtoken'}
-    var data = run_sync_request("/userservice/webprovision", params);
-    if (data.result.status == true) {
-        if (data.result.value.init == true) {
-            // The token was successfully initialized and we will display the url
-            showTokenlist();
-            var url = data.result.value.oathtoken.url;
-            var img = data.result.value.oathtoken.img;
-            $('#oath_link').attr("href", url);
-            $('#oath_qr_code').html($.parseHTML(img));
-            $('#provisionresultDiv').show();
-            $('#qr_code_iphone_download_oath').hide();
-        }
-    } else {
-        alert(i18n.gettext("Failed to enroll token!\n") + escape(data.result.error.message));
-    }
-}
-
-function provisionGoogle() {
-    show_waiting();
-    var type = "googleauthenticator";
-    if ($('#google_type').val() == "totp") {
-        type = "googleauthenticator_time";
-    }
-    var params = {"type" : type};
-    var data = run_sync_request("/userservice/webprovision", params);
-    if (data.result.status == true) {
-        if (data.result.value.init == true) {
-            // The token was successfully initialized and we will display the url
-            showTokenlist();
-            var url = data.result.value.oathtoken.url;
-            var img = data.result.value.oathtoken.img;
-            $('#google_link').attr("href", url);
-            $('#google_qr_code').html($.parseHTML(img));
-            $('#provisionGoogleResultDiv').show();
-            $('#qr_code_iphone_download').hide();
-        }
-    } else {
-        alert(i18n.gettext("Failed to enroll token!\n") + escape(data.result.error.message));
-    }
 }
 
 function setpin() {

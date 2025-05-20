@@ -417,7 +417,7 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
     # -------------------------------------------------------------------- --
 
     # for selfservice "enroll" we check the license limits
-    # - this hook covers both, the 'enroll' and the 'webprovision' userservice
+    # - this hook covers 'enroll' userservice
 
     if method == "enroll":
         if linotp.lib.support.check_license_restrictions():
@@ -1757,21 +1757,6 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
     elif method == "userwebprovision":
         typ = param.get("type").lower()
 
-        if typ == "oathtoken" and get_selfservice_actions(
-            authUser, "webprovisionOATH"
-        ):
-            return ret
-
-        if typ == "googleauthenticator_time" and get_selfservice_actions(
-            authUser, "webprovisionGOOGLEtime"
-        ):
-            return ret
-
-        if typ == "googleauthenticator" and get_selfservice_actions(
-            authUser, "webprovisionGOOGLE"
-        ):
-            return ret
-
         if typ == "ocra2" and get_selfservice_actions(authUser, "enrollOCRA2"):
             return ret
 
@@ -1784,18 +1769,6 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
         raise PolicyException(
             _("The policy settings do not allow you to issue this request!")
         )
-
-        # Here we check, if the tokennum exceeds the allowed tokens
-        if not _check_token_count():
-            log.error("The maximum token number is reached!")
-
-            raise PolicyException(
-                _(
-                    "You may not enroll any more tokens. "
-                    "Your maximum token number "
-                    "is reached!"
-                )
-            )
 
     elif method == "userhistory":
         if not get_selfservice_actions(authUser, "history"):
@@ -1816,14 +1789,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
         typ = param["type"].lower()
         action = "enroll" + typ.upper()
 
-        wpg = get_selfservice_actions(authUser, "webprovisionGOOGLE")
-        wpgt = get_selfservice_actions(authUser, "webprovisionGOOGLEtime")
-
-        if not (
-            get_selfservice_actions(authUser, action)
-            or (typ == "hmac" and wpg)
-            or (typ == "totp" and wpgt)
-        ):
+        if not (get_selfservice_actions(authUser, action)):
             log.warning(
                 "user %r@%r is not allowed to enroll %s!",
                 authUser.login,

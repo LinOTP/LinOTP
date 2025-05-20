@@ -125,8 +125,6 @@ POLICY_DEFINTIONS = {
         "otp_pin_maxlength": {"type": "int", "value": list(range(0, 100))},
         "otp_pin_minlength": {"type": "int", "value": list(range(0, 100))},
         "otp_pin_contents": {"type": "str"},
-        "webprovisionGOOGLE": {"type": "bool"},
-        "webprovisionGOOGLEtime": {"type": "bool"},
         "max_count_dpw": {"type": "int"},
         "max_count_hotp": {"type": "int"},
         "max_count_totp": {"type": "int"},
@@ -541,15 +539,6 @@ def _get_policy_definitions():
     pol = {}
     pol.update(POLICY_DEFINTIONS)
 
-    linotp_config = request_context["Config"]
-    oath_support = (
-        str(linotp_config.get("linotp.OATHTokenSupport", "False")).lower()
-        == "True"
-    )
-
-    if oath_support:
-        pol["webprovisionOATH"] = {"type": "bool"}
-
     # --------------------------------------------------------------------- --
 
     # now add generic policies, which every token should provide:
@@ -636,11 +625,7 @@ def validate_policy_definition(policy):
             "initETNG",
             "initSPASS",
         ],
-        "selfservice": [
-            "webprovisionOATH",
-            "webprovisionGOOGLEtime",
-            "webprovisionGOOGLE",
-        ],
+        "selfservice": [],
         "system": ["*"],
         "tools": ["*"],
         "audit": ["*"],

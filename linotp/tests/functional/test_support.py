@@ -252,7 +252,7 @@ class TestSupport(TestController):
         params = {
             "name": "enrollment_limit_test",
             "scope": "selfservice",
-            "action": "webprovisionGOOGLE, enrollHMAC",
+            "action": "enrollHMAC",
             "user": "*",
             "realm": "*",
             "active": True,
@@ -292,21 +292,7 @@ class TestSupport(TestController):
 
             # ------------------------------------------------------------- --
 
-            # 3a. verify that userservice/webprovision does not work
-
-            response = self.make_userselfservice_request(
-                "webprovision",
-                params={"type": "googleauthenticator"},
-                auth_user=auth_user,
-            )
-            assert not response.json["result"]["status"]
-
-            msg = "Failed to enroll token, please contact your administrator"
-            assert msg in response.json["result"]["error"]["message"], response
-
-            # ------------------------------------------------------------- --
-
-            # 3b. verify that userservice/enroll does not work either
+            # 3a. verify that userservice/enroll does not work
 
             response = self.make_userselfservice_request(
                 "enroll", params={"type": "hmac"}, auth_user=auth_user
