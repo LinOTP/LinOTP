@@ -36,12 +36,12 @@ from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
 from flask_babel import Babel
 from werkzeug.exceptions import HTTPException
+from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from flask import Config as FlaskConfig
 from flask import Flask, abort, current_app
 from flask import g as flask_g
 from flask import jsonify, redirect, url_for
-from flask.helpers import get_env
 
 from . import __version__
 from .flap import config, request, setup_mako, setup_request_context
@@ -290,6 +290,8 @@ class LinOTPApp(Flask):
 
     cache = None
     """Beaker cache for this app"""
+
+    before_first_request_init = False
 
     def __init__(self):
         self.cli_cmd = os.environ.get("LINOTP_CMD", "")
@@ -757,6 +759,25 @@ class LinOTPApp(Flask):
             )
             sys.exit(SYS_EXIT_CODE)
 
+    def before_first_request_handler(self):
+        """
+        The before_first_request hook was removed in Flask 3,
+        so we emulate its behavior here. However, the timing of this
+        hook seems to differ from the original before_first_request, so we
+        cannot move all initialization code to this function.
+        """
+        if self.before_first_request_init:
+            return
+        self.before_first_request_init = True
+
+        # This line comes from init_jwt_config, which is called during initialization.
+        # Tests modify this environment variable after initialization but before the first request.
+        # So to make them work we need to set it here again.
+        self.config["JWT_COOKIE_SECURE"] = self.config["SESSION_COOKIE_SECURE"]
+
+        init_logging_config()
+        self.setup_resolvers()
+
 
 def init_logging(app):
     """Sets up logging for LinOTP."""
@@ -982,7 +1003,8 @@ def create_app(config_name=None, config_extra=None):
     # to pass the correct value.
 
     if config_name is None:
-        config_name = get_env()
+        # get_env was evaluated to "production" before removal
+        config_name = os.getenv("FLASK_ENV", "production")
 
     _configure_app(app, config_name, config_extra)
 
@@ -1021,9 +1043,7 @@ def create_app(config_name=None, config_extra=None):
     )
 
     # Add pre request handlers
-    app.before_first_request(init_logging_config)
-    app.before_first_request(app.init_jwt_config)
-    app.before_first_request(app.setup_resolvers)
+    app.before_request(app.before_first_request_handler)
     app.before_request(app.start_session)
     app.before_request(app.create_context)
 
@@ -1093,35 +1113,27 @@ def create_app(config_name=None, config_extra=None):
 
     # Enable profiling if desired. The options are debatable and could be
     # made more configurable. OTOH, we could all have a pony.
-    profiling = False
     if app.config["PROFILE"]:
-        try:  # Werkzeug >= 1.0.0
-            from werkzeug.middleware.profiler import ProfilerMiddleware
-
-            profiling = True
-        except ImportError:
-            try:  # Werkzeug < 1.0.0
-                from werkzeug.contrib.profiler import ProfilerMiddleware
-
-                profiling = True
-            except ImportError:
-                log.error(
-                    "PROFILE is enabled but ProfilerMiddleware could "
-                    "not be imported. No profiling for you!"
-                )
-        if profiling:
-            app.wsgi_app = ProfilerMiddleware(
-                app.wsgi_app,
-                profile_dir="profile",
-                restrictions=[30],
-                sort_by=["cumulative"],
-            )
-            log.info("PROFILE is enabled (do not use this in production!)")
+        app.wsgi_app = ProfilerMiddleware(
+            app.wsgi_app,
+            profile_dir="profile",
+            restrictions=[30],
+            sort_by=["cumulative"],
+        )
+        log.info("PROFILE is enabled (do not use this in production!)")
 
     trusted_proxies = app.config["TRUSTED_PROXIES"]
 
     if trusted_proxies:
         app.wsgi_app = TrustedProxyHandler(app.wsgi_app, trusted_proxies)
+
+    # We cannot call init_jwt_config at later stage (before request) due to following error:
+    # "AssertionError: The setup method 'errorhandler' can no longer be called on the application.
+    # It has already handled its first request, any changes will not be applied consistently."
+    # Calling it here we have to be sure that enc-key is already set though.
+    # Hacky solution is to avoid calling it when running `linotp init ...` commands.
+    if app.cli_cmd != "init":
+        app.init_jwt_config()
 
     if app.cli_cmd in ["run", ""]:
         # we also do this when `app.cli_cmd=""`
