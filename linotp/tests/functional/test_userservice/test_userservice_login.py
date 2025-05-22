@@ -161,14 +161,12 @@ class TestUserserviceLogin(TestUserserviceController):
 
         assert "false" not in response
 
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
 
         params = {
             "session": auth_cookie,
         }
 
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
         response = self.client.post("userservice/history", data=params)
         response.body = response.data.decode("utf-8")
 
@@ -182,7 +180,9 @@ class TestUserserviceLogin(TestUserserviceController):
         # verify that the authentication was successfull by quering history
 
         wrong_cookie = "wHzUPEnpEEZDQvSjKitKtPi4bgX9mM5R2M8cJDGf5Sg"
-        self.client.set_cookie(".localhost", "user_selfservice", wrong_cookie)
+        self.client.set_cookie(
+            "user_selfservice", wrong_cookie, domain=".localhost"
+        )
 
         auth_data = {
             "username": "passthru_user1@myDefRealm",
@@ -191,8 +191,9 @@ class TestUserserviceLogin(TestUserserviceController):
 
         response = self.client.post("userservice/login", data=auth_data)
 
-        auth_cookie = self.get_cookies(response).get("user_selfservice")
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         assert auth_cookie
+        # we expect a new valid cookie to be set
         assert auth_cookie != wrong_cookie
 
         jresp = response.json
@@ -258,15 +259,10 @@ class TestUserserviceLogin(TestUserserviceController):
 
         response = self.client.post("userservice/login", data=auth_data)
         response.body = response.data.decode("utf-8")
-
         assert "false" not in response
 
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-
         # verify that the authentication was successfull by quering history
-
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         response = self.client.post(
             "userservice/history", data={"session": auth_cookie}
         )
@@ -352,9 +348,6 @@ class TestUserserviceLogin(TestUserserviceController):
             == "LoginToken"
         )
 
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-
         # ------------------------------------------------------------------ --
 
         # 2. step in authentication:
@@ -362,33 +355,36 @@ class TestUserserviceLogin(TestUserserviceController):
         #   submit user and password again
         # - and the requested second factor
 
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         auth_data = {
             "session": auth_cookie,
             "serial": "LoginToken",
             "otp": otps.pop(),
         }
 
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
         response = self.client.post("userservice/login", data=auth_data)
         response.body = response.data.decode("utf-8")
 
         assert "false" not in response
-
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
+        assert auth_cookie != self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
         # verify that the authentication was successfull by quering history
-
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         response = self.client.post(
             "userservice/history", data={"session": auth_cookie}
         )
 
         response.body = response.data.decode("utf-8")
-
         assert "page" in response
+        # no cookies in response anymore
+        assert self.get_cookies(response) == {}
+        # client cookie should still be set
+        assert (
+            auth_cookie
+            == self.client.get_cookie("user_selfservice").decoded_value
+        )
 
     @patch.object(
         linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
@@ -470,20 +466,11 @@ class TestUserserviceLogin(TestUserserviceController):
             == "LoginToken"
         )
 
-        # ------------------------------------------------------------------ --
-
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
-
-        # ------------------------------------------------------------------ --
-
         # 2. step in authentication:
         # - we provide the former sessiom, so we don't need to
         #   submit user and password again
         # - and the requested second factor
-
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         auth_data = {
             "session": auth_cookie,
             "serial": "LoginToken",
@@ -495,6 +482,7 @@ class TestUserserviceLogin(TestUserserviceController):
         assert jresp["result"]["status"]
         assert not jresp["result"]["value"]
         assert jresp["detail"]["replyMode"] == ["offline"]
+        assert auth_cookie != self.get_cookies(response)["user_selfservice"]
 
         transactionid = jresp["detail"]["transactionId"]
 
@@ -503,13 +491,8 @@ class TestUserserviceLogin(TestUserserviceController):
 
         # ------------------------------------------------------------------ --
 
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-
-        # ------------------------------------------------------------------ --
-
         # 3.a step in authentication: provide a wrong otp
-
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         auth_data = {
             "session": auth_cookie,
             "serial": "LoginToken",
@@ -517,16 +500,14 @@ class TestUserserviceLogin(TestUserserviceController):
             "transactionid": transactionid,
         }
 
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
         response = self.client.post("userservice/login", data=auth_data)
 
         jresp = response.json
         assert not jresp["result"]["value"]
         assert jresp["result"]["status"]
-
-        # ------------------------------------------------------------------ --
-
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
+        with pytest.raises(KeyError):
+            # unsuccessful login should not have the cookie
+            self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
@@ -543,18 +524,11 @@ class TestUserserviceLogin(TestUserserviceController):
         assert not jresp["result"]["value"]
         msg = "additional authentication parameter required"
         assert msg in jresp["detail"]["message"]
-
-        # ------------------------------------------------------------------ --
-
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
-
-        # ------------------------------------------------------------------ --
+        assert auth_cookie != self.get_cookies(response)["user_selfservice"]
 
         # 4b. trigger new challenge
 
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         auth_data = {
             "session": auth_cookie,
             "serial": "LoginToken",
@@ -566,6 +540,7 @@ class TestUserserviceLogin(TestUserserviceController):
         assert jresp["result"]["status"]
         assert not jresp["result"]["value"]
         assert jresp["detail"]["replyMode"] == ["offline"]
+        assert auth_cookie != self.get_cookies(response)["user_selfservice"]
 
         transactionid = jresp["detail"]["transactionId"]
 
@@ -574,15 +549,9 @@ class TestUserserviceLogin(TestUserserviceController):
 
         # ------------------------------------------------------------------ --
 
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
-
-        # ------------------------------------------------------------------ --
-
         # 4c. verify second factor
 
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         auth_data = {
             "session": auth_cookie,
             "serial": "LoginToken",
@@ -593,19 +562,13 @@ class TestUserserviceLogin(TestUserserviceController):
 
         jresp = response.json
         assert jresp["result"]["value"]
-
-        # ------------------------------------------------------------------ --
-
-        cookies = self.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
+        assert auth_cookie != self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
         # verify that the authentication was successfull by quering history
 
-        self.client.set_cookie(".localhost", "user_selfservice", auth_cookie)
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         response = self.client.post(
             "userservice/history", data={"session": auth_cookie}
         )
@@ -613,6 +576,13 @@ class TestUserserviceLogin(TestUserserviceController):
         response.body = response.data.decode("utf-8")
 
         assert "page" in response
+        # no cookies in response anymore
+        assert self.get_cookies(response) == {}
+        # client cookie should still be set
+        assert (
+            auth_cookie
+            == self.client.get_cookie("user_selfservice").decoded_value
+        )
 
     def enroll_qr_token(self, serial="myQrToken"):
         """Helper to enroll an qr token done in the following steps
