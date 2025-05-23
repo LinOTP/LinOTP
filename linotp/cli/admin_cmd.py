@@ -66,7 +66,6 @@ def fix_db_encoding_command():
         # Even though we skip initialising the database when doing
         # `linotp init …`, at this point we do need a database engine
         # after all.
-        setup_db(current_app)
         result, response = fix_db_encoding(current_app)
 
     except Exception as exx:
