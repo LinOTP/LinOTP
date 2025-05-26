@@ -73,7 +73,7 @@ test = [
   "pytest-testconfig",
   "pytest-test-groups",
   "pytest-xdist",
-  "selenium<4.10.0",
+  "selenium",
   "mock",
   "setuptools",
   "freezegun",
