@@ -49,7 +49,7 @@ build-pypi:
   before_script:
     - !reference [.docker-registry]
   script:
-    - docker build -t "$PYPI_IMAGE_TAG" -f docker/Dockerfile.testenv-pypi .
+    - docker build -t "$PYPI_IMAGE_TAG" -f docker/Dockerfile.linotp --target testenv-pypi .
     - docker push "$PYPI_IMAGE_TAG"
 
 build-docker:
@@ -63,19 +63,23 @@ build-docker:
     # container image. This makes it easier to identify exactly what is
     # in the image. The `IMAGE_VERSION` maps any version number like
     # `.devX` or `.rcY` to `.0`.
-    - IMAGE_VERSION="$(sed -Ene '/__version__ =/{s/^.*= "(.*)"/\1/;s/\.(dev|rc)[0-9]+/.0/;p}' linotp/__init__.py)"
-    - DATE=$(date +"%Y%m%d")
-    - docker build
-      --label de.linotp.commit-ref="$CI_COMMIT_REF_NAME"
-      --label de.linotp.commit-hash="$CI_COMMIT_SHORT_SHA"
-      --label de.linotp.image-tag="$IMAGE_VERSION-$DATE"
-      --label de.linotp.version="$IMAGE_VERSION"
-      -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
-    - docker push "$DOCKER_IMAGE_TAG"
-    - docker build -t "$DOCKER_TEST_ENV_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testenv .
-    - docker push "$DOCKER_TEST_ENV_IMAGE_TAG"
-    - docker build -t "$DOCKER_TEST_IMG_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testimg .
-    - docker push "$DOCKER_TEST_IMG_IMAGE_TAG"
+    - |
+      IMAGE_VERSION="$(sed -Ene '/__version__ =/{s/^.*= "(.*)"/\1/;s/\.(dev|rc)[0-9]+/.0/;p}' linotp/__init__.py)"
+      DATE=$(date +"%Y%m%d")
+      LABEL_ARGS="
+        --label de.linotp.commit-ref=$CI_COMMIT_REF_NAME
+        --label de.linotp.commit-hash=$CI_COMMIT_SHORT_SHA
+        --label de.linotp.image-tag=$IMAGE_VERSION-$DATE
+        --label de.linotp.version=$IMAGE_VERSION
+      "
+
+      # Build all images with the same labels
+      docker build -t "$DOCKER_IMAGE_TAG" $LABEL_ARGS -f docker/Dockerfile.linotp .
+      docker push "$DOCKER_IMAGE_TAG"
+      docker build -t "$DOCKER_TEST_ENV_IMAGE_TAG" $LABEL_ARGS --target testenv -f docker/Dockerfile.linotp .
+      docker push "$DOCKER_TEST_ENV_IMAGE_TAG"
+      docker build -t "$DOCKER_TEST_IMG_IMAGE_TAG" $LABEL_ARGS --target testimg -f docker/Dockerfile.linotp .
+      docker push "$DOCKER_TEST_IMG_IMAGE_TAG"
 
 container_scanning:
   image:
@@ -178,7 +182,7 @@ semgrep-sast_evaluation:
 pre-commit-check:
   stage: check-and-build
   needs: []
-  image: python:3.11-bookworm
+  image: ghcr.io/astral-sh/uv:python3.11-bookworm
   interruptible: true
   cache:
     paths:
@@ -187,7 +191,7 @@ pre-commit-check:
     - exists:
         - .pre-commit-config.yaml
   before_script:
-    - pip install pre-commit
+    - UV_SYSTEM_PYTHON=1 uv pip install pre-commit
   script:
     - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache pre-commit run --all-files
 
@@ -554,10 +558,13 @@ e2e-test-softhsm:
 # Auto-generate API docs using Sphinx.
 apidocs:
   stage: apidocs
-  image: python:3.11-bookworm
+  image: $PYPI_IMAGE_TAG
   interruptible: true
+  needs: ["build-pypi"]
+  before_script:
+    - uv sync --locked --group apidocs --no-dev && PATH=${CI_PROJECT_DIR}/.venv/bin:$PATH
+    - apt-get install -y make --no-install-recommends
   script:
-    - pip install Sphinx mock webhelpers2 jinja2
     - cd ${CI_PROJECT_DIR}/api-doc
     - make apidocs
     - make html
