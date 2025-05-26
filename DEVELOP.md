@@ -379,6 +379,42 @@ pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_te
 
 You can find sample test files under `linotpd/src/linotp/tests/integration`.
 
+#### Integration tests via docker compose
+
+You can run end-to-end integration tests using Docker Compose:
+
+```terminal
+# Start all services
+docker compose -f compose.e2etests.yml up -d
+
+# Watch test execution logs
+docker compose -f compose.e2etests.yml logs -f runner
+
+# Clean up when done
+docker compose -f compose.e2etests.yml down
+```
+
+You can also test against Firefox instead of Chrome (see note in compose file).
+
+For debugging:
+
+- write Screenshots of failed tests to host:
+  - comment in the volume `# - ./Screenshots:/app/linotp/tests/integration/Screenshots`
+  - create the folder `Screenshots` and update its permissions: `mkdir Screenshots && chmod 777 Screenshots`
+- Look into Selenium to see tests live:
+  - (potential) password: `secret`
+  - via Browser: http://localhost:9700
+  - via VNCViewer: http://localhost:5900
+- Access LinOTP UI: http://localhost:5000/manage/
+  - username: `admin`
+  - password: `admin`
+  - You can use this to view which data is shown in Manage-UI
+- View specific service logs: `docker compose -f compose.e2etests.yml logs -f <service-name>`
+  - most useful: `docker compose -f compose.e2etests.yml logs -f runner`
+- Enter e.g. test container: `docker compose -f compose.e2etests.yml run --rm runner /bin/bash`
+- Pass args to pytest via env `PYTESTARGS`.
+  - e.g. only run a specific test: `PYTESTARGS=test_emailtoken.py::TestEmailTokenEnroll::test_enroll_token`
+
 ## Use MyPy for typechecking
 
 To run a type check on the source code, install `mypy` and `sqlalchemy-stubs`.
