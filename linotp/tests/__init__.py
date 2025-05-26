@@ -58,10 +58,8 @@ from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import pytest
-from packaging import version
 from werkzeug.test import TestResponse
 
-from flask import __version__ as FLASK_VERSION
 from flask import current_app, g, request
 
 from linotp.lib.user import User
