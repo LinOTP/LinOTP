@@ -1004,7 +1004,7 @@ class SmsTokenClass(HmacTokenClass):
                 break
 
             except ProviderNotAvailable as exx:
-                log.warn("Provider not available %r", provider_name)
+                log.warning("Provider not available %r", provider_name)
                 res_scheduler.block(provider_name, delay=30)
 
         if not available:

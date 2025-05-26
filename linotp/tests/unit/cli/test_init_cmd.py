@@ -37,7 +37,7 @@ from unittest.mock import patch
 
 import click.termui
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 
 import linotp.cli.init_cmd as c
 from linotp import __version__
@@ -311,13 +311,13 @@ def test_setup_db_doesnt_create_tables(app, engine, capsys):
     app.echo = Echo(verbosity=1)
 
     # GIVEN an empty database
-    assert "Config" not in engine.table_names()
+    assert "Config" not in inspect(engine).get_table_names()
 
     # WHEN I call `setup_db` without additional arguments
     setup_db(app)
 
     # THEN the tables are NOT created (because `init_db_tables` does that).
-    assert "Config" not in engine.table_names()
+    assert "Config" not in inspect(engine).get_table_names()
 
 
 def test_padding_migration(app, base_app, engine):

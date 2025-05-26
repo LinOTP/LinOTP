@@ -37,10 +37,9 @@ from configobj import ConfigObj
 from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
 
-from flask import current_app, g
+from flask import current_app, g, request
 from flask import send_file as flask_send_file
 
-from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.config import (

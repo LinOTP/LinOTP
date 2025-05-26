@@ -59,12 +59,9 @@ from linotp import __version__ as linotp_version
         {"api": "/userservice/login", "cookie_name": "user_selfservice"},
     ],
 )
-def test_session_cookie_secure(
-    base_app, client, monkeypatch, secure_cookies, auth_type
-):
-    monkeypatch.setitem(
-        base_app.config, "SESSION_COOKIE_SECURE", secure_cookies
-    )
+def test_session_cookie_secure(base_app, client, secure_cookies, auth_type):
+    base_app.config["SESSION_COOKIE_SECURE"] = secure_cookies
+    base_app.config["JWT_COOKIE_SECURE"] = secure_cookies
 
     # Note that we are using `client` rather than `adminclient`, because
     # `adminclient` already is logged in.

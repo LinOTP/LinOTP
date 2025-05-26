@@ -46,10 +46,7 @@ def app():
     The app is configured with an unitialised database and Testing mode
     """
     app = LinOTPApp()
-    config = {
-        "TESTING": True,
-    }
-    app.config.update(config)
+    app.testing = True
     return app
 
 

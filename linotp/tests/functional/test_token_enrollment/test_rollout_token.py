@@ -197,7 +197,7 @@ class TestRolloutToken(TestController):
         self.do_check_scopes(True, False, scopes=["validate"], rollout=True)
 
     def test_empty_scope(self):
-        """
+        r"""
         test 'rollout token' feature with empty scope.
 
         LinOTP should ignore any rollout feature because no explicit scope

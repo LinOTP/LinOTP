@@ -33,10 +33,9 @@ import logging
 
 from werkzeug.datastructures import FileStorage
 
-from flask import current_app, g
+from flask import current_app, g, request
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import request
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
 from linotp.lib.policy import (

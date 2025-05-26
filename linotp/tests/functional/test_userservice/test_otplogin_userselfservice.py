@@ -353,20 +353,17 @@ class TestUserserviceAuthController(TestController):
             url(controller="userservice", action="login"), data=auth_user
         )
 
-        cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-
         jresp = response.json
         tokenlist = jresp["detail"]["tokenList"]
         assert len(tokenlist) == 1
         assert tokenlist[0]["LinOtp.TokenSerialnumber"] == "LoginToken"
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
         # verify that 'history' could not be called in this status
 
-        params = {}
-        params["session"] = "void"
+        params = {"session": "void"}
 
         response = self.client.post(
             url(controller="userservice", action="history"), data=params
@@ -375,10 +372,7 @@ class TestUserserviceAuthController(TestController):
         assert response.status_code == 401
         assert "No valid session" in response.data.decode()
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         response = self.client.post(
             url(controller="userservice", action="usertokenlist"), data=params
         )
@@ -390,10 +384,6 @@ class TestUserserviceAuthController(TestController):
 
         # next request is to trigger the login challenge response
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
         response = self.client.post(
             url(controller="userservice", action="login"), data=params
         )
@@ -403,9 +393,7 @@ class TestUserserviceAuthController(TestController):
 
         # response should contain the challenge information
 
-        cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
@@ -417,10 +405,7 @@ class TestUserserviceAuthController(TestController):
         token_data = json.loads(response.body)["result"]["value"]["data"][0]
         failcount = token_data["LinOtp.FailCount"]
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         otp = self.otps.pop()
         params["otp"] = otp[::-1]
 
@@ -448,10 +433,7 @@ class TestUserserviceAuthController(TestController):
         token_data = json.loads(response.body)["result"]["value"]["data"][0]
         failcount = token_data["LinOtp.FailCount"]
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         otp = self.otps.pop()
         params["otp"] = ""
 
@@ -475,10 +457,7 @@ class TestUserserviceAuthController(TestController):
         # next request replies to the challenge response and
         # finishes the authorisation
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         params["otp"] = self.otps.pop()
 
         response = self.client.post(
@@ -487,15 +466,11 @@ class TestUserserviceAuthController(TestController):
 
         response.body = response.data.decode("utf-8")
         assert '"value": true' in response, response
-
-        cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         response = self.client.post(
             url(controller="userservice", action="history"), data=params
         )
@@ -550,8 +525,7 @@ class TestUserserviceAuthController(TestController):
 
         # ------------------------------------------------------------------ --
 
-        cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
         assert auth_cookie
 
         # ------------------------------------------------------------------ --
@@ -559,10 +533,7 @@ class TestUserserviceAuthController(TestController):
         # next request is to trigger the login challenge response
         # response should contain the challenge information
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         response = self.client.post(
             url(controller="userservice", action="login"), data=params
         )
@@ -573,17 +544,13 @@ class TestUserserviceAuthController(TestController):
 
         # ------------------------------------------------------------------ --
 
-        cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
         # replies to the challenge response which finishes the authorisation
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         params["otp"] = self.otps.pop()
 
         response = self.client.post(
@@ -595,17 +562,13 @@ class TestUserserviceAuthController(TestController):
 
         # ------------------------------------------------------------------ --
 
-        cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
         # verify that the authentication was successful
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         response = self.client.post(
             url(controller="userservice", action="history"), data=params
         )
@@ -660,18 +623,13 @@ class TestUserserviceAuthController(TestController):
 
         # ------------------------------------------------------------------ --
 
-        cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
         # next request is to trigger the login challenge response
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         response = self.client.get(
             url(controller="userservice", action="login"), query_string=params
         )
@@ -686,15 +644,11 @@ class TestUserserviceAuthController(TestController):
 
         # ------------------------------------------------------------------ --
 
-        cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
         # next request queries the challeng status
-
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params = {"session": auth_cookie}
         response = self.client.get(
@@ -723,10 +677,7 @@ class TestUserserviceAuthController(TestController):
 
         # verify that transaction is verified
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
 
         response = self.client.get(
             url(controller="userservice", action="login"), query_string=params
@@ -737,14 +688,11 @@ class TestUserserviceAuthController(TestController):
 
         # ------------------------------------------------------------------ --
 
-        cookies = TestController.get_cookies(response)
-        auth_cookie = cookies.get("user_selfservice")
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
+        auth_cookie = self.get_cookies(response)["user_selfservice"]
 
         # ------------------------------------------------------------------ --
 
-        params = {}
-        params["session"] = auth_cookie
+        params = {"session": auth_cookie}
         response = self.client.get(
             url(controller="userservice", action="history"),
             query_string=params,

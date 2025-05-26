@@ -419,6 +419,7 @@ def app_(monkeypatch, schema):
 )
 def test_configure_app_linotp_cfg_path(monkeypatch, app_, path, expected_seen):
     monkeypatch.setenv("LINOTP_CFG", path)
+    monkeypatch.setenv("FLASK_ENV", "default")
 
     def mocked_glob(self, g):
         if g == "foo":
@@ -439,6 +440,7 @@ def test_configure_app_linotp_cfg_path(monkeypatch, app_, path, expected_seen):
         "from_pyfile",
         lambda self, fn, **kwargs: files_seen.append(str(fn)),
     )
+
     _configure_app(app_)
     assert files_seen == expected_seen
 
@@ -453,10 +455,12 @@ def test_configure_app_linotp_cfg_path(monkeypatch, app_, path, expected_seen):
 def test_configure_app_linotp_cfg_silent(
     monkeypatch, capsys, app_, path, silent
 ):
+    monkeypatch.setenv("FLASK_ENV", "default")
     monkeypatch.setenv("LINOTP_CFG", path)
     monkeypatch.setattr(
         ExtFlaskConfig, "from_pyfile", lambda self, fn, **kwargs: False
     )
+
     _configure_app(app_)
     captured = capsys.readouterr()
     if silent:
@@ -467,11 +471,13 @@ def test_configure_app_linotp_cfg_silent(
 
 def test_configure_app_from_env_variables(monkeypatch, app_):
     mock_env = {
+        "FLASK_ENV": "default",
         "LINOTP_FOO": "quux",
         "LINOTP_CFG": "",  # This should be ignored (reserved name)
         "LINOTP_QUUX": "xyzzy",  # This should also be ignored (not in schema)
     }
     monkeypatch.setattr(os, "environ", mock_env)
+
     _configure_app(app_)
     assert app_.config["FOO"] == "quux"
     assert "CFG" not in app_.config

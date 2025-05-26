@@ -33,14 +33,12 @@ import logging
 from flask import Response, current_app, g, stream_with_context
 
 from linotp.controllers.base import BaseController
-from linotp.flap import config, request
 from linotp.lib import deprecated_methods
 from linotp.lib.audit.iterator import (
     AuditQuery,
     CSVAuditIterator,
     JSONAuditIterator,
 )
-from linotp.lib.context import request_context
 from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError
 from linotp.lib.user import getUserFromRequest

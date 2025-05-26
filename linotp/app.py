@@ -41,10 +41,10 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 from flask import Config as FlaskConfig
 from flask import Flask, abort, current_app
 from flask import g as flask_g
-from flask import jsonify, redirect, url_for
+from flask import jsonify, redirect, request, url_for
 
 from . import __version__
-from .flap import config, request, setup_mako, setup_request_context
+from .flap import config, setup_mako, setup_request_context
 from .flap import tmpl_context as c
 from .lib.audit.base import getAudit
 from .lib.config import getLinotpConfig
@@ -103,6 +103,8 @@ AVAILABLE_CONTROLLERS = {
 }
 
 HEALTHCHECK_ENDPOINT = "healthcheck"
+
+START_LINOTP_COMMANDS = ["run", ""]  # we get `""` from gunicorn
 
 
 class ConfigurationError(Exception):
@@ -288,10 +290,10 @@ class LinOTPApp(Flask):
     The main LinOTP Flask application instance
     """
 
-    cache = None
     """Beaker cache for this app"""
+    cache = None
 
-    before_first_request_init = False
+    available_languages: List[str] = []
 
     def __init__(self):
         self.cli_cmd = os.environ.get("LINOTP_CMD", "")
@@ -380,6 +382,10 @@ class LinOTPApp(Flask):
         self.config["JWT_SECRET_KEY"] = jwt_key
 
         self.config["JWT_COOKIE_SECURE"] = self.config["SESSION_COOKIE_SECURE"]
+
+        # we need to set the JWT_VERIFY_SUB to False, as we do not have a "sub" attribute in the JWT
+        # https://github.com/apache/superset/issues/30995
+        self.config["JWT_VERIFY_SUB"] = False
 
         self.jwt = JWTManager(self)
 
@@ -759,27 +765,8 @@ class LinOTPApp(Flask):
             )
             sys.exit(SYS_EXIT_CODE)
 
-    def before_first_request_handler(self):
-        """
-        The before_first_request hook was removed in Flask 3,
-        so we emulate its behavior here. However, the timing of this
-        hook seems to differ from the original before_first_request, so we
-        cannot move all initialization code to this function.
-        """
-        if self.before_first_request_init:
-            return
-        self.before_first_request_init = True
 
-        # This line comes from init_jwt_config, which is called during initialization.
-        # Tests modify this environment variable after initialization but before the first request.
-        # So to make them work we need to set it here again.
-        self.config["JWT_COOKIE_SECURE"] = self.config["SESSION_COOKIE_SECURE"]
-
-        init_logging_config()
-        self.setup_resolvers()
-
-
-def init_logging(app):
+def init_logging(app: LinOTPApp):
     """Sets up logging for LinOTP."""
 
     if app.config["LOG_CONFIG"] is None:
@@ -832,7 +819,7 @@ def init_logging(app):
     app.logger = logging.getLogger(app.name)
 
 
-def setup_cache(app):
+def setup_cache(app: LinOTPApp):
     """Initialise the Beaker cache for this app."""
 
     cache_opts = {}
@@ -851,7 +838,7 @@ def setup_cache(app):
 # linotp config
 
 
-def init_linotp_config(app):
+def init_linotp_config(app: LinOTPApp):
     """initialize the app global linotp config manager"""
 
     app.linotp_app_config = LinotpAppConfig()
@@ -916,13 +903,22 @@ def drop_security_module():
         raise exx
 
 
-def _configure_app(app, config_name="default", config_extra=None):
+def _configure_app(
+    app: LinOTPApp,
+    config_name: str | None = None,
+    config_extra: dict | None = None,
+):
     """
     Testing the configuration mechanism is a lot easier if it can be
     invoked separately from `create_app()`, which does a lot of other
     stuff, too. Therefore we have pulled out all the configuration-related
     code from `create_app()` into this function.
     """
+
+    # Use production as default environment if not specified
+    if config_name is None:
+        config_name = os.getenv("FLASK_ENV", "production")
+
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
 
@@ -986,83 +982,8 @@ def _configure_app(app, config_name="default", config_extra=None):
         app.config.check_directories()
 
 
-def create_app(config_name=None, config_extra=None):
-    """
-    Generate a new instance of the Flask app
-
-    This generates and configures the main application instance. Testing
-    environments can use `config_extra` to provide extra configuration values
-    such as a temporary database URL.
-
-    @param config_name The name of the configuration to load from settings.py
-    @param config_extra An optional dict of configuration override values
-    """
-    app = LinOTPApp()
-
-    # We need to do this here because the Flask CLI machinery doesn't seem
-    # to pass the correct value.
-
-    if config_name is None:
-        # get_env was evaluated to "production" before removal
-        config_name = os.getenv("FLASK_ENV", "production")
-
-    _configure_app(app, config_name, config_extra)
-
-    with app.app_context():
-        # Determine which languages are available in the i18n directory.
-        # Note that we always have English even without a translation file.
-        babel = Babel(app, configure_jinja=False, default_domain="linotp")
-        app.available_languages = list(
-            {"en"} | {t.language for t in babel.list_translations()}
-        )
-
-    setup_mako(app)
-    init_logging(app)
-    if app.cli_cmd in ["run", ""]:
-        app.logger.info("LinOTP {} starting ...".format(__version__))
-
-    # we need to set the JWT_VERIFY_SUB to False, as we do not have a "sub" attribute in the JWT
-    # https://github.com/apache/superset/issues/30995
-    app.config["JWT_VERIFY_SUB"] = False
-
-    with app.app_context():
-        setup_cache(app)
-        setup_db(app)
-
-        init_linotp_config(app)
-
-        init_security_provider()
-
-        app.setup_audit()
-
-        reload_token_classes()
-        app.check_license()
-
-    app.add_url_rule(
-        f"/{HEALTHCHECK_ENDPOINT}/status", HEALTHCHECK_ENDPOINT, healthcheck
-    )
-
-    # Add pre request handlers
-    app.before_request(app.before_first_request_handler)
-    app.before_request(app.start_session)
-    app.before_request(app.create_context)
-
-    # Per controller setup and handlers
-    app.setup_controllers()
-
-    @app.route("/")
-    def index():
-        site_root_redirect = config["SITE_ROOT_REDIRECT"]
-        if site_root_redirect:
-            return redirect(site_root_redirect)
-
-        if "selfservice" in app.enabled_controllers:
-            return redirect(url_for("selfservice.index"))
-
-        return abort(404)
-
-    # Post handlers
-    app.teardown_request(app.finalise_request)
+def _setup_error_handlers(app: LinOTPApp):
+    """Set up Flask error handlers to handle all Exceptions."""
 
     @app.errorhandler(LinotpError)
     def linotp_error_handler(linotpError):
@@ -1095,24 +1016,35 @@ def create_app(config_name=None, config_extra=None):
         log.exception(exception)
         return sendError(exception)
 
-    def get_locale():
-        """Figure out the locale for this request. We look at the
-        request's `Accept-Language` header and pick the first language
-        in the list that matches one of the languages that we actually
-        support.
-        """
+
+def _setup_request_handlers(app: LinOTPApp):
+    """Set up request lifecycle handlers."""
+    app.before_request(app.start_session)
+    app.before_request(app.create_context)
+    app.teardown_request(app.finalise_request)
+
+
+def _setup_root_route(app: LinOTPApp):
+    """Set up the root route handler."""
+
+    @app.route("/")
+    def index():
         try:
-            return request.accept_languages.best_match(
-                app.available_languages, "en"
-            )
-        except RuntimeError as exx:
-            # Working outside of request context.
-            return babel.default_locale
+            site_root_redirect = app.config["SITE_ROOT_REDIRECT"]
+            if site_root_redirect:
+                return redirect(site_root_redirect)
 
-    babel.init_app(app, locale_selector=get_locale)
+            if "selfservice" in app.enabled_controllers:
+                return redirect(url_for("selfservice.index"))
 
-    # Enable profiling if desired. The options are debatable and could be
-    # made more configurable. OTOH, we could all have a pony.
+        except Exception as exc:
+            log.warning("Error handling root route: %r", exc)
+
+        return abort(404)
+
+
+def _setup_profiling(app: LinOTPApp):
+    """Set up profiling middleware if enabled."""
     if app.config["PROFILE"]:
         app.wsgi_app = ProfilerMiddleware(
             app.wsgi_app,
@@ -1122,23 +1054,105 @@ def create_app(config_name=None, config_extra=None):
         )
         log.info("PROFILE is enabled (do not use this in production!)")
 
-    trusted_proxies = app.config["TRUSTED_PROXIES"]
 
-    if trusted_proxies:
+def _setup_proxies(app: LinOTPApp):
+    """Set up trusted proxies handler if configured."""
+    if trusted_proxies := app.config["TRUSTED_PROXIES"]:
         app.wsgi_app = TrustedProxyHandler(app.wsgi_app, trusted_proxies)
 
-    # We cannot call init_jwt_config at later stage (before request) due to following error:
-    # "AssertionError: The setup method 'errorhandler' can no longer be called on the application.
-    # It has already handled its first request, any changes will not be applied consistently."
-    # Calling it here we have to be sure that enc-key is already set though.
-    # Hacky solution is to avoid calling it when running `linotp init ...` commands.
-    if app.cli_cmd != "init":
-        app.init_jwt_config()
 
-    if app.cli_cmd in ["run", ""]:
-        # we also do this when `app.cli_cmd=""`
-        # because this is how gunicorn starts the app
+def _setup_babel(app: LinOTPApp):
+    """Set up Babel internationalization."""
+
+    def get_locale():
+        """Determine locale for the current request."""
+        try:
+            return request.accept_languages.best_match(
+                app.available_languages, "en"
+            )
+        except RuntimeError:
+            # Working outside of request context.
+            return babel.default_locale
+
+    with app.app_context():
+        # Determine which languages are available in the i18n directory.
+        # Note that we always have English even without a translation file.
+        babel = Babel(app, configure_jinja=False, default_domain="linotp")
+        app.available_languages = list(
+            {"en"} | {t.language for t in babel.list_translations()}
+        )
+        babel.init_app(app, locale_selector=get_locale)
+
+
+def create_app(config_name=None, config_extra=None):
+    """
+    Generate a new instance of the Flask app.
+
+    This generates and configures the main application instance. Testing
+    environments can use `config_extra` to provide extra configuration values
+    such as a temporary database URL.
+
+    Args:
+        config_name (str, optional): The name of the configuration to load from settings.py
+        config_extra (dict, optional): Additional configuration override values
+
+    Returns:
+        LinOTPApp: The configured Flask application instance
+    """
+    app = LinOTPApp()
+
+    # Load config
+    _configure_app(app, config_name, config_extra)
+    init_linotp_config(app)
+
+    init_logging(app)
+
+    if app.cli_cmd in START_LINOTP_COMMANDS:
+        app.logger.info("LinOTP {} starting ...".format(__version__))
+
+    # Initialize components (that need app_context)
+    with app.app_context():
+        setup_db(app)
+        if not app.testing and app.cli_cmd not in START_LINOTP_COMMANDS:
+            return app
+
+        if not app.testing:
+            init_logging_config()
+
+        init_security_provider()
+        app.setup_audit()
+        reload_token_classes()
+        app.check_license()
+
+    # Setup request handlers and routes
+    _setup_request_handlers(app)
+    app.setup_controllers()
+    _setup_root_route(app)
+    _setup_error_handlers(app)
+    # Setup health check endpoint
+    app.add_url_rule(
+        f"/{HEALTHCHECK_ENDPOINT}/status", HEALTHCHECK_ENDPOINT, healthcheck
+    )
+
+    # Initialize internationalization
+    _setup_babel(app)
+    # Setup mako templates
+    setup_mako(app)
+
+    # Setup middleware
+    _setup_proxies(app)
+    _setup_profiling(app)
+
+    setup_cache(app)
+
+    # Perform final checks for run command
+    if app.cli_cmd in START_LINOTP_COMMANDS:
         app.check()
+
+    # Initialize JWT configuration for non-init commands
+    # if app.cli_cmd != "init":
+    #     app.init_jwt_config()
+    app.init_jwt_config()
 
     return app
 

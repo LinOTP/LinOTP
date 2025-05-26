@@ -50,7 +50,7 @@ class TestBaseController(object):
     )
     def test_multidict_params(self, _mock_base, base_app):
         """
-        check if global request.params gets parsed to a plain dict correctly
+        check if global request.args gets parsed to a plain dict correctly
         """
 
         input_params = CombinedMultiDict(

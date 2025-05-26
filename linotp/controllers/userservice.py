@@ -55,10 +55,10 @@ from collections import defaultdict
 from flask_babel import gettext as _
 from werkzeug.exceptions import Forbidden, Unauthorized
 
-from flask import current_app, g
+from flask import current_app, g, request
 
 from linotp.controllers.base import BaseController, methods
-from linotp.flap import config, request
+from linotp.flap import config
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.audit.base import get_token_num_info
@@ -396,8 +396,8 @@ class UserserviceController(BaseController):
                     g.audit["realm"],
                 )
 
-                if "serial" in request.params:
-                    serial = request.params["serial"]
+                if "serial" in request.args:
+                    serial = request.args["serial"]
                     g.audit["serial"] = serial
                     g.audit["token_type"] = getTokenType(serial)
 

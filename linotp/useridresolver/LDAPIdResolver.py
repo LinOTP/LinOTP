@@ -84,7 +84,7 @@ TIMEOUT_NO_LIMIT = -1
 
 
 def escape_hex_for_search(hex_value: str) -> str:
-    """
+    r"""
     transform an hex string for a byte search in ldap, especially used for objectGUID
 
     From: https://ldapwiki.com/wiki/ObjectGUID

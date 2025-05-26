@@ -31,7 +31,7 @@ import logging
 import re
 from difflib import get_close_matches
 
-from flask_sqlalchemy import Pagination
+from flask_sqlalchemy.pagination import Pagination
 from sqlalchemy import and_, not_, or_
 
 from linotp.lib.config import getFromConfig

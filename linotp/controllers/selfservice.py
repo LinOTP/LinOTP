@@ -37,13 +37,12 @@ from flask_babel import gettext as _
 from mako.exceptions import CompileException
 from werkzeug.exceptions import Forbidden, Unauthorized
 
-from flask import Response, current_app, g, redirect, url_for
+from flask import Response, current_app, g, redirect, request, url_for
 
 from linotp.controllers.base import BaseController
 from linotp.controllers.userservice import get_auth_user, getTokenForUser
 from linotp.flap import config
 from linotp.flap import render_mako as render
-from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.context import request_context

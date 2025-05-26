@@ -34,7 +34,6 @@ import pytest
 import flask
 
 
-@pytest.mark.usefixtures("app")
 @pytest.fixture
 def index(adminclient):
     """

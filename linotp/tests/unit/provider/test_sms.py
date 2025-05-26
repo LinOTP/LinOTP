@@ -25,7 +25,6 @@
 #    Support: www.linotp.de
 #
 
-import asyncore
 import smtpd
 import unittest
 from unittest import TestCase
