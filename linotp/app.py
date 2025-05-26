@@ -290,8 +290,10 @@ class LinOTPApp(Flask):
     The main LinOTP Flask application instance
     """
 
-    cache = None
     """Beaker cache for this app"""
+    cache = None
+
+    available_languages: List[str] = []
 
     def __init__(self):
         self.cli_cmd = os.environ.get("LINOTP_CMD", "")
