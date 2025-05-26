@@ -136,13 +136,24 @@ def test_overwrite_check(
 
 
 @pytest.mark.parametrize(
-    "permissions,result",
+    "has_write_permission,result",
     [
-        (0o700, True),
-        (0o500, False),
+        (True, True),
+        (False, False),
     ],
 )
-def test_make_backup(app, capsys, freezer, tmp_path, permissions, result):
+def test_make_backup(
+    app, capsys, freezer, tmp_path, monkeypatch, has_write_permission, result
+):
+    # Raise an OSError if we don't have write permission
+    def mock_replace(src, dst):
+        if not has_write_permission:
+            raise OSError(13, "Permission denied")
+        os.rename(src, dst)
+
+    monkeypatch.setattr("os.replace", mock_replace)
+
+    # Test setup
     app.echo = Echo(verbosity=1)  # we're not going through main so need this
     freezer.move_to("2020-08-18 19:25:33")
     filename = "foo"
@@ -152,7 +163,8 @@ def test_make_backup(app, capsys, freezer, tmp_path, permissions, result):
     expected_name = (
         filename + "." + datetime.datetime.now().strftime(time_format)
     )
-    tmp_path.chmod(permissions)
+
+    # Actual test
     fn_result = c._make_backup("test file", str(tmp_path / filename))
     assert result == fn_result
     captured = capsys.readouterr()
