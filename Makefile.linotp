@@ -26,11 +26,8 @@
 #
 
 PYTHON:=$(shell which python3)
-DESTDIR=/
-BUILDDIR=$(PWD)/linotpd.build
 PROJECT=LinOTP
-LINOTP_SRC_VERSION=$(shell python3 setup.py --version)
-DEB_BUILDDIR:=$(BUILDDIR)/linotp
+LINOTP_SRC_VERSION=$(shell python3 -c "import linotp; print(linotp.__version__)")
 
 I18N_LANGUAGES = de
 I18N_SRC := $(CURDIR)/linotp/i18n
@@ -38,19 +35,14 @@ I18N_JSON_DEST := $(CURDIR)/linotp/public/i18n
 I18N_PO_FILES := $(foreach lang,$(I18N_LANGUAGES),$(I18N_SRC)/$(lang)/LC_MESSAGES/linotp.po)
 I18N_JSON_FILES := $(foreach lang,$(I18N_LANGUAGES),$(I18N_JSON_DEST)/$(lang).json)
 
-
-.PHONY: all
-all:
-	@echo "make source - Create source package"
-	@echo "make create - Create the source packages"
-	@echo "make install - Install on local system"
-	@echo "make clean - Get rid of scratch and byte files"
-	@echo "make translate"
-
-
 .PHONY: extract
 extract:
-	$(PYTHON) setup.py extract_messages
+	pybabel extract \
+		--mapping-file=babel.cfg \
+		--output-file=$(I18N_SRC)/linotp.pot \
+		--msgid-bugs-address=info@linotp.de \
+		--copyright-holder="netgo software GmbH" \
+		linotp
 	$(foreach lang, \
 		$(I18N_LANGUAGES), \
 		msgmerge -U -s $(I18N_SRC)/$(lang)/LC_MESSAGES/linotp.po $(I18N_SRC)/linotp.pot \
@@ -68,13 +60,9 @@ translate-%: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 	$(MAKE) -f Makefile.linotp compile_catalog
 
 check_pojson:
-	pip show pojson > /dev/null 2>&1 || { \
+	pojson --help > /dev/null 2>&1 || { \
 		echo "pojson is not installed. Installing..."; \
-		apt-get update && apt-get install -y --no-install-recommends \
-		python3 python3-pip && \
-		python3 -m pip install --upgrade pip && \
-		python3 -m pip install pojson && \
-		apt-get clean && rm -rf /var/lib/apt/lists/*; \
+		uv pip install pojson; \
 	}
 
 # Compile a .po file to a .json file using the `pojson` tool.
@@ -86,43 +74,11 @@ $(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po check_pojson
 # the .po files are compiled to .json files. The order doesn't matter.
 .PHONY: compile_catalog
 compile_catalog: $(I18N_JSON_FILES)
-	$(PYTHON) setup.py compile_catalog
+	pybabel compile \
+		--domain=linotp \
+		--directory=$(I18N_SRC) \
+		--use-fuzzy \
+		--statistics
 
 .PHONY: buildtranslation
 buildtranslation: extract compile_catalog
-
-.PHONY: source
-source:
-	mkdir -p $(BUILDDIR)
-	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=$(BUILDDIR)
-
-.PHONY: create
-create: source
-
-.PHONY: install
-install:
-	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
-
-.PHONY: clean
-clean:
-	$(PYTHON) setup.py clean
-	rm -rf MANIFEST
-	find . -name '*.pyc' -delete
-	rm -fr ./LinOTP.egg-info/
-	rm -f $(I18N_JSON_FILES)
-	rm -rf ../build/ \
-		linotp-build
-
-	rm -f linotp_*.dsc \
-		linotp_*.build \
-		linotp_*.tar.gz \
-		linotp_*.diff.gz \
-		linotp_*.changes \
-		linotp_*.upload
-
-
-test:
-	$(MAKE) -C linotp/tests/unit $@
-	$(MAKE) -C linotp/tests/functional $@
-
-.PHONY: test
