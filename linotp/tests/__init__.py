@@ -168,22 +168,6 @@ class TestController(TestCase):
         return
 
     @staticmethod
-    def set_cookie(app_client, key, value):
-        """
-        Sets a cookie on the test client
-
-        by setting the expires to 0 and the max_age to 0 the cookie will
-        not be valid anymore
-
-        :param client: the flask test client
-        :param key: the cookie name
-        :param value: the cookie value
-        :param expires: the expiration date
-        :param max_age: the maximum age of the copkie
-        """
-        app_client.set_cookie(key, value)
-
-    @staticmethod
     def delete_cookie(app_client, key):
         """
         Delete a cookie from the test client
@@ -1032,8 +1016,6 @@ class TestController(TestCase):
                 response.body = response.data.decode("utf-8")
                 return response
 
-        TestController.set_cookie(self.client, "userauthcookie", auth_cookie)
-
         params["session"] = auth_cookie
         params["user"] = user
         response = self.client.post("/userservice/" + action, data=params)
@@ -1102,8 +1084,6 @@ class TestController(TestCase):
 
             self.user_selfservice[user] = auth_cookie
 
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
-
         params["session"] = auth_cookie
         # params['user'] = user
         response = self.client.post(
@@ -1151,8 +1131,6 @@ class TestController(TestCase):
                 return response
 
             self.user_selfservice[user] = auth_cookie
-
-        TestController.set_cookie(self.client, "user_selfservice", auth_cookie)
 
         params["session"] = auth_cookie
         # params['user'] = user
