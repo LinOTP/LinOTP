@@ -32,7 +32,7 @@ linotp admin  fix-db-encoding
 import sys
 
 from flask import current_app
-from flask.cli import AppGroup, with_appcontext
+from flask.cli import AppGroup
 
 from linotp.model import fix_db_encoding, setup_db
 
@@ -58,7 +58,6 @@ Affected data might be Config values (Config.Value) and description
 """
     ),
 )
-@with_appcontext
 def fix_db_encoding_command():
     """Fix the python2+mysql iso8859 encoding by conversion to utf-8."""
 

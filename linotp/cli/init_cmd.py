@@ -45,7 +45,7 @@ from typing import Any, Dict, List
 import click
 
 from flask import current_app
-from flask.cli import AppGroup, with_appcontext
+from flask.cli import AppGroup
 
 from linotp.cli import get_backup_filename
 from linotp.cli import main as cli_main
@@ -157,7 +157,6 @@ def erase_confirm(ctx, param, value):
     expose_value=False,
     help="Erase data without prompting for confirmation",
 )
-@with_appcontext
 def init_db_command(erase_all_data):
     """
     Create new tables
@@ -304,7 +303,6 @@ AUDIT_PRIVKEY_BITS = 2048  # Number of bits in a private audit key
     is_flag=True,
     help="Overwrite key pair if it exists already.",
 )
-@with_appcontext
 def init_audit_keys_cmd(force):
     privkey_filename = current_app.config["AUDIT_PRIVATE_KEY_FILE"]
     pubkey_filename = current_app.config["AUDIT_PUBLIC_KEY_FILE"]
@@ -376,7 +374,6 @@ def create_audit_keys(privkey_filename, pubkey_filename):
     is_flag=True,
     help="Pass the `--force` option to all subcommands.",
 )
-@with_appcontext
 def init_all_cmd(force):
     cmds = {
         "enc-key": True,

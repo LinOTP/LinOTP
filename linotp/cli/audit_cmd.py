@@ -36,7 +36,7 @@ from sqlalchemy import desc
 from sqlalchemy.sql.functions import count, max, min
 
 from flask import current_app
-from flask.cli import AppGroup, with_appcontext
+from flask.cli import AppGroup
 
 from linotp.lib.audit.SQLAudit import AuditTable
 from linotp.model import db
@@ -107,7 +107,6 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
         "configured for LinOTP."
     ),
 )
-@with_appcontext
 def cleanup_command(
     max_entries_to_keep: Optional[int],
     cleanup_threshold: Optional[int],

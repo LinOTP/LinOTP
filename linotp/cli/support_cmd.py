@@ -37,7 +37,7 @@ import sys
 import click
 
 from flask import current_app
-from flask.cli import AppGroup, with_appcontext
+from flask.cli import AppGroup
 
 from linotp.app import allocate_security_module
 from linotp.flap import setup_request_context
@@ -80,7 +80,6 @@ def _setup_security_context():
 
 @support_cmds.command("set", help="set linotp support via linotp cli.")
 @click.argument("license_file_name")
-@with_appcontext
 def set_support(license_file_name):
     """set a linotp support similar to system/setSupport."""
 
@@ -114,7 +113,6 @@ def set_support(license_file_name):
 
 
 @support_cmds.command("get", help=("get linotp support info."))
-@with_appcontext
 def get_support():
     """get the linotp support info similar to system/getSupportInfo"""
 
@@ -154,7 +152,6 @@ def get_support():
     type=click.Path(exists=True),
     help=("license file, which is validated against a current linotp"),
 )
-@with_appcontext
 def is_support_valid(filename):
     """checks if the linotp support info is valid similar to isSupportValid"""
 
