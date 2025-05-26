@@ -47,12 +47,13 @@ Common rules
 import logging
 import sys
 
-from flask_sqlalchemy import DeclarativeMeta, SQLAlchemy
+import werkzeug.local
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 
 log = logging.getLogger(__name__)
 
-db: DeclarativeMeta = SQLAlchemy()
+db = SQLAlchemy()
 
 
 implicit_returning = True
@@ -173,6 +174,12 @@ def setup_db(app) -> None:
             "auditdb": audit_database_uri,
         }
 
+    # we do check to avoid "cannot create weak reference to 'LocalProxy' object" error
+    is_proxy = isinstance(app, werkzeug.local.LocalProxy)
+    if is_proxy:
+        # If the app is a LocalProxy, we need to get the actual app
+        # object from it. This is a bit of a hack, but it works.
+        app = app._get_current_object()
     db.init_app(app)
 
     cli_cmd = getattr(app, "cli_cmd", "")
@@ -188,7 +195,7 @@ def setup_db(app) -> None:
         sys.exit(SYS_EXIT_CODE)
 
     if audit_database_uri != "OFF":
-        engine = db.get_engine(app=app, bind="auditdb")
+        engine = db.engines.get("auditdb")
 
         from linotp.lib.audit.SQLAudit import AuditTable
 
@@ -236,10 +243,18 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
 
         if drop_data:
             echo("Dropping tables to erase all data...", v=1)
-            db.drop_all()
+            # Flask-SQLAlchemy 3.x no longer silently ignores missing binds
+            # so we need to check if the bind exists before dropping.
+            if app.config["AUDIT_DATABASE_URI"] == "OFF":
+                db.metadata.drop_all(bind=db.engine)
+            else:
+                db.drop_all()
 
         echo(f"Creating tables...", v=1)
-        db.create_all()
+        if app.config["AUDIT_DATABASE_URI"] == "OFF":
+            db.metadata.create_all(bind=db.engine)
+        else:
+            db.create_all()
 
         run_data_model_migration(db.engine)
         if add_defaults:

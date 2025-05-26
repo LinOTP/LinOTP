@@ -303,7 +303,7 @@ def main():
         "password": 1,
     }
 
-    sql_url = "postgres://otpd:linotp2d@localhost/otpdb"
+    sql_url = "postgresql://otpd:linotp2d@localhost/otpdb"  # gitleaks:allow
     shell_db_context = Shell_DatabaseContext(sql_url=sql_url)
 
     import_handler = SQLImportHandler(

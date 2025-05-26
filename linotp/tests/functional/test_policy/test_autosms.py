@@ -48,20 +48,10 @@ class TestAutoSmsPolicy(TestController):
         self.create_common_resolvers()
         self.create_common_realms()
 
-        # self.initToken()
-
     def tearDown(self):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-
-    @pytest.fixture(autouse=True)
-    def set_policy_fixture(
-        self, set_policy
-    ):  # pylint: disable=redefined-outer-name
-        self.set_policy = (
-            set_policy  # pylint: disable=attribute-defined-outside-init
-        )
 
     def do_autosms_test(self, policy, user, client_ip, expected_result):
         new_policy = {
@@ -72,7 +62,11 @@ class TestAutoSmsPolicy(TestController):
         }
         if policy:
             new_policy.update(policy)
-        self.set_policy(new_policy)
+
+        # this fixes "Popped wrong request context" as we are using only one client instead of 2
+        self.make_system_request("setPolicy", params=new_policy)
+        # need to update context["Policies"] i assume
+        self.make_system_request("getPolicy")
 
         context["Client"] = client_ip
         context["RequestUser"] = getUserFromParam({"user": user})
@@ -84,12 +78,7 @@ class TestAutoSmsPolicy(TestController):
         """
         autosms enabled with no client and no user. Will do for all clients in a realm
         """
-        self.do_autosms_test(
-            None,
-            "horst",
-            "1.2.3.4",
-            True,
-        )
+        self.do_autosms_test(None, "horst", "1.2.3.4", True)
 
     def test_allowed_ip(self):
         """

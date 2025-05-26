@@ -156,7 +156,10 @@ class AuditController(BaseController):
             streamed_response = Response(audit_output, mimetype=mimetype)
 
             if reponse_headers_args:
-                streamed_response.headers.set(**reponse_headers_args)
+                streamed_response.headers.set(
+                    reponse_headers_args["_key"],
+                    reponse_headers_args["_value"],
+                )
 
             g.audit["success"] = True
             db.session.commit()

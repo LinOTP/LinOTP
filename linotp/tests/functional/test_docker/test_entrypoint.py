@@ -106,7 +106,7 @@ class TestDockerLinotpEntrypoint:
         self, setup_env, monkeypatch: pytest.MonkeyPatch
     ):
         """Ensure --with-bootstrap fails with invalid LINOTP_DATABASE_URI"""
-        uri = "postgres://user:pass@unknown_host/linotp_db"  # gitleaks:allow
+        uri = "postgresql://user:pass@unknown_host/linotp_db"  # gitleaks:allow
         monkeypatch.setenv("LINOTP_DATABASE_URI", uri)
 
         result = self.run_entrypoint_script(

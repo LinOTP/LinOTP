@@ -39,19 +39,12 @@ package_directory = os.path.realpath(os.path.dirname(__file__))
 # install with
 # > pip install -r requirements.txt
 install_requirements = [
-    # Flask=2.2.0 breaks tests.
-    # Click is also pinned to <8.2 due to incompatibilities to the
-    # ancient flask version. This pinning cancan be resolved at the
-    # same time
-    "Flask<2.2",
-    # werkzeug=3.0 removes 'url_quote' from 'werkzeug.urls' breaking Flask<3
-    "werkzeug<3",
-    # Flask-Babel=3.0.0 removes @babel.localeselector
-    "Flask-Babel<3.0.0",
+    "Flask",
+    "werkzeug",
+    "Flask-Babel",
     "flask-jwt-extended",
-    "SQLAlchemy<1.4",
-    # flask-sqlalchemy=3.0.0 needs SQLAlchemy>=1.4.18
-    "flask-sqlalchemy<3",
+    "SQLAlchemy>=1.4.18,<2.0",
+    "flask-sqlalchemy",
     "mako",
     "beaker",
     "docutils",

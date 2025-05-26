@@ -59,12 +59,11 @@ from uuid import uuid4
 
 import pytest
 from packaging import version
+from werkzeug.test import TestResponse
 
 from flask import __version__ as FLASK_VERSION
-from flask import _request_ctx_stack as flask_request_ctx_stack
 from flask import current_app, g, request
 
-from linotp.lib.tools.flask_migration import TestResponse
 from linotp.lib.user import User
 
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
@@ -158,18 +157,6 @@ class TestController(TestCase):
             self.client = client
             yield
 
-        # Compatibility with Flask on Debian Buster:
-        # Older versions of Flask (-> debian buster) do not include the needed code
-        # to pop the context if a response was streamed
-        # https://github.com/pytest-dev/pytest-flask/issues/42#issuecomment-483864698
-        if version.parse(FLASK_VERSION) < version.parse("2.0.0"):
-            while True:
-                top = flask_request_ctx_stack.top
-                if top is not None and top.preserved:
-                    top.pop()
-                else:
-                    break
-
     @classmethod
     def setup_class(cls):
         return
@@ -181,7 +168,7 @@ class TestController(TestCase):
         return
 
     @staticmethod
-    def set_cookie(app_client, key, value, expires=None, max_age=None):
+    def set_cookie(app_client, key, value):
         """
         Sets a cookie on the test client
 
@@ -194,9 +181,7 @@ class TestController(TestCase):
         :param expires: the expiration date
         :param max_age: the maximum age of the copkie
         """
-        app_client.set_cookie(
-            ".localhost", key, value, expires=expires, max_age=max_age
-        )
+        app_client.set_cookie(key, value)
 
     @staticmethod
     def delete_cookie(app_client, key):

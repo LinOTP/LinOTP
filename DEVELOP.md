@@ -104,7 +104,7 @@ PostgreSQL or MariaDB database instead, you can override that setting through
 the following environment variable before running `linotp init database`:
 
 ```terminal
-export LINOTP_DATABASE_URI="postgres://user:pass@host/db_name"            #gitleaks:allow
+export LINOTP_DATABASE_URI="postgresql://user:pass@host/db_name"            #gitleaks:allow
 ```
 
 or
@@ -477,7 +477,7 @@ To run the previously-built image as a container named `my_linotp`,
 run
 
 ```terminal
-$ docker run -p 5000:5000 --name my_linotp linotp
+docker run -p 5000:5000 --name my_linotp linotp
 ```
 
 You may wish to use the `--env` option to pass configuration settings

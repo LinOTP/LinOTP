@@ -143,7 +143,7 @@ class TestJwtAdmin:
                 "ZDA0MTM5NzJjOCJ9.9n-IZ0S08kTAO390CZSwkmk3ugB8_BVyMgFUrNGe4wA"
             )
             client.set_cookie(
-                "localhost.local", "access_token_cookie", fake_token
+                "access_token_cookie", fake_token, domain="localhost.local"
             )
 
             response = self.do_authenticated_request(client)
@@ -163,7 +163,9 @@ class TestJwtAdmin:
     ) -> None:
         with scoped_authclient(verify_jwt=True) as client:
             faulty_token = "faulty_jwt"
-            client.set_cookie("localhost", "access_token_cookie", faulty_token)
+            client.set_cookie(
+                "access_token_cookie", faulty_token, domain="localhost"
+            )
 
             with caplog.at_level(logging.ERROR):
                 response = self.do_authenticated_request(client)
@@ -371,10 +373,12 @@ class TestJwtAdmin:
             # After logout the jwt token should be blocklisted in order to
             # prevet anyone from recycling it.
             client.set_cookie(
-                "localhost.local", "access_token_cookie", access_token_saved
+                "access_token_cookie",
+                access_token_saved,
+                domain="localhost.local",
             )
             client.set_cookie(
-                "localhost.local", "csrf_access_token", csrf_token_saved
+                "csrf_access_token", csrf_token_saved, domain="localhost.local"
             )
 
             hacked_response = self.do_authenticated_request(client)

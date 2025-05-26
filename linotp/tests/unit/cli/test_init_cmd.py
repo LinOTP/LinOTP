@@ -355,7 +355,6 @@ def test_padding_migration(app, base_app, engine):
         app.cli_cmd = "init-database"
 
         # 0. drop all data and add defaults
-        setup_db(app)
         init_db_tables(app, drop_data=True, add_defaults=False)
 
         # 1. set the security module to the old padding
@@ -454,7 +453,6 @@ def test_setup_db_erase_all(app, base_app, engine, capsys, erase):
         # GIVEN a database with records
         app.cli_cmd = "init-database"
 
-        setup_db(app)
         init_db_tables(app, drop_data=True, add_defaults=True)
 
         KEY = "linotp.foobar"
@@ -466,8 +464,6 @@ def test_setup_db_erase_all(app, base_app, engine, capsys, erase):
         assert db.session.query(Config).filter_by(Key=KEY).count() == 1
         db.session.remove()
 
-        # WHEN I invoke `setup_db`
-        setup_db(app)
         init_db_tables(app, drop_data=erase, add_defaults=False)
 
         if erase:

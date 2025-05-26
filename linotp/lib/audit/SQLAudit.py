@@ -482,7 +482,9 @@ class Audit(AuditBase):
 
         # we drop here the ORM due to memory consumption
         # and return a resultproxy for row iteration
-        result = db.session.execute(audit_q.statement)
+        stm = audit_q.with_entities(*AuditTable.__table__.columns).statement
+        result = db.session.execute(stm).mappings()
+
         return result
 
     def getTotal(self, param, AND=True, display_error=True):

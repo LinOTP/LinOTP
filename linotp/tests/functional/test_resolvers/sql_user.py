@@ -98,7 +98,7 @@ class SqlUserDB(object):
         analyse the sql connection string and transform this to a dict
         that can be used as an input for an sqluserid resolver
 
-         connect = postgres://otpd:linotp2d@localhost/otpdb
+         connect = postgresql://otpd:linotp2d@localhost/otpdb # gitleaks:allow
 
         """
 
