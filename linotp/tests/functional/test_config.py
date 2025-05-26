@@ -139,8 +139,11 @@ class DoRequest(threading.Thread):
 
         ok = False
         while not ok:
-            response = self.utest.app.get(self.uri, params=self.params)
-            self.response = response.body
+            try:
+                response = self.utest.app.get(self.uri, params=self.params)
+                self.response = response.body
+            except AssertionError:
+                return
             try:
                 json.loads(self.response)
                 ok = True
@@ -687,6 +690,3 @@ class TestConfigController(TestController):
             self.delete_config(prefix="X.")
 
         return
-
-
-#

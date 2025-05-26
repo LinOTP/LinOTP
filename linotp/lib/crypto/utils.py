@@ -35,7 +35,6 @@ import hmac
 import logging
 import secrets
 import struct
-from crypt import crypt as libcrypt
 from hashlib import md5, sha1, sha224, sha256, sha384, sha512
 
 from passlib.context import CryptContext
@@ -108,8 +107,11 @@ def compare_password(password, crypted_password):
     if PasslibHashes.identify(crypted_password):
         return PasslibHashes.verify(password, crypted_password)
 
+    # TODO: remove/refactor as crypt is deprecated and removed in python 3.13
     # compatibilty case:
     # the rare case for the broken system crypto libs like on macos
+
+    from crypt import crypt as libcrypt
 
     new_crypted_passw = libcrypt(password, crypted_password)
     return compare(new_crypted_passw, crypted_password)

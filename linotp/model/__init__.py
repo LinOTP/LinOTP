@@ -49,7 +49,7 @@ import sys
 
 import werkzeug.local
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 
 log = logging.getLogger(__name__)
 
@@ -186,7 +186,7 @@ def setup_db(app) -> None:
     if cli_cmd == "init-database":
         return
 
-    table_names = [tn.lower() for tn in db.engine.table_names()]
+    table_names = [tn.lower() for tn in inspect(db.engine).get_table_names()]
     if "config" not in table_names:
         log.critical(
             "Database schema must be initialised, "
@@ -199,7 +199,9 @@ def setup_db(app) -> None:
 
         from linotp.lib.audit.SQLAudit import AuditTable
 
-        auditdb_table_names = [tn.lower() for tn in engine.table_names()]
+        auditdb_table_names = [
+            tn.lower() for tn in inspect(engine).get_table_names()
+        ]
         if AuditTable.__tablename__.lower() not in auditdb_table_names:
             log.critical(
                 "Audit database schema must be initialised, "
