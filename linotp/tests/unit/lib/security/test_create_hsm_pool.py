@@ -128,9 +128,11 @@ def test_hsm_for_static_requests(app, request_path, should_have_hsm):
     """
 
     flask.request.environ["REMOTE_ADDR"] = "11.12.13.14"  # Any will do
-    with patch("linotp.app.request.path", request_path) as _, patch(
-        "linotp.app.init_key_partition"
-    ) as _, patch("linotp.app.c") as context_mock:
+    with (
+        patch("linotp.app.request.path", request_path) as _,
+        patch("linotp.app.init_key_partition") as _,
+        patch("linotp.app.c") as context_mock,
+    ):
         context_mock.hsm = {}
         app.create_context()
 

@@ -238,16 +238,19 @@ def adminclient(client, request):
     # extract the pytest parameterized username or use fallback if not set.
     admin_user = request.param if hasattr(request, "param") else "admin"
 
-    with patch(
-        "linotp.controllers.base.verify_jwt_in_request",
-        lambda: None,
-    ), patch(
-        "linotp.controllers.base.get_jwt_identity",
-        lambda: {
-            "username": admin_user,
-            "realm": current_app.config["ADMIN_REALM_NAME"],
-            "resolver": "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
-        },
+    with (
+        patch(
+            "linotp.controllers.base.verify_jwt_in_request",
+            lambda: None,
+        ),
+        patch(
+            "linotp.controllers.base.get_jwt_identity",
+            lambda: {
+                "username": admin_user,
+                "realm": current_app.config["ADMIN_REALM_NAME"],
+                "resolver": "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
+            },
+        ),
     ):
         yield client
 
@@ -324,26 +327,32 @@ def scoped_authclient(
         resolver: str = "useridresolver.PasswdIdResolver.IdResolver.def_resolver",
     ) -> Iterator[FlaskClient]:
         if not verify_jwt:
-            with patch(
-                "linotp.controllers.base.verify_jwt_in_request",
-                lambda: None,
-            ), patch(
-                "linotp.controllers.base.get_jwt_identity",
-                lambda: {
-                    "username": username,
-                    "resolver": resolver,
-                    "realm": current_app.config["ADMIN_REALM_NAME"],
-                },
+            with (
+                patch(
+                    "linotp.controllers.base.verify_jwt_in_request",
+                    lambda: None,
+                ),
+                patch(
+                    "linotp.controllers.base.get_jwt_identity",
+                    lambda: {
+                        "username": username,
+                        "resolver": resolver,
+                        "realm": current_app.config["ADMIN_REALM_NAME"],
+                    },
+                ),
             ):
                 yield client
 
         else:
-            with patch(
-                "linotp.controllers.base.verify_jwt_in_request",
-                original_verify_jwt_in_request,
-            ), patch(
-                "linotp.controllers.base.get_jwt_identity",
-                original_get_jwt_identity,
+            with (
+                patch(
+                    "linotp.controllers.base.verify_jwt_in_request",
+                    original_verify_jwt_in_request,
+                ),
+                patch(
+                    "linotp.controllers.base.get_jwt_identity",
+                    original_get_jwt_identity,
+                ),
             ):
                 yield client
 
