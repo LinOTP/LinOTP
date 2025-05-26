@@ -462,7 +462,12 @@ functional-test-mysql-lower-case-table-names:
       alias: blackdog-ldap
     - name: $BLACKDOG_MYSQL_IMAGE
       alias: blackdog-mysql
-    - name: selenium/standalone-chrome-debug:latest
+    # Note: after 4.30.0-20250323 Chrome will throw a popup "Change your password" when they found it in a data breach.
+    # This popup can't currently be disabled or intercepted -> breaking some tests.
+    # What's making it even worse: That popup is not shown in the Screenshots taken by the tests.
+    # (But you can see it via VNC in local e2e tests)
+    # We should check if this is fixed in upcoming versions from time to time.
+    - name: selenium/standalone-chrome:4.30.0-20250323
       alias: test-chrome
     # implicitly start linotp latest, as it relies on the DB
     - name: $DOCKER_TEST_IMG_IMAGE_TAG
