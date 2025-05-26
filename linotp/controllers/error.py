@@ -33,8 +33,10 @@ from html import escape
 
 from webhelpers2.html.builder import literal
 
+from flask import request
+
 from linotp.controllers.base import BaseController
-from linotp.flap import error_document_template, request
+from linotp.flap import error_document_template
 from linotp.lib import deprecated_methods
 from linotp.lib.util import str2unicode
 

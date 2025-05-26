@@ -1,28 +1,49 @@
-# Linotp source tree dockerignore file
-# This list was created by using the following Dockerfile.test:
-#  FROM debian:buster
-#  RUN mkdir /src
-#  COPY . /src
-#  RUN cd /src; find -ls; exit 1
-# and then examining the output of:
-#  docker build -f Dockerfile.test .
-.git
-.vscode
-**/__pycache__
-**/.cache
+# Version control
+.git/
+.gitignore
+
+# Development environments
+.vscode/
+.idea/
+.env*
+.venv*/
+.python-version
+
+# Python artifacts
+**/__pycache__/
+**/*.py[cod]
+**/*.so
+**/*.egg
+**/*.egg-info/
+**/.eggs/
+**/build/
+**/dist/
+
+# Test artifacts
+**/.pytest_cache/
 **/.coverage
-**/.pybuild
-**/.pytest_cache
-**/.mypy_cache
-**/*.pyc
-**/*.egg-info
-**/*.sqlite
-**/build
 **/coverage.xml
-ci
-linotpd/logs
-linotpd/src/.coverage
-linotpd/src/.eggs
-linotpd/src/dist
-linotpd/src/Dockerfile
-Dockerfile.builder
+**/htmlcov/
+Screenshots/
+.tox/
+**/.mypy_cache/
+
+# Local development files
+**/*.sqlite*
+linotp.sqlite*
+**/logs/
+.DS_Store
+
+# Build and CI artifacts
+ci/
+docker/
+# included as entrypoint.sh gets tested:
+!docker/linotp/
+Dockerfile*
+
+# Documentation build
+api-doc/build/
+
+# Cache directories
+**/.cache/
+**/.pybuild/

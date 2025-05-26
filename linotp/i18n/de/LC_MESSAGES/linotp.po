@@ -29,7 +29,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"Report-Msgid-Bugs-To: info@linotp.de\n"
 "PO-Revision-Date: 2025-03-12 11:53+0100\n"
 "Last-Translator: michael <michael.weber@netgo.de>\n"
 "Language-Team: German - Germany <support@linotp.de>\n"
@@ -404,6 +404,12 @@ msgstr "Änderungen bestätigen"
 msgid "Confirm new password"
 msgstr "Neues Passwort bestätigen"
 
+msgid "Confirm using mobile"
+msgstr "Änderungen über ihr Handy bestätigen"
+
+msgid "Connection Error during login"
+msgstr "Verbindungsfehler während der Anmeldung"
+
 msgid "Connection Test: successful"
 msgstr "Verbindungstest: erfolgreich"
 
@@ -757,8 +763,14 @@ msgstr "Rollen Sie Ihren E-Mail-Token aus"
 msgid "Enrolled the token"
 msgstr "Der Token"
 
+msgid "Enter OTP"
+msgstr "OTP eingeben"
+
 msgid "Enter PIN"
-msgstr "PIN setzen"
+msgstr "PIN eingeben"
+
+msgid "Enter TOTP"
+msgstr "TOTP eingeben"
 
 msgid "Enter activation credentials: "
 msgstr "Geben Sie das Aktivierungskennwort ein: "
@@ -854,6 +866,9 @@ msgstr "Fehler während des Userimports."
 
 msgid "Error during import users request: "
 msgstr "Fehler während des User-Imports: "
+
+msgid "Error during login"
+msgstr "Fehler während der Anmeldung"
 
 msgid "Error during token type change processing for type \"\".<br><pre></pre>"
 msgstr ""
@@ -1496,6 +1511,9 @@ msgstr "Die Formulardaten sind ungültig!"
 msgid "Install your soft token profile"
 msgstr "Installieren Sie Ihren Softtokentyp"
 
+msgid "Invalid session - please try again."
+msgstr "Ungültige Session - bitte versuchen Sie es nochmal."
+
 msgid "Invalid time period"
 msgstr "Ungültige Zeitspanne"
 
@@ -1603,6 +1621,13 @@ msgstr "Fehlgeschlagene Loginversuche"
 
 msgid "Login Name"
 msgstr "Login Name"
+
+msgid "Login failed"
+msgstr "Anmeldung fehlgeschlagen"
+
+#, python-format
+msgid "Login failed. Reason: %s"
+msgstr "Anmeldung fehlgeschlagen. Grund: %s"
 
 msgid "Login timed out. Please try again."
 msgstr "Timeout beim Login. Bitte versuchen Sie es nochmal."
@@ -1853,6 +1878,9 @@ msgstr "OTP-PIN"
 
 msgid "OTP PIN and OTP value"
 msgstr "OTP-PIN und OTP-Wert"
+
+msgid "OTP Validation failed"
+msgstr "OTP Validierung fehlgeschlagen"
 
 msgid "OTP Value: "
 msgstr "OTP-Wert: "
@@ -2442,6 +2470,9 @@ msgstr "Konfiguration speichern"
 msgid "Save config"
 msgstr "Konfiguration speichern"
 
+msgid "Scan QR code"
+msgstr "Scannen Sie den QR-Code"
+
 msgid "Scan the QR code and comfirm on your mobile or submit below"
 msgstr ""
 "Scannen Sie den QR-Code und bestätigen Sie auf Ihrem Handy bzw geben Sie "
@@ -2480,6 +2511,7 @@ msgstr "Ausgewählter Benutzer"
 msgid "Selection of more than one user is not supported!"
 msgstr "Die Auswahl von mehr als einem Benutzer wird nicht unterstützt!"
 
+#, python-brace-format
 msgid ""
 "SelfService token test\n"
 "\n"
@@ -2496,6 +2528,7 @@ msgstr ""
 msgid "Selfservice Home"
 msgstr "Self-Service-Start"
 
+#, python-brace-format
 msgid ""
 "Selfservice Login Request\n"
 "User: {}"
@@ -2508,6 +2541,15 @@ msgstr "Self-Service-Portal"
 
 msgid "Selfservice portal"
 msgstr "Self-Service-Portal"
+
+msgid "Send OTP by SMS"
+msgstr "OTP via SMS verschickt"
+
+msgid "Send OTP by e-mail"
+msgstr "OTP via Email verschickt"
+
+msgid "Send OTP by voice call"
+msgstr "OTP via Voice Call verschickt"
 
 msgid "Serial"
 msgstr "Seriennummer"
@@ -2881,6 +2923,7 @@ msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
 msgid "The name of the policy must not be empty"
 msgstr "Der Name der Richtlinie darf nicht leer sein"
 
+#, python-brace-format
 msgid ""
 "The password must contain {0} of the following: lowercase, uppercase, "
 "special characters, numbers, length of 12"
@@ -3408,6 +3451,12 @@ msgstr "Anzahl der Verwendung"
 
 msgid "Use STARTTLS for 'ldap://' connections"
 msgstr "STARTTLS für 'ldap://'-Verbindungen verwenden"
+
+msgid "Use Yubikey"
+msgstr "YubiKey benutzen"
+
+msgid "Use mOTP token"
+msgstr "mOTP-Token benutzen"
 
 msgid "User"
 msgstr "Benutzer"
@@ -4299,6 +4348,7 @@ msgstr "mOTP-Token-Einstellungen"
 msgid "managed"
 msgstr "intern verwaltet"
 
+#, python-brace-format
 msgid "maximum length must be lower than {0}"
 msgstr "Die Länge muss kürzer als {0} sein."
 
@@ -4308,6 +4358,7 @@ msgstr "Nachricht / data"
 msgid "minimum length must be greater than 10"
 msgstr "Die minimale Länge muss größer als 10 sein"
 
+#, python-brace-format
 msgid "minimum length must be greater than {0}"
 msgstr "Die Länge muss größer als {0} sein."
 
@@ -4358,6 +4409,9 @@ msgstr "können Sie sich gerne mit uns in Verbindung setzen"
 
 msgid "preshared key"
 msgstr "Mit Preshared-Key verschlüsselt"
+
+msgid "realm"
+msgstr "Realm"
 
 msgid "register SMS Token"
 msgstr "SMS-Token registrieren"
@@ -4662,9 +4716,6 @@ msgstr "WebUI generiert"
 
 #~ msgid "Enroll HOTP"
 #~ msgstr "HOTP ausrollen"
-
-#~ msgid "Enroll TOTP"
-#~ msgstr "TOTP ausrollen"
 
 #~ msgid "Enroll your TOTP Token"
 #~ msgstr "Rollen Sie Ihren HOTP Token aus"
@@ -5198,9 +5249,6 @@ msgstr "WebUI generiert"
 #~ msgid "please consider subscribing to our quarterly newsletter."
 #~ msgstr ""
 #~ "abonnieren Sie bitte unseren vierteljährlich erscheinenden Newsletter."
-
-#~ msgid "realm"
-#~ msgstr "Realm"
 
 #~ msgid "realms"
 #~ msgstr "Realms"

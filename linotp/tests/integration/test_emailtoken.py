@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 class TestEmailToken:
     @pytest.fixture(autouse=True)
-    def setUp(self, testcase):
+    def setUp(self, testcase: TestCase):
         self.testcase = testcase
 
         self.data = {

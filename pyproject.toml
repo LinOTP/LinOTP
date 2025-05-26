@@ -1,3 +1,133 @@
+[build-system]
+requires = ["setuptools", "wheel", "babel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "LinOTP"
+dynamic = ["version"]
+description = "The Open Source solution for multi-factor authentication (server component)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "AGPL v3" }
+authors = [{ name = "netgo software GmbH", email = "info@linotp.de" }]
+maintainers = [{ name = "netgo software GmbH" }]
+keywords = ["authentication", "two-factor", "linotp"]
+classifiers = [
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Internet",
+  "Topic :: Security",
+  "Topic :: System :: Systems Administration :: Authentication/Directory",
+  "Framework :: Flask",
+]
+# Core dependencies
+dependencies = [
+  "Flask",
+  "Flask-Babel",
+  "flask-jwt-extended",
+  "flask-sqlalchemy",
+  "SQLAlchemy>=1.4.18,<2.0",
+  "werkzeug",
+  "mako",
+  "beaker",
+  "docutils",
+  "pycryptodomex",
+  "pyrad",
+  "netaddr",
+  "qrcode[png]",
+  "configobj",
+  "httplib2",
+  "requests",
+  "passlib",
+  "pysodium",
+  "python-ldap",
+  "bcrypt",
+  "cryptography<35",
+  "click<8.2",
+  "jsonschema",
+  "smpplib",
+  "psycopg2-binary",
+  "mysqlclient",
+  # for running LinOTP in production container
+  "gunicorn",
+]
+
+[dependency-groups]
+dev = [
+  "pre-commit",
+  "black",
+  "isort",
+  "pylint",
+  "autopep8",
+  "mypy",
+  "sqlalchemy-stubs",
+]
+test = [
+  "flask_testing",
+  "pytest",
+  "pytest-cov",
+  "pytest-freezegun",
+  "pytest-flask",
+  "pytest-mock",
+  "pytest-testconfig",
+  "pytest-test-groups",
+  "pytest-xdist",
+  "selenium",
+  "mock",
+  "setuptools",
+  "freezegun",
+  "coverage",
+  "flaky",
+]
+apidocs = ["Sphinx", "mock", "webhelpers2", "jinja2"]
+translations = ["babel", "pojson"]
+
+[project.urls]
+Homepage = "https://www.linotp.org"
+Documentation = "https://www.linotp.org/documentation.html"
+Repository = "https://github.com/LinOTP/LinOTP"
+Changelog = "https://github.com/LinOTP/LinOTP/blob/main/CHANGELOG.md"
+
+[project.scripts]
+linotp = "linotp.cli:main"
+
+[project.entry-points."flask.commands"]
+audit = "linotp.cli.audit_cmd:audit_cmds"
+admin = "linotp.cli.admin_cmd:admin_cmds"
+backup = "linotp.cli.mysql_cmd:backup_cmds"
+config = "linotp.settings:config_cmds"
+dbsnapshot = "linotp.cli.dbsnapshot_cmd:dbsnapshot_cmds"
+init = "linotp.cli.init_cmd:init_cmds"
+ldap-test = "linotp.useridresolver.LDAPIdResolver:ldap_test"
+support = "linotp.cli.support_cmd:support_cmds"
+local-admins = "linotp.cli.local_admins_cmd:local_admins_cmds"
+
+[tool.setuptools]
+package-dir = { "" = "." }
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["linotp*"]
+exclude = ["*.tests*"]
+
+[tool.setuptools.package-data]
+linotp = [
+  "i18n/*/LC_MESSAGES/*.mo",
+  "dictionary",
+  "public/**/*",
+  "templates/**/*",
+  "tokens/**/*.mako",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "linotp.__version__" }
+
+[tool.mypy]
+plugins = "sqlmypy"
+
 [tool.black]
 line-length = 79
 include = '\.pyi?$'
@@ -60,9 +190,3 @@ sections = [
   "FIRSTPARTY",
   "LOCALFOLDER",
 ]
-
-[tool.pip-tools]
-generate-hashes = true
-strip-extras = false
-allow-unsafe = true
-emit-index-url = false

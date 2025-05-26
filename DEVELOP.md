@@ -54,34 +54,30 @@ installing the `python-ldap` dependency via `pip`. Similarly, the
 `libssl-dev` package is needed when installing the `cryptography`
 dependency via `pip`.
 
-A “virtual environment” lets you install additional packages locally
-(without administrator privileges) using Python's `pip` tool. It also
-prevents the pollution of your host system with non-distribution
-packages. We strongly recommend installing a virtual environment as
-follows:
+Then, install the development dependencies using `uv`, a much faster
+Python package installer and resolver:
 
 ```terminal
-python3 -m venv linotp_dev
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
 source linotp_dev/bin/activate
 ```
 
-Then, install the development dependencies:
+If you prefer another installation method, please refer to the
+[UV installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+
+For convenience, you can enable shell auto-completion for `uv` and `uvx`:
 
 ```terminal
-pip3 pip install "setuptools==58"
-pip3 install -r requirements-dev.txt
-pip3 install -e .
+echo 'eval "$(uv generate-shell-completion bash)"' >> ~/.bashrc
+echo 'eval "$(uvx --generate-shell-completion bash)"' >> ~/.bashrc
 ```
 
-> **_NOTE:_**
->
-> we pin setuptools==58
-> due to incompatibility of `funcparserlib` (needed by `mockldap`) using `use_2to3`
-> which was removed in setuptools and lets builds fail with v58.0.2:  
-> <https://setuptools.pypa.io/en/stable/history.html#v58-0-2>
->
-> I'll add the error message so Devs can find this note:  
-> `error in funcparserlib setup command: use_2to3 is invalid.`
+To install all dependencies (e.g. to run tests or build apidocs) run:
+
+```terminal
+uv sync --all-groups
+```
 
 For a quickstart using the default configuration, run:
 
@@ -322,7 +318,7 @@ will launch the Flask development server. (You can still use
 Make sure to create an admin user, otherwise you will not be able to log in to
 LinOTP's management interface:
 
-```
+```terminal
 linotp local-admins add <your_username>
 linotp local-admins password -p <your_password> <your_username>
 ```
@@ -383,13 +379,49 @@ pytest --tc-file=linotpd/src/linotp/tests/integration/server_cfg.ini <path_to_te
 
 You can find sample test files under `linotpd/src/linotp/tests/integration`.
 
+#### Integration tests via docker compose
+
+You can run end-to-end integration tests using Docker Compose:
+
+```terminal
+# Start all services
+docker compose -f compose.e2etests.yml up -d
+
+# Watch test execution logs
+docker compose -f compose.e2etests.yml logs -f runner
+
+# Clean up when done
+docker compose -f compose.e2etests.yml down
+```
+
+You can also test against Firefox instead of Chrome (see note in compose file).
+
+For debugging:
+
+- write Screenshots of failed tests to host:
+  - comment in the volume `# - ./Screenshots:/app/linotp/tests/integration/Screenshots`
+  - create the folder `Screenshots` and update its permissions: `mkdir Screenshots && chmod 777 Screenshots`
+- Look into Selenium to see tests live:
+  - (potential) password: `secret`
+  - via Browser: http://localhost:9700
+  - via VNCViewer: http://localhost:5900
+- Access LinOTP UI: http://localhost:5000/manage/
+  - username: `admin`
+  - password: `admin`
+  - You can use this to view which data is shown in Manage-UI
+- View specific service logs: `docker compose -f compose.e2etests.yml logs -f <service-name>`
+  - most useful: `docker compose -f compose.e2etests.yml logs -f runner`
+- Enter e.g. test container: `docker compose -f compose.e2etests.yml run --rm runner /bin/bash`
+- Pass args to pytest via env `PYTESTARGS`.
+  - e.g. only run a specific test: `PYTESTARGS=test_emailtoken.py::TestEmailTokenEnroll::test_enroll_token`
+
 ## Use MyPy for typechecking
 
 To run a type check on the source code, install `mypy` and `sqlalchemy-stubs`.
 Both requirements are part of the develop requirements:
 
 ```terminal
-pip3 install -r requirements-dev.txt
+uv sync
 ```
 
 Then run `mypy` on a directory of your choice like
@@ -411,10 +443,10 @@ to ensure a consistent style across the whole project. Inspect
 [.pre-commit-config.yaml](.pre-commit-config.yaml) for the configured tools and our [pyproject.toml](pyproject.toml)
 file for the configuration.
 
-Install `pre-commit` manually via pip or as part of our develop dependencies:
+Install `pre-commit` manually via `uv pip` or as part of our develop dependencies:
 
 ```terminal
-pip3 install -r requirements-dev.txt
+uv sync
 ```
 
 Then install the pre-commit hook in git so that it runs before a commit to
@@ -439,11 +471,8 @@ Use the arguments `--files …` or `--all-files` to change what files are checke
 First install the requirements to generate the api documentation:
 
 ```terminal
-pip3 install -e ".[apidocs]"
+uv sync --group apidocs
 ```
-
-However, this is not necessary if you have already installed the requirements
-for the development (".[develop]") environment.
 
 To build the api documentation enter the following commands in your terminal:
 

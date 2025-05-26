@@ -41,7 +41,6 @@ from selenium.common.exceptions import (
     TimeoutException,
     WebDriverException,
 )
-from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.file_detector import UselessFileDetector
 from selenium.webdriver.support import expected_conditions as EC
@@ -168,13 +167,14 @@ class TestCase(object):
             )
             return chrome_options
 
-        def _get_firefox_profile():
-            fp = webdriver.FirefoxProfile()
-            fp.set_preference(
+        def _get_firefox_options():
+            firefox_options = webdriver.FirefoxOptions()
+            firefox_options.set_preference(
                 "intl.accept_languages", cls.selenium_driver_language
             )
-            fp.accept_untrusted_certs = True
-            return fp
+            firefox_options.accept_insecure_certs = True
+
+            return firefox_options
 
         selenium_driver = cls.selenium_driver_name
         if not cls.remote_enable:
@@ -205,41 +205,26 @@ class TestCase(object):
 
             elif selenium_driver == "firefox":
                 driver = webdriver.Firefox(
-                    firefox_profile=_get_firefox_profile(),
+                    options=_get_firefox_options(),
                     **pparams,
                 )
 
         else:
-            # Remote driver. We need to build a desired capabilities
-            # request for the remote instance
-
-            # Map the requested driver to the remote capabilities
-            # listed in selenium.webdriver.DesiredCapabilities
-            #  e.g. firefox -> FIREFOX
-
-            selenium_driver = selenium_driver.upper()
-
-            try:
-                desired_capabilities = getattr(
-                    DesiredCapabilities, selenium_driver
-                ).copy()
-                desired_capabilities["acceptInsecureCerts"] = True
-            except AttributeError:
-                logger.warning(
-                    "Could not find capabilities for the given remote driver %s",
-                    selenium_driver,
-                )
-                desired_capabilities = {"browserName": selenium_driver}
-
             # Remote driver
             url = cls.remote_url
             if not url:
                 url = "http://127.0.0.1:4444/wd/hub"
 
+            options = None
+            if selenium_driver.lower() == "chrome":
+                options = _get_chrome_options()
+            elif selenium_driver.lower() == "firefox":
+                options = _get_firefox_options()
+
             try:
                 driver = webdriver.Remote(
                     command_executor=url,
-                    desired_capabilities=desired_capabilities,
+                    options=options,
                 )
             except Exception as e:
                 logger.error("Could not start driver: %s", e)

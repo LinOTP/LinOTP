@@ -3089,7 +3089,7 @@ def disable_on_authentication_exceed(user, realms=None):
             scope="authentication",
             action=action,
             realm=realm,
-            **ppargs
+            **ppargs,
         )
 
         if get_action_value(
@@ -3121,7 +3121,7 @@ def delete_on_authentication_exceed(user, realms=None):
             scope="authentication",
             action=action,
             realm=realm,
-            **ppargs
+            **ppargs,
         )
 
         if get_action_value(
