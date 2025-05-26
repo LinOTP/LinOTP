@@ -1111,13 +1111,10 @@ def create_app(config_name=None, config_extra=None):
     # Initialize components (that need app_context)
     with app.app_context():
         setup_db(app)
-        if (
-            app.cli_cmd not in START_LINOTP_COMMANDS
-            and not app.config["TESTING"]
-        ):
+        if not app.testing and app.cli_cmd not in START_LINOTP_COMMANDS:
             return app
 
-        if not app.config["TESTING"]:
+        if not app.testing:
             init_logging_config()
 
         init_security_provider()
