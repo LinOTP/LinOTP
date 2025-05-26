@@ -41,10 +41,10 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 from flask import Config as FlaskConfig
 from flask import Flask, abort, current_app
 from flask import g as flask_g
-from flask import jsonify, redirect, url_for
+from flask import jsonify, redirect, request, url_for
 
 from . import __version__
-from .flap import config, request, setup_mako, setup_request_context
+from .flap import config, setup_mako, setup_request_context
 from .flap import tmpl_context as c
 from .lib.audit.base import getAudit
 from .lib.config import getLinotpConfig

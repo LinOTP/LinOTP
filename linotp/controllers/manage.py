@@ -36,13 +36,12 @@ import os
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
 
-from flask import current_app, g
+from flask import current_app, g, request
 
 import linotp
 from linotp.controllers.base import BaseController, jwt_exempt, methods
 from linotp.flap import config
 from linotp.flap import render_mako as render
-from linotp.flap import request
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
 from linotp.lib.config import getFromConfig
@@ -128,8 +127,8 @@ class ManageController(BaseController):
             "manage/userview_flexi",
         ]:
             g.audit["administrator"] = getUserFromRequest()
-            if "serial" in request.params:
-                serial = request.params["serial"]
+            if "serial" in request.args:
+                serial = request.args["serial"]
                 g.audit["serial"] = serial
                 g.audit["token_type"] = getTokenType(serial)
 

@@ -45,9 +45,8 @@ from flask_jwt_extended.exceptions import (
 )
 from jwt import DecodeError, ExpiredSignatureError, InvalidSignatureError
 
-from flask import Blueprint, current_app, g
+from flask import Blueprint, current_app, g, request
 
-from linotp.flap import request
 from linotp.lib import render_calling_path
 from linotp.lib.context import request_context
 from linotp.lib.realm import getRealms

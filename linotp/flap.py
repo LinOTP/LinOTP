@@ -30,25 +30,6 @@ error_document_template = """
     """
 
 
-class RequestProxy(object):
-    """
-    Flask request object plus params -> args
-    """
-
-    def __init__(self, proxy):
-        self.proxy = proxy
-
-    @property
-    def params(self):
-        return self.proxy.args
-
-    def __getattr__(self, name):
-        return getattr(self.proxy, name)
-
-
-request = RequestProxy(flask.request)
-
-
 class RequestContextProxy(object):
     def __getattr__(self, name):
         try:

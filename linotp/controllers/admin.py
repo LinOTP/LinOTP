@@ -35,10 +35,9 @@ from datetime import datetime
 from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
 
-from flask import Response, current_app, g, stream_with_context
+from flask import Response, current_app, g, request, stream_with_context
 
 from linotp.controllers.base import BaseController, JWTMixin, methods
-from linotp.flap import request
 from linotp.lib import deprecated_methods
 from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.challenges import Challenges
@@ -2418,7 +2417,7 @@ class AdminController(BaseController, JWTMixin):
 
         try:
             log.debug("[loadtokens] getting upload data")
-            log.debug("[loadtokens] %r", request.params)
+            log.debug("[loadtokens] %r", request.args)
             tokenFile = request.files["file"]
             fileType = params["type"]
             targetRealm = params.get(
