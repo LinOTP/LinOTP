@@ -116,9 +116,7 @@ class TestEmailtoken(TestController):
         # and make hime the default email provider
 
         params = {"type": "email", "name": "TemplEMailProvider"}
-        response = self.make_system_request(
-            "setDefaultProvider", params=params
-        )
+        response = self.make_system_request("setDefaultProvider", params=params)
 
         assert "false" not in response
 
@@ -188,8 +186,7 @@ class TestEmailtoken(TestController):
             "active": True,
             "scope": "authentication",
             "action": (
-                "emailtext='text from policy',"
-                "emailsubject='subject from policy'"
+                "emailtext='text from policy',emailsubject='subject from policy'"
             ),
             "user": "*",
             "realm": "*",
@@ -237,9 +234,7 @@ class TestEmailtoken(TestController):
         # and make him the default email provider
 
         params = {"type": "email", "name": "TemplEMailProvider"}
-        response = self.make_system_request(
-            "setDefaultProvider", params=params
-        )
+        response = self.make_system_request("setDefaultProvider", params=params)
 
         assert "false" not in response
 
@@ -325,9 +320,7 @@ class TestEmailtoken(TestController):
         # and make him the default email provider
 
         params = {"type": "email", "name": "TemplEMailProvider"}
-        response = self.make_system_request(
-            "setDefaultProvider", params=params
-        )
+        response = self.make_system_request("setDefaultProvider", params=params)
 
         assert "false" not in response
 
@@ -415,9 +408,7 @@ class TestEmailtoken(TestController):
         # and make him the default email provider
 
         params = {"type": "email", "name": "TemplEMailProvider"}
-        response = self.make_system_request(
-            "setDefaultProvider", params=params
-        )
+        response = self.make_system_request("setDefaultProvider", params=params)
 
         assert "false" not in response
 
@@ -475,9 +466,7 @@ class TestEmailtoken(TestController):
             params = {"key": "EMAIL_CHALLENGE_PROMPT"}
             response = self.make_system_request("delConfig", params)
 
-            assert (
-                '"delConfig EMAIL_CHALLENGE_PROMPT": true' in response
-            ), response
+            assert '"delConfig EMAIL_CHALLENGE_PROMPT": true' in response, response
 
             # -------------------------------------------------------------- --
 

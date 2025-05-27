@@ -61,9 +61,7 @@ class TestSmsToken:
             default=self.testcase.http_host.split(":")[0],
         )
         radius_secret = get_from_tconfig(["radius", "secret"], required=True)
-        disable_radius = get_from_tconfig(
-            ["radius", "disable"], default="False"
-        )
+        disable_radius = get_from_tconfig(["radius", "disable"], default="False")
 
         # Enroll sms token
         username = "rollo"
@@ -81,9 +79,9 @@ class TestSmsToken:
 
         token_view = self.testcase.manage_ui.token_view
         token_info = token_view.get_token_info(sms_token)
-        assert (
-            phone_number == token_info["LinOtp.TokenInfo"]["phone"]
-        ), "Wrong phone number was set for sms token."
+        assert phone_number == token_info["LinOtp.TokenInfo"]["phone"], (
+            "Wrong phone number was set for sms token."
+        )
 
         # Authenticate with RADIUS
         if disable_radius.lower() == "true":
@@ -147,15 +145,14 @@ class TestSmsToken:
             access_granted, validate_resp = validate.validate(
                 user=username + "@" + realm_name, password=sms_token_pin
             )
-            assert (
-                not access_granted
-            ), "Should return false because this request only triggers the challenge."
+            assert not access_granted, (
+                "Should return false because this request only triggers the challenge."
+            )
             try:
                 message = validate_resp["detail"]["message"]
             except KeyError as e:
                 raise KeyError(
-                    e.message
-                    + "| detail.message should be present %r" % validate_resp
+                    e.message + "| detail.message should be present %r" % validate_resp
                 )
             assert message == "sms submitted", (
                 "Wrong validate response %r" % validate_resp

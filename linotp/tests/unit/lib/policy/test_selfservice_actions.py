@@ -173,9 +173,7 @@ class SelfserviceActionTest(unittest.TestCase):
         }
         # verify that general policy is honored
 
-        policy_set["general"][
-            "action"
-        ] = "otp_pin_maxlength=4, enrollHMAC, reset"
+        policy_set["general"]["action"] = "otp_pin_maxlength=4, enrollHMAC, reset"
 
         mocked__get_policies.return_value = policy_set
 
@@ -188,9 +186,7 @@ class SelfserviceActionTest(unittest.TestCase):
 
         # verify that user specific policy is honored
 
-        policy_set["simple_user"][
-            "action"
-        ] = "otp_pin_maxlength=6, delete, reset"
+        policy_set["simple_user"]["action"] = "otp_pin_maxlength=6, delete, reset"
 
         mocked__get_policies.return_value = policy_set
 
@@ -253,13 +249,9 @@ class SelfserviceActionTest(unittest.TestCase):
 
         # Verify error message
         error_message = str(excinfo.value)
+        assert f"Could not parse selfservice-policy '{policy_name}'" in error_message
         assert (
-            f"Could not parse selfservice-policy '{policy_name}'"
-            in error_message
-        )
-        assert (
-            f"Could not convert value '{faulty_policy_action_value}'"
-            in error_message
+            f"Could not convert value '{faulty_policy_action_value}'" in error_message
         )
 
     @patch("linotp.lib.token.context", new=fake_context)
@@ -291,15 +283,11 @@ class SelfserviceActionTest(unittest.TestCase):
         }
         # verify that general policy is honored
 
-        policy_set["general"][
-            "action"
-        ] = "otp_pin_maxlength=4, enrollHMAC, reset"
+        policy_set["general"]["action"] = "otp_pin_maxlength=4, enrollHMAC, reset"
 
         mocked__get_policies.return_value = policy_set
 
-        res = get_selfservice_action_value(
-            "otp_pin_maxlength", user=simple_user
-        )
+        res = get_selfservice_action_value("otp_pin_maxlength", user=simple_user)
 
         assert res == 4
 
@@ -307,15 +295,11 @@ class SelfserviceActionTest(unittest.TestCase):
 
         # verify that user specific policy is honored
 
-        policy_set["simple_user"][
-            "action"
-        ] = "otp_pin_maxlength=6, delete, reset"
+        policy_set["simple_user"]["action"] = "otp_pin_maxlength=6, delete, reset"
 
         mocked__get_policies.return_value = policy_set
 
-        res = get_selfservice_action_value(
-            "otp_pin_maxlength", user=simple_user
-        )
+        res = get_selfservice_action_value("otp_pin_maxlength", user=simple_user)
 
         assert res == 6
 
@@ -323,8 +307,6 @@ class SelfserviceActionTest(unittest.TestCase):
 
         # verify that user specific policy is honored but only for the user
 
-        res = get_selfservice_action_value(
-            "otp_pin_maxlength", user=anonym_user
-        )
+        res = get_selfservice_action_value("otp_pin_maxlength", user=anonym_user)
 
         assert res == 4

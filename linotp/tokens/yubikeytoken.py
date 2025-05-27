@@ -27,7 +27,6 @@
 """This file contains the YubiKey token class where the YubiKey is
 run in Yubico AES mode without the YubiCloud"""
 
-
 import binascii
 import logging
 
@@ -41,9 +40,7 @@ log = logging.getLogger(__name__)
 
 ###############################################
 @tokenclass_registry.class_entry("yubikey")
-@tokenclass_registry.class_entry(
-    "linotp.tokens.yubikeytoken.YubikeyTokenClass"
-)
+@tokenclass_registry.class_entry("linotp.tokens.yubikeytoken.YubikeyTokenClass")
 class YubikeyTokenClass(TokenClass):
     """
     The YubiKey Token in Yubico AES mode
@@ -306,9 +303,7 @@ class YubikeyTokenClass(TokenClass):
         # CRC-16 checksum of the whole decrypted OTP should give a fixed residual
         # of 0xf0b8 (see Yubikey-Manual - Chapter 6: Implementation details).
         crc = msg_hex[28:]
-        log.debug(
-            "[checkOtp] calculated checksum (61624): %r", checksum(msg_bin)
-        )
+        log.debug("[checkOtp] calculated checksum (61624): %r", checksum(msg_bin))
         if checksum(msg_bin) != 0xF0B8:
             log.warning("[checkOtp] CRC checksum for token %r failed", serial)
             return -3
@@ -321,9 +316,7 @@ class YubikeyTokenClass(TokenClass):
 
         tokenid = self.getFromTokenInfo("yubikey.tokenid")
         if not tokenid:
-            log.debug(
-                "[checkOtp] Got no tokenid for %r. Setting to %r.", serial, uid
-            )
+            log.debug("[checkOtp] Got no tokenid for %r. Setting to %r.", serial, uid)
             tokenid = uid
             self.addToTokenInfo("yubikey.tokenid", tokenid)
 

@@ -337,10 +337,7 @@ class Audit(AuditBase):
         line = self._attr_to_dict(audit_line)
 
         # replace None values with an empty string
-        line = {
-            key: value if value is not None else ""
-            for key, value in line.items()
-        }
+        line = {key: value if value is not None else "" for key, value in line.items()}
 
         # Signature check
         # TODO: use instead the verify_init
@@ -380,8 +377,7 @@ class Audit(AuditBase):
 
         # Map empty string to None
         audit_dict = {
-            k: v if v != "" and v != "''" else None
-            for k, v in audit_dict.items()
+            k: v if v != "" and v != "''" else None for k, v in audit_dict.items()
         }
 
         return audit_dict
@@ -453,11 +449,7 @@ class Audit(AuditBase):
         if condition is None:
             audit_q = db.session.query(AuditTable).order_by(order_dir)
         else:
-            audit_q = (
-                db.session.query(AuditTable)
-                .filter(condition)
-                .order_by(order_dir)
-            )
+            audit_q = db.session.query(AuditTable).filter(condition).order_by(order_dir)
 
         # FIXME? BUT THIS IS SO MUCH SLOWER!
         # FIXME: Here desc() ordering also does not work! :/

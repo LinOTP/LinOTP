@@ -86,10 +86,7 @@ class TestTokenlist(TestController):
         response = self.make_manage_request("tokenview_flexi", params=params)
         jresp = json.loads(response.body)
         token_id = (
-            jresp.get("result", {})
-            .get("value", {})
-            .get("rows", [{}])[0]
-            .get("id")
+            jresp.get("result", {}).get("value", {}).get("rows", [{}])[0].get("id")
         )
 
         assert serial == token_id, response
@@ -110,10 +107,7 @@ class TestTokenlist(TestController):
         response = self.make_manage_request("tokenview_flexi", params=params)
         jresp = json.loads(response.body)
         token_id = (
-            jresp.get("result", {})
-            .get("value", {})
-            .get("rows", [{}])[0]
-            .get("id")
+            jresp.get("result", {}).get("value", {}).get("rows", [{}])[0].get("id")
         )
 
         assert serial == token_id, response
@@ -134,10 +128,7 @@ class TestTokenlist(TestController):
         response = self.make_manage_request("tokenview_flexi", params=params)
         jresp = json.loads(response.body)
         token_id = (
-            jresp.get("result", {})
-            .get("value", {})
-            .get("rows", [{}])[0]
-            .get("id")
+            jresp.get("result", {}).get("value", {}).get("rows", [{}])[0].get("id")
         )
 
         assert serial == token_id, response
@@ -158,10 +149,7 @@ class TestTokenlist(TestController):
         response = self.make_manage_request("tokenview_flexi", params=params)
         jresp = json.loads(response.body)
         token_id = (
-            jresp.get("result", {})
-            .get("value", {})
-            .get("rows", [{}])[0]
-            .get("id")
+            jresp.get("result", {}).get("value", {}).get("rows", [{}])[0].get("id")
         )
 
         assert serial == token_id, response

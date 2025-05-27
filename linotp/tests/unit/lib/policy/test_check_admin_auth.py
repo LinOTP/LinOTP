@@ -35,9 +35,7 @@ from linotp.lib.user import User
 
 
 def test_check_admin_auth_case_sensitive_resolver_names(app):
-    user = User(
-        login="user1", realm="realm", resolver_config_identifier="resolver"
-    )
+    user = User(login="user1", realm="realm", resolver_config_identifier="resolver")
 
     policies = {
         "user": "",
@@ -51,6 +49,5 @@ def test_check_admin_auth_case_sensitive_resolver_names(app):
     }
 
     assert not checkAdminAuthorization(policies, None, user), (
-        "checkAdminAuthorization resolver name comparison "
-        "is not case-sensitive"
+        "checkAdminAuthorization resolver name comparison is not case-sensitive"
     )

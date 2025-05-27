@@ -108,9 +108,7 @@ class SpassTokenClass(TokenClass):
     def is_challenge_request(self, passw, user, options=None):
         return False
 
-    def is_challenge_response(
-        self, passw, user, options=None, challenges=None
-    ):
+    def is_challenge_response(self, passw, user, options=None, challenges=None):
         return False
 
     def authenticate(self, passw, user, options=None):

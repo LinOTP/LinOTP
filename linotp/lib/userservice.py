@@ -68,9 +68,7 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
     tokenArray = []
 
     log.debug("[getTokenForUser] iterating tokens for user...")
-    log.debug(
-        "[getTokenForUser] ...user %s in realm %s.", user.login, user.realm
-    )
+    log.debug("[getTokenForUser] ...user %s in realm %s.", user.login, user.realm)
 
     tokens = get_tokens(user=user, serial=None, active=active)
 
@@ -82,10 +80,7 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
             # skip the rollout tokens from the selfservice token list
 
             path = token_info.get("scope", {}).get("path", [])
-            if (
-                set(path) & set(["userservice", "validate"])
-                and exclude_rollout
-            ):
+            if set(path) & set(["userservice", "validate"]) and exclude_rollout:
                 continue
 
             tok["LinOtp.TokenInfo"] = token_info
@@ -289,9 +284,7 @@ def get_pre_context(client):
     """
 
     # check for mfa_login, autoassign and autoenroll in policy definition
-    mfa_login_action = get_selfservice_action_value(
-        action="mfa_login", default=False
-    )
+    mfa_login_action = get_selfservice_action_value(action="mfa_login", default=False)
 
     mfa_3_fields_action = get_selfservice_action_value(
         action="mfa_3_fields", default=False
@@ -418,9 +411,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
         if hasattr(tclass_object, "getClassInfo"):
             tok = tclass_object.getClassType()
             try:
-                selfservice = tclass_object.getClassInfo(
-                    "selfservice", ret=None
-                )
+                selfservice = tclass_object.getClassInfo("selfservice", ret=None)
                 # # check if we have a policy in the token definition for the enroll
                 if (
                     selfservice is not None
@@ -441,8 +432,7 @@ def add_dynamic_selfservice_enrollment(config, actions):
 
             except Exception as exx:
                 log.info(
-                    "[_add_dynamic_actions] no policy for tokentype "
-                    "%r found (%r)",
+                    "[_add_dynamic_actions] no policy for tokentype %r found (%r)",
                     tok,
                     exx,
                 )
@@ -476,8 +466,7 @@ def add_dynamic_selfservice_policies(config, actions):
                     dynamic_policies.update(local_policies)
             except Exception as exx:
                 log.info(
-                    "[_add_dynamic_actions] no policy for tokentype "
-                    "%r found (%r)",
+                    "[_add_dynamic_actions] no policy for tokentype %r found (%r)",
                     tok,
                     exx,
                 )

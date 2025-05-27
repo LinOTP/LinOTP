@@ -27,6 +27,7 @@
 
 
 """ """
+
 import json
 import os
 
@@ -68,9 +69,7 @@ class TestImportOTP(TestController):
 
             return data
 
-    def upload_tokens(
-        self, file_name, data=None, params=None, auth_user="admin"
-    ):
+    def upload_tokens(self, file_name, data=None, params=None, auth_user="admin"):
         """
         helper to upload a token file via admin/loadtokens file upload
         like it is done in the browser
@@ -146,9 +145,7 @@ class TestImportOTP(TestController):
 
         params = {"type": "dat", "startdate": "1.1.2000"}
 
-        response = self.upload_tokens(
-            "safework_tokens.dat", data="", params=params
-        )
+        response = self.upload_tokens("safework_tokens.dat", data="", params=params)
 
         error_msg = "Error loading tokens. File or Type empty"
         assert error_msg in response, response
@@ -159,9 +156,7 @@ class TestImportOTP(TestController):
         data = "#"
         params = {"type": "dat", "startdate": "1.1.2000"}
 
-        response = self.upload_tokens(
-            "safework_tokens.dat", data=data, params=params
-        )
+        response = self.upload_tokens("safework_tokens.dat", data=data, params=params)
 
         error_msg = "<imported>0</imported>"
         assert error_msg in response, response
@@ -258,12 +253,8 @@ class TestImportOTP(TestController):
         response = self.upload_tokens("oath_tokens.csv", params=params)
         assert "<imported>4</imported>" in response, response
 
-        response = self.upload_tokens(
-            "oath_tokens_bad_seed.csv", params=params
-        )
-        error_msg = (
-            "The provided token seed contains non-hexadecimal characters"
-        )
+        response = self.upload_tokens("oath_tokens_bad_seed.csv", params=params)
+        error_msg = "The provided token seed contains non-hexadecimal characters"
         assert error_msg in response, response
         assert "<status>False</status>" in response, response
 
@@ -408,9 +399,7 @@ class TestImportOTP(TestController):
         response = self.upload_tokens("token.psk", data="", params=params)
 
         assert "<status>False</status>" in response, response
-        assert (
-            "Error loading tokens. File or Type empty!" in response
-        ), response
+        assert "Error loading tokens. File or Type empty!" in response, response
 
         return
 

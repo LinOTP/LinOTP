@@ -131,19 +131,13 @@ class TestPushProviderController(TestController):
                 push_prov.loadConfig(dict(timeout=v, push_url="https://x"))
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(
-                dict(timeout="invalid,timeout", push_url="https://x")
-            )
+            push_prov.loadConfig(dict(timeout="invalid,timeout", push_url="https://x"))
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(
-                dict(timeout="1,timeout", push_url="https://x")
-            )
+            push_prov.loadConfig(dict(timeout="1,timeout", push_url="https://x"))
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(
-                dict(timeout="invalid,1", push_url="https://x")
-            )
+            push_prov.loadConfig(dict(timeout="invalid,1", push_url="https://x"))
 
     def test_read_config(self):
         """
@@ -158,9 +152,7 @@ class TestPushProviderController(TestController):
         #
 
         configDict["Timeout"] = "30"
-        configDict["access_certificate"] = os.path.join(
-            self.fixture_path, "cert.pem"
-        )
+        configDict["access_certificate"] = os.path.join(self.fixture_path, "cert.pem")
 
         configDict["push_url"] = [
             "https://Notification1.keyidentity.com/send",
@@ -289,9 +281,7 @@ class TestPushProviderController(TestController):
 
         configDict = {}
         configDict["Timeout"] = "30"
-        configDict["access_certificate"] = os.path.join(
-            self.fixture_path, "cert.pem"
-        )
+        configDict["access_certificate"] = os.path.join(self.fixture_path, "cert.pem")
         configDict["push_url"] = "https://notification.keyidentity.com/send"
 
         push_prov = DefaultPushProvider()
@@ -299,10 +289,7 @@ class TestPushProviderController(TestController):
 
         push_prov = DefaultPushProvider()
         push_prov.loadConfig(configDict)
-        gda = (
-            "apn.98c78e19e9842a1cfdeb887bf42142b615865b1ec513"
-            "c31ea1a4f3222660435f"
-        )
+        gda = "apn.98c78e19e9842a1cfdeb887bf42142b615865b1ec513c31ea1a4f3222660435f"
         message = "Authentication request for user bla"
 
         # run the fake request
@@ -331,9 +318,7 @@ class TestPushProviderFailover(TestController):
     def _test_servers(self, servers):
         configDict = {}
         configDict["Timeout"] = "30"
-        configDict["access_certificate"] = os.path.join(
-            self.fixture_path, "cert.pem"
-        )
+        configDict["access_certificate"] = os.path.join(self.fixture_path, "cert.pem")
         configDict["push_url"] = servers
 
         push_prov = DefaultPushProvider()
@@ -341,10 +326,7 @@ class TestPushProviderFailover(TestController):
 
         push_prov = DefaultPushProvider()
         push_prov.loadConfig(configDict)
-        gda = (
-            "apn.98c78e19e9842a1cfdeb887bf42142b615865b1ec513"
-            "c31ea1a4f3222660435f"
-        )
+        gda = "apn.98c78e19e9842a1cfdeb887bf42142b615865b1ec513c31ea1a4f3222660435f"
         message = "Authentication request for user bla"
 
         # run the fake request

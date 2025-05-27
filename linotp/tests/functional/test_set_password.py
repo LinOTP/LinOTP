@@ -30,7 +30,6 @@
 Testing the set password ability
 """
 
-
 import logging
 
 from sqlalchemy.exc import ProgrammingError

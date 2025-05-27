@@ -55,9 +55,7 @@ class ChallengeSchema(db.Model):
         primary_key=True,
         nullable=False,
     )
-    transid = Column(
-        "transid", String(64), unique=True, nullable=False, index=True
-    )
+    transid = Column("transid", String(64), unique=True, nullable=False, index=True)
     ptransid = Column("ptransid", String(64), index=True)
     odata = Column("data", String(512), default="")
     data = Column("bdata", LargeBinary, default=None)

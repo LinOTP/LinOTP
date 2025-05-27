@@ -372,9 +372,7 @@ class TestForwardToken(TestController):
         self.create_policy(params)
 
         p2_serial, otps = self.create_HMAC_token(owner="passthru_user2")
-        self.create_forward_token(
-            target_serial=p2_serial, owner="passthru_user1"
-        )
+        self.create_forward_token(target_serial=p2_serial, owner="passthru_user1")
 
         params = {
             "type": "hmac",

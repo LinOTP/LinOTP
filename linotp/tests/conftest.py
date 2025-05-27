@@ -287,8 +287,7 @@ def set_policy(adminclient):
 
         getResponse = adminclient.get("system/getPolicy", json=params)
         assert (
-            getResponse.json["result"]["value"]["autosms"]["action"]
-            == params["action"]
+            getResponse.json["result"]["value"]["autosms"]["action"] == params["action"]
         )
 
     return _setPolicy
@@ -315,9 +314,7 @@ def scoped_authclient(
         context manager (FlaskClient): a context manager which yields a FlaskClient
     """
 
-    original_verify_jwt_in_request = (
-        linotp.controllers.base.verify_jwt_in_request
-    )
+    original_verify_jwt_in_request = linotp.controllers.base.verify_jwt_in_request
     original_get_jwt_identity = linotp.controllers.base.get_jwt_identity
 
     @contextlib.contextmanager
@@ -488,9 +485,7 @@ def create_managed_resolvers(
         }
 
         with scoped_authclient(verify_jwt=False, username="admin") as client:
-            params.update(
-                {"file": (io.BytesIO(content.encode("utf-8")), "user_list")}
-            )
+            params.update({"file": (io.BytesIO(content.encode("utf-8")), "user_list")})
             headers = {}
             headers["Content-Type"] = "multipart/form-data"
             client.post("/tools/import_users", data=params, headers=headers)
@@ -527,9 +522,7 @@ def create_common_resolvers(
 
     with scoped_authclient(verify_jwt=False, username="admin") as client:
         for resolver_param in resolver_params:
-            _create_resolver(
-                resolver_params=resolver_param, adminclient=client
-            )
+            _create_resolver(resolver_params=resolver_param, adminclient=client)
 
         from linotp.model.local_admin_user import LocalAdminResolver
 
@@ -556,12 +549,8 @@ def create_common_realms(scoped_authclient: Callable) -> None:
     """
 
     common_realms = {
-        "def_realm": [
-            "useridresolver.PasswdIdResolver.IdResolver.def_resolver"
-        ],
-        "dom_realm": [
-            "useridresolver.PasswdIdResolver.IdResolver.dom_resolver"
-        ],
+        "def_realm": ["useridresolver.PasswdIdResolver.IdResolver.def_resolver"],
+        "dom_realm": ["useridresolver.PasswdIdResolver.IdResolver.dom_resolver"],
         "mixed_realm": [
             "useridresolver.PasswdIdResolver.IdResolver.def_resolver",
             "useridresolver.PasswdIdResolver.IdResolver.dom_resolver",

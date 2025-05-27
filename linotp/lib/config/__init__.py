@@ -91,9 +91,7 @@ def getLinotpConfig():
         # FIXME: this happens once every server start and seems quite unnecessary.
         # Please, please, please refactor this method in the future to get rid
         # of the FOUR instantiations of LinOtpConfig() in this method alone.
-        log.debug(
-            "Bad Hack: Retrieving LinotpConfig without controller context"
-        )
+        log.debug("Bad Hack: Retrieving LinotpConfig without controller context")
         ret = LinOtpConfig()
 
         if ret.delay is True:

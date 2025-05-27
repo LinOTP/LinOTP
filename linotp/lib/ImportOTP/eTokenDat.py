@@ -217,9 +217,7 @@ class DatToken(object):
         # sccPrTime=2011/05/03 02:46:54;
         # crypto=HmacSHA256;
         # sccVer=6.2;
-        params = dict(
-            param.split("=") for param in value.split(";") if "=" in param
-        )
+        params = dict(param.split("=") for param in value.split(";") if "=" in param)
         for key, val in params.items():
             # Again, call a specific attribute or generic setter
             setter_method = getattr(self, "set_" + key, None)
@@ -398,9 +396,7 @@ def get_session(lino_url, user=None, pwd=None):
             access_token_cookie = cookies["access_token_cookie"].value
             csrf_token = cookies["csrf_access_token"].value
         except Exception as exception:
-            LOG.error(
-                "Could not retrieve session. Exception was: %r", exception
-            )
+            LOG.error("Could not retrieve session. Exception was: %r", exception)
             raise exception
 
     # add headers, as they transfer the cookies
@@ -452,8 +448,7 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
         else:
             # Print response
             LOG.error(
-                "Error during token submission. Response was: %r, "
-                "Content: %s",
+                "Error during token submission. Response was: %r, Content: %s",
                 resp,
                 content,
             )

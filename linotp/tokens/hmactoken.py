@@ -27,6 +27,7 @@
 """This file containes the dynamic hmac token implementation:
 - HmacTokenClas   (HOTP)
 """
+
 import logging
 import string
 import time
@@ -231,9 +232,7 @@ class HmacTokenClass(TokenClass):
         """
         is_hexadecimal = all(c in string.hexdigits for c in seed)
         if not is_hexadecimal:
-            message = (
-                "The provided token seed contains non-hexadecimal characters"
-            )
+            message = "The provided token seed contains non-hexadecimal characters"
             raise InvalidSeedException(message)
 
     # challenge interfaces starts here
@@ -260,9 +259,7 @@ class HmacTokenClass(TokenClass):
 
         return trigger_challenge
 
-    def is_challenge_response(
-        self, passw, user, options=None, challenges=None
-    ):
+    def is_challenge_response(self, passw, user, options=None, challenges=None):
         """
         This method checks, if this is a request, that is the response to
         a previously sent challenge.
@@ -301,9 +298,7 @@ class HmacTokenClass(TokenClass):
 
         return False
 
-    def checkResponse4Challenge(
-        self, user, passw, options=None, challenges=None
-    ):
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
         verify the response of a previous challenge
 
@@ -353,9 +348,7 @@ class HmacTokenClass(TokenClass):
                  data is preserved in the challenge
                  attributes are additional attributes, which could be returned
         """
-        message = self.getChallengePrompt(
-            default="Please enter your otp value: "
-        )
+        message = self.getChallengePrompt(default="Please enter your otp value: ")
 
         data = {
             "serial": self.token.getSerial(),
@@ -404,9 +397,7 @@ class HmacTokenClass(TokenClass):
 
         secObj = self._get_secret_object()
 
-        hmac2Otp = HmacOtp(
-            secObj, counter, otplen, self.getHashlib(self.hashlibStr)
-        )
+        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(anOtpVal, window)
 
         if -1 == res:
@@ -450,9 +441,7 @@ class HmacTokenClass(TokenClass):
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
 
         secObj = self._get_secret_object()
-        hmac2Otp = HmacOtp(
-            secObj, counter, otplen, self.getHashlib(self.hashlibStr)
-        )
+        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(otp, window)
 
         if res >= 0:
@@ -582,15 +571,11 @@ class HmacTokenClass(TokenClass):
         counter = self.token.getOtpCounter()
         syncWindow = self.token.getSyncWindow()
         # log.debug("serial: %s",serialNum)
-        hmac2Otp = HmacOtp(
-            secObj, counter, otplen, self.getHashlib(self.hashlibStr)
-        )
+        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         counter = hmac2Otp.checkOtp(otp1, syncWindow)
 
         if counter == -1:
-            log.debug(
-                "[resync] exit. First counter (-1) not found  ret: %r", ret
-            )
+            log.debug("[resync] exit. First counter (-1) not found  ret: %r", ret)
             return ret
 
         nextOtp = hmac2Otp.generate(counter + 1)
@@ -622,8 +607,7 @@ class HmacTokenClass(TokenClass):
             timeOut = int(getFromConfig("AutoResyncTimeout", 5 * 60))
         except Exception as ex:
             log.warning(
-                "[getSyncTimeOut] AutoResyncTimeout: value error %r"
-                " - reset to 5*60",
+                "[getSyncTimeOut] AutoResyncTimeout: value error %r - reset to 5*60",
                 ex,
             )
             timeOut = 5 * 60
@@ -641,9 +625,7 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.error(
-                "[getOtp]: Could not convert otplen - value error %r ", ex
-            )
+            log.error("[getOtp]: Could not convert otplen - value error %r ", ex)
             raise Exception(ex)
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
@@ -689,9 +671,7 @@ class HmacTokenClass(TokenClass):
             raise Exception(ex)
         s_count = self.getOtpCount()
         secObj = self._get_secret_object()
-        hmac2Otp = HmacOtp(
-            secObj, s_count, otplen, self.getHashlib(self.hashlibStr)
-        )
+        hmac2Otp = HmacOtp(secObj, s_count, otplen, self.getHashlib(self.hashlibStr))
 
         if count > 0:
             for i in range(count):

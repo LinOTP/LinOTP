@@ -50,9 +50,7 @@ EMAIL_MESSAGE_OTP = ("", "")
 EMAIL_MESSAGE_CONFIG = {}
 
 
-def mocked_submitEmailMessage(
-    SMTPEmailProvider_Object, *argparams, **kwparams
-):
+def mocked_submitEmailMessage(SMTPEmailProvider_Object, *argparams, **kwparams):
     # this hook is defined to grep the otp and make it globally available
     global EMAIL_MESSAGE_OTP
     EMAIL_MESSAGE_OTP = kwparams["replacements"]["otp"]
@@ -97,9 +95,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
     """
 
     def setUp(self):
-        response = self.make_system_request(
-            "setConfig", params={"splitAtSign": "true"}
-        )
+        response = self.make_system_request("setConfig", params={"splitAtSign": "true"})
         assert "false" not in response.body
 
         TestUserserviceController.setUp(self)
@@ -881,9 +877,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         assert detail["linotp_forward_tokenserial"] == "qrtoken"
         assert detail["linotp_forward_tokentype"] == "qr"
 
-    @patch.object(
-        SMTPEmailProvider, "submitMessage", mocked_submitEmailMessage
-    )
+    @patch.object(SMTPEmailProvider, "submitMessage", mocked_submitEmailMessage)
     def test_verify_cr_email_token(self):
         """verify challenge response for email token"""
 
@@ -901,9 +895,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
 
         # define the email provider - we use a mocked file provider
 
-        response = self.define_email_provider(
-            {"name": "simple_email_provider"}
-        )
+        response = self.define_email_provider({"name": "simple_email_provider"})
         assert "false" not in response, response
 
         # ------------------------------------------------------------------ --

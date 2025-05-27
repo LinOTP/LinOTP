@@ -331,9 +331,7 @@ class OcraSuite:
                 try:
                     length = 0
                     if not re.match(r"^(\d+[HMS])+$", complement):
-                        raise ValueError(
-                            "timestep not in [HMS] %r" % complement
-                        )
+                        raise ValueError("timestep not in [HMS] %r" % complement)
                     parts = re.findall(r"\d+[HMS]", complement)
                     for part in parts:
                         period = part[-1]
@@ -341,9 +339,7 @@ class OcraSuite:
                         length += quantity * PERIODS[period]
                     self.T = length
                 except ValueError:
-                    raise ValueError(
-                        "Invalid timestamp descriptor %r" % complement
-                    )
+                    raise ValueError("Invalid timestamp descriptor %r" % complement)
 
     def compute(self, data, key=None):
         """
@@ -352,9 +348,7 @@ class OcraSuite:
         """
         h_data = binascii.hexlify(data)
         try:
-            data_input = bytearray(
-                self.ocrasuite_description.encode("utf-8") + b"\0"
-            )
+            data_input = bytearray(self.ocrasuite_description.encode("utf-8") + b"\0")
             for d in data:
                 data_input.append(d)
 
@@ -509,9 +503,7 @@ class OcraSuite:
                 elif len(P) == 2 * self.P.digest_size:
                     datainput += P_digest.decode("hex")
                 else:
-                    raise ValueError(
-                        "Pin/Password digest invalid %r" % P_digest
-                    )
+                    raise ValueError("Pin/Password digest invalid %r" % P_digest)
             elif P is None:
                 raise ValueError("Pin/Password missing")
             else:

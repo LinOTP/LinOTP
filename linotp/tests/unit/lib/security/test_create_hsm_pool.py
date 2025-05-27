@@ -30,7 +30,6 @@ These tests are far from complete and can not be the only point of
 reliance for changes in the code base
 """
 
-
 import pytest
 from mock import patch
 
@@ -42,16 +41,12 @@ from linotp.lib.security.provider import SecurityProvider
 @patch("linotp.lib.security.provider.SecurityProvider.loadSecurityModule")
 @patch("linotp.lib.security.provider.SecurityProvider._getHsmPool_")
 @patch("linotp.lib.security.provider.SecurityProvider.__init__")
-def test_create_hsm_pool(
-    mock_init, mock_get_hsm_pool, mock_load_security_module
-):
+def test_create_hsm_pool(mock_init, mock_get_hsm_pool, mock_load_security_module):
     poolsize = 20
     mock_init.return_value = None
     mock_get_hsm_pool.return_value = None
 
-    mock_load_security_module.side_effect = Exception(
-        "Mocked Exception to be caught"
-    )
+    mock_load_security_module.side_effect = Exception("Mocked Exception to be caught")
 
     # hook for local provider test
     security_provider = SecurityProvider()

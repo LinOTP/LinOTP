@@ -123,9 +123,7 @@ def cleanup_command(
 
     app = current_app
 
-    if delete_after_days is not None and (
-        cleanup_threshold or max_entries_to_keep
-    ):
+    if delete_after_days is not None and (cleanup_threshold or max_entries_to_keep):
         app.echo(
             "`--delete-after-days` can not be used alongside `--max-entries-to-keep` or `--cleanup-threshold`"
         )
@@ -168,16 +166,14 @@ def cleanup_command(
             )
 
             if cleanup_infos["export_filename"]:
-                app.echo(f'Exported into {cleanup_infos["export_filename"]}')
+                app.echo(f"Exported into {cleanup_infos['export_filename']}")
             else:
                 app.echo("No export was triggered.")
 
-            app.echo(
-                f'Cleaning up took {cleanup_infos["time_taken"]} seconds', v=1
-            )
+            app.echo(f"Cleaning up took {cleanup_infos['time_taken']} seconds", v=1)
         else:
             app.echo(
-                f'Nothing cleaned up. {cleanup_infos["entries_in_audit"]} '
+                f"Nothing cleaned up. {cleanup_infos['entries_in_audit']} "
                 "entries in database.\n"
             )
 
@@ -291,9 +287,7 @@ class SQLJanitor:
 
         start_time = datetime.now(timezone.utc)
 
-        if delete_after_days is not None and (
-            cleanup_threshold or max_entries_to_keep
-        ):
+        if delete_after_days is not None and (cleanup_threshold or max_entries_to_keep):
             raise ValueError(
                 "param `delete_after_days` can not be used alongside `cleanup_threshold` and `max_entries_to_keep`"
             )
@@ -329,9 +323,7 @@ class SQLJanitor:
         if delete_from > 0:
             # if export is enabled, we start the export now
             export_file = self.export_data(delete_from)
-            cleanup_infos["export_filename"] = (
-                str(export_file) if export_file else None
-            )
+            cleanup_infos["export_filename"] = str(export_file) if export_file else None
 
             result = (
                 db.session.query(AuditTable)

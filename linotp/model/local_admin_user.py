@@ -38,17 +38,13 @@ from linotp.model.imported_user import ImportedUserSchema
 
 
 class DuplicateUserError(Exception):
-    def __init__(
-        self, username: str, message: str = "User {0} already exists"
-    ):
+    def __init__(self, username: str, message: str = "User {0} already exists"):
         super().__init__(message.format(username))
         self.username = username
 
 
 class NoSuchUserError(Exception):
-    def __init__(
-        self, username: str, message: str = "User {0} does not exist"
-    ):
+    def __init__(self, username: str, message: str = "User {0} does not exist"):
         super().__init__(message.format(username))
         self.username = username
 
@@ -267,8 +263,7 @@ class LocalAdminResolver:
         """
 
         admin_resolver_name = (
-            "useridresolver.SQLIdResolver.IdResolver."
-            f"{self.admin_resolver_name}"
+            f"useridresolver.SQLIdResolver.IdResolver.{self.admin_resolver_name}"
         )
 
         # Check magic config database entry for the list of resolvers

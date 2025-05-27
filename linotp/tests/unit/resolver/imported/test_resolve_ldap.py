@@ -99,9 +99,7 @@ class LDAPResolverTest(unittest.TestCase):
 class LDAPConnectTests(LDAPResolverTest):
     def test_ldap_testconnection_invalid_parameter(self):
         self.ldap_test_param["linotp.ldapresolver.TIMEOUT"] = "qwerty"
-        (status, desc) = LDAPResolver.IdResolver.testconnection(
-            self.ldap_test_param
-        )
+        (status, desc) = LDAPResolver.IdResolver.testconnection(self.ldap_test_param)
         assert status == "error"
 
 
@@ -114,11 +112,7 @@ class LDAPInProcessTests(LDAPResolverTest):
         adret = [
             (
                 "CN=Clark Maxwell,OU=corp,DC=hotad,DC=example,DC=net",
-                {
-                    "objectGUID": [
-                        "\x9a\x13Y\xb6uF\xd4N\xba\x0f \xc9\xfd\xd9{\x00"
-                    ]
-                },
+                {"objectGUID": ["\x9a\x13Y\xb6uF\xd4N\xba\x0f \xc9\xfd\xd9{\x00"]},
             ),
             (
                 None,
@@ -186,9 +180,7 @@ class LDAPInProcessTests(LDAPResolverTest):
             ) as mock_ldap_init:
                 l_obj = mock_ldap_init.return_value
                 mock_start_tls = l_obj.start_tls_s
-                mock_start_tls.side_effect = effect(
-                    "This exception should be caught"
-                )
+                mock_start_tls.side_effect = effect("This exception should be caught")
 
                 caller = deepcopy(self.ldap_y)
                 caller.enforce_tls = False

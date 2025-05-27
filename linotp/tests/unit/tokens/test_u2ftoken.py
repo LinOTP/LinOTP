@@ -68,9 +68,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue((256**4) - 1000)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_equal_in_overflow_range(self):
@@ -81,9 +79,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue((256**4) - 500)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_increase_in_overflow_range(self):
@@ -94,12 +90,8 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.addToTokenInfo = Mock()
         self.u2f_token.token.LinOtpIsactive = True
         self.u2f_token._verifyCounterValue((256**4) - 400)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
-        self.u2f_token.addToTokenInfo.assert_called_once_with(
-            "counter", (256**4) - 400
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
+        self.u2f_token.addToTokenInfo.assert_called_once_with("counter", (256**4) - 400)
         assert self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_overflow_out_of_range1(self):
@@ -110,9 +102,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(1001)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_overflow_out_of_range2(self):
@@ -123,9 +113,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(0)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_legal_overflow(self):
@@ -136,9 +124,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.addToTokenInfo = Mock()
         self.u2f_token.token.LinOtpIsactive = True
         self.u2f_token._verifyCounterValue(1000)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         self.u2f_token.addToTokenInfo.assert_called_once_with("counter", 1000)
         assert self.u2f_token.token.LinOtpIsactive
 
@@ -150,9 +136,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(499)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_decreased2(self):
@@ -163,9 +147,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(0)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_equal(self):
@@ -176,9 +158,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.token.LinOtpIsactive = True
         with pytest.raises(ValueError):
             self.u2f_token._verifyCounterValue(500)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         assert not self.u2f_token.token.LinOtpIsactive
 
     def test_verify_counter_increased1(self):
@@ -189,9 +169,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.addToTokenInfo = Mock()
         self.u2f_token.token.LinOtpIsactive = True
         self.u2f_token._verifyCounterValue(501)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         self.u2f_token.addToTokenInfo.assert_called_once_with("counter", 501)
         assert self.u2f_token.token.LinOtpIsactive
 
@@ -203,9 +181,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.addToTokenInfo = Mock()
         self.u2f_token.token.LinOtpIsactive = True
         self.u2f_token._verifyCounterValue(5000)
-        self.u2f_token.getFromTokenInfo.assert_called_once_with(
-            "counter", None
-        )
+        self.u2f_token.getFromTokenInfo.assert_called_once_with("counter", None)
         self.u2f_token.addToTokenInfo.assert_called_once_with("counter", 5000)
         assert self.u2f_token.token.LinOtpIsactive
 
@@ -252,9 +228,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         param = dict(description=None, phase="registration1")
         self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with("phase", None)
-        self.u2f_token.addToTokenInfo.assert_called_once_with(
-            "phase", "registration"
-        )
+        self.u2f_token.addToTokenInfo.assert_called_once_with("phase", "registration")
         assert not self.u2f_token.token.LinOtpIsactive
 
     def test_update_requested_phase_registration1_current_phase_registration(

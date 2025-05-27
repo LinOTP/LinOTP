@@ -248,9 +248,7 @@ class Resolver:
                 no_iterator_found,
             )
             users = []
-            for user_dict in self.configuration_instance.getUserList(
-                search_dictionary
-            ):
+            for user_dict in self.configuration_instance.getUserList(search_dictionary):
                 user = User.from_dict(self.name, self.type, user_dict)
                 users.append(user)
 

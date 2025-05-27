@@ -78,9 +78,7 @@ def test_getsearchfields_case_sensitive_resolver_names(fthsm, app):
     admin_resolvers = getFromConfig(admin_resolvers_key, "")
     _, _, aci = admin_resolvers.rpartition(".")
 
-    user = User(
-        login="user1", realm=admin_realm_name, resolver_config_identifier=aci
-    )
+    user = User(login="user1", realm=admin_realm_name, resolver_config_identifier=aci)
 
     # If the user's resolver config identifier matches its resolver, then the
     # `getSearchFields` function should return a set of search fields. If there
@@ -90,9 +88,9 @@ def test_getsearchfields_case_sensitive_resolver_names(fthsm, app):
 
     user.resolver_config_identifier = user.resolver_config_identifier.upper()
     search_fields = getSearchFields(user)
-    assert (
-        not search_fields
-    ), "getSearchFields resolver name comparison is not case-sensitive"
+    assert not search_fields, (
+        "getSearchFields resolver name comparison is not case-sensitive"
+    )
 
 
 def test_getuserlist_case_sensitive_resolver_names(fthsm, app, admin_res):
@@ -116,6 +114,4 @@ def test_getuserlist_case_sensitive_resolver_names(fthsm, app, admin_res):
         resolver_config_identifier=aci.upper(),
     )
     user_list = getUserList({}, search_user)
-    assert (
-        not user_list
-    ), "getUserList resolver name comparison is not case-sensitive"
+    assert not user_list, "getUserList resolver name comparison is not case-sensitive"

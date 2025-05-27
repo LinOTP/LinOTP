@@ -30,7 +30,6 @@
 Test the maxtoken Policy.
 """
 
-
 from linotp.tests import TestController
 
 
@@ -131,10 +130,7 @@ class TestPolicyMaxtoken(TestController):
         i = 3
         token_params = {"serial": "#TCOUNT%d" % i, "user": "def"}
         response = self.enroll_token(token_params)
-        message = (
-            "ERR411: The maximum number of allowed tokens per user "
-            "is exceeded"
-        )
+        message = "ERR411: The maximum number of allowed tokens per user is exceeded"
         assert message in response, response
 
         return
@@ -183,8 +179,7 @@ class TestPolicyMaxtoken(TestController):
         policy = {
             "name": "T1",
             "action": (
-                "enrollEMAIL, enrollSMS, assign, "
-                "enrollHMAC, enrollTOTP, setOTPPIN"
+                "enrollEMAIL, enrollSMS, assign, enrollHMAC, enrollTOTP, setOTPPIN"
             ),
             "user": " passthru.*.myDefRes:",
             "realm": "*",
@@ -396,9 +391,7 @@ class TestMaxtokenSelfService(TestController):
             "password": "geheim1",
         }
 
-        response = self.make_userselfservice_request(
-            "context", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("context", auth_user=auth_user)
 
         all_token_limits = response.json["detail"]["settings"]["token_limits"][
             "all_token"
@@ -418,9 +411,7 @@ class TestMaxtokenSelfService(TestController):
             "password": "geheim1",
         }
 
-        response = self.make_userselfservice_request(
-            "context", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("context", auth_user=auth_user)
 
         all_token_limits = response.json["detail"]["settings"]["token_limits"][
             "all_token"
@@ -454,9 +445,7 @@ class TestMaxtokenSelfService(TestController):
             "password": "geheim1",
         }
 
-        response = self.make_userselfservice_request(
-            "context", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("context", auth_user=auth_user)
 
         token_limit_res = response.json["detail"]["settings"]["token_limits"][
             "token_types"

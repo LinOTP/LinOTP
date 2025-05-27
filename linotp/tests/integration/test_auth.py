@@ -41,9 +41,7 @@ class TestAuth:
     def setUp(self, testcase):
         self.testcase = testcase
         self.realm_name = "se_test_auth"
-        testcase.reset_resolvers_and_realms(
-            data.sepasswd_resolver, self.realm_name
-        )
+        testcase.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
         self.testcase.manage_ui.token_view.delete_all_tokens()
         self.manage_ui = self.testcase.manage_ui
 
@@ -79,7 +77,4 @@ class TestAuth:
             assert auth.auth_using_index3(user, pin, otp) == auth.AUTH_SUCCESS
 
         # wrong otp
-        assert (
-            auth.auth_using_index(user, pin, "some invalid otp")
-            == auth.AUTH_FAIL
-        )
+        assert auth.auth_using_index(user, pin, "some invalid otp") == auth.AUTH_FAIL

@@ -28,7 +28,6 @@
 
 """ """
 
-
 import logging
 import os
 
@@ -57,9 +56,7 @@ class TestPasswdController(TestController):
         Testing PasswdIdResolver
         """
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig(
-            {"fileName": os.path.join(self.fixture_path, "my-passwd")}, ""
-        )
+        y.loadConfig({"fileName": os.path.join(self.fixture_path, "my-passwd")}, "")
 
         userlist = y.getUserList({"username": "*", "userid": "= 1000"})
 
@@ -96,9 +93,7 @@ class TestPasswdController(TestController):
         Testing checkpass with PasswdIdResolver with a shadow passwd file
         """
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig(
-            {"fileName": os.path.join(self.fixture_path, "my-passwd")}, ""
-        )
+        y.loadConfig({"fileName": os.path.join(self.fixture_path, "my-passwd")}, "")
 
         success = False
         try:
@@ -113,9 +108,7 @@ class TestPasswdController(TestController):
         Testing checkpass
         """
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig(
-            {"fileName": os.path.join(self.fixture_path, "my-pass2")}, ""
-        )
+        y.loadConfig({"fileName": os.path.join(self.fixture_path, "my-pass2")}, "")
 
         res = y.checkPass("2001", "geheim")
         msg = "result %r" % res
@@ -130,9 +123,7 @@ class TestPasswdController(TestController):
         Testing getSearchfields
         """
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig(
-            {"fileName": os.path.join(self.fixture_path, "my-pass2")}, ""
-        )
+        y.loadConfig({"fileName": os.path.join(self.fixture_path, "my-pass2")}, "")
 
         s = y.getSearchFields()
         assert s, s
@@ -145,8 +136,7 @@ class TestPasswdController(TestController):
         )
         assert response.json["result"]["status"]
         username_list = [
-            user["username"]
-            for user in response.json["result"]["value"]["pageRecords"]
+            user["username"] for user in response.json["result"]["value"]["pageRecords"]
         ]
         assert username_list == ["passthru_user1", "passthru_user2"]
 
@@ -158,7 +148,6 @@ class TestPasswdController(TestController):
         )
         assert response.json["result"]["status"]
         username_list = [
-            user["username"]
-            for user in response.json["result"]["value"]["pageRecords"]
+            user["username"] for user in response.json["result"]["value"]["pageRecords"]
         ]
         assert username_list == ["passthru_user1", "passthru_user2"]

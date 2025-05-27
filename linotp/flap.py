@@ -58,9 +58,7 @@ class RequestContextProxy(object):
         return flask.g.request_context.items()
 
     def __repr__(self, *_args, **_kwargs):
-        repr_dict = {
-            key: value for key, value in flask.g.request_context.items()
-        }
+        repr_dict = {key: value for key, value in flask.g.request_context.items()}
         return "%r" % repr_dict
 
 
@@ -94,10 +92,7 @@ def _make_mako_lookup(app):
         "output_encoding": "utf-8",
         "default_filters": app.config["MAKO_DEFAULT_FILTERS"],
         "imports": [
-            (
-                "from flask_babel import gettext as _, ngettext, "
-                "pgettext, npgettext"
-            ),
+            ("from flask_babel import gettext as _, ngettext, pgettext, npgettext"),
         ],
         # `module_directory` points to a directory that is used to
         # cache Mako templates that have been compiled to Python code.
@@ -150,9 +145,7 @@ def render_mako(template_name, extra_context=None):
         flask.g.request_context.update(extra_context)
 
     try:
-        template = app.mako_template_lookup.get_template(
-            template_name.lstrip("/")
-        )
+        template = app.mako_template_lookup.get_template(template_name.lstrip("/"))
         ret = template.render(c=tmpl_context, lang=get_locale().language)
     except TemplateError as e:
         log.error(e.text)

@@ -26,7 +26,6 @@
 #
 """resolver objects and processing"""
 
-
 import json
 import logging
 import re
@@ -261,9 +260,7 @@ def get_admin_resolvers():
     """ """
     admin_realm_name = current_app.config["ADMIN_REALM_NAME"].lower()
 
-    admin_realm_definition = getRealms(admin_realm_name).get(
-        admin_realm_name, {}
-    )
+    admin_realm_definition = getRealms(admin_realm_name).get(admin_realm_name, {})
 
     if not admin_realm_definition:
         return []
@@ -293,8 +290,7 @@ def getResolverList(filter_resolver_type=None, config=None):
     for entry in conf:
         for resolver_type in resolvertypes:
             if entry.startswith(f"linotp.{resolver_type}") and (
-                filter_resolver_type is None
-                or filter_resolver_type == resolver_type
+                filter_resolver_type is None or filter_resolver_type == resolver_type
             ):
                 # the resolver might contain dots "." so take
                 # all after the 3rd dot for the resolver name
@@ -321,9 +317,7 @@ def getResolverList(filter_resolver_type=None, config=None):
                     "immutable": local_admin_resolver == resolver_name,
                 }
 
-                readonly_entry = (
-                    f"{resolver[0]}.{resolver[1]}.readonly.{resolver_name}"
-                )
+                readonly_entry = f"{resolver[0]}.{resolver[1]}.readonly.{resolver_name}"
                 if readonly_entry in conf:
                     try:
                         if boolean(conf[readonly_entry]):
@@ -370,11 +364,7 @@ def getResolverInfo(resolvername, passwords=False):
 
             part = config_entry.split(".")
 
-            if (
-                len(part) > 3
-                and part[0] == "linotp"
-                and part[1] in resolver_types
-            ):
+            if len(part) > 3 and part[0] == "linotp" and part[1] in resolver_types:
                 resolver_type = part[1]
                 break
 
@@ -390,13 +380,9 @@ def getResolverInfo(resolvername, passwords=False):
 
     result["spec"] = resolver_cls.db_prefix + "." + resolvername
 
-    res_conf, _missing = resolver_cls.filter_config(
-        linotp_config, resolvername
-    )
+    res_conf, _missing = resolver_cls.filter_config(linotp_config, resolvername)
     # suppress global config entries
-    res_conf = {
-        k: v for k, v in res_conf.items() if not k.startswith("linotp.")
-    }
+    res_conf = {k: v for k, v in res_conf.items() if not k.startswith("linotp.")}
     # --------------------------------------------------------------------- --
 
     # now prepare the resolver config output, which should contain
@@ -781,9 +767,7 @@ def setupResolvers(config=None, cache_dir="/tmp"):
     unique_resolver_classes = set(resolver_registry.values())
 
     for resolver_cls in unique_resolver_classes:
-        if not hasattr(resolver_cls, "setup") or hasattr(
-            resolver_cls, "_setup_done"
-        ):
+        if not hasattr(resolver_cls, "setup") or hasattr(resolver_cls, "_setup_done"):
             continue
 
         try:
@@ -791,8 +775,7 @@ def setupResolvers(config=None, cache_dir="/tmp"):
             setattr(resolver_cls, "_setup_done", True)
         except Exception as exx:
             log.error(
-                "Resolver setup: Failed to call setup of %r. "
-                "Exception was %r",
+                "Resolver setup: Failed to call setup of %r. Exception was %r",
                 resolver_cls,
                 exx,
             )

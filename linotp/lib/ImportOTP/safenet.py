@@ -92,8 +92,6 @@ def parseSafeNetXML(xml):
                         "hashlib": hashlib,
                     }
                 else:
-                    log.error(
-                        "Found token %s without a element 'Seed'", SERIAL
-                    )
+                    log.error("Found token %s without a element 'Seed'", SERIAL)
 
     return TOKENS

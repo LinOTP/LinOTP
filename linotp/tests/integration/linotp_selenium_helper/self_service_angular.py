@@ -86,15 +86,12 @@ class AngularSelfService(object):
     def expect_ui_state(self, tokens, enrollment_options):
         if tokens == 0 and enrollment_options == 0:
             assert find_by_css(self.driver, "#emptyStateSection"), (
-                "Expected the section informing the user of no options "
-                "being available"
+                "Expected the section informing the user of no options being available"
             )
 
         if tokens > 0:
             token_cards = (
-                find_all_by_css(
-                    self.driver, "#activeAuthSection > app-token-card"
-                )
+                find_all_by_css(self.driver, "#activeAuthSection > app-token-card")
                 or []
             )
             assert len(token_cards) == tokens, (
@@ -104,8 +101,7 @@ class AngularSelfService(object):
 
         if enrollment_options > 0:
             enrollment_cards = (
-                find_all_by_css(self.driver, "app-enrollment-grid > mat-card")
-                or []
+                find_all_by_css(self.driver, "app-enrollment-grid > mat-card") or []
             )
             assert len(enrollment_cards) == enrollment_options, (
                 f"Expected {enrollment_options} enrollment options "

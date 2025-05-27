@@ -149,9 +149,7 @@ class MigrationHandler(object):
 
         # decypt the real value
         enc_value = config_entry["Value"]
-        value = self.crypter.decrypt(
-            enc_value, just_mac="enc%s" % key + entry.Value
-        )
+        value = self.crypter.decrypt(enc_value, just_mac="enc%s" % key + entry.Value)
 
         _storeConfigDB(key, value, typ=typ, desc=desc)
 
@@ -170,9 +168,7 @@ class MigrationHandler(object):
                 iv, enc_pin = token.get_encrypted_pin()
                 pin = SecretObj.decrypt_pin(enc_pin, hsm=self.hsm)
                 just_mac = serial + token.LinOtpPinHash
-                enc_value = self.crypter.encrypt(
-                    input_data=pin, just_mac=just_mac
-                )
+                enc_value = self.crypter.encrypt(input_data=pin, just_mac=just_mac)
                 token_data["TokenPin"] = enc_value
 
             # the userpin is used in motp and ocra/ocra2 token
@@ -180,9 +176,7 @@ class MigrationHandler(object):
                 key, iv = token.getUserPin()
                 user_pin = SecretObj.decrypt(key, iv, hsm=self.hsm)
                 just_mac = serial + token.LinOtpTokenPinUser
-                enc_value = self.crypter.encrypt(
-                    input_data=user_pin, just_mac=just_mac
-                )
+                enc_value = self.crypter.encrypt(input_data=user_pin, just_mac=just_mac)
                 token_data["TokenUserPin"] = enc_value
 
             # then we retrieve as well the original value,
@@ -192,18 +186,14 @@ class MigrationHandler(object):
             key, iv = token.get_encrypted_seed()
             secObj = SecretObj(key, iv, hsm=self.hsm)
             seed = secObj.getKey()
-            enc_value = self.crypter.encrypt(
-                input_data=seed, just_mac=serial + encKey
-            )
+            enc_value = self.crypter.encrypt(input_data=seed, just_mac=serial + encKey)
             token_data["TokenSeed"] = enc_value
             # next we look for tokens, where the pin is encrypted
             yield token_data
 
     def set_token_data(self, token_data):
         serial = token_data["Serial"]
-        tokens = model_token.query.filter_by(
-            LinOtpTokenSerialnumber=serial
-        ).all()
+        tokens = model_token.query.filter_by(LinOtpTokenSerialnumber=serial).all()
         token = tokens[0]
 
         if "TokenPin" in token_data:

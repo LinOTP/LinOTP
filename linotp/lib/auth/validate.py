@@ -228,9 +228,7 @@ def split_pin_otp(token, passw, user=None, options=None):
         # NO PIN should be entered at all
         log.debug("pin policy=2: checking no pin")
         (pin, otp) = ("", passw)
-        token.auth_info = {
-            "auth_info": [("pin_length", 0), ("otp_length", len(passw))]
-        }
+        token.auth_info = {"auth_info": [("pin_length", 0), ("otp_length", len(passw))]}
         return 2, pin, otp
 
     elif otppin_mode == 3:
@@ -283,9 +281,7 @@ class ValidationHandler(object):
             token = tokens[0]
             owner = get_token_owner(token)
 
-            (ok, opt) = self.checkTokenList(
-                tokens, passw, user=owner, options=options
-            )
+            (ok, opt) = self.checkTokenList(tokens, passw, user=owner, options=options)
             if opt:
                 reply.update(opt)
 
@@ -344,8 +340,7 @@ class ValidationHandler(object):
 
             else:
                 raise Exception(
-                    "No token found: "
-                    "unable to create challenge for %s" % serial
+                    "No token found: unable to create challenge for %s" % serial
                 )
 
         else:
@@ -378,9 +373,7 @@ class ValidationHandler(object):
         :return: tuple of success and detail dict
         """
 
-        expired, challenges = Challenges.get_challenges(
-            token=None, transid=transid
-        )
+        expired, challenges = Challenges.get_challenges(token=None, transid=transid)
 
         # remove all expired challenges
         if expired:
@@ -412,9 +405,7 @@ class ValidationHandler(object):
             # we only check the user password / token pin if the user
             # paranmeter is given
             if user and owner:
-                pin_match = check_pin(
-                    token, password, user=owner, options=None
-                )
+                pin_match = check_pin(token, password, user=owner, options=None)
             else:
                 pin_match = token.checkPin(password)
 
@@ -501,18 +492,12 @@ class ValidationHandler(object):
         if user:
             # the upper layer will catch / at least should
             try:
-                (uid, _resolver, resolverClass) = getUserId(
-                    user, check_existance=True
-                )
+                (uid, _resolver, resolverClass) = getUserId(user, check_existance=True)
                 user_exists = True
             except Exception as _exx:
-                pass_on = context.get("Config").get(
-                    "linotp.PassOnUserNotFound", False
-                )
+                pass_on = context.get("Config").get("linotp.PassOnUserNotFound", False)
                 if pass_on and pass_on.lower() == "true":
-                    g.audit["action_detail"] = (
-                        "authenticated by PassOnUserNotFound"
-                    )
+                    g.audit["action_detail"] = "authenticated by PassOnUserNotFound"
                     return (True, opt)
                 else:
                     g.audit["action_detail"] = "User not found"
@@ -523,9 +508,7 @@ class ValidationHandler(object):
             servers = get_auth_forward(user)
             if servers:
                 log.info(
-                    "forwarding auth request for user {} to {}".format(
-                        user, servers
-                    )
+                    "forwarding auth request for user {} to {}".format(user, servers)
                 )
                 res, opt = ForwardServerPolicy.do_request(
                     servers, env, user, passw, options
@@ -539,9 +522,7 @@ class ValidationHandler(object):
                 return res, opt
             else:
                 log.info(
-                    "NOT forwarding auth request for user {} (no servers)".format(
-                        user
-                    )
+                    "NOT forwarding auth request for user {} (no servers)".format(user)
                 )
                 g.audit["action_detail"] = "Not forwarded (no servers)"
         else:
@@ -597,17 +578,13 @@ class ValidationHandler(object):
                 # but we will auth the user....
                 return (True, opt)
 
-            auto_enroll_return, opt = th.auto_enrollToken(
-                passw, user, options=options
-            )
+            auto_enroll_return, opt = th.auto_enrollToken(passw, user, options=options)
             if auto_enroll_return:
                 # we always have to return a false, as
                 # we have a challenge tiggered
                 return (False, opt)
 
-            pass_on = context.get("Config").get(
-                "linotp.PassOnUserNoToken", False
-            )
+            pass_on = context.get("Config").get("linotp.PassOnUserNoToken", False)
             if pass_on and pass_on.lower() == "true":
                 g.audit["action_detail"] = "authenticated by PassOnUserNoToken"
                 return (True, opt)
@@ -628,13 +605,8 @@ class ValidationHandler(object):
             # Check alternatively if there is an authentication
             # policy passOnNoToken
             elif get_auth_passOnNoToken(user):
-                log.info(
-                    "user %r has not token. PassOnNoToken"
-                    " set - authenticated!"
-                )
-                g.audit["action_detail"] = (
-                    "Authenticated by passOnNoToken policy"
-                )
+                log.info("user %r has not token. PassOnNoToken set - authenticated!")
+                g.audit["action_detail"] = "Authenticated by passOnNoToken policy"
                 return (True, opt)
 
             # if we have an user, check if we forward the request to another
@@ -655,9 +627,7 @@ class ValidationHandler(object):
                             user, res, opt
                         )
                     )
-                    g.audit["action_detail"] = "Forwarded, result {}".format(
-                        res
-                    )
+                    g.audit["action_detail"] = "Forwarded, result {}".format(res)
                     return res, opt
                 else:
                     log.info(
@@ -672,9 +642,7 @@ class ValidationHandler(object):
         if passw is None:
             raise ParameterError("Missing parameter:pass", id=905)
 
-        (res, opt) = self.checkTokenList(
-            tokenList, passw, user, options=options
-        )
+        (res, opt) = self.checkTokenList(tokenList, passw, user, options=options)
 
         return (res, opt)
 
@@ -704,9 +672,7 @@ class ValidationHandler(object):
         # if we got a validation against a sub_challenge, we extend this to
         # be a validation to all challenges of the transaction id
         check_options = copy.deepcopy(options)
-        transid = check_options.get(
-            "state", check_options.get("transactionid", "")
-        )
+        transid = check_options.get("state", check_options.get("transactionid", ""))
         if transid and "." in transid:
             transid = transid.split(".")[0]
             if "state" in check_options:
@@ -745,9 +711,7 @@ class ValidationHandler(object):
                 t_realms = token.token.getRealmNames()
                 u_realm = user.realm
                 if t_realms and u_realm and u_realm.lower() not in t_realms:
-                    audit_entry["action_detail"] = (
-                        "Realm mismatch for token and user"
-                    )
+                    audit_entry["action_detail"] = "Realm mismatch for token and user"
 
                     continue
 
@@ -852,8 +816,9 @@ class ValidationHandler(object):
                 log.error("checking token %r failed: %r", token, exx)
                 ret = -1
                 reply = "%r" % exx
-                audit_entry["action_detail"] = (
-                    "checking token %r failed: %r" % (token, exx)
+                audit_entry["action_detail"] = "checking token %r failed: %r" % (
+                    token,
+                    exx,
                 )
 
                 audit_entry["info"] = audit_entry.get("info", "") + "%r" % exx
@@ -905,12 +870,7 @@ class ValidationHandler(object):
         # add to all tokens the last accessed time stamp
 
         add_last_accessed_info(
-            set(
-                valid_tokens
-                + pin_matching_tokens
-                + challenge_tokens
-                + invalid_tokens
-            )
+            set(valid_tokens + pin_matching_tokens + challenge_tokens + invalid_tokens)
         )
 
         # add time stamp to all valid tokens
@@ -922,10 +882,7 @@ class ValidationHandler(object):
         # now we care for all involved tokens and their challenges
 
         for token in set(
-            valid_tokens
-            + pin_matching_tokens
-            + challenge_tokens
-            + invalid_tokens
+            valid_tokens + pin_matching_tokens + challenge_tokens + invalid_tokens
         ):
             expired, _valid = Challenges.get_challenges(token)
             if expired:
@@ -974,9 +931,7 @@ class ValidationHandler(object):
         ]
 
         if not tokenList:
-            g.audit["action_detail"] = (
-                "The serial %s could not be found!" % serialnum
-            )
+            g.audit["action_detail"] = "The serial %s could not be found!" % serialnum
             return res, opt
 
         # FIXME if the Token has set a PIN and the User does not want to enter

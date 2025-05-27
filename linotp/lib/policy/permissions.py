@@ -42,9 +42,7 @@ class UserPermissions(dict):
     def __init__(self, user: User) -> None:
         self._user = user
         self._policy_eval = PolicyEvaluator(get_policies())
-        self._all_realms = [
-            realm["realmname"] for realm in getRealms().values()
-        ]
+        self._all_realms = [realm["realmname"] for realm in getRealms().values()]
         _empty_permissions = {
             "inRealm": {realm: {} for realm in self._all_realms},
             "anyRealm": {},
@@ -64,9 +62,7 @@ class UserPermissions(dict):
 
     def _update_user_permissions(self):
         for scope, actions in self._relevant_policies.items():
-            if not self._policy_eval.has_policy(
-                {"scope": scope, "active": True}
-            ):
+            if not self._policy_eval.has_policy({"scope": scope, "active": True}):
                 # no policies -> user has permission for all actions in realm for specific scope
                 self._extend_permissions(scope, list(actions), ["*"])
                 continue
@@ -113,9 +109,7 @@ class UserPermissions(dict):
                 realms_to_extend = self._all_realms
 
             for realm in realms_to_extend:
-                updated_permissions = (
-                    self["inRealm"][realm].get(scope, []) + actions
-                )
+                updated_permissions = self["inRealm"][realm].get(scope, []) + actions
                 self["inRealm"][realm][scope] = list(set(updated_permissions))
         elif scope in GLOBAL_POLICY_SCOPES:
             # user has gobal permission if at least one policy allows it
@@ -142,9 +136,7 @@ class UserPermissions(dict):
             return allowed_realms
 
         allowed_realms = [
-            realm
-            for realm in self._all_realms
-            if policy_active_for_realm(realm)
+            realm for realm in self._all_realms if policy_active_for_realm(realm)
         ]
         return allowed_realms
 

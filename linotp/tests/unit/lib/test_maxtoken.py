@@ -37,8 +37,7 @@ def fake_get_client_policy(client, scope, action, realm, user, userObj):
         return fake_policies
 
     raise Exception(
-        "fake_get_client_policy has no fake return value for "
-        "realm %s" % realm
+        "fake_get_client_policy has no fake return value for realm %s" % realm
     )
 
 
@@ -56,8 +55,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
             check_maxtoken_for_user(None)
         except PolicyException:
             assert not True, (
-                "_checkTokenAssigned: None as argument "
-                "should return without exception"
+                "_checkTokenAssigned: None as argument should return without exception"
             )
 
         empty_user = User("")

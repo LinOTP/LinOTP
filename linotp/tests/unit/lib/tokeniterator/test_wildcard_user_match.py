@@ -56,9 +56,7 @@ class TestUserSearchExpression(unittest.TestCase):
             "*o@hotad.example.net",
             "*oxwell@hot*",
         ]:
-            serials = _user_expression_match(
-                user_search, list(token_user_dict.items())
-            )
+            serials = _user_expression_match(user_search, list(token_user_dict.items()))
 
             assert "match" not in serials
 
@@ -78,9 +76,7 @@ class TestUserSearchExpression(unittest.TestCase):
             "*@hotad.example.net",
             "*xwell@hot*",
         ]:
-            serials = _user_expression_match(
-                user_search, list(token_user_dict.items())
-            )
+            serials = _user_expression_match(user_search, list(token_user_dict.items()))
 
             assert "match" in serials, user_search
 

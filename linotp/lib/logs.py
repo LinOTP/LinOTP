@@ -48,9 +48,7 @@ def log_request_timedelta(logger):
 
     extra = {"type": "request_timedelta", "timedelta": delta_sec}
 
-    logger.debug(
-        "Spent %f seconds for request %s", delta_sec, request_id, extra=extra
-    )
+    logger.debug("Spent %f seconds for request %s", delta_sec, request_id, extra=extra)
 
 
 # ------------------------------------------------------------------------------

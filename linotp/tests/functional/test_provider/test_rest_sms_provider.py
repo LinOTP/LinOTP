@@ -38,7 +38,6 @@ We assume port 5001 is used (default). If you want to use another port you can
 specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
-
 import json
 import logging
 import urllib.parse
@@ -181,9 +180,7 @@ class TestRestSmsController(TestingChallengeResponseController):
         sms_conf = {
             "URL": sms_url,
             "PAYLOAD": {"text": "Message: <message>", "destination": ""},
-            "HEADERS": {
-                "Authorization": "Bearer da634870addc4568859092b2e0223376"
-            },
+            "HEADERS": {"Authorization": "Bearer da634870addc4568859092b2e0223376"},
             "PASSWORD": "v3ry53cr3t",
             "USERNAME": "heinz",
             "SMS_TEXT_KEY": "text",
@@ -284,9 +281,7 @@ class TestRestSmsController(TestingChallengeResponseController):
         sms_conf = {
             "URL": sms_url,
             "PAYLOAD": {"text": "Message: <message>", "destination": ""},
-            "HEADERS": {
-                "Authorization": "Bearer da634870addc4568859092b2e0223376"
-            },
+            "HEADERS": {"Authorization": "Bearer da634870addc4568859092b2e0223376"},
             "PASSWORD": "v3ry53cr3t",
             "USERNAME": "heinz",
             "SMS_TEXT_KEY": "text",
@@ -347,9 +342,9 @@ class TestRestSmsController(TestingChallengeResponseController):
 
         response = self.make_validate_request("check", params=params)
 
-        assert "this is your otp" not in REQUEST_BODY.get(
-            "text", "this is your otp"
-        ), REQUEST_BODY
+        assert "this is your otp" not in REQUEST_BODY.get("text", "this is your otp"), (
+            REQUEST_BODY
+        )
 
         assert '"value": false' in response, response
         assert "transactionid" in response, response

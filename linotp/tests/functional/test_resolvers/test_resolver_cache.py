@@ -196,9 +196,7 @@ class LdapResolverTest(TestController):
         ]
 
         for param in params:
-            response = self.make_system_request(
-                action="setResolver", params=param
-            )
+            response = self.make_system_request(action="setResolver", params=param)
             assert response.json["result"]["value"], response
 
         resolver = (
@@ -309,9 +307,7 @@ class LdapResolverTest(TestController):
         self.setup_ldap_resolver()
 
         with patch.object(ldap_resolver, "getUserId") as mocked_getUserId:
-            with patch.object(
-                ldap_resolver, "getUserInfo"
-            ) as mocked_getUserInfo:
+            with patch.object(ldap_resolver, "getUserInfo") as mocked_getUserInfo:
                 mocked_getUserInfo.side_effect = mock_getUserInfo_func
                 mocked_getUserId.side_effect = mock_getUserId_func
 
@@ -358,9 +354,7 @@ class LdapResolverTest(TestController):
         self.setup_ldap_resolver()
 
         with patch.object(ldap_resolver, "getUserId") as mocked_getUserId:
-            with patch.object(
-                ldap_resolver, "getUserInfo"
-            ) as mocked_getUserInfo:
+            with patch.object(ldap_resolver, "getUserInfo") as mocked_getUserInfo:
                 mocked_getUserInfo.side_effect = mock_getUserInfo_func
                 mocked_getUserId.side_effect = mock_getUserId_func
 

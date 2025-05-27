@@ -152,9 +152,7 @@ class OcraOtp:
         elif self.ocrasuite.find("-SHA512"):
             key_len = 64
 
-        self.bkey = kdf2(
-            self.sharedsecret, self.nonce, self.activationkey, len=key_len
-        )
+        self.bkey = kdf2(self.sharedsecret, self.nonce, self.activationkey, len=key_len)
         self.ocra = OcraSuite(self.ocrasuite)
 
         self.counter = 0

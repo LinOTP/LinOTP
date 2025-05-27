@@ -28,6 +28,7 @@
 """
 Test the autoassignment Policy.
 """
+
 import json
 
 from mock import patch
@@ -139,9 +140,7 @@ class TestAutoassignSMSController(TestController):
         sms_conf = {
             "URL": sms_url,
             "PAYLOAD": {"text": "Message: <message>", "destination": ""},
-            "HEADERS": {
-                "Authorization": "Bearer da634870addc4568859092b2e0223376"
-            },
+            "HEADERS": {"Authorization": "Bearer da634870addc4568859092b2e0223376"},
             "PASSWORD": "v3ry53cr3t",
             "USERNAME": "heinz",
             "SMS_TEXT_KEY": "text",

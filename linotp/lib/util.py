@@ -140,11 +140,7 @@ def get_request_param(request, key, default=None):
 
 
 def getLowerParams(param):
-    return {
-        key.lower(): val
-        for key, val in param.items()
-        if key.lower() != "session"
-    }
+    return {key.lower(): val for key, val in param.items() if key.lower() != "session"}
 
 
 def uniquify(doubleList):
@@ -193,9 +189,7 @@ def remove_session_from_param(param):
     session parameter in the param dictionary.
     So we remove the session from the params.
     """
-    return {
-        key: value for key, value in param.items() if key.lower() != "session"
-    }
+    return {key: value for key, value in param.items() if key.lower() != "session"}
 
 
 ###############################################################################
@@ -239,17 +233,13 @@ def _get_client_from_request(request=None):
             # check, if the request passed by a qualified proxy
 
             remote_addr = client
-            x_forwarded_proxies = getFromConfig(
-                "client.FORWARDED_PROXY", ""
-            ).split(",")
+            x_forwarded_proxies = getFromConfig("client.FORWARDED_PROXY", "").split(",")
 
             for x_forwarded_proxy in x_forwarded_proxies:
                 if is_addr_in_network(remote_addr, x_forwarded_proxy):
                     xff: str = request.environ.get("HTTP_X_FORWARDED_FOR", "")
                     ref_clients = [
-                        client.strip()
-                        for client in xff.split(",")
-                        if client.strip()
+                        client.strip() for client in xff.split(",") if client.strip()
                     ]
                     if ref_clients:
                         # the first ip in the list is the originator
@@ -260,9 +250,7 @@ def _get_client_from_request(request=None):
             # Check if the request passed through a qualified proxy
 
             remote_addr = client
-            forwarded_proxies = getFromConfig(
-                "client.FORWARDED_PROXY", ""
-            ).split(",")
+            forwarded_proxies = getFromConfig("client.FORWARDED_PROXY", "").split(",")
 
             for forwarded_proxy in forwarded_proxies:
                 if not is_addr_in_network(remote_addr, forwarded_proxy):
@@ -377,13 +365,9 @@ def normalize_activation_code(
     if upper:
         activationcode = activationcode.upper()
     if convert_o:
-        activationcode = activationcode[:-2] + activationcode[-2:].replace(
-            "O", "0"
-        )
+        activationcode = activationcode[:-2] + activationcode[-2:].replace("O", "0")
     if convert_0:
-        activationcode = (
-            activationcode[:-2].replace("0", "O") + activationcode[-2:]
-        )
+        activationcode = activationcode[:-2].replace("0", "O") + activationcode[-2:]
 
     return activationcode
 

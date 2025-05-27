@@ -30,7 +30,6 @@
 Test challenge response functionality for the motp token
 """
 
-
 import binascii
 import hashlib
 import json

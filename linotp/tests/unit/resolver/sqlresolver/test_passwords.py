@@ -67,9 +67,7 @@ class TestSQLResolver_Password(object):
         """check the bcrypt password verification method"""
 
         password = "password"
-        password_hash = (
-            "$2a$12$NT0I31Sa7ihGEWpka9ASYeEFkhuTNeBQ2xfZskIiiJeyFXhRgS.Sy"
-        )
+        password_hash = "$2a$12$NT0I31Sa7ihGEWpka9ASYeEFkhuTNeBQ2xfZskIiiJeyFXhRgS.Sy"
         res = check_password(password, password_hash)
         assert res
 
@@ -156,8 +154,7 @@ class TestSQLResolver_Password(object):
                 "ldap_bcrypt",
                 True,
                 "password",
-                "{CRYPT}$2b$12$x2RXheO87fHLqPz4XH8Pg.x3vniptX1APpRuM5"
-                "tDqFUcBdTGCx.bu",
+                "{CRYPT}$2b$12$x2RXheO87fHLqPz4XH8Pg.x3vniptX1APpRuM5tDqFUcBdTGCx.bu",
             ),
             ("ldap_des_crypt", True, "password", "{CRYPT}k18nM0E6BizDk"),
             (

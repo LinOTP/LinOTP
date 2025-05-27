@@ -76,9 +76,7 @@ class Validate:
         assert return_json is not None, (
             "Json response may not be empty %s" % return_json
         )
-        assert "result" in return_json, (
-            "Missing result in Json %s" % return_json
-        )
+        assert "result" in return_json, "Missing result in Json %s" % return_json
 
         return return_json
 

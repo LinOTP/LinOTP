@@ -73,9 +73,7 @@ class TestCaching:
                 + " extra toppings"
             )
 
-        def hawaii_pizza_keygen(
-            count: int, price: int, param1="foo", param2="bar"
-        ):
+        def hawaii_pizza_keygen(count: int, price: int, param1="foo", param2="bar"):
             """Key generator for the hawaii_pizza function
             This function produces a unique key for the input values of hawaii_pizza,
             to make sure the output values would be cached under correct keys.
@@ -93,24 +91,14 @@ class TestCaching:
             """
             output = [None] * 8
             output[0] = pizza_maker(1, 6)  # 1
-            output[1] = pizza_maker(
-                1, 2, param1="more Ananas", param2="Ananas"
-            )  # 2
-            output[2] = pizza_maker(
-                1, 2, param1="more Ananas", param2="ham"
-            )  # 3
-            output[3] = pizza_maker(
-                1, 2, param1="more Ananas", param2="Ham"
-            )  # 4
-            output[4] = pizza_maker(
-                1, 5, param1="more Ananas", param2="wurst"
-            )  # 5
+            output[1] = pizza_maker(1, 2, param1="more Ananas", param2="Ananas")  # 2
+            output[2] = pizza_maker(1, 2, param1="more Ananas", param2="ham")  # 3
+            output[3] = pizza_maker(1, 2, param1="more Ananas", param2="Ham")  # 4
+            output[4] = pizza_maker(1, 5, param1="more Ananas", param2="wurst")  # 5
             output[5] = pizza_maker(
                 1, 2, param1="more Ananas", param2="Ananas"
             )  # cached
-            output[6] = pizza_maker(
-                1, 2, param1="Pineapple", param2="Ananas"
-            )  # 6
+            output[6] = pizza_maker(1, 2, param1="Pineapple", param2="Ananas")  # 6
             output[7] = pizza_maker(
                 1, 5, param1="more Ananas", param2="wurst"
             )  # cached
@@ -154,9 +142,7 @@ class TestCaching:
         hawaii_pizza = hawaii_pizza_orig
 
         # Decorating:
-        hawaii_pizza = cache_in_request(key_generator=hawaii_pizza_keygen)(
-            hawaii_pizza
-        )
+        hawaii_pizza = cache_in_request(key_generator=hawaii_pizza_keygen)(hawaii_pizza)
 
         # calling pizzeria few times:
         hawaii_pizza.counter = 0

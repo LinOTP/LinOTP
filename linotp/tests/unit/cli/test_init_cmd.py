@@ -160,9 +160,7 @@ def test_make_backup(
     data = "supercalifragilisticexpialidocious"
     (tmp_path / filename).write_text(data)
     time_format = app.config["BACKUP_FILE_TIME_FORMAT"]
-    expected_name = (
-        filename + "." + datetime.datetime.now().strftime(time_format)
-    )
+    expected_name = filename + "." + datetime.datetime.now().strftime(time_format)
 
     # Actual test
     fn_result = c._make_backup("test file", str(tmp_path / filename))
@@ -173,7 +171,7 @@ def test_make_backup(
         assert (tmp_path / expected_name).exists()
         assert (tmp_path / expected_name).read_text() == data
         assert (
-            "Moved existing test file to " f"{str(tmp_path / expected_name)}"
+            f"Moved existing test file to {str(tmp_path / expected_name)}"
         ) in captured.err
     else:  # expecting failure
         assert (tmp_path / filename).exists()
@@ -234,8 +232,7 @@ def test_run_command_signal(app, capsys, monkeypatch):
     assert ret.exit_code == -11
     assert ret.output == "foo"
     assert captured.err == (
-        "Test failed:\nCommand 'true' terminated by signal 11\n"
-        "Output was:\nfoo\n"
+        "Test failed:\nCommand 'true' terminated by signal 11\nOutput was:\nfoo\n"
     )
 
 
@@ -468,9 +465,7 @@ def test_setup_db_erase_all(app, base_app, engine, capsys, erase):
         init_db_tables(app, drop_data=True, add_defaults=True)
 
         KEY = "linotp.foobar"
-        item = Config(
-            Key=KEY, Value="123", Type="int", Description="test item"
-        )
+        item = Config(Key=KEY, Value="123", Type="int", Description="test item")
         db.session.add(item)
         db.session.commit()
         assert db.session.query(Config).filter_by(Key=KEY).count() == 1
@@ -688,10 +683,7 @@ def test_init_enc_key_cmd(
         assert secret_file_name.exists()
         assert secret_file_name.read_bytes() == SECRET_KEY
     else:
-        if (
-            secret_file_name.exists()
-            and secret_file_name.read_bytes() == SECRET_KEY
-        ):  # noqa: E129
+        if secret_file_name.exists() and secret_file_name.read_bytes() == SECRET_KEY:  # noqa: E129
             assert False, "secret file was created but shouldn't have been"
         elif has_file and secret_file_name.exists():
             if secret_file_name.read_bytes() == ZERO_KEY:

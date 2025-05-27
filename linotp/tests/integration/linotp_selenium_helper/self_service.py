@@ -135,22 +135,19 @@ class SelfService(object):
 
     def expect_ui_state(self, tokens, enrollment_options):
         if tokens == 0:
-            assert self._find_by_css(
-                ".empty-token-list"
-            ), "Expected no tokens to be visible"
+            assert self._find_by_css(".empty-token-list"), (
+                "Expected no tokens to be visible"
+            )
         if tokens > 0:
             token_list = self._find_all_by_css("#tokenDiv .token") or []
             assert len(token_list) == tokens, (
-                f"Expected {tokens} tokens to be visible "
-                f"but found {len(token_list)}."
+                f"Expected {tokens} tokens to be visible but found {len(token_list)}."
             )
 
         tabs = self._find_all_by_css("#tabs > ul > li.ui-tabs-tab a") or []
 
         enrollment_tabs = [
-            tab
-            for tab in tabs
-            if tab.get_attribute("href").endswith(".enroll")
+            tab for tab in tabs if tab.get_attribute("href").endswith(".enroll")
         ]
         assert len(enrollment_tabs) == enrollment_options, (
             f"Expected {enrollment_options} enrollment tabs to be visible "
@@ -188,9 +185,7 @@ class SelfService(object):
         self.select_tab(tabname)
         # Now wait for token field to be visible
         WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
-            EC.visibility_of_element_located(
-                (By.CSS_SELECTOR, self.selected_token_css)
-            )
+            EC.visibility_of_element_located((By.CSS_SELECTOR, self.selected_token_css))
         )
 
         # Assume, that there is any token/button in the token list
@@ -278,9 +273,10 @@ class SelfService(object):
         fill_form_element(driver, pin2_id, pin2)
         driver.find_element(By.ID, button_id).click()
         msg = close_alert_and_get_its_text(self.driver)
-        assert (
-            msg == expected_msg
-        ), "Unexpected message - Expected:%s - Found:%s" % (expected_msg, msg)
+        assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
+            expected_msg,
+            msg,
+        )
 
         # Allow dialog to finish closing
         WebDriverWait(self.driver, self.testcase.ui_wait_time).until(
@@ -299,9 +295,10 @@ class SelfService(object):
         driver.find_element(By.ID, "button_resync").click()
         msg = close_alert_and_get_its_text(self.driver)
         expected_msg = "Token resynced successfully"
-        assert (
-            msg == expected_msg
-        ), "Unexpected message - Expected:%s - Found:%s" % (expected_msg, msg)
+        assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
+            expected_msg,
+            msg,
+        )
 
     def disable_token(self, token):
         """
@@ -313,9 +310,10 @@ class SelfService(object):
         driver.find_element(By.ID, "button_disable").click()
         msg = close_alert_and_get_its_text(self.driver)
         expected_msg = "Token disabled successfully"
-        assert (
-            msg == expected_msg
-        ), "Unexpected message - Expected:%s - Found:%s" % (expected_msg, msg)
+        assert msg == expected_msg, "Unexpected message - Expected:%s - Found:%s" % (
+            expected_msg,
+            msg,
+        )
 
     def logout(self):
         # To avoid state and Javascript problems in the browser we

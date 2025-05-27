@@ -27,6 +27,7 @@
 """
 provider notification handling
 """
+
 import logging
 
 import linotp.lib.policy

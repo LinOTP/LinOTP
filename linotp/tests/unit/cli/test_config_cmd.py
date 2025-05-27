@@ -127,9 +127,7 @@ def test_config_show_all(app, runner):
     # is not as ridiculous as it seems; it has turned up one configuration
     # item that wasn't actually in the schema.)
 
-    assert [ln.split("=")[0] for ln in sorted(lines)] == list(
-        sorted(app.config)
-    )
+    assert [ln.split("=")[0] for ln in sorted(lines)] == list(sorted(app.config))
 
 
 @pytest.mark.parametrize(

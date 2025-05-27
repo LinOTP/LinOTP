@@ -492,9 +492,9 @@ class TestAdminController(TestController):
         response = self.make_admin_request("show")
         # log.error("response %s\n",response)
         assert len(response.json["result"]["value"]["data"]) == 1, response
-        assert (
-            response.json["result"]["value"]["data"][0]["LinOtp.Userid"] == "0"
-        ), response
+        assert response.json["result"]["value"]["data"][0]["LinOtp.Userid"] == "0", (
+            response
+        )
 
         # test initial assign update
         parameters = {"serial": serial, "user": "root"}
@@ -506,9 +506,7 @@ class TestAdminController(TestController):
         parameters = {"serial": serial, "user": "NoBody"}
         response = self.make_admin_request("assign", params=parameters)
         # log.error("response %s\n",response)
-        assert (
-            "getUserId failed: no user >NoBody< found!" in response
-        ), response
+        assert "getUserId failed: no user >NoBody< found!" in response, response
 
         response = self.make_admin_request("show")
         # log.error("response %s\n",response)
@@ -738,9 +736,7 @@ class TestAdminController(TestController):
 
         resp = json.loads(response.body)
         temp_token_name = resp.get("result", {}).get("value", {}).get("serial")
-        temp_token_pass = (
-            resp.get("result", {}).get("value", {}).get("password")
-        )
+        temp_token_pass = resp.get("result", {}).get("value", {}).get("password")
 
         # first check if old token is not active
         parameters = {"serial": token_name}
@@ -831,9 +827,7 @@ class TestAdminController(TestController):
 
         assert '"value": true' in response, response
 
-        response = self.make_admin_request(
-            "setPin", params={"serial": "setpin_01"}
-        )
+        response = self.make_admin_request("setPin", params={"serial": "setpin_01"})
 
         assert '"status": false' in response, response
         assert '"code": 77' in response, response
@@ -980,22 +974,22 @@ class TestAdminController(TestController):
             content_type="application/json",
         )
 
-        assert response.json["result"][
-            "status"
-        ], 'Expected response.result.status to be True in response: "{}"'.format(
-            response.json
+        assert response.json["result"]["status"], (
+            'Expected response.result.status to be True in response: "{}"'.format(
+                response.json
+            )
         )
 
-        assert (
-            token_serial_1 in response.json["result"]["value"]
-        ), 'Expected response.result.value to contain token id "{}" in response: "{}"'.format(
-            token_serial_1, response.json
+        assert token_serial_1 in response.json["result"]["value"], (
+            'Expected response.result.value to contain token id "{}" in response: "{}"'.format(
+                token_serial_1, response.json
+            )
         )
 
-        assert (
-            token_serial_2 in response.json["result"]["value"]
-        ), 'Expected response.result.value to contain token id "{}" in response: "{}"'.format(
-            token_serial_2, response.json
+        assert token_serial_2 in response.json["result"]["value"], (
+            'Expected response.result.value to contain token id "{}" in response: "{}"'.format(
+                token_serial_2, response.json
+            )
         )
 
     def test_set_empty(self):
@@ -1144,9 +1138,7 @@ class TestAdminController(TestController):
         assert "Can not initialize token with new type" in response, response
 
         # clean up
-        response = self.make_admin_request(
-            "remove", params={"serial": "token01"}
-        )
+        response = self.make_admin_request("remove", params={"serial": "token01"})
 
         assert '"status": true' in response, response
 
@@ -1379,9 +1371,7 @@ class TestAdminController(TestController):
                 new_serial = request_params["to"]
                 self.init_token({**params, "serial": new_serial})
 
-            content_type = (
-                "application/json" if action in ["setValidity"] else None
-            )
+            content_type = "application/json" if action in ["setValidity"] else None
             response = self.make_admin_request(
                 action=action, params=request_params, content_type=content_type
             )
@@ -1397,9 +1387,7 @@ class TestAdminController(TestController):
             # Test with faulty input since tokens are deleted
             if action == "check_serial":
                 # init token with taken serial
-                self.init_token(
-                    params={**params, "serial": request_params["serial"]}
-                )
+                self.init_token(params={**params, "serial": request_params["serial"]})
 
             self.make_admin_request(
                 action=action,
@@ -1432,10 +1420,7 @@ class TestAdminController(TestController):
         assert "1" == audit_entry[5]
         assert username == audit_entry[8]
         assert "linotp_admins" == audit_entry[9]
-        assert (
-            f"{username}@linotp_admins (LinOTP_local_admins)"
-            in audit_entry[10]
-        )
+        assert f"{username}@linotp_admins (LinOTP_local_admins)" in audit_entry[10]
 
     def test_audit_for_unsuccessful_admin_login(
         self,
@@ -1460,16 +1445,12 @@ class TestAdminController(TestController):
         assert f"{username}@linotp_admins" not in audit_entry[10]
 
     @patch("linotp.controllers.base.get_jwt")
-    def test_audit_for_successful_admin_logout(
-        self, get_jwt_mock: Mock
-    ) -> None:
+    def test_audit_for_successful_admin_logout(self, get_jwt_mock: Mock) -> None:
         get_jwt_mock.return_value = {"jti": None, "exp": 1}
 
         username = "admin"
 
-        res = self._make_authenticated_request(
-            controller="admin", action="logout"
-        )
+        res = self._make_authenticated_request(controller="admin", action="logout")
 
         audit_entry = self.get_last_audit_entry()
         assert "admin/logout" == audit_entry[4]
@@ -1702,9 +1683,7 @@ class TestAdminController(TestController):
             action = test_dict["action"]
             if action != "init":
                 # init a token to perform the action on
-                init_params = (
-                    test_dict.get("optional_init_params") or default_params
-                )
+                init_params = test_dict.get("optional_init_params") or default_params
                 self.init_token(params=init_params)
 
                 if action in ["copyTokenUser"]:
@@ -1729,9 +1708,9 @@ class TestAdminController(TestController):
 
                 expected_realm_strings = test_dict["expected_realm_strings"]
 
-                assert len(reported_realm_strings) == len(
-                    expected_realm_strings
-                ), test_dict["test_scenario"]
+                assert len(reported_realm_strings) == len(expected_realm_strings), (
+                    test_dict["test_scenario"]
+                )
 
                 for realm_string in expected_realm_strings:
                     assert realm_string in reported_realm_strings, test_dict[
@@ -1766,9 +1745,7 @@ class TestAdminController(TestController):
             "remove",
             "tokenrealm",
         ]:
-            response = self.make_request(
-                "admin", action, params={"serial": serial}
-            )
+            response = self.make_request("admin", action, params={"serial": serial})
 
             # verify no reporting was triggered
             with DBSession() as session:

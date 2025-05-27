@@ -188,8 +188,7 @@ class YubicoTokenClass(TokenClass):
 
         if len(tokenid) < YUBICO_LEN_ID:
             raise Exception(
-                "The YubiKey token ID needs to be %i characters "
-                "long!" % YUBICO_LEN_ID
+                "The YubiKey token ID needs to be %i characters long!" % YUBICO_LEN_ID
             )
 
         if len(tokenid) > YUBICO_LEN_ID:
@@ -231,8 +230,7 @@ class YubicoTokenClass(TokenClass):
 
             if datetime.datetime.now() >= third_feb_2019:
                 raise Exception(
-                    "Usage of YUBICO_URL %r is deprecated!! "
-                    % DEPRECATED_YUBICO_URL
+                    "Usage of YUBICO_URL %r is deprecated!! " % DEPRECATED_YUBICO_URL
                 )
 
         apiId = getFromConfig("yubico.id")
@@ -240,9 +238,7 @@ class YubicoTokenClass(TokenClass):
 
         if not apiKey or not apiId:
             log.error(APIKEY_UNCONFIGURED_ERROR)
-            raise YubicoApikeyException(
-                "Yubico apiKey or apiId not configured!"
-            )
+            raise YubicoApikeyException("Yubico apiKey or apiId not configured!")
 
         tokenid = self.getFromTokenInfo("yubico.tokenid")
         if len(anOtpVal) < 12:
@@ -262,9 +258,7 @@ class YubicoTokenClass(TokenClass):
 
         nonce = binascii.hexlify(os.urandom(20)).decode()
 
-        p = urllib.parse.urlencode(
-            {"nonce": nonce, "otp": anOtpVal, "id": apiId}
-        )
+        p = urllib.parse.urlencode({"nonce": nonce, "otp": anOtpVal, "id": apiId})
 
         yubico_urls = [x.strip() for x in yubico_url.split(",")]
 
@@ -299,8 +293,7 @@ class YubicoTokenClass(TokenClass):
                 res_scheduler.block(uri, delay=30)
 
                 log.error(
-                    "[checkOtp] Error getting response from "
-                    "Yubico Cloud Server (%r)",
+                    "[checkOtp] Error getting response from Yubico Cloud Server (%r)",
                     uri,
                 )
 
@@ -381,10 +374,7 @@ class YubicoTokenClass(TokenClass):
             return -1
 
         if nonce != return_nonce:
-            log.error(
-                "[checkOtp] The returned nonce does not match"
-                " the sent nonce!"
-            )
+            log.error("[checkOtp] The returned nonce does not match the sent nonce!")
             return -1
 
         if result == "OK":

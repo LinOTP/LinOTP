@@ -121,7 +121,7 @@ class TestParseActionValue(unittest.TestCase):
         }
 
         res = parse_action_value(
-            'erase , delete="12 ,  3",' "blah = '234' " ' , blub ="23, 4", del'
+            'erase , delete="12 ,  3",blah = \'234\'  , blub ="23, 4", del'
         )
 
         assert res == res_dict
@@ -133,9 +133,7 @@ class TestParseActionValue(unittest.TestCase):
             "d": '",,",,"',
         }
 
-        test_action = (
-            "a=blablub," 'b="bla blub",' 'c=",;\'_", ' 'd=\'",,",,"\''
-        )
+        test_action = 'a=blablub,b="bla blub",c=",;\'_", d=\'",,",,"\''
 
         res = parse_action_value(test_action)
 

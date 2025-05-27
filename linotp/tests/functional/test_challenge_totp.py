@@ -30,7 +30,6 @@
 Test challenge response functionality for the totp token
 """
 
-
 import binascii
 import datetime
 import json
@@ -147,9 +146,7 @@ class TestChallengeResponseController(TestController):
 
             otp = calc_totp_OTP(otpkey)
             params = {"user": user, "pass": pin + otp}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
             assert '"value": true' in response, response
 
             # -------------------------------------------------------------- --
@@ -161,9 +158,7 @@ class TestChallengeResponseController(TestController):
                 "user": user,
                 "pass": pin,
             }
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
             assert '"value": false' in response, response
 
             # -------------------------------------------------------------- --
@@ -175,9 +170,7 @@ class TestChallengeResponseController(TestController):
             otp = calc_totp_OTP(otpkey)
 
             params = {"user": user, "pass": pin + otp}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
             assert '"value": true' in response, response
 
@@ -187,9 +180,7 @@ class TestChallengeResponseController(TestController):
             # 3.1 trigger challenge
 
             params = {"user": user, "pass": pin}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
             assert '"value": false' in response, response
 
@@ -206,9 +197,7 @@ class TestChallengeResponseController(TestController):
             otp = calc_totp_OTP(otpkey)
 
             params = {"user": user, "pass": otp, "state": state}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
             assert '"value": true' in response, response
 
@@ -218,9 +207,7 @@ class TestChallengeResponseController(TestController):
             # 4.1 trigger challenge
 
             params = {"user": user, "pass": pin}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
             assert '"value": false' in response, response
 
@@ -233,9 +220,7 @@ class TestChallengeResponseController(TestController):
             otp = calc_totp_OTP(otpkey)
 
             params = {"user": user, "pass": pin + otp}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
             assert '"value": true' in response, response
 

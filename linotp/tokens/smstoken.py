@@ -281,9 +281,7 @@ class SmsTokenClass(HmacTokenClass):
         res = {
             "type": "sms",
             "title": _("SMS Token"),
-            "description": _(
-                "sms challenge-response token - hmac event based"
-            ),
+            "description": _("sms challenge-response token - hmac event based"),
             "init": {
                 "title": {
                     "html": "smstoken.mako",
@@ -322,8 +320,7 @@ class SmsTokenClass(HmacTokenClass):
                         "type": "int",
                         "value": [0, 1],
                         "desc": _(
-                            "define if the user should be allowed"
-                            " to define the sms"
+                            "define if the user should be allowed to define the sms"
                         ),
                     }
                 },
@@ -374,9 +371,7 @@ class SmsTokenClass(HmacTokenClass):
                 u_info = getUserDetail(user)
                 u_phone = u_info.get("mobile", u_info.get("phone", None))
                 if u_phone != phone:
-                    raise Exception(
-                        _("User is not allowed to set phone number")
-                    )
+                    raise Exception(_("User is not allowed to set phone number"))
 
         self.setPhone(phone)
 
@@ -389,9 +384,7 @@ class SmsTokenClass(HmacTokenClass):
 
         return
 
-    def is_challenge_response(
-        self, passw, user, options=None, challenges=None
-    ):
+    def is_challenge_response(self, passw, user, options=None, challenges=None):
         """
         check, if the request contains the result of a challenge
 
@@ -407,9 +400,7 @@ class SmsTokenClass(HmacTokenClass):
 
         # it as well might be a challenge response,
         # if the passw is longer than the pin
-        (res, pin, otpval) = split_pin_otp(
-            self, passw, user=user, options=options
-        )
+        (res, pin, otpval) = split_pin_otp(self, passw, user=user, options=options)
         if res >= 0:
             otp_counter = check_otp(self, otpval, options=options)
             if otp_counter >= 1:
@@ -443,10 +434,7 @@ class SmsTokenClass(HmacTokenClass):
         # if policy to send sms on emtpy pin is set, return true
         realms = self.token.getRealmNames()
         if trigger_sms(realms):
-            if (
-                "check_s" in options.get("scope", {})
-                and "challenge" in options
-            ):
+            if "check_s" in options.get("scope", {}) and "challenge" in options:
                 request_is_valid = True
                 return request_is_valid
 
@@ -515,9 +503,7 @@ class SmsTokenClass(HmacTokenClass):
                 enforce = enforce_smstext(user=login, realm=realm)
 
                 if not enforce:
-                    message = options.get(
-                        "data", options.get("message", "<otp>")
-                    )
+                    message = options.get("data", options.get("message", "<otp>"))
 
             # ---------------------------------------------------------- --
 
@@ -531,9 +517,7 @@ class SmsTokenClass(HmacTokenClass):
             # submit the sms message
 
             transactionid = options.get("transactionid", None)
-            res, result = self.sendSMS(
-                message=message, transactionid=transactionid
-            )
+            res, result = self.sendSMS(message=message, transactionid=transactionid)
 
             self.info["info"] = "SMS sent: %r" % res
             log.debug("SMS sent: %s", result)
@@ -631,16 +615,12 @@ class SmsTokenClass(HmacTokenClass):
         # after submit set validity time in readable
         # datetime format in the storeing data
         timeScope = self.loadLinOtpSMSValidTime()
-        expiryDate = datetime.datetime.now() + datetime.timedelta(
-            seconds=timeScope
-        )
+        expiryDate = datetime.datetime.now() + datetime.timedelta(seconds=timeScope)
         data = {"valid_until": "%s" % expiryDate}
 
         return (success, message, data, attributes)
 
-    def checkResponse4Challenge(
-        self, user, passw, options=None, challenges=None
-    ):
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
         verify the response of a previous challenge
 
@@ -666,9 +646,7 @@ class SmsTokenClass(HmacTokenClass):
         otp_val = passw
 
         # # fallback: do we have pin+otp ??
-        (res, pin, otp) = split_pin_otp(
-            self, passw, user=user, options=options
-        )
+        (res, pin, otp) = split_pin_otp(self, passw, user=user, options=options)
 
         if res >= 0:
             res = check_pin(self, pin, user=user, options=options)
@@ -676,18 +654,14 @@ class SmsTokenClass(HmacTokenClass):
                 otp_val = otp
 
         if otp_val and not challenges:
-            otp_count = self.checkOtp(
-                otp_val, counter, window, options=options
-            )
+            otp_count = self.checkOtp(otp_val, counter, window, options=options)
             return otp_count, []
 
         otp_count = -1
         matching = []
 
         for challenge in challenges:
-            _otp_count = self.checkOtp(
-                otp_val, counter, window, options=options
-            )
+            _otp_count = self.checkOtp(otp_val, counter, window, options=options)
             if _otp_count > 0:
                 matching.append(challenge)
 
@@ -731,9 +705,7 @@ class SmsTokenClass(HmacTokenClass):
                 realms = self.getRealms()
 
                 if "data" in options or "message" in options:
-                    message = options.get(
-                        "data", options.get("message", "<otp>")
-                    )
+                    message = options.get("data", options.get("message", "<otp>"))
 
                 try:
                     _success, message = self.sendSMS(message=message)
@@ -998,9 +970,7 @@ class SmsTokenClass(HmacTokenClass):
                 success = sms_provider.submitMessage(phone, message)
                 available = True
 
-                log.info(
-                    "SMS successfully submitted by provider: %r", provider_name
-                )
+                log.info("SMS successfully submitted by provider: %r", provider_name)
                 break
 
             except ProviderNotAvailable as exx:
@@ -1030,9 +1000,7 @@ class SmsTokenClass(HmacTokenClass):
         try:
             timeout = int(getFromConfig("SMSProviderTimeout", 5 * 60))
         except Exception as ex:
-            log.warning(
-                "SMSProviderTimeout: value error %r - reset to 5*60", ex
-            )
+            log.warning("SMSProviderTimeout: value error %r - reset to 5*60", ex)
             timeout = 5 * 60
 
         return timeout

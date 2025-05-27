@@ -84,9 +84,9 @@ class TestPermissions(TestPoliciesBase):
                 action="setPolicy", params=pol, auth_user=auth_user
             )
             assert response.json["result"]["status"], response
-            assert response.json["result"]["value"][
-                "setPolicy %s" % pol["name"]
-            ], response
+            assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
+                response
+            )
 
     def get_permissions(self, auth_user):
         response = self.make_manage_request(
@@ -103,9 +103,7 @@ class TestPermissions(TestPoliciesBase):
         assert 4 == len(permissions["inRealm"])
         for realm, realm_permissions in permissions["inRealm"].items():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
-        assert set(self.all_realmed_permissions) == set(
-            permissions["anyRealm"]
-        )
+        assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
         assert set(self.all_global_permissions) == set(permissions["global"])
 
     def test_permissios_no_permissions(self):
@@ -323,9 +321,7 @@ class TestPermissions(TestPoliciesBase):
         assert 4 == len(permissions["inRealm"])
         for realm, realm_permissions in permissions["inRealm"].items():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
-        assert set(self.all_realmed_permissions) == set(
-            permissions["anyRealm"]
-        )
+        assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
         expected_global_permissions = set(
             [
                 perm
@@ -340,9 +336,7 @@ class TestPermissions(TestPoliciesBase):
         assert 4 == len(permissions["inRealm"])
         for realm, realm_permissions in permissions["inRealm"].items():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
-        assert set(self.all_realmed_permissions) == set(
-            permissions["anyRealm"]
-        )
+        assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
         assert set(self.all_global_permissions) == set(permissions["global"])
 
     def test_permissions_deactivated_policies(self):
@@ -364,9 +358,7 @@ class TestPermissions(TestPoliciesBase):
         assert 4 == len(permissions["inRealm"])
         for realm, realm_permissions in permissions["inRealm"].items():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
-        assert set(self.all_realmed_permissions) == set(
-            permissions["anyRealm"]
-        )
+        assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
         assert set(self.all_global_permissions) == set(permissions["global"])
 
         # for adminR1
@@ -374,7 +366,5 @@ class TestPermissions(TestPoliciesBase):
         assert 4 == len(permissions["inRealm"])
         for realm, realm_permissions in permissions["inRealm"].items():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
-        assert set(self.all_realmed_permissions) == set(
-            permissions["anyRealm"]
-        )
+        assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
         assert set(self.all_global_permissions) == set(permissions["global"])

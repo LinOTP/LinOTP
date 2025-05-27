@@ -26,7 +26,6 @@
 #
 """static policy definitions"""
 
-
 import logging
 from typing import Dict
 
@@ -91,8 +90,7 @@ POLICY_DEFINTIONS = {
         "totp_lookup": {"type": "bool"},
         "getotp": {
             "type": "bool",
-            "desc": "allow the administrator to retrieve "
-            "OTP values for tokens.",
+            "desc": "allow the administrator to retrieve OTP values for tokens.",
         },
         "show": {"type": "bool"},
         "unpair": {"type": "bool"},
@@ -146,9 +144,7 @@ POLICY_DEFINTIONS = {
         },
         "mfa_passOnNoToken": {
             "type": "bool",
-            "desc": (
-                "support mfa login if user has no token with password only"
-            ),
+            "desc": ("support mfa login if user has no token with password only"),
         },
         "show_landing_page": {
             "type": "bool",
@@ -179,8 +175,7 @@ POLICY_DEFINTIONS = {
         },
         "maxtoken": {
             "type": "int",
-            "desc": "Limit the number of tokens a user in the realm may "
-            "have assigned.",
+            "desc": "Limit the number of tokens a user in the realm may have assigned.",
         },
         "otp_pin_random": {"type": "int", "value": list(range(0, 100))},
         "otp_pin_random_content": {
@@ -229,8 +224,7 @@ POLICY_DEFINTIONS = {
         },
         "lostTokenPWLen": {
             "type": "int",
-            "desc": "The length of the password in case of "
-            "temporary token.",
+            "desc": "The length of the password in case of temporary token.",
         },
         "lostTokenPWContents": {
             "type": "str",
@@ -287,8 +281,7 @@ POLICY_DEFINTIONS = {
         },
         "push_provider": {
             "type": "str",
-            "desc": "The push provider that should be used to "
-            "send push notifications",
+            "desc": "The push provider that should be used to send push notifications",
         },
         "email_provider": {
             "type": "str",
@@ -300,8 +293,7 @@ POLICY_DEFINTIONS = {
         },
         "trigger_sms": {
             "type": "bool",
-            "desc": "should it be possible to trigger a sms challenge"
-            "by check_s",
+            "desc": "should it be possible to trigger a sms challengeby check_s",
         },
         "smstext": {
             "type": "str",
@@ -372,8 +364,7 @@ POLICY_DEFINTIONS = {
             # is defined within a token - this should be joined within the
             # _add_dynamic_tokens() call, which queries every token policy
             # definition
-            "desc": "A list of tokentypes for which challenge response "
-            "should be used.",
+            "desc": "A list of tokentypes for which challenge response should be used.",
         },
         "qrtoken_pairing_callback_url": {
             "type": "str",
@@ -381,8 +372,7 @@ POLICY_DEFINTIONS = {
         },
         "qrtoken_pairing_callback_sms": {
             "type": "str",
-            "desc": "The phone number the pairing response should "
-            "be send to",
+            "desc": "The phone number the pairing response should be send to",
         },
         "qrtoken_challenge_callback_url": {
             "type": "str",
@@ -390,8 +380,7 @@ POLICY_DEFINTIONS = {
         },
         "qrtoken_challenge_callback_sms": {
             "type": "str",
-            "desc": "The sms number the challenge response should "
-            "be send to",
+            "desc": "The sms number the challenge response should be send to",
         },
         "qrtoken_pairing_cert": {
             "type": "str",
@@ -403,20 +392,17 @@ POLICY_DEFINTIONS = {
         "support_offline": {
             "type": "set",
             "range": ["qr", "u2f", "forward"],  # TODO: currently hardcoded
-            "desc": "The token types that should support offline "
-            "authentication",
+            "desc": "The token types that should support offline authentication",
         },
     },
     "authorization": {
         "authorize": {
             "type": "bool",
-            "desc": "The user/realm will be authorized to login "
-            "to the clients IPs.",
+            "desc": "The user/realm will be authorized to login to the clients IPs.",
         },
         "tokentype": {
             "type": "str",
-            "desc": "The user will only be authenticated with this "
-            "very tokentype.",
+            "desc": "The user will only be authenticated with this very tokentype.",
         },
         "serial": {
             "type": "str",
@@ -444,8 +430,7 @@ POLICY_DEFINTIONS = {
     "tools": {
         "migrate_resolver": {
             "type": "bool",
-            "desc": "Support the migration of assigned tokens to "
-            "a new resolver ",
+            "desc": "Support the migration of assigned tokens to a new resolver ",
         },
         "import_users": {
             "type": "bool",
@@ -664,8 +649,7 @@ def validate_policy_definition(policy):
             )
 
             raise ValueError(
-                "unsupported policy action %r in policy %r "
-                % (action, policy["name"])
+                "unsupported policy action %r in policy %r " % (action, policy["name"])
             )
 
         # .2. type conversion

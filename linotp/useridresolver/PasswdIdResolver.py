@@ -373,9 +373,7 @@ class IdResolver(UserIdResolver):
             for search in searchDict:
                 pattern = searchDict[search]
 
-                log.debug(
-                    "[getSearchFields] searching for %s:%s", search, pattern
-                )
+                log.debug("[getSearchFields] searching for %s:%s", search, pattern)
 
         return self.searchFields
 
@@ -429,9 +427,7 @@ class IdResolver(UserIdResolver):
 
             return orFilter and andFilter
 
-        matchingUserDicts = dict(
-            filter(_userMatchesSearchDict, self.descDict.items())
-        )
+        matchingUserDicts = dict(filter(_userMatchesSearchDict, self.descDict.items()))
 
         userInfoList = [
             self.getUserInfo(user_value[self.sF["userid"]], no_passwd=True)
@@ -591,9 +587,7 @@ class IdResolver(UserIdResolver):
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(
-                " missing config entries: %r" % missing
-            )
+            raise ResolverLoadConfigError(" missing config entries: %r" % missing)
 
         fileName = l_config["fileName"]
 

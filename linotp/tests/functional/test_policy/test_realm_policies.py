@@ -34,7 +34,6 @@
 - enrollment
 """
 
-
 import copy
 import logging
 import re
@@ -117,9 +116,9 @@ class TestRealmPolicies(TestPoliciesBase):
             )
 
             assert response.json["result"]["status"], response
-            assert response.json["result"]["value"][
-                "setPolicy %s" % pol["name"]
-            ], response
+            assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
+                response
+            )
 
         # create two tokens and set them in different realms
         seed = "154bf508c52f3048fcf9cf721bbb892637f5e348"
@@ -151,12 +150,12 @@ class TestRealmPolicies(TestPoliciesBase):
         tokens = response.json["result"]["value"]["data"]
         serials = [token["LinOtp.TokenSerialnumber"] for token in tokens]
 
-        assert (
-            "oathDef" in serials
-        ), "oathDef is in realm myDefRealm and should be listed"
-        assert (
-            "oathMix" in serials
-        ), "oathMix is in realm myMixRealm and should be listed"
-        assert (
-            "oathOther" in serials
-        ), "oathOther is in realm myDefRealm and should be listed"
+        assert "oathDef" in serials, (
+            "oathDef is in realm myDefRealm and should be listed"
+        )
+        assert "oathMix" in serials, (
+            "oathMix is in realm myMixRealm and should be listed"
+        )
+        assert "oathOther" in serials, (
+            "oathOther is in realm myDefRealm and should be listed"
+        )

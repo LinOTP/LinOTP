@@ -101,9 +101,7 @@ class TestRemoteServiceList(TestCase):
 
         # the arguments we pass into the service should be returned for
         # investigation
-        args, kwargs = services.call_first_available(
-            1, 2, 3, one=1, two=2, three=3
-        )
+        args, kwargs = services.call_first_available(1, 2, 3, one=1, two=2, three=3)
 
         assert args == (1, 2, 3)
         assert kwargs == dict(one=1, two=2, three=3)

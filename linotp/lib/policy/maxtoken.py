@@ -175,9 +175,7 @@ def check_maxtoken_for_user_by_type(user: User, type_of_token: str):
         raise linotp.lib.policy.MaxTokenTypeUserPolicyException(error_msg)
 
 
-def get_maxtoken_for_user_by_type(
-    user: User, type_of_token: str
-) -> Union[int, None]:
+def get_maxtoken_for_user_by_type(user: User, type_of_token: str) -> Union[int, None]:
     """
     This function returns maximum number of tokens of a specific type
     allowed for a user if maxtoken policy is set or None

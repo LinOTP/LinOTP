@@ -28,7 +28,6 @@
 Tests the chunked data handling in the config
 """
 
-
 import unittest
 
 from mock import patch

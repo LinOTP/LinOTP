@@ -85,18 +85,15 @@ class TestEmailTokenEnroll(TestEmailToken):
         expected_email_address = self.data["email_recipient"]
         email_token = self.enroll_email_token()
 
-        token_info = self.testcase.manage_ui.token_view.get_token_info(
-            email_token
-        )
+        token_info = self.testcase.manage_ui.token_view.get_token_info(email_token)
         description = "Rolled out by Selenium"
         expected_description = expected_email_address + " " + description
         assert (
-            expected_email_address
-            == token_info["LinOtp.TokenInfo"]["email_address"]
+            expected_email_address == token_info["LinOtp.TokenInfo"]["email_address"]
         ), "Wrong e-mail address was set for e-mail token."
-        assert (
-            expected_description == token_info["LinOtp.TokenDesc"]
-        ), "Token description doesn't match"
+        assert expected_description == token_info["LinOtp.TokenDesc"], (
+            "Token description doesn't match"
+        )
 
 
 class TestEmailTokenAuth(TestEmailToken):
@@ -109,7 +106,9 @@ class TestEmailTokenAuth(TestEmailToken):
         def radius_auth(
             username, realm_name, pin, radius_secret, radius_server, state=None
         ):
-            call_array = "python ../../../tools/linotp-auth-radius -f ../../../test.ini".split()
+            call_array = (
+                "python ../../../tools/linotp-auth-radius -f ../../../test.ini".split()
+            )
             call_array.extend(
                 [
                     "-u",
@@ -184,15 +183,14 @@ class TestEmailTokenAuth(TestEmailToken):
                 user=self.data["username"] + "@" + self.data["realm_name"],
                 password=self.data["email_token_pin"],
             )
-            assert (
-                not access_granted
-            ), "Should return false because this request only triggers the challenge."
+            assert not access_granted, (
+                "Should return false because this request only triggers the challenge."
+            )
             try:
                 message = validate_resp["detail"]["message"]
             except KeyError as e:
                 raise KeyError(
-                    e.message
-                    + " | detail.message should be present %r" % validate_resp
+                    e.message + " | detail.message should be present %r" % validate_resp
                 )
             assert message == "e-mail sent successfully", (
                 "Wrong validate response %r" % validate_resp

@@ -73,9 +73,9 @@ class TestManage:
         # for clossing the menus
         time.sleep(0.1)
         self.manage.close_all_menus()
-        WebDriverWait(
-            self.testcase.driver, self.testcase.ui_wait_time
-        ).until_not(EC.element_to_be_clickable((By.ID, menu_item_id)))
+        WebDriverWait(self.testcase.driver, self.testcase.ui_wait_time).until_not(
+            EC.element_to_be_clickable((By.ID, menu_item_id))
+        )
 
     def test_login_logout(self):
         self.testcase.driver.delete_all_cookies()

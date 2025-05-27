@@ -52,8 +52,7 @@ def iterate_users(user_iterators):
                 user_data = next(user_iterator)
                 if isinstance(user_data, list):
                     yield from (
-                        json.dumps({**data, "resolver": resolver})
-                        for data in user_data
+                        json.dumps({**data, "resolver": resolver}) for data in user_data
                     )
                 else:
                     yield json.dumps({**user_data, "resolver": resolver})
@@ -61,9 +60,7 @@ def iterate_users(user_iterators):
             # pass on to next iterator
             pass
         except Exception as exx:
-            log.error(
-                "Problem during iteration of userlist iterators: %r", exx
-            )
+            log.error("Problem during iteration of userlist iterators: %r", exx)
 
     return
 
@@ -100,8 +97,6 @@ def iterate_resolverusers(user_iterators):
             # pass on to next iterator
             pass
         except Exception as exx:
-            log.error(
-                "Problem during iteration of userlist iterators: %r", exx
-            )
+            log.error("Problem during iteration of userlist iterators: %r", exx)
 
     return

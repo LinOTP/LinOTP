@@ -55,9 +55,7 @@ def _getUserRealms(user):
 def _get_pin_values(config):
     REG_POLICY_C = config.get("linotpPolicy.pin_c", "[a-zA-Z]")
     REG_POLICY_N = config.get("linotpPolicy.pin_n", "[0-9]")
-    REG_POLICY_S = config.get(
-        "linotpPolicy.pin_s", r"[.:,;-_<>+*!/()=?$§%&#~\^]"
-    )
+    REG_POLICY_S = config.get("linotpPolicy.pin_s", r"[.:,;-_<>+*!/()=?$§%&#~\^]")
 
     return REG_POLICY_C, REG_POLICY_N, REG_POLICY_S
 

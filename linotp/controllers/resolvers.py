@@ -63,9 +63,7 @@ class ResolversController(BaseController):
             name, install_name=install_name, **kwargs
         )
 
-        self.add_url_rule(
-            "/", "resolvers", self.get_resolvers, methods=["GET"]
-        )
+        self.add_url_rule("/", "resolvers", self.get_resolvers, methods=["GET"])
         self.add_url_rule(
             "/<string:resolver_name>/users",
             "users",
@@ -301,9 +299,7 @@ class ResolversController(BaseController):
                     reverse=reverse,
                 )
             except KeyError:
-                raise KeyError(
-                    f"users can't be sorted by parameter {sort_key}"
-                )
+                raise KeyError(f"users can't be sorted by parameter {sort_key}")
             total_pages = 1
             total_records = len(users)
 
@@ -428,9 +424,7 @@ class ResolversController(BaseController):
                 message = f"Could not find a user with ID {user_id} in resolver {resolver_name}."
                 raise UserNotFoundException(message)
             user_dict["userid"] = user_id
-            result = User.from_dict(
-                resolver.name, resolver.type, user_dict
-            ).as_dict()
+            result = User.from_dict(resolver.name, resolver.type, user_dict).as_dict()
 
             g.audit["success"] = True
 

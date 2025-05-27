@@ -58,9 +58,7 @@ class TokenView(ManageTab):
 
     def __init__(self, manage_ui):
         super(TokenView, self).__init__(manage_ui)
-        self.delete_confirm_dialog = ManageDialog(
-            manage_ui, "dialog_delete_token"
-        )
+        self.delete_confirm_dialog = ManageDialog(manage_ui, "dialog_delete_token")
 
     def open(self):
         """Select the 'Token View' tab"""
@@ -80,9 +78,7 @@ class TokenView(ManageTab):
         select = Select(self.driver.find_element(By.NAME, "rp"))
         if select.first_selected_option.text.strip() != "100":
             # Show 100 tokens in view
-            self.driver.find_element(
-                By.CSS_SELECTOR, 'option[value="100"]'
-            ).click()
+            self.driver.find_element(By.CSS_SELECTOR, 'option[value="100"]').click()
 
         self.wait_for_grid_loading()
 
@@ -128,9 +124,7 @@ class TokenView(ManageTab):
         delete_dialog.check_title("Delete selected tokens?")
 
         t = delete_dialog.get_text()
-        assert t.startswith(
-            r"The following tokens will be permanently deleted"
-        )
+        assert t.startswith(r"The following tokens will be permanently deleted")
 
         delete_dialog.click_button("button_delete_delete")
 
@@ -145,11 +139,12 @@ class TokenView(ManageTab):
                 tokens_before,
                 tokens_after,
             )
-            assert len(tokens_before) > len(
-                tokens_after
-            ), "The token list should be shorter. Before:%s After:%s" % (
-                len(tokens_before),
-                len(tokens_after),
+            assert len(tokens_before) > len(tokens_after), (
+                "The token list should be shorter. Before:%s After:%s"
+                % (
+                    len(tokens_before),
+                    len(tokens_after),
+                )
             )
 
     def clear_tokens_via_api(self):
@@ -221,9 +216,9 @@ class TokenView(ManageTab):
 
         # Check that only the token we require is now displayed as selected
         new_selection = self.get_selected_tokens()
-        assert new_selection == [
-            token_serial
-        ], f"Selection failed for token {token_serial}"
+        assert new_selection == [token_serial], (
+            f"Selection failed for token {token_serial}"
+        )
 
     def deselect_token(self, token_serial):
         """

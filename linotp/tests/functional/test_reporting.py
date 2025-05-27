@@ -47,9 +47,7 @@ class DBSession(object):
         self.engine = create_engine(config.get("DATABASE_URI"))
 
     def __enter__(self):
-        self.session = scoped_session(
-            sessionmaker(autocommit=False, autoflush=True)
-        )
+        self.session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
         self.session.configure(bind=self.engine)
         return self.session
 
@@ -80,9 +78,7 @@ class TestReportingController(TestController):
     # --------------------------------------------------------------------------- --
     # Helper functions
 
-    def create_token(
-        self, serial="1234567", realm=None, user=None, active=True
-    ):
+    def create_token(self, serial="1234567", realm=None, user=None, active=True):
         """
         create an HMAC Token with given parameters
 
@@ -105,9 +101,7 @@ class TestReportingController(TestController):
         response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
         if active is False:
-            response = self.make_admin_request(
-                "disable", params={"serial": serial}
-            )
+            response = self.make_admin_request("disable", params={"serial": serial})
 
             assert '"value": 1' in response, response
         return serial
@@ -158,9 +152,7 @@ class TestReportingController(TestController):
 
         self.create_token(serial="0011", realm="mymixrealm", user="hans")
         self.create_token(serial="0012", user="hans")
-        self.create_token(
-            serial="0013", realm="mymixrealm", user="hans", active=False
-        )
+        self.create_token(serial="0013", realm="mymixrealm", user="hans", active=False)
         self.create_token(serial="0014", realm="mydefrealm", user="hans")
         self.create_token(serial="0015", realm="mymixrealm", user="lorca")
         self.create_token(serial="0016", realm="myotherrealm")
@@ -249,9 +241,7 @@ class TestReportingController(TestController):
         # delete reports
         yest = yesterday.strftime("%Y-%m-%d")
         parameter = {"date": yest, "realms": "*", "status": "active"}
-        response = self.make_reporting_request(
-            "delete_before", params=parameter
-        )
+        response = self.make_reporting_request("delete_before", params=parameter)
         resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
@@ -328,9 +318,7 @@ class TestReportingController(TestController):
         resp = response.json
         values = resp.get("result")
         assert values.get("status"), response
-        assert (
-            values.get("value").get("setPolicy self01").get("action")
-        ), response
+        assert values.get("value").get("setPolicy self01").get("action"), response
 
         # do userservice request
         self.make_userservice_request(
@@ -421,9 +409,7 @@ class TestReportingController(TestController):
 
         # create all tokens and events
 
-        fix_date = datetime.strptime(
-            "2020-02-20  00:00:01", "%Y-%m-%d  %H:%M:%S"
-        )
+        fix_date = datetime.strptime("2020-02-20  00:00:01", "%Y-%m-%d  %H:%M:%S")
 
         # create an initial fallback entry if there is no entry found
         with freeze_time(fix_date - timedelta(days=200)):
@@ -486,9 +472,7 @@ class TestReportingController(TestController):
                 "from": "1970-03-01T00:00:00",
                 "to": "2019-08-04T00:00:00",
             }
-            assert (
-                expected_period == response.json["result"]["value"]["period"]
-            )
+            assert expected_period == response.json["result"]["value"]["period"]
 
             # 0.b: checking the reporting borders
             # - the first entry 2019-08-04 only, thus there should be only
@@ -661,9 +645,7 @@ class TestReportingController(TestController):
 
         self.create_token(serial="0031", realm="mydefrealm", user="hans")
         self.create_token(serial="0032", user="hans")
-        self.create_token(
-            serial="0033", realm="mymixrealm", user="hans", active=False
-        )
+        self.create_token(serial="0033", realm="mymixrealm", user="hans", active=False)
         self.create_token(serial="0034", realm="mydefrealm", user="hans")
         self.create_token(serial="0035", realm="mydefrealm", user="lorca")
         self.create_token(serial="0036", realm="myotherrealm")
@@ -720,9 +702,7 @@ class TestReportingController(TestController):
 
         self.create_token(serial="0041", realm="mydefrealm", user="hans")
         self.create_token(serial="0042", user="hans")
-        self.create_token(
-            serial="0043", realm="mymixrealm", user="hans", active=False
-        )
+        self.create_token(serial="0043", realm="mymixrealm", user="hans", active=False)
         self.create_token(serial="0044", realm="mydefrealm", user="hans")
         self.create_token(serial="0045", realm="mydefrealm", user="lorca")
         self.create_token(serial="0046", realm="myotherrealm")
@@ -765,9 +745,7 @@ class TestReportingController(TestController):
 
         self.create_token(serial="0041", realm="mydefrealm", user="hans")
         self.create_token(serial="0042", user="hans")
-        self.create_token(
-            serial="0043", realm="mymixrealm", user="hans", active=False
-        )
+        self.create_token(serial="0043", realm="mymixrealm", user="hans", active=False)
         self.create_token(serial="0044", realm="mydefrealm", user="hans")
         self.create_token(serial="0045", realm="mydefrealm", user="lorca")
         self.create_token(serial="0046", realm="myotherrealm")
@@ -804,12 +782,8 @@ class TestReportingController(TestController):
 
         # test csv output
 
-        response = self.make_reporting_request(
-            "show", params={"outform": "csv"}
-        )
-        assert (
-            '"token_init", "myotherrealm", "total", "", 1, ' in response
-        ), response
+        response = self.make_reporting_request("show", params={"outform": "csv"})
+        assert '"token_init", "myotherrealm", "total", "", 1, ' in response, response
 
     def test_reporting_show_paging(self):
         # set reporting policy:
@@ -860,9 +834,8 @@ class TestReportingController(TestController):
         # test csv output
         parameter["outform"] = "csv"
         response = self.make_reporting_request("show", params=parameter)
-        line = (
-            '"%s", "token_init", "mydefrealm", "total", "", 18, "", "", ""'
-            % (str(timestamp),)
+        line = '"%s", "token_init", "mydefrealm", "total", "", 18, "", "", ""' % (
+            str(timestamp),
         )
         assert line in response, response
         resp = response.body.splitlines()
@@ -878,9 +851,7 @@ class TestReportingController(TestController):
         # read user based license file
 
         license_data = None
-        license_file = os.path.join(
-            self.fixture_path, "linotp2.token_user.pem"
-        )
+        license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
 
         with open(license_file, "r") as f:
             license_data = f.read()
@@ -892,12 +863,8 @@ class TestReportingController(TestController):
         long_ago = datetime(year=2018, month=11, day=17)
 
         with freeze_time(long_ago) as frozen_time:
-            upload_files = [
-                ("license", "linotp2.token_user.pem", license_data)
-            ]
-            response = self.make_system_request(
-                "setSupport", upload_files=upload_files
-            )
+            upload_files = [("license", "linotp2.token_user.pem", license_data)]
+            response = self.make_system_request("setSupport", upload_files=upload_files)
             assert '"status": true' in response
             assert '"value": true' in response
 
@@ -1145,9 +1112,7 @@ class TestReportingController(TestController):
         # try to delete reports
         today_str = today.strftime("%Y-%m-%d")
         parameter = {"date": today_str, "realms": "*", "status": "active"}
-        response = self.make_reporting_request(
-            "delete_before", params=parameter
-        )
+        response = self.make_reporting_request("delete_before", params=parameter)
 
         resp = response.json
         values = resp.get("result")
@@ -1180,9 +1145,7 @@ class TestReportingController(TestController):
         # try to delete reports
         today_str = today.strftime("%Y-%m-%d")
         parameter = {"date": today_str, "realms": "*", "status": "active"}
-        response = self.make_reporting_request(
-            "delete_before", params=parameter
-        )
+        response = self.make_reporting_request("delete_before", params=parameter)
 
         resp = response.json
         values = resp.get("result")

@@ -46,9 +46,7 @@ from linotp.model.local_admin_user import (
     NoSuchUserError,
 )
 
-local_admins_cmds = AppGroup(
-    "local-admins", help="Manage local administrator accounts"
-)
+local_admins_cmds = AppGroup("local-admins", help="Manage local administrator accounts")
 
 
 # ----------------------------------------------------------------------
@@ -67,9 +65,7 @@ def list_cmd(format, long):
 
     res = LocalAdminResolver(current_app)
     for user_info in res.list_users():
-        user_info["name"] = (
-            f"{user_info['givenname']} {user_info['surname']}".strip()
-        )
+        user_info["name"] = f"{user_info['givenname']} {user_info['surname']}".strip()
         try:
             print(format.format_map(user_info))
         except KeyError as ex:
@@ -82,19 +78,11 @@ def list_cmd(format, long):
 
 
 @local_admins_cmds.command("add", help="Add a local administrator account")
-@click.option(
-    "--phone", default="", help="Phone number associated with the account"
-)
-@click.option(
-    "--mobile", default="", help="Mobile number associated with the account"
-)
-@click.option(
-    "--email", default="", help="Email address associated with the account"
-)
+@click.option("--phone", default="", help="Phone number associated with the account")
+@click.option("--mobile", default="", help="Mobile number associated with the account")
+@click.option("--email", default="", help="Email address associated with the account")
 @click.option("--surname", default="", help="Surname of the account owner")
-@click.option(
-    "--givenname", default="", help="Given name of the account owner"
-)
+@click.option("--givenname", default="", help="Given name of the account owner")
 @click.argument("account_name")
 def add_cmd(phone, mobile, email, surname, givenname, account_name):
     """Adds a new local administrator account.
@@ -125,22 +113,14 @@ def add_cmd(phone, mobile, email, surname, givenname, account_name):
 # ----------------------------------------------------------------------
 
 
-@local_admins_cmds.command(
-    "modify", help="Modify a local administrator account"
-)
-@click.option(
-    "--phone", default=None, help="Phone number associated with the account"
-)
+@local_admins_cmds.command("modify", help="Modify a local administrator account")
+@click.option("--phone", default=None, help="Phone number associated with the account")
 @click.option(
     "--mobile", default=None, help="Mobile number associated with the account"
 )
-@click.option(
-    "--email", default=None, help="Email address associated with the account"
-)
+@click.option("--email", default=None, help="Email address associated with the account")
 @click.option("--surname", default=None, help="Surname of the account owner")
-@click.option(
-    "--givenname", default=None, help="Given name of the account owner"
-)
+@click.option("--givenname", default=None, help="Given name of the account owner")
 @click.argument("account_name")
 def modify_cmd(phone, mobile, email, surname, givenname, account_name):
     res = LocalAdminResolver(current_app)
@@ -190,12 +170,8 @@ def password_cmd(password, account_name):
 # ----------------------------------------------------------------------
 
 
-@local_admins_cmds.command(
-    "remove", help="Remove a local administrator account"
-)
-@click.confirmation_option(
-    prompt="Are you sure you want to remove the account?"
-)
+@local_admins_cmds.command("remove", help="Remove a local administrator account")
+@click.confirmation_option(prompt="Are you sure you want to remove the account?")
 @click.argument("account_name")
 def remove_cmd(account_name):
     res = LocalAdminResolver(current_app)

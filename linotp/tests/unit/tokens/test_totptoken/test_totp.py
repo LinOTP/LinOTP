@@ -109,9 +109,7 @@ class TotpTestCase(unittest.TestCase):
     def test_counter2time(self):
         for t_step in (60, 30):
             for counter in range(0, 10):
-                l_seconds = timedelta(
-                    seconds=(counter - 1) * t_step
-                ).total_seconds()
+                l_seconds = timedelta(seconds=(counter - 1) * t_step).total_seconds()
                 h_seconds = timedelta(seconds=counter * t_step).total_seconds()
 
                 t_seconds = counter2time(counter, timeStepping=t_step)

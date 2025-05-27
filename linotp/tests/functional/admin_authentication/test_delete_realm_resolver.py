@@ -49,9 +49,7 @@ class TestDeleteRealmAndResolver:
         )
 
         # extract csrf token
-        csrf_token = client._cookies[
-            ("localhost", "/", "csrf_access_token")
-        ].value
+        csrf_token = client._cookies[("localhost", "/", "csrf_access_token")].value
 
         # remove local admin resolver
         response = client.post(
@@ -99,9 +97,7 @@ class TestDeleteRealmAndResolver:
             "useridresolver.PasswdIdResolver.IdResolver.def_resolver"
         )
 
-        resolver_classes = ",".join(
-            [default_resolver_spec, admin_resolver_spec]
-        )
+        resolver_classes = ",".join([default_resolver_spec, admin_resolver_spec])
         with scoped_authclient(verify_jwt=False) as client:
             client.post(
                 "/system/setRealm",
@@ -124,9 +120,7 @@ class TestDeleteRealmAndResolver:
         )
 
         # extract csrf token
-        csrf_token = client._cookies[
-            ("localhost", "/", "csrf_access_token")
-        ].value
+        csrf_token = client._cookies[("localhost", "/", "csrf_access_token")].value
 
         # remove local admin resolver
         response = client.post(
@@ -138,9 +132,7 @@ class TestDeleteRealmAndResolver:
             },
         )
 
-        error_message = (
-            response.json.get("result", {}).get("error").get("message")
-        )
+        error_message = response.json.get("result", {}).get("error").get("message")
         assert not response.json.get("result", {}).get("status")
         assert (
             "Resolver def_resolver can not be removed from linotp_admins"
@@ -171,14 +163,9 @@ class TestDeleteRealmAndResolver:
         realm_name = base_app.config["ADMIN_REALM_NAME"].lower()
 
         with scoped_authclient(verify_jwt=False) as client:
-            response = client.post(
-                "/system/delRealm", data=dict(realm=realm_name)
-            )
+            response = client.post("/system/delRealm", data=dict(realm=realm_name))
 
             assert response.json["result"]["status"] is False
 
             response_message = response.json["result"]["error"]["message"]
-            assert (
-                "It is not allowed to delete the admin realm"
-                in response_message
-            )
+            assert "It is not allowed to delete the admin realm" in response_message

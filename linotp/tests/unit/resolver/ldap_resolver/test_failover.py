@@ -125,9 +125,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
         FakeLdapResolver.called = []
         MockedResourceRegistry.registry = {}
 
-        monkeypatch.setattr(
-            LDAPResolver, "connect", FakeLdapResolver.m_connect
-        )
+        monkeypatch.setattr(LDAPResolver, "connect", FakeLdapResolver.m_connect)
 
         monkeypatch.setattr(
             ldap_resolver_module, "ResourceScheduler", MockedResourceScheduler

@@ -385,9 +385,7 @@ class TestPushToken(TestController):
 
         # activate the token
 
-        self.activate_token(
-            user_token_id, data="", retry_activation=retry_activation
-        )
+        self.activate_token(user_token_id, data="", retry_activation=retry_activation)
 
         return user_token_id
 
@@ -414,9 +412,7 @@ class TestPushToken(TestController):
 
         # create the pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(
-            user_token_id
-        )
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
         # ------------------------------------------------------------------ --
 
@@ -483,9 +479,7 @@ class TestPushToken(TestController):
         if flags & FLAG_PAIR_CBURL:
             callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
-            raise NotImplementedError(
-                "Callback URL is mandatory for PushToken"
-            )
+            raise NotImplementedError("Callback URL is mandatory for PushToken")
 
         # ------------------------------------------------------------------ --
 
@@ -609,9 +603,7 @@ class TestPushToken(TestController):
         offset = 1 + 8 + 8
 
         pt_header = plaintext[0:offset]
-        (content_type, transaction_id, _time_stamp) = struct.unpack(
-            "<bQQ", pt_header
-        )
+        (content_type, transaction_id, _time_stamp) = struct.unpack("<bQQ", pt_header)
 
         transaction_id = u64_to_transaction_id(transaction_id)
 
@@ -678,13 +670,9 @@ class TestPushToken(TestController):
 
         # enroll the push token and parse the pairing url
 
-        pairing_url = self.enroll_pushtoken(
-            user=None, pin="123", serial="myPush"
-        )
+        pairing_url = self.enroll_pushtoken(user=None, pin="123", serial="myPush")
 
-        user_token_id = self.create_user_token_by_pairing_url(
-            pairing_url, pin="123"
-        )
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin="123")
 
         # ------------------------------------------------------------------ --
 
@@ -932,9 +920,7 @@ class TestPushToken(TestController):
     def test_multiple_signreq(self):
         """PushToken: Check if signing multiple transactions works correctly"""
 
-        user_token_id = self.execute_correct_pairing(
-            user="root", serial="KIPuOne"
-        )
+        user_token_id = self.execute_correct_pairing(user="root", serial="KIPuOne")
 
         # ------------------------------------------------------------------ --
 
@@ -1080,9 +1066,7 @@ class TestPushToken(TestController):
             content_type=CONTENT_TYPE_SIGNREQ,
         )
 
-        challenge, sig = self.decrypt_and_verify_challenge(
-            challenge_url, action="DENY"
-        )
+        challenge, sig = self.decrypt_and_verify_challenge(challenge_url, action="DENY")
 
         # ------------------------------------------------------------------ --
 
@@ -1198,9 +1182,7 @@ class TestPushToken(TestController):
 
         # send repairing pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(
-            user_token_id
-        )
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
         response_dict = self.send_pairing_response(pairing_response)
 
@@ -1241,9 +1223,7 @@ class TestPushToken(TestController):
 
         # send repairing pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(
-            user_token_id
-        )
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
         response_dict = self.send_pairing_response(pairing_response)
 
@@ -1288,9 +1268,7 @@ class TestPushToken(TestController):
 
         # send repairing pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(
-            user_token_id
-        )
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
         response_dict = self.send_pairing_response(pairing_response)
 

@@ -71,20 +71,16 @@ class SmtpSMSProvider(ISMSProvider):
 
         parameters["start_tls"] = {
             "type": "bool",
-            "description": "use 'starttls' to secure "
-            "the mail communication.",
+            "description": "use 'starttls' to secure the mail communication.",
         }
 
         parameters["keyfile"] = {
             "type": "string",
-            "description": "if 'starttls' is defined, a "
-            "keyfile could be used.",
+            "description": "if 'starttls' is defined, a keyfile could be used.",
         }
         parameters["certfile"] = {
             "type": "string",
-            "description": "if 'starttls' is defined "
-            "a certificate file could "
-            "be used",
+            "description": "if 'starttls' is defined a certificate file could be used",
         }
 
         parameters["use_ssl"] = {
@@ -185,9 +181,7 @@ class SmtpSMSProvider(ISMSProvider):
         subject = self.config.get("subject", "")
         body = self.config.get("body", "")
 
-        log.debug(
-            "[submitMessage] submitting message %s to %s", message, phone
-        )
+        log.debug("[submitMessage] submitting message %s to %s", message, phone)
 
         toaddr = toaddr.replace(PHONE_TAG, phone)
 
@@ -223,15 +217,12 @@ class SmtpSMSProvider(ISMSProvider):
             serv.ehlo()
             if start_tls and not use_ssl:
                 if serv.has_extn("STARTTLS"):
-                    serv.starttls(
-                        start_tls_params_keyfile, start_tls_params_certfile
-                    )
+                    serv.starttls(start_tls_params_keyfile, start_tls_params_certfile)
                     serv.ehlo()
                 else:
                     log.error("Start_TLS not supported:")
                     raise Exception(
-                        "Start_TLS requested but not supported"
-                        " by server %r" % server
+                        "Start_TLS requested but not supported by server %r" % server
                     )
             if user:
                 if serv.has_extn("AUTH"):
@@ -273,9 +264,7 @@ class SmtpSMSProvider(ISMSProvider):
 
     def loadConfig(self, configDict):
         self.config = configDict
-        self.timeout = self.config.get(
-            "TIMEOUT", SmtpSMSProvider.DEFAULT_TIMEOUT
-        )
+        self.timeout = self.config.get("TIMEOUT", SmtpSMSProvider.DEFAULT_TIMEOUT)
 
 
 # eof ########################################################################

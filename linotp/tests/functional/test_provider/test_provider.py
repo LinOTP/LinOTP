@@ -93,8 +93,7 @@ class TestProviderController(TestController):
     def create_sms_token(self, serial=None, token_params=None):
         params = {
             "otpkey": (
-                "1234567890123456789012345678901234567890"
-                "123456789012345678901234"
+                "1234567890123456789012345678901234567890123456789012345678901234"
             ),
             "realm": "myDefRealm",
             "type": "sms",
@@ -161,9 +160,7 @@ class TestProviderController(TestController):
         """Wrapper function to create provider and check success"""
         response = self.define_new_provider(provider_params)
         if '"value": true' not in response:
-            raise ProviderCreationError(
-                f"Provider creation failed: {response}"
-            )
+            raise ProviderCreationError(f"Provider creation failed: {response}")
         return response
 
     def define_new_provider(self, provider_params=None):
@@ -493,9 +490,7 @@ class TestProviderController(TestController):
 
         # set legacy provider as default provider
         params = {"type": "sms", "name": "imported_default"}
-        response = self.make_system_request(
-            "setDefaultProvider", params=params
-        )
+        response = self.make_system_request("setDefaultProvider", params=params)
         assert '"value": true' in response
 
         params = {"type": "sms"}

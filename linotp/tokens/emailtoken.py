@@ -28,6 +28,7 @@
 This file contains the e-mail token implementation:
               - EmailTokenClass   (HOTP)
 """
+
 import datetime
 import logging
 
@@ -221,8 +222,7 @@ class EmailTokenClass(HmacTokenClass):
             if ret == "all":
                 ret = res
         LOG.debug(
-            "[getClassInfo] end. Returned the configuration section:"
-            " ret %r " % ret
+            "[getClassInfo] end. Returned the configuration section: ret %r " % ret
         )
         return ret
 
@@ -236,9 +236,7 @@ class EmailTokenClass(HmacTokenClass):
         :return: nothing
 
         """
-        LOG.debug(
-            "[update] begin. adjust the token class with: param %r", param
-        )
+        LOG.debug("[update] begin. adjust the token class with: param %r", param)
 
         # specific - e-mail
         self._email_address = param[self.EMAIL_ADDRESS_KEY]
@@ -252,9 +250,7 @@ class EmailTokenClass(HmacTokenClass):
                 u_info = getUserDetail(user)
                 u_email = u_info.get("email", None)
                 if u_email.strip() != self._email_address.strip():
-                    raise Exception(
-                        _("User is not allowed to set email address")
-                    )
+                    raise Exception(_("User is not allowed to set email address"))
 
         # in case of the e-mail token, only the server must know the otpkey
         # thus if none is provided, we let create one (in the TokenClass)
@@ -287,9 +283,7 @@ class EmailTokenClass(HmacTokenClass):
         hmac2otp = HmacOtp(secObj, counter, otplen)
         nextotp = hmac2otp.generate(counter + 1)
 
-        LOG.debug(
-            "[getNextOtp] end. got the next otp value: nextOtp %r", nextotp
-        )
+        LOG.debug("[getNextOtp] end. got the next otp value: nextOtp %r", nextotp)
         return nextotp
 
     def initChallenge(self, transactionid, challenges=None, options=None):
@@ -316,9 +310,7 @@ class EmailTokenClass(HmacTokenClass):
 
         now = datetime.datetime.now()
         blocking_time = int(
-            getFromConfig(
-                "EmailBlockingTimeout", self.DEFAULT_EMAIL_BLOCKING_TIMEOUT
-            )
+            getFromConfig("EmailBlockingTimeout", self.DEFAULT_EMAIL_BLOCKING_TIMEOUT)
         )
 
         for challenge in challenges:
@@ -369,9 +361,7 @@ class EmailTokenClass(HmacTokenClass):
             success, status_message = self._sendEmail()
             if success:
                 attributes = {"state": transactionid}
-                prompt_message = self.getChallengePrompt(
-                    default=status_message
-                )
+                prompt_message = self.getChallengePrompt(default=status_message)
                 return success, prompt_message, data, attributes
             return False, status_message, data, {}
 
@@ -516,9 +506,7 @@ class EmailTokenClass(HmacTokenClass):
         # ------------------------------------------------------------------ --
 
         try:
-            email_provider = loadProviderFromPolicy(
-                provider_type="email", user=owner
-            )
+            email_provider = loadProviderFromPolicy(provider_type="email", user=owner)
 
             status, status_message = email_provider.submitMessage(
                 email_address,
@@ -533,9 +521,7 @@ class EmailTokenClass(HmacTokenClass):
 
         return status, status_message
 
-    def is_challenge_response(
-        self, passw, user, options=None, challenges=None
-    ):
+    def is_challenge_response(self, passw, user, options=None, challenges=None):
         """
         Checks if the request is a challenge response.
 
@@ -560,9 +546,7 @@ class EmailTokenClass(HmacTokenClass):
 
         return challenge_response
 
-    def checkResponse4Challenge(
-        self, user, passw, options=None, challenges=None
-    ):
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
         verify the response of a previous challenge
 

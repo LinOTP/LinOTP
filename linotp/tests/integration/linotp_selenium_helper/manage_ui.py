@@ -105,9 +105,7 @@ class ManageUi(object):
         )
         "Welcome screen dialog"
 
-        self.useridresolver_manager: UserIdResolverManager = (
-            UserIdResolverManager(self)
-        )
+        self.useridresolver_manager: UserIdResolverManager = UserIdResolverManager(self)
         "UserIdResolver manager dialog"
         self.realm_manager: RealmManager = RealmManager(self)
         "Realm manager dialog"
@@ -138,12 +136,8 @@ class ManageUi(object):
             params={"username": username, "password": password},
             verify=False,
         )
-        self._jwt_session: str = login_response.cookies.get(
-            "access_token_cookie"
-        )
-        self._jwt_csrf_token: str = login_response.cookies.get(
-            "csrf_access_token"
-        )
+        self._jwt_session: str = login_response.cookies.get("access_token_cookie")
+        self._jwt_csrf_token: str = login_response.cookies.get("csrf_access_token")
 
     def is_url_correct(self):
         """Checks if the url is correctly pointing to the manage"""
@@ -202,9 +196,9 @@ class ManageUi(object):
         """
         Check we are on the right page
         """
-        assert self.is_manage_open(
-            wait, raise_error=True
-        ), f"Current URL: {self.URL} \n 'Tabs' visible: {self.is_tabs_visible()}"
+        assert self.is_manage_open(wait, raise_error=True), (
+            f"Current URL: {self.URL} \n 'Tabs' visible: {self.is_tabs_visible()}"
+        )
 
         assert self.driver.title == "Management - LinOTP"
 
@@ -301,12 +295,12 @@ class ManageUi(object):
 
         Throws an assertion if this dialog does not have an associated menu entry
         """
-        assert (
-            menu_item_id
-        ), "Open dialog requested but no menu id specified (menu_item_id"
-        assert (
-            menu_css
-        ), "Open dialog requested but no toplevel menu specified (menu_css)"
+        assert menu_item_id, (
+            "Open dialog requested but no menu id specified (menu_item_id"
+        )
+        assert menu_css, (
+            "Open dialog requested but no toplevel menu specified (menu_css)"
+        )
 
         self.open_manage()
 
@@ -336,23 +330,15 @@ class ManageUi(object):
         """
 
         # Find all open dialogs
-        dialogs = self.find_all_by_css(
-            '.ui-dialog:not([style*="display: none"])'
-        )
+        dialogs = self.find_all_by_css('.ui-dialog:not([style*="display: none"])')
 
         # Sort by depth (the z-index attribute in reverse order)
-        dialogs.sort(
-            key=methodcaller("value_of_css_property", "z-index"), reverse=True
-        )
+        dialogs.sort(key=methodcaller("value_of_css_property", "z-index"), reverse=True)
 
         # Close them
         for dialog in dialogs:
-            logging.debug(
-                "Closing dialog %s", dialog.get_attribute("aria-describedby")
-            )
-            dialog.find_element(
-                By.CSS_SELECTOR, ManageDialog.CLOSEBUTTON_CSS
-            ).click()
+            logging.debug("Closing dialog %s", dialog.get_attribute("aria-describedby"))
+            dialog.find_element(By.CSS_SELECTOR, ManageDialog.CLOSEBUTTON_CSS).click()
 
     def close_all_menus(self) -> None:
         """
@@ -364,9 +350,7 @@ class ManageUi(object):
         for menu in self.find_all_by_css("#menu > li"):
             if menu.get_attribute("class") == "sfHover":
                 # Close using superfish method
-                self.driver.execute_script(
-                    "$(arguments[0]).superfish('hide')", menu
-                )
+                self.driver.execute_script("$(arguments[0]).superfish('hide')", menu)
 
     def check_alert(
         self, expected_text=None, click_accept=False, click_dismiss=False
@@ -381,9 +365,9 @@ class ManageUi(object):
         :param click_dismiss: If set, will close the dialog
         """
 
-        assert (
-            not click_accept or not click_dismiss
-        ), "check_alert cannot click both accept and dismiss"
+        assert not click_accept or not click_dismiss, (
+            "check_alert cannot click both accept and dismiss"
+        )
 
         alert = self.driver.switch_to.alert
         alert_text = alert.text
@@ -394,9 +378,10 @@ class ManageUi(object):
             alert.dismiss()
 
         if expected_text:
-            assert (
-                alert_text == expected_text
-            ), "Expecting alert text:%s found:%s" % (expected_text, alert_text)
+            assert alert_text == expected_text, "Expecting alert text:%s found:%s" % (
+                expected_text,
+                alert_text,
+            )
 
     def wait_for_waiting_finished(self) -> None:
         """
@@ -498,9 +483,7 @@ class AlertBoxInfoLine(object):
         elif "info_box" in self.classes:
             self.type = "info"
         else:
-            warn(
-                "unknown info box message type. class={}".format(self.classes)
-            )
+            warn("unknown info box message type. class={}".format(self.classes))
             self.type = "unknown"
 
     @property
@@ -684,8 +667,6 @@ class AlertBoxHandler(object):
         """
 
         self.parse()
-        lines = [
-            l for l in self.info_lines if l.type == msg_type and msg in l.text
-        ]
+        lines = [l for l in self.info_lines if l.type == msg_type and msg in l.text]
 
         return len(lines) > 0

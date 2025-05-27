@@ -29,6 +29,7 @@
 """
 Test the onetime token for the selfservice login
 """
+
 import json
 from typing import List
 
@@ -76,9 +77,9 @@ class TestRolloutToken(TestController):
             "active": True,
         }
         response = self.make_system_request("setPolicy", params)
-        assert isinstance(
-            response.json["result"]["value"]["setPolicy mfa"], dict
-        ), "expected mfa policy details to be returned from request"
+        assert isinstance(response.json["result"]["value"]["setPolicy mfa"], dict), (
+            "expected mfa policy details to be returned from request"
+        )
 
     def _setup_purge_policy(self):
         params = {
@@ -90,9 +91,9 @@ class TestRolloutToken(TestController):
             "active": True,
         }
         response = self.make_system_request("setPolicy", params)
-        assert isinstance(
-            response.json["result"]["value"]["setPolicy purge"], dict
-        ), "expected purge policy details to be returned from request"
+        assert isinstance(response.json["result"]["value"]["setPolicy purge"], dict), (
+            "expected purge policy details to be returned from request"
+        )
 
     def init_rollout_token(
         self,
@@ -112,9 +113,9 @@ class TestRolloutToken(TestController):
             "description": self.ROLLOUT_TOKEN_DESC,
         }
 
-        assert (
-            scopes is not None or rollout is not None
-        ), "You should be setting scopes or rollout params for initializing rollout tokens"
+        assert scopes is not None or rollout is not None, (
+            "You should be setting scopes or rollout params for initializing rollout tokens"
+        )
 
         if rollout is not None:
             params["rollout"] = "True"
@@ -124,9 +125,7 @@ class TestRolloutToken(TestController):
         response = self.make_admin_request("init", params=params)
         assert response.json["result"]["value"] == True, response
 
-    def init_token(
-        self, user: str, pw: str, pin: str, serial: str = "KIPWOTHER"
-    ):
+    def init_token(self, user: str, pw: str, pin: str, serial: str = "KIPWOTHER"):
         params = {
             "otpkey": pw,
             "user": user,
@@ -211,9 +210,7 @@ class TestRolloutToken(TestController):
         """
         self._setup_purge_policy()
 
-        self.init_rollout_token(
-            self.user, self.otp1, self.pin1, scopes=["userservice"]
-        )
+        self.init_rollout_token(self.user, self.otp1, self.pin1, scopes=["userservice"])
         self.init_token(self.user, self.otp2, self.pin2)
 
         # ------------------------------------------------------------------ --
@@ -284,9 +281,7 @@ class TestRolloutToken(TestController):
         """
         self._setup_purge_policy()
 
-        self.init_rollout_token(
-            self.user, self.otp1, self.pin1, scopes=["userservice"]
-        )
+        self.init_rollout_token(self.user, self.otp1, self.pin1, scopes=["userservice"])
         self.init_token(self.user, self.otp2, self.pin2)
 
         # ------------------------------------------------------------------ --
@@ -323,9 +318,7 @@ class TestRolloutToken(TestController):
         test janitor - do not remove rollout token via selfservice login
         """
 
-        self.init_rollout_token(
-            self.user, self.otp1, self.pin1, scopes=["userservice"]
-        )
+        self.init_rollout_token(self.user, self.otp1, self.pin1, scopes=["userservice"])
         self.init_token(self.user, self.otp2, self.pin2)
 
         # ------------------------------------------------------------------ --

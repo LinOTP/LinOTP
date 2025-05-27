@@ -31,6 +31,7 @@ linotp support get
 linotp support verify [-f license_file]
 
 """
+
 import json
 import sys
 

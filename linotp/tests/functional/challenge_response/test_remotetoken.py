@@ -30,7 +30,6 @@
 Test challenge response functionality for the remote token
 """
 
-
 import binascii
 import json
 import logging
@@ -178,9 +177,9 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
             "session": self.session,
         }
         response = self.make_system_request(action="setConfig", params=params)
-        assert response.json["result"]["value"][
-            "setConfig enableReplication:true"
-        ], response
+        assert response.json["result"]["value"]["setConfig enableReplication:true"], (
+            response
+        )
 
         return serials
 
@@ -321,10 +320,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
             # now check if we are part of the triggered
             # remote transaction forwarding
-            if (
-                params.get("pass") == otp
-                and params.get("state") == "012345678901"
-            ):
+            if params.get("pass") == otp and params.get("state") == "012345678901":
                 value = True
 
             content = {

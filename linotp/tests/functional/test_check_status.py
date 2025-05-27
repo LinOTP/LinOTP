@@ -143,17 +143,15 @@ class TestCheckStatus(TestController):
                 )
 
                 assert response.json["result"]["status"], response
-                assert response.json["result"]["value"][
-                    "setPolicy %s" % pol["name"]
-                ], response
+                assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
+                    response
+                )
 
             param = {"DefaultChallengeValidityTime": "120"}
             response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
 
-            serial, otps = self.create_hmac_token(
-                user="passthru_user1", pin="123!"
-            )
+            serial, otps = self.create_hmac_token(user="passthru_user1", pin="123!")
 
             # trigger challenge
             params = {"user": "passthru_user1", "pass": "123!"}
@@ -178,25 +176,25 @@ class TestCheckStatus(TestController):
             assert '"valid_tan": false' in response, response
             assert '"received_count": 0' in response, response
             assert ('"error":' in response) == use_detail_policy, response
-            assert (
-                g.audit["user"] == "passthru_user1"
-            ), "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
-                g.audit["user"]
+            assert g.audit["user"] == "passthru_user1", (
+                "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
+                    g.audit["user"]
+                )
             )
-            assert (
-                g.audit["realm"] == "mydefrealm"
-            ), "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
-                g.audit["realm"]
+            assert g.audit["realm"] == "mydefrealm", (
+                "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
+                    g.audit["realm"]
+                )
             )
-            assert (
-                g.audit["token_type"] == "HMAC"
-            ), "token type 'HMAC' should have been written to audit log instead of '{}'".format(
-                g.audit["token_type"]
+            assert g.audit["token_type"] == "HMAC", (
+                "token type 'HMAC' should have been written to audit log instead of '{}'".format(
+                    g.audit["token_type"]
+                )
             )
-            assert (
-                g.audit["serial"] == serial
-            ), "serial {} should have been written to audit log instead of '{}'".format(
-                serial, g.audit["serial"]
+            assert g.audit["serial"] == serial, (
+                "serial {} should have been written to audit log instead of '{}'".format(
+                    serial, g.audit["serial"]
+                )
             )
 
             # invalidate request
@@ -274,13 +272,11 @@ class TestCheckStatus(TestController):
                         "transactionid": transid,
                     }
 
-                    response_stat = self.make_validate_request(
-                        "check_status", params
-                    )
+                    response_stat = self.make_validate_request("check_status", params)
                     if '"value": false' in response_stat:
-                        assert (
-                            '"error":' in response_stat
-                        ) == use_detail_policy, response_stat
+                        assert ('"error":' in response_stat) == use_detail_policy, (
+                            response_stat
+                        )
                         break
 
                     now = datetime.datetime.now()
@@ -316,9 +312,7 @@ class TestCheckStatus(TestController):
         response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
-        serial, otps = self.create_hmac_token(
-            user="passthru_user1", pin="123!"
-        )
+        serial, otps = self.create_hmac_token(user="passthru_user1", pin="123!")
 
         otpkey2 = "6CEF3709075580B44738AD8EABE235FC57C815B2"
         serial2, _otps = self.create_hmac_token(
@@ -353,34 +347,34 @@ class TestCheckStatus(TestController):
         assert '"received_tan": true' not in response, response
         assert '"valid_tan": true' not in response, response
 
-        assert (
-            g.audit["user"] == "passthru_user1"
-        ), "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
-            g.audit["user"]
+        assert g.audit["user"] == "passthru_user1", (
+            "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
+                g.audit["user"]
+            )
         )
-        assert (
-            g.audit["realm"] == "mydefrealm"
-        ), "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
-            g.audit["realm"]
+        assert g.audit["realm"] == "mydefrealm", (
+            "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
+                g.audit["realm"]
+            )
         )
-        assert (
-            g.audit["token_type"] == "HMAC HMAC"
-        ), "token type 'HMAC' should have been written twice to audit log instead of '{}'".format(
-            g.audit["token_type"]
+        assert g.audit["token_type"] == "HMAC HMAC", (
+            "token type 'HMAC' should have been written twice to audit log instead of '{}'".format(
+                g.audit["token_type"]
+            )
         )
-        assert (
-            g.audit["serial"] is not None
-        ), "serials should have been written to audit log instead of '{}'".format(
-            g.audit["serial"]
+        assert g.audit["serial"] is not None, (
+            "serials should have been written to audit log instead of '{}'".format(
+                g.audit["serial"]
+            )
         )
 
         serials = g.audit["serial"].split(" ")
-        assert (
-            serial in serials
-        ), "serial {} should have been written to audit log".format(serial)
-        assert (
-            serial2 in serials
-        ), "serial {} should have been written to audit log".format(serial2)
+        assert serial in serials, (
+            "serial {} should have been written to audit log".format(serial)
+        )
+        assert serial2 in serials, (
+            "serial {} should have been written to audit log".format(serial2)
+        )
 
         # invalidate request
         params = {
@@ -446,9 +440,7 @@ class TestCheckStatus(TestController):
                     "transactionid": transid,
                 }
 
-                response_stat = self.make_validate_request(
-                    "check_status", params
-                )
+                response_stat = self.make_validate_request("check_status", params)
                 if '"value": false' in response_stat:
                     break
 
@@ -502,9 +494,7 @@ class TestCheckStatus(TestController):
         response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
-        serial, otps = self.create_hmac_token(
-            user="passthru_user1", pin="ignored"
-        )
+        serial, otps = self.create_hmac_token(user="passthru_user1", pin="ignored")
 
         # trigger challenge
         params = {"user": "passthru_user1", "pass": ""}
@@ -619,9 +609,7 @@ class TestCheckStatus(TestController):
         response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
-        serial, _otps = self.create_hmac_token(
-            user="passthru_user1", pin=empty_pin
-        )
+        serial, _otps = self.create_hmac_token(user="passthru_user1", pin=empty_pin)
 
         # trigger challenge end extract the transaction id
 
@@ -678,9 +666,7 @@ class TestCheckStatus(TestController):
         response = self.make_system_request("setConfig", params=param)
         assert '"status": true' in response, response
 
-        serial, _otps = self.create_hmac_token(
-            user="passthru_user1", pin=empty_pin
-        )
+        serial, _otps = self.create_hmac_token(user="passthru_user1", pin=empty_pin)
 
         # trigger challenge end extract the transaction id
 
@@ -707,25 +693,25 @@ class TestCheckStatus(TestController):
             .get("status")
         )
         assert status == "open", jresp
-        assert (
-            g.audit["user"] == "passthru_user1"
-        ), "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
-            g.audit["user"]
+        assert g.audit["user"] == "passthru_user1", (
+            "user 'passthru_user1' should have been written to audit log instead of '{}'".format(
+                g.audit["user"]
+            )
         )
-        assert (
-            g.audit["realm"] == "mydefrealm"
-        ), "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
-            g.audit["realm"]
+        assert g.audit["realm"] == "mydefrealm", (
+            "realm 'mydefrealm' should have been written to audit log instead of '{}'".format(
+                g.audit["realm"]
+            )
         )
-        assert (
-            g.audit["token_type"] == "HMAC"
-        ), "token type 'HMAC' should have been written to audit log instead of '{}'".format(
-            g.audit["token_type"]
+        assert g.audit["token_type"] == "HMAC", (
+            "token type 'HMAC' should have been written to audit log instead of '{}'".format(
+                g.audit["token_type"]
+            )
         )
-        assert (
-            g.audit["serial"] == serial
-        ), "serial {} should have been written to audit log instead of '{}'".format(
-            serial, g.audit["serial"]
+        assert g.audit["serial"] == serial, (
+            "serial {} should have been written to audit log instead of '{}'".format(
+                serial, g.audit["serial"]
+            )
         )
 
         # now check for the status

@@ -158,9 +158,7 @@ class TestTotpLookupController(TestController):
                     "window": "24h",
                 }
 
-                response = self.make_admin_request(
-                    "totp_lookup", params=params
-                )
+                response = self.make_admin_request("totp_lookup", params=params)
                 assert '"value": true' in response.body, response
 
                 # ---------------------------------------------------------- --

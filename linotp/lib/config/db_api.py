@@ -28,7 +28,6 @@
 syncronysation and provides this to all requests
 """
 
-
 import logging
 
 from linotp.lib.config.util import expand_here
@@ -68,9 +67,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     if isinstance(key, str):
         key = "" + key
 
-    log.debug(
-        "Changing config entry %r in database: New value is %r", key, val
-    )
+    log.debug("Changing config entry %r in database: New value is %r", key, val)
 
     # ---------------------------------------------------------------------- --
 
@@ -100,9 +97,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     # defined by utf8 in bytes + the clipping of 6 bytes each. But as this
     # could vary, we could not calculate the number of chunks and thus use
     # an iterator to split the value into chunks
-    text_slice = (
-        utf8_slice if len(value) < len(value.encode("utf-8")) else simple_slice
-    )
+    text_slice = utf8_slice if len(value) < len(value.encode("utf-8")) else simple_slice
     chunks = [cont_value for cont_value in text_slice(value, MAX_VALUE_LEN)]
 
     # ---------------------------------------------------------------------- --
@@ -195,9 +190,7 @@ def _store_continous_entry_db(chunks, key, val, typ, desc):
             cont_typ = typ
             cont_desc = desc
 
-        res = _storeConfigEntryDB(
-            cont_key, cont_value, typ=cont_typ, desc=cont_desc
-        )
+        res = _storeConfigEntryDB(cont_key, cont_value, typ=cont_typ, desc=cont_desc)
 
     return res
 
@@ -268,9 +261,7 @@ def _removeConfigDB(key):
             db.session.delete(entry)
 
     except Exception as e:
-        raise ConfigAdminError(
-            "remove Config failed for %r: %r" % (key, e), id=1133
-        )
+        raise ConfigAdminError("remove Config failed for %r: %r" % (key, e), id=1133)
 
     return len(to_be_deleted)
 

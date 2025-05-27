@@ -177,10 +177,7 @@ class U2FTokenClass(TokenClass):
             # preserve the registration state
             self.addToTokenInfo("phase", "registration")
             self.token.LinOtpIsactive = False
-        elif (
-            requested_phase == "registration2"
-            and current_phase == "registration"
-        ):
+        elif requested_phase == "registration2" and current_phase == "registration":
             # Check the token pin
             pin = param.get("pin")
             if pin is None:
@@ -188,9 +185,7 @@ class U2FTokenClass(TokenClass):
             if check_pin(self, pin) is False:
                 raise ValueError("Wrong token pin!")
         # check for set phases which are not "registration1" or "registration2"
-        elif (
-            requested_phase != "registration2" and requested_phase is not None
-        ):
+        elif requested_phase != "registration2" and requested_phase is not None:
             raise Exception("Wrong phase parameter!")
         # only allow empty phase parameters once the token is registered
         # successfully
@@ -198,10 +193,7 @@ class U2FTokenClass(TokenClass):
             raise Exception("Wrong phase parameter!")
         # only allow "registration2" if the token already completed
         # "registration1"
-        elif (
-            current_phase != "registration"
-            and requested_phase == "registration2"
-        ):
+        elif current_phase != "registration" and requested_phase == "registration2":
             raise Exception(
                 "Phase 'registration2' requested but we are not in the correct phase \
                 to process the request."
@@ -262,9 +254,7 @@ class U2FTokenClass(TokenClass):
         """
         # Create an otp key (from urandom) which is used as challenge, 32 bytes
         # long
-        challenge = base64.urlsafe_b64encode(
-            binascii.unhexlify(self._genOtpKey_(32))
-        )
+        challenge = base64.urlsafe_b64encode(binascii.unhexlify(self._genOtpKey_(32)))
 
         # We delete all '=' symbols we added during registration to ensure that the
         # challenge object is sent to exact the same keyHandle we received in the
@@ -437,9 +427,7 @@ class U2FTokenClass(TokenClass):
         # since authentication responses without requiring user presence
         # are not yet supported by the U2F specification
         if FIRST_BIT_MASK & ord(signatureData[:1]) != 0b00000001:
-            log.error(
-                "Wrong signature data format: User presence bit must be set"
-            )
+            log.error("Wrong signature data format: User presence bit must be set")
             raise ValueError("Wrong signature data format")
         userPresenceByte = signatureData[:1]
         signatureData = signatureData[1:]
@@ -472,10 +460,7 @@ class U2FTokenClass(TokenClass):
         # TODO: Create Policy to adjust the OVERFLOW_RANGE
         OVERFLOW_RANGE = 1000
         res = False
-        if (
-            prevCounter >= (256**4) - OVERFLOW_RANGE
-            and counter <= OVERFLOW_RANGE
-        ):
+        if prevCounter >= (256**4) - OVERFLOW_RANGE and counter <= OVERFLOW_RANGE:
             # This is the range of a legal overflow
             res = True
         return res
@@ -504,9 +489,7 @@ class U2FTokenClass(TokenClass):
                 # deactivate the token. This could also happen if you use the token
                 # A LOT with other applications and very seldom with LinOTP.
                 self.token.LinOtpIsactive = False
-                raise ValueError(
-                    "Counter not increased! Possible device cloning!"
-                )
+                raise ValueError("Counter not increased! Possible device cloning!")
 
         # save the new counter
         self.addToTokenInfo("counter", counter)
@@ -551,20 +534,13 @@ class U2FTokenClass(TokenClass):
         # signature on the NIST P-256 curve over the SHA256 hash of the
         # following byte string:
 
-        message = (
-            applicationParameter
-            + userPresenceByte
-            + counter
-            + challengeParameter
-        )
+        message = applicationParameter + userPresenceByte + counter + challengeParameter
 
         # ------------------------------------------------------------------ --
 
         # verify with the asn1, der encoded public key
 
-        ecc_pub = serialization.load_der_public_key(
-            asn1_publicKey, default_backend()
-        )
+        ecc_pub = serialization.load_der_public_key(asn1_publicKey, default_backend())
 
         try:
             ecc_pub.verify(signature, message, ec.ECDSA(hashes.SHA256()))
@@ -578,9 +554,7 @@ class U2FTokenClass(TokenClass):
             log.error("Signature verification failed! %r", exx)
             raise
 
-    def checkResponse4Challenge(
-        self, user, passw, options=None, challenges=None
-    ):
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
         This method verifies if the given ``passw`` matches any existing ``challenge``
         of the token.
@@ -670,9 +644,9 @@ class U2FTokenClass(TokenClass):
                 pass
 
         if len(challenges) == 0:
-            err = (
-                "No open transaction found for token %s and transactionid %s"
-                % (serial, transid)
+            err = "No open transaction found for token %s and transactionid %s" % (
+                serial,
+                transid,
             )
             raise Exception(err)
 
@@ -782,26 +756,20 @@ class U2FTokenClass(TokenClass):
 
         # first byte has to be 0x05
         if ord(registrationData[:1]) != 0x05:
-            log.error(
-                "Wrong registration data format: Reserved byte does not match"
-            )
+            log.error("Wrong registration data format: Reserved byte does not match")
             raise ValueError("Wrong registration data format")
         registrationData = registrationData[1:]
 
         # next 65 bytes refer to the user public key
         userPublicKey = registrationData[:USER_PUBLIC_KEY_LEN]
         if len(userPublicKey) < USER_PUBLIC_KEY_LEN:
-            log.error(
-                "Wrong registration data format: registration data is too short"
-            )
+            log.error("Wrong registration data format: registration data is too short")
             raise ValueError("Wrong registration data format")
         registrationData = registrationData[USER_PUBLIC_KEY_LEN:]
 
         # next byte represents the length of the following key handle
         if len(registrationData) < 1:
-            log.error(
-                "Wrong registration data format: registration data is too short"
-            )
+            log.error("Wrong registration data format: registration data is too short")
             raise ValueError("Wrong registration data format")
         keyHandleLength = ord(registrationData[:1])
         registrationData = registrationData[1:]
@@ -809,16 +777,12 @@ class U2FTokenClass(TokenClass):
         # key handle of length keyHandleLength
         keyHandle = registrationData[:keyHandleLength]
         if len(keyHandle) < keyHandleLength:
-            log.error(
-                "Wrong registration data format: registration data is too short"
-            )
+            log.error("Wrong registration data format: registration data is too short")
             raise ValueError("Wrong registration data format")
         registrationData = registrationData[keyHandleLength:]
 
         # load the X509 Certificate
-        cert = x509.load_der_x509_certificate(
-            registrationData, default_backend()
-        )
+        cert = x509.load_der_x509_certificate(registrationData, default_backend())
 
         cert_len = len(cert.public_bytes(serialization.Encoding.DER))
 
@@ -936,9 +900,7 @@ class U2FTokenClass(TokenClass):
                     # Check for appId conflicts
                     if appId and policy_value:
                         if appId != policy_value:
-                            raise Exception(
-                                "Conflicting appId values in u2f policies."
-                            )
+                            raise Exception("Conflicting appId values in u2f policies.")
                     appId = policy_value
 
             if not appId:
@@ -990,9 +952,7 @@ class U2FTokenClass(TokenClass):
                 registrationData = base64.urlsafe_b64decode(
                     registrationData.encode("ascii")
                 )
-                clientData = base64.urlsafe_b64decode(
-                    clientData.encode("ascii")
-                )
+                clientData = base64.urlsafe_b64decode(clientData.encode("ascii"))
 
                 # parse the raw registrationData according to the specification
                 (
@@ -1008,9 +968,7 @@ class U2FTokenClass(TokenClass):
                     "registration",
                     self.getFromTokenInfo("challenge", None),
                 ):
-                    raise ValueError(
-                        "Received invalid clientData object. Aborting..."
-                    )
+                    raise ValueError("Received invalid clientData object. Aborting...")
 
                 # prepare the applicationParameter and challengeParameter needed for
                 # verification of the registration signature

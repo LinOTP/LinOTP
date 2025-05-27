@@ -34,9 +34,7 @@ from typing import Any, TypedDict
 
 from linotp.tests import TestController
 
-NOT_ALLOWED_ERROR = (
-    "The policy settings do not allow you to issue this request!"
-)
+NOT_ALLOWED_ERROR = "The policy settings do not allow you to issue this request!"
 
 
 class EnrollmentTestParams(TypedDict):

@@ -155,9 +155,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         Verify that an old OTP value (smaller the the stored counter) is not accepted.
         """
         self.model_token.LinOtpCount = 300
-        otp = (
-            self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
-        )  # counter 256
+        otp = self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"  # counter 256
         counter_expected = -1
         counter_actual = self.yubikey_token.checkOtp(otp)
         assert counter_expected == counter_actual, (
@@ -269,9 +267,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         otp = self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
         self.yubikey_token.checkOtp(otp)
         # Verify that the tokenid is passed onto linotp.model.Token
-        expected_tokeninfo = (
-            "" + '{\n"yubikey.tokenid": "' + self.private_uid + '"\n}'
-        )
+        expected_tokeninfo = "" + '{\n"yubikey.tokenid": "' + self.private_uid + '"\n}'
         self.model_token.setInfo.assert_called_once_with(expected_tokeninfo)
 
     def test_checkotp_wrong_tokenid(self):
@@ -319,9 +315,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         }
         class_info = YubikeyTokenClass.getClassInfo()
         assert full_class_info == class_info
-        assert "YubiKey in Yubico Mode" == YubikeyTokenClass.getClassInfo(
-            key="title"
-        )
+        assert "YubiKey in Yubico Mode" == YubikeyTokenClass.getClassInfo(key="title")
         assert full_class_info == YubikeyTokenClass.getClassInfo(
             key="some_non_existent_key"
         )
@@ -337,16 +331,12 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_expected = 256
         self.yubikey_token.incOtpCounter = MagicMock()
         counter_actual = self.yubikey_token.check_otp_exist(otp)
-        self.yubikey_token.incOtpCounter.assert_called_once_with(
-            counter_expected
-        )
+        self.yubikey_token.incOtpCounter.assert_called_once_with(counter_expected)
         assert counter_expected == counter_actual
 
         # invalid (old) value
         self.model_token.LinOtpCount = 300
-        otp = (
-            self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
-        )  # counter 256
+        otp = self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"  # counter 256
         self.yubikey_token.incOtpCounter.reset_mock()
         counter_actual = self.yubikey_token.check_otp_exist(otp)
         assert 0 == self.yubikey_token.incOtpCounter.call_count
@@ -359,13 +349,9 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         patcher = patch("linotp.tokens.yubikeytoken.check_pin", spec=True)
         check_pin_mock = patcher.start()
         check_pin_mock.return_value = True
-        assert self.yubikey_token.is_challenge_request(
-            "a-pin", user="someuser"
-        )
+        assert self.yubikey_token.is_challenge_request("a-pin", user="someuser")
         check_pin_mock.return_value = False
-        assert not self.yubikey_token.is_challenge_request(
-            "not-a-pin", user="someuser"
-        )
+        assert not self.yubikey_token.is_challenge_request("not-a-pin", user="someuser")
         patcher.stop()
 
 

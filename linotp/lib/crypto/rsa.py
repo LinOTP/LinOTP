@@ -25,7 +25,6 @@
 #
 """methods to handle rsa signature - sign and verify"""
 
-
 import logging
 
 from Cryptodome.Hash import SHA256
@@ -35,9 +34,7 @@ from Cryptodome.Signature.pkcs1_15 import PKCS115_SigScheme
 log = logging.getLogger(__name__)
 
 
-def verify_rsa_signature(
-    pub_key: bytes, message: bytes, signature: bytes
-) -> bool:
+def verify_rsa_signature(pub_key: bytes, message: bytes, signature: bytes) -> bool:
     """
     verify rsa signature
 

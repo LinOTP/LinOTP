@@ -49,9 +49,7 @@ class NewResolverDialog(ManageDialog):
     "New resolver dialog"
 
     def __init__(self, manage_ui):
-        super(NewResolverDialog, self).__init__(
-            manage_ui, "dialog_resolver_create"
-        )
+        super(NewResolverDialog, self).__init__(manage_ui, "dialog_resolver_create")
 
 
 class UserIdResolverManager(ManageDialog):
@@ -70,9 +68,7 @@ class UserIdResolverManager(ManageDialog):
         self.resolvers = None
 
         self.new_resolvers_dialog = NewResolverDialog(manage_ui)
-        self.no_realms_defined_dialog = ManageDialog(
-            manage_ui, "text_no_realm"
-        )
+        self.no_realms_defined_dialog = ManageDialog(manage_ui, "text_no_realm")
         self.alert_box_handler = self.manage.alert_box_handler
 
     @staticmethod
@@ -101,9 +97,9 @@ class UserIdResolverManager(ManageDialog):
         res_name = line.find_element(By.CSS_SELECTOR, ".name").text
         res_type = line.find_element(By.CSS_SELECTOR, ".type").text
 
-        assert "ui-selectee" in line.get_attribute("class").split(
-            " "
-        ), "Resolver dialog line not selectable"
+        assert "ui-selectee" in line.get_attribute("class").split(" "), (
+            "Resolver dialog line not selectable"
+        )
 
         return ResolverElement(res_name, res_type, line)
 
@@ -137,9 +133,7 @@ class UserIdResolverManager(ManageDialog):
          name in dialog
         """
         r = [r for r in self.resolvers if r.name == name]
-        assert len(r) == 1, (
-            "Resolver name %r not found in current resolver list" % name
-        )
+        assert len(r) == 1, "Resolver name %r not found in current resolver list" % name
         resolver = r[0]
         return resolver
 
@@ -154,9 +148,9 @@ class UserIdResolverManager(ManageDialog):
         self.open()
         oldlist = self.get_defined_resolvers()
 
-        assert (
-            data["name"] not in oldlist
-        ), "Trying to define a resolver which already exists"
+        assert data["name"] not in oldlist, (
+            "Trying to define a resolver which already exists"
+        )
 
         oldcount = len(oldlist)
         self.find_by_id(self.new_button_id).click()
@@ -354,13 +348,9 @@ class UserIdResolverManager(ManageDialog):
         resolvers = self.manage.admin_api_call("system/getResolvers")
 
         if resolver_name not in resolvers:
-            raise UserIdResolverException(
-                "resolver %r does not found!" % resolver_name
-            )
+            raise UserIdResolverException("resolver %r does not found!" % resolver_name)
 
-        self.manage.admin_api_call(
-            "system/delResolver", {"resolver": resolver_name}
-        )
+        self.manage.admin_api_call("system/delResolver", {"resolver": resolver_name})
 
     def clear_resolvers_via_api(self):
         """Get all resolvers via API call and delete all by resolver name."""
@@ -442,22 +432,20 @@ class UserIdResolverManager(ManageDialog):
             alert_box.wait_for_dialog(timeout=20)
             alert_box_text = alert_box.get_text()
 
-            m = re.search(
-                r"Number of users found: (?P<nusers>\d+)", alert_box_text
-            )
+            m = re.search(r"Number of users found: (?P<nusers>\d+)", alert_box_text)
             if m is None:
                 raise Exception(
-                    "test_connection for %s failed: %s"
-                    % (name, alert_box_text)
+                    "test_connection for %s failed: %s" % (name, alert_box_text)
                 )
             num_found = int(m.group("nusers"))
 
             if expected_users:
-                assert (
-                    num_found == expected_users
-                ), "Expected number of users:%s, found:%s" % (
-                    expected_users,
-                    num_found,
+                assert num_found == expected_users, (
+                    "Expected number of users:%s, found:%s"
+                    % (
+                        expected_users,
+                        num_found,
+                    )
                 )
 
             # Close the popup
@@ -510,9 +498,7 @@ class LdapUserIdResolver(UserIdResolver):
             assert data["uri"].startswith("ldap:")
             checkbox = find_by_id(driver, "ldap_enforce_tls")
             selected = checkbox.is_selected()
-            if (not selected and enforce_tls) or (
-                selected and not enforce_tls
-            ):
+            if (not selected and enforce_tls) or (selected and not enforce_tls):
                 checkbox.click()
                 assert selected is not checkbox.is_selected()
 

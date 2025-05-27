@@ -80,9 +80,7 @@ class TestForwardServer(TestController):
         params = {
             "name": "forward_user",
             "realm": "mydefrealm",
-            "action": (
-                "forward_server=radius://127.0.0.1:1812/?secret=geheim1"
-            ),
+            "action": ("forward_server=radius://127.0.0.1:1812/?secret=geheim1"),
             "client": "",
             "user": "passthru_user1",
             "time": "",
@@ -99,10 +97,7 @@ class TestForwardServer(TestController):
         params = {
             "name": "forward",
             "realm": "mydefrealm",
-            "action": (
-                "forward_server=radius://192.168.100.180:1812/"
-                "?secret=geheim1"
-            ),
+            "action": ("forward_server=radius://192.168.100.180:1812/?secret=geheim1"),
             "client": "",
             "user": "*",
             "time": "",
@@ -115,9 +110,7 @@ class TestForwardServer(TestController):
         name = params["name"]
         assert "setPolicy " + name in response, response
 
-    @patch(
-        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
-    )
+    @patch("linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy)
     def test_server_forwarding(self):
         """
         Checking auth forwarding with check
@@ -145,9 +138,7 @@ class TestForwardServer(TestController):
 
         return
 
-    @patch(
-        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
-    )
+    @patch("linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy)
     def test_server_forwarding2(self):
         """
         Checking auth forwarding with check
@@ -175,9 +166,7 @@ class TestForwardServer(TestController):
 
         return
 
-    @patch(
-        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
-    )
+    @patch("linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy)
     def test_server_forwarding_with_no_token_0(self):
         """
         conditional forward request only if no user has no token.
@@ -228,22 +217,16 @@ class TestForwardServer(TestController):
         global Rad_Serv
         Rad_Serv = None
 
-        with self.caplog.at_level(
-            logging.INFO, logger="linotp.lib.auth.validate"
-        ):
+        with self.caplog.at_level(logging.INFO, logger="linotp.lib.auth.validate"):
             self.caplog.clear()
             params = {"user": "passthru_user1", "pass": "pintest123!"}
 
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
         assert "false" not in response, response
         assert Rad_Serv is None, Rad_Serv
 
-        nf_msgs = [
-            t for t in self.caplog.record_tuples if "NOT forwarding" in t[2]
-        ]
+        nf_msgs = [t for t in self.caplog.record_tuples if "NOT forwarding" in t[2]]
         assert len(nf_msgs) == 1
 
         # This assertion only makes sense if `action_detail` is not overwritten
@@ -251,9 +234,7 @@ class TestForwardServer(TestController):
 
         # assert g.audit["action_detail"] == "NOT forwarded"
 
-    @patch(
-        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
-    )
+    @patch("linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy)
     def test_server_forwarding_with_no_token_1(self):
         """
         conditional forward request only if no user has no token.
@@ -312,9 +293,7 @@ class TestForwardServer(TestController):
         with self.caplog.at_level(logging.INFO):
             self.caplog.clear()
             params = {"user": "passthru_user1", "pass": "geheim1"}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
         assert "false" in response, response
         assert Rad_Serv is None, Rad_Serv
@@ -331,9 +310,7 @@ class TestForwardServer(TestController):
 
         # assert g.audit["action_detail"] == "NOT forwarded"
 
-    @patch(
-        "linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy
-    )
+    @patch("linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy)
     def test_server_forwarding_with_no_token_2(self):
         """
         conditional forward request only if no user has no token.

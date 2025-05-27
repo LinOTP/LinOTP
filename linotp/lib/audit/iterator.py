@@ -232,9 +232,9 @@ class CSVAuditIterator(object):
             if self.i == 0 and self.audit_query.with_headers():
                 headers = (
                     "%s\n"
-                    % json.dumps(
-                        self.audit_query.get_headers(), ensure_ascii=False
-                    )[1:-1]
+                    % json.dumps(self.audit_query.get_headers(), ensure_ascii=False)[
+                        1:-1
+                    ]
                 )
                 res = headers
 

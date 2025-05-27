@@ -120,10 +120,7 @@ def setPolicy(policy):
     # check that the name does not contain any bad characters
     if not PolicyNameRegex.match(name):
         raise Exception(
-            _(
-                "The name of the policy may only contain "
-                "the characters  a-zA-Z0-9_."
-            )
+            _("The name of the policy may only contain the characters  a-zA-Z0-9_.")
         )
 
     # verify the required policy attributes
@@ -131,8 +128,7 @@ def setPolicy(policy):
     for required_attribute in required_attributes:
         if required_attribute not in policy or not policy[required_attribute]:
             raise PolicyWarning(
-                "Missing attribute %s in "
-                "policy %s" % (required_attribute, name)
+                "Missing attribute %s in policy %s" % (required_attribute, name)
             )
 
     # before storing the policy, we have to check the impact:
@@ -181,7 +177,7 @@ def deletePolicy(name, enforce=False):
     res = {}
     if not re.match("^[a-zA-Z0-9_]*$", name):
         raise ServerError(
-            "policy name may only contain the " "characters a-zA-Z0-9_",
+            "policy name may only contain the characters a-zA-Z0-9_",
             id=8888,
         )
 
@@ -296,8 +292,7 @@ def _check_policy_impact(
 
     if reason and enforce is False:
         raise PolicyWarning(
-            "Warning: potential lockout due to policy "
-            "defintion: %s" % reason
+            "Warning: potential lockout due to policy defintion: %s" % reason
         )
 
     # admin policy could as well result in lockout

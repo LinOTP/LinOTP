@@ -126,9 +126,7 @@ class OcraOtp(object):
         elif self.ocrasuite.find("-SHA512"):
             key_len = 64
 
-        self.bkey = kdf2(
-            self.sharedsecret, self.nonce, self.activationkey, len=key_len
-        )
+        self.bkey = kdf2(self.sharedsecret, self.nonce, self.activationkey, len=key_len)
         self.ocra = OcraSuite(self.ocrasuite)
 
         self.counter = 0
@@ -524,9 +522,7 @@ class OcraTest(TestController):
                     {"param": {"data": "ss"}, "otp": "12345"},
                     {"param": {"data": "SS"}, "otp": "12345"},
                     {
-                        "param": {
-                            "data": "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
-                        },
+                        "param": {"data": "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"},
                         "otp": "12345",
                     },
                     {"param": {"data": "DasisteinTExt"}, "otp": "12345"},
@@ -545,9 +541,7 @@ class OcraTest(TestController):
             testdata = {}
 
             ocra = OcraOtp()
-            response1 = self.init_0_QR_Token(
-                user="root", ocrasuite=test["ocrasuite"]
-            )
+            response1 = self.init_0_QR_Token(user="root", ocrasuite=test["ocrasuite"])
             ocra.init_1(response1)
 
             jresp = json.loads(response1.body)
@@ -801,9 +795,7 @@ class OcraTest(TestController):
         if data is not None:
             p[data] = data
 
-        response = self.app.get(
-            genUrl(controller="ocra", action="request"), params=p
-        )
+        response = self.app.get(genUrl(controller="ocra", action="request"), params=p)
         log.info("response %s\n", response)
         assert '"value": true' in response
 
@@ -840,9 +832,7 @@ class OcraTest(TestController):
         else:
             p["user"] = user
 
-        response = self.app.get(
-            genUrl(controller="ocra", action="request"), params=p
-        )
+        response = self.app.get(genUrl(controller="ocra", action="request"), params=p)
         try:
             jresp = json.loads(response.body)
             challenge = str(jresp.get("detail").get("challenge"))
@@ -895,9 +885,7 @@ class OcraTest(TestController):
         p_tests = []
 
         for _i in range(0, numthreads):
-            p_test = doRequest(
-                self, rid=_i, test="ptest_OCRA_token_failcounterInc"
-            )
+            p_test = doRequest(self, rid=_i, test="ptest_OCRA_token_failcounterInc")
             p_tests.append(p_test)
             if "paste.registry" in environ:
                 environ["paste.registry"].register(myglobal, p_test)

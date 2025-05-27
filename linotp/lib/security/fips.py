@@ -30,7 +30,6 @@ fips mode mixin - to overwriting the parent provider methods
 
 """
 
-
 import hashlib
 import logging
 

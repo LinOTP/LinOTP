@@ -137,10 +137,7 @@ class TestYubikey:
             self.testcase.http_username, self.testcase.http_password
         )
         cy_validate_url = (
-            self.testcase.http_protocol
-            + "://"
-            + url
-            + "/validate/check_yubikey?"
+            self.testcase.http_protocol + "://" + url + "/validate/check_yubikey?"
         )
         response = requests.get(
             cy_validate_url,
@@ -150,12 +147,8 @@ class TestYubikey:
         )
         assert response.status_code == 200, "Invalid response %r" % response
         return_json = response.json()
-        assert return_json["result"]["status"], (
-            "Invalid return value: %r" % return_json
-        )
-        assert return_json["result"]["value"], (
-            "Invalid return value: %r" % return_json
-        )
+        assert return_json["result"]["status"], "Invalid return value: %r" % return_json
+        assert return_json["result"]["value"], "Invalid return value: %r" % return_json
         assert return_json["detail"]["user"] == self.user_name, (
             "Invalid return value: %r" % return_json
         )
@@ -191,9 +184,7 @@ class TestYubikey:
         )
         assert response.status_code == 200, "Invalid response %r" % response
         return_json = response.json()
-        assert return_json["result"]["status"], (
-            "Invalid return value: %r" % return_json
-        )
+        assert return_json["result"]["status"], "Invalid return value: %r" % return_json
         assert not return_json["result"]["value"], (
             "Invalid return value: %r" % return_json
         )

@@ -145,9 +145,7 @@ class ValidateController(BaseController):
         else:
             # Extract validation options from parameters
             excluded_params = {"pass", "user", "init"}
-            options = {
-                k: v for k, v in param.items() if k not in excluded_params
-            }
+            options = {k: v for k, v in param.items() if k not in excluded_params}
 
         vh = ValidationHandler()
         (ok, opt) = vh.checkUserPass(user, passw, options=options)
@@ -208,9 +206,7 @@ class ValidateController(BaseController):
             try:
                 (ok, opt) = self._check(param)
             except (AuthorizeException, ParameterError) as exx:
-                log.warning(
-                    "[check] authorization failed for validate/check: %r", exx
-                )
+                log.warning("[check] authorization failed for validate/check: %r", exx)
                 g.audit["success"] = False
                 g.audit["info"] = str(exx)
                 ok = False
@@ -272,10 +268,7 @@ class ValidateController(BaseController):
             transid = param.get("state", param.get("transactionid"))
             if not transid:
                 raise ParameterError(
-                    _(
-                        'Missing required parameter "state" or '
-                        '"transactionid"!'
-                    )
+                    _('Missing required parameter "state" or "transactionid"!')
                 )
 
             # serial is an optional parameter
@@ -704,9 +697,7 @@ class ValidateController(BaseController):
                             tok.LinOtpIdResolver,
                             tok.LinOtpIdResClass,
                         )
-                        user = User(
-                            login=userInfo.get("username"), realm=realm
-                        )
+                        user = User(login=userInfo.get("username"), realm=realm)
 
                         serial = tok.getSerial()
 
@@ -909,10 +900,7 @@ class ValidateController(BaseController):
             token_type = dec_response.token_type
             pairing_data = dec_response.pairing_data
 
-            if (
-                not hasattr(pairing_data, "serial")
-                or pairing_data.serial is None
-            ):
+            if not hasattr(pairing_data, "serial") or pairing_data.serial is None:
                 raise ValidateError(
                     "Pairing responses with no serial attached"
                     " are currently not implemented."
@@ -938,8 +926,7 @@ class ValidateController(BaseController):
 
             if token.type != token_type:
                 raise Exception(
-                    "Serial in pairing response doesn't match "
-                    "supplied token_type"
+                    "Serial in pairing response doesn't match supplied token_type"
                 )
 
             # --------------------------------------------------------------- --

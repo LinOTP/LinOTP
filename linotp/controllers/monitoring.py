@@ -284,9 +284,7 @@ class MonitoringController(BaseController):
             # Add Extra info
             # if needed; use details = None ... for no details!)...
 
-            license_ok, license_msg = verifyLicenseInfo(
-                license_info, license_sig
-            )
+            license_ok, license_msg = verifyLicenseInfo(license_info, license_sig)
             if not license_ok:
                 res = {"valid": license_ok, "message": license_msg}
                 return sendResult(res, 1)
@@ -349,9 +347,7 @@ class MonitoringController(BaseController):
             if "/:no realm:/" in realms:
                 realms.remove("/:no realm:/")
 
-            realm_info = {
-                realm: monit_handler.resolverinfo(realm) for realm in realms
-            }
+            realm_info = {realm: monit_handler.resolverinfo(realm) for realm in realms}
 
             result["Realms"] = realm_info
 
@@ -409,8 +405,7 @@ class MonitoringController(BaseController):
             realms = match_realms(request_realms, realm_whitelist)
 
             realm_info = {
-                realm: monit_handl.active_users_per_realm(realm)
-                for realm in realms
+                realm: monit_handl.active_users_per_realm(realm) for realm in realms
             }
 
             result["Realms"] = realm_info

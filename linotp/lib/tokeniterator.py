@@ -175,9 +175,7 @@ class TokenIterator(object):
         if type(filterRealm) in [list]:
             #  support for multiple realm filtering in the ui
             #  as a coma separated string
-            filterRealm = [
-                realm.strip() for f in filterRealm for realm in f.split(",")
-            ]
+            filterRealm = [realm.strip() for f in filterRealm for realm in f.split(",")]
 
         #  create a list of all realms, which are allowed to be searched
         #  based on the list of the existing ones
@@ -208,9 +206,7 @@ class TokenIterator(object):
         condition = and_(*condTuple)
 
         order = (
-            self._map_sort_param_to_token_param(sort)
-            if sort
-            else Token.LinOtpTokenDesc
+            self._map_sort_param_to_token_param(sort) if sort else Token.LinOtpTokenDesc
         )
 
         #  care for the result sort order
@@ -221,9 +217,7 @@ class TokenIterator(object):
 
         #  care for the result pageing
         if page is None:
-            self.tokens = (
-                Token.query.filter(condition).order_by(order).distinct()
-            )
+            self.tokens = Token.query.filter(condition).order_by(order).distinct()
             self.total_token_count = self.tokens.count()
 
             log.debug(
@@ -348,9 +342,7 @@ class TokenIterator(object):
                 # In case of a '*' wildcard in the list, we take all available
                 # realms
                 valid_realm_list = (
-                    list(getRealms().keys())
-                    if "*" in valid_realms
-                    else valid_realms
+                    list(getRealms().keys()) if "*" in valid_realms else valid_realms
                 )
                 users = [User(user.login, realm) for realm in valid_realm_list]
 
@@ -367,13 +359,9 @@ class TokenIterator(object):
                         if realm in valid_realms or "*" in valid_realms:
                             usr.realm = realm
                             try:
-                                (_uid, _resolver, _resolverClass) = getUserId(
-                                    usr
-                                )
+                                (_uid, _resolver, _resolverClass) = getUserId(usr)
                             except UserError as exx:
-                                log.info(
-                                    "User %r not found in realm %r", usr, realm
-                                )
+                                log.info("User %r not found in realm %r", usr, realm)
                                 continue
                             userlist.extend(usr.getUserPerConf())
                 else:
@@ -382,8 +370,7 @@ class TokenIterator(object):
             for usr in userlist:
                 try:
                     serials.extend(
-                        tok.LinOtpTokenSerialnumber
-                        for tok in get_raw_tokens(user=usr)
+                        tok.LinOtpTokenSerialnumber for tok in get_raw_tokens(user=usr)
                     )
                 except UserError as ex:
                     # we get an exception if the user is not found
@@ -459,8 +446,7 @@ class TokenIterator(object):
 
         if len(valid_realms) > 0:
             log.debug(
-                "[TokenIterator::init] adding filter condition"
-                " for realm %r",
+                "[TokenIterator::init] adding filter condition for realm %r",
                 valid_realms,
             )
 
@@ -469,14 +455,9 @@ class TokenIterator(object):
             rcondition = and_(Token.LinOtpTokenId.in_(token_ids))
             return rcondition
 
-        if (
-            "''" in filterRealm
-            or '""' in filterRealm
-            or "/:no realm:/" in filterRealm
-        ):
+        if "''" in filterRealm or '""' in filterRealm or "/:no realm:/" in filterRealm:
             log.debug(
-                "[TokenIterator::init] search for all tokens, which are"
-                " in no realm"
+                "[TokenIterator::init] search for all tokens, which are in no realm"
             )
 
             return and_(Token.realms == None)
@@ -518,9 +499,7 @@ class TokenIterator(object):
 
         # get all matching realms
         realm_id_tuples = (
-            db.session.query(Realm.id)
-            .filter(Realm.name.in_(valid_realms))
-            .all()
+            db.session.query(Realm.id).filter(Realm.name.in_(valid_realms)).all()
         )
         realm_ids = {realm_tuple[0] for realm_tuple in realm_id_tuples}
 
@@ -543,8 +522,7 @@ class TokenIterator(object):
         search_realms = realms.keys() if "*" in valid_realms else valid_realms
 
         resolvers = {
-            realms.get(realm, {}).get("useridresolver", [])
-            for realm in search_realms
+            realms.get(realm, {}).get("useridresolver", []) for realm in search_realms
         }
         return list(resolvers)
 
@@ -568,9 +546,7 @@ class TokenIterator(object):
             return mapping[sort_param]
         except KeyError:
             error_msg = f"Tokens can't be sorted by {sort_param}."
-            potential_sort_params = get_close_matches(
-                sort_param, mapping.keys()
-            )
+            potential_sort_params = get_close_matches(sort_param, mapping.keys())
             if potential_sort_params:
                 error_msg += f" Did you mean any of {potential_sort_params}?"
             raise KeyError(error_msg)

@@ -130,9 +130,7 @@ class GettokenController(BaseController):
             if count > max_count:
                 count = max_count
 
-            log.debug(
-                "[getmultiotp] retrieving OTP value for token %s", serial
-            )
+            log.debug("[getmultiotp] retrieving OTP value for token %s", serial)
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)
             ret["serial"] = serial
 
@@ -141,9 +139,7 @@ class GettokenController(BaseController):
 
             if view:
                 c.ret = ret
-                return render("/selfservice/multiotp_view.mako").decode(
-                    "utf-8"
-                )
+                return render("/selfservice/multiotp_view.mako").decode("utf-8")
             else:
                 return sendResult(ret, 0)
 
@@ -197,8 +193,7 @@ class GettokenController(BaseController):
                 log.debug("[getotp] retrieving OTP value for token %s", serial)
             elif user.login:
                 log.debug(
-                    "[getotp] retrieving OTP value for token for user "
-                    "%s@%s",
+                    "[getotp] retrieving OTP value for token for user %s@%s",
                     user.login,
                     user.realm,
                 )
@@ -216,8 +211,7 @@ class GettokenController(BaseController):
                 elif 1 == tokennum:
                     serial = toks[0].getSerial()
                     log.debug(
-                        "[getotp] retrieving OTP for token %s for user"
-                        " %s@%s",
+                        "[getotp] retrieving OTP for token %s for user %s@%s",
                         serial,
                         user.login,
                         user.realm,
@@ -259,9 +253,7 @@ class GettokenController(BaseController):
                     -4: "No Token found for this user",
                     -5: "You need to provide a user or a serial",
                 }
-                ret["description"] = error_messages.get(
-                    res, f"Unexpected error: {res}"
-                )
+                ret["description"] = error_messages.get(res, f"Unexpected error: {res}")
                 if res == -3:
                     ret["serials"] = serials
             else:

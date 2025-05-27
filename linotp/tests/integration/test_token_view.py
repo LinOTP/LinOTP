@@ -77,9 +77,7 @@ class TestTokenViewOperations:
         self.testcase.manage_ui.token_view.delete_token(self.token_serial)
 
     def test_03_info(self):
-        info = self.testcase.manage_ui.token_view.get_token_info(
-            self.token_serial
+        info = self.testcase.manage_ui.token_view.get_token_info(self.token_serial)
+        assert info["LinOtp.TokenSerialnumber"] == self.token_serial, (
+            "Displayed token serial should be same as created serial number"
         )
-        assert (
-            info["LinOtp.TokenSerialnumber"] == self.token_serial
-        ), "Displayed token serial should be same as created serial number"

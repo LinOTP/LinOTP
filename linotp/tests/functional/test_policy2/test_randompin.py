@@ -463,9 +463,7 @@ class TestRandompinController(TestController):
             err_msg=err_msg,
         )
 
-    def _validate_base(
-        self, params, action="check", expected="success", err_msg=None
-    ):
+    def _validate_base(self, params, action="check", expected="success", err_msg=None):
         """
         Base method for /validate/<action> requests
 

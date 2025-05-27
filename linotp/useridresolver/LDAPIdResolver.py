@@ -31,7 +31,6 @@
 Dependencies: UserIdResolver
 """
 
-
 import json
 import logging
 import sys
@@ -395,9 +394,7 @@ class IdResolver(UserIdResolver):
                 log.info("testing connection with uri %r", s_uri)
 
                 try:
-                    l_obj = IdResolver.connect(
-                        s_uri, caller, trace_level=trace_level
-                    )
+                    l_obj = IdResolver.connect(s_uri, caller, trace_level=trace_level)
 
                     # try to authenticate to server:
                     # this will establish the first connection
@@ -640,11 +637,7 @@ class IdResolver(UserIdResolver):
 
         relevant_entries = False
         for entry in resultList:
-            if (
-                isinstance(entry, tuple)
-                and len(entry) > 0
-                and entry[0] is not None
-            ):
+            if isinstance(entry, tuple) and len(entry) > 0 and entry[0] is not None:
                 relevant_entries = True
 
         if not relevant_entries:
@@ -682,9 +675,7 @@ class IdResolver(UserIdResolver):
 
         username = ""
 
-        l_user = self.getUserLDAPInfo(
-            userid, attrlist=[self.loginnameattribute]
-        )
+        l_user = self.getUserLDAPInfo(userid, attrlist=[self.loginnameattribute])
 
         if self.loginnameattribute in l_user:
             username = l_user[self.loginnameattribute]
@@ -832,9 +823,7 @@ class IdResolver(UserIdResolver):
         """
         log.debug("[getUserInfo]")
 
-        user = self.getUserLDAPInfo(
-            userid, attrlist=list(self.userinfo.values())
-        )
+        user = self.getUserLDAPInfo(userid, attrlist=list(self.userinfo.values()))
 
         if not user:
             return {}
@@ -955,15 +944,11 @@ class IdResolver(UserIdResolver):
 
         except Exception as exx:
             log.error("failed to parse configuration: %r", exx)
-            raise ResolverLoadConfigError(
-                "failed to parse configuration: %r" % exx
-            )
+            raise ResolverLoadConfigError("failed to parse configuration: %r" % exx)
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(
-                " missing config entries: %r" % missing
-            )
+            raise ResolverLoadConfigError(" missing config entries: %r" % missing)
 
         # ------------------------------------------------------------------ --
 
@@ -1062,8 +1047,7 @@ class IdResolver(UserIdResolver):
         urilist = string_to_list(self.ldapuri)
 
         log.debug(
-            "[checkPass] we will try to authenticate to these LDAP "
-            "servers: %r",
+            "[checkPass] we will try to authenticate to these LDAP servers: %r",
             urilist,
         )
 
@@ -1074,8 +1058,7 @@ class IdResolver(UserIdResolver):
             l_obj = None
             try:
                 log.info(
-                    "[checkPass] check password for user %r "
-                    "on LDAP server %r",
+                    "[checkPass] check password for user %r on LDAP server %r",
                     DN,
                     uri,
                 )
@@ -1307,17 +1290,13 @@ class IdResolver(UserIdResolver):
                 if searchKey == "searchTerm":
                     # already handled in OR filter
                     continue
-                log.debug(
-                    "[getUserList] searchkeys: %r / %r", searchKey, searchValue
-                )
+                log.debug("[getUserList] searchkeys: %r / %r", searchKey, searchValue)
                 if searchKey in self.userinfo:
                     ldapKey = self.userinfo[searchKey]
                     # value and searchFilter are Unicode!
                     searchFilter += "(%s=%s)" % (ldapKey, searchValue)
                 else:
-                    log.warning(
-                        "[getUserList] Unknown searchkey: %r", searchKey
-                    )
+                    log.warning("[getUserList] Unknown searchkey: %r", searchKey)
 
             # finaly embedd the filter in the ldap query string
             if searchFilterOr:
@@ -1404,9 +1383,7 @@ class IdResolver(UserIdResolver):
         :return: generator object (that yields userlist arrays).
         """
         searchFilter = self._prepare_searchFilter(searchDict)
-        log.debug(
-            "[getUserListIterator] doing search with filter %r", searchFilter
-        )
+        log.debug("[getUserListIterator] doing search with filter %r", searchFilter)
 
         # ------------------------------------------------------------------ --
 
@@ -1545,9 +1522,7 @@ class IdResolver(UserIdResolver):
         if not account_dn:
             return {}
 
-        userdata["userid"] = self._get_uid_from_result(
-            result_data, self.uidType
-        )
+        userdata["userid"] = self._get_uid_from_result(result_data, self.uidType)
 
         # finally add all existing userinfos (wrt the mapping)
         for user_key, ldap_key in self.userinfo.items():
@@ -1567,9 +1542,7 @@ class IdResolver(UserIdResolver):
                     try:
                         udata = udata.decode()
                     except BaseException:
-                        log.warning(
-                            "Failed to convert entry %r: %r", ldap_key, udata
-                        )
+                        log.warning("Failed to convert entry %r: %r", ldap_key, udata)
 
                 userdata[user_key] = udata
 
@@ -1618,9 +1591,7 @@ def resolver_request(params, silent=False):
     hide_input=True,
     help="LDAP bind password",
 )
-@click.option(
-    "--enforce_tls", "--enforce-tls", "-e", is_flag=True, help="Enforce TLS"
-)
+@click.option("--enforce_tls", "--enforce-tls", "-e", is_flag=True, help="Enforce TLS")
 @click.option(
     "--trace_level",
     "--trace-level",
@@ -1643,9 +1614,7 @@ def resolver_request(params, silent=False):
     default="ldap",
     help="LDAP server type",
 )
-@click.option(
-    "--cert_file", "--cert-file", help="Use CA certificate from file"
-)
+@click.option("--cert_file", "--cert-file", help="Use CA certificate from file")
 @click.option("--filter", help="Define object filter")
 @click.option("--searchfilter", help="Define object search filter")
 @click.option(
@@ -1787,9 +1756,7 @@ def ldap_test(
         sys.exit(1 - (ok_cases == len(cases)))  # 0=OK, 1=failure
 
     with current_app.test_request_context():
-        result = resolver_request(
-            params, silent=current_app.echo.verbosity == 0
-        )
+        result = resolver_request(params, silent=current_app.echo.verbosity == 0)
         sys.exit(0 if result else 1)
 
 

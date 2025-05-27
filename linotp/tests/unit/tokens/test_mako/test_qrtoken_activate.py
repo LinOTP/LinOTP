@@ -26,6 +26,7 @@
 """
 Tests a very small subset of linotp.lib.reply
 """
+
 import os
 import unittest
 from io import StringIO
@@ -58,9 +59,7 @@ class TestActivationMako(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
     def test_qrtoken_activate(self):
-        qrtemplate = Template(
-            filename=self.lib_token_dir + "/qrtoken/qrtoken.mako"
-        )
+        qrtemplate = Template(filename=self.lib_token_dir + "/qrtoken/qrtoken.mako")
 
         buf = StringIO()
         ctx = Context(buf, c=self.MyContext(), _=mocked_translate)
@@ -71,9 +70,7 @@ class TestActivationMako(unittest.TestCase):
         return
 
     def test_pushtoken_activate(self):
-        qrtemplate = Template(
-            filename=self.lib_token_dir + "/pushtoken/pushtoken.mako"
-        )
+        qrtemplate = Template(filename=self.lib_token_dir + "/pushtoken/pushtoken.mako")
 
         buf = StringIO()
         ctx = Context(buf, c=self.MyContext(), _=mocked_translate)

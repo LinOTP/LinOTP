@@ -77,9 +77,7 @@ class Push_Token_Validation:
 
         # extract metadata and the public key
 
-        data_encoded = pairing_url[
-            len(Push_Token_Validation.uri_schema + "://pair/") :
-        ]
+        data_encoded = pairing_url[len(Push_Token_Validation.uri_schema + "://pair/") :]
 
         data = decode_base64_urlsafe(data_encoded)
         version, token_type, flags = struct.unpack("<bbI", data[0:6])
@@ -106,9 +104,7 @@ class Push_Token_Validation:
         if flags & FLAG_PAIR_CBURL:
             callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
-            raise NotImplementedError(
-                "Callback URL is mandatory for PushToken"
-            )
+            raise NotImplementedError("Callback URL is mandatory for PushToken")
 
         # ------------------------------------------------------------------- --
 
@@ -232,13 +228,9 @@ class Push_Token_Validation:
         offset = 1 + 8 + 8
 
         pt_header = plaintext[0:offset]
-        (content_type, transaction_id, _time_stamp) = struct.unpack(
-            "<bQQ", pt_header
-        )
+        (content_type, transaction_id, _time_stamp) = struct.unpack("<bQQ", pt_header)
 
-        transaction_id = Push_Token_Validation.u64_to_transaction_id(
-            transaction_id
-        )
+        transaction_id = Push_Token_Validation.u64_to_transaction_id(transaction_id)
 
         # ------------------------------------------------------------------ --
 
@@ -299,9 +291,7 @@ class Push_Token_Validation:
 
         pairing_url = response_dict["detail"]["pairing_url"]
         assert pairing_url is not None
-        assert pairing_url.startswith(
-            Push_Token_Validation.uri_schema + "://pair/"
-        )
+        assert pairing_url.startswith(Push_Token_Validation.uri_schema + "://pair/")
 
         return pairing_url
 

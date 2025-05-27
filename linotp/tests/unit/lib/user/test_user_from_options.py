@@ -85,16 +85,14 @@ class TestGetUserFromOptions(unittest.TestCase):
                 fallback_realm="norealm",
             )
 
-            assert (
-                login == result["login"] and realm == result["realm"]
-            ), "failed on run %r:%r:%r" % (login, realm, run)
+            assert login == result["login"] and realm == result["realm"], (
+                "failed on run %r:%r:%r" % (login, realm, run)
+            )
 
         return
 
     @patch("linotp.lib.user.getUserFromParam")
-    def test_run_test_vector_without_fallback_user(
-        self, mock_getUserFromParam
-    ):
+    def test_run_test_vector_without_fallback_user(self, mock_getUserFromParam):
         """
         test a set of options dict values without fallback user and fallback realm
         """
@@ -144,9 +142,9 @@ class TestGetUserFromOptions(unittest.TestCase):
                 fallback_realm="norealm",
             )
 
-            assert (
-                login == result["login"] and realm == result["realm"]
-            ), "failed on run %r:%r:%r" % (login, realm, run)
+            assert login == result["login"] and realm == result["realm"], (
+                "failed on run %r:%r:%r" % (login, realm, run)
+            )
 
         return
 

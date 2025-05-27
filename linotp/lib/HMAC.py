@@ -37,9 +37,7 @@ log = logging.getLogger(__name__)
 
 
 class HmacOtp:
-    def __init__(
-        self, secObj=None, counter: int = 0, digits: int = 6, hashfunc=sha1
-    ):
+    def __init__(self, secObj=None, counter: int = 0, digits: int = 6, hashfunc=sha1):
         self.secretObj = secObj
         self.counter = counter
         self.digits = digits
@@ -51,9 +49,7 @@ class HmacOtp:
         data_input = struct.pack(">Q", counter)
 
         if key is None:
-            dig = self.secretObj.hmac_digest(
-                data_input, hash_algo=self.hashfunc
-            )
+            dig = self.secretObj.hmac_digest(data_input, hash_algo=self.hashfunc)
         else:
             dig = hmac.new(key, data_input, self.hashfunc).digest()
 

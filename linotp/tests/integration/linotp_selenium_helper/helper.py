@@ -166,9 +166,7 @@ def get_from_tconfig(key_array, default=None, required=False):
     current_config = config
 
     if required and not len(current_config):
-        raise Exception(
-            "Testconfig is empty. See Readme for details (--tc-file)"
-        )
+        raise Exception("Testconfig is empty. See Readme for details (--tc-file)")
 
     try:
         for key in key_array:
@@ -178,9 +176,7 @@ def get_from_tconfig(key_array, default=None, required=False):
         if not required:
             return default
         else:
-            raise Exception(
-                "Testconfig entry %s is required" % ".".join(key_array)
-            )
+            raise Exception("Testconfig entry %s is required" % ".".join(key_array))
 
 
 # Helper for skipping tests if there is no radius server
@@ -230,6 +226,4 @@ class BackendException(Exception):
             self.url: str = response.url
 
     def __str__(self) -> str:
-        return (
-            f"{super().__str__()} {self.url} {self.code} - {self.description}"
-        )
+        return f"{super().__str__()} {self.url} {self.code} - {self.description}"

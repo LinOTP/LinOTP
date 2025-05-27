@@ -76,9 +76,7 @@ class TestTokenOwner(unittest.TestCase):
 
     @patch("linotp.lib.token.get_raw_tokens")
     @patch("linotp.lib.token.getUserId")
-    def test_isTokenOwner_no_token(
-        self, mocked_getUserId, mocked_get_raw_tokens
-    ):
+    def test_isTokenOwner_no_token(self, mocked_getUserId, mocked_get_raw_tokens):
         """
         test if no token is found
         """
@@ -102,9 +100,7 @@ class TestTokenOwner(unittest.TestCase):
 
     @patch("linotp.lib.token.get_token")
     @patch("linotp.lib.token.getUserId")
-    def test_isTokenOwner_token_and_user(
-        self, mocked_getUserId, mocked_get_token
-    ):
+    def test_isTokenOwner_token_and_user(self, mocked_getUserId, mocked_get_token):
         """
         test if token owner is found
         """

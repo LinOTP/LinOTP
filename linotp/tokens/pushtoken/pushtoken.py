@@ -151,8 +151,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         info = {"type": "push", "title": _("PushToken")}
 
         info["description"] = (
-            "Challenge-Response-Token over Push "
-            + "Notifications - Curve 25519 based"
+            "Challenge-Response-Token over Push " + "Notifications - Curve 25519 based"
         )
 
         # ------------------------------------------------------------------- --
@@ -306,9 +305,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         ]:
             self.addToTokenInfo("user_token_id", user_token_id)
             b64_user_dsa_public_key = b64encode(user_dsa_public_key)
-            self.addToTokenInfo(
-                "user_dsa_public_key", b64_user_dsa_public_key.decode()
-            )
+            self.addToTokenInfo("user_dsa_public_key", b64_user_dsa_public_key.decode())
             self.addToTokenInfo("user_login", user_login)
             self.addToTokenInfo("gda", gda)
 
@@ -380,10 +377,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         if not callback_url:
             raise Exception(
-                _(
-                    "Policy pushtoken_challenge_callback_url must "
-                    "have a value"
-                )
+                _("Policy pushtoken_challenge_callback_url must have a value")
             )
 
         # ------------------------------------------------------------------- --
@@ -416,9 +410,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             )
 
         elif self.current_state in ["active"]:
-            content_type_as_str = options.get(
-                "content_type", CONTENT_TYPE_SIGNREQ
-            )
+            content_type_as_str = options.get("content_type", CONTENT_TYPE_SIGNREQ)
 
             try:
                 # pylons silently converts all ints in json
@@ -427,9 +419,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 content_type = int(content_type_as_str)
 
             except BaseException:
-                raise ValueError(
-                    "Unrecognized content type: %s" % content_type_as_str
-                )
+                raise ValueError("Unrecognized content type: %s" % content_type_as_str)
 
             # --------------------------------------------------------------- --
 
@@ -454,9 +444,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 )
 
             else:
-                raise ValueError(
-                    "Unrecognized content type: %s" % content_type
-                )
+                raise ValueError("Unrecognized content type: %s" % content_type)
 
         # ------------------------------------------------------------------- --
 
@@ -472,9 +460,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         )
 
         if not success:
-            raise Exception(
-                "push mechanism failed. response was %r" % response
-            )
+            raise Exception("push mechanism failed. response was %r" % response)
 
         # ------------------------------------------------------------------- --
 
@@ -597,8 +583,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         if len(filtered_challenges) > 1:
             log.error(
-                "multiple challenges for one transaction and for one"
-                " token found!"
+                "multiple challenges for one transaction and for one token found!"
             )
             return -1
 
@@ -625,9 +610,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             accept_signature_as_bytes = decode_base64_urlsafe(signature_accept)
 
             accept_data_to_verify_as_bytes = (
-                struct.pack("<b", CHALLENGE_URL_VERSION)
-                + b"ACCEPT\0"
-                + data_to_verify
+                struct.pack("<b", CHALLENGE_URL_VERSION) + b"ACCEPT\0" + data_to_verify
             )
 
             try:
@@ -655,9 +638,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             reject_signature_as_bytes = decode_base64_urlsafe(signature_reject)
 
             reject_data_to_verify_as_bytes = (
-                struct.pack("<b", CHALLENGE_URL_VERSION)
-                + b"DENY\0"
-                + data_to_verify
+                struct.pack("<b", CHALLENGE_URL_VERSION) + b"DENY\0" + data_to_verify
             )
 
             try:
@@ -970,9 +951,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         #            -------------------------------------------------
 
         transaction_id = transaction_id_to_u64(transaction_id)
-        plaintext = struct.pack(
-            "<bQQ", content_type, transaction_id, int(time.time())
-        )
+        plaintext = struct.pack("<bQQ", content_type, transaction_id, int(time.time()))
 
         # ------------------------------------------------------------------- --
 
@@ -1003,8 +982,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             if len(utf8_serial) > 63:
                 raise ValueError(
-                    "serial (encoded as utf8) can only be 63 "
-                    "characters long"
+                    "serial (encoded as utf8) can only be 63 characters long"
                 )
 
             plaintext += utf8_serial + b"\00" + utf8_callback_url + b"\00"

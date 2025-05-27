@@ -97,9 +97,7 @@ def resolver(app):
         ),
         (
             ["--format=name={username}/mail={email}"],
-            "name=hugo/mail=hugo@example.com\n"
-            "name=susi/mail=\n"
-            "name=x123/mail=\n",
+            "name=hugo/mail=hugo@example.com\nname=susi/mail=\nname=x123/mail=\n",
         ),
         (["--format={username}", "--long"], "hugo\nsusi\nx123\n"),
     ],
@@ -115,9 +113,7 @@ def test_local_admins_list_invalid_key(app, runner, resolver):
     # table. Otherwise the template will never be used and the invalid
     # key will never be detected.
 
-    result = runner.invoke(
-        cli_main, ["local-admins", "list", "--format", "{foo}"]
-    )
+    result = runner.invoke(cli_main, ["local-admins", "list", "--format", "{foo}"])
     print(result)
     assert result.exit_code == 1
     assert "Error: invalid key 'foo' in template" in result.stderr
@@ -145,9 +141,7 @@ def test_local_admins_list_invalid_key(app, runner, resolver):
 def test_local_admins_add(app, runner, resolver, username, args):
     result = runner.invoke(
         cli_main,
-        ["local-admins", "add"]
-        + [f"--{k}={v}" for k, v in args.items()]
-        + [username],
+        ["local-admins", "add"] + [f"--{k}={v}" for k, v in args.items()] + [username],
     )
     assert result.exit_code == 0
     u = resolver.session.query(resolver.user_class).get(
@@ -282,9 +276,7 @@ def test_local_admins_remove(app, runner, resolver, args, stdin_data, gone):
 
 
 def test_local_admins_remove_missing_user(app, runner, resolver):
-    result = runner.invoke(
-        cli_main, ["local-admins", "remove", "--yes", "xyzzy"]
-    )
+    result = runner.invoke(cli_main, ["local-admins", "remove", "--yes", "xyzzy"])
     assert result.exit_code == 1
     assert "Error: User xyzzy does not exist" in result.stderr
 
@@ -314,8 +306,7 @@ def test_local_admins_enable_command(app, runner, resolver, res_list):
         first_resolver = admin_resolvers.split(",")[0].strip()
         assert (
             first_resolver
-            == "useridresolver.SQLIdResolver.IdResolver."
-            + resolver.admin_resolver_name
+            == "useridresolver.SQLIdResolver.IdResolver." + resolver.admin_resolver_name
         )
     else:
         assert False, "still no resolvers in admin realm"

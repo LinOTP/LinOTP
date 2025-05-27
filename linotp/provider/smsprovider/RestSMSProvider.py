@@ -158,9 +158,7 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
         :param message: the message to submit to the phone
         """
 
-        log.debug(
-            "[submitMessage] submitting message %s to %s", message, phone
-        )
+        log.debug("[submitMessage] submitting message %s to %s", message, phone)
 
         pparams = {}
 
@@ -210,9 +208,7 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
 
         # replace the phone if there is a given template for it
 
-        sms_phone = self._apply_phone_template(
-            phone, json_body.get(self.sms_phone_key)
-        )
+        sms_phone = self._apply_phone_template(phone, json_body.get(self.sms_phone_key))
 
         json_replace(json_body, key=self.sms_phone_key, value=sms_phone)
 
@@ -290,9 +286,7 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
                 log.error("RestSMSProvider timed out %r", exc)
                 retry -= 1
                 if retry <= 0:
-                    raise ProviderNotAvailable(
-                        "RestSMSProvider timed out %r" % exc
-                    )
+                    raise ProviderNotAvailable("RestSMSProvider timed out %r" % exc)
 
             except Exception as exc:
                 log.error("RestSMSProvider %r", exc)

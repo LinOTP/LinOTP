@@ -28,6 +28,7 @@
 """
 sql user db helper
 """
+
 import json
 import logging
 

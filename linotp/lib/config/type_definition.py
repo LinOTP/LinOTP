@@ -30,7 +30,6 @@ base for a typing system:
     association of linotp system config entries with its types
 """
 
-
 from linotp.lib.type_utils import (
     check_networks_expression,
     check_time_format_string,

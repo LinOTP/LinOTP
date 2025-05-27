@@ -87,9 +87,7 @@ class TestAuditEntryCase(unittest.TestCase):
         # 3. Test  - previous 'action detail' is default
 
         audit_entry["action_detail"] = "no sun, no fun"
-        finish_tokens.create_audit_entry(
-            audit_entry["action_detail"], tokens=[]
-        )
+        finish_tokens.create_audit_entry(audit_entry["action_detail"], tokens=[])
 
         assert "action_detail" in g.audit
         assert "no sun, no fun" in g.audit["action_detail"]

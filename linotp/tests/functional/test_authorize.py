@@ -89,20 +89,14 @@ class TestAuthorizeController(TestController):
     def setTokenRealm(self, serial, realms):
         parameters = {"serial": serial, "realms": realms}
 
-        response = self.make_admin_request(
-            action="tokenrealm", params=parameters
-        )
+        response = self.make_admin_request(action="tokenrealm", params=parameters)
         return response
 
     def setPolicy(self, parameters):
-        response = self.make_system_request(
-            action="setPolicy", params=parameters
-        )
+        response = self.make_system_request(action="setPolicy", params=parameters)
         assert '"status": true' in response, response
         # check for policy
-        response = self.make_system_request(
-            action="getPolicy", params=parameters
-        )
+        response = self.make_system_request(action="getPolicy", params=parameters)
         assert '"action": ' in response, response
 
     def initToken(self):

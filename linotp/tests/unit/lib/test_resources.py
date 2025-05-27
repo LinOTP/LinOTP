@@ -126,9 +126,7 @@ class TestResourceScheduler(unittest.TestCase):
             tries=3, resource_registry_class=DictResourceRegistry
         )
 
-        res_sched.uri_list = string_to_list(
-            "bluri://1, bluri://2, bluri://3, "
-        )
+        res_sched.uri_list = string_to_list("bluri://1, bluri://2, bluri://3, ")
 
         # -------------------------------------------------------------- --
 
@@ -172,9 +170,7 @@ class TestResourceScheduler(unittest.TestCase):
             tries=3, resource_registry_class=DictResourceRegistry
         )
 
-        res_sched.uri_list = string_to_list(
-            "bluri://1, bluri://2, bluri://3, "
-        )
+        res_sched.uri_list = string_to_list("bluri://1, bluri://2, bluri://3, ")
 
         the_blocked_one = res_sched.uri_list[1]
 
@@ -234,9 +230,7 @@ class TestResourceScheduler(unittest.TestCase):
             # verify that the former blocked one is as well unblocked in the
             # registry
 
-            for _key, val in list(
-                res_sched.resource_registry.registry.items()
-            ):
+            for _key, val in list(res_sched.resource_registry.registry.items()):
                 value, _b_ind, _b_count = val
                 assert value is None
 
@@ -266,9 +260,7 @@ class TestResourceScheduler(unittest.TestCase):
             tries=1, resource_registry_class=DictResourceRegistry
         )
 
-        res_sched.uri_list = string_to_list(
-            "bluri://1, bluri://2, bluri://3, "
-        )
+        res_sched.uri_list = string_to_list("bluri://1, bluri://2, bluri://3, ")
 
         the_blocked_one = res_sched.uri_list[1]
 

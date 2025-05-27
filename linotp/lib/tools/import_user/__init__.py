@@ -36,6 +36,7 @@ Session = linotp.model.meta.Session
 Engine = meta.engine
 
 """
+
 import csv
 import json
 import logging
@@ -155,9 +156,7 @@ class UserImport(object):
             if passwords_in_plaintext:
                 user.plain_password = user.password
                 if hash_passwords:
-                    user.password = user.create_password_hash(
-                        user.plain_password
-                    )
+                    user.password = user.create_password_hash(user.plain_password)
 
             yield user
 
@@ -233,20 +232,16 @@ class UserImport(object):
                         }
 
             # finally remove all former, not updated users
-            for del_userid, del_user_name in list(
-                former_userids_to_be_removed.items()
-            ):
+            for del_userid, del_user_name in list(former_userids_to_be_removed.items()):
                 users_deleted[del_userid] = del_user_name
 
             # prepare the results to send back
             result = {
                 "created": {
-                    userid: user.username
-                    for userid, user in users_created.items()
+                    userid: user.username for userid, user in users_created.items()
                 },
                 "updated": {
-                    userid: user.username
-                    for userid, user in users_not_modified.items()
+                    userid: user.username for userid, user in users_not_modified.items()
                 },
                 "modified": {
                     userid: u["new_user"].username
@@ -316,9 +311,7 @@ def main():
 
     user_import.set_mapping(user_column_map)
 
-    result = user_import.import_csv_users(
-        csv_data, format_reader=PasswdFormatReader()
-    )
+    result = user_import.import_csv_users(csv_data, format_reader=PasswdFormatReader())
 
     print(result)
 

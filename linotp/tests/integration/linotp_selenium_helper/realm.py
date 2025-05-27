@@ -93,9 +93,7 @@ class EditRealmDialog(ManageDialog):
                 if element.get_attribute("id") == "realm_edit_resolver_list":
                     continue
 
-                resolvers.append(
-                    UserIdResolverManager.parse_resolver_element(element)
-                )
+                resolvers.append(UserIdResolverManager.parse_resolver_element(element))
 
         return resolvers
 
@@ -110,18 +108,16 @@ class EditRealmDialog(ManageDialog):
 
         resolvers = self.get_resolvers()
 
-        resolver_elements = [
-            r.element for r in resolvers if r.name in linked_resolvers
-        ]
+        resolver_elements = [r.element for r in resolvers if r.name in linked_resolvers]
 
         # We should have a resolver element for each requested resolver
         assert len(linked_resolvers) == len(resolver_elements)
 
         for element in resolver_elements:
             # Ctrl-click on the element
-            ActionChains(self.driver).key_down(Keys.CONTROL).click(
-                element
-            ).key_up(Keys.CONTROL).perform()
+            ActionChains(self.driver).key_down(Keys.CONTROL).click(element).key_up(
+                Keys.CONTROL
+            ).perform()
 
     def save(self):
         """Wait for save button to be clickable, then click save."""
@@ -215,8 +211,7 @@ class RealmManager(ManageDialog):
         """Click on realm in list and delete it."""
         driver = self.driver
         dialog_css = (
-            "div[aria-describedby='dialog_realm_ask_delete'] "
-            "span.ui-dialog-title"
+            "div[aria-describedby='dialog_realm_ask_delete'] span.ui-dialog-title"
         )
 
         realm_count = len(self.realms)
@@ -356,9 +351,7 @@ class RealmManager(ManageDialog):
 
         self.manage.wait_for_waiting_finished()
 
-    def create_via_api(
-        self, name: str, resolvers: Union[List[str], str]
-    ) -> None:
+    def create_via_api(self, name: str, resolvers: Union[List[str], str]) -> None:
         """Create a new realm.
 
         :param name: - The name of the new realm to create

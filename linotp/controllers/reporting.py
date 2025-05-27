@@ -30,6 +30,7 @@
 """
 reporting controller - interfaces for Reporting
 """
+
 import logging
 from datetime import datetime, timedelta
 from typing import List
@@ -156,9 +157,9 @@ class ReportingController(BaseController):
             start = datetime(year=1970, month=1, day=1)
 
             _now = datetime.utcnow()
-            end = datetime(
-                year=_now.year, month=_now.month, day=_now.day
-            ) + timedelta(days=1)
+            end = datetime(year=_now.year, month=_now.month, day=_now.day) + timedelta(
+                days=1
+            )
             # ------------------------------------------------------------- --
 
             request_realms = self.request_params.get("realms", "*").split(",")
@@ -256,9 +257,9 @@ class ReportingController(BaseController):
             # if end is not defined, we use tomorrow at 0:0:0
 
             _now = datetime.utcnow()
-            end = datetime(
-                year=_now.year, month=_now.month, day=_now.day
-            ) + timedelta(days=1)
+            end = datetime(year=_now.year, month=_now.month, day=_now.day) + timedelta(
+                days=1
+            )
             if "to" in self.request_params:
                 end_str = self.request_params.get("to")
                 end = convert_to_datetime(end_str, TIME_FMTS)
@@ -495,9 +496,7 @@ class ReportingController(BaseController):
                     filename="linotp-reports.csv",
                 )
                 return Response(
-                    stream_with_context(
-                        sendCSVIterator(reports.iterate_reports())
-                    ),
+                    stream_with_context(sendCSVIterator(reports.iterate_reports())),
                     mimetype="text/csv",
                     headers=headers,
                 )

@@ -92,6 +92,4 @@ class CustomExpiringList(ExpiringList):
 
     def __janitor__(self):
         now = self._now()
-        self._itemsdic = {
-            item: ex for (item, ex) in self._itemsdic.items() if ex > now
-        }
+        self._itemsdic = {item: ex for (item, ex) in self._itemsdic.items() if ex > now}

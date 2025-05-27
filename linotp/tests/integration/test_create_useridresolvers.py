@@ -92,11 +92,12 @@ class TestCreateUserIdResolvers:
         realm_manager.close()
 
         user_view = self.testcase.manage_ui.user_view
-        assert total_expected_users == user_view.get_num_users(
-            realm_name
-        ), "Expected %i users, got %i" % (
-            total_expected_users,
-            user_view.get_num_users(realm_name),
+        assert total_expected_users == user_view.get_num_users(realm_name), (
+            "Expected %i users, got %i"
+            % (
+                total_expected_users,
+                user_view.get_num_users(realm_name),
+            )
         )
 
     def create_resolver(self, testdata):
@@ -171,9 +172,9 @@ class TestCreateUserIdResolvers:
         ldap_data = data.musicians_ldap_resolver
 
         # Make sure that we really have a UTF-8 string
-        assert (
-            'cn="عبد الحليم حافظ"' in ldap_data["binddn"]
-        ), "Test BindDN does not contain UTF-8"
+        assert 'cn="عبد الحليم حافظ"' in ldap_data["binddn"], (
+            "Test BindDN does not contain UTF-8"
+        )
 
         uid_resolver_manager.create_resolver_via_api(ldap_data)
         resolver_config = uid_resolver_manager.get_resolver_params_via_api(

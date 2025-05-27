@@ -237,9 +237,7 @@ class RemoteTokenClass(TokenClass):
 
         # should we check the pin localy??
         if self.check_pin_local():
-            (res, pin, otpval) = split_pin_otp(
-                self, passw, user, options=options
-            )
+            (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
 
             res = check_pin(self, pin, user=user, options=options)
             if res is False:
@@ -276,9 +274,7 @@ class RemoteTokenClass(TokenClass):
 
         return request_is_valid
 
-    def do_request(
-        self, passw, transactionid=None, user=None, autoassign=False
-    ):
+    def do_request(self, passw, transactionid=None, user=None, autoassign=False):
         """
         run the http request against the remote host
 
@@ -302,9 +298,7 @@ class RemoteTokenClass(TokenClass):
         remoteRealm = self.getFromTokenInfo("remote.realm") or ""
         remoteResConf = self.getFromTokenInfo("remote.resConf") or ""
 
-        ssl_verify_config = getFromConfig(
-            "remote.verify_ssl_certificate", "False"
-        )
+        ssl_verify_config = getFromConfig("remote.verify_ssl_certificate", "False")
         ssl_verify = str(ssl_verify_config).lower().strip() == "true"
 
         # here we also need to check for remote.user and so on....
@@ -373,8 +367,7 @@ class RemoteTokenClass(TokenClass):
                 # 'disable_ssl_certificate_validation'
 
                 log.warning(
-                    "httplib2 'disable_ssl_certificate_validation' "
-                    "attribute error: %r",
+                    "httplib2 'disable_ssl_certificate_validation' attribute error: %r",
                     exx,
                 )
                 # so we run in fallback mode
@@ -431,9 +424,7 @@ class RemoteTokenClass(TokenClass):
 
         return (True, message, data, attributes)
 
-    def checkResponse4Challenge(
-        self, user, passw, options=None, challenges=None
-    ):
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
         This method verifies if the given ``passw`` matches any
         existing ``challenge`` of the token.
@@ -511,9 +502,7 @@ class RemoteTokenClass(TokenClass):
         This is used to autoassign and to determine the serial number of
         a token.
         """
-        (res, otp_count, reply) = self.do_request(
-            otp, user=user, autoassign=autoassign
-        )
+        (res, otp_count, reply) = self.do_request(otp, user=user, autoassign=autoassign)
         return otp_count
 
     def checkPin(self, pin, options=None):

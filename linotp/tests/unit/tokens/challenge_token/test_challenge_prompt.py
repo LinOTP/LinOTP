@@ -178,9 +178,7 @@ class TestChallengePrompt(unittest.TestCase):
 
         return
 
-    @patch(
-        "linotp.tokens.emailtoken.EmailTokenClass._sendEmail", mock_send_email
-    )
+    @patch("linotp.tokens.emailtoken.EmailTokenClass._sendEmail", mock_send_email)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.emailtoken.getFromConfig", mock_getFromConfig)

@@ -98,9 +98,7 @@ class SystemConfig(ManageDialog):
             if self.get_last_access_option():
                 self.find_by_id("token_last_access_check").click()
 
-        assert (
-            self.find_by_id("token_last_access_check").is_selected() == enable
-        ), (
+        assert self.find_by_id("token_last_access_check").is_selected() == enable, (
             "check box for logging usage timestamps should be"
             + str(enable)
             + "selected by now"

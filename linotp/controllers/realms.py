@@ -216,9 +216,7 @@ class RealmsController(BaseController):
 
         param = self.request_params.copy()
 
-        searchDict = {
-            k: v for k, v in param.items() if k not in ["rp", "page"]
-        }
+        searchDict = {k: v for k, v in param.items() if k not in ["rp", "page"]}
         users_iters = getUserListIterators(searchDict, realm_user)
 
         g.audit["success"] = True
@@ -237,9 +235,7 @@ class RealmsController(BaseController):
 
         return Response(
             stream_with_context(
-                sendResultIterator(
-                    iterate_resolverusers(users_iters), rp=rp, page=page
-                )
+                sendResultIterator(iterate_resolverusers(users_iters), rp=rp, page=page)
             ),
             mimetype="application/json",
         )

@@ -214,9 +214,7 @@ def parseSupportLicense(licString: str):
                 signature += l.rstrip()
 
     if len(signature) < 20 or len(licInfo) < 10:
-        log.error(
-            "Format error - not a valid license file! %r", licString[0:40]
-        )
+        log.error("Format error - not a valid license file! %r", licString[0:40])
         raise InvalidLicenseException(
             "Format error - not a valid license file!",
             type="INVALID_FORMAT",
@@ -258,9 +256,7 @@ def isSupportLicenseValid(
 
     if not lic_dict or not lic_sign:
         lic_dict, lic_sign = parseSupportLicense(licString)
-    res, reason = verifyLicenseInfo(
-        lic_dict, lic_sign, raiseException=raiseException
-    )
+    res, reason = verifyLicenseInfo(lic_dict, lic_sign, raiseException=raiseException)
     return res, reason, lic_dict
 
 
@@ -345,18 +341,13 @@ def do_nagging(lic_info, nag_days=7):
 
     if not (
         lic_info.license_type
-        and (
-            lic_info.license_type == "download"
-            or lic_info.license_type == "demo"
-        )
+        and (lic_info.license_type == "download" or lic_info.license_type == "demo")
     ):
         return False
 
     # in case there is no duration definition in 'xx days' we do the nagging
     if not lic_info.license_expiration:
-        log.error(
-            "Download license format error: Missing expiration definition!"
-        )
+        log.error("Download license format error: Missing expiration definition!")
         return True
 
     now_date = datetime.datetime.now().date()
@@ -464,9 +455,7 @@ def verify_duration(lic_dict, raiseException=False):
     :return: boolean, if expired or not
     """
 
-    if not (
-        lic_dict.license_expiration and "days" in lic_dict.license_expiration
-    ):
+    if not (lic_dict.license_expiration and "days" in lic_dict.license_expiration):
         return False
 
     date_format = "%d%m%y"
@@ -543,9 +532,7 @@ def set_duration(lic_dict, raiseException=False):
            in case of a problem
     """
     # if there is no expiration in the license we just can go on
-    if not (
-        lic_dict.license_expiration and "days" in lic_dict.license_expiration
-    ):
+    if not (lic_dict.license_expiration and "days" in lic_dict.license_expiration):
         return True
 
     lic_sign = lic_dict.signature
@@ -553,9 +540,7 @@ def set_duration(lic_dict, raiseException=False):
     try:
         days = int(days)
     except ValueError as _val:
-        raise LicenseException(
-            "Unable to interpret duration in license description"
-        )
+        raise LicenseException("Unable to interpret duration in license description")
 
     # we have a timely limited version, so we have to check if there is
     # already a license like this installed by comparing the signatures
@@ -599,9 +584,7 @@ def removeSupportLicenseInfo():
     removeFromConfig("license")
 
 
-def verifyLicenseInfo(
-    lic_dict, lic_sign, raiseException=False, checkVolume=True
-):
+def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False, checkVolume=True):
     """
     verify the license information
 
@@ -624,8 +607,7 @@ def verifyLicenseInfo(
     if not valid:
         error = _("signature could not be verified!")
         log.error(
-            "Verification of support license failed!"
-            "Error was %s\n. Lincence info: %r",
+            "Verification of support license failed!Error was %s\n. Lincence info: %r",
             error,
             lic_dict.info(),
         )
@@ -638,8 +620,7 @@ def verifyLicenseInfo(
     if not valid:
         error = "%s" % expiration
         log.error(
-            "Verification of support license failed!"
-            "Error was %s\n. Lincence info: %r",
+            "Verification of support license failed!Error was %s\n. Lincence info: %r",
             error,
             lic_dict.info(),
         )
@@ -657,8 +638,7 @@ def verifyLicenseInfo(
 
         error = _("volume exceeded: ") + volume_info
         log.error(
-            "Verification of support license failed!"
-            "Error was %s\n. Lincence info: %r",
+            "Verification of support license failed!Error was %s\n. Lincence info: %r",
             error,
             lic_dict.info(),
         )
@@ -816,8 +796,7 @@ def verify_user_volume(lic_dict):
         user_volume = int(lic_dict.get("user-num", 0))
     except TypeError as err:
         log.error(
-            "Failed to convert license. Number of token users: %r. "
-            "Exception was:%r ",
+            "Failed to convert license. Number of token users: %r. Exception was:%r ",
             lic_dict.get("user-num"),
             err,
         )
@@ -871,8 +850,7 @@ def verify_token_volume(lic_dict):
         token_volume = int(lic_dict.get("token-num", 0))
     except TypeError as err:
         log.error(
-            "Failed to convert license. Number of tokens: %r. "
-            "Exception was:%r ",
+            "Failed to convert license. Number of tokens: %r. Exception was:%r ",
             lic_dict.get("token-num"),
             err,
         )
@@ -943,9 +921,7 @@ def get_public_keys():
                     idx, _sep, _rest = idx.rpartition("_pub")
                 pubKeys[idx] = key_text
             else:
-                log.error(
-                    "Licence: Public key file is not valid (%r)", key_file
-                )
+                log.error("Licence: Public key file is not valid (%r)", key_file)
         except Exception as exx:
             log.error(
                 "Licence: error during reading public key file (%s): %r",
@@ -1048,8 +1024,7 @@ def readPublicKey(filename):
             pem = f.read()
     except Exception as exx:
         log.error(
-            "Licence: Problem reading public key file: %s. "
-            "Exception was: %r",
+            "Licence: Problem reading public key file: %s. Exception was: %r",
             filename,
             exx,
         )
@@ -1057,11 +1032,7 @@ def readPublicKey(filename):
     pem_lines = [line for line in pem.split("\n") if line.strip()]
 
     # only add keys, which contain key definition at start and at end
-    if (
-        pem_lines
-        and pubKeyStart in pem_lines[0]
-        and pubKeyEnd in pem_lines[-1]
-    ):
+    if pem_lines and pubKeyStart in pem_lines[0] and pubKeyEnd in pem_lines[-1]:
         pubKey = "\n".join(pem_lines)
 
     else:

@@ -29,6 +29,7 @@
 linotp admin  fix-db-encoding
 
 """
+
 import sys
 
 from flask import current_app

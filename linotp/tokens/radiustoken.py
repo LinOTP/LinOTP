@@ -26,7 +26,6 @@
 #
 """This file containes the RADIUS token class"""
 
-
 import binascii
 import logging
 
@@ -239,8 +238,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
         # here we also need to check for radius.user
         log.debug(
-            "[do_request] checking OTP len:%r on radius server: %s,"
-            "  user: %s",
+            "[do_request] checking OTP len:%r on radius server: %s,  user: %s",
             len(anOtpVal),
             radiusServer,
             radiusUser,
@@ -262,8 +260,7 @@ class RadiusTokenClass(RemoteTokenClass):
             if len(server) >= 2:
                 r_authport = int(server[1])
             log.debug(
-                "[do_request] [RadiusToken] NAS Identifier: %r, "
-                "Dictionary: %r",
+                "[do_request] [RadiusToken] NAS Identifier: %r, Dictionary: %r",
                 nas_identifier,
                 r_dict,
             )
@@ -332,8 +329,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
         except Exception as ex:
             log.error(
-                "[do_request] [RadiusToken] Error contacting radius"
-                " Server: %r",
+                "[do_request] [RadiusToken] Error contacting radius Server: %r",
                 ex,
             )
 

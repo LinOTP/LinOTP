@@ -27,6 +27,7 @@
 
 
 """"""
+
 import binascii
 import datetime
 import hmac
@@ -280,9 +281,7 @@ class TestTotpController(TestController):
 
         response = self.make_admin_request("show", params=params)
         jresp = json.loads(response.body)
-        t_info = json.loads(
-            jresp["result"]["value"]["data"][0]["LinOtp.TokenInfo"]
-        )
+        t_info = json.loads(jresp["result"]["value"]["data"][0]["LinOtp.TokenInfo"])
 
         return t_info
 
@@ -458,9 +457,7 @@ class TestTotpController(TestController):
                 otpSet.add(otp)
 
                 # Jump to the future
-                frozen_datetime.tick(
-                    delta=datetime.timedelta(seconds=step / 2)
-                )
+                frozen_datetime.tick(delta=datetime.timedelta(seconds=step / 2))
 
     def test_decrement_timeshift(self):
         """
@@ -577,9 +574,7 @@ class TestTotpController(TestController):
             # advance to the future: aut of the check window (300 sec)
             # so that we enter the autosync
 
-            autosync_start = time2seconds(
-                start_time, seconds=timeWindow + step
-            )
+            autosync_start = time2seconds(start_time, seconds=timeWindow + step)
             (next_otp, _) = t1.getOtp(seconds=autosync_start)
 
             res = self.checkOtp(user, next_otp)

@@ -155,9 +155,7 @@ def schema():
 )
 def test_configschema_init(schema, use_schema, refuse_unknown):
     cs = s.ConfigSchema(schema if use_schema else None, refuse_unknown)
-    assert cs.schema == (
-        {item.name: item for item in schema} if use_schema else {}
-    )
+    assert cs.schema == ({item.name: item for item in schema} if use_schema else {})
     assert cs.refuse_unknown == refuse_unknown
 
 
@@ -452,14 +450,10 @@ def test_configure_app_linotp_cfg_path(monkeypatch, app_, path, expected_seen):
         ("-/foo/linotp.cfg", True),
     ],
 )
-def test_configure_app_linotp_cfg_silent(
-    monkeypatch, capsys, app_, path, silent
-):
+def test_configure_app_linotp_cfg_silent(monkeypatch, capsys, app_, path, silent):
     monkeypatch.setenv("FLASK_ENV", "default")
     monkeypatch.setenv("LINOTP_CFG", path)
-    monkeypatch.setattr(
-        ExtFlaskConfig, "from_pyfile", lambda self, fn, **kwargs: False
-    )
+    monkeypatch.setattr(ExtFlaskConfig, "from_pyfile", lambda self, fn, **kwargs: False)
 
     _configure_app(app_)
     captured = capsys.readouterr()

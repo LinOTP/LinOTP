@@ -33,6 +33,7 @@ import user into an SQL Resolver
   * define the resolver
 
 """
+
 import json
 import logging
 
@@ -128,10 +129,7 @@ class Shell_DatabaseContext(DatabaseContext):
         :param params: dict with the resolver parameter
         """
 
-        print(
-            "create resolver currently only available in "
-            "the scope of LinOTP"
-        )
+        print("create resolver currently only available in the scope of LinOTP")
         return
 
 

@@ -36,9 +36,7 @@ from linotp.model.schema import ImportedUserSchema
 
 
 class NoSuchUserError(Exception):
-    def __init__(
-        self, username: str, message: str = "User {0} does not exist"
-    ):
+    def __init__(self, username: str, message: str = "User {0} does not exist"):
         super().__init__(message.format(username))
         self.username = username
 
@@ -55,9 +53,7 @@ class ImportedUser(ImportedUserSchema):
         self.plain_password = None
 
     def _get_user(self, username: str) -> ImportedUserSchema:
-        user = self.session.query(self.user_class).get(
-            (self.resolver_name, username)
-        )
+        user = self.session.query(self.user_class).get((self.resolver_name, username))
         if not user:
             raise NoSuchUserError(username)
         return user

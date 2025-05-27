@@ -43,7 +43,6 @@ directory.
 
 """
 
-
 import base64
 import copy
 import io
@@ -319,10 +318,7 @@ class TestController(TestCase):
 
         if isinstance(auth_user, User):
             login = auth_user.login
-            realm = (
-                auth_user.realm
-                or current_app.config["ADMIN_REALM_NAME"].lower()
-            )
+            realm = auth_user.realm or current_app.config["ADMIN_REALM_NAME"].lower()
             resolver = auth_user.resolver_config_identifier or auth_resolver
 
         app_get_jwt_identity.return_value = {
@@ -615,9 +611,7 @@ class TestController(TestCase):
             auth_resolver=auth_resolver,
         )
 
-    def make_validate_request(
-        self, action, params=None, method=None, client=None
-    ):
+    def make_validate_request(self, action, params=None, method=None, client=None):
         """
         Makes an unauthenticated request to /validate/'action'
         """
@@ -632,9 +626,7 @@ class TestController(TestCase):
 
         admin_realm = current_app.config["ADMIN_REALM_NAME"].lower()
 
-        response = self.make_system_request(
-            "getRealms", params={}, auth_user=auth_user
-        )
+        response = self.make_system_request("getRealms", params={}, auth_user=auth_user)
 
         realms = response.json.get("result", {}).get("value", {})
 
@@ -734,8 +726,7 @@ class TestController(TestCase):
         content = response.json
         assert content["result"]["status"]
         expected_value = {
-            "setPolicy %s"
-            % params["name"]: {
+            "setPolicy %s" % params["name"]: {
                 "realm": True,
                 "active": True,
                 "client": True,
@@ -773,9 +764,7 @@ class TestController(TestCase):
             if not entry.startswith(prefix):
                 continue
 
-            response = self.make_system_request(
-                "delConfig", params={"key": entry}
-            )
+            response = self.make_system_request("delConfig", params={"key": entry})
 
             assert "false" not in response
 
@@ -922,9 +911,7 @@ class TestController(TestCase):
             # create the realm if it does not already exist
 
             if realm.lower() not in existing_realms:
-                response = self.create_realm(
-                    realm=realm, resolvers=resolver_definition
-                )
+                response = self.create_realm(realm=realm, resolvers=resolver_definition)
 
                 content = response.json
                 assert content["result"]["status"]
@@ -934,9 +921,7 @@ class TestController(TestCase):
 
             if realm.lower() == "myDefRealm".lower():
                 params = {"realm": realm.lower()}
-                response = self.make_system_request(
-                    "setDefaultRealm", params=params
-                )
+                response = self.make_system_request("setDefaultRealm", params=params)
 
                 assert "false" not in response
 
@@ -953,9 +938,7 @@ class TestController(TestCase):
         assert "default" in realms["mydefrealm"]
         assert realms["mydefrealm"]["default"]
 
-    def _user_service_init(
-        self, auth_user: str, password: str, otp: str = None
-    ):
+    def _user_service_init(self, auth_user: str, password: str, otp: str = None):
         auth_user = auth_user.encode("utf-8")
         password = password.encode("utf-8")
 
@@ -1006,9 +989,7 @@ class TestController(TestCase):
         auth_cookie = self.user_service.get(user, None)
 
         if not auth_cookie:
-            response, auth_cookie = self._user_service_init(
-                user, password, otp
-            )
+            response, auth_cookie = self._user_service_init(user, password, otp)
 
             if not auth_cookie:
                 response.body = response.data.decode("utf-8")
@@ -1072,9 +1053,7 @@ class TestController(TestCase):
         auth_cookie = self.user_selfservice.get(user)
 
         if not auth_cookie:
-            response, auth_cookie = self._user_service_login(
-                user, password, otp
-            )
+            response, auth_cookie = self._user_service_login(user, password, otp)
 
             if not auth_cookie or '"value": false' in response.body:
                 response.body = response.data.decode("utf-8")
@@ -1121,9 +1100,7 @@ class TestController(TestCase):
         auth_cookie = self.user_selfservice.get(user)
 
         if not auth_cookie:
-            response, auth_cookie = self._user_service_login(
-                user, password, otp
-            )
+            response, auth_cookie = self._user_service_login(user, password, otp)
 
             if not auth_cookie or '"value": false' in response.body:
                 return response

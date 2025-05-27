@@ -28,7 +28,6 @@
 
 """ """
 
-
 import json
 import logging
 import os
@@ -204,11 +203,7 @@ class TestManageController(TestController):
         # only renates token
         params = {"qtype": "loginname", "query": "renate"}
         response = self.make_manage_request("tokenview_flexi", params=params)
-        testbody = (
-            response.body.replace("\n", " ")
-            .replace("\r", "")
-            .replace("  ", " ")
-        )
+        testbody = response.body.replace("\n", " ").replace("\r", "").replace("  ", " ")
         assert '"total": 1' in testbody, testbody
 
         # analyse the reply for token info
@@ -300,9 +295,7 @@ class TestManageController(TestController):
         Manage: Testing tokeninfo dialog
         """
 
-        response = self.make_manage_request(
-            "tokeninfo", params={"serial": "token1"}
-        )
+        response = self.make_manage_request("tokeninfo", params={"serial": "token1"})
 
         msg = "class=tokeninfoOuterTable>LinOtp.TokenSerialnumber"
 

@@ -64,9 +64,7 @@ def string_to_list(string_list, sep=","):
     :param sep: the item separator
     """
     entries = [
-        entry.strip()
-        for entry in string_list.split(sep)
-        if entry and entry.strip()
+        entry.strip() for entry in string_list.split(sep) if entry and entry.strip()
     ]
 
     return entries
@@ -331,9 +329,7 @@ class ResourceScheduler(object):
                 _blocked_until,
                 block_indicator,
                 block_counter,
-            ) = self.resource_registry.store_or_retrieve(
-                resource, (None, 0, 0)
-            )
+            ) = self.resource_registry.store_or_retrieve(resource, (None, 0, 0))
 
             adjusted_delay = delay + delay * 2**block_counter
             block_until = datetime.utcnow() + timedelta(seconds=adjusted_delay)

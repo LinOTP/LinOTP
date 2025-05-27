@@ -78,9 +78,7 @@ def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
     existing = resolver and resolver["type"]
 
     if not existing:
-        useridresolver_manager.create_resolver_via_api(
-            data.musicians_ldap_resolver
-        )
+        useridresolver_manager.create_resolver_via_api(data.musicians_ldap_resolver)
 
     yield dict(
         name=music_resolver["name"],
@@ -93,9 +91,7 @@ def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
 
 
 @pytest.fixture
-def musicians_realm(
-    testcase: TestCase, musicians_resolver: Dict[str, str]
-) -> str:
+def musicians_realm(testcase: TestCase, musicians_resolver: Dict[str, str]) -> str:
     """Create the musician realm and remove it after the test.
 
     manage a realm for a test:
@@ -112,9 +108,7 @@ def musicians_realm(
     existing = realm_name.lower() in realms
 
     if not existing:
-        realm_manager.create_via_api(
-            realm_name, musicians_resolver["fullname"]
-        )
+        realm_manager.create_via_api(realm_name, musicians_resolver["fullname"])
 
     yield realm_name
 

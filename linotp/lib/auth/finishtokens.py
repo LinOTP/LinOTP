@@ -113,15 +113,11 @@ class FinishTokens(object):
             return False, None
 
         if self.user:
-            log.warning(
-                "user %r@%r failed to auth.", self.user.login, self.user.realm
-            )
+            log.warning("user %r@%r failed to auth.", self.user.login, self.user.realm)
         else:
             log.warning(
                 "serial %r failed to auth.",
-                (self.pin_matching_tokens + self.invalid_tokens)[
-                    0
-                ].getSerial(),
+                (self.pin_matching_tokens + self.invalid_tokens)[0].getSerial(),
             )
 
         if self.pin_matching_tokens:
@@ -138,9 +134,7 @@ class FinishTokens(object):
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
 
-            self.create_audit_entry(
-                action_detail=detail, tokens=self.invalid_tokens
-            )
+            self.create_audit_entry(action_detail=detail, tokens=self.invalid_tokens)
 
             return ret, reply
 
@@ -272,9 +266,7 @@ class FinishTokens(object):
         if len(challenge_tokens) == 1:
             challenge_token = challenge_tokens[0]
 
-            _res, reply = Challenges.create_challenge(
-                challenge_token, options=options
-            )
+            _res, reply = Challenges.create_challenge(challenge_token, options=options)
 
             return (False, reply, action_detail)
 
@@ -291,9 +283,7 @@ class FinishTokens(object):
             transactionid = ""
             for i, challenge_token in enumerate(challenge_tokens, 1):
                 id_postfix = f".{i:02d}"
-                challenge_id = (
-                    f"{transactionid}{id_postfix}" if transactionid else ""
-                )
+                challenge_id = f"{transactionid}{id_postfix}" if transactionid else ""
 
                 (_res, reply) = Challenges.create_challenge(
                     challenge_token,
@@ -312,9 +302,7 @@ class FinishTokens(object):
             all_reply["transactionid"] = transactionid
             all_reply["message"] = "Multiple challenges submitted."
 
-            log.debug(
-                "Multiple challenges submitted: %d", len(challenge_tokens)
-            )
+            log.debug("Multiple challenges submitted: %d", len(challenge_tokens))
 
             return (False, all_reply, action_detail)
 
@@ -348,9 +336,7 @@ class FinishTokens(object):
         pin_policies = get_pin_policies(user) or []
 
         action_detail = (
-            "wrong user password -1"
-            if 1 in pin_policies
-            else "wrong otp pin -1"
+            "wrong user password -1" if 1 in pin_policies else "wrong otp pin -1"
         )
 
         return (False, None, action_detail)

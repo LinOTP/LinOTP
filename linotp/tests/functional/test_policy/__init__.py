@@ -44,9 +44,7 @@ class TestPoliciesBase(TestController):
 
             return data
 
-    def upload_tokens(
-        self, file_name, data=None, params=None, auth_user="admin"
-    ):
+    def upload_tokens(self, file_name, data=None, params=None, auth_user="admin"):
         """
         helper to upload a token file via admin/loadtokens file upload
         like it is done in the browser

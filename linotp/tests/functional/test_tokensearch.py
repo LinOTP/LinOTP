@@ -27,6 +27,7 @@
 
 
 """ """
+
 import json
 
 from linotp.tests import TestController
@@ -70,15 +71,11 @@ class TestTokensearch(TestController):
         assert [] == token_list
 
     def _cache_splitAtSign(self):
-        response = self.make_system_request(
-            "getConfig", params={"key": "splitAtSign"}
-        )
+        response = self.make_system_request("getConfig", params={"key": "splitAtSign"})
 
         jresp = json.loads(response.body)
         splitAtSig = (
-            jresp.get("result", {})
-            .get("value", {})
-            .get("getConfig splitAtSig")
+            jresp.get("result", {}).get("value", {}).get("getConfig splitAtSig")
         )
 
         self.splitAtSig = splitAtSig

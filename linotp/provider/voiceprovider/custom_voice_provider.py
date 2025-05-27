@@ -48,8 +48,7 @@ log = logging.getLogger(__name__)
 @provider_registry.class_entry("CustomVoiceProvider")
 @provider_registry.class_entry("linotp.provider.CustomVoiceProvider")
 @provider_registry.class_entry(
-    "linotp.provider.voiceprovider."
-    "custom_voice_provider.CustomVoiceProvider"
+    "linotp.provider.voiceprovider.custom_voice_provider.CustomVoiceProvider"
 )
 class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
     """
@@ -148,9 +147,7 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
 
         # timeout could be a tuple of network timeout or connection timeout
 
-        self.timeout = CustomVoiceProvider.load_timeout(
-            configDict, DEFAULT_TIMEOUT
-        )
+        self.timeout = CustomVoiceProvider.load_timeout(configDict, DEFAULT_TIMEOUT)
 
         # ------------------------------------------------------------------ --
 
@@ -169,9 +166,7 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
         delivery_service = configDict.get("twilioConfig")
 
         if not delivery_service:
-            raise KeyError(
-                "Missing delivery service configuration: twillioConfig"
-            )
+            raise KeyError("Missing delivery service configuration: twillioConfig")
 
         # prepare the twilio voice provider
         # . . . other voice services will follow here
@@ -214,9 +209,7 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
             raise Exception("No message to submit!")
 
         if "{otp}" not in messageTemplate:
-            log.warning(
-                "Missing '{otp}' in messageTemplate: %r", messageTemplate
-            )
+            log.warning("Missing '{otp}' in messageTemplate: %r", messageTemplate)
 
         if not otp:
             raise Exception("Missing otp value!")

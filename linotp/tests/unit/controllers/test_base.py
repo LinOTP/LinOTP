@@ -45,9 +45,7 @@ class TestBaseController(object):
     test for request parameter handling to support parameters from json body
     """
 
-    @mock.patch(
-        "linotp.controllers.BaseController.__init__", return_value=None
-    )
+    @mock.patch("linotp.controllers.BaseController.__init__", return_value=None)
     def test_multidict_params(self, _mock_base, base_app):
         """
         check if global request.args gets parsed to a plain dict correctly
@@ -65,17 +63,15 @@ class TestBaseController(object):
             query_string=input_params,
             content_type="application/x-www-form-urlencoded",
         ):
-            assert isinstance(
-                controller.request_params, dict
-            ), "self.request_params is not of type dict!"
+            assert isinstance(controller.request_params, dict), (
+                "self.request_params is not of type dict!"
+            )
 
-            assert (
-                controller.request_params == expected_params
-            ), "parsed request_params do not match"
+            assert controller.request_params == expected_params, (
+                "parsed request_params do not match"
+            )
 
-    @mock.patch(
-        "linotp.controllers.BaseController.__init__", return_value=None
-    )
+    @mock.patch("linotp.controllers.BaseController.__init__", return_value=None)
     def test_jsondict_params(self, _mock_base, base_app):
         """
         check if global request.json_body gets parsed correctly
@@ -88,17 +84,15 @@ class TestBaseController(object):
         with base_app.test_request_context(
             json=expected_params,
         ):
-            assert isinstance(
-                controller.request_params, dict
-            ), "self.request_params is not of type dict!"
+            assert isinstance(controller.request_params, dict), (
+                "self.request_params is not of type dict!"
+            )
 
-            assert (
-                controller.request_params == expected_params
-            ), "parsed request_params do not match"
+            assert controller.request_params == expected_params, (
+                "parsed request_params do not match"
+            )
 
-    @mock.patch(
-        "linotp.controllers.BaseController.__init__", return_value=None
-    )
+    @mock.patch("linotp.controllers.BaseController.__init__", return_value=None)
     def test_both_given(self, _mock_base, base_app):
         """
         check if json is give as content type the other params are ignored
@@ -113,10 +107,10 @@ class TestBaseController(object):
             query_string=expected_params,
             json=expected_params,
         ):
-            assert isinstance(
-                controller.request_params, dict
-            ), "self.request_params is not of type dict!"
+            assert isinstance(controller.request_params, dict), (
+                "self.request_params is not of type dict!"
+            )
 
-            assert (
-                controller.request_params == expected_params
-            ), "parsed request_params do not match"
+            assert controller.request_params == expected_params, (
+                "parsed request_params do not match"
+            )

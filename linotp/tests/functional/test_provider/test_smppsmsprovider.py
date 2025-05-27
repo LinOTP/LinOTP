@@ -129,9 +129,7 @@ def test_submitMessageNoConnection(smpp_sms_provider):
     assert "Failed to connect to server" in str(ex)
 
 
-def test_submitMessageBadCredentials(
-    smpp_sms_provider, dummy_smpp_server, caplog
-):
+def test_submitMessageBadCredentials(smpp_sms_provider, dummy_smpp_server, caplog):
     dummy_smpp_server.reset()
     smpp_sms_provider.password = "bazquux"
     assert not smpp_sms_provider._submitMessage("987654", "Hello world")

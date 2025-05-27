@@ -45,9 +45,7 @@ class TestChallengesTransactionidLength(unittest.TestCase):
             transid_length = Challenges.get_transactionid_length()
             assert (
                 round(
-                    abs(
-                        transid_length - Challenges.DefaultTransactionIdLength
-                    ),
+                    abs(transid_length - Challenges.DefaultTransactionIdLength),
                     7,
                 )
                 == 0
@@ -59,9 +57,7 @@ class TestChallengesTransactionidLength(unittest.TestCase):
                 "TransactionIdLength must be between 12 and 17, "
                 "was %d" % too_short_length
             )
-            mock_context.get.return_value = {
-                "TransactionIdLength": too_short_length
-            }
+            mock_context.get.return_value = {"TransactionIdLength": too_short_length}
             with pytest.raises(Exception) as wrong_range:
                 Challenges.get_transactionid_length()
 

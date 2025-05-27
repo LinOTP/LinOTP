@@ -420,9 +420,7 @@ def getProvider(provider_type, provider_name=None, decrypted=False):
     if decrypted:
         for provider_def in list(providers.values()):
             if "Config" in provider_def:
-                provider_def["Config"] = provider_def.get(
-                    "Config"
-                ).get_unencrypted()
+                provider_def["Config"] = provider_def.get("Config").get_unencrypted()
 
     if provider_name:
         if provider_name in providers:
@@ -561,9 +559,7 @@ def save_legacy_provider(provider_type, params):
         if spec == "Class" and "class" in params:
             storeConfig(key=config_name, val=params["class"])
         if spec == "Config" and "config" in params:
-            storeConfig(
-                key=config_name, val=params["config"], typ="encrypted_data"
-            )
+            storeConfig(key=config_name, val=params["config"], typ="encrypted_data")
         if spec == "Timeout" and "timeout" in params:
             storeConfig(key=config_name, val=params["timeout"])
 
@@ -628,9 +624,7 @@ def save_new_provider(provider_type, provider_name, params):
         value = params[config_entry]
 
         # store the config entry
-        storeConfig(
-            key=provider_prefix + "." + config_key, val=value, typ=config_type
-        )
+        storeConfig(key=provider_prefix + "." + config_key, val=value, typ=config_type)
 
     return True, {}
 
@@ -672,9 +666,7 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception(
-            "unknown provider_type for policy lookup! %r" % provider_type
-        )
+        raise Exception("unknown provider_type for policy lookup! %r" % provider_type)
 
     if user is None:
         raise Exception("unknown user for policy lookup! %r" % user)
@@ -718,9 +710,7 @@ def get_provider_from_policy(
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception(
-            "unknown provider_type for policy lookup! %r" % provider_type
-        )
+        raise Exception("unknown provider_type for policy lookup! %r" % provider_type)
 
     if user is None:
         raise Exception("unknown user for policy lookup! %r" % user)
@@ -747,9 +737,7 @@ def get_provider_from_policy(
 
         return []
 
-    provider_names = get_action_value(
-        policies, scope=scope, action=action, default=""
-    )
+    provider_names = get_action_value(policies, scope=scope, action=action, default="")
 
     providers = []
 
@@ -772,9 +760,7 @@ def _lookup_provider_policies(provider_type):
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception(
-            "unknown provider_type for policy lookup! %r" % provider_type
-        )
+        raise Exception("unknown provider_type for policy lookup! %r" % provider_type)
 
     # now have a look at all authentication policies
     policies = linotp.lib.policy.getPolicy(
@@ -948,9 +934,7 @@ def _load_provider_class(provider_slass_spec):
     if not provider_slass_spec:
         raise Exception("No provider class defined.")
 
-    provider_class = ProviderClass_lookup.get(
-        provider_slass_spec, provider_slass_spec
-    )
+    provider_class = ProviderClass_lookup.get(provider_slass_spec, provider_slass_spec)
     provider_class_obj = provider_registry.get(provider_class)
 
     if provider_class_obj is None:
@@ -969,14 +953,12 @@ def _load_provider_class(provider_slass_spec):
 
         except ImportError as err:
             raise Exception(
-                "Unknown provider class: Identifier was %s - %r"
-                % (provider_class, err)
+                "Unknown provider class: Identifier was %s - %r" % (provider_class, err)
             )
 
         except AttributeError as err:
             raise Exception(
-                "Unknown provider class: Identifier was %s - %r"
-                % (provider_class, err)
+                "Unknown provider class: Identifier was %s - %r" % (provider_class, err)
             )
 
     #

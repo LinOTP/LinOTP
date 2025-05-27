@@ -82,8 +82,6 @@ class TestUpoloadPolicies(TestPoliciesBase):
             "oathcsv.csv", data=data, params=params, auth_user="realmadmin"
         )
 
-        assert (
-            "The maximum number of allowed tokens in realm" in response
-        ), response
+        assert "The maximum number of allowed tokens in realm" in response, response
 
         return

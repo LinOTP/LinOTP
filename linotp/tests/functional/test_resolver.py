@@ -256,8 +256,7 @@ class TestResolver(TestController):
 
         params = {
             "previous_name": "LdapX",
-            "BINDDN": "ou=roundabout, "
-            "cn=administrator,dc=yourdomain,dc=tld",
+            "BINDDN": "ou=roundabout, cn=administrator,dc=yourdomain,dc=tld",
         }
         response, params = self.define_ldap_resolver("LdapZ", params=params)
         assert '"status": false,' in response, response
@@ -273,8 +272,7 @@ class TestResolver(TestController):
         params = {
             "previous_name": "LdapX",
             "BINDPW": "Test123!",
-            "BINDDN": "ou=roundabout, "
-            "cn=administrator,dc=yourdomain,dc=tld",
+            "BINDDN": "ou=roundabout, cn=administrator,dc=yourdomain,dc=tld",
         }
 
         response, params = self.define_ldap_resolver("LdapZ", params=params)
@@ -367,9 +365,7 @@ class TestResolver(TestController):
         zwei = jresp["zwei"]["useridresolver"]
 
         new_resolver_list = ["AAAA", "CCCC", "DDDD", "ZZZZ"]
-        expected_resolvers = [
-            resolver_base + name for name in new_resolver_list
-        ]
+        expected_resolvers = [resolver_base + name for name in new_resolver_list]
         assert eins.sort() == expected_resolvers.sort(), response.json
         assert zwei.sort() == expected_resolvers.sort(), response.json
 
@@ -413,8 +409,7 @@ class TestResolver(TestController):
         assert '"value": true' in response.body
 
         params = {
-            "resolvers": "useridresolver.LDAPIdResolver.IdResolver."
-            + ldap_name,
+            "resolvers": "useridresolver.LDAPIdResolver.IdResolver." + ldap_name,
             "realm": "lino",
         }
         response = self.make_system_request("setRealm", params=params)
@@ -424,9 +419,7 @@ class TestResolver(TestController):
 
         # run the 'userlist' request against the faked ldap resolver
 
-        with patch(
-            "linotp.useridresolver.LDAPIdResolver.IdResolver"
-        ) as mock_resolver:
+        with patch("linotp.useridresolver.LDAPIdResolver.IdResolver") as mock_resolver:
             mock_lobj = Mock_lObj()
             mock_resolver.connect.return_value = mock_lobj
 

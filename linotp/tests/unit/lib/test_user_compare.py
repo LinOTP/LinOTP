@@ -50,9 +50,7 @@ class TestUserCompare(unittest.TestCase):
 
         th = TokenHandler()
 
-        user = User(
-            login="hugo", realm="realm", resolver_config_identifier="blah"
-        )
+        user = User(login="hugo", realm="realm", resolver_config_identifier="blah")
 
         # ----------------------------------------------------------------- --
 

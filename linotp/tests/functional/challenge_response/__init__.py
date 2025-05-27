@@ -38,7 +38,6 @@ We assume port 5001 is used (default). If you want to use another port you can
 specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
-
 import binascii
 import json
 import logging
@@ -211,9 +210,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_all_policies()
 
         self.remote_url = "http://127.0.0.1:%s" % self.paster_port
-        self.sms_url = (
-            "http://localhost:%s/testing/http2sms" % self.paster_port
-        )
+        self.sms_url = "http://localhost:%s/testing/http2sms" % self.paster_port
         self.radius_url = ("localhost:%s" % self.radius_authport,)
         return
 

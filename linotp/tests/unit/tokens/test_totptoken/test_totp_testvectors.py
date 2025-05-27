@@ -29,7 +29,6 @@
 totp token - linotp hmac compliance test
 """
 
-
 import binascii
 import unittest
 from datetime import datetime
@@ -155,8 +154,6 @@ class TotpTestCase(unittest.TestCase):
 
                 hmac = LinHmacOtp(digits=len(otpvalue), hashfunc=hash_func)
 
-                lin_otp = hmac.generate(
-                    counter=counter, key=binascii.unhexlify(key)
-                )
+                lin_otp = hmac.generate(counter=counter, key=binascii.unhexlify(key))
 
                 assert otpvalue == lin_otp

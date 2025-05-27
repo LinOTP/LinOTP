@@ -129,8 +129,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         import linotp.lib.policy
 
-        support_challenge_response = (
-            linotp.lib.policy.get_auth_challenge_response(user, self.type)
+        support_challenge_response = linotp.lib.policy.get_auth_challenge_response(
+            user, self.type
         )
 
         return not support_challenge_response
@@ -149,8 +149,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         import linotp.lib.policy
 
-        support_challenge_response = (
-            linotp.lib.policy.get_auth_challenge_response(user, self.type)
+        support_challenge_response = linotp.lib.policy.get_auth_challenge_response(
+            user, self.type
         )
         return support_challenge_response
 
@@ -306,9 +306,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             if 1 in pin_policies:
                 otp_counter = check_otp(self, otpval, options=options)
                 if otp_counter >= 0:
-                    pin_match = check_pin(
-                        self, pin, user=user, options=options
-                    )
+                    pin_match = check_pin(self, pin, user=user, options=options)
                     if not pin_match:
                         otp_counter = -1
             else:
@@ -358,9 +356,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         return request_is_valid
 
-    def is_challenge_response(
-        self, passw, user, options=None, challenges=None
-    ):
+    def is_challenge_response(self, passw, user, options=None, challenges=None):
         """
         This method checks, if this is a request, that is the response to
         a previously sent challenge.
@@ -427,9 +423,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             # -------------------------------------------------------------- --
 
             # instance specific timeout
-            validity = int(
-                self.getFromTokenInfo("challenge_validity_time", validity)
-            )
+            validity = int(self.getFromTokenInfo("challenge_validity_time", validity))
 
         except ValueError:
             validity = 120
@@ -469,9 +463,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         """
         return (True, transactionid, "challenge init ok", {})
 
-    def checkResponse4Challenge(
-        self, user, passw, options=None, challenges=None
-    ):
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
         This method verifies if the given ``passw`` matches any existing
         ``challenge`` of the token.
@@ -580,9 +572,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         e.g. SMS_CHALLENGE_PROMPT, EMAIL_CHALLENGE_PROMPT  etc
 
         """
-        prompt = getFromConfig(
-            self.type.upper() + "_CHALLENGE_PROMPT", default
-        )
+        prompt = getFromConfig(self.type.upper() + "_CHALLENGE_PROMPT", default)
         return prompt
 
     def check_token(self, passw, user, options=None, challenges=None):
@@ -613,9 +603,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         # standard authentication token
         if self.is_auth_only_token(user):
-            (res, reply) = self.check_authenticate(
-                user, passw, options=options
-            )
+            (res, reply) = self.check_authenticate(user, passw, options=options)
             return (res, reply)
 
         # only challenge response token authentication
@@ -733,9 +721,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :return: tuple of matching otpcounter and a potential reply
         """
 
-        pin_match, otp_count, reply = self.authenticate(
-            passw, user, options=options
-        )
+        pin_match, otp_count, reply = self.authenticate(passw, user, options=options)
         if otp_count >= 0:
             self.valid_token.append(self)
         elif pin_match is True:
@@ -782,8 +768,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 raise Exception(msg)
         import linotp.lib.policy
 
-        support_challenge_response = (
-            linotp.lib.policy.get_auth_challenge_response(user, self.getType())
+        support_challenge_response = linotp.lib.policy.get_auth_challenge_response(
+            user, self.getType()
         )
 
         if len(self.mode) == 1 and self.mode[0] == "challenge":
@@ -797,9 +783,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 passw, user, options=options
             )
         except Exception as exx:
-            if (
-                support_challenge_response is True
-                and self.is_challenge_request(passw, user, options=options)
+            if support_challenge_response is True and self.is_challenge_request(
+                passw, user, options=options
             ):
                 log.info("Retry on base of a challenge request:")
                 pin_match = False
@@ -880,8 +865,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         if genkey not in [0, 1]:
             raise Exception(
-                "TokenClass supports only genkey in "
-                "range [0,1] : %r" % genkey
+                "TokenClass supports only genkey in range [0,1] : %r" % genkey
             )
 
         if genkey == 1 and otpKey is not None:
@@ -998,15 +982,9 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         # set the defaults
 
         self.token.LinOtpOtpLen = int(getFromConfig("DefaultOtpLen") or 6)
-        self.token.LinOtpCountWindow = int(
-            getFromConfig("DefaultCountWindow") or 10
-        )
-        self.token.LinOtpMaxFail = int(
-            getFromConfig("DefaultMaxFailCount") or 10
-        )
-        self.token.LinOtpSyncWindow = int(
-            getFromConfig("DefaultSyncWindow") or 1000
-        )
+        self.token.LinOtpCountWindow = int(getFromConfig("DefaultCountWindow") or 10)
+        self.token.LinOtpMaxFail = int(getFromConfig("DefaultMaxFailCount") or 10)
+        self.token.LinOtpSyncWindow = int(getFromConfig("DefaultSyncWindow") or 1000)
 
         self.token.LinOtpTokenType = "" + self.type
         return
@@ -1016,9 +994,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :param user: a User() object, consisting of loginname and realm
         :param report: tbdf.
         """
-        (uuserid, uidResolver, uidResolverClass) = getUserResolverId(
-            user, report
-        )
+        (uuserid, uidResolver, uidResolverClass) = getUserResolverId(user, report)
 
         self.token.LinOtpIdResolver = uidResolver
         self.token.LinOtpIdResClass = uidResolverClass
@@ -1141,9 +1117,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :param reset_failcount: boolean, if the failcounter should be reseted
         """
         iv, enc_otp_key = SecretObj.encrypt(otpKey, hsm=context["hsm"])
-        self.token.set_encrypted_seed(
-            enc_otp_key, iv, reset_failcount=reset_failcount
-        )
+        self.token.set_encrypted_seed(enc_otp_key, iv, reset_failcount=reset_failcount)
 
     def setOtpLen(self, otplen):
         self.token.LinOtpOtpLen = int(otplen)
@@ -1244,9 +1218,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
     # http://www.doughellmann.com/PyMOTW/hashlib/index.html#module-hashlib
 
     def getHashlib(self, hLibStr):
-        return get_hashalgo_from_description(
-            description=hLibStr, fallback="sha1"
-        )
+        return get_hashalgo_from_description(description=hLibStr, fallback="sha1")
 
     def incOtpCounter(self, counter=None, reset=True):
         """
@@ -1289,9 +1261,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         except Exception as ex:
             log.error("Token Counter update failed: %r", ex)
-            raise TokenAdminError(
-                "Token Counter update failed: %r" % (ex), id=1106
-            )
+            raise TokenAdminError("Token Counter update failed: %r" % (ex), id=1106)
 
         return self.token.LinOtpCount
 

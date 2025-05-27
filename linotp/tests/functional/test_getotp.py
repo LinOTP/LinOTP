@@ -146,9 +146,7 @@ class TestGetOtpController(TestController):
     def setTokenRealm(self, serial, realms):
         parameters = {"serial": serial, "realms": realms}
 
-        response = self.make_admin_request(
-            action="tokenrealm", params=parameters
-        )
+        response = self.make_admin_request(action="tokenrealm", params=parameters)
         return response
 
     def initToken(self):
@@ -217,9 +215,7 @@ class TestGetOtpController(TestController):
         assert '"status": true' in response, response
 
         parameters = {}
-        response = self.make_system_request(
-            action="getRealms", params=parameters
-        )
+        response = self.make_system_request(action="getRealms", params=parameters)
 
         assert '"status": true' in response, response
 
@@ -227,14 +223,10 @@ class TestGetOtpController(TestController):
             "name": "getmultitoken",
             "scope": "gettoken",
             "realm": "mydefrealm",
-            "action": (
-                "max_count_dpw=10, max_count_hotp=10, max_count_totp=10"
-            ),
+            "action": ("max_count_dpw=10, max_count_hotp=10, max_count_totp=10"),
             "user": "admin",
         }
-        response = self.make_system_request(
-            action="setPolicy", params=parameters
-        )
+        response = self.make_system_request(action="setPolicy", params=parameters)
         assert '"status": true' in response, response
 
         response = self.make_system_request(action="getConfig", params={})
@@ -255,9 +247,7 @@ class TestGetOtpController(TestController):
             "serial": "dpw1",
             "curTime": self.curTime,
         }
-        response = self.make_gettoken_request(
-            action="getotp", params=parameters
-        )
+        response = self.make_gettoken_request(action="getotp", params=parameters)
 
         assert '"otpval": "427701"' in response, "current time %s;%r" % (
             self.curTime,
@@ -275,9 +265,7 @@ class TestGetOtpController(TestController):
             "curTime": self.curTime,
             "count": "10",
         }
-        response = self.make_gettoken_request(
-            action="getmultiotp", params=parameters
-        )
+        response = self.make_gettoken_request(action="getmultiotp", params=parameters)
 
         assert '"12-05-17": "028193"' in response, response
         assert '"12-05-18": "857788"' in response, response
@@ -289,9 +277,7 @@ class TestGetOtpController(TestController):
         test for the correct otp value of the HOTP token
         """
         parameters = {"serial": "hotp1"}
-        response = self.make_gettoken_request(
-            action="getotp", params=parameters
-        )
+        response = self.make_gettoken_request(action="getotp", params=parameters)
 
         assert '"otpval": "819132"' in response, response
 
@@ -306,9 +292,7 @@ class TestGetOtpController(TestController):
             "curTime": self.curTime,
             "count": "20",
         }
-        response = self.make_gettoken_request(
-            action="getmultiotp", params=parameters
-        )
+        response = self.make_gettoken_request(action="getmultiotp", params=parameters)
 
         assert '"0": "819132"' in response, response
         assert '"1": "301156"' in response, response
@@ -349,9 +333,7 @@ class TestGetOtpController(TestController):
             otp = cTime[1]
 
             parameters = {"serial": "totp1", "curTime": TOTPcurTime}
-            response = self.make_gettoken_request(
-                action="getotp", params=parameters
-            )
+            response = self.make_gettoken_request(action="getotp", params=parameters)
             assert otp in response, response
 
         return
@@ -418,13 +400,9 @@ class TestGetOtpController(TestController):
                 "name": "usertoken",
                 "scope": "selfservice",
                 "realm": "mydefrealm",
-                "action": (
-                    "max_count_dpw=10, max_count_hotp=10, max_count_totp=10"
-                ),
+                "action": ("max_count_dpw=10, max_count_hotp=10, max_count_totp=10"),
             }
-            response = self.make_system_request(
-                action="setPolicy", params=parameters
-            )
+            response = self.make_system_request(action="setPolicy", params=parameters)
 
             assert '"status": true' in response, response
 

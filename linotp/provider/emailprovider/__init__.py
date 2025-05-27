@@ -116,9 +116,7 @@ class IEmailProvider(object):
 
 
 @provider_registry.class_entry("SMTPEmailProvider")
-@provider_registry.class_entry(
-    "linotp.provider.emailprovider.SMTPEmailProvider"
-)
+@provider_registry.class_entry("linotp.provider.emailprovider.SMTPEmailProvider")
 @provider_registry.class_entry("linotp.lib.emailprovider.SMTPEmailProvider")
 class SMTPEmailProvider(IEmailProvider):
     """
@@ -158,9 +156,7 @@ class SMTPEmailProvider(IEmailProvider):
         self.smtp_server = configDict.get("SMTP_SERVER")
 
         if not self.smtp_server:
-            raise Exception(
-                "Invalid EmailProviderConfig. SMTP_SERVER is required"
-            )
+            raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is required")
 
         self.start_tls = boolean(self.config.get("START_TLS", False))
         if self.start_tls:
@@ -177,15 +173,11 @@ class SMTPEmailProvider(IEmailProvider):
         self.smtp_user = configDict.get("SMTP_USER")
         self.smtp_password = configDict.get("SMTP_PASSWORD")
         self.email_from = configDict.get("EMAIL_FROM", self.DEFAULT_EMAIL_FROM)
-        self.email_subject = configDict.get(
-            "EMAIL_SUBJECT", self.DEFAULT_EMAIL_SUBJECT
-        )
+        self.email_subject = configDict.get("EMAIL_SUBJECT", self.DEFAULT_EMAIL_SUBJECT)
 
         self.template = configDict.get("TEMPLATE", None)
 
-        self.timeout = configDict.get(
-            "TIMEOUT", SMTPEmailProvider.DEFAULT_TIMEOUT
-        )
+        self.timeout = configDict.get("TIMEOUT", SMTPEmailProvider.DEFAULT_TIMEOUT)
 
     @staticmethod
     def get_template_root():
@@ -209,17 +201,14 @@ class SMTPEmailProvider(IEmailProvider):
 
         if not os.path.isdir(template_root):
             LOG.error(
-                "Configuration error: no email provider template directory "
-                "found: %r"
+                "Configuration error: no email provider template directory found: %r"
             )
             raise Exception("Email provider template directory not found")
 
         return template_root
 
     @staticmethod
-    def render_simple_message(
-        email_to, email_from, subject, message, replacements
-    ):
+    def render_simple_message(email_to, email_from, subject, message, replacements):
         """
         render the email message body based on a simple text message
 
@@ -404,9 +393,7 @@ class SMTPEmailProvider(IEmailProvider):
 
         # now build up the final message with all replacements
 
-        message = SMTPEmailProvider._render_template(
-            template_data, replacements
-        )
+        message = SMTPEmailProvider._render_template(template_data, replacements)
 
         return message.encode("utf-8")
 
@@ -466,8 +453,7 @@ class SMTPEmailProvider(IEmailProvider):
 
             if message and message != DEFAULT_MESSAGE:
                 LOG.warning(
-                    'ignoring "message" defined by policy - '
-                    "using template defintion"
+                    'ignoring "message" defined by policy - using template defintion'
                 )
 
             if subject:
@@ -491,9 +477,7 @@ class SMTPEmailProvider(IEmailProvider):
             email_to, email_from, email_subject, message, replacements
         )
 
-    def submitMessage(
-        self, email_to, message, subject=None, replacements=None
-    ):
+    def submitMessage(self, email_to, message, subject=None, replacements=None):
         """
         Sends out the e-mail.
 
@@ -511,17 +495,13 @@ class SMTPEmailProvider(IEmailProvider):
         """
 
         if not self.smtp_server:
-            raise Exception(
-                "Invalid EmailProviderConfig. SMTP_SERVER is required"
-            )
+            raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is required")
 
         # ------------------------------------------------------------------ --
 
         # setup message
 
-        email_message = self.render_message(
-            email_to, subject, message, replacements
-        )
+        email_message = self.render_message(email_to, subject, message, replacements)
 
         # ------------------------------------------------------------------ --
 
@@ -567,9 +547,7 @@ class SMTPEmailProvider(IEmailProvider):
         if self.smtp_user:
             if not smtp_connection.has_extn("AUTH"):
                 LOG.error("AUTH not supported:")
-                raise Exception(
-                    "AUTH not supported by server %r" % self.smtp_server
-                )
+                raise Exception("AUTH not supported by server %r" % self.smtp_server)
 
             LOG.debug("authenticating to mailserver, user: %r", self.smtp_user)
             smtp_connection.login(self.smtp_user, self.smtp_password)
@@ -579,9 +557,7 @@ class SMTPEmailProvider(IEmailProvider):
         # submit message
 
         try:
-            errors = smtp_connection.sendmail(
-                self.email_from, email_to, email_message
-            )
+            errors = smtp_connection.sendmail(self.email_from, email_to, email_message)
             if len(errors) > 0:
                 LOG.error("error(s) sending e-mail %r", errors)
                 return False, ("error sending e-mail %r" % errors)

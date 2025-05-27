@@ -136,8 +136,7 @@ class LinOTPGroup(FlaskGroup):
     "-v",
     count=True,
     help=(
-        "Increase amount of output from the command "
-        "(can be specified several times)."
+        "Increase amount of output from the command (can be specified several times)."
     ),
 )
 @click.option(
@@ -145,10 +144,7 @@ class LinOTPGroup(FlaskGroup):
     "-q",
     is_flag=True,
     default=False,
-    help=(
-        "Don't generate any output at all (check exit "
-        "code for success/failure)."
-    ),
+    help=("Don't generate any output at all (check exit code for success/failure)."),
 )
 @with_appcontext
 def main(verbose, quiet):

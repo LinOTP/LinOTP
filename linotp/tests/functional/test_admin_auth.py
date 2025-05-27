@@ -114,13 +114,11 @@ class TestAdminAuthController(TestController):
 
         resp_dict = "setPolicy %s" % policy["name"]
 
-        response = self.make_system_request(
-            "setPolicy", params=policy, **pparams
-        )
+        response = self.make_system_request("setPolicy", params=policy, **pparams)
         assert response.json["result"]["status"] == True, response
-        assert isinstance(
-            response.json["result"]["value"][resp_dict], dict
-        ), "expected policy to have been set and details returned."
+        assert isinstance(response.json["result"]["value"][resp_dict], dict), (
+            "expected policy to have been set and details returned."
+        )
 
     def test_admin_show(self):
         """

@@ -40,9 +40,7 @@ from linotp.model import db
 
 @pytest.mark.usefixtures("app")
 class TestSetResolver(unittest.TestCase):
-    @patch(
-        "linotp.controllers.system.BaseController.__init__", return_value=None
-    )
+    @patch("linotp.controllers.system.BaseController.__init__", return_value=None)
     def setUp(self, mock_base):
         unittest.TestCase.setUp(self)
         self.system = SystemController()
@@ -69,18 +67,14 @@ class TestSetResolver(unittest.TestCase):
         params["name"] = "UnitTestResolver"
 
         # prepare_request_params simply returns the parameters unchanged
-        mock_prepare.side_effect = (
-            lambda new_resolver_name, param, previous_name: (
-                param,
-                False,
-                False,
-            )
+        mock_prepare.side_effect = lambda new_resolver_name, param, previous_name: (
+            param,
+            False,
+            False,
         )
 
         with patch("linotp.controllers.system.sendError") as mock_senderror:
-            with patch(
-                "linotp.controllers.system.sendResult"
-            ) as mock_sendresult:
+            with patch("linotp.controllers.system.sendResult") as mock_sendresult:
                 # sendError returns the exception
                 mock_senderror.side_effect = lambda exx: exx
                 mock_sendresult.side_effect = lambda obj, *args: obj
@@ -90,7 +84,9 @@ class TestSetResolver(unittest.TestCase):
         return ret
 
     def test_set_resolver_readonly_param_invalid(self):
-        expected_message = "Failed to convert attribute 'readonly' to a boolean value! 'truly'"
+        expected_message = (
+            "Failed to convert attribute 'readonly' to a boolean value! 'truly'"
+        )
         ret = self.set_resolver({"readonly": "truly"})
         assert str(ret) == expected_message
 
@@ -116,9 +112,7 @@ def err_hsm(app, monkeypatch):
         return {"obj": ErrHSM()}
 
     # Override SecurityProvider.getSecurityModule() to return the error HSM
-    monkeypatch.setattr(
-        SecurityProvider, "getSecurityModule", getErrSecurityModule
-    )
+    monkeypatch.setattr(SecurityProvider, "getSecurityModule", getErrSecurityModule)
 
 
 @pytest.mark.usefixtures("err_hsm")

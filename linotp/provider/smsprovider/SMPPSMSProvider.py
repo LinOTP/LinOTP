@@ -27,6 +27,7 @@
 
 
 """the SMS Provider Interface"""
+
 from linotp.provider import ProviderNotAvailable, provider_registry
 from linotp.provider.smsprovider import ISMSProvider
 
@@ -78,9 +79,7 @@ class SMPPSMSProvider(ISMSProvider):
                 'by service_type" or to control the '
                 "teleservice used on the air interface."
             ),
-            "source_addr_npi": (
-                "Numbering Plan Indicator for source address."
-            ),
+            "source_addr_npi": ("Numbering Plan Indicator for source address."),
             # 'dest_addr_npi': ('Numbering Plan Indicator for dest '
             #                    'address.'),
             "source_addr_ton": ("Type of number of the ESME source address"),
@@ -224,13 +223,9 @@ class SMPPSMSProvider(ISMSProvider):
         # self.registered_delivery = int(self.config.get('registered_delivery',
         #                                                0))
 
-        self.target_encoding = str(
-            self.config.get("target_encoding", "ISO8859-1")
-        )
+        self.target_encoding = str(self.config.get("target_encoding", "ISO8859-1"))
 
-        self.timeout = self.config.get(
-            "TIMEOUT", SMPPSMSProvider.DEFAULT_TIMEOUT
-        )
+        self.timeout = self.config.get("TIMEOUT", SMPPSMSProvider.DEFAULT_TIMEOUT)
 
 
 def main(phone, message, config):
@@ -256,9 +251,7 @@ if __name__ == "__main__":
     parser.add_argument("--system_type", help="type of service")
     parser.add_argument("--source_addr", help="name of sending phone")
     parser.add_argument("--source_addr_npi", help="type of source addr")
-    parser.add_argument(
-        "--source_addr_ton", help="type of number of source addr"
-    )
+    parser.add_argument("--source_addr_ton", help="type of number of source addr")
     parser.add_argument("--system_id", help="user name or system ID")
 
     # parser.add_argument("--target_encoding",
@@ -272,9 +265,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    logging.basicConfig(
-        filename="/dev/stderr", encoding="utf-8", level=logging.DEBUG
-    )
+    logging.basicConfig(filename="/dev/stderr", encoding="utf-8", level=logging.DEBUG)
 
     config = {}
     attrs = [

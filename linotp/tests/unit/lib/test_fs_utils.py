@@ -85,9 +85,8 @@ def test_ensure__dir_missing_base_dir(app, caplog):
     os.rmdir(app.config["CACHE_DIR"])
     with pytest.raises(FileNotFoundError) as ex:
         ensure_dir(app, "test", "CACHE_DIR", "foo", mode=0x700)
-    assert (
-        f"Directory '{app.config['CACHE_DIR']}' (CACHE_DIR) does not exist"
-        in str(ex.value)
+    assert f"Directory '{app.config['CACHE_DIR']}' (CACHE_DIR) does not exist" in str(
+        ex.value
     )
 
 

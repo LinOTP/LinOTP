@@ -86,8 +86,6 @@ class TestTokenAdapter:
         )
         parsed_token = TokenAdapter(mocked_token).to_JSON_format()
 
-        expected_parsed_token_without_userinfo = deepcopy(
-            expected_parsed_token
-        )
+        expected_parsed_token_without_userinfo = deepcopy(expected_parsed_token)
         expected_parsed_token_without_userinfo.update({"userInfo": None})
         assert expected_parsed_token == parsed_token

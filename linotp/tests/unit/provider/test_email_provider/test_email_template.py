@@ -137,9 +137,7 @@ DMt11kPAK5S/Dn2QiCeKXgf4X0iH4OfyrFVlAAAAAElFTkSuQmCC
 """
 
 
-mocked_context = {
-    "Config": {EMAIL_PROVIDER_TEMPLATE_KEY: os.path.dirname(__file__)}
-}
+mocked_context = {"Config": {EMAIL_PROVIDER_TEMPLATE_KEY: os.path.dirname(__file__)}}
 
 
 class TestEMailTemplate(TestCase):

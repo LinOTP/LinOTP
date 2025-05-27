@@ -25,6 +25,7 @@
 #    Support: www.linotp.de
 #
 """policy evaluation"""
+
 from datetime import datetime
 from typing import Dict
 
@@ -149,20 +150,14 @@ class PolicyEvaluator(object):
         if not policy_set:
             policy_set = self.all_policies
 
-        matching_policies, matches = self._get_matching_policies_and_matches(
-            policy_set
-        )
+        matching_policies, matches = self._get_matching_policies_and_matches(policy_set)
         if not matching_policies:
             return {}
 
         if strict_matches:
-            selection = self._intersect_matches_strict(
-                matching_policies, matches
-            )
+            selection = self._intersect_matches_strict(matching_policies, matches)
         else:
-            selection = self._intersect_matches_lazy(
-                matching_policies, matches
-            )
+            selection = self._intersect_matches_lazy(matching_policies, matches)
 
         result = {}
         for entry in selection:
@@ -206,9 +201,7 @@ class PolicyEvaluator(object):
                 # only be evaluated within the user_list_compare
                 # function
 
-                match_type[f_key], matching = f_compare(
-                    policy_condition, f_value
-                )
+                match_type[f_key], matching = f_compare(policy_condition, f_value)
 
                 if not matching:
                     break
@@ -243,9 +236,7 @@ class PolicyEvaluator(object):
         # client match wildcard: p1
         # => 3. selecttion: (p1, p2) & (p1) = p1
 
-        return self._intersect_matches_(
-            matching_policies, matches, strict_matches=True
-        )
+        return self._intersect_matches_(matching_policies, matches, strict_matches=True)
 
     def _intersect_matches_lazy(self, matching_policies, matches):
         # to get the most, we intersect the union of matching policies
@@ -269,9 +260,7 @@ class PolicyEvaluator(object):
             matching_policies, matches, strict_matches=False
         )
 
-    def _intersect_matches_(
-        self, matching_policies, matches, strict_matches=True
-    ):
+    def _intersect_matches_(self, matching_policies, matches, strict_matches=True):
         selection = set(matching_policies.keys())
 
         user_matches = matches.get("user", {})
@@ -558,9 +547,7 @@ def wildcard_list_compare(policy_conditions, value):
     :return: booleans
     """
 
-    matched = wildcard_icase_list_compare(
-        policy_conditions, value, ignore_case=False
-    )
+    matched = wildcard_icase_list_compare(policy_conditions, value, ignore_case=False)
 
     return matched
 

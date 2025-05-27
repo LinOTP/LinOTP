@@ -39,7 +39,6 @@ connection = serial
 
 """
 
-
 import logging
 import string
 import subprocess
@@ -52,9 +51,7 @@ log = logging.getLogger(__name__)
 
 @provider_registry.class_entry("DeviceSMSProvider")
 @provider_registry.class_entry("linotp.provider.smsprovider.DeviceSMSProvider")
-@provider_registry.class_entry(
-    "smsprovider.DeviceSMSProvider.DeviceSMSProvider"
-)
+@provider_registry.class_entry("smsprovider.DeviceSMSProvider.DeviceSMSProvider")
 @provider_registry.class_entry("smsprovider.DeviceSMSProvider")
 class DeviceSMSProvider(ISMSProvider):
     def __init__(self):

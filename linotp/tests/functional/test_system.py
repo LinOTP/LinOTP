@@ -27,6 +27,7 @@
 
 
 """ """
+
 import json
 import logging
 import os
@@ -121,14 +122,12 @@ class TestSystemController(TestController):
 
         response = self.make_admin_request(action="userlist", params=params)
 
-        assert (
-            '"useridresolver.PasswdIdResolver.'
-            'IdResolver.myOtherRes"' in response
-        ), response
-        assert (
-            '"useridresolver.PasswdIdResolver.'
-            'IdResolver.myDefRes"' in response
-        ), response
+        assert '"useridresolver.PasswdIdResolver.IdResolver.myOtherRes"' in response, (
+            response
+        )
+        assert '"useridresolver.PasswdIdResolver.IdResolver.myDefRes"' in response, (
+            response
+        )
 
         # now check for the different users in the different realms
         params = {"username": "root", "realm": "myDefRealm"}
@@ -136,10 +135,9 @@ class TestSystemController(TestController):
         response = self.make_admin_request(action="userlist", params=params)
         # log.info("response %s\n",response)
 
-        assert (
-            '"useridresolver.PasswdIdResolver.'
-            'IdResolver.myDefRes"' in response
-        ), response
+        assert '"useridresolver.PasswdIdResolver.IdResolver.myDefRes"' in response, (
+            response
+        )
         assert '"root-def-passwd"' in response, response
 
         # now check for the different users in the different realms
@@ -147,16 +145,14 @@ class TestSystemController(TestController):
 
         response = self.make_admin_request(action="userlist", params=params)
 
-        assert (
-            '"useridresolver.PasswdIdResolver.'
-            'IdResolver.myOtherRes"' in response
-        ), response
+        assert '"useridresolver.PasswdIdResolver.IdResolver.myOtherRes"' in response, (
+            response
+        )
         assert '"root-myDom-passwd"' in response, response
 
-        assert (
-            '"useridresolver.PasswdIdResolver.'
-            'IdResolver.myDefRes"' in response
-        ), response
+        assert '"useridresolver.PasswdIdResolver.IdResolver.myDefRes"' in response, (
+            response
+        )
         assert '"root-def-passwd"' in response, response
 
         # now check for the different users in the different realms
@@ -164,18 +160,15 @@ class TestSystemController(TestController):
 
         response = self.make_admin_request(action="userlist", params=params)
 
-        assert (
-            '"useridresolver.PasswdIdResolver.'
-            'IdResolver.myDefRes"' in response
-        ), response
+        assert '"useridresolver.PasswdIdResolver.IdResolver.myDefRes"' in response, (
+            response
+        )
         assert '"root-def-passwd"' in response, response
 
         # now set default to myDomain
         params = {"realm": "myOtherRealm"}
 
-        response = self.make_system_request(
-            action="setDefaultRealm", params=params
-        )
+        response = self.make_system_request(action="setDefaultRealm", params=params)
         assert '"value": true' in response, response
 
         response = self.make_system_request(action="getDefaultRealm")
@@ -188,10 +181,9 @@ class TestSystemController(TestController):
 
         response = self.make_admin_request(action="userlist", params=params)
 
-        assert (
-            '"useridresolver.PasswdIdResolver.'
-            'IdResolver.myOtherRes"' in response
-        ), response
+        assert '"useridresolver.PasswdIdResolver.IdResolver.myOtherRes"' in response, (
+            response
+        )
         assert '"root-myDom-passwd"' in response, response
 
         # now delete the default realm
@@ -227,9 +219,7 @@ class TestSystemController(TestController):
         # now set default to myDomain
         params = {"realm": "myDefRealm"}
 
-        response = self.make_system_request(
-            action="setDefaultRealm", params=params
-        )
+        response = self.make_system_request(action="setDefaultRealm", params=params)
         assert '"value": true' in response, response
 
         response = self.make_system_request(action="getDefaultRealm")
@@ -247,9 +237,7 @@ class TestSystemController(TestController):
         # now set default to myDomain
         params = {"realm": "myMixRealm"}
 
-        response = self.make_system_request(
-            action="setDefaultRealm", params=params
-        )
+        response = self.make_system_request(action="setDefaultRealm", params=params)
         assert '"value": true' in response, response
 
         response = self.make_system_request(action="getDefaultRealm")
@@ -268,9 +256,7 @@ class TestSystemController(TestController):
         # now set default to myDomain
         params = {"realm": "myOtherRealm"}
 
-        response = self.make_system_request(
-            action="setDefaultRealm", params=params
-        )
+        response = self.make_system_request(action="setDefaultRealm", params=params)
         assert '"value": false' in response, response
 
         response = self.make_system_request(action="getDefaultRealm")
@@ -354,9 +340,7 @@ class TestSystemController(TestController):
             "fileName": os.path.join(self.fixture_path, "my-pass2"),
         }
 
-        response = self.make_system_request(
-            action="setResolver", params=params
-        )
+        response = self.make_system_request(action="setResolver", params=params)
 
         assert '"value": true' in response, response
 
@@ -366,9 +350,7 @@ class TestSystemController(TestController):
             "fileName": os.path.join(self.fixture_path, "my-pass2"),
         }
 
-        response = self.make_system_request(
-            action="setResolver", params=params
-        )
+        response = self.make_system_request(action="setResolver", params=params)
 
         assert '"value": true' in response, response
         params = {
@@ -377,23 +359,15 @@ class TestSystemController(TestController):
             "fileName": os.path.join(self.fixture_path, "my-pass2"),
         }
 
-        response = self.make_system_request(
-            action="setResolver", params=params
-        )
+        response = self.make_system_request(action="setResolver", params=params)
 
         assert '"value": true' in response, response
 
         response = self.make_system_request(action="getResolvers", params={})
 
-        assert (
-            '"entry": "linotp.passwdresolver.fileName.reso2"' in response
-        ), response
-        assert (
-            '"entry": "linotp.passwdresolver.fileName.reso1"' in response
-        ), response
-        assert (
-            '"entry": "linotp.passwdresolver.fileName.reso3"' in response
-        ), response
+        assert '"entry": "linotp.passwdresolver.fileName.reso2"' in response, response
+        assert '"entry": "linotp.passwdresolver.fileName.reso1"' in response, response
+        assert '"entry": "linotp.passwdresolver.fileName.reso3"' in response, response
 
         # create a realm
         params = {
@@ -428,10 +402,9 @@ class TestSystemController(TestController):
         }
         response = self.make_system_request(action="setPolicy", params=params)
 
-        assert (
-            "The name of the policy may only contain"
-            " the characters" in response
-        ), response
+        assert "The name of the policy may only contain the characters" in response, (
+            response
+        )
 
         self.delete_all_policies()
 
@@ -686,9 +659,7 @@ scope = gettoken
 
         assert '"status": true' in response, response
 
-    def test_set_license_via_form_upload(
-        self, license_filename="demo-lic.pem"
-    ):
+    def test_set_license_via_form_upload(self, license_filename="demo-lic.pem"):
         """
         Ensure that loading a license file works via form upload.
         """
@@ -859,9 +830,7 @@ class TestSystemControllerExtended:
         # delete resolver
 
         with scoped_authclient(verify_jwt=False) as client:
-            client.post(
-                "/system/delResolver", data={"resolver": resolver_name}
-            )
+            client.post("/system/delResolver", data={"resolver": resolver_name})
 
         with scoped_authclient(verify_jwt=False) as client:
             resolver_list = client.post("/system/getResolvers")

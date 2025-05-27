@@ -116,9 +116,7 @@ DB_crypt_schemes = [
 Archaic_crypt_schemes = ["des_crypt", "bsdi_crypt", "bigcrypt"]
 
 
-LdapCrypt = CryptContext(
-    schemes=Ldap_crypt_schemes + Ldap_similar_crypt_schemes
-)
+LdapCrypt = CryptContext(schemes=Ldap_crypt_schemes + Ldap_similar_crypt_schemes)
 
 MCFCrypt = CryptContext(schemes=MCF_crypt_schemes)
 
@@ -228,9 +226,7 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
         url_quote = urllib.parse.quote_plus(param_str)
         connect = "%s%s" % (driver, url_quote)
     else:
-        connect = build_simple_connect(
-            driver, user, pass_, server, port, db, conParams
-        )
+        connect = build_simple_connect(driver, user, pass_, server, port, db, conParams)
 
     return connect
 
@@ -375,9 +371,7 @@ class dbObject:
 
     def getTable(self, tableName):
         log.debug("[dbObject::getTable] %s", tableName)
-        return Table(
-            tableName, self.meta, autoload=True, autoload_with=self.engine
-        )
+        return Table(tableName, self.meta, autoload=True, autoload_with=self.engine)
 
     def count(self, table, where=""):
         log.debug("[dbObject::count] %s:%s", table, where)
@@ -468,9 +462,7 @@ class IdResolver(UserIdResolver):
         :return: boolean
         """
         new_uid = json.loads(new_params.get("Map", "{}")).get("userid", "")
-        prev_uid = json.loads(previous_params.get("Map", "{}")).get(
-            "userid", ""
-        )
+        prev_uid = json.loads(previous_params.get("Map", "{}")).get("userid", "")
 
         return new_uid != prev_uid
 
@@ -623,9 +615,7 @@ class IdResolver(UserIdResolver):
             log.error("[checkPass] password is not defined in SQL mapping!")
             return False
 
-        result = check_password(
-            password, userInfo["password"], userInfo.get("salt")
-        )
+        result = check_password(password, userInfo["password"], userInfo.get("salt"))
 
         if result:
             log.info("[checkPass] successfully authenticated user uid %s", uid)
@@ -696,9 +686,7 @@ class IdResolver(UserIdResolver):
         l_config, missing = self.filter_config(config, conf)
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(
-                " missing config entries: %r" % missing
-            )
+            raise ResolverLoadConfigError(" missing config entries: %r" % missing)
 
         self.managed = l_config.get("readonly", False)
         # example for connect:
@@ -738,8 +726,7 @@ class IdResolver(UserIdResolver):
 
         except ValueError as exx:
             raise ResolverLoadConfigError(
-                "Invalid userinfo - no json "
-                "document: %s %r" % (userInfo, exx)
+                "Invalid userinfo - no json document: %s %r" % (userInfo, exx)
             )
 
         except Exception as exx:
@@ -815,9 +802,7 @@ class IdResolver(UserIdResolver):
             log.debug("[getUserId] select: %r", select)
 
             rows = dbObj.query(select)
-            log.debug(
-                "[getUserId] length of select statement %i", rows.rowcount
-            )
+            log.debug("[getUserId] length of select statement %i", rows.rowcount)
             for row in rows:
                 colName = self.sqlUserInfo.get("userid")
                 userId = row[colName]
@@ -952,9 +937,7 @@ class IdResolver(UserIdResolver):
             rows = dbObj.query(select)
 
             user_info_list = [self._getUserInfo(dbObj, row) for row in rows]
-            users = {
-                user_info["userid"]: user_info for user_info in user_info_list
-            }
+            users = {user_info["userid"]: user_info for user_info in user_info_list}
 
         except KeyError as exx:
             log.error("[getUserList] Invalid Mapping Error: %r", exx)
@@ -1027,9 +1010,7 @@ class IdResolver(UserIdResolver):
         # loginName = loginName.decode("latin1")
         column_name = self.sqlUserInfo.get("username")
         if column_name is None:
-            log.error(
-                "[_getUserIdFilter] username column definition required!"
-            )
+            log.error("[_getUserIdFilter] username column definition required!")
             raise Exception("username column definition required!")
         log.debug("[_getUserIdFilter] type loginName: %s", type(loginName))
         log.debug("[_getUserIdFilter] type filtr: %s", type(column_name))
@@ -1038,9 +1019,7 @@ class IdResolver(UserIdResolver):
         # But as usually a DB2 admin uses upper case, we do not "
         # need the double quotes.
 
-        return self._add_where_clause_to_filter(
-            table.c[column_name] == loginName
-        )
+        return self._add_where_clause_to_filter(table.c[column_name] == loginName)
 
     def _getUserNameFilter(self, table, loginId):
         """
@@ -1057,9 +1036,7 @@ class IdResolver(UserIdResolver):
             log.error(err)
             raise Exception(err)
 
-        return self._add_where_clause_to_filter(
-            table.c[column_name] == loginId
-        )
+        return self._add_where_clause_to_filter(table.c[column_name] == loginId)
 
     def _createSearchString(self, dbObj, table, searchDict: dict):
         def get_column(column_name: str):
@@ -1087,9 +1064,7 @@ class IdResolver(UserIdResolver):
                         return table.c[column_name.upper()]
 
         def get_sql_expression(column, value):
-            log.debug(
-                "[__createSearchString] column: %s, value: %s ", column, value
-            )
+            log.debug("[__createSearchString] column: %s, value: %s ", column, value)
 
             # First: replace wildcards. Our wildcards are * and . (shell-like),
             # and SQL wildcards are % and _.

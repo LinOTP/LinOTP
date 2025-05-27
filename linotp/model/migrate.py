@@ -27,6 +27,7 @@
 """
 database schema migration hook
 """
+
 import binascii
 import logging
 from typing import Any, Optional, Tuple, Union
@@ -79,9 +80,7 @@ def _compile_name(name: str, dialect: Optional[str] = None) -> str:
     :param engine: the corresponding engine for mysql / postgresql
     :return: the adjusted name
     """
-    return sa.Column(name, sa.types.Integer()).compile(
-        dialect=dialect
-    )  # pylint: disable=E1120
+    return sa.Column(name, sa.types.Integer()).compile(dialect=dialect)  # pylint: disable=E1120
 
 
 def add_column(engine: Engine, table_name: str, column: sa.Column):
@@ -105,8 +104,7 @@ def add_column(engine: Engine, table_name: str, column: sa.Column):
     c_column_type = column.type.compile(engine.dialect)
 
     engine.execute(
-        "ALTER TABLE %s ADD COLUMN %s %s"
-        % (c_table_name, c_column_name, c_column_type)
+        "ALTER TABLE %s ADD COLUMN %s %s" % (c_table_name, c_column_name, c_column_type)
     )
 
 
@@ -134,8 +132,7 @@ def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
     c_index_name = _compile_name(index_name, dialect=engine.dialect)
 
     engine.execute(
-        "CREATE INDEX %s ON %s ( %s )"
-        % (c_index_name, c_table_name, c_column_name)
+        "CREATE INDEX %s ON %s ( %s )" % (c_index_name, c_table_name, c_column_name)
     )
 
 
@@ -157,9 +154,7 @@ def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
     c_table_name = _compile_name(table_name, dialect=engine.dialect)
 
     c_column_name = column.compile(dialect=engine.dialect)
-    engine.execute(
-        "ALTER TABLE %s drop COLUMN %s " % (c_table_name, c_column_name)
-    )
+    engine.execute("ALTER TABLE %s drop COLUMN %s " % (c_table_name, c_column_name))
 
 
 def re_encode(
@@ -243,9 +238,7 @@ class MYSQL_Migration:
 
         :param table: the table name
         """
-        return self._execute(
-            f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4;"
-        )
+        return self._execute(f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4;")
 
     def _get_tables(self) -> Any:
         """Query the linotp database for all tables.
@@ -430,9 +423,7 @@ class Migration:
         """
 
         return (
-            model.Config.query.filter(
-                model.Config.Key == "linotp.Config"
-            ).first()
+            model.Config.query.filter(model.Config.Key == "linotp.Config").first()
             is None
         )
 
@@ -609,27 +600,21 @@ class Migration:
         token_table = "Token"
 
         # add created column to tokens
-        created = sa.Column(
-            "LinOtpCreationDate", sa.types.DateTime, index=True
-        )
+        created = sa.Column("LinOtpCreationDate", sa.types.DateTime, index=True)
 
         if not has_column(self.engine, token_table, created):
             add_column(self.engine, token_table, created)
             add_index(self.engine, token_table, created)
 
         # add verified column to tokens
-        verified = sa.Column(
-            "LinOtpLastAuthSuccess", sa.types.DateTime, index=True
-        )
+        verified = sa.Column("LinOtpLastAuthSuccess", sa.types.DateTime, index=True)
 
         if not has_column(self.engine, token_table, verified):
             add_column(self.engine, token_table, verified)
             add_index(self.engine, token_table, verified)
 
         # add accessed column to tokens
-        accessed = sa.Column(
-            "LinOtpLastAuthMatch", sa.types.DateTime, index=True
-        )
+        accessed = sa.Column("LinOtpLastAuthMatch", sa.types.DateTime, index=True)
 
         if not has_column(self.engine, token_table, accessed):
             add_column(self.engine, token_table, accessed)
@@ -705,9 +690,7 @@ class Migration:
         mysql_mig.migrate_data(migrated_tables)
 
         if not migrated_tables:
-            config_entry = model.Config(
-                Key="utf8_conversion", Value="suggested"
-            )
+            config_entry = model.Config(Key="utf8_conversion", Value="suggested")
             model.db.session.add(config_entry)
 
             log.warning(
@@ -812,12 +795,9 @@ class Migration:
 
         if not isinstance(sec_module, DefaultSecurityModule):
             log.info(
-                "Padding migration is only required for the default security "
-                "module"
+                "Padding migration is only required for the default security module"
             )
-            return True, (
-                "Migration for non default security module not required!"
-            )
+            return True, ("Migration for non default security module not required!")
 
         # ----------------------------------------------------------------- --
 
@@ -894,17 +874,11 @@ class Migration:
             encrypted_value = binascii.unhexlify(token.LinOtpKeyEnc)
             enc = binascii.hexlify(encrypted_value)
 
-            value = sec_module.decrypt(
-                value=encrypted_value, iv=iv, id=TOKEN_KEY
-            )
+            value = sec_module.decrypt(value=encrypted_value, iv=iv, id=TOKEN_KEY)
 
-            new_encrypted_value = sec_module.encrypt(
-                data=value, iv=iv, id=TOKEN_KEY
-            )
+            new_encrypted_value = sec_module.encrypt(data=value, iv=iv, id=TOKEN_KEY)
 
-            token.LinOtpKeyEnc = binascii.hexlify(new_encrypted_value).decode(
-                "utf8"
-            )
+            token.LinOtpKeyEnc = binascii.hexlify(new_encrypted_value).decode("utf8")
 
             model.db.session.add(token)
 
@@ -939,9 +913,7 @@ class Migration:
 
         model.Challenge.query.delete()
 
-        return True, (
-            "Migration to 3.2.2 - all challenge entries are deleted."
-        )
+        return True, ("Migration to 3.2.2 - all challenge entries are deleted.")
 
     def migrate_3_2_3_0(self):
         """
@@ -950,9 +922,7 @@ class Migration:
         which is required to trigger debian dbconfig upgrade
         """
 
-        return True, (
-            "Migration to 3.2.3 - to trigger debian dbconfig upgrade"
-        )
+        return True, ("Migration to 3.2.3 - to trigger debian dbconfig upgrade")
 
     def migrate_4_0_0_0(self):
         """
@@ -960,9 +930,9 @@ class Migration:
         webprovisionGOOGLE and webprovisionGOOGLEtime policies to enrollHMAC and enrollTOTP.
         """
         # Remove OATHTokenSupport policy
-        model.Config.query.filter(
-            model.Config.Key == "linotp.OATHTokenSupport"
-        ).delete(synchronize_session=False)
+        model.Config.query.filter(model.Config.Key == "linotp.OATHTokenSupport").delete(
+            synchronize_session=False
+        )
 
         log.info("OATHTokenSupport policy removed")
 
@@ -980,10 +950,8 @@ class Migration:
         for entry in policy_entries:
             # Updating policy value
             policy_actions = _parse_action(entry.Value)
-            new_value, changed = (
-                Migration_4_0_0_0.rename_webprovision_google_policies(
-                    list(policy_actions)
-                )
+            new_value, changed = Migration_4_0_0_0.rename_webprovision_google_policies(
+                list(policy_actions)
             )
             if changed:
                 log.info(
@@ -1055,7 +1023,6 @@ class Migration_4_0_0_0:
             return f"{key}={value}"
 
         result = ", ".join(
-            format_single_action(policy_action)
-            for policy_action in changed_policies
+            format_single_action(policy_action) for policy_action in changed_policies
         )
         return result, True

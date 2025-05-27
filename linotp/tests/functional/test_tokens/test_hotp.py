@@ -172,9 +172,7 @@ class HotpTest:
         :return: the otp string
         """
         hmac = HmacOtp(digits=self.otplen, hashfunc=self.hashlib)
-        return hmac.generate(
-            counter=counter, key=binascii.unhexlify(self.otpkey)
-        )
+        return hmac.generate(counter=counter, key=binascii.unhexlify(self.otpkey))
 
 
 class TestHotpController(TestController):
@@ -304,9 +302,7 @@ class TestHotpController(TestController):
 
             assert "false" not in response
 
-            for counter, otp in response.json["result"]["value"][
-                "otp"
-            ].items():
+            for counter, otp in response.json["result"]["value"]["otp"].items():
                 calc_otp = hotp_test.get_otp(counter=int(counter))
                 assert otp == calc_otp
 

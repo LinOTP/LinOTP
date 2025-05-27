@@ -80,9 +80,7 @@ class MigrateResolverHandler(ToolsHandler):
         ret["message"] = ""
 
         search = getResolverClassName(src["type"], src["resolvername"])
-        target_resolver = getResolverClassName(
-            target["type"], target["resolvername"]
-        )
+        target_resolver = getResolverClassName(target["type"], target["resolvername"])
 
         # get all tokens of src resolver
         tokens = self._get_tokens_for_resolver(search, serials=filter_serials)

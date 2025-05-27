@@ -77,8 +77,7 @@ class StatefulTokenMixin(object):
             raise TokenStateError(
                 "Token %r must be in one of the following "
                 "states for this action: %s, but current "
-                "state is %s"
-                % (self, ",".join(valid_state_ids), current_state_id)
+                "state is %s" % (self, ",".join(valid_state_ids), current_state_id)
             )
 
     def change_state(self, state_id):
