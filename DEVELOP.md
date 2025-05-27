@@ -275,38 +275,16 @@ configuration path for Debian can be found in the file
 
 ## Run the LinOTP development server
 
-To run LinOTP for development, execute Flask from the LinOTP source
-directory (`linotpd/src`) as follows:
-
-```terminal
-FLASK_APP=linotp.app flask run
-```
-
-This starts the Flask development server. Unless you specify otherwise
-using the `--host` and `--port` options, the development server will
-bind to TCP port 5000 on the loopback address (127.0.0.1).
-
-The development server is fine for local experiments but should _under
-no circumstances_ be used to run LinOTP in a production
-environment. The officially approved method for running LinOTP
-productively uses Apache and `mod_wsgi`, and the details of this are
-beyond the scope of this document. Refer to the content of the LinOTP
-source directory's `config` subdirectory for inspiration, or –
-preferably – check the [LinOTP Installation
-Guide](http://www.linotp.org/doc/latest/part-installation/index.html).
-
 To make life easier, LinOTP offers a `linotp` command which you can
 run anywhere without having to define `FLASK_APP`. To enable this on
-your development system, go to the LinOTP source directory and execute
-the
+your development system, execute (if you haven't done so already):
 
 ```terminal
-python3 setup.py develop
+uv sync
 ```
 
-command. (This installs the `linotp` command in the virtualenv's `bin`
-directory.) Giving the `make develop` command in the top-level
-directory should also do the trick. After this, a simple
+(This installs the `linotp` command in the virtualenv's `bin`
+directory.) After this, a simple
 
 ```terminal
 linotp run
@@ -314,6 +292,10 @@ linotp run
 
 will launch the Flask development server. (You can still use
 `FLASK_ENV` to specify the desired environment.)
+
+This starts the Flask development server. Unless you specify otherwise
+using the `--host` and `--port` options, the development server will
+bind to TCP port 5000 on the loopback address (127.0.0.1).
 
 Make sure to create an admin user, otherwise you will not be able to log in to
 LinOTP's management interface:
