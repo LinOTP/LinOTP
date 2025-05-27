@@ -43,8 +43,14 @@ dependencies = [
   "pysodium",
   "python-ldap",
   "bcrypt",
+  # TODO
+  # Fix Breacking changes introduced with cryptography==35
+  # https://github.com/pyca/cryptography/blob/main/CHANGELOG.rst#3500---2021-09-29
+  # Raises `ValueError: error parsing asn1 value: ParseError { kind: ExtraData }`
+  # in `cert = x509.load_der_x509_certificate(...)` of `uf2token.py`
+  # during functional tests
   "cryptography<35",
-  "click<8.2",
+  "click<8.2",       # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
   "jsonschema",
   "smpplib",
   "psycopg2-binary",
