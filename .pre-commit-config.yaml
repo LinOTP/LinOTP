@@ -1,20 +1,15 @@
 repos:
   # Use seed-isort-config to generate the known_third_party list in
   # pyproject.toml. This is not active by default for speed concerns.
-  # -   repo: https://github.com/asottile/seed-isort-config
-  #     rev: v2.2.0
-  #     hooks:
-  #     - id: seed-isort-config
-
-  - repo: https://github.com/pycqa/isort
-    rev: 6.0.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.11.11
     hooks:
-      - id: isort
-
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
-    hooks:
-      - id: black
+      # Run the linter.
+      # TODO: Enable this once the code is clean.
+      # - id: ruff-check
+      # Run the formatter.
+      - id: ruff-format
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.8.2
