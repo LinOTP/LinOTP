@@ -87,7 +87,7 @@ container_scanning:
     entrypoint: [""]
   needs: ["build-docker"]
   variables:
-    SEVERITIES: CRITICAL
+    # SEVERITIES: CRITICAL,HIGH
     GIT_STRATEGY: none
     TRIVY_USERNAME: "$CI_REGISTRY_USER"
     TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
@@ -104,7 +104,7 @@ container_scanning:
       --output "$CI_PROJECT_DIR/gl-container-scanning-report.json" "$FULL_IMAGE_NAME"
     # Prints full report
     - time trivy image --scanners vuln --exit-code 0 --cache-dir .trivycache/ --no-progress "$FULL_IMAGE_NAME"
-    - time trivy image --scanners vuln --exit-code 1 --cache-dir .trivycache/ --severity "$SEVERITIES" --ignore-unfixed --no-progress "$FULL_IMAGE_NAME"
+    - time trivy image --scanners vuln --exit-code 1 --cache-dir .trivycache/ ${SEVERITIES:+--severity ${SEVERITIES}} --ignore-unfixed --no-progress "$FULL_IMAGE_NAME"
   cache:
     paths:
       - .trivycache/

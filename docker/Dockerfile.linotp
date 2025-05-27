@@ -170,6 +170,8 @@ RUN mkdir -p \
     && chmod 644 /etc/doas.conf \
     && python symlink_custom_assets.py && rm symlink_custom_assets.py \
     && ln -s /usr/local/share/ca-certificates /ca-certificates \
+    # remove setuptools due to vulnerabilities
+    && rm -rf /usr/local/lib/python3.11/site-packages/setuptools* \
     && useradd -r $LINOTP_USER \
     && chown -R $LINOTP_USER:$LINOTP_USER \
     $LINOTP_ROOT_DIR \
