@@ -21,7 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- The Flask framework used by LinOTP has been upgraded to version 3 to address multiple known vulnerabilities, including CVE-2023-30861.
+- Update `flask` to version 3.1.1 to address known vulnerability:
+  - CVE-2023-30861
+- Update `werkzeug` to version 3.1.3 to address multiple known vulnerabilities:
+  - CVE-2024-34069, CVE-2024-49766, CVE-2024-49767
 - Update `cryptography` to version 45.0.3 to address multiple known vulnerabilities:
   - CVE-2023-0286, CVE-2023-50782, CVE-2023-23931, CVE-2023-49083, CVE-2024-0727, GHSA-5cpq-8wj7-hf2v, GHSA-jm77-qphf-c4w8, GHSA-v8gr-m533-ghj9
 
