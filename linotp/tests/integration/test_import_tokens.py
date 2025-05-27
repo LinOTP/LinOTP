@@ -36,14 +36,13 @@ import os
 from time import sleep
 
 import pytest
-from selenium.webdriver.common.by import By
-
 from linotp_selenium_helper.manage_ui import AlertBoxHandler, ManageUi
 from linotp_selenium_helper.token_import import (
     TokenImportAladdin,
     TokenImportError,
     TokenImportOATH,
 )
+from selenium.webdriver.common.by import By
 
 # All the tests in this file make use of the musicians realm as default
 pytestmark = pytest.mark.usefixtures("musicians_realm")

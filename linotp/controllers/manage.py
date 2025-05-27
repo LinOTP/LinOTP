@@ -34,10 +34,9 @@ import json
 import logging
 import os
 
+from flask import current_app, g, request
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
-
-from flask import current_app, g, request
 
 import linotp
 from linotp.controllers.base import BaseController, jwt_exempt, methods

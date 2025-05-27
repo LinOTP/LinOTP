@@ -30,9 +30,8 @@ import unittest
 
 import netaddr
 import pytest
-from mock import patch
-
 from flask import current_app
+from mock import patch
 
 import linotp.lib.config
 from linotp.lib.type_utils import get_ip_address, get_ip_network

@@ -37,9 +37,8 @@ import tempfile
 from typing import Callable, ContextManager, Iterator, List
 from unittest.mock import patch
 
-import pytest
-
 import flask
+import pytest
 from flask.globals import current_app
 from flask.testing import FlaskClient
 

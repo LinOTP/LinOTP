@@ -29,9 +29,8 @@ Tests a very small subset of linotp.lib.reply
 
 import json
 
-import pytest
-
 import flask
+import pytest
 
 from linotp.lib import reply
 from linotp.lib.error import ProgrammingError

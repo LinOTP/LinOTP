@@ -46,11 +46,10 @@ import os
 import sys
 
 import click
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.ext.serializer import dumps, loads
-
 from flask import current_app
 from flask.cli import AppGroup
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.serializer import dumps, loads
 
 from linotp.lib.audit.SQLAudit import AuditTable
 from linotp.model import db

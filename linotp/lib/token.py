@@ -34,11 +34,10 @@ import os
 import string
 from typing import List
 
+from flask import g
 from flask_babel import gettext as _
 from sqlalchemy import and_, func, or_
 from sqlalchemy.exc import ResourceClosedError
-
-from flask import g
 
 import linotp
 import linotp.lib.policy

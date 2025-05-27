@@ -28,9 +28,8 @@
 import unittest
 
 import pytest
-from mock import patch
-
 from flask import appcontext_pushed
+from mock import patch
 
 from linotp.controllers.system import SystemController
 from linotp.flap import tmpl_context as context

@@ -50,10 +50,9 @@ except ImportError:
     ldap_api_version = 2.4
 
 import click
-from ldap.controls import SimplePagedResultsControl
-
 from flask import current_app
 from flask.cli import with_appcontext
+from ldap.controls import SimplePagedResultsControl
 
 from linotp.lib.resources import ResourceScheduler, string_to_list
 from linotp.lib.type_utils import boolean, encrypted_data

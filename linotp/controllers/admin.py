@@ -33,10 +33,9 @@ import json
 import logging
 from datetime import datetime
 
+from flask import Response, current_app, g, request, stream_with_context
 from flask_babel import gettext as _
 from werkzeug.datastructures import FileStorage
-
-from flask import Response, current_app, g, request, stream_with_context
 
 from linotp.controllers.base import BaseController, JWTMixin, methods
 from linotp.lib import deprecated_methods

@@ -33,6 +33,7 @@ from inspect import getfullargspec
 from types import FunctionType
 from warnings import warn
 
+from flask import Blueprint, current_app, g, request
 from flask_jwt_extended import (
     create_access_token,
     get_jwt_identity,
@@ -45,8 +46,6 @@ from flask_jwt_extended.exceptions import (
     RevokedTokenError,
 )
 from jwt import DecodeError, ExpiredSignatureError, InvalidSignatureError
-
-from flask import Blueprint, current_app, g, request
 
 from linotp.lib import render_calling_path
 from linotp.lib.context import request_context

@@ -3,10 +3,9 @@ from datetime import datetime, timedelta
 from typing import Callable, Optional
 
 import pytest
-from freezegun import freeze_time
-
 from flask import Response
 from flask.testing import FlaskClient
+from freezegun import freeze_time
 
 from linotp.app import LinOTPApp
 

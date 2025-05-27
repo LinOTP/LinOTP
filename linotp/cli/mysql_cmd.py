@@ -46,10 +46,9 @@ import sys
 from pathlib import Path
 
 import click
-from sqlalchemy import create_engine
-
 from flask import current_app
 from flask.cli import AppGroup
+from sqlalchemy import create_engine
 
 from . import get_backup_filename
 

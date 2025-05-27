@@ -43,7 +43,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, List
 
 import click
-
 from flask import current_app
 from flask.cli import AppGroup
 

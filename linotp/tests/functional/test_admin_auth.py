@@ -35,7 +35,6 @@ import logging
 import os
 
 import pytest
-
 from flask import current_app
 
 from linotp.lib.user import User

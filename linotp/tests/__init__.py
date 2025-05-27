@@ -57,9 +57,8 @@ from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import pytest
-from werkzeug.test import TestResponse
-
 from flask import current_app, g, request
+from werkzeug.test import TestResponse
 
 from linotp.lib.user import User
 

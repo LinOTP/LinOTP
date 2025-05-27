@@ -32,7 +32,6 @@ from subprocess import CalledProcessError, check_output
 
 import integration_data as data
 import pytest
-
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.helper import get_from_tconfig, is_radius_disabled
 from linotp_selenium_helper.smtp_server import EmailProviderServer

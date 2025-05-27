@@ -33,9 +33,8 @@ import logging
 import os
 from typing import Callable
 
-from mock import Mock, patch
-
 from flask.testing import FlaskClient
+from mock import Mock, patch
 
 from linotp.model.imported_user import ImportedUser
 from linotp.tests import TestController

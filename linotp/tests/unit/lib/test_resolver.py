@@ -28,9 +28,8 @@
 import unittest
 
 import pytest
-from mock import ANY, patch
-
 from flask import g
+from mock import ANY, patch
 
 from linotp.lib import resolver
 from linotp.lib.config import getFromConfig, getLinotpConfig

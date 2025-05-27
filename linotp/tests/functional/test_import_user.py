@@ -55,11 +55,10 @@ import logging
 import os
 from typing import Callable
 
+from flask import current_app
 from sqlalchemy import sql
 from sqlalchemy.engine import create_engine
 from sqlalchemy.exc import ProgrammingError
-
-from flask import current_app
 
 from linotp.lib.tools.import_user.SQLImportHandler import (
     LinOTP_DatabaseContext,

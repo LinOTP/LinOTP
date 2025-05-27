@@ -31,11 +31,11 @@ from datetime import datetime, timedelta
 
 import integration_data as data
 import pytest
-
-from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 from linotp_selenium_helper import TestCase, helper
 from linotp_selenium_helper.manage_ui import MsgType
 from linotp_selenium_helper.validate import Validate
+
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 
 
 class TestSystemConfig:

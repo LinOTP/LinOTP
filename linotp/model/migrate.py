@@ -33,11 +33,10 @@ import logging
 from typing import Any, Optional, Tuple, Union
 
 import sqlalchemy as sa
+from flask import current_app
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
-
-from flask import current_app
 
 from linotp import model
 

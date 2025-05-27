@@ -34,11 +34,10 @@ import base64
 import logging
 import os
 
+from flask import Response, current_app, g, redirect, request, url_for
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
 from werkzeug.exceptions import Forbidden, Unauthorized
-
-from flask import Response, current_app, g, redirect, request, url_for
 
 from linotp.controllers.base import BaseController
 from linotp.controllers.userservice import get_auth_user, getTokenForUser

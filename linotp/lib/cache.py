@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 
 from beaker.cache import Cache
-
 from flask import current_app
 
 from linotp.lib.context import request_context as context

@@ -34,14 +34,12 @@ from uuid import uuid4
 
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
+from flask import Config as FlaskConfig
+from flask import Flask, abort, current_app, jsonify, redirect, request, url_for
+from flask import g as flask_g
 from flask_babel import Babel
 from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.profiler import ProfilerMiddleware
-
-from flask import Config as FlaskConfig
-from flask import Flask, abort, current_app
-from flask import g as flask_g
-from flask import jsonify, redirect, request, url_for
 
 from . import __version__
 from .flap import config, setup_mako, setup_request_context

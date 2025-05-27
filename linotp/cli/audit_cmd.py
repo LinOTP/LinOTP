@@ -32,11 +32,10 @@ from pathlib import Path
 from typing import Optional
 
 import click
-from sqlalchemy import desc
-from sqlalchemy.sql.functions import count, max, min
-
 from flask import current_app
 from flask.cli import AppGroup
+from sqlalchemy import desc
+from sqlalchemy.sql.functions import count, max, min
 
 from linotp.lib.audit.SQLAudit import AuditTable
 from linotp.model import db

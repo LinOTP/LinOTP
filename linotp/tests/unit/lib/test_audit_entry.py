@@ -30,9 +30,8 @@ Tests the create of audit entries
 import unittest
 
 import pytest
-from mock import patch
-
 from flask import g
+from mock import patch
 
 from linotp.lib.auth.finishtokens import FinishTokens
 

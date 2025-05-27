@@ -31,10 +31,9 @@ import logging
 
 # we need this for the radius token
 import pyrad.packet
+from flask import current_app
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
-
-from flask import current_app
 
 from linotp.flap import config as env
 from linotp.lib.error import ParameterError

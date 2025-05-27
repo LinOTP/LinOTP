@@ -33,10 +33,9 @@ migration handler -
 import logging
 from datetime import datetime
 
+from flask import g
 from flask_babel import gettext as _
 from sqlalchemy import and_
-
-from flask import g
 
 from linotp.lib.context import request_context as context
 from linotp.lib.resolver import getResolverClassName, getResolverObject

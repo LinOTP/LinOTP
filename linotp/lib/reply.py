@@ -36,10 +36,9 @@ import urllib.request
 from typing import Union
 
 import qrcode
-from qrcode.image.pure import PyPNGImage
-
 from flask import Response, current_app, g
 from flask import request as flask_request
+from qrcode.image.pure import PyPNGImage
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.context import request_context

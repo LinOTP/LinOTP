@@ -24,9 +24,8 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-from selenium.webdriver.common.by import By
-
 from linotp_selenium_helper.self_service import SelfService
+from selenium.webdriver.common.by import By
 
 """LinOTP Selenium Test for Scenario 01 - General functionality tests"""
 
@@ -38,11 +37,11 @@ import time
 
 import integration_data as data
 import pytest
-
-from linotp.lib.HMAC import HmacOtp
 from linotp_selenium_helper import Policy, TestCase
 from linotp_selenium_helper.token_import import TokenImportAladdin
 from linotp_selenium_helper.validate import Validate
+
+from linotp.lib.HMAC import HmacOtp
 
 LOGGER = logging.getLogger(__name__)
 

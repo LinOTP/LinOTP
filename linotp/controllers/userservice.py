@@ -52,10 +52,9 @@ import json
 import logging
 from collections import defaultdict
 
+from flask import current_app, g, request
 from flask_babel import gettext as _
 from werkzeug.exceptions import Forbidden, Unauthorized
-
-from flask import current_app, g, request
 
 from linotp.controllers.base import BaseController, methods
 from linotp.flap import config

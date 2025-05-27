@@ -33,7 +33,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from flask import g
 
 from linotp.lib.config import getFromConfig, getLinotpConfig

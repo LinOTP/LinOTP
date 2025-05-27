@@ -34,9 +34,8 @@ import json
 from copy import deepcopy
 
 import pytest
-from mock import patch
-
 from flask import g
+from mock import patch
 
 from linotp.tests import TestController
 

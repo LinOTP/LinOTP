@@ -30,10 +30,9 @@ These tests are far from complete and can not be the only point of
 reliance for changes in the code base
 """
 
+import flask
 import pytest
 from mock import patch
-
-import flask
 
 from linotp.lib.security.provider import SecurityProvider
 

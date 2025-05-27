@@ -27,10 +27,9 @@
 import copy
 import unittest
 
+import flask
 import pytest
 from mock import mock
-
-import flask
 
 from linotp.controllers.admin import AdminController
 from linotp.lib.user import User

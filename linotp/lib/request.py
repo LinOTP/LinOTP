@@ -41,10 +41,9 @@ import httplib2
 
 # this is needed for the radius request
 import pyrad.packet
+from flask import current_app
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
-
-from flask import current_app
 
 log = logging.getLogger(__name__)
 

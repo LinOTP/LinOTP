@@ -31,9 +31,8 @@ import logging
 import re
 from typing import Dict, List
 
-from flask_babel import gettext as _
-
 from flask import g
+from flask_babel import gettext as _
 
 import linotp
 import linotp.lib.support

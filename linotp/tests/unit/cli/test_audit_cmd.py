@@ -30,9 +30,8 @@ from pathlib import Path
 from typing import List
 
 import pytest
-from freezegun.api import FrozenDateTimeFactory
-
 from flask.testing import FlaskCliRunner
+from freezegun.api import FrozenDateTimeFactory
 
 from linotp.app import LinOTPApp
 from linotp.cli import main as cli_main

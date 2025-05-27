@@ -37,10 +37,12 @@ from Cryptodome.Hash import SHA256
 from Cryptodome.Util import Counter
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
-from pysodium import crypto_sign_detached
-from pysodium import crypto_sign_keypair
+from pysodium import (
+    crypto_sign_detached,
+    crypto_sign_keypair,
+    crypto_sign_verify_detached,
+)
 from pysodium import crypto_sign_keypair as gen_dsa_keypair
-from pysodium import crypto_sign_verify_detached
 
 import linotp.provider.pushprovider.default_push_provider as default_provider
 from linotp.lib.crypto.utils import (

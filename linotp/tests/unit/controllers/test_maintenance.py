@@ -27,12 +27,11 @@
 import json
 import os
 
+import flask
 import pytest
 from mock import patch
 from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import Unauthorized
-
-import flask
 
 from linotp.flap import config
 from linotp.model import Config, LoggingConfig, db

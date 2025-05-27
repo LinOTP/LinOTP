@@ -31,9 +31,8 @@ validate controller - to check the authentication request
 
 import logging
 
-from flask_babel import gettext as _
-
 from flask import current_app, g
+from flask_babel import gettext as _
 
 from linotp.controllers.base import BaseController
 from linotp.flap import tmpl_context as c

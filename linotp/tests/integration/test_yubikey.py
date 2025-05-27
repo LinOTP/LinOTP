@@ -28,10 +28,9 @@
 import integration_data as data
 import pytest
 import requests
-from requests.auth import HTTPDigestAuth
-
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.validate import Validate
+from requests.auth import HTTPDigestAuth
 
 
 class TestYubikey:

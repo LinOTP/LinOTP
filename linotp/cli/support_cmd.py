@@ -36,7 +36,6 @@ import json
 import sys
 
 import click
-
 from flask import current_app
 from flask.cli import AppGroup
 

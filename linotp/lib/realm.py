@@ -30,10 +30,9 @@ import json
 import logging
 from functools import partial
 
+from flask import current_app
 from flask_babel import gettext as _
 from sqlalchemy import func
-
-from flask import current_app
 
 from linotp.lib.cache import get_cache
 from linotp.lib.config import (

@@ -30,9 +30,8 @@ import functools
 import json
 import logging
 
-from sqlalchemy import and_, desc
-
 from flask import g
+from sqlalchemy import and_, desc
 
 import linotp
 from linotp.lib.cache_utils import cache_in_request

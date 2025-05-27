@@ -38,6 +38,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from flask import current_app
 from passlib.context import CryptContext
 from passlib.exc import MissingBackendError
 from sqlalchemy import MetaData, Table, and_, cast, create_engine, or_, types
@@ -45,8 +46,6 @@ from sqlalchemy.exc import NoSuchColumnError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import expression
 from sqlalchemy.sql import text as sql_text
-
-from flask import current_app
 
 from linotp.lib.type_utils import encrypted_data
 from linotp.model import db

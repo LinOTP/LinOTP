@@ -35,7 +35,6 @@ import json
 import logging
 
 import pytest
-
 from flask import g
 
 from linotp.tests import TestController

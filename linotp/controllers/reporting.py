@@ -35,9 +35,8 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 
-from werkzeug.datastructures import Headers
-
 from flask import Response, current_app, g, stream_with_context
+from werkzeug.datastructures import Headers
 
 from linotp.controllers.base import BaseController, methods
 from linotp.lib import deprecated_methods

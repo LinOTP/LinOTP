@@ -6,12 +6,11 @@ import logging
 import os.path
 from builtins import KeyError
 
+import flask
 from flask_babel import get_locale
 from mako.exceptions import text_error_template
 from mako.lookup import TemplateLookup
 from werkzeug.local import LocalProxy
-
-import flask
 
 from linotp.lib.fs_utils import ensure_dir
 

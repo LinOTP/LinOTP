@@ -27,9 +27,8 @@
 
 import logging
 
-from werkzeug.exceptions import InternalServerError
-
 from flask import abort, request
+from werkzeug.exceptions import InternalServerError
 
 from linotp.controllers.base import BaseController, methods
 from linotp.flap import config

@@ -5,10 +5,9 @@ from dataclasses import dataclass
 from typing import Any, Callable, Type
 
 import click
-from jsonschema import Draft4Validator
-
 from flask import current_app
 from flask.cli import AppGroup
+from jsonschema import Draft4Validator
 
 from .lib.security import provider
 from .lib.security.pkcs11 import Pkcs11SecurityModule

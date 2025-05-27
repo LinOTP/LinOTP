@@ -40,10 +40,9 @@ import datetime
 import logging
 from binascii import unhexlify
 
+from flask import current_app
 from sqlalchemy import Column, and_, asc, desc, or_, schema, types
 from sqlalchemy.orm import validates
-
-from flask import current_app
 
 from linotp.lib.audit.base import AuditBase
 from linotp.lib.crypto.rsa import RSA_Signature
