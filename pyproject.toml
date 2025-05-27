@@ -68,6 +68,7 @@ dev = [
   "autopep8",
   "mypy",
   "sqlalchemy-stubs",
+  "ruff>=0.11.11",
 ]
 test = [
   "flask_testing",
