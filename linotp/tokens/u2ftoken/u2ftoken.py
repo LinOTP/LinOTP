@@ -745,49 +745,78 @@ class U2FTokenClass(TokenClass):
 
     def _parseRegistrationData(self, registrationData):
         """
-        Internal helper function to parse the registrationData received on token registration
-        according to the U2F specification
+        Parse U2F registration data according to FIDO U2F specification.
 
-        :param registrationData: Raw urlsafe base64 encoded registration data as sent from
-                                 the U2F token
-        :return:                 Tuple of (userPublicKey, keyHandle, cert, signature)
+        Format:
+        [1 byte] Reserved (must be 0x05)
+        [65 bytes] User public key
+        [1 byte] Key handle length
+        [variable] Key handle
+        [variable] X.509 certificate
+        [variable] Signature
+
+        :param registrationData: Raw registration data bytes
+        :return: Tuple of (userPublicKey, keyHandle, cert, signature)
+        :raises ValueError: If data format is invalid
         """
-        USER_PUBLIC_KEY_LEN = 65
+        offset = 0
 
-        # first byte has to be 0x05
-        if ord(registrationData[:1]) != 0x05:
+        # Reserved byte (0x05)
+        if len(registrationData) < 1 or registrationData[0] != 0x05:
             log.error("Wrong registration data format: Reserved byte does not match")
-            raise ValueError("Wrong registration data format")
-        registrationData = registrationData[1:]
+            raise ValueError("Invalid reserved byte")
+        offset += 1
 
-        # next 65 bytes refer to the user public key
-        userPublicKey = registrationData[:USER_PUBLIC_KEY_LEN]
-        if len(userPublicKey) < USER_PUBLIC_KEY_LEN:
-            log.error("Wrong registration data format: registration data is too short")
-            raise ValueError("Wrong registration data format")
-        registrationData = registrationData[USER_PUBLIC_KEY_LEN:]
+        # User public key (65 bytes)
+        USER_PUBLIC_KEY_LEN = 65
+        if len(registrationData) < offset + USER_PUBLIC_KEY_LEN:
+            log.error("Wrong registration data format: User public key is missing")
+            raise ValueError("Data too short for public key")
+        userPublicKey = registrationData[offset : offset + USER_PUBLIC_KEY_LEN]
+        offset += USER_PUBLIC_KEY_LEN
 
-        # next byte represents the length of the following key handle
-        if len(registrationData) < 1:
-            log.error("Wrong registration data format: registration data is too short")
-            raise ValueError("Wrong registration data format")
-        keyHandleLength = ord(registrationData[:1])
-        registrationData = registrationData[1:]
+        # Key handle length and data
+        if len(registrationData) < offset + 1:
+            log.error("Wrong registration data format: Key handle length is missing")
+            raise ValueError("Data too short for key handle length")
+        keyHandleLength = registrationData[offset]
+        offset += 1
 
-        # key handle of length keyHandleLength
-        keyHandle = registrationData[:keyHandleLength]
-        if len(keyHandle) < keyHandleLength:
-            log.error("Wrong registration data format: registration data is too short")
-            raise ValueError("Wrong registration data format")
-        registrationData = registrationData[keyHandleLength:]
+        if len(registrationData) < offset + keyHandleLength:
+            log.error("Wrong registration data format: Key handle is missing")
+            raise ValueError("Data too short for key handle")
+        keyHandle = registrationData[offset : offset + keyHandleLength]
+        offset += keyHandleLength
 
-        # load the X509 Certificate
-        cert = x509.load_der_x509_certificate(registrationData, default_backend())
+        # Certificate (find ASN.1 SEQUENCE)
+        cert_start = registrationData[offset:].find(b"\x30\x82")
+        if cert_start == -1:
+            log.error(
+                "Wrong registration data format: Certificate start marker not found"
+            )
+            raise ValueError("Certificate start marker not found")
+        cert_start += offset
 
-        cert_len = len(cert.public_bytes(serialization.Encoding.DER))
+        # Get certificate length from ASN.1 length bytes
+        cert_len = (registrationData[cert_start + 2] << 8) + registrationData[
+            cert_start + 3
+        ]
+        # Add 4 for SEQUENCE tag and length bytes
+        cert_end = cert_start + cert_len + 4
 
-        # The remaining registrationData is the ECDSA signature
-        signature = registrationData[cert_len:]
+        if len(registrationData) < cert_end:
+            log.error("Wrong registration data format: Certificate data is missing")
+            raise ValueError("Data too short for certificate")
+
+        # Extract and parse certificate
+        cert_data = registrationData[cert_start:cert_end]
+        cert = x509.load_der_x509_certificate(cert_data, default_backend())
+
+        # Remaining data is the signature
+        signature = registrationData[cert_end:]
+        if not signature:
+            log.error("Wrong registration data format: No signature data found")
+            raise ValueError("No signature data found")
 
         return (userPublicKey, keyHandle, cert, signature)
 

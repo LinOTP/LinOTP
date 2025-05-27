@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - The Flask framework used by LinOTP has been upgraded to version 3 to address multiple known vulnerabilities, including CVE-2023-30861.
+- Update `cryptography` to version 45.0.3 to address multiple known vulnerabilities:
+  - CVE-2023-0286, CVE-2023-50782, CVE-2023-23931, CVE-2023-49083, CVE-2024-0727, GHSA-5cpq-8wj7-hf2v, GHSA-jm77-qphf-c4w8, GHSA-v8gr-m533-ghj9
 
 ### Removed
 
@@ -47,9 +49,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - the `detail_on_success` policy was active
   - the user had no tokens assigned
   - authentication was successful through a passing policy (e.g., `passthru` or `passOnNoToken`)
-  Previously, in this scenario the user object in the response was empty, which could
-  impact integrations that rely on the detail_on_success policy, such as LinOTP IdP.
-  Now, the user information is correctly included in the response.
+    Previously, in this scenario the user object in the response was empty, which could
+    impact integrations that rely on the detail_on_success policy, such as LinOTP IdP.
+    Now, the user information is correctly included in the response.
 - Apply policy `setrealm` in ValidateController when the user is known
 
 ### Changed
