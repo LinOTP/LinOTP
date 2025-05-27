@@ -195,8 +195,7 @@ class U2FTokenClass(TokenClass):
         # "registration1"
         elif current_phase != "registration" and requested_phase == "registration2":
             raise Exception(
-                "Phase 'registration2' requested but we are not in the correct phase \
-                to process the request."
+                "Phase 'registration2' requested but we are not in the correct phase to process the request."
             )
         else:
             raise Exception(
