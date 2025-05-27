@@ -191,9 +191,9 @@ pre-commit-check:
     - exists:
         - .pre-commit-config.yaml
   before_script:
-    - UV_SYSTEM_PYTHON=1 uv pip install pre-commit
+    - uv tool install pre-commit --with pre-commit-uv --force-reinstall
   script:
-    - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache pre-commit run --all-files
+    - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache uvx pre-commit run --all-files
 
 lint:
   stage: lint
