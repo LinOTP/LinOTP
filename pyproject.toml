@@ -126,3 +126,8 @@ version = { attr = "linotp.__version__" }
 
 [tool.mypy]
 plugins = "sqlmypy"
+
+[tool.ruff]
+lint.select = [
+  "I", # isort formatting.
+]

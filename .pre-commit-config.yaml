@@ -12,8 +12,9 @@ repos:
     rev: v0.11.11
     hooks:
       # Run the linter.
-      # TODO: Enable this once the code is clean.
-      # - id: ruff-check
+      # TODO: Extend linter rules in pyproject.toml. `[tool.ruff]`
+      - id: ruff
+        args: [--fix]
       # Run the formatter.
       - id: ruff-format
 
