@@ -1,6 +1,12 @@
 repos:
   # Use seed-isort-config to generate the known_third_party list in
   # pyproject.toml. This is not active by default for speed concerns.
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.7.8
+    hooks:
+      - id: uv-lock
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.11.11
