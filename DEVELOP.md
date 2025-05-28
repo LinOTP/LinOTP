@@ -60,7 +60,7 @@ Python package installer and resolver:
 ```terminal
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
-source linotp_dev/bin/activate
+source .venv/bin/activate
 ```
 
 If you prefer another installation method, please refer to the
