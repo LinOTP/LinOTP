@@ -43,7 +43,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, List
 
 import click
-
 from flask import current_app
 from flask.cli import AppGroup
 
@@ -107,9 +106,7 @@ def _run_command(task: str, cmd: List[str], **kwargs: Dict[str, Any]) -> bool:
     except OSError as ex:
         ret = CmdResult(True, None, str(ex))
     else:
-        ret = CmdResult(
-            False, result.returncode, result.stdout.decode("utf-8")
-        )
+        ret = CmdResult(False, result.returncode, result.stdout.decode("utf-8"))
     if ret.exception or ret.exit_code != 0:
         cmd_str = " ".join(cmd)
         current_app.echo(f"{task} failed:")
@@ -120,9 +117,7 @@ def _run_command(task: str, cmd: List[str], **kwargs: Dict[str, Any]) -> bool:
                 f"Command '{cmd_str}' terminated by signal {-ret.exit_code}"
             )
         else:
-            current_app.echo(
-                f"Command '{cmd_str}' returned exit code {ret.exit_code}"
-            )
+            current_app.echo(f"Command '{cmd_str}' returned exit code {ret.exit_code}")
         current_app.echo(f"Output was:\n{ret.output}")
 
     return ret
@@ -219,12 +214,10 @@ def dump_key(filename, instructions=True):
         check = binascii.crc32(chunk.encode("ascii")) & 0xFFFFFFFF
         m.update(chunk.encode("ascii"))
         click.echo(f"{chunk} {check:08x}")
-    click.echo(f"{' '*CHUNK_SIZE} {m.hexdigest()[:8]}")
+    click.echo(f"{' ' * CHUNK_SIZE} {m.hexdigest()[:8]}")
 
 
-@init_cmds.command(
-    "enc-key", help="Generate AES keys for encryption and decryption"
-)
+@init_cmds.command("enc-key", help="Generate AES keys for encryption and decryption")
 @click.option(
     "--force",
     "-f",
@@ -236,9 +229,7 @@ def dump_key(filename, instructions=True):
     is_flag=True,
     help="Output paper emergency-backup version of the key file.",
 )
-@click.option(
-    "--keys", default="", help="Decode key from emergency backup data."
-)
+@click.option("--keys", default="", help="Decode key from emergency backup data.")
 def init_enc_key_cmd(force, dump, keys):
     """Creates a LinOTP secret file to encrypt and decrypt values in database
 
@@ -294,9 +285,7 @@ def create_secret_key(filename, data=""):
 AUDIT_PRIVKEY_BITS = 2048  # Number of bits in a private audit key
 
 
-@init_cmds.command(
-    "audit-keys", help="Generate RSA key pair for audit log signing"
-)
+@init_cmds.command("audit-keys", help="Generate RSA key pair for audit log signing")
 @click.option(
     "--force",
     "-f",
@@ -317,13 +306,9 @@ def init_audit_keys_cmd(force):
     try:
         create_audit_keys(privkey_filename, pubkey_filename)
         current_app.echo(f"Wrote private audit key to {privkey_filename}", v=1)
-        current_app.echo(
-            f"Extracted public audit key to {pubkey_filename}", v=1
-        )
+        current_app.echo(f"Extracted public audit key to {pubkey_filename}", v=1)
     except Exception as ex:
-        current_app.echo(
-            f"Error writing audit key to {privkey_filename}: {ex!s}"
-        )
+        current_app.echo(f"Error writing audit key to {privkey_filename}: {ex!s}")
         sys.exit(1)
 
 

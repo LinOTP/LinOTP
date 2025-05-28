@@ -135,6 +135,4 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     # ----------------------------------------------------------------------- --
 
-    return PushTokenPairingData(
-        user_public_key, user_token_id, serial, user_login, gda
-    )
+    return PushTokenPairingData(user_public_key, user_token_id, serial, user_login, gda)

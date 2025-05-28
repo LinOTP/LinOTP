@@ -215,9 +215,7 @@ class TestYubikeyController(TestController):
                     "otp": otp,
                     "session": self.session,
                 }
-                response = self.make_admin_request(
-                    "getSerialByOtp", params=params
-                )
+                response = self.make_admin_request("getSerialByOtp", params=params)
 
                 assert '"status": true' in response, "Response: %r" % response
 
@@ -245,9 +243,7 @@ class TestYubikeyController(TestController):
 
         # create alternative yubikey with a different pin
 
-        self.init_token(
-            public_uid=public_uids[0], user=user, pin="alternative_pin"
-        )
+        self.init_token(public_uid=public_uids[0], user=user, pin="alternative_pin")
 
         pw_password = "very secret"
         params = {

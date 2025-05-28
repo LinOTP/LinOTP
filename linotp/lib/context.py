@@ -26,7 +26,6 @@
 #
 """establish a global context object"""
 
-
 from contextlib import contextmanager
 from functools import partial
 
@@ -86,8 +85,7 @@ def context_stack_trace(manager_id, allow_nesting=True):
             # tempers with context_stack directly, we check for stack
             # consistency
             raise ProgrammingError(
-                "Misuse of context stack trace. Entered %s "
-                "but exited %s" % manager_id,
+                "Misuse of context stack trace. Entered %s but exited %s" % manager_id,
                 popped_manager_id,
             )
 

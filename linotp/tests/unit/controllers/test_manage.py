@@ -29,9 +29,8 @@
 
 from unittest.mock import patch
 
-import pytest
-
 import flask
+import pytest
 
 
 @pytest.fixture

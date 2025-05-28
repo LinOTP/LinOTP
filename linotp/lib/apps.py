@@ -129,9 +129,7 @@ def google_authenticator_url(label, param):
 
     period = int(param.get("timeStep", 30))
     if period not in [30, 60]:
-        raise Exception(
-            "unsupported period for totp token %r" % param.get("timeStep")
-        )
+        raise Exception("unsupported period for totp token %r" % param.get("timeStep"))
 
     # --------------------------------------------------------------------- --
 

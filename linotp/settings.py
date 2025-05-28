@@ -5,10 +5,9 @@ from dataclasses import dataclass
 from typing import Any, Callable, Type
 
 import click
-from jsonschema import Draft4Validator
-
 from flask import current_app
 from flask.cli import AppGroup
+from jsonschema import Draft4Validator
 
 from .lib.security import provider
 from .lib.security.pkcs11 import Pkcs11SecurityModule
@@ -63,9 +62,7 @@ def check_int_in_range(min=None, max=None):
                 f"{key} is {result} but must be at least {min}"
             )
         if max is not None and result > max:
-            raise LinOTPConfigValueError(
-                f"{key} is {result} but must be at most {max}"
-            )
+            raise LinOTPConfigValueError(f"{key} is {result} but must be at most {max}")
 
     if min is None and max is not None:
         f.__doc__ = f"value <= {max}"
@@ -173,9 +170,7 @@ class ConfigSchema:
         item = self.schema.get(key, None)
         if item is None:
             if self.refuse_unknown:
-                raise LinOTPConfigKeyError(
-                    f"Unknown configuration item '{key}'"
-                )
+                raise LinOTPConfigKeyError(f"Unknown configuration item '{key}'")
             return value
         # Make sure path-like items are strings, not `pathlib` paths.
         if key.endswith(("_DIR", "_FILE")):
@@ -184,9 +179,7 @@ class ConfigSchema:
         # conversion, either using the function provided or the type itself.
         if item.type != str and isinstance(value, str):
             value = (
-                item.convert(value)
-                if item.convert is not None
-                else item.type(value)
+                item.convert(value) if item.convert is not None else item.type(value)
             )
         # Validate the value if a validate function is registered
         if item.validate is not None:
@@ -353,9 +346,7 @@ _config_schema = ConfigSchema(
         ConfigItem(
             "LOG_CONSOLE_LINE_FORMAT",
             str,
-            default=(
-                "%(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
-            ),
+            default=("%(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"),
             help=(
                 "Format for individual lines in the console log. "
                 "This is the log which will usually be passed to "
@@ -401,8 +392,7 @@ _config_schema = ConfigSchema(
             "LOG_FILE_LINE_FORMAT",
             str,
             default=(
-                "%(asctime)s %(levelname)s: %(message)s "
-                "[in %(pathname)s:%(lineno)d]"
+                "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
             ),
             help=(
                 "Format for individual lines in the main log file. "
@@ -415,10 +405,7 @@ _config_schema = ConfigSchema(
             int,
             validate=check_int_in_range(min=0),
             default=10 * 1024 * 1024,
-            help=(
-                "Log files will be rotated when they reach this length "
-                "(in bytes)"
-            ),
+            help=("Log files will be rotated when they reach this length (in bytes)"),
         ),
         ConfigItem(
             "LOG_FILE_MAX_VERSIONS",
@@ -983,9 +970,7 @@ def config_show_cmd(modified, values, items=None):
             item = schema.find_item(k)
             display = item is not None and v != item.default
         if display:
-            click.echo(
-                ("" if values else f"{k}=") + str(current_app.config[k])
-            )
+            click.echo(("" if values else f"{k}=") + str(current_app.config[k]))
 
 
 SAMPLE_CFG_BANNER = """# This is a sample LinOTP configuration file.
@@ -999,9 +984,7 @@ SAMPLE_CFG_BANNER = """# This is a sample LinOTP configuration file.
 """
 
 
-@config_cmds.command(
-    "explain", help="Describe configuration settings in detail."
-)
+@config_cmds.command("explain", help="Describe configuration settings in detail.")
 @click.option(
     "--sample-file",
     is_flag=True,
@@ -1018,9 +1001,7 @@ def config_explain_cmd(sample_file, banner, items=None):
 
     schema = current_app.config.config_schema
     if sample_file and banner:
-        print(
-            SAMPLE_CFG_BANNER.format("all available" if not items else "some")
-        )
+        print(SAMPLE_CFG_BANNER.format("all available" if not items else "some"))
     if not items:
         items = schema.as_dict().keys()
     for name in items:
@@ -1030,9 +1011,7 @@ def config_explain_cmd(sample_file, banner, items=None):
         elif sample_file:
             description = f"{item.name}: {item.help}"
             print(
-                textwrap.fill(
-                    description, initial_indent="# ", subsequent_indent="# "
-                )
+                textwrap.fill(description, initial_indent="# ", subsequent_indent="# ")
             )
             if item.validate is not None and hasattr(item.validate, "__doc__"):
                 print(f"#\n# Constraints: {item.validate.__doc__}")
@@ -1046,7 +1025,5 @@ def config_explain_cmd(sample_file, banner, items=None):
             click.echo(f"  Current value: {current_app.config[item.name]}")
             description = f"  Description: {item.help}"
             click.echo(
-                textwrap.fill(
-                    description, initial_indent="", subsequent_indent="    "
-                )
+                textwrap.fill(description, initial_indent="", subsequent_indent="    ")
             )

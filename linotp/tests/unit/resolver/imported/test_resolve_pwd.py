@@ -76,10 +76,7 @@ def test_resolver_fail():
         "linotp.passwdresolver.fileName.my": "/dev/shm/this_file_does_not_exist"
     }
 
-    msg = (
-        "File '/dev/shm/this_file_does_not_exist' does not "
-        "exist or is not accessible"
-    )
+    msg = "File '/dev/shm/this_file_does_not_exist' does not exist or is not accessible"
 
     with pytest.raises(ResolverLoadConfigError, match=msg):
         y = PasswdResolver()

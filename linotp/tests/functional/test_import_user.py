@@ -48,17 +48,17 @@ the check is made by a dryrun
 - delete the resolver on test end
 
 """
+
 import io
 import json
 import logging
 import os
 from typing import Callable
 
+from flask import current_app
 from sqlalchemy import sql
 from sqlalchemy.engine import create_engine
 from sqlalchemy.exc import ProgrammingError
-
-from flask import current_app
 
 from linotp.lib.tools.import_user.SQLImportHandler import (
     LinOTP_DatabaseContext,
@@ -154,9 +154,7 @@ class TestImportUser(TestController):
 
         # 3- import a file with 4 less users > 4 users will be deleted
         # and 1 user's password has changed --> 1 user will be modified
-        def_passwd_changed_file = os.path.join(
-            self.fixture_path, "def-passwd-changed"
-        )
+        def_passwd_changed_file = os.path.join(self.fixture_path, "def-passwd-changed")
 
         with io.open(def_passwd_changed_file, "r", encoding="utf-8") as f:
             content = f.read()
@@ -270,9 +268,7 @@ class TestImportUser(TestController):
         # make sure that no additional resolver was created on dryrun
 
         response = self.make_system_request("getResolvers", params={})
-        assert (
-            len(response.json["result"]["value"]) == n_initial_realms
-        ), response
+        assert len(response.json["result"]["value"]) == n_initial_realms, response
 
     def test_list_imported_users(self):
         """
@@ -328,25 +324,16 @@ class TestImportUser(TestController):
         response = self.make_system_request("getResolver", params=params)
         jresp = json.loads(response.body)
 
-        resolver_params = (
-            jresp.get("result", {}).get("value", {}).get("data", {})
-        )
+        resolver_params = jresp.get("result", {}).get("value", {}).get("data", {})
 
         resolver_params["Password"] = ""
         resolver_params["type"] = "sqlresolver"
         resolver_params["name"] = self.resolver_name
         resolver_params["previous_name"] = self.resolver_name
-        response = self.make_admin_request(
-            "testresolver", params=resolver_params
-        )
+        response = self.make_admin_request("testresolver", params=resolver_params)
 
         jresp = json.loads(response.body)
-        rows = (
-            jresp.get("result", {})
-            .get("value", {})
-            .get("desc", {})
-            .get("rows", {})
-        )
+        rows = jresp.get("result", {}).get("value", {}).get("desc", {}).get("rows", {})
 
         assert rows == 24, jresp
 
@@ -459,9 +446,7 @@ class TestImportUser(TestController):
 
         # 1-open the csv data and import the users
 
-        def_passwd_file = os.path.join(
-            self.fixture_path, "def-passwd-plain.csv"
-        )
+        def_passwd_file = os.path.join(self.fixture_path, "def-passwd-plain.csv")
 
         with io.open(def_passwd_file, "r", encoding="utf-8") as f:
             content = f.read()
@@ -547,9 +532,7 @@ class TestImportUser(TestController):
 
         setRealmParams = {"realm": "newrealm", "resolvers": self.resolver_spec}
 
-        response = self.make_system_request(
-            action="setRealm", params=setRealmParams
-        )
+        response = self.make_system_request(action="setRealm", params=setRealmParams)
 
         # for passthru_user1 do check if policy is defined
         auth_user = ("root", "rootpass")

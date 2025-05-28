@@ -141,9 +141,9 @@ class LicenseImport(ManageDialog):
         # lookup if we have success in the message bar
         # - on error raise exception
 
-        assert (
-            self.manage.alert_box_handler.amount_of_lines == 1
-        ), "Expect exactly one message to be shown"
+        assert self.manage.alert_box_handler.amount_of_lines == 1, (
+            "Expect exactly one message to be shown"
+        )
 
         last_line = self.manage.alert_box_handler.last_line
 

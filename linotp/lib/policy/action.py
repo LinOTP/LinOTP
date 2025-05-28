@@ -87,9 +87,7 @@ def get_selfservice_actions(user=None, action=None):
     elif isinstance(user, str):
         pparam["user"] = user
 
-    log.debug(
-        "checking actions for scope=%s, realm=%r", scope, pparam.get("realm")
-    )
+    log.debug("checking actions for scope=%s, realm=%r", scope, pparam.get("realm"))
 
     policies = get_client_policy(client, scope=scope, action=action, **pparam)
 
@@ -105,9 +103,7 @@ def get_selfservice_actions(user=None, action=None):
             if not action:
                 all_actions.update(pat.convert_actions(scope, actions))
             elif action in actions:
-                all_actions[action] = pat.convert(
-                    scope, action, actions[action]
-                )
+                all_actions[action] = pat.convert(scope, action, actions[action])
         except PolicyConversionError as err:
             raise PolicyConversionError(
                 f"Could not parse selfservice-policy '{policy['name']}': {err}"

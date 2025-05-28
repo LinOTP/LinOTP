@@ -180,14 +180,10 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
                 # verify the url scheme
                 parsed_url = urlparse(configDict["proxy"])
                 if parsed_url.scheme not in ["http", "https"]:
-                    raise requests.exceptions.InvalidSchema(
-                        configDict["proxy"]
-                    )
+                    raise requests.exceptions.InvalidSchema(configDict["proxy"])
 
                 if parsed_url.path and parsed_url.path != "/":
-                    raise requests.exceptions.InvalidSchema(
-                        configDict["proxy"]
-                    )
+                    raise requests.exceptions.InvalidSchema(configDict["proxy"])
 
                 self.proxy = DefaultPushProvider.get_proxy_definition(
                     configDict.get("proxy")
@@ -217,9 +213,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
         if not gda:
             raise Exception("Missing target description!")
 
-        (success, result_message) = self._http_push(
-            challenge, gda, transactionId
-        )
+        (success, result_message) = self._http_push(challenge, gda, transactionId)
 
         return success, result_message
 
@@ -300,9 +294,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
 
         # schedule all resources
 
-        res_scheduler = ResourceScheduler(
-            tries=2, uri_list=self.push_server_urls
-        )
+        res_scheduler = ResourceScheduler(tries=2, uri_list=self.push_server_urls)
 
         # ------------------------------------------------------------------ --
 
@@ -373,16 +365,12 @@ def main():
 
     parser = argparse.ArgumentParser(usage)
 
-    parser.add_argument(
-        "-c", "--client_cert", help="client certificate", required=True
-    )
+    parser.add_argument("-c", "--client_cert", help="client certificate", required=True)
 
     parser.add_argument("-u", "--url", help="Provider URL", required=True)
 
     parser.add_argument("-m", "--message", help="message", required=True)
-    parser.add_argument(
-        "-g", "--gda", help="target token info (gda)", required=True
-    )
+    parser.add_argument("-g", "--gda", help="target token info (gda)", required=True)
 
     # not required parameters
 

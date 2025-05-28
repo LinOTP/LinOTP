@@ -28,7 +28,6 @@
 Tests the chunked data handling in the config
 """
 
-
 import unittest
 
 import pytest
@@ -376,9 +375,7 @@ class TestConfigStoreCase(unittest.TestCase):
             "Description": "DESCRIPTIÖN",
         }
 
-        _storeConfigDB(
-            conf["Key"], conf["Value"], conf["Type"], conf["Description"]
-        )
+        _storeConfigDB(conf["Key"], conf["Value"], conf["Type"], conf["Description"])
 
         # Check value is correctly returned
         stored_value = _retrieveConfigDB(conf["Key"])
@@ -391,12 +388,13 @@ class TestConfigStoreCase(unittest.TestCase):
         stored_conf = entries[0]
 
         for key in list(conf.keys()):
-            assert conf[key] == getattr(
-                stored_conf, key
-            ), "Key should match key:%s - expected %r, recevied %r" % (
-                key,
-                conf[key],
-                getattr(stored_conf, key),
+            assert conf[key] == getattr(stored_conf, key), (
+                "Key should match key:%s - expected %r, recevied %r"
+                % (
+                    key,
+                    conf[key],
+                    getattr(stored_conf, key),
+                )
             )
 
     def test_updateExisting(self):

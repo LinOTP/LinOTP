@@ -26,6 +26,7 @@
 """
 Tests a very small subset of linotp.lib.reply
 """
+
 import os
 import unittest
 

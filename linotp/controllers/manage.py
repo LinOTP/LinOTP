@@ -28,15 +28,15 @@
 """
 manage controller - In provides the web gui management interface
 """
+
 import base64
 import json
 import logging
 import os
 
+from flask import current_app, g, request
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
-
-from flask import current_app, g, request
 
 import linotp
 from linotp.controllers.base import BaseController, jwt_exempt, methods
@@ -98,12 +98,9 @@ class ManageController(BaseController):
 
             # check for support of setting admin password
             c.admin_can_change_password = (
-                "linotpadmin.user" in config
-                and "linotpadmin.password" in config
+                "linotpadmin.user" in config and "linotpadmin.password" in config
             )
-            c.app_config_trusted_proxies = current_app.config[
-                "TRUSTED_PROXIES"
-            ]
+            c.app_config_trusted_proxies = current_app.config["TRUSTED_PROXIES"]
             c.app_config_CLIENT_PARAM_ENABLED = current_app.config[
                 "GET_CLIENT_ADDRESS_FROM_POST_DATA"
             ]
@@ -132,9 +129,7 @@ class ManageController(BaseController):
                 g.audit["serial"] = serial
                 g.audit["token_type"] = getTokenType(serial)
 
-            g.audit[
-                "action_detail"
-            ] += linotp.lib.audit.base.get_token_num_info()
+            g.audit["action_detail"] += linotp.lib.audit.base.get_token_num_info()
             current_app.audit_obj.log(g.audit)
 
         return response
@@ -160,8 +155,7 @@ class ManageController(BaseController):
             # check for support of setting admin password
 
             c.admin_can_change_password = (
-                "linotpadmin.user" in config
-                and "linotpadmin.password" in config
+                "linotpadmin.user" in config and "linotpadmin.password" in config
             )
 
             # -------------------------------------------------------------- --
@@ -170,14 +164,10 @@ class ManageController(BaseController):
             confs = _getTokenTypeConfig("config")
             try:
                 c.token_config_tab = {
-                    conf: v["title"]
-                    for conf, v in confs.items()
-                    if v.get("title")
+                    conf: v["title"] for conf, v in confs.items() if v.get("title")
                 }
                 c.token_config_div = {
-                    conf: v["html"]
-                    for conf, v in confs.items()
-                    if v.get("html")
+                    conf: v["html"] for conf, v in confs.items() if v.get("html")
                 }
             except Exception as exx:
                 c.token_config_tab = {}
@@ -191,14 +181,10 @@ class ManageController(BaseController):
             enrolls = _getTokenTypeConfig("init")
             try:
                 c.token_enroll_tab = {
-                    conf: v["title"]
-                    for conf, v in enrolls.items()
-                    if v.get("title")
+                    conf: v["title"] for conf, v in enrolls.items() if v.get("title")
                 }
                 c.token_enroll_div = {
-                    conf: v["html"]
-                    for conf, v in enrolls.items()
-                    if v.get("html")
+                    conf: v["html"] for conf, v in enrolls.items() if v.get("html")
                 }
             except Exception as exx:
                 c.token_config_tab = {}
@@ -446,9 +432,7 @@ class ManageController(BaseController):
             return sendResult(res)
 
         except PolicyException as pe:
-            log.error(
-                "[tokenview_flexi] Error during checking policies: %r", pe
-            )
+            log.error("[tokenview_flexi] Error during checking policies: %r", pe)
             db.session.rollback()
             return sendError(pe, 1)
 
@@ -493,9 +477,7 @@ class ManageController(BaseController):
             user = request_context["RequestUser"]
             # check admin authorization
             # check if we got a realm or resolver, that is ok!
-            checkPolicyPre(
-                "admin", "userlist", {"user": user.login, "realm": c.realm}
-            )
+            checkPolicyPre("admin", "userlist", {"user": user.login, "realm": c.realm})
 
             if c.filter == "":
                 c.filter = "*"
@@ -513,9 +495,7 @@ class ManageController(BaseController):
             if c.psize is None:
                 c.psize = 20
 
-            c.userArray = getUserList(
-                {qtype: c.filter, "realm": c.realm}, user
-            )
+            c.userArray = getUserList({qtype: c.filter, "realm": c.realm}, user)
             c.userNum = len(c.userArray)
 
             lines = []
@@ -587,9 +567,7 @@ class ManageController(BaseController):
             return sendResult(res)
 
         except PolicyException as pe:
-            log.error(
-                "[userview_flexi] Error during checking policies: %r", pe
-            )
+            log.error("[userview_flexi] Error during checking policies: %r", pe)
             db.session.rollback()
             return sendError(pe, 1)
 
@@ -632,16 +610,13 @@ class ManageController(BaseController):
                 filterRealm = res["realms"]
 
             log.info(
-                "[tokeninfo] admin >%s< may display the following realms:"
-                " %s",
+                "[tokeninfo] admin >%s< may display the following realms: %s",
                 res["admin"],
                 filterRealm,
             )
             log.info("[tokeninfo] displaying tokens: serial: %s", serial)
 
-            toks = TokenIterator(
-                User("", "", ""), serial, filterRealm=filterRealm
-            )
+            toks = TokenIterator(User("", "", ""), serial, filterRealm=filterRealm)
 
             token_info = next(toks, {})
             c.tokeninfo = token_info
@@ -680,12 +655,8 @@ class ManageController(BaseController):
         """
 
         try:
-            directory = config.get(
-                "linotpManual.Directory", "/usr/share/doc/linotp"
-            )
-            default_filename = config.get(
-                "linotpManual.File", "LinOTP_Manual-en.pdf"
-            )
+            directory = config.get("linotpManual.Directory", "/usr/share/doc/linotp")
+            default_filename = config.get("linotpManual.File", "LinOTP_Manual-en.pdf")
             mimetype = "application/pdf"
             headers = []
 
@@ -802,8 +773,7 @@ def _getTokenTypeConfig(section="config"):
 
             except CompileException as cex:
                 log.error(
-                    "[_getTokenTypeConfig] compile error while "
-                    "processing %r.%r:",
+                    "[_getTokenTypeConfig] compile error while processing %r.%r:",
                     tok,
                     section,
                 )

@@ -46,10 +46,9 @@ import sys
 from pathlib import Path
 
 import click
-from sqlalchemy import create_engine
-
 from flask import current_app
 from flask.cli import AppGroup
+from sqlalchemy import create_engine
 
 from . import get_backup_filename
 
@@ -207,9 +206,7 @@ def restore_mysql_database(filename: str):
     app.echo(f"Restoring MySQL backup {backup_filename!r}", v=1)
 
     with open(backup_filename, "r") as backup_file:
-        result = subprocess.run(
-            command, stdin=backup_file, capture_output=True
-        )
+        result = subprocess.run(command, stdin=backup_file, capture_output=True)
 
         if result.returncode != 0:
             app.echo(

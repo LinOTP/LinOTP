@@ -53,9 +53,7 @@ def test_invalid_support_file(app, runner):
 
     result = runner.invoke(cli_main, ["support", "set", support_file])
     assert result.exit_code == 2
-    assert (
-        "Failed to set license! expired - valid till '2017-12-12'"
-    ) in result.stderr
+    assert ("Failed to set license! expired - valid till '2017-12-12'") in result.stderr
 
     result = runner.invoke(cli_main, ["support", "get"])
     assert result.exit_code == 2

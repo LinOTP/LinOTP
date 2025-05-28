@@ -349,9 +349,7 @@ class TokensController(BaseController):
             result_count = tokens.getResultSetInfo()["tokens"]
 
             if result_count > 1:
-                raise Exception(
-                    "Multiple tokens found with serial {}".format(serial)
-                )
+                raise Exception("Multiple tokens found with serial {}".format(serial))
 
             formatted_token = {}
 
@@ -408,9 +406,7 @@ class TokenAdapter:
         self.serial = linotp_token["LinOtp.TokenSerialnumber"]
         self.type = linotp_token["LinOtp.TokenType"].lower()
 
-        self.creation_date = _parse_date_string(
-            linotp_token["LinOtp.CreationDate"]
-        )
+        self.creation_date = _parse_date_string(linotp_token["LinOtp.CreationDate"])
 
         self.is_active = linotp_token["LinOtp.Isactive"]
         self.realms = linotp_token["LinOtp.RealmNames"]
@@ -455,14 +451,10 @@ class TokenAdapter:
         # be parsed differently than the remaining date strings.
         for field in ["validity_period_end", "validity_period_start"]:
             if field in self._token_info:
-                date = datetime.strptime(
-                    self._token_info[field], "%d/%m/%y %H:%M"
-                )
+                date = datetime.strptime(self._token_info[field], "%d/%m/%y %H:%M")
                 self._token_info[field] = date.replace(tzinfo=timezone.utc)
 
-        self.validity_start = self._token_info.get(
-            "validity_period_start", None
-        )
+        self.validity_start = self._token_info.get("validity_period_start", None)
         self.validity_end = self._token_info.get("validity_period_end", None)
 
     def to_JSON_format(self):
@@ -535,9 +527,7 @@ def _parse_date_string(date_string):
     If the passed string is empty, return None.
     """
     return (
-        datetime.strptime(date_string, DEFAULT_TIMEFORMAT).replace(
-            tzinfo=timezone.utc
-        )
+        datetime.strptime(date_string, DEFAULT_TIMEFORMAT).replace(tzinfo=timezone.utc)
         if date_string
         else None
     )

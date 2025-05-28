@@ -107,24 +107,16 @@ class TestCase(object):
         if configfile:
             load_tconfig_from_file(configfile)
 
-        cls.http_username = get_from_tconfig(
-            ["linotp", "username"], required=True
-        )
-        cls.http_password = get_from_tconfig(
-            ["linotp", "password"], required=True
-        )
+        cls.http_username = get_from_tconfig(["linotp", "username"], required=True)
+        cls.http_password = get_from_tconfig(["linotp", "password"], required=True)
         cls.http_host = get_from_tconfig(["linotp", "host"], required=True)
-        cls.http_protocol = get_from_tconfig(
-            ["linotp", "protocol"], default="https"
-        )
+        cls.http_protocol = get_from_tconfig(["linotp", "protocol"], default="https")
         cls.http_port = get_from_tconfig(["linotp", "port"])
         cls.base_url = cls.http_protocol + "://" + cls.http_host
         if cls.http_port:
             cls.base_url += ":" + cls.http_port
 
-        remote_setting = get_from_tconfig(
-            ["selenium", "remote"], default="False"
-        )
+        remote_setting = get_from_tconfig(["selenium", "remote"], default="False")
         cls.remote_enable = remote_setting.lower() == "true"
         cls.remote_url = get_from_tconfig(["selenium", "remote_url"])
 
@@ -137,9 +129,7 @@ class TestCase(object):
         cls.implicit_wait_time = int(
             get_from_tconfig(["timeouts", "default"], default=5)
         )
-        cls.ui_wait_time = int(
-            get_from_tconfig(["timeouts", "ui_updates"], default=5)
-        )
+        cls.ui_wait_time = int(get_from_tconfig(["timeouts", "ui_updates"], default=5))
         cls.backend_wait_time = int(
             get_from_tconfig(["timeouts", "backend_updates"], default=10)
         )
@@ -156,15 +146,11 @@ class TestCase(object):
 
         def _get_chrome_options():
             chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_argument(
-                "--lang=" + cls.selenium_driver_language
-            )
+            chrome_options.add_argument("--lang=" + cls.selenium_driver_language)
             chrome_options.add_argument("--ignore-certificate-errors")
             chrome_options.add_argument("--allow-running-insecure-content")
             chrome_options.add_argument("--allow-insecure-localhost")
-            chrome_options.add_argument(
-                "--unsafely-treat-insecure-origin-as-secure"
-            )
+            chrome_options.add_argument("--unsafely-treat-insecure-origin-as-secure")
             return chrome_options
 
         def _get_firefox_options():
@@ -183,9 +169,7 @@ class TestCase(object):
 
             pparams = {}
             if "webdriver_executable_path" in os.environ:
-                pparams["executable_path"] = os.environ[
-                    "webdriver_executable_path"
-                ]
+                pparams["executable_path"] = os.environ["webdriver_executable_path"]
 
             if selenium_driver == "chrome":
                 try:
@@ -365,9 +349,7 @@ class TestCase(object):
 
         filtered_version_string = ".".join(filtered_version)
 
-        if parse_version(filtered_version_string) < parse_version(
-            version_minimum
-        ):
+        if parse_version(filtered_version_string) < parse_version(version_minimum):
             raise SkipTest(
                 "LinOTP version %s (%s) <  %s"
                 % (

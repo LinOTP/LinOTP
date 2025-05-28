@@ -26,7 +26,6 @@
 #
 """default SecurityModules which takes the enc keys from a file"""
 
-
 import binascii
 import hmac
 import logging
@@ -147,9 +146,7 @@ class DefaultSecurityModule(SecurityModule):
             if not secret:
                 # secret = setupKeyFile(secFile, id+1)
                 raise Exception(
-                    "No secret key defined for index: %r !\n"
-                    "Please extend your %s"
-                    " !",
+                    "No secret key defined for index: %r !\nPlease extend your %s !",
                     id,
                     self.secFile,
                 )
@@ -420,9 +417,7 @@ class DefaultSecurityModule(SecurityModule):
 
         try:
             sign_key = self.getSecret(slot_id)
-            hex_mac = hmac.new(
-                sign_key, message.encode("utf-8"), method
-            ).hexdigest()
+            hex_mac = hmac.new(sign_key, message.encode("utf-8"), method).hexdigest()
         finally:
             if sign_key:
                 zerome(sign_key)
@@ -450,9 +445,7 @@ class DefaultSecurityModule(SecurityModule):
         try:
             sign_key = self.getSecret(slot_id)
             hmac_obj = hmac.new(sign_key, message.encode("utf-8"), method)
-            sign_mac = hmac.new(
-                sign_key, message.encode("utf-8"), method
-            ).hexdigest()
+            sign_mac = hmac.new(sign_key, message.encode("utf-8"), method).hexdigest()
 
             res = 0
             # as we compare on hex, we have to multiply by 2

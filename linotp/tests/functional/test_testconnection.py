@@ -32,6 +32,7 @@ test the admin/testresolver api
 the admin/testresolver api could be used wo password, if the resolver
 is already known in LinOTP
 """
+
 import json
 import logging
 

@@ -78,9 +78,7 @@ class TestImportUser(TestController):
             "type": "passwdresolver",
         }
 
-        response = self.make_system_request(
-            "setResolver", params=resolver_param
-        )
+        response = self.make_system_request("setResolver", params=resolver_param)
 
         content = json.loads(response.body)
         assert content["result"]["status"]
@@ -91,9 +89,7 @@ class TestImportUser(TestController):
             "type": "passwdresolver",
         }
 
-        response = self.make_system_request(
-            "setResolver", params=resolver_param
-        )
+        response = self.make_system_request("setResolver", params=resolver_param)
 
         content = json.loads(response.body)
         assert content["result"]["status"]
@@ -146,9 +142,7 @@ class TestImportUser(TestController):
 
         params = {"from": "black1", "to": "black2"}
 
-        response = self.make_tools_request(
-            action="migrate_resolver", params=params
-        )
+        response = self.make_tools_request(action="migrate_resolver", params=params)
 
         assert "1 tokens of 1 migrated" in response, response
 

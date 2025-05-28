@@ -87,7 +87,7 @@ container_scanning:
     entrypoint: [""]
   needs: ["build-docker"]
   variables:
-    SEVERITIES: CRITICAL
+    # SEVERITIES: CRITICAL,HIGH
     GIT_STRATEGY: none
     TRIVY_USERNAME: "$CI_REGISTRY_USER"
     TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
@@ -104,7 +104,7 @@ container_scanning:
       --output "$CI_PROJECT_DIR/gl-container-scanning-report.json" "$FULL_IMAGE_NAME"
     # Prints full report
     - time trivy image --scanners vuln --exit-code 0 --cache-dir .trivycache/ --no-progress "$FULL_IMAGE_NAME"
-    - time trivy image --scanners vuln --exit-code 1 --cache-dir .trivycache/ --severity "$SEVERITIES" --ignore-unfixed --no-progress "$FULL_IMAGE_NAME"
+    - time trivy image --scanners vuln --exit-code 1 --cache-dir .trivycache/ ${SEVERITIES:+--severity ${SEVERITIES}} --ignore-unfixed --no-progress "$FULL_IMAGE_NAME"
   cache:
     paths:
       - .trivycache/
@@ -177,7 +177,7 @@ semgrep-sast_evaluation:
     - apt-get install -y jq
     # remove cmd call from report by hand (because "# nosec" does not work in semgrep job)
     # Update this command in case the job fails after altering "mysql_cmd.py"
-    - jq '(.vulnerabilities[] | select(.location.file == "linotp/cli/mysql_cmd.py" and .location.start_line == 148)) |= null' $REPORT_FILE > tmp.json && mv tmp.json $REPORT_FILE
+    - jq '(.vulnerabilities[] | select(.location.file == "linotp/cli/mysql_cmd.py" and .location.start_line == 147)) |= null' $REPORT_FILE > tmp.json && mv tmp.json $REPORT_FILE
 
 pre-commit-check:
   stage: check-and-build
@@ -191,9 +191,9 @@ pre-commit-check:
     - exists:
         - .pre-commit-config.yaml
   before_script:
-    - UV_SYSTEM_PYTHON=1 uv pip install pre-commit
+    - uv tool install pre-commit --with pre-commit-uv --force-reinstall
   script:
-    - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache pre-commit run --all-files
+    - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache uvx pre-commit run --all-files
 
 lint:
   stage: lint

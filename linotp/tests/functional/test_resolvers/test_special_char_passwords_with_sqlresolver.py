@@ -123,9 +123,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
 
         response = self.make_admin_request("show", params=params)
         jresp = json.loads(response.body)
-        token_info = (
-            jresp.get("result", {}).get("value", {}).get("data", [{}])[0]
-        )
+        token_info = jresp.get("result", {}).get("value", {}).get("data", [{}])[0]
         assert token_info.get("LinOtp.FailCount", -1) == 1
 
         # ------------------------------------------------------------------ --
@@ -136,9 +134,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
 
         params = {"user": user, "pass": pin + secret}
 
-        response = self.make_validate_request(
-            "check", params=params, method="GET"
-        )
+        response = self.make_validate_request("check", params=params, method="GET")
         assert '"value": true' in response
 
         # ------------------------------------------------------------------ --

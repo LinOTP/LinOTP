@@ -27,6 +27,7 @@
 
 
 """ """
+
 import json
 from wsgiref import headers
 
@@ -89,9 +90,7 @@ class TestTokens(TestController):
         response = self.make_api_v2_request("/tokens/")
 
         assert response.json["result"]["status"]
-        assert isinstance(
-            response.json["result"]["value"]["pageRecords"], list
-        )
+        assert isinstance(response.json["result"]["value"]["pageRecords"], list)
 
         # ---------------------------------------------------------------- --
         # access the tokens api with the unauthenticated testing client
@@ -214,9 +213,7 @@ class TestTokens(TestController):
         response = self.make_api_v2_request("/tokens/")
 
         assert response.json["result"]["status"]
-        assert isinstance(
-            response.json["result"]["value"]["pageRecords"], list
-        )
+        assert isinstance(response.json["result"]["value"]["pageRecords"], list)
         assert response.json["result"]["value"]["page"] == 0
         assert response.json["result"]["value"]["pageSize"] == 50
         assert response.json["result"]["value"]["totalPages"] == 1

@@ -30,9 +30,8 @@ import unittest
 
 import netaddr
 import pytest
-from mock import patch
-
 from flask import current_app
+from mock import patch
 
 import linotp.lib.config
 from linotp.lib.type_utils import get_ip_address, get_ip_network
@@ -369,9 +368,7 @@ class TestGetClientCase(unittest.TestCase):
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.return_value = "136.243.104.66"
 
-            in_network = is_addr_in_network(
-                "136.243.104.66", "my.other.test.domain/29"
-            )
+            in_network = is_addr_in_network("136.243.104.66", "my.other.test.domain/29")
             assert in_network is True
 
         in_network = is_addr_in_network("140.181.3.7", "140.181.3.1/29")
@@ -388,9 +385,7 @@ class TestGetClientCase(unittest.TestCase):
                 "[Errno 8] nodename nor servname provided, or not known"
             )
 
-            in_network = is_addr_in_network(
-                "140.181.3.121", "www.my.test.domain "
-            )
+            in_network = is_addr_in_network("140.181.3.121", "www.my.test.domain ")
             assert in_network is False
 
         return

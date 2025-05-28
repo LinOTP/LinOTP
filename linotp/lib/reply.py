@@ -36,10 +36,9 @@ import urllib.request
 from typing import Union
 
 import qrcode
-from qrcode.image.pure import PyPNGImage
-
 from flask import Response, current_app, g
 from flask import request as flask_request
+from qrcode.image.pure import PyPNGImage
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.context import request_context
@@ -135,8 +134,7 @@ def _get_httperror_code_from_params() -> Union[str, None]:
             httperror = str(int(httperror))
         except ValueError as value_error:
             log.warning(
-                "'%r' is not a valid integer. Using '500' as "
-                "fallback. ValueError %r",
+                "'%r' is not a valid integer. Using '500' as fallback. ValueError %r",
                 httperror,
                 value_error,
             )
@@ -209,9 +207,7 @@ def sendError(exception: Union[Exception, str], id: int = 1):
 
     # handle the different types of exception:
     ## Exception, LinOtpError, str/unicode
-    if hasattr(exception, "__class__") is True and isinstance(
-        exception, Exception
-    ):
+    if hasattr(exception, "__class__") is True and isinstance(exception, Exception):
         errDesc = str(exception)
         if isinstance(exception, LinotpError):
             errId = exception.getId()
@@ -463,9 +459,7 @@ def sendCSVResult(obj, flat_lines=False, filename="linotp-tokendata.csv"):
             output += "\n"
 
     response = Response(response=output, status=200, mimetype=content_type)
-    response.headers["Content-disposition"] = (
-        "attachment; filename=%s" % filename
-    )
+    response.headers["Content-disposition"] = "attachment; filename=%s" % filename
 
     return response
 
@@ -795,9 +789,7 @@ def get_details_for_response(response: Response) -> dict:
                         if k != "cryptpass"
                     }
                 except:
-                    log.warning(
-                        "No attributes found to return for user %s", user.login
-                    )
+                    log.warning("No attributes found to return for user %s", user.login)
                     user_info = {"username": user.login}
                 res["user"] = user_info
             # realm info

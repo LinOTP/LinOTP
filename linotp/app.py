@@ -34,14 +34,12 @@ from uuid import uuid4
 
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
+from flask import Config as FlaskConfig
+from flask import Flask, abort, current_app, jsonify, redirect, request, url_for
+from flask import g as flask_g
 from flask_babel import Babel
 from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.profiler import ProfilerMiddleware
-
-from flask import Config as FlaskConfig
-from flask import Flask, abort, current_app
-from flask import g as flask_g
-from flask import jsonify, redirect, request, url_for
 
 from . import __version__
 from .flap import config, setup_mako, setup_request_context
@@ -312,9 +310,7 @@ class LinOTPApp(Flask):
 
         # ------------------------------------------------------------------ --
 
-        super().__init__(
-            __name__, static_folder="public", static_url_path="/static"
-        )
+        super().__init__(__name__, static_folder="public", static_url_path="/static")
 
     def setup_resolvers(self):
         """
@@ -351,9 +347,7 @@ class LinOTPApp(Flask):
 
                 res, msg = linotp.lib.support.setSupportLicense(license_str)
                 if res is False:
-                    log.error(
-                        "failed to load license: %s: %s", license_str, msg
-                    )
+                    log.error("failed to load license: %s: %s", license_str, msg)
 
                 else:
                     log.info("license successfully loaded")
@@ -657,14 +651,10 @@ class LinOTPApp(Flask):
         # AVAILABLE_CONTROLLERS
         enabled = self.config["ENABLE_CONTROLLERS"].strip()
 
-        available_controllers = {
-            controller.strip() for controller in enabled.split()
-        }
+        available_controllers = {controller.strip() for controller in enabled.split()}
 
         if "ALL" in available_controllers:
-            available_controllers = (
-                available_controllers | AVAILABLE_CONTROLLERS
-            )
+            available_controllers = available_controllers | AVAILABLE_CONTROLLERS
             available_controllers.remove("ALL")
 
         disabled = self.config["DISABLE_CONTROLLERS"].split()
@@ -691,9 +681,7 @@ class LinOTPApp(Flask):
             ctrl_name, url_prefix, ctrl_class_name = bits
             self.enable_controller(ctrl_name, url_prefix, ctrl_class_name)
 
-    def enable_controller(
-        self, ctrl_name, url_prefix=None, ctrl_class_name=None
-    ):
+    def enable_controller(self, ctrl_name, url_prefix=None, ctrl_class_name=None):
         """
         Initialise an individual controller and its routing
 
@@ -713,9 +701,7 @@ class LinOTPApp(Flask):
         cls = getattr(mod, ctrl_class_name, None)
         if cls is None:
             raise ConfigurationError(
-                "{} does not define the '{}' class".format(
-                    ctrl_name, ctrl_class_name
-                )
+                "{} does not define the '{}' class".format(ctrl_name, ctrl_class_name)
             )
 
         if not url_prefix:
@@ -957,13 +943,9 @@ def _configure_app(
             # Check `fn` itself if glob doesn't yield results
             # (e.g., when checking `/foo/linotp.cfg` but `/foo` doesn't
             # exist).
-            for fn0 in sorted(
-                list(fn.resolve().parent.glob(fn.name)) or [str(fn)]
-            ):
+            for fn0 in sorted(list(fn.resolve().parent.glob(fn.name)) or [str(fn)]):
                 if app.config.from_pyfile(fn0, silent=True):
-                    print(
-                        f"Configuration loaded from {fn0!s}", file=sys.stderr
-                    )
+                    print(f"Configuration loaded from {fn0!s}", file=sys.stderr)
                 elif warn_on_error:
                     print(
                         f"Configuration from {fn0!s} failed"
@@ -1067,9 +1049,7 @@ def _setup_babel(app: LinOTPApp):
     def get_locale():
         """Determine locale for the current request."""
         try:
-            return request.accept_languages.best_match(
-                app.available_languages, "en"
-            )
+            return request.accept_languages.best_match(app.available_languages, "en")
         except RuntimeError:
             # Working outside of request context.
             return babel.default_locale

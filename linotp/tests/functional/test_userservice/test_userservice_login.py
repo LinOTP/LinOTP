@@ -72,9 +72,7 @@ class TestUserserviceLogin(TestUserserviceController):
         self.delete_all_realms()
         self.delete_all_resolvers()
 
-        response = self.make_system_request(
-            "setConfig", params={"splitAtSign": "true"}
-        )
+        response = self.make_system_request("setConfig", params={"splitAtSign": "true"})
         assert "false" not in response.body
 
         TestUserserviceController.setUp(self)
@@ -180,9 +178,7 @@ class TestUserserviceLogin(TestUserserviceController):
         # verify that the authentication was successfull by quering history
 
         wrong_cookie = "wHzUPEnpEEZDQvSjKitKtPi4bgX9mM5R2M8cJDGf5Sg"
-        self.client.set_cookie(
-            "user_selfservice", wrong_cookie, domain=".localhost"
-        )
+        self.client.set_cookie("user_selfservice", wrong_cookie, domain=".localhost")
 
         auth_data = {
             "username": "passthru_user1@myDefRealm",
@@ -344,8 +340,7 @@ class TestUserserviceLogin(TestUserserviceController):
         assert not jresp["result"]["value"]
         assert jresp["detail"]["tokenList"]
         assert (
-            jresp["detail"]["tokenList"][0]["LinOtp.TokenSerialnumber"]
-            == "LoginToken"
+            jresp["detail"]["tokenList"][0]["LinOtp.TokenSerialnumber"] == "LoginToken"
         )
 
         # ------------------------------------------------------------------ --
@@ -381,10 +376,7 @@ class TestUserserviceLogin(TestUserserviceController):
         # no cookies in response anymore
         assert self.get_cookies(response) == {}
         # client cookie should still be set
-        assert (
-            auth_cookie
-            == self.client.get_cookie("user_selfservice").decoded_value
-        )
+        assert auth_cookie == self.client.get_cookie("user_selfservice").decoded_value
 
     @patch.object(
         linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
@@ -462,8 +454,7 @@ class TestUserserviceLogin(TestUserserviceController):
         assert not jresp["result"]["value"]
         assert jresp["detail"]["tokenList"]
         assert (
-            jresp["detail"]["tokenList"][0]["LinOtp.TokenSerialnumber"]
-            == "LoginToken"
+            jresp["detail"]["tokenList"][0]["LinOtp.TokenSerialnumber"] == "LoginToken"
         )
 
         # 2. step in authentication:
@@ -579,10 +570,7 @@ class TestUserserviceLogin(TestUserserviceController):
         # no cookies in response anymore
         assert self.get_cookies(response) == {}
         # client cookie should still be set
-        assert (
-            auth_cookie
-            == self.client.get_cookie("user_selfservice").decoded_value
-        )
+        assert auth_cookie == self.client.get_cookie("user_selfservice").decoded_value
 
     def enroll_qr_token(self, serial="myQrToken"):
         """Helper to enroll an qr token done in the following steps

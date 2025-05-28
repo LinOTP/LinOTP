@@ -204,9 +204,7 @@ class TokenValidityMixin(object):
         )
 
     def has_exceeded_usage(self):
-        return (
-            self.count_auth_max > 0 and self.count_auth >= self.count_auth_max
-        )
+        return self.count_auth_max > 0 and self.count_auth >= self.count_auth_max
 
     def is_valid(self):
         return not (

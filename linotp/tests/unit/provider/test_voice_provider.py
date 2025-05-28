@@ -39,9 +39,7 @@ from linotp.provider.voiceprovider.custom_voice_provider import (
 # submitVoiceMessage
 
 
-def mocked_make_http_post_request_(
-    CustomVoiceProvider_Object, *argparams, **kwparams
-):
+def mocked_make_http_post_request_(CustomVoiceProvider_Object, *argparams, **kwparams):
     return True, "all ok"
 
 
@@ -89,8 +87,7 @@ class TestVoiceProvider(unittest.TestCase):
         custom_provider.loadConfig(configDict)
 
         with patch(
-            "linotp.provider.voiceprovider."
-            "custom_voice_provider.log.warning"
+            "linotp.provider.voiceprovider.custom_voice_provider.log.warning"
         ) as mocked_log_warning:
             custom_provider.submitVoiceMessage(
                 "+49 123546891", "your otp", "123456", "en"
@@ -98,8 +95,7 @@ class TestVoiceProvider(unittest.TestCase):
             called = mocked_log_warning.called
 
         with patch(
-            "linotp.provider.voiceprovider."
-            "custom_voice_provider.log.warning"
+            "linotp.provider.voiceprovider.custom_voice_provider.log.warning"
         ) as mocked_log_warning:
             custom_provider.submitVoiceMessage(
                 "+49 123546891", "your {otp}", "123456", "en"

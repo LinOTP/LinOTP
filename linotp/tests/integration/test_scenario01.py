@@ -24,9 +24,8 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-from selenium.webdriver.common.by import By
-
 from linotp_selenium_helper.self_service import SelfService
+from selenium.webdriver.common.by import By
 
 """LinOTP Selenium Test for Scenario 01 - General functionality tests"""
 
@@ -38,11 +37,11 @@ import time
 
 import integration_data as data
 import pytest
-
-from linotp.lib.HMAC import HmacOtp
 from linotp_selenium_helper import Policy, TestCase
 from linotp_selenium_helper.token_import import TokenImportAladdin
 from linotp_selenium_helper.validate import Validate
+
+from linotp.lib.HMAC import HmacOtp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -97,16 +96,12 @@ class TestScenario01:
         self._announce_test("1. UserIdResolver anlegen")
         # Create LDAP UserIdResolver
         ldap_data = data.musicians_ldap_resolver
-        ldap_resolver = self.testcase.useridresolver_manager.create_resolver(
-            ldap_data
-        )
+        ldap_resolver = self.testcase.useridresolver_manager.create_resolver(ldap_data)
 
         # Create SQL UserIdResolver
         sql_data = data.sql_resolver
 
-        sql_resolver = self.testcase.useridresolver_manager.create_resolver(
-            sql_data
-        )
+        sql_resolver = self.testcase.useridresolver_manager.create_resolver(sql_data)
         self.testcase.useridresolver_manager.close()
 
         # Create realm for all resolvers
@@ -136,9 +131,7 @@ class TestScenario01:
         serial_token_bach = "oath137332"
         test1_realm = realm_name1.lower()
 
-        self._announce_test(
-            "4. Im Management Webinterface nun eine Policy anlegen"
-        )
+        self._announce_test("4. Im Management Webinterface nun eine Policy anlegen")
 
         Policy(
             self.testcase.manage_ui,
@@ -188,9 +181,7 @@ class TestScenario01:
         driver.find_element(By.ID, "motp_s_pin2").clear()
         driver.find_element(By.ID, "motp_s_pin2").send_keys(motp_pin)
         driver.find_element(By.ID, "motp_self_desc").clear()
-        driver.find_element(By.ID, "motp_self_desc").send_keys(
-            "Selenium self enrolled"
-        )
+        driver.find_element(By.ID, "motp_self_desc").send_keys("Selenium self enrolled")
         driver.find_element(By.ID, "button_register_motp").click()
         alert_box_text = driver.find_element(By.ID, "alert_box_text").text
         m = re.match(
@@ -248,26 +239,17 @@ class TestScenario01:
         # Validate HOTP Token - bach
         hotp = HmacOtp()
         for counter in range(0, 4):
-            otp = "bachnewpin" + hotp.generate(
-                counter=counter, key=seed_oath137332_bin
-            )
+            otp = "bachnewpin" + hotp.generate(counter=counter, key=seed_oath137332_bin)
             access_granted, _ = validate.validate(
                 user="bach@" + test1_realm, password=otp
             )
             assert access_granted, (
-                "OTP: "
-                + otp
-                + " for user "
-                + "bach@"
-                + test1_realm
-                + " returned False"
+                "OTP: " + otp + " for user " + "bach@" + test1_realm + " returned False"
             )
         access_granted, _ = validate.validate(
             user="bach@" + test1_realm, password="1234111111"
         )
-        assert (
-            not access_granted
-        ), "OTP: 1234111111 should be False for user bach"
+        assert not access_granted, "OTP: 1234111111 should be False for user bach"
 
         # Validate Remote token - debussy
 
@@ -302,24 +284,20 @@ class TestScenario01:
         access_granted, _ = validate.validate(
             user="beethoven@" + test1_realm, password="randominvalidpin"
         )
-        assert (
-            not access_granted
-        ), "OTP: randominvalidpin should be False for user beethoven"
+        assert not access_granted, (
+            "OTP: randominvalidpin should be False for user beethoven"
+        )
         # correct PIN + wrong password = fail
         access_granted, _ = validate.validate(
             user="beethoven@" + test1_realm,
             password="beethovennewpin" + "wrongpassword",
         )
-        assert (
-            not access_granted
-        ), "beethoven should not auth with wrong token password"
+        assert not access_granted, "beethoven should not auth with wrong token password"
         # Password without pin = fail
         access_granted, _ = validate.validate(
             user="beethoven@" + test1_realm, password=beethoven_token_password
         )
-        assert (
-            not access_granted
-        ), "beethoven should not auth with password and old pin"
+        assert not access_granted, "beethoven should not auth with password and old pin"
         # Correct PIN + password = success (again)
         access_granted, _ = validate.validate(
             user="beethoven@" + test1_realm,
@@ -338,9 +316,7 @@ class TestScenario01:
 
         # Validate mOTP token - mozart
         current_epoch = time.time()
-        motp_otp = calculate_motp(
-            epoch=current_epoch, key=motp_key, pin=motp_pin
-        )
+        motp_otp = calculate_motp(epoch=current_epoch, key=motp_key, pin=motp_pin)
 
         access_granted, _ = validate.validate(
             user="mozart@" + test1_realm, password="mozartnewpin" + motp_otp
@@ -376,9 +352,7 @@ class TestScenario01:
         time.sleep(10)  # otherwise next mOTP value might not be valid
 
         current_epoch = time.time()
-        motp_otp = calculate_motp(
-            epoch=current_epoch, key=motp_key, pin=new_motp_pin
-        )
+        motp_otp = calculate_motp(epoch=current_epoch, key=motp_key, pin=new_motp_pin)
         access_granted, _ = validate.validate(
             user="mozart@" + test1_realm, password="mozartnewpin" + motp_otp
         )
@@ -396,15 +370,9 @@ class TestScenario01:
         # Bach 'presses' his token more than 10 times and fails to authenticate
         counter = 50  # was 19
         hotp = HmacOtp()
-        otp = "bachnewpin" + hotp.generate(
-            counter=counter, key=seed_oath137332_bin
-        )
-        access_granted, _ = validate.validate(
-            user="bach@" + test1_realm, password=otp
-        )
-        assert not access_granted, (
-            "OTP: %s should be False for user bach" % otp
-        )
+        otp = "bachnewpin" + hotp.generate(counter=counter, key=seed_oath137332_bin)
+        access_granted, _ = validate.validate(user="bach@" + test1_realm, password=otp)
+        assert not access_granted, "OTP: %s should be False for user bach" % otp
 
         selfservice.login("bach", "Test123!", test1_realm)
 
@@ -415,12 +383,8 @@ class TestScenario01:
         selfservice.logout()
 
         # Should be able to authenticate again
-        otp = "bachnewpin" + hotp.generate(
-            counter=counter + 3, key=seed_oath137332_bin
-        )
-        access_granted, _ = validate.validate(
-            user="bach@" + test1_realm, password=otp
-        )
+        otp = "bachnewpin" + hotp.generate(counter=counter + 3, key=seed_oath137332_bin)
+        access_granted, _ = validate.validate(user="bach@" + test1_realm, password=otp)
         assert access_granted, "OTP: %s should be True for user bach" % otp
 
         self._announce_test(
@@ -436,9 +400,9 @@ class TestScenario01:
             user="beethoven@" + test1_realm,
             password="beethovennewpin" + beethoven_token_password,
         )
-        assert (
-            not access_granted
-        ), "OTP: beethovennewpin should be False for user beethoven"
+        assert not access_granted, (
+            "OTP: beethovennewpin should be False for user beethoven"
+        )
 
         self._announce_test(
             "14. Der Admin entsperrt diesen Token, der Benutzer beethoven kann sich wieder anmelden."
@@ -452,9 +416,9 @@ class TestScenario01:
             user="beethoven@" + test1_realm,
             password="beethovennewpin" + beethoven_token_password,
         )
-        assert (
-            access_granted
-        ), "OTP: beethovennewpin should be able to authenticate after re-enabled token."
+        assert access_granted, (
+            "OTP: beethovennewpin should be able to authenticate after re-enabled token."
+        )
 
     def check_users(self, realm, data):
         expected_users = data["expected_users"]
@@ -468,7 +432,7 @@ class TestScenario01:
         )
 
         for user in users:
-            assert self.testcase.manage_ui.user_view.user_exists(
-                user
-            ), "User '%s' should exist in realm %s" % (user, realm)
+            assert self.testcase.manage_ui.user_view.user_exists(user), (
+                "User '%s' should exist in realm %s" % (user, realm)
+            )
             break

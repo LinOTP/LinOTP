@@ -28,17 +28,17 @@
 """
 system controller - to configure the system
 """
+
 import binascii
 import json
 import logging
 from html import escape
 
 from configobj import ConfigObj
-from flask_babel import gettext as _
-from werkzeug.datastructures import FileStorage
-
 from flask import current_app, g, request
 from flask import send_file as flask_send_file
+from flask_babel import gettext as _
+from werkzeug.datastructures import FileStorage
 
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
@@ -288,9 +288,7 @@ class SystemController(BaseController):
         param = self.request_params
 
         try:
-            log.info(
-                "[setConfig] saving configuration: %r", list(param.keys())
-            )
+            log.info("[setConfig] saving configuration: %r", list(param.keys()))
 
             if "key" in param:
                 key = param["key"]
@@ -344,9 +342,7 @@ class SystemController(BaseController):
                 # --------------------------------------------------------- --
 
             db.session.commit()
-            log.debug(
-                "[setConfig] saved configuration: %r", list(param.keys())
-            )
+            log.debug("[setConfig] saved configuration: %r", list(param.keys()))
             return sendResult(res, 1)
 
         except ValueError as exx:
@@ -628,18 +624,13 @@ class SystemController(BaseController):
                 else:
                     mode = "rename"
 
-            log.info(
-                "[setResolver] saving configuration %r", list(param.keys())
-            )
+            log.info("[setResolver] saving configuration %r", list(param.keys()))
 
             #
             # before storing the new resolver, we check if already a
             # resolver with same name exists.
             #
-            if (
-                mode in ["create", "rename"]
-                and new_resolver_name in getResolverList()
-            ):
+            if mode in ["create", "rename"] and new_resolver_name in getResolverList():
                 raise Exception(
                     "Cound not %s resolver, resolver %r already"
                     " exists!" % (mode, new_resolver_name)
@@ -650,14 +641,10 @@ class SystemController(BaseController):
             # except via Tools -> Migrate Resolver
 
             if previous_name:
-                previous_resolver = getResolverInfo(
-                    previous_name, passwords=True
-                )
+                previous_resolver = getResolverInfo(previous_name, passwords=True)
 
                 if param["type"] != previous_resolver["type"]:
-                    raise Exception(
-                        "Modification of resolver type is not supported!"
-                    )
+                    raise Exception("Modification of resolver type is not supported!")
 
             (param, missing, primary_key_changed) = prepare_resolver_parameter(
                 new_resolver_name=new_resolver_name,
@@ -712,9 +699,7 @@ class SystemController(BaseController):
                 target_resolver = resolvers.get(new_resolver_name, None)
 
                 mg = MigrateResolverHandler()
-                ret = mg.migrate_resolver(
-                    src=src_resolver, target=target_resolver
-                )
+                ret = mg.migrate_resolver(src=src_resolver, target=target_resolver)
 
                 log.info("Token migrated to the new resolver: %r", ret)
 
@@ -814,9 +799,7 @@ class SystemController(BaseController):
                 g.audit["info"] = err
                 raise Exception("%r !" % err)
 
-            is_manged_resolver = getResolverInfo(resolver_name).get(
-                "readonly", False
-            )
+            is_manged_resolver = getResolverInfo(resolver_name).get("readonly", False)
 
             if is_manged_resolver:
                 imported_user = ImportedUser(resolver_name)
@@ -911,9 +894,7 @@ class SystemController(BaseController):
             return sendResult(res, 1)
 
         except Exception as exx:
-            log.error(
-                "[setDefaultRealm] setting default realm failed: %r", exx
-            )
+            log.error("[setDefaultRealm] setting default realm failed: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -1162,8 +1143,7 @@ class SystemController(BaseController):
                 db.session.commit()
             else:
                 log.error(
-                    "[setPolicy] failed: policy with empty name"
-                    " or action %r",
+                    "[setPolicy] failed: policy with empty name or action %r",
                     p_param,
                 )
                 string = "setPolicy <%r>" % name
@@ -1207,9 +1187,7 @@ class SystemController(BaseController):
 
         try:
             param = getLowerParams(self.request_params)
-            log.debug(
-                "[policies_flexi] viewing policies with params: %r", param
-            )
+            log.debug("[policies_flexi] viewing policies with params: %r", param)
 
             name = param.get("name")
             realm = param.get("realm")
@@ -1336,9 +1314,7 @@ class SystemController(BaseController):
             return sendResult(pol, 1)
 
         except Exception as exx:
-            log.error(
-                "[getPolicyDef] error getting policy definitions: %r", exx
-            )
+            log.error("[getPolicyDef] error getting policy definitions: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -1371,8 +1347,7 @@ class SystemController(BaseController):
 
                 except Exception as exx:
                     log.info(
-                        "[dynamicToken] no policy for tokentype %r "
-                        "found (%r)",
+                        "[dynamicToken] no policy for tokentype %r found (%r)",
                         tok,
                         exx,
                     )
@@ -1426,8 +1401,7 @@ class SystemController(BaseController):
 
             if fileString == "":
                 log.error(
-                    "[importPolicy] Error loading/importing policy "
-                    "file. file empty!"
+                    "[importPolicy] Error loading/importing policy file. file empty!"
                 )
                 return sendErrorMethod("Error loading policy. File is empty!")
 
@@ -1435,9 +1409,7 @@ class SystemController(BaseController):
             # stored as policies.
             config = fileString.split("\n")
             policies = ConfigObj(config)
-            log.info(
-                "[importPolicy] read the following policies: %r", policies
-            )
+            log.info("[importPolicy] read the following policies: %r", policies)
 
             # -- ------------------------------------------------------ --
             # finally import the policies
@@ -1521,14 +1493,10 @@ class SystemController(BaseController):
                     res["allowed"] = len(pol) > 0
                     res["policy"] = pol
                     if len(pol) > 0:
-                        g.audit["info"] = "allowed by policy %s" % list(
-                            pol.keys()
-                        )
+                        g.audit["info"] = "allowed by policy %s" % list(pol.keys())
                 else:
                     # No policy active for this scope
-                    g.audit["info"] = (
-                        "allowed since no policies in scope %s" % scope
-                    )
+                    g.audit["info"] = "allowed since no policies in scope %s" % scope
                     res["allowed"] = True
                     res["policy"] = "No policies in scope %s" % scope
             else:
@@ -1548,8 +1516,10 @@ class SystemController(BaseController):
                 if len(pol) > 0:
                     g.audit["info"] = "allowed by policy %s" % list(pol.keys())
 
-            g.audit["action_detail"] = (
-                "action = %s, realm = %s, scope = %s" % (action, realm, scope)
+            g.audit["action_detail"] = "action = %s, realm = %s, scope = %s" % (
+                action,
+                realm,
+                scope,
             )
             g.audit["success"] = True
 
@@ -1600,8 +1570,7 @@ class SystemController(BaseController):
             do_export = param.get("export", "false").lower() == "true"
 
             log.debug(
-                "[getPolicy] retrieving policy name: %s, realm: %s,"
-                " scope: %s",
+                "[getPolicy] retrieving policy name: %s, realm: %s, scope: %s",
                 name,
                 realm,
                 scope,
@@ -1615,9 +1584,7 @@ class SystemController(BaseController):
             if name is not None:
                 for nam in name.split(","):
                     search_params["name"] = nam
-                    poli = search_policy(
-                        search_params, only_active=only_active
-                    )
+                    poli = search_policy(search_params, only_active=only_active)
                     pol.update(poli)
             else:
                 pol = search_policy(search_params, only_active=only_active)
@@ -1686,9 +1653,7 @@ class SystemController(BaseController):
             log.info("[delPolicy] deleting policy: %r", self.request_params)
 
             # support the ignore of policy impact check
-            enforce = (
-                self.request_params.get("enforce", "false").lower() == "true"
-            )
+            enforce = self.request_params.get("enforce", "false").lower() == "true"
 
             name_param = self.request_params["name"]
             names = name_param.split(",")
@@ -1731,9 +1696,7 @@ class SystemController(BaseController):
 
         try:
             params = getLowerParams(self.request_params)
-            log.debug(
-                "[setupSecurityModule] parameters: %r", list(params.keys())
-            )
+            log.debug("[setupSecurityModule] parameters: %r", list(params.keys()))
 
             hsm_id = params.get("hsm_id", None)
 
@@ -1808,9 +1771,7 @@ class SystemController(BaseController):
             return sendResult(res, 1)
 
         except Exception as exx:
-            log.error(
-                "[getSupportInfo] : failed to access support info: %r", exx
-            )
+            log.error("[getSupportInfo] : failed to access support info: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -1946,9 +1907,7 @@ class SystemController(BaseController):
                 support_description = self.request_params[key]
                 log.debug("[setSupport] plaintext: %s", support_description)
             else:
-                return sendErrorMethod(
-                    "No key 'license' in the upload request"
-                )
+                return sendErrorMethod("No key 'license' in the upload request")
 
             log.debug("[setSupport] license %s", support_description)
 
@@ -2068,15 +2027,9 @@ class SystemController(BaseController):
             # optional parameters
             provider_name = param.get("name")
 
-            providers = getProvider(
-                provider_type, provider_name, decrypted=True
-            )
+            providers = getProvider(provider_type, provider_name, decrypted=True)
             res = {
-                name: (
-                    info
-                    if "Managed" not in info
-                    else {**info, "Managed": True}
-                )
+                name: (info if "Managed" not in info else {**info, "Managed": True})
                 for name, info in providers.items()
             }
             g.audit["success"] = len(res) > 0
@@ -2163,17 +2116,13 @@ class SystemController(BaseController):
                 and "Managed" in provider_def[provider_name]
             ):
                 if "managed" not in self.request_params:
-                    raise Exception(
-                        "Not allowed to delete the managed provider"
-                    )
+                    raise Exception("Not allowed to delete the managed provider")
 
                 password = self.request_params["managed"]
                 crypt_password = provider_def[provider_name]["Managed"]
 
                 if not utils.compare_password(password, crypt_password):
-                    raise Exception(
-                        "Not allowed to delete the managed provider"
-                    )
+                    raise Exception("Not allowed to delete the managed provider")
 
             res, reply = delProvider(provider_type, provider_name)
 

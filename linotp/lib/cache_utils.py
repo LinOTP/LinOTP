@@ -86,9 +86,7 @@ def cache_in_request(
             if cache_key not in request_context[cache_name]:
                 log.debug(f"{log_prefix}: output values not in cache")
 
-                request_context[cache_name][cache_key] = func_to_cache(
-                    *args, **kwargs
-                )
+                request_context[cache_name][cache_key] = func_to_cache(*args, **kwargs)
             else:
                 log.debug(f"{log_prefix}: getting output values from cache")
 

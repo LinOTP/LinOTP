@@ -33,6 +33,7 @@ either an linotp server, an radius server or a http sms reciever
 The TestSpecialController gathers some of these common methods.
 
 """
+
 import logging
 import os
 import urllib.error
@@ -135,9 +136,7 @@ class TestingChallengeResponseController(TestController):
         result = False
         import subprocess
 
-        p = subprocess.Popen(
-            ["lsof", "-t", "-i:%s" % port], stdout=subprocess.PIPE
-        )
+        p = subprocess.Popen(["lsof", "-t", "-i:%s" % port], stdout=subprocess.PIPE)
         out, _err = p.communicate()
         if len(out) > 0:
             result = True

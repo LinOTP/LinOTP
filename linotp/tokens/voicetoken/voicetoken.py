@@ -105,9 +105,7 @@ def get_voice_language(user="", realm=""):
         pol, scope="authentication", action="voice_language", default=""
     )
 
-    log.debug(
-        "[get_voice_language] got the voice_language = %s", voice_language
-    )
+    log.debug("[get_voice_language] got the voice_language = %s", voice_language)
 
     return voice_language
 
@@ -173,8 +171,7 @@ class VoiceTokenClass(HmacTokenClass):
         """
 
         log.debug(
-            "[getClassInfo] begin. Get class render info for section: "
-            "key %r, ret %r ",
+            "[getClassInfo] begin. Get class render info for section: key %r, ret %r ",
             key,
             ret,
         )
@@ -279,9 +276,7 @@ class VoiceTokenClass(HmacTokenClass):
 
     # --------------------------------------------------------------------------- --
 
-    def is_challenge_response(
-        self, passw, user, options=None, challenges=None
-    ):
+    def is_challenge_response(self, passw, user, options=None, challenges=None):
         """
         check if the request contains the result of a challenge
 
@@ -436,9 +431,7 @@ class VoiceTokenClass(HmacTokenClass):
 
     # --------------------------------------------------------------------------- --
 
-    def checkResponse4Challenge(
-        self, user, passw, options=None, challenges=None
-    ):
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
         verify the response of a previous challenge
 
@@ -550,7 +543,7 @@ class VoiceTokenClass(HmacTokenClass):
             otp_length = int(self.token.LinOtpOtpLen)
         except ValueError as value_error_ex:
             log.error(
-                "[getOTP]: Could not convert otplen - value error " "%r",
+                "[getOTP]: Could not convert otplen - value error %r",
                 value_error_ex,
             )
             raise value_error_ex

@@ -38,9 +38,7 @@ elif __version__.startswith("3."):
 
     def verify_jwt_in_request(optional=False, *args, **kwargs):
         if optional:
-            return getattr(module, "verify_jwt_in_request_optional")(
-                *args, **kwargs
-            )
+            return getattr(module, "verify_jwt_in_request_optional")(*args, **kwargs)
         else:
             return getattr(module, "verify_jwt_in_request")(*args, **kwargs)
 

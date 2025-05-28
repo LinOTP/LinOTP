@@ -54,12 +54,8 @@ def set_policy(
     return {policy["name"]: policy}
 
 
-ADMIN = User(
-    login="admin", realm="realm", resolver_config_identifier="resolver"
-)
-NIMDA = User(
-    login="nimda", realm="realm", resolver_config_identifier="resolver"
-)
+ADMIN = User(login="admin", realm="realm", resolver_config_identifier="resolver")
+NIMDA = User(login="nimda", realm="realm", resolver_config_identifier="resolver")
 
 
 def test_no_policies(app):
@@ -70,16 +66,14 @@ def test_no_policies(app):
 
     policies = {}
 
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
-        assert is_authorized(
-            ADMIN, scope="system", action="read"
-        ), "Admin should be authorized to read in bootstrap mode"
-        assert is_authorized(
-            ADMIN, scope="system", action="write"
-        ), "Admin should be authorized to write in bootstrap mode"
+        assert is_authorized(ADMIN, scope="system", action="read"), (
+            "Admin should be authorized to read in bootstrap mode"
+        )
+        assert is_authorized(ADMIN, scope="system", action="write"), (
+            "Admin should be authorized to write in bootstrap mode"
+        )
 
 
 def test_inactive_policies(app):
@@ -91,16 +85,14 @@ def test_inactive_policies(app):
         name="s1", user="admin", scope="system", action="read", active=False
     )
 
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
-        assert is_authorized(
-            ADMIN, scope="system", action="read"
-        ), "Admin should be authorized as there is no active policy"
-        assert is_authorized(
-            NIMDA, scope="system", action="read"
-        ), "Nimda should be authorized as there is no active policy"
+        assert is_authorized(ADMIN, scope="system", action="read"), (
+            "Admin should be authorized as there is no active policy"
+        )
+        assert is_authorized(NIMDA, scope="system", action="read"), (
+            "Nimda should be authorized as there is no active policy"
+        )
 
 
 def test_user_specific_policy_match(app):
@@ -113,16 +105,14 @@ def test_user_specific_policy_match(app):
         name="s1", user="admin", scope="system", action="read", active=True
     )
 
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
-        assert is_authorized(
-            ADMIN, scope="system", action="read"
-        ), "Admin should be authorized by a matching policy"
-        assert not is_authorized(
-            NIMDA, scope="system", action="read"
-        ), "Nimda should not be authorized as there is no matching policy"
+        assert is_authorized(ADMIN, scope="system", action="read"), (
+            "Admin should be authorized by a matching policy"
+        )
+        assert not is_authorized(NIMDA, scope="system", action="read"), (
+            "Nimda should not be authorized as there is no matching policy"
+        )
 
 
 def test_specific_beats_wildcard_policies(app):
@@ -136,9 +126,7 @@ def test_specific_beats_wildcard_policies(app):
 
     policies = {}
     policies.update(
-        set_policy(
-            name="s1", user="*", scope="system", action="read", active=True
-        )
+        set_policy(name="s1", user="*", scope="system", action="read", active=True)
     )
     policies.update(
         set_policy(
@@ -150,23 +138,20 @@ def test_specific_beats_wildcard_policies(app):
         )
     )
 
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
-        assert is_authorized(
-            NIMDA, scope="system", action="read"
-        ), "Nimda should be authorized by the wildcard matching policy"
-        assert is_authorized(
-            ADMIN, scope="system", action="read"
-        ), "Admin should be authorized by the exact matching policy"
-        assert not is_authorized(NIMDA, scope="system", action="write"), (
-            "Nimda should not be authorized by the specific but unmatching "
-            "policy"
+        assert is_authorized(NIMDA, scope="system", action="read"), (
+            "Nimda should be authorized by the wildcard matching policy"
         )
-        assert is_authorized(
-            ADMIN, scope="system", action="write"
-        ), "Admin should be authorized by the exact matching policy"
+        assert is_authorized(ADMIN, scope="system", action="read"), (
+            "Admin should be authorized by the exact matching policy"
+        )
+        assert not is_authorized(NIMDA, scope="system", action="write"), (
+            "Nimda should not be authorized by the specific but unmatching policy"
+        )
+        assert is_authorized(ADMIN, scope="system", action="write"), (
+            "Admin should be authorized by the exact matching policy"
+        )
 
 
 def test_multiple_user_specific_policies(app):
@@ -194,22 +179,20 @@ def test_multiple_user_specific_policies(app):
             active=True,
         )
     )
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
-        assert is_authorized(
-            NIMDA, scope="system", action="read"
-        ), "Nimda should be authorized by the exact matching policy"
-        assert is_authorized(
-            ADMIN, scope="system", action="read"
-        ), "Admin should be authorized by the exact matching policy"
-        assert not is_authorized(
-            NIMDA, scope="system", action="write"
-        ), "Nimda should not be authorized due to no matching policies"
-        assert is_authorized(
-            ADMIN, scope="system", action="write"
-        ), "Admin should be authorized by the exact matching policy"
+        assert is_authorized(NIMDA, scope="system", action="read"), (
+            "Nimda should be authorized by the exact matching policy"
+        )
+        assert is_authorized(ADMIN, scope="system", action="read"), (
+            "Admin should be authorized by the exact matching policy"
+        )
+        assert not is_authorized(NIMDA, scope="system", action="write"), (
+            "Nimda should not be authorized due to no matching policies"
+        )
+        assert is_authorized(ADMIN, scope="system", action="write"), (
+            "Admin should be authorized by the exact matching policy"
+        )
 
 
 def test_inactive_wildcard_policy(app):
@@ -236,22 +219,20 @@ def test_inactive_wildcard_policy(app):
             active=True,
         )
     )
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
-        assert is_authorized(
-            NIMDA, scope="system", action="read"
-        ), "Nimda should be authorized by the exact matching policy"
-        assert not is_authorized(
-            ADMIN, scope="system", action="read"
-        ), "Admin should not be authorized due to no matching policies"
-        assert not is_authorized(
-            NIMDA, scope="system", action="write"
-        ), "Nimda should not be authorized due to no matching policies"
-        assert not is_authorized(
-            ADMIN, scope="system", action="write"
-        ), "Admin should not be authorized due to no matching policies"
+        assert is_authorized(NIMDA, scope="system", action="read"), (
+            "Nimda should be authorized by the exact matching policy"
+        )
+        assert not is_authorized(ADMIN, scope="system", action="read"), (
+            "Admin should not be authorized due to no matching policies"
+        )
+        assert not is_authorized(NIMDA, scope="system", action="write"), (
+            "Nimda should not be authorized due to no matching policies"
+        )
+        assert not is_authorized(ADMIN, scope="system", action="write"), (
+            "Admin should not be authorized due to no matching policies"
+        )
 
 
 def test_inactive_specific_policy(app):
@@ -261,9 +242,7 @@ def test_inactive_specific_policy(app):
 
     policies = {}
     policies.update(
-        set_policy(
-            name="s1", user="*", scope="system", action="read", active=True
-        )
+        set_policy(name="s1", user="*", scope="system", action="read", active=True)
     )
     policies.update(
         set_policy(
@@ -283,24 +262,22 @@ def test_inactive_specific_policy(app):
             active=False,
         )
     )
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
         assert is_authorized(NIMDA, scope="system", action="read"), (
             "Nimda should be authorized to read as there as there is a "
             "matching active wildcard policy"
         )
-        assert is_authorized(
-            ADMIN, scope="system", action="read"
-        ), "Admin should be authorized to read as there is a matching active policy"
+        assert is_authorized(ADMIN, scope="system", action="read"), (
+            "Admin should be authorized to read as there is a matching active policy"
+        )
         assert not is_authorized(NIMDA, scope="system", action="write"), (
             "Nimda should not be authorized to write as there are no matching "
             "active policies"
         )
-        assert is_authorized(
-            ADMIN, scope="system", action="write"
-        ), "Admin should be authorized to write as there is a matching active policy"
+        assert is_authorized(ADMIN, scope="system", action="write"), (
+            "Admin should be authorized to write as there is a matching active policy"
+        )
 
 
 def test_only_inactive_policies_in_scope(app):
@@ -314,9 +291,7 @@ def test_only_inactive_policies_in_scope(app):
     """
     policies = {}
     policies.update(
-        set_policy(
-            name="s1", user="*", scope="system", action="read", active=False
-        )
+        set_policy(name="s1", user="*", scope="system", action="read", active=False)
     )
     policies.update(
         set_policy(
@@ -336,25 +311,19 @@ def test_only_inactive_policies_in_scope(app):
             active=False,
         )
     )
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
         assert is_authorized(ADMIN, scope="system", action="read"), (
-            "Admin should be authorized to read as all policies in scope are "
-            "inactive"
+            "Admin should be authorized to read as all policies in scope are inactive"
         )
         assert is_authorized(NIMDA, scope="system", action="read"), (
-            "Nimda should be authorized to read as all policies in scope are "
-            "inactive"
+            "Nimda should be authorized to read as all policies in scope are inactive"
         )
         assert is_authorized(ADMIN, scope="system", action="write"), (
-            "Admin should be authorized to write as all policies in scope are "
-            "inactive"
+            "Admin should be authorized to write as all policies in scope are inactive"
         )
         assert is_authorized(NIMDA, scope="system", action="write"), (
-            "Nimda should be authorized to write as all policies in scope are "
-            "inactive"
+            "Nimda should be authorized to write as all policies in scope are inactive"
         )
 
 
@@ -375,29 +344,26 @@ def test_scope_independence(app):
         )
     )
 
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
-        assert is_authorized(
-            ADMIN, scope="audit", action="view"
-        ), "Admin should be authorized to view audit due to matching policy"
-        assert not is_authorized(NIMDA, scope="audit", action="view"), (
-            "Nimda should not be authorized to view audit due to no matching "
-            "policies"
+        assert is_authorized(ADMIN, scope="audit", action="view"), (
+            "Admin should be authorized to view audit due to matching policy"
         )
-        assert is_authorized(
-            ADMIN, scope="system", action="read"
-        ), "Admin should be authorized to read system due to bootstrap mode"
-        assert is_authorized(
-            ADMIN, scope="system", action="write"
-        ), "Admin should be authorized to read system due to bootstrap mode"
-        assert is_authorized(
-            NIMDA, scope="system", action="read"
-        ), "Nimda should be authorized to read system due to bootstrap mode"
-        assert is_authorized(
-            NIMDA, scope="system", action="write"
-        ), "Nimda should be authorized to read system due to bootstrap mode"
+        assert not is_authorized(NIMDA, scope="audit", action="view"), (
+            "Nimda should not be authorized to view audit due to no matching policies"
+        )
+        assert is_authorized(ADMIN, scope="system", action="read"), (
+            "Admin should be authorized to read system due to bootstrap mode"
+        )
+        assert is_authorized(ADMIN, scope="system", action="write"), (
+            "Admin should be authorized to read system due to bootstrap mode"
+        )
+        assert is_authorized(NIMDA, scope="system", action="read"), (
+            "Nimda should be authorized to read system due to bootstrap mode"
+        )
+        assert is_authorized(NIMDA, scope="system", action="write"), (
+            "Nimda should be authorized to read system due to bootstrap mode"
+        )
 
 
 def test_scope_independence_with_inactive_policies(app):
@@ -425,29 +391,26 @@ def test_scope_independence_with_inactive_policies(app):
             active=False,
         )
     )
-    with patch(
-        "linotp.lib.policy.processing.get_policies"
-    ) as mock_get_policies:
+    with patch("linotp.lib.policy.processing.get_policies") as mock_get_policies:
         mock_get_policies.return_value = policies
-        assert is_authorized(
-            ADMIN, scope="audit", action="view"
-        ), "Admin should be authorized to view audit due to matching policy"
-        assert not is_authorized(NIMDA, scope="audit", action="view"), (
-            "Nimda should not be authorized to view audit due to no matching "
-            "policies"
+        assert is_authorized(ADMIN, scope="audit", action="view"), (
+            "Admin should be authorized to view audit due to matching policy"
         )
-        assert is_authorized(
-            ADMIN, scope="system", action="read"
-        ), "Admin should be authorized to read system due to bootstrap mode"
-        assert is_authorized(
-            ADMIN, scope="system", action="write"
-        ), "Admin should be authorized to read system due to bootstrap mode"
-        assert is_authorized(
-            NIMDA, scope="system", action="read"
-        ), "Nimda should be authorized to read system due to bootstrap mode"
-        assert is_authorized(
-            NIMDA, scope="system", action="write"
-        ), "Nimda should be authorized to read system due to bootstrap mode"
+        assert not is_authorized(NIMDA, scope="audit", action="view"), (
+            "Nimda should not be authorized to view audit due to no matching policies"
+        )
+        assert is_authorized(ADMIN, scope="system", action="read"), (
+            "Admin should be authorized to read system due to bootstrap mode"
+        )
+        assert is_authorized(ADMIN, scope="system", action="write"), (
+            "Admin should be authorized to read system due to bootstrap mode"
+        )
+        assert is_authorized(NIMDA, scope="system", action="read"), (
+            "Nimda should be authorized to read system due to bootstrap mode"
+        )
+        assert is_authorized(NIMDA, scope="system", action="write"), (
+            "Nimda should be authorized to read system due to bootstrap mode"
+        )
 
 
 # eof #

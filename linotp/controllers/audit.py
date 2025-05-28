@@ -107,9 +107,7 @@ class AuditController(BaseController):
                 if key in search_params:
                     del search_params[key]
 
-            output_format = (
-                self.request_params.get("outform", "json") or "json"
-            )
+            output_format = self.request_params.get("outform", "json") or "json"
 
             delimiter = self.request_params.get("delimiter", ",") or ","
 

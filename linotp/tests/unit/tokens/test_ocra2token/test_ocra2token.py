@@ -8,9 +8,7 @@ from linotp.tokens.ocra2token.ocra2token import get_qrtan_url
 class Ocra2PolicyTest(unittest.TestCase):
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.tokens.ocra2token.ocra2token.getPolicy")
-    def test_802_getqrtanurl(
-        self, mock_getPolicy, mock_get_policy_definitions
-    ):
+    def test_802_getqrtanurl(self, mock_getPolicy, mock_get_policy_definitions):
         """
         Policy 802: Testing Authentication Scope: the QR-TAN Url with a single realm
         """
@@ -29,9 +27,7 @@ class Ocra2PolicyTest(unittest.TestCase):
             "authentication": {"qrtanurl_init": {"type": "str"}}
         }
 
-        url = get_qrtan_url(
-            qrtan_policy_name="qrtanurl_init", realms=["testrealm"]
-        )
+        url = get_qrtan_url(qrtan_policy_name="qrtanurl_init", realms=["testrealm"])
 
         assert url == URL, url
 
@@ -39,9 +35,7 @@ class Ocra2PolicyTest(unittest.TestCase):
 
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.tokens.ocra2token.ocra2token.getPolicy")
-    def test_803_getqrtanurl(
-        self, mock_getPolicy, mock_get_policy_definitions
-    ):
+    def test_803_getqrtanurl(self, mock_getPolicy, mock_get_policy_definitions):
         """
         Policy 803: Testing Authentication Scope: the QR-TAN Url with 3 realms
         """

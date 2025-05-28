@@ -43,7 +43,6 @@ Common rules
 
 """
 
-
 import logging
 import sys
 
@@ -188,10 +187,7 @@ def setup_db(app) -> None:
 
     table_names = [tn.lower() for tn in inspect(db.engine).get_table_names()]
     if "config" not in table_names:
-        log.critical(
-            "Database schema must be initialised, "
-            "run `linotp init database`."
-        )
+        log.critical("Database schema must be initialised, run `linotp init database`.")
         sys.exit(SYS_EXIT_CODE)
 
     if audit_database_uri != "OFF":
@@ -199,20 +195,15 @@ def setup_db(app) -> None:
 
         from linotp.lib.audit.SQLAudit import AuditTable
 
-        auditdb_table_names = [
-            tn.lower() for tn in inspect(engine).get_table_names()
-        ]
+        auditdb_table_names = [tn.lower() for tn in inspect(engine).get_table_names()]
         if AuditTable.__tablename__.lower() not in auditdb_table_names:
             log.critical(
-                "Audit database schema must be initialised, "
-                "run `linotp init database`."
+                "Audit database schema must be initialised, run `linotp init database`."
             )
             sys.exit(SYS_EXIT_CODE)
 
     if not Migration.is_db_model_current():
-        log.critical(
-            "Database schema is not current, run `linotp init database`."
-        )
+        log.critical("Database schema is not current, run `linotp init database`.")
         sys.exit(EXIT_CODE_DB_NOT_CURRENT)
 
 
@@ -391,9 +382,7 @@ def set_defaults(app):
         key="QRChallengeValidityTime",
         value="150",
         typ="int",
-        description=(
-            "The default qrtoken time, a challenge is regarded as valid."
-        ),
+        description=("The default qrtoken time, a challenge is regarded as valid."),
     )
 
     set_config(
@@ -407,9 +396,7 @@ def set_defaults(app):
         key="PushChallengeValidityTime",
         value="150",
         typ="int",
-        description=(
-            "The pushtoken default time, a challenge is regarded as valid."
-        ),
+        description=("The pushtoken default time, a challenge is regarded as valid."),
     )
 
     set_config(
@@ -506,9 +493,7 @@ def set_defaults(app):
         key="EmailChallengeValidityTime",
         value="600",
         typ="int",
-        description=(
-            "Time that an e-mail token challenge stays valid (seconds)"
-        ),
+        description=("Time that an e-mail token challenge stays valid (seconds)"),
     )
     set_config(
         key="EmailBlockingTimeout",
@@ -624,9 +609,7 @@ def create_admin_realm(admin_realm_name, admin_resolver_name):
 
     set_config(
         key=f"useridresolver.group.{admin_realm_name}",
-        value=(
-            f"useridresolver.SQLIdResolver.IdResolver.{admin_resolver_name}"
-        ),
+        value=(f"useridresolver.SQLIdResolver.IdResolver.{admin_resolver_name}"),
         typ="text",
         description="None",
     )

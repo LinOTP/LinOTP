@@ -41,9 +41,7 @@ class RealmSchema(db.Model):
         nullable=False,
     )
 
-    name = Column(
-        "name", Unicode(255), default="", unique=True, nullable=False
-    )
+    name = Column("name", Unicode(255), default="", unique=True, nullable=False)
 
     default = Column("default", Boolean(), default=False)
     option = Column("option", Unicode(40), default="")

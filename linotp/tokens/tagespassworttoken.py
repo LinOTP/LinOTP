@@ -300,9 +300,7 @@ class TagespasswortTokenClass(TokenClass):
                     delta = timedelta(days=i)
                     date_string = (now + delta).strftime("%d%m%y")
                     otpval = dpw.getOtp(date_string=date_string)
-                    otp_dict["otp"][
-                        (now + delta).strftime("%y-%m-%d")
-                    ] = otpval
+                    otp_dict["otp"][(now + delta).strftime("%y-%m-%d")] = otpval
                 ret = True
 
         return (ret, error, otp_dict)

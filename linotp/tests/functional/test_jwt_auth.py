@@ -3,10 +3,9 @@ from datetime import datetime, timedelta
 from typing import Callable, Optional
 
 import pytest
-from freezegun import freeze_time
-
 from flask import Response
 from flask.testing import FlaskClient
+from freezegun import freeze_time
 
 from linotp.app import LinOTPApp
 
@@ -41,9 +40,7 @@ class TestJwtAdmin:
         """
 
         csrf_token = self.extract_cookie(client, "csrf_access_token")
-        res = client.post(
-            "/system/getConfig", headers={"X-CSRF-TOKEN": csrf_token}
-        )
+        res = client.post("/system/getConfig", headers={"X-CSRF-TOKEN": csrf_token})
 
         return res
 
@@ -163,16 +160,11 @@ class TestJwtAdmin:
     ) -> None:
         with scoped_authclient(verify_jwt=True) as client:
             faulty_token = "faulty_jwt"
-            client.set_cookie(
-                "access_token_cookie", faulty_token, domain="localhost"
-            )
+            client.set_cookie("access_token_cookie", faulty_token, domain="localhost")
 
             with caplog.at_level(logging.ERROR):
                 response = self.do_authenticated_request(client)
-            assert (
-                f"jwt_check: could not decode JWT: '{faulty_token}'"
-                in caplog.text
-            )
+            assert f"jwt_check: could not decode JWT: '{faulty_token}'" in caplog.text
 
             result = response.json["result"]
 
@@ -355,9 +347,7 @@ class TestJwtAdmin:
             )
 
             csrf_token_saved = self.extract_cookie(client, "csrf_access_token")
-            access_token_saved = self.extract_cookie(
-                client, "access_token_cookie"
-            )
+            access_token_saved = self.extract_cookie(client, "access_token_cookie")
 
             assert csrf_token_saved is not None
             assert access_token_saved is not None
@@ -395,9 +385,7 @@ class TestJwtAdmin:
         username = "admin"
         password = "Test123!"
         with scoped_authclient(verify_jwt=True) as client:
-            initial_time = datetime(
-                year=2021, month=10, day=19, hour=17, minute=39
-            )
+            initial_time = datetime(year=2021, month=10, day=19, hour=17, minute=39)
             with freeze_time(initial_time) as frozen_time:
                 client.post(
                     "/admin/login",
@@ -406,15 +394,11 @@ class TestJwtAdmin:
 
                 expiry_time = base_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
                 epsilon_t = 5
-                frozen_time.tick(
-                    delta=timedelta(seconds=expiry_time + epsilon_t)
-                )
+                frozen_time.tick(delta=timedelta(seconds=expiry_time + epsilon_t))
 
                 response = self.do_authenticated_request(client)
 
-                assert (
-                    response.status_code == 401
-                ), "Jwt token should have expired"
+                assert response.status_code == 401, "Jwt token should have expired"
 
     def test_refresh(
         self,
@@ -444,9 +428,7 @@ class TestJwtAdmin:
 
                 # after this time the token should already get refreshed
                 frozen_time.tick(
-                    delta=timedelta(
-                        seconds=expiry_time - refresh_time + t_epsilon
-                    )
+                    delta=timedelta(seconds=expiry_time - refresh_time + t_epsilon)
                 )
 
                 self.do_authenticated_request(client)
@@ -467,9 +449,7 @@ class TestJwtAdmin:
     ) -> None:
         username = "admin"
         password = "Test123!"
-        initial_time = datetime(
-            year=2021, month=10, day=19, hour=17, minute=39
-        )
+        initial_time = datetime(year=2021, month=10, day=19, hour=17, minute=39)
         refresh_time = base_app.config["JWT_ACCESS_TOKEN_REFRESH"]
         expiry_time = base_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
         epsilon_t = 5
@@ -487,9 +467,7 @@ class TestJwtAdmin:
                 )
 
                 frozen_time.tick(
-                    delta=timedelta(
-                        seconds=expiry_time - refresh_time - epsilon_t
-                    )
+                    delta=timedelta(seconds=expiry_time - refresh_time - epsilon_t)
                 )
 
                 self.do_authenticated_request(client)
@@ -499,6 +477,6 @@ class TestJwtAdmin:
                     "access_token_cookie",
                 )
 
-                assert (
-                    initial_cookie is second_cookie
-                ), "The JWT cookie should not have been refreshed"
+                assert initial_cookie is second_cookie, (
+                    "The JWT cookie should not have been refreshed"
+                )

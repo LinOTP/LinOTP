@@ -43,8 +43,8 @@ dependencies = [
   "pysodium",
   "python-ldap",
   "bcrypt",
-  "cryptography<35",
-  "click<8.2",
+  "cryptography",
+  "click<8.2",               # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
   "jsonschema",
   "smpplib",
   "psycopg2-binary",
@@ -56,12 +56,11 @@ dependencies = [
 [dependency-groups]
 dev = [
   "pre-commit",
-  "black",
-  "isort",
   "pylint",
   "autopep8",
   "mypy",
   "sqlalchemy-stubs",
+  "ruff>=0.11.11",
 ]
 test = [
   "flask_testing",
@@ -128,65 +127,7 @@ version = { attr = "linotp.__version__" }
 [tool.mypy]
 plugins = "sqlmypy"
 
-[tool.black]
-line-length = 79
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 79
-known_third_party = [
-  "Cryptodome",
-  "beaker",
-  "click",
-  "configobj",
-  "cryptography",
-  "flaky",
-  "flask_babel",
-  "flask_sqlalchemy",
-  "freezegun",
-  "httplib2",
-  "integration_data",
-  "jsonschema",
-  "ldap",
-  "mako",
-  "mock",
-  "mockldap",
-  "netaddr",
-  "passlib",
-  "paste",
-  "pkg_resources",
-  "pyrad",
-  "pysodium",
-  "pytest",
-  "pytest_testconfig",
-  "qrcode",
-  "requests",
-  "selenium",
-  "setuptools",
-  "sqlalchemy",
-  "urllib3",
-  "webhelpers",
-  "werkzeug",
-]
-known_flask = ["flask"]
-known_first_party = ["linotp", "linotp_selenium_helper"]
-sections = [
-  "FUTURE",
-  "STDLIB",
-  "THIRDPARTY",
-  "FLASK",
-  "FIRSTPARTY",
-  "LOCALFOLDER",
+[tool.ruff]
+lint.select = [
+  "I", # isort formatting.
 ]

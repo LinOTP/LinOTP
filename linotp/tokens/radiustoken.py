@@ -26,16 +26,14 @@
 #
 """This file containes the RADIUS token class"""
 
-
 import binascii
 import logging
 
 # we need this for the radius token
 import pyrad.packet
+from flask import current_app
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
-
-from flask import current_app
 
 from linotp.flap import config as env
 from linotp.lib.error import ParameterError
@@ -239,8 +237,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
         # here we also need to check for radius.user
         log.debug(
-            "[do_request] checking OTP len:%r on radius server: %s,"
-            "  user: %s",
+            "[do_request] checking OTP len:%r on radius server: %s,  user: %s",
             len(anOtpVal),
             radiusServer,
             radiusUser,
@@ -262,8 +259,7 @@ class RadiusTokenClass(RemoteTokenClass):
             if len(server) >= 2:
                 r_authport = int(server[1])
             log.debug(
-                "[do_request] [RadiusToken] NAS Identifier: %r, "
-                "Dictionary: %r",
+                "[do_request] [RadiusToken] NAS Identifier: %r, Dictionary: %r",
                 nas_identifier,
                 r_dict,
             )
@@ -332,8 +328,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
         except Exception as ex:
             log.error(
-                "[do_request] [RadiusToken] Error contacting radius"
-                " Server: %r",
+                "[do_request] [RadiusToken] Error contacting radius Server: %r",
                 ex,
             )
 

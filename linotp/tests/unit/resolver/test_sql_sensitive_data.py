@@ -52,8 +52,7 @@ class TestSQLResolverSensitiveData(object):
             "config": {
                 "Driver": "sqlite",
                 "Port": "",
-                "Database": "%s/imported/data/linotp-users.sql"
-                % current_directory,
+                "Database": "%s/imported/data/linotp-users.sql" % current_directory,
                 "Server": "",
                 "User": "",
                 "Password": "",

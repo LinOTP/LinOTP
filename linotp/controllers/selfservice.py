@@ -29,15 +29,15 @@ selfservice controller - This is the controller for the self service interface,
                 where users can manage their own tokens
 
 """
+
 import base64
 import logging
 import os
 
+from flask import Response, current_app, g, redirect, request, url_for
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
 from werkzeug.exceptions import Forbidden, Unauthorized
-
-from flask import Response, current_app, g, redirect, request, url_for
 
 from linotp.controllers.base import BaseController
 from linotp.controllers.userservice import get_auth_user, getTokenForUser
@@ -221,14 +221,10 @@ class SelfserviceController(BaseController):
                     -1 if action_value is True else action_value,
                 )
 
-            c.dynamic_actions = add_dynamic_selfservice_enrollment(
-                config, c.actions
-            )
+            c.dynamic_actions = add_dynamic_selfservice_enrollment(config, c.actions)
 
             # all token policies need to be initialized for selfservice controller
-            additional_policies = add_dynamic_selfservice_policies(
-                config, actions
-            )
+            additional_policies = add_dynamic_selfservice_policies(config, actions)
             for policy in additional_policies:
                 c.__setattr__(policy, -1)
 
@@ -367,8 +363,7 @@ class SelfserviceController(BaseController):
 
         except CompileException as exx:
             log.error(
-                "[load_form] compile error while processing %r.%r:"
-                "Exeption was %r",
+                "[load_form] compile error while processing %r.%r:Exeption was %r",
                 tok,
                 scope,
                 exx,

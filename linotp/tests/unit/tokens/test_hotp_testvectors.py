@@ -29,7 +29,6 @@
 totp token - linotp hmac compliance test
 """
 
-
 import binascii
 from datetime import datetime
 from hashlib import sha1, sha256, sha512
@@ -104,9 +103,7 @@ class HotpTest:
 
     def get_otp(self, counter=None):
         hmac = HmacOtp(digits=self.otplen, hashfunc=self.hashlib)
-        return hmac.generate(
-            counter=counter, key=binascii.unhexlify(self.otpkey)
-        )
+        return hmac.generate(counter=counter, key=binascii.unhexlify(self.otpkey))
 
 
 def test_hmac_oath_otps():

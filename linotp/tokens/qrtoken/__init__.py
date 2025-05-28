@@ -121,15 +121,12 @@ def parse_qrtoken_pairing_data(plaintext):
 
     if len(user_login) > 255:
         raise ParameterError(
-            "Malformed pairing response for type QrToken:"
-            "User login too long"
+            "Malformed pairing response for type QrToken:User login too long"
         )
 
     # ----------------------------------------------------------------------- --
 
-    return QRTokenPairingData(
-        user_public_key, user_token_id, serial, user_login
-    )
+    return QRTokenPairingData(user_public_key, user_token_id, serial, user_login)
 
 
 # eof############################################################################

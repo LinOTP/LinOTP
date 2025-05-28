@@ -30,10 +30,9 @@ import json
 import logging
 from functools import partial
 
+from flask import current_app
 from flask_babel import gettext as _
 from sqlalchemy import func
-
-from flask import current_app
 
 from linotp.lib.cache import get_cache
 from linotp.lib.config import (
@@ -123,9 +122,7 @@ def realm2Objects(realmList):
     """
     realm_set = set(realmList) if realmList else set()
     realmObjList = [
-        getRealmObject(name=r)
-        for r in realm_set
-        if getRealmObject(name=r) is not None
+        getRealmObject(name=r) for r in realm_set if getRealmObject(name=r) is not None
     ]
     return realmObjList
 
@@ -145,9 +142,7 @@ def getRealmObject(name=""):
     log.debug("Getting realm object for name=%s", name)
 
     name = str(name).strip()
-    realmObj = Realm.query.filter(
-        func.lower(Realm.name) == name.lower()
-    ).first()
+    realmObj = Realm.query.filter(func.lower(Realm.name) == name.lower()).first()
 
     return realmObj
 
@@ -521,9 +516,7 @@ def deleteRealm(realmname):
             realmId = r.id
 
             if realmId != 0:
-                log.debug(
-                    "Deleting token relations for realm with id %r", realmId
-                )
+                log.debug("Deleting token relations for realm with id %r", realmId)
                 TokenRealm.query.filter_by(realm_id=realmId).delete()
             _delete_realm_config(realmname=realmname)
             db.session.delete(r)

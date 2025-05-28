@@ -29,9 +29,8 @@ Tests a very small subset of linotp.lib.reply
 
 import json
 
-import pytest
-
 import flask
+import pytest
 
 from linotp.lib import reply
 from linotp.lib.error import ProgrammingError
@@ -80,9 +79,7 @@ class TestReplyTestCase(object):
     @pytest.mark.usefixtures("unicodeDecodeError")
     def test_httperror_with_UnicodeDecodeError_and_mult_param(self):
         # Raising exceptions on attribute access
-        with flask.current_app.test_request_context(
-            "/?httperror=555&httperror=777"
-        ):
+        with flask.current_app.test_request_context("/?httperror=555&httperror=777"):
             httperror = _get_httperror_code_from_params()
             assert httperror == "777"
 
@@ -118,9 +115,7 @@ class TestReplyTestCase(object):
                 obj=request_context_test_iterator(), rp=None, page=None
             )
         except ProgrammingError:
-            assert (
-                False
-            ), "request_context was used outside of request_context_safety"
+            assert False, "request_context was used outside of request_context_safety"
 
         result = ""
         for chunk in res:
@@ -132,13 +127,9 @@ class TestReplyTestCase(object):
         assert ["one", "two"] == value
 
         try:
-            res = sendResultIterator(
-                obj=request_context_test_iterator(), rp=1, page=0
-            )
+            res = sendResultIterator(obj=request_context_test_iterator(), rp=1, page=0)
         except ProgrammingError:
-            assert (
-                False
-            ), "request_context was used outside of request_context_safety"
+            assert False, "request_context was used outside of request_context_safety"
 
         result = ""
         for chunk in res:

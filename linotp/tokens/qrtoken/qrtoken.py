@@ -310,9 +310,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             if "@" not in message:
                 raise InvalidFunctionParameter(
                     "message",
-                    "For content type "
-                    "auth, message must have format "
-                    "<login>@<server>",
+                    "For content type auth, message must have format <login>@<server>",
                 )
 
         # ------------------------------------------------------------------- --
@@ -419,17 +417,13 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         elif content_type == CONTENT_TYPE_PAIRING and len(utf8_message) > 63:
             raise InvalidFunctionParameter(
                 "message",
-                "max string length "
-                "(encoded as utf8) is 511 for "
-                "content type PAIRING",
+                "max string length (encoded as utf8) is 511 for content type PAIRING",
             )
 
         elif content_type == CONTENT_TYPE_AUTH and len(utf8_message) > 511:
             raise InvalidFunctionParameter(
                 "message",
-                "max string length "
-                "(encoded as utf8) is 511 for "
-                "content type AUTH",
+                "max string length (encoded as utf8) is 511 for content type AUTH",
             )
 
         data_package += utf8_message + b"\x00"
@@ -588,17 +582,12 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             "qrtoken_pairing_callback_sms",
         ]
 
-        cb_url = get_single_auth_policy(
-            pairing_policies[0], user=owner, realms=realms
-        )
-        cb_sms = get_single_auth_policy(
-            pairing_policies[1], user=owner, realms=realms
-        )
+        cb_url = get_single_auth_policy(pairing_policies[0], user=owner, realms=realms)
+        cb_sms = get_single_auth_policy(pairing_policies[1], user=owner, realms=realms)
 
         if not cb_url and not cb_sms:
             raise Exception(
-                _("Policy %s must have a value")
-                % _(" or ").join(pairing_policies)
+                _("Policy %s must have a value") % _(" or ").join(pairing_policies)
             )
 
         challenge_policies = [
@@ -615,8 +604,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         if not cb_url and not cb_sms:
             raise Exception(
-                _("Policy %s must have a value")
-                % _(" or ").join(challenge_policies)
+                _("Policy %s must have a value") % _(" or ").join(challenge_policies)
             )
 
         partition = get_partition(realms, owner)
@@ -920,8 +908,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         if not callback_url and not callback_sms:
             raise Exception(
-                _("Policy %s must have a value")
-                % _(" or ").join(callback_policies)
+                _("Policy %s must have a value") % _(" or ").join(callback_policies)
             )
 
         # TODO: get from policy/config
@@ -981,8 +968,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         user_public_key = b64decode(b64_user_public_key)
 
         sec_obj = self._get_secret_object()
-        hmac_secret = sec_obj.calc_dh(
-            partition=partition, data=user_public_key
-        )
+        hmac_secret = sec_obj.calc_dh(partition=partition, data=user_public_key)
 
         return hmac_secret

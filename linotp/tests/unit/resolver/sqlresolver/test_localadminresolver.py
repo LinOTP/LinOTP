@@ -61,6 +61,6 @@ def test_lar_case_sensitive_resolver_names(app):
 
     refreshConfig()  # force config reload
     new_admin_resolvers = getFromConfig(admin_resolvers_key, "")
-    assert (
-        new_admin_resolvers == admin_resolvers + "," + new_name
-    ), "local admin resolver name comparison is not case-sensitive"
+    assert new_admin_resolvers == admin_resolvers + "," + new_name, (
+        "local admin resolver name comparison is not case-sensitive"
+    )

@@ -87,9 +87,7 @@ def do_forward_failcounter(token):
 
 
 @tokenclass_registry.class_entry("forward")
-@tokenclass_registry.class_entry(
-    "linotp.tokens.forwardtoken.ForwardTokenClass"
-)
+@tokenclass_registry.class_entry("linotp.tokens.forwardtoken.ForwardTokenClass")
 class ForwardTokenClass(TokenClass):
     """
     The Forward token forwards an authentication request to another token.
@@ -361,9 +359,7 @@ class ForwardTokenClass(TokenClass):
         if self.targetToken.type == "push" and not isinstance(passw, dict):
             return (False, self.target_otp_count, None)
 
-        self.target_otp_count = self.targetToken.checkOtp(
-            passw, counter, window
-        )
+        self.target_otp_count = self.targetToken.checkOtp(passw, counter, window)
         res = self.target_otp_count >= 0
 
         return (res, self.target_otp_count, None)
@@ -377,16 +373,12 @@ class ForwardTokenClass(TokenClass):
         tokens = get_tokens(serial=forwardSerial)
 
         if not tokens:
-            raise Exception(
-                "no target token with serial %r found" % forwardSerial
-            )
+            raise Exception("no target token with serial %r found" % forwardSerial)
 
         targetToken = tokens[0]
         return targetToken
 
-    def checkResponse4Challenge(
-        self, user, passw, options=None, challenges=None
-    ):
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
         This method verifies if the given ``passw`` matches any
         existing ``challenge`` of the token.

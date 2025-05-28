@@ -409,9 +409,7 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(
-            user_token_id
-        )
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
         # ------------------------------------------------------------------- --
 
@@ -516,9 +514,7 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(
-            user_token_id
-        )
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
         # ------------------------------------------------------------------- --
 
@@ -979,9 +975,9 @@ class TestQRToken(TestController):
             )
 
             assert response.json["result"]["status"], response
-            assert response.json["result"]["value"][
-                "setPolicy %s" % pol["name"]
-            ], response
+            assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
+                response
+            )
 
     def remove_detail_policies(self):
         for policy_name in ["detail_on_success", "detail_on_fail"]:
@@ -1003,9 +999,7 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(
-            user_token_id
-        )
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
         # ------------------------------------------------------------------- --
 
@@ -1094,9 +1088,7 @@ class TestQRToken(TestController):
 
         # create another pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(
-            user_token_id
-        )
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
         # ------------------------------------------------------------------- --
 
@@ -1135,9 +1127,7 @@ class TestQRToken(TestController):
         """QRTOKEN: check if error is thrown on ill-formatted pairing response"""
 
         self.enroll_qrtoken()
-        response_dict = self.send_pairing_response(
-            "look, mom! i'm crashing the server"
-        )
+        response_dict = self.send_pairing_response("look, mom! i'm crashing the server")
 
         # ------------------------------------------------------------------- --
 
@@ -1268,9 +1258,7 @@ class TestQRToken(TestController):
         cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(
-            header + R + ciphertext + tag
-        )
+        wrong_pairing_response = encode_base64_urlsafe(header + R + ciphertext + tag)
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
@@ -1357,9 +1345,7 @@ class TestQRToken(TestController):
         cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(
-            header + R + ciphertext + tag
-        )
+        wrong_pairing_response = encode_base64_urlsafe(header + R + ciphertext + tag)
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
@@ -1422,9 +1408,7 @@ class TestQRToken(TestController):
         NON_EXISTENT_PROTOCOL = 127
 
         pairing_response = b""
-        pairing_response += struct.pack(
-            "<bI", NON_EXISTENT_PROTOCOL, user_token_id
-        )
+        pairing_response += struct.pack("<bI", NON_EXISTENT_PROTOCOL, user_token_id)
 
         pairing_response += self.public_key
 
@@ -1454,9 +1438,7 @@ class TestQRToken(TestController):
         cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(
-            header + R + ciphertext + tag
-        )
+        wrong_pairing_response = encode_base64_urlsafe(header + R + ciphertext + tag)
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
@@ -1543,9 +1525,7 @@ class TestQRToken(TestController):
         cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(
-            header + R + ciphertext + tag
-        )
+        wrong_pairing_response = encode_base64_urlsafe(header + R + ciphertext + tag)
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
@@ -1598,9 +1578,7 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(
-            user_token_id
-        )
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
         # ------------------------------------------------------------------- --
 
@@ -1929,9 +1907,7 @@ class TestQRToken(TestController):
         }
 
         response = self.make_validate_request("check_status", params)
-        token_status = response.json["detail"]["transactions"][transaction_id][
-            "token"
-        ]
+        token_status = response.json["detail"]["transactions"][transaction_id]["token"]
 
         assert "offline_info" in token_status
 
@@ -2130,9 +2106,7 @@ class TestQRToken(TestController):
             serial = list(challenges.keys())[0]
             challenge_url = challenges[serial]["message"]
 
-            challenge, sig, tan = self.decrypt_and_verify_challenge(
-                challenge_url
-            )
+            challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
             transaction_id = response_dict["detail"]["transactionid"]
             params = {"transactionid": transaction_id, "pass": sig}
@@ -2173,21 +2147,17 @@ class TestQRToken(TestController):
                 response.json.get("detail", {}).get("tokentype") == "qr"
             ) == use_detail_policy, response
             # serial will always be included
-            assert (
-                response.json.get("detail", {}).get("serial") == serial
-            ), response
+            assert response.json.get("detail", {}).get("serial") == serial, response
 
             # check detail_on_fail
             failing_params = {
                 "transactionid": transaction_id,
                 "pass": "failing_pass",
             }
-            failing_response = self.make_validate_request(
-                "check_t", failing_params
+            failing_response = self.make_validate_request("check_t", failing_params)
+            assert ('"error":' in failing_response) == use_detail_policy, (
+                failing_response
             )
-            assert (
-                '"error":' in failing_response
-            ) == use_detail_policy, failing_response
 
             self.set_detail_policies(active=False)
 
@@ -2569,9 +2539,7 @@ class TestQRToken(TestController):
 
             assert challenge_url.startswith(self.uri + "://")
 
-            challenge, sig, tan = self.decrypt_and_verify_challenge(
-                challenge_url
-            )
+            challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
             # -------------------------------------------------------------- --
 

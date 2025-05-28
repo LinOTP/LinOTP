@@ -29,6 +29,7 @@
 """
 Test the support for userservice controller including authentication
 """
+
 import logging
 import os
 
@@ -289,10 +290,7 @@ class TestSelfserviceAuthController(TestController):
         policy = {
             "name": "T1",
             "action": "enrollHMAC",
-            "user": (
-                " passthru.*@myDefRealm#mobile~=1234-24, "
-                " other.*@myotherRealm"
-            ),
+            "user": (" passthru.*@myDefRealm#mobile~=1234-24,  other.*@myotherRealm"),
             "realm": "*",
         }
         self.createPolicy(policy)

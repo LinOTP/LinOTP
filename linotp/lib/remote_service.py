@@ -109,9 +109,7 @@ class RemoteService(object):
         """
 
         if self.state == State.UNAVAILABLE:
-            if now() > self.last_unavailable + timedelta(
-                seconds=self.recovery_timeout
-            ):
+            if now() > self.last_unavailable + timedelta(seconds=self.recovery_timeout):
                 # recovery time is over. try once(!) if function
                 # is available again
 

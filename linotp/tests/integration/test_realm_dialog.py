@@ -28,7 +28,6 @@
 
 import integration_data as data
 import pytest
-
 from linotp_selenium_helper import TestCase
 
 

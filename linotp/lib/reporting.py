@@ -69,18 +69,14 @@ def token_reporting(event, tokenrealms):
         mh = MonitorHandler()
         counters = mh.token_count(realm, action[:])
         for key, val in list(counters.items()):
-            report = Reporting(
-                event=event, realm=realm, parameter=key, count=val
-            )
+            report = Reporting(event=event, realm=realm, parameter=key, count=val)
             try:
                 db.session.add(report)
             except Exception as exce:
                 log.error("Error during saving report. Exception was %r", exce)
 
 
-def get_max_token_count_in_period(
-    realm, start=None, end=None, status="active"
-):
+def get_max_token_count_in_period(realm, start=None, end=None, status="active"):
     """Search for the maximum token count value in the reporing events
     in a period with the status and realm.
 
@@ -231,9 +227,7 @@ class ReportingIterator(object):
 
         realm_cond = tuple()
         for realm in realms:
-            realm_cond += (
-                or_(func.lower(Reporting.realm) == func.lower(realm)),
-            )
+            realm_cond += (or_(func.lower(Reporting.realm) == func.lower(realm)),)
 
         status_cond = tuple()
         for stat in status:
@@ -277,9 +271,7 @@ class ReportingIterator(object):
             order = order.asc()
 
         # query database for all reports
-        self.reports = (
-            Reporting.query.filter(*conds).order_by(order).distinct()
-        )
+        self.reports = Reporting.query.filter(*conds).order_by(order).distinct()
         self.report_num = self.reports.count()
         self.pagesize = self.report_num
 
@@ -287,15 +279,12 @@ class ReportingIterator(object):
         if page is not None:
             try:
                 if psize is None:
-                    pagesize = int(
-                        request_context.get("Config").get("pagesize", 50)
-                    )
+                    pagesize = int(request_context.get("Config").get("pagesize", 50))
                 else:
                     pagesize = int(psize)
             except Exception as exce:
                 log.debug(
-                    "Reporting: Problem with pagesize detected. "
-                    "Exception was: %r",
+                    "Reporting: Problem with pagesize detected. Exception was: %r",
                     exce,
                 )
                 pagesize = 20
@@ -304,8 +293,7 @@ class ReportingIterator(object):
                 the_page = int(page) - 1
             except Exception as exce:
                 log.debug(
-                    "Reporting: Problem with page detected. "
-                    "Exception was %r",
+                    "Reporting: Problem with page detected. Exception was %r",
                     exce,
                 )
                 the_page = 0
@@ -340,6 +328,4 @@ class ReportingIterator(object):
                 yield desc
 
         except Exception as exx:
-            log.error(
-                "Reporting: Problem during iteration.Exception was %r", exx
-            )
+            log.error("Reporting: Problem during iteration.Exception was %r", exx)

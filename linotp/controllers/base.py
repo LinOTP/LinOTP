@@ -25,6 +25,7 @@
 #    Support: www.linotp.de
 #
 """The Controller's Base class"""
+
 import logging
 from datetime import datetime, timedelta, timezone
 from functools import wraps
@@ -32,6 +33,7 @@ from inspect import getfullargspec
 from types import FunctionType
 from warnings import warn
 
+from flask import Blueprint, current_app, g, request
 from flask_jwt_extended import (
     create_access_token,
     get_jwt_identity,
@@ -44,8 +46,6 @@ from flask_jwt_extended.exceptions import (
     RevokedTokenError,
 )
 from jwt import DecodeError, ExpiredSignatureError, InvalidSignatureError
-
-from flask import Blueprint, current_app, g, request
 
 from linotp.lib import render_calling_path
 from linotp.lib.context import request_context
@@ -141,9 +141,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
         self.before_request(self.before_handler)
 
         if hasattr(self, "__after__"):
-            self.after_request(
-                self.__after__
-            )  # noqa pylint: disable=no-member
+            self.after_request(self.__after__)  # noqa pylint: disable=no-member
 
         self.after_request(jwt_refresh)
 
@@ -166,18 +164,14 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             if not hasattr(method.__func__, "methods"):
                 method.__func__.methods = ("GET", "POST")
 
-            if self.jwt_exempt or getattr(
-                method.__func__, "jwt_exempt", False
-            ):
+            if self.jwt_exempt or getattr(method.__func__, "jwt_exempt", False):
                 self.jwt_exempt_methods.add(method_name)
 
             # Add another route if the method has an optional second
             # parameter called `id` (and no parameters after that).
             args, _, _, defaults, _, _, _ = getfullargspec(method)
             if (len(args) == 2 and args[1] == "id") and (
-                defaults is not None
-                and len(defaults) == 1
-                and defaults[0] is None
+                defaults is not None and len(defaults) == 1 and defaults[0] is None
             ):
                 self.add_url_rule(url, method_name, view_func=method)
                 self.add_url_rule(url + "/<id>", method_name, view_func=method)
@@ -208,9 +202,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                 # routes if the URL in question doesn't contain an
                 # underscore to begin with.)
 
-                if "_" in url and getattr(
-                    method.__func__, "hyphenated_url", False
-                ):
+                if "_" in url and getattr(method.__func__, "hyphenated_url", False):
                     self.add_url_rule(
                         url.replace("_", "-"), method_name, view_func=method
                     )
@@ -425,9 +417,7 @@ class JWTMixin(object):
             authUser = User(
                 login=username,
                 realm=admin_realm_name,
-                resolver_config_identifier=resolver_specification.rpartition(
-                    "."
-                )[-1],
+                resolver_config_identifier=resolver_specification.rpartition(".")[-1],
             )
             g.audit["authUser"] = authUser
             # save authUser in request_context as it's used by `getUserFromRequest()`
@@ -451,9 +441,7 @@ class JWTMixin(object):
 
             return response
 
-        response = sendResult(
-            False, opt={"message": "Bad username or password"}
-        )
+        response = sendResult(False, opt={"message": "Bad username or password"})
         response.status_code = 401
         return response
 

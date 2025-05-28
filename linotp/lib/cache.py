@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 
 from beaker.cache import Cache
-
 from flask import current_app
 
 from linotp.lib.context import request_context as context
@@ -65,8 +64,7 @@ def get_cache(cache_name: str, scope: str = None) -> Optional[Cache]:
 
     except ValueError:
         log.info(
-            "caching is disabled due to a value error for expiration "
-            "definition %r",
+            "caching is disabled due to a value error for expiration definition %r",
             expiration_conf,
         )
         return None

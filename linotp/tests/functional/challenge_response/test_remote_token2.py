@@ -611,8 +611,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
         RT2: remote token with otppin, autoassign forward policy and yubikey
         """
         self.skipTest(
-            "this test requires a real running linotp as it "
-            "triggers an outenrollment"
+            "this test requires a real running linotp as it triggers an outenrollment"
         )
 
         self.create_pin_policies()

@@ -90,8 +90,7 @@ def parseOATHcsv(csv):
         serial = line[0]
         if not serial:
             log.error(
-                "[parseOATHcsv] the line %s did not contain"
-                " a serial number",
+                "[parseOATHcsv] the line %s did not contain a serial number",
                 csv_line,
             )
             continue

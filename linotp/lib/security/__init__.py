@@ -25,6 +25,7 @@
 #    Support: www.linotp.de
 #
 """module for SecurityModules / devices like hsms"""
+
 import logging
 
 log = logging.getLogger(__name__)

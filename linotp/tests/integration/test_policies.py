@@ -33,11 +33,11 @@ import binascii
 
 import integration_data as data
 import pytest
-
-from linotp.lib.HMAC import HmacOtp
 from linotp_selenium_helper import Policy, TestCase
 from linotp_selenium_helper.token_import import TokenImportAladdin
 from linotp_selenium_helper.validate import Validate
+
+from linotp.lib.HMAC import HmacOtp
 
 
 class TestPolicies:
@@ -72,15 +72,15 @@ class TestPolicies:
 
         # Create LDAP UserIdResolver
         ldap_data = data.musicians_ldap_resolver
-        self.ldap_resolver = (
-            self.testcase.useridresolver_manager.create_resolver(ldap_data)
+        self.ldap_resolver = self.testcase.useridresolver_manager.create_resolver(
+            ldap_data
         )
 
         # Create SQL UserIdResolver
         sql_data = data.sql_resolver
 
-        self.sql_resolver = (
-            self.testcase.useridresolver_manager.create_resolver(sql_data)
+        self.sql_resolver = self.testcase.useridresolver_manager.create_resolver(
+            sql_data
         )
         self.testcase.useridresolver_manager.close()
 
@@ -173,9 +173,7 @@ class TestPolicies:
         hotp_a = HmacOtp()
 
         # PIN+OTP -> success
-        otp = user_a_token_pin + hotp_a.generate(
-            counter=0, key=seed_oath137332_bin
-        )
+        otp = user_a_token_pin + hotp_a.generate(counter=0, key=seed_oath137332_bin)
 
         access_granted, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp
@@ -280,9 +278,7 @@ class TestPolicies:
         hotp_b = HmacOtp()
 
         # PIN+OTP -> success
-        otp = user_b_token_pin + hotp_b.generate(
-            counter=0, key=user_b_token_seed_bin
-        )
+        otp = user_b_token_pin + hotp_b.generate(counter=0, key=user_b_token_seed_bin)
 
         access_granted, _ = self.testcase.validate.validate(
             user=user_b + "@" + user_b_realm, password=otp
@@ -349,9 +345,7 @@ class TestPolicies:
         # with changed policy!
 
         # OTP -> fails
-        otp = hotp_a.generate(
-            counter=4, inc_counter=False, key=seed_oath137332_bin
-        )
+        otp = hotp_a.generate(counter=4, inc_counter=False, key=seed_oath137332_bin)
 
         access_denied, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp
@@ -367,9 +361,7 @@ class TestPolicies:
         )
 
         # PIN+OTP -> success
-        otp = user_a_token_pin + hotp_a.generate(
-            counter=4, key=seed_oath137332_bin
-        )
+        otp = user_a_token_pin + hotp_a.generate(counter=4, key=seed_oath137332_bin)
 
         access_granted, _ = self.testcase.validate.validate(
             user=user_a + "@" + user_a_realm, password=otp

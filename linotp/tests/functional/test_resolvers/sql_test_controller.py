@@ -150,9 +150,7 @@ class SQLTestController(TestController):
         parameters["type"] = "sqlresolver"
         parameters["Limit"] = "20"
 
-        resp = self.make_system_request(
-            action="setResolver", params=parameters
-        )
+        resp = self.make_system_request(action="setResolver", params=parameters)
 
         assert '"value": true' in resp, resp
 
@@ -170,9 +168,7 @@ class SQLTestController(TestController):
         parameters = {
             "resolver": name,
         }
-        resp = self.make_system_request(
-            action="delResolver", params=parameters
-        )
+        resp = self.make_system_request(action="delResolver", params=parameters)
         assert '"value": true' in resp, resp
 
         return resp

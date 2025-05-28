@@ -28,12 +28,10 @@
 Tests the chunked data handling in the config
 """
 
-
 import unittest
 
-from mock import patch
-
 import flask
+from mock import patch
 
 from linotp.controllers.userservice import UserserviceController
 from linotp.lib.user import User

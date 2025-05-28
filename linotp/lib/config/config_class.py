@@ -199,9 +199,7 @@ class LinOtpConfig(dict):
             typ, check_type_function = Config_Types[key]
 
             if not check_type_function(value):
-                raise ValueError(
-                    "Config Error: %s must be of type %r" % (key, typ)
-                )
+                raise ValueError("Config Error: %s must be of type %r" % (key, typ))
 
     def get(self, key, default=None):
         """
@@ -282,9 +280,7 @@ class LinOtpConfig(dict):
         """
         support for 'in' operator of the Config dict
         """
-        res = super().__contains__(key) or super().__contains__(
-            "linotp." + key
-        )
+        res = super().__contains__(key) or super().__contains__("linotp." + key)
         return res
 
     def update(self, dic):

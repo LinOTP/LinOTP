@@ -340,12 +340,10 @@ class TestU2FController(TestController):
         # Create the registration_response
         #
         registration_response = {
-            "registrationData": base64.urlsafe_b64encode(
-                registration_data
-            ).decode("ascii"),
-            "clientData": base64.urlsafe_b64encode(client_data).decode(
+            "registrationData": base64.urlsafe_b64encode(registration_data).decode(
                 "ascii"
             ),
+            "clientData": base64.urlsafe_b64encode(client_data).decode("ascii"),
         }
 
         return json.dumps(registration_response)
@@ -401,12 +399,10 @@ class TestU2FController(TestController):
         key_handle = key_handle.rstrip(b"=")
         sign_response = {
             "keyHandle": key_handle.decode("ascii"),
-            "signatureData": base64.urlsafe_b64encode(
-                authentication_data
-            ).decode("ascii"),
-            "clientData": base64.urlsafe_b64encode(client_data).decode(
+            "signatureData": base64.urlsafe_b64encode(authentication_data).decode(
                 "ascii"
             ),
+            "clientData": base64.urlsafe_b64encode(client_data).decode("ascii"),
         }
 
         return json.dumps(sign_response)
@@ -446,42 +442,32 @@ class TestU2FController(TestController):
         assert "registerrequest" in response_registration1["detail"], (
             "Response: %r" % response_registration1
         )
-        assert (
-            "challenge" in response_registration1["detail"]["registerrequest"]
-        ), ("Response: %r" % response_registration1)
-        # check for non-empty and correctly-padded challenge
-        assert (
-            response_registration1["detail"]["registerrequest"]["challenge"]
-            != ""
+        assert "challenge" in response_registration1["detail"]["registerrequest"], (
+            "Response: %r" % response_registration1
         )
+        # check for non-empty and correctly-padded challenge
+        assert response_registration1["detail"]["registerrequest"]["challenge"] != ""
         assert (
-            len(
-                response_registration1["detail"]["registerrequest"][
-                    "challenge"
-                ]
-            )
-            % 4
+            len(response_registration1["detail"]["registerrequest"]["challenge"]) % 4
             == 0
         )
-        assert (
-            "version" in response_registration1["detail"]["registerrequest"]
-        ), ("Response: %r" % response_registration1)
+        assert "version" in response_registration1["detail"]["registerrequest"], (
+            "Response: %r" % response_registration1
+        )
         # only U2F_V2 is supported right now
         assert (
-            response_registration1["detail"]["registerrequest"]["version"]
-            == "U2F_V2"
+            response_registration1["detail"]["registerrequest"]["version"] == "U2F_V2"
+        )
+        assert "appId" in response_registration1["detail"]["registerrequest"], (
+            "Response: %r" % response_registration1
         )
         assert (
-            "appId" in response_registration1["detail"]["registerrequest"]
-        ), ("Response: %r" % response_registration1)
-        assert (
-            response_registration1["detail"]["registerrequest"]["appId"]
-            == self.origin
+            response_registration1["detail"]["registerrequest"]["appId"] == self.origin
         )
 
-        challenge_registration = response_registration1["detail"][
-            "registerrequest"
-        ]["challenge"]
+        challenge_registration = response_registration1["detail"]["registerrequest"][
+            "challenge"
+        ]
         self.serial = response_registration1["detail"]["serial"]
         self.serials.add(self.serial)
 
@@ -493,10 +479,8 @@ class TestU2FController(TestController):
 
         key_set = self.key_set.get(key_num, None)
 
-        registration_response_message = (
-            self._createRegistrationResponseMessage(
-                client_data_registration, correct=correct, key_set=key_set
-            )
+        registration_response_message = self._createRegistrationResponseMessage(
+            client_data_registration, correct=correct, key_set=key_set
         )
 
         # Complete the token registration
@@ -530,9 +514,7 @@ class TestU2FController(TestController):
         Test authentication of a previously registered token with given token pin
         """
         # Initial authentication phase
-        response_authentication1 = self.get_json_body(
-            self._authentication1(pin)
-        )
+        response_authentication1 = self.get_json_body(self._authentication1(pin))
 
         # check for status and value
         assert "result" in response_authentication1, (
@@ -615,55 +597,39 @@ class TestU2FController(TestController):
             assert "signrequest" in response_authentication1["detail"], (
                 "Response: %r" % response_authentication1
             )
-            assert (
-                "challenge"
-                in response_authentication1["detail"]["signrequest"]
-            ), ("Response: %r" % response_authentication1)
-            # check for non-empty and correctly-padded challenge
-            assert (
-                response_authentication1["detail"]["signrequest"]["challenge"]
-                != ""
+            assert "challenge" in response_authentication1["detail"]["signrequest"], (
+                "Response: %r" % response_authentication1
             )
+            # check for non-empty and correctly-padded challenge
+            assert response_authentication1["detail"]["signrequest"]["challenge"] != ""
             assert (
-                len(
-                    response_authentication1["detail"]["signrequest"][
-                        "challenge"
-                    ]
-                )
-                % 4
+                len(response_authentication1["detail"]["signrequest"]["challenge"]) % 4
                 == 0
             )
-            assert (
-                "version" in response_authentication1["detail"]["signrequest"]
-            ), ("Response: %r" % response_authentication1)
+            assert "version" in response_authentication1["detail"]["signrequest"], (
+                "Response: %r" % response_authentication1
+            )
             # only U2F_V2 is supported right now
             assert (
-                response_authentication1["detail"]["signrequest"]["version"]
-                == "U2F_V2"
+                response_authentication1["detail"]["signrequest"]["version"] == "U2F_V2"
             )
-            assert (
-                "appId" in response_authentication1["detail"]["signrequest"]
-            ), ("Response: %r" % response_authentication1)
+            assert "appId" in response_authentication1["detail"]["signrequest"], (
+                "Response: %r" % response_authentication1
+            )
             assert (
                 response_authentication1["detail"]["signrequest"]["appId"]
                 == self.origin
             )
 
             # check for non-empty keyHandle
-            assert (
-                "keyHandle"
-                in response_authentication1["detail"]["signrequest"]
-            ), ("Response: %r" % response_authentication1)
-            assert (
-                response_authentication1["detail"]["signrequest"]["keyHandle"]
-                != ""
+            assert "keyHandle" in response_authentication1["detail"]["signrequest"], (
+                "Response: %r" % response_authentication1
             )
+            assert response_authentication1["detail"]["signrequest"]["keyHandle"] != ""
             reply.append(response_authentication1["detail"])
         return reply
 
-    def _authentication_response(
-        self, challenge, correct=True, additional_params=None
-    ):
+    def _authentication_response(self, challenge, correct=True, additional_params=None):
         if additional_params is None:
             additional_params = {}
 
@@ -695,13 +661,11 @@ class TestU2FController(TestController):
         ).decode("ascii")
         ecc_key = self.key_handle_set.get(key_handle_hex, None)
 
-        authentication_response_message = (
-            self._createAuthenticationResponseMessage(
-                client_data_authentication,
-                key_handle_authentication,
-                ecc_key=ecc_key,
-                correct=correct,
-            )
+        authentication_response_message = self._createAuthenticationResponseMessage(
+            client_data_authentication,
+            key_handle_authentication,
+            ecc_key=ecc_key,
+            correct=correct,
         )
         # Complete the token authentication
         # breakpoint()

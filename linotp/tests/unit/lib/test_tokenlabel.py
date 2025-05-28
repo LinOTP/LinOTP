@@ -38,9 +38,7 @@ from linotp.lib.policy import get_tokenissuer, get_tokenlabel
 class TestTokenLabel(unittest.TestCase):
     @patch("linotp.lib.policy.has_client_policy")
     @patch("linotp.lib.policy._get_client")
-    def test_get_tokenlabel_wo_policy(
-        self, mock__get_client, mock_has_client_policy
-    ):
+    def test_get_tokenlabel_wo_policy(self, mock__get_client, mock_has_client_policy):
         mock__get_client.return_value = "localhost"
         mock_has_client_policy.return_value = {}
 
@@ -84,9 +82,7 @@ class TestTokenLabel(unittest.TestCase):
 
     @patch("linotp.lib.policy.has_client_policy")
     @patch("linotp.lib.policy._get_client")
-    def test_get_tokenissuer_wo_policy(
-        self, mock__get_client, mock_has_client_policy
-    ):
+    def test_get_tokenissuer_wo_policy(self, mock__get_client, mock_has_client_policy):
         mock__get_client.return_value = "localhost"
         mock_has_client_policy.return_value = {}
 

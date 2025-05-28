@@ -163,9 +163,7 @@ class TestLastAccess(TestController):
 
             # get the time from the string
             invalid_access = token["LinOtp.LastAuthMatch"]
-            invalid_access_date = datetime.strptime(
-                invalid_access, DEFAULT_TIMEFORMAT
-            )
+            invalid_access_date = datetime.strptime(invalid_access, DEFAULT_TIMEFORMAT)
 
         frozen2 = frozen1 + timedelta(seconds=3)
 
@@ -185,9 +183,7 @@ class TestLastAccess(TestController):
 
             # verify that we can parse the iso format
             valid_access = invalid_access = token["LinOtp.LastAuthSuccess"]
-            valid_access_date = datetime.strptime(
-                valid_access, DEFAULT_TIMEFORMAT
-            )
+            valid_access_date = datetime.strptime(valid_access, DEFAULT_TIMEFORMAT)
 
         assert created_date < invalid_access_date < valid_access_date
 

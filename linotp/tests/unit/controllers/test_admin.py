@@ -27,10 +27,9 @@
 import copy
 import unittest
 
+import flask
 import pytest
 from mock import mock
-
-import flask
 
 from linotp.controllers.admin import AdminController
 from linotp.lib.user import User
@@ -73,12 +72,12 @@ class TestAdminController(unittest.TestCase):
 
         AdminController._parse_tokeninfo(tok)
 
-        assert isinstance(
-            tok.get("LinOtp.TokenInfo"), dict
-        ), "TokenInfo is not of type dict!"
-        assert dict(
-            tok.get("LinOtp.TokenInfo"), **self.expected_subset
-        ) == tok.get("LinOtp.TokenInfo"), tok.get("LinOtp.TokenInfo")
+        assert isinstance(tok.get("LinOtp.TokenInfo"), dict), (
+            "TokenInfo is not of type dict!"
+        )
+        assert dict(tok.get("LinOtp.TokenInfo"), **self.expected_subset) == tok.get(
+            "LinOtp.TokenInfo"
+        ), tok.get("LinOtp.TokenInfo")
 
     @mock.patch("linotp.controllers.admin.TokenIterator")
     @mock.patch("linotp.controllers.admin.checkPolicyPre")
@@ -86,9 +85,7 @@ class TestAdminController(unittest.TestCase):
     @mock.patch("linotp.controllers.admin.Response")
     @mock.patch("linotp.app.request")
     @mock.patch("linotp.controllers.admin.request_context", new={})
-    @mock.patch(
-        "linotp.controllers.admin.BaseController.__init__", return_value=None
-    )
+    @mock.patch("linotp.controllers.admin.BaseController.__init__", return_value=None)
     def check_token(
         self,
         mock_base,

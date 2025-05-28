@@ -149,9 +149,7 @@ class FipsModule(object):
         digest = ctypes.create_string_buffer(self._libcrypto.EVP_MD_size(md))
 
         # call OpenSSL
-        res = self._libcrypto.HMAC(
-            md, key, len(key), msg, len(msg), digest, None
-        )
+        res = self._libcrypto.HMAC(md, key, len(key), msg, len(msg), digest, None)
 
         # OpenSSL will return NULL (None for us) to indicate an error
         if res is None:

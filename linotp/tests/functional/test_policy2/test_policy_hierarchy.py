@@ -29,6 +29,7 @@
 """
 Test wether policies, which specify a username, are prefered over wildcard policies
 """
+
 from datetime import datetime, timedelta
 
 from linotp.tests import TestController
@@ -52,9 +53,7 @@ class TestPolicyHierarchy(TestController):
     def tearDown(self):
         TestController.tearDown(self)
 
-    def _create_token(
-        self, serial="12345", realm=None, user=None, active=True
-    ):
+    def _create_token(self, serial="12345", realm=None, user=None, active=True):
         """
         create an HMAC Token with given parameters
 
@@ -77,9 +76,7 @@ class TestPolicyHierarchy(TestController):
         response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
         if active is False:
-            response = self.make_admin_request(
-                "disable", params={"serial": serial}
-            )
+            response = self.make_admin_request("disable", params={"serial": serial})
 
             assert '"value": 1' in response, response
         return serial
@@ -116,9 +113,7 @@ class TestPolicyHierarchy(TestController):
         self.create_policy(params=policy_wildcard)
 
         today = datetime.now()
-        validity_special = (today + timedelta(days=8)).strftime(
-            "%d/%m/%y 23:59"
-        )
+        validity_special = (today + timedelta(days=8)).strftime("%d/%m/%y 23:59")
         losetoken = self.make_admin_request("losttoken", params=token)
         resp = losetoken.json
         values = resp.get("result").get("value")
@@ -156,9 +151,7 @@ class TestPolicyHierarchy(TestController):
         self.create_policy(params=policy_special)
 
         today = datetime.now()
-        validity_special = (today + timedelta(days=8)).strftime(
-            "%d/%m/%y 23:59"
-        )
+        validity_special = (today + timedelta(days=8)).strftime("%d/%m/%y 23:59")
         losetoken = self.make_admin_request("losttoken", params=token)
         resp = losetoken.json
         values = resp.get("result").get("value")

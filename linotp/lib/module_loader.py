@@ -26,7 +26,6 @@
 #
 """contains utility functions to load dynamic modules"""
 
-
 import importlib
 import logging
 import pkgutil

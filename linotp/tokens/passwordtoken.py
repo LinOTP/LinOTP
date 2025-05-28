@@ -41,9 +41,7 @@ log = logging.getLogger(__name__)
 
 
 @tokenclass_registry.class_entry("pw")
-@tokenclass_registry.class_entry(
-    "linotp.tokens.passwordtoken.PasswordTokenClass"
-)
+@tokenclass_registry.class_entry("linotp.tokens.passwordtoken.PasswordTokenClass")
 class PasswordTokenClass(HmacTokenClass):
     """
     This Token does use a static Password as the OTP value.

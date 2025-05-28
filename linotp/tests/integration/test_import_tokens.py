@@ -36,14 +36,13 @@ import os
 from time import sleep
 
 import pytest
-from selenium.webdriver.common.by import By
-
 from linotp_selenium_helper.manage_ui import AlertBoxHandler, ManageUi
 from linotp_selenium_helper.token_import import (
     TokenImportAladdin,
     TokenImportError,
     TokenImportOATH,
 )
+from selenium.webdriver.common.by import By
 
 # All the tests in this file make use of the musicians realm as default
 pytestmark = pytest.mark.usefixtures("musicians_realm")
@@ -67,16 +66,12 @@ def check_menu_is_closed(current_manage_ui):
     # Move the mouse somewhere else to ensure the menu is closed
     current_manage_ui.find_by_id("logo").click()
 
-    current_manage_ui.wait_for_element_disappearing(
-        "#menu_load_aladdin_xml_tokenfile"
-    )
+    current_manage_ui.wait_for_element_disappearing("#menu_load_aladdin_xml_tokenfile")
 
 
 def test_token_import_aladdin_xml(testcase, aladdin: TokenImportAladdin):
     """Test import of valid aladdin tokens."""
-    aladdin_xml_path = os.path.join(
-        testcase.manage_ui.test_data_dir, "aladdin.xml"
-    )
+    aladdin_xml_path = os.path.join(testcase.manage_ui.test_data_dir, "aladdin.xml")
     aladdin.do_import(file_path=aladdin_xml_path)
 
     token_serials = (
@@ -98,16 +93,12 @@ def test_token_import_aladdin_xml(testcase, aladdin: TokenImportAladdin):
     check_menu_is_closed(testcase.manage_ui)
 
 
-def test_token_import_aladdin_invalid_xml(
-    testcase, aladdin: TokenImportAladdin
-):
+def test_token_import_aladdin_invalid_xml(testcase, aladdin: TokenImportAladdin):
     """Test import of invalid xml."""
 
     with pytest.raises(TokenImportError):
         aladdin.do_import(
-            file_path=os.path.join(
-                testcase.manage_ui.test_data_dir, "wrong_token.xml"
-            )
+            file_path=os.path.join(testcase.manage_ui.test_data_dir, "wrong_token.xml")
         )
     check_menu_is_closed(testcase.manage_ui)
 
@@ -116,9 +107,7 @@ def test_token_import_oath_csv(testcase, oathcsv_importer: TokenImportOATH):
     """Test import of valid oath csv tokens."""
 
     #   data to be tested against:
-    oath_csv_path = os.path.join(
-        testcase.manage_ui.test_data_dir, "oath_tokens.csv"
-    )
+    oath_csv_path = os.path.join(testcase.manage_ui.test_data_dir, "oath_tokens.csv")
     token_serials = (
         "tok1",
         "tok2",
@@ -175,9 +164,7 @@ def test_token_import_oath_csv_invalid_seed(
     )
 
     # check that no token was imported
-    tokens_after_import_attempt = (
-        testcase.manage_ui.token_view._get_token_list()
-    )
+    tokens_after_import_attempt = testcase.manage_ui.token_view._get_token_list()
     tokens_at_first == tokens_after_import_attempt
 
 

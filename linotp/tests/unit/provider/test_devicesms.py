@@ -64,9 +64,7 @@ class BaseClass:
             self.phone = "1234567890"
             self.message = "123456"
 
-        def do_send(
-            self, config, expected_gnokii_status=0, phone=None, message=None
-        ):
+        def do_send(self, config, expected_gnokii_status=0, phone=None, message=None):
             if phone:
                 self.phone = phone
             if message:
@@ -90,22 +88,18 @@ class BaseClass:
                     popen_mock.return_value.returncode = expected_gnokii_status
                 self.return_code = sms.submitMessage(self.phone, self.message)
                 if config.get("CONFIGFILE"):
-                    assert (
-                        popen_mock.call_count == 1
-                    ), "SMS command should be called"
+                    assert popen_mock.call_count == 1, "SMS command should be called"
                     args, kwargs = popen_mock.call_args
                     self.gnokii_args = args
                 else:
-                    assert (
-                        popen_mock.call_count == 0
-                    ), "SMS command should not be called"
+                    assert popen_mock.call_count == 0, (
+                        "SMS command should not be called"
+                    )
 
-        def check_result(
-            self, expected_result=True, expected_gnokii_call=True
-        ):
-            assert (
-                expected_result == self.return_code
-            ), "Unexpected result from sms.submitMessage"
+        def check_result(self, expected_result=True, expected_gnokii_call=True):
+            assert expected_result == self.return_code, (
+                "Unexpected result from sms.submitMessage"
+            )
 
             if expected_gnokii_call:
                 gnokki_cmd = "gnokii --config %s --sendsms %s" % (
@@ -130,9 +124,7 @@ class BaseClass:
 
         def test_03_missing_config(self):
             self.do_send({}, expected_gnokii_status=1)
-            self.check_result(
-                expected_result=False, expected_gnokii_call=False
-            )
+            self.check_result(expected_result=False, expected_gnokii_call=False)
 
         def test_03_invalid_config(self):
             self.do_send({"CONFIGFILE": "12345"}, expected_gnokii_status=1)

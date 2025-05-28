@@ -53,9 +53,7 @@ class TestUserserviceAuthController(TestController):
     """
 
     def setUp(self):
-        response = self.make_system_request(
-            "setConfig", params={"splitAtSign": "true"}
-        )
+        response = self.make_system_request("setConfig", params={"splitAtSign": "true"})
         assert "false" not in response.body
 
         TestController.setUp(self)

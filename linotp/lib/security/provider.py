@@ -87,28 +87,21 @@ class SecurityProvider(object):
             # self.active one is legacy.. therefore we set it here
             self.activeOne = security_provider
             log.debug(
-                "[SecurityProvider:load_config] setting active"
-                " security module: %s",
+                "[SecurityProvider:load_config] setting active security module: %s",
                 self.activeOne,
             )
 
             # add active provider config to self.config with the active
             # provider as key and the config dict as value
             if self.activeOne == "default":
-                default_security_provider_config = config.get(
-                    "HSM_DEFAULT_CONFIG"
-                )
+                default_security_provider_config = config.get("HSM_DEFAULT_CONFIG")
                 keyFile = config["SECRET_FILE"]
                 default_security_provider_config["file"] = keyFile
-                security_provider_config = {
-                    "default": default_security_provider_config
-                }
+                security_provider_config = {"default": default_security_provider_config}
                 self.config.update(security_provider_config)
 
             if self.activeOne == "pkcs11":
-                security_provider_config = {
-                    "pkcs11": config.get("HSM_PKCS11_CONFIG")
-                }
+                security_provider_config = {"pkcs11": config.get("HSM_PKCS11_CONFIG")}
                 self.config.update(security_provider_config)
 
         except Exception as e:
@@ -205,10 +198,7 @@ class SecurityProvider(object):
         try:
             pool = self._getHsmPool_(hsm_id)
             if pool is None:
-                error = (
-                    "[setupModule] failed to retieve pool "
-                    "for hsm_id: %r" % hsm_id
-                )
+                error = "[setupModule] failed to retieve pool for hsm_id: %r" % hsm_id
                 log.error(error)
                 raise HSMException(error, id=707)
 
@@ -257,9 +247,7 @@ class SecurityProvider(object):
 
             conf = self.config.get(id)
             size = int(conf.get("poolsize", 10))
-            log.debug(
-                "[createHSMPool] creating pool %r with size=%r", id, size
-            )
+            log.debug("[createHSMPool] creating pool %r with size=%r", id, size)
 
             pool = []
             for _i in range(0, size):

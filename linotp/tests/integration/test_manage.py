@@ -28,12 +28,11 @@
 import time
 
 import pytest
+from linotp_selenium_helper import TestCase
+from linotp_selenium_helper.manage_ui import ManageUi
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
-from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.manage_ui import ManageUi
 
 
 class TestManage:
@@ -73,9 +72,9 @@ class TestManage:
         # for clossing the menus
         time.sleep(0.1)
         self.manage.close_all_menus()
-        WebDriverWait(
-            self.testcase.driver, self.testcase.ui_wait_time
-        ).until_not(EC.element_to_be_clickable((By.ID, menu_item_id)))
+        WebDriverWait(self.testcase.driver, self.testcase.ui_wait_time).until_not(
+            EC.element_to_be_clickable((By.ID, menu_item_id))
+        )
 
     def test_login_logout(self):
         self.testcase.driver.delete_all_cookies()

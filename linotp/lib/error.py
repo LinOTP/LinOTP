@@ -135,9 +135,7 @@ class InvalidFunctionParameter(Exception):
     def __init__(self, parameter_name, message):
         self.parameter_name = parameter_name
         self.message = message
-        Exception.__init__(
-            self, "Parameter %s: %s" % (parameter_name, message)
-        )
+        Exception.__init__(self, "Parameter %s: %s" % (parameter_name, message))
 
 
 class TokenStateError(UserError):

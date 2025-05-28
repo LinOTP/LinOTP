@@ -76,15 +76,14 @@ if Fips.hmac_sha1(20 * b"\x0c", b"Test With Truncation") != unhexlify(
 
 # test case 6
 if Fips.hmac_sha1(
-    80 * b"\xaa", b"Test Using Larger Than Block-Size Key" b" - Hash Key First"
+    80 * b"\xaa", b"Test Using Larger Than Block-Size Key - Hash Key First"
 ) != unhexlify("aa4ae5e15272d00e95705637ce8a3b55ed402112"):
     raise Exception("HMAC-sha1 self check number 6 failed")
 
 # test case 7
 if Fips.hmac_sha1(
     80 * b"\xaa",
-    b"Test Using Larger Than Block-Size Key "
-    b"and Larger Than One Block-Size Data",
+    b"Test Using Larger Than Block-Size Key and Larger Than One Block-Size Data",
 ) != unhexlify("e8e99d0f45237d786d6bbaa7965c7808bbff1a91"):
     raise Exception("HMAC-sha1 self check number 7 failed")
 
@@ -96,9 +95,7 @@ if Fips.hmac_sha1(
 try:
     ripemd160 = Fips._libcrypto.EVP_ripemd160()
     Fips._HMAC(ripemd160, b"foo", b"bar")
-    raise Exception(
-        "HMAC with ripemd160 hash should be disabled by FIPS mode!"
-    )
+    raise Exception("HMAC with ripemd160 hash should be disabled by FIPS mode!")
 except SSLError:
     pass  # that is what we want
 

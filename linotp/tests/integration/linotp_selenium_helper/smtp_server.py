@@ -130,9 +130,7 @@ class SmtpMessageServer(object):
         logger.debug("Configuration parameters: %s", parameters)
         result = self.set_config.setConfig(parameters)
 
-        assert result, (
-            "It was not possible to set the config. Result:%s" % result
-        )
+        assert result, "It was not possible to set the config. Result:%s" % result
 
     def get_config_parameters(self):
         # This function can be overridden to provide configuration parameters to configure

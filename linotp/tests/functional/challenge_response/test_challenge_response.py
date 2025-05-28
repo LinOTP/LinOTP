@@ -38,7 +38,6 @@ We assume port 5001 is used (default). If you want to use another port you can
 specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
-
 import binascii
 import json
 import logging
@@ -183,9 +182,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        self.sms_url = (
-            "http://localhost:%s/testing/http2sms" % self.paster_port
-        )
+        self.sms_url = "http://localhost:%s/testing/http2sms" % self.paster_port
 
         if not hasattr(self, "once_init"):
             self.serials = []
@@ -300,9 +297,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         counter = 0
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         # normal test
-        serial = self.createToken(
-            pin="shortpin", otpkey=otpkey, user="passthru_user1"
-        )
+        serial = self.createToken(pin="shortpin", otpkey=otpkey, user="passthru_user1")
 
         otp = self.calcOTP(otpkey, counter=counter)
         # submit a pin only request - to trigger a challenge
@@ -362,9 +357,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         """
 
         # normal test
-        serial = self.createToken(
-            pin="shortpin", typ="spass", user="passthru_user1"
-        )
+        serial = self.createToken(pin="shortpin", typ="spass", user="passthru_user1")
 
         # submit a pin only request - to trigger a challenge
         params = {"user": "passthru_user1", "pass": "shortpin"}
@@ -374,9 +367,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         # with otppin==1 the pin should be the same
         self.setPinPolicy(realm="myDefRealm")
-        serial = self.createToken(
-            pin="otppin", typ="spass", user="passthru_user1"
-        )
+        serial = self.createToken(pin="otppin", typ="spass", user="passthru_user1")
 
         params = {"user": "passthru_user1", "pass": "geheim1"}
         response = self.make_validate_request(action="check", params=params)
@@ -386,9 +377,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         # with otppin==2 the pin is not required at all
         self.setPinPolicy(realm="myDefRealm", action="otppin=2, ")
-        serial = self.createToken(
-            pin="otppin", typ="spass", user="passthru_user1"
-        )
+        serial = self.createToken(pin="otppin", typ="spass", user="passthru_user1")
 
         params = {"user": "passthru_user1", "pass": ""}
         response = self.make_validate_request(action="check", params=params)
@@ -440,9 +429,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         counter = 0
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         # normal test
-        serial = self.createToken(
-            pin="shortpin", otpkey=otpkey, user="passthru_user1"
-        )
+        serial = self.createToken(pin="shortpin", otpkey=otpkey, user="passthru_user1")
 
         # submit a pin only request - to trigger a challenge
         params = {"user": "passthru_user1", "pass": "shortpin"}
@@ -567,18 +554,14 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         # submit a pin only request - to trigger a challenge
         for _i in range(1, 3):
             params = {"user": "passthru_user1", "pass": "h1"}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
             assert '"value": false' in response, response
             assert '"transactionid":' in response, response
 
             # submit a pin only request - to trigger a challenge
             params = {"user": "passthru_user1", "pass": "h2"}
-            response2 = self.make_validate_request(
-                action="check", params=params
-            )
+            response2 = self.make_validate_request(action="check", params=params)
 
             assert '"value": false' in response2, response2
             assert '"transactionid":' in response2, response2
@@ -975,9 +958,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
             counter = counter + 1
             otp = self.calcOTP(otpkey, counter=counter, typ=typ)
             params = {"user": user, "pass": pin + otp}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
             assert '"value": true' in response, response
 
         # 2. challenge response with pin+otp
@@ -1493,9 +1474,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         response = self.setPinPolicy(realm="myDefRealm", action="otppin=2, ")
         assert '"status": true,' in response, response
 
-        counter2 = self.do_auth(
-            "", counter2 + 1, otpkey=otpkey2, user="passthru_user1"
-        )
+        counter2 = self.do_auth("", counter2 + 1, otpkey=otpkey2, user="passthru_user1")
 
         self.delete_token(serial1)
         self.delete_token(serial2)
@@ -1677,18 +1656,14 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         assert '"status": true,' in response, response
 
         # email token should do challenge response even with pin == passw
-        counter = self.do_email_auth(
-            "geheim1", counter, typ=typ, user="passthru_user1"
-        )
+        counter = self.do_email_auth("geheim1", counter, typ=typ, user="passthru_user1")
 
         # with otppin==2 the pin should be the same as the password
         response = self.setPinPolicy(realm="myDefRealm", action="otppin=2, ")
         assert '"status": true,' in response, response
 
         # email token should do challenge response even with pin is none
-        counter = self.do_email_auth(
-            "", counter, typ=typ, user="passthru_user1"
-        )
+        counter = self.do_email_auth("", counter, typ=typ, user="passthru_user1")
 
         self.delete_token(serial1)
         self.delete_token(serial2)
@@ -1742,9 +1717,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         with freezegun.freeze_time(datetime.utcnow() - timedelta(minutes=10)):
             params = {"user": "passthru_user1", "pass": "shortpin"}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
         found = False
         # assert 'SMS could not be sent' in response, response
@@ -1813,9 +1786,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         # check if simplecheck displays as well an error
         params = {"user": "passthru_user1", "pass": "shortpin"}
-        response = self.make_validate_request(
-            action="simplecheck", params=params
-        )
+        response = self.make_validate_request(action="simplecheck", params=params)
 
         # due to security fixes to prevent information leakage, there is no
         # more ':-/'
@@ -1880,9 +1851,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         for _i in range(1, 5):
             # submit a pin only request - to trigger a challenge
             params = {"user": "passthru_user1", "pass": "pin"}
-            response = self.make_validate_request(
-                action="check", params=params
-            )
+            response = self.make_validate_request(action="check", params=params)
 
             assert '"value": false' in response, response
             assert '"transactionid":' in response, response
@@ -1904,9 +1873,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         # by top transactionid
         for t, s1, s2, _o1, _o2 in transactions:
             params = {"transactionid": t, "session": self.session}
-            response = self.make_admin_request(
-                action="checkstatus", params=params
-            )
+            response = self.make_admin_request(action="checkstatus", params=params)
             jresp = json.loads(response.body)
             assert s1 in response, response
             assert s2 in response, response

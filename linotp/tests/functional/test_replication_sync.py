@@ -59,9 +59,7 @@ class SQLData(object):
         iStr = """
             INSERT INTO "%s"( "Key", "Value", "Type", "Description")
             VALUES (:key, :value, :typ, :description);
-            """ % (
-            self.userTable
-        )
+            """ % (self.userTable)
 
         if self.engine.url.drivername.startswith("mysql"):
             iStr = """
@@ -334,9 +332,7 @@ class TestReplication(TestController):
             "sqlresolver.User.mySQL": "user",
             "sqlresolver.Database.mySQL": "yourUserDB",
             "sqlresolver.Password.mySQL": (
-                "157455c27f605ad309d6059e1d936a4"
-                "e:7a812ba9e613fb931386f5f4"
-                "fb025890"
+                "157455c27f605ad309d6059e1d936a4e:7a812ba9e613fb931386f5f4fb025890"
             ),
             "sqlresolver.Table.mySQL": "usertable",
             "sqlresolver.Server.mySQL": "127.0.0.1",
@@ -491,9 +487,7 @@ class TestReplication(TestController):
         assert '"value": true' in res
 
         # 5. set new resolver definition
-        realmDef["linotp.useridresolver.group.realm"] = res_group[
-            "resolverTest"
-        ]
+        realmDef["linotp.useridresolver.group.realm"] = res_group["resolverTest"]
         for key, value in list(realmDef.items()):
             self.delData(key)
             self.addData(key, value, "")

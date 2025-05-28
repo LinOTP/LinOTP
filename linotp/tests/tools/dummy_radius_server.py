@@ -48,9 +48,8 @@ from getopt import GetoptError, getopt
 import pyrad.packet as packet
 from pyrad.dictionary import Dictionary
 from pyrad.packet import AccessAccept, AccessChallenge, AccessReject
-from pyrad.server import RemoteHost
+from pyrad.server import RemoteHost, ServerPacketError
 from pyrad.server import Server as RadiusServer
-from pyrad.server import ServerPacketError
 
 try:
     myIP = socket.gethostbyname(socket.gethostname())

@@ -324,18 +324,13 @@ class Ocra2TokenClass(TokenClass):
         if activationcode is not None:
             # dont create a new key
             genkey = None
-            serial = getRolloutToken4User(
-                user=user, serial=serial, tok_type=tok_type
-            )
+            serial = getRolloutToken4User(user=user, serial=serial, tok_type=tok_type)
             if serial is None:
                 raise Exception(
-                    "no token found for user: %r or serial: %r"
-                    % (user, serial)
+                    "no token found for user: %r or serial: %r" % (user, serial)
                 )
             helper_param["serial"] = serial
-            helper_param["activationcode"] = normalize_activation_code(
-                activationcode
-            )
+            helper_param["activationcode"] = normalize_activation_code(activationcode)
 
         if ocrasuite is None:
             if sharedsecret is not None or activationcode is not None:
@@ -377,9 +372,7 @@ class Ocra2TokenClass(TokenClass):
         res = {
             "type": "ocra2",
             "title": _("OCRA2 Token"),
-            "description": _(
-                "ocra challenge-response token - hmac event based"
-            ),
+            "description": _("ocra challenge-response token - hmac event based"),
             "init": {
                 "title": {
                     "html": "ocra2token/ocra2token.mako",
@@ -423,9 +416,7 @@ class Ocra2TokenClass(TokenClass):
                 },
             },
             "policy": {
-                "selfservice": {
-                    "activate_OCRA2": {"type": "bool"}
-                },  # eof selfservice
+                "selfservice": {"activate_OCRA2": {"type": "bool"}},  # eof selfservice
             },  # eof policy
         }
 
@@ -567,9 +558,7 @@ class Ocra2TokenClass(TokenClass):
             # the info url must be provided in any case
             info["url"] = callback
 
-            info["app_import"] = "lseqr://init?%s" % (
-                urllib.parse.urlencode(uInfo)
-            )
+            info["app_import"] = "lseqr://init?%s" % (urllib.parse.urlencode(uInfo))
             del info["ocrasuite"]
             self.info = info
 
@@ -594,9 +583,7 @@ class Ocra2TokenClass(TokenClass):
 
         return {"status": "completed"}
 
-    def _prepare_callback_url(
-        self, params, policy_lookup_funtion, transactionid=None
-    ):
+    def _prepare_callback_url(self, params, policy_lookup_funtion, transactionid=None):
         """
         prepare the callback url
         - check if it is allowed to get the callback from the parameters
@@ -897,9 +884,7 @@ class Ocra2TokenClass(TokenClass):
         #       token.getQRImageData(opt=details)
 
         # do we have a callback url, that will receive the otp value
-        callback = self._prepare_callback_url(
-            options, qrtan_url, transactionid=state
-        )
+        callback = self._prepare_callback_url(options, qrtan_url, transactionid=state)
 
         store_data["url"] = callback
 
@@ -1024,15 +1009,12 @@ class Ocra2TokenClass(TokenClass):
 
         except Exception as ex:
             raise Exception(
-                "[Ocra2TokenClass] Failed to create ocrasuite "
-                "challenge: %r" % (ex)
+                "[Ocra2TokenClass] Failed to create ocrasuite challenge: %r" % (ex)
             )
 
         # create a non exisiting challenge
         try:
-            (res, opt) = Challenges.create_challenge(
-                self, options={"messgae": data}
-            )
+            (res, opt) = Challenges.create_challenge(self, options={"messgae": data})
 
             transid = opt.get("transactionid")
             challenge = opt.get("challenge")
@@ -1041,8 +1023,7 @@ class Ocra2TokenClass(TokenClass):
             # this might happen if we have a db problem or
             # the uniqnes constrain does not fit
             raise Exception(
-                "[Ocra2TokenClass] Failed to create "
-                "challenge object: %s" % (ex)
+                "[Ocra2TokenClass] Failed to create challenge object: %s" % (ex)
             )
 
         realms = []
@@ -1080,15 +1061,11 @@ class Ocra2TokenClass(TokenClass):
                 request_is_valid = True
         else:
             tok = super(Ocra2TokenClass, self)
-            request_is_valid = tok.is_challenge_request(
-                passw, user, options=options
-            )
+            request_is_valid = tok.is_challenge_request(passw, user, options=options)
 
         return request_is_valid
 
-    def is_challenge_response(
-        self, passw, user, options=None, challenges=None
-    ):
+    def is_challenge_response(self, passw, user, options=None, challenges=None):
         """
         test for the ocra token, if this is a response to a challenge
 
@@ -1132,9 +1109,7 @@ class Ocra2TokenClass(TokenClass):
 
         return challenge_response
 
-    def checkResponse4Challenge(
-        self, user, passw, options=None, challenges=None
-    ):
+    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
         verify the response of a previous challenge
 
@@ -1162,9 +1137,7 @@ class Ocra2TokenClass(TokenClass):
 
         if res is False:
             if "transactionid" in options or "state" in options:
-                transactionid = options.get(
-                    "state", options.get("transactionid")
-                )
+                transactionid = options.get("state", options.get("transactionid"))
                 for challenge in challenges:
                     transid = challenge.get("transid", None)
                     if transid == transactionid:
@@ -1196,9 +1169,7 @@ class Ocra2TokenClass(TokenClass):
             for transid in list(mids.keys()):
                 # intentional overwrite the transaction which has been provided
                 loptions["transactionid"] = transid
-                otpcount = self.checkOtp(
-                    otpval, counter, window, options=loptions
-                )
+                otpcount = self.checkOtp(otpval, counter, window, options=loptions)
                 if otpcount >= 0:
                     matching_challenges.append(mids.get(transid))
                     break
@@ -1206,9 +1177,7 @@ class Ocra2TokenClass(TokenClass):
             # direct challenge -
             # brings the challange along with the matching pin
             if not mids and "challenge" in options:
-                otpcount = self.checkOtp(
-                    otpval, counter, window, options=options
-                )
+                otpcount = self.checkOtp(otpval, counter, window, options=options)
 
         return (otpcount, matching_challenges)
 
@@ -1244,9 +1213,7 @@ class Ocra2TokenClass(TokenClass):
 
         if "transactionid" in options:
             transid = options.get("transactionid", None)
-            challs = Challenges.lookup_challenges(
-                serial=serial, transid=transid
-            )
+            challs = Challenges.lookup_challenges(serial=serial, transid=transid)
             for chall in challs:
                 if chall.is_open():
                     (rec_tan, rec_valid) = chall.getTanStatus()
@@ -1297,19 +1264,14 @@ class Ocra2TokenClass(TokenClass):
         if ocraSuite.T is not None:
             defTimeWindow = int(getFromConfig("ocra.timeWindow", 180))
             window = (
-                int(self.getFromTokenInfo("timeWindow", defTimeWindow))
-                // ocraSuite.T
+                int(self.getFromTokenInfo("timeWindow", defTimeWindow)) // ocraSuite.T
             )
             defTimeShift = int(getFromConfig("ocra.timeShift", 0))
             timeShift = int(self.getFromTokenInfo("timeShift", defTimeShift))
 
-        default_retry_window = int(
-            getFromConfig("ocra2.max_check_challenge_retry", 0)
-        )
+        default_retry_window = int(getFromConfig("ocra2.max_check_challenge_retry", 0))
         retry_window = int(
-            self.getFromTokenInfo(
-                "max_check_challenge_retry", default_retry_window
-            )
+            self.getFromTokenInfo("max_check_challenge_retry", default_retry_window)
         )
 
         # now check the otp for each challenge
@@ -1333,8 +1295,7 @@ class Ocra2TokenClass(TokenClass):
 
             if challenge.get("challenge") is None:
                 raise Exception(
-                    "could not checkOtp due to missing challenge"
-                    " in request: %r" % ch
+                    "could not checkOtp due to missing challenge in request: %r" % ch
                 )
 
             ret = ocraSuite.checkOtp(
@@ -1444,9 +1405,7 @@ class Ocra2TokenClass(TokenClass):
             if count_0 != -1:
                 tinfo["lChallenge"] = {"otpc": count_0}
                 self.setTokenInfo(tinfo)
-                log.info(
-                    "[OcraToken:autosync] initial sync - success: %r", count_0
-                )
+                log.info("[OcraToken:autosync] initial sync - success: %r", count_0)
 
             res = -1
 
@@ -1470,8 +1429,7 @@ class Ocra2TokenClass(TokenClass):
                 del tinfo["lChallenge"]
                 self.setTokenInfo(tinfo)
                 log.info(
-                    "[OcraToken:autosync] sync failed! Not a valid pass in "
-                    "scope (%r)",
+                    "[OcraToken:autosync] sync failed! Not a valid pass in scope (%r)",
                     otp1,
                 )
                 res = -1
@@ -1534,13 +1492,8 @@ class Ocra2TokenClass(TokenClass):
                 )
 
             elif rolloutState == "2":
-                max_challenges = int(
-                    getFromConfig("OcraMaxChallengeRequests", 3)
-                )
-                if (
-                    challenge
-                    and challenge.received_count + 1 >= max_challenges
-                ):
+                max_challenges = int(getFromConfig("OcraMaxChallengeRequests", 3))
+                if challenge and challenge.received_count + 1 >= max_challenges:
                     # after 3 fails in rollout state 2 - reset to rescan
                     self.addToTokenInfo("rollout", "1")
                     log.info(
@@ -1548,9 +1501,7 @@ class Ocra2TokenClass(TokenClass):
                         self.getSerial(),
                     )
 
-                log.info(
-                    "rollout for token %r not completed", self.getSerial()
-                )
+                log.info("rollout for token %r not completed", self.getSerial())
 
         except Exception as ex:
             log.error(
@@ -1713,9 +1664,7 @@ class Ocra2TokenClass(TokenClass):
                             ret = True
 
         except Exception as ex:
-            raise Exception(
-                "[Ocra2TokenClass:resync] unknown error: %s" % (ex)
-            )
+            raise Exception("[Ocra2TokenClass:resync] unknown error: %s" % (ex))
 
         return ret
 

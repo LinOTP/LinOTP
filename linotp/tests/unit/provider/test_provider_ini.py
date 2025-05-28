@@ -92,9 +92,7 @@ class TestProviderTestCase(unittest.TestCase):
 
     @patch("linotp.provider._load_provider_class")
     @patch("linotp.provider.storeConfig")
-    def test_save_managed_provider_from_ini(
-        self, mock_storeConfig, mock_load_provider
-    ):
+    def test_save_managed_provider_from_ini(self, mock_storeConfig, mock_load_provider):
         """
         save provider from ini file
         """
@@ -129,8 +127,7 @@ class TestProviderTestCase(unittest.TestCase):
         except AssertionError as aserror:
             call_args_list = mock_storeConfig.call_args_list
             raise Exception(
-                "Error was: %r, calls were: %r"
-                % (aserror.message, call_args_list)
+                "Error was: %r, calls were: %r" % (aserror.message, call_args_list)
             )
 
         assert res == (True, {})

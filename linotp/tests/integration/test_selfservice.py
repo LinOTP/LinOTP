@@ -29,7 +29,6 @@
 import os
 
 import pytest
-
 from linotp_selenium_helper import (
     AngularSelfService,
     Policy,

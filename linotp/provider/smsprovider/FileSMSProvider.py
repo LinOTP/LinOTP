@@ -50,10 +50,7 @@ class FileSMSProvider(ISMSProvider):
         return a description of which config options are available
         """
         iface = {
-            "file": (
-                "the filename, where the phone and otp "
-                "values are to be stored."
-            ),
+            "file": ("the filename, where the phone and otp values are to be stored."),
             "here": ("the base path for the text file"),
             "MSISDN": ("normalize the phone numbers"),
         }

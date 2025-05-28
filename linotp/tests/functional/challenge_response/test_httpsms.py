@@ -38,7 +38,6 @@ We assume port 5001 is used (default). If you want to use another port you can
 specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
-
 import json
 import logging
 import tempfile
@@ -88,9 +87,7 @@ class DefaultProvider:
         define the new provider via setProvider
         """
 
-        response = self.test.make_system_request(
-            "setProvider", params=self.config
-        )
+        response = self.test.make_system_request("setProvider", params=self.config)
         assert response.json["result"]["value"], response
 
         response = self.test.make_system_request(
@@ -155,9 +152,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
         self.initTokens()
         self.initProvider()
 
-        self.sms_url = (
-            "http://localhost:%s/testing/http2sms" % self.paster_port
-        )
+        self.sms_url = "http://localhost:%s/testing/http2sms" % self.paster_port
 
     def tearDown(self):
         TestingChallengeResponseController.tearDown(self)
@@ -210,8 +205,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
             parameters = {
                 "serial": serial,
                 "otpkey": (
-                    "1234567890123456789012345678901234567890"
-                    "123456789012345678901234"
+                    "1234567890123456789012345678901234567890123456789012345678901234"
                 ),
                 "realm": "myDefRealm",
                 "type": "sms",
@@ -532,9 +526,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
                 )
 
                 assert "state" in response.json["detail"], response
-                assert (
-                    "sms submitted" in response.json["detail"]["message"]
-                ), response
+                assert "sms submitted" in response.json["detail"]["message"], response
 
                 with open(filename, "r") as f:
                     line = f.read()
@@ -695,9 +687,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
 
     @patch.object(requests, "post")
     @patch.object(requests, "get")
-    def test_twilio_httpsmsprovider(
-        self, mocked_requests_get, mocked_requests_post
-    ):
+    def test_twilio_httpsmsprovider(self, mocked_requests_get, mocked_requests_post):
         """
         Test Twilio as HttpSMSProvider which requires patter match for result
         """
@@ -729,9 +719,9 @@ class TestHttpSmsController(TestingChallengeResponseController):
                 params = {"serial": self.serials[i], "pass": ""}
                 response = self.make_validate_request("check_s", params=params)
 
-                assert (
-                    "state" in response.json["detail"]
-                ), "Expecting 'state' %d: %r" % (i, response)
+                assert "state" in response.json["detail"], (
+                    "Expecting 'state' %d: %r" % (i, response)
+                )
 
             # ------------------------------------------------------------- --
 

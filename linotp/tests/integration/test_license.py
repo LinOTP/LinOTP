@@ -46,7 +46,6 @@ lgNY1u/Y96WG7DVfuid/rdCDBPX99RgcWml+YU1JJdDudSYKheKitoWcoFVp+4YV5FqdfkfESzcJwYoF
 """
 
 import pytest
-
 from linotp_selenium_helper.license_import import (
     FileUploadException,
     LicenseImport,

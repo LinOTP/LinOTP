@@ -28,7 +28,6 @@
 
 """"""
 
-
 import binascii
 import hashlib
 import json
@@ -87,9 +86,7 @@ class HmacOtp(LinHmac):
         else:
             self.hashfunc = hashfunc
 
-        super().__init__(
-            None, counter=counter, digits=digits, hashfunc=self.hashfunc
-        )
+        super().__init__(None, counter=counter, digits=digits, hashfunc=self.hashfunc)
 
     def _getHashlib(self, hLibStr):
         if hLibStr is None:
@@ -159,10 +156,7 @@ class TestValidateController(TestController):
                 "33435363738393031323334"
             )
         elif hashlib_def == "SHA256":
-            otpkey = (
-                "31323334353637383930313233343536373839303132333435363"
-                "73839303132"
-            )
+            otpkey = "3132333435363738393031323334353637383930313233343536373839303132"
         else:
             otpkey = "3132333435363738393031323334353637383930"
         parameters = {
@@ -194,9 +188,7 @@ class TestValidateController(TestController):
             if T0 is None:
                 T0 = time.time() - shift
             counter = int((T0 // timeStepping) + 0.5)
-            ret = hmac_func.generate(
-                counter, key=binascii.unhexlify(hmac_func.secret)
-            )
+            ret = hmac_func.generate(counter, key=binascii.unhexlify(hmac_func.secret))
 
         except Exception as e:
             raise e
@@ -391,9 +383,7 @@ class TestValidateController(TestController):
         assert '"value": true' in response, response
         return serial
 
-    def createPWToken(
-        self, serial="TPW", user="root", pin="pin", otpkey="123456"
-    ):
+    def createPWToken(self, serial="TPW", user="root", pin="pin", otpkey="123456"):
         parameters = {
             "serial": serial,
             "type": "pw",
@@ -755,15 +745,11 @@ class TestValidateController(TestController):
 
         parameters = {"PassOnUserNoToken": "False"}
         response = self.make_system_request("setConfig", params=parameters)
-        assert (
-            '"setConfig PassOnUserNoToken:False": true' in response
-        ), response
+        assert '"setConfig PassOnUserNoToken:False": true' in response, response
 
         parameters = {"PassOnUserNotFound": "True"}
         response = self.make_system_request("setConfig", params=parameters)
-        assert (
-            '"setConfig PassOnUserNotFound:True": true' in response
-        ), response
+        assert '"setConfig PassOnUserNotFound:True": true' in response, response
 
         self.checkFalse3(realm)
 
@@ -1480,9 +1466,7 @@ class TestValidateController(TestController):
         # |  1111111109 |  2005-03-18  | 00000000023523EC | 07081804 |  SHA1  |
         #                  01:58:29
 
-        old_day = datetime(
-            year=2005, month=3, day=18, hour=1, minute=58, second=29
-        )
+        old_day = datetime(year=2005, month=3, day=18, hour=1, minute=58, second=29)
         with freezegun.freeze_time(old_day):
             parameters = {
                 "user": "root",
@@ -1496,9 +1480,7 @@ class TestValidateController(TestController):
         # one more test value
         # 1234567890 |  2009-02-13  | 000000000273EF07 | 89005924 |  SHA1  |
         #            |   23:31:30
-        old_day = datetime(
-            year=2009, month=2, day=13, hour=23, minute=31, second=30
-        )
+        old_day = datetime(year=2009, month=2, day=13, hour=23, minute=31, second=30)
         with freezegun.freeze_time(old_day):
             parameters = {"user": "root", "pass": "pin89005924"}
             response = self.make_validate_request("check", params=parameters)
@@ -2037,9 +2019,7 @@ class TestValidateController(TestController):
         # first check hmac token where most inherit from
         target_serial, otps = self.create_hmac_token(pin="", user=user)
 
-        remote_serial = self.create_radius_token(
-            user=user, pin=pin, check_pin=1
-        )
+        remote_serial = self.create_radius_token(user=user, pin=pin, check_pin=1)
 
         params = {
             "serial": remote_serial,

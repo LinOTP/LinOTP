@@ -185,9 +185,11 @@ class TestGetFromParam(unittest.TestCase):
 
                 user = getUserFromParam(param)
 
-                msg = (
-                    "Failed for config: %r\n at run[%r] %r\n"
-                    "result was %r" % (config, run_id, run, user)
+                msg = "Failed for config: %r\n at run[%r] %r\nresult was %r" % (
+                    config,
+                    run_id,
+                    run,
+                    user,
                 )
 
                 try:
@@ -236,11 +238,7 @@ class TestGetFromParam(unittest.TestCase):
 
             table.append("")
             cparams = json.dumps(config)
-            cc = (
-                cparams.replace("{", " * ")
-                .replace(",", " * ")
-                .replace("}", "")
-            )
+            cc = cparams.replace("{", " * ").replace(",", " * ").replace("}", "")
 
             panel = (
                 "{panel:title=Configuration|borderColor=blue|"
@@ -264,19 +262,11 @@ class TestGetFromParam(unittest.TestCase):
                 user = getUserFromParam(param)
 
                 jparams = json.dumps(param)
-                pp = (
-                    jparams.replace("{", "|* ")
-                    .replace(",", " * ")
-                    .replace("}", "")
-                )
+                pp = jparams.replace("{", "|* ").replace(",", " * ").replace("}", "")
 
                 result = {"login": user.login, "realm": user.realm}
                 rparams = json.dumps(result)
-                rr = (
-                    rparams.replace("{", "|* ")
-                    .replace(",", " * ")
-                    .replace("}", "")
-                )
+                rr = rparams.replace("{", "|* ").replace(",", " * ").replace("}", "")
 
                 table.append("||Parameters: %s||Result: %s|" % (pp, rr))
 

@@ -38,9 +38,7 @@ def create_provider_config():
 
     provider_config = {}
     for provider_type in list(Provider_types.keys()):
-        providers = get_all_new_providers(
-            provider_type, show_managed_config=True
-        )
+        providers = get_all_new_providers(provider_type, show_managed_config=True)
 
         provider_config[provider_type] = providers
 

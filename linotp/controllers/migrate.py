@@ -124,9 +124,7 @@ class MigrateController(BaseController):
 
                 mac = mig.calculate_mac(json.dumps(backup_data))
                 f.write(
-                    json.dumps(
-                        {"Counter": backup_data, "mac": binascii.hexlify(mac)}
-                    )
+                    json.dumps({"Counter": backup_data, "mac": binascii.hexlify(mac)})
                 )
                 f.write("\n")
 
@@ -176,8 +174,7 @@ class MigrateController(BaseController):
                 backupid = self.request_params["backupid"]
                 passphrase = self.request_params["pass"]
                 remove_backup_file = (
-                    self.request_params.get("remove_backup", "true").lower()
-                    == "true"
+                    self.request_params.get("remove_backup", "true").lower() == "true"
                 )
             except KeyError as exx:
                 missing_param = True
@@ -190,9 +187,7 @@ class MigrateController(BaseController):
             backup_file = "%s.hbak" % binascii.hexlify(backup_file)
 
             if not os.path.isfile(backup_file):
-                raise Exception(
-                    "No restore file found for backupid=%s" % backupid
-                )
+                raise Exception("No restore file found for backupid=%s" % backupid)
 
             counters = {}
             counter_check_done = False
@@ -230,23 +225,21 @@ class MigrateController(BaseController):
                         if binascii.hexlify(mac) != restore_data["mac"]:
                             raise Exception("Restore Lines mismatch")
 
-                        if restore_data["Counter"].get(
-                            "Token"
-                        ) != counters.get("Token", 0):
+                        if restore_data["Counter"].get("Token") != counters.get(
+                            "Token", 0
+                        ):
                             raise Exception("Restore Token mismatch")
 
-                        if restore_data["Counter"].get(
-                            "Config"
-                        ) != counters.get("Config", 0):
+                        if restore_data["Counter"].get("Config") != counters.get(
+                            "Config", 0
+                        ):
                             raise Exception("Restore Config mismatch")
 
                         counter_check_done = True
 
                     else:
                         if not mig:
-                            raise Exception(
-                                "MigrationHandler not initialized!"
-                            )
+                            raise Exception("MigrationHandler not initialized!")
                         else:
                             log.info("unknown entry")
 

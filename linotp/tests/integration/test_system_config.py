@@ -31,11 +31,11 @@ from datetime import datetime, timedelta
 
 import integration_data as data
 import pytest
-
-from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 from linotp_selenium_helper import TestCase, helper
 from linotp_selenium_helper.manage_ui import MsgType
 from linotp_selenium_helper.validate import Validate
+
+from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 
 
 class TestSystemConfig:
@@ -77,9 +77,7 @@ class TestSystemConfig:
             "Error saving system configuration", MsgType.Error
         )
         # It shouldn't raise an error
-        assert (
-            not error_raised
-        ), "Error during system configuration save procedure!"
+        assert not error_raised, "Error during system configuration save procedure!"
         ######## 2- get it, validate it and set again
         self.alert_box_handler.clear_messages()
         with self.system_config:
@@ -99,9 +97,7 @@ class TestSystemConfig:
         error_raised = self.alert_box_handler.check_message(
             "Error saving system configuration", MsgType.Error
         )
-        assert (
-            not error_raised
-        ), "Error during system configuration save procedure!"
+        assert not error_raised, "Error during system configuration save procedure!"
 
         ######## 3- get it again and evaluate it's correctness
         # Check whether the checkbox is enabled after saving and re-open
@@ -127,14 +123,12 @@ class TestSystemConfig:
 
         # check if it is saved
         with self.system_config:
-            assert (
-                self.system_config.get_last_access_option()
-            ), "token_last_access_check option should have been selected"
+            assert self.system_config.get_last_access_option(), (
+                "token_last_access_check option should have been selected"
+            )
 
         self.manage_ui.token_view.clear_tokens_via_api()
-        tokenserial = self.manage_ui.token_enroll.create_static_password_token(
-            pasw
-        )
+        tokenserial = self.manage_ui.token_enroll.create_static_password_token(pasw)
         # assign token
         username = "susi"
         self.manage_ui.user_view.select_user(username)
@@ -151,9 +145,9 @@ class TestSystemConfig:
         # 1-successful authentication
         tvar = timedelta(seconds=2)
         validation_result = validate.validate(username, otp + pasw)
-        assert (
-            validation_result[0] == True
-        ), "unexpected behavior: validation of user with password failed"
+        assert validation_result[0] == True, (
+            "unexpected behavior: validation of user with password failed"
+        )
         validationtime = datetime.now()
         tokeninfo = self.manage_ui.token_view.get_token_info(tokenserial)
         last_authentication = datetime.strptime(
@@ -169,9 +163,9 @@ class TestSystemConfig:
         time.sleep(tvar.seconds)
         validation_result = validate.validate(username, "wrong pass")
 
-        assert (
-            validation_result[0] == False
-        ), "unexpected behavior: critical! validation of user should have failed here"
+        assert validation_result[0] == False, (
+            "unexpected behavior: critical! validation of user should have failed here"
+        )
 
         validationtime = datetime.now()
         tokeninfo = self.manage_ui.token_view.get_token_info(tokenserial)

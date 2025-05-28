@@ -64,9 +64,7 @@ def create_unicode_alphabet():
     ]
 
     return [
-        chr(code_point)
-        for r in include_ranges
-        for code_point in range(r[0], r[1] + 1)
+        chr(code_point) for r in include_ranges for code_point in range(r[0], r[1] + 1)
     ]
 
 
@@ -215,9 +213,7 @@ class TestConfigController(TestController):
             entry_name = "getConfig %s" % config_entry
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
-            assert (
-                config_data.decode("utf-8") == data
-            ), "error while comparing data"
+            assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longBase64ConfigEntry")
 
@@ -250,9 +246,7 @@ class TestConfigController(TestController):
             entry_name = "getConfig %s" % config_entry
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
-            assert (
-                config_data.decode("utf-8") == data
-            ), "error while comparing data"
+            assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longHexConfigEntry")
 
@@ -296,17 +290,13 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert (
-                    config_data == data
-                ), "error while comparing data: %r  %r" % (
+                assert config_data == data, "error while comparing data: %r  %r" % (
                     config_data[it - 3 : it + 1],
                     data[it - 3 : it + 1],
                 )
 
             if len(config_data) != len(data):
-                assert (
-                    config_data == data
-                ), "error while comparing length: %r  %r" % (
+                assert config_data == data, "error while comparing length: %r  %r" % (
                     config_data[len(data) :],
                     data[len(config_data) :],
                 )
@@ -326,9 +316,7 @@ class TestConfigController(TestController):
         """
 
         alphabet = create_unicode_alphabet()
-        config_data_base = str(
-            base64.b64encode(create_long_entries(1990)), "utf-8"
-        )
+        config_data_base = str(base64.b64encode(create_long_entries(1990)), "utf-8")
         chunk_len = 2000
         i = -1
         pos = 0
@@ -362,17 +350,13 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert (
-                    config_data == data
-                ), "error while comparing data: %r  %r" % (
+                assert config_data == data, "error while comparing data: %r  %r" % (
                     config_data[it - 3 : it + 1],
                     data[it - 3 : it + 1],
                 )
 
             if len(config_data) != len(data):
-                assert (
-                    config_data == data
-                ), "error while comparing length: %r  %r" % (
+                assert config_data == data, "error while comparing length: %r  %r" % (
                     config_data[len(data) :],
                     data[len(config_data) :],
                 )
@@ -426,17 +410,13 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert (
-                    config_data == data
-                ), "error while comparing data: %r  %r" % (
+                assert config_data == data, "error while comparing data: %r  %r" % (
                     config_data[it - 3 : it + 1],
                     data[it - 3 : it + 1],
                 )
 
             if len(config_data) != len(data):
-                assert (
-                    config_data == data
-                ), "error while comparing length: %r  %r" % (
+                assert config_data == data, "error while comparing length: %r  %r" % (
                     config_data[len(data) :],
                     data[len(config_data) :],
                 )
@@ -531,24 +511,21 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert (
-                    config_data.decode("utf-8") == data
-                ), "error while comparing data: %r  %r" % (
-                    config_data[it - 3 : it + 1],
-                    data[it - 3 : it + 1],
+                assert config_data.decode("utf-8") == data, (
+                    "error while comparing data: %r  %r"
+                    % (
+                        config_data[it - 3 : it + 1],
+                        data[it - 3 : it + 1],
+                    )
                 )
 
             if len(config_data) != len(data):
-                assert (
-                    config_data == data
-                ), "error while comparing length: %r  %r" % (
+                assert config_data == data, "error while comparing length: %r  %r" % (
                     config_data[len(data) :],
                     data[len(config_data) :],
                 )
 
-            assert (
-                config_data.decode("utf-8") == data
-            ), "error while comparing data"
+            assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longHexlifyConfigEntry")
 
@@ -589,24 +566,21 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert (
-                    config_data.decode("utf-8") == data
-                ), "error while comparing data: %r  %r" % (
-                    config_data[it - 3 : it + 1],
-                    data[it - 3 : it + 1],
+                assert config_data.decode("utf-8") == data, (
+                    "error while comparing data: %r  %r"
+                    % (
+                        config_data[it - 3 : it + 1],
+                        data[it - 3 : it + 1],
+                    )
                 )
 
             if len(config_data) != len(data):
-                assert (
-                    config_data == data
-                ), "error while comparing length: %r  %r" % (
+                assert config_data == data, "error while comparing length: %r  %r" % (
                     config_data[len(data) :],
                     data[len(config_data) :],
                 )
 
-            assert (
-                config_data.decode("utf-8") == data
-            ), "error while comparing data"
+            assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longB64ConfigEntry")
 
@@ -677,9 +651,7 @@ class TestConfigController(TestController):
                 try:
                     jresp = json.loads(check_result.response)
                     error_message = (
-                        jresp.get("result", {})
-                        .get("error", {})
-                        .get("message", "")
+                        jresp.get("result", {}).get("error", {}).get("message", "")
                     )
                     assert msg not in error_message, check_result.response
 

@@ -90,9 +90,7 @@ class SetPasswordHandler(ToolsHandler):
 
         groupid = db.Column(db.String(100), primary_key=True, index=True)
         userid = db.Column(db.String(100), primary_key=True, index=True)
-        username = db.Column(
-            db.String(255), default="", unique=True, index=True
-        )
+        username = db.Column(db.String(255), default="", unique=True, index=True)
         phone = db.Column(db.String(100), default="")
         mobile = db.Column(db.String(100), default="")
         email = db.Column(db.String(100), default="")

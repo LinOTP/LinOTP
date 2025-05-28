@@ -312,9 +312,7 @@ class OrphandTestHelpers(object):
         parameters["type"] = "sqlresolver"
         parameters["Limit"] = "20"
 
-        resp = self.make_system_request(
-            action="setResolver", params=parameters
-        )
+        resp = self.make_system_request(action="setResolver", params=parameters)
 
         assert '"value": true' in resp, resp
 
@@ -331,9 +329,7 @@ class OrphandTestHelpers(object):
         parameters = {
             "resolver": name,
         }
-        resp = self.make_system_request(
-            action="delResolver", params=parameters
-        )
+        resp = self.make_system_request(action="delResolver", params=parameters)
         assert '"value": true' in resp, resp
 
         return resp
@@ -550,9 +546,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         self.addSqlRealm(realmName, resolverName, defaultRealm=True)
 
         parameters = {"username": "knöt"}
-        response = self.make_admin_request(
-            action="userlist", params=parameters
-        )
+        response = self.make_admin_request(action="userlist", params=parameters)
 
         assert '"userid": "__9998"' in response, response
         assert '"userid": "__9997"' not in response, response
@@ -560,9 +554,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
 
         # ignore SQL wildcards
         parameters = {"username": "kn%t"}
-        response = self.make_admin_request(
-            action="userlist", params=parameters
-        )
+        response = self.make_admin_request(action="userlist", params=parameters)
 
         assert '"userid": "__9998"' not in response, response
         assert '"userid": "__9997"' in response, response
@@ -570,9 +562,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
 
         # ignore SQL wildcards
         parameters = {"username": "kn_t"}
-        response = self.make_admin_request(
-            action="userlist", params=parameters
-        )
+        response = self.make_admin_request(action="userlist", params=parameters)
 
         assert '"userid": "__9998"' not in response, response
         assert '"userid": "__9997"' not in response, response
@@ -580,9 +570,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
 
         # support LinOTP wildcards
         parameters = {"username": "kn*t"}
-        response = self.make_admin_request(
-            action="userlist", params=parameters
-        )
+        response = self.make_admin_request(action="userlist", params=parameters)
 
         assert '"userid": "__9998"' in response, response
         assert '"userid": "__9997"' in response, response
@@ -590,9 +578,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
 
         # support LinOTP wildcards
         parameters = {"username": "kn.t"}
-        response = self.make_admin_request(
-            action="userlist", params=parameters
-        )
+        response = self.make_admin_request(action="userlist", params=parameters)
 
         assert '"userid": "__9998"' in response, response
         assert '"userid": "__9997"' in response, response
@@ -600,9 +586,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
 
         # support LinOTP wildcards for other fields
         parameters = {"userid": "*9*"}
-        response = self.make_admin_request(
-            action="userlist", params=parameters
-        )
+        response = self.make_admin_request(action="userlist", params=parameters)
 
         assert '"userid": "__9"' in response, response
         assert '"userid": "__9998"' in response, response

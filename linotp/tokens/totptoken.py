@@ -235,10 +235,7 @@ class TimeHmacTokenClass(HmacTokenClass):
                     "totp_timestep": {
                         "type": "int",
                         "value": [30, 60],
-                        "desc": (
-                            "Specify the time step of the "
-                            "timebased OTP token."
-                        ),
+                        "desc": ("Specify the time step of the timebased OTP token."),
                     },
                     "totp_hashlib": {
                         "type": "int",
@@ -252,8 +249,7 @@ class TimeHmacTokenClass(HmacTokenClass):
                         "type": "int",
                         "value": [6, 8],
                         "desc": (
-                            "Specify the otplen to be used. "
-                            "Can be 6 or 8 digits."
+                            "Specify the otplen to be used. Can be 6 or 8 digits."
                         ),
                     },
                 },
@@ -395,9 +391,7 @@ class TimeHmacTokenClass(HmacTokenClass):
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
             except Exception as ex:
-                log.error(
-                    "[time2float] Error during conversion of datetime: %r", ex
-                )
+                log.error("[time2float] Error during conversion of datetime: %r", ex)
                 raise
         else:
             raise Exception(
@@ -409,8 +403,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         # for python 2.6 compatibility, we have to implement 2.7 .total_seconds()::
         # TODO: fix to float!!!!
         tCounter = (
-            (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6)
-            * 1.0
+            (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) * 1.0
         ) // 10**6
 
         return tCounter
@@ -504,9 +497,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         :param value: the new timeStep value
         """
         if value not in [60, 30]:
-            raise ValueError(
-                "timeStep for totp token must be either 30 or 60!"
-            )
+            raise ValueError("timeStep for totp token must be either 30 or 60!")
 
         new_time_count = self.getOtpCount() * self.timeStepping // value
         self.setOtpCount(int(new_time_count))
@@ -854,15 +845,13 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         if count > 0:
             for i in range(0, count):
-                otpval = hmac2Otp.generate(
-                    counter=counter + i, inc_counter=False
-                )
+                otpval = hmac2Otp.generate(counter=counter + i, inc_counter=False)
                 timeCounter = ((counter + i) * timeStepping) + shift
                 otp_dict["otp"][counter + i] = {
                     "otpval": otpval,
-                    "time": datetime.datetime.utcfromtimestamp(
-                        timeCounter
-                    ).strftime("%Y-%m-%d %H:%M:%S"),
+                    "time": datetime.datetime.utcfromtimestamp(timeCounter).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
                 }
             ret = True
 

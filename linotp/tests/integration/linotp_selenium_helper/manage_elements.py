@@ -145,9 +145,7 @@ class ManageTab(ManageElement):
             self.testcase.backend_wait_time,
             ignored_exceptions=NoSuchElementException,
         ).until_not(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, flexigrid_reloading_css)
-            )
+            EC.presence_of_element_located((By.CSS_SELECTOR, flexigrid_reloading_css))
         )
         self.testcase.enableImplicitWait()
 
@@ -169,9 +167,7 @@ class ManageTab(ManageElement):
             self.manage.close_dialogs_and_click(tab_button)
 
         WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located(
-                (By.CSS_SELECTOR, self.tabpane_css)
-            )
+            EC.visibility_of_element_located((By.CSS_SELECTOR, self.tabpane_css))
         )
 
         assert self._is_tab_open(), "Tab should be open (css={})".format(
@@ -206,9 +202,7 @@ class ManageTab(ManageElement):
         rows = grid.find_elements(By.CSS_SELECTOR, ".bDiv table tr")
 
         for row in rows:
-            values = [
-                cell.text for cell in row.find_elements(By.CSS_SELECTOR, "td")
-            ]
+            values = [cell.text for cell in row.find_elements(By.CSS_SELECTOR, "td")]
             result.append(dict(zip(headings, values)))
 
         return result
@@ -342,9 +336,7 @@ class ManageDialog(ManageElement):
         """
         Close the dialog
         """
-        self.find_by_css(
-            self.dialog_css + " button.ui-dialog-titlebar-close"
-        ).click()
+        self.find_by_css(self.dialog_css + " button.ui-dialog-titlebar-close").click()
 
     def close_if_open(self):
         """

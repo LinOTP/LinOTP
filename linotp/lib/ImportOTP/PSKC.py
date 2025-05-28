@@ -28,6 +28,7 @@
 Parsing of pskc files:
     http://tools.ietf.org/search/rfc6030
 """
+
 import base64
 import binascii
 import hashlib
@@ -215,8 +216,7 @@ def parsePSKCdata(
                             deriv_algo,
                         )
                         raise ImportException(
-                            "We do not support key derivation method %s"
-                            % deriv_algo
+                            "We do not support key derivation method %s" % deriv_algo
                         )
                 log.debug("found the salt <<%r>>", PBE_SALT)
 
@@ -263,17 +263,14 @@ def parsePSKCdata(
                             "Found this MAC Key cipherValue: <<%r>>",
                             cipherValue,
                         )
-                        MACKEY_bin = aes_decrypt(
-                            cipherValue, ENCRYPTION_KEY_hex
-                        )
+                        MACKEY_bin = aes_decrypt(cipherValue, ENCRYPTION_KEY_hex)
                     else:
                         log.error(
                             "Found unsupported child in CipherData: %r",
                             cipher_tag,
                         )
                         raise ImportException(
-                            "Found unsupported child in CipherData: %r"
-                            % cipher_tag
+                            "Found unsupported child in CipherData: %r" % cipher_tag
                         )
             elif "EncryptionMethod" == tag:
                 ENC_ALGO = getEncMethod(e)
@@ -284,9 +281,7 @@ def parsePSKCdata(
     # There is a keypackage per key
     # Now we get the list of keypackages
 
-    elem_KeyPackageList = elem_keycontainer.findall(
-        namespace + TAG_NAME_KEYPACKAGE
-    )
+    elem_KeyPackageList = elem_keycontainer.findall(namespace + TAG_NAME_KEYPACKAGE)
     if 0 == len(elem_KeyPackageList):
         raise ImportException("No element %s contained!" % TAG_NAME_KEYPACKAGE)
 
@@ -395,17 +390,13 @@ def parsePSKCdata(
                         if "PlainValue" == seTag:
                             KD_counter = se.text
                         else:
-                            log.warning(
-                                "We do only support PlainValue counters"
-                            )
+                            log.warning("We do only support PlainValue counters")
                 elif "TimeInterval" == eTag:
                     for se in list(e):
                         seTag = getTagName(se)
                         if "PlainValue" == seTag:
                             KD_TimeInterval = se.text
-                            log.debug(
-                                "Found TimeInterval = %r", KD_TimeInterval
-                            )
+                            log.debug("Found TimeInterval = %r", KD_TimeInterval)
                         else:
                             log.warning(
                                 "We do only support PlainValue for TimeInterval"
@@ -417,9 +408,7 @@ def parsePSKCdata(
                             KD_Time = se.text
                             log.debug("Found Time offset = %s", KD_Time)
                         else:
-                            log.warning(
-                                "We do only support PlainValue for Time"
-                            )
+                            log.warning("We do only support PlainValue for Time")
 
                 else:
                     log.warning("Unparsed Tag in Key: %r", eTag)
@@ -439,15 +428,9 @@ def parsePSKCdata(
                         MAC_digest_bin = hmac.new(
                             MACKEY_bin, base64.b64decode(KD_cipher_b64), sha
                         ).digest()
-                        MAC_digest_b64 = base64.b64encode(
-                            MAC_digest_bin
-                        ).decode()
-                        log.debug(
-                            "AES128-CBC secret cipher: %r", KD_cipher_b64
-                        )
-                        log.debug(
-                            "calculated MAC value    : %r", MAC_digest_b64
-                        )
+                        MAC_digest_b64 = base64.b64encode(MAC_digest_bin).decode()
+                        log.debug("AES128-CBC secret cipher: %r", KD_cipher_b64)
+                        log.debug("calculated MAC value    : %r", MAC_digest_b64)
                         log.debug("read MAC value          : %r", KD_mac_b64)
 
                         # decrypt key
@@ -481,8 +464,7 @@ def parsePSKCdata(
                             #            'hashlib' : KD_hashlib }
                     else:
                         log.warning(
-                            "At the moment we only support hmac-sha1. We"
-                            " found %r",
+                            "At the moment we only support hmac-sha1. We found %r",
                             MAC_Method,
                         )
 

@@ -246,9 +246,7 @@ class DummySMPPServer:
                         "DELIVERYFAILURE",
                     ):
                         if err in text:
-                            data["status"] = getattr(
-                                consts, "SMPP_ESME_R" + err
-                            )
+                            data["status"] = getattr(consts, "SMPP_ESME_R" + err)
                             out_msg = f"ERR {err}"
                             break
                     else:

@@ -29,6 +29,7 @@
 """
 Test user authorisation for actions in the "tools" scope.
 """
+
 import io
 import os
 

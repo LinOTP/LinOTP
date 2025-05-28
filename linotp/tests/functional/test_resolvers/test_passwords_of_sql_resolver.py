@@ -95,8 +95,7 @@ class SQLResolverPasswordTest(SQLTestController):
 
         bach_password = "bach123"
         bach_password_hash = (
-            "{PKCS5S2}ZYIjvFLd99ldgx5b7sqOlDCKNt31"
-            "UBX9HQKxTZwU50WfuZlWTNG5qBsCsFUMWwxC"
+            "{PKCS5S2}ZYIjvFLd99ldgx5b7sqOlDCKNt31UBX9HQKxTZwU50WfuZlWTNG5qBsCsFUMWwxC"
         )
 
         users["bach"] = {
@@ -129,9 +128,7 @@ class SQLResolverPasswordTest(SQLTestController):
             "mail": "f.f@chopin.de",
         }
 
-        assert atlassian_pbkdf2_sha1.verify(
-            chopin_password, chopin_password_hash
-        )
+        assert atlassian_pbkdf2_sha1.verify(chopin_password, chopin_password_hash)
         self.addUser(**users["chopin"])
 
         # ------------------------------------------------------------------ --
@@ -212,9 +209,7 @@ class SQLResolverPasswordTest(SQLTestController):
             "mail": "jakob.ludwig@mendelssohn.de",
         }
 
-        assert passlib_phpass.verify(
-            mendelssohn_password, mendelssohn_password_hash
-        )
+        assert passlib_phpass.verify(mendelssohn_password, mendelssohn_password_hash)
 
         self.addUser(**users["mendelssohn"])
 
@@ -313,9 +308,7 @@ class SQLResolverPasswordTest(SQLTestController):
 
         response = self.make_admin_request("show", params=params)
         jresp = json.loads(response.body)
-        token_info = (
-            jresp.get("result", {}).get("value", {}).get("data", [{}])[0]
-        )
+        token_info = jresp.get("result", {}).get("value", {}).get("data", [{}])[0]
         assert token_info.get("LinOtp.FailCount", -1) == 1
 
         # ------------------------------------------------------------------ --

@@ -26,7 +26,6 @@
 #
 """Contains UserView class"""
 
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -93,15 +92,12 @@ class UserView(ManageTab):
         @param realm_name If given, switch to this realm first
         """
         usertab = self._open_tab_user_view(realm_name)
-        assert usertab, (
-            "User tab could not be opened for realm %s" % realm_name
-        )
+        assert usertab, "User tab could not be opened for realm %s" % realm_name
 
         self.clear_filters(realm_name)
         pPageStat = usertab.find_element(
             By.CSS_SELECTOR,
-            "div.flexigrid "
-            "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat",
+            "div.flexigrid > div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat",
         ).text
         if pPageStat == "No items":
             return 0
@@ -120,7 +116,7 @@ class UserView(ManageTab):
         usertab = self.open_tab()
         search_box = usertab.find_element(
             By.CSS_SELECTOR,
-            "div.flexigrid " '> div.sDiv > div.sDiv2 > input[name="q"]',
+            'div.flexigrid > div.sDiv > div.sDiv2 > input[name="q"]',
         )
         return search_box
 
@@ -135,8 +131,7 @@ class UserView(ManageTab):
         usertab = self._open_tab_user_view(realm_name)
         submit_button = usertab.find_element(
             By.CSS_SELECTOR,
-            "div.flexigrid > div.sDiv > div.sDiv2 > "
-            'input[name="search_button"]',
+            'div.flexigrid > div.sDiv > div.sDiv2 > input[name="search_button"]',
         )
         submit_button.click()
 
@@ -152,7 +147,7 @@ class UserView(ManageTab):
 
         select_type = usertab.find_element(
             By.CSS_SELECTOR,
-            "div.flexigrid > div.sDiv > div.sDiv2 > " 'select[name="qtype"]',
+            'div.flexigrid > div.sDiv > div.sDiv2 > select[name="qtype"]',
         )
         select(self.driver, select_type, "Username")
 

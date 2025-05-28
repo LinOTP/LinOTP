@@ -59,9 +59,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
         if url is None:
             return
 
-        log.debug(
-            "[submitMessage] submitting message %s to %s", message, phone
-        )
+        log.debug("[submitMessage] submitting message %s to %s", message, phone)
 
         method = self.config.get("HTTP_Method", "POST").upper()
         if method not in ["GET", "POST"]:
@@ -158,9 +156,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             ret = re.search(self.config["RETURN_FAIL_REGEX"], reply)
             if ret is not None:
                 log.warning("[_check_success] sending SMS fail")
-                raise Exception(
-                    "We received a predefined error from the SMS Gateway."
-                )
+                raise Exception("We received a predefined error from the SMS Gateway.")
             else:
                 log.debug(
                     "[_check_success] sending sms success full. "
@@ -187,9 +183,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             log.debug("[_check_success] fail: %r", fail)
             if reply[: len(fail)] == fail:
                 log.warning("[_check_success] sending SMS fail")
-                raise Exception(
-                    "We received a predefined error from the SMS Gateway."
-                )
+                raise Exception("We received a predefined error from the SMS Gateway.")
             else:
                 log.debug(
                     "[_check_success] sending sms success full. "
@@ -198,9 +192,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
                 )
         return True
 
-    def request(
-        self, url, parameter, username=None, password=None, method="GET"
-    ):
+    def request(self, url, parameter, username=None, password=None, method="GET"):
         try:
             pparams = {}
 
@@ -222,9 +214,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
 
             if username and password is not None:
                 auth = None
-                auth_type = (
-                    self.config.get("AUTH_TYPE", "basic").lower().strip()
-                )
+                auth_type = self.config.get("AUTH_TYPE", "basic").lower().strip()
 
                 if auth_type == "basic":
                     auth = HTTPBasicAuth(username, password)
@@ -274,9 +264,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             requests.exceptions.TooManyRedirects,
         ) as exc:
             log.error("HttpSMSProvider timed out")
-            raise ProviderNotAvailable(
-                "Failed to send SMS - timed out %r" % exc
-            )
+            raise ProviderNotAvailable("Failed to send SMS - timed out %r" % exc)
 
         except Exception as exc:
             log.error("HttpSMSProvider %r", exc)

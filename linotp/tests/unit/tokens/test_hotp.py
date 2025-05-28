@@ -48,16 +48,12 @@ class HmacTokenValidityTest(unittest.TestCase):
         with self.assertRaises(InvalidSeedException) as cm:
             hmac_token.validate_seed(badseed)
         the_exception = cm.exception
-        errormsg = (
-            "The provided token seed contains non-hexadecimal characters"
-        )
+        errormsg = "The provided token seed contains non-hexadecimal characters"
         self.assertEqual(errormsg, the_exception.msg)
 
         anotherbadseed = "1234ab187fH90bdef1234"
         with self.assertRaises(InvalidSeedException) as cm:
             hmac_token.validate_seed(anotherbadseed)
         the_exception = cm.exception
-        errormsg = (
-            "The provided token seed contains non-hexadecimal characters"
-        )
+        errormsg = "The provided token seed contains non-hexadecimal characters"
         self.assertEqual(errormsg, the_exception.msg)

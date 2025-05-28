@@ -80,9 +80,7 @@ class TestSupport(TestController):
 
         upload_files = [("license", "demo-lic.pem", demo_license)]
 
-        response = self.make_system_request(
-            "setSupport", upload_files=upload_files
-        )
+        response = self.make_system_request("setSupport", upload_files=upload_files)
 
         return response
 
@@ -314,16 +312,12 @@ class TestSupport(TestController):
         license_valid_date = datetime(year=2018, month=11, day=16)
 
         with freeze_time(license_valid_date):
-            license_file = os.path.join(
-                self.fixture_path, "linotp2.token_user.pem"
-            )
+            license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
             with open(license_file, "r") as f:
                 license = f.read()
 
             upload_files = [("license", "linotp2.token_user.pem", license)]
-            response = self.make_system_request(
-                "setSupport", upload_files=upload_files
-            )
+            response = self.make_system_request("setSupport", upload_files=upload_files)
             assert '"status": true' in response
             assert '"value": true' in response
 
@@ -526,16 +520,12 @@ class TestSupport(TestController):
         license_valid_date = datetime(year=2018, month=11, day=16)
 
         with freeze_time(license_valid_date):
-            license_file = os.path.join(
-                self.fixture_path, "linotp2.token_user.pem"
-            )
+            license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
             with open(license_file, "r") as f:
                 license = f.read()
 
             upload_files = [("license", "linotp2.token_user.pem", license)]
-            response = self.make_system_request(
-                "setSupport", upload_files=upload_files
-            )
+            response = self.make_system_request("setSupport", upload_files=upload_files)
             assert '"status": true' in response
             assert '"value": true' in response
 
@@ -587,16 +577,12 @@ class TestSupport(TestController):
         license_valid_date = datetime(year=2018, month=11, day=16)
 
         with freeze_time(license_valid_date):
-            license_file = os.path.join(
-                self.fixture_path, "linotp2.token_user.pem"
-            )
+            license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
             with open(license_file, "r") as f:
                 license = f.read()
 
             upload_files = [("license", "linotp2.token_user.pem", license)]
-            response = self.make_system_request(
-                "setSupport", upload_files=upload_files
-            )
+            response = self.make_system_request("setSupport", upload_files=upload_files)
             assert '"status": true' in response
             assert '"value": true' in response
 
@@ -682,9 +668,7 @@ class TestSupport(TestController):
 
             response = self.make_system_request("getSupportInfo")
             jresp = json.loads(response.body)
-            token_num = (
-                jresp.get("result", {}).get("value", {}).get("token-num")
-            )
+            token_num = jresp.get("result", {}).get("value", {}).get("token-num")
 
             assert token_num == "5"
 

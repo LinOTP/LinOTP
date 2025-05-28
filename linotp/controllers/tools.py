@@ -28,12 +28,12 @@
 """
 tools controller
 """
+
 import json
 import logging
 
-from werkzeug.datastructures import FileStorage
-
 from flask import current_app, g, request
+from werkzeug.datastructures import FileStorage
 
 from linotp.controllers.base import BaseController, methods
 from linotp.lib.context import request_context

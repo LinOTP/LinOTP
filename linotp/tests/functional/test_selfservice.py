@@ -83,15 +83,11 @@ class TestSelfserviceController(TestController):
             "password": "geheim1",
         }
 
-        response = self.make_userselfservice_request(
-            "history", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("history", auth_user=auth_user)
         print(response)
         assert '"rows": [' in response
 
-        response = self.make_selfservice_request(
-            "history", auth_user=auth_user
-        )
+        response = self.make_selfservice_request("history", auth_user=auth_user)
         print(response)
         assert "view_audit_selfservice" in response
 
@@ -105,17 +101,13 @@ class TestSelfserviceController(TestController):
             "password": "geheim1",
         }
 
-        response = self.make_userselfservice_request(
-            "reset", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("reset", auth_user=auth_user)
         print(response)
         assert '"status": false' in response
         assert '"code": 410' in response
 
         self.createPolicy("reset")
-        response = self.make_userselfservice_request(
-            "reset", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("reset", auth_user=auth_user)
         print(response)
         assert "Missing parameter: " in response
         assert '"code": 905' in response
@@ -171,17 +163,13 @@ class TestSelfserviceController(TestController):
             "password": "geheim1",
         }
 
-        response = self.make_userselfservice_request(
-            "resync", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("resync", auth_user=auth_user)
         print(response)
         assert '"status": false' in response
         assert '"code": 410' in response
 
         self.createPolicy("resync")
-        response = self.make_userselfservice_request(
-            "resync", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("resync", auth_user=auth_user)
         print(response)
         assert "Missing parameter" in response
         assert '"code": 905' in response
@@ -244,9 +232,7 @@ class TestSelfserviceController(TestController):
         )
 
         self.createPolicy("setMOTPPIN")
-        response = self.make_userselfservice_request(
-            "setmpin", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("setmpin", auth_user=auth_user)
         print(response)
         assert "Missing parameter: ''pin''" in response
         assert '"code": 905' in response
@@ -273,9 +259,7 @@ class TestSelfserviceController(TestController):
         assert '"status": true' in response
         assert '"set userpin": 1' in response
 
-        response = self.make_selfservice_request(
-            "setmpin", auth_user=auth_user
-        )
+        response = self.make_selfservice_request("setmpin", auth_user=auth_user)
         print(response)
         assert "<div id='passwordform'>" in response
 
@@ -312,9 +296,7 @@ class TestSelfserviceController(TestController):
         )
 
         self.createPolicy("setOTPPIN")
-        response = self.make_userselfservice_request(
-            "setpin", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("setpin", auth_user=auth_user)
         print(response)
         assert "Missing parameter: ''userpin''" in response
         assert '"code": 905' in response
@@ -472,9 +454,7 @@ class TestSelfserviceController(TestController):
         print(response)
         assert "<div id='assignform'>" in response
 
-        response = self.make_selfservice_request(
-            "unassign", auth_user=auth_user
-        )
+        response = self.make_selfservice_request("unassign", auth_user=auth_user)
         print(response)
         assert "<div id='unassignform'>" in response
 
@@ -563,9 +543,7 @@ class TestSelfserviceController(TestController):
         print(response)
         assert '"disable token": 1' in response
 
-        response = self.make_admin_request(
-            "show", params={"serial": "token01"}
-        )
+        response = self.make_admin_request("show", params={"serial": "token01"})
         print(response)
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": false' in response
@@ -588,17 +566,13 @@ class TestSelfserviceController(TestController):
         print(response)
         assert '"enable token": 1' in response
 
-        response = self.make_admin_request(
-            "show", params={"serial": "token01"}
-        )
+        response = self.make_admin_request("show", params={"serial": "token01"})
         print(response)
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
 
         # UI
-        response = self.make_selfservice_request(
-            "disable", auth_user=auth_user
-        )
+        response = self.make_selfservice_request("disable", auth_user=auth_user)
         print(response)
         assert "<div id='disableform'>" in response
 
@@ -646,9 +620,7 @@ class TestSelfserviceController(TestController):
         print(response)
         assert '"status": true' in response
 
-        response = self.make_admin_request(
-            "show", params={"serial": "token01"}
-        )
+        response = self.make_admin_request("show", params={"serial": "token01"})
         print(response)
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
@@ -697,9 +669,7 @@ class TestSelfserviceController(TestController):
         print(response)
         assert '"status": true' in response
 
-        response = self.make_admin_request(
-            "show", params={"serial": "token01"}
-        )
+        response = self.make_admin_request("show", params={"serial": "token01"})
         print(response)
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
@@ -732,9 +702,9 @@ class TestSelfserviceController(TestController):
 
         params = {"linotpGetotp.active": True}
         response = self.make_system_request("setConfig", params=params)
-        assert response.json["result"]["value"][
-            "setConfig linotpGetotp.active:True"
-        ], response
+        assert response.json["result"]["value"]["setConfig linotpGetotp.active:True"], (
+            response
+        )
 
         # ----------------------------------------------------------------- --
 
@@ -834,9 +804,7 @@ class TestSelfserviceController(TestController):
             "password": "geheim1",
         }
         # Test default last_access is False
-        response = self.make_userselfservice_request(
-            "context", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("context", auth_user=auth_user)
         response_dict = json.loads(response.body)
 
         last_access = response_dict["detail"]["settings"]["last_access"]
@@ -845,9 +813,7 @@ class TestSelfserviceController(TestController):
         # Test last_access is True
         param = {"linotp.token.last_access": True}
         _response = self.make_system_request("setConfig", params=param)
-        response = self.make_userselfservice_request(
-            "context", auth_user=auth_user
-        )
+        response = self.make_userselfservice_request("context", auth_user=auth_user)
         response_dict = json.loads(response.body)
 
         last_access = response_dict["detail"]["settings"]["last_access"]

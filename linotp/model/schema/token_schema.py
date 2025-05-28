@@ -54,23 +54,17 @@ class TokenSchema(db.Model):
         index=True,
     )
 
-    LinOtpTokenType = Column(
-        "LinOtpTokenType", Unicode(30), default="HMAC", index=True
-    )
+    LinOtpTokenType = Column("LinOtpTokenType", Unicode(30), default="HMAC", index=True)
     LinOtpTokenInfo = Column("LinOtpTokenInfo", Unicode(2000), default="")
     # # encrypt
     LinOtpTokenPinUser = Column("LinOtpTokenPinUser", Unicode(512), default="")
     # # encrypt
-    LinOtpTokenPinUserIV = Column(
-        "LinOtpTokenPinUserIV", Unicode(32), default=""
-    )
+    LinOtpTokenPinUserIV = Column("LinOtpTokenPinUserIV", Unicode(32), default="")
     # # encrypt
     LinOtpTokenPinSO = Column("LinOtpTokenPinSO", Unicode(512), default="")
     # # encrypt
     LinOtpTokenPinSOIV = Column("LinOtpTokenPinSOIV", Unicode(32), default="")
-    LinOtpIdResolver = Column(
-        "LinOtpIdResolver", Unicode(120), default="", index=True
-    )
+    LinOtpIdResolver = Column("LinOtpIdResolver", Unicode(120), default="", index=True)
     LinOtpIdResClass = Column("LinOtpIdResClass", Unicode(120), default="")
     LinOtpUserid = Column("LinOtpUserid", Unicode(320), default="", index=True)
     LinOtpSeed = Column("LinOtpSeed", Unicode(32), default="")

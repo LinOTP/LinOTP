@@ -78,9 +78,7 @@ class TestAdminLabel(TestController):
         """
 
         admin_realm_name = current_app.config["ADMIN_REALM_NAME"]
-        fallback_admin_resolver_name = current_app.config[
-            "ADMIN_RESOLVER_NAME"
-        ]
+        fallback_admin_resolver_name = current_app.config["ADMIN_RESOLVER_NAME"]
 
         # ----------------------------------------------------------------- --
 

@@ -108,9 +108,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # define user
 
-        user = User(
-            login="user1", realm="realm", resolver_config_identifier="resolver"
-        )
+        user = User(login="user1", realm="realm", resolver_config_identifier="resolver")
 
         # define policies
 
@@ -124,13 +122,9 @@ class TestPoliciesSelection(unittest.TestCase):
             create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
         )
         policies.update(
-            create_policy(
-                "self7", user="!*@realm, *.resolver:, user2.resolver, user1"
-            )
+            create_policy("self7", user="!*@realm, *.resolver:, user2.resolver, user1")
         )
-        policies.update(
-            create_policy("self8", user="*, !user1@realm, user2@realm")
-        )
+        policies.update(create_policy("self8", user="*, !user1@realm, user2@realm"))
 
         # evaluate the policies wrt. the given user
 
@@ -158,9 +152,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # define user
 
-        user = User(
-            login="user2", realm="realm", resolver_config_identifier="resolver"
-        )
+        user = User(login="user2", realm="realm", resolver_config_identifier="resolver")
 
         # define policies
 
@@ -174,13 +166,9 @@ class TestPoliciesSelection(unittest.TestCase):
             create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
         )
         policies.update(
-            create_policy(
-                "self7", user="!*@realm, *.resolver:, user2.resolver:, user1"
-            )
+            create_policy("self7", user="!*@realm, *.resolver:, user2.resolver:, user1")
         )
-        policies.update(
-            create_policy("self8", user="*, !user1@realm, user2@realm")
-        )
+        policies.update(create_policy("self8", user="*, !user1@realm, user2@realm"))
 
         # evaluate the policies wrt. the given user
 
@@ -193,9 +181,7 @@ class TestPoliciesSelection(unittest.TestCase):
         expected_matches = set(["self6", "self8"])
 
         matching_policies_names = set(matching_policies.keys())
-        assert (
-            matching_policies_names == expected_matches
-        ), matching_policies_names
+        assert matching_policies_names == expected_matches, matching_policies_names
 
     @patch("linotp.lib.policy.evaluate.UserDomainCompare.exists")
     @patch("linotp.lib.policy.evaluate.UserDomainCompare.compare")
@@ -211,9 +197,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # define user
 
-        user = User(
-            login="user3", realm="realm", resolver_config_identifier="resolver"
-        )
+        user = User(login="user3", realm="realm", resolver_config_identifier="resolver")
 
         # define policies
 
@@ -227,13 +211,9 @@ class TestPoliciesSelection(unittest.TestCase):
             create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
         )
         policies.update(
-            create_policy(
-                "self7", user="!*@realm, *.resolver:, user2.resolver, user1"
-            )
+            create_policy("self7", user="!*@realm, *.resolver:, user2.resolver, user1")
         )
-        policies.update(
-            create_policy("self8", user="*, !user1@realm, user2@realm")
-        )
+        policies.update(create_policy("self8", user="*, !user1@realm, user2@realm"))
 
         # evaluate the policies wrt. the given user
 
@@ -280,13 +260,9 @@ class TestPoliciesSelection(unittest.TestCase):
             create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
         )
         policies.update(
-            create_policy(
-                "self7", user="!*@realm, *.resolver:, user2.resolver, user1"
-            )
+            create_policy("self7", user="!*@realm, *.resolver:, user2.resolver, user1")
         )
-        policies.update(
-            create_policy("self8", user="*, !user1@realm, user2@realm")
-        )
+        policies.update(create_policy("self8", user="*, !user1@realm, user2@realm"))
 
         # evaluate the policies wrt. the given user
 
@@ -332,13 +308,9 @@ class TestPoliciesSelection(unittest.TestCase):
             create_policy("self6", user="*@realm, *.resolver:, user2, !user1")
         )
         policies.update(
-            create_policy(
-                "self7", user="!*@realm, *.resolver:, user2.resolver, user1"
-            )
+            create_policy("self7", user="!*@realm, *.resolver:, user2.resolver, user1")
         )
-        policies.update(
-            create_policy("self8", user="*, !user1@realm, user2@realm")
-        )
+        policies.update(create_policy("self8", user="*, !user1@realm, user2@realm"))
 
         # evaluate the policies wrt. the given user
 

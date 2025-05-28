@@ -30,9 +30,8 @@ import functools
 import json
 import logging
 
-from sqlalchemy import and_, desc
-
 from flask import g
+from sqlalchemy import and_, desc
 
 import linotp
 from linotp.lib.cache_utils import cache_in_request
@@ -60,8 +59,7 @@ class Challenges(object):
 
         if transid_len < 12 or transid_len > 17:
             raise Exception(
-                "TransactionIdLength must be between 12 and 17, "
-                "was %d" % transid_len
+                "TransactionIdLength must be between 12 and 17, was %d" % transid_len
             )
         return transid_len
 
@@ -77,9 +75,7 @@ class Challenges(object):
                             been verified before
         :return:         return a list of challenge dict
         """
-        log.debug(
-            "lookup_challenges: serial %r: transactionid %r", serial, transid
-        )
+        log.debug("lookup_challenges: serial %r: transactionid %r", serial, transid)
 
         if transid is None and serial is None:
             log.debug(
@@ -95,9 +91,7 @@ class Challenges(object):
             if len(transid) == transid_len:
                 conditions += (and_(Challenge.transid == transid),)
             else:
-                conditions += (
-                    and_(Challenge.transid.startswith(transid + ".")),
-                )
+                conditions += (and_(Challenge.transid.startswith(transid + ".")),)
 
         if serial:
             conditions += (and_(Challenge.tokenserial == serial),)
@@ -106,9 +100,7 @@ class Challenges(object):
             conditions += (and_(Challenge.session.like('%"status": "open"%')),)
 
         challenges = (
-            Challenge.query.filter(*conditions)
-            .order_by(desc(Challenge.id))
-            .all()
+            Challenge.query.filter(*conditions).order_by(desc(Challenge.id)).all()
         )
 
         log.debug("lookup_challenges: founnd challenges: %r", challenges)
@@ -116,9 +108,7 @@ class Challenges(object):
         return challenges
 
     @staticmethod
-    def create_challenge(
-        token, options=None, challenge_id=None, id_postfix=""
-    ):
+    def create_challenge(token, options=None, challenge_id=None, id_postfix=""):
         """
         dedicated method to create a challenge to support the implementation
         of challenge policies in future
@@ -232,8 +222,7 @@ class Challenges(object):
         if res is False and challenge_obj is not None:
             try:
                 log.debug(
-                    "Deleting challenge from database session, because "
-                    "of earlier error"
+                    "Deleting challenge from database session, because of earlier error"
                 )
                 db.session.delete(challenge_obj)
                 db.session.commit()
@@ -255,9 +244,7 @@ class Challenges(object):
 
         # in case that create challenge fails, we must raise this reason
         if reason is not None:
-            log.error(
-                "Failed to create or init challenge. Reason was %r ", reason
-            )
+            log.error("Failed to create or init challenge. Reason was %r ", reason)
             raise ReasonException
 
         # prepare the response for the user
@@ -345,9 +332,7 @@ class Challenges(object):
 
     @staticmethod
     @cache_in_request(key_generator=_get_challenges_cache_keygen)
-    def get_challenges(
-        token=None, transid=None, options=None, filter_open=False
-    ):
+    def get_challenges(token=None, transid=None, options=None, filter_open=False):
         state = options and options.get("state", options.get("transactionid"))
 
         if not transid:
@@ -358,9 +343,7 @@ class Challenges(object):
 
         serial = token and token.getSerial()
 
-        challenges = Challenges.lookup_challenges(
-            serial=serial, transid=transid
-        )
+        challenges = Challenges.lookup_challenges(serial=serial, transid=transid)
 
         expired_challenges = []
         valid_chalenges = []

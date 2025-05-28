@@ -178,9 +178,7 @@ class MonitorHandler(object):
 
         else:
             format_string = "%Y-%m-%d %H:%M:%S.%f"
-            linotp_t = datetime.datetime.strptime(
-                str(linotp_time), format_string
-            )
+            linotp_t = datetime.datetime.strptime(str(linotp_time), format_string)
             db_t = datetime.datetime.strptime(str(db_time), format_string)
             result["cache_to_db_diff"] = str(linotp_t - db_t)
             result["db_time"] = db_time
@@ -275,9 +273,7 @@ class MonitorHandler(object):
         resolver_specs = realminfo.get("useridresolver", "")
         realmdict = {
             config_identifier: 0
-            for _, config_identifier in map(
-                parse_resolver_spec, resolver_specs
-            )
+            for _, config_identifier in map(parse_resolver_spec, resolver_specs)
         }
 
         user = getUserFromParam({"realm": realm})

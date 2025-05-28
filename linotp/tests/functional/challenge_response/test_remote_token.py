@@ -184,9 +184,7 @@ class TestRemoteToken(TestingChallengeResponseController):
         )
         assert '"set pin": 1' in response, response
 
-        response = self.make_admin_request(
-            "set", params={"serial": "LSPW2", "pin": ""}
-        )
+        response = self.make_admin_request("set", params={"serial": "LSPW2", "pin": ""})
         assert '"set pin": 1' in response, response
 
         response = self.make_admin_request(

@@ -111,6 +111,4 @@ class TrustedProxyHandler:
             bool: True if the address is in any of the specified networks, False otherwise.
         """
 
-        return any(
-            is_addr_in_network(addr, str(network)) for network in networks
-        )
+        return any(is_addr_in_network(addr, str(network)) for network in networks)

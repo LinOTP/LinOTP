@@ -232,9 +232,7 @@ class QR_Token_Validation:
 
         pt_header = plaintext[0:10]
         content_type, flags, transaction_id = struct.unpack("<bbQ", pt_header)
-        transaction_id = QR_Token_Validation.u64_to_transaction_id(
-            transaction_id
-        )
+        transaction_id = QR_Token_Validation.u64_to_transaction_id(transaction_id)
 
         # make sure a flag for the server signature is
         # present, if the content type is 'pairing'

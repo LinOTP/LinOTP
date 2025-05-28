@@ -90,9 +90,7 @@ class TestProviderBase(unittest.TestCase):
         """use certificate for verification"""
 
         config = {
-            "server_certificate": os.path.join(
-                TestController.fixture_path, "cert.pem"
-            )
+            "server_certificate": os.path.join(TestController.fixture_path, "cert.pem")
         }
 
         res = ConfigParsingMixin.load_server_cert(

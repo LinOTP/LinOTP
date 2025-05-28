@@ -70,9 +70,7 @@ def test_session_cookie_secure(base_app, client, secure_cookies, auth_type):
         cookie_jar.append(cookie)
 
     for cookie in cookie_jar:
-        client.delete_cookie(
-            cookie.key, path=cookie.path, domain=cookie.domain
-        )
+        client.delete_cookie(cookie.key, path=cookie.path, domain=cookie.domain)
     res = client.post(
         auth_type["api"],
         data={"username": "foooooo", "password": "baaaaar"},
@@ -86,9 +84,7 @@ def test_session_cookie_secure(base_app, client, secure_cookies, auth_type):
         assert False, "no jwt access token cookie found"
 
 
-@pytest.mark.skip(
-    reason="JWT_SECRET_KEY as configurable item is obsolete in LinOTP"
-)
+@pytest.mark.skip(reason="JWT_SECRET_KEY as configurable item is obsolete in LinOTP")
 @pytest.mark.parametrize(
     "key,result",
     [
@@ -107,14 +103,12 @@ def test_jwt_secret(base_app, key, result):
     base_app.config["JWT_SECRET_KEY"] = key
 
     base_app.init_jwt_config()
-    assert (
-        base_app.config["JWT_SECRET_KEY"] == result
-    ), "the jwt secret key should be unchanged after app init"
+    assert base_app.config["JWT_SECRET_KEY"] == result, (
+        "the jwt secret key should be unchanged after app init"
+    )
 
 
-@pytest.mark.skip(
-    reason="JWT_SECRET_KEY as configurable item is obsolete in LinOTP"
-)
+@pytest.mark.skip(reason="JWT_SECRET_KEY as configurable item is obsolete in LinOTP")
 @pytest.mark.parametrize(
     "salt,iterations",
     [
@@ -147,9 +141,9 @@ def test_default_jwt_secret(base_app, key_directory, salt, iterations):
             salt=bytes.fromhex(salt) if isinstance(salt, str) else salt,
             iterations=iterations,
         )
-        assert (
-            base_app.config["JWT_SECRET_KEY"] == jwt_key
-        ), "JWT secret derivation from encKey doesn't work"
+        assert base_app.config["JWT_SECRET_KEY"] == jwt_key, (
+            "JWT secret derivation from encKey doesn't work"
+        )
 
 
 def test_random_jwt_secret(base_app, key_directory):

@@ -30,9 +30,8 @@ from pathlib import Path
 from typing import List
 
 import pytest
-from freezegun.api import FrozenDateTimeFactory
-
 from flask.testing import FlaskCliRunner
+from freezegun.api import FrozenDateTimeFactory
 
 from linotp.app import LinOTPApp
 from linotp.cli import main as cli_main
@@ -253,9 +252,7 @@ def test_audit_cleanup_parameters(
     """Run audit cleanup with different `cleanup-threshold` and `max-entries-to-keep` values"""
 
     freezer.move_to(FREEZE_DATE)
-    formated_time = datetime.now().strftime(
-        app.config["BACKUP_FILE_TIME_FORMAT"]
-    )
+    formated_time = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
     result = runner.invoke(cli_main, ["-vv", "audit", "cleanup"] + options)
 
@@ -291,9 +288,7 @@ def test_audit_cleanup_disabled_export(
     setup_audit_table: None,
 ):
     freezer.move_to(FREEZE_DATE)
-    formated_time = datetime.now().strftime(
-        app.config["BACKUP_FILE_TIME_FORMAT"]
-    )
+    formated_time = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
     runner.invoke(
         cli_main,
@@ -325,9 +320,7 @@ def test_audit_cleanup_custom_export_dir(
     setup_audit_table: None,
 ):
     freezer.move_to(FREEZE_DATE)
-    formated_time = datetime.now().strftime(
-        app.config["BACKUP_FILE_TIME_FORMAT"]
-    )
+    formated_time = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
     runner.invoke(
         cli_main,
@@ -357,9 +350,7 @@ def test_audit_cleanup_custom_export_dir(
     assert num_lines == deleted + 1
 
 
-def test_run_janitor_invalid_threshold(
-    runner: FlaskCliRunner, setup_audit_table: None
-):
+def test_run_janitor_invalid_threshold(runner: FlaskCliRunner, setup_audit_table: None):
     """Run janitor with `cleanup-threshold` smaller than `max-entries-to-keep`"""
     cleanup_threshold = 5
     max_entries_to_keep = cleanup_threshold + 1

@@ -53,9 +53,7 @@ class AuditlogController(BaseController):
             name, install_name=install_name, **kwargs
         )
 
-        self.add_url_rule(
-            "/", "auditlog", self.get_audit_entries, methods=["GET"]
-        )
+        self.add_url_rule("/", "auditlog", self.get_audit_entries, methods=["GET"])
 
     @staticmethod
     def __after__(response):

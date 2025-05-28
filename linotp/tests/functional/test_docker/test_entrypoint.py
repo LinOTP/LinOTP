@@ -6,9 +6,7 @@ import pytest
 
 # Get the absolute path of the entrypoint script relative to the test file
 TEST_DIR = Path(__file__).resolve().parent
-ENTRYPOINT_SCRIPT = (
-    TEST_DIR.parent.parent.parent.parent / "docker/linotp/entrypoint.sh"
-)
+ENTRYPOINT_SCRIPT = TEST_DIR.parent.parent.parent.parent / "docker/linotp/entrypoint.sh"
 
 # Mock commands called in entrypoint to avoid failure
 MOCK_DOAS = 'doas() { echo "Mocked doas: $@";}'
@@ -124,10 +122,9 @@ class TestDockerLinotpEntrypoint:
         assert "Bootstrapping done" not in stderr, stderr
         assert not self.linotp_root.joinpath("bootstrapped").exists()
         # Check command failed
-        assert (
-            "Database is unavailable after multiple attempts. Exiting."
-            in stderr
-        ), stderr
+        assert "Database is unavailable after multiple attempts. Exiting." in stderr, (
+            stderr
+        )
         assert "Error" not in stderr, stderr
         assert result.returncode == 1, stderr
 

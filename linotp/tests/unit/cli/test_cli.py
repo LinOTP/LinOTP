@@ -30,6 +30,7 @@
 """
 Command line tests
 """
+
 from datetime import datetime
 
 import pytest

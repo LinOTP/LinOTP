@@ -28,12 +28,10 @@
 error controller - to display errors
 """
 
-
 from html import escape
 
-from webhelpers2.html.builder import literal
-
 from flask import request
+from webhelpers2.html.builder import literal
 
 from linotp.controllers.base import BaseController
 from linotp.flap import error_document_template
@@ -55,14 +53,10 @@ class ErrorController(BaseController):
             unicode_body = str2unicode(resp.body)
             content = literal(unicode_body)
         else:
-            message = request.GET.get(
-                "message", request.POST.get("message", "")
-            )
+            message = request.GET.get("message", request.POST.get("message", ""))
             content = escape(message)
 
-        code = request.GET.get(
-            "code", request.POST.get("code", str(resp.status_int))
-        )
+        code = request.GET.get("code", request.POST.get("code", str(resp.status_int)))
 
         page = error_document_template % dict(
             prefix=request.environ.get("SCRIPT_NAME", ""),

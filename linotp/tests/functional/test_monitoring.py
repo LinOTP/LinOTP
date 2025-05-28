@@ -100,9 +100,7 @@ class TestMonitoringController(TestController):
         new_lic, new_sig = readLicenseInfo(licfile)
         setSupportLicenseInfo(new_lic, new_sig)
 
-    def create_token(
-        self, serial="1234567", realm=None, user=None, active=True
-    ):
+    def create_token(self, serial="1234567", realm=None, user=None, active=True):
         """
         create an HMAC Token with given parameters
 
@@ -125,9 +123,7 @@ class TestMonitoringController(TestController):
         response = self.make_admin_request("init", params=parameters)
         assert '"value": true' in response, response
         if active is False:
-            response = self.make_admin_request(
-                "disable", params={"serial": serial}
-            )
+            response = self.make_admin_request("disable", params={"serial": serial})
 
             assert '"value": 1' in response, response
         return serial
@@ -162,9 +158,7 @@ class TestMonitoringController(TestController):
         response = self.make_monitoring_request("tokens", params=parameters)
         resp = json.loads(response.body)
         values = resp.get("result").get("value")
-        assert (
-            values.get("Realms").get("mydefrealm").get("total") == 2
-        ), response
+        assert values.get("Realms").get("mydefrealm").get("total") == 2, response
         assert values.get("Summary").get("total") == 3, response
         return
 
@@ -378,9 +372,7 @@ class TestMonitoringController(TestController):
         # read user based license file
 
         license_data = None
-        license_file = os.path.join(
-            self.fixture_path, "linotp2.token_user.pem"
-        )
+        license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
 
         with open(license_file, "r") as f:
             license_data = f.read()
@@ -390,19 +382,13 @@ class TestMonitoringController(TestController):
         # travel back in time with the, then valid, license
 
         with freeze_time(datetime(year=2018, month=11, day=17)):
-            upload_files = [
-                ("license", "linotp2.token_user.pem", license_data)
-            ]
-            response = self.make_system_request(
-                "setSupport", upload_files=upload_files
-            )
+            upload_files = [("license", "linotp2.token_user.pem", license_data)]
+            response = self.make_system_request("setSupport", upload_files=upload_files)
             assert response.json["result"]["status"], response
             assert response.json["result"]["value"], response
 
             response = self.make_system_request("getSupportInfo")
-            license_user_num = int(
-                response.json["result"]["value"]["user-num"]
-            )
+            license_user_num = int(response.json["result"]["value"]["user-num"])
 
             # ------------------------------------------------------------- --
 
@@ -412,9 +398,7 @@ class TestMonitoringController(TestController):
             self.create_token(serial="0032", user="root")
             self.create_token(serial="0033", realm="mydefrealm")
             self.create_token(serial="0034", realm="myotherrealm")
-            self.create_token(
-                serial="0035", realm="myotherrealm", active=False
-            )
+            self.create_token(serial="0035", realm="myotherrealm", active=False)
             self.create_token(
                 serial="0036", realm="myotherrealm", user="max2", active=False
             )
@@ -450,16 +434,12 @@ class TestMonitoringController(TestController):
 
         with freeze_time(datetime(year=2017, month=12, day=1)):
             upload_files = [("license", "expired-lic.pem", license_data)]
-            response = self.make_system_request(
-                "setSupport", upload_files=upload_files
-            )
+            response = self.make_system_request("setSupport", upload_files=upload_files)
             assert response.json["result"]["status"], response
             assert response.json["result"]["value"], response
 
             response = self.make_system_request("getSupportInfo")
-            license_token_num = int(
-                response.json["result"]["value"]["token-num"]
-            )
+            license_token_num = int(response.json["result"]["value"]["token-num"])
 
             # ------------------------------------------------------------- --
 
@@ -469,9 +449,7 @@ class TestMonitoringController(TestController):
             self.create_token(serial="0032", user="root")
             self.create_token(serial="0033", realm="mydefrealm")
             self.create_token(serial="0034", realm="myotherrealm")
-            self.create_token(
-                serial="0035", realm="myotherrealm", active=False
-            )
+            self.create_token(serial="0035", realm="myotherrealm", active=False)
             self.create_token(
                 serial="0036",
                 realm="myotherrealm",
@@ -499,9 +477,7 @@ class TestMonitoringController(TestController):
         values = resp.get("result").get("value")
         assert values.get("encryption"), response
         assert values.get("cryptmodul_name") == "Default", response
-        assert (
-            values.get("cryptmodul_type") == "DefaultSecurityModule"
-        ), response
+        assert values.get("cryptmodul_type") == "DefaultSecurityModule", response
 
         # and one more time:
         response = self.make_monitoring_request("storageEncryption", params={})
@@ -512,13 +488,9 @@ class TestMonitoringController(TestController):
     def test_userinfo(self):
         response = self.make_monitoring_request("userinfo", params={})
         resp = json.loads(response.body)
-        myotherrealm = (
-            resp.get("result").get("value").get("Realms").get("myotherrealm")
-        )
+        myotherrealm = resp.get("result").get("value").get("Realms").get("myotherrealm")
         assert myotherrealm.get("myOtherRes") == 8, response
-        mymixrealm = (
-            resp.get("result").get("value").get("Realms").get("mymixrealm")
-        )
+        mymixrealm = resp.get("result").get("value").get("Realms").get("mymixrealm")
         assert mymixrealm.get("myOtherRes") == 8, response
         assert mymixrealm.get("myDefRes") == 27, response
 
@@ -535,13 +507,9 @@ class TestMonitoringController(TestController):
 
         response = self.make_monitoring_request("userinfo", params={})
         resp = json.loads(response.body)
-        myotherrealm = (
-            resp.get("result").get("value").get("Realms").get("myotherrealm")
-        )
+        myotherrealm = resp.get("result").get("value").get("Realms").get("myotherrealm")
         assert myotherrealm is None
-        mymixrealm = (
-            resp.get("result").get("value").get("Realms").get("mymixrealm")
-        )
+        mymixrealm = resp.get("result").get("value").get("Realms").get("mymixrealm")
         assert mymixrealm.get("myOtherRes") == 8, response
         assert mymixrealm.get("myDefRes") == 27, response
 
@@ -557,12 +525,8 @@ class TestMonitoringController(TestController):
         # myotherrealm = myotherresolver
         self.create_token(serial="0058", user="max1@myotherrealm")
         self.create_token(serial="0059", user="max2", realm="myotherrealm")
-        self.create_token(
-            serial="0060", user="other_user", realm="myotherrealm"
-        )
-        self.create_token(
-            serial="0061", user="other_user", realm="myotherrealm"
-        )
+        self.create_token(serial="0060", user="other_user", realm="myotherrealm")
+        self.create_token(serial="0061", user="other_user", realm="myotherrealm")
         self.create_token(serial="0062", user="root", realm="myotherrealm")
         # mymixrealm = both resolvers
         self.create_token(serial="0063", user="susi", realm="mymixrealm")
@@ -571,17 +535,11 @@ class TestMonitoringController(TestController):
         response = self.make_monitoring_request("activeUsers", params={})
         resp = json.loads(response.body)
         assert resp.get("result").get("value").get("total") == 9, response
-        mydefrealm = (
-            resp.get("result").get("value").get("Realms").get("mydefrealm")
-        )
+        mydefrealm = resp.get("result").get("value").get("Realms").get("mydefrealm")
         assert mydefrealm.get("myDefRes") == 5, response
-        myotherrealm = (
-            resp.get("result").get("value").get("Realms").get("myotherrealm")
-        )
+        myotherrealm = resp.get("result").get("value").get("Realms").get("myotherrealm")
         assert myotherrealm.get("myOtherRes") == 4, response
-        mymixrealm = (
-            resp.get("result").get("value").get("Realms").get("mymixrealm")
-        )
+        mymixrealm = resp.get("result").get("value").get("Realms").get("mymixrealm")
         assert mymixrealm.get("myOtherRes") == 1, response
         assert mymixrealm.get("myDefRes") == 1, response
 

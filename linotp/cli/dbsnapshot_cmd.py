@@ -46,11 +46,10 @@ import os
 import sys
 
 import click
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.ext.serializer import dumps, loads
-
 from flask import current_app
 from flask.cli import AppGroup
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.serializer import dumps, loads
 
 from linotp.lib.audit.SQLAudit import AuditTable
 from linotp.model import db
@@ -80,9 +79,7 @@ dbsnapshot_cmds = AppGroup(
 )
 
 
-@dbsnapshot_cmds.command(
-    "create", help="Create a snapshot of the database tables."
-)
+@dbsnapshot_cmds.command("create", help="Create a snapshot of the database tables.")
 def create_command():
     """Create backup file for your database tables"""
 
@@ -95,9 +92,7 @@ def create_command():
         sys.exit(1)
 
 
-@dbsnapshot_cmds.command(
-    "restore", help="Restore a snapshot of the database tables."
-)
+@dbsnapshot_cmds.command("restore", help="Restore a snapshot of the database tables.")
 @click.option("--file", help="Name of the snapshot file.")
 @click.option(
     "--date",
@@ -204,9 +199,7 @@ def backup_database_tables() -> int:
                 data_query.all(), label=name, file=pb_file
             ) as all_data:
                 for data in all_data:
-                    backup_file.write(
-                        binascii.hexlify(dumps(data)).decode("utf-8")
-                    )
+                    backup_file.write(binascii.hexlify(dumps(data)).decode("utf-8"))
 
                 app.echo(".", v=2, nl=False)
 
@@ -243,12 +236,8 @@ def list_database_backups() -> list:
     for backup_file in os.listdir(backup_dir):
         # backup files match the "template" + "%s.sqldb" format
 
-        if backup_file.startswith(filename_template) and backup_file.endswith(
-            ".sqldb"
-        ):
-            backup_date, _, _ext = backup_file[
-                len(filename_template) :
-            ].rpartition(".")
+        if backup_file.startswith(filename_template) and backup_file.endswith(".sqldb"):
+            backup_date, _, _ext = backup_file[len(filename_template) :].rpartition(".")
 
             yield backup_date, backup_file
 
@@ -290,9 +279,7 @@ def _get_restore_filename(
     # no file or data parameter was provided
 
     if not filename and not date:
-        app.echo(
-            "failed to restore - no date or file name parameter provided", v=1
-        )
+        app.echo("failed to restore - no date or file name parameter provided", v=1)
         raise ValueError("no date or file name parameter provided!")
 
     # ---------------------------------------------------------------------- --
@@ -300,13 +287,9 @@ def _get_restore_filename(
     # verify that the file to restore from exists
 
     if not os.path.isfile(backup_filename):
-        app.echo(
-            "Failed to restore %s - not found or not accessible"
-            % backup_filename
-        )
+        app.echo("Failed to restore %s - not found or not accessible" % backup_filename)
         raise FileNotFoundError(
-            "failed to restore %s - not found or not"
-            " accessible" % backup_filename
+            "failed to restore %s - not found or not accessible" % backup_filename
         )
 
     return backup_filename
@@ -349,22 +332,18 @@ def restore_database_tables(
 
         else:
             app.echo(
-                f"selected table {table} is not in the set "
-                "of supported tables",
+                f"selected table {table} is not in the set of supported tables",
                 v=1,
             )
             raise ValueError(
-                f"selected table {table} is not in the set "
-                "of supported tables"
+                f"selected table {table} is not in the set of supported tables"
             )
 
     # ---------------------------------------------------------------------- --
 
     # determine the backup file for the database restore
 
-    backup_filename = _get_restore_filename(
-        "linotp_backup_%s.sqldb", filename, date
-    )
+    backup_filename = _get_restore_filename("linotp_backup_%s.sqldb", filename, date)
 
     # ---------------------------------------------------------------------- --
 

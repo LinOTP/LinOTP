@@ -35,7 +35,6 @@ status code instead of a standard JSON 200 OK (with error description) response
 in case of an error.
 """
 
-
 import logging
 
 from linotp.tests import TestController, url

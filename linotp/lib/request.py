@@ -41,10 +41,9 @@ import httplib2
 
 # this is needed for the radius request
 import pyrad.packet
+from flask import current_app
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
-
-from flask import current_app
 
 log = logging.getLogger(__name__)
 
@@ -157,9 +156,7 @@ class HttpRequest(RemoteRequest):
 
         server_config = RemoteRequest.parse_url(self.server)
         query_params = server_config.get("query_params", {})
-        ssl_verify = (
-            query_params.get("verify_ssl_certificate", "").lower() == "true"
-        )
+        ssl_verify = query_params.get("verify_ssl_certificate", "").lower() == "true"
 
         res = False
         reply = {}
@@ -189,8 +186,7 @@ class HttpRequest(RemoteRequest):
                 # 'disable_ssl_certificate_validation'
 
                 log.warning(
-                    "httplib2 'disable_ssl_certificate_validation'"
-                    " attribute error: %r",
+                    "httplib2 'disable_ssl_certificate_validation' attribute error: %r",
                     exx,
                 )
                 # so we run in fallback mode
@@ -300,9 +296,7 @@ class RadiusRequest(RemoteRequest):
 
             req["User-Password"] = req.PwCrypt(password)
             if "transactionid" in options or "state" in options:
-                req["State"] = str(
-                    options.get("transactionid", options.get("state"))
-                )
+                req["State"] = str(options.get("transactionid", options.get("state")))
 
             response = srv.SendPacket(req)
 

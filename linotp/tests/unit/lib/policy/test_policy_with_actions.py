@@ -403,8 +403,7 @@ class PolicyActionTest(unittest.TestCase):
             "enrollment": {
                 "lostTokenPWLen": {
                     "type": "int",
-                    "desc": "The length of the password in case of "
-                    "temporary token.",
+                    "desc": "The length of the password in case of temporary token.",
                 },
                 "lostTokenPWContents": {
                     "type": "str",
@@ -424,15 +423,15 @@ class PolicyActionTest(unittest.TestCase):
 
         # verify that general policy is honored
 
-        policy_set["general"][
-            "action"
-        ] = "lostTokenPWLen=5, lostTokenPWContents=n, lostTokenValid=2"
+        policy_set["general"]["action"] = (
+            "lostTokenPWLen=5, lostTokenPWContents=n, lostTokenValid=2"
+        )
 
         mocked__get_policies.return_value = policy_set
 
-        end_date = (
-            datetime.date.today() + datetime.timedelta(days=2)
-        ).strftime("%d/%m/%y")
+        end_date = (datetime.date.today() + datetime.timedelta(days=2)).strftime(
+            "%d/%m/%y"
+        )
         end_date = "%s 23:59" % end_date
 
         th = TokenHandler()
@@ -446,15 +445,15 @@ class PolicyActionTest(unittest.TestCase):
 
         # verify that user specific policy is honored
 
-        policy_set["fake_user"][
-            "action"
-        ] = "lostTokenPWLen=3, lostTokenPWContents=c, lostTokenValid=1"
+        policy_set["fake_user"]["action"] = (
+            "lostTokenPWLen=3, lostTokenPWContents=c, lostTokenValid=1"
+        )
 
         mocked__get_policies.return_value = policy_set
 
-        end_date = (
-            datetime.date.today() + datetime.timedelta(days=1)
-        ).strftime("%d/%m/%y")
+        end_date = (datetime.date.today() + datetime.timedelta(days=1)).strftime(
+            "%d/%m/%y"
+        )
         end_date = "%s 23:59" % end_date
 
         th = TokenHandler()

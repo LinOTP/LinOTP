@@ -198,9 +198,7 @@ class TestChallengePrompt(TestController):
         params = {"key": "YUBIKEY_CHALLENGE_PROMPT"}
         response = self.make_system_request("delConfig", params)
 
-        assert (
-            '"delConfig YUBIKEY_CHALLENGE_PROMPT": true' in response
-        ), response
+        assert '"delConfig YUBIKEY_CHALLENGE_PROMPT": true' in response, response
 
         # --------------------------------------------------------------- --
 
@@ -359,9 +357,7 @@ class TestChallengePrompt(TestController):
         assert '"status": true' in response, response
 
         params = {"name": "imported_default", "type": "sms"}
-        response = self.make_system_request(
-            "setDefaultProvider", params=params
-        )
+        response = self.make_system_request("setDefaultProvider", params=params)
 
         counter = 0
         serial = "SMS_TOKEN_01"

@@ -29,6 +29,7 @@
 """
 Test reporting in userservice controller
 """
+
 from linotp.lib.user import User
 from linotp.model.reporting import Reporting
 from linotp.tests import TestController

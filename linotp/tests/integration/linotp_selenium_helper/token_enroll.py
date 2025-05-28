@@ -58,9 +58,7 @@ class EnrollTokenDialog(ManageDialog):
         self.open()
         select_tag = self.driver.find_element(By.ID, "tokentype")
 
-        select(
-            self.driver, select_element=select_tag, option_text=token_type_text
-        )
+        select(self.driver, select_element=select_tag, option_text=token_type_text)
 
     def complete_enrollment(self, token_prefix: str) -> str:
         """Complete the enrollment process and return token serial number
@@ -77,17 +75,13 @@ class EnrollTokenDialog(ManageDialog):
 
         # Check the last alert line
         info = self.manage.alert_box_handler.last_line
-        if info.type != "info" or not info.text.startswith(
-            "created token with serial"
-        ):
+        if info.type != "info" or not info.text.startswith("created token with serial"):
             raise RuntimeError(
                 "Password not correctly created. Message:{}".format(info)
             )
 
         # Find the token serial number
-        token_serial = info.element.find_element(
-            By.CSS_SELECTOR, ".text_param1"
-        ).text
+        token_serial = info.element.find_element(By.CSS_SELECTOR, ".text_param1").text
 
         if not token_serial or not token_serial.startswith(token_prefix):
             raise Exception("Token was not enrolled correctly.")
@@ -106,9 +100,7 @@ class EnrollTokenDialog(ManageDialog):
 
         return self.complete_enrollment("KIPW")
 
-    def create_sms_token(
-        self, pin="", phone="", description="Selenium enrolled"
-    ):
+    def create_sms_token(self, pin="", phone="", description="Selenium enrolled"):
         self.select_token_type("SMS OTP")
 
         fill_form_element(self.driver, "sms_phone", phone)
@@ -133,9 +125,7 @@ class EnrollTokenDialog(ManageDialog):
 
         wel_hmac_otplen = self.driver.find_element(By.ID, "hmac_otplen")
         wel_hmac_algorithm = self.driver.find_element(By.ID, "hmac_algorithm")
-        wel_enroll_hmac_desc = self.driver.find_element(
-            By.ID, "enroll_hmac_desc"
-        )
+        wel_enroll_hmac_desc = self.driver.find_element(By.ID, "enroll_hmac_desc")
 
         if hmac_key:
             # select: seed input - no random seed

@@ -160,9 +160,7 @@ def get_hashalgo_from_description(description, fallback="sha1"):
         description = fallback
 
     try:
-        hash_func = Hashlib_map.get(
-            description.lower(), Hashlib_map[fallback.lower()]
-        )
+        hash_func = Hashlib_map.get(description.lower(), Hashlib_map[fallback.lower()])
     except Exception as exx:
         raise Exception("unsupported hash function %r:%r", description, exx)
     if not callable(hash_func):

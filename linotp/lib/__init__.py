@@ -120,10 +120,7 @@ def deprecated_methods(deprecated_methods_list):
 
         # update the docstring of the function
         wrapper.__doc__ = (
-            render_calling_path(func)
-            + doc_pretext()
-            + wrapper.__doc__
-            + doc_posttext()
+            render_calling_path(func) + doc_pretext() + wrapper.__doc__ + doc_posttext()
         )
         # Further implementation: set a flag to log a warning in case of being called by the wrong method
         # wrapper.conditional_deprecation_warnings = (

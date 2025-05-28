@@ -114,9 +114,7 @@ def test_set_password(app, db_context):
         ),
     ],
 )
-def test_set_password_various(
-    app, db_context, user, oldpw, newpw, exception, message
-):
+def test_set_password_various(app, db_context, user, oldpw, newpw, exception, message):
     SetPasswordHandler.create_table(db_context)
     pw_handler = SetPasswordHandler(db_context)
     admin_user = "admin"

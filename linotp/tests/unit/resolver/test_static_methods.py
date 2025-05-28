@@ -76,9 +76,7 @@ class TestResolverTestCase(unittest.TestCase):
 
         assert res
 
-        res = ldap_cls.primary_key_changed(
-            {"UIDTYPE": "uid"}, {"UIDTYPE": "uid"}
-        )
+        res = ldap_cls.primary_key_changed({"UIDTYPE": "uid"}, {"UIDTYPE": "uid"})
 
         assert not res
 

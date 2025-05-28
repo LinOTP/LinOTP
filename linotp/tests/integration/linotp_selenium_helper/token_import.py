@@ -86,15 +86,12 @@ class TokenImport(ManageDialog):
 
         if not self.manage.realm_manager.get_realms_via_api():
             raise Exception(
-                "Test problem: TokenImport requires a realm, but no"
-                "realms are available"
+                "Test problem: TokenImport requires a realm, but norealms are available"
             )
 
         if file_content:
             # Create the temp xml file with the given file_content.
-            tf = tempfile.NamedTemporaryFile(
-                mode="w", delete=False, suffix=".xml"
-            )
+            tf = tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".xml")
             tf.write(file_content)
             tf.close()
             self.file_path = tf.name
@@ -102,9 +99,7 @@ class TokenImport(ManageDialog):
             # Use the provided xml token file.
             self.file_path = file_path
 
-        filepath_input = self.driver.find_element(
-            By.XPATH, self.file_name_lineedit
-        )
+        filepath_input = self.driver.find_element(By.XPATH, self.file_name_lineedit)
 
         # On firefox the lineedit is not cleared after dialog re-open
         # So we have to do this explicitly
@@ -129,9 +124,7 @@ class TokenImport(ManageDialog):
 
         # Check the alert boxes on the top of the LinOTP UI
         info = self.manage.alert_box_handler.last_line
-        if info.type != "info" or not info.text.startswith(
-            "Token import result:"
-        ):
+        if info.type != "info" or not info.text.startswith("Token import result:"):
             raise TokenImportError("Import failure:{}".format(info))
 
 

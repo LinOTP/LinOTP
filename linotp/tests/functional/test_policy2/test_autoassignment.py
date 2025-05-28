@@ -29,13 +29,13 @@
 """
 Test the autoassignment Policy.
 """
+
 import json
 from copy import deepcopy
 
 import pytest
-from mock import patch
-
 from flask import g
+from mock import patch
 
 from linotp.tests import TestController
 
@@ -128,9 +128,7 @@ class TestAutoassignmentController(TestController):
 
         token_list = deepcopy(self.token_list)
 
-        self._create_autoassignment_policy(
-            "my_autoassign_policy", "mydefrealm"
-        )
+        self._create_autoassignment_policy("my_autoassign_policy", "mydefrealm")
         self._set_token_realm(token_list, "mydefrealm")
 
         # 5 (user, password) pairs from myDefRealm
@@ -177,9 +175,7 @@ class TestAutoassignmentController(TestController):
         token_list = deepcopy(self.token_list[0:1])
 
         # Put all token in the same realm
-        self._create_autoassignment_policy(
-            "my_autoassign_policy", "mydefrealm"
-        )
+        self._create_autoassignment_policy("my_autoassign_policy", "mydefrealm")
         self._set_token_realm(token_list, "mydefrealm")
 
         # (user, password) pairs from myDefRealm
@@ -231,9 +227,7 @@ class TestAutoassignmentController(TestController):
         """
         A user can only autoassign himself a token if he has no token.
         """
-        self._create_autoassignment_policy(
-            "my_autoassign_policy", "mydefrealm"
-        )
+        self._create_autoassignment_policy("my_autoassign_policy", "mydefrealm")
         # Only two token required for this test
         token_list = deepcopy(self.token_list[0:2])
 
@@ -337,9 +331,7 @@ class TestAutoassignmentController(TestController):
             ("shakespeare", "shakespeare1"),
         ]
 
-        self._create_autoassignment_policy(
-            "my_autoassign_policy", "mydefrealm"
-        )
+        self._create_autoassignment_policy("my_autoassign_policy", "mydefrealm")
         self._set_token_realm(token_list, "mydefrealm")
 
         # autoassign token_list[0] to users[0] -> should fail because the OTP
@@ -388,9 +380,7 @@ class TestAutoassignmentController(TestController):
         """
         token_list = deepcopy(self.token_list[0:1])
 
-        self._create_autoassignment_policy(
-            "my_autoassign_policy", "mydefrealm"
-        )
+        self._create_autoassignment_policy("my_autoassign_policy", "mydefrealm")
         self._set_token_realm(token_list, "mydefrealm")
 
         # (user, password) pairs from myDefRealm
@@ -409,9 +399,7 @@ class TestAutoassignmentController(TestController):
         )
 
         # Assert the token was assigned to the correct user
-        response = self.make_admin_request(
-            "getTokenOwner", {"serial": token["serial"]}
-        )
+        response = self.make_admin_request("getTokenOwner", {"serial": token["serial"]})
         content = response.json
         assert content["result"]["status"]
         assert user_name == content["result"]["value"]["username"]
@@ -458,9 +446,7 @@ class TestAutoassignmentController(TestController):
             assert content["result"]["status"]
             assert 1 == content["result"]["value"]
 
-    def _create_autoassignment_policy(
-        self, name, realm, action="autoassignment"
-    ):
+    def _create_autoassignment_policy(self, name, realm, action="autoassignment"):
         """
         Create an autoassignment policy with name 'name' for realm 'realm'.
 

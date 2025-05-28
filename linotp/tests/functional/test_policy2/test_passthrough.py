@@ -30,7 +30,6 @@
 Test the passthrough Policy in combination with the passOnNoToken
 """
 
-
 from linotp.tests import TestController
 
 
@@ -84,9 +83,7 @@ class TestPolicyPassthrough(TestController):
 
         params = {"user": "passthru_user1", "pass": "password_not_required"}
 
-        response = self.make_validate_request(
-            "check", params, client="127.0.0.1"
-        )
+        response = self.make_validate_request("check", params, client="127.0.0.1")
 
         assert '"value": false' in response, response
 
@@ -97,9 +94,7 @@ class TestPolicyPassthrough(TestController):
 
         params = {"user": "passthru_user1", "pass": "password_not_required"}
 
-        response = self.make_validate_request(
-            "check", params, client="127.0.0.1"
-        )
+        response = self.make_validate_request("check", params, client="127.0.0.1")
 
         assert '"value": true' in response, response
 
@@ -108,9 +103,7 @@ class TestPolicyPassthrough(TestController):
 
         params = {"user": "passthru_user1", "pass": "wrong_password"}
 
-        response = self.make_validate_request(
-            "check", params, client="192.168.13.14"
-        )
+        response = self.make_validate_request("check", params, client="192.168.13.14")
 
         assert '"value": false' in response, response
 
@@ -119,9 +112,7 @@ class TestPolicyPassthrough(TestController):
 
         params = {"user": "passthru_user1", "pass": "geheim1"}
 
-        response = self.make_validate_request(
-            "check", params, client="192.168.13.14"
-        )
+        response = self.make_validate_request("check", params, client="192.168.13.14")
 
         assert '"value": true' in response, response
 

@@ -93,9 +93,7 @@ class Challenge(ChallengeSchema):
     def getData(self) -> Union[dict, str]:
         data: Union[dict, str] = {}
         saved_data = (
-            self.data
-            if isinstance(self.data, str)
-            else self.data.decode("utf-8")
+            self.data if isinstance(self.data, str) else self.data.decode("utf-8")
         )
         try:
             data = json.loads(saved_data)
@@ -198,9 +196,7 @@ class Challenge(ChallengeSchema):
 
         session = json.loads(self.getSession())
         stored_mac = session.get("mac")
-        result = hsm.verfiyMessageSignature(
-            message=challenge_data, hex_mac=stored_mac
-        )
+        result = hsm.verfiyMessageSignature(message=challenge_data, hex_mac=stored_mac)
 
         if not result:
             log.warning(
@@ -315,9 +311,7 @@ class Challenge(ChallengeSchema):
         descr["tokenserial"] = self.tokenserial
         descr["data"] = self.getData()
         if save is True:
-            descr["timestamp"] = "%s" % self.timestamp.strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
+            descr["timestamp"] = "%s" % self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
         else:
             descr["timestamp"] = self.timestamp
         descr["received_tan"] = self.received_tan

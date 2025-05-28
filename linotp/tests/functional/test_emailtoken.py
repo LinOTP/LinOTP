@@ -225,9 +225,9 @@ class TestEmailtokenController(TestController):
         response = self.make_validate_request(
             "check", params={"user": "root", "pass": self.pin}
         )
-        assert (
-            self.mock_smtp_instance.sendmail.call_count >= 1
-        ), "smtplib.SMTP.sendmail() should have been called at least once"
+        assert self.mock_smtp_instance.sendmail.call_count >= 1, (
+            "smtplib.SMTP.sendmail() should have been called at least once"
+        )
         call_args = self.mock_smtp_instance.sendmail.call_args
 
         ordered_args = call_args[0]
@@ -263,9 +263,7 @@ class TestEmailtokenController(TestController):
         )
         response = response.json
         assert response["result"]["status"]
-        assert not response["result"][
-            "value"
-        ], "Challenge should have timed out"
+        assert not response["result"]["value"], "Challenge should have timed out"
 
     def test_otp_not_reused(self):
         """
@@ -293,10 +291,7 @@ class TestEmailtokenController(TestController):
 
         # Trigger 2nd challenge (should send no e-mail)
         response, _ = self._trigger_challenge()
-        assert (
-            "e-mail with otp already submitted"
-            == response["detail"]["message"]
-        )
+        assert "e-mail with otp already submitted" == response["detail"]["message"]
 
         time.sleep(5)  # wait for blocking timeout to pass
 
@@ -322,14 +317,10 @@ class TestEmailtokenController(TestController):
         """
 
         # Get existing challenges (to verify later that no new ones were added)
-        response_string = self.make_admin_request(
-            "checkstatus", {"user": "root"}
-        )
+        response_string = self.make_admin_request("checkstatus", {"user": "root"})
         response = response_string.json
         values = response.get("result").get("value").get("values", {})
-        existing_challenges = values.get(self.token_serial, {}).get(
-            "challenges", {}
-        )
+        existing_challenges = values.get(self.token_serial, {}).get("challenges", {})
 
         # Trigger SMTPRecipientsRefused exception when sendmail is called
         exception_to_raise = smtplib.SMTPRecipientsRefused(
@@ -351,20 +342,16 @@ class TestEmailtokenController(TestController):
         assert '"value": false' in response_string, response_string
 
         # Get new challenges
-        response_string = self.make_admin_request(
-            "checkstatus", {"user": "root"}
-        )
+        response_string = self.make_admin_request("checkstatus", {"user": "root"})
         response = response_string.json
         values = response["result"]["value"]["values"]
-        new_challenges = values.get(self.token_serial, {}).get(
-            "challenges", {}
-        )
+        new_challenges = values.get(self.token_serial, {}).get("challenges", {})
 
         # Verify that no challenge was created (the exception should have
         # prevented it)
-        assert (
-            existing_challenges == new_challenges
-        ), "No new challenges should have been created."
+        assert existing_challenges == new_challenges, (
+            "No new challenges should have been created."
+        )
 
     def _trigger_challenge(self):
         """
@@ -378,9 +365,9 @@ class TestEmailtokenController(TestController):
             "check", params={"user": "root", "pass": self.pin}
         )
 
-        assert (
-            self.mock_smtp_instance.sendmail.call_count >= 1
-        ), "smtplib.SMTP.sendmail() should have been called at least once"
+        assert self.mock_smtp_instance.sendmail.call_count >= 1, (
+            "smtplib.SMTP.sendmail() should have been called at least once"
+        )
         call_args = self.mock_smtp_instance.sendmail.call_args
 
         ordered_args = call_args[0]

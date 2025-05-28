@@ -26,7 +26,6 @@
 #
 """contains utility functions for type checking"""
 
-
 import logging
 import re
 import socket
@@ -87,9 +86,7 @@ def parse_duration(duration_str, time_delta_compliant=False):
         parts = duration_regex.match(duration_str.lower())
 
     if not parts:
-        raise DurationParsingException(
-            "must be of type 'duration': %r" % duration_str
-        )
+        raise DurationParsingException("must be of type 'duration': %r" % duration_str)
 
     parts = parts.groupdict()
 
@@ -98,8 +95,7 @@ def parse_duration(duration_str, time_delta_compliant=False):
             # iso8601 defines month, weeks and years, while the python
             # timedelta does not support it for good reasons
             raise DurationParsingException(
-                "definition %s is not python timedelta supported!"
-                % duration_str
+                "definition %s is not python timedelta supported!" % duration_str
             )
 
     time_params = {
@@ -206,8 +202,7 @@ def get_timeout(timeout, seperator=","):
 
     try:
         timeouts = tuple(
-            float(x.strip())
-            for x in timeout.strip().strip(seperator).split(seperator)
+            float(x.strip()) for x in timeout.strip().strip(seperator).split(seperator)
         )
 
     except ValueError:
@@ -261,9 +256,7 @@ def check_time_format_string(time_format_string):
         _now_stripped = datetime.strptime(dt_str, time_format_string)
         return True
     except ValueError as exx:
-        log.error(
-            "invalid time filter format: %r: %r", time_format_string, exx
-        )
+        log.error("invalid time filter format: %r: %r", time_format_string, exx)
         return False
 
 
@@ -442,6 +435,4 @@ def convert_to_datetime(date_str, time_formats):
         except ValueError as exx:
             err.append("%r" % exx)
 
-    raise Exception(
-        "Failed to convert start time paramter to timestamp %r" % err
-    )
+    raise Exception("Failed to convert start time paramter to timestamp %r" % err)
