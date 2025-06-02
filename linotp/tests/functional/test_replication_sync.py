@@ -49,10 +49,8 @@ class SQLData(object):
         self.connection = None
         try:
             self.engine = create_engine(connect)
-            connection = self.engine.connect()
         except Exception as e:
             print("%r" % e)
-        self.connection = connection
         return
 
     def addData(self, key, value, typ, description):
@@ -74,9 +72,16 @@ class SQLData(object):
 
         t = sqlalchemy.sql.expression.text(intoStr)
 
-        self.connection.execute(
-            t, key=key, value=value, typ=typ, description=description
-        )
+        with self.engine.begin() as conn:
+            conn.execute(
+                t,
+                {
+                    "key": key,
+                    "value": value,
+                    "typ": typ,
+                    "description": description,
+                },
+            )
         return
 
     def updateData(self, key, value):
@@ -87,16 +92,8 @@ class SQLData(object):
         updateStr = uStr % (self.userTable)
 
         t = sqlalchemy.sql.expression.text(updateStr)
-        self.connection.execute(t, key=key, value=value)
-        return
-
-    def query(self):
-        selectStr = "select * from %s" % (self.userTable)
-        result = self.connection.execute(selectStr)
-        rows = []
-        for row in result:
-            rows.append(row)
-            print(str(row))
+        with self.engine.begin() as conn:
+            conn.execute(t, {"key": key, "value": value})
         return
 
     def delData(self, key):
@@ -109,14 +106,10 @@ class SQLData(object):
 
         delStr = dStr
         t = sqlalchemy.sql.expression.text(delStr)
-        self.connection.execute(t, key=key)
+
+        with self.engine.begin() as conn:
+            conn.execute(t, {"key": key})
         return
-
-    def close(self):
-        self.connection.close()
-
-    def __del__(self):
-        self.connection.close()
 
 
 class TestReplication(TestController):
@@ -145,7 +138,6 @@ class TestReplication(TestController):
         sqlData.updateData(
             "linotp.Config", str(datetime.now() + timedelta(milliseconds=sec))
         )
-        sqlData.close()
 
         return
 
@@ -156,7 +148,6 @@ class TestReplication(TestController):
         sqlData.updateData(
             "linotp.Config", str(datetime.now() + timedelta(milliseconds=sec))
         )
-        sqlData.close()
 
         return
 

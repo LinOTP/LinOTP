@@ -51,7 +51,6 @@ class SQLUser(object):
         self.connection = None
         try:
             self.engine = create_engine(connect)
-            connection = self.engine.connect()
             self.sqlurl = self.engine.url
             if self.sqlurl.drivername.startswith("mysql"):
                 self.userTable = "%s.%s" % (
@@ -62,7 +61,6 @@ class SQLUser(object):
 
         except Exception as e:
             print("%r" % e)
-        self.connection = connection
 
         umap = {
             "userid": "id",
@@ -136,13 +134,15 @@ class SQLUser(object):
             self.usercol,
         )
         t = sqlalchemy.sql.expression.text(createStr)
-        self.connection.execute(t)
+        with self.engine.begin() as conn:
+            conn.execute(t)
         return
 
     def dropTable(self):
         dropStr = "DROP TABLE %s;" % (self.userTable)
         t = sqlalchemy.sql.expression.text(dropStr)
-        self.connection.execute(t)
+        with self.engine.begin() as conn:
+            conn.execute(t)
 
     def addUser(
         self,
@@ -167,25 +167,29 @@ class SQLUser(object):
         )
         t = sqlalchemy.sql.expression.text(intoStr)
 
-        self.connection.execute(
-            t,
-            user=user,
-            telephonenumber=telephonenumber,
-            mobile=mobile,
-            sn=sn,
-            givenname=givenname,
-            password=password,
-            salt=salt,
-            id=uid,
-            mail=mail,
-        )
+        with self.engine.begin() as conn:
+            conn.execute(
+                t,
+                {
+                    "user": user,
+                    "telephonenumber": telephonenumber,
+                    "mobile": mobile,
+                    "sn": sn,
+                    "givenname": givenname,
+                    "password": password,
+                    "salt": salt,
+                    "id": uid,
+                    "mail": mail,
+                },
+            )
 
         # execute(sqlalchemy.sql.expression.text("""SELECT COUNT(*)
         # FROM Config WHERE Config.Key = :key"""), key=REPLICATION_CONFIG_KEY)
 
     def query(self):
         selectStr = "select * from %s" % (self.userTable)
-        result = self.connection.execute(selectStr)
+        with self.engine.begin() as conn:
+            result = conn.execute(selectStr)
         res = []
         for row in result:
             res.append(row)
@@ -196,23 +200,20 @@ class SQLUser(object):
         if username is not None:
             delStr = "DELETE FROM %s  WHERE user=:user;" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
-            self.connection.execute(t, user=username)
+            with self.engine.begin() as conn:
+                conn.execute(t, {"user": username})
 
         elif type(uid) in (str, ""):
             delStr = "DELETE FROM %s  WHERE id=:id;" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
-            self.connection.execute(t, id=uid)
+            with self.engine.begin() as conn:
+                conn.execute(t, {"id": uid})
 
         elif uid is None:
             delStr = "DELETE FROM %s ;" % (self.userTable)
             t = sqlalchemy.sql.expression.text(delStr)
-            self.connection.execute(t)
-
-    def close(self):
-        self.connection.close()
-
-    def __del__(self):
-        self.connection.close()
+            with self.engine.begin() as conn:
+                conn.execute(t)
 
 
 class OrphandTestHelpers(object):
@@ -296,14 +297,12 @@ class OrphandTestHelpers(object):
             userAdd.addUser(**user)
 
         resolverDefinition = userAdd.getResolverDefinition()
-        userAdd.close()
 
         return resolverDefinition
 
     def delUsers(self, uid=None, username=None):
         userAdd = SQLUser(connect=self.sqlconnect)
         userAdd.delUsers(uid=uid, username=username)
-        userAdd.close()
 
     def addSqlResolver(self, name):
         parameters = copy.deepcopy(self.sqlResolverDef)

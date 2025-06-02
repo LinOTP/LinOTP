@@ -100,7 +100,6 @@ class SQLTestController(TestController):
         userAdd.addUser(**user)
 
         resolverDefinition = userAdd.getResolverDefinition()
-        userAdd.close()
 
         return resolverDefinition
 
@@ -128,7 +127,6 @@ class SQLTestController(TestController):
             userAdd.addUser(**user)
 
         resolverDefinition = userAdd.getResolverDefinition()
-        userAdd.close()
 
         return resolverDefinition
 
@@ -138,7 +136,6 @@ class SQLTestController(TestController):
         """
         userAdd = SqlUserDB(connect=self.sqlconnect)
         userAdd.delUsers(uid=uid, username=username)
-        userAdd.close()
 
     def addSqlResolver(self, name):
         """
