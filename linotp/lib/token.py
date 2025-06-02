@@ -36,7 +36,7 @@ from typing import List
 
 from flask import g
 from flask_babel import gettext as _
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import ResourceClosedError
 
 import linotp
@@ -1690,6 +1690,7 @@ def get_raw_tokens(
     Additionally, the flag read_for_update specifies whether a lock on the database is required. This is necessary when
     obtaining a list of tokens for validation purposes.
     """
+
     tokenList = []
 
     if serial is None and user is None:
@@ -1719,7 +1720,7 @@ def get_raw_tokens(
         # finally run the query on token serial
         condition = and_(*sconditions)
 
-        sqlQuery = Token.query.filter(condition)
+        stmt = select(Token).where(condition)
 
         # ------------------------------------------------------------------ --
 
@@ -1727,14 +1728,15 @@ def get_raw_tokens(
 
         if read_for_update:
             try:
-                sqlQuery = sqlQuery.with_for_update("update").all()
+                stmt = stmt.with_for_update()
 
             except ResourceClosedError as exx:
                 log.warning("Token already locked for update: %r", exx)
                 raise Exception("Token already locked for update: (%r)" % exx)
 
-        for token in sqlQuery:
-            tokenList.append(token)
+        with db.session.no_autoflush:
+            sqlQuery = db.session.execute(stmt).scalars()
+            tokenList = list(sqlQuery)
 
     if user and user.login:
         for user_definition in user.get_uid_resolver():
@@ -1761,7 +1763,7 @@ def get_raw_tokens(
 
             uconditions += ((Token.LinOtpIdResClass.like(resolverClass)),)
 
-            sqlQuery = Token.query.filter(*uconditions)
+            stmt = select(Token).where(*uconditions)
 
             # ---------------------------------------------------------- --
 
@@ -1771,7 +1773,7 @@ def get_raw_tokens(
 
             if read_for_update:
                 try:
-                    sqlQuery = sqlQuery.with_for_update("update").all()
+                    stmt = stmt.with_for_update()
 
                 except ResourceClosedError as exx:
                     log.warning("Token already locked for update: %r", exx)
@@ -1779,6 +1781,7 @@ def get_raw_tokens(
 
             # ---------------------------------------------------------- --
 
+            sqlQuery = db.session.execute(stmt).scalars()
             for token in sqlQuery:
                 # we have to check that the token is in the same realm as
                 # the user

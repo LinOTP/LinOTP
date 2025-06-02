@@ -102,9 +102,11 @@ def add_column(engine: Engine, table_name: str, column: sa.Column):
     c_column_name = column.compile(dialect=engine.dialect)
     c_column_type = column.type.compile(engine.dialect)
 
-    engine.execute(
-        "ALTER TABLE %s ADD COLUMN %s %s" % (c_table_name, c_column_name, c_column_type)
-    )
+    with engine.connect() as connection:
+        connection.execute(
+            "ALTER TABLE %s ADD COLUMN %s %s"
+            % (c_table_name, c_column_name, c_column_type)
+        )
 
 
 def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
@@ -130,14 +132,14 @@ def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
     index_name = "ix_%s_%s" % (table_name, column.name)
     c_index_name = _compile_name(index_name, dialect=engine.dialect)
 
-    engine.execute(
-        "CREATE INDEX %s ON %s ( %s )" % (c_index_name, c_table_name, c_column_name)
-    )
+    with engine.connect() as connection:
+        connection.execute(
+            "CREATE INDEX %s ON %s ( %s )" % (c_index_name, c_table_name, c_column_name)
+        )
 
 
 def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
     """
-
     calling the compiled SQL statement
 
         ALTER TABLE table_name drop COLUMN column
@@ -153,7 +155,10 @@ def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
     c_table_name = _compile_name(table_name, dialect=engine.dialect)
 
     c_column_name = column.compile(dialect=engine.dialect)
-    engine.execute("ALTER TABLE %s drop COLUMN %s " % (c_table_name, c_column_name))
+    with engine.connect() as connection:
+        connection.execute(
+            "ALTER TABLE %s drop COLUMN %s " % (c_table_name, c_column_name)
+        )
 
 
 def re_encode(
@@ -217,7 +222,8 @@ class MYSQL_Migration:
         :param command: the raw sql command
         :return: the sqlalchemy result (proxy)
         """
-        return self.engine.connect().execute(text(command))
+        with self.engine.connect() as connection:
+            return connection.execute(text(command))
 
     # --------------------------------------------------------------------- --
 
@@ -229,23 +235,28 @@ class MYSQL_Migration:
         the result contains the charset which might be latin1 or utf8
         :param table: the table name
         """
-        results = self._execute(f"SHOW CREATE TABLE {table};")
-        return results.next()[1]
+        with self.engine.connect() as connection:
+            results = connection.execute(f"SHOW CREATE TABLE {table};")
+            return results.fetchone()[1]
 
     def _update_schema(self, table: str) -> Any:
         """Update the table defintion to utf8 charset.
 
         :param table: the table name
         """
-        return self._execute(f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4;")
+        with self.engine.connect() as connection:
+            return connection.execute(
+                f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4;"
+            )
 
     def _get_tables(self) -> Any:
         """Query the linotp database for all tables.
 
         :yield: list of tables in database
         """
-        for result in self._execute("show tables;"):
-            yield result[0]
+        with self.engine.connect() as connection:
+            for result in connection.execute("show tables;"):
+                yield result[0]
 
     def migrate_schema(self) -> list:
         """Migration worker, to update the schema definition.
