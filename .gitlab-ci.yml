@@ -330,7 +330,7 @@ lint:
   script:
     # check that config table is stored lower case, i.e. the tests executed verify that lower case table names work.
     - |
-      TABLES=$(python3 -c "from sqlalchemy import create_engine; print(*create_engine('$LINOTP_DATABASE_URI').table_names(), sep='\n')")
+      TABLES=$(python3 -c "from sqlalchemy import create_engine, inspect; print(*inspect(create_engine('$LINOTP_DATABASE_URI')).get_table_names(), sep='\n')")
       echo $TABLES
       if [[ "$TABLES" =~ "Config" || ! "$TABLES" =~ "config" ]]; then
         echo "ERROR: Expected to find table 'config' and not 'Config' in lower case table name tests."
