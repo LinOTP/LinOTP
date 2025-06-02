@@ -237,11 +237,16 @@ class ReportingIterator(object):
         if date:
             date_cond += (and_(Reporting.timestamp >= date),)
 
-        conds = (
-            and_(*date_cond),
-            or_(*realm_cond),
-            or_(*status_cond),
-        )
+        conds = []
+
+        if date_cond:
+            conds.append(and_(*date_cond))
+
+        if realm_cond:
+            conds.append(or_(*realm_cond))
+
+        if status_cond:
+            conds.append(or_(*status_cond))
 
         if sort is None:
             order = Reporting.timestamp

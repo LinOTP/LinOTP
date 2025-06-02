@@ -57,9 +57,7 @@ class LocalAdminResolver:
         self.admin_realm_name = app.config["ADMIN_REALM_NAME"].lower()
 
     def _get_user(self, username: str) -> ImportedUserSchema:
-        user = self.session.query(self.user_class).get(
-            (self.admin_resolver_name, username)
-        )
+        user = self.session.get(self.user_class, (self.admin_resolver_name, username))
         if not user:
             raise NoSuchUserError(username)
         return user
