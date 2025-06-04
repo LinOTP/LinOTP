@@ -47,7 +47,7 @@ ENV PATH=$VENV_ROOT/bin:$PATH
 # Install common runtime dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends \
+    apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     # required for python-ldap
     libldap2-dev libsasl2-dev \
     # required for pysodium
