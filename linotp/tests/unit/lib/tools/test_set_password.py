@@ -110,7 +110,7 @@ def test_set_password(app, db_context):
             "old_password",
             db_context,
             Exception,
-            "must be unicode or bytes, not function",
+            "must be unicode or bytes, not _pytest.fixtures.FixtureFunctionDefinition",
         ),
     ],
 )
