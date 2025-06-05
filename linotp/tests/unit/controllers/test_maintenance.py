@@ -68,7 +68,7 @@ class TestMaintenance(object):
 
     def test_set_loglevel(self, app, adminclient):
         name = "linotp.lib.user"
-        config_entry = LoggingConfig.query.get(name)
+        config_entry = db.session.get(LoggingConfig, name)
         assert not config_entry
 
         params = dict(
@@ -77,7 +77,7 @@ class TestMaintenance(object):
         )
         adminclient.post("/maintenance/setLogLevel", json=params)
 
-        config_entry = LoggingConfig.query.get(name)
+        config_entry = db.session.get(LoggingConfig, name)
         assert config_entry.level == 10
 
 

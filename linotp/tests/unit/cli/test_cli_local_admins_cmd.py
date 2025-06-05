@@ -144,8 +144,8 @@ def test_local_admins_add(app, runner, resolver, username, args):
         ["local-admins", "add"] + [f"--{k}={v}" for k, v in args.items()] + [username],
     )
     assert result.exit_code == 0
-    u = resolver.session.query(resolver.user_class).get(
-        (resolver.admin_resolver_name, username)
+    u = resolver.session.get(
+        resolver.user_class, (resolver.admin_resolver_name, username)
     )
     assert u.groupid == resolver.admin_resolver_name
     assert u.username == username
@@ -186,8 +186,8 @@ def test_local_admins_add_duplicate_user(app, runner, resolver):
 def test_local_admins_modify(app, runner, resolver, args):
     username = "hugo"
     all_keys = {"givenname", "surname", "email", "phone", "mobile"}
-    orig_u = resolver.session.query(resolver.user_class).get(
-        (resolver.admin_resolver_name, username)
+    orig_u = resolver.session.get(
+        resolver.user_class, (resolver.admin_resolver_name, username)
     )
     result = runner.invoke(
         cli_main,
@@ -196,8 +196,8 @@ def test_local_admins_modify(app, runner, resolver, args):
         + [username],
     )
     assert result.exit_code == 0
-    u = resolver.session.query(resolver.user_class).get(
-        (resolver.admin_resolver_name, username)
+    u = resolver.session.get(
+        resolver.user_class, (resolver.admin_resolver_name, username)
     )
     for k in all_keys:
         v = args[k] if k in args else getattr(orig_u, k)
@@ -230,8 +230,8 @@ def test_local_admins_password(app, runner, resolver, pwd, args, stdin_data):
     )
 
     assert result.exit_code == 0
-    u = resolver.session.query(resolver.user_class).get(
-        (resolver.admin_resolver_name, username)
+    u = resolver.session.get(
+        resolver.user_class, (resolver.admin_resolver_name, username)
     )
 
     # This must match whatever the LinOTP code uses.
@@ -266,8 +266,8 @@ def test_local_admins_remove(app, runner, resolver, args, stdin_data, gone):
     assert result.exit_code == (0 if gone else 1)
     if not args:
         assert "Are you sure you want to remove the account?" in result.output
-    u = resolver.session.query(resolver.user_class).get(
-        (resolver.admin_resolver_name, username)
+    u = resolver.session.get(
+        resolver.user_class, (resolver.admin_resolver_name, username)
     )
     if gone:
         assert not u

@@ -171,7 +171,7 @@ def set_logging_level(name, level):
 
     # --------------------------------------------------------------------------
 
-    config_entry = LoggingConfig.query.get(name)
+    config_entry = db.session.get(LoggingConfig, name)
 
     if config_entry is None:
         new_config_entry = LoggingConfig(name, level)

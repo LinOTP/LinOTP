@@ -41,7 +41,7 @@ import urllib.request
 from flask import current_app
 from passlib.context import CryptContext
 from passlib.exc import MissingBackendError
-from sqlalchemy import MetaData, Table, and_, cast, create_engine, or_, types
+from sqlalchemy import MetaData, Table, and_, cast, create_engine, or_, select, types
 from sqlalchemy.exc import NoSuchColumnError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import expression
@@ -350,7 +350,6 @@ class dbObject:
         Session = sessionmaker(
             bind=self.engine,
             autoflush=True,
-            autocommit=True,
             expire_on_commit=True,
         )
         self.sess = Session()
@@ -370,7 +369,7 @@ class dbObject:
 
     def getTable(self, tableName):
         log.debug("[dbObject::getTable] %s", tableName)
-        return Table(tableName, self.meta, autoload=True, autoload_with=self.engine)
+        return Table(tableName, self.meta, autoload_with=self.engine)
 
     def count(self, table, where=""):
         log.debug("[dbObject::count] %s:%s", table, where)
@@ -381,9 +380,9 @@ class dbObject:
             num = self.sess.query(table).count()
         return num
 
-    def query(self, select):
-        log.debug("[dbObject::query] %s", select)
-        return self.sess.execute(select)
+    def query(self, stmt):
+        log.debug("[dbObject::query] %s", stmt)
+        return self.sess.execute(stmt)
 
     def close(self):
         log.debug("[dbObject::close]")
@@ -797,11 +796,13 @@ class IdResolver(UserIdResolver):
             filtr = self._getUserIdFilter(table, loginName)
             log.debug("[getUserId] filtr: %r", filtr)
             log.debug("[getUserId] filtr type: %s", type(filtr))
-            select = table.select(filtr)
-            log.debug("[getUserId] select: %r", select)
 
-            rows = dbObj.query(select)
-            log.debug("[getUserId] length of select statement %i", rows.rowcount)
+            stmt = select(table).where(filtr)
+
+            log.debug("[getUserId] select statement: %r", stmt)
+
+            rows = list(dbObj.query(stmt).mappings())
+            log.debug("[getUserId] length of select statement %i", len(rows))
             for row in rows:
                 colName = self.sqlUserInfo.get("userid")
                 userId = row[colName]
@@ -833,9 +834,9 @@ class IdResolver(UserIdResolver):
         dbObj = self.connect(self.sqlConnect)
         try:
             table = dbObj.getTable(self.sqlTable)
-            select = table.select(self._getUserNameFilter(table, userId))
+            stmt = select(table).where(self._getUserNameFilter(table, userId))
 
-            for row in dbObj.query(select):
+            for row in dbObj.query(stmt).mappings():
                 colName = self.sqlUserInfo.get("username")
                 userName = row[colName]
 
@@ -862,9 +863,10 @@ class IdResolver(UserIdResolver):
         dbObj = self.connect(self.sqlConnect)
         try:
             table = dbObj.getTable(self.sqlTable)
-            select = table.select(self._getUserNameFilter(table, userId))
 
-            for row in dbObj.query(select):
+            stmt = select(table).where(self._getUserNameFilter(table, userId))
+
+            for row in dbObj.query(stmt).mappings():
                 userInfo = self._getUserInfo(
                     dbObj, row, suppress_password=suppress_password
                 )
@@ -931,9 +933,9 @@ class IdResolver(UserIdResolver):
             sStr = self._createSearchString(dbObj, table, searchDict)
             log.debug("[getUserList] creating searchString <<%r>>", sStr)
             log.debug("[getUserList] type of searchString: %s", type(sStr))
-            select = table.select(sStr, limit=self.limit)
 
-            rows = dbObj.query(select)
+            stmt = select(table).where(sStr).limit(self.limit)
+            rows = dbObj.query(stmt).mappings()
 
             user_info_list = [self._getUserInfo(dbObj, row) for row in rows]
             users = {user_info["userid"]: user_info for user_info in user_info_list}

@@ -47,7 +47,7 @@ class DBSession(object):
         self.engine = create_engine(config.get("DATABASE_URI"))
 
     def __enter__(self):
-        self.session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+        self.session = scoped_session(sessionmaker(autoflush=True))
         self.session.configure(bind=self.engine)
         return self.session
 

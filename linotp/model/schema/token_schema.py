@@ -102,5 +102,9 @@ class TokenSchema(db.Model):
         "Realm",
         secondary=TokenRealmSchema.__table__,
         lazy="subquery",
-        backref=db.backref("tokens", lazy=True),
+        backref=db.backref(
+            "tokens",
+            lazy=True,
+            enable_typechecks=False,
+        ),
     )

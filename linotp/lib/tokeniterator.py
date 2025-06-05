@@ -32,7 +32,7 @@ import re
 from difflib import get_close_matches
 
 from flask_sqlalchemy.pagination import Pagination
-from sqlalchemy import and_, not_, or_
+from sqlalchemy import and_, not_, or_, true
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import UserError
@@ -491,7 +491,7 @@ class TokenIterator(object):
             spec = getResolverSpecByName(params.get("resolver_name"))
             condTuple += (and_(Token.LinOtpIdResClass == spec),)
 
-        return and_(*condTuple)
+        return and_(true(), *condTuple)
 
     def _get_tokens_in_realm(self, valid_realms):
         if not valid_realms:
