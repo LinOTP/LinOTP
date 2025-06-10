@@ -64,7 +64,7 @@ def calculate_motp(epoch, key, pin, digits=6):
 @pytest.mark.smoketest
 class TestScenario01:
     """TestCase class that tests Scenario 01 as defined here:
-    https://wally/projects/linotp/wiki/TestingTest_Szenario_01
+    https://wiki.corp.linotp.de/pages/viewpage.action?pageId=119867175
     """
 
     @pytest.fixture(autouse=True)
@@ -76,7 +76,7 @@ class TestScenario01:
 
     def test_scenario01(self):
         """
-        Scenario01 (https://wally/projects/linotp/wiki/TestingTest_Szenario_01)
+        Scenario01 (https://wiki.corp.linotp.de/pages/viewpage.action?pageId=119867175)
         """
         token_view = self.testcase.manage_ui.token_view
         user_view = self.testcase.manage_ui.user_view
