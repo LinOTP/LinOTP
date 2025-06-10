@@ -38,8 +38,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from linotp.lib.auth.validate import check_otp, check_pin
-from linotp.lib.challenges import Challenges
-from linotp.lib.error import ParameterError, TokenTypeNotSupportedError
+from linotp.lib.error import ParameterError
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy.action import get_action_value
 from linotp.tokens import tokenclass_registry

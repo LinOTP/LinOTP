@@ -44,13 +44,7 @@ from linotp.lib.policy.definitions import validate_policy_definition
 from linotp.lib.policy.forward import ForwardServerPolicy
 from linotp.lib.type_utils import boolean
 
-from .processing import get_client_policy
-from .util import (
-    _get_client,
-    get_copy_of_policies,
-    get_policies,
-    parse_action_value,
-)
+from .util import get_copy_of_policies, get_policies
 
 PolicyNameRegex = re.compile("^[a-zA-Z0-9_]*$")
 

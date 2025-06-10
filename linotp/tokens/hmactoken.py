@@ -36,14 +36,9 @@ from datetime import datetime
 from Cryptodome.Hash import SHA1, SHA256, SHA512
 from flask_babel import gettext as _
 
-from linotp.lib.apps import (
-    NoOtpAuthTokenException,
-    create_google_authenticator,
-)
+from linotp.lib.apps import NoOtpAuthTokenException, create_google_authenticator
 from linotp.lib.auth.validate import check_otp, check_pin
-from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
-from linotp.lib.context import request_context as context
 from linotp.lib.HMAC import HmacOtp
 from linotp.lib.reply import create_img
 from linotp.tokens import tokenclass_registry

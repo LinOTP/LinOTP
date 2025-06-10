@@ -105,16 +105,10 @@ instead of the dedicated ocra/request and ocra/check_t
 
 """
 
-import binascii
 import datetime
 import logging
-import sys
 import time
-import urllib.error
 import urllib.parse
-
-# needed for ocra token
-import urllib.request
 
 from flask_babel import gettext as _
 

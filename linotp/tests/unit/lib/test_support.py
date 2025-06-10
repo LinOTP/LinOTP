@@ -54,7 +54,7 @@ fake_context = {}
 
 @pytest.mark.usefixtures("app")
 class LicenseSupportTestCase(unittest.TestCase):
-    @patch("linotp.lib.support.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     @patch("linotp.lib.support.getTokenNumResolver")
     def test_token_volume(self, mocked_getTokenNumResolver):
         """test verify_token_volume including grace response."""

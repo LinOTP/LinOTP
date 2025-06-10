@@ -40,7 +40,6 @@ from linotp.lib.config import (
     removeFromConfig,
     storeConfig,
 )
-from linotp.lib.context import request_context as context
 from linotp.lib.crypto.encrypted_data import EncryptedData
 from linotp.lib.crypto.rsa import verify_rsa_signature
 from linotp.lib.token import getNumTokenUsers, getTokenNumResolver

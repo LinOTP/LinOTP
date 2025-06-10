@@ -121,17 +121,11 @@ from linotp.lib.policy import (
 from linotp.lib.policy.action import get_action_value
 from linotp.lib.resources import AllResourcesUnavailable, ResourceScheduler
 from linotp.lib.token import get_token_owner
-from linotp.lib.user import (
-    User,
-    get_user_from_options,
-    getUserDetail,
-    getUserFromParam,
-)
+from linotp.lib.user import get_user_from_options, getUserDetail
 from linotp.provider import (
     ProviderNotAvailable,
     get_provider_from_policy,
     loadProvider,
-    loadProviderFromPolicy,
 )
 from linotp.tokens import tokenclass_registry
 from linotp.tokens.hmactoken import HmacTokenClass

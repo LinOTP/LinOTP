@@ -35,7 +35,6 @@ from flask import current_app
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
 
-from linotp.flap import config as env
 from linotp.lib.error import ParameterError
 from linotp.tokens import tokenclass_registry
 
